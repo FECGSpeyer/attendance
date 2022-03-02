@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { IonSelect, ModalController } from '@ionic/angular';
+import { IonContent, IonSelect, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument, Player } from 'src/app/utilities/interfaces';
@@ -15,7 +15,8 @@ dayjs.extend(utc);
 export class PersonPage implements OnInit {
   @Input() existingPlayer: Player;
   @Input() instruments: Instrument[];
-  @ViewChild('select') select: IonSelect; 
+  @ViewChild('select') select: IonSelect;
+  @ViewChild('content') content: IonContent;
 
   public newPlayer: Player = {
     firstName: "",
@@ -27,7 +28,7 @@ export class PersonPage implements OnInit {
     hasTeacher: false,
     isLeader: false,
     notes: "",
-  }
+  };
   public player: Player;
   public birthdayString: string = format(new Date(), 'dd.MM.yyyy');
   public playsSinceString: string = format(new Date(), 'dd.MM.yyyy');
@@ -74,4 +75,7 @@ export class PersonPage implements OnInit {
     });
   }
 
+  scrollDown(): void {
+    this.content.scrollToBottom();
+  }
 }

@@ -9,7 +9,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content #content>
   <ion-grid>
     <ion-row>
       <ion-col>
@@ -120,11 +120,12 @@
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>
-          <ion-textarea rows="6" [(ngModel)]="player.notes"></ion-textarea>
+          <ion-textarea onfocus="scrollDown()" rows="6" [(ngModel)]="player.notes"></ion-textarea>
         </ion-item>
       </ion-col>
     </ion-row>
   </ion-grid>
   <ion-button *ngIf="!existingPlayer" expand="block" (click)="addPlayer()">Spieler hinzufügen</ion-button>
   <ion-button *ngIf="existingPlayer" expand="block" (click)="updatePlayer()">Spieler updaten</ion-button>
+  <div class="bottom-padding"></div>
 </ion-content>
