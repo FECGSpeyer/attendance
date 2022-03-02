@@ -1,5 +1,5 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { IonContent, IonSelect, ModalController } from '@ionic/angular';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { IonContent, IonSelect, ModalController, Platform } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument, Player } from 'src/app/utilities/interfaces';
@@ -12,11 +12,12 @@ dayjs.extend(utc);
   templateUrl: './person.page.html',
   styleUrls: ['./person.page.scss'],
 })
-export class PersonPage implements OnInit {
+export class PersonPage implements OnInit, OnDestroy {
   @Input() existingPlayer: Player;
   @Input() instruments: Instrument[];
   @ViewChild('select') select: IonSelect;
   @ViewChild('content') content: IonContent;
+  keyboardSub;
 
   public newPlayer: Player = {
     firstName: "",
@@ -38,6 +39,7 @@ export class PersonPage implements OnInit {
   constructor(
     private db: DbService,
     private modalController: ModalController,
+    private platform: Platform
   ) { }
 
   ngOnInit() {
@@ -47,10 +49,18 @@ export class PersonPage implements OnInit {
       this.playsSinceString = this.formatDate(this.existingPlayer.playsSince);
       this.joinedString = this.formatDate(this.existingPlayer.joined);
       this.db.getPlayerAttendance();
+      this.keyboardSub = this.platform.keyboardDidShow.subscribe(ev =>
+        {
+          this.content.scrollToBottom();
+        });
     } else {
       this.player = { ...this.newPlayer };
       this.player.instrument = this.instruments[0].id;
     }
+  }
+
+  ngOnDestroy(): void {
+      this.keyboardSub.unsubscribe();
   }
 
   formatDate(value: string) {
@@ -76,6 +86,7 @@ export class PersonPage implements OnInit {
   }
 
   scrollDown(): void {
-    this.content.scrollToBottom();
+    //this.content.scrollToBottom();
   }
+
 }
