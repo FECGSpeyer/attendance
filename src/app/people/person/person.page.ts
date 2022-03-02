@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { IonContent, IonSelect, ModalController, Platform } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
@@ -12,12 +12,11 @@ dayjs.extend(utc);
   templateUrl: './person.page.html',
   styleUrls: ['./person.page.scss'],
 })
-export class PersonPage implements OnInit, OnDestroy {
+export class PersonPage implements OnInit {
   @Input() existingPlayer: Player;
   @Input() instruments: Instrument[];
   @ViewChild('select') select: IonSelect;
   @ViewChild('content') content: IonContent;
-  keyboardSub;
 
   public newPlayer: Player = {
     firstName: "",
@@ -49,19 +48,12 @@ export class PersonPage implements OnInit, OnDestroy {
       this.playsSinceString = this.formatDate(this.existingPlayer.playsSince);
       this.joinedString = this.formatDate(this.existingPlayer.joined);
       this.db.getPlayerAttendance();
-      this.keyboardSub = this.platform.keyboardDidShow.subscribe(ev =>
-        {
-          this.content.scrollToBottom();
-        });
     } else {
       this.player = { ...this.newPlayer };
       this.player.instrument = this.instruments[0].id;
     }
   }
 
-  ngOnDestroy(): void {
-      this.keyboardSub.unsubscribe();
-  }
 
   formatDate(value: string) {
     return format(parseISO(value), 'dd.MM.yyyy');
@@ -86,7 +78,8 @@ export class PersonPage implements OnInit, OnDestroy {
   }
 
   scrollDown(): void {
-    //this.content.scrollToBottom();
+    //this.content.scrollToBottom(); // funktioniert nicht, weil das scrollable item mit der tastatur NICHT das content-component ist,
+                                     // sondern iwas anderes
   }
 
 }
