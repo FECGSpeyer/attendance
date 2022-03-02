@@ -19,6 +19,8 @@ src/environments
 log.txt
 npm-debug.log*
 
+packag-lock.json
+
 /.angular
 /.idea
 /.ionic
