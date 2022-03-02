@@ -1,0 +1,130 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Spieler hinzufügen</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Vorname</ion-label>
+          <ion-input [(ngModel)]="player.firstName"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Nachname</ion-label>
+          <ion-input [(ngModel)]="player.lastName"></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Instrument</ion-label>
+          <ion-select #select [(ngModel)]="player.instrument">
+            <ion-select-option [value]="i.id" *ngFor="let i of instruments">
+              {{ i.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Geburtsdatum</ion-label>
+          <ion-input readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
+          <ion-modal trigger="date-modal">
+            <ng-template>
+              <ion-content>
+                <ion-datetime
+                  [max]="max"
+                  [(ngModel)]="player.birthday"
+                  (ionChange)="birthdayString = formatDate(dateTimePickerBirthday.value)"
+                  presentation="date"
+                  #dateTimePickerBirthday
+                ></ion-datetime>
+              </ion-content>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
+          <ion-input readonly [(ngModel)]="playsSinceString" id="plays-modal"></ion-input>
+          <ion-modal trigger="plays-modal">
+            <ng-template>
+              <ion-content>
+                <ion-datetime
+                  [max]="max"
+                  [(ngModel)]="player.playsSince"
+                  (ionChange)="playsSinceString = formatDate(dateTimePickerPlays.value)"
+                  presentation="date"
+                  #dateTimePickerPlays
+                ></ion-datetime>
+              </ion-content>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Beigetreten am</ion-label>
+          <ion-input readonly [(ngModel)]="joinedString" id="joined-modal"></ion-input>
+          <ion-modal trigger="joined-modal">
+            <ng-template>
+              <ion-content>
+                <ion-datetime
+                  [max]="max"
+                  [(ngModel)]="player.joined"
+                  (ionChange)="joinedString = formatDate(dateTimePickerJoined.value)"
+                  presentation="date"
+                  #dateTimePickerJoined
+                ></ion-datetime>
+              </ion-content>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label>Spielt beim Lehrer</ion-label>
+          <ion-toggle [(ngModel)]="player.hasTeacher"></ion-toggle>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label>Stimmführer</ion-label>
+          <ion-toggle [(ngModel)]="player.isLeader"></ion-toggle>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Notizen</ion-label>
+          <ion-textarea rows="6" [(ngModel)]="player.notes"></ion-textarea>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-button *ngIf="!existingPlayer" expand="block" (click)="addPlayer()">Spieler hinzufügen</ion-button>
+  <ion-button *ngIf="existingPlayer" expand="block" (click)="updatePlayer()">Spieler updaten</ion-button>
+</ion-content>

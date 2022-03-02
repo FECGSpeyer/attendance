@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ attendance?.date | date:'dd.MM.yyyy' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+      <ion-button (click)="save()">
+        <ion-icon name="save-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item-divider sticky="true">
+      <ion-label>Dirigenten</ion-label>
+    </ion-item-divider>
+    <ion-item *ngFor="let con of conductors">
+      <ion-checkbox [(ngModel)]="con.isPresent" slot="start"></ion-checkbox>
+      <ion-label>
+        <h2>{{ con.firstName }} {{ con.lastName }}</h2>
+      </ion-label>
+    </ion-item>
+    <ion-item-sliding *ngFor="let player of players">
+      <ion-item-divider sticky="true" *ngIf="player.firstOfInstrument">
+        <ion-label>{{ player.instrumentName }}</ion-label>
+      </ion-item-divider>
+      <ion-item>
+        <ion-checkbox [(ngModel)]="player.isPresent" slot="start"></ion-checkbox>
+        <ion-label>
+          <h2>{{ player.firstName }} {{ player.lastName }}</h2>
+        </ion-label>
+        <ion-badge color="secondary" *ngIf="player.isLeader" slot="end">Stimmführer</ion-badge>
+        <ion-badge color="danger" *ngIf="player.isNew && !player.isLeader" slot="end">Neu</ion-badge>
+      </ion-item>
+    </ion-item-sliding>
+  </ion-list>
+</ion-content>
