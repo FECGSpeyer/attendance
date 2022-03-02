@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { createClient } from '@supabase/supabase-js';
-import { environment } from 'src/environments/environment';
+import { environment } from 'src/environments/environment.prod';
 import { Attendance, Instrument, Person, Player } from '../utilities/interfaces';
 
 const supabase = createClient(environment.apiUrl, environment.apiKey);
