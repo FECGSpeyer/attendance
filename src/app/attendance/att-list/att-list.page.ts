@@ -78,6 +78,7 @@ export class AttListPage implements OnInit {
   async openAttendance(attendance): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: AttPage,
+      backdropDismiss: false,
       componentProps: {
         attendance,
       }
