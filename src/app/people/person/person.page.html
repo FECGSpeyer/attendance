@@ -125,6 +125,19 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+  <ion-list *ngIf="attendance.length">
+    <ion-list-header>
+      Anwesenheit
+    </ion-list-header>
+    <ion-item>
+      <ion-label>Durchschnitt</ion-label>
+      <ion-badge slot="end" [color]="perc ? 'success' : 'danger'">{{ perc }}%</ion-badge>
+    </ion-item>
+    <ion-item *ngFor="let att of attendance">
+      <ion-label>{{ att.date | date:'dd.MM.YYYY' }}</ion-label>
+      <ion-badge slot="end" [color]="att.attended ? 'success' : 'danger'">{{ att.attended ? "X" : "V" }}</ion-badge>
+    </ion-item>
+  </ion-list>
   <ion-button *ngIf="!existingPlayer" expand="block" (click)="addPlayer()">Spieler hinzufügen</ion-button>
   <ion-button *ngIf="existingPlayer" expand="block" (click)="updatePlayer()">Spieler updaten</ion-button>
   <div class="bottom-padding"></div>

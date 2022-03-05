@@ -43,3 +43,9 @@ export interface Attendance {
     conductors?: any;
     percentage?: number;
 }
+
+export interface PersonAttendance {
+    id: number;
+    date: string;
+    attended: boolean;
+}

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { createClient } from '@supabase/supabase-js';
 import { environment } from 'src/environments/environment.prod';
-import { Attendance, Instrument, Person, Player } from '../utilities/interfaces';
+import { Attendance, Instrument, Person, PersonAttendance, Player } from '../utilities/interfaces';
 
 const supabase = createClient(environment.apiUrl, environment.apiKey);
 
@@ -132,12 +132,21 @@ export class DbService {
       .match({ id });
   }
 
-  async getPlayerAttendance(): Promise<Attendance[]> {
+  async getPlayerAttendance(id: number): Promise<PersonAttendance[]> {
     const response = await supabase
       .from<Attendance>('attendance')
       .select('*')
-      .eq('players->"1"' as any, true);
+      .neq(`players->"${id}"` as any, null)
+      .order("date", {
+        ascending: false,
+      });
 
-    return response.body;
+    return response.body.map((att: Attendance): PersonAttendance => {
+      return {
+        id,
+        date: att.date,
+        attended: att.players[id],
+      }
+    });
   }
 }
