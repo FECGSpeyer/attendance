@@ -4,7 +4,8 @@ import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
 import { DbService } from 'src/app/services/db.service';
-import { Person } from 'src/app/utilities/interfaces';
+import { Person, Player } from 'src/app/utilities/interfaces';
+import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
   selector: 'app-settings',
@@ -14,6 +15,7 @@ import { Person } from 'src/app/utilities/interfaces';
 export class SettingsPage implements OnInit {
   public conductors: Person[] = [];
   public selConductors: number[] = [];
+  public leftPlayers: Player[] = [];
 
   constructor(
     private db: DbService,
@@ -22,6 +24,7 @@ export class SettingsPage implements OnInit {
   async ngOnInit(): Promise<void> {
     this.conductors = await this.db.getConductors();
     this.selConductors = this.conductors.map((c: Person): number => c.id);
+    this.leftPlayers = Utils.getModifiedPlayers(await this.db.getLeftPlayers(), await this.db.getInstruments());
   }
 
   createPlan(conductors: number[], timeString: string | number): void {
@@ -60,10 +63,10 @@ export class SettingsPage implements OnInit {
 
   shuffle(a: string[]) {
     for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
-}
+  }
 
 }

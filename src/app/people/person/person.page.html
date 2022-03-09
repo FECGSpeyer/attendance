@@ -140,5 +140,6 @@
   </ion-list>
   <ion-button *ngIf="!existingPlayer" expand="block" (click)="addPlayer()">Spieler hinzufügen</ion-button>
   <ion-button *ngIf="existingPlayer" expand="block" (click)="updatePlayer()">Spieler updaten</ion-button>
+  <ion-button color="danger" *ngIf="existingPlayer" expand="block" (click)="removePlayer()">Spieler entfernen</ion-button>
   <div class="bottom-padding"></div>
 </ion-content>

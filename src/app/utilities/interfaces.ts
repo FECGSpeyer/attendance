@@ -7,6 +7,7 @@ export interface Person {
     joined: string;
     isPresent?: boolean;
     isInactive?: boolean;
+    left?: string;
 }
 
 export interface Player extends Person {

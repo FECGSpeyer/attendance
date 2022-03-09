@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { IonContent, IonSelect, ModalController, Platform } from '@ionic/angular';
+import { ActionSheetController, IonContent, IonSelect, ModalController, Platform } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument, PersonAttendance, Player } from 'src/app/utilities/interfaces';
@@ -40,7 +40,7 @@ export class PersonPage implements OnInit {
   constructor(
     private db: DbService,
     private modalController: ModalController,
-    private platform: Platform
+    private actionSheetController: ActionSheetController,
   ) { }
 
   async ngOnInit() {
@@ -75,6 +75,41 @@ export class PersonPage implements OnInit {
 
   async updatePlayer(): Promise<void> {
     await this.db.updatePlayer(this.player);
+    this.modalController.dismiss({
+      added: true
+    });
+  }
+
+  async removePlayer(): Promise<void> {
+    const sheet: HTMLIonActionSheetElement = await this.actionSheetController.create({
+      buttons: [{
+        text: "Archivieren",
+        handler: (): void => {
+          this.archivePlayer();
+        },
+      }, {
+        text: "Entfernen",
+        handler: (): void => {
+          this.remove();
+        },
+      }, {
+        role: 'cancel',
+        text: "Abbrechen"
+      }],
+    });
+
+    await sheet.present();
+  }
+
+  async archivePlayer(): Promise<void> {
+    await this.db.archivePlayer(this.player.id);
+    this.modalController.dismiss({
+      added: true
+    });
+  }
+
+  async remove(): Promise<void> {
+    await this.db.removePlayer(this.player.id);
     this.modalController.dismiss({
       added: true
     });

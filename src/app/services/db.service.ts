@@ -23,12 +23,25 @@ export class DbService {
       const response = await supabase
         .from<Player>('player')
         .select('*')
+        .is("left", null)
         .order("instrument")
         .order("lastName");
 
       this.players = response.data;
       return this.players;
     }
+  }
+
+  async getLeftPlayers(): Promise<Player[]> {
+    const response = await supabase
+      .from<Player>('player')
+      .select('*')
+      .not("left", "is", null)
+      .order("left", {
+        ascending: false,
+      });
+
+    return response.data;
   }
 
   async getConductors(reload: boolean = false): Promise<Person[]> {
@@ -68,6 +81,20 @@ export class DbService {
       .match({ id: player.id });
 
     return response.body;
+  }
+
+  async removePlayer(id: number): Promise<void> {
+    await supabase
+      .from<Player>('player')
+      .delete()
+      .match({ id });
+  }
+
+  async archivePlayer(id: number): Promise<void> {
+    await supabase
+      .from<Player>('player')
+      .update({ left: new Date().toISOString() })
+      .match({ id });
   }
 
   async getInstruments(reload: boolean = false): Promise<Instrument[]> {
