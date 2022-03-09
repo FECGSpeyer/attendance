@@ -27,6 +27,10 @@ export class SettingsPage implements OnInit {
     this.leftPlayers = Utils.getModifiedPlayers(await this.db.getLeftPlayers(), await this.db.getInstruments());
   }
 
+  async logout() {
+    await this.db.logout();
+  }
+
   createPlan(conductors: number[], timeString: string | number): void {
     const shuffledConductors: string[] = this.shuffle(conductors.map((id: number): string => {
       const con: Person = this.conductors.find((c: Person): boolean => id === c.id);
@@ -67,6 +71,15 @@ export class SettingsPage implements OnInit {
       [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
+  }
+
+  async addUser(email: string, password: string) {
+    const res: boolean = await this.db.register(email, password);
+    if (res) {
+      await Utils.showToast("Der User wurde erfolgreich erstellt");
+    } else {
+      await Utils.showToast("Fehler beim Erstellen, versuche es noch einmal", "danger");
+    }
   }
 
 }

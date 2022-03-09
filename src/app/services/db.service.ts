@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
+import { Platform } from '@ionic/angular';
 import { createClient } from '@supabase/supabase-js';
+import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
 import { Attendance, Instrument, Person, PersonAttendance, Player } from '../utilities/interfaces';
 
+const adminMails: string[] = ["eckstaedt98@gmail.com", "leonjaeger00@gmail.com", "ericfast.14@gmail.com", "marcelfast2002@gmail.com"];
 const supabase = createClient(environment.apiUrl, environment.apiKey);
 
 @Injectable({
@@ -14,7 +17,58 @@ export class DbService {
   private instruments: Instrument[] = [];
   private attendance: Attendance[] = [];
 
-  constructor() { }
+  authenticationState = new BehaviorSubject({
+    isConductor: false,
+    isPlayer: false,
+  });
+
+  constructor(
+    private plt: Platform
+  ) {
+    this.plt.ready().then(() => {
+      this.checkToken();
+    });
+  }
+
+  async checkToken() {
+    const res = await supabase.auth.user();
+
+    if (res?.email) {
+      this.authenticationState.next({
+        isConductor: adminMails.includes(res.email),
+        isPlayer: true,
+      });
+    }
+  }
+
+  async logout() {
+    await supabase.auth.signOut();
+    this.authenticationState.next({
+      isConductor: false,
+      isPlayer: false,
+    });
+  }
+
+  async register(email: string, password: string) {
+    const res = await supabase.auth.signUp({
+      email, password,
+    });
+
+    return Boolean(res.user);
+  }
+
+  async login(email: string, password: string) {
+    const res = await supabase.auth.signIn({
+      email, password,
+    });
+
+    this.authenticationState.next({
+      isConductor: adminMails.includes(email),
+      isPlayer: true,
+    });
+
+    return Boolean(res.user);
+  }
 
   async getPlayers(reload: boolean = false): Promise<Player[]> {
     if (this.players.length && !reload) {

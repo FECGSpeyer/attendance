@@ -1,3 +1,4 @@
+import { ToastController } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { AttendanceItem, Instrument, Player } from "./interfaces";
 
@@ -53,6 +54,14 @@ export class Utils {
       default:
         throw new Error("unknown clef key")
     }
+  }
+
+  public static async showToast(message: string, color: string = "success"): Promise<void> {
+    const toast: HTMLIonToastElement = await new ToastController().create({
+      message, color,
+    });
+
+    return await toast.present();
   }
 
 }

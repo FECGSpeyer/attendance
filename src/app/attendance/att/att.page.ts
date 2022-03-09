@@ -29,10 +29,12 @@ export class AttPage implements OnInit {
 
     if (Object.keys(this.attendance.players).length) {
       for (let player of Object.keys(this.attendance.players)) {
-        attPlayers.push({
-          ...allPlayers.find((p: Player) => p.id === Number(player)),
-          isPresent: this.attendance.players[Number(player)],
-        });
+        if (Boolean(allPlayers.find((p: Player) => p.id === Number(player)))) {
+          attPlayers.push({
+            ...allPlayers.find((p: Player) => p.id === Number(player)),
+            isPresent: this.attendance.players[Number(player)],
+          });
+        }
       }
     } else {
       attPlayers = allPlayers;

@@ -63,5 +63,31 @@
         </ng-template>
       </ion-modal>
     </ion-item>
+    <ion-item detail="false" button id="register-button">
+      <ion-label>App-User hinzufügen</ion-label>
+      <ion-modal trigger="register-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">
+        <ng-template>
+          <ion-content>
+            <ion-header>
+              <ion-toolbar>
+                <ion-title>App-User hinzufügen</ion-title>
+              </ion-toolbar>
+            </ion-header>
+            <ion-item>
+              <ion-label position="stacked">E-Mail</ion-label>
+              <ion-input #email></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Passwort</ion-label>
+              <ion-input #password type="password"></ion-input>
+            </ion-item>
+            <ion-button [disabled]="!password.value || !email.value" (click)="addUser(email.value, password.value)" expand="block">Hinzufügen</ion-button>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+    <ion-item button (click)="logout()">
+      <ion-label>Ausloggen</ion-label>
+    </ion-item>
   </ion-list>
 </ion-content>

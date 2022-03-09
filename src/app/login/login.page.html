@@ -1,0 +1,30 @@
+<ion-content scrollY="false" class="loginContent">
+  <div class="loginBg">
+    <div class="around">
+      <a>
+        <ion-avatar class="avatar">
+          <img src="../../../assets/icon/favicon.png">
+        </ion-avatar>
+      </a>
+      <form novalidate (keyup.enter)="login()" (ngSubmit)="login()" #registerForm="ngForm">
+        <ion-row>
+          <ion-col>
+            <ion-item class="mailItem">
+              <ion-label position="stacked">E-Mail</ion-label>
+              <ion-input type="text" placeholder="E-Mail" name="email" [(ngModel)]="registerCredentials.email" required></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Passwort</ion-label>
+              <ion-input type="password" placeholder="Passwort" name="password" [(ngModel)]="registerCredentials.password" required></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col class="signup-col">
+            <ion-button expand="block" type="submit" [disabled]="!registerForm.form.valid">Anmelden</ion-button>
+          </ion-col>
+        </ion-row>
+      </form>
+    </div>
+  </div>
+</ion-content>

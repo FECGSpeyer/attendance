@@ -1,0 +1,88 @@
+.loginBg {
+    background-image: url(../../assets/login.jpeg);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    display: block;
+    position: absolute;
+    background-size: cover;
+    background-position: center center;
+}
+
+.around {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    width: 50%;
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    max-width: 500px;
+
+    .avatar {
+        margin: -50px auto 0;
+        margin-top: -5rem;
+        width: 115px;
+        height: 115px;
+        margin-bottom: 2rem;
+        background-color: #fff;
+        position: relative;
+        box-shadow: 0 16px 38px -12px rgba(0, 0, 0, 0.56), 0 4px 25px 0px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.2);
+        border: 3px solid #ffffff;
+
+        img {
+            cursor: pointer;
+        }
+    }
+
+    .mailItem {
+        margin-bottom: 1rem;
+    }
+
+    .login {
+        margin-top: 0.5rem;
+        --background: #005238;
+    }
+}
+
+.footer {
+    height: 2.5rem;
+    background-color: transparent;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+
+    a {
+        color: #fff;
+        padding: 0.8rem;
+        padding-top: 0.2rem;
+
+        &.left {
+            float: left;
+        }
+
+        &.right {
+            float: right;
+        }
+    }
+}
+
+ion-item {
+    --background: #fff;
+    --padding-start: 0;
+}
+
+ion-label {
+    --color: #000;
+}
+
+@media (max-width: 700px) {
+    .around {
+        width: 95%;
+    }
+}

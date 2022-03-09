@@ -2,16 +2,19 @@
   <ion-toolbar>
     <ion-title>Anwesenheit</ion-title>
     <ion-buttons slot="end">
-      <ion-button *ngIf="attendance?.length" (click)="export()">
+      <ion-button *ngIf="isConductor && attendance?.length" (click)="export()">
         <ion-icon name="download-outline"></ion-icon>
+      </ion-button>
+      <ion-button *ngIf="!isConductor" (click)="logout()">
+        <ion-icon name="log-out-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content fullscreen="true">
-  <ion-header collapse="condense">              
-    <ion-toolbar>      
+  <ion-header collapse="condense">
+    <ion-toolbar>
       <ion-title size="large">Anwesenheit</ion-title>
     </ion-toolbar>
   </ion-header>

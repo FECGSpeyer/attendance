@@ -20,6 +20,7 @@ export class AttListPage implements OnInit {
   public dateString: string = format(new Date(), 'dd.MM.yyyy');
   public isLecture: boolean = false;
   public attendance: Attendance[] = [];
+  public isConductor: boolean = false;
 
   constructor(
     private db: DbService,
@@ -27,8 +28,15 @@ export class AttListPage implements OnInit {
     private alertController: AlertController,
   ) { }
 
+  async logout() {
+    await this.db.logout();
+  }
+
   async ngOnInit() {
     await this.getAttendance();
+    this.db.authenticationState.subscribe((state: { isConductor: boolean, isPlayer: boolean }) => {
+      this.isConductor = state.isConductor;
+    });
   }
 
   async getAttendance(reload: boolean = false): Promise<void> {
@@ -113,7 +121,7 @@ export class AttListPage implements OnInit {
 
     for (const player of players) {
       const attInfo: string[] = [];
-      
+
       for (const att of attendance) {
         if (att.players[player.id] !== undefined) {
           attInfo.push(att.players[player.id] ? "X" : "V");
