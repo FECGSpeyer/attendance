@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument, Player } from 'src/app/utilities/interfaces';
+import { Utils } from 'src/app/utilities/Utils';
 import { InstrumentPage } from '../instrument/instrument.page';
 
 @Component({
@@ -15,24 +16,40 @@ export class InstrumentListPage implements OnInit {
   constructor(
     private modalController: ModalController,
     private db: DbService,
+    private routerOutlet: IonRouterOutlet,
   ) { }
 
   async ngOnInit() {
+    await this.getInstruments();
+  }
+
+  async getInstruments(reload: boolean = false): Promise<void> {
     const players: Player[] = await this.db.getPlayers();
-    this.instruments = (await this.db.getInstruments()).map((ins: Instrument): Instrument => {
+    this.instruments = (await this.db.getInstruments(reload)).map((ins: Instrument): Instrument => {
       return {
         ...ins,
-        count: players.filter((player: Player): boolean => player.instrument === ins.id).length, 
+        count: players.filter((player: Player): boolean => player.instrument === ins.id).length,
+        clefText: ins.clefs.map((key: string) => Utils.getClefText(key)).join(", "),
       }
     });
   }
 
-  async openModal(): Promise<void> {
+  async openModal(instrument: Instrument): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: InstrumentPage,
+      componentProps: {
+        existingInstrument: instrument
+      },
+      presentingElement: this.routerOutlet.nativeEl,
     });
 
     await modal.present();
+
+    const { data } = await modal.onWillDismiss();
+
+    if (data?.updated) {
+      await this.getInstruments(true);
+    }
   }
 
   async addInstrument(value: string | number, modal: any) {

@@ -82,7 +82,7 @@ export class PersonPage implements OnInit {
 
   scrollDown(): void {
     //this.content.scrollToBottom(); // funktioniert nicht, weil das scrollable item mit der tastatur NICHT das content-component ist,
-                                     // sondern iwas anderes
+    // sondern iwas anderes
   }
 
 }

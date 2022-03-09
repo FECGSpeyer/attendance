@@ -87,7 +87,19 @@ export class DbService {
   async addInstrument(name: string): Promise<Instrument[]> {
     const response = await supabase
       .from<Instrument>('instruments')
-      .insert({ name });
+      .insert({
+        name,
+        tuning: "C",
+      });
+
+    return response.body;
+  }
+
+  async updateInstrument(att: Partial<Instrument>, id: number): Promise<Instrument[]> {
+    const response = await supabase
+      .from<Instrument>('instruments')
+      .update(att)
+      .match({ id });
 
     return response.body;
   }

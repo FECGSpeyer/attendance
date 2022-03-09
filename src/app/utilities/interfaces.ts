@@ -27,7 +27,10 @@ export interface Instrument {
     name: string;
     tuning?: string;
     notes?: string;
+    range?: string;
     count?: number;
+    clefs?: string[];
+    clefText?: string;
 }
 
 export interface AttendanceItem {

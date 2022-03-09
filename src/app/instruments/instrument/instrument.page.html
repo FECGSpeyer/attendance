@@ -1,9 +1,55 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Instrument hinzufügen</ion-title>
+    <ion-title>{{ instrument.name }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Stimmung</ion-label>
+          <ion-select (ionChange)="onTuningChanges($event)" #select [value]="instrument.tuning">
+            <ion-select-option>C</ion-select-option>
+            <ion-select-option>Es</ion-select-option>
+            <ion-select-option>B</ion-select-option>
+            <ion-select-option>F</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Tonumfang</ion-label>
+          <ion-input [(ngModel)]="instrument.range"></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Stimmung</ion-label>
+          <ion-select multiple="true" (ionChange)="onClefsChanges($event)" #select [value]="instrument.clefs">
+            <ion-select-option value="g">Violinschlüssel (G)</ion-select-option>
+            <ion-select-option value="f">Bassschlüssel (F)</ion-select-option>
+            <ion-select-option value="c">Altschlüssel (C)</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Notizen</ion-label>
+          <ion-textarea rows="6" [(ngModel)]="instrument.notes"></ion-textarea>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-button expand="block" (click)="update()">Aktualisieren</ion-button>
 </ion-content>
