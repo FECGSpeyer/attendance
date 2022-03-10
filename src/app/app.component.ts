@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { Platform } from '@ionic/angular';
+import { IonRouterOutlet, Platform } from '@ionic/angular';
 import { DbService } from './services/db.service';
+import { App } from '@capacitor/app';
 
 @Component({
   selector: 'app-root',
@@ -13,6 +14,7 @@ export class AppComponent {
     private platform: Platform,
     private db: DbService,
     private router: Router,
+    private routerOutlet: IonRouterOutlet,
   ) {
     this.initializeApp();
   }
@@ -28,6 +30,12 @@ export class AppComponent {
           this.router.navigate(['login']);
         }
       });
+    });
+
+    this.platform.backButton.subscribeWithPriority(-1, () => {
+      if (!this.routerOutlet.canGoBack()) {
+        App.exitApp();
+      }
     });
   }
 }
