@@ -86,6 +86,11 @@
         </ng-template>
       </ion-modal>
     </ion-item>
+
+    <ion-item>
+      <ion-label>Version</ion-label>
+      <ion-badge slot="end">{{ version }}</ion-badge>
+    </ion-item>
     <ion-item button (click)="logout()">
       <ion-label>Ausloggen</ion-label>
     </ion-item>

@@ -16,6 +16,7 @@ export class SettingsPage implements OnInit {
   public conductors: Person[] = [];
   public selConductors: number[] = [];
   public leftPlayers: Player[] = [];
+  public version: string = require('../../../../package.json').version;
 
   constructor(
     private db: DbService,

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DbService } from '../services/db.service';
+import { Utils } from '../utilities/Utils';
 
 @Component({
   selector: 'app-login',
@@ -31,6 +32,10 @@ export class LoginPage implements OnInit {
   }
 
   async login() {
-    await this.db.login(this.registerCredentials.email, this.registerCredentials.password);
+    const res: boolean = await this.db.login(this.registerCredentials.email, this.registerCredentials.password);
+
+    if (!res) {
+      Utils.showToast("Fehler bei der Anmeldung, versuche es erneut", "danger");
+    }
   }
 }

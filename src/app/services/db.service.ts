@@ -62,10 +62,12 @@ export class DbService {
       email, password,
     });
 
-    this.authenticationState.next({
-      isConductor: adminMails.includes(email.toLowerCase()),
-      isPlayer: true,
-    });
+    if (res.user) {
+      this.authenticationState.next({
+        isConductor: adminMails.includes(email.toLowerCase()),
+        isPlayer: true,
+      });
+    }
 
     return Boolean(res.user);
   }
