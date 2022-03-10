@@ -35,7 +35,7 @@ export class DbService {
 
     if (res?.email) {
       this.authenticationState.next({
-        isConductor: adminMails.includes(res.email),
+        isConductor: adminMails.includes(res.email.toLowerCase()),
         isPlayer: true,
       });
     }
@@ -63,7 +63,7 @@ export class DbService {
     });
 
     this.authenticationState.next({
-      isConductor: adminMails.includes(email),
+      isConductor: adminMails.includes(email.toLowerCase()),
       isPlayer: true,
     });
 
