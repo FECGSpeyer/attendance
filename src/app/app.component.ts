@@ -25,7 +25,7 @@ export class AppComponent {
       this.db.authenticationState.subscribe(state => {
         if (state.isConductor) {
           if (state.login) {
-            this.router.navigateByUrl(this.router.url);
+            this.router.navigate(['tabs', 'player']);
           }
         } else if (state.isPlayer) {
           this.router.navigate(['tabs', 'attendance']);
