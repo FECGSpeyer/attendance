@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
+import { IonRouterOutlet, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
+import { HistoryPage } from 'src/app/history/history.page';
 import { DbService } from 'src/app/services/db.service';
 import { Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -20,6 +22,8 @@ export class SettingsPage implements OnInit {
 
   constructor(
     private db: DbService,
+    private modalController: ModalController,
+    private routerOutlet: IonRouterOutlet,
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -72,6 +76,15 @@ export class SettingsPage implements OnInit {
       [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
+  }
+
+  async openHistoryModal(): Promise<void> {
+    const modal: HTMLIonModalElement = await this.modalController.create({
+      component: HistoryPage,
+      presentingElement: this.routerOutlet.nativeEl,
+    });
+
+    await modal.present();
   }
 
   async addUser(email: string, password: string) {

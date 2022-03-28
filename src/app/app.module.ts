@@ -10,6 +10,7 @@ import { AttPageModule } from './attendance/att/att.module';
 import { PersonPageModule } from './people/person/person.module';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
+import { HistoryPageModule } from './history/history.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -20,6 +21,7 @@ import { environment } from '../environments/environment';
     AppRoutingModule,
     PersonPageModule,
     AttPageModule,
+    HistoryPageModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
       // Register the ServiceWorker as soon as the app is stable
@@ -30,4 +32,4 @@ import { environment } from '../environments/environment';
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }

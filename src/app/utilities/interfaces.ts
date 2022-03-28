@@ -53,3 +53,12 @@ export interface PersonAttendance {
     date: string;
     attended: boolean;
 }
+
+export interface History {
+    id?: number;
+    created_at?: string;
+    date: string;
+    name: string;
+    conductor: number;
+    conductorName?: string;
+}

@@ -134,7 +134,7 @@
       <ion-badge slot="end" [color]="perc ? 'success' : 'danger'">{{ perc }}%</ion-badge>
     </ion-item>
     <ion-item *ngFor="let att of attendance">
-      <ion-label>{{ att.date | date:'dd.MM.YYYY' }}</ion-label>
+      <ion-label>{{ att.date | date:'dd.MM.yyyy' }}</ion-label>
       <ion-badge slot="end" [color]="att.attended ? 'success' : 'danger'">{{ att.attended ? "X" : "V" }}</ion-badge>
     </ion-item>
   </ion-list>

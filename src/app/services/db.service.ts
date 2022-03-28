@@ -3,7 +3,7 @@ import { Platform } from '@ionic/angular';
 import { createClient } from '@supabase/supabase-js';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
-import { Attendance, Instrument, Person, PersonAttendance, Player } from '../utilities/interfaces';
+import { Attendance, History, Instrument, Person, PersonAttendance, Player } from '../utilities/interfaces';
 
 const adminMails: string[] = ["eckstaedt98@gmail.com", "leonjaeger00@gmail.com", "ericfast.14@gmail.com", "marcelfast2002@gmail.com"];
 const supabase = createClient(environment.apiUrl, environment.apiKey);
@@ -16,10 +16,12 @@ export class DbService {
   private conductors: Person[] = [];
   private instruments: Instrument[] = [];
   private attendance: Attendance[] = [];
+  private history: History[] = [];
 
   authenticationState = new BehaviorSubject({
     isConductor: false,
     isPlayer: false,
+    login: false,
   });
 
   constructor(
@@ -34,9 +36,11 @@ export class DbService {
     const res = await supabase.auth.user();
 
     if (res?.email) {
+      supabase.auth.refreshSession();
       this.authenticationState.next({
         isConductor: adminMails.includes(res.email.toLowerCase()),
         isPlayer: true,
+        login: false,
       });
     }
   }
@@ -46,6 +50,7 @@ export class DbService {
     this.authenticationState.next({
       isConductor: false,
       isPlayer: false,
+      login: false,
     });
   }
 
@@ -66,6 +71,7 @@ export class DbService {
       this.authenticationState.next({
         isConductor: adminMails.includes(email.toLowerCase()),
         isPlayer: true,
+        login: true,
       });
     }
 
@@ -243,5 +249,29 @@ export class DbService {
         attended: att.players[id],
       }
     });
+  }
+
+  async getHistory(reload: boolean = false): Promise<History[]> {
+    if (this.history.length && !reload) {
+      return this.history;
+    }
+
+    const response = await supabase
+      .from<History>('history')
+      .select('*')
+      .order("date", {
+        ascending: false,
+      });
+
+    this.history = response.data;
+    return this.history;
+  }
+
+  async addHistoryEntry(history: History): Promise<History[]> {
+    const response = await supabase
+      .from<History>('history')
+      .insert(history);
+
+    return response.body;
   }
 }

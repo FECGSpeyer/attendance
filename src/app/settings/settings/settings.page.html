@@ -38,6 +38,9 @@
         </ng-template>
       </ion-modal>
     </ion-item>
+    <ion-item button (click)="openHistoryModal()">
+      <ion-label>Werkhistorie</ion-label>
+    </ion-item>
     <ion-item detail="false" button id="trigger-button">
       <ion-label>Registerprobenplan erstellen</ion-label>
       <ion-modal trigger="trigger-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">
