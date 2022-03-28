@@ -15,27 +15,69 @@ export class HistoryPage implements OnInit {
   public dateString: string = format(new Date(), 'dd.MM.yyyy');
   conductors: Person[] = [];
   history: History[] = [];
+  historyFiltered: History[] = [];
   historyEntry: History = {
     name: "",
     conductor: 0,
     date: new Date().toISOString(),
   };
+  searchTerm: string = "";
 
   constructor(
     private modalController: ModalController,
     private db: DbService,
   ) { }
 
-  async ngOnInit() {
-    this.conductors = await this.db.getConductors();
+  async ngOnInit(): Promise<void> {
+    this.conductors = await this.db.getConductors(false, true);
     this.historyEntry.conductor = this.conductors[0].id;
-    this.history = (await this.db.getHistory()).map((entry: History): History => {
+
+    await this.getHistory();
+  }
+
+  async getHistory(refresh: boolean = false): Promise<void> {
+    this.history = (await this.db.getHistory(refresh)).map((entry: History): History => {
       const conductor: Person = this.conductors.find((p: Person) => p.id === entry.conductor);
       return {
         ...entry,
         conductorName: `${conductor.firstName} ${conductor.lastName}`,
       }
-    });;
+    });
+    this.initializeItems();
+  }
+
+  search(event: any): void {
+    if (this.history) {
+      this.searchTerm = '';
+      this.initializeItems();
+
+      this.searchTerm = event.srcElement.value;
+
+      if (!this.searchTerm) {
+        return;
+      }
+
+      this.historyFiltered = this.filter();
+    }
+  }
+
+  filter(): History[] {
+    if (this.searchTerm === '') {
+      return this.history;
+    } else {
+      return this.history.filter((entry: History) => {
+        if (this.searchTerm) {
+          if (entry.name.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1) {
+            return true;
+          }
+          return false;
+        }
+      });
+    }
+  }
+
+  initializeItems(): void {
+    this.historyFiltered = this.history;
   }
 
   formatDate(value: string): string {
@@ -52,12 +94,13 @@ export class HistoryPage implements OnInit {
 
       modal.dismiss();
 
-      this.history = await this.db.getHistory(true);
+      await this.getHistory(true);
       this.historyEntry = {
         name: "",
-        conductor: 0,
+        conductor: 1,
         date: new Date().toISOString(),
       };
+      this.dateString = format(new Date(), 'dd.MM.yyyy');
     } else {
       Utils.showToast("Bitte gib einen Namen an", "danger");
     }

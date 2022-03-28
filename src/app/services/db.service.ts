@@ -106,7 +106,7 @@ export class DbService {
     return response.data;
   }
 
-  async getConductors(reload: boolean = false): Promise<Person[]> {
+  async getConductors(reload: boolean = false, all: boolean = false): Promise<Person[]> {
     if (this.conductors.length && !reload) {
       return this.conductors;
     } else {
@@ -116,7 +116,7 @@ export class DbService {
         .order("lastName");
 
       this.conductors = response.data;
-      return this.conductors;
+      return all ? this.conductors : this.conductors.filter((c: Person) => !c.isInactive);
     }
   }
 
