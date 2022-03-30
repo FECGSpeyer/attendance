@@ -108,7 +108,7 @@ export class DbService {
 
   async getConductors(reload: boolean = false, all: boolean = false): Promise<Person[]> {
     if (this.conductors.length && !reload) {
-      return this.conductors;
+      return all ? this.conductors : this.conductors.filter((c: Person) => !c.isInactive);
     } else {
       const response = await supabase
         .from<Person>('conductors')

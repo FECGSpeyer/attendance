@@ -25,7 +25,6 @@ export class AttPage implements OnInit {
     const allPlayers: Player[] = await this.db.getPlayers();
     const instruments: Instrument[] = await this.db.getInstruments();
     let attPlayers: Player[] = [];
-    let attConductors: Person[] = [];
 
     if (Object.keys(this.attendance.players).length) {
       for (let player of Object.keys(this.attendance.players)) {
@@ -48,7 +47,7 @@ export class AttPage implements OnInit {
         });
       }
     } else {
-      this.conductors = conductors.map((c: Person): Person => {
+      this.conductors = conductors.filter((c: Person): boolean => !c.isInactive).map((c: Person): Person => {
         return {
           ...c,
           isPresent: true,
