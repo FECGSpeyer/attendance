@@ -1,12 +1,17 @@
 import { Injectable } from '@angular/core';
 import { Platform } from '@ionic/angular';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClientOptions } from '@supabase/supabase-js';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
 import { Attendance, History, Instrument, Person, PersonAttendance, Player } from '../utilities/interfaces';
 
 const adminMails: string[] = ["eckstaedt98@gmail.com", "leonjaeger00@gmail.com", "ericfast.14@gmail.com", "marcelfast2002@gmail.com"];
-const supabase = createClient(environment.apiUrl, environment.apiKey);
+const options: SupabaseClientOptions = {
+  autoRefreshToken: true,
+  persistSession: true,
+  detectSessionInUrl: true,
+}
+const supabase = createClient(environment.apiUrl, environment.apiKey, options);
 
 @Injectable({
   providedIn: 'root'
