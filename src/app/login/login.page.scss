@@ -42,13 +42,18 @@
 
     .mailItem {
         margin-bottom: 1rem;
-    }
+        color: #000;
 
-    .login {
+      }
+
+      .inputFontBlack {
+        color: #000;
+      }
+      .login {
         margin-top: 0.5rem;
         --background: #005238;
+      }
     }
-}
 
 .footer {
     height: 2.5rem;
