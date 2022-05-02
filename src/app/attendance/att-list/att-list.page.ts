@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, IonModal, ModalController } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonModal, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
@@ -8,7 +8,8 @@ import { Utils } from 'src/app/utilities/Utils';
 import { AttPage } from '../att/att.page';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
-import { autoTable as AutoTable, CellHook, CellHookData } from 'jspdf-autotable';
+import { autoTable as AutoTable, CellHookData } from 'jspdf-autotable';
+import { utils, WorkBook, WorkSheet, writeFile } from 'xlsx';
 
 @Component({
   selector: 'app-att-list',
@@ -26,6 +27,7 @@ export class AttListPage implements OnInit {
     private db: DbService,
     private modalController: ModalController,
     private alertController: AlertController,
+    private actionSheetController: ActionSheetController,
   ) { }
 
   async logout() {
@@ -102,15 +104,35 @@ export class AttListPage implements OnInit {
   }
 
   async export(): Promise<void> {
+    const actionSheet = await this.actionSheetController.create({
+      buttons: [{
+        text: 'Excel',
+        handler: () => {
+          this.exportType("excel");
+        }
+      }, {
+        text: 'PDF',
+        handler: () => {
+          this.exportType("pdf");
+        }
+      }, {
+        text: 'Abbrechen',
+        role: 'cancel',
+      }]
+    });
+
+    await actionSheet.present();
+  }
+
+  async exportType(type: string) {
     let row = 1;
 
     let attendance: Attendance[] = [...this.attendance].filter((att: Attendance) => Boolean(Object.keys(att.players).length));
-    if (attendance.length > 8) {
+    if (attendance.length > 8 && type === "pdf") {
       attendance.length = 8;
     }
     const attDates: string[] = [];
     const attPerc: string[] = [];
-    const date: string = dayjs().format('DD.MM.YYYY');
     const data = [];
     const players: Player[] = Utils.getModifiedPlayers((await this.db.getPlayers()), (await this.db.getInstruments()));
 
@@ -136,10 +158,37 @@ export class AttListPage implements OnInit {
 
     data.push(["", "", "", "", ...attPerc]);
 
+    const header: string[] = ['', 'Nachname', 'Vorname', 'Instrument', ...attDates.reverse()];
+
+    if (type === "excel") {
+      data.unshift(header)
+      this.exportExcel(data);
+    } else {
+      this.exportPDF(data, header);
+    }
+  }
+
+  exportExcel(data) {
+    const date: string = dayjs().format('DD.MM.YYYY');
+
+    /* generate worksheet */
+    const ws: WorkSheet = utils.aoa_to_sheet(data);
+
+    /* generate workbook and add the worksheet */
+    const wb: WorkBook = utils.book_new();
+    utils.book_append_sheet(wb, ws, 'Anwesenheit');
+
+    /* save to file */
+    writeFile(wb, `VoS_Anwesenheit_Stand_${date}.xlsx`);
+  }
+
+  exportPDF(data, header) {
+    const date: string = dayjs().format('DD.MM.YYYY');
     const doc = new jsPDF();
-    doc.text(`VoS Anwesenheit Stand: ${date}`, 14, 25);
+
+    doc.text(`Jugendchor Anwesenheit Stand: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
-      head: [['', 'Nachname', 'Vorname', 'Instrument', ...attDates]],
+      head: [header],
       body: data,
       margin: { top: 40 },
       theme: 'grid',

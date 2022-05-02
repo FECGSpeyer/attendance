@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IonRouterOutlet, ModalController } from '@ionic/angular';
+import { ActionSheetController, IonRouterOutlet, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument, Player } from 'src/app/utilities/interfaces';
@@ -8,6 +8,7 @@ import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
 import { Utils } from 'src/app/utilities/Utils';
+import { utils, WorkBook, WorkSheet, writeFile } from 'xlsx';
 
 @Component({
   selector: 'app-list',
@@ -24,6 +25,7 @@ export class ListPage implements OnInit {
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
     private db: DbService,
+    private actionSheetController: ActionSheetController,
   ) { }
 
   async ngOnInit() {
@@ -94,7 +96,51 @@ export class ListPage implements OnInit {
     this.playersFiltered = this.players;
   }
 
-  export(): void {
+  async export(): Promise<void> {
+    const actionSheet = await this.actionSheetController.create({
+      buttons: [{
+        text: 'Excel',
+        handler: () => {
+          this.exportExcel();
+        }
+      }, {
+        text: 'PDF',
+        handler: () => {
+          this.exportPDF();
+        }
+      }, {
+        text: 'Abbrechen',
+        role: 'cancel',
+      }]
+    });
+
+    await actionSheet.present();
+  }
+
+  exportExcel() {
+    let row = 1;
+
+    const date: string = dayjs().format('DD.MM.YYYY');
+    const data = [['', 'Nachname', 'Vorname', 'Instrument', 'Geburtsdatum']];
+
+    for (const user of this.players) {
+      const birthday: string = dayjs(user.birthday).format('DD.MM.YYYY');
+      data.push([row.toString(), user.firstName, user.lastName, user.instrumentName, birthday]);
+      row++;
+    }
+
+    /* generate worksheet */
+    const ws: WorkSheet = utils.aoa_to_sheet(data);
+
+    /* generate workbook and add the worksheet */
+    const wb: WorkBook = utils.book_new();
+    utils.book_append_sheet(wb, ws, 'Anwesenheit');
+
+    /* save to file */
+    writeFile(wb, `VoS_Spielerliste_Stand_${date}.xlsx`);
+  }
+
+  exportPDF() {
     let row = 1;
 
     const date: string = dayjs().format('DD.MM.YYYY');
@@ -107,7 +153,7 @@ export class ListPage implements OnInit {
     }
 
     const doc = new jsPDF();
-    doc.text(`VoS Spielerliste Stand: ${date}`, 14, 25);
+    doc.text(`Jugendchor Sängerliste Stand: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
       head: [['', 'Nachname', 'Vorname', 'Instrument', 'Geburtsdatum']],
       body: data,
