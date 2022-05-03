@@ -152,11 +152,11 @@ export class AttListPage implements OnInit {
         }
       }
 
-      data.push([row.toString(), player.firstName, player.lastName, player.instrumentName, ...attInfo]);
+      data.push([row.toString(), player.firstName, player.lastName, player.instrumentName, ...attInfo.reverse()]);
       row++;
     }
 
-    data.push(["", "", "", "", ...attPerc]);
+    data.push(["", "", "", "", ...attPerc.reverse()]);
 
     const header: string[] = ['', 'Nachname', 'Vorname', 'Instrument', ...attDates.reverse()];
 
