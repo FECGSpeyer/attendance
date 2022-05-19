@@ -34,7 +34,7 @@
     </ion-item-sliding>
   </ion-list>
 
-  <ion-modal trigger="add-att-button" [breakpoints]="[0.4]" [initialBreakpoint]="0.4">
+  <ion-modal #addAttModal trigger="add-att-button" [breakpoints]="[0.4]" [initialBreakpoint]="0.4">
     <ng-template>
       <ion-content>
         <ion-header>
@@ -45,7 +45,7 @@
         <ion-item>
           <ion-label position="stacked">Datum</ion-label>
           <ion-input readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
-          <ion-modal #addAttModal class="dateModal" trigger="att-date-modal">
+          <ion-modal class="dateModal" trigger="att-date-modal">
             <ng-template>
               <ion-content>
                 <ion-datetime

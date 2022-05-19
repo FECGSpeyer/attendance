@@ -14,7 +14,7 @@
 
 <ion-content>
   <ion-list>
-    <ion-item-divider sticky="true">
+    <ion-item-divider>
       <ion-label>Dirigenten</ion-label>
     </ion-item-divider>
     <ion-item *ngFor="let con of conductors">
@@ -24,11 +24,11 @@
       </ion-label>
     </ion-item>
     <ion-item-sliding *ngFor="let player of players">
-      <ion-item-divider sticky="true" *ngIf="player.firstOfInstrument">
+      <ion-item-divider *ngIf="player.firstOfInstrument">
         <ion-label>{{ player.instrumentName }}</ion-label>
       </ion-item-divider>
       <ion-item>
-        <ion-checkbox [(ngModel)]="player.isPresent" slot="start"></ion-checkbox>
+        <ion-checkbox (ionChange)="onAttChange(player)" [(ngModel)]="player.isPresent" slot="start"></ion-checkbox>
         <ion-label>
           <h2>{{ player.firstName }} {{ player.lastName }}</h2>
         </ion-label>
