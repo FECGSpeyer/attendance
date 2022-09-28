@@ -27,9 +27,9 @@ export class SettingsPage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.conductors = await this.db.getConductors();
+    this.conductors = await this.db.getConductors(true);
     this.selConductors = this.conductors.map((c: Person): number => c.id);
-    this.leftPlayers = Utils.getModifiedPlayers(await this.db.getLeftPlayers(), await this.db.getInstruments());
+    this.leftPlayers = Utils.getModifiedPlayers(await this.db.getLeftPlayers(), await this.db.getInstruments(true));
   }
 
   async logout() {

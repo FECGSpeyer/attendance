@@ -35,7 +35,7 @@ export class AttListPage implements OnInit {
   }
 
   async ngOnInit() {
-    await this.getAttendance();
+    await this.getAttendance(true);
     this.db.authenticationState.subscribe((state: { isConductor: boolean, isPlayer: boolean }) => {
       this.isConductor = state.isConductor;
     });
@@ -134,7 +134,7 @@ export class AttListPage implements OnInit {
     const attDates: string[] = [];
     const attPerc: string[] = [];
     const data = [];
-    const players: Player[] = Utils.getModifiedPlayers((await this.db.getPlayers()), (await this.db.getInstruments()));
+    const players: Player[] = Utils.getModifiedPlayers((await this.db.getPlayers(true)), (await this.db.getInstruments(true)));
 
     for (const att of attendance) {
       attDates.push(dayjs(att.date).format('DD.MM.YY'));

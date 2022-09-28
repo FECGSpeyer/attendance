@@ -29,7 +29,7 @@ export class HistoryPage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.conductors = await this.db.getConductors(false, true);
+    this.conductors = await this.db.getConductors(true, true);
     this.historyEntry.conductor = this.conductors[0].id;
 
     await this.getHistory();

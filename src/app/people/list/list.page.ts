@@ -29,8 +29,8 @@ export class ListPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.instruments = await this.db.getInstruments();
-    await this.getPlayers();
+    this.instruments = await this.db.getInstruments(true);
+    await this.getPlayers(true);
   }
 
   async getPlayers(reload: boolean = false): Promise<void> {
