@@ -14,9 +14,6 @@
 
 <ion-content>
   <ion-list>
-    <ion-item-divider>
-      <ion-label>Dirigenten</ion-label>
-    </ion-item-divider>
     <ion-item *ngFor="let con of conductors">
       <ion-checkbox [(ngModel)]="con.isPresent" slot="start"></ion-checkbox>
       <ion-label>

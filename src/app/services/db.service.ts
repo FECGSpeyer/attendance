@@ -184,6 +184,7 @@ export class DbService {
       .insert({
         name,
         tuning: "C",
+        clefs: ["g"],
       });
 
     return response.body;
