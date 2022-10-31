@@ -3,7 +3,7 @@ import { Platform } from '@ionic/angular';
 import { createClient, SupabaseClientOptions } from '@supabase/supabase-js';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
-import { Attendance, History, Instrument, Person, PersonAttendance, Player } from '../utilities/interfaces';
+import { Attendance, History, Instrument, Person, PersonAttendance, Player, Teacher } from '../utilities/interfaces';
 
 const adminMails: string[] = ["eckstaedt98@gmail.com", "leonjaeger00@gmail.com", "ericfast.14@gmail.com", "marcelfast2002@gmail.com", "jaeger1390@gmail.com"];
 const options: SupabaseClientOptions = {
@@ -141,6 +141,7 @@ export class DbService {
     delete dataToUpdate.firstOfInstrument;
     delete dataToUpdate.isNew;
     delete dataToUpdate.instrumentLength;
+    delete dataToUpdate.teacherName;
 
     const response = await supabase
       .from<Player>('player')
@@ -277,6 +278,25 @@ export class DbService {
     const response = await supabase
       .from<History>('history')
       .insert(history);
+
+    return response.body;
+  }
+
+  async getTeachers(): Promise<Teacher[]> {
+    const response = await supabase
+      .from<Teacher>('teachers')
+      .select('*')
+      .order("name", {
+        ascending: true,
+      });
+
+    return response.data;
+  }
+
+  async addTeacher(teacher: Teacher): Promise<Teacher[]> {
+    const response = await supabase
+      .from<Teacher>('teachers')
+      .insert(teacher);
 
     return response.body;
   }

@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { IonInput } from '@ionic/angular';
 import { DbService } from '../services/db.service';
 import { Utils } from '../utilities/Utils';
 
@@ -10,7 +10,8 @@ import { Utils } from '../utilities/Utils';
   styleUrls: ['./login.page.scss'],
 })
 export class LoginPage implements OnInit {
-
+  @ViewChild('emailInput', { static: true }) emailInput: IonInput;
+  @ViewChild('passwordInput', { static: true }) passwordInput: IonInput;
   loginForm: FormGroup;
   registerCredentials = { password: '', email: '' };
 
@@ -18,7 +19,7 @@ export class LoginPage implements OnInit {
     private db: DbService,
   ) { }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.loginForm = new FormGroup({
       user: new FormControl('', [
         Validators.required,
@@ -28,6 +29,21 @@ export class LoginPage implements OnInit {
         Validators.required,
         Validators.maxLength(6)
       ])
+    });
+
+    const nativeEmailInput = await this.emailInput.getInputElement();
+    const nativePasswordInput = await this.passwordInput.getInputElement();
+
+    nativeEmailInput.addEventListener('change', (ev: Event) => {
+      requestAnimationFrame(() => {
+        this.registerCredentials.email = (ev.target as HTMLInputElement).value;
+      });
+    });
+
+    nativePasswordInput.addEventListener('change', (ev: Event) => {
+      requestAnimationFrame(() => {
+        this.registerCredentials.password = (ev.target as HTMLInputElement).value;
+      });
     });
   }
 
