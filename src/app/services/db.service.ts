@@ -300,4 +300,15 @@ export class DbService {
 
     return response.body;
   }
+
+  async updateTeacher(teacher: Partial<Teacher>, id: number): Promise<Teacher[]> {
+    delete teacher.insNames;
+
+    const response = await supabase
+      .from<Teacher>('teachers')
+      .update(teacher)
+      .match({ id });
+
+    return response.body;
+  }
 }

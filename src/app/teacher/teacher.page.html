@@ -21,6 +21,10 @@
     </ion-select>
   </ion-item>
   <ion-item>
+    <ion-label>Privatlehrer</ion-label>
+    <ion-toggle [(ngModel)]="editedTeacher.private"></ion-toggle>
+  </ion-item>
+  <ion-item>
     <ion-label position="stacked">Kontakt</ion-label>
     <ion-input [(ngModel)]="editedTeacher.number"></ion-input>
   </ion-item>
@@ -28,5 +32,5 @@
     <ion-label position="stacked">Notizen</ion-label>
     <ion-textarea [(ngModel)]="editedTeacher.notes"></ion-textarea>
   </ion-item>
-  <ion-button (click)="editTeacher()" expand="full">Bearbeiten</ion-button>
+  <ion-button (click)="editTeacher()" expand="full">Lehrer updaten</ion-button>
 </ion-content>

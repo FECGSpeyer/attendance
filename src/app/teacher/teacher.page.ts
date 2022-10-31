@@ -1,6 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
+import { DbService } from '../services/db.service';
 import { Instrument, Teacher } from '../utilities/interfaces';
+import { Utils } from '../utilities/Utils';
 
 @Component({
   selector: 'app-teacher',
@@ -14,7 +16,8 @@ export class TeacherPage implements OnInit {
   editedTeacher: Teacher;
 
   constructor(
-    private modalController: ModalController
+    private modalController: ModalController,
+    private db: DbService,
   ) { }
 
   ngOnInit() {
@@ -23,6 +26,14 @@ export class TeacherPage implements OnInit {
 
   dismiss() {
     this.modalController.dismiss();
+  }
+
+  async editTeacher() {
+    await this.db.updateTeacher(this.editedTeacher, this.editedTeacher.id);
+
+    Utils.showToast("Lehrer erfolgreich geupdated!", "success");
+
+    this.modalController.dismiss(true);
   }
 
 }

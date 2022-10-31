@@ -34,7 +34,7 @@ export class TeachersPage implements OnInit {
     });
   }
 
-  async addTeacher(name: string, instruments: number[], notes: string, number: string, modal: IonModal) {
+  async addTeacher(name: string, instruments: number[], notes: string, number: string, isPrivate: boolean, modal: IonModal) {
     if (name.length < 3 || instruments.length === 0) {
       Utils.showToast("Bitte fülle alle Felder aus...", "danger");
 
@@ -42,7 +42,7 @@ export class TeachersPage implements OnInit {
     }
 
     this.db.addTeacher({
-      name, instruments, notes, number,
+      name, instruments, notes, number, private: isPrivate,
     });
 
     modal.dismiss();
@@ -64,7 +64,7 @@ export class TeachersPage implements OnInit {
 
     const { data } = await modal.onWillDismiss();
 
-    if (data?.added) {
+    if (data) {
       await this.getTeachers();
     }
   }

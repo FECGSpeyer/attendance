@@ -11,6 +11,7 @@ import { PersonPageModule } from './people/person/person.module';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { HistoryPageModule } from './history/history.module';
+import { TeacherPageModule } from './teacher/teacher.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -22,6 +23,7 @@ import { HistoryPageModule } from './history/history.module';
     PersonPageModule,
     AttPageModule,
     HistoryPageModule,
+    TeacherPageModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
       // Register the ServiceWorker as soon as the app is stable

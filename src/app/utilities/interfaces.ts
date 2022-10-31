@@ -73,4 +73,5 @@ export interface Teacher {
     notes: string;
     insNames?: string;
     number: string;
+    private: boolean;
 }
