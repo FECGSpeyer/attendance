@@ -153,7 +153,7 @@ export class ListPage implements OnInit {
     }
 
     const doc = new jsPDF();
-    doc.text(`VoS Spielerliste Stand: ${date}`, 14, 25);
+    doc.text(`SoS Spielerliste Stand: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
       head: [['', 'Nachname', 'Vorname', 'Instrument', 'Geburtsdatum']],
       body: data,

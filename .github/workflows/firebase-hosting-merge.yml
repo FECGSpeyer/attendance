@@ -5,7 +5,7 @@ name: Deploy to Firebase Hosting on merge
 'on':
   push:
     branches:
-      - vos
+      - sos
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
@@ -16,12 +16,12 @@ jobs:
           node-version: '14'
       - run: node server.js
         env:
-          ENV_FILE: '${{ secrets.ENV_FILE }}'
+          ENV_FILE: '${{ secrets.ENV_FILE_SOS }}'
       - run: npm install
       - run: npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_VOS_SPEYER }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SOS_SPEYER }}'
           channelId: live
-          projectId: vos-speyer
+          projectId: sos-speyer

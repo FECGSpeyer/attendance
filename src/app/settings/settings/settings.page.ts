@@ -56,7 +56,7 @@ export class SettingsPage implements OnInit {
     }
 
     const doc = new jsPDF();
-    doc.text(`VoS Registerprobenplan: ${date}`, 14, 25);
+    doc.text(`SoS Registerprobenplan: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
       head: [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']],
       body: data,
@@ -67,7 +67,7 @@ export class SettingsPage implements OnInit {
         fillColor: [0, 82, 56]
       }
     });
-    doc.save(`VoS Registerprobenplan: ${date}.pdf`);
+    doc.save(`SoS Registerprobenplan: ${date}.pdf`);
   }
 
   shuffle(a: string[]) {

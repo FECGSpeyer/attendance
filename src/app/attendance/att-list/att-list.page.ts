@@ -179,7 +179,7 @@ export class AttListPage implements OnInit {
     utils.book_append_sheet(wb, ws, 'Anwesenheit');
 
     /* save to file */
-    writeFile(wb, `VoS_Anwesenheit_Stand_${date}.xlsx`);
+    writeFile(wb, `SoS_Anwesenheit_Stand_${date}.xlsx`);
   }
 
   exportPDF(data, header) {
@@ -214,6 +214,6 @@ export class AttListPage implements OnInit {
         }
       },
     });
-    doc.save(`VoS_Anwesenheit_Stand_${date}.pdf`);
+    doc.save(`SoS_Anwesenheit_Stand_${date}.pdf`);
   }
 }
