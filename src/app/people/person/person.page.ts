@@ -46,7 +46,7 @@ export class PersonPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.teachers = await this.db.getTeachers();
+    // this.teachers = await this.db.getTeachers();
     if (this.existingPlayer) {
       this.player = { ...this.existingPlayer };
       this.birthdayString = this.formatDate(this.existingPlayer.birthday);
