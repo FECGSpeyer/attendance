@@ -10,8 +10,8 @@
 </ion-header>
 
 <ion-content fullscreen="true">
-  <ion-header collapse="condense">              
-    <ion-toolbar>      
+  <ion-header collapse="condense">
+    <ion-toolbar>
       <ion-title size="large">Spieler ({{ players?.length }})</ion-title>
     </ion-toolbar>
   </ion-header>
@@ -28,6 +28,9 @@
         </ion-label>
         <ion-badge color="secondary" *ngIf="player.isLeader" slot="end">Stimmführer</ion-badge>
         <ion-badge color="danger" *ngIf="player.isNew && !player.isLeader" slot="end">Neu</ion-badge>
+        <ion-badge color="warning" *ngIf="player.notes" slot="end">
+          <ion-icon name="pencil"></ion-icon>
+        </ion-badge>
       </ion-item>
     </ion-item-sliding>
   </ion-list>
