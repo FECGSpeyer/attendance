@@ -46,11 +46,11 @@ export class Utils {
   public static getClefText(key: string) {
     switch (key) {
       case 'c':
-        return "Altschlüssel (C)";
+        return "Altschlüssel";
       case 'g':
-        return "Violinschlüssel (G)";
+        return "Violinschlüssel";
       case 'f':
-        return "Bassschlüssel (F)"
+        return "Bassschlüssel"
       default:
         throw new Error("unknown clef key")
     }
