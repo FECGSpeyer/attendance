@@ -53,7 +53,12 @@ export class InstrumentListPage implements OnInit {
   }
 
   async addInstrument(value: string | number, modal: any) {
-    await this.db.addInstrument(String(value));
+    if (value) {
+        await this.db.addInstrument(String(value));
+    } else {
+        Utils.showToast("Bitte gib einem Namen an", "danger");
+        return;
+    }
 
     this.instruments = await this.db.getInstruments(true);
 
