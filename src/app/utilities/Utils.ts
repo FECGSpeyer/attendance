@@ -59,7 +59,8 @@ export class Utils {
   public static async showToast(message: string, color: string = "success"): Promise<void> {
     const toast: HTMLIonToastElement = await new ToastController().create({
       message, color,
-      position: "top"
+      position: "top",
+      duration: 1000,
     });
 
     return await toast.present();
