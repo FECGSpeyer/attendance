@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActionSheetController, IonRouterOutlet, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { Instrument, Player } from 'src/app/utilities/interfaces';
+import { Instrument, Person, Player } from 'src/app/utilities/interfaces';
 import { PersonPage } from '../person/person.page';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
@@ -18,6 +18,7 @@ import { environment } from 'src/environments/environment.prod';
 })
 export class ListPage implements OnInit {
   public players: Player[] = [];
+  public conductors: Person[] = [];
   public playersFiltered: Player[] = [];
   public instruments: Instrument[] = [];
   public searchTerm: string = "";
@@ -31,11 +32,13 @@ export class ListPage implements OnInit {
 
   async ngOnInit() {
     this.instruments = await this.db.getInstruments(true);
-    await this.getPlayers(true);
+    await this.getPlayers();
   }
 
-  async getPlayers(reload: boolean = false): Promise<void> {
-    this.players = await this.db.getPlayers(reload);
+  async getPlayers(): Promise<void> {
+    this.players = await this.db.getPlayers();
+    this.players = await this.db.getPlayers();
+    this.conductors = await this.db.getConductors();
     this.players = Utils.getModifiedPlayers(this.players, this.instruments);
     this.searchTerm = "";
     this.initializeItems();
@@ -56,7 +59,7 @@ export class ListPage implements OnInit {
     const { data } = await modal.onWillDismiss();
 
     if (data?.added) {
-      await this.getPlayers(true);
+      await this.getPlayers();
     }
   }
 

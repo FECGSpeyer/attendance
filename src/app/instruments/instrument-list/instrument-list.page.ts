@@ -24,7 +24,7 @@ export class InstrumentListPage implements OnInit {
   }
 
   async getInstruments(reload: boolean = false): Promise<void> {
-    const players: Player[] = await this.db.getPlayers(true);
+    const players: Player[] = await this.db.getPlayers();
     this.instruments = (await this.db.getInstruments(reload)).map((ins: Instrument): Instrument => {
       return {
         ...ins,
@@ -54,10 +54,10 @@ export class InstrumentListPage implements OnInit {
 
   async addInstrument(value: string | number, modal: any) {
     if (value) {
-        await this.db.addInstrument(String(value));
+      await this.db.addInstrument(String(value));
     } else {
-        Utils.showToast("Bitte gib einem Namen an", "danger");
-        return;
+      Utils.showToast("Bitte gib einem Namen an", "danger");
+      return;
     }
 
     this.instruments = await this.db.getInstruments(true);

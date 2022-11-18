@@ -22,7 +22,7 @@ export class AttPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     const conductors: Person[] = await this.db.getConductors(true);
-    const allPlayers: Player[] = await this.db.getPlayers(true);
+    const allPlayers: Player[] = await this.db.getPlayers();
     const instruments: Instrument[] = await this.db.getInstruments(true);
     let attPlayers: Player[] = [];
 

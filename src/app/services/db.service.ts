@@ -17,8 +17,6 @@ const supabase = createClient(environment.apiUrl, environment.apiKey, options);
   providedIn: 'root'
 })
 export class DbService {
-  private players: Player[] = [];
-  private conductors: Person[] = [];
   private instruments: Instrument[] = [];
   private attendance: Attendance[] = [];
   private history: History[] = [];
@@ -83,20 +81,15 @@ export class DbService {
     return Boolean(res.user);
   }
 
-  async getPlayers(reload: boolean = false): Promise<Player[]> {
-    if (this.players.length && !reload) {
-      return this.players;
-    } else {
-      const response = await supabase
-        .from<Player>('player')
-        .select('*')
-        .is("left", null)
-        .order("instrument")
-        .order("lastName");
+  async getPlayers(): Promise<Player[]> {
+    const response = await supabase
+      .from<Player>('player')
+      .select('*')
+      .is("left", null)
+      .order("instrument")
+      .order("lastName");
 
-      this.players = response.data;
-      return this.players;
-    }
+    return response.data;
   }
 
   async getLeftPlayers(): Promise<Player[]> {
@@ -111,18 +104,13 @@ export class DbService {
     return response.data;
   }
 
-  async getConductors(reload: boolean = false, all: boolean = false): Promise<Person[]> {
-    if (this.conductors.length && !reload) {
-      return all ? this.conductors : this.conductors.filter((c: Person) => !c.isInactive);
-    } else {
-      const response = await supabase
-        .from<Person>('conductors')
-        .select('*')
-        .order("lastName");
+  async getConductors(all: boolean = false): Promise<Person[]> {
+    const response = await supabase
+      .from<Person>('conductors')
+      .select('*')
+      .order("lastName");
 
-      this.conductors = response.data;
-      return all ? this.conductors : this.conductors.filter((c: Person) => !c.isInactive);
-    }
+    return all ? response.data : response.data.filter((c: Person) => !c.isInactive);
   }
 
   async addPlayer(player: Player): Promise<Player[]> {
