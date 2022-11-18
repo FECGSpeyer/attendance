@@ -8,6 +8,7 @@ import { HistoryPage } from 'src/app/history/history.page';
 import { DbService } from 'src/app/services/db.service';
 import { Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-settings',
@@ -27,9 +28,9 @@ export class SettingsPage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.conductors = await this.db.getConductors();
+    this.conductors = await this.db.getConductors(true);
     this.selConductors = this.conductors.map((c: Person): number => c.id);
-    this.leftPlayers = Utils.getModifiedPlayers(await this.db.getLeftPlayers(), await this.db.getInstruments());
+    this.leftPlayers = Utils.getModifiedPlayers(await this.db.getLeftPlayers(), await this.db.getInstruments(true));
   }
 
   async logout() {
@@ -56,7 +57,7 @@ export class SettingsPage implements OnInit {
     }
 
     const doc = new jsPDF();
-    doc.text(`VoS Registerprobenplan: ${date}`, 14, 25);
+    doc.text(`${environment.shortName} Registerprobenplan: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
       head: [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']],
       body: data,
@@ -67,7 +68,7 @@ export class SettingsPage implements OnInit {
         fillColor: [0, 82, 56]
       }
     });
-    doc.save(`VoS Registerprobenplan: ${date}.pdf`);
+    doc.save(`${environment.shortName} Registerprobenplan: ${date}.pdf`);
   }
 
   shuffle(a: string[]) {

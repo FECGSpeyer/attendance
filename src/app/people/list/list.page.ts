@@ -9,6 +9,7 @@ import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
 import { Utils } from 'src/app/utilities/Utils';
 import { utils, WorkBook, WorkSheet, writeFile } from 'xlsx';
+import { environment } from 'src/environments/environment.prod';
 
 @Component({
   selector: 'app-list',
@@ -29,8 +30,8 @@ export class ListPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.instruments = await this.db.getInstruments();
-    await this.getPlayers();
+    this.instruments = await this.db.getInstruments(true);
+    await this.getPlayers(true);
   }
 
   async getPlayers(reload: boolean = false): Promise<void> {
@@ -153,9 +154,9 @@ export class ListPage implements OnInit {
     }
 
     const doc = new jsPDF();
-    doc.text(`Jugendchor Sängerliste Stand: ${date}`, 14, 25);
+    doc.text(`${environment.shortName} Spielerliste Stand: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
-      head: [['', 'Nachname', 'Vorname', 'Instrument', 'Geburtsdatum']],
+      head: [['', 'Vorname', 'Nachname', 'Instrument', 'Geburtsdatum']],
       body: data,
       margin: { top: 40 },
       theme: 'grid',
@@ -164,7 +165,7 @@ export class ListPage implements OnInit {
         fillColor: [0, 82, 56]
       }
     });
-    doc.save(`VoS_Spielerliste_Stand_${date}.pdf`);
+    doc.save(`${environment.shortName}_Spielerliste_Stand_${date}.pdf`);
   }
 
 }

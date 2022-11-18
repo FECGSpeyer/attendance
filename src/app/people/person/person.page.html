@@ -10,7 +10,7 @@
 </ion-header>
 
 <ion-content #content>
-  <ion-grid>
+  <ion-grid *ngIf="player">
     <ion-row>
       <ion-col>
         <ion-item>
@@ -100,11 +100,23 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-row>
+    <ion-row *ngIf="showTeachers">
       <ion-col>
         <ion-item>
           <ion-label>Spielt beim Lehrer</ion-label>
           <ion-toggle [(ngModel)]="player.hasTeacher"></ion-toggle>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row *ngIf="player.hasTeacher && showTeachers">
+      <ion-col>
+        <ion-item>
+          <ion-label>Lehrer</ion-label>
+          <ion-select [(ngModel)]="player.teacher">
+            <ion-select-option [value]="teacher.id" *ngFor="let teacher of teachers">
+              {{ teacher.name }}
+            </ion-select-option>
+          </ion-select>
         </ion-item>
       </ion-col>
     </ion-row>
@@ -125,6 +137,9 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+  <ion-button *ngIf="!existingPlayer" expand="block" (click)="addPlayer()">Spieler hinzufügen</ion-button>
+  <ion-button *ngIf="existingPlayer" expand="block" (click)="updatePlayer()">Spieler updaten</ion-button>
+  <ion-button color="danger" *ngIf="existingPlayer" expand="block" (click)="removePlayer()">Spieler entfernen</ion-button>
   <ion-list *ngIf="attendance.length">
     <ion-list-header>
       Anwesenheit
@@ -138,8 +153,5 @@
       <ion-badge slot="end" [color]="att.attended ? 'success' : 'danger'">{{ att.attended ? "X" : "V" }}</ion-badge>
     </ion-item>
   </ion-list>
-  <ion-button *ngIf="!existingPlayer" expand="block" (click)="addPlayer()">Spieler hinzufügen</ion-button>
-  <ion-button *ngIf="existingPlayer" expand="block" (click)="updatePlayer()">Spieler updaten</ion-button>
-  <ion-button color="danger" *ngIf="existingPlayer" expand="block" (click)="removePlayer()">Spieler entfernen</ion-button>
   <div class="bottom-padding"></div>
 </ion-content>

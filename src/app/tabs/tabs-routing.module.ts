@@ -29,6 +29,10 @@ const routes: Routes = [
         canActivate: [AuthGuard],
       },
       {
+        path: 'teachers',
+        loadChildren: () => import('./../teachers/teachers.module').then(m => m.TeachersPageModule)
+      },
+      {
         path: '',
         redirectTo: '/tabs/player',
         pathMatch: 'full'

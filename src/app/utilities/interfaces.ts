@@ -20,6 +20,8 @@ export interface Player extends Person {
     firstOfInstrument?: boolean;
     isNew?: boolean;
     instrumentLength?: number;
+    teacher?: number;
+    teacherName?: string;
 }
 
 export interface Instrument {
@@ -61,4 +63,15 @@ export interface History {
     name: string;
     conductor: number;
     conductorName?: string;
+}
+
+export interface Teacher {
+    id?: number;
+    created_at?: string;
+    name: string;
+    instruments: number[];
+    notes: string;
+    insNames?: string;
+    number: string;
+    private: boolean;
 }

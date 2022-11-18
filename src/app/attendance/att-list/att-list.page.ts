@@ -10,6 +10,7 @@ import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { autoTable as AutoTable, CellHookData } from 'jspdf-autotable';
 import { utils, WorkBook, WorkSheet, writeFile } from 'xlsx';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-att-list',
@@ -35,7 +36,7 @@ export class AttListPage implements OnInit {
   }
 
   async ngOnInit() {
-    await this.getAttendance();
+    await this.getAttendance(true);
     this.db.authenticationState.subscribe((state: { isConductor: boolean, isPlayer: boolean }) => {
       this.isConductor = state.isConductor;
     });
@@ -134,7 +135,7 @@ export class AttListPage implements OnInit {
     const attDates: string[] = [];
     const attPerc: string[] = [];
     const data = [];
-    const players: Player[] = Utils.getModifiedPlayers((await this.db.getPlayers()), (await this.db.getInstruments()));
+    const players: Player[] = Utils.getModifiedPlayers((await this.db.getPlayers(true)), (await this.db.getInstruments(true)));
 
     for (const att of attendance) {
       attDates.push(dayjs(att.date).format('DD.MM.YY'));
@@ -179,14 +180,14 @@ export class AttListPage implements OnInit {
     utils.book_append_sheet(wb, ws, 'Anwesenheit');
 
     /* save to file */
-    writeFile(wb, `VoS_Anwesenheit_Stand_${date}.xlsx`);
+    writeFile(wb, `${environment.shortName}_Anwesenheit_Stand_${date}.xlsx`);
   }
 
   exportPDF(data, header) {
     const date: string = dayjs().format('DD.MM.YYYY');
     const doc = new jsPDF();
 
-    doc.text(`Jugendchor Anwesenheit Stand: ${date}`, 14, 25);
+    doc.text(`${environment.shortName} Anwesenheit Stand: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
       head: [header],
       body: data,
@@ -214,6 +215,6 @@ export class AttListPage implements OnInit {
         }
       },
     });
-    doc.save(`VoS_Anwesenheit_Stand_${date}.pdf`);
+    doc.save(`${environment.shortName}_Anwesenheit_Stand_${date}.pdf`);
   }
 }

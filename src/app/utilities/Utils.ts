@@ -46,11 +46,11 @@ export class Utils {
   public static getClefText(key: string) {
     switch (key) {
       case 'c':
-        return "Altschlüssel (C)";
+        return "Altschlüssel";
       case 'g':
-        return "Violinschlüssel (G)";
+        return "Violinschlüssel";
       case 'f':
-        return "Bassschlüssel (F)"
+        return "Bassschlüssel"
       default:
         throw new Error("unknown clef key")
     }
@@ -59,6 +59,8 @@ export class Utils {
   public static async showToast(message: string, color: string = "success"): Promise<void> {
     const toast: HTMLIonToastElement = await new ToastController().create({
       message, color,
+      position: "top",
+      duration: 1000,
     });
 
     return await toast.present();

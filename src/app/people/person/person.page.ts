@@ -2,9 +2,10 @@ import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, IonContent, IonSelect, ModalController, Platform } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
-import { Instrument, PersonAttendance, Player } from 'src/app/utilities/interfaces';
+import { Instrument, PersonAttendance, Player, Teacher } from 'src/app/utilities/interfaces';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
+import { environment } from 'src/environments/environment';
 dayjs.extend(utc);
 
 @Component({
@@ -28,6 +29,7 @@ export class PersonPage implements OnInit {
     hasTeacher: false,
     isLeader: false,
     notes: "",
+    teacher: null,
   };
   public player: Player;
   public birthdayString: string = format(new Date(), 'dd.MM.yyyy');
@@ -35,7 +37,9 @@ export class PersonPage implements OnInit {
   public joinedString: string = format(new Date(), 'dd.MM.yyyy');
   public max: string = new Date().toISOString();
   public attendance: PersonAttendance[] = [];
+  public teachers: Teacher[] = [];
   public perc: number = 0;
+  public showTeachers: boolean = environment.showTeachers;
 
   constructor(
     private db: DbService,
@@ -44,12 +48,14 @@ export class PersonPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    // this.teachers = await this.db.getTeachers();
     if (this.existingPlayer) {
       this.player = { ...this.existingPlayer };
       this.birthdayString = this.formatDate(this.existingPlayer.birthday);
       this.playsSinceString = this.formatDate(this.existingPlayer.playsSince);
       this.joinedString = this.formatDate(this.existingPlayer.joined);
       this.attendance = await this.db.getPlayerAttendance(this.player.id);
+      this.player.teacherName = this.player.teacher ? this.teachers.find((teacher: Teacher) => teacher).name : "";
       this.perc = Math.round(this.attendance.filter((att: PersonAttendance) => att.attended).length / this.attendance.length * 100);
     } else {
       this.player = { ...this.newPlayer };

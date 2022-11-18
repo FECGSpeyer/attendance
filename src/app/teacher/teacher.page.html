@@ -1,0 +1,36 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Lehrer bearbeiten</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item>
+    <ion-label position="stacked">Name</ion-label>
+    <ion-input [(ngModel)]="editedTeacher.name"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="stacked">Instrumente</ion-label>
+    <ion-select [(ngModel)]="editedTeacher.instruments" multiple="true">
+      <ion-select-option [value]="ins.id" *ngFor="let ins of instruments">{{ ins.name }}</ion-select-option>
+    </ion-select>
+  </ion-item>
+  <ion-item>
+    <ion-label>Privatlehrer</ion-label>
+    <ion-toggle [(ngModel)]="editedTeacher.private"></ion-toggle>
+  </ion-item>
+  <ion-item>
+    <ion-label position="stacked">Kontakt</ion-label>
+    <ion-input [(ngModel)]="editedTeacher.number"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="stacked">Notizen</ion-label>
+    <ion-textarea [(ngModel)]="editedTeacher.notes"></ion-textarea>
+  </ion-item>
+  <ion-button (click)="editTeacher()" expand="full">Lehrer updaten</ion-button>
+</ion-content>

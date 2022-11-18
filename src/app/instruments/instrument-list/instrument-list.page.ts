@@ -20,11 +20,11 @@ export class InstrumentListPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    await this.getInstruments();
+    await this.getInstruments(true);
   }
 
   async getInstruments(reload: boolean = false): Promise<void> {
-    const players: Player[] = await this.db.getPlayers();
+    const players: Player[] = await this.db.getPlayers(true);
     this.instruments = (await this.db.getInstruments(reload)).map((ins: Instrument): Instrument => {
       return {
         ...ins,
@@ -53,7 +53,12 @@ export class InstrumentListPage implements OnInit {
   }
 
   async addInstrument(value: string | number, modal: any) {
-    await this.db.addInstrument(String(value));
+    if (value) {
+        await this.db.addInstrument(String(value));
+    } else {
+        Utils.showToast("Bitte gib einem Namen an", "danger");
+        return;
+    }
 
     this.instruments = await this.db.getInstruments(true);
 
