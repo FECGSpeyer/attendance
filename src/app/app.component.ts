@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { IonRouterOutlet, Platform } from '@ionic/angular';
 import { DbService } from './services/db.service';
 import { App } from '@capacitor/app';
+import { Title } from '@angular/platform-browser';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -16,8 +18,11 @@ export class AppComponent {
     private platform: Platform,
     private db: DbService,
     private router: Router,
+    private titleService: Title,
   ) {
     this.initializeApp();
+    this.titleService.setTitle(environment.longName);
+    document.body.classList.add(environment.symphonyImage ? "sinfo" : "blas");
   }
 
   initializeApp() {

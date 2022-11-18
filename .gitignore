@@ -19,7 +19,7 @@ src/environments
 log.txt
 npm-debug.log*
 
-packag-lock.json
+package-lock.json
 
 /.angular
 /.idea

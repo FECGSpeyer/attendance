@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { environment } from 'src/environments/environment';
 import { DbService } from '../services/db.service';
 
 @Component({
@@ -8,6 +9,7 @@ import { DbService } from '../services/db.service';
 })
 export class TabsPage {
   public isConductor: boolean = false;
+  public showTeachers: boolean = environment.showTeachers;
 
   constructor(
     private db: DbService,

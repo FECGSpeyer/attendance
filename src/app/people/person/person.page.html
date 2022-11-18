@@ -100,7 +100,7 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <!-- <ion-row>
+    <ion-row *ngIf="showTeachers">
       <ion-col>
         <ion-item>
           <ion-label>Spielt beim Lehrer</ion-label>
@@ -108,7 +108,7 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-row *ngIf="player.hasTeacher">
+    <ion-row *ngIf="player.hasTeacher && showTeachers">
       <ion-col>
         <ion-item>
           <ion-label>Lehrer</ion-label>
@@ -119,7 +119,7 @@
           </ion-select>
         </ion-item>
       </ion-col>
-    </ion-row> -->
+    </ion-row>
     <ion-row>
       <ion-col>
         <ion-item>

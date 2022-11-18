@@ -5,6 +5,7 @@ import { DbService } from 'src/app/services/db.service';
 import { Instrument, PersonAttendance, Player, Teacher } from 'src/app/utilities/interfaces';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
+import { environment } from 'src/environments/environment';
 dayjs.extend(utc);
 
 @Component({
@@ -38,6 +39,7 @@ export class PersonPage implements OnInit {
   public attendance: PersonAttendance[] = [];
   public teachers: Teacher[] = [];
   public perc: number = 0;
+  public showTeachers: boolean = environment.showTeachers;
 
   constructor(
     private db: DbService,
