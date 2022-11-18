@@ -32,7 +32,7 @@ export class ListPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.instruments = await this.db.getInstruments(true);
+    this.instruments = await this.db.getInstruments();
     await this.getPlayers();
   }
 

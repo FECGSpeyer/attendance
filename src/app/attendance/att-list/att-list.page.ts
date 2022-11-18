@@ -135,7 +135,7 @@ export class AttListPage implements OnInit {
     const attDates: string[] = [];
     const attPerc: string[] = [];
     const data = [];
-    const players: Player[] = Utils.getModifiedPlayers((await this.db.getPlayers()), (await this.db.getInstruments(true)));
+    const players: Player[] = Utils.getModifiedPlayers((await this.db.getPlayers()), (await this.db.getInstruments()));
 
     for (const att of attendance) {
       attDates.push(dayjs(att.date).format('DD.MM.YY'));

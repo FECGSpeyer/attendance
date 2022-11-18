@@ -19,7 +19,6 @@ const supabase = createClient(environment.apiUrl, environment.apiKey, options);
   providedIn: 'root'
 })
 export class DbService {
-  private instruments: Instrument[] = [];
   private attendance: Attendance[] = [];
   private history: History[] = [];
 
@@ -83,12 +82,28 @@ export class DbService {
     return Boolean(res.user);
   }
 
-  async getPlayers(): Promise<Player[]> {
+  async getPlayers(all: boolean = false): Promise<Player[]> {
+    if (all) {
+      const { data, error } = await supabase
+        .from<Player>('player')
+        .select('*');
+
+      if (error) {
+        Utils.showToast("Fehler beim Laden der Spieler", "danger");
+        throw error;
+      }
+
+      return data;
+    }
+
     const response = await supabase
       .from<Player>('player')
       .select('*')
       .is("left", null)
       .order("instrument")
+      .order("isLeader", {
+        ascending: false
+      })
       .order("lastName");
 
     if (response.error) {
@@ -186,18 +201,13 @@ export class DbService {
       .match({ id });
   }
 
-  async getInstruments(reload: boolean = false): Promise<Instrument[]> {
-    if (this.instruments.length && !reload) {
-      return this.instruments;
-    }
-
+  async getInstruments(): Promise<Instrument[]> {
     const response = await supabase
       .from<Instrument>('instruments')
       .select('*')
       .order("name");
 
-    this.instruments = response.data;
-    return this.instruments;
+    return response.data;
   }
 
   async addInstrument(name: string): Promise<Instrument[]> {
@@ -216,6 +226,15 @@ export class DbService {
     const response = await supabase
       .from<Instrument>('instruments')
       .update(att)
+      .match({ id });
+
+    return response.body;
+  }
+
+  async removeInstrument(id: number): Promise<Instrument[]> {
+    const response = await supabase
+      .from<Instrument>('instruments')
+      .delete()
       .match({ id });
 
     return response.body;

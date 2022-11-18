@@ -14,6 +14,14 @@
     <ion-row>
       <ion-col>
         <ion-item>
+          <ion-label position="stacked">Name</ion-label>
+          <ion-input [(ngModel)]="instrument.name"></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
           <ion-label position="stacked">Stimmung</ion-label>
           <ion-select (ionChange)="onTuningChanges($event)" #select [value]="instrument.tuning">
             <ion-select-option>C</ion-select-option>
@@ -52,4 +60,5 @@
     </ion-row>
   </ion-grid>
   <ion-button expand="block" (click)="update()">Aktualisieren</ion-button>
+  <ion-button color="danger" expand="block" (click)="delete()">Entfernen</ion-button>
 </ion-content>

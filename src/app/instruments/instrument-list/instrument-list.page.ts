@@ -20,12 +20,12 @@ export class InstrumentListPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    await this.getInstruments(true);
+    await this.getInstruments();
   }
 
-  async getInstruments(reload: boolean = false): Promise<void> {
+  async getInstruments(): Promise<void> {
     const players: Player[] = await this.db.getPlayers();
-    this.instruments = (await this.db.getInstruments(reload)).map((ins: Instrument): Instrument => {
+    this.instruments = (await this.db.getInstruments()).map((ins: Instrument): Instrument => {
       return {
         ...ins,
         count: players.filter((player: Player): boolean => player.instrument === ins.id).length,
@@ -48,7 +48,7 @@ export class InstrumentListPage implements OnInit {
     const { data } = await modal.onWillDismiss();
 
     if (data?.updated) {
-      await this.getInstruments(true);
+      await this.getInstruments();
     }
   }
 
@@ -60,7 +60,7 @@ export class InstrumentListPage implements OnInit {
       return;
     }
 
-    this.instruments = await this.db.getInstruments(true);
+    await this.getInstruments();
 
     modal.dismiss();
   }
