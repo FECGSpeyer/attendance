@@ -8,7 +8,7 @@ const prodFile = 'environment.prod.ts';
 const manifestFile = 'manifest.webmanifest';
 
 const content = `${process.env.ENV_FILE}`;
-const content = `${process.env.MANIFEST}`;
+const manifestContent = `${process.env.MANIFEST}`;
 
 fs.mkdir(dir, { recursive: true }, (e) => {
     if (e) throw e;
@@ -41,16 +41,16 @@ fs.mkdir(dir, { recursive: true }, (e) => {
     });
 });
 
-fs.access(dir, fs.constants.F_OK, (err) => {
+fs.access(manifestDir, fs.constants.F_OK, (err) => {
     try {
-        fs.writeFileSync(dir + "/" + manifestFile, content);
+        fs.writeFileSync(manifestDir + "/" + manifestFile, manifestContent);
 
         console.log('file created', process.cwd());
 
-        if (fs.existsSync(dir + "/" + manifestFile)) {
-            console.log('file is created', path.resolve(dir + '/' + manifestFile));
+        if (fs.existsSync(manifestDir + "/" + manifestFile)) {
+            console.log('file is created', path.resolve(manifestDir + '/' + manifestFile));
 
-            const str = fs.readFileSync(dir + '/' + manifestFile).toString();
+            const str = fs.readFileSync(manifestDir + '/' + manifestFile).toString();
 
             console.log(str);
         }
