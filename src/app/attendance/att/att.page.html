@@ -25,7 +25,7 @@
         <ion-label>{{ player.instrumentName }}</ion-label>
       </ion-item-divider>
       <ion-item>
-        <ion-checkbox (ionChange)="onAttChange(player)" [(ngModel)]="player.isPresent" slot="start"></ion-checkbox>
+        <ion-checkbox [(ngModel)]="player.isPresent" slot="start"></ion-checkbox>
         <ion-label>
           <h2>{{ player.firstName }} {{ player.lastName }}</h2>
         </ion-label>

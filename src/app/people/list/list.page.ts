@@ -10,6 +10,7 @@ import { autoTable as AutoTable } from 'jspdf-autotable';
 import { Utils } from 'src/app/utilities/Utils';
 import { utils, WorkBook, WorkSheet, writeFile } from 'xlsx';
 import { environment } from 'src/environments/environment.prod';
+import { ProblemModalPage } from '../problem-modal/problem-modal.page';
 
 @Component({
   selector: 'app-list',
@@ -36,7 +37,6 @@ export class ListPage implements OnInit {
   }
 
   async getPlayers(): Promise<void> {
-    this.players = await this.db.getPlayers();
     this.players = await this.db.getPlayers();
     this.conductors = await this.db.getConductors();
     this.players = Utils.getModifiedPlayers(this.players, this.instruments);
@@ -103,6 +103,11 @@ export class ListPage implements OnInit {
   async export(): Promise<void> {
     const actionSheet = await this.actionSheetController.create({
       buttons: [{
+        text: 'Problemfälle anzeigen',
+        handler: () => {
+          this.showProblemPersons();
+        }
+      }, {
         text: 'Excel',
         handler: () => {
           this.exportExcel();
@@ -119,6 +124,20 @@ export class ListPage implements OnInit {
     });
 
     await actionSheet.present();
+  }
+
+  async showProblemPersons() {
+    const modal: HTMLIonModalElement = await this.modalController.create({
+      component: ProblemModalPage,
+      breakpoints: [0.5, 1],
+      initialBreakpoint: 0.5,
+    });
+
+    modal.onDidDismiss().then(async () => {
+      await this.getPlayers();
+    });
+
+    await modal.present();
   }
 
   exportExcel() {

@@ -3,7 +3,7 @@
     <ion-title>Spieler ({{ players?.length }})</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="export()">
-        <ion-icon name="download-outline"></ion-icon>
+        <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -38,6 +38,7 @@
         </ion-label>
         <ion-badge color="secondary" *ngIf="player.isLeader" slot="end">Stimmführer</ion-badge>
         <ion-badge color="danger" *ngIf="player.isNew && !player.isLeader" slot="end">Neu</ion-badge>
+        <ion-badge color="danger" *ngIf="player.isCritical" slot="end">Problemfall</ion-badge>
         <ion-badge color="warning" *ngIf="player.notes" slot="end">
           <ion-icon name="pencil"></ion-icon>
         </ion-badge>

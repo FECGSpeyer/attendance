@@ -12,6 +12,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { HistoryPageModule } from './history/history.module';
 import { TeacherPageModule } from './teacher/teacher.module';
+import { ProblemModalPageModule } from './people/problem-modal/problem-modal.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -22,6 +23,7 @@ import { TeacherPageModule } from './teacher/teacher.module';
     AppRoutingModule,
     PersonPageModule,
     AttPageModule,
+    ProblemModalPageModule,
     HistoryPageModule,
     TeacherPageModule,
     ServiceWorkerModule.register('ngsw-worker.js', {

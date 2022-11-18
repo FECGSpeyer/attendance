@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { createClient, SupabaseClientOptions } from '@supabase/supabase-js';
+import * as dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
 import { Attendance, History, Instrument, Person, PersonAttendance, Player, Teacher } from '../utilities/interfaces';
+import { Utils } from '../utilities/Utils';
 
 const adminMails: string[] = ["eckstaedt98@gmail.com", "erwinfast98@gmail.com", "eugen.ko94@yahoo.de"];
 const options: SupabaseClientOptions = {
@@ -89,7 +91,38 @@ export class DbService {
       .order("instrument")
       .order("lastName");
 
+    if (response.error) {
+      Utils.showToast("Fehler beim Laden der Spieler", "danger");
+    }
+
+    const updated: boolean = await this.syncCriticalPlayers(response.data);
+    if (updated) {
+      return (await this.getPlayers());
+    }
+
     return response.data;
+  }
+
+  async syncCriticalPlayers(players: Player[]) {
+    const attendances: Attendance[] = (await this.getAttendance()).filter((att: Attendance) => att.isPractice);
+    let updated: boolean = false;
+
+    for (const player of players) {
+      if (attendances[0] && attendances[1] && attendances[2] && !player.isCritical &&
+        (!player.lastSolve || dayjs(player.lastSolve).isBefore(dayjs().subtract(15, "days"))) &&
+        attendances[0].players.hasOwnProperty(player.id) && !attendances[0].players[player.id] &&
+        attendances[1].players.hasOwnProperty(player.id) && !attendances[1].players[player.id] &&
+        attendances[2].players.hasOwnProperty(player.id) && !attendances[2].players[player.id]) {
+
+        updated = true;
+        this.updatePlayer({
+          ...player,
+          isCritical: true,
+        });
+      }
+    }
+
+    return updated;
   }
 
   async getLeftPlayers(): Promise<Player[]> {

@@ -1,7 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController, ToastController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument } from 'src/app/utilities/interfaces';
+import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
   selector: 'app-instrument',
@@ -15,7 +16,6 @@ export class InstrumentPage implements OnInit {
   constructor(
     private db: DbService,
     private modalController: ModalController,
-    private toastController: ToastController,
   ) { }
 
   ngOnInit() {
@@ -30,11 +30,7 @@ export class InstrumentPage implements OnInit {
       clefs: this.instrument.clefs,
     }, this.instrument.id);
 
-    const toast: HTMLIonToastElement = await this.toastController.create({
-      message: `${this.instrument.name} wurde erfolgreich geupdated`,
-      color: "success",
-    });
-    await toast.present();
+    Utils.showToast(`${this.instrument.name} wurde erfolgreich geupdated`);
     await this.modalController.dismiss({
       updated: true,
     });

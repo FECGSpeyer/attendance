@@ -22,6 +22,8 @@ export interface Player extends Person {
     instrumentLength?: number;
     teacher?: number;
     teacherName?: string;
+    isCritical: boolean;
+    lastSolve?: string;
 }
 
 export interface Instrument {

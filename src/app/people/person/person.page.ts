@@ -30,6 +30,7 @@ export class PersonPage implements OnInit {
     isLeader: false,
     notes: "",
     teacher: null,
+    isCritical: false,
   };
   public player: Player;
   public birthdayString: string = format(new Date(), 'dd.MM.yyyy');
@@ -40,6 +41,7 @@ export class PersonPage implements OnInit {
   public teachers: Teacher[] = [];
   public perc: number = 0;
   public showTeachers: boolean = environment.showTeachers;
+  public solved: boolean = false;
 
   constructor(
     private db: DbService,
@@ -80,7 +82,11 @@ export class PersonPage implements OnInit {
   }
 
   async updatePlayer(): Promise<void> {
-    await this.db.updatePlayer(this.player);
+    await this.db.updatePlayer({
+      ...this.player,
+      isCritical: this.solved ? false : this.player.isCritical,
+      lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
+    });
     this.modalController.dismiss({
       added: true
     });
