@@ -1,5 +1,6 @@
 import { ToastController } from "@ionic/angular";
 import * as dayjs from "dayjs";
+import { environment } from "src/environments/environment";
 import { AttendanceItem, Instrument, Player } from "./interfaces";
 
 export class Utils {
@@ -17,7 +18,7 @@ export class Utils {
         instrumentLength = players.filter((p: Player) => p.instrument === player.instrument).length;
       }
 
-      if (dayjs().subtract(2, "month").isBefore(dayjs(player.joined))) {
+      if (dayjs().subtract(2, "month").isBefore(dayjs(player.joined)) && environment.shortName === "VoS") {
         isNew = true;
       }
 
