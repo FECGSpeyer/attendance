@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
-import { Observable } from 'rxjs';
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
 import { DbService } from './db.service';
 
 @Injectable({
@@ -10,19 +9,11 @@ export class AuthGuard implements CanActivate {
 
   constructor(public db: DbService, private router: Router) { }
 
-  canActivate(
+  async canActivate(
     _: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): boolean {
+    state: RouterStateSnapshot): Promise<boolean> {
+    await this.db.checkToken();
     const value: { isConductor: boolean, isPlayer: boolean } = this.db.authenticationState.value;
-
-    if (state.url === "/login") {
-      if (value.isConductor || value.isPlayer) {
-        this.router.navigateByUrl(value.isConductor ? "/tabs/player" : "/tabs/attendance");
-        return false;
-      } else {
-        return true;
-      }
-    }
 
     if (state.url === "/tabs/attendance") {
       return value.isConductor || value.isPlayer;

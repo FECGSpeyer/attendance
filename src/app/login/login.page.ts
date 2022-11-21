@@ -20,7 +20,6 @@ export class LoginPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.db.register("eckstaedt98@gmail.com", "123People");
     this.loginForm = new FormGroup({
       user: new FormControl('', [
         Validators.required,

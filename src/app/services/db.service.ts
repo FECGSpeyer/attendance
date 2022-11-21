@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
 import { createClient, SupabaseClientOptions } from '@supabase/supabase-js';
 import * as dayjs from 'dayjs';
@@ -29,7 +30,8 @@ export class DbService {
   });
 
   constructor(
-    private plt: Platform
+    private plt: Platform,
+    private router: Router,
   ) {
     this.plt.ready().then(() => {
       this.checkToken();
@@ -56,6 +58,8 @@ export class DbService {
       isPlayer: false,
       login: false,
     });
+
+    this.router.navigateByUrl("/login");
   }
 
   async register(email: string, password: string) {
@@ -77,6 +81,10 @@ export class DbService {
         isPlayer: true,
         login: true,
       });
+
+      this.router.navigateByUrl(adminMails.includes(email.toLowerCase()) ? "/tabs/player" : "/tabs/attendance");
+    } else {
+      Utils.showToast("Bitte gib die richtigen Daten an!", "danger");
     }
 
     return Boolean(res.user);
