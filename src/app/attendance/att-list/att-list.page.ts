@@ -11,6 +11,7 @@ import 'jspdf-autotable';
 import { autoTable as AutoTable, CellHookData } from 'jspdf-autotable';
 import { utils, WorkBook, WorkSheet, writeFile } from 'xlsx';
 import { environment } from 'src/environments/environment';
+require('dayjs/locale/de');
 
 @Component({
   selector: 'app-att-list',
@@ -83,7 +84,8 @@ export class AttListPage implements OnInit {
   }
 
   getReadableDate(date: string): string {
-    return dayjs(date).format("DD.MM.YYYY");
+    dayjs.locale("de");
+    return dayjs(date).format("ddd, DD.MM.YYYY");
   }
 
   async openAttendance(attendance): Promise<void> {
