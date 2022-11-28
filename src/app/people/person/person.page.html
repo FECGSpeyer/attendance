@@ -1,6 +1,7 @@
 <ion-header>
-  <ion-toolbar [color]="player.isCritical ? 'danger' : ''">
-    <ion-title>Spieler hinzufügen</ion-title>
+  <ion-toolbar [color]="player?.isCritical ? 'danger' : ''">
+    <ion-title *ngIf="!existingPlayer">Spieler hinzufügen</ion-title>
+    <ion-title *ngIf="existingPlayer">Spieler bearbeiten</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon name="close"></ion-icon>
@@ -29,7 +30,7 @@
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Instrument</ion-label>
-          <ion-select #select [(ngModel)]="player.instrument">
+          <ion-select (ionChange)="onInstrumentChange()" #select [(ngModel)]="player.instrument">
             <ion-select-option [value]="i.id" *ngFor="let i of instruments">
               {{ i.name }}
             </ion-select-option>

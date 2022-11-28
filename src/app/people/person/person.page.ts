@@ -39,6 +39,7 @@ export class PersonPage implements OnInit {
   public max: string = new Date().toISOString();
   public attendance: PersonAttendance[] = [];
   public teachers: Teacher[] = [];
+  public allTeachers: Teacher[] = [];
   public perc: number = 0;
   public showTeachers: boolean = environment.showTeachers;
   public solved: boolean = false;
@@ -50,7 +51,10 @@ export class PersonPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    // this.teachers = await this.db.getTeachers();
+    if (environment.showTeachers) {
+      this.teachers = await this.db.getTeachers();
+      this.allTeachers = this.teachers;
+    }
     if (this.existingPlayer) {
       this.player = { ...this.existingPlayer };
       this.birthdayString = this.formatDate(this.existingPlayer.birthday);
@@ -63,8 +67,13 @@ export class PersonPage implements OnInit {
       this.player = { ...this.newPlayer };
       this.player.instrument = this.instruments[0].id;
     }
+
+    this.onInstrumentChange();
   }
 
+  onInstrumentChange() {
+    this.teachers = this.allTeachers.filter((t: Teacher) => t.instruments.includes(this.player.instrument));
+  }
 
   formatDate(value: string) {
     return format(parseISO(value), 'dd.MM.yyyy');

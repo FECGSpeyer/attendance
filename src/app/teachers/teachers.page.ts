@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from '../services/db.service';
 import { TeacherPage } from '../teacher/teacher.page';
-import { Instrument, Teacher } from '../utilities/interfaces';
+import { Instrument, Player, Teacher } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
 @Component({
@@ -13,6 +13,7 @@ import { Utils } from '../utilities/Utils';
 export class TeachersPage implements OnInit {
   instruments: Instrument[] = [];
   teachers: Teacher[] = [];
+  players: Player[] = [];
 
   constructor(
     private db: DbService,
@@ -21,6 +22,7 @@ export class TeachersPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.players = await this.db.getPlayers();
     this.instruments = await this.db.getInstruments();
     await this.getTeachers();
   }
@@ -30,6 +32,7 @@ export class TeachersPage implements OnInit {
       return {
         ...t,
         insNames: t.instruments.map((i: number) => this.instruments.find((ins: Instrument) => ins.id === i).name).join(", "),
+        playerCount: this.players.filter((p: Player) => p.teacher === t.id).length
       };
     });
   }

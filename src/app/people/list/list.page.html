@@ -27,7 +27,7 @@
       </ion-col>
     </ion-row>
   </ion-grid> -->
-  <ion-searchbar (ionInput)="search($event)" animated placeholder="Spieler suchen..."></ion-searchbar>
+  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated placeholder="Spieler suchen..."></ion-searchbar>
   <ion-list>
     <ion-item-divider sticky="true">
       <ion-label>Dirigenten ({{conductors.length}})</ion-label>
