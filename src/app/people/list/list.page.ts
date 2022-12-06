@@ -51,7 +51,8 @@ export class ListPage implements OnInit {
       componentProps: {
         existingPlayer: player ? { ...player } : undefined,
         instruments: this.instruments,
-      }
+      },
+      backdropDismiss: false,
     });
 
     await modal.present();
@@ -190,4 +191,34 @@ export class ListPage implements OnInit {
     doc.save(`${environment.shortName}_Spielerliste_Stand_${date}.pdf`);
   }
 
+  async removePlayer(player: Player): Promise<void> {
+    const sheet: HTMLIonActionSheetElement = await this.actionSheetController.create({
+      buttons: [{
+        text: "Archivieren",
+        handler: (): void => {
+          this.archivePlayer(player);
+        },
+      }, {
+        text: "Entfernen",
+        handler: (): void => {
+          this.remove(player);
+        },
+      }, {
+        role: 'cancel',
+        text: "Abbrechen"
+      }],
+    });
+
+    await sheet.present();
+  }
+
+  async archivePlayer(player: Player): Promise<void> {
+    await this.db.archivePlayer(player.id);
+    await this.getPlayers();
+  }
+
+  async remove(player: Player): Promise<void> {
+    await this.db.removePlayer(player.id);
+    await this.getPlayers();
+  }
 }

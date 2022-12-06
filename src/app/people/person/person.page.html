@@ -16,13 +16,13 @@
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Vorname</ion-label>
-          <ion-input [(ngModel)]="player.firstName"></ion-input>
+          <ion-input (ionChange)="onChange()" [(ngModel)]="player.firstName"></ion-input>
         </ion-item>
       </ion-col>
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Nachname</ion-label>
-          <ion-input [(ngModel)]="player.lastName"></ion-input>
+          <ion-input (ionChange)="onChange()" [(ngModel)]="player.lastName"></ion-input>
         </ion-item>
       </ion-col>
     </ion-row>
@@ -30,7 +30,7 @@
       <ion-col>
         <ion-item>
           <ion-label>Mit Person gesprochen</ion-label>
-          <ion-toggle [(ngModel)]="solved"></ion-toggle>
+          <ion-toggle (ionChange)="onChange()" [(ngModel)]="solved"></ion-toggle>
         </ion-item>
       </ion-col>
     </ion-row>
@@ -38,7 +38,7 @@
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>
-          <ion-textarea onfocus="scrollDown()" rows="2" [(ngModel)]="player.notes"></ion-textarea>
+          <ion-textarea (ionChange)="onChange()" rows="4" [(ngModel)]="player.notes"></ion-textarea>
         </ion-item>
       </ion-col>
     </ion-row>
@@ -72,7 +72,7 @@
                   <ng-template>
                     <ion-content>
                       <ion-datetime [max]="max" [(ngModel)]="player.birthday"
-                        (ionChange)="birthdayString = formatDate(dateTimePickerBirthday.value)" presentation="date"
+                        (ionChange)="onChange(); birthdayString = formatDate(dateTimePickerBirthday.value)" presentation="date"
                         #dateTimePickerBirthday></ion-datetime>
                     </ion-content>
                   </ng-template>
@@ -89,7 +89,7 @@
                   <ng-template>
                     <ion-content>
                       <ion-datetime [max]="max" [(ngModel)]="player.playsSince"
-                        (ionChange)="playsSinceString = formatDate(dateTimePickerPlays.value)" presentation="date"
+                        (ionChange)="onChange(); playsSinceString = formatDate(dateTimePickerPlays.value)" presentation="date"
                         #dateTimePickerPlays></ion-datetime>
                     </ion-content>
                   </ng-template>
@@ -106,7 +106,7 @@
                   <ng-template>
                     <ion-content>
                       <ion-datetime [max]="max" [(ngModel)]="player.joined"
-                        (ionChange)="joinedString = formatDate(dateTimePickerJoined.value)" presentation="date"
+                        (ionChange)="onChange(); joinedString = formatDate(dateTimePickerJoined.value)" presentation="date"
                         #dateTimePickerJoined></ion-datetime>
                     </ion-content>
                   </ng-template>
@@ -118,7 +118,7 @@
             <ion-col>
               <ion-item>
                 <ion-label>Spielt beim Lehrer</ion-label>
-                <ion-toggle [(ngModel)]="player.hasTeacher"></ion-toggle>
+                <ion-toggle (ionChange)="onChange()" [(ngModel)]="player.hasTeacher"></ion-toggle>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -126,7 +126,7 @@
             <ion-col>
               <ion-item>
                 <ion-label>Lehrer</ion-label>
-                <ion-select [(ngModel)]="player.teacher">
+                <ion-select (ionChange)="onChange()" [(ngModel)]="player.teacher">
                   <ion-select-option [value]="teacher.id" *ngFor="let teacher of teachers">
                     {{ teacher.name }}
                   </ion-select-option>
@@ -138,7 +138,7 @@
             <ion-col>
               <ion-item>
                 <ion-label>Stimmführer</ion-label>
-                <ion-toggle [(ngModel)]="player.isLeader"></ion-toggle>
+                <ion-toggle (ionChange)="onChange()" [(ngModel)]="player.isLeader"></ion-toggle>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -170,8 +170,6 @@
   </ion-accordion-group>
 
   <ion-button *ngIf="!existingPlayer" expand="block" (click)="addPlayer()">Spieler hinzufügen</ion-button>
-  <ion-button *ngIf="existingPlayer" expand="block" (click)="updatePlayer()">Spieler updaten</ion-button>
-  <ion-button color="danger" *ngIf="existingPlayer" expand="block" (click)="removePlayer()">Spieler entfernen
-  </ion-button>
+  <ion-button *ngIf="existingPlayer && hasChanges" expand="block" (click)="updatePlayer()">Änderungen speichern</ion-button>
   <div class="bottom-padding"></div>
 </ion-content>

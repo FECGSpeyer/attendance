@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, IonContent, IonSelect, ModalController, Platform } from '@ionic/angular';
+import { AlertController, IonContent, IonSelect, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument, PersonAttendance, Player, Teacher } from 'src/app/utilities/interfaces';
@@ -43,14 +43,16 @@ export class PersonPage implements OnInit {
   public perc: number = 0;
   public showTeachers: boolean = environment.showTeachers;
   public solved: boolean = false;
+  public hasChanges: boolean = false;
 
   constructor(
     private db: DbService,
     private modalController: ModalController,
-    private actionSheetController: ActionSheetController,
+    private alertController: AlertController,
   ) { }
 
   async ngOnInit() {
+    this.hasChanges = false;
     if (environment.showTeachers) {
       this.teachers = await this.db.getTeachers();
       this.allTeachers = this.teachers;
@@ -68,10 +70,13 @@ export class PersonPage implements OnInit {
       this.player.instrument = this.instruments[0].id;
     }
 
-    this.onInstrumentChange();
+    this.onInstrumentChange(false);
   }
 
-  onInstrumentChange() {
+  onInstrumentChange(byUser = true) {
+    if (byUser) {
+      this.onChange();
+    }
     this.teachers = this.allTeachers.filter((t: Teacher) => t.instruments.includes(this.player.instrument));
   }
 
@@ -79,8 +84,27 @@ export class PersonPage implements OnInit {
     return format(parseISO(value), 'dd.MM.yyyy');
   }
 
-  dismiss(): void {
-    this.modalController.dismiss();
+  async dismiss(): Promise<void> {
+    if (this.hasChanges) {
+      const alert = await this.alertController.create({
+        header: 'Änderungen verwerfen?',
+        message: 'Möchtest du die ungespeicherten Änderungen wirklich verwerfen?',
+        buttons: [
+          {
+            text: 'Abbrechen',
+          }, {
+            text: 'Ja',
+            handler: () => {
+              this.modalController.dismiss();
+            }
+          }
+        ]
+      });
+
+      await alert.present();
+    } else {
+      this.modalController.dismiss();
+    }
   }
 
   async addPlayer(): Promise<void> {
@@ -101,44 +125,10 @@ export class PersonPage implements OnInit {
     });
   }
 
-  async removePlayer(): Promise<void> {
-    const sheet: HTMLIonActionSheetElement = await this.actionSheetController.create({
-      buttons: [{
-        text: "Archivieren",
-        handler: (): void => {
-          this.archivePlayer();
-        },
-      }, {
-        text: "Entfernen",
-        handler: (): void => {
-          this.remove();
-        },
-      }, {
-        role: 'cancel',
-        text: "Abbrechen"
-      }],
-    });
-
-    await sheet.present();
-  }
-
-  async archivePlayer(): Promise<void> {
-    await this.db.archivePlayer(this.player.id);
-    this.modalController.dismiss({
-      added: true
-    });
-  }
-
-  async remove(): Promise<void> {
-    await this.db.removePlayer(this.player.id);
-    this.modalController.dismiss({
-      added: true
-    });
-  }
-
-  scrollDown(): void {
-    //this.content.scrollToBottom(); // funktioniert nicht, weil das scrollable item mit der tastatur NICHT das content-component ist,
-    // sondern iwas anderes
+  onChange() {
+    if (this.existingPlayer) {
+      this.hasChanges = JSON.stringify({ ...this.existingPlayer, teacherName: this.player.teacherName, notes: this.existingPlayer.notes || "" }) !== JSON.stringify(this.player);
+    }
   }
 
 }
