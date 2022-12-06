@@ -302,6 +302,7 @@ export class DbService {
         id,
         date: att.date,
         attended: att.players[id],
+        text: att.players[id] ? "X" : (att.excused || []).includes(String(id)) ? "E" : "A",
       }
     });
   }

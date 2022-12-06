@@ -50,12 +50,14 @@ export interface Attendance {
     players?: AttendanceItem;
     conductors?: any;
     percentage?: number;
+    excused?: string[];
 }
 
 export interface PersonAttendance {
     id: number;
     date: string;
     attended: boolean;
+    text: string;
 }
 
 export interface History {

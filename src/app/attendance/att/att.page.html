@@ -25,12 +25,11 @@
         <ion-label>{{ player.instrumentName }}</ion-label>
       </ion-item-divider>
       <ion-item>
-        <ion-checkbox [(ngModel)]="player.isPresent" slot="start"></ion-checkbox>
+        <ion-checkbox (ionChange)="onAttChange(player)" [(ngModel)]="player.isPresent" slot="start"></ion-checkbox>
         <ion-label>
           <h2>{{ player.firstName }} {{ player.lastName }}</h2>
         </ion-label>
-        <ion-badge color="secondary" *ngIf="player.isLeader" slot="end">Stimmführer</ion-badge>
-        <ion-badge color="danger" *ngIf="player.isNew && !player.isLeader" slot="end">Neu</ion-badge>
+        <ion-badge *ngIf="!player.isPresent" [color]="excused.has(player.id.toString()) ? 'warning' : 'danger'" slot="end">{{ excused.has(player.id.toString()) ? 'E' : 'A' }}</ion-badge>
       </ion-item>
     </ion-item-sliding>
   </ion-list>

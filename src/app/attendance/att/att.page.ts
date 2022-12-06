@@ -1,8 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { ActionSheetController, AlertController, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { Attendance, AttendanceItem, Instrument, Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { environment } from 'src/environments/environment.prod';
 
 @Component({
   selector: 'app-att',
@@ -13,11 +14,14 @@ export class AttPage implements OnInit {
   @Input() attendance: Attendance;
   public players: Player[] = [];
   public conductors: Person[] = [];
+  public excused: Set<string> = new Set();
+  public withExcuses: boolean = environment.withExcuses;
 
   constructor(
     private modalController: ModalController,
     private db: DbService,
     private alertController: AlertController,
+    private actionSheetController: ActionSheetController,
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -35,6 +39,7 @@ export class AttPage implements OnInit {
           });
         }
       }
+      this.excused = new Set(this.attendance.excused) || new Set<string>();
     } else {
       attPlayers = allPlayers;
     }
@@ -78,6 +83,7 @@ export class AttPage implements OnInit {
     await this.db.updateAttendance({
       players: playerMap,
       conductors: conductorsMap,
+      excused: Array.from(this.excused),
     }, this.attendance.id);
 
     this.modalController.dismiss({
@@ -100,6 +106,28 @@ export class AttPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  async onAttChange(singer: Player) {
+    if (this.withExcuses) {
+      const actionSheet = await this.actionSheetController.create({
+        header: 'Abwesenheit',
+        buttons: [{
+          text: 'Entschuldigt',
+          handler: () => {
+            this.excused.add(String(singer.id));
+          }
+        }, {
+          text: 'Nicht entschuldigt',
+        }]
+      });
+
+      if (singer.isPresent) {
+        this.excused.delete(String(singer.id));
+      } else {
+        await actionSheet.present();
+      }
+    }
   }
 
 }

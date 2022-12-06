@@ -159,7 +159,8 @@
     </ion-item>
     <ion-item *ngFor="let att of attendance">
       <ion-label>{{ att.date | date:'dd.MM.yyyy' }}</ion-label>
-      <ion-badge slot="end" [color]="att.attended ? 'success' : 'danger'">{{ att.attended ? "X" : "V" }}</ion-badge>
+
+      <ion-badge slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : 'warning'">{{ att.text }}</ion-badge>
     </ion-item>
   </ion-list>
   <div class="bottom-padding"></div>
