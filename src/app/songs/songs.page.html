@@ -1,0 +1,99 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Werke ({{ songs?.length }})</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Werke ({{ songs?.length }})</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-searchbar (ionInput)="search($event)" animated placeholder="Lied suchen..."></ion-searchbar>
+  <ion-list>
+    <ion-item *ngFor="let song of songsFiltered">
+      <ion-label [id]="song.id + 'edit-button'">
+        <h2>{{ song.number }} {{ song.name }}</h2>
+        <h3 *ngIf="song.lastSung">Zuletzt gesungen am {{ song.lastSung | date:'dd.MM.YYYY' }} ({{ song.conductor }})</h3>
+      </ion-label>
+      <ion-badge (click)="openLink(song.link)" slot="end" *ngIf="song.link">
+        <ion-icon name="link-outline"></ion-icon>
+      </ion-badge>
+      <ion-modal
+       #modal
+       [trigger]="song.id + 'edit-button'"
+       [breakpoints]="[0.6]"
+       [initialBreakpoint]="0.6"
+      >
+        <ng-template>
+          <ion-content>
+            <ion-header>
+              <ion-toolbar>
+                <ion-title>Werk bearbeiten</ion-title>
+              </ion-toolbar>
+            </ion-header>
+            <ion-item>
+              <ion-label position="stacked">Nummer</ion-label>
+              <ion-input readonly=true [(ngModel)]="song.number" type="number" #number></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Name</ion-label>
+              <ion-input [(ngModel)]="song.name" #name ></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Link (optional)</ion-label>
+              <ion-textarea [(ngModel)]="song.link" rows="2" #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
+            </ion-item>
+            <ion-item>
+              <ion-label>Mit Chor</ion-label>
+              <ion-toggle [(ngModel)]="song.withChoir"></ion-toggle>
+            </ion-item>
+            <ion-button [disabled]="!number.value || !name.value" (click)="editSong(song.id, modal, number.value, name.value, link.value)" expand="block">Aktualisieren</ion-button>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+  </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button id="add-button">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+  <ion-modal #modal trigger="add-button" [breakpoints]="[0.6]" [initialBreakpoint]="0.6">
+    <ng-template>
+      <ion-content>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Werk hinzufügen</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-item>
+          <ion-label position="stacked">Nummer</ion-label>
+          <ion-input type="number" #number></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Name</ion-label>
+          <ion-input #name ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Link</ion-label>
+          <ion-textarea rows="2" #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
+        </ion-item>
+        <ion-item>
+          <ion-label>Mit Orchester</ion-label>
+          <ion-toggle #toggle></ion-toggle>
+        </ion-item>
+        <ion-button [disabled]="!number.value || !name.value" (click)="addSong(modal, number.value, name.value, link.value, toggle.value)" expand="block">Hinzufügen</ion-button>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

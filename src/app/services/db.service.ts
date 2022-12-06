@@ -5,7 +5,7 @@ import { createClient, SupabaseClientOptions } from '@supabase/supabase-js';
 import * as dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
-import { Attendance, History, Instrument, Person, PersonAttendance, Player, Teacher } from '../utilities/interfaces';
+import { Attendance, History, Instrument, Person, PersonAttendance, Player, Song, Teacher } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
 const adminMails: string[] = ["eckstaedt98@gmail.com", "erwinfast98@gmail.com", "eugen.ko94@yahoo.de"];
@@ -359,5 +359,34 @@ export class DbService {
       .match({ id });
 
     return response.body;
+  }
+
+  async getSongs(): Promise<Song[]> {
+    const response = await supabase
+      .from('songs')
+      .select('*')
+      .order("number", {
+        ascending: true,
+      });
+
+    return response.data;
+  }
+
+  async addSong(song: Song): Promise<Song[]> {
+    const { data } = await supabase
+      .from('songs')
+      .insert(song)
+      .select();
+
+    return data;
+  }
+
+  async editSong(id: number, song: Song): Promise<Song[]> {
+    const { data } = await supabase
+      .from('songs')
+      .update(song)
+      .match({ id });
+
+    return data;
   }
 }

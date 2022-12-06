@@ -29,8 +29,10 @@
           </ion-toolbar>
         </ion-header>
         <ion-item>
-          <ion-label position="stacked">Name</ion-label>
-          <ion-input [(ngModel)]="historyEntry.name"></ion-input>
+          <ion-label position="stacked">Werk</ion-label>
+          <ion-select [(ngModel)]="historyEntry.songId" #select multiple="false">
+            <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}</ion-select-option>
+          </ion-select>
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Dirigent</ion-label>

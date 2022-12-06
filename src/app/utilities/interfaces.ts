@@ -53,6 +53,17 @@ export interface Attendance {
     excused?: string[];
 }
 
+export interface Song {
+    id?: number;
+    created_at?: string;
+    name: string;
+    number: number;
+    withChoir: boolean;
+    lastSung?: string;
+    link?: string;
+    conductor?: string;
+}
+
 export interface PersonAttendance {
     id: number;
     date: string;
@@ -64,7 +75,9 @@ export interface History {
     id?: number;
     created_at?: string;
     date: string;
-    name: string;
+    songId: number;
+    number?: number;
+    name?: string;
     conductor: number;
     conductorName?: string;
 }

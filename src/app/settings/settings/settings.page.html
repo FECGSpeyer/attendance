@@ -12,30 +12,20 @@
   </ion-header>
 
   <ion-list>
-    <ion-item detail="false" button id="archive-button">
-      <ion-label>Spielerarchiv</ion-label>
-      <ion-modal trigger="archive-button" [breakpoints]="[0.5, 1]" [initialBreakpoint]="0.5">
-        <ng-template>
-          <ion-content>
-            <ion-header>
-              <ion-toolbar>
-                <ion-title>Spielerarchiv</ion-title>
-              </ion-toolbar>
-            </ion-header>
-            <ion-list>
-              <ion-item *ngFor="let p of leftPlayers">
-                <ion-label>
-                  <h2>{{ p.firstName }} {{ p.lastName }} ({{ p.instrumentName }})</h2>
-                  <h3>Ausgetreten: {{ p.left | date:"dd.MM.YYYY" }}</h3>
-                </ion-label>
-              </ion-item>
-            </ion-list>
-          </ion-content>
-        </ng-template>
-      </ion-modal>
+    <ion-list-header sticky="true">
+      Orchester
+    </ion-list-header>
+    <ion-item routerLink="songs" button>
+      <ion-label>Werke</ion-label>
     </ion-item>
     <ion-item button (click)="openHistoryModal()">
       <ion-label>Werkhistorie</ion-label>
+    </ion-item>
+    <ion-item routerLink="instruments" button>
+      <ion-label>Instrumente</ion-label>
+    </ion-item>
+    <ion-item routerLink="teachers" *ngIf="showTeachers" button>
+      <ion-label>Lehrer</ion-label>
     </ion-item>
     <ion-item detail="false" button id="trigger-button">
       <ion-label>Registerprobenplan erstellen</ion-label>
@@ -62,6 +52,32 @@
         </ng-template>
       </ion-modal>
     </ion-item>
+    <ion-item detail="false" button id="archive-button">
+      <ion-label>Spielerarchiv</ion-label>
+      <ion-modal trigger="archive-button" [breakpoints]="[0.5, 1]" [initialBreakpoint]="0.5">
+        <ng-template>
+          <ion-content>
+            <ion-header>
+              <ion-toolbar>
+                <ion-title>Spielerarchiv</ion-title>
+              </ion-toolbar>
+            </ion-header>
+            <ion-list>
+              <ion-item *ngFor="let p of leftPlayers">
+                <ion-label>
+                  <h2>{{ p.firstName }} {{ p.lastName }} ({{ p.instrumentName }})</h2>
+                  <h3>Ausgetreten: {{ p.left | date:"dd.MM.YYYY" }}</h3>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+
+    <ion-list-header sticky="true">
+      Allgemein
+    </ion-list-header>
     <ion-item detail="false" button id="register-button">
       <ion-label>App-User hinzufügen</ion-label>
       <ion-modal trigger="register-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">
@@ -85,18 +101,12 @@
         </ng-template>
       </ion-modal>
     </ion-item>
-    <ion-item routerLink="instruments" button>
-      <ion-label>Instrumente</ion-label>
-    </ion-item>
-    <ion-item routerLink="teachers" *ngIf="showTeachers" button>
-      <ion-label>Lehrer</ion-label>
-    </ion-item>
 
     <ion-item>
       <ion-label>Version</ion-label>
       <ion-badge slot="end">{{ version }}</ion-badge>
     </ion-item>
-    <ion-item button (click)="logout()">
+    <ion-item color="danger" button (click)="logout()">
       <ion-label>Ausloggen</ion-label>
     </ion-item>
   </ion-list>

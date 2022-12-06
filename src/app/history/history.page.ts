@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from '../services/db.service';
-import { History, Person } from '../utilities/interfaces';
+import { History, Person, Song } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
 @Component({
@@ -17,11 +17,12 @@ export class HistoryPage implements OnInit {
   history: History[] = [];
   historyFiltered: History[] = [];
   historyEntry: History = {
-    name: "",
+    songId: 1,
     conductor: 0,
     date: new Date().toISOString(),
   };
   searchTerm: string = "";
+  songs: Song[] = [];
 
   constructor(
     private modalController: ModalController,
@@ -29,6 +30,8 @@ export class HistoryPage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
+    this.songs = await this.db.getSongs();
+    this.historyEntry.songId = this.songs[0].id;
     this.conductors = await this.db.getConductors(true);
     this.historyEntry.conductor = this.conductors[0].id;
 
@@ -41,6 +44,8 @@ export class HistoryPage implements OnInit {
       return {
         ...entry,
         conductorName: `${conductor.firstName} ${conductor.lastName}`,
+        number: this.songs.find((song: Song) => song.id === entry.songId)?.number,
+        name: this.songs.find((song: Song) => song.id === entry.songId)?.name || entry.name,
       }
     });
     this.initializeItems();
@@ -89,14 +94,14 @@ export class HistoryPage implements OnInit {
   }
 
   async addHistoryEntry(modal: HTMLIonModalElement): Promise<void> {
-    if (this.historyEntry.name) {
+    if (this.historyEntry.songId) {
       await this.db.addHistoryEntry(this.historyEntry);
 
       modal.dismiss();
 
       await this.getHistory(true);
       this.historyEntry = {
-        name: "",
+        songId: this.historyEntry.songId,
         conductor: 1,
         date: new Date().toISOString(),
       };

@@ -33,6 +33,10 @@ const routes: Routes = [
         canActivate: [AuthGuard],
       },
       {
+        path: 'settings/songs',
+        loadChildren: () => import('./../songs/songs.module').then(m => m.SongsPageModule)
+      },
+      {
         path: '',
         redirectTo: '/tabs/player',
         pathMatch: 'full'
