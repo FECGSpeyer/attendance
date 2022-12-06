@@ -34,7 +34,7 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-row>
+    <ion-row *ngIf="existingPlayer">
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>
@@ -44,7 +44,7 @@
     </ion-row>
   </ion-grid>
 
-  <ion-accordion-group>
+  <ion-accordion-group [value]="existingPlayer ? '' : 'more'">
     <ion-accordion value="more">
       <ion-item slot="header" color="light">
         <ion-label>Allgemeine Infos</ion-label>
@@ -65,14 +65,14 @@
           </ion-row>
           <ion-row>
             <ion-col>
-              <ion-item>
+              <ion-item [color]="!existingPlayer || player.correctBirthday ? '' : 'warning'">
                 <ion-label position="stacked">Geburtsdatum</ion-label>
                 <ion-input readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
                 <ion-modal trigger="date-modal">
                   <ng-template>
                     <ion-content>
                       <ion-datetime [max]="max" [(ngModel)]="player.birthday"
-                        (ionChange)="onChange(); birthdayString = formatDate(dateTimePickerBirthday.value)" presentation="date"
+                        (ionChange)="onBirthdayChange(); birthdayString = formatDate(dateTimePickerBirthday.value)" presentation="date"
                         #dateTimePickerBirthday></ion-datetime>
                     </ion-content>
                   </ng-template>
@@ -147,13 +147,13 @@
     </ion-accordion>
   </ion-accordion-group>
 
-  <ion-accordion-group>
+  <ion-accordion-group  [value]="existingPlayer ? 'first' : ''" *ngIf="attendance.length">
     <ion-accordion value="first">
       <ion-item slot="header" color="light">
         <ion-label>Anwesenheit</ion-label>
       </ion-item>
       <div slot="content">
-        <ion-list *ngIf="attendance.length">
+        <ion-list>
           <ion-item>
             <ion-label>Durchschnitt</ion-label>
             <ion-badge slot="end" [color]="perc ? 'success' : 'danger'">{{ perc }}%</ion-badge>

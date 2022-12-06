@@ -6,6 +6,7 @@ import { Instrument, PersonAttendance, Player, Teacher } from 'src/app/utilities
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { environment } from 'src/environments/environment';
+import { Utils } from 'src/app/utilities/Utils';
 dayjs.extend(utc);
 
 @Component({
@@ -31,6 +32,7 @@ export class PersonPage implements OnInit {
     notes: "",
     teacher: null,
     isCritical: false,
+    correctBirthday: false,
   };
   public player: Player;
   public birthdayString: string = format(new Date(), 'dd.MM.yyyy');
@@ -108,10 +110,14 @@ export class PersonPage implements OnInit {
   }
 
   async addPlayer(): Promise<void> {
-    await this.db.addPlayer(this.player);
-    this.modalController.dismiss({
-      added: true
-    });
+    if (this.player.firstName && this.player.lastName) {
+      await this.db.addPlayer(this.player);
+      this.modalController.dismiss({
+        added: true
+      });
+    } else {
+      Utils.showToast("Bitte gib den Vornamen und Nachnamen an.", "danger");
+    }
   }
 
   async updatePlayer(): Promise<void> {
@@ -129,6 +135,11 @@ export class PersonPage implements OnInit {
     if (this.existingPlayer) {
       this.hasChanges = JSON.stringify({ ...this.existingPlayer, teacherName: this.player.teacherName, notes: this.existingPlayer.notes || "" }) !== JSON.stringify(this.player);
     }
+  }
+
+  onBirthdayChange() {
+    this.onChange();
+    this.player.correctBirthday = true;
   }
 
 }

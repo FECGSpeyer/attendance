@@ -61,7 +61,7 @@ export class Utils {
     const toast: HTMLIonToastElement = await new ToastController().create({
       message, color,
       position: "top",
-      duration: 1000,
+      duration: 1500,
     });
 
     return await toast.present();
