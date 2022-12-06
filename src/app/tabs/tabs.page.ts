@@ -9,7 +9,6 @@ import { DbService } from '../services/db.service';
 })
 export class TabsPage {
   public isConductor: boolean = false;
-  public showTeachers: boolean = environment.showTeachers;
 
   constructor(
     private db: DbService,

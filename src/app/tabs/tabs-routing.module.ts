@@ -19,18 +19,18 @@ const routes: Routes = [
         canActivate: [AuthGuard],
       },
       {
-        path: 'instruments',
-        loadChildren: () => import('./../instruments/instrument-list/instrument-list.module').then(m => m.InstrumentListPageModule),
-        canActivate: [AuthGuard],
-      },
-      {
         path: 'settings',
         loadChildren: () => import('./../settings/settings/settings.module').then(m => m.SettingsPageModule),
         canActivate: [AuthGuard],
       },
       {
-        path: 'teachers',
+        path: 'settings/teachers',
         loadChildren: () => import('./../teachers/teachers.module').then(m => m.TeachersPageModule)
+      },
+      {
+        path: 'settings/instruments',
+        loadChildren: () => import('./../instruments/instrument-list/instrument-list.module').then(m => m.InstrumentListPageModule),
+        canActivate: [AuthGuard],
       },
       {
         path: '',

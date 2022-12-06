@@ -20,6 +20,7 @@ export class SettingsPage implements OnInit {
   public selConductors: number[] = [];
   public leftPlayers: Player[] = [];
   public version: string = require('../../../../package.json').version;
+  public showTeachers: boolean = environment.showTeachers;
 
   constructor(
     private db: DbService,

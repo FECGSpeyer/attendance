@@ -12,10 +12,6 @@
   </ion-header>
 
   <ion-list>
-    <!-- <ion-item detail="false" button>
-      <ion-label>Dirigenten</ion-label>
-    </ion-item> -->
-
     <ion-item detail="false" button id="archive-button">
       <ion-label>Spielerarchiv</ion-label>
       <ion-modal trigger="archive-button" [breakpoints]="[0.5, 1]" [initialBreakpoint]="0.5">
@@ -88,6 +84,12 @@
           </ion-content>
         </ng-template>
       </ion-modal>
+    </ion-item>
+    <ion-item routerLink="instruments" button>
+      <ion-label>Instrumente</ion-label>
+    </ion-item>
+    <ion-item routerLink="teachers" *ngIf="showTeachers" button>
+      <ion-label>Lehrer</ion-label>
     </ion-item>
 
     <ion-item>
