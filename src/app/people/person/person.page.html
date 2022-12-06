@@ -26,114 +26,11 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-item>
-          <ion-label position="stacked">Instrument</ion-label>
-          <ion-select (ionChange)="onInstrumentChange()" #select [(ngModel)]="player.instrument">
-            <ion-select-option [value]="i.id" *ngFor="let i of instruments">
-              {{ i.name }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-item>
-          <ion-label position="stacked">Geburtsdatum</ion-label>
-          <ion-input readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
-          <ion-modal trigger="date-modal">
-            <ng-template>
-              <ion-content>
-                <ion-datetime
-                  [max]="max"
-                  [(ngModel)]="player.birthday"
-                  (ionChange)="birthdayString = formatDate(dateTimePickerBirthday.value)"
-                  presentation="date"
-                  #dateTimePickerBirthday
-                ></ion-datetime>
-              </ion-content>
-            </ng-template>
-          </ion-modal>
-        </ion-item>
-      </ion-col>
-    </ion-row>
     <ion-row *ngIf="player.isCritical">
       <ion-col>
         <ion-item>
           <ion-label>Mit Person gesprochen</ion-label>
           <ion-toggle [(ngModel)]="solved"></ion-toggle>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-item>
-          <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
-          <ion-input readonly [(ngModel)]="playsSinceString" id="plays-modal"></ion-input>
-          <ion-modal trigger="plays-modal">
-            <ng-template>
-              <ion-content>
-                <ion-datetime
-                  [max]="max"
-                  [(ngModel)]="player.playsSince"
-                  (ionChange)="playsSinceString = formatDate(dateTimePickerPlays.value)"
-                  presentation="date"
-                  #dateTimePickerPlays
-                ></ion-datetime>
-              </ion-content>
-            </ng-template>
-          </ion-modal>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-item>
-          <ion-label position="stacked">Beigetreten am</ion-label>
-          <ion-input readonly [(ngModel)]="joinedString" id="joined-modal"></ion-input>
-          <ion-modal trigger="joined-modal">
-            <ng-template>
-              <ion-content>
-                <ion-datetime
-                  [max]="max"
-                  [(ngModel)]="player.joined"
-                  (ionChange)="joinedString = formatDate(dateTimePickerJoined.value)"
-                  presentation="date"
-                  #dateTimePickerJoined
-                ></ion-datetime>
-              </ion-content>
-            </ng-template>
-          </ion-modal>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row *ngIf="showTeachers">
-      <ion-col>
-        <ion-item>
-          <ion-label>Spielt beim Lehrer</ion-label>
-          <ion-toggle [(ngModel)]="player.hasTeacher"></ion-toggle>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row *ngIf="player.hasTeacher && showTeachers">
-      <ion-col>
-        <ion-item>
-          <ion-label>Lehrer</ion-label>
-          <ion-select [(ngModel)]="player.teacher">
-            <ion-select-option [value]="teacher.id" *ngFor="let teacher of teachers">
-              {{ teacher.name }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-item>
-          <ion-label>Stimmführer</ion-label>
-          <ion-toggle [(ngModel)]="player.isLeader"></ion-toggle>
         </ion-item>
       </ion-col>
     </ion-row>
@@ -146,22 +43,135 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+
+  <ion-accordion-group>
+    <ion-accordion value="more">
+      <ion-item slot="header" color="light">
+        <ion-label>Allgemeine Infos</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Instrument</ion-label>
+                <ion-select (ionChange)="onInstrumentChange()" #select [(ngModel)]="player.instrument">
+                  <ion-select-option [value]="i.id" *ngFor="let i of instruments">
+                    {{ i.name }}
+                  </ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Geburtsdatum</ion-label>
+                <ion-input readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
+                <ion-modal trigger="date-modal">
+                  <ng-template>
+                    <ion-content>
+                      <ion-datetime [max]="max" [(ngModel)]="player.birthday"
+                        (ionChange)="birthdayString = formatDate(dateTimePickerBirthday.value)" presentation="date"
+                        #dateTimePickerBirthday></ion-datetime>
+                    </ion-content>
+                  </ng-template>
+                </ion-modal>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
+                <ion-input readonly [(ngModel)]="playsSinceString" id="plays-modal"></ion-input>
+                <ion-modal trigger="plays-modal">
+                  <ng-template>
+                    <ion-content>
+                      <ion-datetime [max]="max" [(ngModel)]="player.playsSince"
+                        (ionChange)="playsSinceString = formatDate(dateTimePickerPlays.value)" presentation="date"
+                        #dateTimePickerPlays></ion-datetime>
+                    </ion-content>
+                  </ng-template>
+                </ion-modal>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Beigetreten am</ion-label>
+                <ion-input readonly [(ngModel)]="joinedString" id="joined-modal"></ion-input>
+                <ion-modal trigger="joined-modal">
+                  <ng-template>
+                    <ion-content>
+                      <ion-datetime [max]="max" [(ngModel)]="player.joined"
+                        (ionChange)="joinedString = formatDate(dateTimePickerJoined.value)" presentation="date"
+                        #dateTimePickerJoined></ion-datetime>
+                    </ion-content>
+                  </ng-template>
+                </ion-modal>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row *ngIf="showTeachers">
+            <ion-col>
+              <ion-item>
+                <ion-label>Spielt beim Lehrer</ion-label>
+                <ion-toggle [(ngModel)]="player.hasTeacher"></ion-toggle>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row *ngIf="player.hasTeacher && showTeachers">
+            <ion-col>
+              <ion-item>
+                <ion-label>Lehrer</ion-label>
+                <ion-select [(ngModel)]="player.teacher">
+                  <ion-select-option [value]="teacher.id" *ngFor="let teacher of teachers">
+                    {{ teacher.name }}
+                  </ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label>Stimmführer</ion-label>
+                <ion-toggle [(ngModel)]="player.isLeader"></ion-toggle>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
+
+  <ion-accordion-group>
+    <ion-accordion value="first">
+      <ion-item slot="header" color="light">
+        <ion-label>Anwesenheit</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-list *ngIf="attendance.length">
+          <ion-item>
+            <ion-label>Durchschnitt</ion-label>
+            <ion-badge slot="end" [color]="perc ? 'success' : 'danger'">{{ perc }}%</ion-badge>
+          </ion-item>
+          <ion-item *ngFor="let att of attendance">
+            <ion-label>{{ att.date | date:'dd.MM.yyyy' }}</ion-label>
+
+            <ion-badge slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : 'warning'">
+              {{ att.text }}</ion-badge>
+          </ion-item>
+        </ion-list>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
+
   <ion-button *ngIf="!existingPlayer" expand="block" (click)="addPlayer()">Spieler hinzufügen</ion-button>
   <ion-button *ngIf="existingPlayer" expand="block" (click)="updatePlayer()">Spieler updaten</ion-button>
-  <ion-button color="danger" *ngIf="existingPlayer" expand="block" (click)="removePlayer()">Spieler entfernen</ion-button>
-  <ion-list *ngIf="attendance.length">
-    <ion-list-header>
-      Anwesenheit
-    </ion-list-header>
-    <ion-item>
-      <ion-label>Durchschnitt</ion-label>
-      <ion-badge slot="end" [color]="perc ? 'success' : 'danger'">{{ perc }}%</ion-badge>
-    </ion-item>
-    <ion-item *ngFor="let att of attendance">
-      <ion-label>{{ att.date | date:'dd.MM.yyyy' }}</ion-label>
-
-      <ion-badge slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : 'warning'">{{ att.text }}</ion-badge>
-    </ion-item>
-  </ion-list>
+  <ion-button color="danger" *ngIf="existingPlayer" expand="block" (click)="removePlayer()">Spieler entfernen
+  </ion-button>
   <div class="bottom-padding"></div>
 </ion-content>
