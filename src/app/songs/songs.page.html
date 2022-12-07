@@ -89,7 +89,7 @@
           <ion-textarea rows="2" #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
         </ion-item>
         <ion-item>
-          <ion-label>Mit Orchester</ion-label>
+          <ion-label>Mit Chor</ion-label>
           <ion-toggle #toggle></ion-toggle>
         </ion-item>
         <ion-button [disabled]="!number.value || !name.value" (click)="addSong(modal, number.value, name.value, link.value, toggle.value)" expand="block">Hinzufügen</ion-button>
