@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from '../services/db.service';
 import { History, Person, Song } from '../utilities/interfaces';
@@ -27,6 +27,7 @@ export class HistoryPage implements OnInit {
   constructor(
     private modalController: ModalController,
     private db: DbService,
+    private alertController: AlertController,
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -38,8 +39,8 @@ export class HistoryPage implements OnInit {
     await this.getHistory();
   }
 
-  async getHistory(refresh: boolean = false): Promise<void> {
-    this.history = (await this.db.getHistory(refresh)).map((entry: History): History => {
+  async getHistory(): Promise<void> {
+    this.history = (await this.db.getHistory()).map((entry: History): History => {
       const conductor: Person = this.conductors.find((p: Person) => p.id === entry.conductor);
       return {
         ...entry,
@@ -99,7 +100,7 @@ export class HistoryPage implements OnInit {
 
       modal.dismiss();
 
-      await this.getHistory(true);
+      await this.getHistory();
       this.historyEntry = {
         songId: this.historyEntry.songId,
         conductor: 1,
@@ -109,6 +110,32 @@ export class HistoryPage implements OnInit {
     } else {
       Utils.showToast("Bitte gib einen Namen an", "danger");
     }
+  }
+
+  async remove(id: number, sliding: IonItemSliding) {
+    const alert = await this.alertController.create({
+      header: 'Möchtest du den Eintrag wirklich entfernen?',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          handler: () => {
+            sliding.close();
+          },
+        }, {
+          text: 'Ja',
+          handler: async () => {
+            try {
+              await this.db.removeHistoryEntry(id);
+              await this.getHistory();
+            } catch (error) {
+              Utils.showToast(error, "danger");
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
 }

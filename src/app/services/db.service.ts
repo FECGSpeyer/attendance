@@ -21,7 +21,6 @@ const supabase = createClient(environment.apiUrl, environment.apiKey, options);
 })
 export class DbService {
   private attendance: Attendance[] = [];
-  private history: History[] = [];
 
   authenticationState = new BehaviorSubject({
     isConductor: false,
@@ -307,11 +306,7 @@ export class DbService {
     });
   }
 
-  async getHistory(reload: boolean = false): Promise<History[]> {
-    if (this.history.length && !reload) {
-      return this.history;
-    }
-
+  async getHistory(): Promise<History[]> {
     const response = await supabase
       .from<History>('history')
       .select('*')
@@ -319,14 +314,26 @@ export class DbService {
         ascending: false,
       });
 
-    this.history = response.data;
-    return this.history;
+    return response.data;
   }
 
   async addHistoryEntry(history: History): Promise<History[]> {
     const response = await supabase
       .from<History>('history')
       .insert(history);
+
+    return response.body;
+  }
+
+  async removeHistoryEntry(id: number): Promise<History[]> {
+    const response = await supabase
+      .from<History>('history')
+      .delete()
+      .match({ id });
+
+    if (response.error) {
+      throw new Error("Fehler beim Löschen des Eintrags");
+    }
 
     return response.body;
   }

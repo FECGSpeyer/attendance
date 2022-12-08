@@ -12,12 +12,20 @@
 <ion-content>
   <ion-searchbar (ionInput)="search($event)" animated placeholder="Werk suchen..."></ion-searchbar>
   <ion-list>
-    <ion-item *ngFor="let entry of historyFiltered">
-      <ion-label>
-        <h2>{{ entry.name }}</h2>
-        <h3>{{ entry.date | date:'dd.MM.yyyy' }} | {{ entry.conductorName }}</h3>
-      </ion-label>
-    </ion-item>
+    <ion-item-sliding #sliding *ngFor="let entry of historyFiltered">
+      <ion-item>
+        <ion-label>
+          <h2>{{ entry.name }}</h2>
+          <h3>{{ entry.date | date:'dd.MM.yyyy' }} | {{ entry.conductorName }}</h3>
+        </ion-label>
+      </ion-item>
+
+      <ion-item-options side="end">
+        <ion-item-option (click)="remove(entry.id, sliding)" color="danger">
+          <ion-icon slot="icon-only" name="trash"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
   </ion-list>
 
   <ion-modal trigger="add-his-button" [breakpoints]="[0.7]" [initialBreakpoint]="0.7">
