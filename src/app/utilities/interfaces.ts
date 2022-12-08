@@ -39,6 +39,7 @@ export interface Player extends Person {
     criticalReasonText?: string;
     otherOrchestras?: string[];
     otherExercise?: string;
+    text?: string;
 }
 
 export interface Instrument {

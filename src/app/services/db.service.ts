@@ -197,6 +197,7 @@ export class DbService {
     delete dataToUpdate.teacherName;
     delete dataToUpdate.criticalReasonText;
     delete dataToUpdate.isPresent;
+    delete dataToUpdate.text;
 
     const response = await supabase
       .from<Player>('player')

@@ -90,7 +90,35 @@ export class ListPage implements OnInit {
   }
 
   onViewChanged() {
-    debugger;
+    this.players = this.players.map((p: Player) => {
+      return {
+        ...p,
+        text: this.getSubText(p),
+      }
+    });
+    this.playersFiltered = this.playersFiltered.map((p: Player) => {
+      return {
+        ...p,
+        text: this.getSubText(p),
+      }
+    });
+  }
+
+  getSubText(player: Player): string {
+    const props: string[] = [];
+    if (this.viewOpts.includes("instrument")) {
+      props.push(player.instrumentName);
+    }
+    if (this.viewOpts.includes("birthday")) {
+      props.push(dayjs(player.birthday).format("DD.MM.YYYY"));
+    }
+    if (this.viewOpts.includes("exercises")) {
+      if (player.otherExercise) {
+        props.push(player.otherExercise)
+      }
+    }
+
+    return props.join(" | ");
   }
 
   search(event: any): void {

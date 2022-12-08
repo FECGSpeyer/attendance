@@ -34,16 +34,16 @@
               </ion-select>
             </ion-item>
 
-            <!-- <ion-item lines="none">
+            <ion-item lines="none">
               <ion-icon slot="start" name="eye" size="small"></ion-icon>
               <ion-select multiple="true" slot="end" (ionChange)="onViewChanged()" interface="popover" [(ngModel)]="viewOpts">
                 <ion-select-option value="instrument">Instrument</ion-select-option>
                 <ion-select-option value="birthday">Geburtsdatum</ion-select-option>
                 <ion-select-option value="exercises">Sonstige Dienste</ion-select-option>
-                <ion-select-option *ngIf="isVoS" value="teacher">Lehrer</ion-select-option>
-                <ion-select-option *ngIf="isVoS" value="otherOrchestra">Anderes Orchester</ion-select-option>
+                <!-- <ion-select-option *ngIf="isVoS" value="teacher">Lehrer</ion-select-option>
+                <ion-select-option *ngIf="isVoS" value="otherOrchestra">Anderes Orchester</ion-select-option> -->
               </ion-select>
-            </ion-item> -->
+            </ion-item>
           </ion-list>
         </ion-content>
       </ng-template>
