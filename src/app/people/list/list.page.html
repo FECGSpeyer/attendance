@@ -15,20 +15,36 @@
       <ion-title size="large">Spieler ({{ players?.length }})</ion-title>
     </ion-toolbar>
   </ion-header>
-  <!-- <ion-grid>
+  <ion-grid>
     <ion-row>
       <ion-col size-xs="10" size="11">
         <ion-searchbar (ionInput)="search($event)" animated placeholder="Spieler suchen..."></ion-searchbar>
       </ion-col>
       <ion-col size-xs="2" size="1">
-        <ion-button fill="none">
-          <ion-icon name="filter"></ion-icon>
+        <ion-button id="filter-trigger" fill="none">
+          <ion-icon name="cog"></ion-icon>
         </ion-button>
+        <ion-popover trigger="filter-trigger" triggerAction="click">
+          <ng-template>
+            <ion-content>
+              <ion-list>
+                <ion-item lines="none">
+                  <ion-icon name="filter" size="small"></ion-icon>
+                  <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="filterOpt">
+                    <ion-select-option value="all">Alle Anzeigen</ion-select-option>
+                    <ion-select-option value="criticals">Problemfälle</ion-select-option>
+                    <ion-select-option value="leaders">Stimmführer</ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </ion-list>
+            </ion-content>
+          </ng-template>
+        </ion-popover>
       </ion-col>
     </ion-row>
-  </ion-grid> -->
-  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated placeholder="Spieler suchen..."></ion-searchbar>
-  <ion-list>
+  </ion-grid>
+  <!-- <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated placeholder="Spieler suchen..."></ion-searchbar> -->
+  <ion-list *ngIf="searchTerm === '' && filterOpt === 'all'">
     <ion-item-divider sticky="true">
       <ion-label>Dirigenten ({{conductors.length}})</ion-label>
     </ion-item-divider>

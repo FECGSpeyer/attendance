@@ -24,6 +24,7 @@ export class ListPage implements OnInit {
   public playersFiltered: Player[] = [];
   public instruments: Instrument[] = [];
   public searchTerm: string = "";
+  public filterOpt: string = "all";
 
   constructor(
     private modalController: ModalController,
@@ -44,6 +45,7 @@ export class ListPage implements OnInit {
     this.players = Utils.getModifiedPlayers(this.players, this.instruments);
     this.searchTerm = "";
     this.initializeItems();
+    this.onFilterChanged();
   }
 
   async openModal(player?: Player): Promise<void> {
@@ -64,6 +66,23 @@ export class ListPage implements OnInit {
     if (data?.added) {
       await this.getPlayers();
     }
+  }
+
+  onFilterChanged() {
+    this.searchTerm = '';
+
+    if (this.filterOpt === 'all') {
+      this.initializeItems();
+      return;
+    }
+
+    this.playersFiltered = this.players.filter((player: Player) => {
+      if (this.filterOpt === 'criticals') {
+        return player.isCritical;
+      } else {
+        return player.isLeader;
+      }
+    });
   }
 
   search(event: any): void {
