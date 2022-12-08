@@ -25,6 +25,8 @@ export class ListPage implements OnInit {
   public instruments: Instrument[] = [];
   public searchTerm: string = "";
   public filterOpt: string = "all";
+  public viewOpts: string[] = ["instrument"];
+  public isVoS: boolean = environment.shortName === "VoS";
 
   constructor(
     private modalController: ModalController,
@@ -79,10 +81,16 @@ export class ListPage implements OnInit {
     this.playersFiltered = this.players.filter((player: Player) => {
       if (this.filterOpt === 'criticals') {
         return player.isCritical;
+      } else if (this.filterOpt === "new") {
+        return player.isNew;
       } else {
         return player.isLeader;
       }
     });
+  }
+
+  onViewChanged() {
+    debugger;
   }
 
   search(event: any): void {

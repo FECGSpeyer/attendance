@@ -15,34 +15,40 @@
       <ion-title size="large">Spieler ({{ players?.length }})</ion-title>
     </ion-toolbar>
   </ion-header>
-  <ion-grid>
-    <ion-row class="ion-align-items-center">
-      <ion-col size-xs="10" size="11">
-        <ion-searchbar (ionInput)="search($event)" animated placeholder="Spieler suchen..."></ion-searchbar>
-      </ion-col>
-      <ion-col size-xs="2" size="1">
-        <ion-button id="filter-trigger" fill="none">
-          <ion-icon name="cog"></ion-icon>
-        </ion-button>
-        <ion-popover trigger="filter-trigger" triggerAction="click">
-          <ng-template>
-            <ion-content>
-              <ion-list>
-                <ion-item lines="none">
-                  <ion-icon name="filter" size="small"></ion-icon>
-                  <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="filterOpt">
-                    <ion-select-option value="all">Alle Anzeigen</ion-select-option>
-                    <ion-select-option value="criticals">Problemfälle</ion-select-option>
-                    <ion-select-option value="leaders">Stimmführer</ion-select-option>
-                  </ion-select>
-                </ion-item>
-              </ion-list>
-            </ion-content>
-          </ng-template>
-        </ion-popover>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+  <div class="flex">
+    <ion-searchbar (ionInput)="search($event)" animated placeholder="Spieler suchen..."></ion-searchbar>
+    <ion-button id="filter-trigger" fill="none">
+      <ion-icon size="medium" name="options"></ion-icon>
+    </ion-button>
+    <ion-popover trigger="filter-trigger" triggerAction="click">
+      <ng-template>
+        <ion-content>
+          <ion-list>
+            <ion-item lines="none">
+              <ion-icon slot="start" name="filter" size="small"></ion-icon>
+              <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="filterOpt">
+                <ion-select-option value="all">Alle Anzeigen</ion-select-option>
+                <ion-select-option value="criticals">Problemfälle</ion-select-option>
+                <ion-select-option value="leaders">Stimmführer</ion-select-option>
+                <ion-select-option *ngIf="isVoS" value="new">Neue Spieler</ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <!-- <ion-item lines="none">
+              <ion-icon slot="start" name="eye" size="small"></ion-icon>
+              <ion-select multiple="true" slot="end" (ionChange)="onViewChanged()" interface="popover" [(ngModel)]="viewOpts">
+                <ion-select-option value="instrument">Instrument</ion-select-option>
+                <ion-select-option value="birthday">Geburtsdatum</ion-select-option>
+                <ion-select-option value="exercises">Sonstige Dienste</ion-select-option>
+                <ion-select-option *ngIf="isVoS" value="teacher">Lehrer</ion-select-option>
+                <ion-select-option *ngIf="isVoS" value="otherOrchestra">Anderes Orchester</ion-select-option>
+              </ion-select>
+            </ion-item> -->
+          </ion-list>
+        </ion-content>
+      </ng-template>
+    </ion-popover>
+  </div>
   <!-- <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated placeholder="Spieler suchen..."></ion-searchbar> -->
   <ion-list *ngIf="searchTerm === '' && filterOpt === 'all'">
     <ion-item-divider sticky="true">
@@ -62,7 +68,8 @@
       <ion-item (click)="openModal(player)">
         <ion-label>
           <h2>{{ player.firstName }} {{ player.lastName }}</h2>
-          <h3>{{ player.instrumentName }}</h3>
+          <h3 *ngIf="player.text">{{ player.text }}</h3>
+          <h3 *ngIf="!player.text">{{ player.instrumentName }}</h3>
         </ion-label>
         <ion-badge color="secondary" *ngIf="player.isLeader" slot="end">Stimmführer</ion-badge>
         <ion-badge color="danger" *ngIf="!player.paused && player.isNew && !player.isLeader" slot="end">Neu</ion-badge>
