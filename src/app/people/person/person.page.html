@@ -38,7 +38,7 @@
 
   </ion-grid>
 
-  <ion-accordion-group value="critical" *ngIf="player.isCritical">
+  <ion-accordion-group value="critical" *ngIf="player?.isCritical">
     <ion-accordion value="critical">
       <ion-item slot="header" color="light">
         <ion-label>Problemfall</ion-label>
@@ -61,7 +61,7 @@
     </ion-accordion>
   </ion-accordion-group>
 
-  <ion-accordion-group [value]="existingPlayer ? '' : 'more'">
+  <ion-accordion-group *ngIf="player" [value]="existingPlayer ? '' : 'more'">
     <ion-accordion value="more">
       <ion-item slot="header" color="light">
         <ion-label>Allgemeine Infos</ion-label>
@@ -159,15 +159,35 @@
               </ion-item>
             </ion-col>
           </ion-row>
+          <ion-row *ngIf="isVoS">
+            <ion-col>
+              <ion-item>
+                <ion-label>Andere Orchester</ion-label>
+                <ion-select multiple="true" (ionChange)="onChange()" [(ngModel)]="player.otherOrchestras">
+                  <ion-select-option>SoS</ion-select-option>
+                  <ion-select-option>GoS</ion-select-option>
+                  <ion-select-option>BoS</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Sonstige Dienste</ion-label>
+                <ion-input (ionChange)="onChange()" [(ngModel)]="player.otherExercise"></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
         </ion-grid>
       </div>
     </ion-accordion>
   </ion-accordion-group>
 
-  <ion-accordion-group [value]="existingPlayer && !player.isCritical ? 'first' : ''" *ngIf="attendance.length">
+  <ion-accordion-group [value]="existingPlayer && !player?.isCritical ? 'first' : ''" *ngIf="attendance.length">
     <ion-accordion value="first">
       <ion-item slot="header" color="light">
-        <ion-label>Anwesenheit</ion-label>
+        <ion-label>Historie</ion-label>
       </ion-item>
       <div slot="content">
         <ion-list>
@@ -175,10 +195,13 @@
             <ion-label>Durchschnitt</ion-label>
             <ion-badge slot="end" [color]="perc ? 'success' : 'danger'">{{ perc }}%</ion-badge>
           </ion-item>
-          <ion-item *ngFor="let att of attendance">
-            <ion-label>{{ att.date | date:'dd.MM.yyyy' }}</ion-label>
+          <ion-item *ngFor="let att of history">
+            <ion-label>
+              <h2>{{ att.date | date:'dd.MM.yyyy' }}</h2>
+              <h3 *ngIf="att.type !== 4">{{ att.text }}</h3>
+            </ion-label>
 
-            <ion-badge slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : 'warning'">
+            <ion-badge *ngIf="att.type === 4" slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : 'warning'">
               {{ att.text }}</ion-badge>
           </ion-item>
         </ion-list>

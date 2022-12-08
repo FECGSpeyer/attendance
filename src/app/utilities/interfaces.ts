@@ -37,6 +37,8 @@ export interface Player extends Person {
     history: PlayerHistoryEntry[];
     criticalReason?: PlayerHistoryType;
     criticalReasonText?: string;
+    otherOrchestras?: string[];
+    otherExercise?: string;
 }
 
 export interface Instrument {

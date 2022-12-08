@@ -163,7 +163,7 @@ export class ListPage implements OnInit {
     utils.book_append_sheet(wb, ws, 'Anwesenheit');
 
     /* save to file */
-    writeFile(wb, `VoS_Spielerliste_Stand_${date}.xlsx`);
+    writeFile(wb, `${environment.shortName}_Spielerliste_Stand_${date}.xlsx`);
   }
 
   exportPDF() {

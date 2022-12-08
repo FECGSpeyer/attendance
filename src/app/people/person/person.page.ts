@@ -2,7 +2,7 @@ import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonContent, IonSelect, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
-import { Instrument, PersonAttendance, Player, Teacher } from 'src/app/utilities/interfaces';
+import { Instrument, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { environment } from 'src/environments/environment';
@@ -43,10 +43,12 @@ export class PersonPage implements OnInit {
   public joinedString: string = format(new Date(), 'dd.MM.yyyy');
   public max: string = new Date().toISOString();
   public attendance: PersonAttendance[] = [];
+  public history: any[] = [];
   public teachers: Teacher[] = [];
   public allTeachers: Teacher[] = [];
   public perc: number = 0;
   public showTeachers: boolean = environment.showTeachers;
+  public isVoS: boolean = environment.shortName === "VoS";
   public solved: boolean = false;
   public hasChanges: boolean = false;
   public notes: string = "";
@@ -68,16 +70,29 @@ export class PersonPage implements OnInit {
       this.birthdayString = this.formatDate(this.existingPlayer.birthday);
       this.playsSinceString = this.formatDate(this.existingPlayer.playsSince);
       this.joinedString = this.formatDate(this.existingPlayer.joined);
-      this.attendance = await this.db.getPlayerAttendance(this.player.id);
       this.player.teacherName = this.player.teacher ? this.teachers.find((teacher: Teacher) => teacher).name : "";
-      this.perc = Math.round(this.attendance.filter((att: PersonAttendance) => att.attended).length / this.attendance.length * 100);
       this.player.criticalReasonText = this.player.criticalReason ? Utils.getPlayerHistoryTypeText(this.player.criticalReason) : "";
+
+      await this.getHistoryInfo();
     } else {
       this.player = { ...this.newPlayer };
       this.player.instrument = this.instruments[0].id;
     }
 
     this.onInstrumentChange(false);
+  }
+
+  async getHistoryInfo(): Promise<void> {
+    this.attendance = await this.db.getPlayerAttendance(this.player.id);
+    this.perc = Math.round(this.attendance.filter((att: PersonAttendance) => att.attended).length / this.attendance.length * 100);
+
+    this.history = this.attendance.map((att: PersonAttendance) => {
+      return {
+        date: att.date,
+        text: att.text,
+        type: PlayerHistoryType.ATTENDANCE,
+      };
+    }).concat(this.existingPlayer.history).sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
   onInstrumentChange(byUser = true) {
