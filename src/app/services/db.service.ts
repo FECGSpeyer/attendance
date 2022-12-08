@@ -191,6 +191,10 @@ export class DbService {
       .update(dataToUpdate)
       .match({ id: player.id });
 
+    if (response.error) {
+      throw new Error("Fehler beim updaten des Spielers");
+    }
+
     return response.body;
   }
 

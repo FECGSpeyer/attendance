@@ -33,6 +33,8 @@ export class PersonPage implements OnInit {
     teacher: null,
     isCritical: false,
     correctBirthday: false,
+    history: [],
+    paused: false,
   };
   public player: Player;
   public birthdayString: string = format(new Date(), 'dd.MM.yyyy');

@@ -41,7 +41,7 @@ export class AttPage implements OnInit {
       }
       this.excused = new Set(this.attendance.excused) || new Set<string>();
     } else {
-      attPlayers = allPlayers;
+      attPlayers = allPlayers.filter((player: Player) => !player.paused);
     }
 
     if (Object.keys(this.attendance.conductors).length) {

@@ -39,7 +39,7 @@
     </ion-item>
   </ion-list>
   <ion-list>
-    <ion-item-sliding *ngFor="let player of playersFiltered">
+    <ion-item-sliding #slider *ngFor="let player of playersFiltered">
       <ion-item-divider sticky="true" *ngIf="player.firstOfInstrument">
         <ion-label>{{ player.instrumentName }} ({{ player.instrumentLength }})</ion-label>
       </ion-item-divider>
@@ -49,14 +49,21 @@
           <h3>{{ player.instrumentName }}</h3>
         </ion-label>
         <ion-badge color="secondary" *ngIf="player.isLeader" slot="end">Stimmführer</ion-badge>
-        <ion-badge color="danger" *ngIf="player.isNew && !player.isLeader" slot="end">Neu</ion-badge>
-        <ion-badge color="danger" *ngIf="player.isCritical" slot="end">Problemfall</ion-badge>
-        <ion-badge color="warning" *ngIf="player.notes" slot="end">
+        <ion-badge color="danger" *ngIf="!player.paused && player.isNew && !player.isLeader" slot="end">Neu</ion-badge>
+        <ion-badge color="danger" *ngIf="!player.paused && player.isCritical" slot="end">Problemfall</ion-badge>
+        <ion-badge color="warning" *ngIf="player.paused" slot="end">Pausiert</ion-badge>
+        <ion-badge color="warning" *ngIf="!player.paused && player.notes" slot="end">
           <ion-icon name="pencil"></ion-icon>
         </ion-badge>
       </ion-item>
       <ion-item-options>
-        <ion-item-option [style]="player.firstOfInstrument ? 'margin-top: 2.5rem;' : ''" (click)="removePlayer(player)" color="danger">
+        <ion-item-option *ngIf="!player.paused" [style]="player.firstOfInstrument ? 'margin-top: 1.7rem;' : ''" (click)="pausePlayer(player, slider)" color="primary">
+          <ion-icon name="pause"></ion-icon>
+        </ion-item-option>
+        <ion-item-option *ngIf="player.paused" [style]="player.firstOfInstrument ? 'margin-top: 1.7rem;' : ''" (click)="unpausePlayer(player, slider)" color="primary">
+          <ion-icon name="play"></ion-icon>
+        </ion-item-option>
+        <ion-item-option [style]="player.firstOfInstrument ? 'margin-top: 1.7rem;' : ''" (click)="removePlayer(player, slider)" color="danger">
           <ion-icon name="trash"></ion-icon>
         </ion-item-option>
       </ion-item-options>

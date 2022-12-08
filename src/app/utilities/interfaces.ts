@@ -1,3 +1,5 @@
+import { PlayerHistoryType } from "./constants";
+
 export interface Person {
     id?: number;
     created_at?: string;
@@ -8,6 +10,12 @@ export interface Person {
     isPresent?: boolean;
     isInactive?: boolean;
     left?: string;
+}
+
+export interface PlayerHistoryEntry {
+    date: string;
+    text: string;
+    type: PlayerHistoryType;
 }
 
 export interface Player extends Person {
@@ -25,6 +33,8 @@ export interface Player extends Person {
     isCritical: boolean;
     lastSolve?: string;
     correctBirthday: boolean;
+    paused: boolean;
+    history: PlayerHistoryEntry[];
 }
 
 export interface Instrument {

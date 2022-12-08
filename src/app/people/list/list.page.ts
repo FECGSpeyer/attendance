@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ActionSheetController, IonRouterOutlet, ModalController } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonItemSliding, IonRouterOutlet, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { Instrument, Person, Player } from 'src/app/utilities/interfaces';
+import { Instrument, Person, Player, PlayerHistoryEntry } from 'src/app/utilities/interfaces';
 import { PersonPage } from '../person/person.page';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
@@ -11,6 +11,7 @@ import { Utils } from 'src/app/utilities/Utils';
 import { utils, WorkBook, WorkSheet, writeFile } from 'xlsx';
 import { environment } from 'src/environments/environment.prod';
 import { ProblemModalPage } from '../problem-modal/problem-modal.page';
+import { PlayerHistoryType } from 'src/app/utilities/constants';
 
 @Component({
   selector: 'app-list',
@@ -29,6 +30,7 @@ export class ListPage implements OnInit {
     private routerOutlet: IonRouterOutlet,
     private db: DbService,
     private actionSheetController: ActionSheetController,
+    private alertController: AlertController,
   ) { }
 
   async ngOnInit() {
@@ -191,7 +193,7 @@ export class ListPage implements OnInit {
     doc.save(`${environment.shortName}_Spielerliste_Stand_${date}.pdf`);
   }
 
-  async removePlayer(player: Player): Promise<void> {
+  async removePlayer(player: Player, slider: IonItemSliding): Promise<void> {
     const sheet: HTMLIonActionSheetElement = await this.actionSheetController.create({
       buttons: [{
         text: "Archivieren",
@@ -205,7 +207,10 @@ export class ListPage implements OnInit {
         },
       }, {
         role: 'cancel',
-        text: "Abbrechen"
+        text: "Abbrechen",
+        handler: () => {
+          slider.close();
+        }
       }],
     });
 
@@ -220,5 +225,84 @@ export class ListPage implements OnInit {
   async remove(player: Player): Promise<void> {
     await this.db.removePlayer(player.id);
     await this.getPlayers();
+  }
+
+  async pausePlayer(player: Player, slider: IonItemSliding) {
+    const alert = await this.alertController.create({
+      header: 'Spieler pausieren',
+      subHeader: 'Gib einen Grund an.',
+      inputs: [{
+        type: "textarea",
+        name: "reason"
+      }],
+      buttons: [{
+        text: "Abbrechen",
+        handler: () => {
+          slider.close();
+        }
+      }, {
+        text: "Pausieren",
+        handler: async (evt: { reason: string }) => {
+          if (!evt.reason) {
+            alert.message = "Bitte gib einen Grund an!";
+            return false;
+          }
+          const history: PlayerHistoryEntry[] = player.history;
+          history.push({
+            date: new Date().toISOString(),
+            text: evt.reason,
+            type: PlayerHistoryType.PAUSED,
+          });
+          try {
+            await this.db.updatePlayer({
+              ...player,
+              paused: true,
+              history,
+            });
+            await this.getPlayers();
+          } catch (error) {
+            Utils.showToast(error, "danger");
+          }
+          slider.close();
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  async unpausePlayer(player: Player, slider: IonItemSliding) {
+    const alert = await this.alertController.create({
+      header: 'Spieler wieder aktivieren?',
+      buttons: [{
+        text: "Abbrechen",
+        handler: () => {
+          slider.close();
+        }
+      }, {
+        text: "Aktivieren",
+        handler: async () => {
+          const history: PlayerHistoryEntry[] = player.history;
+          history.push({
+            date: new Date().toISOString(),
+            text: "Spieler wieder aktiv",
+            type: PlayerHistoryType.PAUSED,
+          });
+          try {
+            await this.db.updatePlayer({
+              ...player,
+              paused: false,
+              history,
+            });
+            await this.getPlayers();
+          } catch (error) {
+            Utils.showToast(error, "danger");
+          }
+          slider.close();
+        }
+      }]
+    });
+
+    await alert.present();
   }
 }
