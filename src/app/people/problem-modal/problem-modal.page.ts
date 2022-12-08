@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
+import { PlayerHistoryType } from 'src/app/utilities/constants';
 import { Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
@@ -25,7 +26,12 @@ export class ProblemModalPage implements OnInit {
   async getPlayers() {
     const allPlayers = await this.db.getPlayers();
 
-    this.players = allPlayers.filter((player: Player) => player.isCritical);
+    this.players = allPlayers.filter((player: Player) => player.isCritical).map((player: Player) => {
+      return {
+        ...player,
+        criticalReasonText: Utils.getPlayerHistoryTypeText(player.criticalReason || PlayerHistoryType.MISSING_OFTEN),
+      }
+    });
 
     if (!this.players.length) {
       Utils.showToast("Keine Problemfälle vorhanden", "warning");
@@ -36,7 +42,11 @@ export class ProblemModalPage implements OnInit {
   async save(player: Player) {
     const alert = await this.alertController.create({
       header: `${player.firstName} ${player.lastName}`,
-      message: 'Aus Liste entfernen?',
+      message: 'Mit Person gesprochen?',
+      inputs: [{
+        type: "textarea",
+        name: "text",
+      }],
       buttons: [
         {
           text: 'Abbrechen',
@@ -46,10 +56,17 @@ export class ProblemModalPage implements OnInit {
           }
         }, {
           text: 'Ja',
-          handler: async () => {
+          handler: async (evt: any) => {
+            const history = player.history;
+            history.push({
+              date: new Date().toISOString(),
+              text: evt.text || "",
+              type: player.criticalReason,
+            });
             await this.db.updatePlayer({
               ...player,
               isCritical: false,
+              history,
               lastSolve: new Date().toISOString(),
             });
             await this.getPlayers();

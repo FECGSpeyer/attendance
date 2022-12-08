@@ -26,14 +26,7 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-row *ngIf="player.isCritical">
-      <ion-col>
-        <ion-item>
-          <ion-label>Mit Person gesprochen</ion-label>
-          <ion-toggle (ionChange)="onChange()" [(ngModel)]="solved"></ion-toggle>
-        </ion-item>
-      </ion-col>
-    </ion-row>
+
     <ion-row *ngIf="existingPlayer">
       <ion-col>
         <ion-item>
@@ -42,7 +35,31 @@
         </ion-item>
       </ion-col>
     </ion-row>
+
   </ion-grid>
+
+  <ion-accordion-group value="critical" *ngIf="player.isCritical">
+    <ion-accordion value="critical">
+      <ion-item slot="header" color="light">
+        <ion-label>Problemfall</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-item>
+          <ion-label>Grund: {{ player.criticalReasonText }}</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <h2>Mit Person gesprochen</h2>
+          </ion-label>
+          <ion-toggle (ionChange)="onChange()" [(ngModel)]="solved"></ion-toggle>
+        </ion-item>
+        <ion-item *ngIf="solved">
+          <ion-label position="stacked">Anmerkungen</ion-label>
+          <ion-textarea rows="3" (ionChange)="onChange()" [(ngModel)]="notes"></ion-textarea>
+        </ion-item>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
 
   <ion-accordion-group [value]="existingPlayer ? '' : 'more'">
     <ion-accordion value="more">
@@ -72,8 +89,8 @@
                   <ng-template>
                     <ion-content>
                       <ion-datetime [max]="max" [(ngModel)]="player.birthday"
-                        (ionChange)="onBirthdayChange(); birthdayString = formatDate(dateTimePickerBirthday.value)" presentation="date"
-                        #dateTimePickerBirthday></ion-datetime>
+                        (ionChange)="onBirthdayChange(); birthdayString = formatDate(dateTimePickerBirthday.value)"
+                        presentation="date" #dateTimePickerBirthday></ion-datetime>
                     </ion-content>
                   </ng-template>
                 </ion-modal>
@@ -89,8 +106,8 @@
                   <ng-template>
                     <ion-content>
                       <ion-datetime [max]="max" [(ngModel)]="player.playsSince"
-                        (ionChange)="onChange(); playsSinceString = formatDate(dateTimePickerPlays.value)" presentation="date"
-                        #dateTimePickerPlays></ion-datetime>
+                        (ionChange)="onChange(); playsSinceString = formatDate(dateTimePickerPlays.value)"
+                        presentation="date" #dateTimePickerPlays></ion-datetime>
                     </ion-content>
                   </ng-template>
                 </ion-modal>
@@ -106,8 +123,8 @@
                   <ng-template>
                     <ion-content>
                       <ion-datetime [max]="max" [(ngModel)]="player.joined"
-                        (ionChange)="onChange(); joinedString = formatDate(dateTimePickerJoined.value)" presentation="date"
-                        #dateTimePickerJoined></ion-datetime>
+                        (ionChange)="onChange(); joinedString = formatDate(dateTimePickerJoined.value)"
+                        presentation="date" #dateTimePickerJoined></ion-datetime>
                     </ion-content>
                   </ng-template>
                 </ion-modal>
@@ -147,7 +164,7 @@
     </ion-accordion>
   </ion-accordion-group>
 
-  <ion-accordion-group  [value]="existingPlayer ? 'first' : ''" *ngIf="attendance.length">
+  <ion-accordion-group [value]="existingPlayer && !player.isCritical ? 'first' : ''" *ngIf="attendance.length">
     <ion-accordion value="first">
       <ion-item slot="header" color="light">
         <ion-label>Anwesenheit</ion-label>
@@ -170,6 +187,7 @@
   </ion-accordion-group>
 
   <ion-button *ngIf="!existingPlayer" expand="block" (click)="addPlayer()">Spieler hinzufügen</ion-button>
-  <ion-button *ngIf="existingPlayer && hasChanges" expand="block" (click)="updatePlayer()">Änderungen speichern</ion-button>
+  <ion-button *ngIf="existingPlayer && hasChanges" expand="block" (click)="updatePlayer()">Änderungen speichern
+  </ion-button>
   <div class="bottom-padding"></div>
 </ion-content>

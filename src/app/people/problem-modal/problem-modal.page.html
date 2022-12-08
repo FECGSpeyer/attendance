@@ -7,7 +7,10 @@
 <ion-content>
   <ion-list>
     <ion-item button detail=false (click)="save(player)" *ngFor="let player of players">
-      <ion-label>{{ player.firstName }} {{ player.lastName }}</ion-label>
+      <ion-label>
+        <h2>{{ player.firstName }} {{ player.lastName }}</h2>
+        <h3>Grund: {{ player.criticalReasonText }}</h3>
+      </ion-label>
     </ion-item>
   </ion-list>
 </ion-content>

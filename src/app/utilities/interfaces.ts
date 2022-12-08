@@ -35,6 +35,8 @@ export interface Player extends Person {
     correctBirthday: boolean;
     paused: boolean;
     history: PlayerHistoryEntry[];
+    criticalReason?: PlayerHistoryType;
+    criticalReasonText?: string;
 }
 
 export interface Instrument {
@@ -62,6 +64,7 @@ export interface Attendance {
     conductors?: any;
     percentage?: number;
     excused?: string[];
+    criticalPlayers: number[];
 }
 
 export interface Song {

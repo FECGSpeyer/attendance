@@ -57,6 +57,19 @@ export class Utils {
     }
   }
 
+  public static getPlayerHistoryTypeText(key: number) {
+    switch (key) {
+      case 1:
+        return "Pausiert";
+      case 2:
+        return "Unentschuldigt";
+      case 3:
+        return "Fehlt oft";
+      default:
+        return "Sonstiges";
+    }
+  }
+
   public static async showToast(message: string, color: string = "success"): Promise<void> {
     const toast: HTMLIonToastElement = await new ToastController().create({
       message, color,

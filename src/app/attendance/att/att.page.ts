@@ -1,7 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActionSheetController, AlertController, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
-import { Attendance, AttendanceItem, Instrument, Person, Player } from 'src/app/utilities/interfaces';
+import { PlayerHistoryType } from 'src/app/utilities/constants';
+import { Attendance, AttendanceItem, Instrument, Person, Player, PlayerHistoryEntry } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment.prod';
 
@@ -80,15 +81,42 @@ export class AttPage implements OnInit {
       conductorsMap[con.id] = con.isPresent;
     }
 
+    const unexcusedPlayers: Player[] = this.players.filter((p: Player) =>
+      !p.isPresent && !p.isCritical && !this.excused.has(String(p.id)) && !this.attendance.criticalPlayers.includes(p.id)
+    );
+
     await this.db.updateAttendance({
       players: playerMap,
       conductors: conductorsMap,
       excused: Array.from(this.excused),
+      criticalPlayers: this.attendance.criticalPlayers.concat(unexcusedPlayers.map((player: Player) => player.id)),
     }, this.attendance.id);
+
+    await this.updateCriticalPlayers(unexcusedPlayers);
 
     this.modalController.dismiss({
       updated: true
     });
+  }
+
+  async updateCriticalPlayers(unexcusedPlayers: Player[]) {
+    const hisEntry: PlayerHistoryEntry = {
+      date: new Date().toISOString(),
+      text: "Problemfall: Fehlt unentschuldigt",
+      type: PlayerHistoryType.UNEXCUSED,
+    };
+
+    for (const player of unexcusedPlayers) {
+      let history: PlayerHistoryEntry[] = player.history;
+      history.push(hisEntry);
+
+      this.db.updatePlayer({
+        ...player,
+        isCritical: true,
+        criticalReason: PlayerHistoryType.UNEXCUSED,
+        history,
+      });
+    }
   }
 
   async dismiss(): Promise<void> {

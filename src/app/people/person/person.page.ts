@@ -7,6 +7,7 @@ import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { environment } from 'src/environments/environment';
 import { Utils } from 'src/app/utilities/Utils';
+import { PlayerHistoryType } from 'src/app/utilities/constants';
 dayjs.extend(utc);
 
 @Component({
@@ -48,6 +49,7 @@ export class PersonPage implements OnInit {
   public showTeachers: boolean = environment.showTeachers;
   public solved: boolean = false;
   public hasChanges: boolean = false;
+  public notes: string = "";
 
   constructor(
     private db: DbService,
@@ -69,6 +71,7 @@ export class PersonPage implements OnInit {
       this.attendance = await this.db.getPlayerAttendance(this.player.id);
       this.player.teacherName = this.player.teacher ? this.teachers.find((teacher: Teacher) => teacher).name : "";
       this.perc = Math.round(this.attendance.filter((att: PersonAttendance) => att.attended).length / this.attendance.length * 100);
+      this.player.criticalReasonText = this.player.criticalReason ? Utils.getPlayerHistoryTypeText(this.player.criticalReason) : "";
     } else {
       this.player = { ...this.newPlayer };
       this.player.instrument = this.instruments[0].id;
@@ -123,6 +126,14 @@ export class PersonPage implements OnInit {
   }
 
   async updatePlayer(): Promise<void> {
+    const history = this.player.history;
+    if (this.solved) {
+      history.push({
+        date: new Date().toISOString(),
+        text: this.notes,
+        type: this.player.criticalReason,
+      });
+    }
     await this.db.updatePlayer({
       ...this.player,
       isCritical: this.solved ? false : this.player.isCritical,
@@ -135,7 +146,9 @@ export class PersonPage implements OnInit {
 
   onChange() {
     if (this.existingPlayer) {
-      this.hasChanges = JSON.stringify({ ...this.existingPlayer, teacherName: this.player.teacherName, notes: this.existingPlayer.notes || "" }) !== JSON.stringify(this.player);
+      this.hasChanges =
+        this.solved ||
+        JSON.stringify({ ...this.existingPlayer, teacherName: this.player.teacherName, notes: this.existingPlayer.notes || "", criticalReasonText: this.player.criticalReasonText }) !== JSON.stringify(this.player);
     }
   }
 

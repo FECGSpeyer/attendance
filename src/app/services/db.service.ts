@@ -5,7 +5,8 @@ import { createClient, SupabaseClientOptions } from '@supabase/supabase-js';
 import * as dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
-import { Attendance, History, Instrument, Person, PersonAttendance, Player, Song, Teacher } from '../utilities/interfaces';
+import { PlayerHistoryType } from '../utilities/constants';
+import { Attendance, History, Instrument, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
 const adminMails: string[] = ["eckstaedt98@gmail.com", "erwinfast98@gmail.com", "eugen.ko94@yahoo.de"];
@@ -137,9 +138,18 @@ export class DbService {
         attendances[2].players.hasOwnProperty(player.id) && !attendances[2].players[player.id]) {
 
         updated = true;
+        let history: PlayerHistoryEntry[] = player.history;
+
+        history.push({
+          date: new Date().toISOString(),
+          text: "Problemfall: Fehlt oft hintereinander",
+          type: PlayerHistoryType.MISSING_OFTEN,
+        });
         this.updatePlayer({
           ...player,
           isCritical: true,
+          criticalReason: PlayerHistoryType.MISSING_OFTEN,
+          history
         });
       }
     }
@@ -185,6 +195,8 @@ export class DbService {
     delete dataToUpdate.isNew;
     delete dataToUpdate.instrumentLength;
     delete dataToUpdate.teacherName;
+    delete dataToUpdate.criticalReasonText;
+    delete dataToUpdate.isPresent;
 
     const response = await supabase
       .from<Player>('player')

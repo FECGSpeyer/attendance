@@ -73,6 +73,7 @@ export class AttListPage implements OnInit {
     await this.db.addAttendance({
       date: this.date,
       isPractice: !this.isLecture,
+      criticalPlayers: [],
     });
 
     await modal.dismiss();
