@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
+import { IonicStorageModule } from '@ionic/storage-angular';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
@@ -22,6 +23,7 @@ import { ProblemModalPageModule } from './people/problem-modal/problem-modal.mod
     IonicModule.forRoot(),
     AppRoutingModule,
     PersonPageModule,
+    IonicStorageModule.forRoot(),
     AttPageModule,
     ProblemModalPageModule,
     HistoryPageModule,

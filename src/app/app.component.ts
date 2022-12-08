@@ -3,6 +3,7 @@ import { IonRouterOutlet, Platform } from '@ionic/angular';
 import { App } from '@capacitor/app';
 import { Title } from '@angular/platform-browser';
 import { environment } from 'src/environments/environment';
+import { Storage } from '@ionic/storage-angular';
 
 @Component({
   selector: 'app-root',
@@ -15,10 +16,15 @@ export class AppComponent {
   constructor(
     private platform: Platform,
     private titleService: Title,
+    private storage: Storage,
   ) {
     this.initializeApp();
     this.titleService.setTitle(environment.longName);
     document.body.classList.add(environment.symphonyImage ? "sinfo" : "blas");
+  }
+
+  async ngOnInit() {
+    await this.storage.create();
   }
 
   initializeApp() {

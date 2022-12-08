@@ -31,6 +31,7 @@
     "@capacitor/keyboard": "1.2.2",
     "@capacitor/status-bar": "1.0.8",
     "@ionic/angular": "^6.3.3",
+    "@ionic/storage-angular": "^3.0.6",
     "@supabase/supabase-js": "^1.30.3",
     "date-fns": "^2.28.0",
     "dayjs": "^1.10.7",

@@ -12,6 +12,7 @@ import { utils, WorkBook, WorkSheet, writeFile } from 'xlsx';
 import { environment } from 'src/environments/environment.prod';
 import { ProblemModalPage } from '../problem-modal/problem-modal.page';
 import { PlayerHistoryType } from 'src/app/utilities/constants';
+import { Storage } from '@ionic/storage-angular';
 
 @Component({
   selector: 'app-list',
@@ -25,8 +26,14 @@ export class ListPage implements OnInit {
   public instruments: Instrument[] = [];
   public searchTerm: string = "";
   public filterOpt: string = "all";
+  public sortOpt: string = "instrument";
   public viewOpts: string[] = ["instrument"];
   public isVoS: boolean = environment.shortName === "VoS";
+  public showNotes = false;
+  public showCritical = false;
+  public showLeader = false;
+  public showPaused = false;
+  public showNew = false;
 
   constructor(
     private modalController: ModalController,
@@ -34,11 +41,14 @@ export class ListPage implements OnInit {
     private db: DbService,
     private actionSheetController: ActionSheetController,
     private alertController: AlertController,
+    private storage: Storage,
   ) { }
 
   async ngOnInit() {
+    this.viewOpts = JSON.parse(await this.storage.get("viewOpts") || JSON.stringify(['instrument', 'leader', 'notes', 'critical', 'paused']));
     this.instruments = await this.db.getInstruments();
     await this.getPlayers();
+    this.onViewChanged();
   }
 
   async getPlayers(): Promise<void> {
@@ -67,6 +77,33 @@ export class ListPage implements OnInit {
 
     if (data?.added) {
       await this.getPlayers();
+    }
+  }
+
+  onSortChanged() {
+    if (this.sortOpt === "vorname") {
+      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => a.firstName.localeCompare(b.firstName));
+      return;
+    }
+
+    if (this.sortOpt === "nachname") {
+      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => a.lastName.localeCompare(b.lastName));
+      return;
+    }
+
+    if (this.sortOpt === "birthdayAsc") {
+      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => new Date(a.birthday).getTime() - new Date(b.birthday).getTime());
+      return;
+    }
+
+    if (this.sortOpt === "birthdayDesc") {
+      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => new Date(b.birthday).getTime() - new Date(a.birthday).getTime());
+      return;
+    }
+
+    if (this.sortOpt === "instrument") {
+      this.initializeItems();
+      this.onFilterChanged();
     }
   }
 
@@ -102,6 +139,13 @@ export class ListPage implements OnInit {
         text: this.getSubText(p),
       }
     });
+    this.showLeader = this.viewOpts.includes("leader");
+    this.showCritical = this.viewOpts.includes("critical");
+    this.showNew = this.viewOpts.includes("new");
+    this.showPaused = this.viewOpts.includes("paused");
+    this.showNotes = this.viewOpts.includes("notes");
+
+    this.storage.set("viewOpts", JSON.stringify(this.viewOpts));
   }
 
   getSubText(player: Player): string {
@@ -134,6 +178,7 @@ export class ListPage implements OnInit {
 
       this.playersFiltered = this.filter();
       this.playersFiltered = Utils.getModifiedPlayers(this.playersFiltered, this.instruments);
+      this.onSortChanged();
     }
   }
 

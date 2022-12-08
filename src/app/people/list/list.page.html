@@ -34,15 +34,16 @@
               </ion-select>
             </ion-item>
 
-            <!-- <ion-item lines="none">
+            <ion-item lines="none">
               <ion-icon slot="start" name="filter" size="small"></ion-icon>
-              <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="filterOpt">
-                <ion-select-option value="all">Alle Anzeigen</ion-select-option>
-                <ion-select-option value="criticals">Problemfälle</ion-select-option>
-                <ion-select-option value="leaders">Stimmführer</ion-select-option>
-                <ion-select-option *ngIf="isVoS" value="new">Neue Spieler</ion-select-option>
+              <ion-select slot="end" (ionChange)="onSortChanged()" interface="popover" [(ngModel)]="sortOpt">
+                <ion-select-option value="instrument">Instrument</ion-select-option>
+                <ion-select-option value="vorname">Vorname</ion-select-option>
+                <ion-select-option value="nachname">Nachname</ion-select-option>
+                <ion-select-option value="birthdayAsc">Geburtsdatum ↑</ion-select-option>
+                <ion-select-option value="birthdayDesc">Geburtsdatum ↓</ion-select-option>
               </ion-select>
-            </ion-item> -->
+            </ion-item>
 
             <ion-item lines="none">
               <ion-icon slot="start" name="eye" size="small"></ion-icon>
@@ -50,6 +51,11 @@
                 <ion-select-option value="instrument">Instrument</ion-select-option>
                 <ion-select-option value="birthday">Geburtsdatum</ion-select-option>
                 <ion-select-option value="exercises">Sonstige Dienste</ion-select-option>
+                <ion-select-option value="leader">Stimmführer</ion-select-option>
+                <ion-select-option value="critical">Sonstige Dienste</ion-select-option>
+                <ion-select-option *ngIf="isVoS" value="new">Neu</ion-select-option>
+                <ion-select-option value="paused">Pausiert</ion-select-option>
+                <ion-select-option value="notes">Hat Notizen</ion-select-option>
                 <!-- <ion-select-option *ngIf="isVoS" value="teacher">Lehrer</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="otherOrchestra">Anderes Orchester</ion-select-option> -->
               </ion-select>
@@ -60,7 +66,7 @@
     </ion-popover>
   </div>
   <!-- <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated placeholder="Spieler suchen..."></ion-searchbar> -->
-  <ion-list *ngIf="searchTerm === '' && filterOpt === 'all'">
+  <ion-list *ngIf="searchTerm === '' && filterOpt === 'all' && sortOpt === 'instrument'">
     <ion-item-divider sticky="true">
       <ion-label>Dirigenten ({{conductors.length}})</ion-label>
     </ion-item-divider>
@@ -72,7 +78,7 @@
   </ion-list>
   <ion-list>
     <ion-item-sliding #slider *ngFor="let player of playersFiltered">
-      <ion-item-divider sticky="true" *ngIf="player.firstOfInstrument">
+      <ion-item-divider sticky="true" *ngIf="player.firstOfInstrument && sortOpt === 'instrument'">
         <ion-label>{{ player.instrumentName }} ({{ player.instrumentLength }})</ion-label>
       </ion-item-divider>
       <ion-item (click)="openModal(player)">
@@ -81,11 +87,11 @@
           <h3 *ngIf="player.text">{{ player.text }}</h3>
           <h3 *ngIf="!player.text">{{ player.instrumentName }}</h3>
         </ion-label>
-        <ion-badge color="secondary" *ngIf="player.isLeader" slot="end">Stimmführer</ion-badge>
-        <ion-badge color="danger" *ngIf="!player.paused && player.isNew && !player.isLeader" slot="end">Neu</ion-badge>
-        <ion-badge color="danger" *ngIf="!player.paused && player.isCritical" slot="end">Problemfall</ion-badge>
-        <ion-badge color="warning" *ngIf="player.paused" slot="end">Pausiert</ion-badge>
-        <ion-badge color="warning" *ngIf="!player.paused && player.notes" slot="end">
+        <ion-badge color="secondary" *ngIf="((showPaused && !player.paused) || !showPaused) && showLeader && player.isLeader" slot="end">Stimmführer</ion-badge>
+        <ion-badge color="danger" *ngIf="((showPaused && !player.paused) || !showPaused) && showNew && player.isNew && !player.isLeader" slot="end">Neu</ion-badge>
+        <ion-badge color="danger" *ngIf="((showPaused && !player.paused) || !showPaused) && showCritical && player.isCritical" slot="end">Problemfall</ion-badge>
+        <ion-badge color="warning" *ngIf="showPaused && player.paused" slot="end">Pausiert</ion-badge>
+        <ion-badge color="warning" *ngIf="((showPaused && !player.paused) || !showPaused) && showNotes && player.notes" slot="end">
           <ion-icon name="pencil"></ion-icon>
         </ion-badge>
       </ion-item>
