@@ -97,6 +97,10 @@ export class PersonPage implements OnInit, AfterViewInit {
     }, 500);
   }
 
+  getTypeText(key: number) {
+    return Utils.getPlayerHistoryTypeText(key);
+  }
+
   async getHistoryInfo(): Promise<void> {
     this.attendance = await this.db.getPlayerAttendance(this.player.id);
     this.perc = Math.round(this.attendance.filter((att: PersonAttendance) => att.attended).length / this.attendance.length * 100);
