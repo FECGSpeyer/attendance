@@ -197,9 +197,9 @@
           </ion-item>
           <ion-item *ngFor="let att of history">
             <ion-label>
-              <h2 *ngIf="att.type !== 4">{{ getTypeText(att.type) }}</h2>
+              <h2 *ngIf="att.type !== 4">Mit Person gesprochen ({{ att.date | date:'dd.MM.yyyy' }})</h2>
               <h2 *ngIf="att.type === 4">{{ att.date | date:'dd.MM.yyyy' }}</h2>
-              <h3 *ngIf="att.type !== 4">{{ att.text }}</h3>
+              <h3 *ngIf="att.type !== 4">{{ getTypeText(att.type) }}: {{ att.text }}</h3>
             </ion-label>
 
             <ion-badge *ngIf="att.type === 4" slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : 'warning'">
