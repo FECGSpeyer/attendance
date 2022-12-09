@@ -195,16 +195,27 @@
             <ion-label>Durchschnitt</ion-label>
             <ion-badge slot="end" [color]="perc ? 'success' : 'danger'">{{ perc }}%</ion-badge>
           </ion-item>
-          <ion-item *ngFor="let att of history">
-            <ion-label>
-              <h2 *ngIf="att.type !== 4">Mit Person gesprochen ({{ att.date | date:'dd.MM.yyyy' }})</h2>
-              <h2 *ngIf="att.type === 4">{{ att.date | date:'dd.MM.yyyy' }}</h2>
-              <h3 *ngIf="att.type !== 4">{{ getTypeText(att.type) }}: {{ att.text }}</h3>
-            </ion-label>
+          <ion-item-sliding #slider *ngFor="let att of history">
+            <ion-item>
+              <ion-label>
+                <h2 *ngIf="att.type === 2 || att.type === 3">Mit Person gesprochen ({{ att.date | date:'dd.MM.yyyy HH:mm' }})</h2>
+                <h2 *ngIf="att.type === 5">Notiz geändert ({{ att.date | date:'dd.MM.yyyy HH:mm' }})</h2>
+                <h2 *ngIf="att.type === 4">{{ att.date | date:'dd.MM.yyyy' }}</h2>
+                <h2 *ngIf="att.type === 1">Pausiert {{ att.date | date:'dd.MM.yyyy HH:mm' }}</h2>
+                <h2 *ngIf="att.type === 6">Wieder aktiv {{ att.date | date:'dd.MM.yyyy HH:mm' }}</h2>
+                <h3 *ngIf="att.type !== 4 && att.type !== 6 && att.type !== 5">{{ getTypeText(att.type) }}: {{ att.text ? att.text : 'Keine Anmerkung' }}</h3>
+                <h3 *ngIf="att.type === 5">{{ att.text }}</h3>
+              </ion-label>
 
-            <ion-badge *ngIf="att.type === 4" slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : 'warning'">
-              {{ att.text }}</ion-badge>
-          </ion-item>
+              <ion-badge *ngIf="att.type === 4" slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : 'warning'">
+                {{ att.text }}</ion-badge>
+            </ion-item>
+            <ion-item-options *ngIf="att.type !== 4">
+              <ion-item-option color="danger" (click)="removeHis(att, slider)">
+                <ion-icon name="trash"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
         </ion-list>
       </div>
     </ion-accordion>

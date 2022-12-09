@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/core';
-import { AlertController, IonContent, IonSelect, ModalController } from '@ionic/angular';
+import { AlertController, IonContent, IonItemSliding, IonSelect, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
@@ -168,6 +168,15 @@ export class PersonPage implements OnInit, AfterViewInit {
         type: this.player.criticalReason,
       });
     }
+
+    if ((this.existingPlayer.notes || "") !== this.player.notes) {
+      history.push({
+        date: new Date().toISOString(),
+        text: this.existingPlayer.notes || "Keine Notiz",
+        type: PlayerHistoryType.NOTES,
+      });
+    }
+
     await this.db.updatePlayer({
       ...this.player,
       isCritical: this.solved ? false : this.player.isCritical,
@@ -189,6 +198,35 @@ export class PersonPage implements OnInit, AfterViewInit {
   onBirthdayChange() {
     this.onChange();
     this.player.correctBirthday = true;
+  }
+
+  async removeHis(his: PlayerHistoryEntry, slider: IonItemSliding) {
+    const alert = await this.alertController.create({
+      header: 'Eintrag unwiderruflich entfernen?',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          handler: () => slider.close()
+        }, {
+          text: 'Ja',
+          handler: async () => {
+            const history = this.player.history.filter((h: PlayerHistoryEntry) => h.date !== his.date);
+            debugger;
+            const res = await this.db.updatePlayerHistory(
+              this.player.id,
+              history,
+            );
+
+            this.existingPlayer = { ...res };
+            this.player.history = res.history;
+            this.getHistoryInfo();
+            slider.close();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
 }

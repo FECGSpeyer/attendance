@@ -386,7 +386,7 @@ export class ListPage implements OnInit {
           history.push({
             date: new Date().toISOString(),
             text: "Spieler wieder aktiv",
-            type: PlayerHistoryType.PAUSED,
+            type: PlayerHistoryType.UNPAUSED,
           });
           try {
             await this.db.updatePlayer({

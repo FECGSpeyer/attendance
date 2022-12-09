@@ -3,5 +3,7 @@ export enum PlayerHistoryType {
     UNEXCUSED = 2,
     MISSING_OFTEN = 3,
     ATTENDANCE = 4,
+    NOTES = 5,
+    UNPAUSED = 6,
     OTHER = 99,
 };

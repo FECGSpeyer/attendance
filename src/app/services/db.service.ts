@@ -211,6 +211,21 @@ export class DbService {
     return response.body;
   }
 
+  async updatePlayerHistory(id: number, history: PlayerHistoryEntry[]) {
+    const response = await supabase
+      .from<Player>('player')
+      .update({ history })
+      .match({ id })
+      .select()
+      .single();
+
+    if (response.error) {
+      throw new Error("Fehler beim updaten des Spielers");
+    }
+
+    return response.body;
+  }
+
   async removePlayer(id: number): Promise<void> {
     await supabase
       .from<Player>('player')
