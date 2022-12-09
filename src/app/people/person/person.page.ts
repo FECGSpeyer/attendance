@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonContent, IonSelect, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
@@ -15,7 +15,7 @@ dayjs.extend(utc);
   templateUrl: './person.page.html',
   styleUrls: ['./person.page.scss'],
 })
-export class PersonPage implements OnInit {
+export class PersonPage implements OnInit, AfterViewInit {
   @Input() existingPlayer: Player;
   @Input() instruments: Instrument[];
   @ViewChild('select') select: IonSelect;
@@ -80,6 +80,21 @@ export class PersonPage implements OnInit {
     }
 
     this.onInstrumentChange(false);
+  }
+
+  ngAfterViewInit() {
+    setTimeout(() => {
+      const tx = document.getElementsByTagName("textarea");
+      for (let i = 0; i < tx.length; i++) {
+        tx[i].setAttribute("style", "height:" + (tx[i].scrollHeight) + "px !important;overflow-y:hidden;");
+        tx[i].addEventListener("input", OnInput, false);
+      }
+
+      function OnInput() {
+        this.style.height = 0;
+        this.style.height = (this.scrollHeight) + "px";
+      }
+    }, 500);
   }
 
   async getHistoryInfo(): Promise<void> {
