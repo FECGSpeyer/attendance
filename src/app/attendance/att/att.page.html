@@ -24,12 +24,11 @@
       <ion-item-divider *ngIf="player.firstOfInstrument">
         <ion-label>{{ player.instrumentName }}</ion-label>
       </ion-item-divider>
-      <ion-item>
-        <ion-checkbox (ionChange)="onAttChange(player)" [(ngModel)]="player.isPresent" slot="start"></ion-checkbox>
+      <ion-item button detail="false" (click)="onAttChange(player)" >
         <ion-label>
           <h2>{{ player.firstName }} {{ player.lastName }}</h2>
         </ion-label>
-        <ion-badge *ngIf="!player.isPresent" [color]="excused.has(player.id.toString()) ? 'warning' : 'danger'" slot="end">{{ excused.has(player.id.toString()) ? 'E' : 'A' }}</ion-badge>
+        <ion-badge [color]="excused.has(player.id.toString()) ? 'warning' : player.isPresent ? 'success' :'danger'" slot="end">{{ excused.has(player.id.toString()) ? 'E' : player.isPresent ? '✓' : 'A' }}</ion-badge>
       </ion-item>
     </ion-item-sliding>
   </ion-list>

@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ActionSheetController, AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { PlayerHistoryType } from 'src/app/utilities/constants';
 import { Attendance, AttendanceItem, Instrument, Person, Player, PlayerHistoryEntry } from 'src/app/utilities/interfaces';
@@ -22,7 +22,6 @@ export class AttPage implements OnInit {
     private modalController: ModalController,
     private db: DbService,
     private alertController: AlertController,
-    private actionSheetController: ActionSheetController,
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -92,7 +91,9 @@ export class AttPage implements OnInit {
       criticalPlayers: this.attendance.criticalPlayers.concat(unexcusedPlayers.map((player: Player) => player.id)),
     }, this.attendance.id);
 
-    await this.updateCriticalPlayers(unexcusedPlayers);
+    if (this.withExcuses) {
+      await this.updateCriticalPlayers(unexcusedPlayers);
+    }
 
     this.modalController.dismiss({
       updated: true
@@ -136,26 +137,15 @@ export class AttPage implements OnInit {
     await alert.present();
   }
 
-  async onAttChange(singer: Player) {
-    if (this.withExcuses) {
-      const actionSheet = await this.actionSheetController.create({
-        header: 'Abwesenheit',
-        buttons: [{
-          text: 'Entschuldigt',
-          handler: () => {
-            this.excused.add(String(singer.id));
-          }
-        }, {
-          text: 'Nicht entschuldigt',
-        }]
-      });
-
-      if (singer.isPresent) {
-        this.excused.delete(String(singer.id));
-      } else {
-        await actionSheet.present();
-      }
+  async onAttChange(player: Player) {
+    if (this.withExcuses && this.excused.has(player.id.toString())) {
+      this.excused.delete(player.id.toString());
+      return;
+    } else if (this.withExcuses && player.isPresent) {
+      this.excused.add(player.id.toString());
     }
+
+    player.isPresent = !player.isPresent;
   }
 
 }
