@@ -101,21 +101,11 @@ export class AttPage implements OnInit {
   }
 
   async updateCriticalPlayers(unexcusedPlayers: Player[]) {
-    const hisEntry: PlayerHistoryEntry = {
-      date: new Date().toISOString(),
-      text: "Problemfall: Fehlt unentschuldigt",
-      type: PlayerHistoryType.UNEXCUSED,
-    };
-
     for (const player of unexcusedPlayers) {
-      let history: PlayerHistoryEntry[] = player.history;
-      history.push(hisEntry);
-
       this.db.updatePlayer({
         ...player,
         isCritical: true,
         criticalReason: PlayerHistoryType.UNEXCUSED,
-        history,
       });
     }
   }
