@@ -14,11 +14,11 @@
 
 <ion-content>
   <ion-list>
-    <ion-item *ngFor="let con of conductors">
-      <ion-checkbox [(ngModel)]="con.isPresent" slot="start"></ion-checkbox>
+    <ion-item *ngFor="let con of conductors" (click)="con.isPresent = !con.isPresent">
       <ion-label>
         <h2>{{ con.firstName }} {{ con.lastName }}</h2>
       </ion-label>
+      <ion-badge [color]="con.isPresent ? 'success' :'danger'" slot="end">{{ con.isPresent ? '✓' : 'A' }}</ion-badge>
     </ion-item>
     <ion-item-sliding *ngFor="let player of players">
       <ion-item-divider *ngIf="player.firstOfInstrument">
