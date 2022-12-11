@@ -211,10 +211,16 @@ export class PersonPage implements OnInit, AfterViewInit {
           text: 'Ja',
           handler: async () => {
             const history = this.player.history.filter((h: PlayerHistoryEntry) => h.date !== his.date);
-            const res = await this.db.updatePlayerHistory(
-              this.player.id,
-              history,
-            );
+
+            try {
+              const res = await this.db.updatePlayerHistory(
+                this.player.id,
+                history,
+              );
+              Utils.showToast("Eintrag wurde erfolreich entfernt.", "success");
+            } catch {
+              Utils.showToast("Fehler beim Löschen des Eintrags.", "danger");
+            }
 
             this.existingPlayer = { ...res };
             this.player.history = res.history;
