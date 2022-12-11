@@ -217,14 +217,14 @@ export class PersonPage implements OnInit, AfterViewInit {
                 this.player.id,
                 history,
               );
+              this.existingPlayer = { ...res };
+              this.player.history = res.history;
+              this.getHistoryInfo();
               Utils.showToast("Eintrag wurde erfolreich entfernt.", "success");
             } catch {
               Utils.showToast("Fehler beim Löschen des Eintrags.", "danger");
             }
 
-            this.existingPlayer = { ...res };
-            this.player.history = res.history;
-            this.getHistoryInfo();
             slider.close();
           }
         }
