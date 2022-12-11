@@ -211,7 +211,6 @@ export class PersonPage implements OnInit, AfterViewInit {
           text: 'Ja',
           handler: async () => {
             const history = this.player.history.filter((h: PlayerHistoryEntry) => h.date !== his.date);
-            debugger;
             const res = await this.db.updatePlayerHistory(
               this.player.id,
               history,
