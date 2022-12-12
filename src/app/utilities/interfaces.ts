@@ -62,7 +62,7 @@ export interface Attendance {
     id?: number;
     created_at?: string;
     date: string;
-    isPractice: boolean;
+    type: string;
     players?: AttendanceItem;
     conductors?: any;
     percentage?: number;

@@ -127,7 +127,7 @@ export class DbService {
   }
 
   async syncCriticalPlayers(players: Player[]) {
-    const attendances: Attendance[] = (await this.getAttendance()).filter((att: Attendance) => att.isPractice);
+    const attendances: Attendance[] = (await this.getAttendance()).filter((att: Attendance) => att.type === "uebung");
     let updated: boolean = false;
 
     for (const player of players) {

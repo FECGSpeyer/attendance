@@ -70,6 +70,17 @@ export class Utils {
     }
   }
 
+  public static getTypeText(key: string): string {
+    switch (key) {
+      case "uebung":
+        return "Übung";
+      case "vortrag":
+        return "Vortrag";
+      default:
+        return "Sonstiges";
+    }
+  }
+
   public static async showToast(message: string, color: string = "success"): Promise<void> {
     const toast: HTMLIonToastElement = await new ToastController().create({
       message, color,

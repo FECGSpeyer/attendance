@@ -22,7 +22,7 @@
   <ion-list>
     <ion-item-sliding *ngFor="let att of attendance">
       <ion-item [color]="att.percentage ? '' : 'danger'" (click)="openAttendance(att)">
-        <ion-label>{{ getReadableDate(att.date) }}</ion-label>
+        <ion-label>{{ getReadableDate(att.date) }} ({{ getTypeText(att.type, att.notes) }})</ion-label>
         <ion-badge *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
       </ion-item>
 
@@ -59,8 +59,16 @@
           </ion-modal>
         </ion-item>
         <ion-item>
-          <ion-label>Vortrag</ion-label>
-          <ion-toggle [(ngModel)]="isLecture"></ion-toggle>
+          <ion-label>Kategorie</ion-label>
+          <ion-select [(ngModel)]="type">
+            <ion-select-option value="uebung">Übung</ion-select-option>
+            <ion-select-option value="vortrag">Vortrag</ion-select-option>
+            <ion-select-option value="sonstiges">Sonstiges</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="type === 'sonstiges'">
+          <ion-label position="stacked">Notiz</ion-label>
+          <ion-textarea [(ngModel)]="note"></ion-textarea>
         </ion-item>
         <ion-button (click)="addAttendance(addAttModal)" expand="block">Hinzufügen</ion-button>
       </ion-content>

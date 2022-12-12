@@ -21,7 +21,7 @@ require('dayjs/locale/de');
 export class AttListPage implements OnInit {
   public date: string = new Date().toISOString();
   public dateString: string = format(new Date(), 'dd.MM.yyyy');
-  public isLecture: boolean = false;
+  public type: string = 'uebung';
   public attendance: Attendance[] = [];
   public isConductor: boolean = false;
 
@@ -72,7 +72,7 @@ export class AttListPage implements OnInit {
   async addAttendance(modal: IonModal): Promise<void> {
     await this.db.addAttendance({
       date: this.date,
-      isPractice: !this.isLecture,
+      type: this.type,
       criticalPlayers: [],
     });
 
@@ -82,6 +82,14 @@ export class AttListPage implements OnInit {
 
   formatDate(value: string): string {
     return format(parseISO(value), 'dd.MM.yyyy');
+  }
+
+  getTypeText(key: string, notes: string): string {
+    if (key === "sonstiges" && notes) {
+      return notes;
+    }
+
+    return Utils.getTypeText(key);
   }
 
   getReadableDate(date: string): string {
