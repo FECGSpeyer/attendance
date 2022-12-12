@@ -52,6 +52,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public solved: boolean = false;
   public hasChanges: boolean = false;
   public notes: string = "";
+  public shouldReload: boolean = false;
 
   constructor(
     private db: DbService,
@@ -136,7 +137,9 @@ export class PersonPage implements OnInit, AfterViewInit {
           }, {
             text: 'Ja',
             handler: () => {
-              this.modalController.dismiss();
+              this.modalController.dismiss({
+                added: this.shouldReload
+              });
             }
           }
         ]
@@ -144,7 +147,9 @@ export class PersonPage implements OnInit, AfterViewInit {
 
       await alert.present();
     } else {
-      this.modalController.dismiss();
+      this.modalController.dismiss({
+        added: this.shouldReload
+      });
     }
   }
 
@@ -154,6 +159,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.modalController.dismiss({
         added: true
       });
+      Utils.showToast("Der Spieler wurde erfolgreich hinzugefügt", "success");
     } else {
       Utils.showToast("Bitte gib den Vornamen und Nachnamen an.", "danger");
     }
@@ -185,6 +191,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.modalController.dismiss({
       added: true
     });
+    Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
   }
 
   onChange() {
@@ -220,7 +227,8 @@ export class PersonPage implements OnInit, AfterViewInit {
               this.existingPlayer = { ...res };
               this.player.history = res.history;
               this.getHistoryInfo();
-              Utils.showToast("Eintrag wurde erfolreich entfernt.", "success");
+              this.shouldReload = true;
+              Utils.showToast("Eintrag wurde erfolgreich entfernt.", "success");
             } catch {
               Utils.showToast("Fehler beim Löschen des Eintrags.", "danger");
             }
