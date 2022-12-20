@@ -87,6 +87,8 @@ export class AttListPage implements OnInit {
   getTypeText(key: string, notes: string): string {
     if (key === "sonstiges" && notes) {
       return notes;
+    } else if (key === "uebung") {
+      return "";
     }
 
     return Utils.getTypeText(key);
