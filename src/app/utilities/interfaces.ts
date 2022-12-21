@@ -68,6 +68,7 @@ export interface Attendance {
     percentage?: number;
     excused?: string[];
     criticalPlayers: number[];
+    notes: string;
 }
 
 export interface Song {

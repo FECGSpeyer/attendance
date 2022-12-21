@@ -24,6 +24,7 @@ export class AttListPage implements OnInit {
   public type: string = 'uebung';
   public attendance: Attendance[] = [];
   public isConductor: boolean = false;
+  public notes: string;
 
   constructor(
     private db: DbService,
@@ -74,6 +75,7 @@ export class AttListPage implements OnInit {
       date: this.date,
       type: this.type,
       criticalPlayers: [],
+      notes: this.notes,
     });
 
     await modal.dismiss();
@@ -87,8 +89,6 @@ export class AttListPage implements OnInit {
   getTypeText(key: string, notes: string): string {
     if (key === "sonstiges" && notes) {
       return notes;
-    } else if (key === "uebung") {
-      return "";
     }
 
     return Utils.getTypeText(key);

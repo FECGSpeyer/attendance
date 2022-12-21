@@ -178,7 +178,6 @@ export class ListPage implements OnInit {
 
       this.playersFiltered = this.filter();
       this.playersFiltered = Utils.getModifiedPlayers(this.playersFiltered, this.instruments);
-      this.onSortChanged();
     }
   }
 
