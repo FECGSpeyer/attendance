@@ -9,7 +9,7 @@ import { PlayerHistoryType } from '../utilities/constants';
 import { Attendance, History, Instrument, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
-const adminMails: string[] = ["eckstaedt98@gmail.com", "erwinfast98@gmail.com", "eugen.ko94@yahoo.de"];
+const adminMails: string[] = ["leonjaeger00@gmail.com", "emanuel.ellrich@gmail.com", "jaeger1390@gmail.com", "Ericfast.14@gmail.com", "marcelfast2002@gmail.com", "eckstaedt98@gmail.com", "erwinfast98@gmail.com", "eugen.ko94@yahoo.de"];
 const options: SupabaseClientOptions = {
   autoRefreshToken: true,
   persistSession: true,
