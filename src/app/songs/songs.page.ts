@@ -26,7 +26,7 @@ export class SongsPage implements OnInit {
 
   async getSongs(): Promise<void> {
     const history: History[] = await this.db.getHistory();
-    const conductors: Person[] = await this.db.getConductors();
+    const conductors: Person[] = await this.db.getConductors(true);
     this.songs = (await this.db.getSongs()).map((song: Song): Song => {
       const hisEntry: History | undefined = history.find((his: History): boolean => his.songId === song.id);
       const lastSung: string | undefined = hisEntry?.date;
