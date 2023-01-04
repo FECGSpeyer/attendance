@@ -40,6 +40,7 @@ export interface Player extends Person {
     otherOrchestras?: string[];
     otherExercise?: string;
     text?: string;
+    attNote?: string;
 }
 
 export interface Instrument {
@@ -70,6 +71,7 @@ export interface Attendance {
     criticalPlayers: number[];
     typeInfo: string;
     notes: string;
+    playerNotes: { [prop: number]: string };
 }
 
 export interface Song {

@@ -21,6 +21,7 @@ export interface Database {
           type: string
           notes: string | null
           typeInfo: string | null
+          playerNotes: Json | null
         }
         Insert: {
           id?: number
@@ -33,6 +34,7 @@ export interface Database {
           type?: string
           notes?: string | null
           typeInfo?: string | null
+          playerNotes?: Json | null
         }
         Update: {
           id?: number
@@ -45,6 +47,7 @@ export interface Database {
           type?: string
           notes?: string | null
           typeInfo?: string | null
+          playerNotes?: Json | null
         }
       }
       conductors: {

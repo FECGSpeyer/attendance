@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { PlayerHistoryType } from 'src/app/utilities/constants';
 import { Attendance, AttendanceItem, Instrument, Person, Player, PlayerHistoryEntry } from 'src/app/utilities/interfaces';
@@ -18,6 +18,7 @@ export class AttPage implements OnInit {
   public excused: Set<string> = new Set();
   public withExcuses: boolean = environment.withExcuses;
   private hasInvoked: boolean = false;
+  private playerNotes: { [prop: number]: string } = {};
 
   constructor(
     private modalController: ModalController,
@@ -41,6 +42,7 @@ export class AttPage implements OnInit {
         }
       }
       this.excused = new Set(this.attendance.excused) || new Set<string>();
+      this.playerNotes = { ...this.attendance.playerNotes } || {};
     } else {
       attPlayers = allPlayers.filter((player: Player) => !player.paused);
     }
@@ -166,6 +168,34 @@ export class AttPage implements OnInit {
 
   getAttendedPlayers(players: Player[]): number {
     return players.filter((p: Player) => p.isPresent).length;
+  }
+
+  async addNote(player: Player, slider: IonItemSliding) {
+    slider.close();
+    const alert: HTMLIonAlertElement = await this.alertController.create({
+      header: "Notiz hinzufügen",
+      inputs: [{
+        type: "textarea",
+        placeholder: "Notiz eingeben...",
+        value: player.attNote,
+        name: "note",
+      }],
+      buttons: [{
+        text: "Abbrechen",
+      }, {
+        text: "Notiz löschen",
+        handler: (): void => {
+          delete this.playerNotes[player.id];
+        }
+      }, {
+        text: "Speichern",
+        handler: (evt: { note: string }): void => {
+          this.playerNotes[player.id] = evt.note;
+        }
+      }]
+    });
+
+    await alert.present();
   }
 
 }

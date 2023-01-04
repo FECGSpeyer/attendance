@@ -78,6 +78,7 @@ export class AttListPage implements OnInit {
       criticalPlayers: [],
       notes: this.notes,
       typeInfo: this.typeInfo,
+      playerNotes: {},
     });
 
     await modal.dismiss();

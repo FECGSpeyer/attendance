@@ -10,7 +10,7 @@ import { Attendance, History, Instrument, Person, PersonAttendance, Player, Play
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 
-const adminMails: string[] = ["leonjaeger00@gmail.com", "emanuel.ellrich@gmail.com", "jaeger1390@gmail.com", "Ericfast.14@gmail.com", "marcelfast2002@gmail.com", "eckstaedt98@gmail.com", "erwinfast98@gmail.com", "eugen.ko94@yahoo.de"];
+const adminMails: string[] = ["leonjaeger00@gmail.com", "emanuel.ellrich@gmail.com", "jaeger1390@gmail.com", "ericfast.14@gmail.com", "marcelfast2002@gmail.com", "eckstaedt98@gmail.com", "erwinfast98@gmail.com", "eugen.ko94@yahoo.de"];
 const options: SupabaseClientOptions<any> = {
   auth: {
     autoRefreshToken: true,
