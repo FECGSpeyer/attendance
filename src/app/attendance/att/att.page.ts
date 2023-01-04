@@ -138,4 +138,8 @@ export class AttPage implements OnInit {
     player.isPresent = !player.isPresent;
   }
 
+  getPlayerLengthByInstrument(players: Player[], player: Player): number {
+    return players.filter((p) => p.instrument === player.instrument).length;
+  }
+
 }

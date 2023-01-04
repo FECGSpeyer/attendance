@@ -20,6 +20,9 @@
     </ion-label>
   </ion-item>
   <ion-list>
+    <ion-item-divider>
+      <ion-label>Dirigenten ({{ conductors?.length }})</ion-label>
+    </ion-item-divider>
     <ion-item *ngFor="let con of conductors" (click)="con.isPresent = !con.isPresent">
       <ion-label>
         <h2>{{ con.firstName }} {{ con.lastName }}</h2>
@@ -28,7 +31,7 @@
     </ion-item>
     <ion-item-sliding *ngFor="let player of players">
       <ion-item-divider *ngIf="player.firstOfInstrument">
-        <ion-label>{{ player.instrumentName }}</ion-label>
+        <ion-label>{{ player.instrumentName }} ({{ getPlayerLengthByInstrument(players, player) }})</ion-label>
       </ion-item-divider>
       <ion-item button detail="false" (click)="onAttChange(player)" >
         <ion-label>
