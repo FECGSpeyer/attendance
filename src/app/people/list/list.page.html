@@ -48,7 +48,8 @@
 
             <ion-item lines="none">
               <ion-icon slot="start" name="eye" size="small"></ion-icon>
-              <ion-select multiple="true" slot="end" (ionChange)="onViewChanged()" interface="popover" [(ngModel)]="viewOpts">
+              <ion-select multiple="true" slot="end" (ionChange)="onViewChanged()" interface="popover"
+                [(ngModel)]="viewOpts">
                 <ion-select-option value="instrument">Instrument</ion-select-option>
                 <ion-select-option value="birthday">Geburtsdatum</ion-select-option>
                 <ion-select-option value="exercises">Sonstige Dienste</ion-select-option>
@@ -78,36 +79,48 @@
     </ion-item>
   </ion-list>
   <ion-list class="marginBottom">
-    <ion-item-sliding #slider *ngFor="let player of playersFiltered">
+    <ng-container *ngFor="let player of playersFiltered">
       <ion-item-divider sticky="true" *ngIf="player.firstOfInstrument && sortOpt === 'instrument'">
         <ion-label>{{ player.instrumentName }} ({{ player.instrumentLength }})</ion-label>
       </ion-item-divider>
-      <ion-item (click)="openModal(player)">
-        <ion-label>
-          <h2>{{ player.firstName }} {{ player.lastName }}</h2>
-          <h3 *ngIf="player.text">{{ player.text }}</h3>
-          <h3 *ngIf="!player.text">{{ player.instrumentName }}</h3>
-        </ion-label>
-        <ion-badge color="secondary" *ngIf="((showPaused && !player.paused) || !showPaused) && showLeader && player.isLeader" slot="end">Stimmführer</ion-badge>
-        <ion-badge color="danger" *ngIf="((showPaused && !player.paused) || !showPaused) && showNew && player.isNew && !player.isLeader" slot="end">Neu</ion-badge>
-        <ion-badge color="danger" *ngIf="((showPaused && !player.paused) || !showPaused) && showCritical && player.isCritical" slot="end">Problemfall</ion-badge>
-        <ion-badge color="warning" *ngIf="showPaused && player.paused" slot="end">Pausiert</ion-badge>
-        <ion-badge color="warning" *ngIf="((showPaused && !player.paused) || !showPaused) && showNotes && player.notes" slot="end">
-          <ion-icon name="pencil"></ion-icon>
-        </ion-badge>
-      </ion-item>
-      <ion-item-options>
-        <ion-item-option *ngIf="!player.paused" [style]="player.firstOfInstrument ? 'margin-top: 1.7rem;' : ''" (click)="pausePlayer(player, slider)" color="primary">
-          <ion-icon name="pause"></ion-icon>
-        </ion-item-option>
-        <ion-item-option *ngIf="player.paused" [style]="player.firstOfInstrument ? 'margin-top: 1.7rem;' : ''" (click)="unpausePlayer(player, slider)" color="primary">
-          <ion-icon name="play"></ion-icon>
-        </ion-item-option>
-        <ion-item-option [style]="player.firstOfInstrument ? 'margin-top: 1.7rem;' : ''" (click)="removePlayer(player, slider)" color="danger">
-          <ion-icon name="trash"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
+      <ion-item-sliding #slider>
+        <ion-item (click)="openModal(player)">
+          <ion-label>
+            <h2>{{ player.firstName }} {{ player.lastName }}</h2>
+            <h3 *ngIf="player.text">{{ player.text }}</h3>
+            <h3 *ngIf="!player.text">{{ player.instrumentName }}</h3>
+          </ion-label>
+          <ion-badge color="secondary"
+            *ngIf="((showPaused && !player.paused) || !showPaused) && showLeader && player.isLeader" slot="end">
+            Stimmführer</ion-badge>
+          <ion-badge color="danger"
+            *ngIf="((showPaused && !player.paused) || !showPaused) && showNew && player.isNew && !player.isLeader"
+            slot="end">Neu</ion-badge>
+          <ion-badge color="danger"
+            *ngIf="((showPaused && !player.paused) || !showPaused) && showCritical && player.isCritical" slot="end">
+            Problemfall</ion-badge>
+          <ion-badge color="warning" *ngIf="showPaused && player.paused" slot="end">Pausiert</ion-badge>
+          <ion-badge color="warning"
+            *ngIf="((showPaused && !player.paused) || !showPaused) && showNotes && player.notes" slot="end">
+            <ion-icon name="pencil"></ion-icon>
+          </ion-badge>
+        </ion-item>
+        <ion-item-options>
+          <ion-item-option *ngIf="!player.paused" [style]="player.firstOfInstrument ? 'margin-top: 1.7rem;' : ''"
+            (click)="pausePlayer(player, slider)" color="primary">
+            <ion-icon name="pause"></ion-icon>
+          </ion-item-option>
+          <ion-item-option *ngIf="player.paused" [style]="player.firstOfInstrument ? 'margin-top: 1.7rem;' : ''"
+            (click)="unpausePlayer(player, slider)" color="primary">
+            <ion-icon name="play"></ion-icon>
+          </ion-item-option>
+          <ion-item-option [style]="player.firstOfInstrument ? 'margin-top: 1.7rem;' : ''"
+            (click)="removePlayer(player, slider)" color="danger">
+            <ion-icon name="trash"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </ng-container>
   </ion-list>
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="openModal()">

@@ -36,7 +36,7 @@
     </ion-accordion>
   </ion-accordion-group>
   <ion-list class="marginBottom">
-    <ion-item-divider>
+    <ion-item-divider sticky="true">
       <ion-label>Dirigenten ({{ conductors?.length }})</ion-label>
     </ion-item-divider>
     <ion-item *ngFor="let con of conductors" (click)="con.isPresent = !con.isPresent">
@@ -45,23 +45,25 @@
       </ion-label>
       <ion-badge [color]="con.isPresent ? 'success' :'danger'" slot="end">{{ con.isPresent ? '✓' : 'A' }}</ion-badge>
     </ion-item>
-    <ion-item-sliding #slider *ngFor="let player of players">
-      <ion-item-divider *ngIf="player.firstOfInstrument">
+    <ng-container *ngFor="let player of players">
+      <ion-item-divider sticky="true" *ngIf="player.firstOfInstrument">
         <ion-label>{{ player.instrumentName }} ({{ getPlayerLengthByInstrument(players, player) }})</ion-label>
       </ion-item-divider>
-      <ion-item button detail="false" (click)="onAttChange(player)" >
-        <ion-label>
-          <h2>{{ player.firstName }} {{ player.lastName }}</h2>
-          <h3 *ngIf="playerNotes[player.id]">{{ playerNotes[player.id] }}</h3>
-        </ion-label>
-        <ion-badge [color]="excused.has(player.id.toString()) ? 'warning' : player.isPresent ? 'success' :'danger'" slot="end">{{ excused.has(player.id.toString()) ? 'E' : player.isPresent ? '✓' : 'A' }}</ion-badge>
-      </ion-item>
-      <ion-item-options>
-        <ion-item-option [style]="player.firstOfInstrument ? 'margin-top: 2.3rem;' : ''" color="warning" (click)="addNote(player, slider)">
-          <ion-icon name="pencil"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
+      <ion-item-sliding #slider>
+        <ion-item button detail="false" (click)="onAttChange(player)" >
+          <ion-label>
+            <h2>{{ player.firstName }} {{ player.lastName }}</h2>
+            <h3 *ngIf="playerNotes[player.id]">{{ playerNotes[player.id] }}</h3>
+          </ion-label>
+          <ion-badge [color]="excused.has(player.id.toString()) ? 'warning' : player.isPresent ? 'success' :'danger'" slot="end">{{ excused.has(player.id.toString()) ? 'E' : player.isPresent ? '✓' : 'A' }}</ion-badge>
+        </ion-item>
+        <ion-item-options>
+          <ion-item-option [style]="player.firstOfInstrument ? 'margin-top: 2.3rem;' : ''" color="warning" (click)="addNote(player, slider)">
+            <ion-icon name="pencil"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </ng-container>
   </ion-list>
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="save()">
