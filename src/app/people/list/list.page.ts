@@ -115,15 +115,17 @@ export class ListPage implements OnInit {
       return;
     }
 
-    this.playersFiltered = this.players.filter((player: Player) => {
+    this.playersFiltered = Utils.getModifiedPlayers(this.players.filter((player: Player) => {
       if (this.filterOpt === 'criticals') {
         return player.isCritical;
       } else if (this.filterOpt === "new") {
         return player.isNew;
-      } else {
+      } else if (this.filterOpt === "active") {
+        return !player.paused;
+      } {
         return player.isLeader;
       }
-    });
+    }), this.instruments);
   }
 
   onViewChanged() {

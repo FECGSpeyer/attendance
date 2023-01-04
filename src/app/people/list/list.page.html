@@ -28,6 +28,7 @@
               <ion-icon slot="start" name="funnel" size="small"></ion-icon>
               <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="filterOpt">
                 <ion-select-option value="all">Alle Anzeigen</ion-select-option>
+                <ion-select-option value="active">Aktive Spieler</ion-select-option>
                 <ion-select-option value="criticals">Problemfälle</ion-select-option>
                 <ion-select-option value="leaders">Stimmführer</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="new">Neue Spieler</ion-select-option>
