@@ -184,7 +184,7 @@
     </ion-accordion>
   </ion-accordion-group>
 
-  <ion-accordion-group [value]="existingPlayer && !player?.isCritical ? 'first' : ''" *ngIf="attendance.length">
+  <ion-accordion-group [value]="existingPlayer ? 'first' : ''" *ngIf="attendance.length">
     <ion-accordion value="first">
       <ion-item slot="header" color="light">
         <ion-label>Historie</ion-label>
