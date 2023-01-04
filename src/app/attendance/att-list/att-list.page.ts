@@ -25,6 +25,7 @@ export class AttListPage implements OnInit {
   public attendance: Attendance[] = [];
   public isConductor: boolean = false;
   public notes: string;
+  public typeInfo: string;
 
   constructor(
     private db: DbService,
@@ -76,6 +77,7 @@ export class AttListPage implements OnInit {
       type: this.type,
       criticalPlayers: [],
       notes: this.notes,
+      typeInfo: this.typeInfo,
     });
 
     await modal.dismiss();

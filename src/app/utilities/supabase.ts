@@ -20,6 +20,7 @@ export interface Database {
           criticalPlayers: number[]
           type: string
           notes: string | null
+          typeInfo: string | null
         }
         Insert: {
           id?: number
@@ -31,6 +32,7 @@ export interface Database {
           criticalPlayers?: number[]
           type?: string
           notes?: string | null
+          typeInfo?: string | null
         }
         Update: {
           id?: number
@@ -42,6 +44,7 @@ export interface Database {
           criticalPlayers?: number[]
           type?: string
           notes?: string | null
+          typeInfo?: string | null
         }
       }
       conductors: {

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { PlayerHistoryType } from 'src/app/utilities/constants';
@@ -17,6 +17,7 @@ export class AttPage implements OnInit {
   public conductors: Person[] = [];
   public excused: Set<string> = new Set();
   public withExcuses: boolean = environment.withExcuses;
+  private hasInvoked: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -68,6 +69,24 @@ export class AttPage implements OnInit {
     });
   }
 
+  onAccChange() {
+    if (!this.hasInvoked) {
+      this.hasInvoked = true;
+      setTimeout(() => {
+        const tx = document.getElementsByTagName("textarea");
+        for (let i = 0; i < tx.length; i++) {
+          tx[i].setAttribute("style", "height:" + (tx[i].scrollHeight) + "px !important;overflow-y:hidden;");
+          tx[i].addEventListener("input", OnInput, false);
+        }
+
+        function OnInput() {
+          this.style.height = 0;
+          this.style.height = (this.scrollHeight) + "px";
+        }
+      }, 500);
+    }
+  }
+
   async save(): Promise<void> {
     const playerMap: AttendanceItem = {};
     const conductorsMap: AttendanceItem = {};
@@ -85,6 +104,9 @@ export class AttPage implements OnInit {
     );
 
     await this.db.updateAttendance({
+      notes: this.attendance.notes,
+      typeInfo: this.attendance.type === "sonstiges" ? this.attendance.typeInfo : "",
+      type: this.attendance.type,
       players: playerMap,
       conductors: conductorsMap,
       excused: Array.from(this.excused),
@@ -139,7 +161,11 @@ export class AttPage implements OnInit {
   }
 
   getPlayerLengthByInstrument(players: Player[], player: Player): number {
-    return players.filter((p) => p.instrument === player.instrument).length;
+    return players.filter((p: Player) => p.instrument === player.instrument).length;
+  }
+
+  getAttendedPlayers(players: Player[]): number {
+    return players.filter((p: Player) => p.isPresent).length;
   }
 
 }

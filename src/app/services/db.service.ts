@@ -378,7 +378,7 @@ export class DbService {
         id,
         date: att.date,
         attended: att.players[id],
-        title: att.notes ? att.notes : att.type === "vortrag" ? "Vortrag" : "",
+        title: att.typeInfo ? att.typeInfo : att.type === "vortrag" ? "Vortrag" : "",
         text: att.players[id] ? "X" : (att.excused || []).includes(String(id)) ? "E" : "A",
       }
     });
