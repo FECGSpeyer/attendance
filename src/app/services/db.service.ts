@@ -44,7 +44,7 @@ export class DbService {
   async checkToken() {
     const { data } = await supabase.auth.getUser();
 
-    if (data?.user.email) {
+    if (data?.user?.email) {
       supabase.auth.refreshSession();
       this.authenticationState.next({
         isConductor: adminMails.includes(data.user.email.toLowerCase()),
