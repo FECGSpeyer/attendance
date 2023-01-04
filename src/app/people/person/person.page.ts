@@ -112,8 +112,9 @@ export class PersonPage implements OnInit, AfterViewInit {
         text: att.text,
         type: PlayerHistoryType.ATTENDANCE,
         title: att.title,
+        notes: att.notes,
       };
-    }).concat(this.existingPlayer.history.map((his: PlayerHistoryEntry) => { return { ...his, title: "" }; })).sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }).concat(this.existingPlayer.history.map((his: PlayerHistoryEntry) => { return { ...his, title: "", notes: "" }; })).sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
   onInstrumentChange(byUser = true) {
