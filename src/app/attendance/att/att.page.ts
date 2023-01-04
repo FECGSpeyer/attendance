@@ -112,6 +112,7 @@ export class AttPage implements OnInit {
       players: playerMap,
       conductors: conductorsMap,
       excused: Array.from(this.excused),
+      playerNotes: this.playerNotes,
       criticalPlayers: this.attendance.criticalPlayers.concat(unexcusedPlayers.map((player: Player) => player.id)),
     }, this.attendance.id);
 
