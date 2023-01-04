@@ -91,6 +91,7 @@ export interface PersonAttendance {
     attended: boolean;
     text: string;
     title: string;
+    notes: string;
 }
 
 export interface History {
