@@ -1,6 +1,6 @@
 {
   "name": "attendance",
-  "version": "1.1.11",
+  "version": "1.1.12",
   "author": "Matthias Eckstaedt",
   "homepage": "https://ionicframework.com/",
   "scripts": {
@@ -11,7 +11,8 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "resources": "cordova-res ios && cordova-res android && node scripts/resources.js && npx cap sync"
+    "resources": "cordova-res ios && cordova-res android && node scripts/resources.js && npx cap sync",
+    "genTypes": "npx supabase gen types typescript --project-id \"zukclqspndysemvvihjm\" --schema public > src/app/utilities/supabase.ts"
   },
   "private": true,
   "dependencies": {
@@ -32,7 +33,7 @@
     "@capacitor/status-bar": "1.0.8",
     "@ionic/angular": "^6.3.3",
     "@ionic/storage-angular": "^3.0.6",
-    "@supabase/supabase-js": "^1.30.3",
+    "@supabase/supabase-js": "^2.1.0",
     "date-fns": "^2.28.0",
     "dayjs": "^1.10.7",
     "jspdf": "^2.5.1",
@@ -72,6 +73,7 @@
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "^1.5.0",
     "protractor": "~7.0.0",
+    "supabase": "^1.28.1",
     "ts-node": "~8.3.0",
     "typescript": "~4.4.4"
   },

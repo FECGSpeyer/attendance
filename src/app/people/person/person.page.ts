@@ -225,8 +225,8 @@ export class PersonPage implements OnInit, AfterViewInit {
                 this.player.id,
                 history,
               );
-              this.existingPlayer = { ...res };
-              this.player.history = res.history;
+              this.existingPlayer = { ...res } as any;
+              this.player.history = res.history as any;
               this.getHistoryInfo();
               this.shouldReload = true;
               Utils.showToast("Eintrag wurde erfolgreich entfernt.", "success");

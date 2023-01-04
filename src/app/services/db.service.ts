@@ -7,15 +7,18 @@ import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
 import { PlayerHistoryType } from '../utilities/constants';
 import { Attendance, History, Instrument, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher } from '../utilities/interfaces';
+import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 
 const adminMails: string[] = ["leonjaeger00@gmail.com", "emanuel.ellrich@gmail.com", "jaeger1390@gmail.com", "Ericfast.14@gmail.com", "marcelfast2002@gmail.com", "eckstaedt98@gmail.com", "erwinfast98@gmail.com", "eugen.ko94@yahoo.de"];
-const options: SupabaseClientOptions = {
-  autoRefreshToken: true,
-  persistSession: true,
-  detectSessionInUrl: true,
+const options: SupabaseClientOptions<any> = {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  }
 }
-const supabase = createClient(environment.apiUrl, environment.apiKey, options);
+const supabase = createClient<Database>(environment.apiUrl, environment.apiKey, options);
 
 @Injectable({
   providedIn: 'root'
@@ -39,12 +42,12 @@ export class DbService {
   }
 
   async checkToken() {
-    const res = await supabase.auth.user();
+    const { data } = await supabase.auth.getUser();
 
-    if (res?.email) {
+    if (data?.user.email) {
       supabase.auth.refreshSession();
       this.authenticationState.next({
-        isConductor: adminMails.includes(res.email.toLowerCase()),
+        isConductor: adminMails.includes(data.user.email.toLowerCase()),
         isPlayer: true,
         login: false,
       });
@@ -63,19 +66,19 @@ export class DbService {
   }
 
   async register(email: string, password: string) {
-    const res = await supabase.auth.signUp({
+    const { data } = await supabase.auth.signUp({
       email, password,
     });
 
-    return Boolean(res.user);
+    return Boolean(data.user);
   }
 
   async login(email: string, password: string) {
-    const res = await supabase.auth.signIn({
+    const { data } = await supabase.auth.signInWithPassword({
       email, password,
     });
 
-    if (res.user) {
+    if (data.user) {
       this.authenticationState.next({
         isConductor: adminMails.includes(email.toLowerCase()),
         isPlayer: true,
@@ -87,13 +90,13 @@ export class DbService {
       Utils.showToast("Bitte gib die richtigen Daten an!", "danger");
     }
 
-    return Boolean(res.user);
+    return Boolean(data.user);
   }
 
   async getPlayers(all: boolean = false): Promise<Player[]> {
     if (all) {
       const { data, error } = await supabase
-        .from<Player>('player')
+        .from('player')
         .select('*');
 
       if (error) {
@@ -101,11 +104,16 @@ export class DbService {
         throw error;
       }
 
-      return data;
+      return data.map((player) => {
+        return {
+          ...player,
+          history: player.history as any,
+        }
+      });
     }
 
-    const response = await supabase
-      .from<Player>('player')
+    const { data, error } = await supabase
+      .from('player')
       .select('*')
       .is("left", null)
       .order("instrument")
@@ -114,19 +122,29 @@ export class DbService {
       })
       .order("lastName");
 
-    if (response.error) {
+    if (error) {
       Utils.showToast("Fehler beim Laden der Spieler", "danger");
     }
 
-    const updated: boolean = await this.syncCriticalPlayers(response.data);
+    const updated: boolean = await this.syncCriticalPlayers(data.map((player) => {
+      return {
+        ...player,
+        history: player.history as any,
+      }
+    }));
     if (updated) {
       return (await this.getPlayers());
     }
 
-    return response.data;
+    return data.map((player) => {
+      return {
+        ...player,
+        history: player.history as any,
+      }
+    });
   }
 
-  async syncCriticalPlayers(players: Player[]) {
+  async syncCriticalPlayers(players: Player[]): Promise<boolean> {
     const attendances: Attendance[] = (await this.getAttendance()).filter((att: Attendance) => att.type === "uebung");
     let updated: boolean = false;
 
@@ -158,20 +176,25 @@ export class DbService {
   }
 
   async getLeftPlayers(): Promise<Player[]> {
-    const response = await supabase
-      .from<Player>('player')
+    const { data } = await supabase
+      .from('player')
       .select('*')
       .not("left", "is", null)
       .order("left", {
         ascending: false,
       });
 
-    return response.data;
+    return data.map((player) => {
+      return {
+        ...player,
+        history: player.history as any,
+      }
+    });
   }
 
   async getConductors(all: boolean = false): Promise<Person[]> {
     const response = await supabase
-      .from<Person>('conductors')
+      .from('conductors')
       .select('*')
       .order("lastName");
 
@@ -179,11 +202,20 @@ export class DbService {
   }
 
   async addPlayer(player: Player): Promise<Player[]> {
-    const response = await supabase
-      .from<Player>('player')
-      .insert(player);
+    const { data } = await supabase
+      .from('player')
+      .insert({
+        ...player,
+        history: player.history as any
+      })
+      .select();
 
-    return response.body;
+    return data.map((player) => {
+      return {
+        ...player,
+        history: player.history as any,
+      }
+    });
   }
 
   async updatePlayer(player: Player): Promise<Player[]> {
@@ -199,92 +231,104 @@ export class DbService {
     delete dataToUpdate.isPresent;
     delete dataToUpdate.text;
 
-    const response = await supabase
-      .from<Player>('player')
-      .update(dataToUpdate)
-      .match({ id: player.id });
+    const { data, error } = await supabase
+      .from('player')
+      .update({
+        ...dataToUpdate,
+        history: dataToUpdate.history as any,
+      })
+      .match({ id: player.id })
+      .select();
 
-    if (response.error) {
+    if (error) {
       throw new Error("Fehler beim updaten des Spielers");
     }
 
-    return response.body;
+    return data.map((player) => {
+      return {
+        ...player,
+        history: player.history as any,
+      }
+    });
   }
 
   async updatePlayerHistory(id: number, history: PlayerHistoryEntry[]) {
-    const response = await supabase
-      .from<Player>('player')
-      .update({ history })
+    const { data, error } = await supabase
+      .from('player')
+      .update({ history: history as any[] })
       .match({ id })
       .select()
       .single();
 
-    if (response.error) {
+    if (error) {
       throw new Error("Fehler beim updaten des Spielers");
     }
 
-    return response.body;
+    return data;
   }
 
   async removePlayer(id: number): Promise<void> {
     await supabase
-      .from<Player>('player')
+      .from('player')
       .delete()
       .match({ id });
   }
 
   async archivePlayer(id: number): Promise<void> {
     await supabase
-      .from<Player>('player')
+      .from('player')
       .update({ left: new Date().toISOString() })
       .match({ id });
   }
 
   async getInstruments(): Promise<Instrument[]> {
-    const response = await supabase
-      .from<Instrument>('instruments')
+    const { data } = await supabase
+      .from('instruments')
       .select('*')
       .order("name");
 
-    return response.data;
+    return data;
   }
 
   async addInstrument(name: string): Promise<Instrument[]> {
-    const response = await supabase
-      .from<Instrument>('instruments')
+    const { data } = await supabase
+      .from('instruments')
       .insert({
         name,
         tuning: "C",
         clefs: ["g"],
-      });
+      })
+      .select();
 
-    return response.body;
+    return data;
   }
 
   async updateInstrument(att: Partial<Instrument>, id: number): Promise<Instrument[]> {
-    const response = await supabase
-      .from<Instrument>('instruments')
+    const { data } = await supabase
+      .from('instruments')
       .update(att)
-      .match({ id });
+      .match({ id })
+      .select();
 
-    return response.body;
+    return data;
   }
 
   async removeInstrument(id: number): Promise<Instrument[]> {
-    const response = await supabase
-      .from<Instrument>('instruments')
+    const { data } = await supabase
+      .from('instruments')
       .delete()
       .match({ id });
 
-    return response.body;
+    return data;
   }
 
   async addAttendance(attendance: Attendance): Promise<Attendance[]> {
-    const response = await supabase
-      .from<Attendance>('attendance')
-      .insert(attendance);
+    const { data } = await supabase
+      .from('attendance')
+      .insert(attendance as any)
+      .select();
 
-    return response.body;
+    return data as any;
   }
 
   async getAttendance(reload: boolean = false): Promise<Attendance[]> {
@@ -292,43 +336,44 @@ export class DbService {
       return this.attendance;
     }
 
-    const response = await supabase
-      .from<Attendance>('attendance')
+    const { data } = await supabase
+      .from('attendance')
       .select('*')
       .order("date", {
         ascending: false,
       });
 
-    this.attendance = response.data;
+    this.attendance = data as any;
     return this.attendance;
   }
 
   async updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance[]> {
-    const response = await supabase
-      .from<Attendance>('attendance')
-      .update(att)
-      .match({ id });
+    const { data } = await supabase
+      .from('attendance')
+      .update(att as any)
+      .match({ id })
+      .select();
 
-    return response.body;
+    return data as any;
   }
 
   async removeAttendance(id: number): Promise<void> {
     await supabase
-      .from<Attendance>('attendance')
+      .from('attendance')
       .delete()
       .match({ id });
   }
 
   async getPlayerAttendance(id: number): Promise<PersonAttendance[]> {
-    const response = await supabase
-      .from<Attendance>('attendance')
+    const { data } = await supabase
+      .from('attendance')
       .select('*')
       .neq(`players->"${id}"` as any, null)
       .order("date", {
         ascending: false,
       });
 
-    return response.body.map((att: Attendance): PersonAttendance => {
+    return data.map((att): PersonAttendance => {
       return {
         id,
         date: att.date,
@@ -340,65 +385,67 @@ export class DbService {
   }
 
   async getHistory(): Promise<History[]> {
-    const response = await supabase
-      .from<History>('history')
+    const { data } = await supabase
+      .from('history')
       .select('*')
       .order("date", {
         ascending: false,
       });
 
-    return response.data;
+    return data;
   }
 
   async addHistoryEntry(history: History): Promise<History[]> {
-    const response = await supabase
-      .from<History>('history')
-      .insert(history);
+    const { data } = await supabase
+      .from('history')
+      .insert(history)
+      .select();
 
-    return response.body;
+    return data;
   }
 
   async removeHistoryEntry(id: number): Promise<History[]> {
-    const response = await supabase
-      .from<History>('history')
+    const { data, error } = await supabase
+      .from('history')
       .delete()
       .match({ id });
 
-    if (response.error) {
+    if (error) {
       throw new Error("Fehler beim Löschen des Eintrags");
     }
 
-    return response.body;
+    return data;
   }
 
   async getTeachers(): Promise<Teacher[]> {
-    const response = await supabase
-      .from<Teacher>('teachers')
+    const { data } = await supabase
+      .from('teachers')
       .select('*')
       .order("name", {
         ascending: true,
       });
 
-    return response.data;
+    return data;
   }
 
   async addTeacher(teacher: Teacher): Promise<Teacher[]> {
-    const response = await supabase
-      .from<Teacher>('teachers')
-      .insert(teacher);
+    const { data } = await supabase
+      .from('teachers')
+      .insert(teacher)
+      .select();
 
-    return response.body;
+    return data;
   }
 
   async updateTeacher(teacher: Partial<Teacher>, id: number): Promise<Teacher[]> {
     delete teacher.insNames;
 
-    const response = await supabase
-      .from<Teacher>('teachers')
+    const { data } = await supabase
+      .from('teachers')
       .update(teacher)
       .match({ id });
 
-    return response.body;
+    return data;
   }
 
   async getSongs(): Promise<Song[]> {
