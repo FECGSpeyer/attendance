@@ -18,7 +18,7 @@
   </ion-header>
 
   <ion-searchbar (ionInput)="search($event)" animated placeholder="Werk suchen..."></ion-searchbar>
-  <ion-list>
+  <ion-list class="marginBottom">
     <ion-item *ngFor="let song of songsFiltered">
       <ion-label [id]="song.id + 'edit-button'">
         <h2>{{ song.number }} {{ song.name }}</h2>

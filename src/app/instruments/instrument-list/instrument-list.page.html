@@ -13,7 +13,7 @@
       <ion-title size="large">Instrumente ({{ instruments?.length }})</ion-title>
     </ion-toolbar>
   </ion-header>
-  <ion-list>
+  <ion-list class="marginBottom">
     <ion-item (click)="openModal(instrument)" *ngFor="let instrument of instruments">
       <ion-label>
         <h2>{{ instrument.name }} ({{ instrument.tuning }})</h2>

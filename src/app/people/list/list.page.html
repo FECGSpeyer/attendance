@@ -77,7 +77,7 @@
       </ion-label>
     </ion-item>
   </ion-list>
-  <ion-list>
+  <ion-list class="marginBottom">
     <ion-item-sliding #slider *ngFor="let player of playersFiltered">
       <ion-item-divider sticky="true" *ngIf="player.firstOfInstrument && sortOpt === 'instrument'">
         <ion-label>{{ player.instrumentName }} ({{ player.instrumentLength }})</ion-label>
