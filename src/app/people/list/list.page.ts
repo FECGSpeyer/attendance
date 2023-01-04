@@ -46,6 +46,7 @@ export class ListPage implements OnInit {
 
   async ngOnInit() {
     this.viewOpts = JSON.parse(await this.storage.get("viewOpts") || JSON.stringify(['instrument', 'leader', 'notes', 'critical', 'paused']));
+    this.filterOpt = (await this.storage.get("filterOpt")) || "all";
     this.instruments = await this.db.getInstruments();
     await this.getPlayers();
     this.onViewChanged();
@@ -107,7 +108,7 @@ export class ListPage implements OnInit {
     }
   }
 
-  onFilterChanged() {
+  async onFilterChanged() {
     this.searchTerm = '';
 
     if (this.filterOpt === 'all') {
@@ -126,6 +127,8 @@ export class ListPage implements OnInit {
         return player.isLeader;
       }
     }), this.instruments);
+
+    await this.storage.set("filterOpt", this.filterOpt);
   }
 
   onViewChanged() {
