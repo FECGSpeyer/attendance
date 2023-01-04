@@ -142,7 +142,7 @@ export class DbService {
 
         history.push({
           date: new Date().toISOString(),
-          text: "Problemfall: Fehlt oft hintereinander",
+          text: "Fehlt oft hintereinander",
           type: PlayerHistoryType.MISSING_OFTEN,
         });
         this.updatePlayer({
@@ -333,6 +333,7 @@ export class DbService {
         id,
         date: att.date,
         attended: att.players[id],
+        title: att.notes ? att.notes : att.type === "vortrag" ? "Vortrag" : "",
         text: att.players[id] ? "X" : (att.excused || []).includes(String(id)) ? "E" : "A",
       }
     });

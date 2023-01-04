@@ -87,6 +87,7 @@ export interface PersonAttendance {
     date: string;
     attended: boolean;
     text: string;
+    title: string;
 }
 
 export interface History {
