@@ -21,4 +21,18 @@ export class MeetingListPage implements OnInit {
     this.meetings = await this.db.getMeetings();
   }
 
+  async addAttendance(modal: any): Promise<void> {
+    await this.db.addMeeting({
+      date: this.date,
+      notes: "",
+      attendees: [],
+    });
+
+    await modal.dismiss();
+    await this.db.getMeetings();
+  }
+
+  formatDate(value: string): string {
+    return format(parseISO(value), 'dd.MM.yyyy');
+  }
 }
