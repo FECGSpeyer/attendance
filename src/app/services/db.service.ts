@@ -6,7 +6,7 @@ import * as dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
 import { PlayerHistoryType } from '../utilities/constants';
-import { Attendance, History, Instrument, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher } from '../utilities/interfaces';
+import { Attendance, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 
@@ -476,5 +476,53 @@ export class DbService {
       .match({ id });
 
     return data;
+  }
+
+  async getMeetings(): Promise<Meeting[]> {
+    const response = await supabase
+      .from('meetings')
+      .select('*')
+      .order("date", {
+        ascending: true,
+      });
+
+    return response.data;
+  }
+
+  async getMeeting(id: number): Promise<Meeting> {
+    const response = await supabase
+      .from('meetings')
+      .select('*')
+      .match({ id })
+      .single();
+
+    return response.data;
+  }
+
+  async addMeeting(meeting: Meeting): Promise<Meeting[]> {
+    const { data } = await supabase
+      .from('meetings')
+      .insert(meeting)
+      .select();
+
+    return data;
+  }
+
+  async editMeeting(id: number, meeting: Meeting): Promise<Meeting[]> {
+    const { data } = await supabase
+      .from('meetings')
+      .update(meeting)
+      .match({ id });
+
+    return data;
+  }
+
+  async removeMeeting(id: number): Promise<void> {
+    await supabase
+      .from('meetings')
+      .delete()
+      .match({ id });
+
+    return;
   }
 }

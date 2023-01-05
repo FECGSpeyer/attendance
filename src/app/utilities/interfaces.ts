@@ -115,3 +115,11 @@ export interface Teacher {
     number: string;
     private: boolean;
 }
+
+export interface Meeting {
+    id?: number;
+    created_at?: string;
+    date: string;
+    attendees: number[];
+    notes: string;
+}

@@ -1,0 +1,17 @@
+<ion-header translucent="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="tabs/settings/meetings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ meeting?.date | date:'dd.MM.yyyy' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content *ngIf="meeting" class="ion-padding">
+  <quill-editor [styles]="{height: '500px'}" [(ngModel)]="meeting.notes"></quill-editor>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="save()">
+      <ion-icon name="save-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

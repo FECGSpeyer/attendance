@@ -1,0 +1,16 @@
+<ion-header translucent="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Besprechungen</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item [routerLink]="meeting.id" *ngFor="let meeting of meetings">
+      <ion-label>{{ meeting.date | date:'dd.MM.yyyy' }}</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

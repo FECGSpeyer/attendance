@@ -37,6 +37,14 @@ const routes: Routes = [
         loadChildren: () => import('./../songs/songs.module').then(m => m.SongsPageModule)
       },
       {
+        path: 'settings/meetings',
+        loadChildren: () => import('./../meetings/meeting-list/meeting-list.module').then(m => m.MeetingListPageModule)
+      },
+      {
+        path: 'settings/meetings/:id',
+        loadChildren: () => import('./../meetings/meeting/meeting.module').then(m => m.MeetingPageModule)
+      },
+      {
         path: '',
         redirectTo: '/tabs/player',
         pathMatch: 'full'

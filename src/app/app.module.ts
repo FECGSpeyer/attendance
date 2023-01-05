@@ -14,6 +14,7 @@ import { environment } from '../environments/environment';
 import { HistoryPageModule } from './history/history.module';
 import { TeacherPageModule } from './teacher/teacher.module';
 import { ProblemModalPageModule } from './people/problem-modal/problem-modal.module';
+import { QuillModule } from 'ngx-quill';
 
 @NgModule({
   declarations: [AppComponent],
@@ -28,6 +29,11 @@ import { ProblemModalPageModule } from './people/problem-modal/problem-modal.mod
     ProblemModalPageModule,
     HistoryPageModule,
     TeacherPageModule,
+    QuillModule.forRoot({
+      modules: {
+        syntax: true
+      }
+    }),
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
       // Register the ServiceWorker as soon as the app is stable

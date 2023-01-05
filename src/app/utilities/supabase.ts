@@ -137,6 +137,29 @@ export interface Database {
           clefs?: string[] | null
         }
       }
+      meetings: {
+        Row: {
+          id: number
+          created_at: string | null
+          date: string
+          attendees: number[]
+          notes: string | null
+        }
+        Insert: {
+          id?: number
+          created_at?: string | null
+          date?: string
+          attendees?: number[]
+          notes?: string | null
+        }
+        Update: {
+          id?: number
+          created_at?: string | null
+          date?: string
+          attendees?: number[]
+          notes?: string | null
+        }
+      }
       player: {
         Row: {
           id: number
