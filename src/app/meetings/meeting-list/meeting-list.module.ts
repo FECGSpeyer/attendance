@@ -13,8 +13,8 @@ import { MeetingListPage } from './meeting-list.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    MeetingListPageRoutingModule
+    MeetingListPageRoutingModule,
   ],
   declarations: [MeetingListPage]
 })
-export class MeetingListPageModule {}
+export class MeetingListPageModule { }

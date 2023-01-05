@@ -11,15 +11,15 @@ import { QuillModule } from 'ngx-quill';
 
 @NgModule({
   imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    MeetingPageRoutingModule,
     QuillModule.forRoot({
       modules: {
         syntax: true
       }
     }),
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    MeetingPageRoutingModule,
   ],
   declarations: [MeetingPage]
 })
