@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { format } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
 import { Meeting } from 'src/app/utilities/interfaces';
 
@@ -9,6 +10,8 @@ import { Meeting } from 'src/app/utilities/interfaces';
 })
 export class MeetingListPage implements OnInit {
   public meetings: Meeting[] = [];
+  public date: string = new Date().toISOString();
+  public dateString: string = format(new Date(), 'dd.MM.yyyy');
 
   constructor(
     private db: DbService,

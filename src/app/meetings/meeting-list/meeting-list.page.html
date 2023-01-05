@@ -13,4 +13,38 @@
       <ion-label>{{ meeting.date | date:'dd.MM.yyyy' }}</ion-label>
     </ion-item>
   </ion-list>
+
+  <ion-modal #addAttModal trigger="add-att-button" [breakpoints]="[0.3]" [initialBreakpoint]="0.3">
+    <ng-template>
+      <ion-content>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Anwesenheit hinzufügen</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-item>
+          <ion-label position="stacked">Datum</ion-label>
+          <ion-input readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
+          <ion-modal class="dateModal" trigger="att-date-modal">
+            <ng-template>
+              <ion-content>
+                <ion-datetime
+                  [(ngModel)]="date"
+                  (ionChange)="dateString = formatDate(dateTimePickerDate.value)"
+                  presentation="date"
+                  #dateTimePickerDate
+                ></ion-datetime>
+              </ion-content>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+        <ion-button (click)="addMeeting(addAttModal)" expand="block">Hinzufügen</ion-button>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button id="add-att-button">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

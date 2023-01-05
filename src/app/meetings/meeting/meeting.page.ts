@@ -12,6 +12,7 @@ export class MeetingPage implements OnInit {
   public conductors: Person[];
   public allConductors: Person[];
   public isEditMode: boolean;
+  public attendeesNames: string = "";
 
   constructor(
     private db: DbService
@@ -20,13 +21,21 @@ export class MeetingPage implements OnInit {
   async ngOnInit() {
     this.allConductors = await this.db.getConductors(true);
     this.conductors = this.allConductors.filter((c: Person) => !c.isInactive);
-    this.meeting = await this.db.getMeeting(1);
+    this.meeting = await this.db.getMeeting(Number(window.location.pathname.split("/")[4]));
     this.isEditMode = !this.meeting.notes;
+    this.attendeesNames = this.meeting.attendees.map((id: number) => {
+      const conductor: Person = this.allConductors.find((con: Person) => con.id === id);
+      return `${conductor.firstName} ${conductor.lastName}`;
+    }).join(", ");
   }
 
   async save() {
     await this.db.editMeeting(this.meeting.id, this.meeting);
     this.isEditMode = false;
+    this.attendeesNames = this.meeting.attendees.map((id: number) => {
+      const conductor: Person = this.allConductors.find((con: Person) => con.id === id);
+      return `${conductor.firstName} ${conductor.lastName}`;
+    }).join(", ");
   }
 
 }

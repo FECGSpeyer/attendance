@@ -23,11 +23,9 @@
 </ion-content>
 
 <ion-content *ngIf="meeting && !isEditMode" class="ion-padding">
-  <ion-item>
-    <ion-label position="stacked">Dirigenten</ion-label>
-    <ion-select disabled="true" [(ngModel)]="meeting.attendees" #select multiple="true">
-      <ion-select-option multiple="true" [value]="con.id" *ngFor="let con of conductors">{{ con.firstName }} {{ con.lastName }}</ion-select-option>
-    </ion-select>
+  <ion-item lines="none">
+    <ion-label position="stacked">Anwesende</ion-label>
+    <ion-text>{{ attendeesNames }}</ion-text>
   </ion-item>
   <quill-view [styles]="{height: '450px'}" [content]="meeting.notes"></quill-view>
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
