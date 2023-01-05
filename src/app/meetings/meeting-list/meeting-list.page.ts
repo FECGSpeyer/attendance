@@ -29,7 +29,7 @@ export class MeetingListPage implements OnInit {
     });
 
     await modal.dismiss();
-    await this.db.getMeetings();
+    this.meetings = await this.db.getMeetings();
   }
 
   formatDate(value: string): string {
