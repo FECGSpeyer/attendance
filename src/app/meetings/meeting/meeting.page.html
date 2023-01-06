@@ -9,12 +9,12 @@
 
 <ion-content *ngIf="meeting && isEditMode" class="ion-padding">
   <ion-item>
-    <ion-label position="stacked">Dirigenten</ion-label>
-    <ion-select [(ngModel)]="meeting.attendees" #select multiple="true">
+    <ion-label position="stacked">Anwesende Dirigenten</ion-label>
+    <ion-select placeholder="Dirigenten auswählen..." [(ngModel)]="meeting.attendees" #select multiple="true">
       <ion-select-option multiple="true" [value]="con.id" *ngFor="let con of conductors">{{ con.firstName }} {{ con.lastName }}</ion-select-option>
     </ion-select>
   </ion-item>
-  <quill-editor [styles]="{height: '450px'}" [(ngModel)]="meeting.notes"></quill-editor>
+  <quill-editor placeholder="Notiz eingeben..." [styles]="{height: '450px'}" [(ngModel)]="meeting.notes"></quill-editor>
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="save()">
       <ion-icon name="save-outline"></ion-icon>
@@ -24,7 +24,7 @@
 
 <ion-content *ngIf="meeting && !isEditMode" class="ion-padding">
   <ion-item lines="none">
-    <ion-label position="stacked">Anwesende</ion-label>
+    <ion-label position="stacked">Anwesende Dirigenten</ion-label>
     <ion-text>{{ attendeesNames }}</ion-text>
   </ion-item>
   <quill-view [styles]="{height: '450px'}" [content]="meeting.notes"></quill-view>

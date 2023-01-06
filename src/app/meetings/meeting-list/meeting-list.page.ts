@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AlertController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
 import { Meeting } from 'src/app/utilities/interfaces';
@@ -15,13 +16,14 @@ export class MeetingListPage implements OnInit {
 
   constructor(
     private db: DbService,
+    private alertController: AlertController
   ) { }
 
   async ngOnInit() {
     this.meetings = await this.db.getMeetings();
   }
 
-  async addAttendance(modal: any): Promise<void> {
+  async addMeeting(modal: any): Promise<void> {
     await this.db.addMeeting({
       date: this.date,
       notes: "",
@@ -34,5 +36,24 @@ export class MeetingListPage implements OnInit {
 
   formatDate(value: string): string {
     return format(parseISO(value), 'dd.MM.yyyy');
+  }
+
+  async removeMeeting(id: number) {
+    const alert = await this.alertController.create({
+      header: 'Besprechung wirklich entfernen?',
+      buttons: [
+        {
+          text: 'Abrrechen',
+        }, {
+          text: 'Ja',
+          handler: async () => {
+            await this.db.removeMeeting(id);
+            this.meetings = await this.db.getMeetings();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 }
