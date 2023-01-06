@@ -71,24 +71,6 @@ export class AttPage implements OnInit {
     });
   }
 
-  onAccChange() {
-    if (!this.hasInvoked) {
-      this.hasInvoked = true;
-      setTimeout(() => {
-        const tx = document.getElementsByTagName("textarea");
-        for (let i = 0; i < tx.length; i++) {
-          tx[i].setAttribute("style", "height:" + (tx[i].scrollHeight) + "px !important;overflow-y:hidden;");
-          tx[i].addEventListener("input", OnInput, false);
-        }
-
-        function OnInput() {
-          this.style.height = 0;
-          this.style.height = (this.scrollHeight) + "px";
-        }
-      }, 500);
-    }
-  }
-
   async save(): Promise<void> {
     const playerMap: AttendanceItem = {};
     const conductorsMap: AttendanceItem = {};
