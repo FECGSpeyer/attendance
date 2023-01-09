@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
-import { createClient, SupabaseClientOptions } from '@supabase/supabase-js';
+import { createClient, SupabaseClientOptions, User } from '@supabase/supabase-js';
+import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
 import { PlayerHistoryType } from '../utilities/constants';
-import { Attendance, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher } from '../utilities/interfaces';
+import { Attendance, AuthObject, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 
@@ -24,10 +25,11 @@ const supabase = createClient<Database>(environment.apiUrl, environment.apiKey, 
   providedIn: 'root'
 })
 export class DbService {
-  private attendance: Attendance[] = [];
+  private user: User;
 
-  authenticationState = new BehaviorSubject({
+  authenticationState = new BehaviorSubject<AuthObject>({
     isConductor: false,
+    isHelper: false,
     isPlayer: false,
     login: false,
   });
@@ -45,11 +47,13 @@ export class DbService {
     const { data } = await supabase.auth.getUser();
 
     if (data?.user?.email) {
+      this.user = data.user;
       supabase.auth.refreshSession();
       this.authenticationState.next({
         isConductor: adminMails.includes(data.user.email.toLowerCase()),
-        isPlayer: true,
-        login: false,
+        isHelper: !environment.withSignout,
+        isPlayer: !adminMails.includes(data.user.email.toLowerCase()),
+        login: true,
       });
     }
   }
@@ -58,6 +62,7 @@ export class DbService {
     await supabase.auth.signOut();
     this.authenticationState.next({
       isConductor: false,
+      isHelper: false,
       isPlayer: false,
       login: false,
     });
@@ -73,24 +78,76 @@ export class DbService {
     return Boolean(data.user);
   }
 
+  async createAccount(user: Player) {
+    try {
+      const res = await axios.post(`http://localhost:3000/api/registerAttendanceUser`, {
+        email: user.email,
+        name: `${user.firstName}`,
+        appName: environment.shortName,
+        url: "https://sos-speyer.web.app",
+      });
+
+      if (!res.data?.user?.id) {
+        throw new Error('Fehler beim Erstellen eines Accounts');
+      }
+
+      const { data, error: updateError } = await supabase
+        .from('player')
+        .update({
+          appId: res.data.user.id
+        })
+        .match({ id: user.id })
+        .select()
+        .single();
+
+      if (updateError) {
+        throw new Error('Fehler beim updaten des Benutzers');
+      }
+
+      return data;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   async login(email: string, password: string) {
     const { data } = await supabase.auth.signInWithPassword({
       email, password,
     });
 
     if (data.user) {
+      this.user = data.user;
       this.authenticationState.next({
         isConductor: adminMails.includes(email.toLowerCase()),
-        isPlayer: true,
+        isHelper: !environment.withSignout,
+        isPlayer: !adminMails.includes(data.user.email.toLowerCase()),
         login: true,
       });
 
-      this.router.navigateByUrl(adminMails.includes(email.toLowerCase()) ? "/tabs/player" : "/tabs/attendance");
+      this.router.navigateByUrl(adminMails.includes(email.toLowerCase()) ? "/tabs/player" : "/signout");
     } else {
       Utils.showToast("Bitte gib die richtigen Daten an!", "danger");
     }
 
     return Boolean(data.user);
+  }
+
+  async getPlayerByAppId(): Promise<Player> {
+    const { data: player, error } = await supabase
+      .from('player')
+      .select('*')
+      .match({ appId: this.user.id })
+      .single();
+
+    if (error) {
+      Utils.showToast("Es konnte kein Spieler gefunden werden", "danger");
+      throw error;
+    }
+
+    return {
+      ...player,
+      history: player.history as any,
+    }
   }
 
   async getPlayers(all: boolean = false): Promise<Player[]> {
@@ -331,11 +388,7 @@ export class DbService {
     return data as any;
   }
 
-  async getAttendance(reload: boolean = false): Promise<Attendance[]> {
-    if (this.attendance.length && !reload) {
-      return this.attendance;
-    }
-
+  async getAttendance(): Promise<Attendance[]> {
     const { data } = await supabase
       .from('attendance')
       .select('*')
@@ -343,8 +396,20 @@ export class DbService {
         ascending: false,
       });
 
-    this.attendance = data as any;
-    return this.attendance;
+    return data as any;
+  }
+
+  async getAttendanceById(id: number): Promise<Attendance> {
+    const { data } = await supabase
+      .from('attendance')
+      .select('*')
+      .match({ id })
+      .order("date", {
+        ascending: false,
+      })
+      .single();
+
+    return data as any;
   }
 
   async updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance[]> {
@@ -524,5 +589,16 @@ export class DbService {
       .match({ id });
 
     return;
+  }
+
+  async signout(id: number, attIds: number[], reason: string): Promise<void> {
+    for (const attId of attIds) {
+      const attendance: Attendance = await this.getAttendanceById(attId);
+      attendance.players[id] = false;
+      attendance.playerNotes[id] = reason;
+      attendance.excused.push(String(id));
+
+      await this.updateAttendance(attendance, attId);
+    }
   }
 }

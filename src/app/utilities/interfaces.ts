@@ -1,5 +1,12 @@
 import { PlayerHistoryType } from "./constants";
 
+export interface AuthObject {
+    isConductor: boolean;
+    isHelper: boolean;
+    isPlayer: boolean;
+    login: boolean;
+}
+
 export interface Person {
     id?: number;
     created_at?: string;
@@ -10,6 +17,8 @@ export interface Person {
     isPresent?: boolean;
     isInactive?: boolean;
     left?: string;
+    email?: string;
+    appId?: string;
 }
 
 export interface PlayerHistoryEntry {

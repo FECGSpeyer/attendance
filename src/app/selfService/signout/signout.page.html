@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Abmeldung</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content *ngIf="player">
+  <ion-item lines="none">
+    <ion-label>Hallo {{ player.firstName }}!</ion-label>
+  </ion-item>
+  <ion-item *ngIf="attendances.length" lines="none">
+    <ion-label>Termine auswählen</ion-label>
+    <ion-select multiple="true" [(ngModel)]="selAttIds">
+      <ion-select-option [value]="att.id" *ngFor="let att of attendances">{{ att.date | date:'dd.MM.YYYY' }}
+        {{ att.typeInfo }}</ion-select-option>
+    </ion-select>
+  </ion-item>
+  <ion-item *ngIf="selAttIds.length">
+    <ion-label position="stacked">Grund</ion-label>
+    <ion-textarea placeholder="Mindestend 5 Zeichen..." [(ngModel)]="reason"></ion-textarea>
+  </ion-item>
+  <ion-button *ngIf="attendances.length" (click)="signout()" [disabled]="!(reason && reason.length > 4)" expand="full">
+    Abmeldung einreichen</ion-button>
+
+  <ion-accordion-group [value]="selAttIds.length ? '' : 'first'">
+    <ion-accordion value="first">
+      <ion-item slot="header" color="light">
+        <ion-label>Meine Anwesenheit</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-list>
+          <ion-item>
+            <ion-label>Durchschnitt</ion-label>
+            <ion-badge slot="end" [color]="perc ? 'success' : 'danger'">{{ perc }}%</ion-badge>
+          </ion-item>
+          <ion-item *ngFor="let att of playerAttendance">
+            <ion-label>
+              <h2 *ngIf="att.title">{{ att.date | date:'dd.MM.yyyy' }} | {{ att.title }}</h2>
+              <h2 *ngIf="!att.title">{{ att.date | date:'dd.MM.yyyy' }}</h2>
+            </ion-label>
+
+            <ion-badge slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : 'warning'">
+              {{ att.text }}</ion-badge>
+          </ion-item>
+        </ion-list>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
+</ion-content>

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
+import { AuthObject } from '../utilities/interfaces';
 import { DbService } from './db.service';
 
 @Injectable({
@@ -13,11 +14,13 @@ export class AuthGuard implements CanActivate {
     _: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Promise<boolean> {
     await this.db.checkToken();
-    const value: { isConductor: boolean, isPlayer: boolean } = this.db.authenticationState.value;
+    const value: AuthObject = this.db.authenticationState.value;
 
     if (state.url === "/tabs/attendance") {
-      return value.isConductor || value.isPlayer;
-    } else if (!value.isConductor) {
+      return value.isConductor || value.isHelper;
+    } else if (state.url === "/signout") {
+      return value.isPlayer;
+    } else if (value.isHelper) {
       this.router.navigateByUrl("/tabs/attendance");
       return false;
     }

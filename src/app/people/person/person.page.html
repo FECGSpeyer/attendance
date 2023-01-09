@@ -179,6 +179,14 @@
               </ion-item>
             </ion-col>
           </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">E-Mail</ion-label>
+                <ion-input [disabled]="player.appId" (ionChange)="onChange()" [(ngModel)]="player.email"></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
         </ion-grid>
       </div>
     </ion-accordion>
@@ -224,7 +232,7 @@
   </ion-accordion-group>
 
   <ion-button *ngIf="!existingPlayer" expand="block" (click)="addPlayer()">Spieler hinzufügen</ion-button>
-  <ion-button *ngIf="existingPlayer && hasChanges" expand="block" (click)="updatePlayer()">Änderungen speichern
-  </ion-button>
+  <ion-button *ngIf="existingPlayer && hasChanges" expand="block" (click)="updatePlayer()">Änderungen speichern</ion-button>
+  <ion-button *ngIf="existingPlayer && !hasChanges && !player.appId && player.email" expand="block" (click)="register()">User anlegen</ion-button>
   <div class="bottom-padding"></div>
 </ion-content>

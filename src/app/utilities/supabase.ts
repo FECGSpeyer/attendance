@@ -184,6 +184,8 @@ export interface Database {
           criticalReason: number | null
           otherExercise: string | null
           otherOrchestras: string[]
+          email: string | null
+          appId: string | null
         }
         Insert: {
           id?: number
@@ -208,6 +210,8 @@ export interface Database {
           criticalReason?: number | null
           otherExercise?: string | null
           otherOrchestras?: string[]
+          email?: string | null
+          appId?: string | null
         }
         Update: {
           id?: number
@@ -232,6 +236,8 @@ export interface Database {
           criticalReason?: number | null
           otherExercise?: string | null
           otherOrchestras?: string[]
+          email?: string | null
+          appId?: string | null
         }
       }
       songs: {

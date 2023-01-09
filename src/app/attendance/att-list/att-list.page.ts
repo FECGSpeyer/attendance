@@ -39,14 +39,14 @@ export class AttListPage implements OnInit {
   }
 
   async ngOnInit() {
-    await this.getAttendance(true);
-    this.db.authenticationState.subscribe((state: { isConductor: boolean, isPlayer: boolean }) => {
+    await this.getAttendance();
+    this.db.authenticationState.subscribe((state: { isConductor: boolean, isHelper: boolean }) => {
       this.isConductor = state.isConductor;
     });
   }
 
-  async getAttendance(reload: boolean = false): Promise<void> {
-    this.attendance = (await this.db.getAttendance(reload)).map((att: Attendance): Attendance => {
+  async getAttendance(): Promise<void> {
+    this.attendance = (await this.db.getAttendance()).map((att: Attendance): Attendance => {
       return {
         ...att,
         percentage: Object.keys(att.players).length ? Utils.getPercentage(att.players) : undefined,
@@ -63,7 +63,7 @@ export class AttListPage implements OnInit {
         text: "Fortfahren",
         handler: async (): Promise<void> => {
           await this.db.removeAttendance(id);
-          await this.getAttendance(true);
+          await this.getAttendance();
         }
       }]
     });
@@ -82,7 +82,7 @@ export class AttListPage implements OnInit {
     });
 
     await modal.dismiss();
-    await this.getAttendance(true);
+    await this.getAttendance();
   }
 
   formatDate(value: string): string {
@@ -116,7 +116,7 @@ export class AttListPage implements OnInit {
     const { data } = await modal.onWillDismiss();
 
     if (data?.updated) {
-      await this.getAttendance(true);
+      await this.getAttendance();
     }
   }
 

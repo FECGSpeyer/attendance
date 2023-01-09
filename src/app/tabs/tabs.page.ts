@@ -17,7 +17,7 @@ export class TabsPage {
   }
 
   initialize() {
-    this.db.authenticationState.subscribe((state: { isConductor: boolean, isPlayer: boolean }) => {
+    this.db.authenticationState.subscribe((state: { isConductor: boolean, isHelper: boolean }) => {
       this.isConductor = state.isConductor;
     });
   }

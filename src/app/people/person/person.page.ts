@@ -168,6 +168,11 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async updatePlayer(): Promise<void> {
+    if (this.player.email.length && this.player.email !== this.existingPlayer.email && !Utils.validateEmail(this.player.email)) {
+      Utils.showToast("Bitte gib eine valide E-Mail Adresse ein...", "danger");
+      return;
+    }
+
     const history = this.player.history;
     if (this.solved) {
       history.push({
@@ -242,6 +247,18 @@ export class PersonPage implements OnInit, AfterViewInit {
     });
 
     await alert.present();
+  }
+
+  async register() {
+    try {
+      await this.db.createAccount(this.player);
+      await this.modalController.dismiss({
+        added: true
+      });
+      Utils.showToast("Account wurde erfolgreich angelegt", "success");
+    } catch (error) {
+      Utils.showToast(error, "danger");
+    }
   }
 
 }
