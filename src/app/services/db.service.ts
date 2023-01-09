@@ -80,7 +80,7 @@ export class DbService {
 
   async createAccount(user: Player) {
     try {
-      const res = await axios.post(`http://localhost:3000/api/registerAttendanceUser`, {
+      const res = await axios.post(`https://staccato-server.vercel.app/api/registerAttendanceUser`, {
         email: user.email,
         name: `${user.firstName}`,
         appName: environment.shortName,
