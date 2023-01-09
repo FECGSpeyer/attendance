@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/core';
-import { AlertController, IonContent, IonItemSliding, IonSelect, ModalController } from '@ionic/angular';
+import { AlertController, IonContent, IonItemSliding, IonSelect, LoadingController, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
 import { Attendance, Instrument, Person, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
@@ -59,6 +59,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     private db: DbService,
     private modalController: ModalController,
     private alertController: AlertController,
+    private loadingController: LoadingController
   ) { }
 
   async ngOnInit() {
@@ -251,14 +252,19 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async register() {
+    const loading: HTMLIonLoadingElement = await this.loadingController.create();
+    loading.present();
+
     try {
       await this.db.createAccount(this.player);
       await this.modalController.dismiss({
         added: true
       });
       Utils.showToast("Account wurde erfolgreich angelegt", "success");
+      await loading.dismiss();
     } catch (error) {
       Utils.showToast(error, "danger");
+      await loading.dismiss();
     }
   }
 
