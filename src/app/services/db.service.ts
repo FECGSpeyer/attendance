@@ -84,7 +84,7 @@ export class DbService {
         email: user.email,
         name: `${user.firstName}`,
         appName: environment.shortName,
-        url: "https://sos-speyer.web.app",
+        url: environment.shortName === "SoS" ? "https://sos-speyer.web.app" : "https://bos-speyer.web.app",
       });
 
       if (!res.data?.user?.id) {
