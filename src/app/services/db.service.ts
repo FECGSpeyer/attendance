@@ -48,11 +48,12 @@ export class DbService {
 
     if (data?.user?.email) {
       this.user = data.user;
+      const isAdmin: boolean = adminMails.includes(data.user.email.toLowerCase());
       supabase.auth.refreshSession();
       this.authenticationState.next({
-        isConductor: adminMails.includes(data.user.email.toLowerCase()),
-        isHelper: !environment.withSignout,
-        isPlayer: !adminMails.includes(data.user.email.toLowerCase()),
+        isConductor: isAdmin,
+        isHelper: !environment.withSignout && !isAdmin,
+        isPlayer: !isAdmin,
         login: true,
       });
     }
@@ -117,10 +118,11 @@ export class DbService {
 
     if (data.user) {
       this.user = data.user;
+      const isAdmin: boolean = adminMails.includes(email.toLowerCase());
       this.authenticationState.next({
-        isConductor: adminMails.includes(email.toLowerCase()),
-        isHelper: !environment.withSignout,
-        isPlayer: !adminMails.includes(data.user.email.toLowerCase()),
+        isConductor: isAdmin,
+        isHelper: !environment.withSignout && !isAdmin,
+        isPlayer: !isAdmin,
         login: true,
       });
 
