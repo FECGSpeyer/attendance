@@ -14,7 +14,7 @@ export class LoginGuard implements CanActivate {
     const value: AuthObject = this.db.authenticationState.value;
 
     if (value.isHelper || value.isConductor || value.isPlayer) {
-      this.router.navigateByUrl(value.isConductor ? "/tabs/player" : value.isHelper ? "/tabs/attendance" : "/tabs/signout");
+      this.router.navigateByUrl(value.isConductor ? "/tabs/player" : value.isHelper ? "/tabs/attendance" : "/signout");
       return false;
     }
 

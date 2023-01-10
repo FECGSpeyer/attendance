@@ -123,7 +123,11 @@ export class ListPage implements OnInit {
         return player.isNew;
       } else if (this.filterOpt === "active") {
         return !player.paused;
-      } {
+      } else if (this.filterOpt === "withoutTeacher") {
+        return !player.hasTeacher;
+      } else if (this.filterOpt === "withoutAccount") {
+        return !player.appId;
+      } else {
         return player.isLeader;
       }
     }), this.instruments);

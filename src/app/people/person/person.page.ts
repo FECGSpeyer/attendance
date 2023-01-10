@@ -37,7 +37,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     history: [],
     paused: false,
   };
-  public withSingout: boolean = environment.withSignout;
+  public withSignout: boolean = environment.withSignout;
   public player: Player;
   public birthdayString: string = format(new Date(), 'dd.MM.yyyy');
   public playsSinceString: string = format(new Date(), 'dd.MM.yyyy');
@@ -207,7 +207,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     if (this.existingPlayer) {
       this.hasChanges =
         this.solved ||
-        JSON.stringify({ ...this.existingPlayer, teacherName: this.player.teacherName, notes: this.existingPlayer.notes || "", criticalReasonText: this.player.criticalReasonText }) !== JSON.stringify(this.player);
+        JSON.stringify({ ...this.existingPlayer, email: this.existingPlayer.email || "", teacherName: this.player.teacherName, notes: this.existingPlayer.notes || "", criticalReasonText: this.player.criticalReasonText }) !== JSON.stringify(this.player);
     }
   }
 

@@ -49,7 +49,11 @@ export class LoginPage implements OnInit {
   }
 
   async login() {
+    const loading = await Utils.getLoadingElement();
+    loading.present();
     const res: boolean = await this.db.login(this.registerCredentials.email, this.registerCredentials.password);
+
+    loading.dismiss();
 
     if (!res) {
       Utils.showToast("Fehler bei der Anmeldung, versuche es erneut", "danger");

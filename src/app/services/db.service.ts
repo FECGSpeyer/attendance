@@ -219,7 +219,7 @@ export class DbService {
       return;
     }
 
-    Utils.showToast("Eine E-Mail mit weiteren Anweisungen wurde dir zugesandt", 'success');
+    Utils.showToast("Eine E-Mail mit weiteren Anweisungen wurde dir zugesandt", 'success', 4000);
   }
 
   async updatePassword(password: string) {

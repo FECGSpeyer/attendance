@@ -81,11 +81,11 @@ export class Utils {
     }
   }
 
-  public static async showToast(message: string, color: string = "success"): Promise<void> {
+  public static async showToast(message: string, color: string = "success", duration: number = 1500): Promise<void> {
     const toast: HTMLIonToastElement = await new ToastController().create({
       message, color,
       position: "top",
-      duration: 1500,
+      duration,
     });
 
     return await toast.present();

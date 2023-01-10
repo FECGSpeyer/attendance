@@ -29,26 +29,32 @@ export class SignoutPage implements OnInit {
   async signout() {
     await this.db.signout(this.player.id, this.selAttIds, this.reason);
 
-    Utils.showToast("Vielen Dank für deine Abmeldung! Gottes Segen.");
+    Utils.showToast("Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.", "success", 4000);
 
     await this.getAttendances();
   }
 
   async getAttendances() {
-    this.attendances = (await this.db.getAttendance()).filter((attendance: Attendance) => {
-      return dayjs(attendance.date).isAfter(dayjs()) &&
-        Object.keys(attendance.players).includes(String(this.player.id)) &&
-        !attendance.excused.includes(String(this.player.id));
-    });
+    if (!this.player.paused) {
+      this.attendances = (await this.db.getAttendance()).filter((attendance: Attendance) => {
+        return dayjs(attendance.date).isAfter(dayjs(), "day") &&
+          Object.keys(attendance.players).includes(String(this.player.id)) &&
+          !attendance.excused.includes(String(this.player.id));
+      });
 
-    if (this.attendances.length) {
-      this.selAttIds = [this.attendances[0].id];
-    } else {
-      this.selAttIds = [];
+      if (this.attendances.length) {
+        this.selAttIds = [this.attendances[0].id];
+      } else {
+        this.selAttIds = [];
+      }
     }
 
     this.playerAttendance = await this.db.getPlayerAttendance(this.player.id);
     this.perc = Math.round(this.playerAttendance.filter((att: PersonAttendance) => att.attended).length / this.playerAttendance.length * 100);
+  }
+
+  logout() {
+    this.db.logout();
   }
 
 }

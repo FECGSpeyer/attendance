@@ -31,7 +31,9 @@
                 <ion-select-option value="active">Aktive Spieler</ion-select-option>
                 <ion-select-option value="criticals">Problemfälle</ion-select-option>
                 <ion-select-option value="leaders">Stimmführer</ion-select-option>
+                <ion-select-option *ngIf="withSignout" value="withoutAccount">Ohne Account</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="new">Neue Spieler</ion-select-option>
+                <ion-select-option *ngIf="isVoS" value="withoutTeacher">Ohne Lehrer</ion-select-option>
               </ion-select>
             </ion-item>
 
