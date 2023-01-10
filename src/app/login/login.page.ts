@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { IonInput } from '@ionic/angular';
+import { AlertController, IonInput } from '@ionic/angular';
 import { DbService } from '../services/db.service';
 import { Utils } from '../utilities/Utils';
 
@@ -17,6 +17,7 @@ export class LoginPage implements OnInit {
 
   constructor(
     private db: DbService,
+    private alertController: AlertController
   ) { }
 
   async ngOnInit() {
@@ -53,5 +54,32 @@ export class LoginPage implements OnInit {
     if (!res) {
       Utils.showToast("Fehler bei der Anmeldung, versuche es erneut", "danger");
     }
+  }
+
+  async forgotPassword(email: string) {
+    const alert = await this.alertController.create({
+      header: "Passwort zurücksetzen",
+      inputs: [
+        {
+          name: 'email',
+          value: email,
+          type: 'email',
+          placeholder: "E-Mail eingeben..."
+        }
+      ],
+      buttons: [
+        {
+          text: "Abbrechen",
+          role: 'cancel'
+        }, {
+          text: "Zurücksetzen",
+          handler: (values: any) => {
+            this.db.resetPassword(values.email);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 }

@@ -1,4 +1,4 @@
-import { ToastController } from "@ionic/angular";
+import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { environment } from "src/environments/environment";
 import { AttendanceItem, Instrument, Player } from "./interfaces";
@@ -96,5 +96,11 @@ export class Utils {
     const regexp: any = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
 
     return regexp.test(email);
+  }
+
+  public static async getLoadingElement() {
+    return await new LoadingController().create({
+      duration: 3000
+    });
   }
 }

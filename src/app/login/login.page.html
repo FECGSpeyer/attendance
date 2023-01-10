@@ -14,9 +14,14 @@
               <ion-input #emailInput class="inputFontBlack" type="text" placeholder="E-Mail" name="email" [(ngModel)]="registerCredentials.email" required></ion-input>
             </ion-item>
             <ion-item>
-              <ion-label position="stacked">Passwort</ion-label>
+              <ion-label class="inputFontBlack" position="stacked">Passwort</ion-label>
               <ion-input #passwordInput class="inputFontBlack" type="password" placeholder="Passwort" name="password" [(ngModel)]="registerCredentials.password" required></ion-input>
             </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+            <ion-button (click)="forgotPassword()" size="small" fill="clear">Passwort vergessen?</ion-button>
           </ion-col>
         </ion-row>
         <ion-row>

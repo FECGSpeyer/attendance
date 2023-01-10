@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
-import { createClient, SupabaseClientOptions, User } from '@supabase/supabase-js';
+import { createClient, SupabaseClient, SupabaseClientOptions, User } from '@supabase/supabase-js';
 import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
@@ -41,6 +41,10 @@ export class DbService {
     this.plt.ready().then(() => {
       this.checkToken();
     });
+  }
+
+  getSupabase(): SupabaseClient {
+    return supabase;
   }
 
   async checkToken() {
@@ -85,7 +89,7 @@ export class DbService {
         email: user.email,
         name: `${user.firstName}`,
         appName: environment.shortName,
-        url: environment.shortName === "SoS" ? "https://sos-speyer.web.app" : "https://bos-speyer.web.app",
+        url: environment.shortName === "SoS" ? "https://sos.fecg-speyer.de" : "https://bos.fecg-speyer.de",
       });
 
       if (!res.data?.user?.id) {
@@ -201,6 +205,34 @@ export class DbService {
         history: player.history as any,
       }
     });
+  }
+
+  async resetPassword(email: string) {
+    const loading = await Utils.getLoadingElement();
+    loading.present();
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+
+    loading.dismiss();
+
+    if (error) {
+      Utils.showToast("Fehler beim Zurücksetzen des Passworts. Versuche es später erneut", "danger");
+      return;
+    }
+
+    Utils.showToast("Eine E-Mail mit weiteren Anweisungen wurde dir zugesandt", 'success');
+  }
+
+  async updatePassword(password: string) {
+    const loading = await Utils.getLoadingElement();
+    loading.present();
+    const { data, error } = await supabase.auth.updateUser({
+      password,
+    });
+
+    loading.dismiss();
+
+    if (data) { Utils.showToast('Passwort wurde erfolgreich aktualisiert', 'success'); }
+    if (error) { Utils.showToast('Fehler beim zurücksetzen, versuche es noch einmal', "danger"); }
   }
 
   async syncCriticalPlayers(players: Player[]): Promise<boolean> {
