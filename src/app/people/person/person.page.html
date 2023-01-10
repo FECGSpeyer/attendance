@@ -233,6 +233,6 @@
 
   <ion-button *ngIf="!existingPlayer" expand="block" (click)="addPlayer()">Spieler hinzufügen</ion-button>
   <ion-button *ngIf="existingPlayer && hasChanges" expand="block" (click)="updatePlayer()">Änderungen speichern</ion-button>
-  <ion-button *ngIf="environment.withSignout && existingPlayer && !hasChanges && !player.appId && player.email" expand="block" (click)="register()">User anlegen</ion-button>
+  <ion-button *ngIf="withSignout && existingPlayer && !hasChanges && !player.appId && player.email" expand="block" (click)="register()">User anlegen</ion-button>
   <div class="bottom-padding"></div>
 </ion-content>
