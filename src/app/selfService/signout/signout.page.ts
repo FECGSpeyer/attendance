@@ -16,6 +16,7 @@ export class SignoutPage implements OnInit {
   public selAttIds: number[] = [];
   public reason: string;
   public perc: number;
+  public version: string = require('../../../../package.json').version;
 
   constructor(
     private db: DbService,
@@ -40,7 +41,7 @@ export class SignoutPage implements OnInit {
         return dayjs(attendance.date).isAfter(dayjs(), "day") &&
           Object.keys(attendance.players).includes(String(this.player.id)) &&
           !attendance.excused.includes(String(this.player.id));
-      });
+      }).sort((a: Attendance, b: Attendance) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       if (this.attendances.length) {
         this.selAttIds = [this.attendances[0].id];
