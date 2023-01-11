@@ -490,7 +490,7 @@ export class DbService {
 
     return data.map((att): PersonAttendance => {
       return {
-        id,
+        id: att.id,
         date: att.date,
         attended: att.players[id],
         title: att.typeInfo ? att.typeInfo : att.type === "vortrag" ? "Vortrag" : "",
@@ -650,5 +650,14 @@ export class DbService {
 
       await this.updateAttendance(attendance, attId);
     }
+  }
+
+  async signin(id: number, attId: number): Promise<void> {
+    const attendance: Attendance = await this.getAttendanceById(attId);
+    attendance.players[id] = true;
+    delete attendance.playerNotes[id];
+    attendance.excused = attendance.excused.filter((playerId: string) => playerId !== String(id));
+
+    await this.updateAttendance(attendance, attId);
   }
 }

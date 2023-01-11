@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AlertController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Attendance, PersonAttendance, Player } from 'src/app/utilities/interfaces';
@@ -12,6 +13,7 @@ import { Utils } from 'src/app/utilities/Utils';
 export class SignoutPage implements OnInit {
   public player: Player;
   public attendances: Attendance[] = [];
+  public excusedAttendances: Attendance[] = [];
   public playerAttendance: PersonAttendance[] = [];
   public selAttIds: number[] = [];
   public reason: string;
@@ -20,6 +22,7 @@ export class SignoutPage implements OnInit {
 
   constructor(
     private db: DbService,
+    private alertController: AlertController,
   ) { }
 
   async ngOnInit() {
@@ -35,9 +38,25 @@ export class SignoutPage implements OnInit {
     await this.getAttendances();
   }
 
+  async signin(id: number) {
+    await this.db.signin(this.player.id, id);
+
+    Utils.showToast("Schön, dass du doch kommen kannst.", "success", 4000);
+
+    await this.getAttendances();
+  }
+
   async getAttendances() {
     if (!this.player.paused) {
-      this.attendances = (await this.db.getAttendance()).filter((attendance: Attendance) => {
+      const allAttendances: Attendance[] = await this.db.getAttendance();
+
+      this.excusedAttendances = allAttendances.filter((attendance: Attendance) => {
+        return dayjs(attendance.date).isAfter(dayjs(), "day") &&
+          Object.keys(attendance.players).includes(String(this.player.id)) &&
+          attendance.excused.includes(String(this.player.id));
+      });
+
+      this.attendances = allAttendances.filter((attendance: Attendance) => {
         return dayjs(attendance.date).isAfter(dayjs(), "day") &&
           Object.keys(attendance.players).includes(String(this.player.id)) &&
           !attendance.excused.includes(String(this.player.id));
@@ -56,6 +75,33 @@ export class SignoutPage implements OnInit {
 
   logout() {
     this.db.logout();
+  }
+
+  canEdit(id: number): boolean {
+    return Boolean(this.excusedAttendances.find((att: Attendance) => att.id === id));
+  }
+
+  async removeExcuse(id: number) {
+    if (!this.excusedAttendances.find((att: Attendance) => att.id === id)) {
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Bestätigung',
+      message: 'Ich kann <strong>doch</strong> anwesend sein',
+      buttons: [
+        {
+          text: 'Abbrechen',
+        }, {
+          text: 'Anpassen',
+          handler: () => {
+            this.signin(id);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
 }
