@@ -170,7 +170,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async updatePlayer(): Promise<void> {
-    if (this.player.email.length && this.player.email !== this.existingPlayer.email && !Utils.validateEmail(this.player.email)) {
+    if (this.player.email?.length && this.player.email !== this.existingPlayer.email && !Utils.validateEmail(this.player.email)) {
       Utils.showToast("Bitte gib eine valide E-Mail Adresse ein...", "danger");
       return;
     }
