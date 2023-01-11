@@ -71,14 +71,6 @@ export class InstrumentPage implements OnInit {
     await alert.present();
   }
 
-  onTuningChanges(event: any): void {
-    this.instrument.tuning = event.detail.value;
-  }
-
-  onClefsChanges(event: any): void {
-    this.instrument.clefs = event.detail.value;
-  }
-
   async dismiss(): Promise<void> {
     await this.modalController.dismiss();
   }

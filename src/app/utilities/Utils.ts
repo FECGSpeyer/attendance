@@ -98,9 +98,7 @@ export class Utils {
     return regexp.test(email);
   }
 
-  public static async getLoadingElement() {
-    return await new LoadingController().create({
-      duration: 3000
-    });
+  public static async getLoadingElement(duration: number = 3000) {
+    return await new LoadingController().create({ duration });
   }
 }

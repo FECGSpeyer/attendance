@@ -77,11 +77,14 @@
         </ng-template>
       </ion-modal>
     </ion-item>
+    <ion-item button *ngIf="playersWithoutAccount.length" (click)="createAccounts" color="warning">
+      <ion-label>Fehlende Benutzeraccounts anlegen</ion-label>
+    </ion-item>
 
     <ion-list-header sticky="true">
       Allgemein
     </ion-list-header>
-    <ion-item detail="false" button id="register-button">
+    <!-- <ion-item detail="false" button id="register-button">
       <ion-label>App-User hinzufügen</ion-label>
       <ion-modal trigger="register-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">
         <ng-template>
@@ -103,7 +106,7 @@
           </ion-content>
         </ng-template>
       </ion-modal>
-    </ion-item>
+    </ion-item> -->
 
     <ion-item>
       <ion-label>Version</ion-label>

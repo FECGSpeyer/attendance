@@ -23,7 +23,7 @@
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Stimmung</ion-label>
-          <ion-select (ionChange)="onTuningChanges($event)" #select [value]="instrument.tuning">
+          <ion-select [(ngModel)]="instrument.tuning">
             <ion-select-option>C</ion-select-option>
             <ion-select-option>Es</ion-select-option>
             <ion-select-option>B</ion-select-option>
@@ -42,7 +42,7 @@
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Stimmung</ion-label>
-          <ion-select multiple="true" (ionChange)="onClefsChanges($event)" #select [value]="instrument.clefs">
+          <ion-select multiple="true" [(ngModel)]="instrument.clefs">
             <ion-select-option value="g">Violinschlüssel (G)</ion-select-option>
             <ion-select-option value="f">Bassschlüssel (F)</ion-select-option>
             <ion-select-option value="c">Altschlüssel (C)</ion-select-option>
@@ -54,7 +54,7 @@
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>
-          <ion-textarea rows="6" [(ngModel)]="instrument.notes"></ion-textarea>
+          <ion-textarea rows="4" [(ngModel)]="instrument.notes"></ion-textarea>
         </ion-item>
       </ion-col>
     </ion-row>

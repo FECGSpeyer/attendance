@@ -283,6 +283,22 @@ export class DbService {
     });
   }
 
+  async getPlayersWithoutAccount(): Promise<Player[]> {
+    const { data } = await supabase
+      .from('player')
+      .select('*')
+      .not("email", "is", null)
+      .is("appId", null)
+      .is("left", null);
+
+    return data.map((player) => {
+      return {
+        ...player,
+        history: player.history as any,
+      }
+    });
+  }
+
   async getConductors(all: boolean = false): Promise<Person[]> {
     const response = await supabase
       .from('conductors')

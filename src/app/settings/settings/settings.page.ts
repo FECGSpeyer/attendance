@@ -19,6 +19,7 @@ export class SettingsPage implements OnInit {
   public conductors: Person[] = [];
   public selConductors: number[] = [];
   public leftPlayers: Player[] = [];
+  public playersWithoutAccount: Player[] = [];
   public version: string = require('../../../../package.json').version;
   public showTeachers: boolean = environment.showTeachers;
 
@@ -32,6 +33,7 @@ export class SettingsPage implements OnInit {
     this.conductors = await this.db.getConductors();
     this.selConductors = this.conductors.map((c: Person): number => c.id);
     this.leftPlayers = Utils.getModifiedPlayers(await this.db.getLeftPlayers(), await this.db.getInstruments());
+    this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
   }
 
   async logout() {
@@ -96,6 +98,18 @@ export class SettingsPage implements OnInit {
     } else {
       await Utils.showToast("Fehler beim Erstellen, versuche es noch einmal", "danger");
     }
+  }
+
+  async createAccounts() {
+    const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999999);
+
+    loading.present();
+
+    for (let player of this.playersWithoutAccount) {
+      await this.db.createAccount(player);
+    }
+
+    loading.dismiss();
   }
 
 }
