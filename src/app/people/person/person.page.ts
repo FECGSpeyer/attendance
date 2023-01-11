@@ -207,7 +207,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     if (this.existingPlayer) {
       this.hasChanges =
         this.solved ||
-        JSON.stringify({ ...this.existingPlayer, email: this.existingPlayer.email || "", teacherName: this.player.teacherName, notes: this.existingPlayer.notes || "", criticalReasonText: this.player.criticalReasonText }) !== JSON.stringify(this.player);
+        JSON.stringify({ ...this.existingPlayer, email: this.player.email === null ? null : this.existingPlayer.email || "", teacherName: this.player.teacherName, notes: this.player.notes === null ? null : this.existingPlayer.notes || "", criticalReasonText: this.player.criticalReasonText }) !== JSON.stringify(this.player);
     }
   }
 
