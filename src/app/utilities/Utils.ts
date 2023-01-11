@@ -1,7 +1,7 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { environment } from "src/environments/environment";
-import { AttendanceItem, Instrument, Player } from "./interfaces";
+import { Attendance, AttendanceItem, Instrument, Player } from "./interfaces";
 
 export class Utils {
   public static getModifiedPlayers(players: Player[], instruments: Instrument[]): Player[] {
@@ -100,5 +100,9 @@ export class Utils {
 
   public static async getLoadingElement(duration: number = 3000) {
     return await new LoadingController().create({ duration });
+  }
+
+  public static getAttendanceText(attendance: Attendance): string {
+    return attendance.typeInfo ? attendance.typeInfo : attendance.type === "vortrag" ? "Vortrag" : "";
   }
 }

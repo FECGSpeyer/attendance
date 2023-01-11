@@ -31,7 +31,8 @@ export class SignoutPage implements OnInit {
   }
 
   async signout() {
-    await this.db.signout(this.player.id, this.selAttIds, this.reason);
+    await this.db.signout(this.player, this.selAttIds, this.reason);
+    this.reason = "";
 
     Utils.showToast("Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.", "success", 4000);
 
@@ -39,7 +40,7 @@ export class SignoutPage implements OnInit {
   }
 
   async signin(id: number) {
-    await this.db.signin(this.player.id, id);
+    await this.db.signin(this.player, id);
 
     Utils.showToast("Schön, dass du doch kommen kannst.", "success", 4000);
 

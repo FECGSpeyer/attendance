@@ -641,23 +641,45 @@ export class DbService {
     return;
   }
 
-  async signout(id: number, attIds: number[], reason: string): Promise<void> {
+  async signout(player: Player, attIds: number[], reason: string): Promise<void> {
+    const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
+    loading.present();
+
+    const attendances: Attendance[] = [];
+
     for (const attId of attIds) {
       const attendance: Attendance = await this.getAttendanceById(attId);
-      attendance.players[id] = false;
-      attendance.playerNotes[id] = reason;
-      attendance.excused.push(String(id));
+      attendances.push(attendance);
+      attendance.players[player.id] = false;
+      attendance.playerNotes[player.id] = reason;
+      attendance.excused.push(String(player.id));
 
       await this.updateAttendance(attendance, attId);
     }
+
+    this.notifyPerTelegram(player, attendances, "signout", reason);
+
+    loading.dismiss();
   }
 
-  async signin(id: number, attId: number): Promise<void> {
+  async signin(player: Player, attId: number): Promise<void> {
     const attendance: Attendance = await this.getAttendanceById(attId);
-    attendance.players[id] = true;
-    delete attendance.playerNotes[id];
-    attendance.excused = attendance.excused.filter((playerId: string) => playerId !== String(id));
+    attendance.players[player.id] = true;
+    delete attendance.playerNotes[player.id];
+    attendance.excused = attendance.excused.filter((playerId: string) => playerId !== String(player.id));
+
+    this.notifyPerTelegram(player, [attendance]);
 
     await this.updateAttendance(attendance, attId);
+  }
+
+  async notifyPerTelegram(player: Player, attendances: Attendance[], type: string = "signin", reason?: string): Promise<void> {
+    await axios.post(`https://staccato-server.vercel.app/api/notifyAttendanceOwner`, {
+      name: `${player.firstName} ${player.lastName}`,
+      appName: environment.shortName,
+      dates: attendances.map((attendance: Attendance) => `${dayjs(attendance.date).format("DD.MM.YYYY")}${Utils.getAttendanceText(attendance) ? " " + Utils.getAttendanceText(attendance) : ""}`),
+      type,
+      reason,
+    });
   }
 }
