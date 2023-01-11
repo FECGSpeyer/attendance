@@ -14,6 +14,7 @@ export class LoginPage implements OnInit {
   @ViewChild('passwordInput', { static: true }) passwordInput: IonInput;
   loginForm: FormGroup;
   registerCredentials = { password: '', email: '' };
+  public version: string = require('../../../package.json').version;
 
   constructor(
     private db: DbService,
