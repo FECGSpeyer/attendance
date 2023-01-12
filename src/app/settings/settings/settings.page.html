@@ -84,6 +84,9 @@
     <ion-list-header sticky="true">
       Allgemein
     </ion-list-header>
+    <ion-item button (click)="openStats()">
+      <ion-label>Statistiken</ion-label>
+    </ion-item>
     <ion-item detail="false" button id="register-button">
       <ion-label>App-User hinzufügen</ion-label>
       <ion-modal trigger="register-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">

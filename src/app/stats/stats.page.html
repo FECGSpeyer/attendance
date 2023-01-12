@@ -1,0 +1,73 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Statistiken (bis Heute)</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-list-header>
+      Anwesenheiten
+    </ion-list-header>
+
+    <ion-item>
+      <ion-label>Anwesenheiten Gesamt</ion-label>
+      <ion-badge>{{ attendances?.length }}</ion-badge>
+    </ion-item>
+    <ion-item>
+      <ion-label>Proben</ion-label>
+      <ion-badge>{{ pratices?.length }}</ion-badge>
+    </ion-item>
+    <ion-item>
+      <ion-label>Vorträge</ion-label>
+      <ion-badge>{{ vortraege?.length }}</ion-badge>
+    </ion-item>
+    <ion-item>
+      <ion-label>Sonstige Anwesenheiten</ion-label>
+      <ion-badge>{{ otherAttendances?.length }}</ion-badge>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Ø Teilnehmer pro Termin</ion-label>
+      <ion-badge>{{ attPerc }}%</ion-badge>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Beste Anwesenheit</ion-label>
+      <ion-badge>{{ bestAttendance?.date | date:'dd.MM.YYYY' }} ({{ bestAttendance?.percentage }}%)</ion-badge>
+    </ion-item>
+    <ion-item>
+      <ion-label>Schlechteste Anwesenheit</ion-label>
+      <ion-badge>{{ worstAttendance?.date | date:'dd.MM.YYYY' }} ({{ worstAttendance?.percentage }}%)</ion-badge>
+    </ion-item>
+
+    <ion-list-header>
+      Spieler
+    </ion-list-header>
+
+    <ion-item>
+      <ion-label>Spieler Gesamt</ion-label>
+      <ion-badge>{{ players?.length }}</ion-badge>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Aktive Spieler</ion-label>
+      <ion-badge>{{ activePlayers?.length }}</ion-badge>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Pausierende Spieler</ion-label>
+      <ion-badge>{{ pausedPlayers?.length }}</ion-badge>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Gegangene Spieler</ion-label>
+      <ion-badge>{{ leftPlayers?.length }}</ion-badge>
+    </ion-item>
+  </ion-list>
+</ion-content>

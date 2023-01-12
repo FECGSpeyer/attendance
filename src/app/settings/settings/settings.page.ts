@@ -6,6 +6,7 @@ import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
 import { HistoryPage } from 'src/app/history/history.page';
 import { DbService } from 'src/app/services/db.service';
+import { StatsPage } from 'src/app/stats/stats.page';
 import { Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
@@ -88,6 +89,15 @@ export class SettingsPage implements OnInit {
   async openHistoryModal(): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: HistoryPage,
+      presentingElement: this.routerOutlet.nativeEl,
+    });
+
+    await modal.present();
+  }
+
+  async openStats(): Promise<void> {
+    const modal: HTMLIonModalElement = await this.modalController.create({
+      component: StatsPage,
       presentingElement: this.routerOutlet.nativeEl,
     });
 
