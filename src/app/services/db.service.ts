@@ -381,11 +381,19 @@ export class DbService {
       .match({ id });
   }
 
-  async archivePlayer(id: number): Promise<void> {
+  async archivePlayer(player: Player, left: string, notes: string): Promise<void> {
+    if ((player.notes || "") !== notes) {
+      player.history.push({
+        date: new Date().toISOString(),
+        text: player.notes || "Keine Notiz",
+        type: PlayerHistoryType.NOTES,
+      });
+    }
+
     await supabase
       .from('player')
-      .update({ left: new Date().toISOString() })
-      .match({ id });
+      .update({ left, notes, history: player.history as any })
+      .match({ id: player.id });
   }
 
   async getInstruments(): Promise<Instrument[]> {

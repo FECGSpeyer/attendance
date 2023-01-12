@@ -17,6 +17,7 @@ dayjs.extend(utc);
 })
 export class PersonPage implements OnInit, AfterViewInit {
   @Input() existingPlayer: Player;
+  @Input() readOnly: boolean;
   @Input() instruments: Instrument[];
   @ViewChild('select') select: IonSelect;
   @ViewChild('content') content: IonContent;
@@ -204,7 +205,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   onChange() {
-    if (this.existingPlayer) {
+    if (!this.readOnly && this.existingPlayer) {
       this.hasChanges =
         this.solved ||
         JSON.stringify({ ...this.existingPlayer, email: this.player.email === null ? null : this.existingPlayer.email || "", teacherName: this.player.teacherName, notes: this.player.notes === null ? null : this.existingPlayer.notes || "", criticalReasonText: this.player.criticalReasonText }) !== JSON.stringify(this.player);

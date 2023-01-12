@@ -16,13 +16,13 @@
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Vorname</ion-label>
-          <ion-input (ionChange)="onChange()" [(ngModel)]="player.firstName"></ion-input>
+          <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.firstName"></ion-input>
         </ion-item>
       </ion-col>
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Nachname</ion-label>
-          <ion-input (ionChange)="onChange()" [(ngModel)]="player.lastName"></ion-input>
+          <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.lastName"></ion-input>
         </ion-item>
       </ion-col>
     </ion-row>
@@ -31,14 +31,14 @@
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>
-          <ion-textarea rows="1" (ionChange)="onChange()" [(ngModel)]="player.notes"></ion-textarea>
+          <ion-textarea [disabled]="readOnly" rows="1" (ionChange)="onChange()" [(ngModel)]="player.notes"></ion-textarea>
         </ion-item>
       </ion-col>
     </ion-row>
 
   </ion-grid>
 
-  <ion-accordion-group value="critical" *ngIf="player?.isCritical">
+  <ion-accordion-group value="critical" *ngIf="!readOnly && player?.isCritical">
     <ion-accordion value="critical">
       <ion-item slot="header" color="light">
         <ion-label>Problemfall</ion-label>
@@ -61,7 +61,7 @@
     </ion-accordion>
   </ion-accordion-group>
 
-  <ion-accordion-group *ngIf="player" [value]="existingPlayer ? '' : 'more'">
+  <ion-accordion-group *ngIf="player" [value]="existingPlayer && !readOnly ? '' : 'more'">
     <ion-accordion value="more">
       <ion-item slot="header" color="light">
         <ion-label>Allgemeine Infos</ion-label>
@@ -72,7 +72,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Instrument</ion-label>
-                <ion-select (ionChange)="onInstrumentChange()" #select [(ngModel)]="player.instrument">
+                <ion-select [disabled]="readOnly" (ionChange)="onInstrumentChange()" #select [(ngModel)]="player.instrument">
                   <ion-select-option [value]="i.id" *ngFor="let i of instruments">
                     {{ i.name }}
                   </ion-select-option>
@@ -84,7 +84,7 @@
             <ion-col>
               <ion-item [color]="!existingPlayer || player.correctBirthday ? '' : 'warning'">
                 <ion-label position="stacked">Geburtsdatum</ion-label>
-                <ion-input readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
+                <ion-input [disabled]="readOnly" readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
                 <ion-modal trigger="date-modal">
                   <ng-template>
                     <ion-content>
@@ -101,7 +101,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
-                <ion-input readonly [(ngModel)]="playsSinceString" id="plays-modal"></ion-input>
+                <ion-input [disabled]="readOnly" readonly [(ngModel)]="playsSinceString" id="plays-modal"></ion-input>
                 <ion-modal trigger="plays-modal">
                   <ng-template>
                     <ion-content>
@@ -118,7 +118,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Beigetreten am</ion-label>
-                <ion-input readonly [(ngModel)]="joinedString" id="joined-modal"></ion-input>
+                <ion-input [disabled]="readOnly" readonly [(ngModel)]="joinedString" id="joined-modal"></ion-input>
                 <ion-modal trigger="joined-modal">
                   <ng-template>
                     <ion-content>
@@ -135,7 +135,7 @@
             <ion-col>
               <ion-item>
                 <ion-label>Spielt beim Lehrer</ion-label>
-                <ion-toggle (ionChange)="onChange()" [(ngModel)]="player.hasTeacher"></ion-toggle>
+                <ion-toggle [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.hasTeacher"></ion-toggle>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -143,7 +143,7 @@
             <ion-col>
               <ion-item>
                 <ion-label>Lehrer</ion-label>
-                <ion-select (ionChange)="onChange()" [(ngModel)]="player.teacher">
+                <ion-select [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.teacher">
                   <ion-select-option [value]="teacher.id" *ngFor="let teacher of teachers">
                     {{ teacher.name }}
                   </ion-select-option>
@@ -155,7 +155,7 @@
             <ion-col>
               <ion-item>
                 <ion-label>Stimmführer</ion-label>
-                <ion-toggle (ionChange)="onChange()" [(ngModel)]="player.isLeader"></ion-toggle>
+                <ion-toggle [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.isLeader"></ion-toggle>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -163,7 +163,7 @@
             <ion-col>
               <ion-item>
                 <ion-label>Andere Orchester</ion-label>
-                <ion-select multiple="true" (ionChange)="onChange()" [(ngModel)]="player.otherOrchestras">
+                <ion-select [disabled]="readOnly" multiple="true" (ionChange)="onChange()" [(ngModel)]="player.otherOrchestras">
                   <ion-select-option>SoS</ion-select-option>
                   <ion-select-option>GoS</ion-select-option>
                   <ion-select-option>BoS</ion-select-option>
@@ -175,7 +175,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Sonstige Dienste</ion-label>
-                <ion-input (ionChange)="onChange()" [(ngModel)]="player.otherExercise"></ion-input>
+                <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.otherExercise"></ion-input>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -183,7 +183,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">E-Mail</ion-label>
-                <ion-input [disabled]="player.appId" (ionChange)="onChange()" [(ngModel)]="player.email"></ion-input>
+                <ion-input [disabled]="player.appId || readOnly" (ionChange)="onChange()" [(ngModel)]="player.email"></ion-input>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -232,13 +232,13 @@
   </ion-accordion-group>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button *ngIf="existingPlayer && hasChanges" (click)="updatePlayer()">
+    <ion-fab-button *ngIf="!readOnly && existingPlayer && hasChanges" (click)="updatePlayer()">
       <ion-icon name="save-outline"></ion-icon>
     </ion-fab-button>
     <ion-fab-button *ngIf="!existingPlayer" (click)="addPlayer()">
       <ion-icon name="person-add-outline"></ion-icon>
     </ion-fab-button>
-    <ion-fab-button *ngIf="withSignout && existingPlayer && !hasChanges && !player.appId && player.email" (click)="register()">
+    <ion-fab-button *ngIf="!readOnly && withSignout && existingPlayer && !hasChanges && !player.appId && player.email" (click)="register()">
       <ion-icon name="key-outline"></ion-icon>
     </ion-fab-button>
   </ion-fab>

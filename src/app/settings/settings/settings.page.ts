@@ -5,9 +5,10 @@ import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
 import { HistoryPage } from 'src/app/history/history.page';
+import { PersonPage } from 'src/app/people/person/person.page';
 import { DbService } from 'src/app/services/db.service';
 import { StatsPage } from 'src/app/stats/stats.page';
-import { Person, Player } from 'src/app/utilities/interfaces';
+import { Instrument, Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
 
@@ -23,6 +24,7 @@ export class SettingsPage implements OnInit {
   public playersWithoutAccount: Player[] = [];
   public version: string = require('../../../../package.json').version;
   public showTeachers: boolean = environment.showTeachers;
+  public instruments: Instrument[] = [];
 
   constructor(
     private db: DbService,
@@ -33,7 +35,8 @@ export class SettingsPage implements OnInit {
   async ngOnInit(): Promise<void> {
     this.conductors = await this.db.getConductors();
     this.selConductors = this.conductors.map((c: Person): number => c.id);
-    this.leftPlayers = Utils.getModifiedPlayers(await this.db.getLeftPlayers(), await this.db.getInstruments());
+    this.instruments = await this.db.getInstruments();
+    this.leftPlayers = Utils.getModifiedPlayers(await this.db.getLeftPlayers(), this.instruments);
   }
 
   async ionViewWillEnter() {
@@ -99,6 +102,20 @@ export class SettingsPage implements OnInit {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: StatsPage,
       presentingElement: this.routerOutlet.nativeEl,
+    });
+
+    await modal.present();
+  }
+
+  async openPlayerModal(p: Player) {
+    const modal: HTMLIonModalElement = await this.modalController.create({
+      component: PersonPage,
+      presentingElement: this.routerOutlet.nativeEl,
+      componentProps: {
+        existingPlayer: { ...p },
+        instruments: this.instruments,
+        readOnly: true,
+      }
     });
 
     await modal.present();

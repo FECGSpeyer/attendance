@@ -24,6 +24,7 @@ export class ListPage implements OnInit {
   public conductors: Person[] = [];
   public playersFiltered: Player[] = [];
   public instruments: Instrument[] = [];
+  public playerToArchive: Player;
   public searchTerm: string = "";
   public filterOpt: string = "all";
   public sortOpt: string = "instrument";
@@ -35,6 +36,9 @@ export class ListPage implements OnInit {
   public showPaused = false;
   public showNew = false;
   public withSignout: boolean = environment.withSignout;
+  public isArchiveModalOpen: boolean = false;
+  public archiveDate: string = dayjs().format("YYYY-MM-DD");
+  public archiveNote: string = "";
 
   constructor(
     private modalController: ModalController,
@@ -307,7 +311,8 @@ export class ListPage implements OnInit {
       buttons: [{
         text: "Archivieren",
         handler: (): void => {
-          this.archivePlayer(player);
+          this.playerToArchive = player;
+          this.isArchiveModalOpen = true;
         },
       }, {
         text: "Entfernen",
@@ -326,9 +331,16 @@ export class ListPage implements OnInit {
     await sheet.present();
   }
 
-  async archivePlayer(player: Player): Promise<void> {
-    await this.db.archivePlayer(player.id);
+  async archivePlayer(): Promise<void> {
+    await this.db.archivePlayer(this.playerToArchive, dayjs(this.archiveDate).toISOString(), this.archiveNote);
+    this.dismissArchiveModal();
     await this.getPlayers();
+  }
+
+  dismissArchiveModal(): void {
+    this.archiveNote = "";
+    this.playerToArchive = undefined;
+    this.isArchiveModalOpen = false;
   }
 
   async remove(player: Player): Promise<void> {
