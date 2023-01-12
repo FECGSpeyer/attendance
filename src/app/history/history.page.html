@@ -10,8 +10,8 @@
 </ion-header>
 
 <ion-content>
-  <ion-searchbar (ionInput)="search($event)" animated placeholder="Werk suchen..."></ion-searchbar>
-  <ion-list class="marginBottom">
+  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated placeholder="Werk suchen..."></ion-searchbar>
+  <ion-list *ngIf="searchTerm" class="marginBottom">
     <ion-item-sliding #sliding *ngFor="let entry of historyFiltered">
       <ion-item>
         <ion-label>
@@ -27,6 +27,22 @@
       </ion-item-options>
     </ion-item-sliding>
   </ion-list>
+
+  <ion-accordion-group *ngIf="!searchTerm" value="critical">
+    <ion-accordion *ngFor="let group of groupedHistory | keyvalue" [value]="group.key">
+      <ion-item slot="header" color="light">
+        <ion-label>{{ group.key }}</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-item *ngFor="let his of group.value">
+          <ion-label>
+            <h2>{{ his.name }}</h2>
+            <h3>{{ his.date | date:'dd.MM.yyyy' }} | {{ his.conductorName }}</h3>
+          </ion-label>
+        </ion-item>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
 
   <ion-modal trigger="add-his-button" [breakpoints]="[0.7]" [initialBreakpoint]="0.7">
     <ng-template>

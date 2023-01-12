@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
+import * as dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
 import { History, Person, Song } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
@@ -15,6 +16,7 @@ export class HistoryPage implements OnInit {
   public dateString: string = format(new Date(), 'dd.MM.yyyy');
   conductors: Person[] = [];
   history: History[] = [];
+  groupedHistory: History[] = [];
   historyFiltered: History[] = [];
   historyEntry: History = {
     songId: 1,
@@ -49,6 +51,13 @@ export class HistoryPage implements OnInit {
         name: this.songs.find((song: Song) => song.id === entry.songId)?.name || entry.name,
       }
     });
+
+    this.groupedHistory = this.history.reduce((r: History, a: History) => {
+      r[dayjs(a.date).format("DD.MM.YYYY")] = r[dayjs(a.date).format("DD.MM.YYYY")] || [];
+      r[dayjs(a.date).format("DD.MM.YYYY")].push(a);
+      return r;
+    }, Object.create(null));
+
     this.initializeItems();
   }
 
