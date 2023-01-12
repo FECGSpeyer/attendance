@@ -17,8 +17,9 @@ export class AttPage implements OnInit {
   public conductors: Person[] = [];
   public excused: Set<string> = new Set();
   public withExcuses: boolean = environment.withExcuses;
-  private hasInvoked: boolean = false;
   private playerNotes: { [prop: number]: string } = {};
+  private oldAttendance: Attendance;
+  private hasChanges: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -31,6 +32,9 @@ export class AttPage implements OnInit {
     const allPlayers: Player[] = await this.db.getPlayers();
     const instruments: Instrument[] = await this.db.getInstruments();
     let attPlayers: Player[] = [];
+    this.hasChanges = false;
+
+    this.oldAttendance = { ...this.attendance };
 
     if (Object.keys(this.attendance.players).length) {
       for (let player of Object.keys(this.attendance.players)) {
@@ -41,7 +45,7 @@ export class AttPage implements OnInit {
           });
         }
       }
-      this.excused = new Set(this.attendance.excused) || new Set<string>();
+      this.excused = new Set([...this.attendance.excused]) || new Set<string>();
       this.playerNotes = { ...this.attendance.playerNotes } || {};
     } else {
       attPlayers = allPlayers.filter((player: Player) => !player.paused);
@@ -95,7 +99,7 @@ export class AttPage implements OnInit {
       conductors: conductorsMap,
       excused: Array.from(this.excused),
       playerNotes: this.playerNotes,
-      criticalPlayers: this.attendance.criticalPlayers.concat(unexcusedPlayers.map((player: Player) => player.id)),
+      criticalPlayers: [...this.attendance.criticalPlayers].concat(unexcusedPlayers.map((player: Player) => player.id)),
     }, this.attendance.id);
 
     if (this.withExcuses) {
@@ -118,6 +122,21 @@ export class AttPage implements OnInit {
   }
 
   async dismiss(): Promise<void> {
+    if (JSON.stringify(this.attendance) === JSON.stringify(this.oldAttendance) && !this.hasChanges) {
+      let hasChanged: boolean = false;
+
+      for (const con of this.conductors) {
+        if (this.attendance.conductors?.[con.id] !== con.isPresent) {
+          hasChanged = true;
+        }
+      }
+
+      if (!hasChanged) {
+        this.close();
+        return;
+      }
+    }
+
     const alert: HTMLIonAlertElement = await this.alertController.create({
       header: "Möchtest du die Eingabe wirklich beenden?",
       message: "Alle Ändeungen werden verworfen.",
@@ -126,7 +145,7 @@ export class AttPage implements OnInit {
       }, {
         text: "Fortfahren",
         handler: (): void => {
-          this.modalController.dismiss();
+          this.close();
         }
       }]
     });
@@ -134,7 +153,13 @@ export class AttPage implements OnInit {
     await alert.present();
   }
 
+  close() {
+    this.attendance = this.oldAttendance;
+    this.modalController.dismiss();
+  }
+
   async onAttChange(player: Player) {
+    this.hasChanges = true;
     if (this.withExcuses && this.excused.has(player.id.toString())) {
       this.excused.delete(player.id.toString());
       return;
@@ -160,7 +185,7 @@ export class AttPage implements OnInit {
       inputs: [{
         type: "textarea",
         placeholder: "Notiz eingeben...",
-        value: player.attNote,
+        value: this.playerNotes[player.id],
         name: "note",
       }],
       buttons: [{
@@ -168,11 +193,15 @@ export class AttPage implements OnInit {
       }, {
         text: "Notiz löschen",
         handler: (): void => {
-          delete this.playerNotes[player.id];
+          if (this.playerNotes[player.id]) {
+            this.hasChanges = true;
+            delete this.playerNotes[player.id];
+          }
         }
       }, {
         text: "Speichern",
         handler: (evt: { note: string }): void => {
+          this.hasChanges = true;
           this.playerNotes[player.id] = evt.note;
         }
       }]

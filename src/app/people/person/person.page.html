@@ -231,8 +231,17 @@
     </ion-accordion>
   </ion-accordion-group>
 
-  <ion-button *ngIf="!existingPlayer" expand="block" (click)="addPlayer()">Spieler hinzufügen</ion-button>
-  <ion-button *ngIf="existingPlayer && hasChanges" expand="block" (click)="updatePlayer()">Änderungen speichern</ion-button>
-  <ion-button *ngIf="withSignout && existingPlayer && !hasChanges && !player.appId && player.email" expand="block" (click)="register()">User anlegen</ion-button>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button *ngIf="existingPlayer && hasChanges" (click)="updatePlayer()">
+      <ion-icon name="save-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button *ngIf="!existingPlayer" (click)="addPlayer()">
+      <ion-icon name="person-add-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button *ngIf="withSignout && existingPlayer && !hasChanges && !player.appId && player.email" (click)="register()">
+      <ion-icon name="key-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
   <div class="bottom-padding"></div>
 </ion-content>

@@ -296,7 +296,7 @@ export class DbService {
         ...player,
         history: player.history as any,
       }
-    });
+    }).filter((p: Player) => p.email.length);
   }
 
   async getConductors(all: boolean = false): Promise<Person[]> {

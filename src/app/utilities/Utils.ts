@@ -18,7 +18,7 @@ export class Utils {
         instrumentLength = players.filter((p: Player) => p.instrument === player.instrument).length;
       }
 
-      if (dayjs().subtract(2, "month").isBefore(dayjs(player.joined)) && environment.shortName === "VoS") {
+      if (dayjs().subtract(1, "month").isBefore(dayjs(player.joined)) && environment.shortName === "VoS") {
         isNew = true;
       }
 

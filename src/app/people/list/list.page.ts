@@ -34,6 +34,7 @@ export class ListPage implements OnInit {
   public showLeader = false;
   public showPaused = false;
   public showNew = false;
+  public withSignout: boolean = environment.withSignout;
 
   constructor(
     private modalController: ModalController,

@@ -33,6 +33,9 @@ export class SettingsPage implements OnInit {
     this.conductors = await this.db.getConductors();
     this.selConductors = this.conductors.map((c: Person): number => c.id);
     this.leftPlayers = Utils.getModifiedPlayers(await this.db.getLeftPlayers(), await this.db.getInstruments());
+  }
+
+  async ionViewWillEnter() {
     this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
   }
 
@@ -108,6 +111,10 @@ export class SettingsPage implements OnInit {
     for (let player of this.playersWithoutAccount) {
       await this.db.createAccount(player);
     }
+
+    Utils.showToast("Die Accounts wurden erfolgreich angelegt", "success");
+
+    this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
 
     loading.dismiss();
   }

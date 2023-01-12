@@ -58,7 +58,7 @@
           <ion-badge [color]="excused.has(player.id.toString()) ? 'warning' : player.isPresent ? 'success' :'danger'" slot="end">{{ excused.has(player.id.toString()) ? 'E' : player.isPresent ? '✓' : 'A' }}</ion-badge>
         </ion-item>
         <ion-item-options>
-          <ion-item-option [style]="player.firstOfInstrument ? 'margin-top: 2.3rem;' : ''" color="warning" (click)="addNote(player, slider)">
+          <ion-item-option color="warning" (click)="addNote(player, slider)">
             <ion-icon name="pencil"></ion-icon>
           </ion-item-option>
         </ion-item-options>
