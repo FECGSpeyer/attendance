@@ -4,6 +4,7 @@ import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Attendance, PersonAttendance, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-signout',
@@ -19,6 +20,7 @@ export class SignoutPage implements OnInit {
   public reason: string;
   public perc: number;
   public version: string = require('../../../../package.json').version;
+  public name: string = environment.longName;
 
   constructor(
     private db: DbService,

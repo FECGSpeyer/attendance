@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Abmeldung</ion-title>
+    <ion-title>{{ name }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="logout()">
         <ion-icon name="log-out-outline"></ion-icon>
@@ -33,7 +33,7 @@
           <ion-textarea placeholder="Mindestens 5 Zeichen eingeben..." [(ngModel)]="reason"></ion-textarea>
         </ion-item>
         <ion-button *ngIf="attendances.length" (click)="signout()" [disabled]="!(reason && reason.length > 4)"
-          expand="full">
+          expand="block">
           Abmeldung einreichen</ion-button>
       </div>
     </ion-accordion>
