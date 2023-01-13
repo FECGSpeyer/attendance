@@ -27,7 +27,7 @@
       </ion-col>
     </ion-row>
 
-    <ion-row *ngIf="!isConductor && existingPlayer">
+    <ion-row *ngIf="existingPlayer">
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>
@@ -235,7 +235,7 @@
     <ion-fab-button *ngIf="!readOnly && existingPlayer && hasChanges" (click)="updatePlayer()">
       <ion-icon name="save-outline"></ion-icon>
     </ion-fab-button>
-    <ion-fab-button *ngIf="!existingPlayer" (click)="addPlayer()">
+    <ion-fab-button *ngIf="!existingPlayer" (click)="addPerson()">
       <ion-icon name="person-add-outline"></ion-icon>
     </ion-fab-button>
     <ion-fab-button *ngIf="!readOnly && withSignout && existingPlayer && !hasChanges && !player.appId && player.email" (click)="register()">

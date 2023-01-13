@@ -2,7 +2,7 @@ import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/cor
 import { AlertController, IonContent, IonItemSliding, IonSelect, LoadingController, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
-import { Attendance, Instrument, Person, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
+import { Instrument, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { environment } from 'src/environments/environment';
@@ -172,13 +172,18 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
   }
 
-  async addPlayer(): Promise<void> {
+  async addPerson(): Promise<void> {
     if (this.player.firstName && this.player.lastName) {
-      await this.db.addPlayer(this.player);
+      if (this.isConductor) {
+        await this.db.addConductor(this.player);
+      } else {
+        await this.db.addPlayer(this.player);
+      }
       this.modalController.dismiss({
-        added: true
+        added: !this.isConductor,
+        conductor: this.isConductor,
       });
-      Utils.showToast("Der Spieler wurde erfolgreich hinzugefügt", "success");
+      Utils.showToast(`Der ${this.isConductor ? "Dirigten" : "Spieler"} wurde erfolgreich hinzugefügt`, "success");
     } else {
       Utils.showToast("Bitte gib den Vornamen und Nachnamen an.", "danger");
     }
@@ -229,9 +234,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   onChange() {
     if (!this.readOnly && this.existingPlayer) {
       const existingPerson: Player = { ...this.existingPlayer, email: this.player.email === null ? null : this.existingPlayer.email || "", teacherName: this.player.teacherName, notes: this.player.notes === null ? null : this.existingPlayer.notes || "", criticalReasonText: this.player.criticalReasonText };
-      if (this.isConductor) {
-        delete existingPerson.notes;
-      }
+
       this.hasChanges =
         this.solved ||
         JSON.stringify(existingPerson) !== JSON.stringify(this.player);

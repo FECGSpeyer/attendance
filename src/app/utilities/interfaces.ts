@@ -15,10 +15,10 @@ export interface Person {
     birthday: string;
     joined: string;
     isPresent?: boolean;
-    isInactive?: boolean;
     left?: string;
     email?: string;
     appId?: string;
+    notes: string;
 }
 
 export interface PlayerHistoryEntry {
@@ -33,7 +33,6 @@ export interface Player extends Person {
     hasTeacher: boolean;
     playsSince: string;
     isLeader: boolean;
-    notes: string;
     firstOfInstrument?: boolean;
     isNew?: boolean;
     instrumentLength?: number;

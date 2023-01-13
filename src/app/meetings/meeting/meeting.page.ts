@@ -20,7 +20,7 @@ export class MeetingPage implements OnInit {
 
   async ngOnInit() {
     this.allConductors = await this.db.getConductors(true);
-    this.conductors = this.allConductors.filter((c: Person) => !c.isInactive);
+    this.conductors = this.allConductors.filter((c: Person) => !c.left);
     this.meeting = await this.db.getMeeting(Number(window.location.pathname.split("/")[4]));
     this.isEditMode = !this.meeting.notes;
     this.attendeesNames = this.meeting.attendees.map((id: number) => {

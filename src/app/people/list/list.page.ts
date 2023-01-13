@@ -66,6 +66,27 @@ export class ListPage implements OnInit {
     this.onFilterChanged();
   }
 
+  async openCreateSheet() {
+    const actionSheet = await this.actionSheetController.create({
+      buttons: [{
+        text: 'Spieler hinzufügen',
+        handler: () => {
+          this.openModal(undefined, false);
+        }
+      }, {
+        text: 'Dirigent hinzufügen',
+        handler: () => {
+          this.openModal(undefined, true);
+        }
+      }, {
+        text: 'Abbrechen',
+        role: 'cancel'
+      }]
+    });
+
+    await actionSheet.present();
+  }
+
   async openModal(player?: Player, isConductor?: boolean): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: PersonPage,
@@ -310,18 +331,24 @@ export class ListPage implements OnInit {
     doc.save(`${environment.shortName}_Spielerliste_Stand_${date}.pdf`);
   }
 
-  async removePlayer(player: Player, slider: IonItemSliding): Promise<void> {
+  async removePlayer(player: Player, slider: IonItemSliding, isConductor: boolean = false): Promise<void> {
     const sheet: HTMLIonActionSheetElement = await this.actionSheetController.create({
       buttons: [{
         text: "Archivieren",
         handler: (): void => {
           this.playerToArchive = player;
           this.isArchiveModalOpen = true;
+          slider.close();
         },
       }, {
         text: "Entfernen",
         handler: (): void => {
-          this.remove(player);
+          if (isConductor) {
+            this.removeConductor(player.id);
+          } else {
+            this.remove(player.id);
+          }
+          slider.close();
         },
       }, {
         role: 'cancel',
@@ -336,9 +363,15 @@ export class ListPage implements OnInit {
   }
 
   async archivePlayer(): Promise<void> {
-    await this.db.archivePlayer(this.playerToArchive, dayjs(this.archiveDate).toISOString(), this.archiveNote);
-    this.dismissArchiveModal();
-    await this.getPlayers();
+    if (!this.playerToArchive.instrument) {
+      await this.db.archiveConductor(this.playerToArchive.id, dayjs(this.archiveDate).toISOString(), this.archiveNote);
+      this.dismissArchiveModal();
+      this.conductors == await this.db.getConductors();
+    } else {
+      await this.db.archivePlayer(this.playerToArchive, dayjs(this.archiveDate).toISOString(), this.archiveNote);
+      this.dismissArchiveModal();
+      await this.getPlayers();
+    }
   }
 
   dismissArchiveModal(): void {
@@ -347,9 +380,14 @@ export class ListPage implements OnInit {
     this.isArchiveModalOpen = false;
   }
 
-  async remove(player: Player): Promise<void> {
-    await this.db.removePlayer(player.id);
+  async remove(id: number): Promise<void> {
+    await this.db.removePlayer(id);
     await this.getPlayers();
+  }
+
+  async removeConductor(id: number): Promise<void> {
+    await this.db.removePlayer(id);
+    this.conductors = await this.db.getConductors();
   }
 
   async pausePlayer(player: Player, slider: IonItemSliding) {

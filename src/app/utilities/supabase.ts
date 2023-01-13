@@ -11,286 +11,292 @@ export interface Database {
     Tables: {
       attendance: {
         Row: {
-          id: number
-          created_at: string | null
-          date: string | null
-          players: Json | null
           conductors: Json | null
-          excused: string[] | null
+          created_at: string | null
           criticalPlayers: number[]
-          type: string
+          date: string | null
+          excused: string[] | null
+          id: number
           notes: string | null
-          typeInfo: string | null
           playerNotes: Json | null
+          players: Json | null
+          type: string
+          typeInfo: string | null
         }
         Insert: {
-          id?: number
-          created_at?: string | null
-          date?: string | null
-          players?: Json | null
           conductors?: Json | null
-          excused?: string[] | null
+          created_at?: string | null
           criticalPlayers?: number[]
-          type?: string
+          date?: string | null
+          excused?: string[] | null
+          id?: number
           notes?: string | null
-          typeInfo?: string | null
           playerNotes?: Json | null
+          players?: Json | null
+          type?: string
+          typeInfo?: string | null
         }
         Update: {
-          id?: number
-          created_at?: string | null
-          date?: string | null
-          players?: Json | null
           conductors?: Json | null
-          excused?: string[] | null
+          created_at?: string | null
           criticalPlayers?: number[]
-          type?: string
+          date?: string | null
+          excused?: string[] | null
+          id?: number
           notes?: string | null
-          typeInfo?: string | null
           playerNotes?: Json | null
+          players?: Json | null
+          type?: string
+          typeInfo?: string | null
         }
       }
       conductors: {
         Row: {
-          id: number
-          created_at: string | null
-          firstName: string | null
-          lastName: string | null
+          appId: string | null
           birthday: string | null
-          isInactive: boolean | null
+          correctBirthday: boolean | null
+          created_at: string | null
+          email: string | null
+          firstName: string | null
+          id: number
           joined: string | null
+          lastName: string | null
           left: string | null
+          notes: string | null
         }
         Insert: {
-          id?: number
-          created_at?: string | null
-          firstName?: string | null
-          lastName?: string | null
+          appId?: string | null
           birthday?: string | null
-          isInactive?: boolean | null
+          correctBirthday?: boolean | null
+          created_at?: string | null
+          email?: string | null
+          firstName?: string | null
+          id?: number
           joined?: string | null
+          lastName?: string | null
           left?: string | null
+          notes?: string | null
         }
         Update: {
-          id?: number
-          created_at?: string | null
-          firstName?: string | null
-          lastName?: string | null
+          appId?: string | null
           birthday?: string | null
-          isInactive?: boolean | null
+          correctBirthday?: boolean | null
+          created_at?: string | null
+          email?: string | null
+          firstName?: string | null
+          id?: number
           joined?: string | null
+          lastName?: string | null
           left?: string | null
+          notes?: string | null
         }
       }
       history: {
         Row: {
-          id: number
-          created_at: string | null
-          name: string | null
-          date: string | null
           conductor: number | null
+          created_at: string | null
+          date: string | null
+          id: number
+          name: string | null
           songId: number | null
         }
         Insert: {
-          id?: number
-          created_at?: string | null
-          name?: string | null
-          date?: string | null
           conductor?: number | null
+          created_at?: string | null
+          date?: string | null
+          id?: number
+          name?: string | null
           songId?: number | null
         }
         Update: {
-          id?: number
-          created_at?: string | null
-          name?: string | null
-          date?: string | null
           conductor?: number | null
+          created_at?: string | null
+          date?: string | null
+          id?: number
+          name?: string | null
           songId?: number | null
         }
       }
       instruments: {
         Row: {
-          id: number
-          created_at: string | null
-          name: string | null
-          tuning: string
-          range: string | null
-          notes: string | null
           clefs: string[] | null
+          created_at: string | null
+          id: number
+          name: string | null
+          notes: string | null
+          range: string | null
+          tuning: string
         }
         Insert: {
-          id?: number
-          created_at?: string | null
-          name?: string | null
-          tuning?: string
-          range?: string | null
-          notes?: string | null
           clefs?: string[] | null
+          created_at?: string | null
+          id?: number
+          name?: string | null
+          notes?: string | null
+          range?: string | null
+          tuning?: string
         }
         Update: {
-          id?: number
-          created_at?: string | null
-          name?: string | null
-          tuning?: string
-          range?: string | null
-          notes?: string | null
           clefs?: string[] | null
+          created_at?: string | null
+          id?: number
+          name?: string | null
+          notes?: string | null
+          range?: string | null
+          tuning?: string
         }
       }
       meetings: {
         Row: {
-          id: number
+          attendees: number[]
           created_at: string | null
           date: string
-          attendees: number[]
+          id: number
           notes: string | null
         }
         Insert: {
-          id?: number
+          attendees?: number[]
           created_at?: string | null
           date?: string
-          attendees?: number[]
+          id?: number
           notes?: string | null
         }
         Update: {
-          id?: number
+          attendees?: number[]
           created_at?: string | null
           date?: string
-          attendees?: number[]
+          id?: number
           notes?: string | null
         }
       }
       player: {
         Row: {
-          id: number
-          created_at: string | null
-          firstName: string | null
-          lastName: string | null
+          appId: string | null
           birthday: string | null
-          playsSince: string | null
-          joined: string | null
-          isLeader: boolean | null
-          hasTeacher: boolean | null
-          instrument: number | null
-          notes: string | null
-          isInactive: boolean | null
-          left: string | null
-          teacher: number | null
-          isCritical: boolean | null
-          lastSolve: string | null
           correctBirthday: boolean
-          paused: boolean | null
-          history: Json[]
+          created_at: string | null
           criticalReason: number | null
+          email: string | null
+          firstName: string | null
+          hasTeacher: boolean | null
+          history: Json[]
+          id: number
+          instrument: number | null
+          isCritical: boolean | null
+          isLeader: boolean | null
+          joined: string | null
+          lastName: string | null
+          lastSolve: string | null
+          left: string | null
+          notes: string | null
           otherExercise: string | null
           otherOrchestras: string[]
-          email: string | null
-          appId: string | null
+          paused: boolean | null
+          playsSince: string | null
+          teacher: number | null
         }
         Insert: {
-          id?: number
-          created_at?: string | null
-          firstName?: string | null
-          lastName?: string | null
+          appId?: string | null
           birthday?: string | null
-          playsSince?: string | null
-          joined?: string | null
-          isLeader?: boolean | null
-          hasTeacher?: boolean | null
-          instrument?: number | null
-          notes?: string | null
-          isInactive?: boolean | null
-          left?: string | null
-          teacher?: number | null
-          isCritical?: boolean | null
-          lastSolve?: string | null
           correctBirthday?: boolean
-          paused?: boolean | null
-          history?: Json[]
+          created_at?: string | null
           criticalReason?: number | null
+          email?: string | null
+          firstName?: string | null
+          hasTeacher?: boolean | null
+          history?: Json[]
+          id?: number
+          instrument?: number | null
+          isCritical?: boolean | null
+          isLeader?: boolean | null
+          joined?: string | null
+          lastName?: string | null
+          lastSolve?: string | null
+          left?: string | null
+          notes?: string | null
           otherExercise?: string | null
           otherOrchestras?: string[]
-          email?: string | null
-          appId?: string | null
+          paused?: boolean | null
+          playsSince?: string | null
+          teacher?: number | null
         }
         Update: {
-          id?: number
-          created_at?: string | null
-          firstName?: string | null
-          lastName?: string | null
+          appId?: string | null
           birthday?: string | null
-          playsSince?: string | null
-          joined?: string | null
-          isLeader?: boolean | null
-          hasTeacher?: boolean | null
-          instrument?: number | null
-          notes?: string | null
-          isInactive?: boolean | null
-          left?: string | null
-          teacher?: number | null
-          isCritical?: boolean | null
-          lastSolve?: string | null
           correctBirthday?: boolean
-          paused?: boolean | null
-          history?: Json[]
+          created_at?: string | null
           criticalReason?: number | null
+          email?: string | null
+          firstName?: string | null
+          hasTeacher?: boolean | null
+          history?: Json[]
+          id?: number
+          instrument?: number | null
+          isCritical?: boolean | null
+          isLeader?: boolean | null
+          joined?: string | null
+          lastName?: string | null
+          lastSolve?: string | null
+          left?: string | null
+          notes?: string | null
           otherExercise?: string | null
           otherOrchestras?: string[]
-          email?: string | null
-          appId?: string | null
+          paused?: boolean | null
+          playsSince?: string | null
+          teacher?: number | null
         }
       }
       songs: {
         Row: {
-          id: number
           created_at: string | null
+          id: number
+          link: string | null
           name: string | null
           number: number | null
           withChoir: boolean | null
-          link: string | null
         }
         Insert: {
-          id?: number
           created_at?: string | null
+          id?: number
+          link?: string | null
           name?: string | null
           number?: number | null
           withChoir?: boolean | null
-          link?: string | null
         }
         Update: {
-          id?: number
           created_at?: string | null
+          id?: number
+          link?: string | null
           name?: string | null
           number?: number | null
           withChoir?: boolean | null
-          link?: string | null
         }
       }
       teachers: {
         Row: {
-          id: number
           created_at: string | null
+          id: number
+          instruments: number[] | null
           name: string | null
           notes: string | null
-          instruments: number[] | null
           number: string | null
           private: boolean | null
         }
         Insert: {
-          id?: number
           created_at?: string | null
+          id?: number
+          instruments?: number[] | null
           name?: string | null
           notes?: string | null
-          instruments?: number[] | null
           number?: string | null
           private?: boolean | null
         }
         Update: {
-          id?: number
           created_at?: string | null
+          id?: number
+          instruments?: number[] | null
           name?: string | null
           notes?: string | null
-          instruments?: number[] | null
           number?: string | null
           private?: boolean | null
         }

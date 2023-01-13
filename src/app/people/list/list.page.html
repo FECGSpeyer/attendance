@@ -16,7 +16,8 @@
     </ion-toolbar>
   </ion-header>
   <div class="flex">
-    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated placeholder="Spieler suchen..."></ion-searchbar>
+    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated placeholder="Spieler suchen...">
+    </ion-searchbar>
     <ion-button id="filter-trigger" fill="none">
       <ion-icon size="medium" name="options"></ion-icon>
     </ion-button>
@@ -73,11 +74,18 @@
     <ion-item-divider sticky="true">
       <ion-label>Dirigenten ({{conductors.length}})</ion-label>
     </ion-item-divider>
-    <ion-item button (click)="openModal(con, true)" *ngFor="let con of conductors">
-      <ion-label>
-        <h2>{{ con.firstName }} {{ con.lastName }}</h2>
-      </ion-label>
-    </ion-item>
+    <ion-item-sliding #sliderDiri *ngFor="let con of conductors">
+      <ion-item button (click)="openModal(con, true)">
+        <ion-label>
+          <h2>{{ con.firstName }} {{ con.lastName }}</h2>
+        </ion-label>
+      </ion-item>
+      <ion-item-options>
+        <ion-item-option (click)="removePlayer(con, sliderDiri, true)" color="danger">
+          <ion-icon name="trash"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
   </ion-list>
   <ion-list class="marginBottom">
     <ng-container *ngFor="let player of playersFiltered">
@@ -121,7 +129,7 @@
     </ng-container>
   </ion-list>
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="openModal()">
+    <ion-fab-button (click)="openCreateSheet()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>

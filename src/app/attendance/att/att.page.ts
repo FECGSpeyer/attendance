@@ -59,7 +59,7 @@ export class AttPage implements OnInit {
         });
       }
     } else {
-      this.conductors = conductors.filter((c: Person): boolean => !c.isInactive).map((c: Person): Person => {
+      this.conductors = conductors.filter((c: Person): boolean => !c.left).map((c: Person): Person => {
         return {
           ...c,
           isPresent: true,

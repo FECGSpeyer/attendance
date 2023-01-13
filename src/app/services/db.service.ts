@@ -303,7 +303,7 @@ export class DbService {
       throw new Error("Fehler beim Laden der Dirigenten E-Mails");
     }
 
-    return data.map((d: { email: string }) => d.email.toLowerCase()).concat(["eckstaedt98@gmail.com"]);
+    return data.filter((d: { email: string }) => Boolean(d.email)).map((d: { email: string }) => d.email.toLowerCase()).concat(["eckstaedt98@gmail.com"]);
   }
 
   async getConductors(all: boolean = false): Promise<Person[]> {
@@ -312,7 +312,30 @@ export class DbService {
       .select('*')
       .order("lastName");
 
-    return all ? response.data : response.data.filter((c: Person) => !c.isInactive);
+    return all ? response.data : response.data.filter((c: Person) => !c.left);
+  }
+
+  async addConductor(person: Person): Promise<void> {
+    const dataToCreate: any = { ...person };
+    delete dataToCreate.hasTeacher;
+    delete dataToCreate.instrument;
+    delete dataToCreate.isLeader;
+    delete dataToCreate.history;
+    delete dataToCreate.isCritical;
+    delete dataToCreate.notes;
+    delete dataToCreate.paused;
+    delete dataToCreate.teacher;
+    delete dataToCreate.playsSince;
+
+    const { error } = await supabase
+      .from('conductors')
+      .insert(dataToCreate);
+
+    if (error) {
+      throw new Error("Fehler beim hinzufügen des Dirigenten.");
+    }
+
+    return;
   }
 
   async addPlayer(player: Player): Promise<Player[]> {
@@ -414,6 +437,13 @@ export class DbService {
       .match({ id });
   }
 
+  async removeConductor(id: number): Promise<void> {
+    await supabase
+      .from('player')
+      .delete()
+      .match({ id });
+  }
+
   async archivePlayer(player: Player, left: string, notes: string): Promise<void> {
     if ((player.notes || "") !== notes) {
       player.history.push({
@@ -427,6 +457,13 @@ export class DbService {
       .from('player')
       .update({ left, notes, history: player.history as any })
       .match({ id: player.id });
+  }
+
+  async archiveConductor(id: number, left: string, notes: string): Promise<void> {
+    await supabase
+      .from('conductors')
+      .update({ left, notes })
+      .match({ id });
   }
 
   async getInstruments(): Promise<Instrument[]> {
