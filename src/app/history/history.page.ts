@@ -16,7 +16,7 @@ export class HistoryPage implements OnInit {
   public dateString: string = format(new Date(), 'dd.MM.yyyy');
   conductors: Person[] = [];
   history: History[] = [];
-  groupedHistory: History[] = [];
+  groupedHistory: {} = {};
   historyFiltered: History[] = [];
   historyEntry: History = {
     songId: 1,
@@ -52,11 +52,21 @@ export class HistoryPage implements OnInit {
       }
     });
 
-    this.groupedHistory = this.history.reduce((r: History, a: History) => {
+    const grouped: {} = this.history.reduce((r: History, a: History) => {
       r[dayjs(a.date).format("DD.MM.YYYY")] = r[dayjs(a.date).format("DD.MM.YYYY")] || [];
       r[dayjs(a.date).format("DD.MM.YYYY")].push(a);
       return r;
     }, Object.create(null));
+
+    this.groupedHistory = Object.keys(grouped).sort((a: string, b: string): number => {
+      return dayjs(a).toDate().getTime() - dayjs(b).toDate().getTime();
+    }).reduce(
+      (obj, key) => {
+        obj[key] = grouped[key];
+        return obj;
+      },
+      {}
+    );
 
     this.initializeItems();
   }
