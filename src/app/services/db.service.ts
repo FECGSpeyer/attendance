@@ -359,6 +359,32 @@ export class DbService {
     });
   }
 
+  async updateConductor(person: Person): Promise<Person[]> {
+    const dataToUpdate: any = { ...person };
+    delete dataToUpdate.id;
+    delete dataToUpdate.created_at;
+    delete dataToUpdate.instrumentName;
+    delete dataToUpdate.firstOfInstrument;
+    delete dataToUpdate.isNew;
+    delete dataToUpdate.instrumentLength;
+    delete dataToUpdate.teacherName;
+    delete dataToUpdate.criticalReasonText;
+    delete dataToUpdate.isPresent;
+    delete dataToUpdate.text;
+
+    const { data, error } = await supabase
+      .from('conductors')
+      .update(dataToUpdate)
+      .match({ id: person.id })
+      .select();
+
+    if (error) {
+      throw new Error("Fehler beim updaten des Dirigenten");
+    }
+
+    return data;
+  }
+
   async updatePlayerHistory(id: number, history: PlayerHistoryEntry[]) {
     const { data, error } = await supabase
       .from('player')
@@ -504,6 +530,27 @@ export class DbService {
         title: att.typeInfo ? att.typeInfo : att.type === "vortrag" ? "Vortrag" : "",
         text: att.players[id] ? "X" : (att.excused || []).includes(String(id)) ? "E" : "A",
         notes: att.playerNotes && att.playerNotes[id] ? att.playerNotes[id] : "",
+      }
+    });
+  }
+
+  async getConductorAttendance(id: number): Promise<PersonAttendance[]> {
+    const { data } = await supabase
+      .from('attendance')
+      .select('*')
+      .neq(`conductors->"${id}"` as any, null)
+      .order("date", {
+        ascending: false,
+      });
+
+    return data.map((att): PersonAttendance => {
+      return {
+        id: att.id,
+        date: att.date,
+        attended: att.conductors[id],
+        title: att.typeInfo ? att.typeInfo : att.type === "vortrag" ? "Vortrag" : "",
+        text: att.conductors[id] ? "X" : (att.excused || []).includes(String(id)) ? "E" : "A",
+        notes: "",
       }
     });
   }

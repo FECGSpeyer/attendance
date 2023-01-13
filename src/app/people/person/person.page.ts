@@ -19,6 +19,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   @Input() existingPlayer: Player;
   @Input() readOnly: boolean;
   @Input() instruments: Instrument[];
+  @Input() isConductor: boolean;
   @ViewChild('select') select: IonSelect;
   @ViewChild('content') content: IonContent;
 
@@ -72,12 +73,25 @@ export class PersonPage implements OnInit, AfterViewInit {
     if (this.existingPlayer) {
       this.player = { ...this.existingPlayer };
       this.birthdayString = this.formatDate(this.existingPlayer.birthday);
-      this.playsSinceString = this.formatDate(this.existingPlayer.playsSince);
+      this.playsSinceString = this.existingPlayer.playsSince ? this.formatDate(this.existingPlayer.playsSince) : "";
       this.joinedString = this.formatDate(this.existingPlayer.joined);
       this.player.teacherName = this.player.teacher ? this.teachers.find((teacher: Teacher) => teacher).name : "";
       this.player.criticalReasonText = this.player.criticalReason ? Utils.getPlayerHistoryTypeText(this.player.criticalReason) : "";
 
-      await this.getHistoryInfo();
+      if (this.isConductor) {
+        this.history = (await this.db.getConductorAttendance(this.player.id)).filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs())).map((att: PersonAttendance) => {
+          return {
+            date: att.date,
+            text: att.text,
+            type: PlayerHistoryType.ATTENDANCE,
+            title: att.title,
+            notes: att.notes,
+          };
+        });
+        this.perc = Math.round(this.history.filter((att: PersonAttendance) => att.text === "X").length / this.history.length * 100);
+      } else {
+        await this.getHistoryInfo();
+      }
     } else {
       this.player = { ...this.newPlayer };
       this.player.instrument = this.instruments[0].id;
@@ -185,30 +199,42 @@ export class PersonPage implements OnInit, AfterViewInit {
       });
     }
 
-    if ((this.existingPlayer.notes || "") !== this.player.notes) {
-      history.push({
-        date: new Date().toISOString(),
-        text: this.existingPlayer.notes || "Keine Notiz",
-        type: PlayerHistoryType.NOTES,
+    if (this.isConductor) {
+      await this.db.updateConductor(this.player);
+      this.modalController.dismiss({
+        conductor: true,
       });
-    }
+      Utils.showToast("Die Dirigentendaten wurden erfolgreich aktualisiert.", "success");
+    } else {
+      if ((this.existingPlayer.notes || "") !== this.player.notes) {
+        history.push({
+          date: new Date().toISOString(),
+          text: this.existingPlayer.notes || "Keine Notiz",
+          type: PlayerHistoryType.NOTES,
+        });
+      }
 
-    await this.db.updatePlayer({
-      ...this.player,
-      isCritical: this.solved ? false : this.player.isCritical,
-      lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
-    });
-    this.modalController.dismiss({
-      added: true
-    });
-    Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
+      await this.db.updatePlayer({
+        ...this.player,
+        isCritical: this.solved ? false : this.player.isCritical,
+        lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
+      });
+      this.modalController.dismiss({
+        added: true
+      });
+      Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
+    }
   }
 
   onChange() {
     if (!this.readOnly && this.existingPlayer) {
+      const existingPerson: Player = { ...this.existingPlayer, email: this.player.email === null ? null : this.existingPlayer.email || "", teacherName: this.player.teacherName, notes: this.player.notes === null ? null : this.existingPlayer.notes || "", criticalReasonText: this.player.criticalReasonText };
+      if (this.isConductor) {
+        delete existingPerson.notes;
+      }
       this.hasChanges =
         this.solved ||
-        JSON.stringify({ ...this.existingPlayer, email: this.player.email === null ? null : this.existingPlayer.email || "", teacherName: this.player.teacherName, notes: this.player.notes === null ? null : this.existingPlayer.notes || "", criticalReasonText: this.player.criticalReasonText }) !== JSON.stringify(this.player);
+        JSON.stringify(existingPerson) !== JSON.stringify(this.player);
     }
   }
 

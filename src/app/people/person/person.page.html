@@ -27,7 +27,7 @@
       </ion-col>
     </ion-row>
 
-    <ion-row *ngIf="existingPlayer">
+    <ion-row *ngIf="!isConductor && existingPlayer">
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>
@@ -68,7 +68,7 @@
       </ion-item>
       <div slot="content">
         <ion-grid>
-          <ion-row>
+          <ion-row *ngIf="!isConductor">
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Instrument</ion-label>
@@ -97,7 +97,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row>
+          <ion-row *ngIf="!isConductor">
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
@@ -131,7 +131,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="showTeachers">
+          <ion-row *ngIf="!isConductor && showTeachers">
             <ion-col>
               <ion-item>
                 <ion-label>Spielt beim Lehrer</ion-label>
@@ -151,7 +151,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row>
+          <ion-row *ngIf="!isConductor">
             <ion-col>
               <ion-item>
                 <ion-label>Stimmführer</ion-label>
@@ -159,7 +159,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="isVoS">
+          <ion-row *ngIf="!isConductor && isVoS">
             <ion-col>
               <ion-item>
                 <ion-label>Andere Orchester</ion-label>
@@ -171,7 +171,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row>
+          <ion-row *ngIf="!isConductor">
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Sonstige Dienste</ion-label>
@@ -179,7 +179,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="withSignout">
+          <ion-row *ngIf="isConductor || withSignout">
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">E-Mail</ion-label>
@@ -192,7 +192,7 @@
     </ion-accordion>
   </ion-accordion-group>
 
-  <ion-accordion-group [value]="existingPlayer ? 'first' : ''" *ngIf="attendance.length">
+  <ion-accordion-group [value]="existingPlayer ? 'first' : ''" *ngIf="attendance.length || history.length">
     <ion-accordion value="first">
       <ion-item slot="header" color="light">
         <ion-label>Historie</ion-label>

@@ -66,13 +66,14 @@ export class ListPage implements OnInit {
     this.onFilterChanged();
   }
 
-  async openModal(player?: Player): Promise<void> {
+  async openModal(player?: Player, isConductor?: boolean): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: PersonPage,
       presentingElement: this.routerOutlet.nativeEl,
       componentProps: {
         existingPlayer: player ? { ...player } : undefined,
         instruments: this.instruments,
+        isConductor,
       },
       backdropDismiss: false,
     });
@@ -83,6 +84,8 @@ export class ListPage implements OnInit {
 
     if (data?.added) {
       await this.getPlayers();
+    } else if (data?.conductor) {
+      this.conductors = await this.db.getConductors();
     }
   }
 
@@ -118,6 +121,7 @@ export class ListPage implements OnInit {
 
     if (this.filterOpt === 'all') {
       this.initializeItems();
+      await this.storage.set("filterOpt", this.filterOpt);
       return;
     }
 
