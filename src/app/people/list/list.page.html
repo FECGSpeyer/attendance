@@ -19,7 +19,7 @@
     <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated placeholder="Spieler suchen...">
     </ion-searchbar>
     <ion-button id="filter-trigger" fill="none">
-      <ion-icon size="medium" name="options"></ion-icon>
+      <ion-icon [color]="filterOpt === 'all' ? '' : 'primary'" size="medium" name="options"></ion-icon>
     </ion-button>
     <ion-popover trigger="filter-trigger" triggerAction="click">
       <ng-template>
