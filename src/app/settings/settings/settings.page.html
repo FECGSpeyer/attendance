@@ -55,17 +55,28 @@
         </ng-template>
       </ion-modal>
     </ion-item>
+
     <ion-item *ngIf="leftPlayers?.length" detail="false" button id="archive-button">
-      <ion-label>Spielerarchiv</ion-label>
+      <ion-label>Archiv</ion-label>
       <ion-modal trigger="archive-button" [breakpoints]="[0.5, 1]" [initialBreakpoint]="0.5">
         <ng-template>
           <ion-content>
             <ion-header>
               <ion-toolbar>
-                <ion-title>Spielerarchiv</ion-title>
+                <ion-title>Archiv</ion-title>
               </ion-toolbar>
             </ion-header>
             <ion-list>
+              <ion-list-header>Dirigenten</ion-list-header>
+              <ion-item button (click)="openPlayerModal(p, true)" *ngFor="let p of leftConductors">
+                <ion-label>
+                  <h2>{{ p.firstName }} {{ p.lastName }}</h2>
+                  <h3>Ausgetreten: {{ p.left | date:"dd.MM.YYYY" }}</h3>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+            <ion-list>
+              <ion-list-header>Spieler</ion-list-header>
               <ion-item button (click)="openPlayerModal(p)" *ngFor="let p of leftPlayers">
                 <ion-label>
                   <h2>{{ p.firstName }} {{ p.lastName }} ({{ p.instrumentName }})</h2>
@@ -78,28 +89,6 @@
       </ion-modal>
     </ion-item>
 
-    <ion-item *ngIf="leftConductors?.length" detail="false" button id="diri-archive-button">
-      <ion-label>Dirigentenarchiv</ion-label>
-      <ion-modal trigger="diri-archive-button" [breakpoints]="[0.5, 1]" [initialBreakpoint]="0.5">
-        <ng-template>
-          <ion-content>
-            <ion-header>
-              <ion-toolbar>
-                <ion-title>Dirigentenarchiv</ion-title>
-              </ion-toolbar>
-            </ion-header>
-            <ion-list>
-              <ion-item button (click)="openPlayerModal(p, true)" *ngFor="let p of leftConductors">
-                <ion-label>
-                  <h2>{{ p.firstName }} {{ p.lastName }}</h2>
-                  <h3>Ausgetreten: {{ p.left | date:"dd.MM.YYYY" }}</h3>
-                </ion-label>
-              </ion-item>
-            </ion-list>
-          </ion-content>
-        </ng-template>
-      </ion-modal>
-    </ion-item>
     <ion-item button *ngIf="playersWithoutAccount.length" (click)="createAccounts()" color="primary">
       <ion-label>Fehlende Benutzeraccounts anlegen</ion-label>
     </ion-item>
@@ -109,6 +98,10 @@
     </ion-list-header>
     <ion-item button (click)="openStats()">
       <ion-label>Statistiken</ion-label>
+    </ion-item>
+
+    <ion-item button (click)="openExport()">
+      <ion-label>Export</ion-label>
     </ion-item>
 
     <ion-item>

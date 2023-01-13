@@ -1,0 +1,31 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Daten exportieren</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-segment mode="md" [(ngModel)]="content">
+    <ion-segment-button value="player">
+      <ion-label>Spieler</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="attendance">
+      <ion-label>Anwesenheit</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+  <ion-list>
+    <ion-item>
+      <ion-label>Export-Typ</ion-label>
+      <ion-select interface="popover" [(ngModel)]="type">
+        <ion-select-option value="pdf">PDF</ion-select-option>
+        <ion-select-option value="excel">Excel</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </ion-list>
+  <ion-button (click)="export()" expand="block">Exportieren</ion-button>
+</ion-content>

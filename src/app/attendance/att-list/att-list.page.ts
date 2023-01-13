@@ -3,14 +3,10 @@ import { ActionSheetController, AlertController, IonModal, ModalController } fro
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { Attendance, Player } from 'src/app/utilities/interfaces';
+import { Attendance } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { AttPage } from '../att/att.page';
-import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
-import { autoTable as AutoTable, CellHookData } from 'jspdf-autotable';
-import { utils, WorkBook, WorkSheet, writeFile } from 'xlsx';
-import { environment } from 'src/environments/environment';
 require('dayjs/locale/de');
 
 @Component({
@@ -118,119 +114,5 @@ export class AttListPage implements OnInit {
     if (data?.updated) {
       await this.getAttendance();
     }
-  }
-
-  async export(): Promise<void> {
-    const actionSheet = await this.actionSheetController.create({
-      buttons: [{
-        text: 'Excel',
-        handler: () => {
-          this.exportType("excel");
-        }
-      }, {
-        text: 'PDF',
-        handler: () => {
-          this.exportType("pdf");
-        }
-      }, {
-        text: 'Abbrechen',
-        role: 'cancel',
-      }]
-    });
-
-    await actionSheet.present();
-  }
-
-  async exportType(type: string) {
-    let row = 1;
-
-    let attendance: Attendance[] = [...this.attendance].filter((att: Attendance) => Boolean(Object.keys(att.players).length));
-    if (attendance.length > 8 && type === "pdf") {
-      attendance.length = 8;
-    }
-    const attDates: string[] = [];
-    const attPerc: string[] = [];
-    const data = [];
-    const players: Player[] = Utils.getModifiedPlayers((await this.db.getPlayers()), (await this.db.getInstruments()));
-
-    for (const att of attendance) {
-      attDates.push(dayjs(att.date).format('DD.MM.YY'));
-      attPerc.push(String(att.percentage ? `${att.percentage}%` : ""));
-    }
-
-    for (const player of players) {
-      const attInfo: string[] = [];
-
-      for (const att of attendance) {
-        if (att.players[player.id] !== undefined) {
-          attInfo.push(att.players[player.id] ? "X" : "V");
-        } else {
-          attInfo.push("");
-        }
-      }
-
-      data.push([row.toString(), player.firstName, player.lastName, player.instrumentName, ...attInfo.reverse()]);
-      row++;
-    }
-
-    data.push(["", "", "", "", ...attPerc.reverse()]);
-
-    const header: string[] = ['', 'Nachname', 'Vorname', 'Instrument', ...attDates.reverse()];
-
-    if (type === "excel") {
-      data.unshift(header)
-      this.exportExcel(data);
-    } else {
-      this.exportPDF(data, header);
-    }
-  }
-
-  exportExcel(data) {
-    const date: string = dayjs().format('DD.MM.YYYY');
-
-    /* generate worksheet */
-    const ws: WorkSheet = utils.aoa_to_sheet(data);
-
-    /* generate workbook and add the worksheet */
-    const wb: WorkBook = utils.book_new();
-    utils.book_append_sheet(wb, ws, 'Anwesenheit');
-
-    /* save to file */
-    writeFile(wb, `${environment.shortName}_Anwesenheit_Stand_${date}.xlsx`);
-  }
-
-  exportPDF(data, header) {
-    const date: string = dayjs().format('DD.MM.YYYY');
-    const doc = new jsPDF();
-
-    doc.text(`${environment.shortName} Anwesenheit Stand: ${date}`, 14, 25);
-    ((doc as any).autoTable as AutoTable)({
-      head: [header],
-      body: data,
-      margin: { top: 40 },
-      theme: 'grid',
-      headStyles: {
-        fontSize: 8,
-        halign: 'center',
-        fillColor: [0, 82, 56]
-      },
-      bodyStyles: {
-        fontSize: 8,
-      },
-      didParseCell: (data: CellHookData) => {
-        if (data.cell.raw === "V") {
-          data.cell.styles.fillColor = [178, 34, 34];
-          data.cell.styles.textColor = [255, 255, 255];
-          data.cell.styles.halign = "center";
-        } else if (data.cell.raw === "X") {
-          data.cell.styles.fillColor = [50, 205, 50];
-          data.cell.styles.textColor = [255, 255, 255];
-          data.cell.styles.halign = "center";
-        } else if (data.cell.raw.toString().includes("%")) {
-          data.cell.styles.halign = "center";
-        }
-      },
-    });
-    doc.save(`${environment.shortName}_Anwesenheit_Stand_${date}.pdf`);
   }
 }

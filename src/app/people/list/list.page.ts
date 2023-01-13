@@ -4,15 +4,11 @@ import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument, Person, Player, PlayerHistoryEntry } from 'src/app/utilities/interfaces';
 import { PersonPage } from '../person/person.page';
-import { jsPDF } from "jspdf";
-import 'jspdf-autotable';
-import { autoTable as AutoTable } from 'jspdf-autotable';
-import { Utils } from 'src/app/utilities/Utils';
-import { utils, WorkBook, WorkSheet, writeFile } from 'xlsx';
 import { environment } from 'src/environments/environment.prod';
 import { ProblemModalPage } from '../problem-modal/problem-modal.page';
 import { PlayerHistoryType } from 'src/app/utilities/constants';
 import { Storage } from '@ionic/storage-angular';
+import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
   selector: 'app-list',
@@ -241,32 +237,6 @@ export class ListPage implements OnInit {
     this.playersFiltered = this.players;
   }
 
-  async export(): Promise<void> {
-    const actionSheet = await this.actionSheetController.create({
-      buttons: [{
-        text: 'Problemfälle anzeigen',
-        handler: () => {
-          this.showProblemPersons();
-        }
-      }, {
-        text: 'Excel',
-        handler: () => {
-          this.exportExcel();
-        }
-      }, {
-        text: 'PDF',
-        handler: () => {
-          this.exportPDF();
-        }
-      }, {
-        text: 'Abbrechen',
-        role: 'cancel',
-      }]
-    });
-
-    await actionSheet.present();
-  }
-
   async showProblemPersons() {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: ProblemModalPage,
@@ -279,56 +249,6 @@ export class ListPage implements OnInit {
     });
 
     await modal.present();
-  }
-
-  exportExcel() {
-    let row = 1;
-
-    const date: string = dayjs().format('DD.MM.YYYY');
-    const data = [['', 'Nachname', 'Vorname', 'Instrument', 'Geburtsdatum']];
-
-    for (const user of this.players) {
-      const birthday: string = dayjs(user.birthday).format('DD.MM.YYYY');
-      data.push([row.toString(), user.firstName, user.lastName, user.instrumentName, birthday]);
-      row++;
-    }
-
-    /* generate worksheet */
-    const ws: WorkSheet = utils.aoa_to_sheet(data);
-
-    /* generate workbook and add the worksheet */
-    const wb: WorkBook = utils.book_new();
-    utils.book_append_sheet(wb, ws, 'Anwesenheit');
-
-    /* save to file */
-    writeFile(wb, `${environment.shortName}_Spielerliste_Stand_${date}.xlsx`);
-  }
-
-  exportPDF() {
-    let row = 1;
-
-    const date: string = dayjs().format('DD.MM.YYYY');
-    const data = [];
-
-    for (const user of this.players) {
-      const birthday: string = dayjs(user.birthday).format('DD.MM.YYYY');
-      data.push([row.toString(), user.firstName, user.lastName, user.instrumentName, birthday]);
-      row++;
-    }
-
-    const doc = new jsPDF();
-    doc.text(`${environment.shortName} Spielerliste Stand: ${date}`, 14, 25);
-    ((doc as any).autoTable as AutoTable)({
-      head: [['', 'Vorname', 'Nachname', 'Instrument', 'Geburtsdatum']],
-      body: data,
-      margin: { top: 40 },
-      theme: 'grid',
-      headStyles: {
-        halign: 'center',
-        fillColor: [0, 82, 56]
-      }
-    });
-    doc.save(`${environment.shortName}_Spielerliste_Stand_${date}.pdf`);
   }
 
   async removePlayer(player: Player, slider: IonItemSliding, isConductor: boolean = false): Promise<void> {

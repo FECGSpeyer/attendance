@@ -4,6 +4,7 @@ import * as dayjs from 'dayjs';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
+import { ExportPage } from 'src/app/export/export.page';
 import { HistoryPage } from 'src/app/history/history.page';
 import { PersonPage } from 'src/app/people/person/person.page';
 import { DbService } from 'src/app/services/db.service';
@@ -104,6 +105,15 @@ export class SettingsPage implements OnInit {
   async openStats(): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: StatsPage,
+      presentingElement: this.routerOutlet.nativeEl,
+    });
+
+    await modal.present();
+  }
+
+  async openExport(): Promise<void> {
+    const modal: HTMLIonModalElement = await this.modalController.create({
+      component: ExportPage,
       presentingElement: this.routerOutlet.nativeEl,
     });
 

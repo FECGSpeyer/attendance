@@ -2,9 +2,6 @@
   <ion-toolbar>
     <ion-title>Anwesenheit</ion-title>
     <ion-buttons slot="end">
-      <ion-button *ngIf="isConductor && attendance?.length" (click)="export()">
-        <ion-icon name="download-outline"></ion-icon>
-      </ion-button>
       <ion-button *ngIf="!isConductor" (click)="logout()">
         <ion-icon name="log-out-outline"></ion-icon>
       </ion-button>

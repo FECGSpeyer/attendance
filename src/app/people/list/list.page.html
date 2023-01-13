@@ -75,7 +75,7 @@
       <ion-label>Dirigenten ({{conductors.length}})</ion-label>
     </ion-item-divider>
     <ion-item-sliding #sliderDiri *ngFor="let con of conductors">
-      <ion-item button (click)="openModal(con, true)">
+      <ion-item button detail="false" (click)="openModal(con, true)">
         <ion-label>
           <h2>{{ con.firstName }} {{ con.lastName }}</h2>
         </ion-label>
@@ -93,7 +93,7 @@
         <ion-label>{{ player.instrumentName }} ({{ player.instrumentLength }})</ion-label>
       </ion-item-divider>
       <ion-item-sliding #slider>
-        <ion-item button (click)="openModal(player)">
+        <ion-item button detail="false" (click)="openModal(player)">
           <ion-label>
             <h2>{{ player.firstName }} {{ player.lastName }}</h2>
             <h3 *ngIf="player.text">{{ player.text }}</h3>
