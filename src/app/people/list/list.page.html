@@ -70,7 +70,7 @@
       </ng-template>
     </ion-popover>
   </div>
-  <ion-list *ngIf="searchTerm === '' && filterOpt === 'all' && sortOpt === 'instrument'">
+  <ion-list *ngIf="searchTerm === '' && (filterOpt === 'all' || filterOpt === 'active') && sortOpt === 'instrument'">
     <ion-item-divider sticky="true">
       <ion-label>Dirigenten ({{conductors.length}})</ion-label>
     </ion-item-divider>
