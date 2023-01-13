@@ -21,6 +21,7 @@ export class SettingsPage implements OnInit {
   public conductors: Person[] = [];
   public selConductors: number[] = [];
   public leftPlayers: Player[] = [];
+  public leftConductors: Person[] = [];
   public playersWithoutAccount: Player[] = [];
   public version: string = require('../../../../package.json').version;
   public showTeachers: boolean = environment.showTeachers;
@@ -33,10 +34,12 @@ export class SettingsPage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.conductors = await this.db.getConductors();
-    this.selConductors = this.conductors.map((c: Person): number => c.id);
+    const allConductors: Person[] = await this.db.getConductors(true);
+    this.conductors = allConductors.filter((con: Person) => !con.left);
+    this.selConductors = this.conductors.filter((con: Person) => Boolean(!con.left)).map((c: Person): number => c.id);
     this.instruments = await this.db.getInstruments();
     this.leftPlayers = Utils.getModifiedPlayers(await this.db.getLeftPlayers(), this.instruments);
+    this.leftConductors = allConductors.filter((con: Person) => Boolean(con.left));
   }
 
   async ionViewWillEnter() {
@@ -107,7 +110,7 @@ export class SettingsPage implements OnInit {
     await modal.present();
   }
 
-  async openPlayerModal(p: Player) {
+  async openPlayerModal(p: Player, isConductor: boolean) {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: PersonPage,
       presentingElement: this.routerOutlet.nativeEl,
@@ -115,19 +118,11 @@ export class SettingsPage implements OnInit {
         existingPlayer: { ...p },
         instruments: this.instruments,
         readOnly: true,
+        isConductor,
       }
     });
 
     await modal.present();
-  }
-
-  async addUser(email: string, password: string) {
-    const res: boolean = await this.db.register(email, password);
-    if (res) {
-      await Utils.showToast("Der User wurde erfolgreich erstellt");
-    } else {
-      await Utils.showToast("Fehler beim Erstellen, versuche es noch einmal", "danger");
-    }
   }
 
   async createAccounts() {

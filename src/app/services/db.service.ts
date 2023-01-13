@@ -11,7 +11,6 @@ import { Attendance, AuthObject, History, Instrument, Meeting, Person, PersonAtt
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 
-const adminMails: string[] = ["leonjaeger00@gmail.com", "emanuel.ellrich@gmail.com", "jaeger1390@gmail.com", "ericfast.14@gmail.com", "marcelfast2002@gmail.com", "eckstaedt98@gmail.com", "erwinfast98@gmail.com", "eugen.ko94@yahoo.de"];
 const options: SupabaseClientOptions<any> = {
   auth: {
     autoRefreshToken: true,
@@ -51,6 +50,7 @@ export class DbService {
     const { data } = await supabase.auth.getUser();
 
     if (data?.user?.email) {
+      const adminMails: string[] = await this.getConductorMails();
       this.user = data.user;
       const isAdmin: boolean = adminMails.includes(data.user.email.toLowerCase());
       supabase.auth.refreshSession();
@@ -73,14 +73,6 @@ export class DbService {
     });
 
     this.router.navigateByUrl("/login");
-  }
-
-  async register(email: string, password: string) {
-    const { data } = await supabase.auth.signUp({
-      email, password,
-    });
-
-    return Boolean(data.user);
   }
 
   async createAccount(user: Player) {
@@ -121,6 +113,7 @@ export class DbService {
     });
 
     if (data.user) {
+      const adminMails: string[] = await this.getConductorMails();
       this.user = data.user;
       const isAdmin: boolean = adminMails.includes(email.toLowerCase());
       this.authenticationState.next({
@@ -297,6 +290,20 @@ export class DbService {
         history: player.history as any,
       }
     }).filter((p: Player) => p.email.length);
+  }
+
+  async getConductorMails(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('conductors')
+      .select('email')
+      .is("left", null);
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Dirigenten E-Mails", "danger");
+      throw new Error("Fehler beim Laden der Dirigenten E-Mails");
+    }
+
+    return data.map((d: { email: string }) => d.email.toLowerCase()).concat(["eckstaedt98@gmail.com"]);
   }
 
   async getConductors(all: boolean = false): Promise<Person[]> {

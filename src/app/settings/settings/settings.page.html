@@ -55,7 +55,7 @@
         </ng-template>
       </ion-modal>
     </ion-item>
-    <ion-item detail="false" button id="archive-button">
+    <ion-item *ngIf="leftPlayers?.length" detail="false" button id="archive-button">
       <ion-label>Spielerarchiv</ion-label>
       <ion-modal trigger="archive-button" [breakpoints]="[0.5, 1]" [initialBreakpoint]="0.5">
         <ng-template>
@@ -77,6 +77,29 @@
         </ng-template>
       </ion-modal>
     </ion-item>
+
+    <ion-item *ngIf="leftConductors?.length" detail="false" button id="diri-archive-button">
+      <ion-label>Dirigentenarchiv</ion-label>
+      <ion-modal trigger="diri-archive-button" [breakpoints]="[0.5, 1]" [initialBreakpoint]="0.5">
+        <ng-template>
+          <ion-content>
+            <ion-header>
+              <ion-toolbar>
+                <ion-title>Dirigentenarchiv</ion-title>
+              </ion-toolbar>
+            </ion-header>
+            <ion-list>
+              <ion-item button (click)="openPlayerModal(p, true)" *ngFor="let p of leftConductors">
+                <ion-label>
+                  <h2>{{ p.firstName }} {{ p.lastName }}</h2>
+                  <h3>Ausgetreten: {{ p.left | date:"dd.MM.YYYY" }}</h3>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
     <ion-item button *ngIf="playersWithoutAccount.length" (click)="createAccounts()" color="primary">
       <ion-label>Fehlende Benutzeraccounts anlegen</ion-label>
     </ion-item>
@@ -86,29 +109,6 @@
     </ion-list-header>
     <ion-item button (click)="openStats()">
       <ion-label>Statistiken</ion-label>
-    </ion-item>
-    <ion-item detail="false" button id="register-button">
-      <ion-label>App-User hinzufügen</ion-label>
-      <ion-modal trigger="register-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">
-        <ng-template>
-          <ion-content>
-            <ion-header>
-              <ion-toolbar>
-                <ion-title>App-User hinzufügen</ion-title>
-              </ion-toolbar>
-            </ion-header>
-            <ion-item>
-              <ion-label position="stacked">E-Mail</ion-label>
-              <ion-input #email></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-label position="stacked">Passwort</ion-label>
-              <ion-input #password type="password"></ion-input>
-            </ion-item>
-            <ion-button [disabled]="!password.value || !email.value" (click)="addUser(email.value, password.value)" expand="block">Hinzufügen</ion-button>
-          </ion-content>
-        </ng-template>
-      </ion-modal>
     </ion-item>
 
     <ion-item>

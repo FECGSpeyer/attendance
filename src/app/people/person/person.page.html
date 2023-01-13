@@ -82,7 +82,7 @@
           </ion-row>
           <ion-row>
             <ion-col>
-              <ion-item [color]="!existingPlayer || player.correctBirthday ? '' : 'warning'">
+              <ion-item [color]="!existingPlayer || player.correctBirthday || readOnly ? '' : 'warning'">
                 <ion-label position="stacked">Geburtsdatum</ion-label>
                 <ion-input [disabled]="readOnly" readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
                 <ion-modal trigger="date-modal">
