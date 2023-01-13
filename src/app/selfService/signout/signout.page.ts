@@ -71,7 +71,11 @@ export class SignoutPage implements OnInit {
     }
 
     this.playerAttendance = await this.db.getPlayerAttendance(this.player.id);
-    this.perc = Math.round(this.playerAttendance.filter((att: PersonAttendance) => att.attended).length / this.playerAttendance.length * 100);
+    const vergangene: any[] = this.playerAttendance.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
+    if (vergangene.length) {
+      vergangene[0].showDivider = true;
+      this.perc = Math.round(vergangene.filter((att: PersonAttendance) => att.attended).length / vergangene.length * 100);
+    }
   }
 
   logout() {
