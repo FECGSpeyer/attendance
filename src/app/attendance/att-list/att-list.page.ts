@@ -40,7 +40,7 @@ export class AttListPage implements OnInit {
     this.db.authenticationState.subscribe((state: { isConductor: boolean, isHelper: boolean }) => {
       this.isConductor = state.isConductor;
     });
-    // this.faceRecService.initialize();
+    this.faceRecService.initialize();
   }
 
   async getAttendance(): Promise<void> {

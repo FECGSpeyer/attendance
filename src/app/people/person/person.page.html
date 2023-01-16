@@ -171,6 +171,10 @@
               </ion-item>
             </ion-col>
           </ion-row>
+          <ion-item *ngIf="isVoS">
+            <ion-label position="stacked">Testergebnis</ion-label>
+            <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.testResult"></ion-input>
+          </ion-item>
           <ion-row *ngIf="!isConductor">
             <ion-col>
               <ion-item>

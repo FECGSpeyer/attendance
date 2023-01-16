@@ -153,6 +153,8 @@ export class ListPage implements OnInit {
         return !player.hasTeacher;
       } else if (this.filterOpt === "withoutAccount") {
         return !player.appId;
+      } else if (this.filterOpt === "withoutTest") {
+        return !player.testResult;
       } else {
         return player.isLeader;
       }

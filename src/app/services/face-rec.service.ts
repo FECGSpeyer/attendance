@@ -12,8 +12,8 @@ export class FaceRecService {
   }
 
   async initialize() {
-    const MODEL_URL = '../assets/models/';
-    await faceapi.loadSsdMobilenetv1Model(MODEL_URL + "ssd_mobilenetv1_model-weights_manifest.json");
+    const MODEL_URL = "https://zukclqspndysemvvihjm.supabase.co/storage/v1/object/public/models/";
+    await faceapi.loadSsdMobilenetv1Model(MODEL_URL);
     await faceapi.loadFaceLandmarkModel(MODEL_URL);
     await faceapi.loadFaceRecognitionModel(MODEL_URL);
 

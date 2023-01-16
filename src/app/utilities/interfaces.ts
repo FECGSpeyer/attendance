@@ -49,6 +49,7 @@ export interface Player extends Person {
     otherExercise?: string;
     text?: string;
     attNote?: string;
+    testResult?: string;
 }
 
 export interface Instrument {
