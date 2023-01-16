@@ -255,7 +255,7 @@ export class ListPage implements OnInit {
     await modal.present();
   }
 
-  async removePlayer(player: Player, slider: IonItemSliding, isConductor: boolean = false): Promise<void> {
+  async remove(player: Player, slider: IonItemSliding, isConductor: boolean = false): Promise<void> {
     const sheet: HTMLIonActionSheetElement = await this.actionSheetController.create({
       buttons: [{
         text: "Archivieren",
@@ -270,7 +270,7 @@ export class ListPage implements OnInit {
           if (isConductor) {
             this.removeConductor(player.id);
           } else {
-            this.remove(player.id);
+            this.removePlayer(player.id);
           }
           slider.close();
         },
@@ -304,7 +304,7 @@ export class ListPage implements OnInit {
     this.isArchiveModalOpen = false;
   }
 
-  async remove(id: number): Promise<void> {
+  async removePlayer(id: number): Promise<void> {
     await this.db.removePlayer(id);
     await this.getPlayers();
   }

@@ -68,6 +68,17 @@ export class AttListPage implements OnInit {
   }
 
   async addAttendance(modal: IonModal): Promise<void> {
+    const conductors: {} = {};
+    const players: {} = {};
+
+    for (const con of (await this.db.getConductors())) {
+      conductors[con.id] = true;
+    }
+
+    for (const player of (await this.db.getPlayers())) {
+      players[player.id] = true;
+    }
+
     await this.db.addAttendance({
       date: this.date,
       type: this.type,
@@ -75,6 +86,9 @@ export class AttListPage implements OnInit {
       notes: this.notes,
       typeInfo: this.typeInfo,
       playerNotes: {},
+      players,
+      conductors,
+      excused: [],
     });
 
     await modal.dismiss();

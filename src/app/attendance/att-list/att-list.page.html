@@ -19,7 +19,7 @@
   <ion-list class="marginBottom">
     <image id="myImage" src="../../../assets/test.jpeg"></image>
     <ion-item-sliding *ngFor="let att of attendance">
-      <ion-item [color]="att.percentage ? '' : 'danger'" (click)="openAttendance(att)">
+      <ion-item (click)="openAttendance(att)">
         <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
         <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} | {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
         <ion-badge *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>

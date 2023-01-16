@@ -36,35 +36,24 @@ export class AttPage implements OnInit {
 
     this.oldAttendance = { ...this.attendance };
 
-    if (Object.keys(this.attendance.players).length) {
-      for (let player of Object.keys(this.attendance.players)) {
-        if (Boolean(allPlayers.find((p: Player) => p.id === Number(player)))) {
-          attPlayers.push({
-            ...allPlayers.find((p: Player) => p.id === Number(player)),
-            isPresent: this.attendance.players[Number(player)],
-          });
-        }
+    for (let player of Object.keys(this.attendance.players)) {
+      if (Boolean(allPlayers.find((p: Player) => p.id === Number(player)))) {
+        attPlayers.push({
+          ...allPlayers.find((p: Player) => p.id === Number(player)),
+          isPresent: this.attendance.players[Number(player)],
+        });
       }
-      this.excused = new Set([...this.attendance.excused]) || new Set<string>();
-      this.playerNotes = { ...this.attendance.playerNotes } || {};
-    } else {
-      attPlayers = allPlayers.filter((player: Player) => !player.paused);
     }
+    this.excused = new Set([...this.attendance.excused]) || new Set<string>();
+    this.playerNotes = { ...this.attendance.playerNotes } || {};
 
-    if (Object.keys(this.attendance.conductors).length) {
-      for (let con of Object.keys(this.attendance.conductors)) {
+    for (let con of Object.keys(this.attendance.conductors)) {
+      if (Boolean(conductors.find((p: Player) => p.id === Number(con)))) {
         this.conductors.push({
           ...conductors.find((p: Player) => p.id === Number(con)),
           isPresent: this.attendance.conductors[Number(con)],
         });
       }
-    } else {
-      this.conductors = conductors.filter((c: Person): boolean => !c.left).map((c: Person): Person => {
-        return {
-          ...c,
-          isPresent: true,
-        }
-      });
     }
 
     this.players = Utils.getModifiedPlayers(attPlayers, instruments).map((p: Player): Player => {

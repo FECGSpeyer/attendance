@@ -39,7 +39,7 @@
     <ion-item-divider sticky="true">
       <ion-label>Dirigenten ({{ conductors?.length }})</ion-label>
     </ion-item-divider>
-    <ion-item *ngFor="let con of conductors" (click)="con.isPresent = !con.isPresent">
+    <ion-item button detail="false" *ngFor="let con of conductors" (click)="con.isPresent = !con.isPresent">
       <ion-label>
         <h2>{{ con.firstName }} {{ con.lastName }}</h2>
       </ion-label>

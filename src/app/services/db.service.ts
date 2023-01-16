@@ -327,32 +327,86 @@ export class DbService {
     delete dataToCreate.teacher;
     delete dataToCreate.playsSince;
 
-    const { error } = await supabase
+    const { error, data } = await supabase
       .from('conductors')
-      .insert(dataToCreate);
+      .insert(dataToCreate)
+      .select()
+      .single();
 
     if (error) {
       throw new Error("Fehler beim hinzufügen des Dirigenten.");
     }
 
+    await this.addConductorToUpcomingAttendances(data.id);
+
     return;
   }
 
-  async addPlayer(player: Player): Promise<Player[]> {
-    const { data } = await supabase
+  async addPlayer(player: Player): Promise<void> {
+    const { data, error } = await supabase
       .from('player')
       .insert({
         ...player,
         history: player.history as any
       })
-      .select();
+      .select()
+      .single();
 
-    return data.map((player) => {
-      return {
-        ...player,
-        history: player.history as any,
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    await this.addPlayerToUpcomingAttendances(data.id);
+  }
+
+  async addPlayerToUpcomingAttendances(id: number) {
+    const attData: Attendance[] = await this.getUpcomingAttendances();
+
+    if (attData?.length) {
+      for (const att of attData) {
+        att.players[id] = true;
+        await this.updateAttendance({ players: att.players }, att.id);
       }
-    });
+    }
+  }
+
+  async addConductorToUpcomingAttendances(id: number) {
+    const attData: Attendance[] = await this.getUpcomingAttendances();
+
+    if (attData?.length) {
+      for (const att of attData) {
+        att.conductors[id] = true;
+        await this.updateAttendance({ conductors: att.conductors }, att.id);
+      }
+    }
+  }
+
+  async removePlayerFromAttendances(id: number) {
+    const { data } = await supabase
+      .from('attendance')
+      .select('*')
+      .neq(`players->"${id}"` as any, null);
+
+    if (data?.length) {
+      for (const att of data) {
+        delete att.players[id];
+        await this.updateAttendance({ players: att.players as any }, att.id);
+      }
+    }
+  }
+
+  async removeConductorFromAttendances(id: number) {
+    const { data } = await supabase
+      .from('attendance')
+      .select('*')
+      .neq(`conductors->"${id}"` as any, null);
+
+    if (data?.length) {
+      for (const att of data) {
+        delete att.conductors[id];
+        await this.updateAttendance({ conductors: att.conductors as any }, att.id);
+      }
+    }
   }
 
   async updatePlayer(player: Player): Promise<Player[]> {
@@ -435,6 +489,8 @@ export class DbService {
       .from('player')
       .delete()
       .match({ id });
+
+    await this.removePlayerFromAttendances(id);
   }
 
   async removeConductor(id: number): Promise<void> {
@@ -442,6 +498,8 @@ export class DbService {
       .from('player')
       .delete()
       .match({ id });
+
+    await this.removeConductorFromAttendances(id);
   }
 
   async archivePlayer(player: Player, left: string, notes: string): Promise<void> {
@@ -520,6 +578,18 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
+      .order("date", {
+        ascending: false,
+      });
+
+    return data as any;
+  }
+
+  async getUpcomingAttendances(): Promise<Attendance[]> {
+    const { data } = await supabase
+      .from('attendance')
+      .select('*')
+      .gt("date", dayjs().startOf("day").toISOString())
       .order("date", {
         ascending: false,
       });
