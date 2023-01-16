@@ -2,7 +2,7 @@ import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { PlayerHistoryType } from 'src/app/utilities/constants';
-import { Attendance, AttendanceItem, Instrument, Person, Player, PlayerHistoryEntry } from 'src/app/utilities/interfaces';
+import { Attendance, AttendanceItem, Instrument, Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment.prod';
 

@@ -7,6 +7,7 @@ import { Attendance } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { AttPage } from '../att/att.page';
 import 'jspdf-autotable';
+import { FaceRecService } from 'src/app/services/face-rec.service';
 require('dayjs/locale/de');
 
 @Component({
@@ -27,7 +28,7 @@ export class AttListPage implements OnInit {
     private db: DbService,
     private modalController: ModalController,
     private alertController: AlertController,
-    private actionSheetController: ActionSheetController,
+    private faceRecService: FaceRecService,
   ) { }
 
   async logout() {
@@ -39,6 +40,7 @@ export class AttListPage implements OnInit {
     this.db.authenticationState.subscribe((state: { isConductor: boolean, isHelper: boolean }) => {
       this.isConductor = state.isConductor;
     });
+    // this.faceRecService.initialize();
   }
 
   async getAttendance(): Promise<void> {
