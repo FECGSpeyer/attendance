@@ -28,7 +28,6 @@ export class AttListPage implements OnInit {
     private db: DbService,
     private modalController: ModalController,
     private alertController: AlertController,
-    private faceRecService: FaceRecService,
   ) { }
 
   async logout() {
@@ -40,7 +39,6 @@ export class AttListPage implements OnInit {
     this.db.authenticationState.subscribe((state: { isConductor: boolean, isHelper: boolean }) => {
       this.isConductor = state.isConductor;
     });
-    this.faceRecService.initialize();
   }
 
   async getAttendance(): Promise<void> {
