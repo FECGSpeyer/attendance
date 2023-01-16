@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as faceapi from 'face-api.js';
+import { DEFAULT_IMAGE } from '../utilities/constants';
+import { Person, Player } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
 @Injectable({
@@ -7,54 +9,40 @@ import { Utils } from '../utilities/Utils';
 })
 export class FaceRecService {
 
-  constructor() {
-    // this.initialize();
-  }
+  constructor() { }
 
-  async initialize() {
+  async initialize(players: Player[], conductors: Person[], imageUrl: string) {
     const MODEL_URL = "https://zukclqspndysemvvihjm.supabase.co/storage/v1/object/public/models/";
     await faceapi.loadSsdMobilenetv1Model(MODEL_URL);
     await faceapi.loadFaceLandmarkModel(MODEL_URL);
     await faceapi.loadFaceRecognitionModel(MODEL_URL);
 
     const image = new Image();
-    image.src = "../../assets/test.jpeg";
+    image.src = imageUrl;
+    image.crossOrigin = "anonymous";
 
     const fullFaceDescriptions = await faceapi.detectAllFaces(image).withFaceLandmarks().withFaceDescriptors();
 
-    console.log(fullFaceDescriptions);
-
-    const labels = ['matthias'];
-
     const labeledFaceDescriptors = await Promise.all(
-      labels.map(async label => {
+      [...players, ...conductors].filter((player: Player) => player.img !== DEFAULT_IMAGE).map(async (player: Player) => {
         // fetch image data from urls and convert blob to HTMLImage element
-        const imgUrl = `../../assets/${label}.jpg`;
-        const img = await faceapi.fetchImage(imgUrl)
+        const img = await faceapi.fetchImage(player.img);
 
         // detect the face with the highest score in the image and compute it's landmarks and face descriptor
         const fullFaceDescription = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
 
         if (!fullFaceDescription) {
-          throw new Error(`no faces detected for ${label}`)
+          throw new Error(`no faces detected for ${player.firstName} ${player.lastName}`)
         }
 
         const faceDescriptors = [fullFaceDescription.descriptor]
-        return new faceapi.LabeledFaceDescriptors(label, faceDescriptors)
+        return new faceapi.LabeledFaceDescriptors(`${player.firstName} ${player.lastName}`, faceDescriptors)
       })
     )
-
-    console.log(labeledFaceDescriptors);
 
     const maxDescriptorDistance = 0.6
     const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, maxDescriptorDistance);
 
-    const results = fullFaceDescriptions.map(fd => faceMatcher.findBestMatch(fd.descriptor));
-
-    console.log(results);
-
-    if (results[3].label === "matthias") {
-      Utils.showToast("Matthias ist da");
-    }
+    return fullFaceDescriptions.map(fd => faceMatcher.findBestMatch(fd.descriptor));
   }
 }

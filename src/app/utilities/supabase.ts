@@ -17,6 +17,7 @@ export interface Database {
           date: string | null
           excused: string[] | null
           id: number
+          img: string | null
           notes: string | null
           playerNotes: Json | null
           players: Json | null
@@ -30,6 +31,7 @@ export interface Database {
           date?: string | null
           excused?: string[] | null
           id?: number
+          img?: string | null
           notes?: string | null
           playerNotes?: Json | null
           players?: Json | null
@@ -43,6 +45,7 @@ export interface Database {
           date?: string | null
           excused?: string[] | null
           id?: number
+          img?: string | null
           notes?: string | null
           playerNotes?: Json | null
           players?: Json | null

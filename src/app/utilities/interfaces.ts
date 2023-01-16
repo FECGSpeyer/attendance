@@ -82,6 +82,7 @@ export interface Attendance {
     typeInfo: string;
     notes: string;
     playerNotes: { [prop: number]: string };
+    img?: string;
 }
 
 export interface Song {

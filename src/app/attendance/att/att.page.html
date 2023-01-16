@@ -32,6 +32,11 @@
           <ion-label position="stacked">Notizen</ion-label>
           <ion-textarea rows="2" [(ngModel)]="attendance.notes"></ion-textarea>
         </ion-item>
+        <input style="display: 'none';" name="file" #chooser (change)="onImageSelect($event)" accept="image/*" class="inputFile" type="file" />
+        <ion-item>
+          <ion-button (click)="recognizeFaces()">Personenerkennung</ion-button>
+          <ion-avatar slot="end" *ngIf="attendance.img" [src]="attendance.img"></ion-avatar>
+        </ion-item>
       </div>
     </ion-accordion>
   </ion-accordion-group>

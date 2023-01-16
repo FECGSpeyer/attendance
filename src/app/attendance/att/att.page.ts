@@ -1,6 +1,8 @@
-import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
+import { FaceMatch } from 'face-api.js';
 import { DbService } from 'src/app/services/db.service';
+import { FaceRecService } from 'src/app/services/face-rec.service';
 import { PlayerHistoryType } from 'src/app/utilities/constants';
 import { Attendance, AttendanceItem, Instrument, Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -13,6 +15,7 @@ import { environment } from 'src/environments/environment.prod';
 })
 export class AttPage implements OnInit {
   @Input() attendance: Attendance;
+  @ViewChild('chooser') chooser: ElementRef;
   public players: Player[] = [];
   public conductors: Person[] = [];
   public excused: Set<string> = new Set();
@@ -25,6 +28,7 @@ export class AttPage implements OnInit {
     private modalController: ModalController,
     private db: DbService,
     private alertController: AlertController,
+    private faceRecService: FaceRecService,
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -197,6 +201,42 @@ export class AttPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  async recognizeFaces() {
+    if (this.attendance.img) {
+      const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
+      loading.present();
+      const res: FaceMatch[] = (await this.faceRecService.initialize(this.players, this.conductors, this.attendance.img)).filter((match: FaceMatch) => match.label !== "unknown");
+      loading.dismiss();
+      Utils.showToast(res.map((match: FaceMatch) => match.label).join(", ") + " gefunden");
+    } else {
+      this.chooser.nativeElement.click();
+    }
+  }
+
+  async onImageSelect(evt: any) {
+    const loading = await Utils.getLoadingElement();
+    loading.present();
+    const imgFile: File = evt.target.files[0];
+
+    if (imgFile) {
+      if (imgFile.type.substring(0, 5) === 'image') {
+        const reader: FileReader = new FileReader();
+
+        reader.readAsDataURL(imgFile);
+
+        try {
+          const url: string = await this.db.updateAttImage(this.attendance.id, imgFile);
+          this.attendance.img = url;
+        } catch (error) {
+          Utils.showToast(error, "danger");
+        }
+      } else {
+        loading.dismiss();
+        Utils.showToast("Fehler beim hinzufügen des Bildes, versuche es später erneut", "danger");
+      }
+    }
   }
 
 }

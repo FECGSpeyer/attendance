@@ -900,4 +900,26 @@ export class DbService {
 
     return data.publicUrl;
   }
+
+  async updateAttImage(id: number, image: File) {
+    const { error } = await supabase.storage
+      .from("attendances")
+      .upload(id.toString(), image, { upsert: true });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const { data } = await supabase
+      .storage
+      .from("attendances")
+      .getPublicUrl(id.toString());
+
+    await supabase
+      .from("attendance")
+      .update({ img: data.publicUrl })
+      .match({ id });
+
+    return data.publicUrl;
+  }
 }
