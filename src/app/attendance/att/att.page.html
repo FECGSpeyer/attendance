@@ -35,7 +35,9 @@
         <input style="display: 'none';" name="file" #chooser (change)="onImageSelect($event)" accept="image/*" class="inputFile" type="file" />
         <ion-item>
           <ion-button (click)="recognizeFaces()">Personenerkennung</ion-button>
-          <ion-avatar slot="end" *ngIf="attendance.img" [src]="attendance.img"></ion-avatar>
+          <ion-avatar slot="end" *ngIf="attendance.img">
+            <img [src]="attendance.img" />
+          </ion-avatar>
         </ion-item>
       </div>
     </ion-accordion>
