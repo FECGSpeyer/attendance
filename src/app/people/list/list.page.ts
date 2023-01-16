@@ -31,6 +31,7 @@ export class ListPage implements OnInit {
   public showLeader = false;
   public showPaused = false;
   public showNew = false;
+  public showImg = true;
   public withSignout: boolean = environment.withSignout;
   public isArchiveModalOpen: boolean = false;
   public archiveDate: string = dayjs().format("YYYY-MM-DD");
@@ -181,6 +182,7 @@ export class ListPage implements OnInit {
     this.showNew = this.viewOpts.includes("new");
     this.showPaused = this.viewOpts.includes("paused");
     this.showNotes = this.viewOpts.includes("notes");
+    this.showImg = this.viewOpts.includes("img");
 
     this.storage.set("viewOpts", JSON.stringify(this.viewOpts));
   }

@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
-import { PlayerHistoryType } from '../utilities/constants';
+import { DEFAULT_IMAGE, PlayerHistoryType } from '../utilities/constants';
 import { Attendance, AuthObject, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
@@ -312,7 +312,7 @@ export class DbService {
       .select('*')
       .order("lastName");
 
-    return all ? response.data : response.data.filter((c: Person) => !c.left);
+    return (all ? response.data : response.data.filter((c: Person) => !c.left)).map((con: Person) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
   }
 
   async addConductor(person: Person): Promise<void> {
@@ -780,5 +780,54 @@ export class DbService {
       type,
       reason,
     });
+  }
+
+  async removeImage(id: number, imgPath: string, isConductor: boolean) {
+    if (isConductor) {
+      await supabase
+        .from("conductors")
+        .update({ img: "" })
+        .match({ id });
+    } else {
+      await supabase
+        .from("player")
+        .update({ img: "" })
+        .match({ id });
+    }
+
+    await supabase.storage
+      .from("profiles")
+      .remove([`${isConductor ? "con_" : ""}${id}`]);
+  }
+
+  async updateImage(id: number, image: File, isConductor: boolean) {
+    const fileName: string = `${isConductor ? "con_" : ""}${id}`;
+
+    const { error } = await supabase.storage
+      .from("profiles")
+      .upload(fileName, image, { upsert: true });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const { data } = await supabase
+      .storage
+      .from("profiles")
+      .getPublicUrl(fileName);
+
+    if (isConductor) {
+      await supabase
+        .from("conductors")
+        .update({ img: data.publicUrl })
+        .match({ id });
+    } else {
+      await supabase
+        .from("player")
+        .update({ img: data.publicUrl })
+        .match({ id });
+    }
+
+    return data.publicUrl;
   }
 }

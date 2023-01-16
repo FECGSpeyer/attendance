@@ -1,6 +1,7 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { environment } from "src/environments/environment";
+import { DEFAULT_IMAGE } from "./constants";
 import { Attendance, AttendanceItem, Instrument, Player } from "./interfaces";
 
 export class Utils {
@@ -28,6 +29,7 @@ export class Utils {
         instrumentLength,
         isNew,
         instrumentName: instruments.find((ins: Instrument) => ins.id === player.instrument).name,
+        img: player.img || DEFAULT_IMAGE,
       }
     }).sort((a: Player, b: Player) => (a.instrumentName > b.instrumentName) ? 1 : ((b.instrumentName > a.instrumentName) ? -1 : 0));
   }

@@ -1,7 +1,9 @@
 <ion-header>
   <ion-toolbar [color]="player?.isCritical ? 'danger' : ''">
-    <ion-title *ngIf="!existingPlayer">Spieler hinzufügen</ion-title>
-    <ion-title *ngIf="existingPlayer">Spieler bearbeiten</ion-title>
+    <ion-title *ngIf="!existingPlayer && !isConductor">Spieler hinzufügen</ion-title>
+    <ion-title *ngIf="!existingPlayer && isConductor">Dirigent hinzufügen</ion-title>
+    <ion-title *ngIf="existingPlayer && !isConductor">Spieler bearbeiten</ion-title>
+    <ion-title *ngIf="existingPlayer && isConductor">Dirigent bearbeiten</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon name="close"></ion-icon>
@@ -14,13 +16,13 @@
   <ion-grid *ngIf="player">
     <ion-row>
       <ion-col>
-        <ion-item>
+        <ion-item lines="none">
           <ion-label position="stacked">Vorname</ion-label>
           <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.firstName"></ion-input>
         </ion-item>
       </ion-col>
       <ion-col>
-        <ion-item>
+        <ion-item lines="none">
           <ion-label position="stacked">Nachname</ion-label>
           <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.lastName"></ion-input>
         </ion-item>
@@ -68,6 +70,17 @@
       </ion-item>
       <div slot="content">
         <ion-grid>
+          <ion-row *ngIf="existingPlayer">
+            <ion-col>
+              <input style="display: 'none';" name="file" #chooser (change)="onImageSelect($event)" accept="image/*" class="inputFile" type="file" />
+              <ion-item button lines="none" (click)="changeImg()">
+                <ion-label>Profilbild</ion-label>
+                <ion-avatar slot="end">
+                  <img [src]="player.img" />
+                </ion-avatar>
+              </ion-item>
+            </ion-col>
+          </ion-row>
           <ion-row *ngIf="!isConductor">
             <ion-col>
               <ion-item>

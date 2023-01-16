@@ -59,6 +59,7 @@ export interface Database {
           email: string | null
           firstName: string | null
           id: number
+          img: string | null
           joined: string | null
           lastName: string | null
           left: string | null
@@ -72,6 +73,7 @@ export interface Database {
           email?: string | null
           firstName?: string | null
           id?: number
+          img?: string | null
           joined?: string | null
           lastName?: string | null
           left?: string | null
@@ -85,6 +87,7 @@ export interface Database {
           email?: string | null
           firstName?: string | null
           id?: number
+          img?: string | null
           joined?: string | null
           lastName?: string | null
           left?: string | null
@@ -181,6 +184,7 @@ export interface Database {
           hasTeacher: boolean | null
           history: Json[]
           id: number
+          img: string | null
           instrument: number | null
           isCritical: boolean | null
           isLeader: boolean | null
@@ -194,6 +198,7 @@ export interface Database {
           paused: boolean | null
           playsSince: string | null
           teacher: number | null
+          testResult: string | null
         }
         Insert: {
           appId?: string | null
@@ -206,6 +211,7 @@ export interface Database {
           hasTeacher?: boolean | null
           history?: Json[]
           id?: number
+          img?: string | null
           instrument?: number | null
           isCritical?: boolean | null
           isLeader?: boolean | null
@@ -219,6 +225,7 @@ export interface Database {
           paused?: boolean | null
           playsSince?: string | null
           teacher?: number | null
+          testResult?: string | null
         }
         Update: {
           appId?: string | null
@@ -231,6 +238,7 @@ export interface Database {
           hasTeacher?: boolean | null
           history?: Json[]
           id?: number
+          img?: string | null
           instrument?: number | null
           isCritical?: boolean | null
           isLeader?: boolean | null
@@ -244,6 +252,7 @@ export interface Database {
           paused?: boolean | null
           playsSince?: string | null
           teacher?: number | null
+          testResult?: string | null
         }
       }
       songs: {

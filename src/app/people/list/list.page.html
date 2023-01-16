@@ -57,6 +57,7 @@
                 <ion-select-option *ngIf="isVoS" value="new">Neu</ion-select-option>
                 <ion-select-option value="paused">Pausiert</ion-select-option>
                 <ion-select-option value="notes">Hat Notizen</ion-select-option>
+                <ion-select-option value="img">Profilbild</ion-select-option>
                 <!-- <ion-select-option *ngIf="isVoS" value="teacher">Lehrer</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="otherOrchestra">Anderes Orchester</ion-select-option> -->
               </ion-select>
@@ -72,6 +73,9 @@
     </ion-item-divider>
     <ion-item-sliding #sliderDiri *ngFor="let con of conductors">
       <ion-item button detail="false" (click)="openModal(con, true)">
+        <ion-avatar *ngIf="showImg" slot="start">
+          <img [src]="con.img" />
+        </ion-avatar>
         <ion-label>
           <h2>{{ con.firstName }} {{ con.lastName }}</h2>
         </ion-label>
@@ -90,6 +94,9 @@
       </ion-item-divider>
       <ion-item-sliding #slider>
         <ion-item button detail="false" (click)="openModal(player)">
+          <ion-avatar *ngIf="showImg" slot="start">
+            <img [src]="player.img" />
+          </ion-avatar>
           <ion-label>
             <h2>{{ player.firstName }} {{ player.lastName }}</h2>
             <h3 *ngIf="player.text">{{ player.text }}</h3>

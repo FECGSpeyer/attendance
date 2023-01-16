@@ -7,3 +7,5 @@ export enum PlayerHistoryType {
     UNPAUSED = 6,
     OTHER = 99,
 };
+
+export const DEFAULT_IMAGE = "https://ionicframework.com/docs/img/demos/avatar.svg";

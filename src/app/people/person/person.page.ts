@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/core';
-import { AlertController, IonContent, IonItemSliding, IonSelect, LoadingController, ModalController } from '@ionic/angular';
+import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { ActionSheetController, AlertController, IonContent, IonItemSliding, IonSelect, LoadingController, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
@@ -7,7 +7,7 @@ import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { environment } from 'src/environments/environment';
 import { Utils } from 'src/app/utilities/Utils';
-import { PlayerHistoryType } from 'src/app/utilities/constants';
+import { DEFAULT_IMAGE, PlayerHistoryType } from 'src/app/utilities/constants';
 dayjs.extend(utc);
 
 @Component({
@@ -22,6 +22,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   @Input() isConductor: boolean;
   @ViewChild('select') select: IonSelect;
   @ViewChild('content') content: IonContent;
+  @ViewChild('chooser') chooser: ElementRef;
 
   public newPlayer: Player = {
     firstName: "",
@@ -61,7 +62,8 @@ export class PersonPage implements OnInit, AfterViewInit {
     private db: DbService,
     private modalController: ModalController,
     private alertController: AlertController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private actionSheetController: ActionSheetController,
   ) { }
 
   async ngOnInit() {
@@ -295,6 +297,60 @@ export class PersonPage implements OnInit, AfterViewInit {
     } catch (error) {
       Utils.showToast(error, "danger");
       await loading.dismiss();
+    }
+  }
+
+  async changeImg() {
+    const additionalButtons: {}[] = [];
+
+    if (this.player.img !== DEFAULT_IMAGE) {
+      additionalButtons.push({
+        text: 'Profilbild entfernen',
+        handler: () => {
+          this.db.removeImage(this.player.id, this.player.img.split("/")[this.player.img.split("/").length - 1], this.isConductor);
+          this.player.img = DEFAULT_IMAGE;
+          this.shouldReload = true;
+          Utils.showToast("Das Profilbild wurde erfolgreich entfernt", "success");
+        }
+      });
+    }
+
+    const actionSheet = await this.actionSheetController.create({
+      buttons: [{
+        text: 'Profilbild ersetzen',
+        handler: () => {
+          this.chooser.nativeElement.click();
+        }
+      }, ...additionalButtons, {
+        text: 'Abbrechen'
+      }]
+    });
+
+    await actionSheet.present();
+  }
+
+  async onImageSelect(evt: any) {
+    const loading = await Utils.getLoadingElement();
+    loading.present();
+    const imgFile: File = evt.target.files[0];
+
+    if (imgFile) {
+      if (imgFile.type.substring(0, 5) === 'image') {
+        const reader: FileReader = new FileReader();
+
+        reader.readAsDataURL(imgFile);
+
+        try {
+          const url: string = await this.db.updateImage(this.player.id, imgFile, this.isConductor);
+          this.player.img = url;
+          this.shouldReload = true;
+        } catch (error) {
+          Utils.showToast(error, "danger");
+        }
+      } else {
+        loading.dismiss();
+        Utils.showToast("Fehler beim ändern des Profilbildes, versuche es später erneut", "danger");
+      }
     }
   }
 

@@ -19,6 +19,7 @@ export interface Person {
     email?: string;
     appId?: string;
     notes: string;
+    img?: string;
 }
 
 export interface PlayerHistoryEntry {
