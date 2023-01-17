@@ -5,6 +5,7 @@ export enum PlayerHistoryType {
     ATTENDANCE = 4,
     NOTES = 5,
     UNPAUSED = 6,
+    INSTRUMENT_CHANGE = 7,
     OTHER = 99,
 };
 

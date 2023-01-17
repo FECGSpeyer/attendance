@@ -206,6 +206,14 @@ export class PersonPage implements OnInit, AfterViewInit {
       });
     }
 
+    if (this.existingPlayer.instrument !== this.player.instrument) {
+      history.push({
+        date: new Date().toISOString(),
+        text: `${this.instruments.find((ins: Instrument) => ins.id === this.existingPlayer.instrument).name} -> ${this.instruments.find((ins: Instrument) => ins.id === this.player.instrument).name}`,
+        type: PlayerHistoryType.INSTRUMENT_CHANGE,
+      });
+    }
+
     if (this.isConductor) {
       await this.db.updateConductor(this.player);
       this.modalController.dismiss({
