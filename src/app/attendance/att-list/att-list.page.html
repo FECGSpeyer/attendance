@@ -18,19 +18,29 @@
 
   <ion-list class="marginBottom">
     <image id="myImage" src="../../../assets/test.jpeg"></image>
-    <ion-item-sliding *ngFor="let att of attendance">
-      <ion-item (click)="openAttendance(att)">
-        <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
-        <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} | {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
-        <ion-badge *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
-      </ion-item>
+    <ng-container *ngFor="let att of attendance; let i = index;">
+      <ion-item-divider sticky="true" *ngIf="i === 0">
+        <ion-label>Anstehende</ion-label>
+        <ion-badge style="margin-right: '16px'" slot="end">Ø {{ perc }}%</ion-badge>
+      </ion-item-divider>
+      <ion-item-divider sticky="true" *ngIf="att.showDivider">
+        <ion-label>Vergangene</ion-label>
+        <ion-badge style="margin-right: '16px'" slot="end">Ø {{ perc }}%</ion-badge>
+      </ion-item-divider>
+      <ion-item-sliding>
+        <ion-item (click)="openAttendance(att)">
+          <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
+          <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} | {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
+          <ion-badge *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
+        </ion-item>
 
-      <ion-item-options side="end">
-        <ion-item-option color="danger" (click)="remove(att.id)">
-          <ion-icon name="trash-outline"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
+        <ion-item-options side="end">
+          <ion-item-option color="danger" (click)="remove(att.id)">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </ng-container>
   </ion-list>
 
   <ion-modal #addAttModal trigger="add-att-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">

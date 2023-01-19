@@ -205,11 +205,15 @@ export class AttPage implements OnInit {
 
   async recognizeFaces() {
     if (this.attendance.img) {
-      const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
+      const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999999);
       loading.present();
       const res: FaceMatch[] = (await this.faceRecService.initialize(this.players, this.conductors, this.attendance.img)).filter((match: FaceMatch) => match.label !== "unknown");
       loading.dismiss();
-      Utils.showToast(res.map((match: FaceMatch) => match.label).join(", ") + " gefunden");
+      if (res.length) {
+        Utils.showToast(res.map((match: FaceMatch) => match.label).join(", ") + " gefunden");
+      } else {
+        Utils.showToast("Keine Personen gefunden", "danger");
+      }
     } else {
       this.chooser.nativeElement.click();
     }

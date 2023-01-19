@@ -48,6 +48,11 @@ export class AttListPage implements OnInit {
         percentage: Object.keys(att.players).length ? Utils.getPercentage(att.players) : undefined,
       }
     });
+
+    const vergangene: any[] = this.attendance.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
+    if (vergangene.length) {
+      vergangene[0].showDivider = true;
+    }
   }
 
   async remove(id: number): Promise<void> {
