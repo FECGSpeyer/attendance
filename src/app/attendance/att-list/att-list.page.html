@@ -19,7 +19,7 @@
   <ion-list class="marginBottom">
     <image id="myImage" src="../../../assets/test.jpeg"></image>
     <ng-container *ngFor="let att of attendance; let i = index;">
-      <ion-item-divider sticky="true" *ngIf="i === 0">
+      <ion-item-divider sticky="true" *ngIf="i === 0 && !att.showDivider">
         <ion-label>Anstehende</ion-label>
         <ion-badge style="margin-right: '16px'" slot="end">Ø {{ perc }}%</ion-badge>
       </ion-item-divider>
