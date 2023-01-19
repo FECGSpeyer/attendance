@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActionSheetController, AlertController, IonModal, ModalController } from '@ionic/angular';
+import { AlertController, IonModal, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
@@ -7,7 +7,6 @@ import { Attendance } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { AttPage } from '../att/att.page';
 import 'jspdf-autotable';
-import { FaceRecService } from 'src/app/services/face-rec.service';
 require('dayjs/locale/de');
 
 @Component({
@@ -19,7 +18,9 @@ export class AttListPage implements OnInit {
   public date: string = new Date().toISOString();
   public dateString: string = format(new Date(), 'dd.MM.yyyy');
   public type: string = 'uebung';
-  public attendance: Attendance[] = [];
+  public attendances: Attendance[] = [];
+  public oldAttendances: Attendance[] = [];
+  public currentAttendance: Attendance;
   public isConductor: boolean = false;
   public notes: string;
   public typeInfo: string;
@@ -42,16 +43,18 @@ export class AttListPage implements OnInit {
   }
 
   async getAttendance(): Promise<void> {
-    this.attendance = (await this.db.getAttendance()).map((att: Attendance): Attendance => {
+    const attendances: Attendance[] = (await this.db.getAttendance()).map((att: Attendance): Attendance => {
       return {
         ...att,
         percentage: Object.keys(att.players).length ? Utils.getPercentage(att.players) : undefined,
       }
     });
 
-    const vergangene: any[] = this.attendance.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
-    if (vergangene.length) {
-      vergangene[0].showDivider = true;
+    this.attendances = attendances.filter((att: Attendance) => dayjs(att.date).isAfter(dayjs().startOf("day"))).reverse();
+    this.oldAttendances = attendances.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
+    if (this.attendances.length) {
+      this.currentAttendance = { ...this.attendances[0] };
+      this.attendances.splice(0, 1);
     }
   }
 

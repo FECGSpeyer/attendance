@@ -16,30 +16,72 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-list class="marginBottom">
-    <image id="myImage" src="../../../assets/test.jpeg"></image>
-    <ng-container *ngFor="let att of attendance; let i = index;">
-      <ion-item-divider sticky="true" *ngIf="i === 0 && !att.showDivider">
-        <ion-label>Anstehende</ion-label>
-      </ion-item-divider>
-      <ion-item-divider sticky="true" *ngIf="att.showDivider">
-        <ion-label>Vergangene</ion-label>
-      </ion-item-divider>
-      <ion-item-sliding>
-        <ion-item (click)="openAttendance(att)">
-          <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
-          <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} | {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
-          <ion-badge *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
+  <ion-accordion-group value="current" *ngIf="currentAttendance">
+    <ion-accordion value="current">
+      <ion-item slot="header" color="light">
+        <ion-label>Aktuelle</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-item button detail="false" (click)="openAttendance(currentAttendance)" *ngIf="currentAttendance">
+          <ion-label *ngIf="currentAttendance.type === 'uebung'">{{ getReadableDate(currentAttendance.date) }}</ion-label>
+          <ion-label *ngIf="currentAttendance.type !== 'uebung'">{{ getReadableDate(currentAttendance.date) }} |
+            {{ getTypeText(currentAttendance.type, currentAttendance.typeInfo) }}</ion-label>
+          <ion-badge *ngIf="currentAttendance.percentage" slot="end">{{ currentAttendance.percentage }}%</ion-badge>
         </ion-item>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
 
-        <ion-item-options side="end">
-          <ion-item-option color="danger" (click)="remove(att.id)">
-            <ion-icon name="trash-outline"></ion-icon>
-          </ion-item-option>
-        </ion-item-options>
-      </ion-item-sliding>
-    </ng-container>
-  </ion-list>
+  <ion-accordion-group value="" *ngIf="attendances.length">
+    <ion-accordion value="actual">
+      <ion-item slot="header" color="light">
+        <ion-label>Anstehende</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-list>
+          <ion-item-sliding *ngFor="let att of attendances">
+            <ion-item button detail="false" (click)="openAttendance(att)">
+              <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
+              <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
+                {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
+              <ion-badge *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
+            </ion-item>
+
+            <ion-item-options side="end">
+              <ion-item-option color="danger" (click)="remove(att.id)">
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ion-list>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
+  <ion-accordion-group value="old" *ngIf="attendances.length">
+    <ion-accordion value="old">
+      <ion-item slot="header" color="light">
+        <ion-label>Vergangene</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-list class="marginBottom">
+          <ion-item-sliding *ngFor="let att of oldAttendances">
+            <ion-item button detail="false" (click)="openAttendance(att)">
+              <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
+              <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
+                {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
+              <ion-badge *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
+            </ion-item>
+
+            <ion-item-options side="end">
+              <ion-item-option color="danger" (click)="remove(att.id)">
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ion-list>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
 
   <ion-modal #addAttModal trigger="add-att-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">
     <ng-template>
@@ -55,12 +97,8 @@
           <ion-modal class="dateModal" trigger="att-date-modal">
             <ng-template>
               <ion-content>
-                <ion-datetime
-                  [(ngModel)]="date"
-                  (ionChange)="dateString = formatDate(dateTimePickerDate.value)"
-                  presentation="date"
-                  #dateTimePickerDate
-                ></ion-datetime>
+                <ion-datetime [(ngModel)]="date" (ionChange)="dateString = formatDate(dateTimePickerDate.value)"
+                  presentation="date" #dateTimePickerDate></ion-datetime>
               </ion-content>
             </ng-template>
           </ion-modal>
