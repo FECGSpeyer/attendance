@@ -24,6 +24,7 @@ export class AttListPage implements OnInit {
   public isConductor: boolean = false;
   public notes: string;
   public typeInfo: string;
+  public perc: number = 0;
 
   constructor(
     private db: DbService,
@@ -55,6 +56,10 @@ export class AttListPage implements OnInit {
     if (this.attendances.length) {
       this.currentAttendance = { ...this.attendances[0] };
       this.attendances.splice(0, 1);
+    }
+
+    if (this.oldAttendances.length) {
+      this.perc = Math.round((this.oldAttendances.reduce((value: number, current: Attendance) => value + current.percentage, 0)) / this.oldAttendances.length);
     }
   }
 
