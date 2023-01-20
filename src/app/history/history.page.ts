@@ -6,17 +6,20 @@ import { DbService } from '../services/db.service';
 import { History, Person, Song } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
+interface GroupedHistory { date: string, parts: History[] };
+
 @Component({
   selector: 'app-history',
   templateUrl: './history.page.html',
   styleUrls: ['./history.page.scss'],
 })
+
 export class HistoryPage implements OnInit {
   date: string = new Date().toISOString();
   public dateString: string = format(new Date(), 'dd.MM.yyyy');
   conductors: Person[] = [];
   history: History[] = [];
-  groupedHistory: {} = {};
+  groupedHistory: GroupedHistory[] = [];
   historyFiltered: History[] = [];
   historyEntry: History = {
     songId: 1,
@@ -52,21 +55,22 @@ export class HistoryPage implements OnInit {
       }
     });
 
-    const grouped: {} = this.history.reduce((r: History, a: History) => {
+    const grouped: GroupedHistory = this.history.reduce((r: History, a: History) => {
       r[dayjs(a.date).format("DD.MM.YYYY")] = r[dayjs(a.date).format("DD.MM.YYYY")] || [];
       r[dayjs(a.date).format("DD.MM.YYYY")].push(a);
       return r;
     }, Object.create(null));
 
-    this.groupedHistory = Object.keys(grouped).sort((a: string, b: string): number => {
+    const sorted: string[] = Object.keys(grouped).sort((a: string, b: string): number => {
       return dayjs(a).toDate().getTime() - dayjs(b).toDate().getTime();
-    }).reduce(
-      (obj, key) => {
-        obj[key] = grouped[key];
-        return obj;
-      },
-      {}
-    );
+    });
+
+    this.groupedHistory = sorted.map((date: string) => {
+      return {
+        date,
+        parts: grouped[date]
+      }
+    });
 
     this.initializeItems();
   }
