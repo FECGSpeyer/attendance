@@ -184,7 +184,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-item *ngIf="isVoS">
+          <ion-item *ngIf="isVoS && !isConductor">
             <ion-label position="stacked">Testergebnis</ion-label>
             <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.testResult"></ion-input>
           </ion-item>
@@ -248,14 +248,14 @@
     </ion-accordion>
   </ion-accordion-group>
 
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab *ngIf="player" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button *ngIf="!readOnly && existingPlayer && hasChanges" (click)="updatePlayer()">
       <ion-icon name="save-outline"></ion-icon>
     </ion-fab-button>
     <ion-fab-button *ngIf="!existingPlayer" (click)="addPerson()">
       <ion-icon name="person-add-outline"></ion-icon>
     </ion-fab-button>
-    <ion-fab-button *ngIf="!readOnly && withSignout && existingPlayer && !hasChanges && !player.appId && player.email" (click)="register()">
+    <ion-fab-button *ngIf="!readOnly && (withSignout || isConductor) && existingPlayer && !hasChanges && !player.appId && player.email" (click)="register()">
       <ion-icon name="key-outline"></ion-icon>
     </ion-fab-button>
   </ion-fab>

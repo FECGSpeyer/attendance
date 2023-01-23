@@ -34,6 +34,9 @@ export class ExportPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    if (environment.shortName === "VoS") {
+      this.fields.push("Testergebnis");
+    }
     this.players = Utils.getModifiedPlayers(await this.db.getPlayers(), await this.db.getInstruments());
     this.attendance = (await this.db.getAttendance()).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
   }
@@ -237,6 +240,9 @@ export class ExportPage implements OnInit {
           break;
         case "Instrument":
           values.push(player.instrumentName);
+          break;
+        case "Testergebnis":
+          values.push(player.testResult || "Kein Ergebnis");
           break;
         default:
           values.push("");

@@ -128,6 +128,11 @@ export class ListPage implements OnInit {
       return;
     }
 
+    if (this.sortOpt === "test") {
+      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => (a.testResult ? Number(a.testResult.replace("%", "")) : 0) - (b.testResult ? Number(b.testResult.replace("%", "")) : 0)).reverse()
+      return;
+    }
+
     if (this.sortOpt === "instrument") {
       this.initializeItems();
       this.onFilterChanged();
@@ -194,6 +199,9 @@ export class ListPage implements OnInit {
     }
     if (this.viewOpts.includes("birthday")) {
       props.push(dayjs(player.birthday).format("DD.MM.YYYY"));
+    }
+    if (this.viewOpts.includes("test")) {
+      props.push(player.testResult || "Kein Ergebnis");
     }
     if (this.viewOpts.includes("exercises")) {
       if (player.otherExercise) {
@@ -310,7 +318,7 @@ export class ListPage implements OnInit {
   }
 
   async removeConductor(id: number): Promise<void> {
-    await this.db.removePlayer(id);
+    await this.db.removeConductor(id);
     this.conductors = await this.db.getConductors();
   }
 

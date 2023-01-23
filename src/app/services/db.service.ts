@@ -495,7 +495,7 @@ export class DbService {
 
   async removeConductor(id: number): Promise<void> {
     await supabase
-      .from('player')
+      .from('conductors')
       .delete()
       .match({ id });
 

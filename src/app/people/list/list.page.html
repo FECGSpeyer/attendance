@@ -42,6 +42,7 @@
                 <ion-select-option value="nachname">Nachname</ion-select-option>
                 <ion-select-option value="birthdayAsc">Geburtsdatum ↑</ion-select-option>
                 <ion-select-option value="birthdayDesc">Geburtsdatum ↓</ion-select-option>
+                <ion-select-option value="test">Testergebnis</ion-select-option>
               </ion-select>
             </ion-item>
 
@@ -51,6 +52,7 @@
                 [(ngModel)]="viewOpts">
                 <ion-select-option value="instrument">Instrument</ion-select-option>
                 <ion-select-option value="birthday">Geburtsdatum</ion-select-option>
+                <ion-select-option *ngIf="isVoS" value="test">Testergebnis</ion-select-option>
                 <ion-select-option value="exercises">Sonstige Dienste</ion-select-option>
                 <ion-select-option value="leader">Stimmführer</ion-select-option>
                 <ion-select-option value="critical">Problemfälle</ion-select-option>
