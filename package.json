@@ -41,7 +41,7 @@
     "face-api.js": "^0.22.2",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.23",
-    "ngx-quill": "^20.0.1",
+    "ngx-quill": "^15.0.0",
     "rxjs": "~6.6.0",
     "tslib": "^2.2.0",
     "xlsx": "^0.18.5",
