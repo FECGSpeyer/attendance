@@ -62,18 +62,26 @@ export class SettingsPage implements OnInit {
 
     for (let index = 0; index < conductors.length; index++) {
       const slotTime = Math.round(timePerUnit * index);
-      data.push([
-        String(slotTime),
-        shuffledConductors[(index) % (shuffledConductors.length)],
-        shuffledConductors[(index + 1) % (shuffledConductors.length)],
-        shuffledConductors[(index + 2) % (shuffledConductors.length)]
-      ]);
+      if (environment.shortName === "BoS") {
+        data.push([
+          String(slotTime),
+          shuffledConductors[(index) % (shuffledConductors.length)],
+          shuffledConductors[(index + 1) % (shuffledConductors.length)]
+        ]);
+      } else {
+        data.push([
+          String(slotTime),
+          shuffledConductors[(index) % (shuffledConductors.length)],
+          shuffledConductors[(index + 1) % (shuffledConductors.length)],
+          shuffledConductors[(index + 2) % (shuffledConductors.length)]
+        ]);
+      }
     }
 
     const doc = new jsPDF();
     doc.text(`${environment.shortName} Registerprobenplan: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
-      head: [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']],
+      head: environment.shortName === "BoS" ? [['Minuten', 'Blechbläser', 'Holzbläser']] : [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']],
       body: data,
       margin: { top: 40 },
       theme: 'grid',

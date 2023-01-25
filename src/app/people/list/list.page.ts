@@ -353,7 +353,7 @@ export class ListPage implements OnInit {
               ...player,
               paused: true,
               history,
-            });
+            }, true);
             await this.getPlayers();
           } catch (error) {
             Utils.showToast(error, "danger");
@@ -388,7 +388,7 @@ export class ListPage implements OnInit {
               ...player,
               paused: false,
               history,
-            });
+            }, true);
             await this.getPlayers();
           } catch (error) {
             Utils.showToast(error, "danger");
