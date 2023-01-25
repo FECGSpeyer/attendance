@@ -3,7 +3,7 @@ import { AlertController, IonModal, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { Attendance } from 'src/app/utilities/interfaces';
+import { Attendance, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { AttPage } from '../att/att.page';
 import 'jspdf-autotable';
@@ -88,7 +88,7 @@ export class AttListPage implements OnInit {
       conductors[con.id] = true;
     }
 
-    for (const player of (await this.db.getPlayers())) {
+    for (const player of (await this.db.getPlayers()).filter((player: Player) => !player.paused)) {
       players[player.id] = true;
     }
 
