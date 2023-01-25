@@ -370,6 +370,17 @@ export class DbService {
     }
   }
 
+  async removePlayerFromUpcomingAttendances(id: number) {
+    const attData: Attendance[] = await this.getUpcomingAttendances();
+
+    if (attData?.length) {
+      for (const att of attData) {
+        delete att.players[id];
+        await this.updateAttendance({ players: att.players }, att.id);
+      }
+    }
+  }
+
   async addConductorToUpcomingAttendances(id: number) {
     const attData: Attendance[] = await this.getUpcomingAttendances();
 
@@ -409,7 +420,7 @@ export class DbService {
     }
   }
 
-  async updatePlayer(player: Player): Promise<Player[]> {
+  async updatePlayer(player: Player, pausedAction?: boolean): Promise<Player[]> {
     const dataToUpdate: Player = { ...player };
     delete dataToUpdate.id;
     delete dataToUpdate.created_at;
@@ -433,6 +444,14 @@ export class DbService {
 
     if (error) {
       throw new Error("Fehler beim updaten des Spielers");
+    }
+
+    if (pausedAction) {
+      if (player.paused) {
+        this.removePlayerFromUpcomingAttendances(player.id);
+      } else {
+        this.addPlayerToUpcomingAttendances(player.id);
+      }
     }
 
     return data.map((player) => {
