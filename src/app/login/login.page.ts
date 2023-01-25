@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AlertController, IonInput } from '@ionic/angular';
 import { DbService } from '../services/db.service';
 import { Utils } from '../utilities/Utils';
@@ -12,7 +12,7 @@ import { Utils } from '../utilities/Utils';
 export class LoginPage implements OnInit {
   @ViewChild('emailInput', { static: true }) emailInput: IonInput;
   @ViewChild('passwordInput', { static: true }) passwordInput: IonInput;
-  loginForm: UntypedFormGroup;
+  loginForm: FormGroup;
   registerCredentials = { password: '', email: '' };
   public version: string = require('../../../package.json').version;
 
@@ -22,12 +22,12 @@ export class LoginPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.loginForm = new UntypedFormGroup({
-      user: new UntypedFormControl('', [
+    this.loginForm = new FormGroup({
+      user: new FormControl('', [
         Validators.required,
         Validators.minLength(5)
       ]),
-      password: new UntypedFormControl('', [
+      password: new FormControl('', [
         Validators.required,
         Validators.maxLength(6)
       ])
