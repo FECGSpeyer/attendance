@@ -7,6 +7,7 @@ import { autoTable as AutoTable } from 'jspdf-autotable';
 import { ExportPage } from 'src/app/export/export.page';
 import { HistoryPage } from 'src/app/history/history.page';
 import { PersonPage } from 'src/app/people/person/person.page';
+import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { StatsPage } from 'src/app/stats/stats.page';
 import { Instrument, Person, Player } from 'src/app/utilities/interfaces';
@@ -122,6 +123,15 @@ export class SettingsPage implements OnInit {
   async openExport(): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: ExportPage,
+      presentingElement: this.routerOutlet.nativeEl,
+    });
+
+    await modal.present();
+  }
+
+  async openPlanning(): Promise<void> {
+    const modal: HTMLIonModalElement = await this.modalController.create({
+      component: PlanningPage,
       presentingElement: this.routerOutlet.nativeEl,
     });
 

@@ -30,6 +30,9 @@
     <ion-item routerLink="teachers" *ngIf="showTeachers" button>
       <ion-label>Lehrer</ion-label>
     </ion-item>
+    <ion-item button (click)="openPlanning()">
+      <ion-label>Probenplan erstellen</ion-label>
+    </ion-item>
     <ion-item detail="false" button id="trigger-button">
       <ion-label>Registerprobenplan erstellen</ion-label>
       <ion-modal trigger="trigger-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">
