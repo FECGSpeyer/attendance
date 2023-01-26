@@ -17,6 +17,7 @@ import { ProblemModalPageModule } from './people/problem-modal/problem-modal.mod
 import { StatsPageModule } from './stats/stats.module';
 import { ExportPageModule } from './export/export.module';
 import { PlanningPageModule } from './planning/planning.module';
+import { InstrumentPageModule } from './instruments/instrument/instrument.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -34,6 +35,7 @@ import { PlanningPageModule } from './planning/planning.module';
     StatsPageModule,
     ExportPageModule,
     PlanningPageModule,
+    InstrumentPageModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
       // Register the ServiceWorker as soon as the app is stable
