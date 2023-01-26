@@ -85,10 +85,10 @@ export class PlanningPage implements OnInit {
       }, {
         text: "Hinzufügen",
         handler: (evt: any) => {
-          if (!isNaN(evt.field) && Boolean(this.songs.find((song: Song) => song.id === Number(evt.field)))) {
-            const song: Song = this.songs.find((song: Song) => song.id === Number(evt.field));
+          if (!isNaN(evt.field) && Boolean(this.songs.find((song: Song) => song.number === Number(evt.field)))) {
+            const song: Song = this.songs.find((song: Song) => song.number === Number(evt.field));
             this.selectedFields.push({
-              id: song.id.toString(),
+              id: song.number.toString(),
               name: `${song.number}. ${song.name}`,
               time: "20",
             });
@@ -113,7 +113,7 @@ export class PlanningPage implements OnInit {
     const selectedSongs: string[] = this.selectedSongs.filter((id: string) => !Boolean(this.selectedFields.find((field: FieldSelection) => field.id === id)));
 
     for (let id of selectedSongs) {
-      const song: Song = this.songs.find((song: Song) => song.id === parseInt(id));
+      const song: Song = this.songs.find((song: Song) => song.number === parseInt(id));
       this.selectedFields.push({
         id,
         name: `${song.number}. ${song.name}`,
