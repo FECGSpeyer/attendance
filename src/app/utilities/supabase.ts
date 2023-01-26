@@ -19,7 +19,7 @@ export interface Database {
           id: number
           img: string | null
           notes: string | null
-          planUrl: string | null
+          plan: Json | null
           playerNotes: Json | null
           players: Json | null
           type: string
@@ -34,7 +34,7 @@ export interface Database {
           id?: number
           img?: string | null
           notes?: string | null
-          planUrl?: string | null
+          plan?: Json | null
           playerNotes?: Json | null
           players?: Json | null
           type?: string
@@ -49,7 +49,7 @@ export interface Database {
           id?: number
           img?: string | null
           notes?: string | null
-          planUrl?: string | null
+          plan?: Json | null
           playerNotes?: Json | null
           players?: Json | null
           type?: string
