@@ -243,4 +243,8 @@ export class AttPage implements OnInit {
     }
   }
 
+  openPlan() {
+    window.open(this.attendance.planUrl, "_blank");
+  }
+
 }

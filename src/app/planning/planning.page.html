@@ -11,7 +11,13 @@
 
 <ion-content>
   <ion-list>
-    <ion-item>
+    <ion-item *ngIf="attendances.length">
+      <ion-label>Zugehörige Anwesenheit</ion-label>
+      <ion-select [(ngModel)]="attendance">
+        <ion-select-option [value]="att.id" *ngFor="let att of attendances">{{ att.date | date:'dd.MM.yyyy' }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item *ngIf="songs.length">
       <ion-label>Werke</ion-label>
       <ion-select [(ngModel)]="selectedSongs" (ionChange)="onSongsChange()" multiple="true">
         <ion-select-option [value]="song.number.toString()" *ngFor="let song of songs">{{ song.number }} {{ song.name }}</ion-select-option>
@@ -64,4 +70,5 @@
     </ion-item> -->
   </ion-list>
   <ion-button [disabled]="!selectedFields.length" (click)="export()" expand="block">Exportieren</ion-button>
+  <ion-button *ngIf="attendances.length && attendance" [disabled]="!selectedFields.length" (click)="addToAttendance()" expand="block">Zu Anwesenheit hinzufügen</ion-button>
 </ion-content>

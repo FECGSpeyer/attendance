@@ -83,6 +83,7 @@ export interface Attendance {
     notes: string;
     playerNotes: { [prop: number]: string };
     img?: string;
+    planUrl?: string;
 }
 
 export interface Song {

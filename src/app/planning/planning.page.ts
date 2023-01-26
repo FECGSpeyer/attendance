@@ -3,9 +3,10 @@ import { AlertController, ItemReorderEventDetail, ModalController } from '@ionic
 import * as dayjs from 'dayjs';
 import jsPDF from 'jspdf';
 import { DbService } from '../services/db.service';
-import { History, Player, Song } from '../utilities/interfaces';
+import { Attendance, History, Player, Song } from '../utilities/interfaces';
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
+import { Utils } from '../utilities/Utils';
 
 interface FieldSelection {
   id: string;
@@ -23,6 +24,8 @@ export class PlanningPage implements OnInit {
   public songs: Song[] = [];
   public history: History[] = [];
   public selectedFields: FieldSelection[] = [];
+  public attendances: Attendance[] = [];
+  public attendance: number;
   public selectedSongs: string[] = [];
   public time: string = dayjs().utc().hour(18).minute(0).format("YYYY-MM-DDTHH:mm");
   public end: string;
@@ -36,6 +39,10 @@ export class PlanningPage implements OnInit {
   async ngOnInit() {
     this.songs = await this.db.getSongs();
     this.history = await this.db.getUpcomingHistory();
+    this.attendances = await this.db.getUpcomingAttendances();
+    if (this.attendances.length) {
+      this.attendance = this.attendances[0].id;
+    }
 
     if (this.history.length) {
       for (let his of this.history) {
@@ -127,11 +134,10 @@ export class PlanningPage implements OnInit {
     this.end = currentTime.format("YYYY-MM-DDTHH:mm");
   }
 
-  async export() {
+  export(date: string = dayjs().format('DD.MM.YYYY'), open: boolean = true) {
     const startingTime = dayjs(this.time);
     const hasConductors = Boolean(this.history.length && this.history.find((his: History) => Boolean(this.selectedFields.find((field: FieldSelection) => field.id === his.songId.toString()))));
 
-    const date: string = dayjs().format('DD.MM.YYYY');
     const data = [];
 
     let row = 1;
@@ -165,7 +171,27 @@ export class PlanningPage implements OnInit {
         fillColor: [0, 82, 56]
       }
     });
+
+    if (open) {
+      doc.save(`Probenplan_${date}.pdf`);
+    } else {
+      return doc;
+    }
+  }
+
+  async addToAttendance() {
+    const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999);
+    await loading.present();
+    const date: string = dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format("DD.MM.YYYY");
+    const doc: jsPDF = this.export(date, false);
+    const pdf: Blob = doc.output('blob');
+
+    this.db.uploadPracticePlan(pdf, this.attendance);
+
+    await loading.dismiss();
+
     doc.save(`Probenplan_${date}.pdf`);
+
   }
 
 }

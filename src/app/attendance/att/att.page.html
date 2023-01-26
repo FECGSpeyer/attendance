@@ -33,6 +33,7 @@
           <ion-textarea rows="2" [(ngModel)]="attendance.notes"></ion-textarea>
         </ion-item>
         <input style="display: 'none';" name="file" #chooser (change)="onImageSelect($event)" accept="image/*" class="inputFile" type="file" />
+        <ion-item lines="none" *ngIf="attendance.planUrl" button (click)="openPlan()">Probenplan öffnen</ion-item>
         <ion-item>
           <ion-button (click)="recognizeFaces()">Personenerkennung</ion-button>
           <ion-avatar slot="end" *ngIf="attendance.img">
