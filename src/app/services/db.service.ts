@@ -80,8 +80,9 @@ export class DbService {
       const res = await axios.post(`https://staccato-server.vercel.app/api/registerAttendanceUser`, {
         email: user.email,
         name: `${user.firstName}`,
-        appName: environment.shortName,
-        url: environment.shortName === "SoS" ? "https://sos.fecg-speyer.de" : "https://bos.fecg-speyer.de",
+        appName: environment.longName,
+        shortName: environment.shortName,
+        url: environment.shortName === "SoS" ? "https://sos.fecg-speyer.de" : environment.shortName === "VoS" ? "https://vos.fecg-speyer.de" : "https://bos.fecg-speyer.de",
       });
 
       if (!res.data?.user?.id) {
