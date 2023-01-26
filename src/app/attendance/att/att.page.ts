@@ -243,8 +243,8 @@ export class AttPage implements OnInit {
     }
   }
 
-  openPlan() {
-    window.open(this.attendance.planUrl, "_blank");
+  async exportPlan() {
+    Utils.createPlanExport({ ...this.attendance.plan, history: await this.db.getUpcomingHistory() });
   }
 
 }

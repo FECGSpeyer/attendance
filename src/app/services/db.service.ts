@@ -921,26 +921,6 @@ export class DbService {
     return data.publicUrl;
   }
 
-  async uploadPracticePlan(plan: Blob, att: number) {
-    const { error } = await supabase.storage
-      .from("attendances")
-      .upload(att.toString() + ".pdf", plan, { upsert: true });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    const { data } = await supabase
-      .storage
-      .from("attendances")
-      .getPublicUrl(att.toString() + ".pdf");
-
-    await supabase
-      .from("attendance")
-      .update({ planUrl: data.publicUrl })
-      .match({ id: att });
-  }
-
   async updateAttImage(id: number, image: File) {
     const { error } = await supabase.storage
       .from("attendances")

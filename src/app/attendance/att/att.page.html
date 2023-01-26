@@ -33,13 +33,37 @@
           <ion-textarea rows="2" [(ngModel)]="attendance.notes"></ion-textarea>
         </ion-item>
         <input style="display: 'none';" name="file" #chooser (change)="onImageSelect($event)" accept="image/*" class="inputFile" type="file" />
-        <ion-item lines="none" *ngIf="attendance.planUrl" button (click)="openPlan()">Probenplan öffnen</ion-item>
         <ion-item>
           <ion-button (click)="recognizeFaces()">Personenerkennung</ion-button>
           <ion-avatar slot="end" *ngIf="attendance.img">
             <img [src]="attendance.img" />
           </ion-avatar>
         </ion-item>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
+  <ion-accordion-group *ngIf="attendance.plan">
+    <ion-accordion value="plan">
+      <ion-item slot="header" color="light">
+        <ion-label>Probenplan</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-item lines="none">
+          <ion-label>Beginn</ion-label>
+          <ion-badge slot="end">{{ attendance.plan.time | date:'HH:mm' }} Uhr</ion-badge>
+        </ion-item>
+        <ion-item *ngFor="let field of attendance.plan.fields">
+          <ion-label>
+            <h2>{{ field.name }}</h2>
+            <h3 *ngIf="field.conductor">{{ field.conductor }}</h3>
+          </ion-label>
+          <ion-badge slot="end">{{ field.time }} min</ion-badge>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-label>Ende</ion-label>
+          <ion-badge slot="end">{{ attendance.plan.end | date:'HH:mm' }} Uhr</ion-badge>
+        </ion-item>
+        <ion-button (click)="exportPlan()" style="margin-left: '16px'" size="small">Exportieren</ion-button>
       </div>
     </ion-accordion>
   </ion-accordion-group>

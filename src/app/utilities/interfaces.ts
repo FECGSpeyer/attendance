@@ -83,7 +83,7 @@ export interface Attendance {
     notes: string;
     playerNotes: { [prop: number]: string };
     img?: string;
-    planUrl?: string;
+    plan?: any;
 }
 
 export interface Song {
@@ -134,4 +134,11 @@ export interface Meeting {
     date: string;
     attendees: number[];
     notes: string;
+}
+
+export interface FieldSelection {
+    id: string;
+    name: string;
+    time: string;
+    conductor?: string;
 }

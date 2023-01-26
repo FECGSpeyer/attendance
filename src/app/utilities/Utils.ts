@@ -2,7 +2,10 @@ import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { environment } from "src/environments/environment";
 import { DEFAULT_IMAGE } from "./constants";
-import { Attendance, AttendanceItem, Instrument, Player } from "./interfaces";
+import { Attendance, AttendanceItem, FieldSelection, Instrument, Player, History } from "./interfaces";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { autoTable as AutoTable } from 'jspdf-autotable';
 
 export class Utils {
   public static getModifiedPlayers(players: Player[], instruments: Instrument[]): Player[] {
@@ -106,5 +109,47 @@ export class Utils {
 
   public static getAttendanceText(attendance: Attendance): string {
     return attendance.typeInfo ? attendance.typeInfo : attendance.type === "vortrag" ? "Vortrag" : "";
+  }
+
+  public static createPlanExport(props: any) {
+    const date: string = props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).format("DD.MM.YYYY") : dayjs(props.time).format("DD.MM.YYYY");
+    const startingTime = dayjs(props.time);
+    const hasConductors = Boolean(props.history.length && props.history.find((his: History) => Boolean(props.fields.find((field: FieldSelection) => field.id === his.songId.toString()))));
+
+    const data = [];
+
+    let row = 1;
+    let currentTime = startingTime;
+
+    for (const field of props.fields) {
+      if (hasConductors) {
+        data.push([
+          row.toString(),
+          field.name,
+          props.history.find((his: History) => his.songId === parseInt(field.id))?.conductorName || "",
+          `${field.time} min`,
+          `${currentTime.format("HH:mm")} Uhr`
+        ]);
+      } else {
+        data.push([row.toString(), field.name, `${field.time} min`, `${currentTime.format("HH:mm")} Uhr`]);
+      }
+      currentTime = currentTime.add(parseInt(field.time), "minutes");
+      row++;
+    }
+
+    const doc = new jsPDF();
+    doc.text(`Probenplan: ${date}`, 14, 25);
+    ((doc as any).autoTable as AutoTable)({
+      head: hasConductors ? [["", "Werk", "Dirigent", "Dauer", "Uhrzeit"]] : [["", "Werk", "Dauer", "Uhrzeit"]],
+      body: data,
+      margin: { top: 40 },
+      theme: 'grid',
+      headStyles: {
+        halign: 'center',
+        fillColor: [0, 82, 56]
+      }
+    });
+
+    doc.save(`Probenplan_${date}.pdf`);
   }
 }
