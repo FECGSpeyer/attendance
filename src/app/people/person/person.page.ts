@@ -144,7 +144,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   formatDate(value: string) {
-    return format(parseISO(value), 'dd.MM.yyyy');
+    return format(parseISO(value || new Date().toISOString()), 'dd.MM.yyyy');
   }
 
   async dismiss(): Promise<void> {
