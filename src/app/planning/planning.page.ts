@@ -188,10 +188,10 @@ export class PlanningPage implements OnInit {
 
     this.db.uploadPracticePlan(pdf, this.attendance);
 
-    await loading.dismiss();
-
     doc.save(`Probenplan_${date}.pdf`);
 
+    await loading.dismiss();
+    await this.dismiss();
   }
 
 }
