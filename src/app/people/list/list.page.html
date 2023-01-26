@@ -69,6 +69,11 @@
       </ng-template>
     </ion-popover>
   </div>
+
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <ion-list *ngIf="searchTerm === '' && (filterOpt === 'all' || filterOpt === 'active') && sortOpt === 'instrument'">
     <ion-item-divider sticky="true">
       <ion-label>Dirigenten ({{conductors.length}})</ion-label>

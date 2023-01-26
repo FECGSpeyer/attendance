@@ -16,6 +16,10 @@
     </ion-toolbar>
   </ion-header>
 
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <ion-accordion-group value="current" *ngIf="currentAttendance">
     <ion-accordion value="current">
       <ion-item slot="header" color="light">

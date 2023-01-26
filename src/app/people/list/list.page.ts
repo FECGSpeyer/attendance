@@ -54,6 +54,12 @@ export class ListPage implements OnInit {
     this.onViewChanged();
   }
 
+  async handleRefresh(event: any) {
+    await this.getPlayers();
+
+    event.target.complete();
+  }
+
   async getPlayers(): Promise<void> {
     this.players = await this.db.getPlayers();
     this.conductors = await this.db.getConductors();

@@ -65,6 +65,12 @@ export class AttListPage implements OnInit {
     }
   }
 
+  async handleRefresh(event: any) {
+    await this.getAttendance();
+
+    event.target.complete();
+  }
+
   async remove(id: number, slider: IonItemSliding): Promise<void> {
     const alert: HTMLIonAlertElement = await this.alertController.create({
       header: "Möchtest du die Anwesenheit wirklich entfernen?",
