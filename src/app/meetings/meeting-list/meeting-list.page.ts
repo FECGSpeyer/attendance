@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { AlertController, IonModal } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
+import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Meeting } from 'src/app/utilities/interfaces';
 
@@ -36,6 +37,14 @@ export class MeetingListPage implements OnInit {
 
   formatDate(value: string): string {
     return format(parseISO(value), 'dd.MM.yyyy');
+  }
+
+  onDateChanged(value: string, dateModal: IonModal): void {
+    if (parseInt(this.dateString.substring(0, 2), 10) !== dayjs(this.date).date()) {
+      dateModal.dismiss();
+    }
+
+    this.dateString = this.formatDate(value);
   }
 
   async removeMeeting(id: number) {

@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, AlertController, IonContent, IonItemSliding, IonSelect, LoadingController, ModalController } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
@@ -251,9 +251,35 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
   }
 
-  onBirthdayChange() {
+  onBirthdayChange(value: string, modal: IonModal) {
     this.onChange();
     this.player.correctBirthday = true;
+
+    if (parseInt(this.birthdayString.substring(0, 2), 10) !== dayjs(this.player.birthday).date()) {
+      modal.dismiss();
+    }
+
+    this.birthdayString = this.formatDate(value);
+  }
+
+  onPlaysSinceChange(value: string, modal: IonModal) {
+    this.onChange();
+
+    if (parseInt(this.playsSinceString.substring(0, 2), 10) !== dayjs(this.player.playsSince).date()) {
+      modal.dismiss();
+    }
+
+    this.playsSinceString = this.formatDate(value);
+  }
+
+  onJoinedChange(value: string, modal: IonModal) {
+    this.onChange();
+
+    if (parseInt(this.joinedString.substring(0, 2), 10) !== dayjs(this.player.joined).date()) {
+      modal.dismiss();
+    }
+
+    this.joinedString = this.formatDate(value);
   }
 
   async removeHis(his: PlayerHistoryEntry, slider: IonItemSliding) {

@@ -98,11 +98,11 @@
               <ion-item [color]="!existingPlayer || player.correctBirthday || readOnly ? '' : 'warning'">
                 <ion-label position="stacked">Geburtsdatum</ion-label>
                 <ion-input [disabled]="readOnly" readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
-                <ion-modal trigger="date-modal">
+                <ion-modal #birthdayModal trigger="date-modal">
                   <ng-template>
                     <ion-content>
                       <ion-datetime [max]="max" [(ngModel)]="player.birthday"
-                        (ionChange)="onBirthdayChange(); birthdayString = formatDate(dateTimePickerBirthday.value)"
+                        (ionChange)="onBirthdayChange(dateTimePickerBirthday.value, birthdayModal)"
                         presentation="date" #dateTimePickerBirthday></ion-datetime>
                     </ion-content>
                   </ng-template>
@@ -115,11 +115,11 @@
               <ion-item>
                 <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
                 <ion-input [disabled]="readOnly" readonly [(ngModel)]="playsSinceString" id="plays-modal"></ion-input>
-                <ion-modal trigger="plays-modal">
+                <ion-modal #playsSinceModal trigger="plays-modal">
                   <ng-template>
                     <ion-content>
                       <ion-datetime [max]="max" [(ngModel)]="player.playsSince"
-                        (ionChange)="onChange(); playsSinceString = formatDate(dateTimePickerPlays.value)"
+                        (ionChange)="onPlaysSinceChange(dateTimePickerPlays.value, playsSinceModal)"
                         presentation="date" #dateTimePickerPlays></ion-datetime>
                     </ion-content>
                   </ng-template>
@@ -132,11 +132,11 @@
               <ion-item>
                 <ion-label position="stacked">Beigetreten am</ion-label>
                 <ion-input [disabled]="readOnly" readonly [(ngModel)]="joinedString" id="joined-modal"></ion-input>
-                <ion-modal trigger="joined-modal">
+                <ion-modal #joinedModal trigger="joined-modal">
                   <ng-template>
                     <ion-content>
                       <ion-datetime [max]="max" [(ngModel)]="player.joined"
-                        (ionChange)="onChange(); joinedString = formatDate(dateTimePickerJoined.value)"
+                        (ionChange)="onJoinedChange(dateTimePickerJoined.value, joinedModal)"
                         presentation="date" #dateTimePickerJoined></ion-datetime>
                     </ion-content>
                   </ng-template>

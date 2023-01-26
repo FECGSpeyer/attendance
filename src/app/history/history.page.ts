@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
+import { AlertController, IonItemSliding, IonModal, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
@@ -88,6 +88,14 @@ export class HistoryPage implements OnInit {
 
       this.historyFiltered = this.filter();
     }
+  }
+
+  onDateChanged(value: string, dateModal: IonModal): void {
+    if (parseInt(this.dateString.substring(0, 2), 10) !== dayjs(this.historyEntry.date).date()) {
+      dateModal.dismiss();
+    }
+
+    this.dateString = this.formatDate(value);
   }
 
   filter(): History[] {
