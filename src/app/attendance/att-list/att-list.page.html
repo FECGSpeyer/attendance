@@ -22,12 +22,20 @@
         <ion-label>Aktuelle</ion-label>
       </ion-item>
       <div slot="content">
-        <ion-item button detail="false" (click)="openAttendance(currentAttendance)" *ngIf="currentAttendance">
-          <ion-label *ngIf="currentAttendance.type === 'uebung'">{{ getReadableDate(currentAttendance.date) }}</ion-label>
-          <ion-label *ngIf="currentAttendance.type !== 'uebung'">{{ getReadableDate(currentAttendance.date) }} |
-            {{ getTypeText(currentAttendance.type, currentAttendance.typeInfo) }}</ion-label>
-          <ion-badge *ngIf="currentAttendance.percentage" slot="end">{{ currentAttendance.percentage }}%</ion-badge>
-        </ion-item>
+        <ion-item-sliding #slider>
+          <ion-item button detail="false" (click)="openAttendance(currentAttendance)" *ngIf="currentAttendance">
+            <ion-label *ngIf="currentAttendance.type === 'uebung'">{{ getReadableDate(currentAttendance.date) }}</ion-label>
+            <ion-label *ngIf="currentAttendance.type !== 'uebung'">{{ getReadableDate(currentAttendance.date) }} |
+              {{ getTypeText(currentAttendance.type, currentAttendance.typeInfo) }}</ion-label>
+            <ion-badge *ngIf="currentAttendance.percentage" slot="end">{{ currentAttendance.percentage }}%</ion-badge>
+          </ion-item>
+
+          <ion-item-options side="end">
+            <ion-item-option color="danger" (click)="remove(currentAttendance.id, slider)">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
       </div>
     </ion-accordion>
   </ion-accordion-group>
@@ -39,7 +47,7 @@
       </ion-item>
       <div slot="content">
         <ion-list>
-          <ion-item-sliding *ngFor="let att of attendances">
+          <ion-item-sliding #slider *ngFor="let att of attendances">
             <ion-item button detail="false" (click)="openAttendance(att)">
               <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
               <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
@@ -48,7 +56,7 @@
             </ion-item>
 
             <ion-item-options side="end">
-              <ion-item-option color="danger" (click)="remove(att.id)">
+              <ion-item-option color="danger" (click)="remove(att.id, slider)">
                 <ion-icon name="trash-outline"></ion-icon>
               </ion-item-option>
             </ion-item-options>
@@ -68,7 +76,7 @@
             <ion-label>Durchschnitt</ion-label>
             <ion-badge style="margin-right: '16px'" slot="end">{{ perc }}%</ion-badge>
           </ion-item-divider>
-          <ion-item-sliding *ngFor="let att of oldAttendances">
+          <ion-item-sliding #slider *ngFor="let att of oldAttendances">
             <ion-item button detail="false" (click)="openAttendance(att)">
               <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
               <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
@@ -77,7 +85,7 @@
             </ion-item>
 
             <ion-item-options side="end">
-              <ion-item-option color="danger" (click)="remove(att.id)">
+              <ion-item-option color="danger" (click)="remove(att.id, slider)">
                 <ion-icon name="trash-outline"></ion-icon>
               </ion-item-option>
             </ion-item-options>

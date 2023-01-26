@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, IonModal, ModalController } from '@ionic/angular';
+import { AlertController, IonItemSliding, IonModal, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
@@ -56,6 +56,8 @@ export class AttListPage implements OnInit {
     if (this.attendances.length) {
       this.currentAttendance = { ...this.attendances[0] };
       this.attendances.splice(0, 1);
+    } else {
+      this.currentAttendance = undefined;
     }
 
     if (this.oldAttendances.length) {
@@ -63,7 +65,7 @@ export class AttListPage implements OnInit {
     }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, slider: IonItemSliding): Promise<void> {
     const alert: HTMLIonAlertElement = await this.alertController.create({
       header: "Möchtest du die Anwesenheit wirklich entfernen?",
       buttons: [{
@@ -71,6 +73,7 @@ export class AttListPage implements OnInit {
       }, {
         text: "Fortfahren",
         handler: async (): Promise<void> => {
+          slider.close();
           await this.db.removeAttendance(id);
           await this.getAttendance();
         }
