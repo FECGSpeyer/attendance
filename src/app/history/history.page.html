@@ -10,7 +10,8 @@
 </ion-header>
 
 <ion-content>
-  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated placeholder="Werk suchen..."></ion-searchbar>
+  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated placeholder="Werk suchen...">
+  </ion-searchbar>
   <ion-list *ngIf="searchTerm" class="marginBottom">
     <ion-item-sliding #sliding *ngFor="let entry of historyFiltered">
       <ion-item>
@@ -34,17 +35,25 @@
         <ion-label>{{ group.date }}</ion-label>
       </ion-item>
       <div slot="content">
-        <ion-item *ngFor="let his of group.parts">
-          <ion-label>
-            <h2>{{ his.name }}</h2>
-            <h3>{{ his.date | date:'dd.MM.yyyy' }} | {{ his.conductorName }}</h3>
-          </ion-label>
-        </ion-item>
+        <ion-item-sliding #sliding *ngFor="let his of group.parts">
+          <ion-item>
+            <ion-label>
+              <h2>{{ his.name }}</h2>
+              <h3>{{ his.date | date:'dd.MM.yyyy' }} | {{ his.conductorName }}</h3>
+            </ion-label>
+          </ion-item>
+
+          <ion-item-options side="end">
+            <ion-item-option (click)="remove(his.id, sliding)" color="danger">
+              <ion-icon slot="icon-only" name="trash"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
       </div>
     </ion-accordion>
   </ion-accordion-group>
 
-  <ion-modal trigger="add-his-button" [breakpoints]="[0.7]" [initialBreakpoint]="0.7">
+  <ion-modal #addHisModal trigger="add-his-button" [breakpoints]="[0.7]" [initialBreakpoint]="0.7">
     <ng-template>
       <ion-content>
         <ion-header>
@@ -55,32 +64,31 @@
         <ion-item>
           <ion-label position="stacked">Werk</ion-label>
           <ion-select [(ngModel)]="historyEntry.songId" #select multiple="false">
-            <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}</ion-select-option>
+            <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}
+            </ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Dirigent</ion-label>
           <ion-select [(ngModel)]="historyEntry.conductor" #select multiple="false">
-            <ion-select-option [value]="con.id" *ngFor="let con of conductors">{{ con.firstName }} {{ con.lastName }}</ion-select-option>
+            <ion-select-option [value]="con.id" *ngFor="let con of conductors">{{ con.firstName }} {{ con.lastName }}
+            </ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Datum</ion-label>
           <ion-input readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
-          <ion-modal #addAttModal class="dateModal" trigger="att-date-modal">
+          <ion-modal class="dateModal" trigger="att-date-modal">
             <ng-template>
               <ion-content>
-                <ion-datetime
-                  [(ngModel)]="historyEntry.date"
-                  (ionChange)="dateString = formatDate(dateTimePickerDate.value)"
-                  presentation="date"
-                  #dateTimePickerDate
-                ></ion-datetime>
+                <ion-datetime [(ngModel)]="historyEntry.date"
+                  (ionChange)="dateString = formatDate(dateTimePickerDate.value)" presentation="date"
+                  #dateTimePickerDate></ion-datetime>
               </ion-content>
             </ng-template>
           </ion-modal>
         </ion-item>
-        <ion-button (click)="addHistoryEntry(addAttModal)" expand="block">Hinzufügen</ion-button>
+        <ion-button (click)="addHistoryEntry(addHisModal)" expand="block">Hinzufügen</ion-button>
       </ion-content>
     </ng-template>
   </ion-modal>

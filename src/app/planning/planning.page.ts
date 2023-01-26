@@ -3,12 +3,13 @@ import { AlertController, ItemReorderEventDetail, ModalController } from '@ionic
 import * as dayjs from 'dayjs';
 import jsPDF from 'jspdf';
 import { DbService } from '../services/db.service';
-import { Player, Song } from '../utilities/interfaces';
+import { History, Player, Song } from '../utilities/interfaces';
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
 
 interface FieldSelection {
   id: string;
+  name: string;
   time: string;
 }
 
@@ -19,11 +20,11 @@ interface FieldSelection {
 })
 export class PlanningPage implements OnInit {
   public type: string = "pdf";
-  public players: Player[] = [];
   public songs: Song[] = [];
+  public history: History[] = [];
   public selectedFields: FieldSelection[] = [];
   public selectedSongs: string[] = [];
-  public time: string = dayjs().hour(19).minute(0).toISOString();
+  public time: string = dayjs().utc().hour(18).minute(0).format("YYYY-MM-DDTHH:mm");
   public end: string;
 
   constructor(
@@ -34,6 +35,16 @@ export class PlanningPage implements OnInit {
 
   async ngOnInit() {
     this.songs = await this.db.getSongs();
+    this.history = await this.db.getUpcomingHistory();
+
+    if (this.history.length) {
+      for (let his of this.history) {
+        const song: Song = this.songs.find((s: Song): boolean => s.number === his.songId);
+        this.selectedSongs.push(String(song.number));
+      }
+
+      this.onSongsChange();
+    }
   }
 
   dismiss() {
@@ -58,18 +69,30 @@ export class PlanningPage implements OnInit {
     const alert = await this.alertController.create({
       header: 'Feld hinzufügen',
       inputs: [{
-        type: "text",
-        name: "field"
+        type: "textarea",
+        name: "field",
+        placeholder: "Liednummer oder Freitext eingeben..."
       }],
       buttons: [{
         text: "Abbrechen"
       }, {
         text: "Hinzufügen",
         handler: (evt: any) => {
-          this.selectedFields.push({
-            id: evt.field,
-            time: "20",
-          });
+          if (!isNaN(evt.field) && Boolean(this.songs.find((song: Song) => song.id === Number(evt.field)))) {
+            const song: Song = this.songs.find((song: Song) => song.id === Number(evt.field));
+            this.selectedFields.push({
+              id: song.id.toString(),
+              name: `${song.number}. ${song.name}`,
+              time: "20",
+            });
+          } else {
+            this.selectedFields.push({
+              id: evt.field,
+              name: evt.field,
+              time: "20",
+            });
+          }
+
           this.calculateEnd();
         }
       }]
@@ -78,12 +101,15 @@ export class PlanningPage implements OnInit {
     await alert.present();
   }
 
-  onSongsChange(evt: any) {
-    const selectedSongs: string[] = evt.target.value.filter((id: string) => !Boolean(this.selectedFields.find((field: FieldSelection) => field.id === id)));
+  onSongsChange() {
+    this.selectedFields = this.selectedFields.filter((field: FieldSelection) => this.selectedSongs.includes(field.id));
+    const selectedSongs: string[] = this.selectedSongs.filter((id: string) => !Boolean(this.selectedFields.find((field: FieldSelection) => field.id === id)));
 
     for (let id of selectedSongs) {
+      const song: Song = this.songs.find((song: Song) => song.id === parseInt(id));
       this.selectedFields.push({
         id,
+        name: `${song.number}. ${song.name}`,
         time: "20"
       });
     }
@@ -92,17 +118,18 @@ export class PlanningPage implements OnInit {
   }
 
   calculateEnd(): void {
-    let currentTime = dayjs(this.time).subtract(Math.abs(new Date().getTimezoneOffset()), "minutes");
+    let currentTime = dayjs(this.time);
 
     for (let field of this.selectedFields) {
       currentTime = currentTime.add(parseInt(field.time), "minutes");
     }
 
-    this.end = currentTime.add(Math.abs(new Date().getTimezoneOffset()), "minutes").toISOString();
+    this.end = currentTime.format("YYYY-MM-DDTHH:mm");
   }
 
-  export() {
-    const startingTime = dayjs(this.time).subtract(Math.abs(new Date().getTimezoneOffset()), "minutes");
+  async export() {
+    const startingTime = dayjs(this.time);
+    const hasConductors = Boolean(this.history.length && this.history.find((his: History) => Boolean(this.selectedFields.find((field: FieldSelection) => field.id === his.songId.toString()))));
 
     const date: string = dayjs().format('DD.MM.YYYY');
     const data = [];
@@ -111,7 +138,17 @@ export class PlanningPage implements OnInit {
     let currentTime = startingTime;
 
     for (const field of this.selectedFields) {
-      data.push([row.toString(), field.id, field.time, currentTime.format("HH:mm")]);
+      if (hasConductors) {
+        data.push([
+          row.toString(),
+          field.name,
+          this.history.find((his: History) => his.songId === parseInt(field.id))?.conductorName || "",
+          `${field.time} min`,
+          `${currentTime.format("HH:mm")} Uhr`
+        ]);
+      } else {
+        data.push([row.toString(), field.name, `${field.time} min`, `${currentTime.format("HH:mm")} Uhr`]);
+      }
       currentTime = currentTime.add(parseInt(field.time), "minutes");
       row++;
     }
@@ -119,7 +156,7 @@ export class PlanningPage implements OnInit {
     const doc = new jsPDF();
     doc.text(`Probenplan: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
-      head: [["", "Werk", "Dauer", "Uhrzeit"]],
+      head: hasConductors ? [["", "Werk", "Dirigent", "Dauer", "Uhrzeit"]] : [["", "Werk", "Dauer", "Uhrzeit"]],
       body: data,
       margin: { top: 40 },
       theme: 'grid',

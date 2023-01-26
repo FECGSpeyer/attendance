@@ -941,4 +941,32 @@ export class DbService {
 
     return data.publicUrl;
   }
+
+  async getUpcomingHistory(): Promise<History[]> {
+    const { data, error } = await supabase
+      .from("history")
+      .select(`
+        id,
+        conductors (
+          firstName, lastName
+        ),
+        date,
+        songId
+      `)
+      .gt("date", dayjs().startOf("day").toISOString())
+      .order("date", {
+        ascending: false,
+      });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data.map((his: any) => {
+      return {
+        ...his,
+        conductorName: `${his.conductors.firstName} ${his.conductors.lastName}`,
+      };
+    });
+  }
 }

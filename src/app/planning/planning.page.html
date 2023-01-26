@@ -13,8 +13,8 @@
   <ion-list>
     <ion-item>
       <ion-label>Werke</ion-label>
-      <ion-select (ionChange)="onSongsChange($event)" multiple="true">
-        <ion-select-option *ngFor="let song of songs">{{ song.number }} {{ song.name }}</ion-select-option>
+      <ion-select [(ngModel)]="selectedSongs" (ionChange)="onSongsChange()" multiple="true">
+        <ion-select-option [value]="song.number.toString()" *ngFor="let song of songs">{{ song.number }} {{ song.name }}</ion-select-option>
       </ion-select>
     </ion-item>
     <ion-item>
@@ -31,7 +31,7 @@
       <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
         <ion-item-sliding #slider *ngFor="let field of selectedFields; let i = index">
           <ion-item>
-            <ion-label>{{ field.id }}</ion-label>
+            <ion-label>{{ field.name }}</ion-label>
             <ion-input (ionBlur)="calculateEnd()" [(ngModel)]="field.time" placeholder="min" type="number" slot="end"></ion-input>
             <ion-reorder slot="end"></ion-reorder>
           </ion-item>
@@ -42,20 +42,19 @@
           </ion-item-options>
         </ion-item-sliding>
       </ion-reorder-group>
-
-      <ion-item *ngIf="end">
-        <ion-label>Ende</ion-label>
-        <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
-        <ion-modal [keepContentsMounted]="true">
-          <ng-template>
-            <ion-datetime disabled="true" [(ngModel)]="end" presentation="time" minuteValues="0,,10,15,20,25,30,35,40,45,50,55" id="datetimeend"></ion-datetime>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
     </ion-list>
 
     <ion-button (click)="addExtraField()" style="margin-left: '16px'" size="small">Extrafeld hinzufügen</ion-button>
 
+    <ion-item *ngIf="end">
+      <ion-label>Endzeit</ion-label>
+      <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime disabled="true" [(ngModel)]="end" presentation="time" minuteValues="0,,10,15,20,25,30,35,40,45,50,55" id="datetimeend"></ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
     <!-- <ion-item>
       <ion-label>Export-Typ</ion-label>
       <ion-select interface="popover" [(ngModel)]="type">

@@ -121,15 +121,15 @@ export class HistoryPage implements OnInit {
     if (this.historyEntry.songId) {
       await this.db.addHistoryEntry(this.historyEntry);
 
-      modal.dismiss();
+      await modal.dismiss();
 
       await this.getHistory();
       this.historyEntry = {
         songId: this.historyEntry.songId,
-        conductor: 1,
-        date: new Date().toISOString(),
+        conductor: this.conductors[0].id,
+        date: this.historyEntry.date,
       };
-      this.dateString = format(new Date(), 'dd.MM.yyyy');
+      this.dateString = format(new Date(this.historyEntry.date), 'dd.MM.yyyy');
     } else {
       Utils.showToast("Bitte gib einen Namen an", "danger");
     }
