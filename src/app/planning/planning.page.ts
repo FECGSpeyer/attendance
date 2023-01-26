@@ -39,7 +39,7 @@ export class PlanningPage implements OnInit {
   async ngOnInit() {
     this.songs = await this.db.getSongs();
     this.history = await this.db.getUpcomingHistory();
-    this.attendances = await this.db.getUpcomingAttendances();
+    this.attendances = (await this.db.getUpcomingAttendances()).reverse();
     if (this.attendances.length) {
       this.attendance = this.attendances[0].id;
     }
