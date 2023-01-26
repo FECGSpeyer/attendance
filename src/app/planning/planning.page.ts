@@ -46,8 +46,8 @@ export class PlanningPage implements OnInit {
 
     if (this.history.length) {
       for (let his of this.history) {
-        const song: Song = this.songs.find((s: Song): boolean => s.number === his.songId);
-        this.selectedSongs.push(String(song.number));
+        const song: Song = this.songs.find((s: Song): boolean => s.id === his.songId);
+        this.selectedSongs.push(String(song.id));
       }
 
       this.onSongsChange();
@@ -78,7 +78,7 @@ export class PlanningPage implements OnInit {
       inputs: [{
         type: "textarea",
         name: "field",
-        placeholder: "Liednummer oder Freitext eingeben..."
+        placeholder: "Werknummer oder Freitext eingeben..."
       }],
       buttons: [{
         text: "Abbrechen"
@@ -88,7 +88,7 @@ export class PlanningPage implements OnInit {
           if (!isNaN(evt.field) && Boolean(this.songs.find((song: Song) => song.number === Number(evt.field)))) {
             const song: Song = this.songs.find((song: Song) => song.number === Number(evt.field));
             this.selectedFields.push({
-              id: song.number.toString(),
+              id: song.id.toString(),
               name: `${song.number}. ${song.name}`,
               time: "20",
             });
@@ -113,7 +113,7 @@ export class PlanningPage implements OnInit {
     const selectedSongs: string[] = this.selectedSongs.filter((id: string) => !Boolean(this.selectedFields.find((field: FieldSelection) => field.id === id)));
 
     for (let id of selectedSongs) {
-      const song: Song = this.songs.find((song: Song) => song.number === parseInt(id));
+      const song: Song = this.songs.find((song: Song) => song.id === parseInt(id));
       this.selectedFields.push({
         id,
         name: `${song.number}. ${song.name}`,

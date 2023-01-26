@@ -20,7 +20,7 @@
     <ion-item *ngIf="songs.length">
       <ion-label>Werke</ion-label>
       <ion-select [(ngModel)]="selectedSongs" (ionChange)="onSongsChange()" multiple="true">
-        <ion-select-option [value]="song.number.toString()" *ngFor="let song of songs">{{ song.number }} {{ song.name }}</ion-select-option>
+        <ion-select-option [value]="song.id.toString()" *ngFor="let song of songs">{{ song.number }} {{ song.name }}</ion-select-option>
       </ion-select>
     </ion-item>
     <ion-item>
