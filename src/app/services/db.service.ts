@@ -865,10 +865,11 @@ export class DbService {
   async sendPlanPerTelegram(blob: Blob, name: string): Promise<void> {
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999);
     await loading.present();
+    const fileName: string = name + "_" + Math.floor(Math.random() * 100) + ".pdf";
 
     const { error } = await supabase.storage
       .from("attendances")
-      .upload(name + ".pdf", blob, { upsert: true });
+      .upload(fileName, blob, { upsert: true });
 
     if (error) {
       throw new Error(error.message);
@@ -877,7 +878,7 @@ export class DbService {
     const { data } = await supabase
       .storage
       .from("attendances")
-      .getPublicUrl(name + ".pdf");
+      .getPublicUrl(fileName);
 
     await axios.post(`https://staccato-server.vercel.app/api/sendPracticePlan`, {
       url: data.publicUrl,
@@ -891,7 +892,7 @@ export class DbService {
     window.setTimeout(async () => {
       await supabase.storage
         .from("attendances")
-        .remove([name + ".pdf"]);
+        .remove([fileName]);
     }, 10000);
   }
 
