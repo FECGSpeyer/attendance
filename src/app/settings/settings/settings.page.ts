@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IonRouterOutlet, ModalController } from '@ionic/angular';
+import { IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
@@ -52,7 +52,7 @@ export class SettingsPage implements OnInit {
     await this.db.logout();
   }
 
-  createPlan(conductors: number[], timeString: string | number): void {
+  createPlan(conductors: number[], timeString: string | number, modal: IonModal, perTelegram?: boolean): void {
     const shuffledConductors: string[] = this.shuffle(conductors.map((id: number): string => {
       const con: Person = this.conductors.find((c: Person): boolean => id === c.id);
       return `${con.firstName} ${con.lastName.substr(0, 1)}.`;
@@ -91,7 +91,14 @@ export class SettingsPage implements OnInit {
         fillColor: [0, 82, 56]
       }
     });
-    doc.save(`${environment.shortName} Registerprobenplan: ${date}.pdf`);
+
+    if (perTelegram) {
+      this.db.sendPlanPerTelegram(doc.output('blob'), `Registerprobenplan_${dayjs().format('DD_MM_YYYY')}`);
+    } else {
+      doc.save(`${environment.shortName} Registerprobenplan: ${date}.pdf`);
+    }
+
+    modal.dismiss();
   }
 
   shuffle(a: string[]) {

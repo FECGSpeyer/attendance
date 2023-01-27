@@ -244,7 +244,12 @@ export class AttPage implements OnInit {
   }
 
   async exportPlan() {
-    Utils.createPlanExport({ ...this.attendance.plan, history: await this.db.getUpcomingHistory() });
+    Utils.createPlanExport({
+      ...this.attendance.plan,
+      history: await this.db.getUpcomingHistory(),
+      attendance: this.attendance.id,
+      attendances: await this.db.getAttendance(),
+    });
   }
 
 }

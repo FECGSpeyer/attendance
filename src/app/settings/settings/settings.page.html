@@ -35,7 +35,7 @@
     </ion-item>
     <ion-item detail="false" button id="trigger-button">
       <ion-label>Registerprobenplan erstellen</ion-label>
-      <ion-modal trigger="trigger-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">
+      <ion-modal #planModal trigger="trigger-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">
         <ng-template>
           <ion-content>
             <ion-header>
@@ -53,7 +53,8 @@
               <ion-label position="stacked">Zeit in Minuten</ion-label>
               <ion-input value="60" #input type="number"></ion-input>
             </ion-item>
-            <ion-button [disabled]="!select.value?.length || !input.value" (click)="createPlan(select.value, input.value)" expand="block">Erstellen</ion-button>
+            <ion-button [disabled]="!select.value?.length || !input.value" (click)="createPlan(select.value, input.value, planModal)" expand="block">Exportieren</ion-button>
+            <ion-button [disabled]="!select.value?.length || !input.value" (click)="createPlan(select.value, input.value, planModal, true)" expand="block">Per Telegram senden</ion-button>
           </ion-content>
         </ng-template>
       </ion-modal>
@@ -120,6 +121,12 @@
             </ion-header>
 
             <ion-list>
+              <ion-list-header>Version 1.4.3</ion-list-header>
+              <ion-item>
+                <ion-label>
+                  <h2>- Senden der Pläne per Telgram möglich</h2>
+                </ion-label>
+              </ion-item>
               <ion-list-header>Version 1.4.2</ion-list-header>
               <ion-item>
                 <ion-label>

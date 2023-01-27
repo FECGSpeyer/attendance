@@ -150,6 +150,10 @@ export class Utils {
       }
     });
 
-    doc.save(`Probenplan_${date}.pdf`);
+    if (props.asBlob) {
+      return doc.output("blob");
+    } else {
+      doc.save(`Probenplan_${date}.pdf`);
+    }
   }
 }

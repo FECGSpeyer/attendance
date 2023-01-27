@@ -48,6 +48,20 @@ export class PlanningPage implements OnInit {
     }
   }
 
+  send() {
+    const name: string = this.attendance ? dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format("DD_MM_YYYY") : dayjs(this.time).format("DD_MM_YYYY");
+    const blob: Blob = Utils.createPlanExport({
+      time: this.time,
+      end: this.end,
+      fields: this.selectedFields,
+      history: this.history,
+      asBlob: true,
+      attendance: this.attendance,
+      attendances: this.attendances
+    });
+    this.db.sendPlanPerTelegram(blob, `Probenplan_${name}`);
+  }
+
   onAttChange() {
     const attendance: Attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
     if (attendance.plan) {

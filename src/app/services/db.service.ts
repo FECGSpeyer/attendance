@@ -862,6 +862,39 @@ export class DbService {
     await this.updateAttendance(attendance, attId);
   }
 
+  async sendPlanPerTelegram(blob: Blob, name: string): Promise<void> {
+    const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999);
+    await loading.present();
+
+    const { error } = await supabase.storage
+      .from("attendances")
+      .upload(name + ".pdf", blob, { upsert: true });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const { data } = await supabase
+      .storage
+      .from("attendances")
+      .getPublicUrl(name + ".pdf");
+
+    await axios.post(`https://staccato-server.vercel.app/api/sendPracticePlan`, {
+      url: data.publicUrl,
+      shortName: environment.shortName,
+    });
+
+    loading.dismiss();
+
+    Utils.showToast("Nachricht wurde erfolgreich gesendet!");
+
+    window.setTimeout(async () => {
+      await supabase.storage
+        .from("attendances")
+        .remove([name + ".pdf"]);
+    }, 10000);
+  }
+
   async notifyPerTelegram(player: Player, attendances: Attendance[], type: string = "signin", reason?: string): Promise<void> {
     await axios.post(`https://staccato-server.vercel.app/api/notifyAttendanceOwner`, {
       name: `${player.firstName} ${player.lastName}`,
