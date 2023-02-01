@@ -2,7 +2,7 @@ import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { environment } from "src/environments/environment";
 import { DEFAULT_IMAGE } from "./constants";
-import { Attendance, AttendanceItem, FieldSelection, Instrument, Player, History } from "./interfaces";
+import { Attendance, AttendanceItem, FieldSelection, Instrument, Player } from "./interfaces";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
@@ -114,7 +114,7 @@ export class Utils {
   public static createPlanExport(props: any) {
     const date: string = props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).format("DD.MM.YYYY") : dayjs(props.time).format("DD.MM.YYYY");
     const startingTime = dayjs(props.time);
-    const hasConductors = Boolean(props.history.length && props.history.find((his: History) => Boolean(props.fields.find((field: FieldSelection) => field.id === his.songId.toString()))));
+    const hasConductors = Boolean(props.fields.find((field: FieldSelection) => field.conductor));
 
     const data = [];
 
@@ -124,23 +124,40 @@ export class Utils {
     for (const field of props.fields) {
       if (hasConductors) {
         data.push([
-          row.toString(),
-          field.name,
-          props.history.find((his: History) => his.songId === parseInt(field.id))?.conductorName || "",
-          `${field.time} min`,
-          `${currentTime.format("HH:mm")} Uhr`
+          { content: row.toString(), styles: { fontSize: 14 } },
+          { content: field.name, styles: { fontSize: 14 } },
+          { content: field.conductor || "", styles: { fontSize: 14 } },
+          { content: `${field.time} min`, styles: { fontSize: 14 } },
+          { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
         ]);
       } else {
-        data.push([row.toString(), field.name, `${field.time} min`, `${currentTime.format("HH:mm")} Uhr`]);
+        data.push([
+          { content: row.toString(), styles: { fontSize: 14 } },
+          { content: field.name, styles: { fontSize: 14 } },
+          { content: `${field.time} min`, styles: { fontSize: 14 } },
+          { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
+        ]);
       }
       currentTime = currentTime.add(parseInt(field.time), "minutes");
       row++;
     }
 
     const doc = new jsPDF();
+    doc.setFontSize(20);
     doc.text(`Probenplan: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
-      head: hasConductors ? [["", "Werk", "Dirigent", "Dauer", "Uhrzeit"]] : [["", "Werk", "Dauer", "Uhrzeit"]],
+      head: hasConductors ? [[
+        { content: "", styles: { fontSize: 14 } },
+        { content: "Werk", styles: { fontSize: 14 } },
+        { content: "Dirigent", styles: { fontSize: 14 } },
+        { content: "Dauer", styles: { fontSize: 14 } },
+        { content: "Uhrzeit", styles: { fontSize: 14 } },
+      ]] : [[
+        { content: "", styles: { fontSize: 14 } },
+        { content: "Werk", styles: { fontSize: 14 } },
+        { content: "Dauer", styles: { fontSize: 14 } },
+        { content: "Uhrzeit", styles: { fontSize: 14 } },
+      ]],
       body: data,
       margin: { top: 40 },
       theme: 'grid',

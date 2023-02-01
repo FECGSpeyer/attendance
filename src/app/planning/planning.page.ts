@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, ItemReorderEventDetail, ModalController } from '@ionic/angular';
+import { AlertController, IonItemSliding, ItemReorderEventDetail, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
 import { Attendance, FieldSelection, History, Song } from '../utilities/interfaces';
@@ -15,10 +15,14 @@ export class PlanningPage implements OnInit {
   public type: string = "pdf";
   public songs: Song[] = [];
   public history: History[] = [];
-  public selectedFields: FieldSelection[] = [];
+  public selectedFields: FieldSelection[] = [{
+    id: "",
+    name: "Wort ",
+    time: "5",
+  }];
   public attendances: Attendance[] = [];
   public attendance: number;
-  public time: string = dayjs().utc().hour(18).minute(0).format("YYYY-MM-DDTHH:mm");
+  public time: string = dayjs().utc().hour(17).minute(50).format("YYYY-MM-DDTHH:mm");
   public end: string;
 
   constructor(
@@ -48,13 +52,41 @@ export class PlanningPage implements OnInit {
     }
   }
 
+  async changeField(field: FieldSelection, slider: IonItemSliding) {
+    slider.close();
+    const clone: FieldSelection = JSON.parse(JSON.stringify(field));
+    const alert = await this.alertController.create({
+      header: 'Feld bearbeiten',
+      inputs: [{
+        type: "textarea",
+        name: "field",
+        value: clone.name,
+        placeholder: "Werknummer oder Freitext eingeben..."
+      }],
+      buttons: [{
+        text: "Abbrechen"
+      }, {
+        text: "Updaten",
+        handler: (evt: any) => {
+          if (evt.field.includes("(") && evt.field.includes(")")) {
+            field.conductor = evt.field.substring(evt.field.indexOf("(") + 1, evt.field.indexOf(")"));
+            evt.field = evt.field.substring(0, evt.field.indexOf("("));
+          }
+          field.name = evt.field;
+          this.calculateEnd();
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
   send() {
     const name: string = this.attendance ? dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format("DD_MM_YYYY") : dayjs(this.time).format("DD_MM_YYYY");
     const blob: Blob = Utils.createPlanExport({
       time: this.time,
       end: this.end,
       fields: this.selectedFields,
-      history: this.history,
       asBlob: true,
       attendance: this.attendance,
       attendances: this.attendances

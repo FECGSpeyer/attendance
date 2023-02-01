@@ -37,11 +37,17 @@
       <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
         <ion-item-sliding #slider *ngFor="let field of selectedFields; let i = index">
           <ion-item>
-            <ion-label>{{ field.name }}</ion-label>
+            <ion-label>
+              <h2>{{ field.name }}</h2>
+              <h3 *ngIf="field.conductor">{{ field.conductor }}</h3>
+            </ion-label>
             <ion-input (ionBlur)="calculateEnd()" [(ngModel)]="field.time" placeholder="min" type="number" slot="end"></ion-input>
             <ion-reorder slot="end"></ion-reorder>
           </ion-item>
           <ion-item-options>
+            <ion-item-option color="warning" (click)="changeField(field, slider)">
+              <ion-icon name="trash"></ion-icon>
+            </ion-item-option>
             <ion-item-option color="danger" (click)="removeField(i, slider)">
               <ion-icon name="trash"></ion-icon>
             </ion-item-option>
