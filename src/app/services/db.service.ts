@@ -1000,7 +1000,7 @@ export class DbService {
     return data.map((his: any) => {
       return {
         ...his,
-        conductorName: `${his.conductors.firstName} ${his.conductors.lastName}`,
+        conductorName: his.conductors ? `${his.conductors.firstName} ${his.conductors.lastName}` : "",
       };
     });
   }
