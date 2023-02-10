@@ -107,6 +107,7 @@ export interface Database {
           date: string | null
           id: number
           name: string | null
+          otherConductor: string | null
           songId: number | null
         }
         Insert: {
@@ -115,6 +116,7 @@ export interface Database {
           date?: string | null
           id?: number
           name?: string | null
+          otherConductor?: string | null
           songId?: number | null
         }
         Update: {
@@ -123,6 +125,7 @@ export interface Database {
           date?: string | null
           id?: number
           name?: string | null
+          otherConductor?: string | null
           songId?: number | null
         }
       }
@@ -324,6 +327,9 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
       [_ in never]: never
     }
   }

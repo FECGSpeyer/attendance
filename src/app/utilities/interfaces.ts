@@ -115,6 +115,7 @@ export interface History {
     name?: string;
     conductor: number;
     conductorName?: string;
+    otherConductor?: string;
 }
 
 export interface Teacher {
@@ -141,4 +142,5 @@ export interface FieldSelection {
     name: string;
     time: string;
     conductor?: string;
+    currentTime?: string;
 }

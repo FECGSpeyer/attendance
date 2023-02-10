@@ -1,10 +1,11 @@
 import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
+import * as dayjs from 'dayjs';
 import { FaceMatch } from 'face-api.js';
 import { DbService } from 'src/app/services/db.service';
 import { FaceRecService } from 'src/app/services/face-rec.service';
 import { PlayerHistoryType } from 'src/app/utilities/constants';
-import { Attendance, AttendanceItem, Instrument, Person, Player } from 'src/app/utilities/interfaces';
+import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment.prod';
 
@@ -241,6 +242,18 @@ export class AttPage implements OnInit {
         Utils.showToast("Fehler beim hinzufügen des Bildes, versuche es später erneut", "danger");
       }
     }
+  }
+
+  calculateTime(field: FieldSelection, index: number) {
+    let minutesToAdd: number = 0;
+    let currentIndex: number = 0;
+
+    while (currentIndex !== index) {
+      minutesToAdd += Number(this.attendance.plan.fields[currentIndex].time);
+      currentIndex++;
+    }
+
+    return `${dayjs(this.attendance.plan.time).add(minutesToAdd, "minute").format("HH:mm")} ${field.conductor ? `| ${field.conductor}` : ""}`;
   }
 
   async exportPlan() {

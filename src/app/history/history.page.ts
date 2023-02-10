@@ -18,6 +18,7 @@ export class HistoryPage implements OnInit {
   date: string = new Date().toISOString();
   public dateString: string = format(new Date(), 'dd.MM.yyyy');
   conductors: Person[] = [];
+  activeConductors: Person[] = [];
   history: History[] = [];
   groupedHistory: GroupedHistory[] = [];
   historyFiltered: History[] = [];
@@ -28,6 +29,7 @@ export class HistoryPage implements OnInit {
   };
   searchTerm: string = "";
   songs: Song[] = [];
+  otherConductor: number = 9999999999;
 
   constructor(
     private modalController: ModalController,
@@ -39,17 +41,18 @@ export class HistoryPage implements OnInit {
     this.songs = await this.db.getSongs();
     this.historyEntry.songId = this.songs[0].id;
     this.conductors = await this.db.getConductors(true);
-    this.historyEntry.conductor = this.conductors[0].id;
+    this.activeConductors = this.conductors.filter((con: Person) => !con.left);
+    this.historyEntry.conductor = this.activeConductors[0].id;
 
     await this.getHistory();
   }
 
   async getHistory(): Promise<void> {
     this.history = (await this.db.getHistory()).map((entry: History): History => {
-      const conductor: Person = this.conductors.find((p: Person) => p.id === entry.conductor);
+      const conductor: Person | undefined = this.conductors.find((p: Person) => p.id === entry.conductor);
       return {
         ...entry,
-        conductorName: `${conductor.firstName} ${conductor.lastName}`,
+        conductorName: conductor ? `${conductor.firstName} ${conductor.lastName}` : entry.otherConductor,
         number: this.songs.find((song: Song) => song.id === entry.songId)?.number,
         name: this.songs.find((song: Song) => song.id === entry.songId)?.name || entry.name,
       }
@@ -125,8 +128,37 @@ export class HistoryPage implements OnInit {
     await this.modalController.dismiss();
   }
 
+  async onConChange() {
+    if (this.historyEntry.conductor === this.otherConductor) {
+      const alert = await this.alertController.create({
+        header: 'Dirigent eingeben',
+        inputs: [
+          {
+            type: "text",
+            name: "conductor",
+            placeholder: "Dirigent",
+          }
+        ],
+        buttons: ["Abbrechen", {
+          text: "Speichern",
+          handler: (data: any) => {
+            this.historyEntry.otherConductor = data.conductor;
+          }
+        }]
+      });
+
+      await alert.present();
+    } else {
+      delete this.historyEntry.otherConductor;
+    }
+  }
+
   async addHistoryEntry(modal: HTMLIonModalElement): Promise<void> {
     if (this.historyEntry.songId) {
+      if (this.historyEntry.conductor === this.otherConductor) {
+        delete this.historyEntry.conductor;
+      }
+
       await this.db.addHistoryEntry(this.historyEntry);
 
       await modal.dismiss();

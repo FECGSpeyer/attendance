@@ -70,10 +70,14 @@
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Dirigent</ion-label>
-          <ion-select [(ngModel)]="historyEntry.conductor" #select multiple="false">
-            <ion-select-option [value]="con.id" *ngFor="let con of conductors">{{ con.firstName }} {{ con.lastName }}
+          <ion-select (ionChange)="onConChange()" [(ngModel)]="historyEntry.conductor" #select multiple="false">
+            <ion-select-option [value]="con.id" *ngFor="let con of activeConductors">{{ con.firstName }} {{ con.lastName }}
             </ion-select-option>
+            <ion-select-option [value]="otherConductor">Anderer Dirigent</ion-select-option>
           </ion-select>
+        </ion-item>
+        <ion-item *ngIf="historyEntry.conductor === otherConductor && historyEntry.otherConductor">
+          <ion-input [(ngModel)]="historyEntry.otherConductor"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Datum</ion-label>

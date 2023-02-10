@@ -24,6 +24,7 @@ export class PlanningPage implements OnInit {
   public attendance: number;
   public time: string = dayjs().utc().hour(17).minute(50).format("YYYY-MM-DDTHH:mm");
   public end: string;
+  public notes: string = "";
 
   constructor(
     private modalController: ModalController,
@@ -37,6 +38,7 @@ export class PlanningPage implements OnInit {
     this.attendances = (await this.db.getUpcomingAttendances()).reverse();
     if (this.attendances.length) {
       this.attendance = this.attendances[0].id;
+      this.notes = this.attendances[0].notes;
       if (this.attendances[0].plan) {
         this.end = this.attendances[0].plan.end;
         this.time = this.attendances[0].plan.time;
@@ -44,12 +46,24 @@ export class PlanningPage implements OnInit {
       }
     }
 
-    if (this.history.length && !this.selectedFields.length) {
+    if (this.history.length && this.selectedFields.length === 1) {
       for (let his of this.history) {
         const song: Song = this.songs.find((s: Song): boolean => s.id === his.songId);
-        this.onSongsChange(String(song.id));
+        this.onSongsChange([String(song.id)]);
       }
     }
+  }
+
+  calculateTime(field: FieldSelection, index: number) {
+    let minutesToAdd: number = 0;
+    let currentIndex: number = 0;
+
+    while (currentIndex !== index) {
+      minutesToAdd += Number(this.selectedFields[currentIndex].time);
+      currentIndex++;
+    }
+
+    return `${dayjs(this.time).add(minutesToAdd, "minute").format("HH:mm")} ${field.conductor ? `| ${field.conductor}` : ""}`;
   }
 
   async changeField(field: FieldSelection, slider: IonItemSliding) {
@@ -96,10 +110,21 @@ export class PlanningPage implements OnInit {
 
   onAttChange() {
     const attendance: Attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
+    this.notes = attendance.notes;
     if (attendance.plan) {
       this.end = attendance.plan.end;
       this.time = attendance.plan.time;
       this.selectedFields = attendance.plan.fields;
+    } else if (this.history.length) {
+      this.selectedFields = [{
+        id: "",
+        name: "Wort ",
+        time: "5",
+      }];
+      for (let his of this.history) {
+        const song: Song = this.songs.find((s: Song): boolean => s.id === his.songId);
+        this.onSongsChange([String(song.id)]);
+      }
     }
   }
 
@@ -159,15 +184,18 @@ export class PlanningPage implements OnInit {
     await alert.present();
   }
 
-  onSongsChange(id: any) {
-    const song: Song = this.songs.find((song: Song) => song.id === parseInt(id));
-    const conductor: string | undefined = this.history?.find((his: History) => his.songId === song.id)?.conductorName;
-    this.selectedFields.push({
-      id,
-      name: `${song.number}. ${song.name}`,
-      time: "20",
-      conductor: conductor || "",
-    });
+  onSongsChange(ids: string[]) {
+    for (let id of ids) {
+      const song: Song = this.songs.find((song: Song) => song.id === parseInt(id));
+      const conductor: string | undefined = this.history?.find((his: History) => his.songId === song.id)?.conductorName;
+
+      this.selectedFields.push({
+        id,
+        name: `${song.number}. ${song.name}`,
+        time: "20",
+        conductor: conductor || "",
+      });
+    }
 
     this.calculateEnd();
   }
