@@ -35,14 +35,15 @@ export class PlanningPage implements OnInit {
   async ngOnInit() {
     this.songs = await this.db.getSongs();
     this.history = await this.db.getUpcomingHistory();
-    this.attendances = (await this.db.getUpcomingAttendances()).reverse();
-    if (this.attendances.length) {
-      this.attendance = this.attendances[0].id;
-      this.notes = this.attendances[0].notes;
-      if (this.attendances[0].plan) {
-        this.end = this.attendances[0].plan.end;
-        this.time = this.attendances[0].plan.time;
-        this.selectedFields = this.attendances[0].plan.fields;
+    this.attendances = await this.db.getAttendance();
+    const upcomingAttendances: Attendance[] = (await this.db.getUpcomingAttendances()).reverse();
+    if (upcomingAttendances.length) {
+      this.attendance = upcomingAttendances[0].id;
+      this.notes = upcomingAttendances[0].notes;
+      if (upcomingAttendances[0].plan) {
+        this.end = upcomingAttendances[0].plan.end;
+        this.time = upcomingAttendances[0].plan.time;
+        this.selectedFields = upcomingAttendances[0].plan.fields;
       }
     }
 
