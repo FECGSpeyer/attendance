@@ -7,7 +7,7 @@ import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { environment } from 'src/environments/environment';
 import { Utils } from 'src/app/utilities/Utils';
-import { DEFAULT_IMAGE, PlayerHistoryType } from 'src/app/utilities/constants';
+import { DEFAULT_IMAGE, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 dayjs.extend(utc);
 
 @Component({
@@ -57,6 +57,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public hasChanges: boolean = false;
   public notes: string = "";
   public shouldReload: boolean = false;
+  public isAdmin: boolean = false;
 
   constructor(
     private db: DbService,
@@ -67,6 +68,9 @@ export class PersonPage implements OnInit, AfterViewInit {
   ) { }
 
   async ngOnInit() {
+    this.db.authenticationState.subscribe((state: { role: Role }) => {
+      this.isAdmin = state.role === Role.ADMIN;
+    });
     this.hasChanges = false;
     if (environment.showTeachers) {
       this.teachers = await this.db.getTeachers();

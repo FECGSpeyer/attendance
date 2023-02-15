@@ -4,6 +4,7 @@ import { DbService } from 'src/app/services/db.service';
 import { IonModal } from '@ionic/angular';
 import { Utils } from '../utilities/Utils';
 import { Browser } from '@capacitor/browser';
+import { Role } from '../utilities/constants';
 
 @Component({
   selector: 'app-songs',
@@ -15,6 +16,7 @@ export class SongsPage implements OnInit {
   public songs: Song[] = [];
   public songsFiltered: Song[] = [];
   searchTerm: string = "";
+  public isAdmin: boolean = false;
 
   constructor(
     private db: DbService,
@@ -25,6 +27,9 @@ export class SongsPage implements OnInit {
   }
 
   async getSongs(): Promise<void> {
+    this.db.authenticationState.subscribe((state: { role: Role }) => {
+      this.isAdmin = state.role === Role.ADMIN;
+    });
     const history: History[] = await this.db.getHistory();
     const conductors: Person[] = await this.db.getConductors(true);
     this.songs = (await this.db.getSongs()).map((song: Song): Song => {

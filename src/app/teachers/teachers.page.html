@@ -57,7 +57,7 @@
       </ion-content>
     </ng-template>
   </ion-modal>
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button id="add-teacher-button">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>

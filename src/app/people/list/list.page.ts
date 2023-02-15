@@ -6,7 +6,7 @@ import { Instrument, Person, Player, PlayerHistoryEntry } from 'src/app/utilitie
 import { PersonPage } from '../person/person.page';
 import { environment } from 'src/environments/environment.prod';
 import { ProblemModalPage } from '../problem-modal/problem-modal.page';
-import { PlayerHistoryType } from 'src/app/utilities/constants';
+import { PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from 'src/app/utilities/Utils';
 
@@ -36,6 +36,7 @@ export class ListPage implements OnInit {
   public isArchiveModalOpen: boolean = false;
   public archiveDate: string = dayjs().format("YYYY-MM-DD");
   public archiveNote: string = "";
+  public isAdmin: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -48,6 +49,9 @@ export class ListPage implements OnInit {
 
   async ngOnInit() {
     this.viewOpts = JSON.parse(await this.storage.get("viewOpts") || JSON.stringify(['instrument', 'leader', 'notes', 'critical', 'paused']));
+    this.db.authenticationState.subscribe((state: { role: Role }) => {
+      this.isAdmin = state.role === Role.ADMIN;
+    });
     this.filterOpt = (await this.storage.get("filterOpt")) || "all";
     this.instruments = await this.db.getInstruments();
     await this.getPlayers();
@@ -82,12 +86,52 @@ export class ListPage implements OnInit {
           this.openModal(undefined, true);
         }
       }, {
+        text: 'Beobachter hinzufügen',
+        handler: () => {
+          this.openViewerAlert();
+        }
+      }, {
         text: 'Abbrechen',
         role: 'cancel'
       }]
     });
 
     await actionSheet.present();
+  }
+
+  async openViewerAlert() {
+    const alert = await this.alertController.create({
+      header: 'Beobachter hinzufügen',
+      inputs: [{
+        type: "email",
+        name: "email",
+        placeholder: "E-Mail-Adresse",
+      }],
+      buttons: [{
+        text: "Abbrechen",
+      }, {
+        text: "Einladen",
+        handler: async (data: { email: string }) => {
+          if (Utils.validateEmail(data.email)) {
+            const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
+            loading.present();
+            try {
+              await this.db.createViewer(data.email);
+              Utils.showToast("Der Benutzer wurde erfolgreich angelegt.", "success");
+              await loading.dismiss();
+            } catch (error) {
+              Utils.showToast(error.message, "danger");
+              await loading.dismiss();
+            }
+          } else {
+            alert.message = "Bitte gib eine gültige E-Mail-Adresse ein.";
+            return false;
+          }
+        }
+      }]
+    });
+
+    await alert.present();
   }
 
   async openModal(player?: Player, isConductor?: boolean): Promise<void> {
@@ -98,6 +142,7 @@ export class ListPage implements OnInit {
         existingPlayer: player ? { ...player } : undefined,
         instruments: this.instruments,
         isConductor,
+        readOnly: !this.isAdmin,
       },
       backdropDismiss: false,
     });

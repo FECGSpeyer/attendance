@@ -1,9 +1,7 @@
-import { PlayerHistoryType } from "./constants";
+import { PlayerHistoryType, Role } from "./constants";
 
 export interface AuthObject {
-    isConductor: boolean;
-    isHelper: boolean;
-    isPlayer: boolean;
+    role: Role;
     login: boolean;
 }
 

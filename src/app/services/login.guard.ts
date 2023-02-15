@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
+import { Role } from '../utilities/constants';
 import { AuthObject } from '../utilities/interfaces';
+import { Utils } from '../utilities/Utils';
 import { DbService } from './db.service';
 
 @Injectable({
@@ -13,8 +15,10 @@ export class LoginGuard implements CanActivate {
     await this.db.checkToken();
     const value: AuthObject = this.db.authenticationState.value;
 
-    if (value.isHelper || value.isConductor || value.isPlayer) {
-      this.router.navigateByUrl(value.isConductor ? "/tabs/player" : value.isHelper ? "/tabs/attendance" : "/signout");
+    if (value.role !== Role.NONE) {
+      const url: string = Utils.getUrl(value.role);
+
+      this.router.navigateByUrl(url);
       return false;
     }
 

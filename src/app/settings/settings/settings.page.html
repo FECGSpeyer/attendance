@@ -18,10 +18,10 @@
     <ion-item routerLink="songs" button>
       <ion-label>Werke</ion-label>
     </ion-item>
-    <ion-item button (click)="openHistoryModal()">
+    <ion-item *ngIf="isAdmin" button (click)="openHistoryModal()">
       <ion-label>Werkhistorie</ion-label>
     </ion-item>
-    <ion-item routerLink="meetings" button>
+    <ion-item *ngIf="isAdmin" routerLink="meetings" button>
       <ion-label>Besprechungen</ion-label>
     </ion-item>
     <ion-item routerLink="instruments" button>
@@ -30,10 +30,10 @@
     <ion-item routerLink="teachers" *ngIf="showTeachers" button>
       <ion-label>Lehrer</ion-label>
     </ion-item>
-    <ion-item button (click)="openPlanning()">
+    <ion-item *ngIf="isAdmin" button (click)="openPlanning()">
       <ion-label>Probenplan erstellen</ion-label>
     </ion-item>
-    <ion-item detail="false" button id="trigger-button">
+    <ion-item *ngIf="isAdmin" detail="false" button id="trigger-button">
       <ion-label>Registerprobenplan erstellen</ion-label>
       <ion-modal #planModal trigger="trigger-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">
         <ng-template>
@@ -93,7 +93,7 @@
       </ion-modal>
     </ion-item>
 
-    <ion-item button *ngIf="playersWithoutAccount.length" (click)="createAccounts()" color="primary">
+    <ion-item button *ngIf="isAdmin && playersWithoutAccount.length" (click)="createAccounts()" color="primary">
       <ion-label>Fehlende Benutzeraccounts anlegen</ion-label>
     </ion-item>
 
@@ -121,6 +121,12 @@
             </ion-header>
 
             <ion-list>
+              <ion-list-header>Version 1.5.0</ion-list-header>
+              <ion-item>
+                <ion-label>
+                  <h2>- Beobachterrolle hinzugefügt</h2>
+                </ion-label>
+              </ion-item>
               <ion-list-header>Version 1.4.5</ion-list-header>
               <ion-item>
                 <ion-label>

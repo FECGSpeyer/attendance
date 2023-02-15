@@ -7,6 +7,7 @@ import { Attendance, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { AttPage } from '../att/att.page';
 import 'jspdf-autotable';
+import { Role } from 'src/app/utilities/constants';
 require('dayjs/locale/de');
 
 @Component({
@@ -38,8 +39,8 @@ export class AttListPage implements OnInit {
 
   async ngOnInit() {
     await this.getAttendance();
-    this.db.authenticationState.subscribe((state: { isConductor: boolean, isHelper: boolean }) => {
-      this.isConductor = state.isConductor;
+    this.db.authenticationState.subscribe((state: { role: Role }) => {
+      this.isConductor = state.role === Role.ADMIN;
     });
   }
 

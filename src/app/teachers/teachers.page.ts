@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from '../services/db.service';
 import { TeacherPage } from '../teacher/teacher.page';
+import { Role } from '../utilities/constants';
 import { Instrument, Player, Teacher } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
@@ -14,6 +15,7 @@ export class TeachersPage implements OnInit {
   instruments: Instrument[] = [];
   teachers: Teacher[] = [];
   players: Player[] = [];
+  isAdmin: boolean = false;
 
   constructor(
     private db: DbService,
@@ -22,6 +24,9 @@ export class TeachersPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.db.authenticationState.subscribe((state: { role: Role }) => {
+      this.isAdmin = state.role === Role.ADMIN;
+    });
     this.players = await this.db.getPlayers();
     this.instruments = await this.db.getInstruments();
     await this.getTeachers();
@@ -54,6 +59,10 @@ export class TeachersPage implements OnInit {
   }
 
   async openModal(teacher: Teacher): Promise<void> {
+    if (!this.isAdmin) {
+      return;
+    }
+
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: TeacherPage,
       presentingElement: this.routerOutlet.nativeEl,

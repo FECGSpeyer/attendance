@@ -10,6 +10,7 @@ import { PersonPage } from 'src/app/people/person/person.page';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { StatsPage } from 'src/app/stats/stats.page';
+import { Role } from 'src/app/utilities/constants';
 import { Instrument, Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
@@ -28,6 +29,7 @@ export class SettingsPage implements OnInit {
   public version: string = require('../../../../package.json').version;
   public showTeachers: boolean = environment.showTeachers;
   public instruments: Instrument[] = [];
+  public isAdmin: boolean = false;
 
   constructor(
     private db: DbService,
@@ -36,6 +38,9 @@ export class SettingsPage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
+    this.db.authenticationState.subscribe((state: { role: Role }) => {
+      this.isAdmin = state.role === Role.ADMIN;
+    });
     const allConductors: Person[] = await this.db.getConductors(true);
     this.conductors = allConductors.filter((con: Person) => !con.left);
     this.selConductors = this.conductors.filter((con: Person) => Boolean(!con.left)).map((c: Person): number => c.id);

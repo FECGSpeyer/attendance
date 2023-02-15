@@ -28,6 +28,7 @@
         <ion-icon name="link-outline"></ion-icon>
       </ion-badge>
       <ion-modal
+       *ngIf="isAdmin"
        #modal
        [trigger]="song.id + 'edit-button'"
        [breakpoints]="[0.6]"
@@ -63,7 +64,7 @@
     </ion-item>
   </ion-list>
 
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button id="add-button">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>

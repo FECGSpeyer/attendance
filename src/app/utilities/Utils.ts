@@ -1,7 +1,7 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { environment } from "src/environments/environment";
-import { DEFAULT_IMAGE } from "./constants";
+import { DEFAULT_IMAGE, Role } from "./constants";
 import { Attendance, AttendanceItem, FieldSelection, Instrument, Player } from "./interfaces";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -171,6 +171,22 @@ export class Utils {
       return doc.output("blob");
     } else {
       doc.save(`Probenplan_${date}.pdf`);
+    }
+  }
+
+  public static getUrl(role: Role) {
+    let url: string;
+
+    switch (role) {
+      case Role.ADMIN:
+      case Role.VIEWER:
+        return "/tabs/player";
+      case Role.HELPER:
+        return "/tabs/attendance";
+      case Role.NONE:
+        return "/login";
+      default:
+        return "/signout";
     }
   }
 }

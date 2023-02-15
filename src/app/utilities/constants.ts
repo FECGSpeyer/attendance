@@ -9,4 +9,12 @@ export enum PlayerHistoryType {
     OTHER = 99,
 };
 
+export enum Role {
+    ADMIN = 1,
+    PLAYER = 2,
+    VIEWER = 3,
+    HELPER = 4,
+    NONE = 99,
+};
+
 export const DEFAULT_IMAGE = "https://ionicframework.com/docs/img/demos/avatar.svg";

@@ -124,7 +124,7 @@
             <ion-icon name="pencil"></ion-icon>
           </ion-badge>
         </ion-item>
-        <ion-item-options>
+        <ion-item-options *ngIf="isAdmin">
           <ion-item-option *ngIf="!player.paused" (click)="pausePlayer(player, slider)" color="primary">
             <ion-icon name="pause"></ion-icon>
           </ion-item-option>
@@ -138,7 +138,7 @@
       </ion-item-sliding>
     </ng-container>
   </ion-list>
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="openCreateSheet()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>

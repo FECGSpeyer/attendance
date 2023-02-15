@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
-import { DEFAULT_IMAGE, PlayerHistoryType } from '../utilities/constants';
+import { DEFAULT_IMAGE, PlayerHistoryType, Role } from '../utilities/constants';
 import { Attendance, AuthObject, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
@@ -27,9 +27,7 @@ export class DbService {
   private user: User;
 
   authenticationState = new BehaviorSubject<AuthObject>({
-    isConductor: false,
-    isHelper: false,
-    isPlayer: false,
+    role: Role.NONE,
     login: false,
   });
 
@@ -52,12 +50,9 @@ export class DbService {
     if (data?.user?.email) {
       const adminMails: string[] = await this.getConductorMails();
       this.user = data.user;
-      const isAdmin: boolean = adminMails.includes(data.user.email.toLowerCase());
       supabase.auth.refreshSession();
       this.authenticationState.next({
-        isConductor: isAdmin,
-        isHelper: !environment.withSignout && !isAdmin,
-        isPlayer: !isAdmin,
+        role: await this.getRole(),
         login: true,
       });
     }
@@ -66,16 +61,28 @@ export class DbService {
   async logout() {
     await supabase.auth.signOut();
     this.authenticationState.next({
-      isConductor: false,
-      isHelper: false,
-      isPlayer: false,
+      role: Role.NONE,
       login: false,
     });
 
     this.router.navigateByUrl("/login");
   }
 
-  async createAccount(user: Player) {
+  async createViewer(email: string) {
+    const res = await axios.post(`https://staccato-server.vercel.app/api/registerAttendanceUser`, {
+      email: email,
+      name: "Beobachter",
+      appName: environment.longName,
+      shortName: environment.shortName,
+      url: environment.shortName === "SoS" ? "https://sos.fecg-speyer.de" : environment.shortName === "VoS" ? "https://vos.fecg-speyer.de" : "https://bos.fecg-speyer.de",
+    });
+
+    if (!res.data?.user?.id) {
+      throw new Error('Fehler beim Erstellen des Accounts');
+    }
+  }
+
+  async createAccount(user?: Player) {
     try {
       const res = await axios.post(`https://staccato-server.vercel.app/api/registerAttendanceUser`, {
         email: user.email,
@@ -86,7 +93,7 @@ export class DbService {
       });
 
       if (!res.data?.user?.id) {
-        throw new Error('Fehler beim Erstellen eines Accounts');
+        throw new Error('Fehler beim Erstellen des Accounts');
       }
 
       const { data, error: updateError } = await supabase
@@ -114,17 +121,14 @@ export class DbService {
     });
 
     if (data.user) {
-      const adminMails: string[] = await this.getConductorMails();
       this.user = data.user;
-      const isAdmin: boolean = adminMails.includes(email.toLowerCase());
+      const role: Role = await this.getRole();
       this.authenticationState.next({
-        isConductor: isAdmin,
-        isHelper: !environment.withSignout && !isAdmin,
-        isPlayer: !isAdmin,
+        role,
         login: true,
       });
 
-      this.router.navigateByUrl(adminMails.includes(email.toLowerCase()) ? "/tabs/player" : "/signout");
+      this.router.navigateByUrl(Utils.getUrl(role));
     } else {
       Utils.showToast("Bitte gib die richtigen Daten an!", "danger");
     }
@@ -132,7 +136,30 @@ export class DbService {
     return Boolean(data.user);
   }
 
-  async getPlayerByAppId(): Promise<Player> {
+  async getRole(): Promise<Role> {
+    const adminMails: string[] = await this.getConductorMails();
+    const isAdmin: boolean = adminMails.includes(this.user.email.toLowerCase());
+    const hasProfile: boolean = await this.hasUserProfile();
+
+    if (isAdmin) {
+      return Role.ADMIN;
+    } else if (hasProfile) {
+      return environment.withSignout ? Role.PLAYER : Role.HELPER;
+    } else {
+      return Role.VIEWER;
+    }
+  }
+
+  async hasUserProfile(): Promise<boolean> {
+    try {
+      await this.getPlayerByAppId(false);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  async getPlayerByAppId(showToast: boolean = true): Promise<Player> {
     const { data: player, error } = await supabase
       .from('player')
       .select('*')
@@ -140,7 +167,9 @@ export class DbService {
       .single();
 
     if (error) {
-      Utils.showToast("Es konnte kein Spieler gefunden werden", "danger");
+      if (showToast) {
+        Utils.showToast("Es konnte kein Spieler gefunden werden.", "danger");
+      }
       throw error;
     }
 

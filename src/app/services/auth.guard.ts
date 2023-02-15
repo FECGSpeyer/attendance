@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
+import { Role } from '../utilities/constants';
 import { AuthObject } from '../utilities/interfaces';
 import { DbService } from './db.service';
 
@@ -17,15 +18,15 @@ export class AuthGuard implements CanActivate {
     const value: AuthObject = this.db.authenticationState.value;
 
     if (state.url === "/tabs/attendance") {
-      return value.isConductor || value.isHelper;
+      return value.role === Role.ADMIN || value.role === Role.HELPER || value.role === Role.VIEWER;
     } else if (state.url === "/signout") {
-      return value.isPlayer;
-    } else if (value.isHelper) {
+      return value.role === Role.PLAYER;
+    } else if (value.role === Role.HELPER) {
       this.router.navigateByUrl("/tabs/attendance");
       return false;
     }
 
-    return value.isConductor;
+    return value.role === Role.ADMIN || value.role === Role.VIEWER;
   }
 
 }
