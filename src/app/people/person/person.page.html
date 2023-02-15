@@ -185,6 +185,10 @@
             </ion-col>
           </ion-row>
           <ion-item *ngIf="isVoS && !isConductor">
+            <ion-label>Prüfling</ion-label>
+            <ion-toggle [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.examinee"></ion-toggle>
+          </ion-item>
+          <ion-item *ngIf="isVoS && !isConductor">
             <ion-label position="stacked">Testergebnis</ion-label>
             <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.testResult"></ion-input>
           </ion-item>

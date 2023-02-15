@@ -32,6 +32,7 @@ export class ListPage implements OnInit {
   public showPaused = false;
   public showNew = false;
   public showImg = true;
+  public showExaminee = false;
   public withSignout: boolean = environment.withSignout;
   public isArchiveModalOpen: boolean = false;
   public archiveDate: string = dayjs().format("YYYY-MM-DD");
@@ -204,6 +205,8 @@ export class ListPage implements OnInit {
         return player.isCritical;
       } else if (this.filterOpt === "new") {
         return player.isNew;
+      } else if (this.filterOpt === "examinee") {
+        return player.examinee;
       } else if (this.filterOpt === "active") {
         return !player.paused;
       } else if (this.filterOpt === "withoutTeacher") {
@@ -236,6 +239,7 @@ export class ListPage implements OnInit {
     this.showLeader = this.viewOpts.includes("leader");
     this.showCritical = this.viewOpts.includes("critical");
     this.showNew = this.viewOpts.includes("new");
+    this.showExaminee = this.viewOpts.includes("examinee");
     this.showPaused = this.viewOpts.includes("paused");
     this.showNotes = this.viewOpts.includes("notes");
     this.showImg = this.viewOpts.includes("img");

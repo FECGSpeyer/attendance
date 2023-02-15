@@ -189,6 +189,7 @@ export interface Database {
           created_at: string | null
           criticalReason: number | null
           email: string | null
+          examinee: boolean | null
           firstName: string | null
           hasTeacher: boolean | null
           history: Json[]
@@ -216,6 +217,7 @@ export interface Database {
           created_at?: string | null
           criticalReason?: number | null
           email?: string | null
+          examinee?: boolean | null
           firstName?: string | null
           hasTeacher?: boolean | null
           history?: Json[]
@@ -243,6 +245,7 @@ export interface Database {
           created_at?: string | null
           criticalReason?: number | null
           email?: string | null
+          examinee?: boolean | null
           firstName?: string | null
           hasTeacher?: boolean | null
           history?: Json[]

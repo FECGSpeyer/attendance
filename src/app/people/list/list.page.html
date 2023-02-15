@@ -28,6 +28,7 @@
                 <ion-select-option value="criticals">Problemfälle</ion-select-option>
                 <ion-select-option value="leaders">Stimmführer</ion-select-option>
                 <ion-select-option *ngIf="withSignout" value="withoutAccount">Ohne Account</ion-select-option>
+                <ion-select-option *ngIf="isVoS" value="examinee">Prüflinge</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="new">Neue Spieler</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="withoutTeacher">Ohne Lehrer</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="withoutTest">Testergebnis fehlt</ion-select-option>
@@ -60,6 +61,7 @@
                 <ion-select-option value="paused">Pausiert</ion-select-option>
                 <ion-select-option value="notes">Hat Notizen</ion-select-option>
                 <ion-select-option value="img">Profilbild</ion-select-option>
+                <ion-select-option *ngIf="isVoS" value="examinee">Prüfling</ion-select-option>
                 <!-- <ion-select-option *ngIf="isVoS" value="teacher">Lehrer</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="otherOrchestra">Anderes Orchester</ion-select-option> -->
               </ion-select>
@@ -123,6 +125,7 @@
             *ngIf="((showPaused && !player.paused) || !showPaused) && showNotes && player.notes" slot="end">
             <ion-icon name="pencil"></ion-icon>
           </ion-badge>
+          <ion-badge color="dark" *ngIf="showExaminee && player.examinee" slot="end">Prüfling</ion-badge>
         </ion-item>
         <ion-item-options *ngIf="isAdmin">
           <ion-item-option *ngIf="!player.paused" (click)="pausePlayer(player, slider)" color="primary">

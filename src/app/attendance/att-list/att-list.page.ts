@@ -23,6 +23,7 @@ export class AttListPage implements OnInit {
   public oldAttendances: Attendance[] = [];
   public currentAttendance: Attendance;
   public isConductor: boolean = false;
+  public isHelper: boolean = false;
   public notes: string;
   public typeInfo: string;
   public perc: number = 0;
@@ -41,6 +42,7 @@ export class AttListPage implements OnInit {
     await this.getAttendance();
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isConductor = state.role === Role.ADMIN;
+      this.isHelper = state.role === Role.HELPER;
     });
   }
 
@@ -145,7 +147,7 @@ export class AttListPage implements OnInit {
 
   async openAttendance(attendance): Promise<void> {
     if (this.isConductor) {
-        return;
+      return;
     }
 
     const modal: HTMLIonModalElement = await this.modalController.create({
