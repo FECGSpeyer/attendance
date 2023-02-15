@@ -20,7 +20,7 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <ion-accordion-group value="current" *ngIf="currentAttendance">
+  <ion-accordion-group *ngIf="isConductor" value="current" *ngIf="currentAttendance">
     <ion-accordion value="current">
       <ion-item slot="header" color="light">
         <ion-label>Aktuelle</ion-label>
@@ -44,7 +44,7 @@
     </ion-accordion>
   </ion-accordion-group>
 
-  <ion-accordion-group value="" *ngIf="attendances.length">
+  <ion-accordion-group *ngIf="isConductor" value="" *ngIf="attendances.length">
     <ion-accordion value="actual">
       <ion-item slot="header" color="light">
         <ion-label>Anstehende</ion-label>
@@ -139,7 +139,7 @@
       </ion-content>
     </ng-template>
   </ion-modal>
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab *ngIf="isConductor" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button id="add-att-button">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
