@@ -59,7 +59,7 @@
               <ion-badge *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
             </ion-item>
 
-            <ion-item-options side="end">
+            <ion-item-options *ngIf="isConductor" side="end">
               <ion-item-option color="danger" (click)="remove(att.id, slider)">
                 <ion-icon name="trash-outline"></ion-icon>
               </ion-item-option>
