@@ -75,7 +75,7 @@
       <ion-label>
         <h2>{{ con.firstName }} {{ con.lastName }}</h2>
       </ion-label>
-      <ion-badge [color]="con.isPresent ? 'success' :'danger'" slot="end">{{ con.isPresent ? '✓' : 'A' }}</ion-badge>
+      <ion-badge [color]="con.isPresent ? 'success' :'warning'" slot="end">{{ con.isPresent ? '✓' : 'E' }}</ion-badge>
     </ion-item>
     <ng-container *ngFor="let player of players">
       <ion-item-divider sticky="true" *ngIf="player.firstOfInstrument">

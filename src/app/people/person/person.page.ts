@@ -392,4 +392,12 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
   }
 
+  getAttText(text: string) {
+    if (text === "X") {
+      return "✓";
+    } else {
+      return this.isConductor || text === "E" ? "E" : "A";
+    }
+  }
+
 }
