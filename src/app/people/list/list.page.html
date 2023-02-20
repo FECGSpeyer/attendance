@@ -13,7 +13,7 @@
     </ion-toolbar>
   </ion-header>
   <div class="flex">
-    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated placeholder="Spieler suchen...">
+    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated [placeholder]="isChoir ? 'Sänger suchen' : 'Spieler suchen...'">
     </ion-searchbar>
     <ion-button id="filter-trigger" fill="none">
       <ion-icon [color]="filterOpt === 'all' ? '' : 'primary'" size="medium" name="options"></ion-icon>
