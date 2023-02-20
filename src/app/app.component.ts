@@ -24,7 +24,7 @@ export class AppComponent {
   ) {
     this.initializeApp();
     this.titleService.setTitle(environment.longName);
-    document.body.classList.add(environment.symphonyImage ? "sinfo" : "blas");
+    document.body.classList.add(environment.isChoir ? "choir" : environment.symphonyImage ? "sinfo" : "blas");
     this.listenToAuthChanges();
   }
 
