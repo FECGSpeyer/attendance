@@ -89,7 +89,7 @@ export class SettingsPage implements OnInit {
     const doc = new jsPDF();
     doc.text(`${environment.shortName} Registerprobenplan: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
-      head: environment.shortName === "BoS" ? [['Minuten', 'Blechbläser', 'Holzbläser']] : [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']],
+      head: environment.isChoir ? [["Sopran", "Alt", "Tenor", "Bass"]] : environment.shortName === "BoS" ? [['Minuten', 'Blechbläser', 'Holzbläser']] : [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']],
       body: data,
       margin: { top: 40 },
       theme: 'grid',

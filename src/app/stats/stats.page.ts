@@ -14,6 +14,7 @@ export class StatsPage implements OnInit {
   public attendances: Attendance[] = [];
   public pratices: Attendance[] = [];
   public vortraege: Attendance[] = [];
+  public hochzeiten: Attendance[] = [];
   public otherAttendances: Attendance[] = [];
   public players: Player[] = [];
   public leftPlayers: Player[] = [];
@@ -45,6 +46,7 @@ export class StatsPage implements OnInit {
     this.bestAttendance = sort[sort.length - 1];
     this.pratices = this.attendances.filter((att: Attendance) => att.type === "uebung");
     this.vortraege = this.attendances.filter((att: Attendance) => att.type === "vortrag");
+    this.hochzeiten = this.attendances.filter((att: Attendance) => att.type === "hochzeit");
     this.otherAttendances = this.attendances.filter((att: Attendance) => att.type === "sonstiges");
     this.attPerc = Math.round(((this.attendances.map((att: Attendance) => att.percentage).reduce((a: number, b: number) => a + b, 0)) / (this.attendances.length * 100)) * 100);
   }

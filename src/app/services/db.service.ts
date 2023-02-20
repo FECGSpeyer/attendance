@@ -377,7 +377,6 @@ export class DbService {
       .from('player')
       .insert({
         ...player,
-        id: Utils.getId(),
         history: player.history as any
       })
       .select()
