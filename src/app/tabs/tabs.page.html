@@ -3,7 +3,8 @@
   <ion-tab-bar *ngIf="isConductor" slot="bottom">
     <ion-tab-button tab="player">
       <ion-icon name="people-outline"></ion-icon>
-      <ion-label>Spieler</ion-label>
+      <ion-label *ngIf="!isChoir">Spieler</ion-label>
+      <ion-label *ngIf="isChoir">Sänger</ion-label>
     </ion-tab-button>
 
     <ion-tab-button tab="attendance">

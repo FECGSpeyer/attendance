@@ -58,6 +58,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public notes: string = "";
   public shouldReload: boolean = false;
   public isAdmin: boolean = false;
+  public isChoir: boolean = false;
 
   constructor(
     private db: DbService,
@@ -68,6 +69,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   ) { }
 
   async ngOnInit() {
+    this.isChoir = environment.isChoir;
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isAdmin = state.role === Role.ADMIN;
     });

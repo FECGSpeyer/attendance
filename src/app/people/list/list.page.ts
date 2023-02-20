@@ -33,11 +33,13 @@ export class ListPage implements OnInit {
   public showNew = false;
   public showImg = true;
   public showExaminee = false;
+  public showInstruments = false;
   public withSignout: boolean = environment.withSignout;
   public isArchiveModalOpen: boolean = false;
   public archiveDate: string = dayjs().format("YYYY-MM-DD");
   public archiveNote: string = "";
   public isAdmin: boolean = false;
+  public isChoir: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -49,6 +51,7 @@ export class ListPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.isChoir = environment.isChoir;
     this.viewOpts = JSON.parse(await this.storage.get("viewOpts") || JSON.stringify(['instrument', 'leader', 'notes', 'critical', 'paused']));
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isAdmin = state.role === Role.ADMIN;
@@ -243,6 +246,7 @@ export class ListPage implements OnInit {
     this.showPaused = this.viewOpts.includes("paused");
     this.showNotes = this.viewOpts.includes("notes");
     this.showImg = this.viewOpts.includes("img");
+    this.showInstruments = this.viewOpts.includes("instrument");
 
     this.storage.set("viewOpts", JSON.stringify(this.viewOpts));
   }
@@ -257,6 +261,9 @@ export class ListPage implements OnInit {
     }
     if (this.viewOpts.includes("test")) {
       props.push(player.testResult || "Kein Ergebnis");
+    }
+    if (this.viewOpts.includes("instruments") && player.instruments) {
+      props.push(player.instruments);
     }
     if (this.viewOpts.includes("exercises")) {
       if (player.otherExercise) {

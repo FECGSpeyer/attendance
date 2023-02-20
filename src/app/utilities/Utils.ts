@@ -81,6 +81,8 @@ export class Utils {
         return "Übung";
       case "vortrag":
         return "Vortrag";
+      case "hochzeit":
+        return "Hochzeit";
       default:
         return "Sonstiges";
     }

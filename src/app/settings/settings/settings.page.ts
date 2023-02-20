@@ -30,6 +30,7 @@ export class SettingsPage implements OnInit {
   public showTeachers: boolean = environment.showTeachers;
   public instruments: Instrument[] = [];
   public isAdmin: boolean = false;
+  public isChoir: boolean = false;
 
   constructor(
     private db: DbService,
@@ -38,6 +39,7 @@ export class SettingsPage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
+    this.isChoir = environment.isChoir;
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isAdmin = state.role === Role.ADMIN;
     });

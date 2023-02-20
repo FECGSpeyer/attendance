@@ -19,7 +19,7 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-row>
+    <ion-row *ngIf="!isChoir">
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Stimmung</ion-label>
@@ -38,7 +38,7 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-row>
+    <ion-row *ngIf="!isChoir">
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Stimmung</ion-label>

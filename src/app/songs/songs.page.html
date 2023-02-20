@@ -54,7 +54,7 @@
               <ion-textarea [(ngModel)]="song.link" rows="2" #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
             </ion-item>
             <ion-item>
-              <ion-label>Mit Chor</ion-label>
+              <ion-label>Chor & Orchester</ion-label>
               <ion-toggle [(ngModel)]="song.withChoir"></ion-toggle>
             </ion-item>
             <ion-button [disabled]="!number.value || !name.value" (click)="editSong(song.id, modal, number.value, name.value, link.value)" expand="block">Aktualisieren</ion-button>
@@ -90,7 +90,7 @@
           <ion-textarea rows="3" #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
         </ion-item>
         <ion-item>
-          <ion-label>Mit Chor</ion-label>
+          <ion-label>Chor & Orchester</ion-label>
           <ion-toggle #toggle></ion-toggle>
         </ion-item>
         <ion-button [disabled]="!number.value || !name.value" (click)="addSong(modal, number.value, name.value, link.value, toggle.value)" expand="block">Hinzufügen</ion-button>

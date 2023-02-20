@@ -64,3 +64,22 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_BOS_SPEYER }}'
           channelId: live
           projectId: bos-speyer
+  build_and_deploy_jugendchor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - run: node server.js
+        env:
+          ENV_FILE: '${{ secrets.ENV_FILE_JUGENDCHOR }}'
+          MANIFEST: '${{ secrets.MANIFEST_JUGENDCHOR }}'
+      - run: npm install
+      - run: npm run build
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_JUGENDCHOR_SPEYER }}'
+          channelId: live
+          projectId: jugendchor-speyer

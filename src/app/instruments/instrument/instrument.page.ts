@@ -3,6 +3,7 @@ import { AlertController, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { environment } from 'src/environments/environment.prod';
 
 @Component({
   selector: 'app-instrument',
@@ -12,6 +13,7 @@ import { Utils } from 'src/app/utilities/Utils';
 export class InstrumentPage implements OnInit {
   @Input() existingInstrument: Instrument;
   public instrument: Instrument;
+  public isChoir: boolean = false;
 
   constructor(
     private db: DbService,
@@ -20,6 +22,7 @@ export class InstrumentPage implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.isChoir = environment.isChoir;
     this.instrument = { ...this.existingInstrument };
   }
 

@@ -3,7 +3,8 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="tabs/settings"></ion-back-button>
     </ion-buttons>
-    <ion-title>Instrumente ({{ instruments?.length }})</ion-title>
+    <ion-title *ngIf="isChoir">Stimmen ({{ instruments?.length }})</ion-title>
+    <ion-title *ngIf="!isChoir">Instrumente ({{ instruments?.length }})</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -16,10 +17,12 @@
   <ion-list class="marginBottom">
     <ion-item (click)="openModal(instrument)" *ngFor="let instrument of instruments">
       <ion-label>
-        <h2>{{ instrument.name }} ({{ instrument.tuning }})</h2>
-        <h3>{{ instrument.clefText }}</h3>
+        <h2 *ngIf="!isChoir">{{ instrument.name }} ({{ instrument.tuning }})</h2>
+        <h2 *ngIf="isChoir">{{ instrument.name }}</h2>
+        <h3 *ngIf="!isChoir">{{ instrument.clefText }}</h3>
       </ion-label>
-      <ion-badge [color]="instrument.count ? '' : 'danger'">{{ instrument.count }} Spieler</ion-badge>
+      <ion-badge *ngIf="!isChoir" [color]="instrument.count ? '' : 'danger'">{{ instrument.count }} Spieler</ion-badge>
+      <ion-badge *ngIf="isChoir" [color]="instrument.count ? '' : 'danger'">{{ instrument.count }} Sänger</ion-badge>
     </ion-item>
   </ion-list>
 
@@ -28,11 +31,13 @@
       <ion-content>
         <ion-header>
           <ion-toolbar>
-            <ion-title>Instrument hinzufügen</ion-title>
+            <ion-title *ngIf="!isChoir">Instrument hinzufügen</ion-title>
+            <ion-title *ngIf="isChoir">Stimme hinzufügen</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-item>
-          <ion-label position="stacked">Instrument</ion-label>
+          <ion-label *ngIf="isChoir" position="stacked">Stimme</ion-label>
+          <ion-label *ngIf="!isChoir" position="stacked">Instrument</ion-label>
           <ion-input #input></ion-input>
         </ion-item>
         <ion-button (click)="addInstrument(input.value, modal)" expand="full">Hinzufügen</ion-button>

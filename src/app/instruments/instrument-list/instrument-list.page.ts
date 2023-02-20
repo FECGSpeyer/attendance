@@ -4,6 +4,7 @@ import { DbService } from 'src/app/services/db.service';
 import { Role } from 'src/app/utilities/constants';
 import { Instrument, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { environment } from 'src/environments/environment.prod';
 import { InstrumentPage } from '../instrument/instrument.page';
 
 @Component({
@@ -14,6 +15,7 @@ import { InstrumentPage } from '../instrument/instrument.page';
 export class InstrumentListPage implements OnInit {
   public instruments: Instrument[] = [];
   public isAdmin: boolean = false;
+  public isChoir: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -22,6 +24,7 @@ export class InstrumentListPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.isChoir = environment.isChoir;
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isAdmin = state.role === Role.ADMIN;
     });
@@ -34,7 +37,7 @@ export class InstrumentListPage implements OnInit {
       return {
         ...ins,
         count: players.filter((player: Player): boolean => player.instrument === ins.id).length,
-        clefText: ins.clefs.map((key: string) => Utils.getClefText(key)).join(", "),
+        clefText: ins.clefs?.map((key: string) => Utils.getClefText(key)).join(", ") || "",
       }
     });
   }

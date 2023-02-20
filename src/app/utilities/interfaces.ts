@@ -50,6 +50,8 @@ export interface Player extends Person {
     attNote?: string;
     testResult?: string;
     examinee?: boolean;
+    range?: string;
+    instruments?: string;
 }
 
 export interface Instrument {
