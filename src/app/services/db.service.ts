@@ -37,28 +37,12 @@ export class DbService {
   ) {
     this.plt.ready().then(() => {
       this.checkToken();
-
-      // this.update()
     });
   }
 
   getSupabase(): SupabaseClient {
     return supabase;
   }
-
-  // async update() {
-  //   const a: any[] = await this.getAttendance();
-  //   for (const att of a) {
-  //     const { data } = await supabase
-  //       .from('attendance')
-  //       .update({
-  //         ...att,
-  //         players: att.singers as any,
-  //       })
-  //       .match({ id: att.id })
-  //       .select();
-  //   }
-  // }
 
   async checkToken() {
     const { data } = await supabase.auth.getUser();
@@ -393,6 +377,7 @@ export class DbService {
       .from('player')
       .insert({
         ...player,
+        id: Utils.getId(),
         history: player.history as any
       })
       .select()

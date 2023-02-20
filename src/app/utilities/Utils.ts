@@ -8,6 +8,10 @@ import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
 
 export class Utils {
+  public static getId(): number {
+    return Math.floor(Math.random() * (999999999999 - 1000000000 + 1)) + 1000000000;
+  }
+
   public static getModifiedPlayers(players: Player[], instruments: Instrument[]): Player[] {
     const instrumentsMap: { [props: number]: boolean } = {};
 
