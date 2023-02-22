@@ -139,7 +139,7 @@
       </ion-content>
     </ng-template>
   </ion-modal>
-  <ion-fab *ngIf="isConductor" vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab [class]="isConductor ? '' : 'invisible'" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button id="add-att-button">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>

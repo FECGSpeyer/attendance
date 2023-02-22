@@ -47,7 +47,7 @@ export class AttListPage implements OnInit {
   }
 
   async getAttendance(): Promise<void> {
-    const attendances: Attendance[] = (await this.db.getAttendance()).map((att: Attendance): Attendance => {
+    const attendances: Attendance[] = (await this.db.getAttendance()).filter((att: Attendance) => Boolean(att.players)).map((att: Attendance): Attendance => {
       return {
         ...att,
         percentage: Object.keys(att.players).length ? Utils.getPercentage(att.players) : undefined,
