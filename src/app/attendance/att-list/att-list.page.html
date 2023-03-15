@@ -20,7 +20,7 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <ion-accordion-group value="current" *ngIf="currentAttendance && isConductor">
+  <ion-accordion-group value="current" *ngIf="currentAttendance && (isConductor || isHelper)">
     <ion-accordion value="current">
       <ion-item slot="header" color="light">
         <ion-label>Aktuelle</ion-label>
@@ -139,7 +139,7 @@
       </ion-content>
     </ng-template>
   </ion-modal>
-  <ion-fab [class]="isConductor ? '' : 'invisible'" vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab [class]="isConductor || isHelper ? '' : 'invisible'" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button id="add-att-button">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>

@@ -146,7 +146,7 @@ export class AttListPage implements OnInit {
   }
 
   async openAttendance(attendance): Promise<void> {
-    if (!this.isConductor) {
+    if (!this.isConductor && !this.isHelper) {
       return;
     }
 
