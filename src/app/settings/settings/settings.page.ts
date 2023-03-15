@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
+import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
@@ -31,6 +32,8 @@ export class SettingsPage implements OnInit {
   public instruments: Instrument[] = [];
   public isAdmin: boolean = false;
   public isChoir: boolean = false;
+  public attDateString: string = format(new Date(), 'dd.MM.yyyy');
+  public attDate: string = new Date().toISOString();
 
   constructor(
     private db: DbService,
@@ -43,6 +46,8 @@ export class SettingsPage implements OnInit {
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isAdmin = state.role === Role.ADMIN;
     });
+    this.attDate = await this.db.getCurrentAttDate();
+    this.attDateString = format(new Date(this.attDate), 'dd.MM.yyyy');
     const allConductors: Person[] = await this.db.getConductors(true);
     this.conductors = allConductors.filter((con: Person) => !con.left);
     this.selConductors = this.conductors.filter((con: Person) => Boolean(!con.left)).map((c: Person): number => c.id);
@@ -57,6 +62,21 @@ export class SettingsPage implements OnInit {
 
   async logout() {
     await this.db.logout();
+  }
+
+  onAttDateChange(value: string, dateModal: IonModal) {
+    if (parseInt(this.attDateString.substring(0, 2), 10) !== dayjs(this.attDate).date()) {
+      dateModal.dismiss();
+    }
+
+    this.attDateString = this.formatDate(value);
+    this.db.updateSettings({
+      attDate: value,
+    });
+  }
+
+  formatDate(value: string): string {
+    return format(parseISO(value), 'dd.MM.yyyy');
   }
 
   createPlan(conductors: number[], timeString: string | number, modal: IonModal, perTelegram?: boolean): void {
@@ -161,6 +181,7 @@ export class SettingsPage implements OnInit {
         instruments: this.instruments,
         readOnly: true,
         isConductor,
+        hasLeft: true,
       }
     });
 

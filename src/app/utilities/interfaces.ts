@@ -145,3 +145,8 @@ export interface FieldSelection {
     conductor?: string;
     currentTime?: string;
 }
+
+export interface Settings {
+    id: string;
+    attDate: string;
+}

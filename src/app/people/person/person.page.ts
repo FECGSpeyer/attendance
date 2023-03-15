@@ -20,6 +20,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   @Input() readOnly: boolean;
   @Input() instruments: Instrument[];
   @Input() isConductor: boolean;
+  @Input() hasLeft: boolean;
   @ViewChild('select') select: IonSelect;
   @ViewChild('content') content: IonContent;
   @ViewChild('chooser') chooser: ElementRef;
@@ -87,7 +88,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.player.criticalReasonText = this.player.criticalReason ? Utils.getPlayerHistoryTypeText(this.player.criticalReason) : "";
 
       if (this.isConductor) {
-        this.history = (await this.db.getConductorAttendance(this.player.id)).filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs())).map((att: PersonAttendance) => {
+        this.history = (await this.db.getConductorAttendance(this.player.id, this.hasLeft)).filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs())).map((att: PersonAttendance) => {
           return {
             date: att.date,
             text: att.text,
@@ -128,7 +129,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async getHistoryInfo(): Promise<void> {
-    this.attendance = (await this.db.getPlayerAttendance(this.player.id)).filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs()));
+    this.attendance = (await this.db.getPlayerAttendance(this.player.id, this.hasLeft)).filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs()));
     this.perc = Math.round(this.attendance.filter((att: PersonAttendance) => att.attended).length / this.attendance.length * 100);
 
     this.history = this.attendance.map((att: PersonAttendance) => {
@@ -139,7 +140,7 @@ export class PersonPage implements OnInit, AfterViewInit {
         title: att.title,
         notes: att.notes,
       };
-    }).concat(this.existingPlayer.history.map((his: PlayerHistoryEntry) => { return { ...his, title: "", notes: "" }; })).sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }).concat(this.existingPlayer.history.filter(async (his: PlayerHistoryEntry) => dayjs(await this.db.getCurrentAttDate()).isBefore(dayjs(his.date))).map((his: PlayerHistoryEntry) => { return { ...his, title: "", notes: "" }; })).sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
   onInstrumentChange(byUser = true) {

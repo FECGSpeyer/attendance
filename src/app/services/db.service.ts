@@ -7,7 +7,7 @@ import * as dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
 import { DEFAULT_IMAGE, PlayerHistoryType, Role } from '../utilities/constants';
-import { Attendance, AuthObject, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher } from '../utilities/interfaces';
+import { Attendance, AuthObject, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Settings, Song, Teacher } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 
@@ -30,6 +30,8 @@ export class DbService {
     role: Role.NONE,
     login: false,
   });
+  private attDate: string;
+  private settings: Settings;
 
   constructor(
     private plt: Platform,
@@ -161,6 +163,16 @@ export class DbService {
     } catch (_) {
       return false;
     }
+  }
+
+  async getCurrentAttDate(): Promise<string> {
+    await this.getSettings();
+    this.attDate = this.settings?.attDate || dayjs("2023-01-01").toISOString();
+    return this.attDate;
+  }
+
+  setCurrentAttDate(date: string) {
+    this.attDate = date;
   }
 
   async getPlayerByAppId(showToast: boolean = true): Promise<Player> {
@@ -633,10 +645,11 @@ export class DbService {
     return data as any;
   }
 
-  async getAttendance(): Promise<Attendance[]> {
+  async getAttendance(all: boolean = false): Promise<Attendance[]> {
     const { data } = await supabase
       .from('attendance')
       .select('*')
+      .gt("date", all ? new Date("01-01-2020").toISOString() : await this.getCurrentAttDate())
       .order("date", {
         ascending: false,
       });
@@ -686,11 +699,12 @@ export class DbService {
       .match({ id });
   }
 
-  async getPlayerAttendance(id: number): Promise<PersonAttendance[]> {
+  async getPlayerAttendance(id: number, all: boolean = false): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('attendance')
       .select('*')
       .neq(`players->"${id}"` as any, null)
+      .gt("date", all ? new Date("2020-01-01").toISOString() : await this.getCurrentAttDate())
       .order("date", {
         ascending: false,
       });
@@ -707,11 +721,12 @@ export class DbService {
     });
   }
 
-  async getConductorAttendance(id: number): Promise<PersonAttendance[]> {
+  async getConductorAttendance(id: number, all: boolean = false): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('attendance')
       .select('*')
       .neq(`conductors->"${id}"` as any, null)
+      .gt("date", all ? new Date("2020-01-01").toISOString() : await this.getCurrentAttDate())
       .order("date", {
         ascending: false,
       });
@@ -1042,5 +1057,29 @@ export class DbService {
         conductorName: his.conductors ? `${his.conductors.firstName} ${his.conductors.lastName}` : "",
       };
     });
+  }
+
+  async getSettings(): Promise<Settings> {
+    if (this.settings) {
+      return this.settings;
+    }
+
+    const response = await supabase
+      .from('settings')
+      .select('*')
+      .match({ id: 1 })
+      .single();
+
+    this.settings = response.data;
+    return this.settings;
+  }
+
+  async updateSettings(settings: Partial<Settings>): Promise<Settings[]> {
+    const { data } = await supabase
+      .from('settings')
+      .update(settings)
+      .match({ id: 1 });
+
+    return data;
   }
 }
