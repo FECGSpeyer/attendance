@@ -20,7 +20,7 @@
     </ion-list-header>
     <ion-item button id="general-item">
       <ion-label>Allgemeine Einstellungen</ion-label>
-      <ion-modal #generalModal trigger="general-item">
+      <ion-modal #generalModal [breakpoints]="[0.5]" [initialBreakpoint]="0.5" trigger="general-item">
         <ng-template>
           <ion-content>
             <ion-header>

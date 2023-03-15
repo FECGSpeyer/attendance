@@ -167,8 +167,7 @@ export class DbService {
 
   async getCurrentAttDate(): Promise<string> {
     await this.getSettings();
-    this.attDate = this.settings?.attDate || dayjs("2023-01-01").toISOString();
-    return this.attDate;
+    return this.settings?.attDate || dayjs("2023-01-01").toISOString();
   }
 
   setCurrentAttDate(date: string) {
@@ -1078,8 +1077,11 @@ export class DbService {
     const { data } = await supabase
       .from('settings')
       .update(settings)
-      .match({ id: 1 });
+      .match({ id: 1 })
+      .select()
+      .single();
 
+    this.settings = data;
     return data;
   }
 }
