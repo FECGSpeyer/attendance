@@ -99,7 +99,7 @@
     </ng-container>
   </ion-list>
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="save()">
+    <ion-fab-button [disabled]="!isOnline" (click)="save()">
       <ion-icon name="save-outline"></ion-icon>
     </ion-fab-button>
   </ion-fab>

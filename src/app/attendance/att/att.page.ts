@@ -8,6 +8,7 @@ import { PlayerHistoryType } from 'src/app/utilities/constants';
 import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment.prod';
+import { ConnectionStatus, ConnectionStatusChangeListener, Network } from '@capacitor/network';
 
 @Component({
   selector: 'app-att',
@@ -24,6 +25,7 @@ export class AttPage implements OnInit {
   private playerNotes: { [prop: number]: string } = {};
   private oldAttendance: Attendance;
   private hasChanges: boolean = false;
+  private isOnline: boolean = true;
 
   constructor(
     private modalController: ModalController,
@@ -33,6 +35,7 @@ export class AttPage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
+    void this.listenOnNetworkChanges();
     const conductors: Person[] = await this.db.getConductors(true);
     const allPlayers: Player[] = await this.db.getPlayers();
     const instruments: Instrument[] = await this.db.getInstruments();
@@ -66,6 +69,14 @@ export class AttPage implements OnInit {
         ...p,
         isPresent: Object.keys(this.attendance.players).length ? p.isPresent : true,
       }
+    });
+  }
+
+  async listenOnNetworkChanges(): Promise<void> {
+    this.isOnline = (await Network.getStatus()).connected;
+    Network.addListener('networkStatusChange', (status: ConnectionStatus) => {
+      this.isOnline = status.connected;
+      Utils.showToast(status.connected ? "Verbindung widerhergestellt" : "Keine Internetverbindung vorhanden", status.connected ? "success" : "danger");
     });
   }
 

@@ -20,8 +20,10 @@ export class TabsPage {
 
   initialize() {
     this.isChoir = environment.isChoir;
+    console.log("subscribed");
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isConductor = state.role === Role.ADMIN || state.role === Role.VIEWER;
+      console.log("changed");
     });
   }
 

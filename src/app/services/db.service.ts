@@ -25,7 +25,7 @@ const supabase = createClient<Database>(environment.apiUrl, environment.apiKey, 
 })
 export class DbService {
   private user: User;
-
+  private conductorMails: string[] = [];
   authenticationState = new BehaviorSubject<AuthObject>({
     role: Role.NONE,
     login: false,
@@ -45,16 +45,20 @@ export class DbService {
   }
 
   async checkToken() {
+    if (this.authenticationState.getValue().login) {
+      return;
+    }
     const { data } = await supabase.auth.getUser();
 
     if (data?.user?.email) {
-      const adminMails: string[] = await this.getConductorMails();
       this.user = data.user;
-      supabase.auth.refreshSession();
-      this.authenticationState.next({
-        role: await this.getRole(),
-        login: true,
-      });
+      const role: Role = await this.getRole();
+      if (this.authenticationState.getValue().role !== role) {
+        this.authenticationState.next({
+          role,
+          login: true,
+        });
+      }
     }
   }
 
@@ -323,6 +327,10 @@ export class DbService {
   }
 
   async getConductorMails(): Promise<string[]> {
+    if (this.conductorMails?.length) {
+      return this.conductorMails;
+    }
+
     const { data, error } = await supabase
       .from('conductors')
       .select('email')
@@ -333,7 +341,8 @@ export class DbService {
       throw new Error("Fehler beim Laden der Dirigenten E-Mails");
     }
 
-    return data.filter((d: { email: string }) => Boolean(d.email)).map((d: { email: string }) => d.email.toLowerCase()).concat(["eckstaedt98@gmail.com"]);
+    this.conductorMails = data.filter((d: { email: string }) => Boolean(d.email)).map((d: { email: string }) => d.email.toLowerCase()).concat(["eckstaedt98@gmail.com"]);
+    return this.conductorMails;
   }
 
   async getConductors(all: boolean = false): Promise<Person[]> {
