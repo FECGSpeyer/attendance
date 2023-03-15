@@ -50,27 +50,34 @@
       <ion-badge>{{ worstAttendance?.date | date:'dd.MM.YYYY' }} ({{ worstAttendance?.percentage }}%)</ion-badge>
     </ion-item>
 
-    <ion-list-header>
+    <ion-list-header *ngIf="!isChoir">
       Spieler
+    </ion-list-header>
+    <ion-list-header *ngIf="isChoir">
+      Sänger
     </ion-list-header>
 
     <ion-item>
-      <ion-label>Spieler Gesamt</ion-label>
+      <ion-label *ngIf="!isChoir">Spieler Gesamt</ion-label>
+      <ion-label *ngIf="isChoir">Sänger Gesamt</ion-label>
       <ion-badge>{{ players?.length }}</ion-badge>
     </ion-item>
 
     <ion-item>
-      <ion-label>Aktive Spieler</ion-label>
+      <ion-label *ngIf="!isChoir">Aktive Spieler</ion-label>
+      <ion-label *ngIf="isChoir">Aktive Sänger</ion-label>
       <ion-badge>{{ activePlayers?.length }}</ion-badge>
     </ion-item>
 
     <ion-item>
-      <ion-label>Pausierende Spieler</ion-label>
+      <ion-label *ngIf="!isChoir">Pausierende Spieler</ion-label>
+      <ion-label *ngIf="isChoir">Pausierende Sänger</ion-label>
       <ion-badge>{{ pausedPlayers?.length }}</ion-badge>
     </ion-item>
 
     <ion-item>
-      <ion-label>Gegangene Spieler</ion-label>
+      <ion-label *ngIf="!isChoir">Gegangene Spieler</ion-label>
+      <ion-label *ngIf="isChoir">Gegangene Sänger</ion-label>
       <ion-badge>{{ leftPlayers?.length }}</ion-badge>
     </ion-item>
   </ion-list>

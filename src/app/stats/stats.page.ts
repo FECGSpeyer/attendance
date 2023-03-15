@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
+import { environment } from 'src/environments/environment.prod';
 import { DbService } from '../services/db.service';
 import { Attendance, Player } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
@@ -23,6 +24,7 @@ export class StatsPage implements OnInit {
   public bestAttendance: Attendance;
   public worstAttendance: Attendance;
   public attPerc: number;
+  public isChoir: boolean = false;
 
   constructor(
     private db: DbService,
@@ -30,6 +32,7 @@ export class StatsPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.isChoir = environment.isChoir;
     this.attendances = (await this.db.getAttendance()).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().add(1, "day"))).map((att: Attendance) => {
       return {
         ...att,
