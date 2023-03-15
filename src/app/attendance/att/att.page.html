@@ -51,7 +51,7 @@
       <div slot="content">
         <ion-item lines="none">
           <ion-label>Start</ion-label>
-          <ion-badge slot="end">{{ attendance.plan.time | date:'HH:mm' }} Uhr</ion-badge>
+          <ion-badge slot="end">{{ attendance.plan.time }} Uhr</ion-badge>
         </ion-item>
         <ion-item *ngFor="let field of attendance.plan.fields; let i = index">
           <ion-label>

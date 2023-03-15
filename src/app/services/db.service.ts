@@ -653,7 +653,12 @@ export class DbService {
         ascending: false,
       });
 
-    return data as any;
+    return data.map((att: any): Attendance => {
+      if (att.plan) {
+        att.plan.time = dayjs(att.plan.time).isValid() ? dayjs(att.plan.time).format("HH:mm") : att.plan.time;
+      }
+      return att;
+    });
   }
 
   async getUpcomingAttendances(): Promise<Attendance[]> {

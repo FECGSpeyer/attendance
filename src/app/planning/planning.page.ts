@@ -68,7 +68,8 @@ export class PlanningPage implements OnInit {
       currentIndex++;
     }
 
-    return `${dayjs(this.time).add(minutesToAdd, "minute").format("HH:mm")} ${field.conductor ? `| ${field.conductor}` : ""}`;
+    const time: dayjs.Dayjs = dayjs(this.time).isValid() ? dayjs(this.time) : dayjs().hour(Number(this.time.substring(0, 2))).minute(Number(this.time.substring(3, 5)));
+    return `${time.add(minutesToAdd, "minute").format("HH:mm")} ${field.conductor ? `| ${field.conductor}` : ""}`;
   }
 
   async changeField(field: FieldSelection, slider: IonItemSliding) {
@@ -101,7 +102,7 @@ export class PlanningPage implements OnInit {
   }
 
   send() {
-    const name: string = this.attendance ? dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format("DD_MM_YYYY") : dayjs(this.time).format("DD_MM_YYYY");
+    const name: string = this.attendance ? dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format("DD_MM_YYYY") : dayjs().format("DD_MM_YYYY");
     const blob: Blob = Utils.createPlanExport({
       time: this.time,
       end: this.end,

@@ -264,7 +264,8 @@ export class AttPage implements OnInit {
       currentIndex++;
     }
 
-    return `${dayjs(this.attendance.plan.time).add(minutesToAdd, "minute").format("HH:mm")} ${field.conductor ? `| ${field.conductor}` : ""}`;
+    const time: dayjs.Dayjs = dayjs().hour(Number(this.attendance.plan.time.substring(0, 2))).minute(Number(this.attendance.plan.time.substring(3, 5)));
+    return `${time.add(minutesToAdd, "minute").format("HH:mm")} ${field.conductor ? `| ${field.conductor}` : ""}`;
   }
 
   async exportPlan() {
