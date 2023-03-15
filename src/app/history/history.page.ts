@@ -3,7 +3,7 @@ import { AlertController, IonItemSliding, IonModal, ModalController } from '@ion
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
-import { History, Person, Song } from '../utilities/interfaces';
+import { Attendance, FieldSelection, History, Person, Song } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
 interface GroupedHistory { date: string, parts: History[] };
@@ -48,6 +48,7 @@ export class HistoryPage implements OnInit {
   }
 
   async getHistory(): Promise<void> {
+    const attendances: Attendance[] = await this.db.getAttendance(true);
     this.history = (await this.db.getHistory()).map((entry: History): History => {
       const conductor: Person | undefined = this.conductors.find((p: Person) => p.id === entry.conductor);
       return {
@@ -55,6 +56,7 @@ export class HistoryPage implements OnInit {
         conductorName: conductor ? `${conductor.firstName} ${conductor.lastName}` : entry.otherConductor,
         number: this.songs.find((song: Song) => song.id === entry.songId)?.number,
         name: this.songs.find((song: Song) => song.id === entry.songId)?.name || entry.name,
+        count: attendances.filter((att: Attendance) => this.isSongInPlan(att, entry.songId, entry.date)).length
       }
     });
 
@@ -76,6 +78,18 @@ export class HistoryPage implements OnInit {
     });
 
     this.initializeItems();
+  }
+
+  isSongInPlan(att: Attendance, songId: number, date: string): boolean {
+    if (att.type !== "uebung" || !att.plan) {
+      return false;
+    }
+
+    if (dayjs(att.date).isBefore(date) && dayjs(att.date).isAfter(dayjs(date).subtract(4, "months"))) {
+      return Boolean(att.plan?.fields.find((field: FieldSelection) => field.id === String(songId)));
+    }
+
+    return false;
   }
 
   search(event: any): void {

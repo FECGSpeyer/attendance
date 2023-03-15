@@ -44,7 +44,7 @@
     </ion-accordion>
   </ion-accordion-group>
 
-  <ion-accordion-group value="" *ngIf="attendances.length && isConductor">
+  <ion-accordion-group value="" *ngIf="attendances.length && (isConductor || isHelper)">
     <ion-accordion value="actual">
       <ion-item slot="header" color="light">
         <ion-label>Anstehende</ion-label>
@@ -71,7 +71,7 @@
   </ion-accordion-group>
   <ion-accordion-group value="old" *ngIf="oldAttendances.length">
     <ion-accordion value="old">
-      <ion-item *ngIf="isConductor" slot="header" color="light">
+      <ion-item *ngIf="isConductor || isHelper" slot="header" color="light">
         <ion-label>Vergangene</ion-label>
       </ion-item>
       <div slot="content">

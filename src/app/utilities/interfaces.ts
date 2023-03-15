@@ -117,6 +117,7 @@ export interface History {
     conductor: number;
     conductorName?: string;
     otherConductor?: string;
+    count?: number;
 }
 
 export interface Teacher {
