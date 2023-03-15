@@ -12,7 +12,7 @@ import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { StatsPage } from 'src/app/stats/stats.page';
 import { Role } from 'src/app/utilities/constants';
-import { Instrument, Person, Player } from 'src/app/utilities/interfaces';
+import { Instrument, Person, Player, Settings } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
 
@@ -34,6 +34,8 @@ export class SettingsPage implements OnInit {
   public isChoir: boolean = false;
   public attDateString: string = format(new Date(), 'dd.MM.yyyy');
   public attDate: string = new Date().toISOString();
+  public practiceStart: string;
+  public practiceEnd: string;
 
   constructor(
     private db: DbService,
@@ -47,6 +49,9 @@ export class SettingsPage implements OnInit {
       this.isAdmin = state.role === Role.ADMIN;
     });
     this.attDate = await this.db.getCurrentAttDate();
+    const settings: Settings = await this.db.getSettings();
+    this.practiceStart = settings.practiceStart || '18:00';
+    this.practiceEnd = settings.practiceEnd || '20:00';
     this.attDateString = format(new Date(this.attDate), 'dd.MM.yyyy');
     const allConductors: Person[] = await this.db.getConductors(true);
     this.conductors = allConductors.filter((con: Person) => !con.left);
@@ -64,15 +69,23 @@ export class SettingsPage implements OnInit {
     await this.db.logout();
   }
 
+  async saveGeneralSettings(generalModal: IonModal) {
+    await this.db.updateSettings({
+      attDate: this.attDate,
+      practiceStart: this.practiceStart,
+      practiceEnd: this.practiceEnd,
+    });
+    Utils.showToast('Einstellungen gespeichert');
+
+    await generalModal.dismiss();
+  }
+
   onAttDateChange(value: string, dateModal: IonModal) {
     if (parseInt(this.attDateString.substring(0, 2), 10) !== dayjs(this.attDate).date()) {
       dateModal.dismiss();
     }
 
     this.attDateString = this.formatDate(value);
-    this.db.updateSettings({
-      attDate: value,
-    });
   }
 
   formatDate(value: string): string {

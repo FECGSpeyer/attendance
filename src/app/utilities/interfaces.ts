@@ -149,4 +149,6 @@ export interface FieldSelection {
 export interface Settings {
     id: string;
     attDate: string;
+    practiceStart: string;
+    practiceEnd: string;
 }
