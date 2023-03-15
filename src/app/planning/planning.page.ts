@@ -174,6 +174,13 @@ export class PlanningPage implements OnInit {
               time: "20",
               conductor: conductor || "",
             });
+          } else if (evt.field.includes("(") && evt.field.includes(")")) {
+            this.selectedFields.push({
+              id: evt.field.substring(0, evt.field.indexOf("(")),
+              name: evt.field.substring(0, evt.field.indexOf("(")),
+              conductor: evt.field.substring(evt.field.indexOf("(") + 1, evt.field.indexOf(")")),
+              time: "20",
+            });
           } else {
             this.selectedFields.push({
               id: evt.field,
