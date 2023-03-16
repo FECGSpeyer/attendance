@@ -25,6 +25,7 @@ export class StatsPage implements OnInit {
   public worstAttendance: Attendance;
   public attPerc: number;
   public isChoir: boolean = false;
+  public curAttDate: Date;
 
   constructor(
     private db: DbService,
@@ -32,6 +33,7 @@ export class StatsPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.curAttDate = new Date(await this.db.getCurrentAttDate());
     this.isChoir = environment.isChoir;
     this.attendances = (await this.db.getAttendance()).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().add(1, "day"))).map((att: Attendance) => {
       return {
