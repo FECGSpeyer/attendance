@@ -648,7 +648,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
-      .gt("date", all ? new Date("01-01-2020").toISOString() : await this.getCurrentAttDate())
+      .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
       .order("date", {
         ascending: false,
       });
@@ -708,7 +708,7 @@ export class DbService {
       .from('attendance')
       .select('*')
       .neq(`players->"${id}"` as any, null)
-      .gt("date", all ? new Date("2020-01-01").toISOString() : await this.getCurrentAttDate())
+      .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
       .order("date", {
         ascending: false,
       });
@@ -730,7 +730,7 @@ export class DbService {
       .from('attendance')
       .select('*')
       .neq(`conductors->"${id}"` as any, null)
-      .gt("date", all ? new Date("2020-01-01").toISOString() : await this.getCurrentAttDate())
+      .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
       .order("date", {
         ascending: false,
       });
