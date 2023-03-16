@@ -232,6 +232,8 @@ export class PlanningPage implements OnInit {
       end: this.end,
       fields: this.selectedFields,
       history: this.history,
+      attendance: this.attendance,
+      attendances: this.attendances,
     });
   }
 

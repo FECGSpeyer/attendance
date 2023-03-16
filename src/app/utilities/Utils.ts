@@ -118,8 +118,8 @@ export class Utils {
   }
 
   public static createPlanExport(props: any) {
-    const date: string = props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).format("DD.MM.YYYY") : dayjs(props.time).format("DD.MM.YYYY");
-    const startingTime = dayjs(props.time);
+    const startingTime: dayjs.Dayjs = dayjs(props.time).isValid() ? dayjs(props.time) : dayjs().hour(Number(props.time.substring(0, 2))).minute(Number(props.time.substring(3, 5)));
+    const date: string = props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).format("DD.MM.YYYY") : startingTime.format("DD.MM.YYYY");
     const hasConductors = Boolean(props.fields.find((field: FieldSelection) => field.conductor));
 
     const data = [];
