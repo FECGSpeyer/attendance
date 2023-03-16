@@ -267,6 +267,26 @@ export interface Database {
           testResult?: string | null
         }
       }
+      settings: {
+        Row: {
+          attDate: string | null
+          id: number
+          practiceEnd: string | null
+          practiceStart: string | null
+        }
+        Insert: {
+          attDate?: string | null
+          id?: number
+          practiceEnd?: string | null
+          practiceStart?: string | null
+        }
+        Update: {
+          attDate?: string | null
+          id?: number
+          practiceEnd?: string | null
+          practiceStart?: string | null
+        }
+      }
       songs: {
         Row: {
           created_at: string | null

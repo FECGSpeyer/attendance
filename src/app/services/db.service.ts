@@ -1036,7 +1036,7 @@ export class DbService {
   }
 
   async getUpcomingHistory(): Promise<History[]> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("history")
       .select(`
         id,
@@ -1044,6 +1044,7 @@ export class DbService {
           firstName, lastName
         ),
         date,
+        otherConductor,
         songId
       `)
       .gt("date", dayjs().startOf("day").toISOString())
@@ -1058,7 +1059,7 @@ export class DbService {
     return data.map((his: any) => {
       return {
         ...his,
-        conductorName: his.conductors ? `${his.conductors.firstName} ${his.conductors.lastName}` : "",
+        conductorName: his.conductors ? `${his.conductors.firstName} ${his.conductors.lastName}` : his.otherConductor || "",
       };
     });
   }
@@ -1078,7 +1079,7 @@ export class DbService {
     return this.settings;
   }
 
-  async updateSettings(settings: Partial<Settings>): Promise<Settings[]> {
+  async updateSettings(settings: Partial<Settings>): Promise<void> {
     const { data } = await supabase
       .from('settings')
       .update(settings)
@@ -1087,6 +1088,5 @@ export class DbService {
       .single();
 
     this.settings = data;
-    return data;
   }
 }

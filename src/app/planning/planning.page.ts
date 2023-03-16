@@ -45,7 +45,12 @@ export class PlanningPage implements OnInit {
       if (upcomingAttendances[0].plan) {
         this.end = upcomingAttendances[0].plan.end;
         this.time = upcomingAttendances[0].plan.time;
-        this.selectedFields = upcomingAttendances[0].plan.fields;
+        this.selectedFields = upcomingAttendances[0].plan.fields.map((field: FieldSelection) => {
+          return {
+            ...field,
+            conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || "")
+          }
+        });
       } else {
         this.time = this.settings.practiceStart || "17:50";
       }
@@ -120,7 +125,12 @@ export class PlanningPage implements OnInit {
     if (attendance.plan) {
       this.end = attendance.plan.end;
       this.time = attendance.plan.time;
-      this.selectedFields = attendance.plan.fields;
+      this.selectedFields = attendance.plan.fields.map((field: FieldSelection) => {
+        return {
+          ...field,
+          conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || "")
+        }
+      });;
     } else if (this.history.length) {
       this.selectedFields = [{
         id: "",
