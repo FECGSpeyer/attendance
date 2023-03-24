@@ -80,7 +80,7 @@ export class ListPage implements OnInit {
   async openCreateSheet() {
     const actionSheet = await this.actionSheetController.create({
       buttons: [{
-        text: 'Spieler hinzufügen',
+        text: this.isChoir ? 'Sänger hinzufügen' : 'Spieler hinzufügen',
         handler: () => {
           this.openModal(undefined, false);
         }
@@ -257,7 +257,7 @@ export class ListPage implements OnInit {
       props.push(player.instrumentName);
     }
     if (this.viewOpts.includes("birthday")) {
-      props.push(dayjs(player.birthday).format("DD.MM.YYYY"));
+      props.push(`${dayjs(player.birthday).format("DD.MM.YYYY")} (${Utils.calculateAge(new Date(player.birthday))} Jahre)`);
     }
     if (this.viewOpts.includes("test")) {
       props.push(player.testResult || "Kein Ergebnis");

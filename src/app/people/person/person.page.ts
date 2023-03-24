@@ -403,4 +403,17 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
   }
 
+  async onHisItemClicked(his: PlayerHistoryEntry) {
+    if (his.type === PlayerHistoryType.NOTES) {
+      const alert = await this.alertController.create({
+        header: 'Notiz geändert',
+        subHeader: dayjs(his.date).format("DD.MM.YYYY"),
+        message: `Alte Notiz: ${his.text}`,
+        buttons: ['Ok']
+      });
+
+      await alert.present();
+    }
+  }
+
 }

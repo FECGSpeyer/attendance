@@ -173,11 +173,43 @@ export class Utils {
       }
     });
 
-    if (props.asBlob) {
-      return doc.output("blob");
-    } else {
-      doc.save(`Probenplan_${date}.pdf`);
-    }
+    const output: string = doc.output("datauristring");
+    console.log(output);
+    console.log(doc.canvas.getContext("2d"));
+
+    //   doc.getPage(currentPage).then(function(page) {
+    //     console.log("Printing:" + currentPage);
+    //     var viewport = page.getViewport({scale});
+    //     var canvas = document.createElement('canvas') , ctx = canvas.getContext('2d');
+    //     var renderContext = { canvasContext: ctx, viewport: viewport };
+
+    //     canvas.height = viewport.height;
+    //     canvas.width = viewport.width;
+
+
+    //     const mypage = page.render(renderContext)
+    //     mypage.promise.then(function() {
+    //         pages.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+
+    //         heights.push(height);
+    //         height += canvas.height;
+    //         if (width < canvas.width) width = canvas.width;
+
+    //         if (currentPage < pdf.numPages) {
+    //             currentPage++;
+    //             getPage();
+    //         }
+    //         else {
+    //             draw();
+    //         }
+    //     });
+    // });
+
+    // if (props.asBlob) {
+    return doc.output("blob");
+    // } else {
+    //   doc.save(`Probenplan_${date}.pdf`);
+    // }
   }
 
   public static getUrl(role: Role) {
@@ -194,5 +226,12 @@ export class Utils {
       default:
         return "/signout";
     }
+  }
+
+  public static calculateAge(birthdate: Date): number {
+    const msDiff = Date.now() - birthdate.getTime();
+    const ageDiff = new Date(msDiff);
+
+    return Math.abs(ageDiff.getUTCFullYear() - 1970);
   }
 }

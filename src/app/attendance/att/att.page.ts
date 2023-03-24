@@ -117,6 +117,9 @@ export class AttPage implements OnInit {
   }
 
   async updateCriticalPlayers(unexcusedPlayers: Player[]) {
+    if (!environment.isChoir) {
+      return;
+    }
     for (const player of unexcusedPlayers) {
       this.db.updatePlayer({
         ...player,

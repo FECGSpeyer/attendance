@@ -278,11 +278,11 @@ export class DbService {
     let updated: boolean = false;
 
     for (const player of players) {
-      if (attendances[0] && attendances[1] && attendances[2] && !player.isCritical &&
+      if (attendances[0] && attendances[1] && (environment.isChoir || attendances[2]) && !player.isCritical &&
         (!player.lastSolve || dayjs(player.lastSolve).isBefore(dayjs().subtract(15, "days"))) &&
         attendances[0].players.hasOwnProperty(player.id) && !attendances[0].players[player.id] &&
         attendances[1].players.hasOwnProperty(player.id) && !attendances[1].players[player.id] &&
-        attendances[2].players.hasOwnProperty(player.id) && !attendances[2].players[player.id]) {
+        (environment.isChoir || attendances[2].players.hasOwnProperty(player.id) && !attendances[2].players[player.id])) {
 
         updated = true;
         let history: PlayerHistoryEntry[] = player.history;
@@ -393,6 +393,10 @@ export class DbService {
   }
 
   async addPlayer(player: Player): Promise<void> {
+    if (!environment.showTeachers) {
+      delete player.teacher;
+    }
+
     const { data, error } = await supabase
       .from('player')
       .insert({
