@@ -217,8 +217,8 @@ export class SettingsPage implements OnInit {
     loading.dismiss();
   }
 
-  onClickTest() {
-    debugger;
-    window.location.reload();
-  }
+  // onClickTest() {
+  //   debugger;
+  //   window.location.reload();
+  // }
 }
