@@ -1,6 +1,6 @@
 /* eslint-disable arrow-body-style */
-import { Component, OnInit } from '@angular/core';
-import { ActionSheetController, AlertController } from '@ionic/angular';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { ActionSheetController, AlertController, IonAccordionGroup } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Attendance, PersonAttendance, Player } from 'src/app/utilities/interfaces';
@@ -13,6 +13,7 @@ import { environment } from 'src/environments/environment';
   styleUrls: ['./signout.page.scss'],
 })
 export class SignoutPage implements OnInit {
+  @ViewChild('signoutAccordionGroup') signoutAccordionGroup: IonAccordionGroup;
   public player: Player;
   public attendances: Attendance[] = [];
   public excusedAttendances: Attendance[] = [];
@@ -37,12 +38,14 @@ export class SignoutPage implements OnInit {
   }
 
   async signout() {
+    this.signoutAccordionGroup.value = undefined;
     await this.db.signout(this.player, this.selAttIds, this.reason, this.isLateComingEvent);
     this.reason = "";
 
     Utils.showToast("Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.", "success", 4000);
 
     await this.getAttendances();
+
   }
 
   async signin(id: number) {
