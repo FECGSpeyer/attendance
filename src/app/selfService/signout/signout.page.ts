@@ -1,5 +1,6 @@
+/* eslint-disable arrow-body-style */
 import { Component, OnInit } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { ActionSheetController, AlertController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Attendance, PersonAttendance, Player } from 'src/app/utilities/interfaces';
@@ -15,16 +16,19 @@ export class SignoutPage implements OnInit {
   public player: Player;
   public attendances: Attendance[] = [];
   public excusedAttendances: Attendance[] = [];
+  public lateExcusedAttendances: Attendance[] = [];
   public playerAttendance: PersonAttendance[] = [];
   public selAttIds: number[] = [];
   public reason: string;
   public perc: number;
   public version: string = require('../../../../package.json').version;
   public name: string = environment.longName;
+  public isLateComingEvent: boolean;
 
   constructor(
     private db: DbService,
     private alertController: AlertController,
+    private actionSheetController: ActionSheetController
   ) { }
 
   async ngOnInit() {
@@ -33,7 +37,7 @@ export class SignoutPage implements OnInit {
   }
 
   async signout() {
-    await this.db.signout(this.player, this.selAttIds, this.reason);
+    await this.db.signout(this.player, this.selAttIds, this.reason, this.isLateComingEvent);
     this.reason = "";
 
     Utils.showToast("Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.", "success", 4000);
@@ -57,6 +61,12 @@ export class SignoutPage implements OnInit {
         return dayjs(attendance.date).isAfter(dayjs(), "day") &&
           Object.keys(attendance.players).includes(String(this.player.id)) &&
           attendance.excused.includes(String(this.player.id));
+      });
+
+      this.lateExcusedAttendances = allAttendances.filter((attendance: Attendance) => {
+        return dayjs(attendance.date).isAfter(dayjs(), "day") &&
+          Object.keys(attendance.players).includes(String(this.player.id)) &&
+          attendance.lateExcused.includes(String(this.player.id));
       });
 
       this.attendances = allAttendances.filter((attendance: Attendance) => {
@@ -85,11 +95,13 @@ export class SignoutPage implements OnInit {
   }
 
   canEdit(id: number): boolean {
-    return Boolean(this.excusedAttendances.find((att: Attendance) => att.id === id));
+    return Boolean(this.excusedAttendances.find((att: Attendance) => att.id === id) ||
+                   this.lateExcusedAttendances.find((att: Attendance) => att.id === id));
   }
 
   async removeExcuse(id: number) {
-    if (!this.excusedAttendances.find((att: Attendance) => att.id === id)) {
+    if (!this.excusedAttendances.find((att: Attendance) => att.id === id) &&
+        !this.lateExcusedAttendances.find((att: Attendance) => att.id === id)) {
       return;
     }
 
@@ -109,6 +121,37 @@ export class SignoutPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  async presentActionSheetForChoice() {
+    // TODO: When abmeldungen pflegen was pressed, it should be disabled or any kind
+    //       that another click shouldnt bring up the actionSheet
+
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Anwendungsfall',
+      buttons: [
+        {
+          text: 'Abmeldung eintragen',
+          handler: () => {
+            this.isLateComingEvent = false;
+            this.actionSheetController.dismiss();
+          },
+        },
+        {
+          text: 'Verspätung eintragen',
+          handler: () => this.isLateComingEvent = true,
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          data: {
+            action: 'cancel',
+          },
+        },
+      ],
+    });
+
+    await actionSheet.present();
   }
 
 }

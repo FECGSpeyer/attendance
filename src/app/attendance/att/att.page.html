@@ -72,7 +72,7 @@
     <ion-item-divider sticky="true">
       <ion-label>Dirigenten ({{ conductors?.length }})</ion-label>
     </ion-item-divider>
-    <ion-item button detail="false" *ngFor="let con of conductors" (click)="con.isPresent = !con.isPresent">
+    <ion-item button detail="false" *ngFor="let con of conductors" (click)="onAttChange(con)">
       <ion-label>
         <h2>{{ con.firstName }} {{ con.lastName }}</h2>
       </ion-label>
@@ -88,7 +88,14 @@
             <h2>{{ player.firstName }} {{ player.lastName }}</h2>
             <h3 *ngIf="playerNotes[player.id]">{{ playerNotes[player.id] }}</h3>
           </ion-label>
-          <ion-badge [color]="excused.has(player.id.toString()) ? 'warning' : player.isPresent ? 'success' :'danger'" slot="end">{{ excused.has(player.id.toString()) ? 'E' : player.isPresent ? '✓' : 'A' }}</ion-badge>
+          <ion-badge [color]="excused.has(player.id.toString()) ? 'warning' : 
+                              lateExcused.has(player.id.toString()) ? 'tertiary' :
+                              player.isPresent ? 'success' : 'danger'" 
+                     slot="end">
+                                {{ excused.has(player.id.toString()) ? 'E' : 
+                                   lateExcused.has(player.id.toString()) ? 'L' : 
+                                   player.isPresent ? '✓' : 'A' }}
+          </ion-badge>
         </ion-item>
         <ion-item-options>
           <ion-item-option color="warning" (click)="addNote(player, slider)">

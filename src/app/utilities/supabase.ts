@@ -16,6 +16,7 @@ export interface Database {
           criticalPlayers: number[]
           date: string | null
           excused: string[] | null
+          lateExcused: string[] | null
           id: number
           img: string | null
           notes: string | null

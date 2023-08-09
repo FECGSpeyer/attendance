@@ -21,6 +21,7 @@ export class AttPage implements OnInit {
   public players: Player[] = [];
   public conductors: Person[] = [];
   public excused: Set<string> = new Set();
+  public lateExcused: Set<string> = new Set();
   public withExcuses: boolean = environment.withExcuses;
   private playerNotes: { [prop: number]: string } = {};
   private oldAttendance: Attendance;
@@ -49,10 +50,12 @@ export class AttPage implements OnInit {
         attPlayers.push({
           ...allPlayers.find((p: Player) => p.id === Number(player)),
           isPresent: this.attendance.players[Number(player)],
+          isLateExcused: this.attendance.lateExcused.includes(String(player))
         });
       }
     }
     this.excused = new Set([...this.attendance.excused]) || new Set<string>();
+    this.lateExcused = new Set([...this.attendance.lateExcused]) || new Set<string>();
     this.playerNotes = { ...this.attendance.playerNotes } || {};
 
     for (let con of Object.keys(this.attendance.conductors)) {
@@ -60,6 +63,7 @@ export class AttPage implements OnInit {
         this.conductors.push({
           ...conductors.find((p: Player) => p.id === Number(con)),
           isPresent: this.attendance.conductors[Number(con)],
+          isLateExcused: this.attendance.lateExcused.includes(String(con))
         });
       }
     }
@@ -103,6 +107,7 @@ export class AttPage implements OnInit {
       players: playerMap,
       conductors: conductorsMap,
       excused: Array.from(this.excused),
+      lateExcused: Array.from(this.lateExcused),
       playerNotes: this.playerNotes,
       criticalPlayers: [...this.attendance.criticalPlayers].concat(unexcusedPlayers.map((player: Player) => player.id)),
     }, this.attendance.id);
@@ -149,7 +154,7 @@ export class AttPage implements OnInit {
       header: "Möchtest du die Eingabe wirklich beenden?",
       message: "Alle Ändeungen werden verworfen.",
       buttons: [{
-        text: "Abrrechen",
+        text: "Abbrechen",
       }, {
         text: "Fortfahren",
         handler: (): void => {
@@ -166,16 +171,23 @@ export class AttPage implements OnInit {
     this.modalController.dismiss();
   }
 
-  async onAttChange(player: Player) {
+  async onAttChange(individual: (Player|Person)) {
     this.hasChanges = true;
-    if (this.withExcuses && this.excused.has(player.id.toString())) {
-      this.excused.delete(player.id.toString());
-      return;
-    } else if (this.withExcuses && player.isPresent) {
-      this.excused.add(player.id.toString());
+    // First Case is for: Condition '✓' to Condition 'E'
+    // Second Case is for: Condition 'E to Condition 'L'
+    // Third Case is for: Condition 'L' to '✓'
+    // if(individual.)
+    debugger;
+    if (this.withExcuses && this.lateExcused.has(individual.id.toString())) {
+      this.lateExcused.delete(individual.id.toString());
+    } else if (this.withExcuses && this.excused.has(individual.id.toString())) {
+      individual.isPresent = true;
+      this.excused.delete(individual.id.toString());
+      this.lateExcused.add(individual.id.toString());
+    } else if (this.withExcuses && individual.isPresent) {
+      individual.isPresent = false;
+      this.excused.add(individual.id.toString());
     }
-
-    player.isPresent = !player.isPresent;
   }
 
   getPlayerLengthByInstrument(players: Player[], player: Player): number {

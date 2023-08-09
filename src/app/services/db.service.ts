@@ -723,7 +723,7 @@ export class DbService {
         date: att.date,
         attended: att.players[id],
         title: att.typeInfo ? att.typeInfo : att.type === "vortrag" ? "Vortrag" : "",
-        text: att.players[id] ? "X" : (att.excused || []).includes(String(id)) ? "E" : "A",
+        text: att.players[id] ? "X" : (att.excused || []).includes(String(id)) ? "E" : (att.lateExcused || []).includes(String(id)) ? 'L' : "A", // 
         notes: att.playerNotes && att.playerNotes[id] ? att.playerNotes[id] : "",
       }
     });
@@ -892,7 +892,7 @@ export class DbService {
     return;
   }
 
-  async signout(player: Player, attIds: number[], reason: string): Promise<void> {
+  async signout(player: Player, attIds: number[], reason: string, isLateExcused: boolean): Promise<void> {
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
     loading.present();
 
@@ -903,7 +903,11 @@ export class DbService {
       attendances.push(attendance);
       attendance.players[player.id] = false;
       attendance.playerNotes[player.id] = reason;
-      attendance.excused.push(String(player.id));
+      if(isLateExcused === true) {
+        attendance.lateExcused.push(String(player.id));
+      }else {
+        attendance.excused.push(String(player.id));
+      }
 
       await this.updateAttendance(attendance, attId);
     }
@@ -918,6 +922,7 @@ export class DbService {
     attendance.players[player.id] = true;
     delete attendance.playerNotes[player.id];
     attendance.excused = attendance.excused.filter((playerId: string) => playerId !== String(player.id));
+    attendance.lateExcused = attendance.lateExcused.filter((playerId: string) => playerId !== String(player.id));
 
     this.notifyPerTelegram(player, [attendance]);
 

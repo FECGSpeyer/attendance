@@ -15,23 +15,55 @@
     <ion-label *ngIf="player.paused">Shalom {{ player.firstName }}! Du pausierst gerade.</ion-label>
   </ion-item>
 
-  <ion-accordion-group [value]="selAttIds.length ? 'first' : 'second'">
+  <ion-accordion-group [value]="'second'">
     <ion-accordion value="first">
-      <ion-item slot="header" color="light">
+      <ion-item slot="header" color="light" (click)="presentActionSheetForChoice()">
         <ion-label>Abmeldungen pflegen</ion-label>
       </ion-item>
       <div slot="content">
-        <ion-item *ngIf="attendances.length" lines="none">
-          <ion-label>Termine auswählen</ion-label>
-          <ion-select multiple="true" [(ngModel)]="selAttIds">
-            <ion-select-option [value]="att.id" *ngFor="let att of attendances">{{ att.date | date:'dd.MM.YYYY' }}
-              {{ att.typeInfo }}</ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-item *ngIf="selAttIds.length">
-          <ion-label position="stacked">Grund</ion-label>
-          <ion-textarea placeholder="Mindestens 5 Zeichen eingeben..." [(ngModel)]="reason"></ion-textarea>
-        </ion-item>
+        <ion-list>
+          <ion-item *ngIf="attendances.length" lines="none">
+            <ion-label>Termine auswählen</ion-label>
+            <ion-select multiple="true" [(ngModel)]="selAttIds">
+              <ion-select-option [value]="att.id" *ngFor="let att of attendances">{{ att.date | date:'dd.MM.YYYY' }}
+                {{ att.typeInfo }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <!-- <ion-item>
+            <ion-radio-group style="display: flex; width: 100%;">
+              <ion-item style="display: flex; width: 50%;">
+                <ion-label>Abwesend</ion-label>
+                <ion-radio slot="start" value="radio1"></ion-radio>
+              </ion-item>
+              <ion-item style="display: flex; width: 50%;" slot="end">
+                <ion-label>Zu Spät kommend</ion-label>
+                <ion-radio slot="start" value="radio2"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+          </ion-item> -->
+          <!-- <ion-grid>
+            <ion-row>
+              <ion-radio-group style="display: flex; width: 100%;">
+                <ion-col>
+                  <ion-item>
+                    <ion-label>Radio 1</ion-label>
+                    <ion-radio slot="start" value="radio1"></ion-radio>
+                  </ion-item>
+                </ion-col>
+                <ion-col>
+                  <ion-item>
+                    <ion-label>Radio 2</ion-label>
+                    <ion-radio slot="start" value="radio2"></ion-radio>
+                  </ion-item>
+                </ion-col>
+              </ion-radio-group>
+            </ion-row>
+          </ion-grid> -->
+          <ion-item *ngIf="selAttIds.length">
+            <ion-label position="stacked">Grund</ion-label>
+            <ion-textarea placeholder="Mindestens 5 Zeichen eingeben..." [(ngModel)]="reason"></ion-textarea>
+          </ion-item>
+        </ion-list>
         <ion-button *ngIf="attendances.length" (click)="signout()" [disabled]="!(reason && reason.length > 4)"
           expand="block">
           Abmeldung einreichen</ion-button>
@@ -55,7 +87,7 @@
                 <h2 *ngIf="!att.title">{{ att.date | date:'dd.MM.yyyy' }}</h2>
               </ion-label>
 
-              <ion-badge slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : 'warning'">
+              <ion-badge slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? 'tertiary' : 'warning'">
                 {{ att.text }}</ion-badge>
             </ion-item>
           </ng-container>

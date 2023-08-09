@@ -13,6 +13,7 @@ export interface Person {
     birthday: string;
     joined: string;
     isPresent?: boolean;
+    isLateExcused?: boolean;
     left?: string;
     email?: string;
     appId?: string;
@@ -85,6 +86,7 @@ export interface Attendance {
     playerNotes: { [prop: number]: string };
     img?: string;
     plan?: any;
+    lateExcused?: string[];
 }
 
 export interface Song {
