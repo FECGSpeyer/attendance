@@ -128,9 +128,7 @@ export class SignoutPage implements OnInit {
   }
 
   async presentActionSheetForChoice() {
-    // TODO: When abmeldungen pflegen was pressed, it should be disabled or any kind
-    //       that another click shouldnt bring up the actionSheet
-
+    if (this.signoutAccordionGroup.value === 'first') return;
     const actionSheet = await this.actionSheetController.create({
       header: 'Anwendungsfall',
       buttons: [
@@ -147,6 +145,7 @@ export class SignoutPage implements OnInit {
         },
         {
           text: 'Cancel',
+          handler: () => this.signoutAccordionGroup.value = undefined,
           role: 'cancel',
           data: {
             action: 'cancel',
