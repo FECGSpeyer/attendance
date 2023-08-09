@@ -173,12 +173,15 @@ export class AttPage implements OnInit {
 
   async onAttChange(individual: (Player|Person)) {
     this.hasChanges = true;
-    // First Case is for: Condition '✓' to Condition 'E'
-    // Second Case is for: Condition 'E to Condition 'L'
-    // Third Case is for: Condition 'L' to '✓'
-    // if(individual.)
-    debugger;
-    if (this.withExcuses && this.lateExcused.has(individual.id.toString())) {
+    // First Case is for: Condition 'A' to '✓'
+    // Second Case is for: Condition 'L' to 'A'
+    // Third Case is for: Condition 'E to 'L'
+    // Fourth Case is for: Condition  '✓' to 'E'
+    if (this.withExcuses && !individual.isPresent &&
+       !this.lateExcused.has(individual.id.toString()) && !this.excused.has(individual.id.toString())) {
+      individual.isPresent = true;
+      }else if (this.withExcuses && this.lateExcused.has(individual.id.toString())) {
+      individual.isPresent = false;
       this.lateExcused.delete(individual.id.toString());
     } else if (this.withExcuses && this.excused.has(individual.id.toString())) {
       individual.isPresent = true;

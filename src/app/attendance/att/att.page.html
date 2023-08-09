@@ -76,7 +76,14 @@
       <ion-label>
         <h2>{{ con.firstName }} {{ con.lastName }}</h2>
       </ion-label>
-      <ion-badge [color]="con.isPresent ? 'success' :'warning'" slot="end">{{ con.isPresent ? '✓' : 'E' }}</ion-badge>
+      <ion-badge [color]="excused.has(con.id.toString()) ? 'warning' : 
+                          lateExcused.has(con.id.toString()) ? 'tertiary' :
+                          con.isPresent ? 'success' : 'danger'" 
+                  slot="end">
+                             {{ excused.has(con.id.toString()) ? 'E' : 
+                                lateExcused.has(con.id.toString()) ? 'L' : 
+                                con.isPresent ? '✓' : 'A' }}
+      </ion-badge>
     </ion-item>
     <ng-container *ngFor="let player of players">
       <ion-item-divider sticky="true" *ngIf="player.firstOfInstrument">

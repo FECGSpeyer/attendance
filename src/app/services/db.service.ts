@@ -899,14 +899,24 @@ export class DbService {
     const attendances: Attendance[] = [];
 
     for (const attId of attIds) {
-      const attendance: Attendance = await this.getAttendanceById(attId);
+      let attendance: Attendance = await this.getAttendanceById(attId);
       attendances.push(attendance);
       attendance.players[player.id] = false;
       attendance.playerNotes[player.id] = reason;
-      if(isLateExcused === true) {
+      // If Case: If smbdy wants to hand in a late arrival notification
+      // Else Case: Smbdy wants to sign out for a rehearsal
+      if(isLateExcused === true && !attendance.lateExcused.includes(String(player.id))) {
+        if (attendance.excused.includes(String(player.id))) {
+          attendance.excused = attendance.excused.filter(pId => pId !== String(player.id));
+        }
         attendance.lateExcused.push(String(player.id));
       }else {
-        attendance.excused.push(String(player.id));
+        if (attendance.lateExcused.includes(String(player.id))) {
+          attendance.lateExcused = attendance.lateExcused.filter(pId => pId !== String(player.id));
+        }
+        if (!attendance.excused.includes(String(player.id))) {
+          attendance.excused.push(String(player.id));
+        }
       }
 
       await this.updateAttendance(attendance, attId);

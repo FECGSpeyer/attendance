@@ -72,7 +72,8 @@ export class SignoutPage implements OnInit {
       this.attendances = allAttendances.filter((attendance: Attendance) => {
         return dayjs(attendance.date).isAfter(dayjs(), "day") &&
           Object.keys(attendance.players).includes(String(this.player.id)) &&
-          !attendance.excused.includes(String(this.player.id));
+          !attendance.excused.includes(String(this.player.id)) &&
+          !attendance.lateExcused.includes(String(this.player.id));
       }).sort((a: Attendance, b: Attendance) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       if (this.attendances.length) {
