@@ -152,7 +152,7 @@ export class AttPage implements OnInit {
 
     const alert: HTMLIonAlertElement = await this.alertController.create({
       header: "Möchtest du die Eingabe wirklich beenden?",
-      message: "Alle Ändeungen werden verworfen.",
+      message: "Alle Änderungen werden verworfen.",
       buttons: [{
         text: "Abbrechen",
       }, {
