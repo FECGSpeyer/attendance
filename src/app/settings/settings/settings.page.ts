@@ -217,7 +217,4 @@ export class SettingsPage implements OnInit {
     loading.dismiss();
   }
 
-  onClickTest() {
-    window.location.reload();
-  }
 }
