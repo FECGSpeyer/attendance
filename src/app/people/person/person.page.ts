@@ -396,11 +396,16 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   getAttText(text: string) {
-    if (text === "X") {
-      return "✓";
-    } else {
-      return this.isConductor || text === "E" ? "E" : "A";
-    }
+    return text === 'X' ? '✓' :
+           text === 'L' ? 'L' :
+           (this.isConductor || text ==='E') ? 'E' : 'A';
+    // if (text === "X") {
+    //   return "✓";
+    // }else if(text === 'L') {
+    //   return 'L';
+    // } else {
+    //   return this.isConductor || text === "E" ? "E" : "A";
+    // }
   }
 
   async onHisItemClicked(his: PlayerHistoryEntry) {

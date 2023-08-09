@@ -723,7 +723,7 @@ export class DbService {
         date: att.date,
         attended: att.players[id],
         title: att.typeInfo ? att.typeInfo : att.type === "vortrag" ? "Vortrag" : "",
-        text: att.players[id] ? "X" : (att.excused || []).includes(String(id)) ? "E" : (att.lateExcused || []).includes(String(id)) ? 'L' : "A", // 
+        text: (att.excused || []).includes(String(id)) ? "E" : (att.lateExcused || []).includes(String(id)) ? 'L' : att.players[id] ? "X" : "A", // 
         notes: att.playerNotes && att.playerNotes[id] ? att.playerNotes[id] : "",
       }
     });
