@@ -931,10 +931,11 @@ export class DbService {
     const attendance: Attendance = await this.getAttendanceById(attId);
     attendance.players[player.id] = true;
     delete attendance.playerNotes[player.id];
+    const playerIsLateExcused = attendance.lateExcused.includes(String(player.id));
     attendance.excused = attendance.excused.filter((playerId: string) => playerId !== String(player.id));
     attendance.lateExcused = attendance.lateExcused.filter((playerId: string) => playerId !== String(player.id));
 
-    this.notifyPerTelegram(player, [attendance]);
+    this.notifyPerTelegram(player, [attendance], playerIsLateExcused === true ? 'lateSignin' : 'signin');
 
     await this.updateAttendance(attendance, attId);
   }
