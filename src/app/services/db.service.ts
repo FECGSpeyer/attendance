@@ -922,7 +922,7 @@ export class DbService {
       await this.updateAttendance(attendance, attId);
     }
 
-    this.notifyPerTelegram(player, attendances, "signout", reason);
+    this.notifyPerTelegram(player, attendances, isLateExcused === true ? 'lateSignout' : "signout", reason);
 
     loading.dismiss();
   }
