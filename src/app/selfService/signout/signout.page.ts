@@ -25,6 +25,7 @@ export class SignoutPage implements OnInit {
   public version: string = require('../../../../package.json').version;
   public name: string = environment.longName;
   public isLateComingEvent: boolean;
+  public reasonSelection = '';
 
   constructor(
     private db: DbService,
@@ -129,6 +130,7 @@ export class SignoutPage implements OnInit {
 
   async presentActionSheetForChoice() {
     if (this.signoutAccordionGroup.value === 'first') return;
+
     const actionSheet = await this.actionSheetController.create({
       header: 'Anwendungsfall',
       buttons: [
@@ -155,6 +157,16 @@ export class SignoutPage implements OnInit {
     });
 
     await actionSheet.present();
+  }
+
+  onReasonSelect(event) {
+    this.reasonSelection = event.detail.value;
+
+    if(this.reasonSelection !== 'Sonstiger Grund') {
+      this.reason = this.reasonSelection;
+    } else {
+      this.reason = '';
+    }
   }
 
 }

@@ -25,3 +25,14 @@ ion-radio {
   .radio-checked.ios::part(container) {
     border-color: var(--ion-color-primary);
   }
+
+  .margin-auto {
+    margin: auto;
+  }
+
+  #ReasonIonSelect {
+    margin: auto;
+    padding: 5%; 
+    padding-bottom: 0;
+    width: 100%;
+  }

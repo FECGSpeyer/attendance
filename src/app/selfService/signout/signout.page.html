@@ -16,7 +16,7 @@
   </ion-item>
 
   <ion-accordion-group #signoutAccordionGroup [value]="'second'">
-    <ion-accordion value="first">
+    <ion-accordion value="first" [disabled]="attendances.length === 0">
       <ion-item slot="header" color="light" (click)="presentActionSheetForChoice()">
         <ion-label>Abmeldungen pflegen</ion-label>
       </ion-item>
@@ -29,37 +29,20 @@
                 {{ att.typeInfo }}</ion-select-option>
             </ion-select>
           </ion-item>
-          <!-- <ion-item>
-            <ion-radio-group style="display: flex; width: 100%;">
-              <ion-item style="display: flex; width: 50%;">
-                <ion-label>Abwesend</ion-label>
-                <ion-radio slot="start" value="radio1"></ion-radio>
+          <div>
+            <ion-list #ReasonIonSelect>
+              <ion-item class="margin-auto">
+                <ion-select (ionChange)="onReasonSelect($event)" class="margin-auto" aria-label="reason-ion-select" interface="action-sheet" placeholder="Grund auswählen">
+                  <ion-select-option value="Krankheitsbedingt">Krankheitsbedingt</ion-select-option>
+                  <ion-select-option value="Urlaubsbedingt">Urlaubsbedingt</ion-select-option>
+                  <ion-select-option value="Arbeitsbedingt">Arbeitsbedingt</ion-select-option>
+                  <ion-select-option value="Familienbedingt">Familienbedingt</ion-select-option>
+                  <ion-select-option value="Sonstiger Grund">Sonstiger Grund (Text)</ion-select-option>
+                </ion-select>
               </ion-item>
-              <ion-item style="display: flex; width: 50%;" slot="end">
-                <ion-label>Zu Spät kommend</ion-label>
-                <ion-radio slot="start" value="radio2"></ion-radio>
-              </ion-item>
-            </ion-radio-group>
-          </ion-item> -->
-          <!-- <ion-grid>
-            <ion-row>
-              <ion-radio-group style="display: flex; width: 100%;">
-                <ion-col>
-                  <ion-item>
-                    <ion-label>Radio 1</ion-label>
-                    <ion-radio slot="start" value="radio1"></ion-radio>
-                  </ion-item>
-                </ion-col>
-                <ion-col>
-                  <ion-item>
-                    <ion-label>Radio 2</ion-label>
-                    <ion-radio slot="start" value="radio2"></ion-radio>
-                  </ion-item>
-                </ion-col>
-              </ion-radio-group>
-            </ion-row>
-          </ion-grid> -->
-          <ion-item *ngIf="selAttIds.length">
+            </ion-list>
+          </div>
+          <ion-item *ngIf="selAttIds.length && (reasonSelection === 'Sonstiger Grund')">
             <ion-label position="stacked">Grund</ion-label>
             <ion-textarea placeholder="Mindestens 5 Zeichen eingeben..." [(ngModel)]="reason"></ion-textarea>
           </ion-item>
