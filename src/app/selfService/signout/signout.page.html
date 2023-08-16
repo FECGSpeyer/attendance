@@ -62,7 +62,7 @@
           <ng-container *ngFor="let att of playerAttendance">
             <ion-item-divider *ngIf="att.showDivider">
               <ion-label>Vergangene</ion-label>
-              <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'x" style="margin-right: '16px'" slot="end">Ø {{ perc }}%</ion-badge>
+              <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'" slot="end">Ø {{ perc }}%</ion-badge>
             </ion-item-divider>
             <ion-item [button]="canEdit(att.id) ? 'true' : 'false'" (click)="removeExcuse(att.id)" [color]="canEdit(att.id) ? 'primary' : ''">
               <ion-label>
