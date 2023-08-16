@@ -25,7 +25,7 @@ export class SignoutPage implements OnInit {
   public version: string = require('../../../../package.json').version;
   public name: string = environment.longName;
   public isLateComingEvent: boolean;
-  public reasonSelection = '';
+  public reasonSelection;
 
   constructor(
     private db: DbService,
@@ -42,11 +42,12 @@ export class SignoutPage implements OnInit {
     this.signoutAccordionGroup.value = undefined;
     await this.db.signout(this.player, this.selAttIds, this.reason, this.isLateComingEvent);
     this.reason = "";
-
+    
     Utils.showToast("Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.", "success", 4000);
+    
+    this.reasonSelection = '';
 
     await this.getAttendances();
-
   }
 
   async signin(id: number) {
@@ -160,10 +161,10 @@ export class SignoutPage implements OnInit {
   }
 
   onReasonSelect(event) {
-    this.reasonSelection = event.detail.value;
-
-    if(this.reasonSelection !== 'Sonstiger Grund') {
-      this.reason = this.reasonSelection;
+    const currentReasonSelection = event.detail.value;
+    if (!currentReasonSelection) return;
+    if(currentReasonSelection !== 'Sonstiger Grund') {
+      this.reason = currentReasonSelection;
     } else {
       this.reason = '';
     }
