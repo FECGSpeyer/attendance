@@ -50,12 +50,12 @@ export class AttPage implements OnInit {
         attPlayers.push({
           ...allPlayers.find((p: Player) => p.id === Number(player)),
           isPresent: this.attendance.players[Number(player)],
-          isLateExcused: this.attendance.lateExcused.includes(String(player))
+          isLateExcused: (this.attendance.lateExcused || []).includes(String(player))
         });
       }
     }
     this.excused = new Set([...this.attendance.excused]) || new Set<string>();
-    this.lateExcused = new Set([...this.attendance.lateExcused]) || new Set<string>();
+    this.lateExcused = new Set([...this.attendance.lateExcused || []]) || new Set<string>();
     this.playerNotes = { ...this.attendance.playerNotes } || {};
 
     for (let con of Object.keys(this.attendance.conductors)) {
@@ -63,7 +63,7 @@ export class AttPage implements OnInit {
         this.conductors.push({
           ...conductors.find((p: Player) => p.id === Number(con)),
           isPresent: this.attendance.conductors[Number(con)],
-          isLateExcused: this.attendance.lateExcused.includes(String(con))
+          isLateExcused: (this.attendance.lateExcused || []).includes(String(con))
         });
       }
     }
@@ -171,16 +171,16 @@ export class AttPage implements OnInit {
     this.modalController.dismiss();
   }
 
-  async onAttChange(individual: (Player|Person)) {
+  async onAttChange(individual: (Player | Person)) {
     this.hasChanges = true;
     // First Case is for: Condition 'A' to '✓'
     // Second Case is for: Condition 'L' to 'A'
     // Third Case is for: Condition 'E to 'L'
     // Fourth Case is for: Condition  '✓' to 'E'
     if (this.withExcuses && !individual.isPresent &&
-       !this.lateExcused.has(individual.id.toString()) && !this.excused.has(individual.id.toString())) {
+      !this.lateExcused.has(individual.id.toString()) && !this.excused.has(individual.id.toString())) {
       individual.isPresent = true;
-      }else if (this.withExcuses && this.lateExcused.has(individual.id.toString())) {
+    } else if (this.withExcuses && this.lateExcused.has(individual.id.toString())) {
       individual.isPresent = false;
       this.lateExcused.delete(individual.id.toString());
     } else if (this.withExcuses && this.excused.has(individual.id.toString())) {
