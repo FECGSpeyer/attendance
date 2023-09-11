@@ -100,7 +100,7 @@ export class AttPage implements OnInit {
       !p.isPresent && !p.isCritical && !this.excused.has(String(p.id)) && !this.attendance.criticalPlayers.includes(p.id)
     );
 
-    await this.db.updateAttendance({
+    const attData: Partial<Attendance> = {
       notes: this.attendance.notes,
       typeInfo: this.attendance.type === "sonstiges" ? this.attendance.typeInfo : "",
       type: this.attendance.type,
@@ -110,7 +110,13 @@ export class AttPage implements OnInit {
       lateExcused: Array.from(this.lateExcused),
       playerNotes: this.playerNotes,
       criticalPlayers: [...this.attendance.criticalPlayers].concat(unexcusedPlayers.map((player: Player) => player.id)),
-    }, this.attendance.id);
+    };
+
+    if (this.lateExcused.size === 0) {
+      delete attData.lateExcused;
+    }
+
+    await this.db.updateAttendance(attData, this.attendance.id);
 
     if (this.withExcuses) {
       await this.updateCriticalPlayers(unexcusedPlayers);
@@ -190,6 +196,8 @@ export class AttPage implements OnInit {
     } else if (this.withExcuses && individual.isPresent) {
       individual.isPresent = false;
       this.excused.add(individual.id.toString());
+    } else {
+      individual.isPresent = !individual.isPresent
     }
   }
 
