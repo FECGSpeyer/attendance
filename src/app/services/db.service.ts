@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
-import { DEFAULT_IMAGE, PlayerHistoryType, Role } from '../utilities/constants';
+import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role } from '../utilities/constants';
 import { Attendance, AuthObject, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Settings, Song, Teacher } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
@@ -419,7 +419,7 @@ export class DbService {
 
     if (attData?.length) {
       for (const att of attData) {
-        att.players[id] = true;
+        att.players[id] = AttendanceStatus.Present;
         await this.updateAttendance({ players: att.players }, att.id);
       }
     }
@@ -691,7 +691,7 @@ export class DbService {
   }
 
   async updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance[]> {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('attendance')
       .update(att as any)
       .match({ id })
@@ -718,12 +718,28 @@ export class DbService {
       });
 
     return data.map((att): PersonAttendance => {
+      let attText;
+      if (typeof att.players[String(id)] == 'boolean'){
+        if ((att.excused || []).includes(String(id))) {
+          attText = 'E';
+        } else if ((att.excused || []).includes(String(id))) {
+          attText = 'L';
+        } else if (att.players[String(id)] === true) {
+          attText = 'X';
+        } else {
+          attText = 'A';
+        }
+      }
+      if (!attText) {
+        attText = att.players[id] === 0 ? 'N' : att.players[id] === 1 ? 'X' : att.players[id] === 2 ? 'E' : att.players[id] === 3 ? 'L' : 'A'
+      }
+
       return {
         id: att.id,
         date: att.date,
         attended: att.players[id],
         title: att.typeInfo ? att.typeInfo : att.type === "vortrag" ? "Vortrag" : "",
-        text: (att.excused || []).includes(String(id)) ? "E" : (att.lateExcused || []).includes(String(id)) ? 'L' : att.players[id] ? "X" : "A", // 
+        text: attText, 
         notes: att.playerNotes && att.playerNotes[id] ? att.playerNotes[id] : "",
       }
     });
@@ -899,25 +915,10 @@ export class DbService {
     const attendances: Attendance[] = [];
 
     for (const attId of attIds) {
-      let attendance: Attendance = await this.getAttendanceById(attId);
+      const attendance: Attendance = await this.getAttendanceById(attId);
       attendances.push(attendance);
-      attendance.players[player.id] = false;
+      attendance.players[player.id] = isLateExcused === true ? AttendanceStatus.Late : AttendanceStatus.Excused;
       attendance.playerNotes[player.id] = reason;
-      // If Case: If smbdy wants to hand in a late arrival notification
-      // Else Case: Smbdy wants to sign out for a rehearsal
-      if(isLateExcused === true && !attendance.lateExcused.includes(String(player.id))) {
-        if (attendance.excused.includes(String(player.id))) {
-          attendance.excused = attendance.excused.filter(pId => pId !== String(player.id));
-        }
-        attendance.lateExcused.push(String(player.id));
-      }else {
-        if (attendance.lateExcused.includes(String(player.id))) {
-          attendance.lateExcused = attendance.lateExcused.filter(pId => pId !== String(player.id));
-        }
-        if (!attendance.excused.includes(String(player.id))) {
-          attendance.excused.push(String(player.id));
-        }
-      }
 
       await this.updateAttendance(attendance, attId);
     }
@@ -929,7 +930,7 @@ export class DbService {
 
   async signin(player: Player, attId: number): Promise<void> {
     const attendance: Attendance = await this.getAttendanceById(attId);
-    attendance.players[player.id] = true;
+    attendance.players[player.id] = AttendanceStatus.Present;
     delete attendance.playerNotes[player.id];
     const playerIsLateExcused = attendance.lateExcused.includes(String(player.id));
     attendance.excused = attendance.excused.filter((playerId: string) => playerId !== String(player.id));

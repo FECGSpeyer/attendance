@@ -70,7 +70,7 @@
                 <h2 *ngIf="!att.title">{{ att.date | date:'dd.MM.yyyy' }}</h2>
               </ion-label>
 
-              <ion-badge slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? 'tertiary' : 'warning'">
+              <ion-badge slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? 'tertiary' : att.text === 'N' ? 'medium' : 'warning'">
                 {{ att.text }}</ion-badge>
             </ion-item>
           </ng-container>

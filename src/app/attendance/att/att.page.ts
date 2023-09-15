@@ -4,7 +4,7 @@ import * as dayjs from 'dayjs';
 import { FaceMatch } from 'face-api.js';
 import { DbService } from 'src/app/services/db.service';
 import { FaceRecService } from 'src/app/services/face-rec.service';
-import { PlayerHistoryType } from 'src/app/utilities/constants';
+import { AttendanceStatus, PlayerHistoryType } from 'src/app/utilities/constants';
 import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment.prod';
@@ -19,14 +19,16 @@ export class AttPage implements OnInit {
   @Input() attendance: Attendance;
   @ViewChild('chooser') chooser: ElementRef;
   public players: Player[] = [];
+  public attPlayers: Player[] = [];
   public conductors: Person[] = [];
   public excused: Set<string> = new Set();
   public lateExcused: Set<string> = new Set();
   public withExcuses: boolean = environment.withExcuses;
+  public isOnline = true;
   private playerNotes: { [prop: number]: string } = {};
   private oldAttendance: Attendance;
-  private hasChanges: boolean = false;
-  public isOnline: boolean = true;
+  private hasChanges = false;
+
 
   constructor(
     private modalController: ModalController,
@@ -40,39 +42,48 @@ export class AttPage implements OnInit {
     const conductors: Person[] = await this.db.getConductors(true);
     const allPlayers: Player[] = await this.db.getPlayers();
     const instruments: Instrument[] = await this.db.getInstruments();
-    let attPlayers: Player[] = [];
     this.hasChanges = false;
 
     this.oldAttendance = { ...this.attendance };
-
-    for (let player of Object.keys(this.attendance.players)) {
-      if (Boolean(allPlayers.find((p: Player) => p.id === Number(player)))) {
-        attPlayers.push({
-          ...allPlayers.find((p: Player) => p.id === Number(player)),
-          isPresent: this.attendance.players[Number(player)],
-          isLateExcused: this.attendance.lateExcused.includes(String(player))
-        });
-      }
-    }
+    
     this.excused = new Set([...this.attendance.excused]) || new Set<string>();
     this.lateExcused = new Set([...this.attendance.lateExcused]) || new Set<string>();
     this.playerNotes = { ...this.attendance.playerNotes } || {};
 
-    for (let con of Object.keys(this.attendance.conductors)) {
-      if (Boolean(conductors.find((p: Player) => p.id === Number(con)))) {
-        this.conductors.push({
-          ...conductors.find((p: Player) => p.id === Number(con)),
-          isPresent: this.attendance.conductors[Number(con)],
-          isLateExcused: this.attendance.lateExcused.includes(String(con))
+    for (let player of Object.keys(this.attendance.players)) {
+      if (Boolean(allPlayers.find((p: Player) => p.id === Number(player)))) {
+        let attStatus = this.attendance.players[String(player)];
+        if (typeof attStatus == 'boolean') {
+          attStatus = this.convertOldAttToNewAttStatus(player, this.excused, this.lateExcused);
+        }
+        this.attPlayers.push({
+          ...allPlayers.find((p: Player) => p.id === Number(player)),
+          attStatus: (attStatus as unknown as AttendanceStatus),
+          isPresent: (attStatus as any) === AttendanceStatus.Present || (attStatus as any) === AttendanceStatus.Late || (attStatus as any) === true,
         });
       }
     }
 
-    this.players = Utils.getModifiedPlayers(attPlayers, instruments).map((p: Player): Player => {
+    for (let con of Object.keys(this.attendance.conductors)) {
+      if (Boolean(conductors.find((p: Player) => p.id === Number(con)))) {
+        let attStatus = this.attendance.conductors[String(con)];
+        if (typeof attStatus == 'boolean') {
+          attStatus = this.convertOldAttToNewAttStatus(con, this.excused, this.lateExcused);
+        }
+        this.conductors.push({
+          ...conductors.find((p: Player) => p.id === Number(con)),
+          attStatus: (attStatus as unknown as AttendanceStatus),
+          isPresent: (attStatus as unknown as AttendanceStatus) === AttendanceStatus.Present || (attStatus as unknown as AttendanceStatus) === AttendanceStatus.Late,
+          isConductor: true
+        });
+      }
+    }
+
+    this.players = Utils.getModifiedPlayers(this.attPlayers, instruments).map((p: Player): Player => {
       return {
         ...p,
-        isPresent: Object.keys(this.attendance.players).length ? p.isPresent : true,
-      }
+        isPresent: p.attStatus === AttendanceStatus.Present || p.attStatus === AttendanceStatus.Late,
+      };
     });
   }
 
@@ -80,7 +91,7 @@ export class AttPage implements OnInit {
     this.isOnline = (await Network.getStatus()).connected;
     Network.addListener('networkStatusChange', (status: ConnectionStatus) => {
       this.isOnline = status.connected;
-      Utils.showToast(status.connected ? "Verbindung widerhergestellt" : "Keine Internetverbindung vorhanden", status.connected ? "success" : "danger");
+      Utils.showToast(status.connected ? "Verbindung wiederhergestellt" : "Keine Internetverbindung vorhanden", status.connected ? "success" : "danger");
     });
   }
 
@@ -89,11 +100,11 @@ export class AttPage implements OnInit {
     const conductorsMap: AttendanceItem = {};
 
     for (const player of this.players) {
-      playerMap[player.id] = player.isPresent;
+      playerMap[player.id] = (player.attStatus as any);
     }
 
     for (const con of this.conductors) {
-      conductorsMap[con.id] = con.isPresent;
+      conductorsMap[con.id] = (con.attStatus as any);
     }
 
     const unexcusedPlayers: Player[] = this.players.filter((p: Player) =>
@@ -106,8 +117,6 @@ export class AttPage implements OnInit {
       type: this.attendance.type,
       players: playerMap,
       conductors: conductorsMap,
-      excused: Array.from(this.excused),
-      lateExcused: Array.from(this.lateExcused),
       playerNotes: this.playerNotes,
       criticalPlayers: [...this.attendance.criticalPlayers].concat(unexcusedPlayers.map((player: Player) => player.id)),
     }, this.attendance.id);
@@ -173,23 +182,24 @@ export class AttPage implements OnInit {
 
   async onAttChange(individual: (Player|Person)) {
     this.hasChanges = true;
-    // First Case is for: Condition 'A' to '✓'
-    // Second Case is for: Condition 'L' to 'A'
-    // Third Case is for: Condition 'E to 'L'
-    // Fourth Case is for: Condition  '✓' to 'E'
-    if (this.withExcuses && !individual.isPresent &&
-       !this.lateExcused.has(individual.id.toString()) && !this.excused.has(individual.id.toString())) {
-      individual.isPresent = true;
-      }else if (this.withExcuses && this.lateExcused.has(individual.id.toString())) {
-      individual.isPresent = false;
-      this.lateExcused.delete(individual.id.toString());
-    } else if (this.withExcuses && this.excused.has(individual.id.toString())) {
-      individual.isPresent = true;
-      this.excused.delete(individual.id.toString());
-      this.lateExcused.add(individual.id.toString());
-    } else if (this.withExcuses && individual.isPresent) {
-      individual.isPresent = false;
-      this.excused.add(individual.id.toString());
+    // First Case is for: Condition ('N' OR 'A') to '✓'
+    // Second Case is for: Condition '✓' to 'L'
+    // Third Case is for: Condition 'L to 'E'
+    // Fourth Case is for: Condition  'E' to 'A'
+    if (individual.attStatus === AttendanceStatus.Neutral || individual.attStatus === AttendanceStatus.Absent) {
+      individual.attStatus = AttendanceStatus.Present;
+      }else if (individual.attStatus === AttendanceStatus.Present) {
+      individual.attStatus = AttendanceStatus.Excused;
+    } else if (individual.attStatus === AttendanceStatus.Excused) {
+      individual.attStatus = AttendanceStatus.Late;
+    } else if (individual.attStatus === AttendanceStatus.Late) {
+      individual.attStatus = AttendanceStatus.Absent;
+    }
+
+    if(individual.isConductor === true) {
+      this.conductors[individual.id].attStatus = (individual.attStatus as any);
+    } else {
+      this.players[individual.id].attStatus = (individual.attStatus as any);
     }
   }
 
@@ -294,4 +304,15 @@ export class AttPage implements OnInit {
     });
   }
 
+  convertOldAttToNewAttStatus(id: string, excused: Set<string>, lateExcused: Set<string>): any {
+    if (excused?.has(id.toString())) {
+      return AttendanceStatus.Excused;
+    } else if (lateExcused?.has(id.toString())) {
+      return AttendanceStatus.Late;
+    } else if (this.attendance.players[String(id)] === true || this.attendance.conductors[String(id)] === true) {
+      return AttendanceStatus.Present;
+    }
+    return AttendanceStatus.Absent;
+  }
 }
+

@@ -76,13 +76,16 @@
       <ion-label>
         <h2>{{ con.firstName }} {{ con.lastName }}</h2>
       </ion-label>
-      <ion-badge [color]="excused.has(con.id.toString()) ? 'warning' : 
-                          lateExcused.has(con.id.toString()) ? 'tertiary' :
-                          con.isPresent ? 'success' : 'danger'" 
+      <ion-badge [color]="con.attStatus === 0 ? 'medium' : 
+                          con.attStatus === 1 ? 'success' :
+                          con.attStatus === 2 ? 'warning' :
+                          con.attStatus === 3 ? 'tertiary' : 'danger'" 
                   slot="end">
-                             {{ excused.has(con.id.toString()) ? 'E' : 
-                                lateExcused.has(con.id.toString()) ? 'L' : 
-                                con.isPresent ? '✓' : 'A' }}
+                             {{
+                               con.attStatus === 0 ? 'N' : 
+                               con.attStatus === 1 ? '✓' :
+                               con.attStatus === 2 ? 'E' :
+                               con.attStatus === 3 ? 'L' : 'A' }}
       </ion-badge>
     </ion-item>
     <ng-container *ngFor="let player of players">
@@ -95,13 +98,17 @@
             <h2>{{ player.firstName }} {{ player.lastName }}</h2>
             <h3 *ngIf="playerNotes[player.id]">{{ playerNotes[player.id] }}</h3>
           </ion-label>
-          <ion-badge [color]="excused.has(player.id.toString()) ? 'warning' : 
-                              lateExcused.has(player.id.toString()) ? 'tertiary' :
-                              player.isPresent ? 'success' : 'danger'" 
+          <ion-badge [color]="player.attStatus === 0 ? 'medium' : 
+                              player.attStatus === 1 ? 'success' :
+                              player.attStatus === 2 ? 'warning' :
+                              player.attStatus === 3 ? 'tertiary' : 'danger'"
                      slot="end">
-                                {{ excused.has(player.id.toString()) ? 'E' : 
-                                   lateExcused.has(player.id.toString()) ? 'L' : 
-                                   player.isPresent ? '✓' : 'A' }}
+                                {{
+                                  player.attStatus === 0 ? 'N' : 
+                                  player.attStatus === 1 ? '✓' :
+                                  player.attStatus === 2 ? 'E' :
+                                  player.attStatus === 3 ? 'L' : 'A'
+                                }}
           </ion-badge>
         </ion-item>
         <ion-item-options>

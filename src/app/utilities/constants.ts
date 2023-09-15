@@ -17,4 +17,12 @@ export enum Role {
     NONE = 99,
 };
 
+export enum AttendanceStatus {
+    Neutral = 0,
+    Present = 1,
+    Excused = 2,
+    Late = 3,
+    Absent = 4,
+}
+
 export const DEFAULT_IMAGE = "https://ionicframework.com/docs/img/demos/avatar.svg";

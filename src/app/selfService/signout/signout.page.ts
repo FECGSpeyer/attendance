@@ -3,6 +3,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, IonAccordionGroup } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
+import { AttendanceStatus } from 'src/app/utilities/constants';
 import { Attendance, PersonAttendance, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
@@ -40,6 +41,7 @@ export class SignoutPage implements OnInit {
 
   async signout() {
     this.signoutAccordionGroup.value = undefined;
+
     await this.db.signout(this.player, this.selAttIds, this.reason, this.isLateComingEvent);
     this.reason = "";
     
@@ -102,12 +104,14 @@ export class SignoutPage implements OnInit {
 
   canEdit(id: number): boolean {
     return Boolean(this.excusedAttendances.find((att: Attendance) => att.id === id) ||
-                   this.lateExcusedAttendances.find((att: Attendance) => att.id === id));
+                   this.lateExcusedAttendances.find((att: Attendance) => att.id === id) ||
+                   this.playerAttendance.find((att) => (att.text === 'E' || att.text === 'L') && att.id === id));
   }
 
   async removeExcuse(id: number) {
     if (!this.excusedAttendances.find((att: Attendance) => att.id === id) &&
-        !this.lateExcusedAttendances.find((att: Attendance) => att.id === id)) {
+        !this.lateExcusedAttendances.find((att: Attendance) => att.id === id) &&
+        !this.playerAttendance.find((att) => (att.text === 'E' || att.text === 'L') && att.id === id)) {
       return;
     }
 

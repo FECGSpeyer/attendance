@@ -1,7 +1,7 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { environment } from "src/environments/environment";
-import { DEFAULT_IMAGE, Role } from "./constants";
+import { AttendanceStatus, DEFAULT_IMAGE, Role } from "./constants";
 import { Attendance, AttendanceItem, FieldSelection, Instrument, Player } from "./interfaces";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -45,7 +45,7 @@ export class Utils {
     const overallCount: number = Object.keys(attItem).length;
     let presentCount: number = 0;
     for (const p in attItem) {
-      if (attItem[p]) {
+      if (attItem[p] === AttendanceStatus.Present || attItem[p] === AttendanceStatus.Late || (attItem[p] as any) === true) {
         presentCount++;
       }
     }

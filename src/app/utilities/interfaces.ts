@@ -1,4 +1,4 @@
-import { PlayerHistoryType, Role } from "./constants";
+import { AttendanceStatus, PlayerHistoryType, Role } from "./constants";
 
 export interface AuthObject {
     role: Role;
@@ -19,6 +19,8 @@ export interface Person {
     appId?: string;
     notes: string;
     img?: string;
+    attStatus?: AttendanceStatus;
+    isConductor?: boolean;
 }
 
 export interface PlayerHistoryEntry {
@@ -68,7 +70,7 @@ export interface Instrument {
 }
 
 export interface AttendanceItem {
-    [props: number]: boolean;
+    [props: number]: AttendanceStatus;
 }
 
 export interface Attendance {
