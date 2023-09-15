@@ -47,7 +47,7 @@ export class AttPage implements OnInit {
     this.oldAttendance = { ...this.attendance };
     
     this.excused = new Set([...this.attendance.excused]) || new Set<string>();
-    this.lateExcused = new Set([...this.attendance.lateExcused]) || new Set<string>();
+    this.lateExcused = new Set([...this.attendance.lateExcused] || []) || new Set<string>();
     this.playerNotes = { ...this.attendance.playerNotes } || {};
 
     for (let player of Object.keys(this.attendance.players)) {
@@ -111,7 +111,7 @@ export class AttPage implements OnInit {
       !p.isPresent && !p.isCritical && !this.excused.has(String(p.id)) && !this.attendance.criticalPlayers.includes(p.id)
     );
 
-    await this.db.updateAttendance({
+    const attData: Partial<Attendance> = {
       notes: this.attendance.notes,
       typeInfo: this.attendance.type === "sonstiges" ? this.attendance.typeInfo : "",
       type: this.attendance.type,
@@ -119,7 +119,13 @@ export class AttPage implements OnInit {
       conductors: conductorsMap,
       playerNotes: this.playerNotes,
       criticalPlayers: [...this.attendance.criticalPlayers].concat(unexcusedPlayers.map((player: Player) => player.id)),
-    }, this.attendance.id);
+    };
+
+    if (this.lateExcused.size === 0) {
+      delete attData.lateExcused;
+    }
+
+    await this.db.updateAttendance(attData, this.attendance.id);
 
     if (this.withExcuses) {
       await this.updateCriticalPlayers(unexcusedPlayers);
@@ -180,7 +186,7 @@ export class AttPage implements OnInit {
     this.modalController.dismiss();
   }
 
-  async onAttChange(individual: (Player|Person)) {
+  async onAttChange(individual: (Player | Person)) {
     this.hasChanges = true;
     // First Case is for: Condition ('N' OR 'A') to '✓'
     // Second Case is for: Condition '✓' to 'L'
