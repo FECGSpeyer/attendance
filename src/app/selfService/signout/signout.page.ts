@@ -105,19 +105,21 @@ export class SignoutPage implements OnInit {
   canEdit(id: number): boolean {
     return Boolean(this.excusedAttendances.find((att: Attendance) => att.id === id) ||
                    this.lateExcusedAttendances.find((att: Attendance) => att.id === id) ||
-                   this.playerAttendance.find((att) => (att.text === 'E' || att.text === 'L') && att.id === id));
+                   this.playerAttendance.find((att) => (att.text === 'E' || att.text === 'L' || att.text === 'N') && att.id === id));
   }
 
-  async removeExcuse(id: number) {
+  async removeExcuse(id: number, attText: string) {
     if (!this.excusedAttendances.find((att: Attendance) => att.id === id) &&
         !this.lateExcusedAttendances.find((att: Attendance) => att.id === id) &&
-        !this.playerAttendance.find((att) => (att.text === 'E' || att.text === 'L') && att.id === id)) {
-      return;
-    }
+        !this.playerAttendance.find((att) => (att.text === 'E' || att.text === 'L' || att.text === 'N') && att.id === id)) {
+          return;
+        }
+
+    const message = attText === 'N' ? 'Ich werde am Termin <strong>dabei</strong> sein!' : 'Ich kann <strong>doch</strong> anwesend sein';
 
     const alert = await this.alertController.create({
       header: 'Bestätigung',
-      message: 'Ich kann <strong>doch</strong> anwesend sein',
+      message,
       buttons: [
         {
           text: 'Abbrechen',

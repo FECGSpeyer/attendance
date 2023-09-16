@@ -64,7 +64,7 @@
               <ion-label>Vergangene</ion-label>
               <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'" slot="end">Ø {{ perc }}%</ion-badge>
             </ion-item-divider>
-            <ion-item [button]="canEdit(att.id) ? 'true' : 'false'" (click)="removeExcuse(att.id)" [color]="canEdit(att.id) ? 'primary' : ''">
+            <ion-item [button]="canEdit(att.id) ? 'true' : 'false'" (click)="removeExcuse(att.id, att.text)" [color]="canEdit(att.id) ? 'primary' : ''">
               <ion-label>
                 <h2 *ngIf="att.title">{{ att.date | date:'dd.MM.yyyy' }} | {{ att.title }}</h2>
                 <h2 *ngIf="!att.title">{{ att.date | date:'dd.MM.yyyy' }}</h2>
