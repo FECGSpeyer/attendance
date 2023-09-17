@@ -45,9 +45,9 @@ export class AttPage implements OnInit {
     this.hasChanges = false;
 
     this.oldAttendance = { ...this.attendance };
-    
+
     this.excused = new Set([...this.attendance.excused]) || new Set<string>();
-    this.lateExcused = new Set([...this.attendance.lateExcused] || []) || new Set<string>();
+    this.lateExcused = new Set(...[this.attendance.lateExcused] || []) || new Set<string>();
     this.playerNotes = { ...this.attendance.playerNotes } || {};
 
     for (let player of Object.keys(this.attendance.players)) {
@@ -85,6 +85,7 @@ export class AttPage implements OnInit {
         isPresent: p.attStatus === AttendanceStatus.Present || p.attStatus === AttendanceStatus.Late,
       };
     });
+
   }
 
   async listenOnNetworkChanges(): Promise<void> {
