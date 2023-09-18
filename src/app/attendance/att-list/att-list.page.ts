@@ -134,6 +134,7 @@ export class AttListPage implements OnInit {
     this.notes = '';
     this.type = '';
     this.date = '';
+    this.typeInfo = '';
     this.dateString = format(new Date(), 'dd.MM.yyyy');
   }
 
