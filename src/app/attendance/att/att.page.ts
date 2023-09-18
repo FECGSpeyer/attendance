@@ -202,16 +202,6 @@ export class AttPage implements OnInit {
     } else if (individual.attStatus === AttendanceStatus.Late) {
       individual.attStatus = AttendanceStatus.Absent;
     }
-
-    if(individual.isConductor === true) {
-      this.conductors.forEach((con) => {
-        con.attStatus = con.id === individual.id ? individual.attStatus : con.attStatus;
-      });
-    } else {
-      this.players.forEach((player) => {
-        player.attStatus = player.id === individual.id ? individual.attStatus : player.attStatus;
-      });
-    }
   }
 
   getPlayerLengthByInstrument(players: Player[], player: Player): number {
