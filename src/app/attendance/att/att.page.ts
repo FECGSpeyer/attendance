@@ -204,9 +204,13 @@ export class AttPage implements OnInit {
     }
 
     if(individual.isConductor === true) {
-      this.conductors[individual.id].attStatus = (individual.attStatus as any);
+      this.conductors.forEach((con) => {
+        con.attStatus = con.id === individual.id ? individual.attStatus : con.attStatus;
+      });
     } else {
-      this.players[individual.id].attStatus = (individual.attStatus as any);
+      this.players.forEach((player) => {
+        player.attStatus = player.id === individual.id ? individual.attStatus : player.attStatus;
+      });
     }
   }
 

@@ -93,7 +93,7 @@
         <ion-label>{{ player.instrumentName }} ({{ getPlayerLengthByInstrument(players, player) }})</ion-label>
       </ion-item-divider>
       <ion-item-sliding #slider>
-        <ion-item button detail="false" (click)="onAttChange(player)" >
+        <ion-item button detail="false" (click)="onAttChange(player)">
           <ion-label>
             <h2>{{ player.firstName }} {{ player.lastName }}</h2>
             <h3 *ngIf="playerNotes[player.id]">{{ playerNotes[player.id] }}</h3>
