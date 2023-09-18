@@ -130,6 +130,11 @@ export class AttListPage implements OnInit {
 
     await modal.dismiss();
     await this.getAttendance();
+
+    this.notes = '';
+    this.type = '';
+    this.date = '';
+    this.dateString = format(new Date(), 'dd.MM.yyyy');
   }
 
   formatDate(value: string): string {
