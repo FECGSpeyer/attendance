@@ -116,6 +116,7 @@ export class SignoutPage implements OnInit {
         handler: () => {
           this.excuseModal.present();
           this.isLateComingEvent = false;
+          this.reason = 'Krankheitsbedingt';
           this.actionSheetController.dismiss();
         },
       },
@@ -124,6 +125,7 @@ export class SignoutPage implements OnInit {
         handler: () => {
           this.excuseModal.present();
           this.isLateComingEvent = true;
+          this.reason = 'Krankheitsbedingt';
           this.actionSheetController.dismiss();
         },
       },
