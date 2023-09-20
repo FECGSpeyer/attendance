@@ -739,7 +739,7 @@ export class DbService {
         date: att.date,
         attended: att.players[id],
         title: att.typeInfo ? att.typeInfo : att.type === "vortrag" ? "Vortrag" : "",
-        text: attText, 
+        text: attText,
         notes: att.playerNotes && att.playerNotes[id] ? att.playerNotes[id] : "",
       }
     });

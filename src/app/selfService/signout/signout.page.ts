@@ -96,7 +96,8 @@ export class SignoutPage implements OnInit {
     const vergangene: any[] = this.playerAttendance.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
     if (vergangene.length) {
       vergangene[0].showDivider = true;
-      this.perc = Math.round(vergangene.filter((att: PersonAttendance) => att.attended).length / vergangene.length * 100);
+      this.perc = Math.round(vergangene.filter((att: PersonAttendance) => 
+          (att.attended as any) === AttendanceStatus.Present || (att.attended as any) === AttendanceStatus.Late || att.attended === true).length / vergangene.length * 100);
     }
   }
 
