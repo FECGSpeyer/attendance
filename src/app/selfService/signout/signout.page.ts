@@ -1,5 +1,6 @@
 /* eslint-disable arrow-body-style */
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { Keyboard } from '@capacitor/keyboard';
 import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
@@ -7,6 +8,7 @@ import { AttendanceStatus } from 'src/app/utilities/constants';
 import { Attendance, PersonAttendance, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
+
 
 @Component({
   selector: 'app-signout',
@@ -34,7 +36,6 @@ export class SignoutPage implements OnInit {
     private db: DbService,
     private alertController: AlertController,
     private actionSheetController: ActionSheetController,
-
   ) { }
 
   async ngOnInit() {
@@ -110,6 +111,7 @@ export class SignoutPage implements OnInit {
   }
 
   async presentActionSheetForChoice(attendance: PersonAttendance) {
+    this.reasonSelection = 'Krankheitsbedingt';
     if (!this.canEdit(attendance.id)) return;
     let buttons = [
       {
@@ -164,8 +166,9 @@ export class SignoutPage implements OnInit {
       this.reason = currentReasonSelection;
     } else {
       this.excuseModal.setCurrentBreakpoint(0.5);
-      window.addEventListener('native.showkeyboard', () => {
-      this.excuseModal.setCurrentBreakpoint(0.8);
+      Keyboard.addListener('keyboardWillShow', () => {
+        this.excuseModal.setCurrentBreakpoint(0.8);
+        Keyboard.removeAllListeners();
       });
       this.reason = '';
     }
