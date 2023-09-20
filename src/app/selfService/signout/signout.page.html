@@ -16,7 +16,7 @@
   </ion-item>
 
   <div>
-    <ion-modal #excuseModal [initialBreakpoint]="0.3" [breakpoints]="[0, 0.3, 0.5, 0.8]">
+    <ion-modal #excuseModal [initialBreakpoint]="0.3" [breakpoints]="[0, 0.3, 0.4, 0.8]">
         <ng-template>
           <ion-header>
             <ion-toolbar>
@@ -50,7 +50,7 @@
           </div>
           <ion-item *ngIf="selAttIds.length && (reasonSelection === 'Sonstiger Grund')">
             <ion-label position="stacked">Grund</ion-label>
-            <ion-textarea placeholder="Mindestens 5 Zeichen eingeben..." [(ngModel)]="reason"></ion-textarea>
+            <ion-textarea placeholder="Mindestens 5 Zeichen eingeben..." [(ngModel)]="reason" (ionFocus)="setModalBreakpoint();"></ion-textarea>
           </ion-item>
         </ion-list>
           </ion-content>

@@ -1,14 +1,12 @@
 /* eslint-disable arrow-body-style */
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Keyboard } from '@capacitor/keyboard';
-import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, ModalController } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, IonTextarea, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus } from 'src/app/utilities/constants';
 import { Attendance, PersonAttendance, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
-
 
 @Component({
   selector: 'app-signout',
@@ -163,18 +161,19 @@ export class SignoutPage implements OnInit {
     const currentReasonSelection = event.detail.value;
     if (!currentReasonSelection) return;
     if(currentReasonSelection !== 'Sonstiger Grund') {
+      this.excuseModal.setCurrentBreakpoint(0.3);
       this.reason = currentReasonSelection;
     } else {
-      this.excuseModal.setCurrentBreakpoint(0.5);
-      Keyboard.addListener('keyboardWillShow', () => {
-        this.excuseModal.setCurrentBreakpoint(0.8);
-        Keyboard.removeAllListeners();
-      });
+    this.excuseModal.setCurrentBreakpoint(0.4);
       this.reason = '';
     }
   }
 
   dismissExcuseModal() {
     this.excuseModal.dismiss();
+  }
+
+  setModalBreakpoint() {
+    this.excuseModal.setCurrentBreakpoint(0.8);
   }
 }
