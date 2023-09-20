@@ -161,10 +161,10 @@ export class SignoutPage implements OnInit {
     const currentReasonSelection = event.detail.value;
     if (!currentReasonSelection) return;
     if(currentReasonSelection !== 'Sonstiger Grund') {
-      this.excuseModal.setCurrentBreakpoint(0.3);
+      this.excuseModal.setCurrentBreakpoint(0.4);
       this.reason = currentReasonSelection;
     } else {
-    this.excuseModal.setCurrentBreakpoint(0.4);
+    this.excuseModal.setCurrentBreakpoint(0.5);
       this.reason = '';
     }
   }
