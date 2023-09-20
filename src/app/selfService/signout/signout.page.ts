@@ -163,7 +163,10 @@ export class SignoutPage implements OnInit {
     if(currentReasonSelection !== 'Sonstiger Grund') {
       this.reason = currentReasonSelection;
     } else {
-      this.excuseModal.setCurrentBreakpoint(0.3);
+      this.excuseModal.setCurrentBreakpoint(0.5);
+      window.addEventListener('native.showkeyboard', () => {
+      this.excuseModal.setCurrentBreakpoint(0.8);
+      });
       this.reason = '';
     }
   }
