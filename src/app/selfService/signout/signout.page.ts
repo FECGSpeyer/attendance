@@ -173,7 +173,11 @@ export class SignoutPage implements OnInit {
     this.excuseModal.dismiss();
   }
 
-  setModalBreakpoint() {
+  increaseModalBreakpoint() {
     this.excuseModal.setCurrentBreakpoint(0.8);
+  }
+
+  decreaseModalBreakpoint() {
+    this.excuseModal.setCurrentBreakpoint(0.4);
   }
 }
