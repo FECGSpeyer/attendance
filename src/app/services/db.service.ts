@@ -911,7 +911,6 @@ export class DbService {
   async signout(player: Player, attIds: number[], reason: string, isLateExcused: boolean): Promise<void> {
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
     loading.present();
-
     const attendances: Attendance[] = [];
 
     for (const attId of attIds) {

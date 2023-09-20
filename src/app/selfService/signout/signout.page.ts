@@ -1,6 +1,6 @@
 /* eslint-disable arrow-body-style */
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, AlertController, IonAccordionGroup } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus } from 'src/app/utilities/constants';
@@ -15,6 +15,7 @@ import { environment } from 'src/environments/environment';
 })
 export class SignoutPage implements OnInit {
   @ViewChild('signoutAccordionGroup') signoutAccordionGroup: IonAccordionGroup;
+  @ViewChild('excuseModal') excuseModal: IonModal;
   public player: Player;
   public attendances: Attendance[] = [];
   public excusedAttendances: Attendance[] = [];
@@ -27,11 +28,13 @@ export class SignoutPage implements OnInit {
   public name: string = environment.longName;
   public isLateComingEvent: boolean;
   public reasonSelection;
+  public signoutTitle: string;
 
   constructor(
     private db: DbService,
     private alertController: AlertController,
-    private actionSheetController: ActionSheetController
+    private actionSheetController: ActionSheetController,
+
   ) { }
 
   async ngOnInit() {
@@ -40,9 +43,9 @@ export class SignoutPage implements OnInit {
   }
 
   async signout() {
-    this.signoutAccordionGroup.value = undefined;
-
     await this.db.signout(this.player, this.selAttIds, this.reason, this.isLateComingEvent);
+
+    this.excuseModal.dismiss();
     this.reason = "";
     
     Utils.showToast("Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.", "success", 4000);
@@ -55,7 +58,7 @@ export class SignoutPage implements OnInit {
   async signin(id: number) {
     await this.db.signin(this.player, id);
 
-    Utils.showToast("Schön, dass du doch kommen kannst.", "success", 4000);
+    Utils.showToast("Schön, dass du dabei bist 🙂", "success", 4000);
 
     await this.getAttendances();
   }
@@ -103,64 +106,52 @@ export class SignoutPage implements OnInit {
   }
 
   canEdit(id: number): boolean {
-    return Boolean(this.excusedAttendances.find((att: Attendance) => att.id === id) ||
-                   this.lateExcusedAttendances.find((att: Attendance) => att.id === id) ||
-                   this.playerAttendance.find((att) => (att.text === 'E' || att.text === 'L' || att.text === 'N') && att.id === id));
+    return Boolean(this.playerAttendance.find((att) => dayjs(att.date).isAfter(dayjs(), "day") && att.id === id));
   }
 
-  async removeExcuse(id: number, attText: string) {
-    if (!this.excusedAttendances.find((att: Attendance) => att.id === id) &&
-        !this.lateExcusedAttendances.find((att: Attendance) => att.id === id) &&
-        !this.playerAttendance.find((att) => (att.text === 'E' || att.text === 'L' || att.text === 'N') && att.id === id)) {
-          return;
-        }
+  async presentActionSheetForChoice(attendance: PersonAttendance) {
+    if (!this.canEdit(attendance.id)) return;
+    let buttons = [
+      {
+        text: 'Anmelden',
+        handler: () => this.signin(attendance.id),
+      },
+      {
+        text: 'Abmelden',
+        handler: () => {
+          this.excuseModal.present();
+          this.isLateComingEvent = false;
+          this.actionSheetController.dismiss();
+        },
+      },
+      {
+        text: 'Verspätung eintragen',
+        handler: () => {
+          this.excuseModal.present();
+          this.isLateComingEvent = true;
+          this.actionSheetController.dismiss();
+        },
+      },
+      {
+        text: 'Cancel',
+        handler: () => {},
+        role: 'cancel',
+        data: {
+          action: 'cancel',
+        },
+      },
+    ];
 
-    const message = attText === 'N' ? 'Ich werde am Termin <strong>dabei</strong> sein!' : 'Ich kann <strong>doch</strong> anwesend sein';
-
-    const alert = await this.alertController.create({
-      header: 'Bestätigung',
-      message,
-      buttons: [
-        {
-          text: 'Abbrechen',
-        }, {
-          text: 'Anpassen',
-          handler: () => {
-            this.signin(id);
-          }
-        }
-      ]
-    });
-
-    await alert.present();
-  }
-
-  async presentActionSheetForChoice() {
-    if (this.signoutAccordionGroup.value === 'first') return;
-
+    if((attendance.attended as any) === AttendanceStatus.Present) {
+      buttons = buttons.filter((btn) => btn.text !== 'Anmelden');
+    } else if((attendance.attended as any) === AttendanceStatus.Excused) {
+      buttons = buttons.filter((btn) => btn.text !== 'Abmelden');
+    } else if((attendance.attended as any) === AttendanceStatus.Late) {
+      buttons = buttons.filter((btn) => btn.text !== 'Verspätung eintragen');
+    }
+    this.selAttIds = [attendance.id];
     const actionSheet = await this.actionSheetController.create({
-      header: 'Anwendungsfall',
-      buttons: [
-        {
-          text: 'Abmeldung eintragen',
-          handler: () => {
-            this.isLateComingEvent = false;
-            this.actionSheetController.dismiss();
-          },
-        },
-        {
-          text: 'Verspätung eintragen',
-          handler: () => this.isLateComingEvent = true,
-        },
-        {
-          text: 'Cancel',
-          handler: () => this.signoutAccordionGroup.value = undefined,
-          role: 'cancel',
-          data: {
-            action: 'cancel',
-          },
-        },
-      ],
+      buttons,
     });
 
     await actionSheet.present();
@@ -172,8 +163,12 @@ export class SignoutPage implements OnInit {
     if(currentReasonSelection !== 'Sonstiger Grund') {
       this.reason = currentReasonSelection;
     } else {
+      this.excuseModal.setCurrentBreakpoint(0.3);
       this.reason = '';
     }
   }
 
+  dismissExcuseModal() {
+    this.excuseModal.dismiss();
+  }
 }

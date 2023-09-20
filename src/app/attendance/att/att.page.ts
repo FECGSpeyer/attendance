@@ -151,7 +151,7 @@ export class AttPage implements OnInit {
   }
 
   async dismiss(): Promise<void> {
-    if (JSON.stringify(this.attendance) === JSON.stringify(this.oldAttendance) && !this.hasChanges) {
+    if (!this.hasChanges) {
       let hasChanged: boolean = false;
 
       for (const con of this.conductors) {
