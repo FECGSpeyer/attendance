@@ -104,13 +104,8 @@ export class SignoutPage implements OnInit {
     this.db.logout();
   }
 
-  canEdit(id: number): boolean {
-    return Boolean(this.playerAttendance.find((att) => dayjs(att.date).isAfter(dayjs(), "day") && att.id === id));
-  }
-
   async presentActionSheetForChoice(attendance: PersonAttendance) {
     this.reasonSelection = 'Krankheitsbedingt';
-    if (!this.canEdit(attendance.id)) return;
     let buttons = [
       {
         text: 'Anmelden',
@@ -179,5 +174,14 @@ export class SignoutPage implements OnInit {
 
   decreaseModalBreakpoint() {
     this.excuseModal.setCurrentBreakpoint(0.4);
+  }
+
+  attHasPassed(att: PersonAttendance) {
+    return dayjs(att.date).isBefore(dayjs(), "day");
+  }
+
+  attIsInFuture(att: PersonAttendance) {
+    return dayjs(att.date).isAfter(dayjs(), "day");
+
   }
 }
