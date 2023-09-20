@@ -9,6 +9,10 @@
   </ion-toolbar>
 </ion-header>
 
+<ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+  <ion-refresher-content></ion-refresher-content>
+</ion-refresher>
+
 <ion-content *ngIf="player">
   <ion-item lines="none">
     <ion-label *ngIf="!player.paused">Shalom {{ player.firstName }}!</ion-label>
@@ -69,7 +73,7 @@
                       (click)="presentActionSheetForChoice(att)" 
                       color="light">
               <ion-label>
-                <ion-card-title style="font-weight: 300; font-size: 1.3em;">{{ att.date | date:'dd.MM.yyyy' }}</ion-card-title>
+                <ion-card-title style="font-weight: 200; font-size: 1.3em;">{{ att.date | date:'dd.MM.yyyy' }}</ion-card-title>
                 <ion-card-subtitle>{{ att.title ? att.title : 'Übung' }}</ion-card-subtitle>
               </ion-label>
               <ion-badge slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? 'tertiary' : att.text === 'N' ? 'medium' : 'warning'">
@@ -92,7 +96,7 @@
           <ng-container *ngFor="let att of playerAttendance">
             <ion-item *ngIf="attHasPassed(att)" style="opacity: 0.6;">
             <ion-label>
-              <ion-card-title style="font-weight: 300; font-size: 1.3em;">{{ att.date | date:'dd.MM.yyyy' }}</ion-card-title>
+              <ion-card-title style="font-weight: 200; font-size: 1.35em;">{{ att.date | date:'dd.MM.yyyy' }}</ion-card-title>
               <ion-card-subtitle>{{ att.title ? att.title : 'Übung' }}</ion-card-subtitle>
             </ion-label>
             

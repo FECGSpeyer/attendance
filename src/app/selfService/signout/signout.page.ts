@@ -184,6 +184,11 @@ export class SignoutPage implements OnInit {
 
   attIsInFuture(att: PersonAttendance) {
     return dayjs(att.date).isAfter(dayjs(), "day");
+  }
 
+  async handleRefresh(event) {
+    await this.getAttendances();
+
+    event.target.complete();
   }
 }
