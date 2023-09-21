@@ -99,6 +99,7 @@ export class SignoutPage implements OnInit {
       this.perc = Math.round(vergangene.filter((att: PersonAttendance) => 
           (att.attended as any) === AttendanceStatus.Present || (att.attended as any) === AttendanceStatus.Late || att.attended === true).length / vergangene.length * 100);
     }
+    debugger;
   }
 
   logout() {
@@ -191,5 +192,9 @@ export class SignoutPage implements OnInit {
     await this.getAttendances();
 
     event.target.complete();
+  }
+
+  doNothing(){
+    this.reasonSelection = 'Familienbedingt';
   }
 }
