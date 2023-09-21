@@ -193,8 +193,4 @@ export class SignoutPage implements OnInit {
 
     event.target.complete();
   }
-
-  doNothing(){
-    this.reasonSelection = 'Familienbedingt';
-  }
 }

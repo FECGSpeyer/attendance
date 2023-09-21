@@ -53,9 +53,9 @@
               </ion-item>
             </ion-list>
           </div>
-          <ion-item *ngIf="selAttIds.length && (reasonSelection === 'Sonstiger Grund')" (ionFocus)="increaseModalBreakpoint()" (ionBlur)="decreaseModalBreakpoint()">
-            <ion-label position="stacked" >Grund</ion-label>
-            <ion-textarea placeholder="Mindestens 5 Zeichen eingeben..." [(ngModel)]="reason" (ionFocus)="doNothing()"></ion-textarea>
+          <ion-item *ngIf="selAttIds.length && (reasonSelection === 'Sonstiger Grund')">
+            <ion-label position="stacked">Grund</ion-label>
+            <ion-textarea placeholder="Mindestens 5 Zeichen eingeben..." [(ngModel)]="reason" (ionFocus)="increaseModalBreakpoint()" (ionBlur)="decreaseModalBreakpoint()"></ion-textarea>
           </ion-item>
         </ion-list>
           </ion-content>
