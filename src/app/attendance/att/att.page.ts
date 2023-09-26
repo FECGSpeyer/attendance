@@ -152,18 +152,8 @@ export class AttPage implements OnInit {
 
   async dismiss(): Promise<void> {
     if (!this.hasChanges) {
-      let hasChanged: boolean = false;
-
-      for (const con of this.conductors) {
-        if (this.attendance.conductors?.[con.id] !== con.isPresent) {
-          hasChanged = true;
-        }
-      }
-
-      if (!hasChanged) {
-        this.close();
-        return;
-      }
+      this.close();
+      return;
     }
 
     const alert: HTMLIonAlertElement = await this.alertController.create({
