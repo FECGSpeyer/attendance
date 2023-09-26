@@ -21,7 +21,7 @@
   </ion-item>
 
   <ion-accordion-group value="first">
-    <ion-modal #excuseModal [initialBreakpoint]="0.3" [breakpoints]="[0, 0.3, 0.4, 0.8]">
+    <ion-modal #excuseModal [initialBreakpoint]="attIsToday ? 0.4 : 0.3" [breakpoints]="[0, 0.3, 0.4, 0.8]">
         <ng-template>
           <ion-header>
             <ion-toolbar>
@@ -44,10 +44,10 @@
             <ion-list #ReasonIonSelect>
               <ion-item class="margin-auto">
                 <ion-select [(ngModel)]="reasonSelection" (ionChange)="onReasonSelect($event)" class="margin-auto" aria-label="reason-ion-select" interface="action-sheet" placeholder="Grund auswählen">
-                  <ion-select-option value="Krankheitsbedingt">Krankheitsbedingt</ion-select-option>
-                  <ion-select-option value="Urlaubsbedingt">Urlaubsbedingt</ion-select-option>
-                  <ion-select-option value="Arbeitsbedingt">Arbeitsbedingt</ion-select-option>
-                  <ion-select-option value="Familienbedingt">Familienbedingt</ion-select-option>
+                  <ion-select-option *ngIf="!attIsToday" value="Krankheitsbedingt">Krankheitsbedingt</ion-select-option>
+                  <ion-select-option *ngIf="!attIsToday" value="Urlaubsbedingt">Urlaubsbedingt</ion-select-option>
+                  <ion-select-option *ngIf="!attIsToday" value="Arbeitsbedingt">Arbeitsbedingt</ion-select-option>
+                  <ion-select-option *ngIf="!attIsToday" value="Familienbedingt">Familienbedingt</ion-select-option>
                   <ion-select-option value="Sonstiger Grund">Sonstiger Grund (Text)</ion-select-option>
                 </ion-select>
               </ion-item>
@@ -70,11 +70,11 @@
         <ion-list>
           <ng-container *ngFor="let att of playerAttendance">
             <ion-item button 
-                      *ngIf="attIsInFuture(att)" 
+                      *ngIf="attIsInFuture(att) || isAttToday(att)"
                       (click)="presentActionSheetForChoice(att)" 
                       color="light">
               <ion-label>
-                <ion-card-title>{{ att.date | date:'dd.MM.yyyy' }}</ion-card-title>
+                <ion-card-title>{{ getReadableDate(att.date) }}</ion-card-title>
                 <ion-card-subtitle>{{ att.title ? att.title : 'Übung' }}</ion-card-subtitle>
               </ion-label>
               <ion-badge slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? 'tertiary' : att.text === 'N' ? 'medium' : 'warning'">
@@ -97,7 +97,7 @@
           <ng-container *ngFor="let att of playerAttendance">
             <ion-item *ngIf="attHasPassed(att)" style="opacity: 0.6;">
             <ion-label>
-              <ion-card-title>{{ att.date | date:'dd.MM.yyyy' }}</ion-card-title>
+              <ion-card-title>{{ getReadableDate(att.date) }}</ion-card-title>
               <ion-card-subtitle>{{ att.title ? att.title : 'Übung' }}</ion-card-subtitle>
             </ion-label>
             

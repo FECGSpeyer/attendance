@@ -29,6 +29,7 @@ export class SignoutPage implements OnInit {
   public isLateComingEvent: boolean;
   public reasonSelection;
   public signoutTitle: string;
+  public attIsToday: boolean;
 
   constructor(
     private db: DbService,
@@ -99,7 +100,6 @@ export class SignoutPage implements OnInit {
       this.perc = Math.round(vergangene.filter((att: PersonAttendance) => 
           (att.attended as any) === AttendanceStatus.Present || (att.attended as any) === AttendanceStatus.Late || att.attended === true).length / vergangene.length * 100);
     }
-    debugger;
   }
 
   logout() {
@@ -116,18 +116,32 @@ export class SignoutPage implements OnInit {
       {
         text: 'Abmelden',
         handler: () => {
+          if(this.isAttToday(attendance)) {
+            this.attIsToday = true;
+            this.reasonSelection = 'Sonstiger Grund';
+            this.reason = '';
+          } else {
+            this.attIsToday = false;
+            this.reason = 'Krankheitsbedingt';
+          }
           this.excuseModal.present();
           this.isLateComingEvent = false;
-          this.reason = 'Krankheitsbedingt';
           this.actionSheetController.dismiss();
         },
       },
       {
         text: 'Verspätung eintragen',
         handler: () => {
+          if(this.isAttToday(attendance)) {
+            this.attIsToday = true;
+            this.reasonSelection = 'Sonstiger Grund';
+            this.reason = '';
+          } else {
+            this.attIsToday = false;
+            this.reason = 'Krankheitsbedingt';
+          }
           this.excuseModal.present();
           this.isLateComingEvent = true;
-          this.reason = 'Krankheitsbedingt';
           this.actionSheetController.dismiss();
         },
       },
@@ -186,6 +200,15 @@ export class SignoutPage implements OnInit {
 
   attIsInFuture(att: PersonAttendance) {
     return dayjs(att.date).isAfter(dayjs(), "day");
+  }
+
+  isAttToday(att: PersonAttendance) {
+    return dayjs(att.date).isSame(dayjs(), "day");
+  }
+
+  getReadableDate(date: string): string {
+    dayjs.locale("de");
+    return dayjs(date).format("ddd, DD.MM.YYYY");
   }
 
   async handleRefresh(event) {
