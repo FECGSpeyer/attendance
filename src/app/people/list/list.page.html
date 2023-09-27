@@ -93,7 +93,7 @@
         </ion-avatar>
         <ion-label>
           <ion-card-title>{{ con.firstName }} {{ con.lastName }}</ion-card-title>
-          <ion-card-subtitle>Dirigent</ion-card-subtitle>
+          <p>Dirigent</p>
         </ion-label>
       </ion-item>
       <ion-item-options>
@@ -115,7 +115,7 @@
           </ion-avatar>
           <ion-label>
             <ion-card-title>{{ player.firstName }} {{ player.lastName }}</ion-card-title>
-            <ion-card-subtitle *ngIf="player.text">{{ player.text }}</ion-card-subtitle>
+            <p *ngIf="player.text">{{ player.text }}</p>
             <p *ngIf="!player.text">{{ player.instrumentName }}</p>
           </ion-label>
           <ion-badge color="secondary"
