@@ -56,13 +56,14 @@ export class AppComponent {
       const updateFound = await this.updates.checkForUpdate();
       console.log(updateFound ? 'A new version is available.' : 'Already on the latest version.');
       if (updateFound) {
+        console.log('reloading location 1');
+        document.location.reload();
         this.updates.versionUpdates
         .pipe(filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
         .subscribe(evt => {
           // if (promptUser(evt)) {
             // Reload the page to update to the latest version.
-            document.location.reload();
-            console.log('reloading location');
+            console.log('reloading location 2');
           // }
         });
       }
