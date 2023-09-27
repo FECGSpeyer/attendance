@@ -1,4 +1,4 @@
-import { ApplicationRef, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, ApplicationRef, Component, ViewChild } from '@angular/core';
 import { AlertController, IonRouterOutlet, Platform } from '@ionic/angular';
 import { App } from '@capacitor/app';
 import { Title } from '@angular/platform-browser';
@@ -14,7 +14,7 @@ import { filter, first } from 'rxjs/operators';
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   @ViewChild(IonRouterOutlet, { static: true }) routerOutlet: IonRouterOutlet;
 
   constructor(
@@ -35,6 +35,10 @@ export class AppComponent {
   async ngOnInit() {
     await this.storage.create();
     await this.db.getSettings();
+    this.checkForUpdate();
+  }
+
+  async ngAfterViewInit() {
     this.checkForUpdate();
   }
 
