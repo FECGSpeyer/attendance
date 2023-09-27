@@ -64,7 +64,7 @@ export class AppComponent {
               role: 'cancel'
             }, {
               text: "Aktualisieren",
-              handler: (values: any) => {
+              handler: () => {
                 document.location.reload();
               }
             }
