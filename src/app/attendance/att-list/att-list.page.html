@@ -22,7 +22,7 @@
 
   <ion-accordion-group [multiple]="true" [value]="['current', 'future']" *ngIf="currentAttendance && (isConductor || isHelper)">
     <ion-accordion value="current">
-      <ion-item slot="header" color="primary">
+      <ion-item class="accordion-header" slot="header" color="primary">
         <ion-label>Aktuelle</ion-label>
       </ion-item>
       <div slot="content">
@@ -51,7 +51,7 @@
     </ion-accordion>
 
     <ion-accordion value="future" *ngIf="attendances.length && (isConductor || isHelper)">
-      <ion-item slot="header" color="primary">
+      <ion-item class="accordion-header" slot="header" color="primary">
         <ion-label>Anstehende</ion-label>
       </ion-item>
       <div slot="content">
@@ -78,7 +78,7 @@
       </div>
     </ion-accordion>
     <ion-accordion value="old" *ngIf="oldAttendances.length">
-      <ion-item *ngIf="isConductor || isHelper" slot="header" color="primary">
+      <ion-item class="accordion-header" *ngIf="isConductor || isHelper" slot="header" color="primary">
         <ion-label>Vergangene</ion-label>
       </ion-item>
       <div slot="content">
