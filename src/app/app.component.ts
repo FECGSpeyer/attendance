@@ -55,6 +55,7 @@ export class AppComponent {
     try {
       const updateFound = await this.updates.checkForUpdate();
       console.log(updateFound ? 'A new version is available.' : 'Already on the latest version.');
+      console.log(updateFound);
       if (updateFound) {
         console.log('reloading location 1');
         document.location.reload();
