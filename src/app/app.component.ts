@@ -35,6 +35,7 @@ export class AppComponent {
   async ngOnInit() {
     await this.storage.create();
     await this.db.getSettings();
+    this.checkForUpdate();
   }
 
   initializeApp() {
