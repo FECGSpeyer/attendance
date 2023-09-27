@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { ApplicationRef, Component, ViewChild } from '@angular/core';
 import { AlertController, IonRouterOutlet, Platform } from '@ionic/angular';
 import { App } from '@capacitor/app';
 import { Title } from '@angular/platform-browser';
@@ -6,6 +6,8 @@ import { environment } from 'src/environments/environment';
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from './utilities/Utils';
 import { DbService } from './services/db.service';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+import { filter, first } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -21,6 +23,8 @@ export class AppComponent {
     private storage: Storage,
     private alertController: AlertController,
     private db: DbService,
+    private updates: SwUpdate,
+    private appRef: ApplicationRef
   ) {
     this.initializeApp();
     this.titleService.setTitle(environment.longName);
@@ -39,6 +43,32 @@ export class AppComponent {
         App.exitApp();
       }
     });
+    this.checkForUpdate();
+  }
+
+  async checkForUpdate() {
+    const appIsStable$ = this.appRef.isStable.pipe(first(isStable => isStable === true));
+    if(!appIsStable$) {
+      console.log('app is not stable');
+      return;
+    }
+    try {
+      const updateFound = await this.updates.checkForUpdate();
+      console.log(updateFound ? 'A new version is available.' : 'Already on the latest version.');
+      if (updateFound) {
+        this.updates.versionUpdates
+        .pipe(filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
+        .subscribe(evt => {
+          // if (promptUser(evt)) {
+            // Reload the page to update to the latest version.
+            document.location.reload();
+            console.log('reloading location');
+          // }
+        });
+      }
+    } catch (error) {
+      console.error('Failed to check for updates:', error);
+    }
   }
 
   async presentPasswordRecoveryAlert() {
