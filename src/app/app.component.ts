@@ -56,7 +56,22 @@ export class AppComponent {
       const updateFound = await this.updates.checkForUpdate();
       console.log(updateFound ? 'A new version is available.' : 'Already on the latest version.');
       if (updateFound) {
-        document.location.reload();
+        const alert = await this.alertController.create({
+          header: "Update verfügbar!",
+          buttons: [
+            {
+              text: "Abbrechen",
+              role: 'cancel'
+            }, {
+              text: "Aktualisieren",
+              handler: (values: any) => {
+                document.location.reload();
+              }
+            }
+          ]
+        });
+
+        await alert.present();
       }
     } catch (error) {
       console.error('Failed to check for updates:', error);
