@@ -30,7 +30,7 @@ export class DbService {
     role: Role.NONE,
     login: false,
   });
-  private attDate: string;
+  public attDate: string;
   private settings: Settings;
 
   constructor(
@@ -719,7 +719,7 @@ export class DbService {
 
     return data.map((att): PersonAttendance => {
       let attText;
-      if (typeof att.players[String(id)] == 'boolean'){
+      if (typeof att.players[String(id)] == 'boolean') {
         if ((att.excused || []).includes(String(id))) {
           attText = 'E';
         } else if ((att.excused || []).includes(String(id))) {
