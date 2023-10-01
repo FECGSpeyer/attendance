@@ -329,7 +329,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     loading.present();
 
     try {
-      await this.db.createAccount(this.player);
+      await this.db.createAccount(this.player, this.isConductor);
       await this.modalController.dismiss({
         added: true
       });
@@ -397,8 +397,8 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   getAttText(text: string) {
     return text === 'X' ? '✓' :
-           text === 'L' ? 'L' :
-           (this.isConductor || text ==='E') ? 'E' : 'A';
+      text === 'L' ? 'L' :
+        (this.isConductor || text === 'E') ? 'E' : 'A';
     // if (text === "X") {
     //   return "✓";
     // }else if(text === 'L') {
