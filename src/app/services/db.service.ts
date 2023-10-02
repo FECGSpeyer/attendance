@@ -30,7 +30,7 @@ export class DbService {
     role: Role.NONE,
     login: false,
   });
-  private attDate: string;
+  public attDate: string;
   private settings: Settings;
 
   constructor(
@@ -88,14 +88,14 @@ export class DbService {
     }
   }
 
-  async createAccount(user?: Player) {
+  async createAccount(user?: Player, isConductor: boolean = false) {
     try {
       const res = await axios.post(`https://staccato-server.vercel.app/api/registerAttendanceUser`, {
         email: user.email,
         name: `${user.firstName}`,
         appName: environment.longName,
         shortName: environment.shortName,
-        url: environment.shortName === "SoS" ? "https://sos.fecg-speyer.de" : environment.shortName === "VoS" ? "https://vos.fecg-speyer.de" : "https://bos.fecg-speyer.de",
+        url: environment.shortName === "Jugendchor" ? "https://jugendchor.fecg-speyer.de" : environment.shortName === "GoS" ? "https://gos.fecg-speyer.de" : environment.shortName === "SoS" ? "https://sos.fecg-speyer.de" : environment.shortName === "VoS" ? "https://vos.fecg-speyer.de" : "https://bos.fecg-speyer.de",
       });
 
       if (!res.data?.user?.id) {
@@ -103,7 +103,7 @@ export class DbService {
       }
 
       const { data, error: updateError } = await supabase
-        .from('player')
+        .from(isConductor ? 'conductors' : 'player')
         .update({
           appId: res.data.user.id
         })
@@ -719,7 +719,7 @@ export class DbService {
 
     return data.map((att): PersonAttendance => {
       let attText;
-      if (typeof att.players[String(id)] == 'boolean'){
+      if (typeof att.players[String(id)] == 'boolean') {
         if ((att.excused || []).includes(String(id))) {
           attText = 'E';
         } else if ((att.excused || []).includes(String(id))) {

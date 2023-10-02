@@ -20,8 +20,8 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <ion-accordion-group [multiple]="true" [value]="['current', 'future']" *ngIf="currentAttendance && (isConductor || isHelper)">
-    <ion-accordion value="current">
+  <ion-accordion-group [multiple]="true" [value]="['current', 'future']">
+    <ion-accordion *ngIf="currentAttendance && (isConductor || isHelper)" value="current">
       <ion-item class="accordion-header" slot="header" color="primary">
         <ion-label>Aktuelle</ion-label>
       </ion-item>
@@ -29,13 +29,13 @@
         <ion-item-sliding #slider>
           <ng-container>
 
-            <ion-item button detail="false" (click)="openAttendance(currentAttendance)" *ngIf="currentAttendance">
+            <ion-item button detail="false" (click)="openAttendance(currentAttendance)">
               <ion-label *ngIf="currentAttendance.type === 'uebung'">{{ getReadableDate(currentAttendance.date) }}</ion-label>
                 <ion-label *ngIf="currentAttendance.type !== 'uebung'">{{ getReadableDate(currentAttendance.date) }} |
                   {{ getTypeText(currentAttendance.type, currentAttendance.typeInfo) }}</ion-label>
                   <ion-badge *ngIf="currentAttendance.percentage" slot="end">{{ currentAttendance.percentage }}%</ion-badge>
                 </ion-item>
-                
+
                 <ion-item-options side="end">
                   <ion-item-option color="danger" (click)="remove(currentAttendance.id, slider)">
                     <ion-icon name="trash-outline"></ion-icon>
@@ -74,7 +74,7 @@
       </div>
     </ion-accordion>
     <ion-accordion value="old" *ngIf="oldAttendances.length">
-      <ion-item class="accordion-header" *ngIf="isConductor || isHelper" slot="header" color="primary">
+      <ion-item class="accordion-header" *ngIf="isConductor || isHelper" slot="header" color="primary">
         <ion-label>Vergangene</ion-label>
       </ion-item>
       <div slot="content">

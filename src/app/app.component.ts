@@ -52,14 +52,17 @@ export class AppComponent {
   }
 
   async checkForUpdate() {
+    if (!this.updates.isEnabled) {
+      return;
+    }
+
     const appIsStable$ = this.appRef.isStable.pipe(first(isStable => isStable === true));
-    if(!appIsStable$) {
+    if (!appIsStable$) {
       console.log('app is not stable');
       return;
     }
     try {
       const updateFound = await this.updates.checkForUpdate();
-      console.log(updateFound ? 'A new version is available.' : 'Already on the latest version.');
       if (updateFound) {
         const alert = await this.alertController.create({
           header: "Update verfügbar!",
