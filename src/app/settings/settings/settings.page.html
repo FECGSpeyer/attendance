@@ -13,15 +13,13 @@
 
   <ion-list>
     <ion-list-header color="primary" *ngIf="!isChoir" sticky="true">
-      <h1 style="font-weight: 500;">Orchester</h1>
+      Orchester
     </ion-list-header>
     <ion-list-header *ngIf="isChoir" sticky="true">
       Chor
     </ion-list-header>
     <ion-item button id="general-item">
-      <ion-label>
-        <ion-card-title>Allgemeine Einstellungen</ion-card-title>
-      </ion-label>
+      <ion-label>Allgemeine Einstellungen</ion-label>
       <ion-modal #generalModal [breakpoints]="[0.5]" [initialBreakpoint]="0.5" trigger="general-item">
         <ng-template>
           <ion-content>
@@ -67,43 +65,41 @@
       </ion-modal>
     </ion-item>
     <ion-item routerLink="songs" button>
-      <ion-label>
-        <ion-card-title>Werke</ion-card-title>
-      </ion-label>
+      <ion-label>Werke</ion-label>
     </ion-item>
     <ion-item *ngIf="isAdmin" button (click)="openHistoryModal()">
       <ion-label>
-        <ion-card-title>Werkhistorie</ion-card-title>
+        Werkhistorie
       </ion-label>
     </ion-item>
     <ion-item *ngIf="isAdmin" routerLink="meetings" button>
       <ion-label>
-        <ion-card-title>Besprechungen</ion-card-title>
+        Besprechungen
       </ion-label>
     </ion-item>
     <ion-item *ngIf="!isChoir" routerLink="instruments" button>
       <ion-label>
-        <ion-card-title>Instrumente</ion-card-title>
+        Instrumente
       </ion-label>
     </ion-item>
     <ion-item *ngIf="isChoir" routerLink="instruments" button>
       <ion-label>
-        <ion-card-title>Stimmen</ion-card-title>
+        Stimmen
       </ion-label>
     </ion-item>
     <ion-item routerLink="teachers" *ngIf="showTeachers" button>
       <ion-label>
-        <ion-card-title>Lehrer</ion-card-title>
+        Lehrer
       </ion-label>
     </ion-item>
     <ion-item *ngIf="isAdmin" button (click)="openPlanning()">
       <ion-label>
-        <ion-card-title>Probenplan erstellen</ion-card-title>
+        Probenplan erstellen
       </ion-label>
     </ion-item>
     <ion-item *ngIf="isAdmin" detail="false" button id="trigger-button">
       <ion-label>
-        <ion-card-title>Registerprobenplan erstellen</ion-card-title>
+        Registerprobenplan erstellen
       </ion-label>
       <ion-modal #planModal trigger="trigger-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">
         <ng-template>
@@ -132,7 +128,7 @@
 
     <ion-item detail="false" button id="archive-button">
       <ion-label>
-        <ion-card-title>Archiv</ion-card-title>
+        Archiv
       </ion-label>
       <ion-modal trigger="archive-button" [breakpoints]="[0.5, 1]" [initialBreakpoint]="0.5">
         <ng-template>
@@ -171,23 +167,23 @@
     </ion-item>
 
     <ion-list-header color="primary" sticky="true">
-        <h1>Allgemein</h1>
+        Allgemein
     </ion-list-header>
     <ion-item button (click)="openStats()">
       <ion-label>
-        <ion-card-title>Statistiken</ion-card-title>
+        Statistiken
       </ion-label>
     </ion-item>
 
     <ion-item button (click)="openExport()">
       <ion-label>
-        <ion-card-title>Export</ion-card-title>
+        Export
       </ion-label>
     </ion-item>
 
     <ion-item button detail="false" id="whatsnew-button">
       <ion-label>
-        <ion-card-title>Version</ion-card-title>
+        Version
       </ion-label>
       <ion-badge slot="end">{{ version }}</ion-badge>
       <ion-modal trigger="whatsnew-button" [breakpoints]="[0.5, 1]" [initialBreakpoint]="0.5">

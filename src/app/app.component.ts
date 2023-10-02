@@ -14,7 +14,7 @@ import { filter, first } from 'rxjs/operators';
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent {
   @ViewChild(IonRouterOutlet, { static: true }) routerOutlet: IonRouterOutlet;
 
   constructor(
@@ -38,7 +38,7 @@ export class AppComponent implements AfterViewInit {
     this.checkForUpdate();
   }
 
-  async ngAfterViewInit() {
+  async ionViewDidEnter() {
     this.checkForUpdate();
   }
 

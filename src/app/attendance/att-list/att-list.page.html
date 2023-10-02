@@ -30,13 +30,9 @@
           <ng-container>
 
             <ion-item button detail="false" (click)="openAttendance(currentAttendance)" *ngIf="currentAttendance">
-              <ion-label>
-                <ion-card-title>{{ getReadableDate(currentAttendance.date) }}</ion-card-title>
-                <ion-card-subtitle>{{ getTypeText(currentAttendance.type, currentAttendance.typeInfo) }}</ion-card-subtitle>
-              </ion-label>
-              <!-- <ion-label *ngIf="currentAttendance.type === 'uebung'">{{ getReadableDate(currentAttendance.date) }}</ion-label>
-                <ion-label *ngIf="currentAttendance.type !== 'uebung'">{{ getReadableDate(currentAttendance.date) }} | -->
-                  <!-- {{ getTypeText(currentAttendance.type, currentAttendance.typeInfo) }}</ion-label> -->
+              <ion-label *ngIf="currentAttendance.type === 'uebung'">{{ getReadableDate(currentAttendance.date) }}</ion-label>
+                <ion-label *ngIf="currentAttendance.type !== 'uebung'">{{ getReadableDate(currentAttendance.date) }} |
+                  {{ getTypeText(currentAttendance.type, currentAttendance.typeInfo) }}</ion-label>
                   <ion-badge *ngIf="currentAttendance.percentage" slot="end">{{ currentAttendance.percentage }}%</ion-badge>
                 </ion-item>
                 
@@ -58,13 +54,13 @@
         <ion-list>
           <ion-item-sliding #slider *ngFor="let att of attendances">
             <ion-item button detail="false" (click)="openAttendance(att)">
-              <ion-label>
+              <!-- <ion-label>
                 <ion-card-title>{{ getReadableDate(att.date) }}</ion-card-title>
                 <ion-card-subtitle>{{ getTypeText(att.type, att.typeInfo) }}</ion-card-subtitle>
-              </ion-label>
-              <!-- <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
+              </ion-label> -->
+              <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
               <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
-                {{ getTypeText(att.type, att.typeInfo) }}</ion-label> -->
+                {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
               <ion-badge *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
             </ion-item>
 
@@ -89,13 +85,9 @@
           </ion-item-divider>
           <ion-item-sliding #slider *ngFor="let att of oldAttendances">
             <ion-item button detail="false" (click)="openAttendance(att)">
-              <ion-label>
-                <ion-card-title>{{ getReadableDate(att.date) }}</ion-card-title>
-                <ion-card-subtitle>{{ getTypeText(att.type, att.typeInfo) }}</ion-card-subtitle>
-              </ion-label>
-              <!-- <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
+              <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
               <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
-                {{ getTypeText(att.type, att.typeInfo) }}</ion-label> -->
+                {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
               <ion-badge *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
             </ion-item>
 
