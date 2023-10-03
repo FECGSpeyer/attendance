@@ -975,14 +975,18 @@ export class DbService {
       .from("attendances")
       .getPublicUrl(fileName);
 
-    await axios.post(`https://staccato-server.vercel.app/api/sendPracticePlan`, {
+    const res = await axios.post(`https://staccato-server.vercel.app/api/sendPracticePlan`, {
       url: data.publicUrl,
       shortName: environment.shortName,
     });
 
     loading.dismiss();
 
-    Utils.showToast("Nachricht wurde erfolgreich gesendet!");
+    if (res.status === 200) {
+      Utils.showToast("Nachricht wurde erfolgreich gesendet!");
+    } else {
+      Utils.showToast("Fehler beim Senden der Nachricht, versuche es später erneut!", "danger");
+    }
 
     window.setTimeout(async () => {
       await supabase.storage
