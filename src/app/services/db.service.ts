@@ -441,7 +441,7 @@ export class DbService {
 
     if (attData?.length) {
       for (const att of attData) {
-        att.conductors[id] = true;
+        att.conductors[id] = AttendanceStatus.Present;
         await this.updateAttendance({ conductors: att.conductors }, att.id);
       }
     }
@@ -451,7 +451,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
-      .neq(`players->"${id}"` as any, null);
+      .neq(`players->>"${id}"` as any, null);
 
     if (data?.length) {
       for (const att of data) {
@@ -465,7 +465,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
-      .neq(`conductors->"${id}"` as any, null);
+      .neq(`conductors->>"${id}"` as any, null);
 
     if (data?.length) {
       for (const att of data) {
@@ -711,7 +711,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
-      .neq(`players->"${id}"` as any, null)
+      .neq(`players->>"${id}"` as any, null)
       .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
       .order("date", {
         ascending: false,
@@ -749,7 +749,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
-      .neq(`conductors->"${id}"` as any, null)
+      .neq(`conductors->>"${id}"` as any, null)
       .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
       .order("date", {
         ascending: false,
