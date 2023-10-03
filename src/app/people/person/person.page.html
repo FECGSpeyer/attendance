@@ -100,7 +100,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Stimmumfang</ion-label>
-                <ion-input [disabled]="readOnly || !isAdmin" readonly [(ngModel)]="player.range"></ion-input>
+                <ion-input [disabled]="readOnly || !isAdmin" [(ngModel)]="player.range"></ion-input>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -253,8 +253,8 @@
                 <h3 *ngIf="att.type === 4 && att.notes">{{ att.notes }}</h3>
               </ion-label>
 
-              <ion-badge *ngIf="att.type === 4" slot="end" [color]="att.text === 'X' ? 'success' : 
-                                                                    (att.text === 'A' && !isConductor) ? 'danger' : 
+              <ion-badge *ngIf="att.type === 4" slot="end" [color]="att.text === 'X' ? 'success' :
+                                                                    (att.text === 'A' && !isConductor) ? 'danger' :
                                                                     (att.text === 'L') ? 'tertiary' : 'warning'">
                 {{ getAttText(att.text) }}</ion-badge>
             </ion-item>

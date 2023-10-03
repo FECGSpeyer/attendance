@@ -338,9 +338,9 @@ export class ListPage implements OnInit {
         text: "Entfernen",
         handler: (): void => {
           if (isConductor) {
-            this.removeConductor(player.id);
+            this.removeConductor(player);
           } else {
-            this.removePlayer(player.id);
+            this.removePlayer(player);
           }
           slider.close();
         },
@@ -374,13 +374,13 @@ export class ListPage implements OnInit {
     this.isArchiveModalOpen = false;
   }
 
-  async removePlayer(id: number): Promise<void> {
-    await this.db.removePlayer(id);
+  async removePlayer(player: Person): Promise<void> {
+    await this.db.removePlayer(player);
     await this.getPlayers();
   }
 
-  async removeConductor(id: number): Promise<void> {
-    await this.db.removeConductor(id);
+  async removeConductor(conductor: Person): Promise<void> {
+    await this.db.removeConductor(conductor);
     this.conductors = await this.db.getConductors();
   }
 

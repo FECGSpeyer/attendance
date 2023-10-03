@@ -80,7 +80,7 @@ export class DbService {
       name: "Beobachter",
       appName: environment.longName,
       shortName: environment.shortName,
-      url: environment.shortName === "SoS" ? "https://sos.fecg-speyer.de" : environment.shortName === "VoS" ? "https://vos.fecg-speyer.de" : "https://bos.fecg-speyer.de",
+      url: environment.shortName === "Jugendchor" ? "https://jugendchor.fecg-speyer.de" : environment.shortName === "GoS" ? "https://gos.fecg-speyer.de" : environment.shortName === "SoS" ? "https://sos.fecg-speyer.de" : environment.shortName === "VoS" ? "https://vos.fecg-speyer.de" : "https://bos.fecg-speyer.de",
     });
 
     if (!res.data?.user?.id) {
@@ -558,22 +558,39 @@ export class DbService {
     return data;
   }
 
-  async removePlayer(id: number): Promise<void> {
+  async removePlayer(player: Person): Promise<void> {
     await supabase
       .from('player')
       .delete()
-      .match({ id });
+      .match({ id: player.id });
 
-    await this.removePlayerFromAttendances(id);
+    await this.removePlayerFromAttendances(player.id);
+    if (player.appId) {
+      await this.removeEmailFromAuth(player.appId);
+    }
   }
 
-  async removeConductor(id: number): Promise<void> {
+  async removeEmailFromAuth(appId: string) {
+    const res = await axios.post(`https://staccato-server.vercel.app/api/deleteUserFromAuth`, {
+      id: appId,
+      appShortName: environment.shortName,
+    });
+
+    if (res.status !== 200) {
+      throw new Error('Fehler beim Löschen des Accounts');
+    }
+  }
+
+  async removeConductor(conductor: Person): Promise<void> {
     await supabase
       .from('conductors')
       .delete()
-      .match({ id });
+      .match({ id: conductor.id });
 
-    await this.removeConductorFromAttendances(id);
+    await this.removeConductorFromAttendances(conductor.id);
+    if (conductor.appId) {
+      await this.removeEmailFromAuth(conductor.appId);
+    }
   }
 
   async archivePlayer(player: Player, left: string, notes: string): Promise<void> {
