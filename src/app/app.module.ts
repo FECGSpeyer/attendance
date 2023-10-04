@@ -20,30 +20,29 @@ import { PlanningPageModule } from './planning/planning.module';
 import { InstrumentPageModule } from './instruments/instrument/instrument.module';
 
 @NgModule({
-  declarations: [AppComponent],
-  entryComponents: [],
-  imports: [
-    BrowserModule,
-    IonicModule.forRoot(),
-    AppRoutingModule,
-    PersonPageModule,
-    IonicStorageModule.forRoot(),
-    AttPageModule,
-    ProblemModalPageModule,
-    HistoryPageModule,
-    TeacherPageModule,
-    StatsPageModule,
-    ExportPageModule,
-    PlanningPageModule,
-    InstrumentPageModule,
-    ServiceWorkerModule.register('ngsw-worker.js', {
-      enabled: environment.production,
-      // Register the ServiceWorker as soon as the app is stable
-      // or after 30 seconds (whichever comes first).
-      registrationStrategy: 'registerWhenStable:30000'
-    }),
-  ],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
-  bootstrap: [AppComponent],
+    declarations: [AppComponent],
+    imports: [
+        BrowserModule,
+        IonicModule.forRoot(),
+        AppRoutingModule,
+        PersonPageModule,
+        IonicStorageModule.forRoot(),
+        AttPageModule,
+        ProblemModalPageModule,
+        HistoryPageModule,
+        TeacherPageModule,
+        StatsPageModule,
+        ExportPageModule,
+        PlanningPageModule,
+        InstrumentPageModule,
+        ServiceWorkerModule.register('ngsw-worker.js', {
+            enabled: environment.production,
+            // Register the ServiceWorker as soon as the app is stable
+            // or after 30 seconds (whichever comes first).
+            registrationStrategy: 'registerWhenStable:30000'
+        }),
+    ],
+    providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
+    bootstrap: [AppComponent]
 })
 export class AppModule { }
