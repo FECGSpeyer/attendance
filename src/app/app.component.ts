@@ -26,9 +26,7 @@ export class AppComponent {
     this.titleService.setTitle(environment.longName);
     document.body.classList.add(environment.isChoir ? "choir" : environment.symphonyImage ? "sinfo" : "blas");
     this.listenToAuthChanges();
-    const webApp: any = (window as any).Telegram.WebApp;
-    webApp.expand();
-    Utils.showToast(JSON.stringify(webApp.initData));
+    this.initializeTelegram();
   }
 
   async ngOnInit() {
@@ -42,6 +40,17 @@ export class AppComponent {
         App.exitApp();
       }
     });
+  }
+
+  initializeTelegram() {
+    const webApp: any = (window as any).Telegram.WebApp;
+    if (webApp.initData?.length) {
+      webApp.expand();
+      const telegramId: string = JSON.parse(webApp.initData).user.id;
+      const photo: string = JSON.parse(webApp.initData).user.photo_url;
+      Utils.showToast(telegramId + " " + photo);
+      webApp.sendData({ test: "test" });
+    }
   }
 
   async presentPasswordRecoveryAlert() {
