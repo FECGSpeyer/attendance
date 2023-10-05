@@ -219,9 +219,9 @@ export class DbService {
     }
   }
 
-  async getConductorByAppId(showToast: boolean = true): Promise<Player> {
-    const { data: player, error } = await supabase
-      .from('player')
+  async getConductorByAppId(showToast: boolean = true): Promise<Person> {
+    const { data: conductor, error } = await supabase
+      .from(SupabaseTable.CONDUCTORS)
       .select('*')
       .match({ appId: this.user.id })
       .single();
@@ -233,10 +233,7 @@ export class DbService {
       throw error;
     }
 
-    return {
-      ...player,
-      history: player.history as any,
-    }
+    return conductor;
   }
 
   async getPlayers(all: boolean = false): Promise<Player[]> {

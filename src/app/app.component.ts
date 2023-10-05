@@ -96,11 +96,11 @@ export class AppComponent {
   }
 
   async listenToAuthChanges() {
-    this.db.getSupabase().auth.onAuthStateChange(async (event, session) => {
+    this.db.getSupabase().auth.onAuthStateChange(async (event) => {
       if (event === 'PASSWORD_RECOVERY') {
         this.presentPasswordRecoveryAlert();
       }
-      if (session.user) {
+      if (event === "SIGNED_IN") {
         this.initializeTelegram();
       }
     });
