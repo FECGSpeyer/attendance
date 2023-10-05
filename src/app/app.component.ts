@@ -27,7 +27,9 @@ export class AppComponent {
     document.body.classList.add(environment.isChoir ? "choir" : environment.symphonyImage ? "sinfo" : "blas");
     this.listenToAuthChanges();
     if ((window as any).Telegram?.WebApp.isExpanded === false) {
-      (window as any).Telegram.WebApp.expand();
+      const webApp: any = (window as any).Telegram.WebApp;
+      webApp.expand();
+      window.alert(JSON.stringify(webApp.initData));
     }
   }
 
