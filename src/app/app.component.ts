@@ -1,4 +1,4 @@
-import { AfterViewInit, ApplicationRef, Component, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { AlertController, IonRouterOutlet, Platform } from '@ionic/angular';
 import { App } from '@capacitor/app';
 import { Title } from '@angular/platform-browser';
@@ -6,7 +6,6 @@ import { environment } from 'src/environments/environment';
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from './utilities/Utils';
 import { DbService } from './services/db.service';
-import { SwUpdate } from '@angular/service-worker';
 
 @Component({
   selector: 'app-root',
@@ -22,8 +21,6 @@ export class AppComponent {
     private storage: Storage,
     private alertController: AlertController,
     private db: DbService,
-    private updates: SwUpdate,
-    private appRef: ApplicationRef
   ) {
     this.initializeApp();
     this.titleService.setTitle(environment.longName);
