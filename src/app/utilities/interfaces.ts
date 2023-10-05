@@ -30,6 +30,7 @@ export interface Person {
     img?: string;
     attStatus?: AttendanceStatus;
     isConductor?: boolean;
+    telegramId?: string;
 }
 
 export interface PlayerHistoryEntry {

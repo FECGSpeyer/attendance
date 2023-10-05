@@ -6,6 +6,8 @@ import { environment } from 'src/environments/environment';
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from './utilities/Utils';
 import { DbService } from './services/db.service';
+import { Role } from './utilities/constants';
+import { Person, Player } from './utilities/interfaces';
 
 @Component({
   selector: 'app-root',
@@ -42,14 +44,24 @@ export class AppComponent {
     });
   }
 
-  initializeTelegram() {
+  async initializeTelegram() {
     const webApp: any = (window as any).Telegram.WebApp;
     if (webApp.initData?.length) {
       webApp.expand();
-      const telegramId: string = JSON.parse(webApp.initData).user.id;
-      const photo: string = JSON.parse(webApp.initData).user.photo_url;
-      Utils.showToast(telegramId + " " + photo);
-      webApp.sendData({ test: "test" });
+      let person: Person;
+      if (await this.db.getRole() === Role.ADMIN) {
+        person = await this.db.getConductorByAppId();
+        if (!person.telegramId) {
+          this.db.updateConductor({ ...person, telegramId: webApp.initDataUnsafe.user.id });
+          webApp.sendData({ success: true });
+        }
+      } else {
+        person = await this.db.getPlayerByAppId();
+        if (!person.telegramId) {
+          this.db.updatePlayer({ ...person, telegramId: webApp.initDataUnsafe.user.id } as Player);
+          webApp.sendData({ success: true });
+        }
+      }
     }
   }
 

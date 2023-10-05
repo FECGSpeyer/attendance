@@ -219,6 +219,26 @@ export class DbService {
     }
   }
 
+  async getConductorByAppId(showToast: boolean = true): Promise<Player> {
+    const { data: player, error } = await supabase
+      .from('player')
+      .select('*')
+      .match({ appId: this.user.id })
+      .single();
+
+    if (error) {
+      if (showToast) {
+        Utils.showToast("Es konnte kein Spieler gefunden werden.", "danger");
+      }
+      throw error;
+    }
+
+    return {
+      ...player,
+      history: player.history as any,
+    }
+  }
+
   async getPlayers(all: boolean = false): Promise<Player[]> {
     if (all) {
       const { data, error } = await supabase
