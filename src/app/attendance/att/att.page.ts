@@ -3,7 +3,6 @@ import { AlertController, IonItemSliding, ModalController } from '@ionic/angular
 import * as dayjs from 'dayjs';
 import { FaceMatch } from 'face-api.js';
 import { DbService } from 'src/app/services/db.service';
-import { FaceRecService } from 'src/app/services/face-rec.service';
 import { AttendanceStatus, PlayerHistoryType } from 'src/app/utilities/constants';
 import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -34,7 +33,6 @@ export class AttPage implements OnInit {
     private modalController: ModalController,
     private db: DbService,
     private alertController: AlertController,
-    private faceRecService: FaceRecService,
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -185,7 +183,7 @@ export class AttPage implements OnInit {
     // Fourth Case is for: Condition  'E' to 'A'
     if (individual.attStatus === AttendanceStatus.Neutral || individual.attStatus === AttendanceStatus.Absent) {
       individual.attStatus = AttendanceStatus.Present;
-      }else if (individual.attStatus === AttendanceStatus.Present) {
+    } else if (individual.attStatus === AttendanceStatus.Present) {
       individual.attStatus = AttendanceStatus.Excused;
     } else if (individual.attStatus === AttendanceStatus.Excused) {
       individual.attStatus = AttendanceStatus.Late;
@@ -232,22 +230,6 @@ export class AttPage implements OnInit {
     });
 
     await alert.present();
-  }
-
-  async recognizeFaces() {
-    if (this.attendance.img) {
-      const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999999);
-      loading.present();
-      const res: FaceMatch[] = (await this.faceRecService.initialize(this.players, this.conductors, this.attendance.img)).filter((match: FaceMatch) => match.label !== "unknown");
-      loading.dismiss();
-      if (res.length) {
-        Utils.showToast(res.map((match: FaceMatch) => match.label).join(", ") + " gefunden");
-      } else {
-        Utils.showToast("Keine Personen gefunden", "danger");
-      }
-    } else {
-      this.chooser.nativeElement.click();
-    }
   }
 
   async onImageSelect(evt: any) {
