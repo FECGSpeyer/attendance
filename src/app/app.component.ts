@@ -61,6 +61,10 @@ export class AppComponent {
           webApp.sendData(JSON.stringify({ success: true }));
         }
       }
+
+      Utils.showToast("Account erfolgreich verknüpft!");
+
+      setTimeout(webApp.close.bind(this), 1000);
     }
   }
 
