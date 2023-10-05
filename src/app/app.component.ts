@@ -35,11 +35,11 @@ export class AppComponent {
   async ngOnInit() {
     await this.storage.create();
     await this.db.getSettings();
-    this.checkForUpdate();
+    // this.checkForUpdate();
   }
 
   async ionViewDidEnter() {
-    this.checkForUpdate();
+    // this.checkForUpdate();
   }
 
   initializeApp() {
@@ -48,7 +48,7 @@ export class AppComponent {
         App.exitApp();
       }
     });
-    this.checkForUpdate();
+    // this.checkForUpdate();
   }
 
   async checkForUpdate() {
