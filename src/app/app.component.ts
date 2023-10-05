@@ -26,11 +26,9 @@ export class AppComponent {
     this.titleService.setTitle(environment.longName);
     document.body.classList.add(environment.isChoir ? "choir" : environment.symphonyImage ? "sinfo" : "blas");
     this.listenToAuthChanges();
-    if ((window as any).Telegram?.WebApp.isExpanded === false) {
-      const webApp: any = (window as any).Telegram.WebApp;
-      webApp.expand();
-      window.alert(JSON.stringify(webApp.initData));
-    }
+    const webApp: any = (window as any).Telegram.WebApp;
+    webApp.expand();
+    Utils.showToast(JSON.stringify(webApp.initData));
   }
 
   async ngOnInit() {
