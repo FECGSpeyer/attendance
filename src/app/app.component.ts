@@ -51,14 +51,14 @@ export class AppComponent {
       if (await this.db.getRole() === Role.ADMIN) {
         person = await this.db.getConductorByAppId();
         if (!person.telegramId) {
-          this.db.updateConductor({ ...person, telegramId: webApp.initDataUnsafe.user.id });
-          webApp.sendData({ success: true });
+          await this.db.updateConductor({ ...person, telegramId: webApp.initDataUnsafe.user.id });
+          webApp.sendData(JSON.stringify({ success: true }));
         }
       } else {
         person = await this.db.getPlayerByAppId();
         if (!person.telegramId) {
-          this.db.updatePlayer({ ...person, telegramId: webApp.initDataUnsafe.user.id } as Player);
-          webApp.sendData({ success: true });
+          await this.db.updatePlayer({ ...person, telegramId: webApp.initDataUnsafe.user.id } as Player);
+          webApp.sendData(JSON.stringify({ success: true }));
         }
       }
     }
