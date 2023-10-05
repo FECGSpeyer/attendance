@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
+import { AlertController, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { jsPDF } from "jspdf";
@@ -15,6 +15,7 @@ import { Role } from 'src/app/utilities/constants';
 import { Instrument, Person, Player, Settings } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
+import { Viewer } from '../../utilities/interfaces';
 
 @Component({
   selector: 'app-settings',
@@ -30,6 +31,7 @@ export class SettingsPage implements OnInit {
   public version: string = require('../../../../package.json').version;
   public showTeachers: boolean = environment.showTeachers;
   public instruments: Instrument[] = [];
+  public viewers: Viewer[] = [];
   public isAdmin: boolean = false;
   public isChoir: boolean = false;
   public attDateString: string = format(new Date(), 'dd.MM.yyyy');
@@ -59,10 +61,12 @@ export class SettingsPage implements OnInit {
     this.instruments = await this.db.getInstruments();
     this.leftPlayers = Utils.getModifiedPlayers(await this.db.getLeftPlayers(), this.instruments);
     this.leftConductors = allConductors.filter((con: Person) => Boolean(con.left));
+    this.viewers = await this.db.getViewers();
   }
 
   async ionViewWillEnter() {
     this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
+    this.viewers = await this.db.getViewers();
   }
 
   async logout() {
@@ -217,4 +221,21 @@ export class SettingsPage implements OnInit {
     loading.dismiss();
   }
 
+  async removeViewer(viewer: Viewer): Promise<void> {
+    const alert = await new AlertController().create({
+      header: 'Beobachter entfernen?',
+      message: `Möchtest du ${viewer.firstName} wirklich entfernen?`,
+      buttons: [{
+        text: "Abbrechen"
+      }, {
+        text: "Ja",
+        handler: async () => {
+          await this.db.removeEmailFromAuth(viewer.appId);
+          this.viewers = await this.db.getViewers();
+        }
+      }]
+    });
+
+    await alert.present();
+  }
 }

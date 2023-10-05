@@ -202,4 +202,21 @@ export class Utils {
 
     return Math.abs(ageDiff.getUTCFullYear() - 1970);
   }
+
+  public static getUrlByShortName(shortName: string): string {
+    switch (shortName) {
+      case "Jugendchor":
+        return "https://jugendchor.fecg-speyer.de";
+      case "GoS":
+        return "https://gos.fecg-speyer.de";
+      case "SoS":
+        return "https://sos.fecg-speyer.de";
+      case "VoS":
+        return "https://vos.fecg-speyer.de";
+      case "BoS":
+        return "https://bos.fecg-speyer.de";
+      default:
+        throw new Error("short name not found");
+    }
+  }
 }

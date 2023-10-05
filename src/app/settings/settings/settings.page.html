@@ -12,7 +12,7 @@
   </ion-header>
 
   <ion-list>
-    <ion-list-header color="primary" *ngIf="!isChoir" sticky="true">
+    <ion-list-header *ngIf="!isChoir" sticky="true">
       Orchester
     </ion-list-header>
     <ion-list-header *ngIf="isChoir" sticky="true">
@@ -166,9 +166,35 @@
       <ion-label>Fehlende Benutzeraccounts anlegen</ion-label>
     </ion-item>
 
-    <ion-list-header color="primary" sticky="true">
+    <ion-list-header sticky="true">
         Allgemein
     </ion-list-header>
+
+    <ion-item detail="false" button id="viewer-button">
+      <ion-label>
+        Beobachter
+      </ion-label>
+      <ion-modal trigger="viewer-button" [breakpoints]="[0.5, 1]" [initialBreakpoint]="0.5">
+        <ng-template>
+          <ion-content>
+            <ion-header>
+              <ion-toolbar>
+                <ion-title>Beobachter</ion-title>
+              </ion-toolbar>
+            </ion-header>
+            <ion-list>
+              <ion-item button (click)="removeViewer(v)" *ngFor="let v of viewers">
+                <ion-label>
+                  <h2>{{ v.firstName }} {{ v.lastName }}</h2>
+                  <h3>{{ v.email }}</h3>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+
     <ion-item button (click)="openStats()">
       <ion-label>
         Statistiken

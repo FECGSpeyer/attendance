@@ -25,4 +25,10 @@ export enum AttendanceStatus {
     Absent = 4,
 }
 
+export enum SupabaseTable {
+    CONDUCTORS = "conductors",
+    PLAYER = "player",
+    VIEWERS = "viewers",
+}
+
 export const DEFAULT_IMAGE = "https://ionicframework.com/docs/img/demos/avatar.svg";

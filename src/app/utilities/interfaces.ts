@@ -5,6 +5,15 @@ export interface AuthObject {
     login: boolean;
 }
 
+export interface Viewer {
+    id?: number;
+    created_at?: string;
+    appId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+}
+
 export interface Person {
     id?: number;
     created_at?: string;

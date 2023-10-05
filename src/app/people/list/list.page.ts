@@ -110,17 +110,23 @@ export class ListPage implements OnInit {
         type: "email",
         name: "email",
         placeholder: "E-Mail-Adresse",
+      }, {
+        name: "firstName",
+        placeholder: "Vorname",
+      }, {
+        name: "lastName",
+        placeholder: "Nachname",
       }],
       buttons: [{
         text: "Abbrechen",
       }, {
         text: "Einladen",
-        handler: async (data: { email: string }) => {
-          if (Utils.validateEmail(data.email)) {
+        handler: async (data: { email: string, firstName: string, lastName: string }) => {
+          if (Utils.validateEmail(data.email) && data.firstName.length && data.lastName.length) {
             const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
             loading.present();
             try {
-              await this.db.createViewer(data.email);
+              await this.db.createViewer(data);
               Utils.showToast("Der Benutzer wurde erfolgreich angelegt.", "success");
               await loading.dismiss();
             } catch (error) {
@@ -128,7 +134,7 @@ export class ListPage implements OnInit {
               await loading.dismiss();
             }
           } else {
-            alert.message = "Bitte gib eine gültige E-Mail-Adresse ein.";
+            alert.message = "Bitte gib gültige Werte ein.";
             return false;
           }
         }
@@ -358,7 +364,7 @@ export class ListPage implements OnInit {
 
   async archivePlayer(): Promise<void> {
     if (!this.playerToArchive.instrument) {
-      await this.db.archiveConductor(this.playerToArchive.id, dayjs(this.archiveDate).toISOString(), this.archiveNote);
+      await this.db.archiveConductor(this.playerToArchive, dayjs(this.archiveDate).toISOString(), this.archiveNote);
       this.dismissArchiveModal();
       this.conductors == await this.db.getConductors();
     } else {

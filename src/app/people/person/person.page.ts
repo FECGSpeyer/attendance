@@ -8,6 +8,7 @@ import * as utc from 'dayjs/plugin/utc';
 import { environment } from 'src/environments/environment';
 import { Utils } from 'src/app/utilities/Utils';
 import { DEFAULT_IMAGE, PlayerHistoryType, Role } from 'src/app/utilities/constants';
+import { SupabaseTable } from '../../utilities/constants';
 dayjs.extend(utc);
 
 @Component({
@@ -329,7 +330,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     loading.present();
 
     try {
-      await this.db.createAccount(this.player, this.isConductor);
+      await this.db.createAccount(this.player, this.isConductor ? SupabaseTable.CONDUCTORS : SupabaseTable.PLAYER);
       await this.modalController.dismiss({
         added: true
       });

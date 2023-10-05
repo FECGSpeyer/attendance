@@ -6,8 +6,8 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
-import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role } from '../utilities/constants';
-import { Attendance, AuthObject, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Settings, Song, Teacher } from '../utilities/interfaces';
+import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
+import { Attendance, AuthObject, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Settings, Song, Teacher, Viewer } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 
@@ -74,39 +74,61 @@ export class DbService {
     this.router.navigateByUrl("/login");
   }
 
-  async createViewer(email: string) {
-    const res = await axios.post(`https://staccato-server.vercel.app/api/registerAttendanceUser`, {
-      email: email,
-      name: "Beobachter",
-      appName: environment.longName,
-      shortName: environment.shortName,
-      url: environment.shortName === "Jugendchor" ? "https://jugendchor.fecg-speyer.de" : environment.shortName === "GoS" ? "https://gos.fecg-speyer.de" : environment.shortName === "SoS" ? "https://sos.fecg-speyer.de" : environment.shortName === "VoS" ? "https://vos.fecg-speyer.de" : "https://bos.fecg-speyer.de",
-    });
+  async getViewers(): Promise<Viewer[]> {
+    const { data, error } = await supabase
+      .from(SupabaseTable.VIEWERS)
+      .select('*');
 
-    if (!res.data?.user?.id) {
-      throw new Error('Fehler beim Erstellen des Accounts');
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Beobachter", "danger");
+      throw error;
+    }
+
+    return data;
+  }
+
+  async createViewer(viewer: Partial<Viewer>) {
+    const appId: string = await this.registerUser(viewer.email as string, viewer.firstName as string);
+
+    const { error } = await supabase
+      .from(SupabaseTable.VIEWERS)
+      .insert({
+        ...viewer,
+        appId
+      });
+
+    if (error) {
+      throw new Error("Fehler beim hinzufügen des Beobachters.");
     }
   }
 
-  async createAccount(user?: Player, isConductor: boolean = false) {
+  async registerUser(email: string, name: string): Promise<string> {
     try {
       const res = await axios.post(`https://staccato-server.vercel.app/api/registerAttendanceUser`, {
-        email: user.email,
-        name: `${user.firstName}`,
+        email,
+        name,
         appName: environment.longName,
         shortName: environment.shortName,
-        url: environment.shortName === "Jugendchor" ? "https://jugendchor.fecg-speyer.de" : environment.shortName === "GoS" ? "https://gos.fecg-speyer.de" : environment.shortName === "SoS" ? "https://sos.fecg-speyer.de" : environment.shortName === "VoS" ? "https://vos.fecg-speyer.de" : "https://bos.fecg-speyer.de",
+        url: Utils.getUrlByShortName(environment.shortName),
       });
 
       if (!res.data?.user?.id) {
         throw new Error('Fehler beim Erstellen des Accounts');
       }
 
+      return res.data.user.id;
+    } catch (_) {
+      throw new Error("Die E-Mail Adresse wird bereits verwendet");
+    }
+  }
+
+  async createAccount(user: Player, table: SupabaseTable = SupabaseTable.PLAYER) {
+    try {
+      const appId: string = await this.registerUser(user.email as string, user.firstName);
+
       const { data, error: updateError } = await supabase
-        .from(isConductor ? 'conductors' : 'player')
-        .update({
-          appId: res.data.user.id
-        })
+        .from(table)
+        .update({ appId })
         .match({ id: user.id })
         .select()
         .single();
@@ -144,19 +166,22 @@ export class DbService {
 
   async getRole(): Promise<Role> {
     const adminMails: string[] = await this.getConductorMails();
-    const isAdmin: boolean = adminMails.includes(this.user.email.toLowerCase());
-    const hasProfile: boolean = await this.hasUserProfile();
+    const isAdmin: boolean = adminMails.includes((this.user.email || "").toLowerCase());
 
     if (isAdmin) {
       return Role.ADMIN;
-    } else if (hasProfile) {
+    }
+
+    const hasProfile: boolean = await this.hasPlayerProfile();
+
+    if (hasProfile) {
       return environment.withSignout ? Role.PLAYER : Role.HELPER;
     } else {
       return Role.VIEWER;
     }
   }
 
-  async hasUserProfile(): Promise<boolean> {
+  async hasPlayerProfile(): Promise<boolean> {
     try {
       await this.getPlayerByAppId(false);
       return true;
@@ -594,6 +619,12 @@ export class DbService {
   }
 
   async archivePlayer(player: Player, left: string, notes: string): Promise<void> {
+    if (player.appId && player.email) {
+      await this.removeEmailFromAuth(player.email);
+      delete player.appId;
+      delete player.email;
+    }
+
     if ((player.notes || "") !== notes) {
       player.history.push({
         date: new Date().toISOString(),
@@ -608,11 +639,17 @@ export class DbService {
       .match({ id: player.id });
   }
 
-  async archiveConductor(id: number, left: string, notes: string): Promise<void> {
+  async archiveConductor(conductor: Person, left: string, notes: string): Promise<void> {
+    if (conductor.appId && conductor.email) {
+      await this.removeEmailFromAuth(conductor.email);
+      delete conductor.appId;
+      delete conductor.email;
+    }
+
     await supabase
-      .from('conductors')
+      .from(SupabaseTable.CONDUCTORS)
       .update({ left, notes })
-      .match({ id });
+      .match({ id: conductor.id });
   }
 
   async getInstruments(): Promise<Instrument[]> {
