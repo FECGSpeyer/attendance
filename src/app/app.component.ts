@@ -6,8 +6,7 @@ import { environment } from 'src/environments/environment';
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from './utilities/Utils';
 import { DbService } from './services/db.service';
-import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
-import { filter, first } from 'rxjs/operators';
+import { SwUpdate } from '@angular/service-worker';
 
 @Component({
   selector: 'app-root',
@@ -35,11 +34,6 @@ export class AppComponent {
   async ngOnInit() {
     await this.storage.create();
     await this.db.getSettings();
-    // this.checkForUpdate();
-  }
-
-  async ionViewDidEnter() {
-    // this.checkForUpdate();
   }
 
   initializeApp() {
@@ -48,42 +42,6 @@ export class AppComponent {
         App.exitApp();
       }
     });
-    // this.checkForUpdate();
-  }
-
-  async checkForUpdate() {
-    if (!this.updates.isEnabled) {
-      return;
-    }
-
-    const appIsStable$ = this.appRef.isStable.pipe(first(isStable => isStable === true));
-    if (!appIsStable$) {
-      console.log('app is not stable');
-      return;
-    }
-    try {
-      const updateFound = await this.updates.checkForUpdate();
-      if (updateFound) {
-        const alert = await this.alertController.create({
-          header: "Update verfügbar!",
-          buttons: [
-            {
-              text: "Abbrechen",
-              role: 'cancel'
-            }, {
-              text: "Aktualisieren",
-              handler: () => {
-                document.location.reload();
-              }
-            }
-          ]
-        });
-
-        await alert.present();
-      }
-    } catch (error) {
-      console.error('Failed to check for updates:', error);
-    }
   }
 
   async presentPasswordRecoveryAlert() {
