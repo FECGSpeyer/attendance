@@ -62,9 +62,20 @@ export class AppComponent {
         }
       }
 
-      Utils.showToast("Account erfolgreich verknüpft!");
+      const alert = await this.alertController.create({
+        header: 'Verknüpfung erfolgreich!',
+        message: 'Die Verknüpfung war erfolgreich! App schließen?',
+        buttons: [
+          {
+            text: 'Nein',
+          }, {
+            text: 'Ja',
+            handler: webApp.close.bind(this)
+          }
+        ]
+      });
 
-      setTimeout(webApp.close.bind(this), 1000);
+      await alert.present();
     }
   }
 
