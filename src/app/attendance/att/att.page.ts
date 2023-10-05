@@ -1,7 +1,6 @@
-import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
-import { FaceMatch } from 'face-api.js';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, PlayerHistoryType } from 'src/app/utilities/constants';
 import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, Player } from 'src/app/utilities/interfaces';
