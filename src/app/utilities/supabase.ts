@@ -3,7 +3,7 @@ export type Json =
   | number
   | boolean
   | null
-  | { [key: string]: Json }
+  | { [key: string]: Json | undefined }
   | Json[]
 
 export interface Database {
@@ -16,7 +16,6 @@ export interface Database {
           criticalPlayers: number[]
           date: string | null
           excused: string[] | null
-          lateExcused: string[] | null
           id: number
           img: string | null
           notes: string | null
@@ -56,6 +55,7 @@ export interface Database {
           type?: string
           typeInfo?: string | null
         }
+        Relationships: []
       }
       conductors: {
         Row: {
@@ -100,6 +100,7 @@ export interface Database {
           left?: string | null
           notes?: string | null
         }
+        Relationships: []
       }
       history: {
         Row: {
@@ -129,6 +130,20 @@ export interface Database {
           otherConductor?: string | null
           songId?: number | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "history_conductor_fkey"
+            columns: ["conductor"]
+            referencedRelation: "conductors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "history_songId_fkey"
+            columns: ["songId"]
+            referencedRelation: "songs"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       instruments: {
         Row: {
@@ -158,6 +173,7 @@ export interface Database {
           range?: string | null
           tuning?: string
         }
+        Relationships: []
       }
       meetings: {
         Row: {
@@ -181,6 +197,7 @@ export interface Database {
           id?: number
           notes?: string | null
         }
+        Relationships: []
       }
       player: {
         Row: {
@@ -267,6 +284,20 @@ export interface Database {
           teacher?: number | null
           testResult?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "player_instrument_fkey"
+            columns: ["instrument"]
+            referencedRelation: "instruments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_teacher_fkey"
+            columns: ["teacher"]
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       settings: {
         Row: {
@@ -287,6 +318,7 @@ export interface Database {
           practiceEnd?: string | null
           practiceStart?: string | null
         }
+        Relationships: []
       }
       songs: {
         Row: {
@@ -313,6 +345,7 @@ export interface Database {
           number?: number | null
           withChoir?: boolean | null
         }
+        Relationships: []
       }
       teachers: {
         Row: {
@@ -342,6 +375,41 @@ export interface Database {
           number?: string | null
           private?: boolean | null
         }
+        Relationships: []
+      }
+      viewers: {
+        Row: {
+          appId: string | null
+          created_at: string
+          email: string | null
+          firstName: string | null
+          id: number
+          lastName: string | null
+        }
+        Insert: {
+          appId?: string | null
+          created_at?: string
+          email?: string | null
+          firstName?: string | null
+          id?: number
+          lastName?: string | null
+        }
+        Update: {
+          appId?: string | null
+          created_at?: string
+          email?: string | null
+          firstName?: string | null
+          id?: number
+          lastName?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viewers_appId_fkey"
+            columns: ["appId"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
