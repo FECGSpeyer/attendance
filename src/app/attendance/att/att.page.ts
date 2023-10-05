@@ -175,8 +175,17 @@ export class AttPage implements OnInit {
     this.modalController.dismiss();
   }
 
-  async onAttChange(individual: (Player | Person)) {
+  async onAttChange(individual: (Person)) {
     this.hasChanges = true;
+    if (!this.withExcuses) {
+      if (individual.attStatus === AttendanceStatus.Absent) {
+        individual.attStatus = AttendanceStatus.Present;
+      } else {
+        individual.attStatus = AttendanceStatus.Absent;
+      }
+
+      return;
+    }
     // First Case is for: Condition ('N' OR 'A') to '✓'
     // Second Case is for: Condition '✓' to 'L'
     // Third Case is for: Condition 'L to 'E'

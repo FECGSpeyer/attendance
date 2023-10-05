@@ -791,7 +791,7 @@ export class DbService {
       return {
         id: att.id,
         date: att.date,
-        attended: att.players[id],
+        attended: attText === "L" || attText === "X",
         title: att.typeInfo ? att.typeInfo : att.type === "vortrag" ? "Vortrag" : "",
         text: attText,
         notes: att.playerNotes && att.playerNotes[id] ? att.playerNotes[id] : "",
@@ -810,12 +810,28 @@ export class DbService {
       });
 
     return data.map((att): PersonAttendance => {
+      let attText;
+      if (typeof att.conductors[String(id)] == 'boolean') {
+        if ((att.excused || []).includes(String(id))) {
+          attText = 'E';
+        } else if ((att.excused || []).includes(String(id))) {
+          attText = 'L';
+        } else if (att.conductors[String(id)] === true) {
+          attText = 'X';
+        } else {
+          attText = 'A';
+        }
+      }
+      if (!attText) {
+        attText = att.conductors[id] === 0 ? 'N' : att.conductors[id] === 1 ? 'X' : att.conductors[id] === 2 ? 'E' : att.conductors[id] === 3 ? 'L' : 'A'
+      }
+
       return {
         id: att.id,
         date: att.date,
-        attended: att.conductors[id],
+        attended: attText === "L" || attText === "X",
         title: att.typeInfo ? att.typeInfo : att.type === "vortrag" ? "Vortrag" : "",
-        text: att.conductors[id] ? "X" : (att.excused || []).includes(String(id)) ? "E" : "A",
+        text: attText,
         notes: "",
       }
     });

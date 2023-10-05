@@ -96,9 +96,10 @@ export class PersonPage implements OnInit, AfterViewInit {
             type: PlayerHistoryType.ATTENDANCE,
             title: att.title,
             notes: att.notes,
+            attended: att.attended,
           };
         });
-        this.perc = Math.round(this.history.filter((att: PersonAttendance) => att.text === "X").length / this.history.length * 100);
+        this.perc = Math.round(this.history.filter((att: PersonAttendance) => att.attended).length / this.history.length * 100);
       } else {
         await this.getHistoryInfo();
       }
