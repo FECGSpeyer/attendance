@@ -28,7 +28,6 @@ export class AppComponent {
     this.titleService.setTitle(environment.longName);
     document.body.classList.add(environment.isChoir ? "choir" : environment.symphonyImage ? "sinfo" : "blas");
     this.listenToAuthChanges();
-    this.initializeTelegram();
   }
 
   async ngOnInit() {
@@ -100,6 +99,9 @@ export class AppComponent {
     this.db.getSupabase().auth.onAuthStateChange(async (event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         this.presentPasswordRecoveryAlert();
+      }
+      if (session.user) {
+        this.initializeTelegram();
       }
     });
   }
