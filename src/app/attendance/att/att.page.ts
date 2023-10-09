@@ -7,7 +7,7 @@ import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, Player 
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment.prod';
 import { ConnectionStatus, Network } from '@capacitor/network';
-import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { Storage } from '@ionic/storage-angular';
 
 @Component({
@@ -32,6 +32,7 @@ export class AttPage implements OnInit {
   private oldAttendance: Attendance;
   private hasChanges = false;
   public realtimeAttendance: boolean = false;
+  private sub: RealtimeChannel;
 
   constructor(
     private modalController: ModalController,
@@ -48,11 +49,13 @@ export class AttPage implements OnInit {
     this.instruments = await this.db.getInstruments();
     this.hasChanges = false;
 
-    this.db.getAttChannel().on(
-      'postgres_changes',
-      { event: 'UPDATE', schema: 'public', table: 'attendance' },
-      (payload: RealtimePostgresChangesPayload<any>) => this.onAttRealtimeChanges(payload))
-      .subscribe();
+    if (this.realtimeAttendance) {
+      this.sub = this.db.getAttChannel().on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'attendance' },
+        (payload: RealtimePostgresChangesPayload<any>) => this.onAttRealtimeChanges(payload))
+        .subscribe();
+    }
 
     this.oldAttendance = { ...this.attendance };
     this.initializeAttObjects();
@@ -204,14 +207,13 @@ export class AttPage implements OnInit {
       this.attendance = this.oldAttendance;
     }
 
+    if (this.realtimeAttendance) {
+      await this.sub.unsubscribe();
+    }
     this.modalController.dismiss();
   }
 
   onAttRealtimeChanges(payload: RealtimePostgresChangesPayload<any>) {
-    if (!this.realtimeAttendance) {
-      return;
-    }
-
     if (
       payload.new.id !== this.attendance.id ||
       this.oldAttendance.type !== payload.new.type ||
