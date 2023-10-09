@@ -222,6 +222,12 @@
             </ion-header>
 
             <ion-list>
+              <ion-list-header>Version 1.7.0</ion-list-header>
+              <ion-item>
+                <ion-label>
+                  <h2>- Anwesenheit wird in Echtzeit aktualisiert</h2>
+                </ion-label>
+              </ion-item>
               <ion-list-header>Version 1.6.18</ion-list-header>
               <ion-item>
                 <ion-label>
@@ -421,6 +427,15 @@
         </ng-template>
       </ion-modal>
     </ion-item>
+
+    <ion-list-header sticky="true">
+      Beta (App wird bei Änderungen neu geladen)
+    </ion-list-header>
+    <ion-item>
+      <ion-label>Echzeit-Anwesenheit</ion-label>
+      <ion-toggle (ionChange)="onRealtimeChange()" [(ngModel)]="realtimeAttendance"></ion-toggle>
+    </ion-item>
+
     <ion-item color="danger" button (click)="logout()">
       <ion-label>Ausloggen</ion-label>
     </ion-item>

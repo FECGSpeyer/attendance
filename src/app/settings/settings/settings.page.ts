@@ -16,6 +16,7 @@ import { Instrument, Person, Player, Settings } from 'src/app/utilities/interfac
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
 import { Viewer } from '../../utilities/interfaces';
+import { Storage } from '@ionic/storage-angular';
 
 @Component({
   selector: 'app-settings',
@@ -38,11 +39,13 @@ export class SettingsPage implements OnInit {
   public attDate: string = new Date().toISOString();
   public practiceStart: string;
   public practiceEnd: string;
+  public realtimeAttendance: boolean = false;
 
   constructor(
     private db: DbService,
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
+    private storage: Storage,
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -50,6 +53,7 @@ export class SettingsPage implements OnInit {
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isAdmin = state.role === Role.ADMIN;
     });
+    this.realtimeAttendance = await this.storage.get("realtimeAttendance") || false;
     this.attDate = await this.db.getCurrentAttDate();
     const settings: Settings = await this.db.getSettings();
     this.practiceStart = settings.practiceStart || '18:00';
@@ -237,5 +241,10 @@ export class SettingsPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  async onRealtimeChange() {
+    await this.storage.set("realtimeAttendance", this.realtimeAttendance);
+    window.location.reload();
   }
 }

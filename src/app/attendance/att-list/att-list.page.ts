@@ -8,6 +8,8 @@ import { Utils } from 'src/app/utilities/Utils';
 import { AttPage } from '../att/att.page';
 import 'jspdf-autotable';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
+import { Storage } from '@ionic/storage-angular';
+import { environment } from 'src/environments/environment';
 require('dayjs/locale/de');
 
 @Component({
@@ -27,11 +29,13 @@ export class AttListPage implements OnInit {
   public notes: string;
   public typeInfo: string;
   public perc: number = 0;
+  public realtimeAttendance: boolean = false;
 
   constructor(
     private db: DbService,
     private modalController: ModalController,
     private alertController: AlertController,
+    private storage: Storage,
   ) { }
 
   async logout() {
@@ -40,6 +44,7 @@ export class AttListPage implements OnInit {
 
   async ngOnInit() {
     await this.getAttendance();
+    this.realtimeAttendance = await this.storage.get("realtimeAttendance") || false;
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isConductor = state.role === Role.ADMIN;
       this.isHelper = state.role === Role.HELPER;
@@ -109,8 +114,8 @@ export class AttListPage implements OnInit {
     }
 
     for (const player of (await this.db.getPlayers()).filter((player: Player) => !player.paused)) {
-      if(this.type === 'vortrag') {
-      players[player.id] = AttendanceStatus.Neutral;
+      if (this.type === 'vortrag' && environment.withExcuses) {
+        players[player.id] = AttendanceStatus.Neutral;
       } else {
         players[player.id] = AttendanceStatus.Present;
       }
@@ -170,10 +175,15 @@ export class AttListPage implements OnInit {
 
     await modal.present();
 
-    const { data } = await modal.onWillDismiss();
-
-    if (data?.updated) {
+    if (this.realtimeAttendance) {
+      await modal.onWillDismiss();
       await this.getAttendance();
+    } else {
+      const { data } = await modal.onWillDismiss();
+
+      if (data?.updated) {
+        await this.getAttendance();
+      }
     }
   }
 }

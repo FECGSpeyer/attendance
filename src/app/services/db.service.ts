@@ -529,6 +529,7 @@ export class DbService {
     delete dataToUpdate.criticalReasonText;
     delete dataToUpdate.isPresent;
     delete dataToUpdate.text;
+    delete dataToUpdate.attStatus;
 
     const { data, error } = await supabase
       .from('player')
@@ -708,6 +709,11 @@ export class DbService {
       .match({ id });
 
     return data;
+  }
+
+  getAttChannel() {
+    return supabase
+      .channel('att-changes');
   }
 
   async addAttendance(attendance: Attendance): Promise<Attendance[]> {

@@ -1,6 +1,7 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-title *ngIf="players">{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(players) }}/{{ players.length }}</ion-title>
+  <ion-toolbar [color]="realtimeAttendance ? 'warning' : ''">
+    <ion-title *ngIf="players && !realtimeAttendance">{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(players) }}/{{ players.length }}</ion-title>
+    <ion-title *ngIf="players && realtimeAttendance">{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(players) }}/{{ players.length }} (Echtzeit Beta Funktion Aktiv)</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon name="close"></ion-icon>
@@ -18,7 +19,7 @@
       <div slot="content">
         <ion-item lines="none" *ngIf="attendance">
           <ion-label>Kategorie</ion-label>
-          <ion-select [(ngModel)]="attendance.type">
+          <ion-select (ionChange)="onInfoChanged()" [(ngModel)]="attendance.type">
             <ion-select-option value="uebung">Übung</ion-select-option>
             <ion-select-option value="vortrag">Vortrag</ion-select-option>
             <ion-select-option value="hochzeit">Hochzeit</ion-select-option>
@@ -27,18 +28,18 @@
         </ion-item>
         <ion-item lines="none" *ngIf="attendance?.type === 'sonstiges'">
           <ion-label position="stacked">Probenart</ion-label>
-          <ion-input [(ngModel)]="attendance.typeInfo"></ion-input>
+          <ion-input (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.typeInfo"></ion-input>
         </ion-item>
         <ion-item lines="none">
           <ion-label position="stacked">Notizen</ion-label>
-          <ion-textarea rows="2" [(ngModel)]="attendance.notes"></ion-textarea>
+          <ion-textarea (ionBlur)="onInfoChanged()" rows="2" [(ngModel)]="attendance.notes"></ion-textarea>
         </ion-item>
-        <input style="display: 'none';" name="file" #chooser (change)="onImageSelect($event)" accept="image/*" class="inputFile" type="file" />
+        <!-- <input style="display: 'none';" name="file" #chooser (change)="onImageSelect($event)" accept="image/*" class="inputFile" type="file" />
         <ion-item>
           <ion-avatar slot="end" *ngIf="attendance.img">
             <img [src]="attendance.img" />
           </ion-avatar>
-        </ion-item>
+        </ion-item> -->
       </div>
     </ion-accordion>
   </ion-accordion-group>
@@ -71,7 +72,7 @@
     <ion-item-divider sticky="true">
       <ion-label>Dirigenten ({{ conductors?.length }})</ion-label>
     </ion-item-divider>
-    <ion-item button detail="false" *ngFor="let con of conductors" (click)="onAttChange(con)">
+    <ion-item button detail="false" *ngFor="let con of conductors; trackBy:userById" (click)="onAttChange(con)">
       <ion-label>
         <h2>{{ con.firstName }} {{ con.lastName }}</h2>
       </ion-label>
@@ -87,7 +88,7 @@
                                con.attStatus === 3 ? 'L' : 'A' }}
       </ion-badge>
     </ion-item>
-    <ng-container *ngFor="let player of players">
+    <ng-container *ngFor="let player of players; trackBy:userById">
       <ion-item-divider sticky="true" *ngIf="player.firstOfInstrument">
         <ion-label>{{ player.instrumentName }} ({{ getPlayerLengthByInstrument(players, player) }})</ion-label>
       </ion-item-divider>
@@ -118,7 +119,7 @@
       </ion-item-sliding>
     </ng-container>
   </ion-list>
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab *ngIf="!realtimeAttendance" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button [disabled]="!isOnline" (click)="save()">
       <ion-icon name="save-outline"></ion-icon>
     </ion-fab-button>

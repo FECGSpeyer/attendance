@@ -7,6 +7,8 @@ import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, Player 
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment.prod';
 import { ConnectionStatus, Network } from '@capacitor/network';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { Storage } from '@ionic/storage-angular';
 
 @Component({
   selector: 'app-att',
@@ -17,8 +19,11 @@ export class AttPage implements OnInit {
   @Input() attendance: Attendance;
   @ViewChild('chooser') chooser: ElementRef;
   public players: Player[] = [];
+  public allPlayers: Player[] = [];
   public attPlayers: Player[] = [];
   public conductors: Person[] = [];
+  public allConductors: Person[] = [];
+  public instruments: Instrument[] = [];
   public excused: Set<string> = new Set();
   public lateExcused: Set<string> = new Set();
   public withExcuses: boolean = environment.withExcuses;
@@ -26,35 +31,52 @@ export class AttPage implements OnInit {
   private playerNotes: { [prop: number]: string } = {};
   private oldAttendance: Attendance;
   private hasChanges = false;
-
+  public realtimeAttendance: boolean = false;
 
   constructor(
     private modalController: ModalController,
     private db: DbService,
     private alertController: AlertController,
+    private storage: Storage,
   ) { }
 
   async ngOnInit(): Promise<void> {
+    this.realtimeAttendance = await this.storage.get("realtimeAttendance") || false;
     void this.listenOnNetworkChanges();
-    const conductors: Person[] = await this.db.getConductors(true);
-    const allPlayers: Player[] = await this.db.getPlayers();
-    const instruments: Instrument[] = await this.db.getInstruments();
+    this.allConductors = await this.db.getConductors(true);
+    this.allPlayers = await this.db.getPlayers();
+    this.instruments = await this.db.getInstruments();
     this.hasChanges = false;
 
-    this.oldAttendance = { ...this.attendance };
+    this.db.getAttChannel().on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'attendance' },
+      (payload: RealtimePostgresChangesPayload<any>) => this.onAttRealtimeChanges(payload))
+      .subscribe();
 
+    this.oldAttendance = { ...this.attendance };
+    this.initializeAttObjects();
+  }
+
+  userById(player: Player) {
+    return player.id;
+  }
+
+  initializeAttObjects() {
+    this.attPlayers = [];
+    this.conductors = [];
     this.excused = new Set([...this.attendance.excused]) || new Set<string>();
     this.lateExcused = new Set(...[this.attendance.lateExcused] || []) || new Set<string>();
     this.playerNotes = { ...this.attendance.playerNotes } || {};
 
     for (let player of Object.keys(this.attendance.players)) {
-      if (Boolean(allPlayers.find((p: Player) => p.id === Number(player)))) {
+      if (Boolean(this.allPlayers.find((p: Player) => p.id === Number(player)))) {
         let attStatus = this.attendance.players[String(player)];
         if (typeof attStatus == 'boolean') {
           attStatus = this.convertOldAttToNewAttStatus(player, this.excused, this.lateExcused);
         }
         this.attPlayers.push({
-          ...allPlayers.find((p: Player) => p.id === Number(player)),
+          ...this.allPlayers.find((p: Player) => p.id === Number(player)),
           attStatus: (attStatus as unknown as AttendanceStatus),
           isPresent: (attStatus as any) === AttendanceStatus.Present || (attStatus as any) === AttendanceStatus.Late || (attStatus as any) === true,
         });
@@ -62,13 +84,13 @@ export class AttPage implements OnInit {
     }
 
     for (let con of Object.keys(this.attendance.conductors)) {
-      if (Boolean(conductors.find((p: Player) => p.id === Number(con)))) {
+      if (Boolean(this.allConductors.find((p: Player) => p.id === Number(con)))) {
         let attStatus = this.attendance.conductors[String(con)];
         if (typeof attStatus == 'boolean') {
           attStatus = this.convertOldAttToNewAttStatus(con, this.excused, this.lateExcused);
         }
         this.conductors.push({
-          ...conductors.find((p: Player) => p.id === Number(con)),
+          ...this.allConductors.find((p: Player) => p.id === Number(con)),
           attStatus: (attStatus as unknown as AttendanceStatus),
           isPresent: (attStatus as unknown as AttendanceStatus) === AttendanceStatus.Present || (attStatus as unknown as AttendanceStatus) === AttendanceStatus.Late,
           isConductor: true
@@ -76,13 +98,12 @@ export class AttPage implements OnInit {
       }
     }
 
-    this.players = Utils.getModifiedPlayers(this.attPlayers, instruments).map((p: Player): Player => {
+    this.players = Utils.getModifiedPlayers(this.attPlayers, this.instruments).map((p: Player): Player => {
       return {
         ...p,
         isPresent: p.attStatus === AttendanceStatus.Present || p.attStatus === AttendanceStatus.Late,
       };
     });
-
   }
 
   async listenOnNetworkChanges(): Promise<void> {
@@ -125,13 +146,15 @@ export class AttPage implements OnInit {
 
     await this.db.updateAttendance(attData, this.attendance.id);
 
-    if (this.withExcuses) {
-      await this.updateCriticalPlayers(unexcusedPlayers);
-    }
+    if (!this.realtimeAttendance) {
+      if (this.withExcuses) {
+        await this.updateCriticalPlayers(unexcusedPlayers);
+      }
 
-    this.modalController.dismiss({
-      updated: true
-    });
+      this.modalController.dismiss({
+        updated: true
+      });
+    }
   }
 
   async updateCriticalPlayers(unexcusedPlayers: Player[]) {
@@ -148,7 +171,7 @@ export class AttPage implements OnInit {
   }
 
   async dismiss(): Promise<void> {
-    if (!this.hasChanges) {
+    if (!this.hasChanges || this.realtimeAttendance) {
       this.close();
       return;
     }
@@ -169,13 +192,43 @@ export class AttPage implements OnInit {
     await alert.present();
   }
 
-  close() {
-    this.attendance = this.oldAttendance;
+
+  async close() {
+    if (this.withExcuses && this.realtimeAttendance) {
+      const unexcusedPlayers: Player[] = this.players.filter((p: Player) =>
+        !p.isPresent && !p.isCritical && !this.excused.has(String(p.id)) && !this.attendance.criticalPlayers.includes(p.id)
+      );
+
+      await this.updateCriticalPlayers(unexcusedPlayers);
+    } else {
+      this.attendance = this.oldAttendance;
+    }
+
     this.modalController.dismiss();
   }
 
+  onAttRealtimeChanges(payload: RealtimePostgresChangesPayload<any>) {
+    if (!this.realtimeAttendance) {
+      return;
+    }
+
+    if (
+      payload.new.id !== this.attendance.id ||
+      this.oldAttendance.type !== payload.new.type ||
+      this.oldAttendance.typeInfo !== payload.new.typeInfo ||
+      this.oldAttendance.notes !== payload.new.notes
+    ) {
+      return;
+    }
+
+    this.attendance = payload.new;
+    this.initializeAttObjects();
+  }
+
   async onAttChange(individual: (Person)) {
-    this.hasChanges = true;
+    if (!this.realtimeAttendance) {
+      this.hasChanges = true;
+    }
     if (!this.withExcuses) {
       if (individual.attStatus === AttendanceStatus.Absent) {
         individual.attStatus = AttendanceStatus.Present;
@@ -197,6 +250,10 @@ export class AttPage implements OnInit {
       individual.attStatus = AttendanceStatus.Late;
     } else if (individual.attStatus === AttendanceStatus.Late) {
       individual.attStatus = AttendanceStatus.Absent;
+    }
+
+    if (this.realtimeAttendance) {
+      this.save();
     }
   }
 
@@ -224,14 +281,18 @@ export class AttPage implements OnInit {
         text: "Notiz löschen",
         handler: (): void => {
           if (this.playerNotes[player.id]) {
-            this.hasChanges = true;
+            if (!this.realtimeAttendance) {
+              this.hasChanges = true;
+            }
             delete this.playerNotes[player.id];
           }
         }
       }, {
         text: "Speichern",
         handler: (evt: { note: string }): void => {
-          this.hasChanges = true;
+          if (!this.realtimeAttendance) {
+            this.hasChanges = true;
+          }
           this.playerNotes[player.id] = evt.note;
         }
       }]
@@ -294,6 +355,14 @@ export class AttPage implements OnInit {
       return AttendanceStatus.Present;
     }
     return AttendanceStatus.Absent;
+  }
+
+  async onInfoChanged() {
+    await this.db.updateAttendance({
+      type: this.attendance.type,
+      typeInfo: this.attendance.typeInfo,
+      notes: this.attendance.notes,
+    }, this.attendance.id);
   }
 }
 
