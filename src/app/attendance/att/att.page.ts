@@ -50,10 +50,11 @@ export class AttPage implements OnInit {
     this.hasChanges = false;
 
     if (this.realtimeAttendance) {
-      this.sub = this.db.getAttChannel().on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'attendance' },
-        (payload: RealtimePostgresChangesPayload<any>) => this.onAttRealtimeChanges(payload))
+      this.sub = this.db.getSupabase()
+        .channel('att-changes').on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'attendance' },
+          (payload: RealtimePostgresChangesPayload<any>) => this.onAttRealtimeChanges(payload))
         .subscribe();
     }
 

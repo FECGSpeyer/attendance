@@ -269,16 +269,6 @@ export class DbService {
       Utils.showToast("Fehler beim Laden der Spieler", "danger");
     }
 
-    const updated: boolean = await this.syncCriticalPlayers(data.map((player) => {
-      return {
-        ...player,
-        history: player.history as any,
-      }
-    }));
-    if (updated) {
-      return (await this.getPlayers());
-    }
-
     return data.map((player) => {
       return {
         ...player,
@@ -315,35 +305,17 @@ export class DbService {
     if (error) { Utils.showToast('Fehler beim zurücksetzen, versuche es noch einmal', "danger"); }
   }
 
-  async syncCriticalPlayers(players: Player[]): Promise<boolean> {
-    const attendances: Attendance[] = (await this.getAttendance()).filter((att: Attendance) => att.type === "uebung");
-    let updated: boolean = false;
+  async syncCriticalPlayers(): Promise<boolean> {
+    const res = await axios.post(`https://staccato-server.vercel.app/api/syncCriticalPlayers`, {
+      isChoir: environment.isChoir,
+      shortName: environment.shortName,
+    });
 
-    for (const player of players) {
-      if (attendances[0] && attendances[1] && (environment.isChoir || attendances[2]) && !player.isCritical &&
-        (!player.lastSolve || dayjs(player.lastSolve).isBefore(dayjs().subtract(15, "days"))) &&
-        attendances[0].players.hasOwnProperty(player.id) && !attendances[0].players[player.id] &&
-        attendances[1].players.hasOwnProperty(player.id) && !attendances[1].players[player.id] &&
-        (environment.isChoir || attendances[2].players.hasOwnProperty(player.id) && !attendances[2].players[player.id])) {
-
-        updated = true;
-        let history: PlayerHistoryEntry[] = player.history;
-
-        history.push({
-          date: new Date().toISOString(),
-          text: "Fehlt oft hintereinander",
-          type: PlayerHistoryType.MISSING_OFTEN,
-        });
-        this.updatePlayer({
-          ...player,
-          isCritical: true,
-          criticalReason: PlayerHistoryType.MISSING_OFTEN,
-          history
-        });
-      }
+    if (res.status !== 200) {
+      throw new Error('Fehler beim Löschen des Accounts');
     }
 
-    return updated;
+    return res.data.updated;
   }
 
   async getLeftPlayers(): Promise<Player[]> {
@@ -709,11 +681,6 @@ export class DbService {
       .match({ id });
 
     return data;
-  }
-
-  getAttChannel() {
-    return supabase
-      .channel('att-changes');
   }
 
   async addAttendance(attendance: Attendance): Promise<Attendance[]> {

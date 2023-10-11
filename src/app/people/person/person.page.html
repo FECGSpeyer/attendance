@@ -247,8 +247,9 @@
       <div slot="content">
         <ion-list>
           <ion-item>
-            <ion-label>Durchschnitt</ion-label>
-            <ion-badge slot="end" [color]="perc ? 'success' : 'danger'">{{ perc }}%</ion-badge>
+            <ion-label *ngIf="lateCount === 0">Durchschnitt</ion-label>
+            <ion-label *ngIf="lateCount !== 0">Durchschnitt ({{lateCount}}x zu spät)</ion-label>
+            <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" slot="end">{{ perc }}%</ion-badge>
           </ion-item>
           <ion-item-sliding #slider *ngFor="let att of history">
             <ion-item (click)="onHisItemClicked(att)">

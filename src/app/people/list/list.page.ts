@@ -5,10 +5,10 @@ import { DbService } from 'src/app/services/db.service';
 import { Instrument, Person, Player, PlayerHistoryEntry } from 'src/app/utilities/interfaces';
 import { PersonPage } from '../person/person.page';
 import { environment } from 'src/environments/environment.prod';
-import { ProblemModalPage } from '../problem-modal/problem-modal.page';
 import { PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from 'src/app/utilities/Utils';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 @Component({
   selector: 'app-list',
@@ -39,6 +39,7 @@ export class ListPage implements OnInit {
   public archiveNote: string = "";
   public isAdmin: boolean = false;
   public isChoir: boolean = false;
+  public sub: RealtimeChannel;
 
   constructor(
     private modalController: ModalController,
@@ -58,13 +59,15 @@ export class ListPage implements OnInit {
     this.filterOpt = (await this.storage.get("filterOpt")) || "all";
     this.instruments = await this.db.getInstruments();
     await this.getPlayers();
+
+    this.sub = this.db.getSupabase()
+      .channel('player-changes').on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'player' },
+        () => this.getPlayers())
+      .subscribe();
+
     this.onViewChanged();
-  }
-
-  async handleRefresh(event: any) {
-    await this.getPlayers();
-
-    event.target.complete();
   }
 
   async getPlayers(): Promise<void> {
@@ -164,9 +167,7 @@ export class ListPage implements OnInit {
 
     const { data } = await modal.onWillDismiss();
 
-    if (data?.added) {
-      await this.getPlayers();
-    } else if (data?.conductor) {
+    if (data?.conductor) {
       this.conductors = await this.db.getConductors();
     }
   }
@@ -320,20 +321,6 @@ export class ListPage implements OnInit {
     this.playersFiltered = this.players;
   }
 
-  async showProblemPersons() {
-    const modal: HTMLIonModalElement = await this.modalController.create({
-      component: ProblemModalPage,
-      breakpoints: [0.5, 1],
-      initialBreakpoint: 0.5,
-    });
-
-    modal.onDidDismiss().then(async () => {
-      await this.getPlayers();
-    });
-
-    await modal.present();
-  }
-
   async remove(player: Player, slider: IonItemSliding, isConductor: boolean = false): Promise<void> {
     const sheet: HTMLIonActionSheetElement = await this.actionSheetController.create({
       buttons: [{
@@ -373,7 +360,6 @@ export class ListPage implements OnInit {
     } else {
       await this.db.archivePlayer(this.playerToArchive, dayjs(this.archiveDate).toISOString(), this.archiveNote);
       this.dismissArchiveModal();
-      await this.getPlayers();
     }
   }
 
@@ -385,7 +371,6 @@ export class ListPage implements OnInit {
 
   async removePlayer(player: Person): Promise<void> {
     await this.db.removePlayer(player);
-    await this.getPlayers();
   }
 
   async removeConductor(conductor: Person): Promise<void> {
@@ -425,7 +410,6 @@ export class ListPage implements OnInit {
               paused: true,
               history,
             }, true);
-            await this.getPlayers();
           } catch (error) {
             Utils.showToast(error, "danger");
           }
@@ -460,7 +444,6 @@ export class ListPage implements OnInit {
               paused: false,
               history,
             }, true);
-            await this.getPlayers();
           } catch (error) {
             Utils.showToast(error, "danger");
           }

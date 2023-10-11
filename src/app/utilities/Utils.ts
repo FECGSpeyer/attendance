@@ -15,7 +15,12 @@ export class Utils {
   public static getModifiedPlayers(players: Player[], instruments: Instrument[]): Player[] {
     const instrumentsMap: { [props: number]: boolean } = {};
 
-    return players.map((player: Player): Player => {
+    return players.sort((a: Player, b: Player) => {
+      if (a.instrument === b.instrument) {
+        return a.lastName.localeCompare(b.lastName);
+      }
+      return b.instrument - a.instrument;
+    }).map((player: Player): Player => {
       let firstOfInstrument: boolean = false;
       let instrumentLength: number = 0;
       let isNew: boolean = false;
@@ -38,7 +43,7 @@ export class Utils {
         instrumentName: instruments.find((ins: Instrument) => ins.id === player.instrument).name,
         img: player.img || DEFAULT_IMAGE,
       }
-    }).sort((a: Player, b: Player) => (a.instrumentName > b.instrumentName) ? 1 : ((b.instrumentName > a.instrumentName) ? -1 : 0));
+    }).sort((a: Player, b: Player) => a.instrumentName.localeCompare(b.instrumentName));
   }
 
   public static getPercentage(attItem: AttendanceItem): number {

@@ -114,7 +114,7 @@ export class AttListPage implements OnInit {
     }
 
     for (const player of (await this.db.getPlayers()).filter((player: Player) => !player.paused)) {
-      if (this.type === 'vortrag' && environment.withExcuses) {
+      if (this.type === 'vortrag' && environment.shortName === "SoS") {
         players[player.id] = AttendanceStatus.Neutral;
       } else {
         players[player.id] = AttendanceStatus.Present;

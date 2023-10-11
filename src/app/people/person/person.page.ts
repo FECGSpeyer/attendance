@@ -60,9 +60,9 @@ export class PersonPage implements OnInit, AfterViewInit {
   public solved: boolean = false;
   public hasChanges: boolean = false;
   public notes: string = "";
-  public shouldReload: boolean = false;
   public isAdmin: boolean = false;
   public isChoir: boolean = false;
+  public lateCount: number = 0;
 
   constructor(
     private db: DbService,
@@ -136,6 +136,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.attendance = (await this.db.getPlayerAttendance(this.player.id, this.hasLeft)).filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs()));
     this.perc = Math.round(this.attendance.filter((att: PersonAttendance) => att.attended).length / this.attendance.length * 100);
 
+    this.lateCount = this.attendance.filter((a) => a.text === "L").length;
     this.history = this.attendance.map((att: PersonAttendance) => {
       return {
         date: att.date,
@@ -169,9 +170,7 @@ export class PersonPage implements OnInit, AfterViewInit {
           }, {
             text: 'Ja',
             handler: () => {
-              this.modalController.dismiss({
-                added: this.shouldReload
-              });
+              this.modalController.dismiss();
             }
           }
         ]
@@ -179,9 +178,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
       await alert.present();
     } else {
-      this.modalController.dismiss({
-        added: this.shouldReload
-      });
+      this.modalController.dismiss();
     }
   }
 
@@ -193,7 +190,6 @@ export class PersonPage implements OnInit, AfterViewInit {
         await this.db.addPlayer(this.player);
       }
       this.modalController.dismiss({
-        added: !this.isConductor,
         conductor: this.isConductor,
       });
       Utils.showToast(`Der ${this.isConductor ? "Dirigten" : "Spieler"} wurde erfolgreich hinzugefügt`, "success");
@@ -245,9 +241,7 @@ export class PersonPage implements OnInit, AfterViewInit {
         isCritical: this.solved ? false : this.player.isCritical,
         lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
       });
-      this.modalController.dismiss({
-        added: true
-      });
+      this.modalController.dismiss();
       Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
     }
   }
@@ -313,7 +307,6 @@ export class PersonPage implements OnInit, AfterViewInit {
               this.existingPlayer = { ...res } as any;
               this.player.history = res.history as any;
               this.getHistoryInfo();
-              this.shouldReload = true;
               Utils.showToast("Eintrag wurde erfolgreich entfernt.", "success");
             } catch {
               Utils.showToast("Fehler beim Löschen des Eintrags.", "danger");
@@ -334,9 +327,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     try {
       await this.db.createAccount(this.player, this.isConductor ? SupabaseTable.CONDUCTORS : SupabaseTable.PLAYER);
-      await this.modalController.dismiss({
-        added: true
-      });
+      await this.modalController.dismiss();
       Utils.showToast("Account wurde erfolgreich angelegt", "success");
       await loading.dismiss();
     } catch (error) {
@@ -354,7 +345,6 @@ export class PersonPage implements OnInit, AfterViewInit {
         handler: () => {
           this.db.removeImage(this.player.id, this.player.img.split("/")[this.player.img.split("/").length - 1], this.isConductor);
           this.player.img = DEFAULT_IMAGE;
-          this.shouldReload = true;
           Utils.showToast("Das Profilbild wurde erfolgreich entfernt", "success");
         }
       });
@@ -388,7 +378,6 @@ export class PersonPage implements OnInit, AfterViewInit {
         try {
           const url: string = await this.db.updateImage(this.player.id, imgFile, this.isConductor);
           this.player.img = url;
-          this.shouldReload = true;
         } catch (error) {
           Utils.showToast(error, "danger");
         }

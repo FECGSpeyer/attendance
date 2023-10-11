@@ -33,7 +33,7 @@
               <ion-label *ngIf="currentAttendance.type === 'uebung'">{{ getReadableDate(currentAttendance.date) }}</ion-label>
                 <ion-label *ngIf="currentAttendance.type !== 'uebung'">{{ getReadableDate(currentAttendance.date) }} |
                   {{ getTypeText(currentAttendance.type, currentAttendance.typeInfo) }}</ion-label>
-                  <ion-badge *ngIf="currentAttendance.percentage" slot="end">{{ currentAttendance.percentage }}%</ion-badge>
+                  <ion-badge [color]="currentAttendance.percentage >= 75 ? 'success' : currentAttendance.percentage >= 50 ? 'warning' : 'danger'" *ngIf="currentAttendance.percentage" slot="end">{{ currentAttendance.percentage }}%</ion-badge>
                 </ion-item>
 
                 <ion-item-options side="end">
@@ -61,7 +61,7 @@
               <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
               <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
                 {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
-              <ion-badge *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
+              <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'" *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
             </ion-item>
 
             <ion-item-options *ngIf="isConductor" side="end">
@@ -81,14 +81,14 @@
         <ion-list class="marginBottom">
           <ion-item-divider>
             <ion-label>Durchschnitt</ion-label>
-            <ion-badge style="margin-right: '16px'" slot="end">{{ perc }}%</ion-badge>
+            <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'" slot="end">{{ perc }}%</ion-badge>
           </ion-item-divider>
           <ion-item-sliding #slider *ngFor="let att of oldAttendances">
             <ion-item button detail="false" (click)="openAttendance(att)">
               <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
               <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
                 {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
-              <ion-badge *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
+              <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'" *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
             </ion-item>
 
             <ion-item-options side="end">
