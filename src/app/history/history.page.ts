@@ -30,6 +30,7 @@ export class HistoryPage implements OnInit {
   searchTerm: string = "";
   songs: Song[] = [];
   otherConductor: number = 9999999999;
+  selectedSongs: number[] = [];
 
   constructor(
     private modalController: ModalController,
@@ -39,7 +40,7 @@ export class HistoryPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.songs = await this.db.getSongs();
-    this.historyEntry.songId = this.songs[0].id;
+    this.selectedSongs = [this.songs[0].id];
     this.conductors = await this.db.getConductors(true);
     this.activeConductors = this.conductors.filter((con: Person) => !con.left);
     this.historyEntry.conductor = this.activeConductors[0].id;
@@ -168,16 +169,26 @@ export class HistoryPage implements OnInit {
   }
 
   async addHistoryEntry(modal: HTMLIonModalElement): Promise<void> {
-    if (this.historyEntry.songId) {
+    if (this.selectedSongs.length) {
       if (this.historyEntry.conductor === this.otherConductor) {
         delete this.historyEntry.conductor;
       }
 
-      await this.db.addHistoryEntry(this.historyEntry);
+      const historyEntries: History[] = [];
+
+      for (const songId of this.selectedSongs) {
+        historyEntries.push({
+          ...this.historyEntry,
+          songId
+        });
+      }
+
+      await this.db.addHistoryEntry(historyEntries);
 
       await modal.dismiss();
 
       await this.getHistory();
+      this.selectedSongs = [];
       this.historyEntry = {
         songId: this.historyEntry.songId,
         conductor: this.conductors[0].id,
@@ -185,7 +196,7 @@ export class HistoryPage implements OnInit {
       };
       this.dateString = format(new Date(this.historyEntry.date), 'dd.MM.yyyy');
     } else {
-      Utils.showToast("Bitte gib einen Namen an", "danger");
+      Utils.showToast("Bitte wähle mindestens ein Werk an", "danger");
     }
   }
 

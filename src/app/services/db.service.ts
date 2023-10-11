@@ -871,7 +871,7 @@ export class DbService {
     return data;
   }
 
-  async addHistoryEntry(history: History): Promise<History[]> {
+  async addHistoryEntry(history: History[]): Promise<History[]> {
     const { data } = await supabase
       .from('history')
       .insert(history)

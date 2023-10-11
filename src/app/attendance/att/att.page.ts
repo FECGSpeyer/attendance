@@ -2,7 +2,7 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { AttendanceStatus, PlayerHistoryType } from 'src/app/utilities/constants';
+import { AttendanceStatus, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment.prod';
@@ -42,7 +42,7 @@ export class AttPage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.realtimeAttendance = await this.storage.get("realtimeAttendance") || false;
+    this.realtimeAttendance = await this.storage.get("realtimeAttendance") || await this.db.getRole() === Role.HELPER || false;
     void this.listenOnNetworkChanges();
     this.allConductors = await this.db.getConductors(true);
     this.allPlayers = await this.db.getPlayers();
