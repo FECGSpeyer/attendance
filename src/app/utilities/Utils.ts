@@ -181,14 +181,12 @@ export class Utils {
   }
 
   public static getUrl(role: Role) {
-    let url: string;
-
     switch (role) {
       case Role.ADMIN:
       case Role.VIEWER:
         return "/tabs/player";
       case Role.HELPER:
-        return "/tabs/attendance";
+        return "/tabs/signout";
       case Role.NONE:
         return "/login";
       default:

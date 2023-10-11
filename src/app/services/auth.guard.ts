@@ -19,11 +19,10 @@ export class AuthGuard implements CanActivate {
 
     if (state.url === "/tabs/attendance") {
       return value.role === Role.ADMIN || value.role === Role.HELPER || value.role === Role.VIEWER;
+    } else if (state.url === "/tabs/signout") {
+      return value.role === Role.HELPER;
     } else if (state.url === "/signout") {
       return value.role === Role.PLAYER;
-    } else if (value.role === Role.HELPER) {
-      this.router.navigateByUrl("/tabs/attendance");
-      return false;
     }
 
     return value.role === Role.ADMIN || value.role === Role.VIEWER;

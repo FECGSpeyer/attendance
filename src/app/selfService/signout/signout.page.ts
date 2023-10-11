@@ -47,9 +47,9 @@ export class SignoutPage implements OnInit {
 
     this.excuseModal.dismiss();
     this.reason = "";
-    
+
     Utils.showToast("Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.", "success", 4000);
-    
+
     this.reasonSelection = '';
 
     await this.getAttendances();
@@ -76,14 +76,14 @@ export class SignoutPage implements OnInit {
       this.lateExcusedAttendances = allAttendances.filter((attendance: Attendance) => {
         return dayjs(attendance.date).isAfter(dayjs(), "day") &&
           Object.keys(attendance.players).includes(String(this.player.id)) &&
-          attendance.lateExcused.includes(String(this.player.id));
+          (attendance.lateExcused || []).includes(String(this.player.id));
       });
 
       this.attendances = allAttendances.filter((attendance: Attendance) => {
         return dayjs(attendance.date).isAfter(dayjs(), "day") &&
           Object.keys(attendance.players).includes(String(this.player.id)) &&
           !attendance.excused.includes(String(this.player.id)) &&
-          !attendance.lateExcused.includes(String(this.player.id));
+          !(attendance.lateExcused || []).includes(String(this.player.id));
       }).sort((a: Attendance, b: Attendance) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       if (this.attendances.length) {
@@ -97,8 +97,8 @@ export class SignoutPage implements OnInit {
     const vergangene: any[] = this.playerAttendance.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
     if (vergangene.length) {
       vergangene[0].showDivider = true;
-      this.perc = Math.round(vergangene.filter((att: PersonAttendance) => 
-          (att.attended as any) === AttendanceStatus.Present || (att.attended as any) === AttendanceStatus.Late || att.attended === true).length / vergangene.length * 100);
+      this.perc = Math.round(vergangene.filter((att: PersonAttendance) =>
+        (att.attended as any) === AttendanceStatus.Present || (att.attended as any) === AttendanceStatus.Late || att.attended === true).length / vergangene.length * 100);
     }
   }
 
@@ -116,7 +116,7 @@ export class SignoutPage implements OnInit {
       {
         text: 'Abmelden',
         handler: () => {
-          if(this.isAttToday(attendance)) {
+          if (this.isAttToday(attendance)) {
             this.attIsToday = true;
             this.reasonSelection = 'Sonstiger Grund';
             this.reason = '';
@@ -132,7 +132,7 @@ export class SignoutPage implements OnInit {
       {
         text: 'Verspätung eintragen',
         handler: () => {
-          if(this.isAttToday(attendance)) {
+          if (this.isAttToday(attendance)) {
             this.attIsToday = true;
             this.reasonSelection = 'Sonstiger Grund';
             this.reason = '';
@@ -147,7 +147,7 @@ export class SignoutPage implements OnInit {
       },
       {
         text: 'Cancel',
-        handler: () => {},
+        handler: () => { },
         role: 'cancel',
         data: {
           action: 'cancel',
@@ -155,11 +155,11 @@ export class SignoutPage implements OnInit {
       },
     ];
 
-    if((attendance.attended as any) === AttendanceStatus.Present) {
+    if ((attendance.attended as any) === AttendanceStatus.Present) {
       buttons = buttons.filter((btn) => btn.text !== 'Anmelden');
-    } else if((attendance.attended as any) === AttendanceStatus.Excused) {
+    } else if ((attendance.attended as any) === AttendanceStatus.Excused) {
       buttons = buttons.filter((btn) => btn.text !== 'Abmelden');
-    } else if((attendance.attended as any) === AttendanceStatus.Late) {
+    } else if ((attendance.attended as any) === AttendanceStatus.Late) {
       buttons = buttons.filter((btn) => btn.text !== 'Verspätung eintragen');
     }
     this.selAttIds = [attendance.id];
@@ -173,11 +173,11 @@ export class SignoutPage implements OnInit {
   onReasonSelect(event) {
     const currentReasonSelection = event.detail.value;
     if (!currentReasonSelection) return;
-    if(currentReasonSelection !== 'Sonstiger Grund') {
+    if (currentReasonSelection !== 'Sonstiger Grund') {
       this.excuseModal.setCurrentBreakpoint(0.3);
       this.reason = currentReasonSelection;
     } else {
-    this.excuseModal.setCurrentBreakpoint(0.4);
+      this.excuseModal.setCurrentBreakpoint(0.4);
       this.reason = '';
     }
   }

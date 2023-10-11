@@ -71,6 +71,7 @@ export interface Database {
           lastName: string | null
           left: string | null
           notes: string | null
+          telegramId: string | null
         }
         Insert: {
           appId?: string | null
@@ -85,6 +86,7 @@ export interface Database {
           lastName?: string | null
           left?: string | null
           notes?: string | null
+          telegramId?: string | null
         }
         Update: {
           appId?: string | null
@@ -99,6 +101,7 @@ export interface Database {
           lastName?: string | null
           left?: string | null
           notes?: string | null
+          telegramId?: string | null
         }
         Relationships: []
       }
@@ -225,7 +228,9 @@ export interface Database {
           otherOrchestras: string[]
           paused: boolean | null
           playsSince: string | null
+          role: number
           teacher: number | null
+          telegramId: string | null
           testResult: string | null
         }
         Insert: {
@@ -253,7 +258,9 @@ export interface Database {
           otherOrchestras?: string[]
           paused?: boolean | null
           playsSince?: string | null
+          role?: number
           teacher?: number | null
+          telegramId?: string | null
           testResult?: string | null
         }
         Update: {
@@ -281,7 +288,9 @@ export interface Database {
           otherOrchestras?: string[]
           paused?: boolean | null
           playsSince?: string | null
+          role?: number
           teacher?: number | null
+          telegramId?: string | null
           testResult?: string | null
         }
         Relationships: [

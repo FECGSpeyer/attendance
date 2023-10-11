@@ -34,7 +34,6 @@ export class ListPage implements OnInit {
   public showImg = true;
   public showExaminee = false;
   public showInstruments = false;
-  public withSignout: boolean = environment.withSignout;
   public isArchiveModalOpen: boolean = false;
   public archiveDate: string = dayjs().format("YYYY-MM-DD");
   public archiveNote: string = "";
@@ -101,6 +100,10 @@ export class ListPage implements OnInit {
     });
 
     await actionSheet.present();
+  }
+
+  userById(person: Person) {
+    return person.id;
   }
 
   async openViewerAlert() {

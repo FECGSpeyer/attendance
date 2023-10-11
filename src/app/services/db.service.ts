@@ -172,21 +172,21 @@ export class DbService {
       return Role.ADMIN;
     }
 
-    const hasProfile: boolean = await this.hasPlayerProfile();
+    const profile: Player | undefined = await this.getPlayerProfile();
 
-    if (hasProfile) {
-      return environment.withSignout ? Role.PLAYER : Role.HELPER;
+    if (profile) {
+      return profile.role === Role.HELPER ? Role.HELPER : Role.PLAYER;
     } else {
       return Role.VIEWER;
     }
   }
 
-  async hasPlayerProfile(): Promise<boolean> {
+  async getPlayerProfile(): Promise<Player | undefined> {
     try {
-      await this.getPlayerByAppId(false);
-      return true;
+      const player: Player = await this.getPlayerByAppId(false);
+      return player;
     } catch (_) {
-      return false;
+      return undefined;
     }
   }
 

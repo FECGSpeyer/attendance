@@ -9,6 +9,11 @@ const routes: Routes = [
     component: TabsPage,
     children: [
       {
+        path: 'signout',
+        loadChildren: () => import('./../selfService/signout/signout.module').then(m => m.SignoutPageModule),
+        canActivate: [AuthGuard]
+      },
+      {
         path: 'player',
         loadChildren: () => import('./../people/list/list.module').then(m => m.ListPageModule),
         canActivate: [AuthGuard],

@@ -137,8 +137,8 @@ export class AttListPage implements OnInit {
     await this.getAttendance();
 
     this.notes = '';
-    this.type = '';
-    this.date = '';
+    this.type = 'uebung';
+    this.date = new Date().toISOString();
     this.typeInfo = '';
     this.dateString = format(new Date(), 'dd.MM.yyyy');
   }

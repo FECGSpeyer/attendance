@@ -41,8 +41,10 @@ export class PersonPage implements OnInit, AfterViewInit {
     correctBirthday: false,
     history: [],
     paused: false,
+    role: Role.NONE,
   };
-  public withSignout: boolean = environment.withSignout;
+  public readonly NONE: Role = Role.NONE;
+  public readonly HELPER: Role = Role.HELPER;
   public player: Player;
   public birthdayString: string = format(new Date(), 'dd.MM.yyyy');
   public playsSinceString: string = format(new Date(), 'dd.MM.yyyy');

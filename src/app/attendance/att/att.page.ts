@@ -61,8 +61,8 @@ export class AttPage implements OnInit {
     this.initializeAttObjects();
   }
 
-  userById(player: Player) {
-    return player.id;
+  userById(person: Person) {
+    return person.id;
   }
 
   initializeAttObjects() {

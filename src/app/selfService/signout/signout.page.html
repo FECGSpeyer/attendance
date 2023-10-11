@@ -34,7 +34,7 @@
                 }}
               </ion-title>
               <ion-buttons slot="end">
-                <ion-button [strong]="true" *ngIf="attendances.length" [disabled]="!(reason && reason.length > 4)" (click)="signout()">Bestätigen</ion-button>
+                <ion-button *ngIf="attendances.length" [disabled]="!(reason && reason.length > 4)" (click)="signout()">Bestätigen</ion-button>
               </ion-buttons>
             </ion-toolbar>
           </ion-header>
@@ -69,13 +69,13 @@
       <div slot="content">
         <ion-list>
           <ng-container *ngFor="let att of playerAttendance">
-            <ion-item button 
+            <ion-item button
                       *ngIf="attIsInFuture(att) || isAttToday(att)"
-                      (click)="presentActionSheetForChoice(att)" 
+                      (click)="presentActionSheetForChoice(att)"
                       color="light">
               <ion-label>
-                <ion-card-title>{{ getReadableDate(att.date) }}</ion-card-title>
-                <ion-card-subtitle>{{ att.title ? att.title : 'Übung' }}</ion-card-subtitle>
+                <h2>{{ getReadableDate(att.date) }}</h2>
+                <h3>{{ att.title ? att.title : 'Übung' }}</h3>
               </ion-label>
               <ion-badge slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? 'tertiary' : att.text === 'N' ? 'medium' : 'warning'">
                 {{ att.text === 'X' ? '✓' : att.text }}</ion-badge>
@@ -92,15 +92,15 @@
         <ion-list>
           <ion-item-divider>
             <ion-label>Durchschnitt</ion-label>
-            <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'" slot="end">Ø {{ perc }}%</ion-badge>
+            <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" slot="end">Ø {{ perc }}%</ion-badge>
           </ion-item-divider>
           <ng-container *ngFor="let att of playerAttendance">
-            <ion-item *ngIf="attHasPassed(att)" style="opacity: 0.6;">
+            <ion-item *ngIf="attHasPassed(att)">
             <ion-label>
-              <ion-card-title>{{ getReadableDate(att.date) }}</ion-card-title>
-              <ion-card-subtitle>{{ att.title ? att.title : 'Übung' }}</ion-card-subtitle>
+              <h2>{{ getReadableDate(att.date) }}</h2>
+              <h3>{{ att.title ? att.title : 'Übung' }}</h3>
             </ion-label>
-            
+
             <ion-badge slot="end" [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? 'tertiary' : att.text === 'N' ? 'medium' : 'warning'">
               {{ att.text === 'X' ? '✓' : att.text}}
             </ion-badge>

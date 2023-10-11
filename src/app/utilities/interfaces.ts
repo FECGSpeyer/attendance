@@ -65,6 +65,7 @@ export interface Player extends Person {
     examinee?: boolean;
     range?: string;
     instruments?: string;
+    role: Role;
 }
 
 export interface Instrument {

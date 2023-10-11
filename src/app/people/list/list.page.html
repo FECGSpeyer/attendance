@@ -30,7 +30,7 @@
                 <ion-select-option *ngIf="!isChoir" value="active">Aktive Spieler</ion-select-option>
                 <ion-select-option value="criticals">Problemfälle</ion-select-option>
                 <ion-select-option value="leaders">Stimmführer</ion-select-option>
-                <ion-select-option *ngIf="withSignout" value="withoutAccount">Ohne Account</ion-select-option>
+                <ion-select-option value="withoutAccount">Ohne Account</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="examinee">Prüflinge</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="new">Neue Spieler</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="withoutTeacher">Ohne Lehrer</ion-select-option>
@@ -86,7 +86,7 @@
     <ion-item-divider color="primary" sticky="true">
       <ion-label>Dirigenten ({{conductors.length}})</ion-label>
     </ion-item-divider>
-    <ion-item-sliding #sliderDiri *ngFor="let con of conductors">
+    <ion-item-sliding #sliderDiri *ngFor="let con of conductors; trackBy:userById">
       <ion-item button detail="false" (click)="openModal(con, true)">
         <ion-avatar *ngIf="showImg" slot="start">
           <img [src]="con.img" />
@@ -103,7 +103,7 @@
     </ion-item-sliding>
   </ion-list>
   <ion-list style="padding-top: 0;" class="marginBottom">
-    <ng-container *ngFor="let player of playersFiltered">
+    <ng-container *ngFor="let player of playersFiltered; trackBy:userById">
       <ion-item-divider color="primary" sticky="true" *ngIf="player.firstOfInstrument && sortOpt === 'instrument'">
         <ion-label>{{ player.instrumentName }} ({{ player.instrumentLength }})</ion-label>
       </ion-item-divider>

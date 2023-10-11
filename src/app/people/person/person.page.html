@@ -215,11 +215,22 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="isConductor || withSignout">
+          <ion-row>
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">E-Mail</ion-label>
                 <ion-input [disabled]="player.appId || readOnly" (ionChange)="onChange()" [(ngModel)]="player.email"></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row *ngIf="!isConductor && player.email">
+            <ion-col>
+              <ion-item>
+                <ion-label>Rolle</ion-label>
+                <ion-select type="number" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.role">
+                  <ion-select-option [value]="NONE">Keine Rolle</ion-select-option>
+                  <ion-select-option [value]="HELPER">Helfer</ion-select-option>
+                </ion-select>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -276,7 +287,7 @@
     <ion-fab-button *ngIf="!existingPlayer" (click)="addPerson()">
       <ion-icon name="person-add-outline"></ion-icon>
     </ion-fab-button>
-    <ion-fab-button *ngIf="!readOnly && (withSignout || isConductor) && existingPlayer && !hasChanges && !player.appId && player.email" (click)="register()">
+    <ion-fab-button *ngIf="!readOnly && existingPlayer && !hasChanges && !player.appId && player.email" (click)="register()">
       <ion-icon name="key-outline"></ion-icon>
     </ion-fab-button>
   </ion-fab>
