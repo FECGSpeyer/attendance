@@ -3,7 +3,7 @@ import { AlertController, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
-import { environment } from 'src/environments/environment.prod';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-instrument',

@@ -4,7 +4,7 @@ import { DbService } from 'src/app/services/db.service';
 import { Role } from 'src/app/utilities/constants';
 import { Instrument, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
-import { environment } from 'src/environments/environment.prod';
+import { environment } from 'src/environments/environment';
 import { InstrumentPage } from '../instrument/instrument.page';
 
 @Component({

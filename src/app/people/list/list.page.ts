@@ -4,7 +4,7 @@ import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument, Person, Player, PlayerHistoryEntry } from 'src/app/utilities/interfaces';
 import { PersonPage } from '../person/person.page';
-import { environment } from 'src/environments/environment.prod';
+import { environment } from 'src/environments/environment';
 import { PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from 'src/app/utilities/Utils';

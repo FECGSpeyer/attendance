@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
-import { environment } from 'src/environments/environment.prod';
+import { environment } from 'src/environments/environment';
 import { DbService } from '../services/db.service';
 import { Attendance, Player } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';

@@ -5,7 +5,7 @@ import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
-import { environment } from 'src/environments/environment.prod';
+import { environment } from 'src/environments/environment';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { Storage } from '@ionic/storage-angular';

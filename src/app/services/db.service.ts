@@ -5,7 +5,7 @@ import { createClient, SupabaseClient, SupabaseClientOptions, User } from '@supa
 import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
-import { environment } from 'src/environments/environment.prod';
+import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
 import { Attendance, AuthObject, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Settings, Song, Teacher, Viewer } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
