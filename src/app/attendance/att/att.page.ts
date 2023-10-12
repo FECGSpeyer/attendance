@@ -43,8 +43,8 @@ export class AttPage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    const isHelper = await this.db.getRole() === Role.HELPER;
-    this.realtimeAttendance = await this.storage.get("realtimeAttendance") || isHelper || false;
+    this.isHelper = await this.db.getRole() === Role.HELPER;
+    this.realtimeAttendance = await this.storage.get("realtimeAttendance") || this.isHelper || false;
     void this.listenOnNetworkChanges();
     this.allConductors = await this.db.getConductors(true);
     this.allPlayers = await this.db.getPlayers();
