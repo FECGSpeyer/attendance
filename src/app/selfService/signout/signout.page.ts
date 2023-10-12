@@ -30,6 +30,7 @@ export class SignoutPage implements OnInit {
   public reasonSelection;
   public signoutTitle: string;
   public attIsToday: boolean;
+  public lateCount: number = 0;
 
   constructor(
     private db: DbService,
@@ -96,6 +97,7 @@ export class SignoutPage implements OnInit {
     this.playerAttendance = await this.db.getPlayerAttendance(this.player.id);
     const vergangene: any[] = this.playerAttendance.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
     if (vergangene.length) {
+      this.lateCount = vergangene.filter((a) => a.text === "L").length;
       vergangene[0].showDivider = true;
       this.perc = Math.round(vergangene.filter((att: PersonAttendance) =>
         (att.attended as any) === AttendanceStatus.Present || (att.attended as any) === AttendanceStatus.Late || att.attended === true).length / vergangene.length * 100);

@@ -91,7 +91,8 @@
       <div slot="content">
         <ion-list>
           <ion-item-divider>
-            <ion-label>Durchschnitt</ion-label>
+            <ion-label *ngIf="lateCount === 0">Durchschnitt</ion-label>
+            <ion-label *ngIf="lateCount !== 0">Durchschnitt ({{lateCount}}x zu spät)</ion-label>
             <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" slot="end">Ø {{ perc }}%</ion-badge>
           </ion-item-divider>
           <ng-container *ngFor="let att of playerAttendance">
