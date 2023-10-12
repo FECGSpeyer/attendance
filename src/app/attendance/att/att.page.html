@@ -96,7 +96,8 @@
         <ion-item button detail="false" (click)="onAttChange(player)">
           <ion-label>
             <h2>{{ player.firstName }} {{ player.lastName }}</h2>
-            <h3 *ngIf="playerNotes[player.id]">{{ playerNotes[player.id] }}</h3>
+            <h3 *ngIf="!isHelper playerNotes[player.id]">{{ playerNotes[player.id] }}</h3>
+            <h3 *ngIf="isHelper playerNotes[player.id]">Notiz hinzugefügt</h3>
           </ion-label>
           <ion-badge [color]="player.attStatus === 0 ? 'medium' :
                               player.attStatus === 1 ? 'success' :

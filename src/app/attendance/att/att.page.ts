@@ -33,6 +33,7 @@ export class AttPage implements OnInit {
   private hasChanges = false;
   public realtimeAttendance: boolean = false;
   private sub: RealtimeChannel;
+  public isHelper: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -42,7 +43,8 @@ export class AttPage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.realtimeAttendance = await this.storage.get("realtimeAttendance") || await this.db.getRole() === Role.HELPER || false;
+    const isHelper = await this.db.getRole() === Role.HELPER;
+    this.realtimeAttendance = await this.storage.get("realtimeAttendance") || isHelper || false;
     void this.listenOnNetworkChanges();
     this.allConductors = await this.db.getConductors(true);
     this.allPlayers = await this.db.getPlayers();
