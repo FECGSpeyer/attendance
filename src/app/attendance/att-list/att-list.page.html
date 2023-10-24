@@ -102,6 +102,19 @@
     </ion-accordion>
   </ion-accordion-group>
 
+  <ion-list *ngIf="!isConductor && !isHelper" class="marginBottom">
+    <ion-item-divider>
+      <ion-label>Durchschnitt</ion-label>
+      <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'" slot="end">{{ perc }}%</ion-badge>
+    </ion-item-divider>
+    <ion-item *ngFor="let att of oldAttendances" detail="false">
+      <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
+      <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
+        {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
+      <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'" *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
+    </ion-item>
+  </ion-list>
+
   <ion-modal #addAttModal trigger="add-att-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">
     <ng-template>
       <ion-content>
