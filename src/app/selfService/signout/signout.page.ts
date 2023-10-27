@@ -175,6 +175,7 @@ export class SignoutPage implements OnInit {
   onReasonSelect(event) {
     const currentReasonSelection = event.detail.value;
     if (!currentReasonSelection) return;
+
     if (currentReasonSelection !== 'Sonstiger Grund') {
       this.excuseModal.setCurrentBreakpoint(0.3);
       this.reason = currentReasonSelection;
