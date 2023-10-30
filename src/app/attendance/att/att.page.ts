@@ -31,7 +31,6 @@ export class AttPage implements OnInit {
   private playerNotes: { [prop: number]: string } = {};
   private oldAttendance: Attendance;
   private hasChanges = false;
-  public realtimeAttendance: boolean = false;
   private sub: RealtimeChannel;
   public isHelper: boolean = false;
 
@@ -44,21 +43,18 @@ export class AttPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.isHelper = await this.db.getRole() === Role.HELPER;
-    this.realtimeAttendance = await this.storage.get("realtimeAttendance") || this.isHelper || false;
     void this.listenOnNetworkChanges();
     this.allConductors = await this.db.getConductors(true);
     this.allPlayers = await this.db.getPlayers();
     this.instruments = await this.db.getInstruments();
     this.hasChanges = false;
 
-    if (this.realtimeAttendance) {
-      this.sub = this.db.getSupabase()
-        .channel('att-changes').on(
-          'postgres_changes',
-          { event: 'UPDATE', schema: 'public', table: 'attendance' },
-          (payload: RealtimePostgresChangesPayload<any>) => this.onAttRealtimeChanges(payload))
-        .subscribe();
-    }
+    this.sub = this.db.getSupabase()
+      .channel('att-changes').on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'attendance' },
+        (payload: RealtimePostgresChangesPayload<any>) => this.onAttRealtimeChanges(payload))
+      .subscribe();
 
     this.oldAttendance = { ...this.attendance };
     this.initializeAttObjects();
@@ -151,16 +147,6 @@ export class AttPage implements OnInit {
     }
 
     await this.db.updateAttendance(attData, this.attendance.id);
-
-    if (!this.realtimeAttendance) {
-      if (this.withExcuses) {
-        await this.updateCriticalPlayers(unexcusedPlayers);
-      }
-
-      this.modalController.dismiss({
-        updated: true
-      });
-    }
   }
 
   async updateCriticalPlayers(unexcusedPlayers: Player[]) {
@@ -176,31 +162,8 @@ export class AttPage implements OnInit {
     }
   }
 
-  async dismiss(): Promise<void> {
-    if (!this.hasChanges || this.realtimeAttendance) {
-      this.close();
-      return;
-    }
-
-    const alert: HTMLIonAlertElement = await this.alertController.create({
-      header: "Möchtest du die Eingabe wirklich beenden?",
-      message: "Alle Änderungen werden verworfen.",
-      buttons: [{
-        text: "Abbrechen",
-      }, {
-        text: "Fortfahren",
-        handler: (): void => {
-          this.close();
-        }
-      }]
-    });
-
-    await alert.present();
-  }
-
-
   async close() {
-    if (this.withExcuses && this.realtimeAttendance) {
+    if (this.withExcuses) {
       const unexcusedPlayers: Player[] = this.players.filter((p: Player) =>
         !p.isPresent && !p.isCritical && !this.excused.has(String(p.id)) && !this.attendance.criticalPlayers.includes(p.id)
       );
@@ -210,9 +173,7 @@ export class AttPage implements OnInit {
       this.attendance = this.oldAttendance;
     }
 
-    if (this.realtimeAttendance) {
-      await this.sub.unsubscribe();
-    }
+    await this.sub.unsubscribe();
     this.modalController.dismiss();
   }
 
@@ -231,10 +192,6 @@ export class AttPage implements OnInit {
   }
 
   async onAttChange(individual: (Person)) {
-    if (!this.realtimeAttendance) {
-      this.hasChanges = true;
-    }
-
     if (!this.withExcuses) {
       if (individual.attStatus === AttendanceStatus.Absent) {
         individual.attStatus = AttendanceStatus.Present;
@@ -257,9 +214,7 @@ export class AttPage implements OnInit {
       }
     }
 
-    if (this.realtimeAttendance) {
-      this.save();
-    }
+    this.save();
   }
 
   getPlayerLengthByInstrument(players: Player[], player: Player): number {
@@ -286,18 +241,12 @@ export class AttPage implements OnInit {
         text: "Notiz löschen",
         handler: (): void => {
           if (this.playerNotes[player.id]) {
-            if (!this.realtimeAttendance) {
-              this.hasChanges = true;
-            }
             delete this.playerNotes[player.id];
           }
         }
       }, {
         text: "Speichern",
         handler: (evt: { note: string }): void => {
-          if (!this.realtimeAttendance) {
-            this.hasChanges = true;
-          }
           this.playerNotes[player.id] = evt.note;
         }
       }]

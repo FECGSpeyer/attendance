@@ -1,9 +1,8 @@
 <ion-header>
-  <ion-toolbar [color]="realtimeAttendance ? 'warning' : ''">
-    <ion-title *ngIf="players && !realtimeAttendance">{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(players) }}/{{ players.length }}</ion-title>
-    <ion-title *ngIf="players && realtimeAttendance">{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(players) }}/{{ players.length }} (Echtzeit Beta Funktion Aktiv)</ion-title>
+  <ion-toolbar>
+    <ion-title *ngIf="players">{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(players) }}/{{ players.length }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="dismiss()">
+      <ion-button (click)="close()">
         <ion-icon name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -120,9 +119,4 @@
       </ion-item-sliding>
     </ng-container>
   </ion-list>
-  <ion-fab *ngIf="!realtimeAttendance" vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button [disabled]="!isOnline" (click)="save()">
-      <ion-icon name="save-outline"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
 </ion-content>

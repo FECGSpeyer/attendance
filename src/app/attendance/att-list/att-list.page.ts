@@ -29,7 +29,6 @@ export class AttListPage implements OnInit {
   public notes: string;
   public typeInfo: string;
   public perc: number = 0;
-  public realtimeAttendance: boolean = false;
 
   constructor(
     private db: DbService,
@@ -44,7 +43,6 @@ export class AttListPage implements OnInit {
 
   async ngOnInit() {
     await this.getAttendance();
-    this.realtimeAttendance = await this.storage.get("realtimeAttendance") || false;
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isConductor = state.role === Role.ADMIN;
       this.isHelper = state.role === Role.HELPER;
@@ -167,23 +165,13 @@ export class AttListPage implements OnInit {
 
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: AttPage,
-      backdropDismiss: false,
       componentProps: {
         attendance,
       }
     });
 
     await modal.present();
-
-    if (this.realtimeAttendance) {
-      await modal.onWillDismiss();
-      await this.getAttendance();
-    } else {
-      const { data } = await modal.onWillDismiss();
-
-      if (data?.updated) {
-        await this.getAttendance();
-      }
-    }
+    await modal.onWillDismiss();
+    await this.getAttendance();
   }
 }

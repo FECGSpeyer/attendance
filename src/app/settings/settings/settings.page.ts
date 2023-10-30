@@ -39,7 +39,6 @@ export class SettingsPage implements OnInit {
   public attDate: string = new Date().toISOString();
   public practiceStart: string;
   public practiceEnd: string;
-  public realtimeAttendance: boolean = false;
 
   constructor(
     private db: DbService,
@@ -53,7 +52,6 @@ export class SettingsPage implements OnInit {
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isAdmin = state.role === Role.ADMIN;
     });
-    this.realtimeAttendance = await this.storage.get("realtimeAttendance") || false;
     this.attDate = await this.db.getCurrentAttDate();
     const settings: Settings = await this.db.getSettings();
     this.practiceStart = settings.practiceStart || '18:00';
@@ -241,10 +239,5 @@ export class SettingsPage implements OnInit {
     });
 
     await alert.present();
-  }
-
-  async onRealtimeChange() {
-    await this.storage.set("realtimeAttendance", this.realtimeAttendance);
-    window.location.reload();
   }
 }
