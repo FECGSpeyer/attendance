@@ -234,27 +234,27 @@ export class AttPage implements OnInit {
     if (!this.realtimeAttendance) {
       this.hasChanges = true;
     }
+
     if (!this.withExcuses) {
       if (individual.attStatus === AttendanceStatus.Absent) {
         individual.attStatus = AttendanceStatus.Present;
       } else {
         individual.attStatus = AttendanceStatus.Absent;
       }
-
-      return;
-    }
-    // First Case is for: Condition ('N' OR 'A') to '✓'
-    // Second Case is for: Condition '✓' to 'L'
-    // Third Case is for: Condition 'L to 'E'
-    // Fourth Case is for: Condition  'E' to 'A'
-    if (individual.attStatus === AttendanceStatus.Neutral || individual.attStatus === AttendanceStatus.Absent) {
-      individual.attStatus = AttendanceStatus.Present;
-    } else if (individual.attStatus === AttendanceStatus.Present) {
-      individual.attStatus = AttendanceStatus.Excused;
-    } else if (individual.attStatus === AttendanceStatus.Excused) {
-      individual.attStatus = AttendanceStatus.Late;
-    } else if (individual.attStatus === AttendanceStatus.Late) {
-      individual.attStatus = AttendanceStatus.Absent;
+    } else {
+      // First Case is for: Condition ('N' OR 'A') to '✓'
+      // Second Case is for: Condition '✓' to 'L'
+      // Third Case is for: Condition 'L to 'E'
+      // Fourth Case is for: Condition  'E' to 'A'
+      if (individual.attStatus === AttendanceStatus.Neutral || individual.attStatus === AttendanceStatus.Absent) {
+        individual.attStatus = AttendanceStatus.Present;
+      } else if (individual.attStatus === AttendanceStatus.Present) {
+        individual.attStatus = AttendanceStatus.Excused;
+      } else if (individual.attStatus === AttendanceStatus.Excused) {
+        individual.attStatus = AttendanceStatus.Late;
+      } else if (individual.attStatus === AttendanceStatus.Late) {
+        individual.attStatus = AttendanceStatus.Absent;
+      }
     }
 
     if (this.realtimeAttendance) {

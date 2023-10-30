@@ -3,9 +3,9 @@
     <ion-title *ngIf="!existingPlayer && !isConductor && isChoir">Sänger hinzufügen</ion-title>
     <ion-title *ngIf="!existingPlayer && !isConductor && !isChoir">Spieler hinzufügen</ion-title>
     <ion-title *ngIf="!existingPlayer && isConductor">Dirigent hinzufügen</ion-title>
-    <ion-title *ngIf="existingPlayer && !isConductor && isChoir">Sänger bearbeiten</ion-title>
-    <ion-title *ngIf="existingPlayer && !isConductor && !isChoir">Spieler bearbeiten</ion-title>
-    <ion-title *ngIf="existingPlayer && isConductor">Dirigent bearbeiten</ion-title>
+    <ion-title *ngIf="!readOnly && existingPlayer && !isConductor && isChoir">Sänger bearbeiten</ion-title>
+    <ion-title *ngIf="!readOnly && existingPlayer && !isConductor && !isChoir">Spieler bearbeiten</ion-title>
+    <ion-title *ngIf="!readOnly && existingPlayer && isConductor">Dirigent bearbeiten</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon name="close"></ion-icon>
