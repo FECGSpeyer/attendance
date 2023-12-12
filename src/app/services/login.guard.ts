@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { Role } from '../utilities/constants';
 import { AuthObject } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
@@ -8,7 +8,7 @@ import { DbService } from './db.service';
 @Injectable({
   providedIn: 'root'
 })
-export class LoginGuard implements CanActivate {
+export class LoginGuard  {
   constructor(public db: DbService, private router: Router) { }
 
   async canActivate(): Promise<boolean> {
