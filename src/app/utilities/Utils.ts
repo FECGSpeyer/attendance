@@ -222,4 +222,25 @@ export class Utils {
         throw new Error("short name not found");
     }
   }
+
+  public static getAttText(att: Attendance, id: number): string {
+    let attText: string = "";
+
+    if (typeof att.players[String(id)] == 'boolean') {
+      if ((att.excused || []).includes(String(id))) {
+        attText = 'E';
+      } else if ((att.excused || []).includes(String(id))) {
+        attText = 'L';
+      } else if (att.players[String(id)] === true) {
+        attText = 'X';
+      } else {
+        attText = 'A';
+      }
+    }
+    if (!attText) {
+      attText = att.players[id] === AttendanceStatus.Neutral ? 'N' : att.players[id] === AttendanceStatus.Present ? 'X' : att.players[id] === AttendanceStatus.Excused ? 'E' : att.players[id] === AttendanceStatus.Late ? 'L' : 'A';
+    }
+
+    return attText
+  }
 }

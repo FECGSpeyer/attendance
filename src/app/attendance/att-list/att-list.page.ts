@@ -8,7 +8,6 @@ import { Utils } from 'src/app/utilities/Utils';
 import { AttPage } from '../att/att.page';
 import 'jspdf-autotable';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
-import { Storage } from '@ionic/storage-angular';
 import { environment } from 'src/environments/environment';
 require('dayjs/locale/de');
 
@@ -34,7 +33,6 @@ export class AttListPage implements OnInit {
     private db: DbService,
     private modalController: ModalController,
     private alertController: AlertController,
-    private storage: Storage,
   ) { }
 
   async logout() {

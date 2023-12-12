@@ -762,21 +762,7 @@ export class DbService {
       });
 
     return data.map((att): PersonAttendance => {
-      let attText;
-      if (typeof att.players[String(id)] == 'boolean') {
-        if ((att.excused || []).includes(String(id))) {
-          attText = 'E';
-        } else if ((att.excused || []).includes(String(id))) {
-          attText = 'L';
-        } else if (att.players[String(id)] === true) {
-          attText = 'X';
-        } else {
-          attText = 'A';
-        }
-      }
-      if (!attText) {
-        attText = att.players[id] === 0 ? 'N' : att.players[id] === 1 ? 'X' : att.players[id] === 2 ? 'E' : att.players[id] === 3 ? 'L' : 'A'
-      }
+      let attText = Utils.getAttText(att as Attendance, id);
 
       return {
         id: att.id,

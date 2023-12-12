@@ -151,7 +151,7 @@ export class ExportPage implements OnInit {
 
       for (const att of attendance) {
         if (att.players[player.id] !== undefined) {
-          attInfo.push(att.players[player.id] ? "X" : att.excused.includes(player.id.toString()) ? "E" : "V");
+          attInfo.push(Utils.getAttText(att, player.id));
         } else {
           attInfo.push("");
         }
@@ -204,7 +204,7 @@ export class ExportPage implements OnInit {
         fontSize: 8,
       },
       didParseCell: (data: CellHookData) => {
-        if (data.cell.raw === "V") {
+        if (data.cell.raw === "A") {
           data.cell.styles.fillColor = [178, 34, 34];
           data.cell.styles.textColor = [255, 255, 255];
           data.cell.styles.halign = "center";
@@ -214,6 +214,14 @@ export class ExportPage implements OnInit {
           data.cell.styles.halign = "center";
         } else if (data.cell.raw === "E") {
           data.cell.styles.fillColor = [255, 196, 9];
+          data.cell.styles.textColor = [255, 255, 255];
+          data.cell.styles.halign = "center";
+        } else if (data.cell.raw === "L") {
+          data.cell.styles.fillColor = [0, 191, 255];
+          data.cell.styles.textColor = [255, 255, 255];
+          data.cell.styles.halign = "center";
+        } else if (data.cell.raw === "N") {
+          data.cell.styles.fillColor = [220, 220, 220];
           data.cell.styles.textColor = [255, 255, 255];
           data.cell.styles.halign = "center";
         } else if (data.cell.raw?.toString().includes("%")) {
