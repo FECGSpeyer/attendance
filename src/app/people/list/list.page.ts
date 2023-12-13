@@ -379,13 +379,13 @@ export class ListPage implements OnInit {
   }
 
   async pauseConductor(con: Person, slider: IonItemSliding) {
-    await this.db.updateConductor({ ...con, paused: true });
+    await this.db.updateConductor({ ...con, paused: true }, true);
     slider.close();
     this.getPlayers();
   }
 
   async unpauseConductor(con: Person, slider: IonItemSliding) {
-    await this.db.updateConductor({ ...con, paused: false });
+    await this.db.updateConductor({ ...con, paused: false }, true);
     slider.close();
     this.getPlayers();
   }
