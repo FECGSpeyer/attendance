@@ -31,6 +31,7 @@ export interface Person {
     attStatus?: AttendanceStatus;
     isConductor?: boolean;
     telegramId?: string;
+    paused?: boolean;
 }
 
 export interface PlayerHistoryEntry {
@@ -53,7 +54,6 @@ export interface Player extends Person {
     isCritical: boolean;
     lastSolve?: string;
     correctBirthday: boolean;
-    paused: boolean;
     history: PlayerHistoryEntry[];
     criticalReason?: PlayerHistoryType;
     criticalReasonText?: string;

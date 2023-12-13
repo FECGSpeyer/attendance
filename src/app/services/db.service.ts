@@ -450,6 +450,17 @@ export class DbService {
     }
   }
 
+  async removeConductorFromUpcomingAttendances(id: number) {
+    const attData: Attendance[] = await this.getUpcomingAttendances();
+
+    if (attData?.length) {
+      for (const att of attData) {
+        delete att.conductors[id];
+        await this.updateAttendance({ conductors: att.conductors }, att.id as number);
+      }
+    }
+  }
+
   async addConductorToUpcomingAttendances(id: number) {
     const attData: Attendance[] = await this.getUpcomingAttendances();
 
@@ -532,7 +543,7 @@ export class DbService {
     });
   }
 
-  async updateConductor(person: Person): Promise<Person[]> {
+  async updateConductor(person: Person, pausedAction?: boolean): Promise<Person[]> {
     const dataToUpdate: any = { ...person };
     delete dataToUpdate.id;
     delete dataToUpdate.created_at;
@@ -553,6 +564,14 @@ export class DbService {
 
     if (error) {
       throw new Error("Fehler beim updaten des Dirigenten");
+    }
+
+    if (pausedAction) {
+      if (person.paused) {
+        this.removeConductorFromUpcomingAttendances(person.id);
+      } else {
+        this.addConductorToUpcomingAttendances(person.id);
+      }
     }
 
     return data;

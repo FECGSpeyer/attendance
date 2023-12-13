@@ -90,8 +90,15 @@
         <ion-label>
           <h2>{{ con.firstName }} {{ con.lastName }}</h2>
         </ion-label>
+        <ion-badge color="warning" *ngIf="showPaused && con.paused" slot="end">Pausiert</ion-badge>
       </ion-item>
       <ion-item-options>
+        <ion-item-option *ngIf="!con.paused" (click)="pauseConductor(con, sliderDiri)" color="primary">
+          <ion-icon name="pause"></ion-icon>
+        </ion-item-option>
+        <ion-item-option *ngIf="con.paused" (click)="unpauseConductor(con, sliderDiri)" color="primary">
+          <ion-icon name="play"></ion-icon>
+        </ion-item-option>
         <ion-item-option (click)="remove(con, sliderDiri, true)" color="danger">
           <ion-icon name="trash"></ion-icon>
         </ion-item-option>

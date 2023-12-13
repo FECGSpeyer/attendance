@@ -9,6 +9,7 @@ import { AttPage } from '../att/att.page';
 import 'jspdf-autotable';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
 import { environment } from 'src/environments/environment';
+import { Person } from '../../utilities/interfaces';
 require('dayjs/locale/de');
 
 @Component({
@@ -105,7 +106,7 @@ export class AttListPage implements OnInit {
     const conductors: {} = {};
     const players: {} = {};
 
-    for (const con of (await this.db.getConductors())) {
+    for (const con of (await this.db.getConductors()).filter((con: Person) => !con.paused)) {
       conductors[con.id] = AttendanceStatus.Present;
     }
 

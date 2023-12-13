@@ -378,6 +378,18 @@ export class ListPage implements OnInit {
     this.conductors = await this.db.getConductors();
   }
 
+  async pauseConductor(con: Person, slider: IonItemSliding) {
+    await this.db.updateConductor({ ...con, paused: true });
+    slider.close();
+    this.getPlayers();
+  }
+
+  async unpauseConductor(con: Person, slider: IonItemSliding) {
+    await this.db.updateConductor({ ...con, paused: false });
+    slider.close();
+    this.getPlayers();
+  }
+
   async pausePlayer(player: Player, slider: IonItemSliding) {
     const alert = await this.alertController.create({
       header: 'Spieler pausieren',
