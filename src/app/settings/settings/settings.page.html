@@ -46,7 +46,7 @@
               <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
-                  <ion-datetime [(ngModel)]="practiceStart" presentation="time" minuteValues="0,,10,15,20,25,30,35,40,45,50,55" id="datetimestart"></ion-datetime>
+                  <ion-datetime [(ngModel)]="practiceStart" presentation="time" minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestart"></ion-datetime>
                 </ng-template>
               </ion-modal>
             </ion-item>
@@ -55,7 +55,7 @@
               <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
-                  <ion-datetime [(ngModel)]="practiceEnd" presentation="time" minuteValues="0,,10,15,20,25,30,35,40,45,50,55" id="datetimeend"></ion-datetime>
+                  <ion-datetime [(ngModel)]="practiceEnd" presentation="time" minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimeend"></ion-datetime>
                 </ng-template>
               </ion-modal>
             </ion-item>
@@ -222,6 +222,13 @@
             </ion-header>
 
             <ion-list>
+              <ion-list-header>Version 1.7.8</ion-list-header>
+              <ion-item>
+                <ion-label>
+                  <h2>- Probenplan minütlich planbar</h2>
+                  <h2>- Fehlerbehebungen</h2>
+                </ion-label>
+              </ion-item>
               <ion-list-header>Version 1.7.7</ion-list-header>
               <ion-item>
                 <ion-label>

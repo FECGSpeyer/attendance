@@ -32,7 +32,7 @@
       <ion-datetime-button datetime="datetime"></ion-datetime-button>
       <ion-modal [keepContentsMounted]="true">
         <ng-template>
-          <ion-datetime (ionChange)="calculateEnd()" [(ngModel)]="time" presentation="time" minuteValues="0,,10,15,20,25,30,35,40,45,50,55" id="datetime"></ion-datetime>
+          <ion-datetime (ionChange)="calculateEnd()" [(ngModel)]="time" presentation="time" id="datetime"></ion-datetime>
         </ng-template>
       </ion-modal>
     </ion-item>
@@ -67,7 +67,7 @@
       <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
       <ion-modal [keepContentsMounted]="true">
         <ng-template>
-          <ion-datetime disabled="true" [(ngModel)]="end" presentation="time" minuteValues="0,,10,15,20,25,30,35,40,45,50,55" id="datetimeend"></ion-datetime>
+          <ion-datetime disabled="true" [(ngModel)]="end" presentation="time" id="datetimeend"></ion-datetime>
         </ng-template>
       </ion-modal>
     </ion-item>

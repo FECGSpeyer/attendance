@@ -43,7 +43,7 @@
             </ion-header>
             <ion-item>
               <ion-label position="stacked">Nummer</ion-label>
-              <ion-input readonly=true [(ngModel)]="song.number" type="number" #number></ion-input>
+              <ion-input [(ngModel)]="song.number" type="number" #number></ion-input>
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Name</ion-label>
@@ -57,7 +57,7 @@
               <ion-label>Chor & Orchester</ion-label>
               <ion-toggle [(ngModel)]="song.withChoir"></ion-toggle>
             </ion-item>
-            <ion-button [disabled]="!number.value || !name.value" (click)="editSong(song.id, modal, number.value, name.value, link.value)" expand="block">Aktualisieren</ion-button>
+            <ion-button [disabled]="(!number.value && number.value !== 0) || !name.value" (click)="editSong(song.id, modal, number.value, name.value, link.value)" expand="block">Aktualisieren</ion-button>
           </ion-content>
         </ng-template>
       </ion-modal>
@@ -93,7 +93,7 @@
           <ion-label>Chor & Orchester</ion-label>
           <ion-toggle #toggle></ion-toggle>
         </ion-item>
-        <ion-button [disabled]="!number.value || !name.value" (click)="addSong(modal, number.value, name.value, link.value, toggle.value)" expand="block">Hinzufügen</ion-button>
+        <ion-button [disabled]="(!number.value && number.value !== 0) || !name.value" (click)="addSong(modal, number.value, name.value, link.value, toggle.value)" expand="block">Hinzufügen</ion-button>
       </ion-content>
     </ng-template>
   </ion-modal>
