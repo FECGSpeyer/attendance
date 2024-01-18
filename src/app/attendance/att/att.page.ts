@@ -164,11 +164,11 @@ export class AttPage implements OnInit {
 
   async close() {
     if (this.withExcuses) {
-      const unexcusedPlayers: Player[] = this.players.filter((p: Player) =>
-        !p.isPresent && !p.isCritical && !this.excused.has(String(p.id)) && !this.attendance.criticalPlayers.includes(p.id)
-      );
+      // const unexcusedPlayers: Player[] = this.players.filter((p: Player) =>
+      //   !p.isPresent && !p.isCritical && !this.excused.has(String(p.id)) && !this.attendance.criticalPlayers.includes(p.id)
+      // );
 
-      await this.updateCriticalPlayers(unexcusedPlayers);
+      // await this.updateCriticalPlayers(unexcusedPlayers);
     } else {
       this.attendance = this.oldAttendance;
     }
