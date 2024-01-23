@@ -9,14 +9,14 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content *ngIf="attendance">
   <ion-accordion-group>
     <ion-accordion value="info">
       <ion-item slot="header" color="light">
         <ion-label>Informationen</ion-label>
       </ion-item>
       <div slot="content">
-        <ion-item lines="none" *ngIf="attendance">
+        <ion-item lines="none">
           <ion-label>Kategorie</ion-label>
           <ion-select (ionChange)="onInfoChanged()" [(ngModel)]="attendance.type">
             <ion-select-option value="uebung">Übung</ion-select-option>

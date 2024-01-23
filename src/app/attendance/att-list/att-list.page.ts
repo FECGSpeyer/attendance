@@ -10,6 +10,7 @@ import 'jspdf-autotable';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
 import { environment } from 'src/environments/environment';
 import { Person } from '../../utilities/interfaces';
+import { RealtimeChannel } from '@supabase/supabase-js';
 require('dayjs/locale/de');
 
 @Component({
@@ -29,6 +30,7 @@ export class AttListPage implements OnInit {
   public notes: string;
   public typeInfo: string;
   public perc: number = 0;
+  private sub: RealtimeChannel;
 
   constructor(
     private db: DbService,
@@ -46,6 +48,21 @@ export class AttListPage implements OnInit {
       this.isConductor = state.role === Role.ADMIN;
       this.isHelper = state.role === Role.HELPER;
     });
+
+    this.subscribeOnAttChannel();
+  }
+
+  subscribeOnAttChannel() {
+    this.sub = this.db.getSupabase()
+      .channel('att-changes').on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'attendance' },
+        () => this.getAttendance())
+      .subscribe();
+  }
+
+  async ngOnDestroy() {
+    await this.sub.unsubscribe();
   }
 
   async getAttendance(): Promise<void> {
@@ -70,12 +87,6 @@ export class AttListPage implements OnInit {
     }
   }
 
-  async handleRefresh(event: any) {
-    await this.getAttendance();
-
-    event.target.complete();
-  }
-
   async remove(id: number, slider: IonItemSliding): Promise<void> {
     const alert: HTMLIonAlertElement = await this.alertController.create({
       header: "Möchtest du die Anwesenheit wirklich entfernen?",
@@ -86,7 +97,6 @@ export class AttListPage implements OnInit {
         handler: async (): Promise<void> => {
           slider.close();
           await this.db.removeAttendance(id);
-          await this.getAttendance();
         }
       }]
     });
@@ -131,7 +141,6 @@ export class AttListPage implements OnInit {
     });
 
     await modal.dismiss();
-    await this.getAttendance();
 
     this.notes = '';
     this.type = 'uebung';
@@ -162,15 +171,18 @@ export class AttListPage implements OnInit {
       return;
     }
 
+    this.sub?.unsubscribe();
+
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: AttPage,
       componentProps: {
-        attendance,
+        attendanceId: attendance.id,
       }
     });
 
     await modal.present();
     await modal.onWillDismiss();
     await this.getAttendance();
+    this.subscribeOnAttChannel();
   }
 }

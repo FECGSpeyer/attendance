@@ -8,7 +8,6 @@ import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { Storage } from '@ionic/storage-angular';
 
 @Component({
   selector: 'app-att',
@@ -16,7 +15,7 @@ import { Storage } from '@ionic/storage-angular';
   styleUrls: ['./att.page.scss'],
 })
 export class AttPage implements OnInit {
-  @Input() attendance: Attendance;
+  @Input() attendanceId: number;
   @ViewChild('chooser') chooser: ElementRef;
   public players: Player[] = [];
   public allPlayers: Player[] = [];
@@ -29,8 +28,7 @@ export class AttPage implements OnInit {
   public withExcuses: boolean = environment.withExcuses;
   public isOnline = true;
   private playerNotes: { [prop: number]: string } = {};
-  private oldAttendance: Attendance;
-  private hasChanges = false;
+  private attendance: Attendance;
   private sub: RealtimeChannel;
   public isHelper: boolean = false;
 
@@ -38,25 +36,23 @@ export class AttPage implements OnInit {
     private modalController: ModalController,
     private db: DbService,
     private alertController: AlertController,
-    private storage: Storage,
   ) { }
 
   async ngOnInit(): Promise<void> {
+    this.attendance = await this.db.getAttendanceById(this.attendanceId);
     this.isHelper = await this.db.getRole() === Role.HELPER;
     void this.listenOnNetworkChanges();
     this.allConductors = await this.db.getConductors(true);
     this.allPlayers = await this.db.getPlayers();
     this.instruments = await this.db.getInstruments();
-    this.hasChanges = false;
 
     this.sub = this.db.getSupabase()
       .channel('att-changes').on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'attendance' },
+        { event: '*', schema: 'public', table: 'attendance' },
         (payload: RealtimePostgresChangesPayload<any>) => this.onAttRealtimeChanges(payload))
       .subscribe();
 
-    this.oldAttendance = { ...this.attendance };
     this.initializeAttObjects();
   }
 
@@ -169,8 +165,6 @@ export class AttPage implements OnInit {
       // );
 
       // await this.updateCriticalPlayers(unexcusedPlayers);
-    } else {
-      this.attendance = this.oldAttendance;
     }
 
     await this.sub.unsubscribe();
@@ -178,12 +172,13 @@ export class AttPage implements OnInit {
   }
 
   onAttRealtimeChanges(payload: RealtimePostgresChangesPayload<any>) {
-    if (
-      payload.new.id !== this.attendance.id ||
-      this.oldAttendance.type !== payload.new.type ||
-      this.oldAttendance.typeInfo !== payload.new.typeInfo ||
-      this.oldAttendance.notes !== payload.new.notes
-    ) {
+    if (!Object.keys(payload.new).length && payload.old && (payload.old as { id: number }).id === this.attendance.id) {
+      Utils.showToast("Die Anwesenheit wurde soeben von einem anderen Nutzer gelöscht", "danger", 3000);
+      this.close();
+      return;
+    }
+
+    if (payload.new.id !== this.attendance.id) {
       return;
     }
 

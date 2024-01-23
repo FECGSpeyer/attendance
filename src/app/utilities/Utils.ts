@@ -1,4 +1,4 @@
-import { ToastController, LoadingController } from "@ionic/angular";
+import { ToastController, LoadingController, Platform } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { environment } from "src/environments/environment";
 import { AttendanceStatus, DEFAULT_IMAGE, Role } from "./constants";
