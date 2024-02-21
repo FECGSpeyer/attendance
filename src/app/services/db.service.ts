@@ -629,7 +629,7 @@ export class DbService {
 
   async archivePlayer(player: Player, left: string, notes: string): Promise<void> {
     if (player.appId && player.email) {
-      await this.removeEmailFromAuth(player.email);
+      await this.removeEmailFromAuth(player.appId);
       delete player.appId;
       delete player.email;
     }
@@ -650,7 +650,7 @@ export class DbService {
 
   async archiveConductor(conductor: Person, left: string, notes: string): Promise<void> {
     if (conductor.appId && conductor.email) {
-      await this.removeEmailFromAuth(conductor.email);
+      await this.removeEmailFromAuth(conductor.appId);
       delete conductor.appId;
       delete conductor.email;
     }
