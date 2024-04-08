@@ -390,6 +390,7 @@ export class DbService {
     delete dataToCreate.paused;
     delete dataToCreate.teacher;
     delete dataToCreate.playsSince;
+    delete dataToCreate.role;
 
     const { error, data } = await supabase
       .from('conductors')
