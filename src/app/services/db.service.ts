@@ -426,7 +426,18 @@ export class DbService {
       throw new Error(error.message);
     }
 
-    await this.addPlayerToUpcomingAttendances(data.id);
+    await this.addPlayerToAttendancesByDate(data.id, data.joined);
+  }
+
+  async addPlayerToAttendancesByDate(id: number, joined: string) {
+    const attData: Attendance[] = await this.getAttendancesByDate(joined);
+
+    if (attData?.length) {
+      for (const att of attData) {
+        att.players[id] = AttendanceStatus.Present;
+        await this.updateAttendance({ players: att.players }, att.id);
+      }
+    }
   }
 
   async addPlayerToUpcomingAttendances(id: number) {
@@ -734,6 +745,18 @@ export class DbService {
       .from('attendance')
       .select('*')
       .gt("date", dayjs().startOf("day").toISOString())
+      .order("date", {
+        ascending: false,
+      });
+
+    return data as any;
+  }
+
+  async getAttendancesByDate(date): Promise<Attendance[]> {
+    const { data } = await supabase
+      .from('attendance')
+      .select('*')
+      .gt("date", dayjs(date).startOf("day").toISOString())
       .order("date", {
         ascending: false,
       });
