@@ -144,6 +144,7 @@ export interface Teacher {
     insNames?: string;
     number: string;
     private: boolean;
+    playerCount?: number;
 }
 
 export interface Meeting {

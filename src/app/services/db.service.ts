@@ -888,6 +888,7 @@ export class DbService {
 
   async updateTeacher(teacher: Partial<Teacher>, id: number): Promise<Teacher[]> {
     delete teacher.insNames;
+    delete teacher.playerCount;
 
     const { data } = await supabase
       .from('teachers')

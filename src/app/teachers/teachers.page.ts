@@ -49,11 +49,11 @@ export class TeachersPage implements OnInit {
       return;
     }
 
-    this.db.addTeacher({
+    await this.db.addTeacher({
       name, instruments, notes, number, private: isPrivate,
     });
 
-    modal.dismiss();
+    await modal.dismiss();
 
     await this.getTeachers();
   }
