@@ -3,7 +3,7 @@ import { AlertController, IonItemSliding, IonModal, ModalController } from '@ion
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { Attendance, Player } from 'src/app/utilities/interfaces';
+import { Attendance, Player, Song } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { AttPage } from '../att/att.page';
 import 'jspdf-autotable';
@@ -31,6 +31,8 @@ export class AttListPage implements OnInit {
   public typeInfo: string;
   public perc: number = 0;
   private sub: RealtimeChannel;
+  public songs: Song[] = [];
+  public selectedSongs: number[] = [];
 
   constructor(
     private db: DbService,
@@ -50,6 +52,8 @@ export class AttListPage implements OnInit {
     });
 
     this.subscribeOnAttChannel();
+
+    this.songs = await this.db.getSongs();
   }
 
   subscribeOnAttChannel() {
@@ -134,6 +138,7 @@ export class AttListPage implements OnInit {
       criticalPlayers: [],
       notes: this.notes,
       typeInfo: this.typeInfo,
+      songs: this.selectedSongs,
       playerNotes: {},
       players,
       conductors,
@@ -147,6 +152,7 @@ export class AttListPage implements OnInit {
     this.date = new Date().toISOString();
     this.typeInfo = '';
     this.dateString = format(new Date(), 'dd.MM.yyyy');
+    this.selectedSongs = [];
   }
 
   formatDate(value: string): string {

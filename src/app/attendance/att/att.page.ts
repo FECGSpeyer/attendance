@@ -3,7 +3,7 @@ import { AlertController, IonItemSliding, ModalController } from '@ionic/angular
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, PlayerHistoryType, Role } from 'src/app/utilities/constants';
-import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, Player } from 'src/app/utilities/interfaces';
+import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, Player, Song } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
 import { ConnectionStatus, Network } from '@capacitor/network';
@@ -31,6 +31,8 @@ export class AttPage implements OnInit {
   private attendance: Attendance;
   private sub: RealtimeChannel;
   public isHelper: boolean = false;
+  public songs: Song[] = [];
+  public selectedSongs: number[] = [];
 
   constructor(
     private modalController: ModalController,
@@ -45,6 +47,8 @@ export class AttPage implements OnInit {
     this.allConductors = await this.db.getConductors(true);
     this.allPlayers = await this.db.getPlayers();
     this.instruments = await this.db.getInstruments();
+    this.songs = await this.db.getSongs();
+    this.selectedSongs = this.attendance.songs || [];
 
     this.sub = this.db.getSupabase()
       .channel('att-changes').on(

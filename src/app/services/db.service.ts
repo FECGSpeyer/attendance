@@ -814,6 +814,7 @@ export class DbService {
         title: att.typeInfo ? att.typeInfo : att.type === "vortrag" ? "Vortrag" : "",
         text: attText,
         notes: att.playerNotes && att.playerNotes[id] ? att.playerNotes[id] : "",
+        songs: att.songs,
       }
     });
   }

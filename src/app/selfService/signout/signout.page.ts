@@ -1,10 +1,10 @@
 /* eslint-disable arrow-body-style */
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, IonTextarea, ModalController } from '@ionic/angular';
+import { ActionSheetController, IonAccordionGroup, IonModal } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus } from 'src/app/utilities/constants';
-import { Attendance, PersonAttendance, Player } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, Player, Song } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
 
@@ -31,15 +31,16 @@ export class SignoutPage implements OnInit {
   public signoutTitle: string;
   public attIsToday: boolean;
   public lateCount: number = 0;
+  public songs: Song[] = [];
 
   constructor(
     private db: DbService,
-    private alertController: AlertController,
     private actionSheetController: ActionSheetController,
   ) { }
 
   async ngOnInit() {
     this.player = await this.db.getPlayerByAppId();
+    this.songs = await this.db.getSongs();
     await this.getAttendances();
   }
 
@@ -218,5 +219,11 @@ export class SignoutPage implements OnInit {
     await this.getAttendances();
 
     event.target.complete();
+  }
+
+  getSongNames(songIds: number[]): string {
+    return songIds.map((id: number) => {
+      return `${this.songs.find((s: Song) => s.id === id).number} ${this.songs.find((s: Song) => s.id === id).name}`;
+    }).join(", ");
   }
 }

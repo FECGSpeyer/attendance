@@ -100,6 +100,7 @@ export interface Attendance {
     img?: string;
     plan?: any;
     lateExcused?: string[];
+    songs?: number[];
 }
 
 export interface Song {
@@ -120,6 +121,7 @@ export interface PersonAttendance {
     text: string;
     title: string;
     notes: string;
+    songs?: number[];
 }
 
 export interface History {

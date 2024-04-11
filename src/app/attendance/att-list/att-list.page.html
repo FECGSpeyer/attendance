@@ -143,6 +143,13 @@
           <ion-label position="stacked">Veranstaltung</ion-label>
           <ion-textarea [(ngModel)]="typeInfo"></ion-textarea>
         </ion-item>
+        <ion-item *ngIf="type === 'vortrag'">
+          <ion-label position="stacked">Werk(e)</ion-label>
+          <ion-select multiple="true" [(ngModel)]="selectedSongs" #select>
+            <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>
           <ion-textarea [(ngModel)]="notes"></ion-textarea>

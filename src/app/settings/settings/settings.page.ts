@@ -16,7 +16,6 @@ import { Instrument, Person, Player, Settings } from 'src/app/utilities/interfac
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
 import { Viewer } from '../../utilities/interfaces';
-import { Storage } from '@ionic/storage-angular';
 
 @Component({
   selector: 'app-settings',
@@ -44,7 +43,6 @@ export class SettingsPage implements OnInit {
     private db: DbService,
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
-    private storage: Storage,
   ) { }
 
   async ngOnInit(): Promise<void> {
