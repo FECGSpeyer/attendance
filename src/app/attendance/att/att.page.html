@@ -29,7 +29,7 @@
           <ion-label position="stacked">Probenart</ion-label>
           <ion-input (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.typeInfo"></ion-input>
         </ion-item>
-        <ion-item *ngIf="attendance?.type === 'vortrag'">
+        <ion-item *ngIf="attendance?.type === 'vortrag' || attendance?.type === 'sonstiges'">
           <ion-label position="stacked">Werk(e)</ion-label>
           <ion-select (ionChange)="onInfoChanged()" multiple="true" [(ngModel)]="selectedSongs" #select>
             <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}
