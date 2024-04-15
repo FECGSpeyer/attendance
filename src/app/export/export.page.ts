@@ -4,7 +4,6 @@ import * as dayjs from 'dayjs';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { autoTable as AutoTable, CellHookData } from 'jspdf-autotable';
-import { environment } from 'src/environments/environment';
 import { utils, WorkBook, WorkSheet, writeFile } from 'xlsx';
 import { DbService } from '../services/db.service';
 import { Attendance, Player } from '../utilities/interfaces';
@@ -34,9 +33,6 @@ export class ExportPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    if (environment.shortName === "VoS") {
-      this.fields.push("Testergebnis");
-    }
     this.players = Utils.getModifiedPlayers(await this.db.getPlayers(), await this.db.getInstruments());
     this.attendance = (await this.db.getAttendance()).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
   }
@@ -78,15 +74,15 @@ export class ExportPage implements OnInit {
     await alert.present();
   }
 
-  export() {
+  export(shortName: string) {
     if (this.content === "player") {
-      this.type === "pdf" ? this.exportPlayerPDF() : this.exportPlayerExcel();
+      this.type === "pdf" ? this.exportPlayerPDF(shortName) : this.exportPlayerExcel(shortName);
     } else {
-      this.exportType();
+      this.exportType(shortName);
     }
   }
 
-  exportPlayerExcel() {
+  exportPlayerExcel(shortName: string) {
     let row = 1;
 
     const date: string = dayjs().format('DD.MM.YYYY');
@@ -101,10 +97,10 @@ export class ExportPage implements OnInit {
     const wb: WorkBook = utils.book_new();
     utils.book_append_sheet(wb, ws, 'Anwesenheit');
 
-    writeFile(wb, `${environment.shortName}_Spielerliste_Stand_${date}.xlsx`);
+    writeFile(wb, `${shortName}_Spielerliste_Stand_${date}.xlsx`);
   }
 
-  exportPlayerPDF() {
+  exportPlayerPDF(shortName: string) {
     let row = 1;
 
     const date: string = dayjs().format('DD.MM.YYYY');
@@ -116,7 +112,7 @@ export class ExportPage implements OnInit {
     }
 
     const doc = new jsPDF();
-    doc.text(`${environment.shortName} Spielerliste Stand: ${date}`, 14, 25);
+    doc.text(`${shortName} Spielerliste Stand: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
       head: [['', ...this.selectedFields]],
       body: data,
@@ -127,10 +123,10 @@ export class ExportPage implements OnInit {
         fillColor: [0, 82, 56]
       }
     });
-    doc.save(`${environment.shortName}_Spielerliste_Stand_${date}.pdf`);
+    doc.save(`${shortName}_Spielerliste_Stand_${date}.pdf`);
   }
 
-  async exportType() {
+  async exportType(shortName: string) {
     let row = 1;
 
     let attendance: Attendance[] = [...this.attendance].filter((att: Attendance) => Boolean(Object.keys(att.players).length));
@@ -165,13 +161,13 @@ export class ExportPage implements OnInit {
 
     if (this.type === "excel") {
       data.unshift(header)
-      this.exportAttExcel(data);
+      this.exportAttExcel(data, shortName);
     } else {
-      this.exportAttPDF(data, header);
+      this.exportAttPDF(data, header, shortName);
     }
   }
 
-  exportAttExcel(data) {
+  exportAttExcel(data, shortName: string) {
     const date: string = dayjs().format('DD.MM.YYYY');
 
     /* generate worksheet */
@@ -182,14 +178,14 @@ export class ExportPage implements OnInit {
     utils.book_append_sheet(wb, ws, 'Anwesenheit');
 
     /* save to file */
-    writeFile(wb, `${environment.shortName}_Anwesenheit_Stand_${date}.xlsx`);
+    writeFile(wb, `${shortName}_Anwesenheit_Stand_${date}.xlsx`);
   }
 
-  exportAttPDF(data, header) {
+  exportAttPDF(data, header, shortName: string) {
     const date: string = dayjs().format('DD.MM.YYYY');
     const doc = new jsPDF();
 
-    doc.text(`${environment.shortName} Anwesenheit Stand: ${date}`, 14, 25);
+    doc.text(`${shortName} Anwesenheit Stand: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
       head: [header],
       body: data,
@@ -229,7 +225,7 @@ export class ExportPage implements OnInit {
         }
       },
     });
-    doc.save(`${environment.shortName}_Anwesenheit_Stand_${date}.pdf`);
+    doc.save(`${shortName}_Anwesenheit_Stand_${date}.pdf`);
   }
 
   getFieldValues(player: Player) {

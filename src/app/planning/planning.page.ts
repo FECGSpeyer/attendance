@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController, IonItemSliding, ItemReorderEventDetail, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
-import { Attendance, FieldSelection, History, Settings, Song } from '../utilities/interfaces';
+import { Attendance, FieldSelection, History, Song } from '../utilities/interfaces';
 
 import { Utils } from '../utilities/Utils';
+import { TenantService } from '../services/tenant.service';
 
 @Component({
   selector: 'app-planning',
@@ -25,16 +26,15 @@ export class PlanningPage implements OnInit {
   public time: string = dayjs().utc().hour(17).minute(50).format("YYYY-MM-DDTHH:mm");
   public end: string;
   public notes: string = "";
-  public settings: Settings;
 
   constructor(
     private modalController: ModalController,
     private db: DbService,
+    private tenantService: TenantService,
     private alertController: AlertController,
   ) { }
 
   async ngOnInit() {
-    this.settings = await this.db.getSettings();
     this.songs = await this.db.getSongs();
     this.history = await this.db.getUpcomingHistory();
     this.attendances = await this.db.getAttendance();
@@ -52,7 +52,7 @@ export class PlanningPage implements OnInit {
           }
         });
       } else {
-        this.time = this.settings.practiceStart || "17:50";
+        this.time = this.tenantService.tenant.practiceStart || "17:50";
       }
     }
 

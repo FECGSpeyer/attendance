@@ -1,18 +1,17 @@
 {
-  "name": "attendance",
-  "version": "1.8.3",
+  "name": "attendix",
+  "version": "2.0.0",
   "author": "Matthias Eckstaedt",
-  "homepage": "https://ionicframework.com/",
+  "homepage": "https://attendix.de/",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "deploy": "ng build --configuration production && firebase deploy",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "resources": "cordova-res ios && cordova-res android && node scripts/resources.js && npx cap sync",
-    "genTypes": "npx supabase gen types typescript --project-id \"zukclqspndysemvvihjm\" --schema public > src/app/utilities/supabase.ts"
+    "genTypes": "npx supabase gen types typescript --project-id \"ultyjzgwejpehfjuyenr\" --schema public > src/app/utilities/supabase.ts"
   },
   "private": true,
   "dependencies": {
@@ -42,6 +41,7 @@
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.23",
     "ngx-quill": "^24.0.0",
+    "quill": "^1.3.7",
     "rxjs": "^7.5.0",
     "tslib": "^2.2.0",
     "xlsx": "^0.18.5",
@@ -77,7 +77,7 @@
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "^1.5.0",
     "protractor": "~7.0.0",
-    "supabase": "^1.28.1",
+    "supabase": "^1.157.2",
     "ts-node": "~8.3.0",
     "typescript": "~5.2.2"
   },

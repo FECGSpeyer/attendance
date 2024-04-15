@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
-import { Role } from 'src/app/utilities/constants';
-import { Instrument, Player } from 'src/app/utilities/interfaces';
+import { AttendanceType, Role } from 'src/app/utilities/constants';
+import { Instrument, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
 import { InstrumentPage } from '../instrument/instrument.page';
+import { TenantService } from 'src/app/services/tenant.service';
 
 @Component({
   selector: 'app-instrument-list',
@@ -20,11 +21,12 @@ export class InstrumentListPage implements OnInit {
   constructor(
     private modalController: ModalController,
     private db: DbService,
+    private tenantService: TenantService,
     private routerOutlet: IonRouterOutlet,
   ) { }
 
   async ngOnInit() {
-    this.isChoir = environment.isChoir;
+    this.isChoir = this.tenantService.tenant.type === AttendanceType.CHOIR;
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isAdmin = state.role === Role.ADMIN;
     });

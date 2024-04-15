@@ -3,6 +3,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, IonAccordionGroup, IonModal } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
+import { TenantService } from 'src/app/services/tenant.service';
 import { AttendanceStatus } from 'src/app/utilities/constants';
 import { Attendance, PersonAttendance, Player, Song } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -25,7 +26,7 @@ export class SignoutPage implements OnInit {
   public reason: string;
   public perc: number;
   public version: string = require('../../../../package.json').version;
-  public name: string = environment.longName;
+  public name: string;
   public isLateComingEvent: boolean;
   public reasonSelection;
   public signoutTitle: string;
@@ -35,10 +36,12 @@ export class SignoutPage implements OnInit {
 
   constructor(
     private db: DbService,
+    private tenantService: TenantService,
     private actionSheetController: ActionSheetController,
   ) { }
 
   async ngOnInit() {
+    this.name = this.tenantService.tenant.longName;
     this.player = await this.db.getPlayerByAppId();
     this.songs = await this.db.getSongs();
     await this.getAttendances();

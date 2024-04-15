@@ -7,8 +7,9 @@ import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { environment } from 'src/environments/environment';
 import { Utils } from 'src/app/utilities/Utils';
-import { DEFAULT_IMAGE, PlayerHistoryType, Role } from 'src/app/utilities/constants';
+import { AttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { SupabaseTable } from '../../utilities/constants';
+import { TenantService } from 'src/app/services/tenant.service';
 dayjs.extend(utc);
 
 @Component({
@@ -41,7 +42,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     correctBirthday: false,
     history: [],
     paused: false,
-    role: Role.NONE,
+    tenantId: 999999999,
   };
   public readonly NONE: Role = Role.NONE;
   public readonly HELPER: Role = Role.HELPER;
@@ -55,8 +56,8 @@ export class PersonPage implements OnInit, AfterViewInit {
   public teachers: Teacher[] = [];
   public allTeachers: Teacher[] = [];
   public perc: number = 0;
-  public showTeachers: boolean = environment.showTeachers;
-  public isVoS: boolean = environment.shortName === "VoS";
+  public maintainTeachers: boolean;
+  public isVoS: boolean;
   public solved: boolean = false;
   public hasChanges: boolean = false;
   public notes: string = "";
@@ -66,6 +67,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   constructor(
     private db: DbService,
+    private tenantService: TenantService,
     private modalController: ModalController,
     private alertController: AlertController,
     private loadingController: LoadingController,
@@ -73,12 +75,14 @@ export class PersonPage implements OnInit, AfterViewInit {
   ) { }
 
   async ngOnInit() {
-    this.isChoir = environment.isChoir;
+    this.isVoS = this.tenantService.tenant.shortName === 'VoS';
+    this.maintainTeachers = this.tenantService.tenant.maintainTeachers;
+    this.isChoir = this.tenantService.tenant.type === AttendanceType.CHOIR;
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isAdmin = state.role === Role.ADMIN;
     });
     this.hasChanges = false;
-    if (environment.showTeachers) {
+    if (this.tenantService.tenant.maintainTeachers) {
       this.teachers = await this.db.getTeachers();
       this.allTeachers = this.teachers;
     }
@@ -107,6 +111,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       }
     } else {
       this.player = { ...this.newPlayer };
+      this.player.tenantId = this.tenantService.tenant.id;
       this.player.instrument = this.instruments[0].id;
     }
 

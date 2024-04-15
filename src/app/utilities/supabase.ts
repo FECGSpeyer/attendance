@@ -13,52 +13,60 @@ export type Database = {
         Row: {
           conductors: Json | null
           created_at: string | null
-          criticalPlayers: number[]
+          criticalPlayers: number[] | null
           date: string | null
-          excused: string[] | null
+          excused: string[]
           id: number
           img: string | null
-          notes: string | null
           plan: Json | null
           playerNotes: Json | null
           players: Json | null
-          songs: number[] | null
-          type: string
+          songs: number[]
+          tenantId: number
+          type: string | null
           typeInfo: string | null
         }
         Insert: {
           conductors?: Json | null
           created_at?: string | null
-          criticalPlayers?: number[]
+          criticalPlayers?: number[] | null
           date?: string | null
-          excused?: string[] | null
+          excused?: string[]
           id?: number
           img?: string | null
-          notes?: string | null
           plan?: Json | null
           playerNotes?: Json | null
           players?: Json | null
-          songs?: number[] | null
-          type?: string
+          songs?: number[]
+          tenantId: number
+          type?: string | null
           typeInfo?: string | null
         }
         Update: {
           conductors?: Json | null
           created_at?: string | null
-          criticalPlayers?: number[]
+          criticalPlayers?: number[] | null
           date?: string | null
-          excused?: string[] | null
+          excused?: string[]
           id?: number
           img?: string | null
-          notes?: string | null
           plan?: Json | null
           playerNotes?: Json | null
           players?: Json | null
-          songs?: number[] | null
-          type?: string
+          songs?: number[]
+          tenantId?: number
+          type?: string | null
           typeInfo?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "public_attendance_tenantId_fkey"
+            columns: ["tenantId"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conductors: {
         Row: {
@@ -74,8 +82,7 @@ export type Database = {
           lastName: string | null
           left: string | null
           notes: string | null
-          paused: boolean | null
-          telegramId: string | null
+          tenantId: number
         }
         Insert: {
           appId?: string | null
@@ -90,8 +97,7 @@ export type Database = {
           lastName?: string | null
           left?: string | null
           notes?: string | null
-          paused?: boolean | null
-          telegramId?: string | null
+          tenantId: number
         }
         Update: {
           appId?: string | null
@@ -106,10 +112,17 @@ export type Database = {
           lastName?: string | null
           left?: string | null
           notes?: string | null
-          paused?: boolean | null
-          telegramId?: string | null
+          tenantId?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "public_conductors_tenantId_fkey"
+            columns: ["tenantId"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       history: {
         Row: {
@@ -117,7 +130,6 @@ export type Database = {
           created_at: string | null
           date: string | null
           id: number
-          name: string | null
           otherConductor: string | null
           songId: number | null
         }
@@ -126,7 +138,6 @@ export type Database = {
           created_at?: string | null
           date?: string | null
           id?: number
-          name?: string | null
           otherConductor?: string | null
           songId?: number | null
         }
@@ -135,7 +146,6 @@ export type Database = {
           created_at?: string | null
           date?: string | null
           id?: number
-          name?: string | null
           otherConductor?: string | null
           songId?: number | null
         }
@@ -148,7 +158,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "history_songId_fkey"
+            foreignKeyName: "history_songid_fkey"
             columns: ["songId"]
             isOneToOne: false
             referencedRelation: "songs"
@@ -164,7 +174,8 @@ export type Database = {
           name: string | null
           notes: string | null
           range: string | null
-          tuning: string
+          tenantId: number
+          tuning: string | null
         }
         Insert: {
           clefs?: string[] | null
@@ -173,7 +184,8 @@ export type Database = {
           name?: string | null
           notes?: string | null
           range?: string | null
-          tuning?: string
+          tenantId: number
+          tuning?: string | null
         }
         Update: {
           clefs?: string[] | null
@@ -182,49 +194,69 @@ export type Database = {
           name?: string | null
           notes?: string | null
           range?: string | null
-          tuning?: string
+          tenantId?: number
+          tuning?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "public_instruments_tenantId_fkey"
+            columns: ["tenantId"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       meetings: {
         Row: {
-          attendees: number[]
+          attendees: number[] | null
           created_at: string | null
-          date: string
+          date: string | null
           id: number
           notes: string | null
+          tenantId: number | null
         }
         Insert: {
-          attendees?: number[]
+          attendees?: number[] | null
           created_at?: string | null
-          date?: string
+          date?: string | null
           id?: number
           notes?: string | null
+          tenantId?: number | null
         }
         Update: {
-          attendees?: number[]
+          attendees?: number[] | null
           created_at?: string | null
-          date?: string
+          date?: string | null
           id?: number
           notes?: string | null
+          tenantId?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "public_meetings_tenantId_fkey"
+            columns: ["tenantId"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       player: {
         Row: {
           appId: string | null
           birthday: string | null
-          correctBirthday: boolean
+          correctBirthday: boolean | null
           created_at: string | null
           criticalReason: number | null
           email: string | null
-          examinee: boolean | null
           firstName: string | null
           hasTeacher: boolean | null
-          history: Json[]
+          history: Json | null
           id: number
           img: string | null
           instrument: number | null
+          instruments: string | null
           isCritical: boolean | null
           isLeader: boolean | null
           joined: string | null
@@ -233,28 +265,25 @@ export type Database = {
           left: string | null
           notes: string | null
           otherExercise: string | null
-          otherOrchestras: string[]
           paused: boolean | null
           playsSince: string | null
-          role: number
-          teacher: number | null
-          telegramId: string | null
-          testResult: string | null
+          range: string | null
+          tenantId: number
         }
         Insert: {
           appId?: string | null
           birthday?: string | null
-          correctBirthday?: boolean
+          correctBirthday?: boolean | null
           created_at?: string | null
           criticalReason?: number | null
           email?: string | null
-          examinee?: boolean | null
           firstName?: string | null
           hasTeacher?: boolean | null
-          history?: Json[]
+          history?: Json | null
           id?: number
           img?: string | null
           instrument?: number | null
+          instruments?: string | null
           isCritical?: boolean | null
           isLeader?: boolean | null
           joined?: string | null
@@ -263,28 +292,25 @@ export type Database = {
           left?: string | null
           notes?: string | null
           otherExercise?: string | null
-          otherOrchestras?: string[]
           paused?: boolean | null
           playsSince?: string | null
-          role?: number
-          teacher?: number | null
-          telegramId?: string | null
-          testResult?: string | null
+          range?: string | null
+          tenantId: number
         }
         Update: {
           appId?: string | null
           birthday?: string | null
-          correctBirthday?: boolean
+          correctBirthday?: boolean | null
           created_at?: string | null
           criticalReason?: number | null
           email?: string | null
-          examinee?: boolean | null
           firstName?: string | null
           hasTeacher?: boolean | null
-          history?: Json[]
+          history?: Json | null
           id?: number
           img?: string | null
           instrument?: number | null
+          instruments?: string | null
           isCritical?: boolean | null
           isLeader?: boolean | null
           joined?: string | null
@@ -293,13 +319,10 @@ export type Database = {
           left?: string | null
           notes?: string | null
           otherExercise?: string | null
-          otherOrchestras?: string[]
           paused?: boolean | null
           playsSince?: string | null
-          role?: number
-          teacher?: number | null
-          telegramId?: string | null
-          testResult?: string | null
+          range?: string | null
+          tenantId?: number
         }
         Relationships: [
           {
@@ -310,34 +333,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "player_teacher_fkey"
-            columns: ["teacher"]
+            foreignKeyName: "public_player_tenantId_fkey"
+            columns: ["tenantId"]
             isOneToOne: false
-            referencedRelation: "teachers"
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
       }
-      settings: {
+      scores: {
         Row: {
-          attDate: string | null
+          created_at: string | null
           id: number
-          practiceEnd: string | null
-          practiceStart: string | null
+          name: string | null
+          tenantId: number | null
         }
         Insert: {
-          attDate?: string | null
+          created_at?: string | null
           id?: number
-          practiceEnd?: string | null
-          practiceStart?: string | null
+          name?: string | null
+          tenantId?: number | null
         }
         Update: {
-          attDate?: string | null
+          created_at?: string | null
           id?: number
-          practiceEnd?: string | null
-          practiceStart?: string | null
+          name?: string | null
+          tenantId?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "public_scores_tenantId_fkey"
+            columns: ["tenantId"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       songs: {
         Row: {
@@ -346,7 +377,9 @@ export type Database = {
           link: string | null
           name: string | null
           number: number | null
+          tenantId: number | null
           withChoir: boolean | null
+          withOrchestra: boolean | null
         }
         Insert: {
           created_at?: string | null
@@ -354,7 +387,9 @@ export type Database = {
           link?: string | null
           name?: string | null
           number?: number | null
+          tenantId?: number | null
           withChoir?: boolean | null
+          withOrchestra?: boolean | null
         }
         Update: {
           created_at?: string | null
@@ -362,39 +397,93 @@ export type Database = {
           link?: string | null
           name?: string | null
           number?: number | null
+          tenantId?: number | null
           withChoir?: boolean | null
+          withOrchestra?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_songs_tenantId_fkey"
+            columns: ["tenantId"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenants: {
+        Row: {
+          created_at: string
+          hasNeutralStatus: boolean | null
+          id: number
+          longName: string | null
+          maintainTeachers: boolean | null
+          practiceEnd: string | null
+          practiceStart: string | null
+          seasonStart: string | null
+          shortName: string | null
+          type: string | null
+          withExcuses: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          hasNeutralStatus?: boolean | null
+          id?: number
+          longName?: string | null
+          maintainTeachers?: boolean | null
+          practiceEnd?: string | null
+          practiceStart?: string | null
+          seasonStart?: string | null
+          shortName?: string | null
+          type?: string | null
+          withExcuses?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          hasNeutralStatus?: boolean | null
+          id?: number
+          longName?: string | null
+          maintainTeachers?: boolean | null
+          practiceEnd?: string | null
+          practiceStart?: string | null
+          seasonStart?: string | null
+          shortName?: string | null
+          type?: string | null
+          withExcuses?: boolean | null
         }
         Relationships: []
       }
-      teachers: {
+      tenantUsers: {
         Row: {
-          created_at: string | null
+          created_at: string
           id: number
-          instruments: number[] | null
-          name: string | null
-          notes: string | null
-          number: string | null
-          private: boolean | null
+          role: number | null
+          tenantId: number
+          userId: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           id?: number
-          instruments?: number[] | null
-          name?: string | null
-          notes?: string | null
-          number?: string | null
-          private?: boolean | null
+          role?: number | null
+          tenantId: number
+          userId: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           id?: number
-          instruments?: number[] | null
-          name?: string | null
-          notes?: string | null
-          number?: string | null
-          private?: boolean | null
+          role?: number | null
+          tenantId?: number
+          userId?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "public_tenantUsers_tenantId_fkey"
+            columns: ["tenantId"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       viewers: {
         Row: {
@@ -404,6 +493,7 @@ export type Database = {
           firstName: string | null
           id: number
           lastName: string | null
+          tenantId: number | null
         }
         Insert: {
           appId?: string | null
@@ -412,6 +502,7 @@ export type Database = {
           firstName?: string | null
           id?: number
           lastName?: string | null
+          tenantId?: number | null
         }
         Update: {
           appId?: string | null
@@ -420,10 +511,18 @@ export type Database = {
           firstName?: string | null
           id?: number
           lastName?: string | null
+          tenantId?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "viewers_appId_fkey"
+            foreignKeyName: "public_viewers_tenantId_fkey"
+            columns: ["tenantId"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viewers_appid_fkey"
             columns: ["appId"]
             isOneToOne: false
             referencedRelation: "users"

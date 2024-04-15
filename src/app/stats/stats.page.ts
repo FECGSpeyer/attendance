@@ -5,6 +5,8 @@ import { environment } from 'src/environments/environment';
 import { DbService } from '../services/db.service';
 import { Attendance, Player } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
+import { TenantService } from '../services/tenant.service';
+import { AttendanceType } from '../utilities/constants';
 
 @Component({
   selector: 'app-stats',
@@ -29,12 +31,13 @@ export class StatsPage implements OnInit {
 
   constructor(
     private db: DbService,
+    private tenantService: TenantService,
     private modalController: ModalController,
   ) { }
 
   async ngOnInit() {
     this.curAttDate = new Date(await this.db.getCurrentAttDate());
-    this.isChoir = environment.isChoir;
+    this.isChoir = this.tenantService.tenant.type === AttendanceType.CHOIR;
     this.attendances = (await this.db.getAttendance()).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().add(1, "day"))).map((att: Attendance) => {
       return {
         ...att,

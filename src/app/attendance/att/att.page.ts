@@ -5,9 +5,9 @@ import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, Player, Song } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
-import { environment } from 'src/environments/environment';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { TenantService } from 'src/app/services/tenant.service';
 
 @Component({
   selector: 'app-att',
@@ -25,7 +25,7 @@ export class AttPage implements OnInit {
   public instruments: Instrument[] = [];
   public excused: Set<string> = new Set();
   public lateExcused: Set<string> = new Set();
-  public withExcuses: boolean = environment.withExcuses;
+  public withExcuses: boolean;
   public isOnline = true;
   private playerNotes: { [prop: number]: string } = {};
   private attendance: Attendance;
@@ -37,12 +37,14 @@ export class AttPage implements OnInit {
   constructor(
     private modalController: ModalController,
     private db: DbService,
+    private tenantService: TenantService,
     private alertController: AlertController,
   ) { }
 
   async ngOnInit(): Promise<void> {
+    this.withExcuses = this.tenantService.tenant.withExcuses;
     this.attendance = await this.db.getAttendanceById(this.attendanceId);
-    this.isHelper = await this.db.getRole() === Role.HELPER;
+    // this.isHelper = await this.db.getRole() === Role.HELPER; TODO
     void this.listenOnNetworkChanges();
     this.allConductors = await this.db.getConductors(true);
     this.allPlayers = await this.db.getPlayers();
@@ -150,7 +152,7 @@ export class AttPage implements OnInit {
   }
 
   async updateCriticalPlayers(unexcusedPlayers: Player[]) {
-    if (!environment.isChoir) {
+    if (this.tenantService.tenant.longName !== 'Jugendchor Speyer') {
       return;
     }
     for (const player of unexcusedPlayers) {

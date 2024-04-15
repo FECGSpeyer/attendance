@@ -8,9 +8,9 @@ import { Utils } from 'src/app/utilities/Utils';
 import { AttPage } from '../att/att.page';
 import 'jspdf-autotable';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
-import { environment } from 'src/environments/environment';
 import { Person } from '../../utilities/interfaces';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { TenantService } from 'src/app/services/tenant.service';
 require('dayjs/locale/de');
 
 @Component({
@@ -36,6 +36,7 @@ export class AttListPage implements OnInit {
 
   constructor(
     private db: DbService,
+    private tenantService: TenantService,
     private modalController: ModalController,
     private alertController: AlertController,
   ) { }
@@ -45,10 +46,12 @@ export class AttListPage implements OnInit {
   }
 
   async ngOnInit() {
-    await this.getAttendance();
-    this.db.authenticationState.subscribe((state: { role: Role }) => {
+    this.db.authenticationState.subscribe(async (state: { role: Role }) => {
       this.isConductor = state.role === Role.ADMIN;
       this.isHelper = state.role === Role.HELPER;
+      if (this.tenantService.tenant) {
+        await this.getAttendance();
+      }
     });
 
     this.subscribeOnAttChannel();
@@ -61,7 +64,11 @@ export class AttListPage implements OnInit {
       .channel('att-changes').on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'attendance' },
-        () => this.getAttendance())
+        (event: any) => {
+          if (event.new?.tenantId === this.tenantService.tenant.id || event.old?.tenantId === this.tenantService.tenant.id) {
+            this.getAttendance();
+          }
+        })
       .subscribe();
   }
 
@@ -125,7 +132,7 @@ export class AttListPage implements OnInit {
     }
 
     for (const player of (await this.db.getPlayers()).filter((player: Player) => !player.paused)) {
-      if (this.type === 'vortrag' && environment.shortName === "SoS") {
+      if (this.type === 'vortrag' && this.tenantService.tenant.hasNeutralStatus) {
         players[player.id] = AttendanceStatus.Neutral;
       } else {
         players[player.id] = AttendanceStatus.Present;

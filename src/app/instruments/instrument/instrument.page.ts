@@ -1,6 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
+import { TenantService } from 'src/app/services/tenant.service';
+import { AttendanceType } from 'src/app/utilities/constants';
 import { Instrument, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
@@ -17,12 +19,13 @@ export class InstrumentPage implements OnInit {
 
   constructor(
     private db: DbService,
+    private tenantService: TenantService,
     private modalController: ModalController,
     private alertController: AlertController
   ) { }
 
   ngOnInit() {
-    this.isChoir = environment.isChoir;
+    this.isChoir = this.tenantService.tenant.type === AttendanceType.CHOIR;
     this.instrument = { ...this.existingInstrument };
   }
 

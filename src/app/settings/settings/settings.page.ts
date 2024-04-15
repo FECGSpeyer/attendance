@@ -11,11 +11,12 @@ import { PersonPage } from 'src/app/people/person/person.page';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { StatsPage } from 'src/app/stats/stats.page';
-import { Role } from 'src/app/utilities/constants';
-import { Instrument, Person, Player, Settings } from 'src/app/utilities/interfaces';
+import { AttendanceStatus, AttendanceType, Role } from 'src/app/utilities/constants';
+import { Instrument, Person, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { environment } from 'src/environments/environment';
 import { Viewer } from '../../utilities/interfaces';
+import { TenantService } from 'src/app/services/tenant.service';
 
 @Component({
   selector: 'app-settings',
@@ -29,31 +30,32 @@ export class SettingsPage implements OnInit {
   public leftConductors: Person[] = [];
   public playersWithoutAccount: Player[] = [];
   public version: string = require('../../../../package.json').version;
-  public showTeachers: boolean = environment.showTeachers;
+  public maintainTeachers: boolean = false;
   public instruments: Instrument[] = [];
   public viewers: Viewer[] = [];
   public isAdmin: boolean = false;
-  public isChoir: boolean = false;
   public attDateString: string = format(new Date(), 'dd.MM.yyyy');
   public attDate: string = new Date().toISOString();
   public practiceStart: string;
   public practiceEnd: string;
+  public tenant: Tenant;
 
   constructor(
     private db: DbService,
+    private tenantService: TenantService,
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.isChoir = environment.isChoir;
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isAdmin = state.role === Role.ADMIN;
     });
     this.attDate = await this.db.getCurrentAttDate();
-    const settings: Settings = await this.db.getSettings();
-    this.practiceStart = settings.practiceStart || '18:00';
-    this.practiceEnd = settings.practiceEnd || '20:00';
+    this.tenant = {...this.tenantService.tenant};
+    this.maintainTeachers = this.tenant.maintainTeachers;
+    this.practiceStart = this.tenant.practiceStart || '18:00';
+    this.practiceEnd = this.tenant.practiceEnd || '20:00';
     this.attDateString = format(new Date(this.attDate), 'dd.MM.yyyy');
     const allConductors: Person[] = await this.db.getConductors(true);
     this.conductors = allConductors.filter((con: Person) => !con.left);
@@ -74,14 +76,7 @@ export class SettingsPage implements OnInit {
   }
 
   async saveGeneralSettings(generalModal: IonModal) {
-    await this.db.updateSettings({
-      attDate: this.attDate,
-      practiceStart: this.practiceStart,
-      practiceEnd: this.practiceEnd,
-    });
-    Utils.showToast('Einstellungen gespeichert');
 
-    await generalModal.dismiss();
   }
 
   onAttDateChange(value: string, dateModal: IonModal) {
@@ -107,26 +102,18 @@ export class SettingsPage implements OnInit {
 
     for (let index = 0; index < conductors.length; index++) {
       const slotTime = Math.round(timePerUnit * index);
-      if (environment.shortName === "BoS") {
-        data.push([
-          String(slotTime),
-          shuffledConductors[(index) % (shuffledConductors.length)],
-          shuffledConductors[(index + 1) % (shuffledConductors.length)]
-        ]);
-      } else {
-        data.push([
-          String(slotTime),
-          shuffledConductors[(index) % (shuffledConductors.length)],
-          shuffledConductors[(index + 1) % (shuffledConductors.length)],
-          shuffledConductors[(index + 2) % (shuffledConductors.length)]
-        ]);
-      }
+      data.push([
+        String(slotTime),
+        shuffledConductors[(index) % (shuffledConductors.length)],
+        shuffledConductors[(index + 1) % (shuffledConductors.length)],
+        shuffledConductors[(index + 2) % (shuffledConductors.length)]
+      ]); // TODO attendance type
     }
 
     const doc = new jsPDF();
-    doc.text(`${environment.shortName} Registerprobenplan: ${date}`, 14, 25);
+    doc.text(`${this.tenant.shortName} Registerprobenplan: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
-      head: environment.isChoir ? [["Sopran", "Alt", "Tenor", "Bass"]] : environment.shortName === "BoS" ? [['Minuten', 'Blechbläser', 'Holzbläser']] : [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']],
+      head: this.tenant.type === AttendanceType.CHOIR ? [["Minuten", "Sopran", "Alt", "Tenor", "Bass"]] : this.tenant.shortName === "BoS" ? [['Minuten', 'Blechbläser', 'Holzbläser']] : [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']], // TODO attendance type
       body: data,
       margin: { top: 40 },
       theme: 'grid',
@@ -139,7 +126,7 @@ export class SettingsPage implements OnInit {
     if (perTelegram) {
       this.db.sendPlanPerTelegram(doc.output('blob'), `Registerprobenplan_${dayjs().format('DD_MM_YYYY')}`);
     } else {
-      doc.save(`${environment.shortName} Registerprobenplan: ${date}.pdf`);
+      doc.save(`${this.tenant.shortName} Registerprobenplan: ${date}.pdf`);
     }
 
     modal.dismiss();
@@ -237,5 +224,15 @@ export class SettingsPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  getAttendanceTypePersonaText(): string {
+    if (this.tenant.type === AttendanceType.CHOIR) {
+      return "Sänger";
+    } else if (this.tenant.type === AttendanceType.ORCHESTRA) {
+      return "Spieler";
+    } else {
+      return "Personen";
+    }
   }
 }

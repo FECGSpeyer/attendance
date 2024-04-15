@@ -5,10 +5,11 @@ import { DbService } from 'src/app/services/db.service';
 import { Instrument, Person, Player, PlayerHistoryEntry } from 'src/app/utilities/interfaces';
 import { PersonPage } from '../person/person.page';
 import { environment } from 'src/environments/environment';
-import { PlayerHistoryType, Role } from 'src/app/utilities/constants';
+import { AttendanceType, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from 'src/app/utilities/Utils';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { TenantService } from 'src/app/services/tenant.service';
 
 @Component({
   selector: 'app-list',
@@ -25,7 +26,7 @@ export class ListPage implements OnInit {
   public filterOpt: string = "all";
   public sortOpt: string = "instrument";
   public viewOpts: string[] = ["instrument"];
-  public isVoS: boolean = environment.shortName === "VoS";
+  public isVoS: boolean;
   public showNotes = false;
   public showCritical = false;
   public showLeader = false;
@@ -45,16 +46,20 @@ export class ListPage implements OnInit {
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
     private db: DbService,
+    private tenantService: TenantService,
     private actionSheetController: ActionSheetController,
     private alertController: AlertController,
     private storage: Storage,
   ) { }
 
   async ngOnInit() {
-    this.isChoir = environment.isChoir;
     this.viewOpts = JSON.parse(await this.storage.get("viewOpts") || JSON.stringify(['instrument', 'leader', 'notes', 'critical', 'paused']));
     this.db.authenticationState.subscribe((state: { role: Role }) => {
       this.isAdmin = state.role === Role.ADMIN;
+      if (this.tenantService.tenant) {
+        this.isChoir = this.tenantService.tenant.type === AttendanceType.CHOIR;
+        this.isVoS = this.tenantService.tenant.shortName === 'VoS';
+      }
     });
     this.filterOpt = (await this.storage.get("filterOpt")) || "all";
     this.instruments = await this.db.getInstruments();
@@ -64,7 +69,11 @@ export class ListPage implements OnInit {
       .channel('player-changes').on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'player' },
-        () => this.getPlayers())
+        (event: any) => {
+          if (event.new?.tenantId === this.tenantService.tenant.id || event.old?.tenantId === this.tenantService.tenant.id) {
+            this.getPlayers();
+          }
+        })
       .subscribe();
 
     this.onViewChanged();

@@ -14,6 +14,7 @@ export enum Role {
     PLAYER = 2,
     VIEWER = 3,
     HELPER = 4,
+    CONDUCTOR = 5,
     NONE = 99,
 };
 
@@ -29,6 +30,12 @@ export enum SupabaseTable {
     CONDUCTORS = "conductors",
     PLAYER = "player",
     VIEWERS = "viewers",
+}
+
+export enum AttendanceType {
+    ORCHESTRA = "orchestra",
+    CHOIR = "choir",
+    GROUP = "group",
 }
 
 export const DEFAULT_IMAGE = "https://ionicframework.com/docs/img/demos/avatar.svg";

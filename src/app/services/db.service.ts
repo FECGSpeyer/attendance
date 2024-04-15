@@ -7,9 +7,10 @@ import * as dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, AuthObject, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Settings, Song, Teacher, Viewer } from '../utilities/interfaces';
+import { Attendance, AuthObject, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
+import { TenantService } from './tenant.service';
 
 const options: SupabaseClientOptions<any> = {
   auth: {
@@ -31,11 +32,11 @@ export class DbService {
     login: false,
   });
   public attDate: string;
-  private settings: Settings;
 
   constructor(
     private plt: Platform,
     private router: Router,
+    private tenantService: TenantService,
   ) {
     this.plt.ready().then(() => {
       this.checkToken();
@@ -54,14 +55,46 @@ export class DbService {
 
     if (data?.user?.email) {
       this.user = data.user;
-      const role: Role = await this.getRole();
-      if (this.authenticationState.getValue().role !== role) {
+      await this.setTenant();
+      if (this.authenticationState.getValue().role !== this.tenantService.tenantUser.role) {
         this.authenticationState.next({
-          role,
+          role: this.tenantService.tenantUser.role,
           login: true,
         });
       }
     }
+  }
+
+  async setTenant() {
+    this.tenantService.tenantUser = (await this.getTenantsByUserId())[0];
+    this.tenantService.tenant = await this.getTenant(this.tenantService.tenantUser.tenantId);
+  }
+
+  async getTenant(id: number): Promise<Tenant> {
+    const { data, error } = await supabase
+      .from('tenants')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      throw new Error("Fehler beim Laden des Mandanten");
+    }
+
+    return data;
+  }
+
+  async getTenantsByUserId(): Promise<TenantUser[]> {
+    const { data, error } = await supabase
+      .from('tenantUsers')
+      .select('*')
+      .eq('userId', this.user.id);
+
+    if (error) {
+      throw new Error("Fehler beim Laden der Mandanten");
+    }
+
+    return data;
   }
 
   async logout() {
@@ -77,7 +110,8 @@ export class DbService {
   async getViewers(): Promise<Viewer[]> {
     const { data, error } = await supabase
       .from(SupabaseTable.VIEWERS)
-      .select('*');
+      .select('*')
+      .eq('tenantId', this.tenantService.tenant.id);
 
     if (error) {
       Utils.showToast("Fehler beim Laden der Beobachter", "danger");
@@ -94,6 +128,7 @@ export class DbService {
       .from(SupabaseTable.VIEWERS)
       .insert({
         ...viewer,
+        tenantId: this.tenantService.tenant.id,
         appId
       });
 
@@ -107,9 +142,9 @@ export class DbService {
       const res = await axios.post(`https://staccato-server.vercel.app/api/registerAttendanceUser`, {
         email,
         name,
-        appName: environment.longName,
-        shortName: environment.shortName,
-        url: Utils.getUrlByShortName(environment.shortName),
+        // appName: environment.longName,
+        // shortName: environment.shortName,
+        url: Utils.getUrlByShortName("TODO"),
       });
 
       if (!res.data?.user?.id) {
@@ -150,35 +185,18 @@ export class DbService {
 
     if (data.user) {
       this.user = data.user;
-      const role: Role = await this.getRole();
+      await this.setTenant();
       this.authenticationState.next({
-        role,
+        role: this.tenantService.tenantUser.role,
         login: true,
       });
 
-      this.router.navigateByUrl(Utils.getUrl(role));
+      this.router.navigateByUrl(Utils.getUrl(this.tenantService.tenantUser.role));
     } else {
       Utils.showToast("Bitte gib die richtigen Daten an!", "danger");
     }
 
     return Boolean(data.user);
-  }
-
-  async getRole(): Promise<Role> {
-    const adminMails: string[] = await this.getConductorMails();
-    const isAdmin: boolean = adminMails.includes((this.user.email || "").toLowerCase());
-
-    if (isAdmin) {
-      return Role.ADMIN;
-    }
-
-    const profile: Player | undefined = await this.getPlayerProfile();
-
-    if (profile) {
-      return profile.role === Role.HELPER ? Role.HELPER : Role.PLAYER;
-    } else {
-      return Role.VIEWER;
-    }
   }
 
   async getPlayerProfile(): Promise<Player | undefined> {
@@ -191,8 +209,7 @@ export class DbService {
   }
 
   async getCurrentAttDate(): Promise<string> {
-    await this.getSettings();
-    return this.settings?.attDate || dayjs("2023-01-01").toISOString();
+    return this.tenantService.tenant.seasonStart || dayjs("2023-01-01").toISOString();
   }
 
   setCurrentAttDate(date: string) {
@@ -203,6 +220,7 @@ export class DbService {
     const { data: player, error } = await supabase
       .from('player')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .match({ appId: this.user.id })
       .single();
 
@@ -223,6 +241,7 @@ export class DbService {
     const { data: conductor, error } = await supabase
       .from(SupabaseTable.CONDUCTORS)
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .match({ appId: this.user.id })
       .single();
 
@@ -240,7 +259,8 @@ export class DbService {
     if (all) {
       const { data, error } = await supabase
         .from('player')
-        .select('*');
+        .select('*')
+        .eq('tenantId', this.tenantService.tenant.id);
 
       if (error) {
         Utils.showToast("Fehler beim Laden der Spieler", "danger");
@@ -258,6 +278,7 @@ export class DbService {
     const { data, error } = await supabase
       .from('player')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .is("left", null)
       .order("instrument")
       .order("isLeader", {
@@ -307,8 +328,8 @@ export class DbService {
 
   async syncCriticalPlayers(): Promise<boolean> {
     const res = await axios.post(`https://staccato-server.vercel.app/api/syncCriticalPlayers`, {
-      isChoir: environment.isChoir,
-      shortName: environment.shortName,
+      isChoir: "TODO",
+      shortName: "UNDEFINED", // TODO
     });
 
     if (res.status !== 200) {
@@ -322,6 +343,7 @@ export class DbService {
     const { data } = await supabase
       .from('player')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .not("left", "is", null)
       .order("left", {
         ascending: false,
@@ -339,6 +361,7 @@ export class DbService {
     const { data } = await supabase
       .from('player')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .not("email", "is", null)
       .is("appId", null)
       .is("left", null);
@@ -359,6 +382,7 @@ export class DbService {
     const { data, error } = await supabase
       .from('conductors')
       .select('email')
+      .eq('tenantId', this.tenantService.tenant.id)
       .is("left", null);
 
     if (error) {
@@ -374,6 +398,7 @@ export class DbService {
     const response = await supabase
       .from('conductors')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .order("lastName");
 
     return (all ? response.data : response.data.filter((c: Person) => !c.left)).map((con: Person) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
@@ -394,7 +419,10 @@ export class DbService {
 
     const { error, data } = await supabase
       .from('conductors')
-      .insert(dataToCreate)
+      .insert({
+        ...dataToCreate,
+        tenantId: this.tenantService.tenant.id,
+      })
       .select()
       .single();
 
@@ -408,7 +436,7 @@ export class DbService {
   }
 
   async addPlayer(player: Player): Promise<void> {
-    if (!environment.showTeachers) {
+    if (!this.tenantService.tenant.maintainTeachers) {
       delete player.teacher;
     }
 
@@ -416,6 +444,7 @@ export class DbService {
       .from('player')
       .insert({
         ...player,
+        tenantId: this.tenantService.tenant.id,
         id: Utils.getId(),
         history: player.history as any
       })
@@ -488,6 +517,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .neq(`players->>"${id}"` as any, null);
 
     if (data?.length) {
@@ -502,6 +532,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .neq(`conductors->>"${id}"` as any, null);
 
     if (data?.length) {
@@ -619,7 +650,7 @@ export class DbService {
   async removeEmailFromAuth(appId: string) {
     const res = await axios.post(`https://staccato-server.vercel.app/api/deleteUserFromAuth`, {
       id: appId,
-      appShortName: environment.shortName,
+      appShortName: "UNDEFINED", // TODO
     });
 
     if (res.status !== 200) {
@@ -677,6 +708,7 @@ export class DbService {
     const { data } = await supabase
       .from('instruments')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .order("name");
 
     return data;
@@ -689,6 +721,7 @@ export class DbService {
         name,
         tuning: "C",
         clefs: ["g"],
+        tenantId: this.tenantService.tenant.id,
       })
       .select();
 
@@ -717,7 +750,10 @@ export class DbService {
   async addAttendance(attendance: Attendance): Promise<Attendance[]> {
     const { data } = await supabase
       .from('attendance')
-      .insert(attendance as any)
+      .insert({
+        ...attendance as any,
+        tenantId: this.tenantService.tenant.id,
+      })
       .select();
 
     return data as any;
@@ -727,6 +763,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
       .order("date", {
         ascending: false,
@@ -744,6 +781,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .gt("date", dayjs().startOf("day").toISOString())
       .order("date", {
         ascending: false,
@@ -756,6 +794,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .gt("date", dayjs(date).startOf("day").toISOString())
       .order("date", {
         ascending: false,
@@ -798,6 +837,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .neq(`players->>"${id}"` as any, null)
       .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
       .order("date", {
@@ -805,7 +845,7 @@ export class DbService {
       });
 
     return data.map((att): PersonAttendance => {
-      let attText = Utils.getAttText(att as Attendance, id);
+      let attText = Utils.getAttText(att as any, id);
 
       return {
         id: att.id,
@@ -823,6 +863,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .neq(`conductors->>"${id}"` as any, null)
       .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
       .order("date", {
@@ -861,6 +902,7 @@ export class DbService {
     const { data } = await supabase
       .from('history')
       .select('*')
+      // .eq('tenantId', this.tenantService.tenant.id)
       .order("date", {
         ascending: false,
       });
@@ -894,6 +936,7 @@ export class DbService {
     const { data } = await supabase
       .from('teachers')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .order("name", {
         ascending: true,
       });
@@ -904,7 +947,10 @@ export class DbService {
   async addTeacher(teacher: Teacher): Promise<Teacher[]> {
     const { data } = await supabase
       .from('teachers')
-      .insert(teacher)
+      .insert({
+        ...teacher,
+        tenantId: this.tenantService.tenant.id
+      })
       .select();
 
     return data;
@@ -926,6 +972,7 @@ export class DbService {
     const response = await supabase
       .from('songs')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .order("number", {
         ascending: true,
       });
@@ -936,7 +983,10 @@ export class DbService {
   async addSong(song: Song): Promise<Song[]> {
     const { data } = await supabase
       .from('songs')
-      .insert(song)
+      .insert({
+        ...song,
+        tenantId: this.tenantService.tenant.id,
+      })
       .select();
 
     return data;
@@ -955,6 +1005,7 @@ export class DbService {
     const response = await supabase
       .from('meetings')
       .select('*')
+      .eq('tenantId', this.tenantService.tenant.id)
       .order("date", {
         ascending: true,
       });
@@ -975,7 +1026,10 @@ export class DbService {
   async addMeeting(meeting: Meeting): Promise<Meeting[]> {
     const { data } = await supabase
       .from('meetings')
-      .insert(meeting)
+      .insert({
+        ...meeting,
+        tenantId: this.tenantService.tenant.id
+      })
       .select();
 
     return data;
@@ -1051,7 +1105,7 @@ export class DbService {
 
     const res = await axios.post(`https://staccato-server.vercel.app/api/sendPracticePlan`, {
       url: data.publicUrl,
-      shortName: environment.shortName,
+      shortName: "UNDEFINED", // TODO
     });
 
     loading.dismiss();
@@ -1072,7 +1126,7 @@ export class DbService {
   async notifyPerTelegram(player: Player, attendances: Attendance[], type: string = "signin", reason?: string): Promise<void> {
     await axios.post(`https://staccato-server.vercel.app/api/notifyAttendanceOwner`, {
       name: `${player.firstName} ${player.lastName}`,
-      appName: environment.shortName,
+      appName: 'UNDEFINED', // TODO
       dates: attendances.map((attendance: Attendance) => `${dayjs(attendance.date).format("DD.MM.YYYY")}${Utils.getAttendanceText(attendance) ? " " + Utils.getAttendanceText(attendance) : ""}`),
       type,
       reason,
@@ -1177,31 +1231,5 @@ export class DbService {
         conductorName: his.conductors ? `${his.conductors.firstName} ${his.conductors.lastName}` : his.otherConductor || "",
       };
     });
-  }
-
-  async getSettings(): Promise<Settings> {
-    if (this.settings) {
-      return this.settings;
-    }
-
-    const response = await supabase
-      .from('settings')
-      .select('*')
-      .match({ id: 1 })
-      .single();
-
-    this.settings = response.data;
-    return this.settings;
-  }
-
-  async updateSettings(settings: Partial<Settings>): Promise<void> {
-    const { data } = await supabase
-      .from('settings')
-      .update(settings)
-      .match({ id: 1 })
-      .select()
-      .single();
-
-    this.settings = data;
   }
 }

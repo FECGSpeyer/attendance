@@ -2,12 +2,9 @@ import { Component, ViewChild } from '@angular/core';
 import { AlertController, IonRouterOutlet, Platform } from '@ionic/angular';
 import { App } from '@capacitor/app';
 import { Title } from '@angular/platform-browser';
-import { environment } from 'src/environments/environment';
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from './utilities/Utils';
 import { DbService } from './services/db.service';
-import { Role } from './utilities/constants';
-import { Person, Player } from './utilities/interfaces';
 
 @Component({
   selector: 'app-root',
@@ -25,14 +22,13 @@ export class AppComponent {
     private db: DbService,
   ) {
     this.initializeApp();
-    this.titleService.setTitle(environment.longName);
-    document.body.classList.add(environment.isChoir ? "choir" : environment.symphonyImage ? "sinfo" : "blas");
+    this.titleService.setTitle("Attendix");
+    // document.body.classList.add(environment.isChoir ? "choir" : environment.symphonyImage ? "sinfo" : "blas"); TODO
     this.listenToAuthChanges();
   }
 
   async ngOnInit() {
     await this.storage.create();
-    await this.db.getSettings();
   }
 
   initializeApp() {
@@ -41,42 +37,6 @@ export class AppComponent {
         App.exitApp();
       }
     });
-  }
-
-  async initializeTelegram() {
-    const webApp: any = (window as any).Telegram.WebApp;
-    if (webApp.initData?.length) {
-      webApp.expand();
-      let person: Person;
-      if (await this.db.getRole() === Role.ADMIN) {
-        person = await this.db.getConductorByAppId();
-        if (!person.telegramId) {
-          await this.db.updateConductor({ ...person, telegramId: webApp.initDataUnsafe.user.id });
-          webApp.sendData(JSON.stringify({ success: true }));
-        }
-      } else {
-        person = await this.db.getPlayerByAppId();
-        if (!person.telegramId) {
-          await this.db.updatePlayer({ ...person, telegramId: webApp.initDataUnsafe.user.id } as Player);
-          webApp.sendData(JSON.stringify({ success: true }));
-        }
-      }
-
-      const alert = await this.alertController.create({
-        header: 'Verknüpfung erfolgreich!',
-        message: 'Die Verknüpfung war erfolgreich! App schließen?',
-        buttons: [
-          {
-            text: 'Nein',
-          }, {
-            text: 'Ja',
-            handler: webApp.close.bind(this)
-          }
-        ]
-      });
-
-      await alert.present();
-    }
   }
 
   async presentPasswordRecoveryAlert() {
@@ -114,9 +74,6 @@ export class AppComponent {
     this.db.getSupabase().auth.onAuthStateChange(async (event) => {
       if (event === 'PASSWORD_RECOVERY') {
         this.presentPasswordRecoveryAlert();
-      }
-      if (event === "SIGNED_IN") {
-        this.initializeTelegram();
       }
     });
   }

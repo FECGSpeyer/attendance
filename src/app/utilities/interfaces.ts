@@ -5,6 +5,28 @@ export interface AuthObject {
     login: boolean;
 }
 
+export interface Tenant {
+    id: number;
+    created_at: string;
+    shortName: string;
+    longName: string;
+    maintainTeachers: boolean;
+    type: string;
+    withExcuses: boolean;
+    practiceStart: string;
+    practiceEnd: string;
+    hasNeutralStatus: boolean;
+    seasonStart: string;
+}
+
+export interface TenantUser {
+    id: number;
+    created_at: string;
+    tenantId: number;
+    userId: string;
+    role?: number;
+}
+
 export interface Viewer {
     id?: number;
     created_at?: string;
@@ -65,7 +87,7 @@ export interface Player extends Person {
     examinee?: boolean;
     range?: string;
     instruments?: string;
-    role: Role;
+    tenantId: number;
 }
 
 export interface Instrument {
@@ -78,6 +100,7 @@ export interface Instrument {
     count?: number;
     clefs?: string[];
     clefText?: string;
+    tenantId: number;
 }
 
 export interface AttendanceItem {
@@ -163,11 +186,4 @@ export interface FieldSelection {
     time: string;
     conductor?: string;
     currentTime?: string;
-}
-
-export interface Settings {
-    id: number;
-    attDate: string;
-    practiceStart: string;
-    practiceEnd: string;
 }
