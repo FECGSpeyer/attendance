@@ -2,13 +2,10 @@ const fs = require('fs');
 const path = require('path');
 
 const dir = 'src/environments';
-const manifestDir = 'src';
 const file = 'environment.ts';
 const prodFile = 'environment.prod.ts';
-const manifestFile = 'manifest.webmanifest';
 
 const content = `${process.env.ENV_FILE}`;
-const manifestContent = `${process.env.MANIFEST}`;
 
 fs.mkdir(dir, { recursive: true }, (e) => {
     if (e) throw e;
@@ -39,23 +36,4 @@ fs.mkdir(dir, { recursive: true }, (e) => {
             process.exit(1);
         }
     });
-});
-
-fs.access(manifestDir, fs.constants.F_OK, (err) => {
-    try {
-        fs.writeFileSync(manifestDir + "/" + manifestFile, manifestContent);
-
-        console.log('file created', process.cwd());
-
-        if (fs.existsSync(manifestDir + "/" + manifestFile)) {
-            console.log('file is created', path.resolve(manifestDir + '/' + manifestFile));
-
-            const str = fs.readFileSync(manifestDir + '/' + manifestFile).toString();
-
-            console.log(str);
-        }
-    } catch (error) {
-        console.log(error);
-        process.exit(1);
-    }
 });
