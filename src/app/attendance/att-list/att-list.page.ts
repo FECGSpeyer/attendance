@@ -64,7 +64,7 @@ export class AttListPage implements OnInit {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'attendance' },
         (event: any) => {
-          if (event.new?.tenantId === this.db.tenant().id || event.old?.tenantId === this.db.tenant().id) {
+          if (event.new?.tenantId === this.db.tenant().id || event.old?.id) {
             this.getAttendance();
           }
         })
