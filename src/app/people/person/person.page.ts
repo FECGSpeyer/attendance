@@ -185,9 +185,9 @@ export class PersonPage implements OnInit, AfterViewInit {
   async addPerson(): Promise<void> {
     if (this.player.firstName && this.player.lastName) {
       if (this.isConductor) {
-        await this.db.addConductor(this.player);
+        await this.db.addConductor(this.player, Boolean(this.player.email));
       } else {
-        await this.db.addPlayer(this.player);
+        await this.db.addPlayer(this.player, Boolean(this.player.email));
       }
       this.modalController.dismiss({
         conductor: this.isConductor,

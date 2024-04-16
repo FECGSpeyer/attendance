@@ -435,7 +435,7 @@ export class DbService {
     return (all ? response.data : response.data.filter((c: Person) => !c.left)).map((con: Person) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
   }
 
-  async addConductor(person: Person): Promise<void> {
+  async addConductor(person: Person, register: boolean): Promise<void> {
     const dataToCreate: any = { ...person };
     delete dataToCreate.hasTeacher;
     delete dataToCreate.instrument;
@@ -462,11 +462,14 @@ export class DbService {
     }
 
     await this.addConductorToUpcomingAttendances(data.id);
+    if (data.email && register) {
+      await this.registerUser(data.email, data.firstName, Role.CONDUCTOR);
+    }
 
     return;
   }
 
-  async addPlayer(player: Player): Promise<void> {
+  async addPlayer(player: Player, register: boolean): Promise<void> {
     if (!this.tenant().maintainTeachers) {
       delete player.teacher;
     }
@@ -487,6 +490,9 @@ export class DbService {
     }
 
     await this.addPlayerToAttendancesByDate(data.id, data.joined);
+    if (data.email && register) {
+      await this.registerUser(data.email, data.firstName, Role.PLAYER);
+    }
   }
 
   async addPlayerToAttendancesByDate(id: number, joined: string) {
