@@ -5,7 +5,6 @@ import { DbService } from '../services/db.service';
 import { Attendance, FieldSelection, History, Song } from '../utilities/interfaces';
 
 import { Utils } from '../utilities/Utils';
-import { TenantService } from '../services/tenant.service';
 
 @Component({
   selector: 'app-planning',
@@ -30,7 +29,6 @@ export class PlanningPage implements OnInit {
   constructor(
     private modalController: ModalController,
     private db: DbService,
-    private tenantService: TenantService,
     private alertController: AlertController,
   ) { }
 
@@ -52,7 +50,7 @@ export class PlanningPage implements OnInit {
           }
         });
       } else {
-        this.time = this.tenantService.tenant.practiceStart || "17:50";
+        this.time = this.db.tenant().practiceStart || "17:50";
       }
     }
 

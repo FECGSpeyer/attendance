@@ -27,9 +27,7 @@ export class SongsPage implements OnInit {
   }
 
   async getSongs(): Promise<void> {
-    this.db.authenticationState.subscribe((state: { role: Role }) => {
-      this.isAdmin = state.role === Role.ADMIN;
-    });
+    this.isAdmin = this.db.tenantUser().role === Role.ADMIN;
     const history: History[] = await this.db.getHistory();
     const conductors: Person[] = await this.db.getConductors(true);
     this.songs = (await this.db.getSongs()).map((song: Song): Song => {

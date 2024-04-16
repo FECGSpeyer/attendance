@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Role } from '../utilities/constants';
-import { AuthObject } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 import { DbService } from './db.service';
 
@@ -13,10 +12,9 @@ export class LoginGuard  {
 
   async canActivate(): Promise<boolean> {
     await this.db.checkToken();
-    const value: AuthObject = this.db.authenticationState.value;
 
-    if (value.role !== Role.NONE) {
-      const url: string = Utils.getUrl(value.role);
+    if (this.db.tenantUser()) {
+      const url: string = Utils.getUrl(this.db.tenantUser().role);
 
       this.router.navigateByUrl(url);
       return false;

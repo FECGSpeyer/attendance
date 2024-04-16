@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, WritableSignal, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
 import { createClient, SupabaseClient, SupabaseClientOptions, User } from '@supabase/supabase-js';
@@ -10,7 +10,6 @@ import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable
 import { Attendance, AuthObject, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
-import { TenantService } from './tenant.service';
 
 const options: SupabaseClientOptions<any> = {
   auth: {
@@ -27,17 +26,20 @@ const supabase = createClient<Database>(environment.apiUrl, environment.apiKey, 
 export class DbService {
   private user: User;
   private conductorMails: string[] = [];
-  authenticationState = new BehaviorSubject<AuthObject>({
-    role: Role.NONE,
-    login: false,
-  });
   public attDate: string;
+  public tenant: WritableSignal<Tenant | undefined>;
+  public tenants: WritableSignal<Tenant[] | undefined>;
+  public tenantUsers: WritableSignal<TenantUser[] | undefined>;
+  public tenantUser: WritableSignal<TenantUser | undefined>;
 
   constructor(
     private plt: Platform,
     private router: Router,
-    private tenantService: TenantService,
   ) {
+    this.tenant = signal(undefined);
+    this.tenants = signal([]);
+    this.tenantUser = signal(undefined);
+    this.tenantUsers = signal([]);
     this.plt.ready().then(() => {
       this.checkToken();
     });
@@ -48,7 +50,7 @@ export class DbService {
   }
 
   async checkToken() {
-    if (this.authenticationState.getValue().login) {
+    if (this.tenantUser()) {
       return;
     }
     const { data } = await supabase.auth.getUser();
@@ -56,29 +58,25 @@ export class DbService {
     if (data?.user?.email) {
       this.user = data.user;
       await this.setTenant();
-      if (this.authenticationState.getValue().role !== this.tenantService.tenantUser.role) {
-        this.authenticationState.next({
-          role: this.tenantService.tenantUser.role,
-          login: true,
-        });
-      }
     }
   }
 
   async setTenant() {
-    this.tenantService.tenantUser = (await this.getTenantsByUserId())[0];
-    this.tenantService.tenant = await this.getTenant(this.tenantService.tenantUser.tenantId);
+    this.tenantUsers.set((await this.getTenantsByUserId()));
+    this.tenants.set(await this.getTenants(this.tenantUsers().map((tenantUser: TenantUser) => tenantUser.tenantId)));
+    this.tenant.set(this.tenants()[0]);
+
+    this.tenantUser.set(this.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenant().id)); 
   }
 
-  async getTenant(id: number): Promise<Tenant> {
+  async getTenants(ids: number[]): Promise<Tenant[]> {
     const { data, error } = await supabase
       .from('tenants')
       .select('*')
-      .eq('id', id)
-      .single();
+      .in('id', ids);
 
     if (error) {
-      throw new Error("Fehler beim Laden des Mandanten");
+      throw new Error("Fehler beim Laden der Tenants");
     }
 
     return data;
@@ -99,10 +97,10 @@ export class DbService {
 
   async logout() {
     await supabase.auth.signOut();
-    this.authenticationState.next({
-      role: Role.NONE,
-      login: false,
-    });
+    this.tenant.set(undefined);
+    this.tenants.set([]);
+    this.tenantUser.set(undefined);
+    this.tenantUsers.set([]);
 
     this.router.navigateByUrl("/login");
   }
@@ -111,7 +109,7 @@ export class DbService {
     const { data, error } = await supabase
       .from(SupabaseTable.VIEWERS)
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id);
+      .eq('tenantId', this.tenant().id);
 
     if (error) {
       Utils.showToast("Fehler beim Laden der Beobachter", "danger");
@@ -128,7 +126,7 @@ export class DbService {
       .from(SupabaseTable.VIEWERS)
       .insert({
         ...viewer,
-        tenantId: this.tenantService.tenant.id,
+        tenantId: this.tenant().id,
         appId
       });
 
@@ -186,12 +184,7 @@ export class DbService {
     if (data.user) {
       this.user = data.user;
       await this.setTenant();
-      this.authenticationState.next({
-        role: this.tenantService.tenantUser.role,
-        login: true,
-      });
-
-      this.router.navigateByUrl(Utils.getUrl(this.tenantService.tenantUser.role));
+      this.router.navigateByUrl(Utils.getUrl(this.tenantUser().role));
     } else {
       Utils.showToast("Bitte gib die richtigen Daten an!", "danger");
     }
@@ -209,7 +202,7 @@ export class DbService {
   }
 
   async getCurrentAttDate(): Promise<string> {
-    return this.tenantService.tenant.seasonStart || dayjs("2023-01-01").toISOString();
+    return this.tenant().seasonStart || dayjs("2023-01-01").toISOString();
   }
 
   setCurrentAttDate(date: string) {
@@ -220,7 +213,7 @@ export class DbService {
     const { data: player, error } = await supabase
       .from('player')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .match({ appId: this.user.id })
       .single();
 
@@ -241,7 +234,7 @@ export class DbService {
     const { data: conductor, error } = await supabase
       .from(SupabaseTable.CONDUCTORS)
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .match({ appId: this.user.id })
       .single();
 
@@ -260,7 +253,7 @@ export class DbService {
       const { data, error } = await supabase
         .from('player')
         .select('*')
-        .eq('tenantId', this.tenantService.tenant.id);
+        .eq('tenantId', this.tenant().id);
 
       if (error) {
         Utils.showToast("Fehler beim Laden der Spieler", "danger");
@@ -278,7 +271,7 @@ export class DbService {
     const { data, error } = await supabase
       .from('player')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .is("left", null)
       .order("instrument")
       .order("isLeader", {
@@ -343,7 +336,7 @@ export class DbService {
     const { data } = await supabase
       .from('player')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .not("left", "is", null)
       .order("left", {
         ascending: false,
@@ -361,7 +354,7 @@ export class DbService {
     const { data } = await supabase
       .from('player')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .not("email", "is", null)
       .is("appId", null)
       .is("left", null);
@@ -382,7 +375,7 @@ export class DbService {
     const { data, error } = await supabase
       .from('conductors')
       .select('email')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .is("left", null);
 
     if (error) {
@@ -398,7 +391,7 @@ export class DbService {
     const response = await supabase
       .from('conductors')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .order("lastName");
 
     return (all ? response.data : response.data.filter((c: Person) => !c.left)).map((con: Person) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
@@ -421,7 +414,7 @@ export class DbService {
       .from('conductors')
       .insert({
         ...dataToCreate,
-        tenantId: this.tenantService.tenant.id,
+        tenantId: this.tenant().id,
       })
       .select()
       .single();
@@ -436,7 +429,7 @@ export class DbService {
   }
 
   async addPlayer(player: Player): Promise<void> {
-    if (!this.tenantService.tenant.maintainTeachers) {
+    if (!this.tenant().maintainTeachers) {
       delete player.teacher;
     }
 
@@ -444,7 +437,7 @@ export class DbService {
       .from('player')
       .insert({
         ...player,
-        tenantId: this.tenantService.tenant.id,
+        tenantId: this.tenant().id,
         id: Utils.getId(),
         history: player.history as any
       })
@@ -517,7 +510,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .neq(`players->>"${id}"` as any, null);
 
     if (data?.length) {
@@ -532,7 +525,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .neq(`conductors->>"${id}"` as any, null);
 
     if (data?.length) {
@@ -708,7 +701,7 @@ export class DbService {
     const { data } = await supabase
       .from('instruments')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .order("name");
 
     return data;
@@ -721,7 +714,7 @@ export class DbService {
         name,
         tuning: "C",
         clefs: ["g"],
-        tenantId: this.tenantService.tenant.id,
+        tenantId: this.tenant().id,
       })
       .select();
 
@@ -752,7 +745,7 @@ export class DbService {
       .from('attendance')
       .insert({
         ...attendance as any,
-        tenantId: this.tenantService.tenant.id,
+        tenantId: this.tenant().id,
       })
       .select();
 
@@ -763,7 +756,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
       .order("date", {
         ascending: false,
@@ -781,7 +774,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .gt("date", dayjs().startOf("day").toISOString())
       .order("date", {
         ascending: false,
@@ -794,7 +787,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .gt("date", dayjs(date).startOf("day").toISOString())
       .order("date", {
         ascending: false,
@@ -837,7 +830,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .neq(`players->>"${id}"` as any, null)
       .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
       .order("date", {
@@ -863,7 +856,7 @@ export class DbService {
     const { data } = await supabase
       .from('attendance')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .neq(`conductors->>"${id}"` as any, null)
       .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
       .order("date", {
@@ -902,7 +895,7 @@ export class DbService {
     const { data } = await supabase
       .from('history')
       .select('*')
-      // .eq('tenantId', this.tenantService.tenant.id)
+      // .eq('tenantId', this.tenant().id)
       .order("date", {
         ascending: false,
       });
@@ -936,7 +929,7 @@ export class DbService {
     const { data } = await supabase
       .from('teachers')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .order("name", {
         ascending: true,
       });
@@ -949,7 +942,7 @@ export class DbService {
       .from('teachers')
       .insert({
         ...teacher,
-        tenantId: this.tenantService.tenant.id
+        tenantId: this.tenant().id
       })
       .select();
 
@@ -972,7 +965,7 @@ export class DbService {
     const response = await supabase
       .from('songs')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .order("number", {
         ascending: true,
       });
@@ -985,7 +978,7 @@ export class DbService {
       .from('songs')
       .insert({
         ...song,
-        tenantId: this.tenantService.tenant.id,
+        tenantId: this.tenant().id,
       })
       .select();
 
@@ -1005,7 +998,7 @@ export class DbService {
     const response = await supabase
       .from('meetings')
       .select('*')
-      .eq('tenantId', this.tenantService.tenant.id)
+      .eq('tenantId', this.tenant().id)
       .order("date", {
         ascending: true,
       });
@@ -1028,7 +1021,7 @@ export class DbService {
       .from('meetings')
       .insert({
         ...meeting,
-        tenantId: this.tenantService.tenant.id
+        tenantId: this.tenant().id
       })
       .select();
 
@@ -1067,7 +1060,7 @@ export class DbService {
       await this.updateAttendance(attendance, attId);
     }
 
-    this.notifyPerTelegram(player, attendances, isLateExcused === true ? 'lateSignout' : "signout", reason);
+    // this.notifyPerTelegram(player, attendances, isLateExcused === true ? 'lateSignout' : "signout", reason); TODO
 
     loading.dismiss();
   }
@@ -1080,7 +1073,7 @@ export class DbService {
     attendance.excused = attendance.excused.filter((playerId: string) => playerId !== String(player.id));
     attendance.lateExcused = attendance.lateExcused.filter((playerId: string) => playerId !== String(player.id));
 
-    this.notifyPerTelegram(player, [attendance], playerIsLateExcused === true ? 'lateSignin' : 'signin');
+    // this.notifyPerTelegram(player, [attendance], playerIsLateExcused === true ? 'lateSignin' : 'signin'); TODO
 
     await this.updateAttendance(attendance, attId);
   }

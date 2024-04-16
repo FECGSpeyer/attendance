@@ -1,7 +1,6 @@
 import { AttendanceStatus, PlayerHistoryType, Role } from "./constants";
 
 export interface AuthObject {
-    role: Role;
     login: boolean;
 }
 

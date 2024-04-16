@@ -5,11 +5,9 @@ import { DbService } from 'src/app/services/db.service';
 import { Instrument, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
-import { environment } from 'src/environments/environment';
 import { Utils } from 'src/app/utilities/Utils';
 import { AttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { SupabaseTable } from '../../utilities/constants';
-import { TenantService } from 'src/app/services/tenant.service';
 dayjs.extend(utc);
 
 @Component({
@@ -67,7 +65,6 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   constructor(
     private db: DbService,
-    private tenantService: TenantService,
     private modalController: ModalController,
     private alertController: AlertController,
     private loadingController: LoadingController,
@@ -75,14 +72,12 @@ export class PersonPage implements OnInit, AfterViewInit {
   ) { }
 
   async ngOnInit() {
-    this.isVoS = this.tenantService.tenant.shortName === 'VoS';
-    this.maintainTeachers = this.tenantService.tenant.maintainTeachers;
-    this.isChoir = this.tenantService.tenant.type === AttendanceType.CHOIR;
-    this.db.authenticationState.subscribe((state: { role: Role }) => {
-      this.isAdmin = state.role === Role.ADMIN;
-    });
+    this.isVoS = this.db.tenant().shortName === 'VoS';
+    this.maintainTeachers = this.db.tenant().maintainTeachers;
+    this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
+    this.isAdmin = this.db.tenantUser().role === Role.ADMIN;
     this.hasChanges = false;
-    if (this.tenantService.tenant.maintainTeachers) {
+    if (this.db.tenant().maintainTeachers) {
       this.teachers = await this.db.getTeachers();
       this.allTeachers = this.teachers;
     }
@@ -111,7 +106,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       }
     } else {
       this.player = { ...this.newPlayer };
-      this.player.tenantId = this.tenantService.tenant.id;
+      this.player.tenantId = this.db.tenant().id;
       this.player.instrument = this.instruments[0].id;
     }
 

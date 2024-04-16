@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { DbService } from '../services/db.service';
 import { AttendanceType, Role } from '../utilities/constants';
-import { TenantService } from '../services/tenant.service';
 
 @Component({
   selector: 'app-tabs',
@@ -14,16 +13,13 @@ export class TabsPage {
 
   constructor(
     private db: DbService,
-    private tenantService: TenantService,
   ) {
     this.initialize();
   }
 
   initialize() {
-    this.db.authenticationState.subscribe((state: { role: Role }) => {
-      this.isConductor = state.role === Role.ADMIN || state.role === Role.VIEWER;
-      this.isChoir = this.tenantService.tenant?.type === AttendanceType.CHOIR;
-    });
+    this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.VIEWER;
+    this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
   }
 
 }

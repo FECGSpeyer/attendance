@@ -7,7 +7,6 @@ import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, Player,
 import { Utils } from 'src/app/utilities/Utils';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { TenantService } from 'src/app/services/tenant.service';
 
 @Component({
   selector: 'app-att',
@@ -37,12 +36,11 @@ export class AttPage implements OnInit {
   constructor(
     private modalController: ModalController,
     private db: DbService,
-    private tenantService: TenantService,
     private alertController: AlertController,
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.withExcuses = this.tenantService.tenant.withExcuses;
+    this.withExcuses = this.db.tenant().withExcuses;
     this.attendance = await this.db.getAttendanceById(this.attendanceId);
     // this.isHelper = await this.db.getRole() === Role.HELPER; TODO
     void this.listenOnNetworkChanges();
@@ -152,7 +150,7 @@ export class AttPage implements OnInit {
   }
 
   async updateCriticalPlayers(unexcusedPlayers: Player[]) {
-    if (this.tenantService.tenant.longName !== 'Jugendchor Speyer') {
+    if (this.db.tenant().longName !== 'Jugendchor Speyer') {
       return;
     }
     for (const player of unexcusedPlayers) {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, effect } from '@angular/core';
 import { AlertController, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
@@ -11,12 +11,11 @@ import { PersonPage } from 'src/app/people/person/person.page';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { StatsPage } from 'src/app/stats/stats.page';
-import { AttendanceStatus, AttendanceType, Role } from 'src/app/utilities/constants';
-import { Instrument, Person, Player, Tenant } from 'src/app/utilities/interfaces';
+import { AttendanceType, Role } from 'src/app/utilities/constants';
+import { Instrument, Person, Player, Tenant, TenantUser } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
-import { environment } from 'src/environments/environment';
 import { Viewer } from '../../utilities/interfaces';
-import { TenantService } from 'src/app/services/tenant.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-settings',
@@ -38,24 +37,31 @@ export class SettingsPage implements OnInit {
   public attDate: string = new Date().toISOString();
   public practiceStart: string;
   public practiceEnd: string;
-  public tenant: Tenant;
+  public tenantId: number;
 
   constructor(
     private db: DbService,
-    private tenantService: TenantService,
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
-  ) { }
+    private router: Router,
+  ) {
+    effect(async () => {
+      this.db.tenant();
+      await this.initialize();
+    });
+  }
 
   async ngOnInit(): Promise<void> {
-    this.db.authenticationState.subscribe((state: { role: Role }) => {
-      this.isAdmin = state.role === Role.ADMIN;
-    });
+    await this.initialize();
+  }
+
+  async initialize(): Promise<void> {
+    this.isAdmin = this.db.tenantUser().role === Role.ADMIN;
     this.attDate = await this.db.getCurrentAttDate();
-    this.tenant = {...this.tenantService.tenant};
-    this.maintainTeachers = this.tenant.maintainTeachers;
-    this.practiceStart = this.tenant.practiceStart || '18:00';
-    this.practiceEnd = this.tenant.practiceEnd || '20:00';
+    this.tenantId = this.db.tenant().id;
+    this.maintainTeachers = this.db.tenant().maintainTeachers;
+    this.practiceStart = this.db.tenant().practiceStart || '18:00';
+    this.practiceEnd = this.db.tenant().practiceEnd || '20:00';
     this.attDateString = format(new Date(this.attDate), 'dd.MM.yyyy');
     const allConductors: Person[] = await this.db.getConductors(true);
     this.conductors = allConductors.filter((con: Person) => !con.left);
@@ -64,6 +70,7 @@ export class SettingsPage implements OnInit {
     this.leftPlayers = Utils.getModifiedPlayers(await this.db.getLeftPlayers(), this.instruments);
     this.leftConductors = allConductors.filter((con: Person) => Boolean(con.left));
     this.viewers = await this.db.getViewers();
+    this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
   }
 
   async ionViewWillEnter() {
@@ -111,9 +118,9 @@ export class SettingsPage implements OnInit {
     }
 
     const doc = new jsPDF();
-    doc.text(`${this.tenant.shortName} Registerprobenplan: ${date}`, 14, 25);
+    doc.text(`${this.db.tenant().shortName} Registerprobenplan: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
-      head: this.tenant.type === AttendanceType.CHOIR ? [["Minuten", "Sopran", "Alt", "Tenor", "Bass"]] : this.tenant.shortName === "BoS" ? [['Minuten', 'Blechbläser', 'Holzbläser']] : [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']], // TODO attendance type
+      head: this.db.tenant().type === AttendanceType.CHOIR ? [["Minuten", "Sopran", "Alt", "Tenor", "Bass"]] : this.db.tenant().shortName === "BoS" ? [['Minuten', 'Blechbläser', 'Holzbläser']] : [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']], // TODO attendance type
       body: data,
       margin: { top: 40 },
       theme: 'grid',
@@ -126,7 +133,7 @@ export class SettingsPage implements OnInit {
     if (perTelegram) {
       this.db.sendPlanPerTelegram(doc.output('blob'), `Registerprobenplan_${dayjs().format('DD_MM_YYYY')}`);
     } else {
-      doc.save(`${this.tenant.shortName} Registerprobenplan: ${date}.pdf`);
+      doc.save(`${this.db.tenant().shortName} Registerprobenplan: ${date}.pdf`);
     }
 
     modal.dismiss();
@@ -227,12 +234,18 @@ export class SettingsPage implements OnInit {
   }
 
   getAttendanceTypePersonaText(): string {
-    if (this.tenant.type === AttendanceType.CHOIR) {
+    if (this.db.tenant().type === AttendanceType.CHOIR) {
       return "Sänger";
-    } else if (this.tenant.type === AttendanceType.ORCHESTRA) {
+    } else if (this.db.tenant().type === AttendanceType.ORCHESTRA) {
       return "Spieler";
     } else {
       return "Personen";
     }
+  }
+
+  async onTenantChange(): Promise<void> {
+    this.db.tenantUser.set(this.db.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenantId));
+    this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser().role));
+    this.db.tenant.set(this.db.tenants().find((tenant: Tenant) => tenant.id === this.tenantId));
   }
 }

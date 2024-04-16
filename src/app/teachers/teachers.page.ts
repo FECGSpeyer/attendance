@@ -24,9 +24,7 @@ export class TeachersPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.db.authenticationState.subscribe((state: { role: Role }) => {
-      this.isAdmin = state.role === Role.ADMIN;
-    });
+    this.isAdmin = this.db.tenantUser().role === Role.ADMIN;
     this.players = await this.db.getPlayers();
     this.instruments = await this.db.getInstruments();
     await this.getTeachers();

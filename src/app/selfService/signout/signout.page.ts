@@ -1,13 +1,12 @@
 /* eslint-disable arrow-body-style */
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, effect, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { ActionSheetController, IonAccordionGroup, IonModal } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { TenantService } from 'src/app/services/tenant.service';
-import { AttendanceStatus } from 'src/app/utilities/constants';
-import { Attendance, PersonAttendance, Player, Song } from 'src/app/utilities/interfaces';
+import { AttendanceStatus, Role } from 'src/app/utilities/constants';
+import { Attendance, PersonAttendance, Player, Song, Tenant, TenantUser } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
-import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-signout',
@@ -33,18 +32,34 @@ export class SignoutPage implements OnInit {
   public attIsToday: boolean;
   public lateCount: number = 0;
   public songs: Song[] = [];
+  public tenantId: number;
+  public tenants: Tenant[] = [];
 
   constructor(
     private db: DbService,
-    private tenantService: TenantService,
     private actionSheetController: ActionSheetController,
-  ) { }
+    private router: Router,
+  ) {
+    effect(async () => {
+      if (this.db.tenant()) {
+        this.initialize();
+      }
+    });
+  }
 
   async ngOnInit() {
-    this.name = this.tenantService.tenant.longName;
-    this.player = await this.db.getPlayerByAppId();
-    this.songs = await this.db.getSongs();
-    await this.getAttendances();
+    await this.initialize();
+  }
+
+  async initialize() {
+    this.name = this.db.tenant().longName;
+    this.tenants = this.db.tenants();
+    this.tenantId = this.db.tenant().id;
+    if (this.db.tenantUser().role === Role.PLAYER) {
+      this.player = await this.db.getPlayerByAppId();
+      this.songs = await this.db.getSongs();
+      await this.getAttendances();
+    }
   }
 
   async signout() {
@@ -228,5 +243,13 @@ export class SignoutPage implements OnInit {
     return songIds.map((id: number) => {
       return `${this.songs.find((s: Song) => s.id === id).number} ${this.songs.find((s: Song) => s.id === id).name}`;
     }).join(", ");
+  }
+
+  async onTenantChange(): Promise<void> {
+    this.db.tenantUser.set(this.db.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenantId));
+    if (this.db.tenantUser().role !== Role.PLAYER) {
+      this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser().role));
+    }
+    this.db.tenant.set(this.db.tenants().find((tenant: Tenant) => tenant.id === this.tenantId));
   }
 }

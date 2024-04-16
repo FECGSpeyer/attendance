@@ -1,15 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, effect } from '@angular/core';
 import { ActionSheetController, AlertController, IonItemSliding, IonRouterOutlet, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Instrument, Person, Player, PlayerHistoryEntry } from 'src/app/utilities/interfaces';
 import { PersonPage } from '../person/person.page';
-import { environment } from 'src/environments/environment';
 import { AttendanceType, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from 'src/app/utilities/Utils';
 import { RealtimeChannel } from '@supabase/supabase-js';
-import { TenantService } from 'src/app/services/tenant.service';
 
 @Component({
   selector: 'app-list',
@@ -46,21 +44,22 @@ export class ListPage implements OnInit {
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
     private db: DbService,
-    private tenantService: TenantService,
     private actionSheetController: ActionSheetController,
     private alertController: AlertController,
     private storage: Storage,
-  ) { }
+  ) {
+    effect(async () => {
+      this.db.tenant();
+      this.instruments = await this.db.getInstruments();
+      await this.getPlayers();
+    });
+  }
 
   async ngOnInit() {
     this.viewOpts = JSON.parse(await this.storage.get("viewOpts") || JSON.stringify(['instrument', 'leader', 'notes', 'critical', 'paused']));
-    this.db.authenticationState.subscribe((state: { role: Role }) => {
-      this.isAdmin = state.role === Role.ADMIN;
-      if (this.tenantService.tenant) {
-        this.isChoir = this.tenantService.tenant.type === AttendanceType.CHOIR;
-        this.isVoS = this.tenantService.tenant.shortName === 'VoS';
-      }
-    });
+    this.isAdmin = this.db.tenantUser().role === Role.ADMIN;
+    this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
+    this.isVoS = this.db.tenant().shortName === 'VoS';
     this.filterOpt = (await this.storage.get("filterOpt")) || "all";
     this.instruments = await this.db.getInstruments();
     await this.getPlayers();
@@ -70,7 +69,7 @@ export class ListPage implements OnInit {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'player' },
         (event: any) => {
-          if (event.new?.tenantId === this.tenantService.tenant.id || event.old?.tenantId === this.tenantService.tenant.id) {
+          if (event.new?.tenantId === this.db.tenant().id || event.old?.tenantId === this.db.tenant().id) {
             this.getPlayers();
           }
         })
