@@ -23,7 +23,8 @@ export interface TenantUser {
     created_at: string;
     tenantId: number;
     userId: string;
-    role?: number;
+    role: number;
+    email: string;
 }
 
 export interface Viewer {
@@ -157,6 +158,7 @@ export interface History {
     conductorName?: string;
     otherConductor?: string;
     count?: number;
+    tenantId?: number;
 }
 
 export interface Teacher {

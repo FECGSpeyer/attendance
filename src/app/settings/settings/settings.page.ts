@@ -224,7 +224,7 @@ export class SettingsPage implements OnInit {
       }, {
         text: "Ja",
         handler: async () => {
-          await this.db.removeEmailFromAuth(viewer.appId);
+          await this.db.removeEmailFromAuth(viewer.appId, viewer.email);
           this.viewers = await this.db.getViewers();
         }
       }]

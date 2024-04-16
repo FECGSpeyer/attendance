@@ -74,12 +74,12 @@
         Besprechungen
       </ion-label>
     </ion-item>
-    <ion-item *ngIf="tenant?.().type === 'orchestra'" routerLink="instruments" button>
+    <ion-item *ngIf="db.tenant().type === 'orchestra'" routerLink="instruments" button>
       <ion-label>
         Instrumente
       </ion-label>
     </ion-item>
-    <ion-item *ngIf="tenant?.().type !== 'orchestra'" routerLink="instruments" button>
+    <ion-item *ngIf="db.tenant().type !== 'orchestra'" routerLink="instruments" button>
       <ion-label>
         Gruppen
       </ion-label>
@@ -203,7 +203,7 @@
       </ion-label>
     </ion-item>
 
-    <ion-item *ngIf="db.tenants().length">
+    <ion-item *ngIf="db.tenants().length > 1">
       <ion-label>
         App wechseln
       </ion-label>

@@ -132,6 +132,7 @@ export type Database = {
           id: number
           otherConductor: string | null
           songId: number | null
+          tenantId: number | null
         }
         Insert: {
           conductor?: number | null
@@ -140,6 +141,7 @@ export type Database = {
           id?: number
           otherConductor?: string | null
           songId?: number | null
+          tenantId?: number | null
         }
         Update: {
           conductor?: number | null
@@ -148,6 +150,7 @@ export type Database = {
           id?: number
           otherConductor?: string | null
           songId?: number | null
+          tenantId?: number | null
         }
         Relationships: [
           {
@@ -162,6 +165,13 @@ export type Database = {
             columns: ["songId"]
             isOneToOne: false
             referencedRelation: "songs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_history_tenantId_fkey"
+            columns: ["tenantId"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -268,6 +278,7 @@ export type Database = {
           paused: boolean | null
           playsSince: string | null
           range: string | null
+          teacher: number | null
           tenantId: number
         }
         Insert: {
@@ -295,6 +306,7 @@ export type Database = {
           paused?: boolean | null
           playsSince?: string | null
           range?: string | null
+          teacher?: number | null
           tenantId: number
         }
         Update: {
@@ -322,6 +334,7 @@ export type Database = {
           paused?: boolean | null
           playsSince?: string | null
           range?: string | null
+          teacher?: number | null
           tenantId?: number
         }
         Relationships: [
@@ -330,6 +343,13 @@ export type Database = {
             columns: ["instrument"]
             isOneToOne: false
             referencedRelation: "instruments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_player_teacher_fkey"
+            columns: ["teacher"]
+            isOneToOne: false
+            referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
           {
@@ -411,6 +431,47 @@ export type Database = {
           },
         ]
       }
+      teachers: {
+        Row: {
+          created_at: string
+          id: number
+          instruments: number[] | null
+          name: string | null
+          notes: string | null
+          number: string | null
+          private: boolean | null
+          tenantId: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          instruments?: number[] | null
+          name?: string | null
+          notes?: string | null
+          number?: string | null
+          private?: boolean | null
+          tenantId?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          instruments?: number[] | null
+          name?: string | null
+          notes?: string | null
+          number?: string | null
+          private?: boolean | null
+          tenantId?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_teachers_tenantId_fkey"
+            columns: ["tenantId"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           created_at: string
@@ -456,22 +517,25 @@ export type Database = {
       tenantUsers: {
         Row: {
           created_at: string
+          email: string | null
           id: number
-          role: number | null
+          role: number
           tenantId: number
           userId: string
         }
         Insert: {
           created_at?: string
+          email?: string | null
           id?: number
-          role?: number | null
+          role: number
           tenantId: number
           userId: string
         }
         Update: {
           created_at?: string
+          email?: string | null
           id?: number
-          role?: number | null
+          role?: number
           tenantId?: number
           userId?: string
         }

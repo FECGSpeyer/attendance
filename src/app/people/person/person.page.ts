@@ -327,11 +327,13 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     try {
       await this.db.createAccount(this.player, this.isConductor ? SupabaseTable.CONDUCTORS : SupabaseTable.PLAYER);
-      await this.modalController.dismiss();
+      await this.modalController.dismiss({
+        conductor: this.isConductor,
+      });
       Utils.showToast("Account wurde erfolgreich angelegt", "success");
       await loading.dismiss();
     } catch (error) {
-      Utils.showToast(error, "danger");
+      Utils.showToast(error.message, "danger");
       await loading.dismiss();
     }
   }

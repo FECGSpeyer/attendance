@@ -120,7 +120,7 @@ export class DbService {
   }
 
   async createViewer(viewer: Partial<Viewer>) {
-    const appId: string = await this.registerUser(viewer.email as string, viewer.firstName as string);
+    const appId: string = await this.registerUser(viewer.email as string, viewer.firstName as string, Role.VIEWER);
 
     const { error } = await supabase
       .from(SupabaseTable.VIEWERS)
@@ -135,29 +135,67 @@ export class DbService {
     }
   }
 
-  async registerUser(email: string, name: string): Promise<string> {
+  async registerUser(email: string, name: string, role: Role): Promise<string> {
+    const userId: string | undefined = await this.getAppIdByEmail(email);
+
+    if (userId) {
+      await this.addUserToTenant(userId, role, email);
+      return userId;
+    }
+
     try {
-      const res = await axios.post(`https://staccato-server.vercel.app/api/registerAttendanceUser`, {
+      const res = await axios.post(`https://staccato-server.vercel.app/api/registerAttendixUser`, {
         email,
         name,
-        // appName: environment.longName,
-        // shortName: environment.shortName,
-        url: Utils.getUrlByShortName("TODO"),
       });
 
       if (!res.data?.user?.id) {
         throw new Error('Fehler beim Erstellen des Accounts');
       }
 
+      await this.addUserToTenant(res.data.user.id, role, email);
+
       return res.data.user.id;
-    } catch (_) {
-      throw new Error("Die E-Mail Adresse wird bereits verwendet");
+    } catch (e) {
+      throw new Error(e.response.data?.error?.message || "Fehler beim Erstellen des Accounts");
     }
+  }
+
+  async addUserToTenant(userId: string, role: Role, email: string) {
+    const { error } = await supabase
+      .from('tenantUsers')
+      .insert({
+        userId,
+        role,
+        tenantId: this.tenant().id,
+        email
+      });
+
+    if (error) {
+      throw new Error('Fehler beim Hinzufügen des Benutzers zum Mandanten');
+    }
+  }
+
+  async getAppIdByEmail(email: string): Promise<string | undefined> {
+    const { data, error } = await supabase
+      .from('tenantUsers')
+      .select('*')
+      .eq('email', email);
+
+    if (data.find((tenantUser: TenantUser) => tenantUser.tenantId === this.tenant().id)) {
+      throw new Error('Der Benutzer ist bereits in diesem Mandanten');
+    }
+
+    if (error) {
+      throw new Error('Fehler beim Laden des Benutzers');
+    }
+
+    return data.length ? data[0].userId : undefined;
   }
 
   async createAccount(user: Player, table: SupabaseTable = SupabaseTable.PLAYER) {
     try {
-      const appId: string = await this.registerUser(user.email as string, user.firstName);
+      const appId: string = await this.registerUser(user.email as string, user.firstName, table === SupabaseTable.CONDUCTORS ? Role.CONDUCTOR : Role.PLAYER);
 
       const { data, error: updateError } = await supabase
         .from(table)
@@ -636,14 +674,31 @@ export class DbService {
 
     await this.removePlayerFromAttendances(player.id);
     if (player.appId) {
-      await this.removeEmailFromAuth(player.appId);
+      await this.removeEmailFromAuth(player.appId, player.email);
     }
   }
 
-  async removeEmailFromAuth(appId: string) {
-    const res = await axios.post(`https://staccato-server.vercel.app/api/deleteUserFromAuth`, {
+  async removeUserFromTenant(appId: string) {
+    const { error } = await supabase
+      .from('tenantUsers')
+      .delete()
+      .eq('tenantId', this.tenant().id)
+      .match({ userId: appId });
+
+    if (error) {
+      throw new Error('Fehler beim Löschen des Accounts vom Mandanten');
+    }
+  }
+
+  async removeEmailFromAuth(appId: string, email: string) {
+    await this.removeUserFromTenant(appId);
+
+    if (await this.getAppIdByEmail(email)) {
+      return;
+    }
+
+    const res = await axios.post(`https://staccato-server.vercel.app/api/deleteUserFromAttendix`, {
       id: appId,
-      appShortName: "UNDEFINED", // TODO
     });
 
     if (res.status !== 200) {
@@ -659,13 +714,13 @@ export class DbService {
 
     await this.removeConductorFromAttendances(conductor.id);
     if (conductor.appId) {
-      await this.removeEmailFromAuth(conductor.appId);
+      await this.removeEmailFromAuth(conductor.appId, conductor.email);
     }
   }
 
   async archivePlayer(player: Player, left: string, notes: string): Promise<void> {
     if (player.appId && player.email) {
-      await this.removeEmailFromAuth(player.appId);
+      await this.removeEmailFromAuth(player.appId, player.email);
       delete player.appId;
       delete player.email;
     }
@@ -686,7 +741,7 @@ export class DbService {
 
   async archiveConductor(conductor: Person, left: string, notes: string): Promise<void> {
     if (conductor.appId && conductor.email) {
-      await this.removeEmailFromAuth(conductor.appId);
+      await this.removeEmailFromAuth(conductor.appId, conductor.email);
       delete conductor.appId;
       delete conductor.email;
     }
@@ -895,7 +950,7 @@ export class DbService {
     const { data } = await supabase
       .from('history')
       .select('*')
-      // .eq('tenantId', this.tenant().id)
+      .eq('tenantId', this.tenant().id)
       .order("date", {
         ascending: false,
       });
@@ -906,7 +961,10 @@ export class DbService {
   async addHistoryEntry(history: History[]): Promise<History[]> {
     const { data } = await supabase
       .from('history')
-      .insert(history)
+      .insert({
+        ...history,
+        tenantId: this.tenant().id,
+      })
       .select();
 
     return data;
