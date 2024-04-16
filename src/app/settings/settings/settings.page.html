@@ -15,7 +15,7 @@
     <ion-list-header sticky="true">
       Einstellungen
     </ion-list-header>
-    <ion-item *ngIf="isAdmin" button id="general-item">
+    <!-- <ion-item *ngIf="isAdmin" button id="general-item"> TODO: General settings
       <ion-label>Allgemeine Einstellungen</ion-label>
       <ion-modal #generalModal [breakpoints]="[0.5]" [initialBreakpoint]="0.5" trigger="general-item">
         <ng-template>
@@ -60,7 +60,7 @@
           </ion-content>
         </ng-template>
       </ion-modal>
-    </ion-item>
+    </ion-item> -->
     <ion-item routerLink="songs" button>
       <ion-label>Werke</ion-label>
     </ion-item>
