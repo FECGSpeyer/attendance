@@ -448,6 +448,11 @@ export class DbService {
     delete dataToCreate.playsSince;
     delete dataToCreate.role;
 
+    if (dataToCreate.email && register) {
+      const appId: string = await this.registerUser(dataToCreate.email, dataToCreate.firstName, Role.CONDUCTOR);
+      dataToCreate.appId = appId;
+    }
+
     const { error, data } = await supabase
       .from('conductors')
       .insert({
@@ -462,9 +467,6 @@ export class DbService {
     }
 
     await this.addConductorToUpcomingAttendances(data.id);
-    if (data.email && register) {
-      await this.registerUser(data.email, data.firstName, Role.CONDUCTOR);
-    }
 
     return;
   }
@@ -472,6 +474,11 @@ export class DbService {
   async addPlayer(player: Player, register: boolean): Promise<void> {
     if (!this.tenant().maintainTeachers) {
       delete player.teacher;
+    }
+
+    if (player.email && register) {
+      const appId: string = await this.registerUser(player.email, player.firstName, Role.PLAYER);
+      player.appId = appId;
     }
 
     const { data, error } = await supabase
@@ -490,9 +497,6 @@ export class DbService {
     }
 
     await this.addPlayerToAttendancesByDate(data.id, data.joined);
-    if (data.email && register) {
-      await this.registerUser(data.email, data.firstName, Role.PLAYER);
-    }
   }
 
   async addPlayerToAttendancesByDate(id: number, joined: string) {

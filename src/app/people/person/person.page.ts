@@ -183,6 +183,8 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async addPerson(): Promise<void> {
+    const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
+    loading.present();
     if (this.player.firstName && this.player.lastName) {
       if (this.isConductor) {
         await this.db.addConductor(this.player, Boolean(this.player.email));
@@ -196,6 +198,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     } else {
       Utils.showToast("Bitte gib den Vornamen und Nachnamen an.", "danger");
     }
+    loading.dismiss();
   }
 
   async updatePlayer(): Promise<void> {
