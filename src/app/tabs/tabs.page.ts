@@ -18,7 +18,7 @@ export class TabsPage {
   }
 
   initialize() {
-    this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.VIEWER;
+    this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.VIEWER || this.db.tenantUser().role === Role.CONDUCTOR;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
   }
 

@@ -56,7 +56,7 @@ export class SettingsPage implements OnInit {
   }
 
   async initialize(): Promise<void> {
-    this.isAdmin = this.db.tenantUser().role === Role.ADMIN;
+    this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.CONDUCTOR;
     this.attDate = await this.db.getCurrentAttDate();
     this.tenantId = this.db.tenant().id;
     this.maintainTeachers = this.db.tenant().maintainTeachers;

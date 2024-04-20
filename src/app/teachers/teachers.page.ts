@@ -24,7 +24,7 @@ export class TeachersPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.isAdmin = this.db.tenantUser().role === Role.ADMIN;
+    this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.CONDUCTOR;
     this.players = await this.db.getPlayers();
     this.instruments = await this.db.getInstruments();
     await this.getTeachers();

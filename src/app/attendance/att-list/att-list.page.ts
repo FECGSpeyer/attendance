@@ -49,7 +49,7 @@ export class AttListPage implements OnInit {
   }
 
   async ngOnInit() {
-    this.isConductor = this.db.tenantUser().role === Role.ADMIN;
+    this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.CONDUCTOR;
     this.isHelper = this.db.tenantUser().role === Role.HELPER;
     await this.getAttendance();
 

@@ -75,7 +75,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.maintainTeachers = this.db.tenant().maintainTeachers;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
-    this.isAdmin = this.db.tenantUser().role === Role.ADMIN;
+    this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.CONDUCTOR;
     this.hasChanges = false;
     if (this.db.tenant().maintainTeachers) {
       this.teachers = await this.db.getTeachers();

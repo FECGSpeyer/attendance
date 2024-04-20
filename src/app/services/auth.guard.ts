@@ -17,14 +17,14 @@ export class AuthGuard  {
     const role: Role = this.db.tenantUser().role;
 
     if (state.url === "/tabs/attendance") {
-      return role === Role.ADMIN || role === Role.HELPER || role === Role.VIEWER;
+      return role === Role.ADMIN || role === Role.HELPER || role === Role.VIEWER || role === Role.CONDUCTOR;
     } else if (state.url === "/tabs/signout") {
       return role === Role.HELPER;
     } else if (state.url === "/signout") {
       return role === Role.PLAYER;
     }
 
-    return role === Role.ADMIN || role === Role.VIEWER;
+    return role === Role.ADMIN || role === Role.CONDUCTOR || role === Role.VIEWER;
   }
 
 }

@@ -188,6 +188,7 @@ export class Utils {
   public static getUrl(role: Role) {
     switch (role) {
       case Role.ADMIN:
+      case Role.CONDUCTOR:
       case Role.VIEWER:
         return "/tabs/player";
       case Role.HELPER:

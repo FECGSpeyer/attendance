@@ -57,7 +57,7 @@ export class ListPage implements OnInit {
 
   async ngOnInit() {
     this.viewOpts = JSON.parse(await this.storage.get("viewOpts") || JSON.stringify(['instrument', 'leader', 'notes', 'critical', 'paused']));
-    this.isAdmin = this.db.tenantUser().role === Role.ADMIN;
+    this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.CONDUCTOR;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.filterOpt = (await this.storage.get("filterOpt")) || "all";
