@@ -16,6 +16,7 @@ import { Instrument, Person, Player, Tenant, TenantUser } from 'src/app/utilitie
 import { Utils } from 'src/app/utilities/Utils';
 import { Viewer } from '../../utilities/interfaces';
 import { Router } from '@angular/router';
+import { Storage } from '@ionic/storage-angular';
 
 @Component({
   selector: 'app-settings',
@@ -44,6 +45,7 @@ export class SettingsPage implements OnInit {
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
     private router: Router,
+    private storage: Storage,
   ) {
     effect(async () => {
       this.db.tenant();
@@ -247,5 +249,6 @@ export class SettingsPage implements OnInit {
     this.db.tenantUser.set(this.db.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenantId));
     this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser().role));
     this.db.tenant.set(this.db.tenants().find((tenant: Tenant) => tenant.id === this.tenantId));
+    this.storage.set('tenantId', this.tenantId);
   }
 }

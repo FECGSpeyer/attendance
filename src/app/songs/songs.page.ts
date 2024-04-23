@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { History, Person, Song } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
-import { IonModal } from '@ionic/angular';
+import { AlertController, IonModal } from '@ionic/angular';
 import { Utils } from '../utilities/Utils';
 import { Browser } from '@capacitor/browser';
 import { Role } from '../utilities/constants';
@@ -17,6 +17,7 @@ export class SongsPage implements OnInit {
   public songsFiltered: Song[] = [];
   searchTerm: string = "";
   public isAdmin: boolean = false;
+  public withChoir: boolean = false;
 
   constructor(
     private db: DbService,
@@ -51,7 +52,7 @@ export class SongsPage implements OnInit {
     }, 700);
   }
 
-  async addSong(modal: IonModal, number: any, name: any, link: any, withChoir: any) {
+  async addSong(modal: IonModal, number: any, name: any, link: any) {
     if (this.songs.find((song: Song) => song.number === Number(number))) {
       Utils.showToast("Die Liednummer ist bereits vergeben", "danger");
       return;
@@ -63,8 +64,10 @@ export class SongsPage implements OnInit {
       number,
       name,
       link,
-      withChoir: withChoir === "on",
+      withChoir: this.withChoir,
     });
+
+    this.withChoir = false;
 
     await modal.dismiss();
     this.getSongs();
@@ -85,6 +88,28 @@ export class SongsPage implements OnInit {
 
     await modal.dismiss();
     this.getSongs();
+  }
+
+  async removeSong(id: number, modal: IonModal) {
+    const alert = await new AlertController().create({
+      header: 'Werk löschen',
+      message: 'Soll das Werk wirklich gelöscht werden?',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel',
+        }, {
+          text: 'Löschen',
+          handler: async () => {
+            await this.db.removeSong(id);
+            await modal.dismiss();
+            await this.getSongs();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   isValidHttpUrl(link: string) {

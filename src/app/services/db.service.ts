@@ -4,12 +4,12 @@ import { Platform } from '@ionic/angular';
 import { createClient, SupabaseClient, SupabaseClientOptions, User } from '@supabase/supabase-js';
 import axios from 'axios';
 import * as dayjs from 'dayjs';
-import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, AuthObject, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer } from '../utilities/interfaces';
+import { Attendance, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
+import { Storage } from '@ionic/storage-angular';
 
 const options: SupabaseClientOptions<any> = {
   auth: {
@@ -35,6 +35,7 @@ export class DbService {
   constructor(
     private plt: Platform,
     private router: Router,
+    private storage: Storage,
   ) {
     this.tenant = signal(undefined);
     this.tenants = signal([]);
@@ -64,7 +65,12 @@ export class DbService {
   async setTenant() {
     this.tenantUsers.set((await this.getTenantsByUserId()));
     this.tenants.set(await this.getTenants(this.tenantUsers().map((tenantUser: TenantUser) => tenantUser.tenantId)));
-    this.tenant.set(this.tenants()[0]);
+    const storedTenantId: string | null = await this.storage.get('tenantId');
+    if (storedTenantId) {
+      this.tenant.set(this.tenants().find((t: Tenant) => t.id === Number(storedTenantId)));
+    } else {
+      this.tenant.set(this.tenants()[0]);
+    }
 
     this.tenantUser.set(this.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenant().id)); 
   }
@@ -1051,6 +1057,19 @@ export class DbService {
       .select();
 
     return data;
+  }
+
+  async removeSong(id: number): Promise<void> {
+    const { error } = await supabase
+      .from('songs')
+      .delete()
+      .match({ id });
+
+    if (error) {
+      throw new Error("Fehler beim Löschen des Liedes");
+    }
+
+    return;
   }
 
   async editSong(id: number, song: Song): Promise<Song[]> {
