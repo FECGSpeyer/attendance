@@ -72,7 +72,7 @@ export class DbService {
       this.tenant.set(this.tenants()[0]);
     }
 
-    this.tenantUser.set(this.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenant().id)); 
+    this.tenantUser.set(this.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenant().id));
   }
 
   async getTenants(ids: number[]): Promise<Tenant[]> {
@@ -977,10 +977,14 @@ export class DbService {
   async addHistoryEntry(history: History[]): Promise<History[]> {
     const { data } = await supabase
       .from('history')
-      .insert({
-        ...history,
-        tenantId: this.tenant().id,
-      })
+      .insert(
+        history.map((h: History) => {
+          return {
+            ...h,
+            tenantId: this.tenant().id,
+          }
+        })
+      )
       .select();
 
     return data;
