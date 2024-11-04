@@ -66,7 +66,7 @@ export class DbService {
     this.tenantUsers.set((await this.getTenantsByUserId()));
     this.tenants.set(await this.getTenants(this.tenantUsers().map((tenantUser: TenantUser) => tenantUser.tenantId)));
     const storedTenantId: string | null = await this.storage.get('tenantId');
-    if (storedTenantId) {
+    if (storedTenantId && this.tenants().find((t: Tenant) => t.id === Number(storedTenantId))) {
       this.tenant.set(this.tenants().find((t: Tenant) => t.id === Number(storedTenantId)));
     } else {
       this.tenant.set(this.tenants()[0]);

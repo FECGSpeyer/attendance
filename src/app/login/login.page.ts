@@ -3,6 +3,7 @@ import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms
 import { AlertController, IonInput } from '@ionic/angular';
 import { DbService } from '../services/db.service';
 import { Utils } from '../utilities/Utils';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -53,6 +54,18 @@ export class LoginPage implements OnInit {
     const loading = await Utils.getLoadingElement();
     loading.present();
     const res: boolean = await this.db.login(this.registerCredentials.email, this.registerCredentials.password);
+
+    loading.dismiss();
+
+    if (!res) {
+      Utils.showToast("Fehler bei der Anmeldung, versuche es erneut", "danger");
+    }
+  }
+
+  async startDemo() {
+    const loading = await Utils.getLoadingElement();
+    loading.present();
+    const res: boolean = await this.db.login(environment.demoMail, environment.demoPassword);
 
     loading.dismiss();
 
