@@ -88,6 +88,7 @@ export interface Player extends Person {
     range?: string;
     instruments?: string;
     tenantId: number;
+    role?: Role;
 }
 
 export interface Instrument {

@@ -228,7 +228,7 @@
               <ion-item>
                 <ion-label>Rolle</ion-label>
                 <ion-select type="number" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.role">
-                  <ion-select-option [value]="NONE">Keine Rolle</ion-select-option>
+                  <ion-select-option [value]="PLAYER">Keine Rolle</ion-select-option>
                   <ion-select-option [value]="HELPER">Helfer</ion-select-option>
                 </ion-select>
               </ion-item>

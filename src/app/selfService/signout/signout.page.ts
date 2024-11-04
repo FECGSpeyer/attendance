@@ -55,7 +55,7 @@ export class SignoutPage implements OnInit {
     this.name = this.db.tenant().longName;
     this.tenants = this.db.tenants();
     this.tenantId = this.db.tenant().id;
-    if (this.db.tenantUser().role === Role.PLAYER) {
+    if (this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.HELPER) {
       this.player = await this.db.getPlayerByAppId();
       this.songs = await this.db.getSongs();
       await this.getAttendances();
@@ -247,9 +247,9 @@ export class SignoutPage implements OnInit {
 
   async onTenantChange(): Promise<void> {
     this.db.tenantUser.set(this.db.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenantId));
+    this.db.tenant.set(this.db.tenants().find((tenant: Tenant) => tenant.id === this.tenantId));
     if (this.db.tenantUser().role !== Role.PLAYER) {
       this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser().role));
     }
-    this.db.tenant.set(this.db.tenants().find((tenant: Tenant) => tenant.id === this.tenantId));
   }
 }

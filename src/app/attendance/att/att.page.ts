@@ -42,7 +42,7 @@ export class AttPage implements OnInit {
   async ngOnInit(): Promise<void> {
     this.withExcuses = this.db.tenant().withExcuses;
     this.attendance = await this.db.getAttendanceById(this.attendanceId);
-    // this.isHelper = await this.db.getRole() === Role.HELPER; TODO
+    this.isHelper = await this.db.tenantUser().role === Role.HELPER;
     void this.listenOnNetworkChanges();
     this.allConductors = await this.db.getConductors(true);
     this.allPlayers = await this.db.getPlayers();

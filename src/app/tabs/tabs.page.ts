@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, effect } from '@angular/core';
 import { DbService } from '../services/db.service';
 import { AttendanceType, Role } from '../utilities/constants';
 
@@ -20,6 +20,11 @@ export class TabsPage {
   initialize() {
     this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.VIEWER || this.db.tenantUser().role === Role.CONDUCTOR;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
+
+    effect(() => {
+      this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.VIEWER || this.db.tenantUser().role === Role.CONDUCTOR;
+      this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
+    });
   }
 
 }

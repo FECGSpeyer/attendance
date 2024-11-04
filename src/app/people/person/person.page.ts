@@ -42,7 +42,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     paused: false,
     tenantId: 999999999,
   };
-  public readonly NONE: Role = Role.NONE;
+  public readonly PLAYER: Role = Role.PLAYER;
   public readonly HELPER: Role = Role.HELPER;
   public player: Player;
   public birthdayString: string = format(new Date(), 'dd.MM.yyyy');

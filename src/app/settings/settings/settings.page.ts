@@ -34,6 +34,7 @@ export class SettingsPage implements OnInit {
   public instruments: Instrument[] = [];
   public viewers: Viewer[] = [];
   public isAdmin: boolean = false;
+  public isSuperAdmin: boolean = false;
   public attDateString: string = format(new Date(), 'dd.MM.yyyy');
   public attDate: string = new Date().toISOString();
   public practiceStart: string;
@@ -59,6 +60,7 @@ export class SettingsPage implements OnInit {
 
   async initialize(): Promise<void> {
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.CONDUCTOR;
+    this.isSuperAdmin = this.db.tenantUser().role === Role.ADMIN;
     this.attDate = await this.db.getCurrentAttDate();
     this.tenantId = this.db.tenant().id;
     this.maintainTeachers = this.db.tenant().maintainTeachers;

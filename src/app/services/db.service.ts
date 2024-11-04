@@ -178,6 +178,7 @@ export class DbService {
       });
 
     if (error) {
+      Utils.showToast("Fehler beim Hinzufügen des Benutzers zum Mandanten", "danger");
       throw new Error('Fehler beim Hinzufügen des Benutzers zum Mandanten');
     }
   }
@@ -483,9 +484,11 @@ export class DbService {
     }
 
     if (player.email && register) {
-      const appId: string = await this.registerUser(player.email, player.firstName, Role.PLAYER);
+      const appId: string = await this.registerUser(player.email, player.firstName, player.role ?? Role.PLAYER);
       player.appId = appId;
     }
+
+    delete player.role;
 
     const { data, error } = await supabase
       .from('player')
