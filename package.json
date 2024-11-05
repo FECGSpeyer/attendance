@@ -34,7 +34,7 @@
     "@ionic/angular": "^7.6.0",
     "@ionic/angular-server": "^7.6.0",
     "@ionic/storage-angular": "^3.0.6",
-    "@supabase/supabase-js": "^2.46.1",
+    "@supabase/supabase-js": "^2.10.0",
     "axios": "^1.2.2",
     "date-fns": "^2.28.0",
     "dayjs": "^1.10.7",
