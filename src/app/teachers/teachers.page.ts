@@ -16,6 +16,7 @@ export class TeachersPage implements OnInit {
   teachers: Teacher[] = [];
   players: Player[] = [];
   isAdmin: boolean = false;
+  selInstruments: number[] = [];
 
   constructor(
     private db: DbService,
@@ -40,15 +41,15 @@ export class TeachersPage implements OnInit {
     });
   }
 
-  async addTeacher(name: string, instruments: number[], notes: string, number: string, isPrivate: boolean, modal: IonModal) {
-    if (name.length < 3 || instruments.length === 0) {
+  async addTeacher(name: string | number, instruments: number[], notes: string, number: string | number, pri: string, modal: IonModal) {
+    if (String(name).length < 3 || instruments.length === 0) {
       Utils.showToast("Bitte fülle alle Felder aus...", "danger");
 
       return;
     }
 
     await this.db.addTeacher({
-      name, instruments, notes, number, private: isPrivate,
+      name: String(name), instruments, notes, number: String(number), private: pri === "true",
     });
 
     await modal.dismiss();

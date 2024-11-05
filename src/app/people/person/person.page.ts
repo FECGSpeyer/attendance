@@ -62,6 +62,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public isAdmin: boolean = false;
   public isChoir: boolean = false;
   public lateCount: number = 0;
+  public showTeachers: boolean = false;
 
   constructor(
     private db: DbService,
@@ -77,6 +78,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.CONDUCTOR;
     this.hasChanges = false;
+    this.showTeachers = this.db.tenant().maintainTeachers;
     if (this.db.tenant().maintainTeachers) {
       this.teachers = await this.db.getTeachers();
       this.allTeachers = this.teachers;
@@ -259,7 +261,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
   }
 
-  onBirthdayChange(value: string, modal: IonModal) {
+  onBirthdayChange(value: string | string[], modal: IonModal) {
     this.onChange();
     this.player.correctBirthday = true;
 
@@ -267,27 +269,27 @@ export class PersonPage implements OnInit, AfterViewInit {
       modal.dismiss();
     }
 
-    this.birthdayString = this.formatDate(value);
+    this.birthdayString = this.formatDate(String(value));
   }
 
-  onPlaysSinceChange(value: string, modal: IonModal) {
+  onPlaysSinceChange(value: string | string[], modal: IonModal) {
     this.onChange();
 
     if (parseInt(this.playsSinceString.substring(0, 2), 10) !== dayjs(this.player.playsSince).date()) {
       modal.dismiss();
     }
 
-    this.playsSinceString = this.formatDate(value);
+    this.playsSinceString = this.formatDate(String(value));
   }
 
-  onJoinedChange(value: string, modal: IonModal) {
+  onJoinedChange(value: string | string[], modal: IonModal) {
     this.onChange();
 
     if (parseInt(this.joinedString.substring(0, 2), 10) !== dayjs(this.player.joined).date()) {
       modal.dismiss();
     }
 
-    this.joinedString = this.formatDate(value);
+    this.joinedString = this.formatDate(String(value));
   }
 
   async removeHis(his: PlayerHistoryEntry, slider: IonItemSliding) {

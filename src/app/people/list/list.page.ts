@@ -113,8 +113,8 @@ export class ListPage implements OnInit {
     await actionSheet.present();
   }
 
-  userById(person: Person) {
-    return person.id;
+  userById(_: number, person: Person): string {
+    return String(person.id);
   }
 
   async openViewerAlert() {
@@ -158,7 +158,7 @@ export class ListPage implements OnInit {
     await alert.present();
   }
 
-  async openModal(player?: Player, isConductor?: boolean): Promise<void> {
+  async openModal(player?: Player | Person, isConductor?: boolean): Promise<void> {
     if (!isConductor && this.instruments.length === 0) {
       Utils.showToast("Bitte erstelle zuerst ein Instrument", "danger");
       return;
@@ -333,12 +333,12 @@ export class ListPage implements OnInit {
     this.playersFiltered = this.players;
   }
 
-  async remove(player: Player, slider: IonItemSliding, isConductor: boolean = false): Promise<void> {
+  async remove(player: Person, slider: IonItemSliding, isConductor: boolean = false): Promise<void> {
     const sheet: HTMLIonActionSheetElement = await this.actionSheetController.create({
       buttons: [{
         text: "Archivieren",
         handler: (): void => {
-          this.playerToArchive = player;
+          this.playerToArchive = player as Player;
           this.isArchiveModalOpen = true;
           slider.close();
         },

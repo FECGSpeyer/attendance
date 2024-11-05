@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, ItemReorderEventDetail, ModalController } from '@ionic/angular';
+import { AlertController, IonItemSliding, ItemReorderEventDetail, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
@@ -49,7 +49,7 @@ export class ExportPage implements OnInit {
     ev.detail.complete(this.selectedFields);
   }
 
-  removeField(index: number, slider: HTMLIonItemSlidingElement) {
+  removeField(index: number, slider: IonItemSliding) {
     this.selectedFields.splice(index, 1);
     slider.close();
   }
@@ -74,7 +74,8 @@ export class ExportPage implements OnInit {
     await alert.present();
   }
 
-  export(shortName: string) {
+  export() {
+    const shortName: string =this.db.tenant().shortName;
     if (this.content === "player") {
       this.type === "pdf" ? this.exportPlayerPDF(shortName) : this.exportPlayerExcel(shortName);
     } else {

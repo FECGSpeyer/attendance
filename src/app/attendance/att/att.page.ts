@@ -26,8 +26,8 @@ export class AttPage implements OnInit {
   public lateExcused: Set<string> = new Set();
   public withExcuses: boolean;
   public isOnline = true;
-  private playerNotes: { [prop: number]: string } = {};
-  private attendance: Attendance;
+  public playerNotes: { [prop: number]: string } = {};
+  public attendance: Attendance;
   private sub: RealtimeChannel;
   public isHelper: boolean = false;
   public songs: Song[] = [];
@@ -60,8 +60,8 @@ export class AttPage implements OnInit {
     this.initializeAttObjects();
   }
 
-  userById(person: Person) {
-    return person.id;
+  userById(index: number, person: Person): string {
+    return String(person.id);
   }
 
   initializeAttObjects() {

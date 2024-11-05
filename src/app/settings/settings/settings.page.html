@@ -146,7 +146,7 @@
             </ion-list>
             <ion-list>
               <ion-list-header>{{ getAttendanceTypePersonaText() }}</ion-list-header>
-              <ion-item button (click)="openPlayerModal(p)" *ngFor="let p of leftPlayers">
+              <ion-item button (click)="openPlayerModal(p, false)" *ngFor="let p of leftPlayers">
                 <ion-label>
                   <h2>{{ p.firstName }} {{ p.lastName }} ({{ p.instrumentName }})</h2>
                   <h3>Ausgetreten: {{ p.left | date:"dd.MM.YYYY" }}</h3>

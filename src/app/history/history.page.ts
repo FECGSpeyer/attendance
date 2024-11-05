@@ -108,12 +108,12 @@ export class HistoryPage implements OnInit {
     }
   }
 
-  onDateChanged(value: string, dateModal: IonModal): void {
+  onDateChanged(value: string | string[], dateModal: IonModal): void {
     if (parseInt(this.dateString.substring(0, 2), 10) !== dayjs(this.historyEntry.date).date()) {
       dateModal.dismiss();
     }
 
-    this.dateString = this.formatDate(value);
+    this.dateString = this.formatDate(String(value));
   }
 
   filter(): History[] {
@@ -168,7 +168,7 @@ export class HistoryPage implements OnInit {
     }
   }
 
-  async addHistoryEntry(modal: HTMLIonModalElement): Promise<void> {
+  async addHistoryEntry(modal: IonModal): Promise<void> {
     if (this.selectedSongs.length) {
       if (this.historyEntry.conductor === this.otherConductor) {
         delete this.historyEntry.conductor;

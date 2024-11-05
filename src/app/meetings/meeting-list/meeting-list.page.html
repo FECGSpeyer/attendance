@@ -10,11 +10,11 @@
 <ion-content>
   <ion-list>
     <ion-item-sliding #slider *ngFor="let meeting of meetings">
-      <ion-item [routerLink]="meeting.id">
+      <ion-item [routerLink]="meeting.id.toString()">
         <ion-label>{{ meeting.date | date:'dd.MM.yyyy' }}</ion-label>
       </ion-item>
       <ion-item-options>
-        <ion-item-option color="danger" (click)="removeMeeting(meeting.id, slider)">
+        <ion-item-option color="danger" (click)="removeMeeting(meeting.id)">
           <ion-icon name="trash"></ion-icon>
         </ion-item-option>
       </ion-item-options>

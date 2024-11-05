@@ -154,7 +154,7 @@ export class PlanningPage implements OnInit {
     ev.detail.complete(this.selectedFields);
   }
 
-  removeField(index: number, slider: HTMLIonItemSlidingElement) {
+  removeField(index: number, slider: IonItemSliding) {
     this.selectedFields.splice(index, 1);
     slider.close();
     this.calculateEnd();

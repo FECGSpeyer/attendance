@@ -39,12 +39,12 @@ export class MeetingListPage implements OnInit {
     return format(parseISO(value), 'dd.MM.yyyy');
   }
 
-  onDateChanged(value: string, dateModal: IonModal): void {
+  onDateChanged(value: string | string[], dateModal: IonModal): void {
     if (parseInt(this.dateString.substring(0, 2), 10) !== dayjs(this.date).date()) {
       dateModal.dismiss();
     }
 
-    this.dateString = this.formatDate(value);
+    this.dateString = this.formatDate(String(value));
   }
 
   async removeMeeting(id: number) {

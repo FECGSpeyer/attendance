@@ -74,13 +74,13 @@ export class LoginPage implements OnInit {
     }
   }
 
-  async forgotPassword(email: string) {
+  async forgotPassword() {
     const alert = await this.alertController.create({
       header: "Passwort zurücksetzen",
       inputs: [
         {
           name: 'email',
-          value: email,
+          value: this.registerCredentials.email,
           type: 'email',
           placeholder: "E-Mail eingeben..."
         }

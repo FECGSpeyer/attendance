@@ -36,7 +36,7 @@ export class SignoutPage implements OnInit {
   public tenants: Tenant[] = [];
 
   constructor(
-    private db: DbService,
+    public db: DbService,
     private actionSheetController: ActionSheetController,
     private router: Router,
   ) {

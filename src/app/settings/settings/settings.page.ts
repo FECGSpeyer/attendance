@@ -42,7 +42,7 @@ export class SettingsPage implements OnInit {
   public tenantId: number;
 
   constructor(
-    private db: DbService,
+    public db: DbService,
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
     private router: Router,
@@ -187,7 +187,7 @@ export class SettingsPage implements OnInit {
     await modal.present();
   }
 
-  async openPlayerModal(p: Player, isConductor: boolean) {
+  async openPlayerModal(p: Player | Person, isConductor: boolean) {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: PersonPage,
       presentingElement: this.routerOutlet.nativeEl,

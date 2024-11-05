@@ -114,12 +114,12 @@ export class AttListPage implements OnInit {
     await alert.present();
   }
 
-  onDateChanged(value: string, dateModal: IonModal): void {
+  onDateChanged(value: string | string[], dateModal: IonModal): void {
     if (parseInt(this.dateString.substring(0, 2), 10) !== dayjs(this.date).date()) {
       dateModal.dismiss();
     }
 
-    this.dateString = this.formatDate(value);
+    this.dateString = this.formatDate(String(value));
   }
 
   async addAttendance(modal: IonModal): Promise<void> {
