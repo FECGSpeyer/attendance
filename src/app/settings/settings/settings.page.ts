@@ -253,4 +253,16 @@ export class SettingsPage implements OnInit {
     this.db.tenant.set(this.db.tenants().find((tenant: Tenant) => tenant.id === this.tenantId));
     this.storage.set('tenantId', this.tenantId);
   }
+
+  async openCreateInstanceModal() {
+    const modal: HTMLIonModalElement = await this.modalController.create({
+      component: ExportPage,
+      presentingElement: this.routerOutlet.nativeEl,
+      componentProps: {
+        createInstance: true
+      }
+    });
+
+    await modal.present();
+  }
 }
