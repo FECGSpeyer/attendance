@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
-import * as dayjs from 'dayjs';
+import * as dayjs from "dayjs";
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, Player, Song } from 'src/app/utilities/interfaces';
