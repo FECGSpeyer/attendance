@@ -160,8 +160,11 @@ export class ListPage implements OnInit {
 
   async openModal(player?: Player | Person, isConductor?: boolean): Promise<void> {
     if (!isConductor && this.instruments.length === 0) {
-      Utils.showToast("Bitte erstelle zuerst ein Instrument", "danger");
-      return;
+      this.instruments = await this.db.getInstruments();
+      if (this.instruments.length === 0) {
+        Utils.showToast("Bitte erstelle zuerst ein Instrument", "danger");
+        return;
+      }
     }
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: PersonPage,

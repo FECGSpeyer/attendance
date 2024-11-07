@@ -40,6 +40,14 @@ export class AttPage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
+    document.addEventListener("visibilitychange", async () => {
+        if (!document.hidden) {
+            this.attendance = await this.db.getAttendanceById(this.attendanceId);
+            this.initializeAttObjects();
+            this.sub.unsubscribe();
+            this.subsribeOnChannels();
+        }
+    });
     this.withExcuses = this.db.tenant().withExcuses;
     this.attendance = await this.db.getAttendanceById(this.attendanceId);
     this.isHelper = await this.db.tenantUser().role === Role.HELPER;
@@ -50,17 +58,20 @@ export class AttPage implements OnInit {
     this.songs = await this.db.getSongs();
     this.selectedSongs = this.attendance.songs || [];
 
+    this.subsribeOnChannels();
+    this.initializeAttObjects();
+  }
+
+  subsribeOnChannels() {
     this.sub = this.db.getSupabase()
       .channel('att-changes').on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'attendance' },
         (payload: RealtimePostgresChangesPayload<any>) => this.onAttRealtimeChanges(payload))
       .subscribe();
-
-    this.initializeAttObjects();
   }
 
-  userById(index: number, person: Person): string {
+  userById(_: number, person: Person): string {
     return String(person.id);
   }
 
