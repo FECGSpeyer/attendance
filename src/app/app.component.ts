@@ -5,6 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from './utilities/Utils';
 import { DbService } from './services/db.service';
+import { inject } from "@vercel/analytics"
 
 @Component({
   selector: 'app-root',
@@ -32,6 +33,7 @@ export class AppComponent {
   }
 
   initializeApp() {
+    inject();
     this.platform.backButton.subscribeWithPriority(-1, () => {
       if (!this.routerOutlet.canGoBack()) {
         App.exitApp();
