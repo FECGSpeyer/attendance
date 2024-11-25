@@ -20,16 +20,12 @@ fs.mkdir(dir, { recursive: true }, (e) => {
             if (fs.existsSync(dir + "/" + file)) {
                 console.log('file is created', path.resolve(dir + '/' + file));
 
-                const str = fs.readFileSync(dir + '/' + file).toString();
-
-                console.log(str);
+                fs.readFileSync(dir + '/' + file).toString();
             }
             if (fs.existsSync(dir + "/" + prodFile)) {
                 console.log('file is created', path.resolve(dir + '/' + prodFile));
 
-                const str = fs.readFileSync(dir + '/' + prodFile).toString();
-
-                console.log(str);
+                fs.readFileSync(dir + '/' + prodFile).toString();
             }
         } catch (error) {
             console.log(error);
