@@ -15,8 +15,7 @@
     <ion-input [(ngModel)]="editedTeacher.name"></ion-input>
   </ion-item>
   <ion-item>
-    <ion-label position="stacked">Instrumente</ion-label>
-    <ion-select [(ngModel)]="editedTeacher.instruments" multiple="true">
+    <ion-select label="Instrumente" [(ngModel)]="editedTeacher.instruments" multiple="true">
       <ion-select-option [value]="ins.id" *ngFor="let ins of instruments">{{ ins.name }}</ion-select-option>
     </ion-select>
   </ion-item>

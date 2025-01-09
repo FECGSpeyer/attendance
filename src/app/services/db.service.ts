@@ -454,6 +454,8 @@ export class DbService {
     delete dataToCreate.teacher;
     delete dataToCreate.playsSince;
     delete dataToCreate.role;
+    delete dataToCreate.instruments;
+    delete dataToCreate.range;
 
     if (dataToCreate.email && register) {
       const appId: string = await this.registerUser(dataToCreate.email, dataToCreate.firstName, Role.CONDUCTOR);

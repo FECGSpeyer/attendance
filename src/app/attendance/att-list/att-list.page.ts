@@ -7,7 +7,7 @@ import { Attendance, Player, Song } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { AttPage } from '../att/att.page';
 import 'jspdf-autotable';
-import { AttendanceStatus, Role } from 'src/app/utilities/constants';
+import { AttendanceStatus, AttendanceType, Role } from 'src/app/utilities/constants';
 import { Person } from '../../utilities/interfaces';
 import { RealtimeChannel } from '@supabase/supabase-js';
 require('dayjs/locale/de');
@@ -26,6 +26,7 @@ export class AttListPage implements OnInit {
   public currentAttendance: Attendance;
   public isConductor: boolean = false;
   public isHelper: boolean = false;
+  public isChoir: boolean = false;
   public notes: string;
   public typeInfo: string;
   public perc: number = 0;
@@ -49,6 +50,7 @@ export class AttListPage implements OnInit {
   }
 
   async ngOnInit() {
+    this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
     this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.CONDUCTOR;
     this.isHelper = this.db.tenantUser().role === Role.HELPER;
     await this.getAttendance();

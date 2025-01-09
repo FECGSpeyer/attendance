@@ -125,6 +125,7 @@ export interface Attendance {
     plan?: any;
     lateExcused?: string[];
     songs?: number[];
+    tenantId?: number;
 }
 
 export interface Song {

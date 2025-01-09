@@ -111,7 +111,7 @@
     </ion-item>
   </ion-list>
 
-  <ion-modal #addAttModal trigger="add-att-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">
+  <ion-modal #addAttModal trigger="add-att-button" [breakpoints]="[0.7]" [initialBreakpoint]="0.7">
     <ng-template>
       <ion-content>
         <ion-header>
@@ -132,10 +132,10 @@
           </ion-modal>
         </ion-item>
         <ion-item>
-          <ion-label>Kategorie</ion-label>
-          <ion-select [(ngModel)]="type">
+          <ion-select label="Kategorie" [(ngModel)]="type">
             <ion-select-option value="uebung">Übung</ion-select-option>
             <ion-select-option value="vortrag">Vortrag</ion-select-option>
+            <ion-select-option *ngIf="isChoir" value="hochzeit">Hochzeit</ion-select-option>
             <ion-select-option value="sonstiges">Sonstiges</ion-select-option>
           </ion-select>
         </ion-item>
@@ -143,9 +143,8 @@
           <ion-label position="stacked">Veranstaltung</ion-label>
           <ion-textarea [(ngModel)]="typeInfo"></ion-textarea>
         </ion-item>
-        <ion-item *ngIf="type === 'vortrag' || type === 'sonstiges'">
-          <ion-label position="stacked">Werk(e)</ion-label>
-          <ion-select multiple="true" [(ngModel)]="selectedSongs" #select>
+        <ion-item *ngIf="type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit'">
+          <ion-select label="Werk(e)" multiple="true" [(ngModel)]="selectedSongs" #select>
             <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}
             </ion-select-option>
           </ion-select>

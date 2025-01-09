@@ -9,8 +9,7 @@
 
 <ion-content *ngIf="meeting && isEditMode" class="ion-padding">
   <ion-item>
-    <ion-label position="stacked">Anwesende Dirigenten</ion-label>
-    <ion-select placeholder="Dirigenten auswählen..." [(ngModel)]="meeting.attendees" #select multiple="true">
+    <ion-select label="Anwesende Dirigenten" placeholder="Dirigenten auswählen..." [(ngModel)]="meeting.attendees" #select multiple="true">
       <ion-select-option multiple="true" [value]="con.id" *ngFor="let con of conductors">{{ con.firstName }} {{ con.lastName }}</ion-select-option>
     </ion-select>
   </ion-item>

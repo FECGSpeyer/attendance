@@ -86,9 +86,7 @@
           <ion-row *ngIf="!isConductor">
             <ion-col>
               <ion-item>
-                <ion-label *ngIf="!isChoir" position="stacked">Instrument</ion-label>
-                <ion-label *ngIf="isChoir" position="stacked">Stimme</ion-label>
-                <ion-select [disabled]="readOnly" (ionChange)="onInstrumentChange()" #select [(ngModel)]="player.instrument">
+                <ion-select [label]="isChoir ? 'Stimme' : 'Instrument'" [disabled]="readOnly" (ionChange)="onInstrumentChange()" #select [(ngModel)]="player.instrument">
                   <ion-select-option [value]="i.id" *ngFor="let i of instruments">
                     {{ i.name }}
                   </ion-select-option>
@@ -96,7 +94,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="isChoir">
+          <ion-row *ngIf="!isConductor && isChoir">
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Stimmumfang</ion-label>
@@ -166,8 +164,7 @@
           <ion-row *ngIf="player.hasTeacher && showTeachers">
             <ion-col>
               <ion-item>
-                <ion-label>Lehrer</ion-label>
-                <ion-select [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.teacher">
+                <ion-select label="Lehrer" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.teacher">
                   <ion-select-option [value]="teacher.id" *ngFor="let teacher of teachers">
                     {{ teacher.name }}
                   </ion-select-option>
@@ -183,7 +180,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-item *ngIf="isChoir">
+          <ion-item *ngIf="!isConductor && isChoir">
             <ion-label position="stacked">Instrumente</ion-label>
             <ion-input [disabled]="readOnly || !isAdmin" (ionChange)="onChange()" [(ngModel)]="player.instruments"></ion-input>
           </ion-item>
@@ -191,7 +188,7 @@
             <ion-col>
               <ion-item>
                 <ion-label>Andere Orchester</ion-label>
-                <ion-select [disabled]="readOnly" multiple="true" (ionChange)="onChange()" [(ngModel)]="player.otherOrchestras">
+                <ion-select label="Andere Orchester" [disabled]="readOnly" multiple="true" (ionChange)="onChange()" [(ngModel)]="player.otherOrchestras">
                   <ion-select-option>SoS</ion-select-option>
                   <ion-select-option>GoS</ion-select-option>
                   <ion-select-option>BoS</ion-select-option>
@@ -226,8 +223,7 @@
           <ion-row *ngIf="!isConductor && player.email">
             <ion-col>
               <ion-item>
-                <ion-label>Rolle</ion-label>
-                <ion-select type="number" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.role">
+                <ion-select label="Rolle" type="number" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.role">
                   <ion-select-option [value]="PLAYER">Keine Rolle</ion-select-option>
                   <ion-select-option [value]="HELPER">Helfer</ion-select-option>
                 </ion-select>

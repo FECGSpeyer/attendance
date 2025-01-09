@@ -22,8 +22,7 @@
     <ion-row *ngIf="!isChoir">
       <ion-col>
         <ion-item>
-          <ion-label position="stacked">Stimmung</ion-label>
-          <ion-select [(ngModel)]="instrument.tuning">
+          <ion-select label="Stimmung" [(ngModel)]="instrument.tuning">
             <ion-select-option>C</ion-select-option>
             <ion-select-option>Es</ion-select-option>
             <ion-select-option>B</ion-select-option>
@@ -41,8 +40,7 @@
     <ion-row *ngIf="!isChoir">
       <ion-col>
         <ion-item>
-          <ion-label position="stacked">Stimmung</ion-label>
-          <ion-select multiple="true" [(ngModel)]="instrument.clefs">
+          <ion-select label="Stimmung" multiple="true" [(ngModel)]="instrument.clefs">
             <ion-select-option value="g">Violinschlüssel (G)</ion-select-option>
             <ion-select-option value="f">Bassschlüssel (F)</ion-select-option>
             <ion-select-option value="c">Altschlüssel (C)</ion-select-option>

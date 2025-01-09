@@ -114,10 +114,7 @@
   </ion-accordion-group>
 
   <ion-item *ngIf="db.tenants().length">
-    <ion-label>
-      App wechseln
-    </ion-label>
-    <ion-select [(ngModel)]="tenantId" (ionChange)="onTenantChange()">
+    <ion-select label="App wechseln" [(ngModel)]="tenantId" (ionChange)="onTenantChange()">
       <ion-select-option [value]="tenant.id" *ngFor="let tenant of tenants">{{ tenant.longName }}</ion-select-option>
     </ion-select>
   </ion-item>

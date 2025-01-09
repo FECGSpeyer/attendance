@@ -76,6 +76,9 @@ export class AttPage implements OnInit {
   }
 
   initializeAttObjects() {
+    if (!this.attendance.players) {
+      return;
+    }
     this.attPlayers = [];
     this.conductors = [];
     this.excused = new Set([...this.attendance.excused]) || new Set<string>();

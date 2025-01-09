@@ -20,8 +20,7 @@
   </ion-segment>
   <ion-list>
     <ion-item>
-      <ion-label>Felder</ion-label>
-      <ion-select [(ngModel)]="selectedFields" multiple="true">
+      <ion-select label="Felder" [(ngModel)]="selectedFields" multiple="true">
         <ion-select-option *ngFor="let field of fields">{{ field }}</ion-select-option>
       </ion-select>
     </ion-item>
@@ -45,8 +44,7 @@
     <ion-button (click)="addExtraField()" style="margin-left: '16px'" size="small">Extrafeld hinzufügen</ion-button>
 
     <ion-item>
-      <ion-label>Export-Typ</ion-label>
-      <ion-select interface="popover" [(ngModel)]="type">
+      <ion-select label="Export-Typ" interface="popover" [(ngModel)]="type">
         <ion-select-option value="pdf">PDF</ion-select-option>
         <ion-select-option value="excel">Excel</ion-select-option>
       </ion-select>

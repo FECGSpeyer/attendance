@@ -17,8 +17,7 @@
       </ion-item>
       <div slot="content">
         <ion-item lines="none">
-          <ion-label>Kategorie</ion-label>
-          <ion-select (ionChange)="onInfoChanged()" [(ngModel)]="attendance.type">
+          <ion-select label="Kategorie" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.type">
             <ion-select-option value="uebung">Übung</ion-select-option>
             <ion-select-option value="vortrag">Vortrag</ion-select-option>
             <ion-select-option value="hochzeit">Hochzeit</ion-select-option>
@@ -29,9 +28,8 @@
           <ion-label position="stacked">Probenart</ion-label>
           <ion-input (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.typeInfo"></ion-input>
         </ion-item>
-        <ion-item *ngIf="attendance?.type === 'vortrag' || attendance?.type === 'sonstiges'">
-          <ion-label position="stacked">Werk(e)</ion-label>
-          <ion-select (ionChange)="onInfoChanged()" multiple="true" [(ngModel)]="selectedSongs" #select>
+        <ion-item *ngIf="attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit'">
+          <ion-select label="Werk(e)" (ionChange)="onInfoChanged()" multiple="true" [(ngModel)]="selectedSongs" #select>
             <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}
             </ion-select-option>
           </ion-select>
