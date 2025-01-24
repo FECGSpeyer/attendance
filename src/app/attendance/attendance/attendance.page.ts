@@ -71,8 +71,8 @@ export class AttendancePage implements OnInit {
       .subscribe();
   }
 
-  userById(_: number, person: Person): string {
-    return String(person.id);
+  userById(_: number, person: PersonAttendance): string {
+    return person.id;
   }
 
   initializeAttObjects() {
@@ -166,12 +166,12 @@ export class AttendancePage implements OnInit {
     this.db.updatePersonAttendance(individual.id, { status: individual.status });
   }
 
-  getPlayerLengthByInstrument(players: Player[], player: Player): number {
-    return players.filter((p: Player) => p.instrument === player.instrument).length;
+  getPlayerLengthByInstrument(players: PersonAttendance[], player: PersonAttendance): number {
+    return players.filter((p: PersonAttendance) => p.instrument === player.instrument).length;
   }
 
-  getAttendedPlayers(players: Player[]): number {
-    return players.filter((p: Player) => p.isPresent).length;
+  getAttendedPlayers(players: PersonAttendance[]): number {
+    return players.filter((p: PersonAttendance) => p.status === AttendanceStatus.Late || p.status === AttendanceStatus.Present).length;
   }
 
   async addNote(player: PersonAttendance, slider: IonItemSliding) {

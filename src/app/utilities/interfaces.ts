@@ -147,6 +147,7 @@ export interface PersonAttendance {
     person?: Partial<Player>;
     attendance?: Partial<Attendance>;
     attended?: boolean;
+    firstOfInstrument?: boolean;
 }
 
 export interface Song {
