@@ -5,7 +5,7 @@ import { ActionSheetController, IonAccordionGroup, IonModal } from '@ionic/angul
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
-import { Attendance, PersonAttendance, Player, Song, Tenant, TenantUser } from 'src/app/utilities/interfaces';
+import { Attendance, LegacyPersonAttendance, Player, Song, Tenant, TenantUser } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -20,7 +20,7 @@ export class SignoutPage implements OnInit {
   public attendances: Attendance[] = [];
   public excusedAttendances: Attendance[] = [];
   public lateExcusedAttendances: Attendance[] = [];
-  public playerAttendance: PersonAttendance[] = [];
+  public playerAttendance: LegacyPersonAttendance[] = [];
   public selAttIds: number[] = [];
   public reason: string;
   public perc: number;
@@ -114,11 +114,11 @@ export class SignoutPage implements OnInit {
     }
 
     this.playerAttendance = await this.db.getPlayerAttendance(this.player.id);
-    const vergangene: any[] = this.playerAttendance.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
+    const vergangene: any[] = this.playerAttendance.filter((att: LegacyPersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
     if (vergangene.length) {
       this.lateCount = vergangene.filter((a) => a.text === "L").length;
       vergangene[0].showDivider = true;
-      this.perc = Math.round(vergangene.filter((att: PersonAttendance) =>
+      this.perc = Math.round(vergangene.filter((att: LegacyPersonAttendance) =>
         (att.attended as any) === AttendanceStatus.Present || (att.attended as any) === AttendanceStatus.Late || att.attended === true).length / vergangene.length * 100);
     }
   }
@@ -127,7 +127,7 @@ export class SignoutPage implements OnInit {
     this.db.logout();
   }
 
-  async presentActionSheetForChoice(attendance: PersonAttendance) {
+  async presentActionSheetForChoice(attendance: LegacyPersonAttendance) {
     this.reasonSelection = 'Krankheitsbedingt';
     let buttons = [
       {
@@ -216,15 +216,15 @@ export class SignoutPage implements OnInit {
     this.excuseModal.setCurrentBreakpoint(0.4);
   }
 
-  attHasPassed(att: PersonAttendance) {
+  attHasPassed(att: LegacyPersonAttendance) {
     return dayjs(att.date).isBefore(dayjs(), "day");
   }
 
-  attIsInFuture(att: PersonAttendance) {
+  attIsInFuture(att: LegacyPersonAttendance) {
     return dayjs(att.date).isAfter(dayjs(), "day");
   }
 
-  isAttToday(att: PersonAttendance) {
+  isAttToday(att: LegacyPersonAttendance) {
     return dayjs(att.date).isSame(dayjs(), "day");
   }
 

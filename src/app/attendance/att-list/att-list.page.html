@@ -132,7 +132,7 @@
           </ion-modal>
         </ion-item>
         <ion-item>
-          <ion-select label="Kategorie" [(ngModel)]="type">
+          <ion-select label="Kategorie" (ionChange)="onTypeChange()" [(ngModel)]="type">
             <ion-select-option value="uebung">Übung</ion-select-option>
             <ion-select-option value="vortrag">Vortrag</ion-select-option>
             <ion-select-option *ngIf="isChoir" value="hochzeit">Hochzeit</ion-select-option>
@@ -148,6 +148,10 @@
             <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}
             </ion-select-option>
           </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label>Neutral</ion-label>
+          <ion-toggle slot="end" [(ngModel)]="hasNeutral"></ion-toggle>
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>

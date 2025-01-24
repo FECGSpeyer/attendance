@@ -38,7 +38,7 @@ export class StatsPage implements OnInit {
     this.attendances = (await this.db.getAttendance()).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().add(1, "day"))).map((att: Attendance) => {
       return {
         ...att,
-        percentage: Utils.getPercentage(att.players),
+        percentage: Utils.getPercentageLegacy(att.players),
       };
     });
     this.players = await this.db.getPlayers(true);

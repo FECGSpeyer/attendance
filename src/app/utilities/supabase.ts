@@ -16,8 +16,10 @@ export type Database = {
           criticalPlayers: number[] | null
           date: string | null
           excused: string[]
+          hasNeutral: boolean
           id: number
           img: string | null
+          notes: string | null
           plan: Json | null
           playerNotes: Json | null
           players: Json | null
@@ -32,8 +34,10 @@ export type Database = {
           criticalPlayers?: number[] | null
           date?: string | null
           excused?: string[]
+          hasNeutral?: boolean
           id?: number
           img?: string | null
+          notes?: string | null
           plan?: Json | null
           playerNotes?: Json | null
           players?: Json | null
@@ -48,8 +52,10 @@ export type Database = {
           criticalPlayers?: number[] | null
           date?: string | null
           excused?: string[]
+          hasNeutral?: boolean
           id?: number
           img?: string | null
+          notes?: string | null
           plan?: Json | null
           playerNotes?: Json | null
           players?: Json | null
@@ -181,6 +187,7 @@ export type Database = {
           clefs: string[] | null
           created_at: string | null
           id: number
+          maingroup: boolean | null
           name: string | null
           notes: string | null
           range: string | null
@@ -191,6 +198,7 @@ export type Database = {
           clefs?: string[] | null
           created_at?: string | null
           id?: number
+          maingroup?: boolean | null
           name?: string | null
           notes?: string | null
           range?: string | null
@@ -201,6 +209,7 @@ export type Database = {
           clefs?: string[] | null
           created_at?: string | null
           id?: number
+          maingroup?: boolean | null
           name?: string | null
           notes?: string | null
           range?: string | null
@@ -248,6 +257,45 @@ export type Database = {
             columns: ["tenantId"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      person_attendances: {
+        Row: {
+          attendance_id: number
+          id: string
+          notes: string | null
+          person_id: number
+          status: number
+        }
+        Insert: {
+          attendance_id: number
+          id?: string
+          notes?: string | null
+          person_id: number
+          status: number
+        }
+        Update: {
+          attendance_id?: number
+          id?: string
+          notes?: string | null
+          person_id?: number
+          status?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "person_attendances_attendance_id_fkey"
+            columns: ["attendance_id"]
+            isOneToOne: false
+            referencedRelation: "attendance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_attendances_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "player"
             referencedColumns: ["id"]
           },
         ]
@@ -474,8 +522,8 @@ export type Database = {
       }
       tenants: {
         Row: {
+          betaProgram: boolean
           created_at: string
-          hasNeutralStatus: boolean | null
           id: number
           longName: string | null
           maintainTeachers: boolean | null
@@ -487,8 +535,8 @@ export type Database = {
           withExcuses: boolean | null
         }
         Insert: {
+          betaProgram?: boolean
           created_at?: string
-          hasNeutralStatus?: boolean | null
           id?: number
           longName?: string | null
           maintainTeachers?: boolean | null
@@ -500,8 +548,8 @@ export type Database = {
           withExcuses?: boolean | null
         }
         Update: {
+          betaProgram?: boolean
           created_at?: string
-          hasNeutralStatus?: boolean | null
           id?: number
           longName?: string | null
           maintainTeachers?: boolean | null
@@ -583,13 +631,6 @@ export type Database = {
             columns: ["tenantId"]
             isOneToOne: false
             referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "viewers_appid_fkey"
-            columns: ["appId"]
-            isOneToOne: false
-            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -690,4 +731,19 @@ export type Enums<
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof PublicSchema["CompositeTypes"]
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never

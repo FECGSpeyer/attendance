@@ -32,12 +32,14 @@ export class ListPage implements OnInit {
   public showNew = false;
   public showImg = true;
   public showExaminee = false;
+  public showAttendance = false;
   public showInstruments = false;
   public isArchiveModalOpen: boolean = false;
   public archiveDate: string = dayjs().format("YYYY-MM-DD");
   public archiveNote: string = "";
   public isAdmin: boolean = false;
   public isChoir: boolean = false;
+  public isBetaProgram: boolean = false;
   public sub: RealtimeChannel;
 
   constructor(
@@ -51,6 +53,7 @@ export class ListPage implements OnInit {
     effect(async () => {
       this.db.tenant();
       this.instruments = await this.db.getInstruments();
+      this.isBetaProgram = this.db.tenant().betaProgram;
       await this.getPlayers();
     });
   }
@@ -62,6 +65,7 @@ export class ListPage implements OnInit {
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.filterOpt = (await this.storage.get("filterOpt")) || "all";
     this.instruments = await this.db.getInstruments();
+    this.isBetaProgram = this.db.tenant().betaProgram;
     await this.getPlayers();
 
     this.sub = this.db.getSupabase()
@@ -81,7 +85,7 @@ export class ListPage implements OnInit {
   async getPlayers(): Promise<void> {
     this.players = await this.db.getPlayers();
     this.conductors = await this.db.getConductors();
-    this.players = Utils.getModifiedPlayers(this.players, this.instruments);
+    this.players = Utils.getModifiedPlayersLegacy(this.players, this.instruments);
     this.searchTerm = "";
     this.initializeItems();
     this.onFilterChanged();
@@ -228,7 +232,7 @@ export class ListPage implements OnInit {
       return;
     }
 
-    this.playersFiltered = Utils.getModifiedPlayers(this.players.filter((player: Player) => {
+    this.playersFiltered = Utils.getModifiedPlayersLegacy(this.players.filter((player: Player) => {
       if (this.filterOpt === 'criticals') {
         return player.isCritical;
       } else if (this.filterOpt === "new") {
@@ -272,6 +276,7 @@ export class ListPage implements OnInit {
     this.showNotes = this.viewOpts.includes("notes");
     this.showImg = this.viewOpts.includes("img");
     this.showInstruments = this.viewOpts.includes("instrument");
+    this.showAttendance = this.viewOpts.includes("attendance");
 
     this.storage.set("viewOpts", JSON.stringify(this.viewOpts));
   }
@@ -311,7 +316,7 @@ export class ListPage implements OnInit {
       }
 
       this.playersFiltered = this.filter();
-      this.playersFiltered = Utils.getModifiedPlayers(this.playersFiltered, this.instruments);
+      this.playersFiltered = Utils.getModifiedPlayersLegacy(this.playersFiltered, this.instruments);
     }
   }
 

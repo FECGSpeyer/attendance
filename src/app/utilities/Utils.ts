@@ -2,7 +2,7 @@ import { ToastController, LoadingController, Platform } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { environment } from "src/environments/environment";
 import { AttendanceStatus, DEFAULT_IMAGE, Role } from "./constants";
-import { Attendance, AttendanceItem, FieldSelection, Instrument, Player } from "./interfaces";
+import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, PersonAttendance, Player } from "./interfaces";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
@@ -12,7 +12,7 @@ export class Utils {
     return Math.floor(Math.random() * (999999999999 - 1000000000 + 1)) + 1000000000;
   }
 
-  public static getModifiedPlayers(players: Player[], instruments: Instrument[]): Player[] {
+  public static getModifiedPlayersLegacy(players: Player[], instruments: Instrument[]): Player[] {
     const instrumentsMap: { [props: number]: boolean } = {};
 
     return players.sort((a: Player, b: Player) => {
@@ -35,22 +35,91 @@ export class Utils {
         isNew = true;
       }
 
+      let percentage: number = 0;
+
+      if (player.person_attendances) {
+        percentage = Utils.getPercentage(player.person_attendances);
+        if (isNaN(percentage)) {
+          percentage = 0;
+        }
+      }
+
       return {
         ...player,
         firstOfInstrument,
         instrumentLength,
         isNew,
+        percentage,
         instrumentName: instruments.find((ins: Instrument) => ins.id === player.instrument).name,
         img: player.img || DEFAULT_IMAGE,
       }
     }).sort((a: Player, b: Player) => a.instrumentName.localeCompare(b.instrumentName));
   }
 
-  public static getPercentage(attItem: AttendanceItem): number {
+  public static getModifiedPlayers(persons: PersonAttendance[]): PersonAttendance[] {
+    const instrumentsMap: { [props: number]: boolean } = {};
+
+    return persons.sort((a: PersonAttendance, b: PersonAttendance) => {
+      if (a.instrument === b.instrument) {
+        return a.person.lastName.localeCompare(b.person.lastName);
+      }
+      return a.instrumentName.localeCompare(b.instrumentName);
+    }).map((player: PersonAttendance): PersonAttendance => {
+      let firstOfInstrument: boolean = false;
+      let instrumentLength: number = 0;
+      let isNew: boolean = false;
+
+      if (!instrumentsMap[player.instrument]) {
+        instrumentsMap[player.instrument] = true;
+        firstOfInstrument = true;
+        instrumentLength = persons.filter((p: PersonAttendance) => p.instrument === player.instrument).length;
+      }
+
+      if (dayjs().subtract(1, "month").isBefore(dayjs(player.person.joined))) {
+        isNew = true;
+      }
+
+      return {
+        ...player,
+        ...player.person,
+        firstOfInstrument,
+        instrumentLength,
+        isNew,
+        img: player.img || DEFAULT_IMAGE,
+      } as any
+    }).sort((a: PersonAttendance, b: PersonAttendance) => a.instrumentName.localeCompare(b.instrumentName));
+  }
+
+  public static getModifiedAttendanceData(attendance: Attendance): Attendance {
+    attendance.persons = attendance.persons.map((person: PersonAttendance): PersonAttendance => {
+      return {
+        ...person,
+        img: person.img || DEFAULT_IMAGE,
+        instrument: (person.person.instrument as any).id,
+        instrumentName: (person.person.instrument as any).name,
+      }
+    });
+
+    return attendance;
+  }
+
+  public static getPercentageLegacy(attItem: AttendanceItem): number {
     const overallCount: number = Object.keys(attItem).length;
     let presentCount: number = 0;
     for (const p in attItem) {
       if (attItem[p] === AttendanceStatus.Present || attItem[p] === AttendanceStatus.Late || (attItem[p] as any) === true) {
+        presentCount++;
+      }
+    }
+
+    return Math.round((presentCount / overallCount) * 100);
+  }
+
+  public static getPercentage(personAttendances: PersonAttendance[]): number {
+    const overallCount: number = personAttendances.length;
+    let presentCount: number = 0;
+    for (const p of personAttendances) {
+      if (p.status === AttendanceStatus.Present || p.status === AttendanceStatus.Late) {
         presentCount++;
       }
     }
@@ -207,7 +276,7 @@ export class Utils {
     return Math.abs(ageDiff.getUTCFullYear() - 1970);
   }
 
-  public static getAttText(att: Attendance, id: number): string {
+  public static getAttTextLegacy(att: Attendance, id: number): string {
     let attText: string = "";
 
     if (typeof att.players[String(id)] == 'boolean') {
@@ -226,5 +295,29 @@ export class Utils {
     }
 
     return attText
+  }
+
+  public static getAttText(att: PersonAttendance): string {
+    let attText: string = "";
+
+    switch (att.status) {
+      case AttendanceStatus.Neutral:
+        attText = 'N';
+        break;
+      case AttendanceStatus.Present:
+        attText = 'X';
+        break;
+      case AttendanceStatus.Excused:
+        attText = 'E';
+        break;
+      case AttendanceStatus.Late:
+        attText = 'L';
+        break;
+      case AttendanceStatus.Absent:
+        attText = 'A';
+        break;
+    }
+
+    return attText;
   }
 }

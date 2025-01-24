@@ -38,6 +38,7 @@ export class InstrumentPage implements OnInit {
       tuning: this.instrument.tuning,
       clefs: this.instrument.clefs,
       name: this.instrument.name,
+      maingroup: this.instrument.maingroup,
     }, this.instrument.id);
 
     Utils.showToast(`${this.instrument.name} wurde erfolgreich geupdated`);

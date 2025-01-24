@@ -3,13 +3,14 @@ import { AlertController, IonItemSliding, IonModal, ModalController } from '@ion
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { Attendance, Player, Song } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, Player, Song } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { AttPage } from '../att/att.page';
 import 'jspdf-autotable';
 import { AttendanceStatus, AttendanceType, Role } from 'src/app/utilities/constants';
 import { Person } from '../../utilities/interfaces';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { AttendancePage } from '../attendance/attendance.page';
 require('dayjs/locale/de');
 
 @Component({
@@ -31,8 +32,10 @@ export class AttListPage implements OnInit {
   public typeInfo: string;
   public perc: number = 0;
   private sub: RealtimeChannel;
+  private persSub: RealtimeChannel;
   public songs: Song[] = [];
   public selectedSongs: number[] = [];
+  public hasNeutral: boolean = false;
 
   constructor(
     private db: DbService,
@@ -71,17 +74,29 @@ export class AttListPage implements OnInit {
           }
         })
       .subscribe();
+
+    this.persSub = this.db.getSupabase()
+      .channel('att-changes').on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'person_attendances' },
+        (event: any) => {
+          if (event.new?.tenantId === this.db.tenant().id) {
+            this.getAttendance();
+          }
+        })
+      .subscribe();
   }
 
   async ngOnDestroy() {
     await this.sub.unsubscribe();
+    await this.persSub.unsubscribe();
   }
 
   async getAttendance(): Promise<void> {
-    const attendances: Attendance[] = (await this.db.getAttendance()).filter((att: Attendance) => Boolean(att.players)).map((att: Attendance): Attendance => {
+    const attendances: Attendance[] = (await this.db.getAttendance(false, this.db.tenant().betaProgram)).filter((att: Attendance) => Boolean(att.players) || this.db.tenant().betaProgram).map((att: Attendance): Attendance => {
       return {
         ...att,
-        percentage: Object.keys(att.players).length ? Utils.getPercentage(att.players) : undefined,
+        percentage: this.db.tenant().betaProgram ? Utils.getPercentage(att.persons) : Object.keys(att.players).length ? Utils.getPercentageLegacy(att.players) : undefined,
       }
     });
 
@@ -125,6 +140,10 @@ export class AttListPage implements OnInit {
   }
 
   async addAttendance(modal: IonModal): Promise<void> {
+    if (this.db.tenant().betaProgram) {
+      this.addPersonsToAttendance(modal);
+      return;
+    }
     const conductors: {} = {};
     const players: {} = {};
 
@@ -133,7 +152,7 @@ export class AttListPage implements OnInit {
     }
 
     for (const player of (await this.db.getPlayers()).filter((player: Player) => !player.paused)) {
-      if (this.type === 'vortrag' && this.db.tenant().hasNeutralStatus) {
+      if (this.hasNeutral) {
         players[player.id] = AttendanceStatus.Neutral;
       } else {
         players[player.id] = AttendanceStatus.Present;
@@ -152,6 +171,38 @@ export class AttListPage implements OnInit {
       conductors,
       excused: [],
     });
+
+    await modal.dismiss();
+
+    this.notes = '';
+    this.type = 'uebung';
+    this.date = new Date().toISOString();
+    this.typeInfo = '';
+    this.dateString = format(new Date(), 'dd.MM.yyyy');
+    this.selectedSongs = [];
+  }
+
+  async addPersonsToAttendance(modal: IonModal): Promise<void> {
+    const persons: PersonAttendance[] = [];
+
+    const attendance_id: number = await this.db.addAttendance({
+      date: this.date,
+      type: this.type,
+      notes: this.notes,
+      typeInfo: this.typeInfo,
+      songs: this.selectedSongs,
+    });
+
+    for (const player of (await this.db.getPlayers()).filter((player: Player) => !player.paused)) {
+      persons.push({
+        attendance_id,
+        person_id: player.id,
+        status: this.hasNeutral ? AttendanceStatus.Neutral : AttendanceStatus.Present,
+        notes: '',
+      });
+    }
+
+    await this.db.addPersonAttendances(persons);
 
     await modal.dismiss();
 
@@ -186,17 +237,33 @@ export class AttListPage implements OnInit {
     }
 
     this.sub?.unsubscribe();
+    this.persSub?.unsubscribe();
 
-    const modal: HTMLIonModalElement = await this.modalController.create({
-      component: AttPage,
-      componentProps: {
-        attendanceId: attendance.id,
-      }
-    });
+    let modal: HTMLIonModalElement;
+
+    if (this.db.tenant().betaProgram) {
+      modal = await this.modalController.create({
+        component: AttendancePage,
+        componentProps: {
+          attendanceId: attendance.id,
+        }
+      });
+    } else {
+      modal = await this.modalController.create({
+        component: AttPage,
+        componentProps: {
+          attendanceId: attendance.id,
+        }
+      });
+    }
 
     await modal.present();
     await modal.onWillDismiss();
     await this.getAttendance();
     this.subscribeOnAttChannel();
+  }
+
+  onTypeChange(): void {
+    this.hasNeutral = this.type !== 'uebung';
   }
 }

@@ -17,12 +17,15 @@
   <ion-list class="marginBottom">
     <ion-item (click)="openModal(instrument)" *ngFor="let instrument of instruments">
       <ion-label>
-        <h2 *ngIf="!isChoir">{{ instrument.name }} ({{ instrument.tuning }})</h2>
-        <h2 *ngIf="isChoir">{{ instrument.name }}</h2>
-        <h3 *ngIf="!isChoir">{{ instrument.clefText }}</h3>
+        @if (instrument.maingroup) {
+          <h2>{{ instrument.name }}</h2>
+        } @else {
+          <h2 *ngIf="!isChoir">{{ instrument.name }} ({{ instrument.tuning }})</h2>
+          <h2 *ngIf="isChoir">{{ instrument.name }}</h2>
+          <h3 *ngIf="!isChoir">{{ instrument.clefText }}</h3>
+        }
       </ion-label>
-      <ion-badge *ngIf="!isChoir" [color]="instrument.count ? '' : 'danger'">{{ instrument.count }} Spieler</ion-badge>
-      <ion-badge *ngIf="isChoir" [color]="instrument.count ? '' : 'danger'">{{ instrument.count }} Sänger</ion-badge>
+      <ion-badge [color]="instrument.count ? '' : 'danger'">{{ instrument.count }} Personen</ion-badge>
     </ion-item>
   </ion-list>
 

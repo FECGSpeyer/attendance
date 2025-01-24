@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Instrument, Meeting, Person, PersonAttendance, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer } from '../utilities/interfaces';
+import { Attendance, History, Instrument, Meeting, Person, LegacyPersonAttendance, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 import { Storage } from '@ionic/storage-angular';
@@ -19,6 +19,12 @@ const options: SupabaseClientOptions<any> = {
   }
 }
 const supabase = createClient<Database>(environment.apiUrl, environment.apiKey, options);
+
+const attendanceSelect: string = `*, persons:person_attendances(
+          *, person:person_id(
+            firstName, lastName, img, instrument(id, name), joined
+          )
+        )`;
 
 @Injectable({
   providedIn: 'root'
@@ -315,7 +321,7 @@ export class DbService {
 
     const { data, error } = await supabase
       .from('player')
-      .select('*')
+      .select('*, person_attendances(*)')
       .eq('tenantId', this.tenant().id)
       .is("left", null)
       .order("instrument")
@@ -514,9 +520,21 @@ export class DbService {
     const attData: Attendance[] = await this.getAttendancesByDate(joined);
 
     if (attData?.length) {
-      for (const att of attData) {
-        att.players[id] = AttendanceStatus.Present;
-        await this.updateAttendance({ players: att.players }, att.id);
+      if (this.tenant().betaProgram) {
+        const attToAdd: PersonAttendance[] = attData.map((att: Attendance) => {
+          return {
+            attendance_id: att.id,
+            person_id: id,
+            notes: "",
+            status: AttendanceStatus.Present,
+          }
+        });
+        await this.addPersonAttendances(attToAdd);
+      } else {
+        for (const att of attData) {
+          att.players[id] = AttendanceStatus.Present;
+          await this.updateAttendance({ players: att.players }, att.id);
+        }
       }
     }
   }
@@ -525,9 +543,21 @@ export class DbService {
     const attData: Attendance[] = await this.getUpcomingAttendances();
 
     if (attData?.length) {
-      for (const att of attData) {
-        att.players[id] = AttendanceStatus.Present;
-        await this.updateAttendance({ players: att.players }, att.id);
+      if (this.tenant().betaProgram) {
+        const attToAdd: PersonAttendance[] = attData.map((att: Attendance) => {
+          return {
+            attendance_id: att.id,
+            person_id: id,
+            notes: "",
+            status: AttendanceStatus.Present,
+          }
+        });
+        await this.addPersonAttendances(attToAdd);
+      } else {
+        for (const att of attData) {
+          att.players[id] = AttendanceStatus.Present;
+          await this.updateAttendance({ players: att.players }, att.id);
+        }
       }
     }
   }
@@ -536,9 +566,13 @@ export class DbService {
     const attData: Attendance[] = await this.getUpcomingAttendances();
 
     if (attData?.length) {
-      for (const att of attData) {
-        delete att.players[id];
-        await this.updateAttendance({ players: att.players }, att.id);
+      if (this.tenant().betaProgram) {
+        await this.deletePersonAttendances(attData.map((att: Attendance) => att.id), id);
+      } else {
+        for (const att of attData) {
+          delete att.players[id];
+          await this.updateAttendance({ players: att.players }, att.id);
+        }
       }
     }
   }
@@ -608,6 +642,8 @@ export class DbService {
     delete dataToUpdate.isPresent;
     delete dataToUpdate.text;
     delete dataToUpdate.attStatus;
+    delete dataToUpdate.person_attendances;
+    delete dataToUpdate.percentage;
 
     const { data, error } = await supabase
       .from('player')
@@ -791,6 +827,7 @@ export class DbService {
         tuning: "C",
         clefs: ["g"],
         tenantId: this.tenant().id,
+        maingroup: false,
       })
       .select();
 
@@ -816,29 +853,93 @@ export class DbService {
     return data;
   }
 
-  async addAttendance(attendance: Attendance): Promise<Attendance[]> {
-    const { data } = await supabase
+  async addAttendance(attendance: Attendance): Promise<number> {
+    const { data, error } = await supabase
       .from('attendance')
       .insert({
         ...attendance as any,
         tenantId: this.tenant().id,
       })
-      .select();
+      .select().single();
 
-    return data as any;
+    if (error) {
+      throw new Error("Fehler beim hinzufügen der Anwesenheit");
+    }
+
+    return data.id;
   }
 
-  async getAttendance(all: boolean = false): Promise<Attendance[]> {
-    const { data } = await supabase
-      .from('attendance')
-      .select('*')
-      .eq('tenantId', this.tenant().id)
-      .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
-      .order("date", {
-        ascending: false,
-      });
+  async addPersonAttendances(personAttendances: PersonAttendance[]): Promise<void> {
+    const { error } = await supabase
+      .from('person_attendances')
+      .insert(personAttendances);
 
-    return data.map((att: any): Attendance => {
+    if (error) {
+      throw new Error("");
+    }
+
+    return;
+  }
+
+  async deletePersonAttendances(ids: number[], personId: number): Promise<void> {
+    const { error } = await supabase
+      .from('person_attendances')
+      .delete()
+      .in('attendance_id', ids)
+      .eq('person_id', personId);
+
+    if (error) {
+      throw new Error("");
+    }
+
+    return;
+  }
+
+  async getAttendance(all: boolean = false, betaProgram: boolean = false): Promise<Attendance[]> {
+    let res: any[];
+    if (betaProgram) {
+      const { data } = await supabase
+        .from('attendance')
+        .select(`*, persons:person_attendances(
+          *, person:person_id(
+            firstName, lastName, img, instrument(id, name), joined
+          )
+        )`)
+        .eq('tenantId', this.tenant().id)
+        .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
+        .order("date", {
+          ascending: false,
+        });
+
+      res = data.map((att) => ({
+        ...att,
+        persons: att.persons.map((pa) => {
+          return {
+            ...pa,
+            firstName: (pa as any).person.firstName,
+            lastName: (pa as any).person.lastName,
+            img: (pa as any).person.img,
+            instrument: (pa as any).person.instrument.id,
+            instrumentName: (pa as any).person.instrument.name,
+            joined: (pa as any).person.joined,
+          };
+        })
+      }) as any
+      );
+    } else {
+      let { data } = await supabase
+        .from('attendance')
+        .select('*')
+        .eq('tenantId', this.tenant().id)
+        .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
+        .order("date", {
+          ascending: false,
+        });
+
+      res = data;
+    }
+
+    return res.map((att: any): Attendance => {
       if (att.plan) {
         att.plan.time = dayjs(att.plan.time).isValid() ? dayjs(att.plan.time).format("HH:mm") : att.plan.time;
       }
@@ -875,14 +976,14 @@ export class DbService {
   async getAttendanceById(id: number): Promise<Attendance> {
     const { data } = await supabase
       .from('attendance')
-      .select('*')
+      .select(this.tenant().betaProgram ? attendanceSelect : "*")
       .match({ id })
       .order("date", {
         ascending: false,
       })
       .single();
 
-    return data as any;
+    return Utils.getModifiedAttendanceData(data as any);
   }
 
   async updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance[]> {
@@ -902,7 +1003,7 @@ export class DbService {
       .match({ id });
   }
 
-  async getPlayerAttendance(id: number, all: boolean = false): Promise<PersonAttendance[]> {
+  async getPlayerAttendance(id: number, all: boolean = false): Promise<LegacyPersonAttendance[]> {
     const { data } = await supabase
       .from('attendance')
       .select('*')
@@ -913,8 +1014,8 @@ export class DbService {
         ascending: false,
       });
 
-    return data.map((att): PersonAttendance => {
-      let attText = Utils.getAttText(att as any, id);
+    return data.map((att): LegacyPersonAttendance => {
+      let attText = Utils.getAttTextLegacy(att as any, id);
 
       return {
         id: att.id,
@@ -928,7 +1029,40 @@ export class DbService {
     });
   }
 
-  async getConductorAttendance(id: number, all: boolean = false): Promise<PersonAttendance[]> {
+  async getPersonAttendances(id: number, all: boolean = false): Promise<PersonAttendance[]> {
+    const { data } = await supabase
+      .from('person_attendances')
+      .select('*, attendance:attendance_id(date, type, typeInfo, songs)')
+      .eq('person_id', id)
+      .gt("attendance.date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate());
+
+      return data.map((att): PersonAttendance => {
+        let attText = Utils.getAttText(att as any);
+
+        return {
+          id: att.id,
+          date: (att.attendance as any).date,
+          attended: attText === "L" || attText === "X",
+          title: (att.attendance as any).typeInfo ? (att.attendance as any).typeInfo : (att.attendance as any).type === "vortrag" ? "Vortrag" : "",
+          text: attText,
+          notes: att.notes,
+          songs: (att.attendance as any).songs,
+        } as any;
+      });
+  }
+
+  async updatePersonAttendance(id: string, att: Partial<PersonAttendance>): Promise<void> {
+    const { error } = await supabase
+      .from('person_attendances')
+      .update(att)
+      .match({ id });
+
+    if (error) {
+      throw new Error("Fehler beim updaten der Anwesenheit");
+    }
+  }
+
+  async getConductorAttendance(id: number, all: boolean = false): Promise<LegacyPersonAttendance[]> {
     const { data } = await supabase
       .from('attendance')
       .select('*')
@@ -939,7 +1073,7 @@ export class DbService {
         ascending: false,
       });
 
-    return data.map((att): PersonAttendance => {
+    return data.map((att): LegacyPersonAttendance => {
       let attText;
       if (typeof att.conductors[String(id)] == 'boolean') {
         if ((att.excused || []).includes(String(id))) {

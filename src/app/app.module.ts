@@ -15,6 +15,7 @@ import { StatsPageModule } from './stats/stats.module';
 import { ExportPageModule } from './export/export.module';
 import { PlanningPageModule } from './planning/planning.module';
 import { InstrumentPageModule } from './instruments/instrument/instrument.module';
+import { AttendancePageModule } from './attendance/attendance/attendance.module';
 
 @NgModule({
     declarations: [AppComponent],
@@ -31,6 +32,7 @@ import { InstrumentPageModule } from './instruments/instrument/instrument.module
         ExportPageModule,
         PlanningPageModule,
         InstrumentPageModule,
+        AttendancePageModule,
     ],
     providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
     bootstrap: [AppComponent]

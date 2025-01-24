@@ -33,7 +33,7 @@ export class ExportPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.players = Utils.getModifiedPlayers(await this.db.getPlayers(), await this.db.getInstruments());
+    this.players = Utils.getModifiedPlayersLegacy(await this.db.getPlayers(), await this.db.getInstruments());
     this.attendance = (await this.db.getAttendance()).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
   }
 
@@ -148,7 +148,7 @@ export class ExportPage implements OnInit {
 
       for (const att of attendance) {
         if (att.players[player.id] !== undefined) {
-          attInfo.push(Utils.getAttText(att, player.id));
+          attInfo.push(Utils.getAttTextLegacy(att, player.id));
         } else {
           attInfo.push("");
         }

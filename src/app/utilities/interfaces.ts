@@ -14,8 +14,8 @@ export interface Tenant {
     withExcuses: boolean;
     practiceStart: string;
     practiceEnd: string;
-    hasNeutralStatus: boolean;
     seasonStart: string;
+    betaProgram: boolean;
 }
 
 export interface TenantUser {
@@ -89,6 +89,8 @@ export interface Player extends Person {
     instruments?: string;
     tenantId: number;
     role?: Role;
+    person_attendances?: PersonAttendance[];
+    percentage?: number;
 }
 
 export interface Instrument {
@@ -102,6 +104,7 @@ export interface Instrument {
     clefs?: string[];
     clefText?: string;
     tenantId: number;
+    maingroup: boolean;
 }
 
 export interface AttendanceItem {
@@ -117,15 +120,33 @@ export interface Attendance {
     conductors?: any;
     percentage?: number;
     excused?: string[];
-    criticalPlayers: number[];
+    criticalPlayers?: number[];
     typeInfo: string;
     notes: string;
-    playerNotes: { [prop: number]: string };
+    playerNotes?: { [prop: number]: string };
     img?: string;
     plan?: any;
     lateExcused?: string[];
     songs?: number[];
     tenantId?: number;
+    persons?: PersonAttendance[];
+}
+
+export interface PersonAttendance {
+    id?: string;
+    attendance_id: number;
+    person_id: number;
+    status: AttendanceStatus;
+    notes: string;
+    firstName?: string;
+    lastName?: string;
+    img?: string;
+    instrument?: number;
+    instrumentName?: string;
+    joined?: string;
+    person?: Partial<Player>;
+    attendance?: Partial<Attendance>;
+    attended?: boolean;
 }
 
 export interface Song {
@@ -139,7 +160,7 @@ export interface Song {
     conductor?: string;
 }
 
-export interface PersonAttendance {
+export interface LegacyPersonAttendance {
     id: number;
     date: string;
     attended: boolean;

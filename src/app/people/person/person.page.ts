@@ -2,11 +2,11 @@ import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '
 import { ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
-import { Instrument, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
+import { Instrument, LegacyPersonAttendance, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
-import { AttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role } from 'src/app/utilities/constants';
+import { AttendanceStatus, AttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { SupabaseTable } from '../../utilities/constants';
 dayjs.extend(utc);
 
@@ -49,7 +49,8 @@ export class PersonPage implements OnInit, AfterViewInit {
   public playsSinceString: string = format(new Date(), 'dd.MM.yyyy');
   public joinedString: string = format(new Date(), 'dd.MM.yyyy');
   public max: string = new Date().toISOString();
-  public attendance: PersonAttendance[] = [];
+  public attendance: LegacyPersonAttendance[] = [];
+  public personAttendance: PersonAttendance[] = [];
   public history: any[] = [];
   public teachers: Teacher[] = [];
   public allTeachers: Teacher[] = [];
@@ -92,7 +93,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.player.criticalReasonText = this.player.criticalReason ? Utils.getPlayerHistoryTypeText(this.player.criticalReason) : "";
 
       if (this.isConductor) {
-        this.history = (await this.db.getConductorAttendance(this.player.id, this.hasLeft)).filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs())).map((att: PersonAttendance) => {
+        this.history = (await this.db.getConductorAttendance(this.player.id, this.hasLeft)).filter((att: LegacyPersonAttendance) => dayjs(att.date).isBefore(dayjs())).map((att: LegacyPersonAttendance) => {
           return {
             date: att.date,
             text: att.text,
@@ -102,7 +103,7 @@ export class PersonPage implements OnInit, AfterViewInit {
             attended: att.attended,
           };
         });
-        this.perc = Math.round(this.history.filter((att: PersonAttendance) => att.attended).length / this.history.length * 100);
+        this.perc = Math.round(this.history.filter((att: LegacyPersonAttendance) => att.attended).length / this.history.length * 100);
       } else {
         await this.getHistoryInfo();
       }
@@ -135,19 +136,33 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async getHistoryInfo(): Promise<void> {
-    this.attendance = (await this.db.getPlayerAttendance(this.player.id, this.hasLeft)).filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs()));
-    this.perc = Math.round(this.attendance.filter((att: PersonAttendance) => att.attended).length / this.attendance.length * 100);
-
-    this.lateCount = this.attendance.filter((a) => a.text === "L").length;
-    this.history = this.attendance.map((att: PersonAttendance) => {
-      return {
-        date: att.date,
-        text: att.text,
-        type: PlayerHistoryType.ATTENDANCE,
-        title: att.title,
-        notes: att.notes,
-      };
-    }).concat(this.existingPlayer.history.filter(async (his: PlayerHistoryEntry) => dayjs(await this.db.getCurrentAttDate()).isBefore(dayjs(his.date))).map((his: PlayerHistoryEntry) => { return { ...his, title: "", notes: "" }; })).sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    if (this.db.tenant().betaProgram) {
+      this.personAttendance = (await this.db.getPersonAttendances(this.player.id, this.hasLeft)).filter((att: PersonAttendance) => dayjs((att as any).date).isBefore(dayjs()));
+      this.perc = Math.round(this.personAttendance.filter((att: PersonAttendance) => att.attended).length / this.personAttendance.length * 100);
+      this.lateCount = this.personAttendance.filter((a) => a.status === AttendanceStatus.Late).length;
+      this.history = this.personAttendance.map((att: PersonAttendance) => {
+        return {
+          date: (att as any).date,
+          text: (att as any).text,
+          type: PlayerHistoryType.ATTENDANCE,
+          title: (att as any).title,
+          notes: att.notes,
+        };
+      }).concat(this.existingPlayer.history.filter(async (his: PlayerHistoryEntry) => dayjs(await this.db.getCurrentAttDate()).isBefore(dayjs(his.date))).map((his: PlayerHistoryEntry) => { return { ...his, title: "", notes: "" }; })).sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    } else {
+      this.attendance = (await this.db.getPlayerAttendance(this.player.id, this.hasLeft)).filter((att: LegacyPersonAttendance) => dayjs(att.date).isBefore(dayjs()));
+      this.perc = Math.round(this.attendance.filter((att: LegacyPersonAttendance) => att.attended).length / this.attendance.length * 100);
+      this.lateCount = this.attendance.filter((a) => a.text === "L").length;
+      this.history = this.attendance.map((att: LegacyPersonAttendance) => {
+        return {
+          date: att.date,
+          text: att.text,
+          type: PlayerHistoryType.ATTENDANCE,
+          title: att.title,
+          notes: att.notes,
+        };
+      }).concat(this.existingPlayer.history.filter(async (his: PlayerHistoryEntry) => dayjs(await this.db.getCurrentAttDate()).isBefore(dayjs(his.date))).map((his: PlayerHistoryEntry) => { return { ...his, title: "", notes: "" }; })).sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }
   }
 
   onInstrumentChange(byUser = true) {
@@ -395,7 +410,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
   }
 
-  getAttText(text: string) {
+  getAttTextLegacy(text: string) {
     return text === 'X' ? '✓' :
       text === 'L' ? 'L' :
         (this.isConductor || text === 'E') ? 'E' : 'A';
