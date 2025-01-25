@@ -31,7 +31,7 @@
     "@capacitor/keyboard": "^4.0.0",
     "@capacitor/network": "^4.1.0",
     "@capacitor/status-bar": "^4.0.0",
-    "@ionic/angular": "^8.4.0",
+    "@ionic/angular": "^8.4.2",
     "@ionic/storage-angular": "^4.0.0",
     "@supabase/supabase-js": "^2.46.1",
     "@vercel/analytics": "^1.4.1",
@@ -77,14 +77,9 @@
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "^1.5.0",
     "protractor": "~7.0.0",
-    "supabase": "^1.157.2",
+    "supabase": "^2.6.8",
     "ts-node": "~8.3.0",
     "typescript": "~5.5.4"
-  },
-  "overrides": {
-    "@supabase/realtime-js": {
-      "@types/ws": "8.5.4"
-    }
   },
   "description": "An Ionic project"
 }
