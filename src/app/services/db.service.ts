@@ -983,7 +983,7 @@ export class DbService {
       })
       .single();
 
-    return Utils.getModifiedAttendanceData(data as any);
+    return data as any;
   }
 
   async updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance[]> {
