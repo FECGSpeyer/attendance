@@ -21,7 +21,6 @@ export class AttendancePage implements OnInit {
   public excused: Set<string> = new Set();
   public withExcuses: boolean;
   public isOnline = true;
-  public playerNotes: { [prop: number]: string } = {};
   public attendance: Attendance;
   private sub: RealtimeChannel;
   private personAttSub: RealtimeChannel;
@@ -181,7 +180,7 @@ export class AttendancePage implements OnInit {
       inputs: [{
         type: "textarea",
         placeholder: "Notiz eingeben...",
-        value: this.playerNotes[player.id],
+        value: player.notes,
         name: "note",
       }],
       buttons: [{
