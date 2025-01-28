@@ -983,7 +983,7 @@ export class DbService {
       })
       .single();
 
-    return data as any;
+    return this.tenant().betaProgram ? Utils.getModifiedAttendanceData(data as any) : data as any;
   }
 
   async updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance[]> {
