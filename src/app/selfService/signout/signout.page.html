@@ -34,7 +34,7 @@
                 }}
               </ion-title>
               <ion-buttons slot="end">
-                <ion-button *ngIf="attendances.length" [disabled]="!(reason && reason.length > 4)" (click)="signout()">Bestätigen</ion-button>
+                <ion-button [disabled]="!(reason && reason.length > 4)" (click)="signout()">Bestätigen</ion-button>
               </ion-buttons>
             </ion-toolbar>
           </ion-header>
