@@ -44,10 +44,10 @@
             <ion-list #ReasonIonSelect>
               <ion-item class="margin-auto">
                 <ion-select [(ngModel)]="reasonSelection" (ionChange)="onReasonSelect($event)" class="margin-auto" aria-label="reason-ion-select" interface="action-sheet" placeholder="Grund auswählen">
-                  <ion-select-option *ngIf="!attIsToday" value="Krankheitsbedingt">Krankheitsbedingt</ion-select-option>
-                  <ion-select-option *ngIf="!attIsToday" value="Urlaubsbedingt">Urlaubsbedingt</ion-select-option>
-                  <ion-select-option *ngIf="!attIsToday" value="Arbeitsbedingt">Arbeitsbedingt</ion-select-option>
-                  <ion-select-option *ngIf="!attIsToday" value="Familienbedingt">Familienbedingt</ion-select-option>
+                  <ion-select-option value="Krankheitsbedingt">Krankheitsbedingt</ion-select-option>
+                  <ion-select-option value="Urlaubsbedingt">Urlaubsbedingt</ion-select-option>
+                  <ion-select-option value="Arbeitsbedingt">Arbeitsbedingt</ion-select-option>
+                  <ion-select-option value="Familienbedingt">Familienbedingt</ion-select-option>
                   <ion-select-option value="Sonstiger Grund">Sonstiger Grund (Text)</ion-select-option>
                 </ion-select>
               </ion-item>
