@@ -176,11 +176,11 @@ export class SignoutPage implements OnInit {
       },
     ];
 
-    if ((attendance.attended as any) === AttendanceStatus.Present) {
+    if (attendance.text === "X") {
       buttons = buttons.filter((btn) => btn.text !== 'Anmelden');
-    } else if ((attendance.attended as any) === AttendanceStatus.Excused) {
+    } else if (attendance.text === "E") {
       buttons = buttons.filter((btn) => btn.text !== 'Abmelden');
-    } else if ((attendance.attended as any) === AttendanceStatus.Late) {
+    } else if (attendance.text === "L") {
       buttons = buttons.filter((btn) => btn.text !== 'Verspätung eintragen');
     }
     this.selAttIds = [attendance.id];
