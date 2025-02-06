@@ -243,7 +243,7 @@ export class SignoutPage implements OnInit {
   }
 
   isAttToday(att: LegacyPersonAttendance) {
-    return !this.attHasPassed(att);
+    return dayjs(att.date).isSame(dayjs(), "day");
   }
 
   getReadableDate(date: string): string {
