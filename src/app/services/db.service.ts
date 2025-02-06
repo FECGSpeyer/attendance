@@ -107,6 +107,20 @@ export class DbService {
     return data;
   }
 
+  async getTenantUserById(id: string): Promise<TenantUser> {
+    const { data, error } = await supabase
+      .from('tenantUsers')
+      .select('*')
+      .match({ tenantId: this.tenant().id, userId: id })
+      .single();
+
+    if (error) {
+      throw new Error("Fehler beim Laden des Mandanten");
+    }
+
+    return data;
+  }
+
   async logout() {
     await supabase.auth.signOut();
     this.tenant.set(undefined);
@@ -189,6 +203,19 @@ export class DbService {
     }
   }
 
+  async updateTenantUser(updates: Partial<TenantUser>, userId: string): Promise<void> {
+    const { data, error } = await supabase
+      .from('tenantUsers')
+      .update(updates)
+      .match({ tenantId: this.tenant().id, userId: userId });
+
+    if (error) {
+      throw new Error('Fehler beim Updaten des Benutzers');
+    }
+
+    return data;
+  }
+
   async getAppIdByEmail(email: string): Promise<string | undefined> {
     const { data, error } = await supabase
       .from('tenantUsers')
@@ -208,7 +235,7 @@ export class DbService {
 
   async createAccount(user: Player, table: SupabaseTable = SupabaseTable.PLAYER) {
     try {
-      const appId: string = await this.registerUser(user.email as string, user.firstName, table === SupabaseTable.CONDUCTORS ? Role.CONDUCTOR : Role.PLAYER);
+      const appId: string = await this.registerUser(user.email as string, user.firstName, table === SupabaseTable.CONDUCTORS ? Role.CONDUCTOR : user.role ?? Role.PLAYER);
 
       const { data, error: updateError } = await supabase
         .from(table)
@@ -339,7 +366,7 @@ export class DbService {
         ...player,
         history: player.history as any,
       }
-    });
+    }) as any;
   }
 
   async resetPassword(email: string) {
@@ -644,6 +671,12 @@ export class DbService {
     delete dataToUpdate.attStatus;
     delete dataToUpdate.person_attendances;
     delete dataToUpdate.percentage;
+
+    if (dataToUpdate.role && player.appId) {
+      await this.updateTenantUser({ role: dataToUpdate.role }, player.appId);
+    }
+
+    delete dataToUpdate.role;
 
     const { data, error } = await supabase
       .from('player')

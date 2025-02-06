@@ -105,12 +105,23 @@ export class PersonPage implements OnInit, AfterViewInit {
         });
         this.perc = Math.round(this.history.filter((att: LegacyPersonAttendance) => att.attended).length / this.history.length * 100);
       } else {
+        this.player.role = Role.PLAYER;
+        if (this.player.email) {
+          if (this.player.appId) {
+            const tenantUser = await this.db.getTenantUserById(this.player.appId);
+            this.player.role = tenantUser.role ?? Role.PLAYER;
+          }
+        }
         await this.getHistoryInfo();
       }
     } else {
       this.player = { ...this.newPlayer };
       this.player.tenantId = this.db.tenant().id;
       this.player.instrument = this.instruments[0].id;
+
+      if (!this.isConductor) {
+        this.player.role = Role.PLAYER;
+      }
     }
 
     this.onInstrumentChange(false);
@@ -242,11 +253,15 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     if (this.isConductor) {
-      await this.db.updateConductor(this.player);
-      this.modalController.dismiss({
-        conductor: true,
-      });
-      Utils.showToast("Die Dirigentendaten wurden erfolgreich aktualisiert.", "success");
+      try {
+        await this.db.updateConductor(this.player);
+        this.modalController.dismiss({
+          conductor: true,
+        });
+        Utils.showToast("Die Dirigentendaten wurden erfolgreich aktualisiert.", "success");
+      } catch (error) {
+        Utils.showToast("Fehler beim aktualisieren des Dirigenten", "danger");
+      }
     } else {
       if ((this.existingPlayer.notes || "") !== this.player.notes) {
         history.push({
@@ -256,13 +271,17 @@ export class PersonPage implements OnInit, AfterViewInit {
         });
       }
 
-      await this.db.updatePlayer({
-        ...this.player,
-        isCritical: this.solved ? false : this.player.isCritical,
-        lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
-      });
-      this.modalController.dismiss();
-      Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
+      try {
+        await this.db.updatePlayer({
+          ...this.player,
+          isCritical: this.solved ? false : this.player.isCritical,
+          lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
+        });
+        this.modalController.dismiss();
+        Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
+      } catch (error) {
+        Utils.showToast("Fehler beim aktualisieren des Spielers", "danger");
+      }
     }
   }
 

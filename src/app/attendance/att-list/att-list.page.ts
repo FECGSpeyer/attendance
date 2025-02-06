@@ -65,7 +65,7 @@ export class AttListPage implements OnInit {
 
   subscribeOnAttChannel() {
     this.sub = this.db.getSupabase()
-      .channel('att-changes').on(
+      .channel('att-changes-legacy').on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'attendance' },
         (event: any) => {

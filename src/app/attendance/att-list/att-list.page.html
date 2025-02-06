@@ -144,7 +144,7 @@
           <ion-textarea [(ngModel)]="typeInfo"></ion-textarea>
         </ion-item>
         <ion-item *ngIf="type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit'">
-          <ion-select label="Werk(e)" multiple="true" [(ngModel)]="selectedSongs" #select>
+          <ion-select [label]="isChoir ? 'Lieder' : 'Werke'" multiple="true" [(ngModel)]="selectedSongs" #select>
             <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}
             </ion-select-option>
           </ion-select>
