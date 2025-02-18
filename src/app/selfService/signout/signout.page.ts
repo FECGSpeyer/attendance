@@ -217,25 +217,7 @@ export class SignoutPage implements OnInit {
   }
 
   attHasPassed(att: LegacyPersonAttendance) {
-    return dayjs(att.date).isBefore(dayjs(), "day") || (dayjs(att.date).isSame(dayjs(), "day") && dayjs().hour() >= this.getHour(att.title ?? 'Übung') && dayjs().minute() >= this.getMinute(att.title ?? 'Übung'));
-  }
-
-  getHour(title: string): number {
-    if (title.includes("Übung")) {
-      return 19;
-    } else if (title.includes("Hochzeit")) {
-      return 8;
-    } else {
-      return 9;
-    }
-  }
-
-  getMinute(title: string): number {
-    if (!title.includes("Übung")) {
-      return 30;
-    }
-
-    return 0;
+    return dayjs(att.date).isBefore(dayjs(), "day");
   }
 
   attIsInFuture(att: LegacyPersonAttendance) {
