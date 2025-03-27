@@ -202,10 +202,47 @@ export class Utils {
     let currentTime = startingTime;
 
     for (const field of props.fields) {
+      let fieldName = field.name;
+
+      // transcribe fieldName from cyrillic to latin
+      fieldName = fieldName.replace(/а/g, 'a');
+      fieldName = fieldName.replace(/б/g, 'b');
+      fieldName = fieldName.replace(/в/g, 'v');
+      fieldName = fieldName.replace(/г/g, 'g');
+      fieldName = fieldName.replace(/д/g, 'd');
+      fieldName = fieldName.replace(/е/g, 'e');
+      fieldName = fieldName.replace(/ё/g, 'e');
+      fieldName = fieldName.replace(/ж/g, 'zh');
+      fieldName = fieldName.replace(/з/g, 'z');
+      fieldName = fieldName.replace(/и/g, 'i');
+      fieldName = fieldName.replace(/й/g, 'i');
+      fieldName = fieldName.replace(/к/g, 'k');
+      fieldName = fieldName.replace(/л/g, 'l');
+      fieldName = fieldName.replace(/м/g, 'm');
+      fieldName = fieldName.replace(/н/g, 'n');
+      fieldName = fieldName.replace(/о/g, 'o');
+      fieldName = fieldName.replace(/п/g, 'p');
+      fieldName = fieldName.replace(/р/g, 'r');
+      fieldName = fieldName.replace(/с/g, 's');
+      fieldName = fieldName.replace(/т/g, 't');
+      fieldName = fieldName.replace(/у/g, 'u');
+      fieldName = fieldName.replace(/ф/g, 'f');
+      fieldName = fieldName.replace(/х/g, 'kh');
+      fieldName = fieldName.replace(/ц/g, 'ts');
+      fieldName = fieldName.replace(/ч/g, 'ch');
+      fieldName = fieldName.replace(/ш/g, 'sh');
+      fieldName = fieldName.replace(/щ/g, 'shch');
+      fieldName = fieldName.replace(/ъ/g, '');
+      fieldName = fieldName.replace(/ы/g, 'y');
+      fieldName = fieldName.replace(/ь/g, '');
+      fieldName = fieldName.replace(/э/g, 'e');
+      fieldName = fieldName.replace(/ю/g, 'yu');
+      fieldName = fieldName.replace(/я/g, 'ya');
+
       if (hasConductors) {
         data.push([
           { content: row.toString(), styles: { fontSize: 14 } },
-          { content: field.name, styles: { fontSize: 14 } },
+          { content: fieldName, styles: { fontSize: 14 } },
           { content: field.conductor || "", styles: { fontSize: 14 } },
           { content: `${field.time} min`, styles: { fontSize: 14 } },
           { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
@@ -213,7 +250,7 @@ export class Utils {
       } else {
         data.push([
           { content: row.toString(), styles: { fontSize: 14 } },
-          { content: field.name, styles: { fontSize: 14 } },
+          { content: fieldName, styles: { fontSize: 14 } },
           { content: `${field.time} min`, styles: { fontSize: 14 } },
           { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
         ]);
