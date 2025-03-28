@@ -7,7 +7,7 @@ import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
 import { Attendance, History, Instrument, Meeting, Person, LegacyPersonAttendance, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance } from '../utilities/interfaces';
-// import { Database } from '../utilities/supabase';
+import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 import { Storage } from '@ionic/storage-angular';
 
@@ -18,7 +18,7 @@ const options: SupabaseClientOptions<any> = {
     detectSessionInUrl: true,
   }
 }
-const supabase = createClient<any>(environment.apiUrl, environment.apiKey, options);
+const supabase = createClient<Database>(environment.apiUrl, environment.apiKey, options);
 
 const attendanceSelect: string = `*, persons:person_attendances(
           *, person:person_id(
@@ -627,10 +627,14 @@ export class DbService {
   }
 
   async removePlayerFromAttendances(id: number) {
+    // @ts-ignore
     const { data } = await supabase
+      // @ts-ignore
       .from('attendance')
       .select('*')
+      // @ts-ignore
       .eq('tenantId', this.tenant().id)
+      // @ts-ignore
       .neq(`players->>"${id}"` as any, null);
 
     if (data?.length) {
