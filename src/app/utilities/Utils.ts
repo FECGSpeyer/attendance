@@ -204,7 +204,39 @@ export class Utils {
     for (const field of props.fields) {
       let fieldName = field.name;
 
-      // transcribe fieldName from cyrillic to latin
+      fieldName = fieldName.replace(/А/g, 'A');
+      fieldName = fieldName.replace(/Б/g, 'B');
+      fieldName = fieldName.replace(/В/g, 'V');
+      fieldName = fieldName.replace(/Г/g, 'G');
+      fieldName = fieldName.replace(/Д/g, 'D');
+      fieldName = fieldName.replace(/Е/g, 'E');
+      fieldName = fieldName.replace(/Ё/g, 'E');
+      fieldName = fieldName.replace(/Ж/g, 'Zh');
+      fieldName = fieldName.replace(/З/g, 'Z');
+      fieldName = fieldName.replace(/И/g, 'I');
+      fieldName = fieldName.replace(/Й/g, 'I');
+      fieldName = fieldName.replace(/К/g, 'K');
+      fieldName = fieldName.replace(/Л/g, 'L');
+      fieldName = fieldName.replace(/М/g, 'M');
+      fieldName = fieldName.replace(/Н/g, 'N');
+      fieldName = fieldName.replace(/О/g, 'O');
+      fieldName = fieldName.replace(/П/g, 'P');
+      fieldName = fieldName.replace(/Р/g, 'R');
+      fieldName = fieldName.replace(/С/g, 'S');
+      fieldName = fieldName.replace(/Т/g, 'T');
+      fieldName = fieldName.replace(/У/g, 'U');
+      fieldName = fieldName.replace(/Ф/g, 'F');
+      fieldName = fieldName.replace(/Х/g, 'Kh');
+      fieldName = fieldName.replace(/Ц/g, 'Ts');
+      fieldName = fieldName.replace(/Ч/g, 'Ch');
+      fieldName = fieldName.replace(/Ш/g, 'Sh');
+      fieldName = fieldName.replace(/Щ/g, 'Shch');
+      fieldName = fieldName.replace(/Ъ/g, '');
+      fieldName = fieldName.replace(/Ы/g, 'Y');
+      fieldName = fieldName.replace(/Ь/g, '');
+      fieldName = fieldName.replace(/Э/g, 'E');
+      fieldName = fieldName.replace(/Ю/g, 'Yu');
+      fieldName = fieldName.replace(/Я/g, 'Ya');
       fieldName = fieldName.replace(/а/g, 'a');
       fieldName = fieldName.replace(/б/g, 'b');
       fieldName = fieldName.replace(/в/g, 'v');
