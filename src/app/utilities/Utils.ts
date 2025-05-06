@@ -270,6 +270,13 @@ export class Utils {
       fieldName = fieldName.replace(/э/g, 'e');
       fieldName = fieldName.replace(/ю/g, 'yu');
       fieldName = fieldName.replace(/я/g, 'ya');
+      fieldName = fieldName.replace(/Ä/g, 'Ae');
+      fieldName = fieldName.replace(/Ö/g, 'Oe');
+      fieldName = fieldName.replace(/Ü/g, 'Ue');
+      fieldName = fieldName.replace(/ä/g, 'ae');
+      fieldName = fieldName.replace(/ö/g, 'oe');
+      fieldName = fieldName.replace(/ü/g, 'ue');
+      fieldName = fieldName.replace(/ß/g, 'ss');
 
       if (hasConductors) {
         data.push([

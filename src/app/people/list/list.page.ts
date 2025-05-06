@@ -212,6 +212,24 @@ export class ListPage implements OnInit {
       return;
     }
 
+    if (this.sortOpt === "nextBirthday") {
+      // Sort by next birthday but ignore the year
+      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => {
+        const aBirthday = new Date(a.birthday);
+        const bBirthday = new Date(b.birthday);
+        const aNextBirthday = new Date(new Date().getFullYear(), aBirthday.getMonth(), aBirthday.getDate());
+        const bNextBirthday = new Date(new Date().getFullYear(), bBirthday.getMonth(), bBirthday.getDate());
+        if (aNextBirthday < new Date()) {
+          aNextBirthday.setFullYear(aNextBirthday.getFullYear() + 1);
+        }
+        if (bNextBirthday < new Date()) {
+          bNextBirthday.setFullYear(bNextBirthday.getFullYear() + 1);
+        }
+        return aNextBirthday.getTime() - bNextBirthday.getTime();
+      });
+      return;
+    }
+
     if (this.sortOpt === "test") {
       this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => (a.testResult ? Number(a.testResult.replace("%", "")) : 0) - (b.testResult ? Number(b.testResult.replace("%", "")) : 0)).reverse()
       return;

@@ -1,6 +1,6 @@
 {
   "name": "attendix",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "author": "Matthias Eckstaedt",
   "homepage": "https://attendix.de/",
   "scripts": {
@@ -31,7 +31,7 @@
     "@capacitor/keyboard": "^4.0.0",
     "@capacitor/network": "^4.1.0",
     "@capacitor/status-bar": "^4.0.0",
-    "@ionic/angular": "^8.4.0",
+    "@ionic/angular": "^8.5.0",
     "@ionic/storage-angular": "^4.0.0",
     "@supabase/supabase-js": "^2.46.1",
     "@vercel/analytics": "^1.4.1",
