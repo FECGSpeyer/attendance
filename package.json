@@ -77,14 +77,9 @@
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "^1.5.0",
     "protractor": "~7.0.0",
-    "supabase": "^1.157.2",
+    "supabase": "^2.6.8",
     "ts-node": "~8.3.0",
     "typescript": "~5.5.4"
-  },
-  "overrides": {
-    "@supabase/realtime-js": {
-      "@types/ws": "8.5.4"
-    }
   },
   "description": "An Ionic project"
 }
