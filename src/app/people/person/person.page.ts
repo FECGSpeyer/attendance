@@ -44,6 +44,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   };
   public readonly PLAYER: Role = Role.PLAYER;
   public readonly HELPER: Role = Role.HELPER;
+  public readonly RESPONSIBLE: Role = Role.RESPONSIBLE;
   public player: Player;
   public birthdayString: string = format(new Date(), 'dd.MM.yyyy');
   public playsSinceString: string = format(new Date(), 'dd.MM.yyyy');
@@ -64,6 +65,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public isChoir: boolean = false;
   public lateCount: number = 0;
   public showTeachers: boolean = false;
+  public isMainGroup: boolean = false;
 
   constructor(
     private db: DbService,
@@ -77,7 +79,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.maintainTeachers = this.db.tenant().maintainTeachers;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
-    this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.CONDUCTOR;
+    this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.hasChanges = false;
     this.showTeachers = this.db.tenant().maintainTeachers;
     if (this.db.tenant().maintainTeachers) {
@@ -181,6 +183,13 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.onChange();
     }
     this.teachers = this.allTeachers.filter((t: Teacher) => t.instruments.includes(this.player.instrument));
+    if (this.instruments.find((i: Instrument) => i.id === this.player.instrument).maingroup) {
+      this.player.role = Role.RESPONSIBLE;
+      this.isMainGroup = true;
+    } else {
+      this.player.role = Role.NONE;
+      this.isMainGroup = false;
+    }
   }
 
   formatDate(value: string) {

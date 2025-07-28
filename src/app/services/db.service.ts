@@ -235,7 +235,7 @@ export class DbService {
 
   async createAccount(user: Player, table: SupabaseTable = SupabaseTable.PLAYER) {
     try {
-      const appId: string = await this.registerUser(user.email as string, user.firstName, table === SupabaseTable.CONDUCTORS ? Role.CONDUCTOR : user.role ?? Role.PLAYER);
+      const appId: string = await this.registerUser(user.email as string, user.firstName, table === SupabaseTable.CONDUCTORS ? Role.RESPONSIBLE : user.role ?? Role.PLAYER);
 
       const { data, error: updateError } = await supabase
         .from(table)
@@ -491,7 +491,7 @@ export class DbService {
     delete dataToCreate.range;
 
     if (dataToCreate.email && register) {
-      const appId: string = await this.registerUser(dataToCreate.email, dataToCreate.firstName, Role.CONDUCTOR);
+      const appId: string = await this.registerUser(dataToCreate.email, dataToCreate.firstName, Role.RESPONSIBLE);
       dataToCreate.appId = appId;
     }
 

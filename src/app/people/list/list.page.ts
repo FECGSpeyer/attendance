@@ -60,7 +60,7 @@ export class ListPage implements OnInit {
 
   async ngOnInit() {
     this.viewOpts = JSON.parse(await this.storage.get("viewOpts") || JSON.stringify(['instrument', 'leader', 'notes', 'critical', 'paused']));
-    this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.CONDUCTOR;
+    this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.filterOpt = (await this.storage.get("filterOpt")) || "all";
@@ -94,16 +94,17 @@ export class ListPage implements OnInit {
   async openCreateSheet() {
     const actionSheet = await this.actionSheetController.create({
       buttons: [{
-        text: this.isChoir ? 'Sänger hinzufügen' : 'Spieler hinzufügen',
+        text: this.isBetaProgram ? "Person hinzufügen" : this.isChoir ? 'Sänger hinzufügen' : 'Spieler hinzufügen',
         handler: () => {
           this.openModal(undefined, false);
         }
-      }, {
+      },
+      ...this.isBetaProgram ? [] : [{
         text: 'Dirigent hinzufügen',
         handler: () => {
           this.openModal(undefined, true);
         }
-      }, {
+      }], {
         text: 'Beobachter hinzufügen',
         handler: () => {
           this.openViewerAlert();

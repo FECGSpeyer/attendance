@@ -24,7 +24,7 @@ export class InstrumentListPage implements OnInit {
 
   async ngOnInit() {
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
-    this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.CONDUCTOR;
+    this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     await this.getInstruments();
   }
 

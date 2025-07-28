@@ -18,11 +18,11 @@ export class TabsPage {
   }
 
   initialize() {
-    this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.VIEWER || this.db.tenantUser().role === Role.CONDUCTOR;
+    this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.VIEWER || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
 
     effect(() => {
-      this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.VIEWER || this.db.tenantUser().role === Role.CONDUCTOR;
+      this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.VIEWER || this.db.tenantUser().role === Role.RESPONSIBLE;
       this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
     });
   }

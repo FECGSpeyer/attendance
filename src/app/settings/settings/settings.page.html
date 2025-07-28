@@ -74,12 +74,7 @@
         Besprechungen
       </ion-label>
     </ion-item>
-    <ion-item *ngIf="db.tenant().type === 'orchestra'" routerLink="instruments" button>
-      <ion-label>
-        Instrumente
-      </ion-label>
-    </ion-item>
-    <ion-item *ngIf="db.tenant().type !== 'orchestra'" routerLink="instruments" button>
+    <ion-item routerLink="instruments" button>
       <ion-label>
         Gruppen
       </ion-label>

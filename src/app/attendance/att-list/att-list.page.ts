@@ -54,7 +54,7 @@ export class AttListPage implements OnInit {
 
   async ngOnInit() {
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
-    this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.CONDUCTOR;
+    this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isHelper = this.db.tenantUser().role === Role.HELPER;
     await this.getAttendance();
 

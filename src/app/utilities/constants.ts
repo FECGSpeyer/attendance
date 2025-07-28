@@ -14,7 +14,7 @@ export enum Role {
     PLAYER = 2,
     VIEWER = 3,
     HELPER = 4,
-    CONDUCTOR = 5,
+    RESPONSIBLE = 5,
     NONE = 99,
 };
 

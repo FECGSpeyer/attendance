@@ -1,15 +1,13 @@
 <ion-header translucent="true">
   <ion-toolbar>
-    <ion-title *ngIf="!isChoir">Spieler ({{ playersFiltered?.length }})</ion-title>
-    <ion-title *ngIf="isChoir">Sänger ({{ playersFiltered?.length }})</ion-title>
+    <ion-title>Personen ({{ playersFiltered?.length }})</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content fullscreen="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title *ngIf="isChoir" size="large">Sänger ({{ playersFiltered?.length }})</ion-title>
-      <ion-title *ngIf="!isChoir" size="large">Spieler ({{ playersFiltered?.length }})</ion-title>
+      <ion-title size="large">Personen ({{ playersFiltered?.length }})</ion-title>
     </ion-toolbar>
   </ion-header>
   <div class="flex">
