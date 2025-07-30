@@ -466,6 +466,23 @@ export class DbService {
   }
 
   async getConductors(all: boolean = false): Promise<Person[]> {
+    if (this.tenant().betaProgram) {
+      const mainGroupId = (await this.getMainGroup())?.id;
+
+      if (!mainGroupId) {
+        throw new Error("Hauptgruppe nicht gefunden");
+      }
+
+      const { data, error } = await supabase
+        .from('player')
+        .select('*')
+        .eq('instrument', mainGroupId)
+        .eq('tenantId', this.tenant().id)
+        .order("lastName");
+
+      return (all ? data : data.filter((c: Person) => !c.left)).map((con: Person) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
+    }
+
     const response = await supabase
       .from('conductors')
       .select('*')
@@ -852,6 +869,17 @@ export class DbService {
       .select('*')
       .eq('tenantId', this.tenant().id)
       .order("name");
+
+    return data;
+  }
+
+  async getMainGroup(): Promise<Instrument> {
+    const { data } = await supabase
+      .from('instruments')
+      .select('*')
+      .eq('tenantId', this.tenant().id)
+      .eq('maingroup', true)
+      .single();
 
     return data;
   }
