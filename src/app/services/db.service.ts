@@ -348,7 +348,7 @@ export class DbService {
 
     const { data, error } = await supabase
       .from('player')
-      .select('*, person_attendances(*)')
+      .select('*, person_attendances(*, attendance:attendance_id(*))')
       .eq('tenantId', this.tenant().id)
       .is("left", null)
       .order("instrument")

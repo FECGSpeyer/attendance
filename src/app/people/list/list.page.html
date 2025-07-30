@@ -134,7 +134,7 @@
             *ngIf="((showPaused && !player.paused) || !showPaused) && showCritical && player.isCritical" slot="end">
             Problemfall</ion-badge>
           <ion-badge color="warning" *ngIf="showPaused && player.paused" slot="end">Pausiert</ion-badge>
-          <ion-badge [color]="player.percentage >= 75 ? 'success' : player.percentage >= 50 ? 'warning' : 'danger'" *ngIf="showAttendance" slot="end">{{ player.percentage }}%</ion-badge>
+          <ion-badge [color]="player.percentage >= 75 ? 'success' : player.percentage >= 50 ? 'warning' : 'danger'" *ngIf="showAttendance && isBetaProgram" slot="end">{{ player.percentage }}%</ion-badge>
           <ion-badge color="warning"
             *ngIf="((showPaused && !player.paused) || !showPaused) && showNotes && player.notes" slot="end">
             <ion-icon name="pencil"></ion-icon>

@@ -38,7 +38,8 @@ export class Utils {
       let percentage: number = 0;
 
       if (player.person_attendances) {
-        percentage = Utils.getPercentage(player.person_attendances);
+        const personAttendancesTillNow = player.person_attendances.filter((personAttendance: PersonAttendance) => dayjs(personAttendance.attendance.date).isBefore(dayjs().add(1, "day")));
+        percentage = Utils.getPercentage(personAttendancesTillNow);
         if (isNaN(percentage)) {
           percentage = 0;
         }
@@ -116,6 +117,9 @@ export class Utils {
   }
 
   public static getPercentage(personAttendances: PersonAttendance[]): number {
+    if (!personAttendances.length) {
+      return 0;
+    }
     const overallCount: number = personAttendances.length;
     let presentCount: number = 0;
     for (const p of personAttendances) {
