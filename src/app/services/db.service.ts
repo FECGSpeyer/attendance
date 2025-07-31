@@ -1113,32 +1113,6 @@ export class DbService {
       .match({ id });
   }
 
-  async getPlayerAttendance(id: number, all: boolean = false): Promise<LegacyPersonAttendance[]> {
-    const { data } = await supabase
-      .from('attendance')
-      .select('*')
-      .eq('tenantId', this.tenant().id)
-      .neq(`players->>"${id}"` as any, null)
-      .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
-      .order("date", {
-        ascending: false,
-      });
-
-    return data.map((att): LegacyPersonAttendance => {
-      let attText = Utils.getAttTextLegacy(att as any, id);
-
-      return {
-        id: att.id,
-        date: att.date,
-        attended: attText === "L" || attText === "X",
-        title: att.typeInfo ? att.typeInfo : att.type === "vortrag" ? "Vortrag" : "",
-        text: attText,
-        notes: att.playerNotes && att.playerNotes[id] ? att.playerNotes[id] : "",
-        songs: att.songs,
-      }
-    });
-  }
-
   async getPersonAttendances(id: number, all: boolean = false): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
@@ -1386,58 +1360,28 @@ export class DbService {
     return;
   }
 
-  async signout(player: Player, attIds: any[], reason: string, isLateExcused: boolean): Promise<void> {
-    if (this.tenant().betaProgram) {
-      for (const attId of attIds) {
-        await this.updatePersonAttendance(attId, {
-          notes: reason,
-          status: isLateExcused ? AttendanceStatus.Late : AttendanceStatus.Excused,
-        });
-      }
+  async signout(attIds: any[], reason: string, isLateExcused: boolean): Promise<void> {
+    for (const attId of attIds) {
+      await this.updatePersonAttendance(attId, {
+        notes: reason,
+        status: isLateExcused ? AttendanceStatus.Late : AttendanceStatus.Excused,
+      });
+    }
 
     // this.notifyPerTelegram(player, attendances, isLateExcused === true ? 'lateSignout' : "signout", reason); TODO
 
-      return;
-    }
-
-    const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
-    loading.present();
-    const attendances: Attendance[] = [];
-
-    for (const attId of attIds) {
-      const attendance: Attendance = await this.getAttendanceById(attId);
-      attendances.push(attendance);
-      attendance.players[player.id] = isLateExcused === true ? AttendanceStatus.Late : AttendanceStatus.Excused;
-      attendance.playerNotes[player.id] = reason;
-
-      await this.updateAttendance(attendance, attId);
-    }
-
-    loading.dismiss();
+    return;
   }
 
-  async signin(player: Player, attId: string): Promise<void> {
-    if (this.tenant().betaProgram) {
-      await this.updatePersonAttendance(attId, {
-        notes: "",
-        status: AttendanceStatus.Present,
-      });
-
-// this.notifyPerTelegram(player, [attendance], playerIsLateExcused === true ? 'lateSignin' : 'signin'); TODO
-
-      return;
-    }
-
-    const attendance: Attendance = await this.getAttendanceById(attId as any);
-    attendance.players[player.id] = AttendanceStatus.Present;
-    delete attendance.playerNotes[player.id];
-    // const playerIsLateExcused = attendance.lateExcused.includes(String(player.id));
-    attendance.excused = attendance.excused.filter((playerId: string) => playerId !== String(player.id));
-    // attendance.lateExcused = attendance.lateExcused.filter((playerId: string) => playerId !== String(player.id));
+  async signin(attId: string): Promise<void> {
+    await this.updatePersonAttendance(attId, {
+      notes: "",
+      status: AttendanceStatus.Present,
+    });
 
     // this.notifyPerTelegram(player, [attendance], playerIsLateExcused === true ? 'lateSignin' : 'signin'); TODO
 
-    await this.updateAttendance(attendance, attId as any);
+    return;
   }
 
   async sendPlanPerTelegram(blob: Blob, name: string): Promise<void> {

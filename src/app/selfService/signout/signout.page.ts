@@ -61,7 +61,7 @@ export class SignoutPage implements OnInit {
   }
 
   async signout() {
-    await this.db.signout(this.player, this.selAttIds, this.reason, this.isLateComingEvent);
+    await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent);
 
     this.excuseModal.dismiss();
     this.reason = "";
@@ -74,7 +74,7 @@ export class SignoutPage implements OnInit {
   }
 
   async signin(id: string) {
-    await this.db.signin(this.player, id);
+    await this.db.signin(id);
 
     Utils.showToast("Schön, dass du dabei bist 🙂", "success", 4000);
 

@@ -153,6 +153,7 @@ export interface PersonAttendance {
     date?: string;
     text?: string;
     title?: string;
+    songs?: number[];
 }
 
 export interface Song {

@@ -149,33 +149,18 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async getHistoryInfo(): Promise<void> {
-    if (this.db.tenant().betaProgram) {
-      this.personAttendance = (await this.db.getPersonAttendances(this.player.id, this.hasLeft)).filter((att: PersonAttendance) => dayjs((att as any).date).isBefore(dayjs()));
-      this.perc = Math.round(this.personAttendance.filter((att: PersonAttendance) => att.attended).length / this.personAttendance.length * 100);
-      this.lateCount = this.personAttendance.filter((a) => a.status === AttendanceStatus.Late).length;
-      this.history = this.personAttendance.map((att: PersonAttendance) => {
-        return {
-          date: (att as any).date,
-          text: (att as any).text,
-          type: PlayerHistoryType.ATTENDANCE,
-          title: (att as any).title,
-          notes: att.notes,
-        };
-      }).concat(this.existingPlayer.history.filter(async (his: PlayerHistoryEntry) => dayjs(await this.db.getCurrentAttDate()).isBefore(dayjs(his.date))).map((his: PlayerHistoryEntry) => { return { ...his, title: "", notes: "" }; })).sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    } else {
-      this.attendance = (await this.db.getPlayerAttendance(this.player.id, this.hasLeft)).filter((att: LegacyPersonAttendance) => dayjs(att.date).isBefore(dayjs()));
-      this.perc = Math.round(this.attendance.filter((att: LegacyPersonAttendance) => att.attended).length / this.attendance.length * 100);
-      this.lateCount = this.attendance.filter((a) => a.text === "L").length;
-      this.history = this.attendance.map((att: LegacyPersonAttendance) => {
-        return {
-          date: att.date,
-          text: att.text,
-          type: PlayerHistoryType.ATTENDANCE,
-          title: att.title,
-          notes: att.notes,
-        };
-      }).concat(this.existingPlayer.history.filter(async (his: PlayerHistoryEntry) => dayjs(await this.db.getCurrentAttDate()).isBefore(dayjs(his.date))).map((his: PlayerHistoryEntry) => { return { ...his, title: "", notes: "" }; })).sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    }
+    this.personAttendance = (await this.db.getPersonAttendances(this.player.id, this.hasLeft)).filter((att: PersonAttendance) => dayjs((att as any).date).isBefore(dayjs()));
+    this.perc = Math.round(this.personAttendance.filter((att: PersonAttendance) => att.attended).length / this.personAttendance.length * 100);
+    this.lateCount = this.personAttendance.filter((a) => a.status === AttendanceStatus.Late).length;
+    this.history = this.personAttendance.map((att: PersonAttendance) => {
+      return {
+        date: (att as any).date,
+        text: (att as any).text,
+        type: PlayerHistoryType.ATTENDANCE,
+        title: (att as any).title,
+        notes: att.notes,
+      };
+    }).concat(this.existingPlayer.history.filter(async (his: PlayerHistoryEntry) => dayjs(await this.db.getCurrentAttDate()).isBefore(dayjs(his.date))).map((his: PlayerHistoryEntry) => { return { ...his, title: "", notes: "" }; })).sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
   onInstrumentChange(byUser = true) {
