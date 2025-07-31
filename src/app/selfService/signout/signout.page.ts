@@ -5,7 +5,7 @@ import { ActionSheetController, IonAccordionGroup, IonModal } from '@ionic/angul
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
-import { Attendance, LegacyPersonAttendance, PersonAttendance, Player, Song, Tenant, TenantUser } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, Player, Song, Tenant, TenantUser } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -19,7 +19,6 @@ export class SignoutPage implements OnInit {
   public player: Player;
   public attendances: Attendance[] = [];
   public excusedAttendances: Attendance[] = [];
-  public playerAttendance: LegacyPersonAttendance[] = [];
   public personAttendances: PersonAttendance[] = [];
   public selAttIds: string[] = [];
   public reason: string;

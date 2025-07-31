@@ -98,7 +98,7 @@
             <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" slot="end">Ø {{ perc
               }}%</ion-badge>
           </ion-item-divider>
-          <ng-container *ngFor="let att of playerAttendance">
+          <ng-container *ngFor="let att of personAttendances">
             <ion-item *ngIf="attHasPassed(att)">
               <ion-label>
                 <h2>{{ getReadableDate(att.date) }}</h2>
