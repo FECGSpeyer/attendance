@@ -1393,6 +1393,9 @@ export class DbService {
           status: isLateExcused ? AttendanceStatus.Late : AttendanceStatus.Excused,
         });
       }
+
+    // this.notifyPerTelegram(player, attendances, isLateExcused === true ? 'lateSignout' : "signout", reason); TODO
+
       return;
     }
 
@@ -1409,13 +1412,22 @@ export class DbService {
       await this.updateAttendance(attendance, attId);
     }
 
-    // this.notifyPerTelegram(player, attendances, isLateExcused === true ? 'lateSignout' : "signout", reason); TODO
-
     loading.dismiss();
   }
 
-  async signin(player: Player, attId: number): Promise<void> {
-    const attendance: Attendance = await this.getAttendanceById(attId);
+  async signin(player: Player, attId: string): Promise<void> {
+    if (this.tenant().betaProgram) {
+      await this.updatePersonAttendance(attId, {
+        notes: "",
+        status: AttendanceStatus.Present,
+      });
+
+// this.notifyPerTelegram(player, [attendance], playerIsLateExcused === true ? 'lateSignin' : 'signin'); TODO
+
+      return;
+    }
+
+    const attendance: Attendance = await this.getAttendanceById(attId as any);
     attendance.players[player.id] = AttendanceStatus.Present;
     delete attendance.playerNotes[player.id];
     // const playerIsLateExcused = attendance.lateExcused.includes(String(player.id));
@@ -1424,7 +1436,7 @@ export class DbService {
 
     // this.notifyPerTelegram(player, [attendance], playerIsLateExcused === true ? 'lateSignin' : 'signin'); TODO
 
-    await this.updateAttendance(attendance, attId);
+    await this.updateAttendance(attendance, attId as any);
   }
 
   async sendPlanPerTelegram(blob: Blob, name: string): Promise<void> {

@@ -151,6 +151,7 @@ export interface PersonAttendance {
     instrumentLength?: number;
     showDivider?: boolean;
     date?: string;
+    text?: string;
 }
 
 export interface Song {

@@ -19,10 +19,9 @@ export class SignoutPage implements OnInit {
   public player: Player;
   public attendances: Attendance[] = [];
   public excusedAttendances: Attendance[] = [];
-  public lateExcusedAttendances: Attendance[] = [];
   public playerAttendance: LegacyPersonAttendance[] = [];
   public personAttendances: PersonAttendance[] = [];
-  public selAttIds: number[] = [];
+  public selAttIds: string[] = [];
   public reason: string;
   public perc: number;
   public version: string = require('../../../../package.json').version;
@@ -78,7 +77,7 @@ export class SignoutPage implements OnInit {
     await this.getAttendances();
   }
 
-  async signin(id: number) {
+  async signin(id: string) {
     await this.db.signin(this.player, id);
 
     Utils.showToast("Schön, dass du dabei bist 🙂", "success", 4000);
@@ -107,22 +106,6 @@ export class SignoutPage implements OnInit {
         }
       });
 
-      this.lateExcusedAttendances = allAttendances.filter((attendance: Attendance) => { // TODO: needed?
-        if (!dayjs(attendance.date).isAfter(dayjs(), "day")) {
-          return false;
-        }
-
-        if (this.isBetaProgram) {
-          return allPersonAttendances.some((personAtt: PersonAttendance) => {
-            return personAtt.person_id === this.player.id &&
-              personAtt.status === AttendanceStatus.LateExcused;
-          });
-        } else {
-          return Object.keys(attendance.players).includes(String(this.player.id)) &&
-            (attendance.lateExcused || []).includes(String(this.player.id));
-        }
-      });
-
       this.attendances = allAttendances.filter((attendance: Attendance) => {
         if (!dayjs(attendance.date).isAfter(dayjs(), "day")) {
           return false;
@@ -141,7 +124,7 @@ export class SignoutPage implements OnInit {
       }).sort((a: Attendance, b: Attendance) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       if (this.attendances.length) {
-        this.selAttIds = [this.attendances[0].id];
+        this.selAttIds = [this.attendances[0].id as any];
       } else {
         this.selAttIds = [];
       }
@@ -172,12 +155,12 @@ export class SignoutPage implements OnInit {
     this.db.logout();
   }
 
-  async presentActionSheetForChoice(attendance: LegacyPersonAttendance) {
+  async presentActionSheetForChoice(attendance: PersonAttendance) {
     this.reasonSelection = 'Krankheitsbedingt';
     let buttons = [
       {
         text: 'Anmelden',
-        handler: () => this.signin(attendance.id),
+        handler: () => this.signin(attendance.id as string),
       },
       {
         text: 'Abmelden',
@@ -261,15 +244,15 @@ export class SignoutPage implements OnInit {
     this.excuseModal.setCurrentBreakpoint(0.4);
   }
 
-  attHasPassed(att: LegacyPersonAttendance) {
+  attHasPassed(att: PersonAttendance) {
     return dayjs(att.date).isBefore(dayjs(), "day");
   }
 
-  attIsInFuture(att: LegacyPersonAttendance) {
+  attIsInFuture(att: PersonAttendance) {
     return dayjs(att.date).isAfter(dayjs(), "day");
   }
 
-  isAttToday(att: LegacyPersonAttendance) {
+  isAttToday(att: PersonAttendance) {
     return dayjs(att.date).isSame(dayjs(), "day");
   }
 
