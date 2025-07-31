@@ -87,7 +87,7 @@ export class ListPage implements OnInit {
   async getPlayers(): Promise<void> {
     this.players = await this.db.getPlayers();
     this.conductors = await this.db.getConductors();
-    this.players = Utils.getModifiedPlayersLegacy(this.players, this.instruments, this.mainGroup);
+    this.players = Utils.getModifiedPlayersLegacy(this.players, this.instruments, await this.db.getAttendance(), this.mainGroup);
     this.searchTerm = "";
     this.initializeItems();
     this.onFilterChanged();
@@ -271,7 +271,7 @@ export class ListPage implements OnInit {
       } else {
         return player.isLeader;
       }
-    }), this.instruments, this.mainGroup);
+    }), this.instruments, await this.db.getAttendance(), this.mainGroup);
 
     await this.storage.set("filterOpt", this.filterOpt);
   }
@@ -308,7 +308,7 @@ export class ListPage implements OnInit {
       props.push(player.instrumentName);
     }
     if (this.viewOpts.includes("birthday")) {
-      props.push(`${dayjs(player.birthday).format("DD.MM.YYYY")} (${Utils.calculateAge(new Date(player.birthday))} Jahre)`);
+      props.push(`${dayjs(player.birthday).format("DD.MM.YYYY")} (${Utils.calculateAge(new Date(player.birthday))} J.)`);
     }
     if (this.viewOpts.includes("test")) {
       props.push(player.testResult || "Kein Ergebnis");
@@ -325,7 +325,7 @@ export class ListPage implements OnInit {
     return props.join(" | ");
   }
 
-  search(event: any): void {
+  async search(event: any): Promise<void> {
     if (this.players) {
       this.searchTerm = '';
       this.initializeItems();
@@ -337,7 +337,7 @@ export class ListPage implements OnInit {
       }
 
       this.playersFiltered = this.filter();
-      this.playersFiltered = Utils.getModifiedPlayersLegacy(this.playersFiltered, this.instruments, this.mainGroup);
+      this.playersFiltered = Utils.getModifiedPlayersLegacy(this.playersFiltered, this.instruments, await this.db.getAttendance(), this.mainGroup);
     }
   }
 

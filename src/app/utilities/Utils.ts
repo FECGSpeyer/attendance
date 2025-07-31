@@ -12,7 +12,7 @@ export class Utils {
     return Math.floor(Math.random() * (999999999999 - 1000000000 + 1)) + 1000000000;
   }
 
-  public static getModifiedPlayersLegacy(players: Player[], instruments: Instrument[], mainGroup?: number): Player[] {
+  public static getModifiedPlayersLegacy(players: Player[], instruments: Instrument[], attendances: Attendance[], mainGroup?: number): Player[] {
     const instrumentsMap: { [props: number]: boolean } = {};
 
     return players.sort((a: Player, b: Player) => {
@@ -45,8 +45,11 @@ export class Utils {
 
       let percentage: number = 0;
 
-      if (player.person_attendances) {
-        const personAttendancesTillNow = player.person_attendances.filter((personAttendance: PersonAttendance) => dayjs(personAttendance.attendance.date).isBefore(dayjs().add(1, "day")));
+      if (player.person_attendances && attendances?.length) {
+        const personAttendancesTillNow = player.person_attendances.filter((personAttendance: PersonAttendance) => {
+          const attendance = attendances.find((attendance: Attendance) => personAttendance.attendance_id === attendance.id);
+          return attendance && dayjs().isBefore(dayjs().add(1, "day"));
+        });
         percentage = Utils.getPercentage(personAttendancesTillNow);
         if (isNaN(percentage)) {
           percentage = 0;

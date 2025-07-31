@@ -72,7 +72,7 @@ export class SettingsPage implements OnInit {
     this.conductors = allConductors.filter((con: Person) => !con.left);
     this.selConductors = this.conductors.filter((con: Person) => Boolean(!con.left)).map((c: Person): number => c.id);
     this.instruments = await this.db.getInstruments();
-    this.leftPlayers = Utils.getModifiedPlayersLegacy(await this.db.getLeftPlayers(), this.instruments, this.instruments.find(ins => ins.maingroup)?.id);
+    this.leftPlayers = Utils.getModifiedPlayersLegacy(await this.db.getLeftPlayers(), this.instruments, [], this.instruments.find(ins => ins.maingroup)?.id);
     this.leftConductors = allConductors.filter((con: Person) => Boolean(con.left));
     this.viewers = await this.db.getViewers();
     this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();

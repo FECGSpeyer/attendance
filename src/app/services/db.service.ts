@@ -348,7 +348,7 @@ export class DbService {
 
     const { data, error } = await supabase
       .from('player')
-      .select('*, person_attendances(*, attendance:attendance_id(*))')
+      .select('*, person_attendances(*)')
       .eq('tenantId', this.tenant().id)
       .is("left", null)
       .order("instrument")
@@ -359,9 +359,10 @@ export class DbService {
 
     if (error) {
       Utils.showToast("Fehler beim Laden der Spieler", "danger");
+      throw error;
     }
 
-    return data.map((player) => {
+    return (data as any).map((player) => {
       return {
         ...player,
         history: player.history as any,

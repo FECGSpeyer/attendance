@@ -114,7 +114,7 @@ export class AttPage implements OnInit {
       }
     }
 
-    this.players = Utils.getModifiedPlayersLegacy(this.attPlayers, this.instruments).map((p: Player): Player => {
+    this.players = Utils.getModifiedPlayersLegacy(this.attPlayers, this.instruments, []).map((p: Player): Player => {
       return {
         ...p,
         isPresent: p.attStatus === AttendanceStatus.Present || p.attStatus === AttendanceStatus.Late,
