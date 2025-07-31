@@ -1005,9 +1005,9 @@ export class DbService {
     return;
   }
 
-  async getAttendance(all: boolean = false, betaProgram: boolean = false): Promise<Attendance[]> {
+  async getAttendance(all: boolean = false, withPersonAttendance: boolean = false): Promise<Attendance[]> {
     let res: any[];
-    if (betaProgram) {
+    if (withPersonAttendance) {
       const { data } = await supabase
         .from('attendance')
         .select(`*, persons:person_attendances(

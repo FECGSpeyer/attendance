@@ -18,7 +18,6 @@ export class SignoutPage implements OnInit {
   @ViewChild('excuseModal') excuseModal: IonModal;
   public player: Player;
   public attendances: Attendance[] = [];
-  public excusedAttendances: Attendance[] = [];
   public personAttendances: PersonAttendance[] = [];
   public selAttIds: string[] = [];
   public reason: string;
@@ -86,17 +85,6 @@ export class SignoutPage implements OnInit {
     const allPersonAttendances = await this.db.getPersonAttendances(this.player.id);
     if (!this.player.paused) {
       const allAttendances: Attendance[] = await this.db.getAttendance();
-
-      this.excusedAttendances = allAttendances.filter((attendance: Attendance) => {
-        if (!dayjs(attendance.date).isAfter(dayjs(), "day")) {
-          return false;
-        }
-
-        return allPersonAttendances.some((personAtt: PersonAttendance) => {
-          return personAtt.person_id === this.player.id &&
-            personAtt.status === AttendanceStatus.Excused;
-        });
-      });
 
       this.attendances = allAttendances.filter((attendance: Attendance) => {
         if (!dayjs(attendance.date).isAfter(dayjs(), "day")) {

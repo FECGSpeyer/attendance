@@ -2,7 +2,7 @@ import { Component, OnInit, effect } from '@angular/core';
 import { ActionSheetController, AlertController, IonItemSliding, IonRouterOutlet, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { Instrument, Person, Player, PlayerHistoryEntry } from 'src/app/utilities/interfaces';
+import { Attendance, Instrument, Person, Player, PlayerHistoryEntry } from 'src/app/utilities/interfaces';
 import { PersonPage } from '../person/person.page';
 import { AttendanceType, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Storage } from '@ionic/storage-angular';
@@ -42,6 +42,7 @@ export class ListPage implements OnInit {
   public isBetaProgram: boolean = false;
   public sub: RealtimeChannel;
   public mainGroup: number | undefined;
+  public attendances: Attendance[] = [];
 
   constructor(
     private modalController: ModalController,
@@ -87,7 +88,8 @@ export class ListPage implements OnInit {
   async getPlayers(): Promise<void> {
     this.players = await this.db.getPlayers();
     this.conductors = await this.db.getConductors();
-    this.players = Utils.getModifiedPlayersLegacy(this.players, this.instruments, await this.db.getAttendance(), this.mainGroup);
+    this.attendances = await this.db.getAttendance();
+    this.players = Utils.getModifiedPlayersLegacy(this.players, this.instruments, this.attendances, this.mainGroup);
     this.searchTerm = "";
     this.initializeItems();
     this.onFilterChanged();
@@ -271,7 +273,7 @@ export class ListPage implements OnInit {
       } else {
         return player.isLeader;
       }
-    }), this.instruments, await this.db.getAttendance(), this.mainGroup);
+    }), this.instruments, this.attendances, this.mainGroup);
 
     await this.storage.set("filterOpt", this.filterOpt);
   }
@@ -325,7 +327,7 @@ export class ListPage implements OnInit {
     return props.join(" | ");
   }
 
-  async search(event: any): Promise<void> {
+  async search(event: any) {
     if (this.players) {
       this.searchTerm = '';
       this.initializeItems();
@@ -337,7 +339,7 @@ export class ListPage implements OnInit {
       }
 
       this.playersFiltered = this.filter();
-      this.playersFiltered = Utils.getModifiedPlayersLegacy(this.playersFiltered, this.instruments, await this.db.getAttendance(), this.mainGroup);
+      this.playersFiltered = Utils.getModifiedPlayersLegacy(this.playersFiltered, this.instruments, this.attendances, this.mainGroup);
     }
   }
 

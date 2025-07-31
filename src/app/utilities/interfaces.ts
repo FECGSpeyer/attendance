@@ -152,6 +152,7 @@ export interface PersonAttendance {
     showDivider?: boolean;
     date?: string;
     text?: string;
+    title?: string;
 }
 
 export interface Song {
