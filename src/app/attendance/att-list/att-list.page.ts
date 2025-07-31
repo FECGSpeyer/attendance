@@ -7,7 +7,6 @@ import { Attendance, PersonAttendance, Player, Song } from 'src/app/utilities/in
 import { Utils } from 'src/app/utilities/Utils';
 import 'jspdf-autotable';
 import { AttendanceStatus, AttendanceType, Role } from 'src/app/utilities/constants';
-import { Person } from '../../utilities/interfaces';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { AttendancePage } from '../attendance/attendance.page';
 require('dayjs/locale/de');
