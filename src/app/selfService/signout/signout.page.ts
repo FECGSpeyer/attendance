@@ -34,7 +34,6 @@ export class SignoutPage implements OnInit {
   public songs: Song[] = [];
   public tenantId: number;
   public tenants: Tenant[] = [];
-  public isBetaProgram: boolean = false;
 
   constructor(
     public db: DbService,
@@ -56,7 +55,6 @@ export class SignoutPage implements OnInit {
     this.name = this.db.tenant().longName;
     this.tenants = this.db.tenants();
     this.tenantId = this.db.tenant().id;
-    this.isBetaProgram = this.db.tenant().betaProgram;
     if (this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.HELPER) {
       this.player = await this.db.getPlayerByAppId();
       this.songs = await this.db.getSongs();
@@ -86,7 +84,7 @@ export class SignoutPage implements OnInit {
   }
 
   async getAttendances() {
-    const allPersonAttendances = this.isBetaProgram ? await this.db.getPersonAttendances(this.player.id) : [];
+    const allPersonAttendances = await this.db.getPersonAttendances(this.player.id);
     if (!this.player.paused) {
       const allAttendances: Attendance[] = await this.db.getAttendance();
 
@@ -95,15 +93,10 @@ export class SignoutPage implements OnInit {
           return false;
         }
 
-        if (this.isBetaProgram) {
-          return allPersonAttendances.some((personAtt: PersonAttendance) => {
-            return personAtt.person_id === this.player.id &&
-              personAtt.status === AttendanceStatus.Excused;
-          });
-        } else {
-          return Object.keys(attendance.players).includes(String(this.player.id)) &&
-            attendance.excused.includes(String(this.player.id));
-        }
+        return allPersonAttendances.some((personAtt: PersonAttendance) => {
+          return personAtt.person_id === this.player.id &&
+            personAtt.status === AttendanceStatus.Excused;
+        });
       });
 
       this.attendances = allAttendances.filter((attendance: Attendance) => {
@@ -111,16 +104,10 @@ export class SignoutPage implements OnInit {
           return false;
         }
 
-        if (this.isBetaProgram) {
-          return allPersonAttendances.some((personAtt: PersonAttendance) => {
-            return personAtt.person_id === this.player.id &&
-              personAtt.status !== AttendanceStatus.Excused && personAtt.status !== AttendanceStatus.LateExcused;
-          });
-        } else {
-          return Object.keys(attendance.players).includes(String(this.player.id)) &&
-            !attendance.excused.includes(String(this.player.id)) &&
-            !(attendance.lateExcused || []).includes(String(this.player.id));
-        }
+        return allPersonAttendances.some((personAtt: PersonAttendance) => {
+          return personAtt.person_id === this.player.id &&
+            personAtt.status !== AttendanceStatus.Excused && personAtt.status !== AttendanceStatus.LateExcused;
+        });
       }).sort((a: Attendance, b: Attendance) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       if (this.attendances.length) {
@@ -130,24 +117,13 @@ export class SignoutPage implements OnInit {
       }
     }
 
-    if (this.isBetaProgram) {
-      this.personAttendances = allPersonAttendances;
-      const vergangene: PersonAttendance[] = this.personAttendances.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
-      if (vergangene.length) {
-        this.lateCount = vergangene.filter((a) => a.status === AttendanceStatus.Late).length;
-        vergangene[0].showDivider = true;
-        this.perc = Math.round(vergangene.filter((att: PersonAttendance) =>
-          att.status === AttendanceStatus.Present || att.status === AttendanceStatus.Late).length / vergangene.length * 100);
-      }
-    } else {
-      this.playerAttendance = await this.db.getPlayerAttendance(this.player.id);
-      const vergangene: any[] = this.playerAttendance.filter((att: LegacyPersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
-      if (vergangene.length) {
-        this.lateCount = vergangene.filter((a) => a.text === "L").length;
-        vergangene[0].showDivider = true;
-        this.perc = Math.round(vergangene.filter((att: LegacyPersonAttendance) =>
-          (att.attended as any) === AttendanceStatus.Present || (att.attended as any) === AttendanceStatus.Late || att.attended === true).length / vergangene.length * 100);
-      }
+    this.personAttendances = allPersonAttendances;
+    const vergangene: PersonAttendance[] = this.personAttendances.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
+    if (vergangene.length) {
+      this.lateCount = vergangene.filter((a) => a.status === AttendanceStatus.Late).length;
+      vergangene[0].showDivider = true;
+      this.perc = Math.round(vergangene.filter((att: PersonAttendance) =>
+        att.status === AttendanceStatus.Present || att.status === AttendanceStatus.Late).length / vergangene.length * 100);
     }
   }
 
