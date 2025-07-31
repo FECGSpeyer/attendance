@@ -1385,7 +1385,17 @@ export class DbService {
     return;
   }
 
-  async signout(player: Player, attIds: number[], reason: string, isLateExcused: boolean): Promise<void> {
+  async signout(player: Player, attIds: any[], reason: string, isLateExcused: boolean): Promise<void> {
+    if (this.tenant().betaProgram) {
+      for (const attId of attIds) {
+        await this.updatePersonAttendance(attId, {
+          notes: reason,
+          status: isLateExcused ? AttendanceStatus.Late : AttendanceStatus.Excused,
+        });
+      }
+      return;
+    }
+
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
     loading.present();
     const attendances: Attendance[] = [];

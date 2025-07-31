@@ -149,6 +149,8 @@ export interface PersonAttendance {
     attended?: boolean;
     firstOfInstrument?: boolean;
     instrumentLength?: number;
+    showDivider?: boolean;
+    date?: string;
 }
 
 export interface Song {

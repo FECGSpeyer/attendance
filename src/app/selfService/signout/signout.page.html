@@ -69,8 +69,23 @@
         <ion-label>Anstehende Termine</ion-label>
       </ion-item>
       <div slot="content">
-        <ion-list>
+        <ion-list *ngIf="!isBetaProgram">
           <ng-container *ngFor="let att of playerAttendance">
+            <ion-item button *ngIf="attIsInFuture(att) || !attHasPassed(att)" (click)="presentActionSheetForChoice(att)"
+              color="light">
+              <ion-label>
+                <h2>{{ getReadableDate(att.date) }}</h2>
+                <h3>{{ att.title ? att.title : 'Übung' }}</h3>
+                <h3 *ngIf="att.songs?.length">{{ getSongNames(att.songs) }}</h3>
+              </ion-label>
+              <ion-badge slot="end"
+                [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? 'tertiary' : att.text === 'N' ? 'medium' : 'warning'">
+                {{ att.text === 'X' ? '✓' : att.text }}</ion-badge>
+            </ion-item>
+          </ng-container>
+        </ion-list>
+        <ion-list *ngIf="isBetaProgram">
+          <ng-container *ngFor="let att of personAttendances">
             <ion-item button *ngIf="attIsInFuture(att) || !attHasPassed(att)" (click)="presentActionSheetForChoice(att)"
               color="light">
               <ion-label>
