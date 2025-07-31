@@ -5,7 +5,6 @@ import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Attendance, PersonAttendance, Player, Song } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
-import { AttPage } from '../att/att.page';
 import 'jspdf-autotable';
 import { AttendanceStatus, AttendanceType, Role } from 'src/app/utilities/constants';
 import { Person } from '../../utilities/interfaces';
@@ -93,10 +92,10 @@ export class AttListPage implements OnInit {
   }
 
   async getAttendance(): Promise<void> {
-    const attendances: Attendance[] = (await this.db.getAttendance(false, this.db.tenant().betaProgram)).filter((att: Attendance) => Boolean(att.players) || this.db.tenant().betaProgram).map((att: Attendance): Attendance => {
+    const attendances: Attendance[] = (await this.db.getAttendance(false, true)).map((att: Attendance): Attendance => {
       return {
         ...att,
-        percentage: this.db.tenant().betaProgram ? Utils.getPercentage(att.persons) : Object.keys(att.players).length ? Utils.getPercentageLegacy(att.players) : undefined,
+        percentage: Utils.getPercentage(att.persons),
       }
     });
 
@@ -140,49 +139,6 @@ export class AttListPage implements OnInit {
   }
 
   async addAttendance(modal: IonModal): Promise<void> {
-    if (this.db.tenant().betaProgram) {
-      this.addPersonsToAttendance(modal);
-      return;
-    }
-    const conductors: {} = {};
-    const players: {} = {};
-
-    for (const con of (await this.db.getConductors()).filter((con: Person) => !con.paused)) {
-      conductors[con.id] = AttendanceStatus.Present;
-    }
-
-    for (const player of (await this.db.getPlayers()).filter((player: Player) => !player.paused)) {
-      if (this.hasNeutral) {
-        players[player.id] = AttendanceStatus.Neutral;
-      } else {
-        players[player.id] = AttendanceStatus.Present;
-      }
-    }
-
-    await this.db.addAttendance({
-      date: this.date,
-      type: this.type,
-      criticalPlayers: [],
-      notes: this.notes,
-      typeInfo: this.typeInfo,
-      songs: this.selectedSongs,
-      playerNotes: {},
-      players,
-      conductors,
-      excused: [],
-    });
-
-    await modal.dismiss();
-
-    this.notes = '';
-    this.type = 'uebung';
-    this.date = new Date().toISOString();
-    this.typeInfo = '';
-    this.dateString = format(new Date(), 'dd.MM.yyyy');
-    this.selectedSongs = [];
-  }
-
-  async addPersonsToAttendance(modal: IonModal): Promise<void> {
     const persons: PersonAttendance[] = [];
 
     const attendance_id: number = await this.db.addAttendance({
@@ -239,23 +195,12 @@ export class AttListPage implements OnInit {
     this.sub?.unsubscribe();
     this.persSub?.unsubscribe();
 
-    let modal: HTMLIonModalElement;
-
-    if (this.db.tenant().betaProgram) {
-      modal = await this.modalController.create({
-        component: AttendancePage,
-        componentProps: {
-          attendanceId: attendance.id,
-        }
-      });
-    } else {
-      modal = await this.modalController.create({
-        component: AttPage,
-        componentProps: {
-          attendanceId: attendance.id,
-        }
-      });
-    }
+    const modal = await this.modalController.create({
+      component: AttendancePage,
+      componentProps: {
+        attendanceId: attendance.id,
+      }
+    });
 
     await modal.present();
     await modal.onWillDismiss();

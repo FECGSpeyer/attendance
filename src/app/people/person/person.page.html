@@ -1,11 +1,7 @@
 <ion-header>
   <ion-toolbar [color]="player?.isCritical ? 'danger' : ''">
-    <ion-title *ngIf="!existingPlayer && !isConductor && isChoir">Sänger hinzufügen</ion-title>
-    <ion-title *ngIf="!existingPlayer && !isConductor && !isChoir">Spieler hinzufügen</ion-title>
-    <ion-title *ngIf="!existingPlayer && isConductor">Dirigent hinzufügen</ion-title>
-    <ion-title *ngIf="!readOnly && existingPlayer && !isConductor && isChoir">Sänger bearbeiten</ion-title>
-    <ion-title *ngIf="!readOnly && existingPlayer && !isConductor && !isChoir">Spieler bearbeiten</ion-title>
-    <ion-title *ngIf="!readOnly && existingPlayer && isConductor">Dirigent bearbeiten</ion-title>
+    <ion-title *ngIf="!existingPlayer">Person hinzufügen</ion-title>
+    <ion-title *ngIf="!readOnly && existingPlayer">Person bearbeiten</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon name="close"></ion-icon>
@@ -80,7 +76,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="!isConductor">
+          <ion-row>
             <ion-col>
               <ion-item>
                 <ion-select label="Gruppe" [disabled]="readOnly" (ionChange)="onInstrumentChange()" #select [(ngModel)]="player.instrument">
@@ -91,7 +87,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="!isConductor && isChoir">
+          <ion-row *ngIf="isChoir">
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Stimmumfang</ion-label>
@@ -116,7 +112,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="!isConductor && !isChoir">
+          <ion-row *ngIf="!isChoir">
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
@@ -150,7 +146,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="!isConductor && showTeachers">
+          <ion-row *ngIf="showTeachers">
             <ion-col>
               <ion-item>
                 <ion-label>Spielt beim Lehrer</ion-label>
@@ -169,7 +165,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="!isConductor">
+          <ion-row *ngIf="!isMainGroup">
             <ion-col>
               <ion-item>
                 <ion-label>Stimmführer</ion-label>
@@ -177,11 +173,11 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-item *ngIf="!isConductor && isChoir">
+          <ion-item *ngIf="!isMainGroup && isChoir">
             <ion-label position="stacked">Instrumente</ion-label>
             <ion-input [disabled]="readOnly || !isAdmin" (ionChange)="onChange()" [(ngModel)]="player.instruments"></ion-input>
           </ion-item>
-          <ion-row *ngIf="!isConductor && isVoS">
+          <ion-row *ngIf="!isMainGroup && isVoS">
             <ion-col>
               <ion-item>
                 <ion-label>Andere Orchester</ion-label>
@@ -193,14 +189,14 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-item *ngIf="isVoS && !isConductor">
+          <ion-item *ngIf="isVoS && !isMainGroup">
             <ion-toggle label="Prüfling" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.examinee"></ion-toggle>
           </ion-item>
-          <ion-item *ngIf="isVoS && !isConductor">
+          <ion-item *ngIf="isVoS && !isMainGroup">
             <ion-label position="stacked">Testergebnis</ion-label>
             <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.testResult"></ion-input>
           </ion-item>
-          <ion-row *ngIf="!isConductor">
+          <ion-row *ngIf="!isMainGroup">
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Sonstige Dienste</ion-label>
@@ -216,7 +212,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="!isConductor && player.email">
+          <ion-row *ngIf="!isMainGroup && player.email">
             <ion-col>
               <ion-item>
                 <ion-select label="Rolle" type="number" [disabled]="readOnly || isMainGroup" (ionChange)="onChange()" [(ngModel)]="player.role">
@@ -259,8 +255,8 @@
               </ion-label>
 
               <ion-badge *ngIf="att.type === 4" slot="end" [color]="att.text === 'X' ? 'success' :
-                                                                    (att.text === 'A' && !isConductor) ? 'danger' :
-                                                                    (att.text === 'L') ? 'tertiary' : 'warning'">
+                                                                    att.text === 'A' ? 'danger' :
+                                                                    att.text === 'L' ? 'tertiary' : 'warning'">
                 {{ getAttTextLegacy(att.text) }}</ion-badge>
             </ion-item>
             <ion-item-options *ngIf="att.type !== 4 && !readOnly">

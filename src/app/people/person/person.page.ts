@@ -7,7 +7,6 @@ import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
 import { AttendanceStatus, AttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role } from 'src/app/utilities/constants';
-import { SupabaseTable } from '../../utilities/constants';
 dayjs.extend(utc);
 
 @Component({
@@ -19,7 +18,6 @@ export class PersonPage implements OnInit, AfterViewInit {
   @Input() existingPlayer: Player;
   @Input() readOnly: boolean;
   @Input() instruments: Instrument[];
-  @Input() isConductor: boolean;
   @Input() hasLeft: boolean;
   @ViewChild('select') select: IonSelect;
   @ViewChild('content') content: IonContent;
@@ -94,36 +92,19 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.player.teacherName = this.player.teacher ? this.teachers.find((teacher: Teacher) => teacher).name : "";
       this.player.criticalReasonText = this.player.criticalReason ? Utils.getPlayerHistoryTypeText(this.player.criticalReason) : "";
 
-      if (this.isConductor) {
-        this.history = (await this.db.getConductorAttendance(this.player.id, this.hasLeft)).filter((att: LegacyPersonAttendance) => dayjs(att.date).isBefore(dayjs())).map((att: LegacyPersonAttendance) => {
-          return {
-            date: att.date,
-            text: att.text,
-            type: PlayerHistoryType.ATTENDANCE,
-            title: att.title,
-            notes: att.notes,
-            attended: att.attended,
-          };
-        });
-        this.perc = Math.round(this.history.filter((att: LegacyPersonAttendance) => att.attended).length / this.history.length * 100);
-      } else {
-        this.player.role = Role.PLAYER;
-        if (this.player.email) {
-          if (this.player.appId) {
-            const tenantUser = await this.db.getTenantUserById(this.player.appId);
-            this.player.role = tenantUser.role ?? Role.PLAYER;
-          }
+      this.player.role = Role.PLAYER;
+      if (this.player.email) {
+        if (this.player.appId) {
+          const tenantUser = await this.db.getTenantUserById(this.player.appId);
+          this.player.role = tenantUser.role ?? Role.PLAYER;
         }
-        await this.getHistoryInfo();
       }
+      await this.getHistoryInfo();
     } else {
       this.player = { ...this.newPlayer };
       this.player.tenantId = this.db.tenant().id;
       this.player.instrument = this.instruments[0].id;
-
-      if (!this.isConductor) {
-        this.player.role = Role.PLAYER;
-      }
+      this.player.role = Role.PLAYER;
     }
 
     this.onInstrumentChange(false);
@@ -208,15 +189,9 @@ export class PersonPage implements OnInit, AfterViewInit {
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
     loading.present();
     if (this.player.firstName && this.player.lastName) {
-      if (this.isConductor) {
-        await this.db.addConductor(this.player, Boolean(this.player.email));
-      } else {
-        await this.db.addPlayer(this.player, Boolean(this.player.email));
-      }
-      this.modalController.dismiss({
-        conductor: this.isConductor,
-      });
-      Utils.showToast(`Der ${this.isConductor ? "Dirigten" : "Spieler"} wurde erfolgreich hinzugefügt`, "success");
+      await this.db.addPlayer(this.player, Boolean(this.player.email));
+      this.modalController.dismiss();
+      Utils.showToast(`Der Spieler wurde erfolgreich hinzugefügt`, "success");
     } else {
       Utils.showToast("Bitte gib den Vornamen und Nachnamen an.", "danger");
     }
@@ -246,36 +221,24 @@ export class PersonPage implements OnInit, AfterViewInit {
       });
     }
 
-    if (this.isConductor) {
-      try {
-        await this.db.updateConductor(this.player);
-        this.modalController.dismiss({
-          conductor: true,
-        });
-        Utils.showToast("Die Dirigentendaten wurden erfolgreich aktualisiert.", "success");
-      } catch (error) {
-        Utils.showToast("Fehler beim aktualisieren des Dirigenten", "danger");
-      }
-    } else {
-      if ((this.existingPlayer.notes || "") !== this.player.notes) {
-        history.push({
-          date: new Date().toISOString(),
-          text: this.existingPlayer.notes || "Keine Notiz",
-          type: PlayerHistoryType.NOTES,
-        });
-      }
+    if ((this.existingPlayer.notes || "") !== this.player.notes) {
+      history.push({
+        date: new Date().toISOString(),
+        text: this.existingPlayer.notes || "Keine Notiz",
+        type: PlayerHistoryType.NOTES,
+      });
+    }
 
-      try {
-        await this.db.updatePlayer({
-          ...this.player,
-          isCritical: this.solved ? false : this.player.isCritical,
-          lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
-        });
-        this.modalController.dismiss();
-        Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
-      } catch (error) {
-        Utils.showToast("Fehler beim aktualisieren des Spielers", "danger");
-      }
+    try {
+      await this.db.updatePlayer({
+        ...this.player,
+        isCritical: this.solved ? false : this.player.isCritical,
+        lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
+      });
+      this.modalController.dismiss();
+      Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
+    } catch (error) {
+      Utils.showToast("Fehler beim aktualisieren des Spielers", "danger");
     }
   }
 
@@ -359,10 +322,8 @@ export class PersonPage implements OnInit, AfterViewInit {
     loading.present();
 
     try {
-      await this.db.createAccount(this.player, this.isConductor ? SupabaseTable.CONDUCTORS : SupabaseTable.PLAYER);
-      await this.modalController.dismiss({
-        conductor: this.isConductor,
-      });
+      await this.db.createAccount(this.player);
+      await this.modalController.dismiss();
       Utils.showToast("Account wurde erfolgreich angelegt", "success");
       await loading.dismiss();
     } catch (error) {
@@ -378,7 +339,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       additionalButtons.push({
         text: 'Profilbild entfernen',
         handler: () => {
-          this.db.removeImage(this.player.id, this.player.img.split("/")[this.player.img.split("/").length - 1], this.isConductor);
+          this.db.removeImage(this.player.id, this.player.img.split("/")[this.player.img.split("/").length - 1]);
           this.player.img = DEFAULT_IMAGE;
           Utils.showToast("Das Profilbild wurde erfolgreich entfernt", "success");
         }
@@ -411,7 +372,7 @@ export class PersonPage implements OnInit, AfterViewInit {
         reader.readAsDataURL(imgFile);
 
         try {
-          const url: string = await this.db.updateImage(this.player.id, imgFile, this.isConductor);
+          const url: string = await this.db.updateImage(this.player.id, imgFile);
           this.player.img = url;
         } catch (error) {
           Utils.showToast(error, "danger");
@@ -426,7 +387,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   getAttTextLegacy(text: string) {
     return text === 'X' ? '✓' :
       text === 'L' ? 'L' :
-        (this.isConductor || text === 'E') ? 'E' : 'A';
+        text === 'E' ? 'E' : 'A';
     // if (text === "X") {
     //   return "✓";
     // }else if(text === 'L') {

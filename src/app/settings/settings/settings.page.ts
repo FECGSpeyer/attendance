@@ -40,7 +40,6 @@ export class SettingsPage implements OnInit {
   public practiceStart: string;
   public practiceEnd: string;
   public tenantId: number;
-  public isBetaProgram: boolean = false;
 
   constructor(
     public db: DbService,
@@ -76,7 +75,6 @@ export class SettingsPage implements OnInit {
     this.leftConductors = allConductors.filter((con: Person) => Boolean(con.left));
     this.viewers = await this.db.getViewers();
     this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
-    this.isBetaProgram = this.db.tenant().betaProgram;
   }
 
   async ionViewWillEnter() {
@@ -189,7 +187,7 @@ export class SettingsPage implements OnInit {
     await modal.present();
   }
 
-  async openPlayerModal(p: Player | Person, isConductor: boolean) {
+  async openPlayerModal(p: Player | Person) {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: PersonPage,
       presentingElement: this.routerOutlet.nativeEl,
@@ -197,7 +195,6 @@ export class SettingsPage implements OnInit {
         existingPlayer: { ...p },
         instruments: this.instruments,
         readOnly: true,
-        isConductor,
         hasLeft: true,
       }
     });
@@ -268,42 +265,42 @@ export class SettingsPage implements OnInit {
     await modal.present();
   }
 
-  async migrate() {
-    const oldConductors = await this.db.getConductors(true, true);
-    const mainGroup = await this.db.getMainGroup();
+  // async migrate() {
+  //   const oldConductors = await this.db.getConductors(true, true);
+  //   const mainGroup = await this.db.getMainGroup();
 
-    for (const conductor of oldConductors) {
-      await this.db.addPlayer({
-        ...conductor,
-        hasTeacher: false,
-        playsSince: null,
-        isLeader: false,
-        isCritical: false,
-        correctBirthday: (conductor as any).correctBirthday,
-        history: [],
-        tenantId: this.db.tenant().id,
-        instrument: mainGroup.id
-      }, false, conductor.id);
-    }
-  }
+  //   for (const conductor of oldConductors) {
+  //     await this.db.addPlayer({
+  //       ...conductor,
+  //       hasTeacher: false,
+  //       playsSince: null,
+  //       isLeader: false,
+  //       isCritical: false,
+  //       correctBirthday: (conductor as any).correctBirthday,
+  //       history: [],
+  //       tenantId: this.db.tenant().id,
+  //       instrument: mainGroup.id
+  //     }, false, conductor.id);
+  //   }
+  // }
 
-  async migratePlayers() {
-    const players = await this.db.getPlayers(true);
-    const attendances = await this.db.getAttendance(true);
+  // async migratePlayers() {
+  //   const players = await this.db.getPlayers(true);
+  //   const attendances = await this.db.getAttendance(true);
 
-    for (const player of players) {
-      const attToAdd: PersonAttendance[] = [];
-      for (const att of attendances) {
-        if (att.players[player.id] !== undefined) {
-          attToAdd.push({
-            attendance_id: att.id,
-            person_id: player.id,
-            notes: att.playerNotes[player.id] || "",
-            status: att.players[player.id],
-          });
-        }
-      }
-      await this.db.addPersonAttendances(attToAdd);
-    }
-  }
+  //   for (const player of players) {
+  //     const attToAdd: PersonAttendance[] = [];
+  //     for (const att of attendances) {
+  //       if (att.players[player.id] !== undefined) {
+  //         attToAdd.push({
+  //           attendance_id: att.id,
+  //           person_id: player.id,
+  //           notes: att.playerNotes[player.id] || "",
+  //           status: att.players[player.id],
+  //         });
+  //       }
+  //     }
+  //     await this.db.addPersonAttendances(attToAdd);
+  //   }
+  // }
 }

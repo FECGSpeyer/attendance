@@ -39,7 +39,6 @@ export class ListPage implements OnInit {
   public archiveNote: string = "";
   public isAdmin: boolean = false;
   public isChoir: boolean = false;
-  public isBetaProgram: boolean = false;
   public sub: RealtimeChannel;
   public mainGroup: number | undefined;
   public attendances: Attendance[] = [];
@@ -55,7 +54,6 @@ export class ListPage implements OnInit {
     effect(async () => {
       this.db.tenant();
       this.instruments = await this.db.getInstruments();
-      this.isBetaProgram = this.db.tenant().betaProgram;
       await this.getPlayers();
     });
   }
@@ -67,8 +65,7 @@ export class ListPage implements OnInit {
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.filterOpt = (await this.storage.get("filterOpt")) || "all";
     this.instruments = await this.db.getInstruments();
-    this.isBetaProgram = this.db.tenant().betaProgram;
-    this.mainGroup = this.isBetaProgram ? this.instruments.find(ins => ins.maingroup)?.id : undefined;
+    this.mainGroup = this.instruments.find(ins => ins.maingroup)?.id;
     await this.getPlayers();
 
     this.sub = this.db.getSupabase()
@@ -87,7 +84,6 @@ export class ListPage implements OnInit {
 
   async getPlayers(): Promise<void> {
     this.players = await this.db.getPlayers();
-    this.conductors = await this.db.getConductors();
     this.attendances = await this.db.getAttendance();
     this.players = Utils.getModifiedPlayersLegacy(this.players, this.instruments, this.attendances, this.mainGroup);
     this.searchTerm = "";
@@ -98,17 +94,11 @@ export class ListPage implements OnInit {
   async openCreateSheet() {
     const actionSheet = await this.actionSheetController.create({
       buttons: [{
-        text: this.isBetaProgram ? "Person hinzufügen" : this.isChoir ? 'Sänger hinzufügen' : 'Spieler hinzufügen',
+        text: "Person hinzufügen",
         handler: () => {
           this.openModal(undefined, false);
         }
-      },
-      ...this.isBetaProgram ? [] : [{
-        text: 'Dirigent hinzufügen',
-        handler: () => {
-          this.openModal(undefined, true);
-        }
-      }], {
+      }, {
         text: 'Beobachter hinzufügen',
         handler: () => {
           this.openViewerAlert();
@@ -168,7 +158,7 @@ export class ListPage implements OnInit {
   }
 
   async openModal(player?: Player | Person, isConductor?: boolean): Promise<void> {
-    if (!isConductor && this.instruments.length === 0) {
+    if (this.instruments.length === 0) {
       this.instruments = await this.db.getInstruments();
       if (this.instruments.length === 0) {
         Utils.showToast("Bitte erstelle zuerst ein Instrument", "danger");
@@ -181,7 +171,6 @@ export class ListPage implements OnInit {
       componentProps: {
         existingPlayer: player ? { ...player } : undefined,
         instruments: this.instruments,
-        isConductor,
         readOnly: !this.isAdmin,
       },
       backdropDismiss: false,
@@ -190,10 +179,6 @@ export class ListPage implements OnInit {
     await modal.present();
 
     const { data } = await modal.onWillDismiss();
-
-    if (data?.conductor) {
-      this.conductors = await this.db.getConductors();
-    }
   }
 
   onSortChanged() {
@@ -364,7 +349,7 @@ export class ListPage implements OnInit {
     this.playersFiltered = this.players;
   }
 
-  async remove(player: Person, slider: IonItemSliding, isConductor: boolean = false): Promise<void> {
+  async remove(player: Person, slider: IonItemSliding): Promise<void> {
     const sheet: HTMLIonActionSheetElement = await this.actionSheetController.create({
       buttons: [{
         text: "Archivieren",
@@ -376,11 +361,7 @@ export class ListPage implements OnInit {
       }, {
         text: "Entfernen",
         handler: (): void => {
-          if (isConductor) {
-            this.removeConductor(player);
-          } else {
-            this.removePlayer(player);
-          }
+          this.removePlayer(player);
           slider.close();
         },
       }, {
@@ -396,14 +377,8 @@ export class ListPage implements OnInit {
   }
 
   async archivePlayer(): Promise<void> {
-    if (!this.playerToArchive.instrument) {
-      await this.db.archiveConductor(this.playerToArchive, dayjs(this.archiveDate).toISOString(), this.archiveNote);
-      this.dismissArchiveModal();
-      this.conductors == await this.db.getConductors();
-    } else {
-      await this.db.archivePlayer(this.playerToArchive, dayjs(this.archiveDate).toISOString(), this.archiveNote);
-      this.dismissArchiveModal();
-    }
+    await this.db.archivePlayer(this.playerToArchive, dayjs(this.archiveDate).toISOString(), this.archiveNote);
+    this.dismissArchiveModal();
   }
 
   dismissArchiveModal(): void {
@@ -414,23 +389,6 @@ export class ListPage implements OnInit {
 
   async removePlayer(player: Person): Promise<void> {
     await this.db.removePlayer(player);
-  }
-
-  async removeConductor(conductor: Person): Promise<void> {
-    await this.db.removeConductor(conductor);
-    this.conductors = await this.db.getConductors();
-  }
-
-  async pauseConductor(con: Person, slider: IonItemSliding) {
-    await this.db.updateConductor({ ...con, paused: true }, true);
-    slider.close();
-    this.getPlayers();
-  }
-
-  async unpauseConductor(con: Person, slider: IonItemSliding) {
-    await this.db.updateConductor({ ...con, paused: false }, true);
-    slider.close();
-    this.getPlayers();
   }
 
   async pausePlayer(player: Player, slider: IonItemSliding) {

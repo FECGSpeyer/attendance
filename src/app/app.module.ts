@@ -7,7 +7,6 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { AttPageModule } from './attendance/att/att.module';
 import { PersonPageModule } from './people/person/person.module';
 import { HistoryPageModule } from './history/history.module';
 import { TeacherPageModule } from './teacher/teacher.module';
@@ -25,7 +24,6 @@ import { AttendancePageModule } from './attendance/attendance/attendance.module'
         AppRoutingModule,
         PersonPageModule,
         IonicStorageModule.forRoot(),
-        AttPageModule,
         HistoryPageModule,
         TeacherPageModule,
         StatsPageModule,

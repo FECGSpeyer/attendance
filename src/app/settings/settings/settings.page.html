@@ -69,16 +69,16 @@
         Werkhistorie
       </ion-label>
     </ion-item>
-    <ion-item *ngIf="isAdmin && isBetaProgram" button (click)="migrate()">
+    <!-- <ion-item *ngIf="isAdmin" button (click)="migrate()">
       <ion-label>
         Migriere Dirigenten
       </ion-label>
     </ion-item>
-    <ion-item *ngIf="isAdmin && isBetaProgram" button (click)="migratePlayers()">
+    <ion-item *ngIf="isAdmin" button (click)="migratePlayers()">
       <ion-label>
         Migriere Spieler
       </ion-label>
-    </ion-item>
+    </ion-item> -->
     <ion-item *ngIf="isAdmin" routerLink="meetings" button>
       <ion-label>
         Besprechungen

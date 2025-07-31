@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Instrument, Meeting, Person, LegacyPersonAttendance, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance } from '../utilities/interfaces';
+import { Attendance, History, Instrument, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 import { Storage } from '@ionic/storage-angular';
@@ -31,7 +31,6 @@ const attendanceSelect: string = `*, persons:person_attendances(
 })
 export class DbService {
   private user: User;
-  private conductorMails: string[] = [];
   public attDate: string;
   public tenant: WritableSignal<Tenant | undefined>;
   public tenants: WritableSignal<Tenant[] | undefined>;
@@ -233,12 +232,12 @@ export class DbService {
     return data.length ? data[0].userId : undefined;
   }
 
-  async createAccount(user: Player, table: SupabaseTable = SupabaseTable.PLAYER) {
+  async createAccount(user: Player) {
     try {
-      const appId: string = await this.registerUser(user.email as string, user.firstName, table === SupabaseTable.CONDUCTORS ? Role.RESPONSIBLE : user.role ?? Role.PLAYER);
+      const appId: string = await this.registerUser(user.email as string, user.firstName, user.role ?? Role.PLAYER);
 
       const { data, error: updateError } = await supabase
-        .from(table)
+        .from(SupabaseTable.PLAYER)
         .update({ appId })
         .match({ id: user.id })
         .select()
@@ -306,24 +305,6 @@ export class DbService {
       ...player,
       history: player.history as any,
     }
-  }
-
-  async getConductorByAppId(showToast: boolean = true): Promise<Person> {
-    const { data: conductor, error } = await supabase
-      .from(SupabaseTable.CONDUCTORS)
-      .select('*')
-      .eq('tenantId', this.tenant().id)
-      .match({ appId: this.user.id })
-      .single();
-
-    if (error) {
-      if (showToast) {
-        Utils.showToast("Es konnte kein Spieler gefunden werden.", "danger");
-      }
-      throw error;
-    }
-
-    return conductor;
   }
 
   async getPlayers(all: boolean = false): Promise<Player[]> {
@@ -446,97 +427,29 @@ export class DbService {
     }).filter((p: Player) => p.email.length);
   }
 
-  async getConductorMails(): Promise<string[]> {
-    if (this.conductorMails?.length) {
-      return this.conductorMails;
+  async getConductors(all: boolean = false, old: boolean = false): Promise<Person[]> {
+    const mainGroupId = (await this.getMainGroup())?.id;
+
+    if (!mainGroupId) {
+      throw new Error("Hauptgruppe nicht gefunden");
     }
 
     const { data, error } = await supabase
-      .from('conductors')
-      .select('email')
-      .eq('tenantId', this.tenant().id)
-      .is("left", null);
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Dirigenten E-Mails", "danger");
-      throw new Error("Fehler beim Laden der Dirigenten E-Mails");
-    }
-
-    this.conductorMails = data.filter((d: { email: string }) => Boolean(d.email)).map((d: { email: string }) => d.email.toLowerCase()).concat(["eckstaedt98@gmail.com"]);
-    return this.conductorMails;
-  }
-
-  async getConductors(all: boolean = false, old: boolean = false): Promise<Person[]> {
-    if (this.tenant().betaProgram && !old) {
-      const mainGroupId = (await this.getMainGroup())?.id;
-
-      if (!mainGroupId) {
-        throw new Error("Hauptgruppe nicht gefunden");
-      }
-
-      const { data, error } = await supabase
-        .from('player')
-        .select('*')
-        .eq('instrument', mainGroupId)
-        .eq('tenantId', this.tenant().id)
-        .order("lastName");
-
-      if (error) {
-        Utils.showToast("Fehler beim Laden der Hauptgruppen-Personen", "danger");
-        throw new Error("Fehler beim Laden der Spieler");
-      }
-
-      return (all ? data : data.filter((c: Person) => !c.left)).map((con: Person) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
-    }
-
-    const response = await supabase
-      .from('conductors')
+      .from('player')
       .select('*')
+      .eq('instrument', mainGroupId)
       .eq('tenantId', this.tenant().id)
       .order("lastName");
 
-    return (all ? response.data : response.data.filter((c: Person) => !c.left)).map((con: Person) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
-  }
-
-  async addConductor(person: Person, register: boolean): Promise<void> {
-    const dataToCreate: any = { ...person };
-    delete dataToCreate.hasTeacher;
-    delete dataToCreate.instrument;
-    delete dataToCreate.isLeader;
-    delete dataToCreate.history;
-    delete dataToCreate.isCritical;
-    delete dataToCreate.notes;
-    delete dataToCreate.paused;
-    delete dataToCreate.teacher;
-    delete dataToCreate.playsSince;
-    delete dataToCreate.role;
-    delete dataToCreate.instruments;
-    delete dataToCreate.range;
-
-    if (dataToCreate.email && register) {
-      const appId: string = await this.registerUser(dataToCreate.email, dataToCreate.firstName, Role.RESPONSIBLE);
-      dataToCreate.appId = appId;
-    }
-
-    const { error, data } = await supabase
-      .from('conductors')
-      .insert({
-        ...dataToCreate,
-        tenantId: this.tenant().id,
-      })
-      .select()
-      .single();
-
     if (error) {
-      throw new Error("Fehler beim hinzufügen des Dirigenten.");
+      Utils.showToast("Fehler beim Laden der Hauptgruppen-Personen", "danger");
+      throw new Error("Fehler beim Laden der Spieler");
     }
 
-    await this.addConductorToUpcomingAttendances(data.id);
-
-    return;
+    return (all ? data : data.filter((c: Person) => !c.left)).map((con: Person) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
   }
 
-  async addPlayer(player: Player, register: boolean, conductorId?: number): Promise<void> {
+  async addPlayer(player: Player, register: boolean): Promise<void> {
     if (!this.tenant().maintainTeachers) {
       delete player.teacher;
     }
@@ -563,75 +476,38 @@ export class DbService {
       throw new Error(error.message);
     }
 
-    if (conductorId) {
-      const history = await this.getHistory();
-      const entries = history.filter((his: History) => his.conductor === conductorId);
-
-      const updates = entries.map((his: History) => {
-        return {
-          ...his,
-          person_id: data.id,
-        };
-      });
-
-      await supabase
-        .from('history')
-        .upsert(updates);
-    }
-
-    await this.addPlayerToAttendancesByDate(data.id, data.joined, conductorId);
+    await this.addPlayerToAttendancesByDate(data.id, data.joined);
   }
 
-  async addPlayerToAttendancesByDate(id: number, joined: string, conductorId?: number) {
+  async addPlayerToAttendancesByDate(id: number, joined: string) {
     const attData: Attendance[] = await this.getAttendancesByDate(joined);
 
     if (attData?.length) {
-      if (this.tenant().betaProgram) {
-        const attToAdd: PersonAttendance[] = await Promise.all(attData.map(async (att: Attendance) => {
-          return {
-            attendance_id: att.id,
-            person_id: id,
-            notes: "",
-            status: conductorId ? await this.getConductorAttendanceStatus(conductorId, att.id) : AttendanceStatus.Present,
-          }
-        }));
-        await this.addPersonAttendances(attToAdd);
-      } else {
-        for (const att of attData) {
-          att.players[id] = AttendanceStatus.Present;
-          await this.updateAttendance({ players: att.players }, att.id);
+      const attToAdd: PersonAttendance[] = await Promise.all(attData.map(async (att: Attendance) => {
+        return {
+          attendance_id: att.id,
+          person_id: id,
+          notes: "",
+          status: AttendanceStatus.Present,
         }
-      }
+      }));
+      await this.addPersonAttendances(attToAdd);
     }
-  }
-
-  async getConductorAttendanceStatus(conductorId: number, attendanceId: number): Promise<AttendanceStatus> {
-    const attendances = await this.getAttendance(true);
-    const conductorAttendance = attendances.find((att: Attendance) => att.conductors[conductorId] && att.id === attendanceId);
-
-    return conductorAttendance ? conductorAttendance.conductors[conductorId] : AttendanceStatus.Absent;
   }
 
   async addPlayerToUpcomingAttendances(id: number) {
     const attData: Attendance[] = await this.getUpcomingAttendances();
 
     if (attData?.length) {
-      if (this.tenant().betaProgram) {
-        const attToAdd: PersonAttendance[] = attData.map((att: Attendance) => {
-          return {
-            attendance_id: att.id,
-            person_id: id,
-            notes: "",
-            status: AttendanceStatus.Present,
-          }
-        });
-        await this.addPersonAttendances(attToAdd);
-      } else {
-        for (const att of attData) {
-          att.players[id] = AttendanceStatus.Present;
-          await this.updateAttendance({ players: att.players }, att.id);
+      const attToAdd: PersonAttendance[] = attData.map((att: Attendance) => {
+        return {
+          attendance_id: att.id,
+          person_id: id,
+          notes: "",
+          status: AttendanceStatus.Present,
         }
-      }
+      });
+      await this.addPersonAttendances(attToAdd);
     }
   }
 
@@ -639,36 +515,7 @@ export class DbService {
     const attData: Attendance[] = await this.getUpcomingAttendances();
 
     if (attData?.length) {
-      if (this.tenant().betaProgram) {
-        await this.deletePersonAttendances(attData.map((att: Attendance) => att.id), id);
-      } else {
-        for (const att of attData) {
-          delete att.players[id];
-          await this.updateAttendance({ players: att.players }, att.id);
-        }
-      }
-    }
-  }
-
-  async removeConductorFromUpcomingAttendances(id: number) {
-    const attData: Attendance[] = await this.getUpcomingAttendances();
-
-    if (attData?.length) {
-      for (const att of attData) {
-        delete att.conductors[id];
-        await this.updateAttendance({ conductors: att.conductors }, att.id as number);
-      }
-    }
-  }
-
-  async addConductorToUpcomingAttendances(id: number) {
-    const attData: Attendance[] = await this.getUpcomingAttendances();
-
-    if (attData?.length) {
-      for (const att of attData) {
-        att.conductors[id] = AttendanceStatus.Present;
-        await this.updateAttendance({ conductors: att.conductors }, att.id);
-      }
+      await this.deletePersonAttendances(attData.map((att: Attendance) => att.id), id);
     }
   }
 
@@ -687,21 +534,6 @@ export class DbService {
       for (const att of data) {
         delete att.players[id];
         await this.updateAttendance({ players: att.players as any }, att.id);
-      }
-    }
-  }
-
-  async removeConductorFromAttendances(id: number) {
-    const { data } = await supabase
-      .from('attendance')
-      .select('*')
-      .eq('tenantId', this.tenant().id)
-      .neq(`conductors->>"${id}"` as any, null);
-
-    if (data?.length) {
-      for (const att of data) {
-        delete att.conductors[id];
-        await this.updateAttendance({ conductors: att.conductors as any }, att.id);
       }
     }
   }
@@ -755,40 +587,6 @@ export class DbService {
         history: player.history as any,
       }
     });
-  }
-
-  async updateConductor(person: Person, pausedAction?: boolean): Promise<Person[]> {
-    const dataToUpdate: any = { ...person };
-    delete dataToUpdate.id;
-    delete dataToUpdate.created_at;
-    delete dataToUpdate.instrumentName;
-    delete dataToUpdate.firstOfInstrument;
-    delete dataToUpdate.isNew;
-    delete dataToUpdate.instrumentLength;
-    delete dataToUpdate.teacherName;
-    delete dataToUpdate.criticalReasonText;
-    delete dataToUpdate.isPresent;
-    delete dataToUpdate.text;
-
-    const { data, error } = await supabase
-      .from('conductors')
-      .update(dataToUpdate)
-      .match({ id: person.id })
-      .select();
-
-    if (error) {
-      throw new Error("Fehler beim updaten des Dirigenten");
-    }
-
-    if (pausedAction) {
-      if (person.paused) {
-        this.removeConductorFromUpcomingAttendances(person.id);
-      } else {
-        this.addConductorToUpcomingAttendances(person.id);
-      }
-    }
-
-    return data;
   }
 
   async updatePlayerHistory(id: number, history: PlayerHistoryEntry[]) {
@@ -846,18 +644,6 @@ export class DbService {
     }
   }
 
-  async removeConductor(conductor: Person): Promise<void> {
-    await supabase
-      .from('conductors')
-      .delete()
-      .match({ id: conductor.id });
-
-    await this.removeConductorFromAttendances(conductor.id);
-    if (conductor.appId) {
-      await this.removeEmailFromAuth(conductor.appId, conductor.email);
-    }
-  }
-
   async archivePlayer(player: Player, left: string, notes: string): Promise<void> {
     if (player.appId && player.email) {
       await this.removeEmailFromAuth(player.appId, player.email);
@@ -879,19 +665,6 @@ export class DbService {
       .match({ id: player.id });
   }
 
-  async archiveConductor(conductor: Person, left: string, notes: string): Promise<void> {
-    if (conductor.appId && conductor.email) {
-      await this.removeEmailFromAuth(conductor.appId, conductor.email);
-      delete conductor.appId;
-      delete conductor.email;
-    }
-
-    await supabase
-      .from(SupabaseTable.CONDUCTORS)
-      .update({ left, notes })
-      .match({ id: conductor.id });
-  }
-
   async getInstruments(): Promise<Instrument[]> {
     const { data } = await supabase
       .from('instruments')
@@ -906,10 +679,6 @@ export class DbService {
   }
 
   async getMainGroup(): Promise<Instrument | undefined> {
-    if (!this.tenant().betaProgram) {
-      return undefined;
-    }
-
     const { data } = await supabase
       .from('instruments')
       .select('*')
@@ -1086,14 +855,14 @@ export class DbService {
   async getAttendanceById(id: number): Promise<Attendance> {
     const { data } = await supabase
       .from('attendance')
-      .select(this.tenant().betaProgram ? attendanceSelect : "*")
+      .select(attendanceSelect)
       .match({ id })
       .order("date", {
         ascending: false,
       })
       .single();
 
-    return this.tenant().betaProgram ? Utils.getModifiedAttendanceData(data as any) : data as any;
+    return Utils.getModifiedAttendanceData(data as any);
   }
 
   async updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance[]> {
@@ -1144,45 +913,6 @@ export class DbService {
     if (error) {
       throw new Error("Fehler beim updaten der Anwesenheit");
     }
-  }
-
-  async getConductorAttendance(id: number, all: boolean = false): Promise<LegacyPersonAttendance[]> {
-    const { data } = await supabase
-      .from('attendance')
-      .select('*')
-      .eq('tenantId', this.tenant().id)
-      .neq(`conductors->>"${id}"` as any, null)
-      .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
-      .order("date", {
-        ascending: false,
-      });
-
-    return data.map((att): LegacyPersonAttendance => {
-      let attText;
-      if (typeof att.conductors[String(id)] == 'boolean') {
-        if ((att.excused || []).includes(String(id))) {
-          attText = 'E';
-        } else if ((att.excused || []).includes(String(id))) {
-          attText = 'L';
-        } else if (att.conductors[String(id)] === true) {
-          attText = 'X';
-        } else {
-          attText = 'A';
-        }
-      }
-      if (!attText) {
-        attText = att.conductors[id] === 0 ? 'N' : att.conductors[id] === 1 ? 'X' : att.conductors[id] === 2 ? 'E' : att.conductors[id] === 3 ? 'L' : 'A'
-      }
-
-      return {
-        id: att.id,
-        date: att.date,
-        attended: attText === "L" || attText === "X",
-        title: att.typeInfo ? att.typeInfo : att.type === "vortrag" ? "Vortrag" : "",
-        text: attText,
-        notes: "",
-      }
-    });
   }
 
   async getHistory(): Promise<History[]> {
@@ -1432,26 +1162,19 @@ export class DbService {
     });
   }
 
-  async removeImage(id: number, imgPath: string, isConductor: boolean) {
-    if (isConductor) {
-      await supabase
-        .from("conductors")
-        .update({ img: "" })
-        .match({ id });
-    } else {
-      await supabase
-        .from("player")
-        .update({ img: "" })
-        .match({ id });
-    }
+  async removeImage(id: number, imgPath: string) {
+    await supabase
+      .from("player")
+      .update({ img: "" })
+      .match({ id });
 
     await supabase.storage
       .from("profiles")
-      .remove([`${isConductor ? "con_" : ""}${id}`]);
+      .remove([String(id)]);
   }
 
-  async updateImage(id: number, image: File, isConductor: boolean) {
-    const fileName: string = `${isConductor ? "con_" : ""}${id}`;
+  async updateImage(id: number, image: File) {
+    const fileName: string = `${id}`;
 
     const { error } = await supabase.storage
       .from("profiles")
@@ -1466,17 +1189,10 @@ export class DbService {
       .from("profiles")
       .getPublicUrl(fileName);
 
-    if (isConductor) {
-      await supabase
-        .from("conductors")
-        .update({ img: data.publicUrl })
-        .match({ id });
-    } else {
-      await supabase
-        .from("player")
-        .update({ img: data.publicUrl })
-        .match({ id });
-    }
+    await supabase
+      .from("player")
+      .update({ img: data.publicUrl })
+      .match({ id });
 
     return data.publicUrl;
   }

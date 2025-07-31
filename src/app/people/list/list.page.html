@@ -56,7 +56,7 @@
                 [(ngModel)]="viewOpts">
                 <ion-select-option *ngIf="!isChoir" value="instrument">Instrument</ion-select-option>
                 <ion-select-option *ngIf="isChoir" value="instrument">Stimme</ion-select-option>
-                <ion-select-option *ngIf="isBetaProgram" value="attendance">Anwesenheit</ion-select-option>
+                <ion-select-option value="attendance">Anwesenheit</ion-select-option>
                 <ion-select-option value="birthday">Geburtsdatum</ion-select-option>
                 <ion-select-option *ngIf="isChoir" value="instruments">Instrumente</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="test">Testergebnis</ion-select-option>
@@ -78,35 +78,6 @@
     </ion-popover>
   </div>
 
-  @if (!isBetaProgram) {
-    <ion-list style="padding-bottom: 0;" *ngIf="searchTerm === '' && (filterOpt === 'all' || filterOpt === 'active') && sortOpt === 'instrument'">
-      <ion-item-divider color="primary" sticky="true">
-        <ion-label>Dirigenten ({{conductors.length}})</ion-label>
-      </ion-item-divider>
-      <ion-item-sliding #sliderDiri *ngFor="let con of conductors; trackBy:userById">
-        <ion-item button detail="false" (click)="openModal(con, true)">
-          <ion-avatar *ngIf="showImg" slot="start">
-            <img [src]="con.img" />
-          </ion-avatar>
-          <ion-label>
-            <h2>{{ con.firstName }} {{ con.lastName }}</h2>
-          </ion-label>
-          <ion-badge color="warning" *ngIf="showPaused && con.paused" slot="end">Pausiert</ion-badge>
-        </ion-item>
-        <ion-item-options>
-          <ion-item-option *ngIf="!con.paused" (click)="pauseConductor(con, sliderDiri)" color="primary">
-            <ion-icon name="pause"></ion-icon>
-          </ion-item-option>
-          <ion-item-option *ngIf="con.paused" (click)="unpauseConductor(con, sliderDiri)" color="primary">
-            <ion-icon name="play"></ion-icon>
-          </ion-item-option>
-          <ion-item-option (click)="remove(con, sliderDiri, true)" color="danger">
-            <ion-icon name="trash"></ion-icon>
-          </ion-item-option>
-        </ion-item-options>
-      </ion-item-sliding>
-    </ion-list>
-  }
   <ion-list style="padding-top: 0;" class="marginBottom">
     <ng-container *ngFor="let player of playersFiltered; trackBy:userById">
       <ion-item-divider color="primary" sticky="true" *ngIf="player.firstOfInstrument && sortOpt === 'instrument'">
@@ -134,7 +105,7 @@
             *ngIf="((showPaused && !player.paused) || !showPaused) && showCritical && player.isCritical" slot="end">
             Problemfall</ion-badge>
           <ion-badge color="warning" *ngIf="showPaused && player.paused" slot="end">Pausiert</ion-badge>
-          <ion-badge [color]="player.percentage >= 75 ? 'success' : player.percentage >= 50 ? 'warning' : 'danger'" *ngIf="showAttendance && isBetaProgram" slot="end">{{ player.percentage }}%</ion-badge>
+          <ion-badge [color]="player.percentage >= 75 ? 'success' : player.percentage >= 50 ? 'warning' : 'danger'" *ngIf="showAttendance" slot="end">{{ player.percentage }}%</ion-badge>
           <ion-badge color="warning"
             *ngIf="((showPaused && !player.paused) || !showPaused) && showNotes && player.notes" slot="end">
             <ion-icon name="pencil"></ion-icon>
