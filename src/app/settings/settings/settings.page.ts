@@ -11,8 +11,8 @@ import { PersonPage } from 'src/app/people/person/person.page';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { StatsPage } from 'src/app/stats/stats.page';
-import { AttendanceType, Role } from 'src/app/utilities/constants';
-import { Instrument, Person, Player, Tenant, TenantUser } from 'src/app/utilities/interfaces';
+import { AttendanceStatus, AttendanceType, Role } from 'src/app/utilities/constants';
+import { Instrument, Person, PersonAttendance, Player, Tenant, TenantUser } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { Viewer } from '../../utilities/interfaces';
 import { Router } from '@angular/router';
@@ -40,6 +40,7 @@ export class SettingsPage implements OnInit {
   public practiceStart: string;
   public practiceEnd: string;
   public tenantId: number;
+  public isBetaProgram: boolean = false;
 
   constructor(
     public db: DbService,
@@ -71,10 +72,11 @@ export class SettingsPage implements OnInit {
     this.conductors = allConductors.filter((con: Person) => !con.left);
     this.selConductors = this.conductors.filter((con: Person) => Boolean(!con.left)).map((c: Person): number => c.id);
     this.instruments = await this.db.getInstruments();
-    this.leftPlayers = Utils.getModifiedPlayersLegacy(await this.db.getLeftPlayers(), this.instruments);
+    this.leftPlayers = Utils.getModifiedPlayersLegacy(await this.db.getLeftPlayers(), this.instruments, this.instruments.find(ins => ins.maingroup)?.id);
     this.leftConductors = allConductors.filter((con: Person) => Boolean(con.left));
     this.viewers = await this.db.getViewers();
     this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
+    this.isBetaProgram = this.db.tenant().betaProgram;
   }
 
   async ionViewWillEnter() {
@@ -264,5 +266,44 @@ export class SettingsPage implements OnInit {
     });
 
     await modal.present();
+  }
+
+  async migrate() {
+    const oldConductors = await this.db.getConductors(true, true);
+    const mainGroup = await this.db.getMainGroup();
+
+    for (const conductor of oldConductors) {
+      await this.db.addPlayer({
+        ...conductor,
+        hasTeacher: false,
+        playsSince: null,
+        isLeader: false,
+        isCritical: false,
+        correctBirthday: (conductor as any).correctBirthday,
+        history: [],
+        tenantId: this.db.tenant().id,
+        instrument: mainGroup.id
+      }, false, conductor.id);
+    }
+  }
+
+  async migratePlayers() {
+    const players = await this.db.getPlayers(true);
+    const attendances = await this.db.getAttendance(true);
+
+    for (const player of players) {
+      const attToAdd: PersonAttendance[] = [];
+      for (const att of attendances) {
+        if (att.players[player.id] !== undefined) {
+          attToAdd.push({
+            attendance_id: att.id,
+            person_id: player.id,
+            notes: att.playerNotes[player.id] || "",
+            status: att.players[player.id],
+          });
+        }
+      }
+      await this.db.addPersonAttendances(attToAdd);
+    }
   }
 }

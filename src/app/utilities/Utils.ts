@@ -12,14 +12,22 @@ export class Utils {
     return Math.floor(Math.random() * (999999999999 - 1000000000 + 1)) + 1000000000;
   }
 
-  public static getModifiedPlayersLegacy(players: Player[], instruments: Instrument[]): Player[] {
+  public static getModifiedPlayersLegacy(players: Player[], instruments: Instrument[], mainGroup?: number): Player[] {
     const instrumentsMap: { [props: number]: boolean } = {};
 
     return players.sort((a: Player, b: Player) => {
       if (a.instrument === b.instrument) {
         return a.lastName.localeCompare(b.lastName);
       }
-      return b.instrument - a.instrument;
+
+      // Sort by instrument but maingroup first
+      if (a.instrumentName === b.instrumentName) {
+        return 0;
+      } else if (a.instrument === mainGroup) {
+        return -1;
+      } else if (b.instrument === mainGroup) {
+        return 1;
+      }
     }).map((player: Player): Player => {
       let firstOfInstrument: boolean = false;
       let instrumentLength: number = 0;
@@ -54,17 +62,33 @@ export class Utils {
         instrumentName: instruments.find((ins: Instrument) => ins.id === player.instrument).name,
         img: player.img || DEFAULT_IMAGE,
       }
-    }).sort((a: Player, b: Player) => a.instrumentName.localeCompare(b.instrumentName));
+    }).sort((a: Player, b: Player) => {
+      // Sort by instrument but maingroup first
+      if (a.instrumentName === b.instrumentName) {
+        return 0;
+      } else if (a.instrument === mainGroup) {
+        return -1;
+      } else if (b.instrument === mainGroup) {
+        return 1;
+      }
+    });
   }
 
-  public static getModifiedPlayers(persons: PersonAttendance[]): PersonAttendance[] {
+  public static getModifiedPlayers(persons: PersonAttendance[], mainGroup?: number): PersonAttendance[] {
     const instrumentsMap: { [props: number]: boolean } = {};
 
     return persons.sort((a: PersonAttendance, b: PersonAttendance) => {
       if (a.instrument === b.instrument) {
         return a.person.lastName.localeCompare(b.person.lastName);
       }
-      return a.instrumentName.localeCompare(b.instrumentName);
+      // Sort by instrument name but maingroup (only one exists) first
+      if (a.instrumentName === b.instrumentName) {
+        return 0;
+      } else if (a.instrument === mainGroup) {
+        return -1;
+      } else if (b.instrument === mainGroup) {
+        return 1;
+      }
     }).map((player: PersonAttendance): PersonAttendance => {
       let firstOfInstrument: boolean = false;
       let instrumentLength: number = 0;
@@ -88,7 +112,16 @@ export class Utils {
         isNew,
         img: player.img || DEFAULT_IMAGE,
       } as any
-    }).sort((a: PersonAttendance, b: PersonAttendance) => a.instrumentName.localeCompare(b.instrumentName));
+    }).sort((a: PersonAttendance, b: PersonAttendance) => {
+      // Sort by instrument but maingroup first
+      if (a.instrumentName === b.instrumentName) {
+        return 0;
+      } else if (a.instrument === mainGroup) {
+        return -1;
+      } else if (b.instrument === mainGroup) {
+        return 1;
+      }
+    });
   }
 
   public static getModifiedAttendanceData(attendance: Attendance): Attendance {

@@ -183,6 +183,7 @@ export interface History {
     otherConductor?: string;
     count?: number;
     tenantId?: number;
+    person_id?: number;
 }
 
 export interface Teacher {

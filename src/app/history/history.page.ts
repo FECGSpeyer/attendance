@@ -51,7 +51,7 @@ export class HistoryPage implements OnInit {
   async getHistory(): Promise<void> {
     const attendances: Attendance[] = await this.db.getAttendance(true);
     this.history = (await this.db.getHistory()).map((entry: History): History => {
-      const conductor: Person | undefined = this.conductors.find((p: Person) => p.id === entry.conductor);
+      const conductor: Person | undefined = this.conductors.find((p: Person) => p.id === (this.db.tenant().betaProgram ? entry.person_id : entry.conductor));
       return {
         ...entry,
         conductorName: conductor ? `${conductor.firstName} ${conductor.lastName}` : entry.otherConductor,

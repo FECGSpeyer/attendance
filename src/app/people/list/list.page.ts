@@ -41,6 +41,7 @@ export class ListPage implements OnInit {
   public isChoir: boolean = false;
   public isBetaProgram: boolean = false;
   public sub: RealtimeChannel;
+  public mainGroup: number | undefined;
 
   constructor(
     private modalController: ModalController,
@@ -66,6 +67,7 @@ export class ListPage implements OnInit {
     this.filterOpt = (await this.storage.get("filterOpt")) || "all";
     this.instruments = await this.db.getInstruments();
     this.isBetaProgram = this.db.tenant().betaProgram;
+    this.mainGroup = this.isBetaProgram ? this.instruments.find(ins => ins.maingroup)?.id : undefined;
     await this.getPlayers();
 
     this.sub = this.db.getSupabase()
@@ -85,7 +87,7 @@ export class ListPage implements OnInit {
   async getPlayers(): Promise<void> {
     this.players = await this.db.getPlayers();
     this.conductors = await this.db.getConductors();
-    this.players = Utils.getModifiedPlayersLegacy(this.players, this.instruments);
+    this.players = Utils.getModifiedPlayersLegacy(this.players, this.instruments, this.mainGroup);
     this.searchTerm = "";
     this.initializeItems();
     this.onFilterChanged();
@@ -269,7 +271,7 @@ export class ListPage implements OnInit {
       } else {
         return player.isLeader;
       }
-    }), this.instruments);
+    }), this.instruments, this.mainGroup);
 
     await this.storage.set("filterOpt", this.filterOpt);
   }
@@ -335,7 +337,7 @@ export class ListPage implements OnInit {
       }
 
       this.playersFiltered = this.filter();
-      this.playersFiltered = Utils.getModifiedPlayersLegacy(this.playersFiltered, this.instruments);
+      this.playersFiltered = Utils.getModifiedPlayersLegacy(this.playersFiltered, this.instruments, this.mainGroup);
     }
   }
 

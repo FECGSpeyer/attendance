@@ -75,7 +75,7 @@
   <ion-list class="marginBottom">
     <ng-container *ngFor="let player of players; trackBy:userById">
       <ion-item-divider sticky="true" *ngIf="player.firstOfInstrument">
-        <ion-label>{{ player.instrumentName }} ({{ getPlayerLengthByInstrument(players, player) }})</ion-label>
+        <ion-label>{{ player.instrumentName }} ({{ player.instrumentLength }})</ion-label>
       </ion-item-divider>
       <ion-item-sliding #slider>
         <ion-item button detail="false" (click)="onAttChange(player)">

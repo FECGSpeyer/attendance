@@ -465,8 +465,8 @@ export class DbService {
     return this.conductorMails;
   }
 
-  async getConductors(all: boolean = false): Promise<Person[]> {
-    if (this.tenant().betaProgram) {
+  async getConductors(all: boolean = false, old: boolean = false): Promise<Person[]> {
+    if (this.tenant().betaProgram && !old) {
       const mainGroupId = (await this.getMainGroup())?.id;
 
       if (!mainGroupId) {
@@ -479,6 +479,11 @@ export class DbService {
         .eq('instrument', mainGroupId)
         .eq('tenantId', this.tenant().id)
         .order("lastName");
+
+      if (error) {
+        Utils.showToast("Fehler beim Laden der Hauptgruppen-Personen", "danger");
+        throw new Error("Fehler beim Laden der Spieler");
+      }
 
       return (all ? data : data.filter((c: Person) => !c.left)).map((con: Person) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
     }
@@ -530,7 +535,7 @@ export class DbService {
     return;
   }
 
-  async addPlayer(player: Player, register: boolean): Promise<void> {
+  async addPlayer(player: Player, register: boolean, conductorId?: number): Promise<void> {
     if (!this.tenant().maintainTeachers) {
       delete player.teacher;
     }
@@ -557,22 +562,38 @@ export class DbService {
       throw new Error(error.message);
     }
 
-    await this.addPlayerToAttendancesByDate(data.id, data.joined);
+    if (conductorId) {
+      const history = await this.getHistory();
+      const entries = history.filter((his: History) => his.conductor === conductorId);
+
+      const updates = entries.map((his: History) => {
+        return {
+          ...his,
+          person_id: data.id,
+        };
+      });
+
+      await supabase
+        .from('history')
+        .upsert(updates);
+    }
+
+    await this.addPlayerToAttendancesByDate(data.id, data.joined, conductorId);
   }
 
-  async addPlayerToAttendancesByDate(id: number, joined: string) {
+  async addPlayerToAttendancesByDate(id: number, joined: string, conductorId?: number) {
     const attData: Attendance[] = await this.getAttendancesByDate(joined);
 
     if (attData?.length) {
       if (this.tenant().betaProgram) {
-        const attToAdd: PersonAttendance[] = attData.map((att: Attendance) => {
+        const attToAdd: PersonAttendance[] = await Promise.all(attData.map(async (att: Attendance) => {
           return {
             attendance_id: att.id,
             person_id: id,
             notes: "",
-            status: AttendanceStatus.Present,
+            status: conductorId ? await this.getConductorAttendanceStatus(conductorId, att.id) : AttendanceStatus.Present,
           }
-        });
+        }));
         await this.addPersonAttendances(attToAdd);
       } else {
         for (const att of attData) {
@@ -581,6 +602,13 @@ export class DbService {
         }
       }
     }
+  }
+
+  async getConductorAttendanceStatus(conductorId: number, attendanceId: number): Promise<AttendanceStatus> {
+    const attendances = await this.getAttendance(true);
+    const conductorAttendance = attendances.find((att: Attendance) => att.conductors[conductorId] && att.id === attendanceId);
+
+    return conductorAttendance ? conductorAttendance.conductors[conductorId] : AttendanceStatus.Absent;
   }
 
   async addPlayerToUpcomingAttendances(id: number) {
@@ -868,12 +896,19 @@ export class DbService {
       .from('instruments')
       .select('*')
       .eq('tenantId', this.tenant().id)
+      .order("maingroup", {
+        ascending: false,
+      })
       .order("name");
 
     return data;
   }
 
-  async getMainGroup(): Promise<Instrument> {
+  async getMainGroup(): Promise<Instrument | undefined> {
+    if (!this.tenant().betaProgram) {
+      return undefined;
+    }
+
     const { data } = await supabase
       .from('instruments')
       .select('*')
@@ -900,11 +935,20 @@ export class DbService {
   }
 
   async updateInstrument(att: Partial<Instrument>, id: number): Promise<Instrument[]> {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('instruments')
       .update(att)
       .match({ id })
       .select();
+
+    if (error) {
+      if (error.code === '23505') {
+        Utils.showToast("Es kann nur eine Hauptgruppe existieren", "danger");
+      } else {
+        Utils.showToast("Fehler beim updaten des Instruments", "danger");
+      }
+      throw new Error("Fehler beim updaten des Instruments");
+    }
 
     return data;
   }
@@ -1101,19 +1145,19 @@ export class DbService {
       .eq('person_id', id)
       .gt("attendance.date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate());
 
-      return data.map((att): PersonAttendance => {
-        let attText = Utils.getAttText(att as any);
+    return data.map((att): PersonAttendance => {
+      let attText = Utils.getAttText(att as any);
 
-        return {
-          id: att.id,
-          date: (att.attendance as any).date,
-          attended: attText === "L" || attText === "X",
-          title: (att.attendance as any).typeInfo ? (att.attendance as any).typeInfo : (att.attendance as any).type === "vortrag" ? "Vortrag" : "",
-          text: attText,
-          notes: att.notes,
-          songs: (att.attendance as any).songs,
-        } as any;
-      });
+      return {
+        id: att.id,
+        date: (att.attendance as any).date,
+        attended: attText === "L" || attText === "X",
+        title: (att.attendance as any).typeInfo ? (att.attendance as any).typeInfo : (att.attendance as any).type === "vortrag" ? "Vortrag" : "",
+        text: attText,
+        notes: att.notes,
+        songs: (att.attendance as any).songs,
+      } as any;
+    });
   }
 
   async updatePersonAttendance(id: string, att: Partial<PersonAttendance>): Promise<void> {

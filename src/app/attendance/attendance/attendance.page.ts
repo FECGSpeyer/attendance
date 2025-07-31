@@ -5,7 +5,7 @@ import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supab
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
-import { Attendance, FieldSelection, Instrument, Person, PersonAttendance, Player, Song } from 'src/app/utilities/interfaces';
+import { Attendance, FieldSelection, Person, PersonAttendance, Song } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -27,6 +27,7 @@ export class AttendancePage implements OnInit {
   public isHelper: boolean = false;
   public songs: Song[] = [];
   public selectedSongs: number[] = [];
+  public mainGroup: number | undefined;
 
   constructor(
     private modalController: ModalController,
@@ -35,6 +36,7 @@ export class AttendancePage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
+    this.mainGroup = (await this.db.getMainGroup()).id;
     document.addEventListener("visibilitychange", async () => {
       if (!document.hidden) {
         this.attendance = await this.db.getAttendanceById(this.attendanceId);
@@ -79,7 +81,7 @@ export class AttendancePage implements OnInit {
       return;
     }
 
-    this.players = Utils.getModifiedPlayers(this.attendance.persons);
+    this.players = Utils.getModifiedPlayers(this.attendance.persons, this.mainGroup);
   }
 
   async listenOnNetworkChanges(): Promise<void> {
@@ -163,10 +165,6 @@ export class AttendancePage implements OnInit {
     }
 
     this.db.updatePersonAttendance(individual.id, { status: individual.status });
-  }
-
-  getPlayerLengthByInstrument(players: PersonAttendance[], player: PersonAttendance): number {
-    return players.filter((p: PersonAttendance) => p.instrument === player.instrument).length;
   }
 
   getAttendedPlayers(players: PersonAttendance[]): number {
