@@ -148,6 +148,7 @@ export interface PersonAttendance {
     attendance?: Partial<Attendance>;
     attended?: boolean;
     firstOfInstrument?: boolean;
+    instrumentLength?: number;
 }
 
 export interface Song {
