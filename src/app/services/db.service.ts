@@ -519,25 +519,6 @@ export class DbService {
     }
   }
 
-  async removePlayerFromAttendances(id: number) {
-    // @ts-ignore
-    const { data } = await supabase
-      // @ts-ignore
-      .from('attendance')
-      .select('*')
-      // @ts-ignore
-      .eq('tenantId', this.tenant().id)
-      // @ts-ignore
-      .neq(`players->>"${id}"` as any, null);
-
-    if (data?.length) {
-      for (const att of data) {
-        delete att.players[id];
-        await this.updateAttendance({ players: att.players as any }, att.id);
-      }
-    }
-  }
-
   async updatePlayer(player: Player, pausedAction?: boolean): Promise<Player[]> {
     const dataToUpdate: Player = { ...player };
     delete dataToUpdate.id;
@@ -610,7 +591,6 @@ export class DbService {
       .delete()
       .match({ id: player.id });
 
-    await this.removePlayerFromAttendances(player.id);
     if (player.appId) {
       await this.removeEmailFromAuth(player.appId, player.email);
     }
@@ -1090,11 +1070,11 @@ export class DbService {
     return;
   }
 
-  async signout(attIds: string[], reason: string, isLateExcused: boolean, player: Player): Promise<void> {
+  async signout(attIds: string[], reason: string, isLateExcused: Boolean): Promise<void> {
     for (const attId of attIds) {
       await this.updatePersonAttendance(attId, {
         notes: reason,
-        status: isLateExcused ? AttendanceStatus.Late : AttendanceStatus.Excused,
+        status: isLateExcused ? AttendanceStatus.LateExcused : AttendanceStatus.Excused,
       });
     }
 
@@ -1103,13 +1083,13 @@ export class DbService {
     return;
   }
 
-  async signin(attId: string): Promise<void> {
+  async signin(attId: string, wasLateExcused: boolean): Promise<void> {
     await this.updatePersonAttendance(attId, {
       notes: "",
       status: AttendanceStatus.Present,
     });
 
-    this.notifyPerTelegram(attId, 'signin'); // todo lateSignIn
+    this.notifyPerTelegram(attId, wasLateExcused ? 'lateSignIn' : 'signin');
 
     return;
   }

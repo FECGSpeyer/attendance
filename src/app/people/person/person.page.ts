@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '
 import { ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
-import { Instrument, LegacyPersonAttendance, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
+import { Instrument, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
@@ -48,7 +48,6 @@ export class PersonPage implements OnInit, AfterViewInit {
   public playsSinceString: string = format(new Date(), 'dd.MM.yyyy');
   public joinedString: string = format(new Date(), 'dd.MM.yyyy');
   public max: string = new Date().toISOString();
-  public attendance: LegacyPersonAttendance[] = [];
   public personAttendance: PersonAttendance[] = [];
   public history: any[] = [];
   public teachers: Teacher[] = [];
@@ -384,17 +383,10 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
   }
 
-  getAttTextLegacy(text: string) {
+  getAttText(text: string) {
     return text === 'X' ? '✓' :
       text === 'L' ? 'L' :
         text === 'E' ? 'E' : 'A';
-    // if (text === "X") {
-    //   return "✓";
-    // }else if(text === 'L') {
-    //   return 'L';
-    // } else {
-    //   return this.isConductor || text === "E" ? "E" : "A";
-    // }
   }
 
   async onHisItemClicked(his: PlayerHistoryEntry) {

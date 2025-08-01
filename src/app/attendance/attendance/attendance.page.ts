@@ -157,7 +157,7 @@ export class AttendancePage implements OnInit {
         individual.status = AttendanceStatus.Present;
       } else if (individual.status === AttendanceStatus.Present) {
         individual.status = AttendanceStatus.Excused;
-      } else if (individual.status === AttendanceStatus.Excused) {
+      } else if (individual.status === AttendanceStatus.Excused || individual.status === AttendanceStatus.LateExcused) {
         individual.status = AttendanceStatus.Late;
       } else if (individual.status === AttendanceStatus.Late) {
         individual.status = AttendanceStatus.Absent;

@@ -61,7 +61,7 @@ export class SignoutPage implements OnInit {
   }
 
   async signout() {
-    await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent, this.player);
+    await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent);
 
     this.excuseModal.dismiss();
     this.reason = "";
@@ -73,8 +73,8 @@ export class SignoutPage implements OnInit {
     await this.getAttendances();
   }
 
-  async signin(id: string) {
-    await this.db.signin(id);
+  async signin(attendance: PersonAttendance) {
+    await this.db.signin(attendance.id, attendance.status === AttendanceStatus.LateExcused);
 
     Utils.showToast("Schön, dass du dabei bist 🙂", "success", 4000);
 
@@ -123,7 +123,7 @@ export class SignoutPage implements OnInit {
     let buttons = [
       {
         text: 'Anmelden',
-        handler: () => this.signin(attendance.id as string),
+        handler: () => this.signin(attendance),
       },
       {
         text: 'Abmelden',

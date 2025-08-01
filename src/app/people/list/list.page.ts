@@ -85,7 +85,7 @@ export class ListPage implements OnInit {
   async getPlayers(): Promise<void> {
     this.players = await this.db.getPlayers();
     this.attendances = await this.db.getAttendance();
-    this.players = Utils.getModifiedPlayersLegacy(this.players, this.instruments, this.attendances, this.mainGroup);
+    this.players = Utils.getModifiedPlayersForList(this.players, this.instruments, this.attendances, this.mainGroup);
     this.searchTerm = "";
     this.initializeItems();
     this.onFilterChanged();
@@ -240,7 +240,7 @@ export class ListPage implements OnInit {
       return;
     }
 
-    this.playersFiltered = Utils.getModifiedPlayersLegacy(this.players.filter((player: Player) => {
+    this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
       if (this.filterOpt === 'criticals') {
         return player.isCritical;
       } else if (this.filterOpt === "new") {
@@ -324,7 +324,7 @@ export class ListPage implements OnInit {
       }
 
       this.playersFiltered = this.filter();
-      this.playersFiltered = Utils.getModifiedPlayersLegacy(this.playersFiltered, this.instruments, this.attendances, this.mainGroup);
+      this.playersFiltered = Utils.getModifiedPlayersForList(this.playersFiltered, this.instruments, this.attendances, this.mainGroup);
     }
   }
 

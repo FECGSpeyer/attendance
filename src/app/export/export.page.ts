@@ -33,8 +33,8 @@ export class ExportPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.players = Utils.getModifiedPlayersLegacy(await this.db.getPlayers(), await this.db.getInstruments(), [], (await this.db.getMainGroup())?.id);
-    this.attendance = (await this.db.getAttendance()).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
+    this.players = Utils.getModifiedPlayersForList(await this.db.getPlayers(), await this.db.getInstruments(), [], (await this.db.getMainGroup())?.id);
+    this.attendance = (await this.db.getAttendance(false, true)).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
   }
 
   dismiss() {
@@ -130,7 +130,7 @@ export class ExportPage implements OnInit {
   async exportType(shortName: string) {
     let row = 1;
 
-    let attendance: Attendance[] = [...this.attendance].filter((att: Attendance) => Boolean(Object.keys(att.players).length));
+    let attendance: Attendance[] = [...this.attendance].filter((att: Attendance) => Boolean(Object.keys(att.persons).length));
     if (attendance.length > 8 && this.type === "pdf") {
       attendance.length = 8;
     }
@@ -147,8 +147,8 @@ export class ExportPage implements OnInit {
       const attInfo: string[] = [];
 
       for (const att of attendance) {
-        if (att.players[player.id] !== undefined) {
-          attInfo.push(Utils.getAttTextLegacy(att, player.id));
+        if (att.persons.find((p) => p.person_id === player.id)) {
+          attInfo.push(Utils.getAttText(att.persons.find((p) => p.person_id === player.id)));
         } else {
           attInfo.push("");
         }

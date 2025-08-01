@@ -2,7 +2,7 @@ import { ToastController, LoadingController, Platform } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { environment } from "src/environments/environment";
 import { AttendanceStatus, DEFAULT_IMAGE, Role } from "./constants";
-import { Attendance, AttendanceItem, FieldSelection, Instrument, Person, PersonAttendance, Player } from "./interfaces";
+import { Attendance, FieldSelection, Instrument, Person, PersonAttendance, Player } from "./interfaces";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
@@ -12,7 +12,7 @@ export class Utils {
     return Math.floor(Math.random() * (999999999999 - 1000000000 + 1)) + 1000000000;
   }
 
-  public static getModifiedPlayersLegacy(players: Player[], instruments: Instrument[], attendances: Attendance[], mainGroup?: number): Player[] {
+  public static getModifiedPlayersForList(players: Player[], instruments: Instrument[], attendances: Attendance[], mainGroup?: number): Player[] {
     const instrumentsMap: { [props: number]: boolean } = {};
 
     return players.sort((a: Player, b: Player) => {
@@ -138,18 +138,6 @@ export class Utils {
     });
 
     return attendance;
-  }
-
-  public static getPercentageLegacy(attItem: AttendanceItem): number {
-    const overallCount: number = Object.keys(attItem).length;
-    let presentCount: number = 0;
-    for (const p in attItem) {
-      if (attItem[p] === AttendanceStatus.Present || attItem[p] === AttendanceStatus.Late || (attItem[p] as any) === true) {
-        presentCount++;
-      }
-    }
-
-    return Math.round((presentCount / overallCount) * 100);
   }
 
   public static getPercentage(personAttendances: PersonAttendance[]): number {
@@ -390,27 +378,6 @@ export class Utils {
     const ageDiff = new Date(msDiff);
 
     return Math.abs(ageDiff.getUTCFullYear() - 1970);
-  }
-
-  public static getAttTextLegacy(att: Attendance, id: number): string {
-    let attText: string = "";
-
-    if (typeof att.players[String(id)] == 'boolean') {
-      if ((att.excused || []).includes(String(id))) {
-        attText = 'E';
-      } else if ((att.excused || []).includes(String(id))) {
-        attText = 'L';
-      } else if (att.players[String(id)] === true) {
-        attText = 'X';
-      } else {
-        attText = 'A';
-      }
-    }
-    if (!attText) {
-      attText = att.players[id] === AttendanceStatus.Neutral ? 'N' : att.players[id] === AttendanceStatus.Present ? 'X' : att.players[id] === AttendanceStatus.Excused ? 'E' : att.players[id] === AttendanceStatus.Late ? 'L' : 'A';
-    }
-
-    return attText
   }
 
   public static getAttText(att: PersonAttendance): string {

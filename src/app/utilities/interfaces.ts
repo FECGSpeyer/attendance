@@ -117,17 +117,11 @@ export interface Instrument {
     maingroup: boolean;
 }
 
-export interface AttendanceItem {
-    [props: number]: AttendanceStatus;
-}
-
 export interface Attendance {
     id?: number;
     created_at?: string;
     date: string;
     type: string;
-    players?: AttendanceItem;
-    conductors?: any;
     percentage?: number;
     excused?: string[];
     criticalPlayers?: number[];
@@ -175,16 +169,6 @@ export interface Song {
     lastSung?: string;
     link?: string;
     conductor?: string;
-}
-
-export interface LegacyPersonAttendance {
-    id: number;
-    date: string;
-    attended: boolean;
-    text: string;
-    title: string;
-    notes: string;
-    songs?: number[];
 }
 
 export interface History {
