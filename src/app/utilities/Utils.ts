@@ -391,6 +391,7 @@ export class Utils {
         attText = 'X';
         break;
       case AttendanceStatus.Excused:
+      case AttendanceStatus.LateExcused:
         attText = 'E';
         break;
       case AttendanceStatus.Late:
