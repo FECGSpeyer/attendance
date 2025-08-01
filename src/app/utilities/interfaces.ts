@@ -25,6 +25,7 @@ export interface TenantUser {
     userId: string;
     role: number;
     email: string;
+    telegram_chat_id?: string;
 }
 
 export interface NotificationConfig {

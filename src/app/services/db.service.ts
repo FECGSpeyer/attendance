@@ -77,7 +77,12 @@ export class DbService {
       this.tenant.set(this.tenants()[0]);
     }
 
-    this.tenantUser.set(this.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenant().id));
+    const user = this.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenant().id);
+    const config = await this.getNotifcationConfig(user?.userId);
+    this.tenantUser.set({
+      ...user,
+      telegram_chat_id: config?.telegram_chat_id,
+    });
   }
 
   async getTenants(ids: number[]): Promise<Tenant[]> {
@@ -1107,19 +1112,22 @@ export class DbService {
       throw new Error(error.message);
     }
 
-    const { data } = await supabase
+    const { data: urlData } = await supabase
       .storage
       .from("attendances")
       .getPublicUrl(fileName);
 
-    const res = await axios.post(`https://staccato-server.vercel.app/api/sendPracticePlan`, {
-      url: data.publicUrl,
-      shortName: "UNDEFINED", // TODO
+    const { error: sendError } = await supabase.functions.invoke("send-document", {
+      body: {
+        url: urlData.publicUrl,
+        chat_id: this.tenantUser().telegram_chat_id,
+      },
+      method: "POST",
     });
 
     loading.dismiss();
 
-    if (res.status === 200) {
+    if (!sendError) {
       Utils.showToast("Nachricht wurde erfolgreich gesendet!");
     } else {
       Utils.showToast("Fehler beim Senden der Nachricht, versuche es später erneut!", "danger");
@@ -1229,11 +1237,11 @@ export class DbService {
     });
   }
 
-  async getNotifcationConfig() {
+  async getNotifcationConfig(userId?: string) {
     const { data } = await supabase
       .from('notifications')
       .select('*')
-      .eq('id', this.tenantUser().userId)
+      .eq('id', userId || this.tenantUser().userId)
       .single();
 
     if (!data) {

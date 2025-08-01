@@ -78,5 +78,5 @@
   </ion-list>
   <ion-button *ngIf="attendances.length && attendance" [disabled]="!selectedFields.length" (click)="addToAttendance()" expand="block">Zu Anwesenheit hinzufügen</ion-button>
   <ion-button [disabled]="!selectedFields.length" (click)="export()" expand="block">Exportieren</ion-button>
-  <!-- <ion-button [disabled]="!selectedFields.length" (click)="send()" expand="block">Per Telegram senden</ion-button> -->
+  <ion-button *ngIf="hasChatId" [disabled]="!selectedFields.length" (click)="send()" expand="block">Per Telegram senden</ion-button>
 </ion-content>

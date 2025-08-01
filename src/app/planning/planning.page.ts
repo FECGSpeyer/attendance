@@ -25,6 +25,7 @@ export class PlanningPage implements OnInit {
   public time: string = dayjs().utc().hour(17).minute(50).format("YYYY-MM-DDTHH:mm");
   public end: string;
   public notes: string = "";
+  public hasChatId: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -33,6 +34,7 @@ export class PlanningPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.hasChatId = Boolean(this.db.tenantUser().telegram_chat_id);
     this.songs = await this.db.getSongs();
     this.history = await this.db.getUpcomingHistory();
     this.attendances = await this.db.getAttendance();
