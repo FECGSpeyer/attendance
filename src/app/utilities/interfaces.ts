@@ -27,6 +27,13 @@ export interface TenantUser {
     email: string;
 }
 
+export interface NotificationConfig {
+    id: string;
+    created_at: string;
+    enabled: boolean;
+    telegram_chat_id: string;
+}
+
 export interface Viewer {
     id?: number;
     created_at?: string;

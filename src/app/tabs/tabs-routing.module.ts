@@ -46,6 +46,10 @@ const routes: Routes = [
         loadChildren: () => import('./../meetings/meeting/meeting.module').then(m => m.MeetingPageModule),
       },
       {
+        path: 'settings/notifications',
+        loadChildren: () => import('./../notifications/notifications.module').then(m => m.NotificationsPageModule)
+      },
+      {
         path: '',
         redirectTo: '/tabs/player',
         pathMatch: 'full'

@@ -308,6 +308,27 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          telegram_chat_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id: string
+          telegram_chat_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          telegram_chat_id?: string | null
+        }
+        Relationships: []
+      }
       person_attendances: {
         Row: {
           attendance_id: number

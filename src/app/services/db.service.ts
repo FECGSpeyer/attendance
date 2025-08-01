@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Instrument, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance } from '../utilities/interfaces';
+import { Attendance, History, Instrument, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 import { Storage } from '@ionic/storage-angular';
@@ -1246,5 +1246,44 @@ export class DbService {
         conductorName: his.conductors ? `${his.conductors.firstName} ${his.conductors.lastName}` : his.otherConductor || "",
       };
     });
+  }
+
+  async getNotifcationConfig() {
+    const { data } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('id', this.tenantUser().userId)
+      .single();
+
+    if (!data) {
+      const newData = {
+        id: this.tenantUser().userId,
+        created_at: new Date().toISOString(),
+        enabled: false,
+        telegram_chat_id: ""
+      };
+
+      await supabase
+        .from('notifications')
+        .insert(newData);
+
+      return newData;
+    }
+
+    return data;
+  }
+
+  async updateNotificationConfig(config: NotificationConfig) {
+    const { error } = await supabase
+      .from("notifications")
+      .update(config)
+      .eq("id", config.id);
+
+    if (error) {
+      Utils.showToast("Fehler beim Updaten der Konfiguration, bitte versuche es später erneut.", "danger")
+      throw new Error(error.message);
+    }
+
+    return;
   }
 }
