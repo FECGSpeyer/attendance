@@ -1098,7 +1098,7 @@ export class DbService {
       });
     }
 
-    this.notifyPerTelegram(isLateExcused === true ? 'lateSignout' : "signout", reason);
+    this.notifyPerTelegram(attIds[0], isLateExcused === true ? 'lateSignout' : "signout", reason);
 
     return;
   }
@@ -1153,7 +1153,7 @@ export class DbService {
   }
 
   async notifyPerTelegram(attId: string, type: string = "signin", reason?: string): Promise<void> {
-    await supabase.functions.invoke("notify-attendance-resp", {
+    await supabase.functions.invoke("quick-processor", {
       body: {
         attId,
         type,
