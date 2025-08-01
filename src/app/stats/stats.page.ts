@@ -35,7 +35,7 @@ export class StatsPage implements OnInit {
   async ngOnInit() {
     this.curAttDate = new Date(await this.db.getCurrentAttDate());
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
-    this.attendances = (await this.db.getAttendance()).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().add(1, "day"))).map((att: Attendance) => {
+    this.attendances = (await this.db.getAttendance(false, true)).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().add(1, "day"))).map((att: Attendance) => {
       return {
         ...att,
         percentage: Utils.getPercentage(att.persons),
