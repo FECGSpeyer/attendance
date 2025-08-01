@@ -61,7 +61,7 @@ export class SignoutPage implements OnInit {
   }
 
   async signout() {
-    await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent);
+    await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent, this.player);
 
     this.excuseModal.dismiss();
     this.reason = "";

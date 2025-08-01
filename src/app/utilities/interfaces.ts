@@ -32,6 +32,9 @@ export interface NotificationConfig {
     created_at: string;
     enabled: boolean;
     telegram_chat_id: string;
+    birthdays: boolean;
+    signins: boolean;
+    signouts: boolean;
 }
 
 export interface Viewer {

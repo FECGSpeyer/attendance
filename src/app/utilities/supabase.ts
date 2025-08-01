@@ -310,21 +310,30 @@ export type Database = {
       }
       notifications: {
         Row: {
+          birthdays: boolean
           created_at: string
           enabled: boolean
           id: string
+          signins: boolean
+          signouts: boolean
           telegram_chat_id: string | null
         }
         Insert: {
+          birthdays?: boolean
           created_at?: string
           enabled?: boolean
           id: string
+          signins?: boolean
+          signouts?: boolean
           telegram_chat_id?: string | null
         }
         Update: {
+          birthdays?: boolean
           created_at?: string
           enabled?: boolean
           id?: string
+          signins?: boolean
+          signouts?: boolean
           telegram_chat_id?: string | null
         }
         Relationships: []

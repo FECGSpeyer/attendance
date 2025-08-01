@@ -1090,7 +1090,7 @@ export class DbService {
     return;
   }
 
-  async signout(attIds: any[], reason: string, isLateExcused: boolean): Promise<void> {
+  async signout(attIds: string[], reason: string, isLateExcused: boolean, player: Player): Promise<void> {
     for (const attId of attIds) {
       await this.updatePersonAttendance(attId, {
         notes: reason,
@@ -1098,7 +1098,7 @@ export class DbService {
       });
     }
 
-    // this.notifyPerTelegram(player, attendances, isLateExcused === true ? 'lateSignout' : "signout", reason); TODO
+    this.notifyPerTelegram(isLateExcused === true ? 'lateSignout' : "signout", reason);
 
     return;
   }
@@ -1109,7 +1109,7 @@ export class DbService {
       status: AttendanceStatus.Present,
     });
 
-    // this.notifyPerTelegram(player, [attendance], playerIsLateExcused === true ? 'lateSignin' : 'signin'); TODO
+    this.notifyPerTelegram(attId, 'signin'); // todo lateSignIn
 
     return;
   }
@@ -1152,13 +1152,14 @@ export class DbService {
     }, 10000);
   }
 
-  async notifyPerTelegram(player: Player, attendances: Attendance[], type: string = "signin", reason?: string): Promise<void> {
-    await axios.post(`https://staccato-server.vercel.app/api/notifyAttendanceOwner`, {
-      name: `${player.firstName} ${player.lastName}`,
-      appName: 'UNDEFINED', // TODO
-      dates: attendances.map((attendance: Attendance) => `${dayjs(attendance.date).format("DD.MM.YYYY")}${Utils.getAttendanceText(attendance) ? " " + Utils.getAttendanceText(attendance) : ""}`),
-      type,
-      reason,
+  async notifyPerTelegram(attId: string, type: string = "signin", reason?: string): Promise<void> {
+    await supabase.functions.invoke("notify-attendance-resp", {
+      body: {
+        attId,
+        type,
+        reason,
+      },
+      method: "POST",
     });
   }
 
@@ -1260,7 +1261,10 @@ export class DbService {
         id: this.tenantUser().userId,
         created_at: new Date().toISOString(),
         enabled: false,
-        telegram_chat_id: ""
+        telegram_chat_id: "",
+        birthdays: true,
+        signins: true,
+        signouts: true,
       };
 
       await supabase
