@@ -15,7 +15,7 @@
     <ion-list-header sticky="true">
       Einstellungen
     </ion-list-header>
-    <ion-item *ngIf="isAdmin" button id="general-item">
+    <!-- <ion-item *ngIf="isAdmin" button id="general-item">
       <ion-label>Allgemeine Einstellungen</ion-label>
       <ion-modal #generalModal [breakpoints]="[0.5]" [initialBreakpoint]="0.5" trigger="general-item">
         <ng-template>
@@ -60,7 +60,7 @@
           </ion-content>
         </ng-template>
       </ion-modal>
-    </ion-item>
+    </ion-item> -->
     <ion-item routerLink="songs" button>
       <ion-label>Werke</ion-label>
     </ion-item>
@@ -113,14 +113,16 @@
             </ion-header>
             <ion-item>
               <ion-select label="Dirigenten" [(ngModel)]="selConductors" #select multiple="true">
-                <ion-select-option [value]="con.id" *ngFor="let con of conductors">{{ con.firstName }} {{ con.lastName }}</ion-select-option>
+                <ion-select-option [value]="con.id" *ngFor="let con of conductors">{{ con.firstName }} {{ con.lastName
+                  }}</ion-select-option>
               </ion-select>
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Zeit in Minuten</ion-label>
               <ion-input value="60" #input type="number"></ion-input>
             </ion-item>
-            <ion-button [disabled]="!select.value?.length || !input.value" (click)="createPlan(select.value, input.value, planModal)" expand="block">Exportieren</ion-button>
+            <ion-button [disabled]="!select.value?.length || !input.value"
+              (click)="createPlan(select.value, input.value, planModal)" expand="block">Exportieren</ion-button>
             <!-- <ion-button [disabled]="!select.value?.length || !input.value" (click)="createPlan(select.value, input.value, planModal, true)" expand="block">Per Telegram senden</ion-button> -->
           </ion-content>
         </ng-template>
@@ -157,16 +159,16 @@
       <ion-label>Fehlende Benutzeraccounts anlegen</ion-label>
     </ion-item>
 
+    @if (isAdmin) {
     <ion-item routerLink="notifications">
       <ion-label>
         Benachrichtigungen
       </ion-label>
     </ion-item>
-
-
+    }
 
     <ion-list-header sticky="true">
-        Allgemein
+      Allgemein
     </ion-list-header>
 
     <ion-item *ngIf="isAdmin" detail="false" button id="viewer-button">
@@ -208,7 +210,8 @@
 
     <ion-item *ngIf="db.tenants().length > 1">
       <ion-select label="App wechseln" [(ngModel)]="tenantId" (ionChange)="onTenantChange()">
-        <ion-select-option [value]="tenant.id" *ngFor="let tenant of db.tenants()">{{ tenant.longName }}</ion-select-option>
+        <ion-select-option [value]="tenant.id" *ngFor="let tenant of db.tenants()">{{ tenant.longName
+          }}</ion-select-option>
       </ion-select>
     </ion-item>
 
@@ -525,7 +528,8 @@
                 <ion-label>
                   <h2>- Probenplan export vergrößert</h2>
                   <h2>- Wort als erster Eintrag im Probenplan</h2>
-                  <h2>- Probenplan: Bei Freitexteingabe in Klammern Dirigent mit eingebbar z.B. Wort (Max Mustermann)</h2>
+                  <h2>- Probenplan: Bei Freitexteingabe in Klammern Dirigent mit eingebbar z.B. Wort (Max Mustermann)
+                  </h2>
                 </ion-label>
               </ion-item>
               <ion-list-header>Version 1.4.3</ion-list-header>
