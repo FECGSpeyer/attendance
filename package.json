@@ -10,7 +10,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "resources": "cordova-res ios && cordova-res android && node scripts/resources.js && npx cap sync",
+    "resources": "ionic cordova resources ios && ionic cordova resources android && node scripts/resources.js && npx cap sync",
     "genTypes": "npx supabase gen types typescript --project-id \"ultyjzgwejpehfjuyenr\" --schema public > src/app/utilities/supabase.ts"
   },
   "private": true,
@@ -57,6 +57,7 @@
     "@angular/compiler": "^18.2.10",
     "@angular/compiler-cli": "^18.2.10",
     "@angular/language-service": "^18.2.10",
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^4.0.0",
     "@ionic/angular-toolkit": "^11.0.1",
     "@types/jasmine": "~3.6.0",
