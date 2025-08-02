@@ -24,7 +24,7 @@ export enum AttendanceStatus {
     Excused = 2,
     Late = 3,
     Absent = 4,
-    LateExcused = 5, // TODO: needed?
+    LateExcused = 5,
 }
 
 export enum SupabaseTable {

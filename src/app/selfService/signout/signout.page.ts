@@ -66,7 +66,7 @@ export class SignoutPage implements OnInit {
     this.excuseModal.dismiss();
     this.reason = "";
 
-    Utils.showToast("Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.", "success", 4000);
+    Utils.showToast(this.isLateComingEvent ? "Vielen Dank für die Info und Gottes Segen dir!" : "Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.", "success", 4000);
 
     this.reasonSelection = '';
 
