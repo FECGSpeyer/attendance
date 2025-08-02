@@ -8,13 +8,21 @@ import { DbService } from './db.service';
 })
 export class AuthGuard  {
 
-  constructor(public db: DbService) { }
+  constructor(
+    public db: DbService,
+    private router: Router
+  ) { }
 
   async canActivate(
     _: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Promise<boolean> {
     await this.db.checkToken();
-    const role: Role = this.db.tenantUser().role;
+    const role = this.db.tenantUser()?.role;
+
+    if (!role) {
+      this.router.navigateByUrl("/login");
+      return false;
+    }
 
     if (state.url === "/tabs/attendance") {
       return role === Role.ADMIN || role === Role.HELPER || role === Role.VIEWER || role === Role.RESPONSIBLE;

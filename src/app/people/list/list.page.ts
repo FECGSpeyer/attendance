@@ -54,6 +54,7 @@ export class ListPage implements OnInit {
     effect(async () => {
       this.db.tenant();
       this.instruments = await this.db.getInstruments();
+      this.mainGroup = this.instruments.find(ins => ins.maingroup)?.id;
       await this.getPlayers();
     });
   }
