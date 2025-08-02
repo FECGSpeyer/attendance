@@ -48,7 +48,7 @@ export class Utils {
       if (player.person_attendances && attendances?.length) {
         const personAttendancesTillNow = player.person_attendances.filter((personAttendance: PersonAttendance) => {
           const attendance = attendances.find((attendance: Attendance) => personAttendance.attendance_id === attendance.id);
-          return attendance && dayjs().isBefore(dayjs().add(1, "day"));
+          return attendance && dayjs(attendance.date).isBefore(dayjs().add(1, "day"));
         });
         percentage = Utils.getPercentage(personAttendancesTillNow);
         if (isNaN(percentage)) {
