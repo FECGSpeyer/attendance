@@ -1237,16 +1237,16 @@ export class DbService {
     });
   }
 
-  async getNotifcationConfig(userId?: string) {
+  async getNotifcationConfig(userId: string) {
     const { data } = await supabase
       .from('notifications')
       .select('*')
-      .eq('id', userId || this.tenantUser().userId)
+      .eq('id', userId)
       .single();
 
     if (!data) {
       const newData = {
-        id: this.tenantUser().userId,
+        id: userId,
         created_at: new Date().toISOString(),
         enabled: false,
         telegram_chat_id: "",

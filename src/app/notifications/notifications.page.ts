@@ -18,7 +18,7 @@ export class NotificationsPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.notificationConfig = await this.db.getNotifcationConfig();
+    this.notificationConfig = await this.db.getNotifcationConfig(this.db.tenantUser().userId);
 
     this.db.getSupabase()
       .channel('noti-changes').on(
