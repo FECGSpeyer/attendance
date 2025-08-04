@@ -46,7 +46,7 @@ export class ListPage implements OnInit {
   constructor(
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
-    private db: DbService,
+    public db: DbService,
     private actionSheetController: ActionSheetController,
     private alertController: AlertController,
     private storage: Storage,
