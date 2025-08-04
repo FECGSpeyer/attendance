@@ -1088,13 +1088,13 @@ export class DbService {
     return;
   }
 
-  async signin(attId: string, wasLateExcused: boolean): Promise<void> {
+  async signin(attId: string, status: string): Promise<void> {
     await this.updatePersonAttendance(attId, {
       notes: "",
       status: AttendanceStatus.Present,
     });
 
-    this.notifyPerTelegram(attId, wasLateExcused ? 'lateSignIn' : 'signin');
+    this.notifyPerTelegram(attId, status);
 
     return;
   }

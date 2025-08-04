@@ -74,7 +74,7 @@ export class SignoutPage implements OnInit {
   }
 
   async signin(attendance: PersonAttendance) {
-    await this.db.signin(attendance.id, attendance.status === AttendanceStatus.LateExcused);
+    await this.db.signin(attendance.id, attendance.status === AttendanceStatus.LateExcused ? 'lateSignIn' : attendance.status === AttendanceStatus.Neutral ? "neutralSignin" : 'signin');
 
     Utils.showToast("Schön, dass du dabei bist 🙂", "success", 4000);
 
