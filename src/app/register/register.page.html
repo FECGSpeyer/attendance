@@ -1,0 +1,42 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Neue Instanz anlegen</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Neue Instanz anlegen</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-list>
+    <ion-item>
+      <ion-label position="stacked">Gruppenname</ion-label>
+      <ion-input [(ngModel)]="tenant.longName"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked">Kurzname</ion-label>
+      <ion-input [(ngModel)]="tenant.shortName"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked">Typ</ion-label>
+      <ion-select [(ngModel)]="tenant.type">
+        <ion-select-option disabled="true" value="general">Allgemein (kommt bald)</ion-select-option>
+        <ion-select-option value="choir">Chor</ion-select-option>
+        <ion-select-option value="orchestra">Orchester</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked">Hauptgruppen-Name</ion-label>
+      <ion-input placeholder="z.B. Verantwortliche, Dirigenten, etc." [(ngModel)]="mainGroupName"></ion-input>
+    </ion-item>
+  </ion-list>
+  <ion-button expand="full" (click)="createInstance()">Instanz anlegen</ion-button>
+</ion-content>

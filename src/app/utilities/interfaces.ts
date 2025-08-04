@@ -5,16 +5,16 @@ export interface AuthObject {
 }
 
 export interface Tenant {
-    id: number;
-    created_at: string;
+    id?: number;
+    created_at?: string;
     shortName: string;
     longName: string;
     maintainTeachers: boolean;
     type: string;
     withExcuses: boolean;
-    practiceStart: string;
-    practiceEnd: string;
-    seasonStart: string;
+    practiceStart?: string;
+    practiceEnd?: string;
+    seasonStart?: string;
     betaProgram: boolean;
 }
 

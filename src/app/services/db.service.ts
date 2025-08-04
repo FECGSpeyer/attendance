@@ -67,14 +67,18 @@ export class DbService {
     }
   }
 
-  async setTenant() {
+  async setTenant(tenantId?: number) {
     this.tenantUsers.set((await this.getTenantsByUserId()));
     this.tenants.set(await this.getTenants(this.tenantUsers().map((tenantUser: TenantUser) => tenantUser.tenantId)));
-    const storedTenantId: string | null = await this.storage.get('tenantId');
+    const storedTenantId: string | null = tenantId || await this.storage.get('tenantId');
     if (storedTenantId && this.tenants().find((t: Tenant) => t.id === Number(storedTenantId))) {
       this.tenant.set(this.tenants().find((t: Tenant) => t.id === Number(storedTenantId)));
     } else {
       this.tenant.set(this.tenants()[0]);
+    }
+
+    if (tenantId) {
+      this.storage.set('tenantId', tenantId);
     }
 
     const user = this.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenant().id);
@@ -674,15 +678,15 @@ export class DbService {
     return data;
   }
 
-  async addInstrument(name: string): Promise<Instrument[]> {
+  async addInstrument(name: string, maingroup: boolean = false, tenantId?: number): Promise<Instrument[]> {
     const { data } = await supabase
       .from('instruments')
       .insert({
         name,
         tuning: "C",
         clefs: ["g"],
-        tenantId: this.tenant().id,
-        maingroup: false,
+        tenantId: tenantId || this.tenant().id,
+        maingroup,
       })
       .select();
 
@@ -1277,5 +1281,39 @@ export class DbService {
     }
 
     return;
+  }
+
+  async createInstance(tenant: Tenant, mainGroupName: string): Promise<void> {
+    const { data, error } = await supabase
+      .from("tenants")
+      .insert(tenant)
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast("Fehler beim Erstellen der Instanz, bitte versuche es später erneut.", "danger");
+      throw new Error(error.message);
+    }
+
+    const { error: userError } = await supabase
+      .from("tenantUsers")
+      .insert({
+        userId: this.user.id,
+        role: Role.ADMIN,
+        tenantId: data.id,
+        email: this.user.email,
+      });
+
+    if (userError) {
+      Utils.showToast("Fehler beim Erstellen des Benutzers, bitte versuche es später erneut.", "danger");
+      throw new Error(userError.message);
+    }
+
+    await this.addInstrument(mainGroupName, true, data.id);
+
+    Utils.showToast("Instanz wurde erfolgreich erstellt!");
+
+    await this.setTenant(data.id);
+    this.router.navigateByUrl(Utils.getUrl(Role.ADMIN));
   }
 }

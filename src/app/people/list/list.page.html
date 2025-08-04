@@ -1,17 +1,17 @@
 <ion-header translucent="true">
   <ion-toolbar>
-    <ion-title>Personen ({{ playersFiltered?.length }})</ion-title>
+    <ion-title>{{ db.tenant()?.longName }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content fullscreen="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Personen ({{ playersFiltered?.length }})</ion-title>
+      <ion-title size="large">{{ db.tenant()?.longName }}</ion-title>
     </ion-toolbar>
   </ion-header>
   <div class="flex">
-    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated [placeholder]="isChoir ? 'Sänger suchen' : 'Spieler suchen...'">
+    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated placeholder="Person suchen...">
     </ion-searchbar>
     <ion-button id="filter-trigger" fill="none">
       <ion-icon [color]="filterOpt === 'all' ? '' : 'primary'" size="medium" name="options"></ion-icon>
@@ -79,6 +79,9 @@
   </div>
 
   <ion-list style="padding-top: 0;" class="marginBottom">
+    <ion-list-header>
+      <ion-label>Personen ({{ playersFiltered?.length }})</ion-label>
+    </ion-list-header>
     <ng-container *ngFor="let player of playersFiltered; trackBy:userById">
       <ion-item-divider color="primary" sticky="true" *ngIf="player.firstOfInstrument && sortOpt === 'instrument'">
         <ion-label>{{ player.instrumentName }} ({{ player.instrumentLength }})</ion-label>

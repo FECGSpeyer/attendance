@@ -50,6 +50,10 @@ const routes: Routes = [
         loadChildren: () => import('./../notifications/notifications.module').then(m => m.NotificationsPageModule)
       },
       {
+        path: 'settings/register',
+        loadChildren: () => import('./../register/register.module').then(m => m.RegisterPageModule)
+      },
+      {
         path: '',
         redirectTo: '/tabs/player',
         pathMatch: 'full'

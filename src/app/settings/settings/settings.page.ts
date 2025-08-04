@@ -17,6 +17,7 @@ import { Utils } from 'src/app/utilities/Utils';
 import { Viewer } from '../../utilities/interfaces';
 import { Router } from '@angular/router';
 import { Storage } from '@ionic/storage-angular';
+import { RegisterPage } from 'src/app/register/register.page';
 
 @Component({
   selector: 'app-settings',
@@ -255,11 +256,8 @@ export class SettingsPage implements OnInit {
 
   async openCreateInstanceModal() {
     const modal: HTMLIonModalElement = await this.modalController.create({
-      component: ExportPage,
+      component: RegisterPage,
       presentingElement: this.routerOutlet.nativeEl,
-      componentProps: {
-        createInstance: true
-      }
     });
 
     await modal.present();
