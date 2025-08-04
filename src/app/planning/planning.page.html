@@ -12,7 +12,7 @@
 <ion-content>
   <ion-list>
     <ion-item *ngIf="attendances.length">
-      <ion-select label="Zugehörige Anwesenheit" (ionChange)="onAttChange()" [(ngModel)]="attendance">
+      <ion-select interface="modal" label="Zugehörige Anwesenheit" (ionChange)="onAttChange()" [(ngModel)]="attendance">
         <ion-select-option [value]="att.id" *ngFor="let att of attendances">{{ att.date | date:'dd.MM.yyyy' }}</ion-select-option>
       </ion-select>
     </ion-item>
@@ -21,7 +21,7 @@
       <ion-textarea rows="1" disabled="true">{{ notes }}</ion-textarea>
     </ion-item>
     <ion-item *ngIf="songs.length">
-      <ion-select label="Werke hinzufügen" multiple="true" (ionChange)="onSongsChange($event.target.value)">
+      <ion-select interface="modal" label="Werke hinzufügen" multiple="true" (ionChange)="onSongsChange($event.target.value)">
         <ion-select-option [value]="song.id.toString()" *ngFor="let song of songs">{{ song.number }} {{ song.name }}</ion-select-option>
       </ion-select>
     </ion-item>

@@ -79,7 +79,7 @@
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-select label="Gruppe" [disabled]="readOnly" (ionChange)="onInstrumentChange()" #select [(ngModel)]="player.instrument">
+                <ion-select interface="modal" label="Gruppe" [disabled]="readOnly" (ionChange)="onInstrumentChange()" #select [(ngModel)]="player.instrument">
                   <ion-select-option [value]="i.id" *ngFor="let i of instruments">
                     {{ i.name }}
                   </ion-select-option>
@@ -157,7 +157,7 @@
           <ion-row *ngIf="player.hasTeacher && showTeachers">
             <ion-col>
               <ion-item>
-                <ion-select label="Lehrer" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.teacher">
+                <ion-select interface="modal" label="Lehrer" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.teacher">
                   <ion-select-option [value]="teacher.id" *ngFor="let teacher of teachers">
                     {{ teacher.name }}
                   </ion-select-option>

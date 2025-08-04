@@ -36,7 +36,7 @@
           <ion-input #input></ion-input>
         </ion-item>
         <ion-item>
-          <ion-select label="Instrumente" [(ngModel)]="selInstruments" #select multiple="true">
+          <ion-select interface="modal" label="Instrumente" [(ngModel)]="selInstruments" #select multiple="true">
             <ion-select-option [value]="ins.id" *ngFor="let ins of instruments">{{ ins.name }}</ion-select-option>
           </ion-select>
         </ion-item>

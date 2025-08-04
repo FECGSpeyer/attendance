@@ -21,14 +21,10 @@
         </ion-row>
         <ion-row>
           <ion-col>
+            <ion-button (click)="register()" size="small" fill="clear">Registrieren</ion-button>
             <ion-button (click)="forgotPassword()" size="small" fill="clear">Passwort vergessen?</ion-button>
           </ion-col>
         </ion-row>
-        <!-- <ion-row class="demo">
-          <ion-col>
-            <ion-button (click)="startDemo()" size="small" fill="clear">Demo starten</ion-button>
-          </ion-col>
-        </ion-row> -->
         <ion-row>
           <ion-col class="signup-col">
             <ion-button expand="block" type="submit" [disabled]="!registerForm.form.valid">Anmelden</ion-button>

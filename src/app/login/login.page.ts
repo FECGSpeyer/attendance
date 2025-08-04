@@ -100,4 +100,8 @@ export class LoginPage implements OnInit {
 
     await alert.present();
   }
+
+  async register() {
+    Utils.showToast("Kommt bald! Schau doch schonmal in die Demo rein.", "warning", 4000);
+  }
 }

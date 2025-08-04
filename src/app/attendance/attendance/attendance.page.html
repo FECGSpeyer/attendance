@@ -29,7 +29,7 @@
           <ion-input (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.typeInfo"></ion-input>
         </ion-item>
         <ion-item *ngIf="attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit'">
-          <ion-select label="Werk(e)" (ionChange)="onInfoChanged()" multiple="true" [(ngModel)]="selectedSongs" #select>
+          <ion-select interface="modal" label="Werk(e)" (ionChange)="onInfoChanged()" multiple="true" [(ngModel)]="selectedSongs" #select>
             <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}
             </ion-select-option>
           </ion-select>
