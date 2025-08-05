@@ -116,7 +116,7 @@
     </ion-accordion>
   </ion-accordion-group>
 
-  <ion-item *ngIf="db.tenants().length">
+  <ion-item *ngIf="db.tenants().length !== 1">
     <ion-select interface="modal" label="App wechseln" [(ngModel)]="tenantId" (ionChange)="onTenantChange()">
       <ion-select-option [value]="tenant.id" *ngFor="let tenant of tenants">{{ tenant.longName }}</ion-select-option>
     </ion-select>

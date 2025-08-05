@@ -243,6 +243,9 @@ export class DbService {
 
   async createAccount(user: Player) {
     try {
+      if (user.role === Role.NONE) {
+        user.role = Role.PLAYER;
+      }
       const appId: string = await this.registerUser(user.email as string, user.firstName, user.role ?? Role.PLAYER);
 
       const { data, error: updateError } = await supabase
@@ -436,7 +439,7 @@ export class DbService {
     }).filter((p: Player) => p.email.length);
   }
 
-  async getConductors(all: boolean = false, old: boolean = false): Promise<Person[]> {
+  async getConductors(all: boolean = false): Promise<Person[]> {
     const mainGroupId = (await this.getMainGroup())?.id;
 
     if (!mainGroupId) {
