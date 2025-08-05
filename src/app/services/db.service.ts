@@ -878,7 +878,7 @@ export class DbService {
       .eq('person_id', id)
       .gt("attendance.date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate());
 
-    return data.map((att): PersonAttendance => {
+    return data.filter((a) => Boolean(a.attendance)).map((att): PersonAttendance => {
       let attText = Utils.getAttText(att as any);
 
       return {
