@@ -80,19 +80,7 @@ export class Utils {
   public static getModifiedPlayers(persons: PersonAttendance[], mainGroup?: number): PersonAttendance[] {
     const instrumentsMap: { [props: number]: boolean } = {};
 
-    return persons.sort((a: PersonAttendance, b: PersonAttendance) => {
-      if (a.instrument === b.instrument) {
-        return a.person.lastName.localeCompare(b.person.lastName);
-      }
-      // Sort by instrument name but maingroup (only one exists) first
-      if (a.instrumentName === b.instrumentName) {
-        return 0;
-      } else if (a.instrument === mainGroup) {
-        return -1;
-      } else if (b.instrument === mainGroup) {
-        return 1;
-      }
-    }).map((player: PersonAttendance): PersonAttendance => {
+    return Utils.sortPlayers(persons, mainGroup).map((player: PersonAttendance): PersonAttendance => {
       let firstOfInstrument: boolean = false;
       let instrumentLength: number = 0;
       let isNew: boolean = false;
@@ -115,16 +103,40 @@ export class Utils {
         isNew,
         img: player.img || DEFAULT_IMAGE,
       } as any
-    }).sort((a: PersonAttendance, b: PersonAttendance) => {
-      // Sort by instrument but maingroup first
-      if (a.instrumentName === b.instrumentName) {
-        return 0;
-      } else if (a.instrument === mainGroup) {
-        return -1;
-      } else if (b.instrument === mainGroup) {
-        return 1;
-      }
     });
+  }
+
+  private static sortPlayers(players: PersonAttendance[], mainGroupId: number): PersonAttendance[] {
+    // Separate main group and other players
+    const mainGroup = players.filter(p => p.instrument === mainGroupId);
+    const otherGroups = players.filter(p => p.instrument !== mainGroupId);
+
+    // Sort main group by lastName
+    const sortedMainGroup = mainGroup.sort((a, b) => (a.person?.lastName ?? a.lastName).localeCompare(b.person?.lastName ?? b.lastName));
+
+    // Group others by groupId
+    const grouped = new Map<number, { instrumentName: string; players: PersonAttendance[] }>();
+
+    for (const player of otherGroups) {
+      if (!grouped.has(player.instrument)) {
+        grouped.set(player.instrument, {
+          instrumentName: player.instrumentName,
+          players: []
+        });
+      }
+      grouped.get(player.instrument).players.push(player);
+    }
+
+    // Sort the groups by instrument name, then sort each group's players by lastName
+    const sortedOtherGroups = [...grouped.entries()]
+      .sort(([, a], [, b]) => a.instrumentName.localeCompare(b.instrumentName))
+      .map(([, group]) =>
+        group.players.sort((a, b) => (a.person?.lastName ?? a.lastName).localeCompare(b.person?.lastName ?? b.lastName))
+      )
+      .reduce((acc, val) => acc.concat(val), []);
+
+    // Return combined sorted result
+    return [...sortedMainGroup, ...sortedOtherGroups];
   }
 
   public static getModifiedAttendanceData(attendance: Attendance): Attendance {
