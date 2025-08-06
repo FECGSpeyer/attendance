@@ -19,8 +19,8 @@ export interface Tenant {
 }
 
 export interface TenantUser {
-    id: number;
-    created_at: string;
+    id?: number;
+    created_at?: string;
     tenantId: number;
     userId: string;
     role: number;
@@ -102,6 +102,8 @@ export interface Player extends Person {
     role?: Role;
     person_attendances?: PersonAttendance[];
     percentage?: number;
+    legacyId?: number;
+    legacyConductorId?: number;
 }
 
 export interface Instrument {
@@ -116,6 +118,7 @@ export interface Instrument {
     clefText?: string;
     tenantId: number;
     maingroup: boolean;
+    legacyId?: number;
 }
 
 export interface Attendance {
@@ -135,6 +138,13 @@ export interface Attendance {
     songs?: number[];
     tenantId?: number;
     persons?: PersonAttendance[];
+    players?: { [prop: string]: AttendanceStatus | boolean };
+}
+
+export interface Plan {
+    end: string;
+    time: string;
+    fields: FieldSelection[];
 }
 
 export interface PersonAttendance {
@@ -164,12 +174,14 @@ export interface PersonAttendance {
 export interface Song {
     id?: number;
     created_at?: string;
+    tenantId?: number;
     name: string;
     number: number;
     withChoir: boolean;
     lastSung?: string;
     link?: string;
     conductor?: string;
+    legacyId?: number;
 }
 
 export interface History {

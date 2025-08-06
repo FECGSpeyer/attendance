@@ -378,8 +378,6 @@ export class Utils {
         return "/tabs/player";
       case Role.HELPER:
         return "/tabs/signout";
-      case Role.NONE:
-        return "/login";
       default:
         return "/signout";
     }

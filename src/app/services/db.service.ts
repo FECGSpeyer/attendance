@@ -70,15 +70,20 @@ export class DbService {
   async setTenant(tenantId?: number) {
     this.tenantUsers.set((await this.getTenantsByUserId()));
     this.tenants.set(await this.getTenants(this.tenantUsers().map((tenantUser: TenantUser) => tenantUser.tenantId)));
-    const storedTenantId: string | null = tenantId || await this.storage.get('tenantId');
+    const storedTenantId: string | null = tenantId || this.user.user_metadata?.currentTenantId;
     if (storedTenantId && this.tenants().find((t: Tenant) => t.id === Number(storedTenantId))) {
       this.tenant.set(this.tenants().find((t: Tenant) => t.id === Number(storedTenantId)));
     } else {
       this.tenant.set(this.tenants()[0]);
     }
 
-    if (tenantId) {
-      this.storage.set('tenantId', tenantId);
+    if (this.user.user_metadata?.currentTenantId !== this.tenant().id) {
+      this.user.user_metadata.currentTenantId = this.tenant().id;
+      supabase.auth.updateUser({
+        data: {
+          currentTenantId: this.tenant().id,
+        }
+      });
     }
 
     const user = this.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenant().id);

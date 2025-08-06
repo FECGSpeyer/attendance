@@ -29,7 +29,7 @@ export class AuthGuard  {
     } else if (state.url === "/tabs/signout") {
       return role === Role.HELPER;
     } else if (state.url === "/signout") {
-      return role === Role.PLAYER;
+      return role === Role.PLAYER || role === Role.NONE;
     }
 
     return role === Role.ADMIN || role === Role.RESPONSIBLE || role === Role.VIEWER;
