@@ -53,7 +53,7 @@ export class SignoutPage implements OnInit {
     this.name = this.db.tenant().longName;
     this.tenants = this.db.tenants();
     this.tenantId = this.db.tenant().id;
-    if (this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.HELPER) {
+    if (this.db.tenantUser() && this.db.tenantUser().role === Role.NONE || this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.HELPER) {
       this.player = await this.db.getPlayerByAppId();
       this.songs = await this.db.getSongs();
       await this.getAttendances();
