@@ -48,7 +48,8 @@
       </ion-item>
       <div slot="content">
         <ion-list>
-          <ion-item-sliding #slider *ngFor="let att of attendances">
+          @for (att of attendances; track att.id) {
+          <ion-item-sliding #slider>
             <ion-item button detail="false" (click)="openAttendance(att)">
               <!-- <ion-label>
                 <ion-card-title>{{ getReadableDate(att.date) }}</ion-card-title>
@@ -66,6 +67,7 @@
               </ion-item-option>
             </ion-item-options>
           </ion-item-sliding>
+          }
         </ion-list>
       </div>
     </ion-accordion>

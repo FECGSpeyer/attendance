@@ -209,6 +209,8 @@ export interface Teacher {
     number: string;
     private: boolean;
     playerCount?: number;
+    tenantId?: number;
+    legacyId?: number;
 }
 
 export interface Meeting {

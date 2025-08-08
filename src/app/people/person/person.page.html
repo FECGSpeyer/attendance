@@ -146,7 +146,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="showTeachers">
+          <ion-row *ngIf="showTeachers && !isMainGroup">
             <ion-col>
               <ion-item>
                 <ion-label>Spielt beim Lehrer</ion-label>
@@ -154,7 +154,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="player.hasTeacher && showTeachers">
+          <ion-row *ngIf="player.hasTeacher && showTeachers && !isMainGroup">
             <ion-col>
               <ion-item>
                 <ion-select interface="modal" label="Lehrer" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.teacher">
