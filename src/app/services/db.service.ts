@@ -233,7 +233,7 @@ export class DbService {
     const { data, error } = await supabase
       .from('tenantUsers')
       .select('*')
-      .eq('email', email);
+      .ilike('email', `%${email}%`);
 
     if (data.find((tenantUser: TenantUser) => tenantUser.tenantId === this.tenant().id)) {
       throw new Error('Der Benutzer ist bereits in diesem Mandanten');
@@ -248,9 +248,8 @@ export class DbService {
 
   async createAccount(user: Player) {
     try {
-      if (user.role === Role.NONE) {
-        user.role = Role.PLAYER;
-      }
+      const mainGroupId = (await this.getMainGroup())?.id;
+      user.role = user.role || (mainGroupId === user.instrument ? Role.RESPONSIBLE : Role.PLAYER);
       const appId: string = await this.registerUser(user.email as string, user.firstName, user.role ?? Role.PLAYER);
 
       const { data, error: updateError } = await supabase

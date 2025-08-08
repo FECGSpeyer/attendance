@@ -203,6 +203,23 @@ export class SettingsPage implements OnInit {
     await modal.present();
   }
 
+  async showAlertForAccountsCreation() {
+    const alert = await new AlertController().create({
+      header: 'Accounts anlegen',
+      message: `Folgende Accounts werden angelegt: ${this.playersWithoutAccount.map((p: Player) => `${p.firstName} ${p.lastName}`).join(', ')}`,
+      buttons: [{
+        text: "Abbrechen"
+      }, {
+        text: "Fortfahren",
+        handler: async () => {
+          await this.createAccounts();
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
   async createAccounts() {
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999999);
 

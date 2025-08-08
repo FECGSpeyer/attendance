@@ -155,7 +155,7 @@
       </ion-modal>
     </ion-item>
 
-    <ion-item button *ngIf="isAdmin && playersWithoutAccount.length" (click)="createAccounts()" color="primary">
+    <ion-item button *ngIf="isAdmin && playersWithoutAccount.length" (click)="showAlertForAccountsCreation()" color="primary">
       <ion-label>Fehlende Benutzeraccounts anlegen</ion-label>
     </ion-item>
 
