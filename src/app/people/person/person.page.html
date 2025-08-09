@@ -209,13 +209,16 @@
               <ion-item>
                 <ion-label position="stacked">E-Mail</ion-label>
                 <ion-input [disabled]="player.appId || readOnly" (ionChange)="onChange()" [(ngModel)]="player.email"></ion-input>
+                <!-- <ion-button *ngIf="!player.appId" slot="end" (click)="searchPerson()">
+                  <ion-icon name="search"></ion-icon>
+                </ion-button> -->
               </ion-item>
             </ion-col>
           </ion-row>
           <ion-row *ngIf="!isMainGroup && player.email">
             <ion-col>
               <ion-item>
-                <ion-select label="Rolle" type="number" [disabled]="readOnly || isMainGroup" (ionChange)="onChange()" [(ngModel)]="player.role">
+                <ion-select (ionChange)="onRoleChange()" label="Rolle" type="number" [disabled]="readOnly || isMainGroup" [(ngModel)]="role">
                   <ion-select-option [value]="PLAYER">Keine Rolle</ion-select-option>
                   <ion-select-option [value]="RESPONSIBLE">Verantwortlicher</ion-select-option>
                   <ion-select-option [value]="HELPER">Helfer</ion-select-option>

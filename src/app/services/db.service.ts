@@ -302,6 +302,21 @@ export class DbService {
     this.attDate = date;
   }
 
+  async getRoleFromTenantUser(appId: string): Promise<Role> {
+    const { data, error } = await supabase
+      .from('tenantUsers')
+      .select('role')
+      .eq('tenantId', this.tenant().id)
+      .eq('userId', appId)
+      .single();
+
+    if (error) {
+      throw new Error('Fehler beim Laden der Rolle');
+    }
+
+    return data.role;
+  }
+
   async getPlayerByAppId(showToast: boolean = true): Promise<Player> {
     const { data: player, error } = await supabase
       .from('player')
@@ -550,12 +565,6 @@ export class DbService {
     delete dataToUpdate.attStatus;
     delete dataToUpdate.person_attendances;
     delete dataToUpdate.percentage;
-
-    if (dataToUpdate.role && player.appId) {
-      await this.updateTenantUser({ role: dataToUpdate.role }, player.appId);
-    }
-
-    delete dataToUpdate.role;
 
     const { data, error } = await supabase
       .from('player')

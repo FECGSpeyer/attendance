@@ -63,6 +63,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public lateCount: number = 0;
   public showTeachers: boolean = false;
   public isMainGroup: boolean = false;
+  public role: Role = Role.PLAYER;
 
   constructor(
     private db: DbService,
@@ -91,19 +92,18 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.player.teacherName = this.player.teacher ? this.teachers.find((teacher: Teacher) => teacher).name : "";
       this.player.criticalReasonText = this.player.criticalReason ? Utils.getPlayerHistoryTypeText(this.player.criticalReason) : "";
 
-      this.player.role = Role.PLAYER;
-      if (this.player.email) {
-        if (this.player.appId) {
-          const tenantUser = await this.db.getTenantUserById(this.player.appId);
-          this.player.role = tenantUser.role ?? Role.PLAYER;
-        }
+      if (this.player.appId) {
+        const role = await this.db.getRoleFromTenantUser(this.player.appId);
+        this.role = role === Role.NONE || !role ? Role.PLAYER : role;
+      } else {
+        this.role = Role.PLAYER;
       }
       await this.getHistoryInfo();
     } else {
       this.player = { ...this.newPlayer };
       this.player.tenantId = this.db.tenant().id;
       this.player.instrument = this.instruments[0].id;
-      this.player.role = Role.PLAYER;
+      this.role = Role.PLAYER;
     }
 
     this.onInstrumentChange(false);
@@ -149,10 +149,12 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
     this.teachers = this.allTeachers.filter((t: Teacher) => t.instruments.includes(this.player.instrument));
     if (this.instruments.find((i: Instrument) => i.id === this.player.instrument).maingroup) {
-      this.player.role = Role.RESPONSIBLE;
+      this.role = Role.RESPONSIBLE;
       this.isMainGroup = true;
     } else {
-      this.player.role = Role.NONE;
+      if (this.role === Role.RESPONSIBLE) {
+        this.role = Role.PLAYER;
+      }
       this.isMainGroup = false;
     }
   }
@@ -197,10 +199,18 @@ export class PersonPage implements OnInit, AfterViewInit {
     loading.dismiss();
   }
 
+  async searchPerson() {
+
+  }
+
   async updatePlayer(): Promise<void> {
     if (this.player.email?.length && this.player.email !== this.existingPlayer.email && !Utils.validateEmail(this.player.email)) {
       Utils.showToast("Bitte gib eine valide E-Mail Adresse ein...", "danger");
       return;
+    }
+
+    if (this.existingPlayer.email !== this.player.email) {
+      // const alert = await
     }
 
     const history = this.player.history;
@@ -239,6 +249,11 @@ export class PersonPage implements OnInit, AfterViewInit {
     } catch (error) {
       Utils.showToast("Fehler beim aktualisieren des Spielers", "danger");
     }
+  }
+
+  async onRoleChange() {
+    await this.db.updateTenantUser({ role: this.role }, this.player.appId);
+    Utils.showToast("Die Rolle wurde erfolgreich aktualisiert.", "success");
   }
 
   onChange() {
