@@ -99,7 +99,6 @@ export interface Player extends Person {
     range?: string;
     instruments?: string;
     tenantId: number;
-    role?: Role;
     person_attendances?: PersonAttendance[];
     percentage?: number;
     legacyId?: number;

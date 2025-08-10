@@ -215,7 +215,7 @@
       </ion-select>
     </ion-item>
 
-    <ion-item button (click)="openCreateInstanceModal()">
+    <ion-item *ngIf="isSuperAdmin" button (click)="openCreateInstanceModal()">
       <ion-label>Neue Instanz anlegen</ion-label>
     </ion-item>
 

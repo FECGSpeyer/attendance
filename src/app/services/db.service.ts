@@ -249,8 +249,8 @@ export class DbService {
   async createAccount(user: Player) {
     try {
       const mainGroupId = (await this.getMainGroup())?.id;
-      user.role = user.role || (mainGroupId === user.instrument ? Role.RESPONSIBLE : Role.PLAYER);
-      const appId: string = await this.registerUser(user.email as string, user.firstName, user.role ?? Role.PLAYER);
+      const role = (mainGroupId === user.instrument ? Role.RESPONSIBLE : Role.PLAYER);
+      const appId: string = await this.registerUser(user.email as string, user.firstName, role);
 
       const { data, error: updateError } = await supabase
         .from(SupabaseTable.PLAYER)
@@ -480,17 +480,15 @@ export class DbService {
     return (all ? data : data.filter((c: Person) => !c.left)).map((con: Person) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
   }
 
-  async addPlayer(player: Player, register: boolean): Promise<void> {
+  async addPlayer(player: Player, register: boolean, role: Role): Promise<void> {
     if (!this.tenant().maintainTeachers) {
       delete player.teacher;
     }
 
-    if (player.email && register) {
-      const appId: string = await this.registerUser(player.email, player.firstName, player.role ?? Role.PLAYER);
+    if (player.email && register && role) {
+      const appId: string = await this.registerUser(player.email, player.firstName, role);
       player.appId = appId;
     }
-
-    delete player.role;
 
     const { data, error } = await supabase
       .from('player')
@@ -550,7 +548,7 @@ export class DbService {
     }
   }
 
-  async updatePlayer(player: Player, pausedAction?: boolean): Promise<Player[]> {
+  async updatePlayer(player: Player, pausedAction?: boolean, createAccount?: boolean, role?: Role): Promise<Player[]> {
     const dataToUpdate: Player = { ...player };
     delete dataToUpdate.id;
     delete dataToUpdate.created_at;
@@ -585,6 +583,11 @@ export class DbService {
       } else {
         this.addPlayerToUpcomingAttendances(player.id);
       }
+    }
+
+    if (createAccount && player.email && role) {
+      const appId: string = await this.registerUser(player.email, player.firstName, role);
+      player.appId = appId;
     }
 
     return data.map((player) => {

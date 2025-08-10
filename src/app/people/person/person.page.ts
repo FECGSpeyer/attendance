@@ -190,7 +190,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
     loading.present();
     if (this.player.firstName && this.player.lastName) {
-      await this.db.addPlayer(this.player, Boolean(this.player.email));
+      await this.db.addPlayer(this.player, Boolean(this.player.email), this.role);
       this.modalController.dismiss();
       Utils.showToast(`Der Spieler wurde erfolgreich hinzugefügt`, "success");
     } else {
@@ -210,7 +210,33 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     if (this.existingPlayer.email !== this.player.email) {
-      // const alert = await
+      const alert = await this.alertController.create({
+        header: 'E-Mail Adresse hinzugefügt',
+        message: 'Möchtest du gleich ein Konto für die Person anlegen?',
+        buttons: [
+          {
+            text: 'Abbrechen',
+            role: 'cancel',
+          },
+          {
+            text: 'Ja',
+            handler: async () => {
+              await this.continueUpdatingPlayer(true);
+            },
+          },
+        ],
+      });
+      await alert.present();
+      return;
+    }
+
+    await this.continueUpdatingPlayer();
+  }
+
+  async continueUpdatingPlayer(createAccount = false): Promise<void> {
+    const mainGroupId = this.instruments.find((i: Instrument) => i.maingroup)?.id;
+    if (this.player.appId && this.existingPlayer.instrument !== this.player.instrument && this.player.instrument === mainGroupId || this.existingPlayer.instrument === mainGroupId) {
+      await this.db.updateTenantUser({ role: this.player.instrument === mainGroupId ? Role.RESPONSIBLE : Role.PLAYER }, this.player.appId);
     }
 
     const history = this.player.history;
@@ -243,7 +269,7 @@ export class PersonPage implements OnInit, AfterViewInit {
         ...this.player,
         isCritical: this.solved ? false : this.player.isCritical,
         lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
-      });
+      }, false, createAccount, this.role);
       this.modalController.dismiss();
       Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
     } catch (error) {

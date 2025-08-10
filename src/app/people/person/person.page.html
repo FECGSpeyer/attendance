@@ -215,7 +215,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="!isMainGroup && player.email">
+          <ion-row *ngIf="!isMainGroup && player.email && player.appId">
             <ion-col>
               <ion-item>
                 <ion-select (ionChange)="onRoleChange()" label="Rolle" type="number" [disabled]="readOnly || isMainGroup" [(ngModel)]="role">
