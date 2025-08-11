@@ -227,13 +227,18 @@ export class SettingsPage implements OnInit {
 
     loading.present();
 
-    for (let player of this.playersWithoutAccount) {
-      await this.db.createAccount(player);
+    try {
+      for (let player of this.playersWithoutAccount) {
+        await this.db.createAccount(player);
+      }
+    } catch (error) {
+      this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
+      Utils.showToast(`Fehler beim Erstellen der Accounts: ${error.message}`, "danger");
+      loading.dismiss();
+      return;
     }
 
     Utils.showToast("Die Accounts wurden erfolgreich angelegt", "success");
-
-    this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
 
     loading.dismiss();
   }

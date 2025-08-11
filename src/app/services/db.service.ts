@@ -175,9 +175,12 @@ export class DbService {
   }
 
   async registerUser(email: string, name: string, role: Role): Promise<string> {
-    const userId: string | undefined = await this.getAppIdByEmail(email);
+    const { userId, alreadyThere } = await this.getAppIdByEmail(email) || {};
 
     if (userId) {
+      if (alreadyThere) {
+        return userId;
+      }
       await this.addUserToTenant(userId, role, email);
       return userId;
     }
@@ -229,29 +232,46 @@ export class DbService {
     return data;
   }
 
-  async getAppIdByEmail(email: string): Promise<string | undefined> {
+  async getAppIdByEmail(email: string): Promise<{ userId: string, alreadyThere: boolean } | undefined> {
     const { data, error } = await supabase
       .from('tenantUsers')
       .select('*')
       .ilike('email', `%${email}%`);
 
-    if (data.find((tenantUser: TenantUser) => tenantUser.tenantId === this.tenant().id)) {
+    const foundTenantUser = data.find((tenantUser: TenantUser) => tenantUser.tenantId === this.tenant().id);
+
+    if (foundTenantUser && foundTenantUser.role !== Role.ADMIN) {
       throw new Error('Der Benutzer ist bereits in diesem Mandanten');
+    }
+
+    if (foundTenantUser.role === Role.ADMIN) {
+      return {
+        userId: foundTenantUser.userId,
+        alreadyThere: true,
+      };
     }
 
     if (error) {
       throw new Error('Fehler beim Laden des Benutzers');
     }
 
-    return data.length ? data[0].userId : undefined;
+    return data.length ? {
+      userId: data[0].userId,
+      alreadyThere: false,
+    } : undefined;
   }
 
   async createAccount(user: Player) {
     try {
       const mainGroupId = (await this.getMainGroup())?.id;
       const role = (mainGroupId === user.instrument ? Role.RESPONSIBLE : Role.PLAYER);
-      const appId: string = await this.registerUser(user.email as string, user.firstName, role);
-
+      let appId: string;
+      try {
+        appId = await this.registerUser(user.email as string, user.firstName, role);
+      } catch (error) {
+        Utils.showToast(`${user.firstName} ${user.lastName} - Fehler beim Erstellen des Accounts: ${error.message}`, "danger");
+        throw error;
+      }
       const { data, error: updateError } = await supabase
         .from(SupabaseTable.PLAYER)
         .update({ appId })
@@ -625,6 +645,18 @@ export class DbService {
   }
 
   async removeUserFromTenant(appId: string) {
+    const { data } = await supabase
+      .from('tenantUsers')
+      .select('*')
+      .eq('role', Role.ADMIN)
+      .eq('userId', appId)
+      .eq('tenantId', this.tenant().id)
+      .single();
+
+    if (data) {
+      return;
+    }
+
     const { error } = await supabase
       .from('tenantUsers')
       .delete()
