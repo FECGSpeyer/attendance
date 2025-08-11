@@ -244,7 +244,7 @@ export class DbService {
       throw new Error('Der Benutzer ist bereits in diesem Mandanten');
     }
 
-    if (foundTenantUser.role === Role.ADMIN) {
+    if (foundTenantUser?.role === Role.ADMIN) {
       return {
         userId: foundTenantUser.userId,
         alreadyThere: true,
