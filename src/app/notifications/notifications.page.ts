@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { DbService } from 'src/app/services/db.service';
+import { Role } from 'src/app/utilities/constants';
 import { NotificationConfig } from 'src/app/utilities/interfaces';
 
 @Component({
@@ -11,6 +12,7 @@ import { NotificationConfig } from 'src/app/utilities/interfaces';
 })
 export class NotificationsPage implements OnInit {
   public notificationConfig: NotificationConfig
+  public isAdmin: boolean;
 
   constructor(
     private db: DbService,
@@ -19,6 +21,7 @@ export class NotificationsPage implements OnInit {
 
   async ngOnInit() {
     this.notificationConfig = await this.db.getNotifcationConfig(this.db.tenantUser().userId);
+    this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
 
     this.db.getSupabase()
       .channel('noti-changes').on(

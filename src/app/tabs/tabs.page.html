@@ -11,12 +11,12 @@
       <ion-label>Personen</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="attendance">
+    <ion-tab-button *ngIf="isHelper || isConductor" tab="attendance">
       <ion-icon name="checkbox-outline"></ion-icon>
       <ion-label>Anwesenheit</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button *ngIf="isConductor" tab="settings">
+    <ion-tab-button tab="settings">
       <ion-icon name="ellipsis-horizontal"></ion-icon>
       <ion-label>Mehr</ion-label>
     </ion-tab-button>

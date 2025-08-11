@@ -234,6 +234,7 @@ export type Database = {
           clefs: string[] | null
           created_at: string | null
           id: number
+          legacyId: number | null
           maingroup: boolean | null
           name: string | null
           notes: string | null
@@ -245,6 +246,7 @@ export type Database = {
           clefs?: string[] | null
           created_at?: string | null
           id?: number
+          legacyId?: number | null
           maingroup?: boolean | null
           name?: string | null
           notes?: string | null
@@ -256,6 +258,7 @@ export type Database = {
           clefs?: string[] | null
           created_at?: string | null
           id?: number
+          legacyId?: number | null
           maingroup?: boolean | null
           name?: string | null
           notes?: string | null
@@ -385,6 +388,7 @@ export type Database = {
           created_at: string | null
           criticalReason: number | null
           email: string | null
+          examinee: boolean | null
           firstName: string | null
           hasTeacher: boolean | null
           history: Json | null
@@ -398,13 +402,17 @@ export type Database = {
           lastName: string | null
           lastSolve: string | null
           left: string | null
+          legacyConductorId: number | null
+          legacyId: number | null
           notes: string | null
           otherExercise: string | null
+          otherOrchestras: string[] | null
           paused: boolean | null
           playsSince: string | null
           range: string | null
           teacher: number | null
           tenantId: number
+          testResult: string | null
         }
         Insert: {
           appId?: string | null
@@ -413,6 +421,7 @@ export type Database = {
           created_at?: string | null
           criticalReason?: number | null
           email?: string | null
+          examinee?: boolean | null
           firstName?: string | null
           hasTeacher?: boolean | null
           history?: Json | null
@@ -426,13 +435,17 @@ export type Database = {
           lastName?: string | null
           lastSolve?: string | null
           left?: string | null
+          legacyConductorId?: number | null
+          legacyId?: number | null
           notes?: string | null
           otherExercise?: string | null
+          otherOrchestras?: string[] | null
           paused?: boolean | null
           playsSince?: string | null
           range?: string | null
           teacher?: number | null
           tenantId: number
+          testResult?: string | null
         }
         Update: {
           appId?: string | null
@@ -441,6 +454,7 @@ export type Database = {
           created_at?: string | null
           criticalReason?: number | null
           email?: string | null
+          examinee?: boolean | null
           firstName?: string | null
           hasTeacher?: boolean | null
           history?: Json | null
@@ -454,13 +468,17 @@ export type Database = {
           lastName?: string | null
           lastSolve?: string | null
           left?: string | null
+          legacyConductorId?: number | null
+          legacyId?: number | null
           notes?: string | null
           otherExercise?: string | null
+          otherOrchestras?: string[] | null
           paused?: boolean | null
           playsSince?: string | null
           range?: string | null
           teacher?: number | null
           tenantId?: number
+          testResult?: string | null
         }
         Relationships: [
           {
@@ -519,6 +537,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: number
+          legacyId: number | null
           link: string | null
           name: string | null
           number: number | null
@@ -529,6 +548,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: number
+          legacyId?: number | null
           link?: string | null
           name?: string | null
           number?: number | null
@@ -539,6 +559,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: number
+          legacyId?: number | null
           link?: string | null
           name?: string | null
           number?: number | null
@@ -561,6 +582,7 @@ export type Database = {
           created_at: string
           id: number
           instruments: number[] | null
+          legacyId: number | null
           name: string | null
           notes: string | null
           number: string | null
@@ -571,6 +593,7 @@ export type Database = {
           created_at?: string
           id?: number
           instruments?: number[] | null
+          legacyId?: number | null
           name?: string | null
           notes?: string | null
           number?: string | null
@@ -581,6 +604,7 @@ export type Database = {
           created_at?: string
           id?: number
           instruments?: number[] | null
+          legacyId?: number | null
           name?: string | null
           notes?: string | null
           number?: string | null
@@ -596,6 +620,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tenant_group_tenants: {
+        Row: {
+          created_at: string
+          id: number
+          tenant_group: number | null
+          tenant_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          tenant_group?: number | null
+          tenant_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          tenant_group?: number | null
+          tenant_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_group_tenants_tenant_group_fkey"
+            columns: ["tenant_group"]
+            isOneToOne: false
+            referencedRelation: "tenant_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_group_tenants_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_groups: {
+        Row: {
+          created_at: string
+          id: number
+          name: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string | null
+        }
+        Relationships: []
       }
       tenants: {
         Row: {

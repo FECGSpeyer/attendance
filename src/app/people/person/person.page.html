@@ -209,9 +209,9 @@
               <ion-item>
                 <ion-label position="stacked">E-Mail</ion-label>
                 <ion-input [disabled]="player.appId || readOnly" (ionChange)="onChange()" [(ngModel)]="player.email"></ion-input>
-                <!-- <ion-button *ngIf="!player.appId" slot="end" (click)="searchPerson()">
+                <ion-button *ngIf="!player.appId" slot="end" (click)="searchPerson()">
                   <ion-icon name="search"></ion-icon>
-                </ion-button> -->
+                </ion-button>
               </ion-item>
             </ion-col>
           </ion-row>

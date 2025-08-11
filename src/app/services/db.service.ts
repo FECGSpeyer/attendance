@@ -1335,4 +1335,36 @@ export class DbService {
     await this.setTenant(data.id);
     this.router.navigateByUrl(Utils.getUrl(Role.ADMIN));
   }
+
+  async getPossiblePersonsByName(firstName: string, lastName: string): Promise<Person[]> {
+    const { data, error } = await supabase
+      .from('player')
+      .select('*, instrument(name), tenantId(id, shortName)')
+      .ilike('firstName', `%${firstName.trim()}%`)
+      .ilike('lastName', `%${lastName.trim()}%`)
+      .neq('email', null);
+
+    const { data: tenantGroupTenants, error: tenantGroupTenantsError } = await supabase
+      .from('tenant_group_tenants')
+      .select('*');
+
+    if (tenantGroupTenantsError) {
+      Utils.showToast("Fehler beim Laden der Gruppenteilnehmer", "danger");
+      throw tenantGroupTenantsError;
+    }
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Personen", "danger");
+      throw error;
+    }
+
+    const groups = tenantGroupTenants.filter((tgt) => tgt.tenant_id === this.tenant().id);
+    const linkedTenants = tenantGroupTenants.filter((tgt) =>
+      groups.some((g) => g.tenant_group === tgt.tenant_group) && tgt.tenant_id !== this.tenant().id
+    ).map((tgt) => tgt.tenant_id);
+
+    return data.filter((p: Person) => {
+      return linkedTenants.includes((p as any).tenantId.id);
+    });
+  }
 }

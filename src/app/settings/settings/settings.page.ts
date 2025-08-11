@@ -11,12 +11,11 @@ import { PersonPage } from 'src/app/people/person/person.page';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { StatsPage } from 'src/app/stats/stats.page';
-import { AttendanceStatus, AttendanceType, Role } from 'src/app/utilities/constants';
-import { Instrument, Person, PersonAttendance, Player, Song, Tenant, TenantUser, History, Attendance, Teacher } from 'src/app/utilities/interfaces';
+import { AttendanceType, Role } from 'src/app/utilities/constants';
+import { Instrument, Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { Viewer } from '../../utilities/interfaces';
 import { Router } from '@angular/router';
-import { Storage } from '@ionic/storage-angular';
 import { RegisterPage } from 'src/app/register/register.page';
 
 @Component({
@@ -41,13 +40,14 @@ export class SettingsPage implements OnInit {
   public practiceStart: string;
   public practiceEnd: string;
   public tenantId: number;
+  public isHelper: boolean = false;
+  public isPlayer: boolean = false
 
   constructor(
     public db: DbService,
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
     private router: Router,
-    private storage: Storage,
   ) {
     effect(async () => {
       this.db.tenant();
@@ -61,6 +61,8 @@ export class SettingsPage implements OnInit {
 
   async initialize(): Promise<void> {
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
+    this.isHelper = this.db.tenantUser().role === Role.HELPER;
+    this.isPlayer = this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.NONE;
     this.isSuperAdmin = this.db.tenantUser().role === Role.ADMIN;
     this.attDate = await this.db.getCurrentAttDate();
     this.tenantId = this.db.tenant().id;
@@ -265,7 +267,7 @@ export class SettingsPage implements OnInit {
   }
 
   async onTenantChange(): Promise<void> {
-    this.db.setTenant(this.tenantId);
+    await this.db.setTenant(this.tenantId);
     this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser().role));
   }
 

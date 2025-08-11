@@ -65,6 +65,7 @@ export interface Person {
     isConductor?: boolean;
     telegramId?: string;
     paused?: boolean;
+    tenantId?: number;
 }
 
 export interface PlayerHistoryEntry {

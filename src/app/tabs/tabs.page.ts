@@ -9,7 +9,7 @@ import { AttendanceType, Role } from '../utilities/constants';
 })
 export class TabsPage {
   public isConductor: boolean = false;
-  public isChoir: boolean = false;
+  public isHelper: boolean = false;
 
   constructor(
     private db: DbService,
@@ -19,11 +19,11 @@ export class TabsPage {
 
   initialize() {
     this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.VIEWER || this.db.tenantUser().role === Role.RESPONSIBLE;
-    this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
+    this.isHelper = this.db.tenantUser().role === Role.HELPER;
 
     effect(() => {
       this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.VIEWER || this.db.tenantUser().role === Role.RESPONSIBLE;
-      this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
+      this.isHelper = this.db.tenantUser().role === Role.HELPER;
     });
   }
 

@@ -27,9 +27,9 @@ export class AuthGuard  {
     if (state.url === "/tabs/attendance") {
       return role === Role.ADMIN || role === Role.HELPER || role === Role.VIEWER || role === Role.RESPONSIBLE;
     } else if (state.url === "/tabs/signout") {
-      return role === Role.HELPER;
-    } else if (state.url === "/signout") {
-      return role === Role.PLAYER || role === Role.NONE;
+      return role === Role.HELPER || role === Role.PLAYER || role === Role.NONE;
+    } else if (state.url === "/tabs/settings") {
+      return Boolean(role);
     }
 
     return role === Role.ADMIN || role === Role.RESPONSIBLE || role === Role.VIEWER;

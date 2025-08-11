@@ -14,11 +14,6 @@ const routes: Routes = [
     loadChildren: () => import('./login/login.module').then(m => m.LoginPageModule),
     canActivate: [LoginGuard]
   },
-  {
-    path: 'signout',
-    loadChildren: () => import('./selfService/signout/signout.module').then(m => m.SignoutPageModule),
-    canActivate: [AuthGuard]
-  },
 ];
 @NgModule({
   imports: [

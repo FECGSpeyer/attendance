@@ -22,7 +22,6 @@ export class SignoutPage implements OnInit {
   public selAttIds: string[] = [];
   public reason: string;
   public perc: number;
-  public version: string = require('../../../../package.json').version;
   public name: string;
   public isLateComingEvent: boolean;
   public reasonSelection;
@@ -112,10 +111,6 @@ export class SignoutPage implements OnInit {
       this.perc = Math.round(vergangene.filter((att: PersonAttendance) =>
         att.status === AttendanceStatus.Present || att.status === AttendanceStatus.Late).length / vergangene.length * 100);
     }
-  }
-
-  logout() {
-    this.db.logout();
   }
 
   async presentActionSheetForChoice(attendance: PersonAttendance) {
@@ -234,13 +229,5 @@ export class SignoutPage implements OnInit {
     return songIds.map((id: number) => {
       return `${this.songs.find((s: Song) => s.id === id).number} ${this.songs.find((s: Song) => s.id === id).name}`;
     }).join(", ");
-  }
-
-  async onTenantChange(): Promise<void> {
-    this.db.tenantUser.set(this.db.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenantId));
-    this.db.tenant.set(this.db.tenants().find((tenant: Tenant) => tenant.id === this.tenantId));
-    if (this.db.tenantUser().role !== Role.PLAYER) {
-      this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser().role));
-    }
   }
 }

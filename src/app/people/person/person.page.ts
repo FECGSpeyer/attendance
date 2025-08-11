@@ -199,10 +199,6 @@ export class PersonPage implements OnInit, AfterViewInit {
     loading.dismiss();
   }
 
-  async searchPerson() {
-
-  }
-
   async updatePlayer(): Promise<void> {
     if (this.player.email?.length && this.player.email !== this.existingPlayer.email && !Utils.validateEmail(this.player.email)) {
       Utils.showToast("Bitte gib eine valide E-Mail Adresse ein...", "danger");
@@ -441,6 +437,34 @@ export class PersonPage implements OnInit, AfterViewInit {
 
       await alert.present();
     }
+  }
+
+  async searchPerson() {
+   const names = await this.db.getPossiblePersonsByName(this.player.firstName, this.player.lastName);
+
+   if (names.length === 0) {
+      Utils.showToast("Es wurde keine Person gefunden", "danger");
+      return;
+    }
+
+    const actionSheet = await this.actionSheetController.create({
+      header: "Gefundene Personen",
+      buttons: names.map((name) => {
+        return {
+          text: `${name.firstName} ${name.lastName}, ${(name as any).instrument.name} (${(name as any).tenantId.shortName})`,
+          handler: async () => {
+            this.player.email = name.email;
+            await this.db.updatePlayer({
+              ...this.player,
+              email: name.email,
+            });
+            Utils.showToast("Die E-Mail Adresse wurde erfolgreich aktualisiert", "success");
+          }
+        };
+      })
+    });
+
+    await actionSheet.present();
   }
 
 }

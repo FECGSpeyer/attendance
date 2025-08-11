@@ -69,27 +69,17 @@
         Werkhistorie
       </ion-label>
     </ion-item>
-    <!-- <ion-item *ngIf="isAdmin" button (click)="migrate()">
-      <ion-label>
-        Migriere Dirigenten
-      </ion-label>
-    </ion-item>
-    <ion-item *ngIf="isAdmin" button (click)="migratePlayers()">
-      <ion-label>
-        Migriere Spieler
-      </ion-label>
-    </ion-item> -->
     <ion-item *ngIf="isAdmin" routerLink="meetings" button>
       <ion-label>
         Besprechungen
       </ion-label>
     </ion-item>
-    <ion-item routerLink="instruments" button>
+    <ion-item *ngIf="isAdmin" routerLink="instruments" button>
       <ion-label>
         Gruppen
       </ion-label>
     </ion-item>
-    <ion-item routerLink="teachers" *ngIf="maintainTeachers" button>
+    <ion-item routerLink="teachers" *ngIf="maintainTeachers && isAdmin" button>
       <ion-label>
         Lehrer
       </ion-label>
@@ -129,7 +119,7 @@
       </ion-modal>
     </ion-item>
 
-    <ion-item detail="false" button id="archive-button">
+    <ion-item *ngIf="isAdmin" detail="false" button id="archive-button">
       <ion-label>
         Archiv
       </ion-label>
@@ -159,7 +149,7 @@
       <ion-label>Fehlende Benutzeraccounts anlegen</ion-label>
     </ion-item>
 
-    @if (isAdmin) {
+    @if (isAdmin || isHelper || isPlayer) {
     <ion-item routerLink="notifications">
       <ion-label>
         Benachrichtigungen
@@ -196,13 +186,13 @@
       </ion-modal>
     </ion-item>
 
-    <ion-item button (click)="openStats()">
+    <ion-item *ngIf="isAdmin" button (click)="openStats()">
       <ion-label>
         Statistiken
       </ion-label>
     </ion-item>
 
-    <ion-item button (click)="openExport()">
+    <ion-item *ngIf="isAdmin" button (click)="openExport()">
       <ion-label>
         Export
       </ion-label>
@@ -217,7 +207,7 @@
 
     <ion-item *ngIf="isSuperAdmin" button (click)="openCreateInstanceModal()">
       <ion-label>Neue Instanz anlegen</ion-label>
-    </ion-item>
+    </ion-item> <!-- TODO -->
 
     <ion-item button detail="false" id="whatsnew-button">
       <ion-label>
