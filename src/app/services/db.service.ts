@@ -334,7 +334,7 @@ export class DbService {
       throw new Error('Fehler beim Laden der Rolle');
     }
 
-    return data.role;
+    return data?.role;
   }
 
   async getPlayerByAppId(showToast: boolean = true): Promise<Player> {
