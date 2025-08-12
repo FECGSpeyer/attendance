@@ -31,7 +31,7 @@
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>
-          <ion-textarea [disabled]="readOnly" rows="1" (ionChange)="onChange()" [(ngModel)]="player.notes"></ion-textarea>
+          <ion-textarea [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()" [(ngModel)]="player.notes"></ion-textarea>
         </ion-item>
       </ion-col>
     </ion-row>
@@ -52,7 +52,7 @@
         </ion-item>
         <ion-item *ngIf="solved">
           <ion-label position="stacked">Anmerkungen</ion-label>
-          <ion-textarea rows="3" (ionChange)="onChange()" [(ngModel)]="notes"></ion-textarea>
+          <ion-textarea autoGrow="true" (ionChange)="onChange()" [(ngModel)]="notes"></ion-textarea>
         </ion-item>
       </div>
     </ion-accordion>
