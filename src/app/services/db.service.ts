@@ -1348,12 +1348,17 @@ export class DbService {
 
     const { error: userError } = await supabase
       .from("tenantUsers")
-      .insert({
+      .insert([{
         userId: this.user.id,
         role: Role.ADMIN,
         tenantId: data.id,
         email: this.user.email,
-      });
+      }, {
+        userId: "665fe2b4-d53f-4f17-a66b-46c0949af99a",
+        role: Role.ADMIN,
+        tenantId: data.id,
+        email: "developer@attendix.de"
+      }]);
 
     if (userError) {
       Utils.showToast("Fehler beim Erstellen des Benutzers, bitte versuche es später erneut.", "danger");

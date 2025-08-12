@@ -51,16 +51,8 @@
     <ion-row>
       <ion-col>
         <ion-item>
-          <ion-label>Hauptgruppe</ion-label>
-          <ion-toggle [(ngModel)]="instrument.maingroup" slot="end" label="Hauptgruppe"></ion-toggle>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-item>
           <ion-label position="stacked">Notizen</ion-label>
-          <ion-textarea rows="4" [(ngModel)]="instrument.notes"></ion-textarea>
+          <ion-textarea autoGrow="true" [(ngModel)]="instrument.notes"></ion-textarea>
         </ion-item>
       </ion-col>
     </ion-row>
