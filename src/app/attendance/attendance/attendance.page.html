@@ -36,7 +36,7 @@
         </ion-item>
         <ion-item lines="none">
           <ion-label position="stacked">Notizen</ion-label>
-          <ion-textarea (ionBlur)="onInfoChanged()" rows="2" [(ngModel)]="attendance.notes"></ion-textarea>
+          <ion-textarea (ionBlur)="onInfoChanged()" autoGrow="true" [(ngModel)]="attendance.notes"></ion-textarea>
         </ion-item>
         <!-- <input style="display: 'none';" name="file" #chooser (change)="onImageSelect($event)" accept="image/*" class="inputFile" type="file" />
         <ion-item>
