@@ -180,7 +180,6 @@
           <ion-row *ngIf="!isMainGroup && isVoS">
             <ion-col>
               <ion-item>
-                <ion-label>Andere Orchester</ion-label>
                 <ion-select label="Andere Orchester" [disabled]="readOnly" multiple="true" (ionChange)="onChange()" [(ngModel)]="player.otherOrchestras">
                   <ion-select-option>SoS</ion-select-option>
                   <ion-select-option>GoS</ion-select-option>

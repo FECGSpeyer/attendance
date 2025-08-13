@@ -34,6 +34,7 @@ export class AttListPage implements OnInit {
   public songs: Song[] = [];
   public selectedSongs: number[] = [];
   public hasNeutral: boolean = false;
+  public saveInHistory: boolean = true;
 
   constructor(
     private db: DbService,
@@ -146,6 +147,7 @@ export class AttListPage implements OnInit {
       notes: this.notes,
       typeInfo: this.typeInfo,
       songs: this.selectedSongs,
+      save_in_history: this.saveInHistory,
     });
 
     for (const player of (await this.db.getPlayers()).filter((player: Player) => !player.paused)) {
@@ -158,6 +160,9 @@ export class AttListPage implements OnInit {
     }
 
     await this.db.addPersonAttendances(persons);
+    if (this.saveInHistory && this.selectedSongs.length) {
+      await this.db.updateSongsInHistory(this.selectedSongs, this.date);
+    }
 
     await modal.dismiss();
 
@@ -209,5 +214,6 @@ export class AttListPage implements OnInit {
 
   onTypeChange(): void {
     this.hasNeutral = this.type !== 'uebung';
+    this.saveInHistory = this.type !== 'uebung' && Boolean(this.selectedSongs?.length);
   }
 }

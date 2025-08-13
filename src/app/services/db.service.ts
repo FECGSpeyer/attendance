@@ -9,7 +9,6 @@ import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable
 import { Attendance, History, Instrument, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
-import { Storage } from '@ionic/storage-angular';
 
 const options: SupabaseClientOptions<any> = {
   auth: {
@@ -40,7 +39,6 @@ export class DbService {
   constructor(
     private plt: Platform,
     private router: Router,
-    private storage: Storage,
   ) {
     this.tenant = signal(undefined);
     this.tenants = signal([]);
@@ -1013,6 +1011,47 @@ export class DbService {
     }
 
     return data;
+  }
+
+  async updateSongsInHistory(songs: number[], date: string) {
+    const { data } = await supabase
+      .from('history')
+      .select('*')
+      .eq('tenantId', this.tenant().id);
+
+    const filteredData = data.filter((h: History) => dayjs(h.date).isSame(dayjs(date), 'day'));
+    const historyToInsert: History[] = [];
+
+    for (const song of songs) {
+      if (!filteredData.some((h: History) => h.songId === song)) {
+        historyToInsert.push({
+          songId: song,
+          date: dayjs(date).toISOString(),
+          tenantId: this.tenant().id,
+          conductor: null,
+          otherConductor: "Keine Angabe",
+        });
+      }
+    }
+
+    for (const h of filteredData) {
+      if (!songs.includes(h.songId)) {
+        await this.removeHistoryEntry(h.id);
+      }
+    }
+
+    if (historyToInsert.length !== 0) {
+      const { error } = await supabase
+        .from('history')
+        .insert(historyToInsert)
+        .select();
+
+      if (error) {
+        throw new Error("Fehler beim Hinzufügen der Lieder zur Historie");
+      }
+    }
+
+    return;
   }
 
   async getTeachers(): Promise<Teacher[]> {

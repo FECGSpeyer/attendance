@@ -249,6 +249,12 @@ export class AttendancePage implements OnInit {
       type: this.attendance.type,
       typeInfo: this.attendance.typeInfo,
       notes: this.attendance.notes,
+      save_in_history: this.attendance.save_in_history,
+      songs: this.selectedSongs,
     }, this.attendance.id);
+
+    if (this.attendance.save_in_history && this.selectedSongs.length !== this.attendance.songs.length) {
+      await this.db.updateSongsInHistory(this.selectedSongs, this.attendance.date);
+    }
   }
 }

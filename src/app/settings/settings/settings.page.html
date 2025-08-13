@@ -35,7 +35,7 @@
             </ion-item>
             <ion-item lines="none">
               <ion-label position="stacked">Saisonbeginn</ion-label>
-              <ion-input helperText="Anwesenheiten werden erst ab diesem Datum bei den Personen berücksichtigt" [disabled]="readOnly" readonly [(ngModel)]="attDateString" id="date-modal"></ion-input>
+              <ion-input helperText="Anwesenheiten werden erst ab diesem Datum bei den Personen berücksichtigt" [(ngModel)]="attDateString" id="date-modal"></ion-input>
               <ion-modal class="attDateModal" #attModal trigger="date-modal">
                 <ng-template>
                   <ion-content>

@@ -126,6 +126,7 @@ export interface Attendance {
     created_at?: string;
     date: string;
     type: string;
+    save_in_history: boolean;
     percentage?: number;
     excused?: string[];
     criticalPlayers?: number[];

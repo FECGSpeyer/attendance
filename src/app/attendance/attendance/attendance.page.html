@@ -29,11 +29,16 @@
           <ion-input (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.typeInfo"></ion-input>
         </ion-item>
         <ion-item *ngIf="attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit'">
-          <ion-select interface="modal" label="Werk(e)" (ionChange)="onInfoChanged()" multiple="true" [(ngModel)]="selectedSongs" #select>
+          <ion-select interface="modal" label="Werk(e)" (ionDismiss)="onInfoChanged()" multiple="true" [(ngModel)]="selectedSongs" #select>
             <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}
             </ion-select-option>
           </ion-select>
         </ion-item>
+        @if (attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit') {
+          <ion-item>
+            <ion-toggle (ionChange)="onInfoChanged()" helperText="Ausgewählte Werke werden automatisch in die Werkhistorie übernommen" [(ngModel)]="attendance.save_in_history">In der Werkhistorie berücksichtigen</ion-toggle>
+          </ion-item>
+        }
         <ion-item lines="none">
           <ion-label position="stacked">Notizen</ion-label>
           <ion-textarea (ionBlur)="onInfoChanged()" autoGrow="true" [(ngModel)]="attendance.notes"></ion-textarea>

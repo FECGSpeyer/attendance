@@ -43,7 +43,8 @@ export class SettingsPage implements OnInit {
   public longName: string = ''
   public tenantId: number;
   public isHelper: boolean = false;
-  public isPlayer: boolean = false
+  public isPlayer: boolean = false;
+  public max: string = new Date().toISOString();
 
   constructor(
     public db: DbService,
@@ -125,12 +126,12 @@ export class SettingsPage implements OnInit {
     await generalModal.dismiss();
   }
 
-  onAttDateChange(value: string, dateModal: IonModal) {
+  onAttDateChange(value: string | string[], dateModal: IonModal) {
     if (parseInt(this.attDateString.substring(0, 2), 10) !== dayjs(this.attDate).date()) {
       dateModal.dismiss();
     }
 
-    this.attDateString = this.formatDate(value);
+    this.attDateString = this.formatDate(value as string);
   }
 
   formatDate(value: string): string {

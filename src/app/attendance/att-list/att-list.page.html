@@ -146,11 +146,16 @@
           <ion-textarea [(ngModel)]="typeInfo"></ion-textarea>
         </ion-item>
         <ion-item *ngIf="type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit'">
-          <ion-select interface="modal" [label]="isChoir ? 'Lieder' : 'Werke'" multiple="true" [(ngModel)]="selectedSongs" #select>
+          <ion-select (ionDismiss)="onInfoChanged()" interface="modal" [label]="isChoir ? 'Lieder' : 'Werke'" multiple="true" [(ngModel)]="selectedSongs" #select>
             <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}
             </ion-select-option>
           </ion-select>
         </ion-item>
+        @if (type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit') {
+          <ion-item lines="none">
+            <ion-toggle helperText="Ausgewählte Werke werden automatisch in die Werkhistorie übernommen" [(ngModel)]="saveInHistory">In der Werkhistorie berücksichtigen</ion-toggle>
+          </ion-item>
+        }
         <ion-item>
           <ion-label>Neutral</ion-label>
           <ion-toggle slot="end" [(ngModel)]="hasNeutral"></ion-toggle>
