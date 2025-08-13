@@ -39,6 +39,8 @@ export class SettingsPage implements OnInit {
   public attDate: string = new Date().toISOString();
   public practiceStart: string;
   public practiceEnd: string;
+  public shortName: string = '';
+  public longName: string = ''
   public tenantId: number;
   public isHelper: boolean = false;
   public isPlayer: boolean = false
@@ -51,6 +53,8 @@ export class SettingsPage implements OnInit {
   ) {
     effect(async () => {
       this.db.tenant();
+      this.shortName = this.db.tenant().shortName;
+      this.longName = this.db.tenant().longName;
       await this.initialize();
     });
   }
@@ -90,7 +94,35 @@ export class SettingsPage implements OnInit {
   }
 
   async saveGeneralSettings(generalModal: IonModal) {
+    try {
+      await this.db.updateTenantData({
+        practiceStart: this.practiceStart,
+        practiceEnd: this.practiceEnd,
+        seasonStart: this.attDate,
+        shortName: this.shortName,
+        longName: this.longName,
+      });
+      Utils.showToast("Einstellungen gespeichert", "success");
 
+      const alert = await new AlertController().create({
+        header: 'Einstellungen gespeichert',
+        message: 'Die Einstellungen wurden erfolgreich gespeichert. Bitte lade die Seite neu, um die Änderungen zu sehen.',
+        buttons: [{
+          text: "Abbrechen"
+        }, {
+          text: "Neu laden",
+          handler: () => {
+            window?.location?.reload();
+          }
+        }]
+      });
+
+      await alert.present();
+    } catch (error) {
+      Utils.showToast("Fehler beim Aktualisieren der Einstellungen", "danger");
+    }
+
+    await generalModal.dismiss();
   }
 
   onAttDateChange(value: string, dateModal: IonModal) {

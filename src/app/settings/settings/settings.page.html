@@ -15,9 +15,9 @@
     <ion-list-header sticky="true">
       Einstellungen
     </ion-list-header>
-    <!-- <ion-item *ngIf="isAdmin" button id="general-item">
+    <ion-item *ngIf="isAdmin" button id="general-item">
       <ion-label>Allgemeine Einstellungen</ion-label>
-      <ion-modal #generalModal [breakpoints]="[0.5]" [initialBreakpoint]="0.5" trigger="general-item">
+      <ion-modal #generalModal [breakpoints]="[0.9]" [initialBreakpoint]="0.9" trigger="general-item">
         <ng-template>
           <ion-content>
             <ion-header>
@@ -25,9 +25,17 @@
                 <ion-title>Allgemeine Einstellungen</ion-title>
               </ion-toolbar>
             </ion-header>
-            <ion-item>
+            <ion-item lines="none">
+              <ion-label position="stacked">Gruppenname</ion-label>
+              <ion-input [(ngModel)]="longName"></ion-input>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-label position="stacked">Kurzname</ion-label>
+              <ion-input helperText="Wird vor allem als Dateiname bei Exports verwendet" [(ngModel)]="shortName"></ion-input>
+            </ion-item>
+            <ion-item lines="none">
               <ion-label position="stacked">Saisonbeginn</ion-label>
-              <ion-input [disabled]="readOnly" readonly [(ngModel)]="attDateString" id="date-modal"></ion-input>
+              <ion-input helperText="Anwesenheiten werden erst ab diesem Datum bei den Personen berücksichtigt" [disabled]="readOnly" readonly [(ngModel)]="attDateString" id="date-modal"></ion-input>
               <ion-modal class="attDateModal" #attModal trigger="date-modal">
                 <ng-template>
                   <ion-content>
@@ -38,21 +46,46 @@
                 </ng-template>
               </ion-modal>
             </ion-item>
-            <ion-item>
+            <ion-item lines="none">
               <ion-label>Probenbeginn</ion-label>
               <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
-                  <ion-datetime [(ngModel)]="practiceStart" presentation="time" minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestart"></ion-datetime>
+                  <ion-datetime
+                    [(ngModel)]="practiceStart"
+                    presentation="time"
+                    minuteValues="0,5,10,15,20,25,30,35,40,45,50,55"
+                    id="datetimestart"
+                    [formatOptions]="{
+                      time: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      }
+                    }"
+                  ></ion-datetime>
                 </ng-template>
               </ion-modal>
             </ion-item>
-            <ion-item>
+            <ion-item lines="none">
               <ion-label>Probenende</ion-label>
               <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
-                  <ion-datetime [(ngModel)]="practiceEnd" presentation="time" minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimeend"></ion-datetime>
+                  <ion-datetime
+                    [(ngModel)]="practiceEnd"
+                    presentation="time"
+                    minuteValues="0,5,10,15,20,25,30,35,40,45,50,55"
+                    id="datetimeend"
+                    [formatOptions]="{
+                      time: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      }
+                    }"
+                  >
+                  </ion-datetime>
                 </ng-template>
               </ion-modal>
             </ion-item>
@@ -60,7 +93,7 @@
           </ion-content>
         </ng-template>
       </ion-modal>
-    </ion-item> -->
+    </ion-item>
     <ion-item routerLink="songs" button>
       <ion-label>Werke</ion-label>
     </ion-item>

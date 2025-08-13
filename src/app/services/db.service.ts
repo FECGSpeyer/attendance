@@ -98,11 +98,30 @@ export class DbService {
     const { data, error } = await supabase
       .from('tenants')
       .select('*')
-      .in('id', ids);
+      .in('id', ids)
+      .order('longName', { ascending: true });
 
     if (error) {
       throw new Error("Fehler beim Laden der Tenants");
     }
+
+    return data;
+  }
+
+  async updateTenantData(tenant: Partial<Tenant>): Promise<Tenant> {
+    const { data, error } = await supabase
+      .from('tenants')
+      .update(tenant)
+      .match({ id: this.tenant().id })
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast("Fehler beim Aktualisieren der Einstellungen", "danger");
+      throw new Error("Fehler beim Aktualisieren der Mandantendaten");
+    }
+
+    this.tenant.set(data);
 
     return data;
   }
