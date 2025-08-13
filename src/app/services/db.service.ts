@@ -1346,19 +1346,25 @@ export class DbService {
       throw new Error(error.message);
     }
 
-    const { error: userError } = await supabase
-      .from("tenantUsers")
-      .insert([{
-        userId: this.user.id,
-        role: Role.ADMIN,
-        tenantId: data.id,
-        email: this.user.email,
-      }, {
+    const usersToAdd = [{
         userId: "665fe2b4-d53f-4f17-a66b-46c0949af99a",
         role: Role.ADMIN,
         tenantId: data.id,
         email: "developer@attendix.de"
-      }]);
+      }];
+
+    if (this.user.email !== "developer@attendix.de") {
+      usersToAdd.push({
+        userId: this.user.id,
+        role: Role.ADMIN,
+        tenantId: data.id,
+        email: this.user.email,
+      });
+    }
+
+    const { error: userError } = await supabase
+      .from("tenantUsers")
+      .insert(usersToAdd);
 
     if (userError) {
       Utils.showToast("Fehler beim Erstellen des Benutzers, bitte versuche es später erneut.", "danger");
