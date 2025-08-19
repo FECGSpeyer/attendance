@@ -17,7 +17,7 @@
       </ion-item>
       <div slot="content">
         <ion-item lines="none">
-          <ion-select label="Kategorie" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.type">
+          <ion-select disabled="true" label="Kategorie" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.type">
             <ion-select-option value="uebung">Übung</ion-select-option>
             <ion-select-option value="vortrag">Vortrag</ion-select-option>
             <ion-select-option value="hochzeit">Hochzeit</ion-select-option>
@@ -28,12 +28,53 @@
           <ion-label position="stacked">Probenart</ion-label>
           <ion-input (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.typeInfo"></ion-input>
         </ion-item>
-        <ion-item *ngIf="attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit'">
-          <ion-select interface="modal" label="Werk(e)" (ionDismiss)="onInfoChanged()" multiple="true" [(ngModel)]="selectedSongs" #select>
-            <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
+        <ion-list *ngIf="attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit'">
+          <ion-list-header>
+            <ion-label>Werke</ion-label>
+            <ion-button id="add-his-button">
+              <ion-icon name="add"></ion-icon>
+            </ion-button>
+            <ion-modal #addHisModal trigger="add-his-button" [breakpoints]="[0.7]" [initialBreakpoint]="0.7">
+              <ng-template>
+                <ion-content>
+                  <ion-header>
+                    <ion-toolbar>
+                      <ion-title>Werk(e) hinzufügen</ion-title>
+                    </ion-toolbar>
+                  </ion-header>
+                  <ion-item>
+                    <ion-select interface="modal" label="Werk(e)" multiple="true" [(ngModel)]="selectedSongs" #select>
+                      <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}
+                      </ion-select-option>
+                    </ion-select>
+                  </ion-item>
+                  <ion-item>
+                    <ion-select label="Dirigent" (ionChange)="onConChange()" [(ngModel)]="historyEntry.person_id"
+                      #select multiple="false">
+                      <ion-select-option [value]="con.id" *ngFor="let con of activeConductors">{{ con.firstName }} {{
+                        con.lastName }}
+                      </ion-select-option>
+                      <ion-select-option [value]="otherConductor">Anderer Dirigent</ion-select-option>
+                    </ion-select>
+                  </ion-item>
+                  <ion-item *ngIf="historyEntry.person_id === otherConductor && historyEntry.otherConductor">
+                    <ion-input [(ngModel)]="historyEntry.otherConductor"></ion-input>
+                  </ion-item>
+                  <ion-button (click)="addSongsToHistory(addHisModal)" expand="block">Hinzufügen</ion-button>
+                </ion-content>
+              </ng-template>
+            </ion-modal>
+          </ion-list-header>
+          <ion-item *ngFor="let entry of historyEntries">
+            <ion-label>
+              <h2>{{ getSongInfo(entry) }}</h2>
+              <h3>{{ getConductorInfo(entry) }}</h3>
+            </ion-label>
+            <ion-button fill="clear" slot="end" (click)="removeHistoryEntry(entry.id)">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
         @if (attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit') {
           <ion-item>
             <ion-toggle (ionChange)="onInfoChanged()" helperText="Ausgewählte Werke werden automatisch in die Werkhistorie übernommen" [(ngModel)]="attendance.save_in_history">In der Werkhistorie berücksichtigen</ion-toggle>

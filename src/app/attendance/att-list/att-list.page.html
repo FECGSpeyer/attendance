@@ -26,19 +26,22 @@
           <ng-container>
 
             <ion-item button detail="false" (click)="openAttendance(currentAttendance)">
-              <ion-label *ngIf="currentAttendance.type === 'uebung'">{{ getReadableDate(currentAttendance.date) }}</ion-label>
-                <ion-label *ngIf="currentAttendance.type !== 'uebung'">{{ getReadableDate(currentAttendance.date) }} |
-                  {{ getTypeText(currentAttendance.type, currentAttendance.typeInfo) }}</ion-label>
-                  <ion-badge [color]="currentAttendance.percentage >= 75 ? 'success' : currentAttendance.percentage >= 50 ? 'warning' : 'danger'" *ngIf="currentAttendance.percentage" slot="end">{{ currentAttendance.percentage }}%</ion-badge>
-                </ion-item>
+              <ion-label *ngIf="currentAttendance.type === 'uebung'">{{ getReadableDate(currentAttendance.date)
+                }}</ion-label>
+              <ion-label *ngIf="currentAttendance.type !== 'uebung'">{{ getReadableDate(currentAttendance.date) }} |
+                {{ getTypeText(currentAttendance.type, currentAttendance.typeInfo) }}</ion-label>
+              <ion-badge
+                [color]="currentAttendance.percentage >= 75 ? 'success' : currentAttendance.percentage >= 50 ? 'warning' : 'danger'"
+                *ngIf="currentAttendance.percentage" slot="end">{{ currentAttendance.percentage }}%</ion-badge>
+            </ion-item>
 
-                <ion-item-options side="end">
-                  <ion-item-option color="danger" (click)="remove(currentAttendance.id, slider)">
-                    <ion-icon name="trash-outline"></ion-icon>
-                  </ion-item-option>
-                </ion-item-options>
-              </ng-container>
-              </ion-item-sliding>
+            <ion-item-options side="end">
+              <ion-item-option color="danger" (click)="remove(currentAttendance.id, slider)">
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ng-container>
+        </ion-item-sliding>
       </div>
     </ion-accordion>
 
@@ -58,7 +61,8 @@
               <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
               <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
                 {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
-              <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'" *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
+              <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
+                *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
             </ion-item>
 
             <ion-item-options *ngIf="isConductor" side="end">
@@ -79,14 +83,16 @@
         <ion-list class="marginBottom">
           <ion-item-divider>
             <ion-label>Durchschnitt</ion-label>
-            <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'" slot="end">{{ perc }}%</ion-badge>
+            <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'"
+              slot="end">{{ perc }}%</ion-badge>
           </ion-item-divider>
           <ion-item-sliding #slider *ngFor="let att of oldAttendances">
             <ion-item button detail="false" (click)="openAttendance(att)">
               <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
               <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
                 {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
-              <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'" *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
+              <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
+                *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
             </ion-item>
 
             <ion-item-options side="end">
@@ -103,17 +109,19 @@
   <ion-list *ngIf="!isConductor && !isHelper" class="marginBottom">
     <ion-item-divider>
       <ion-label>Durchschnitt</ion-label>
-      <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'" slot="end">{{ perc }}%</ion-badge>
+      <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'"
+        slot="end">{{ perc }}%</ion-badge>
     </ion-item-divider>
     <ion-item *ngFor="let att of oldAttendances" detail="false">
       <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
       <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
         {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
-      <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'" *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
+      <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
+        *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
     </ion-item>
   </ion-list>
 
-  <ion-modal #addAttModal trigger="add-att-button" [breakpoints]="[0.7]" [initialBreakpoint]="0.7">
+  <ion-modal #addAttModal trigger="add-att-button" [breakpoints]="[1]" [initialBreakpoint]="1">
     <ng-template>
       <ion-content>
         <ion-header>
@@ -145,16 +153,58 @@
           <ion-label position="stacked">Veranstaltung</ion-label>
           <ion-textarea [(ngModel)]="typeInfo"></ion-textarea>
         </ion-item>
-        <ion-item *ngIf="type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit'">
-          <ion-select interface="modal" [label]="isChoir ? 'Lieder' : 'Werke'" multiple="true" [(ngModel)]="selectedSongs" #select>
-            <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-        @if (type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit') {
-          <ion-item lines="none">
-            <ion-toggle helperText="Ausgewählte Werke werden automatisch in die Werkhistorie übernommen" [(ngModel)]="saveInHistory">In der Werkhistorie berücksichtigen</ion-toggle>
+        <ion-list *ngIf="type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit'">
+          <ion-list-header>
+            <ion-label>Werke</ion-label>
+            <ion-button id="add-his-button">
+              <ion-icon name="add"></ion-icon>
+            </ion-button>
+            <ion-modal #addHisModal trigger="add-his-button" [breakpoints]="[0.7]" [initialBreakpoint]="0.7">
+              <ng-template>
+                <ion-content>
+                  <ion-header>
+                    <ion-toolbar>
+                      <ion-title>Werk(e) hinzufügen</ion-title>
+                    </ion-toolbar>
+                  </ion-header>
+                  <ion-item>
+                    <ion-select interface="modal" label="Werk(e)" multiple="true" [(ngModel)]="selectedSongs" #select>
+                      <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.number }} {{ song.name }}
+                      </ion-select-option>
+                    </ion-select>
+                  </ion-item>
+                  <ion-item>
+                    <ion-select label="Dirigent" (ionChange)="onConChange()" [(ngModel)]="historyEntry.person_id"
+                      #select multiple="false">
+                      <ion-select-option [value]="con.id" *ngFor="let con of activeConductors">{{ con.firstName }} {{
+                        con.lastName }}
+                      </ion-select-option>
+                      <ion-select-option [value]="otherConductor">Anderer Dirigent</ion-select-option>
+                    </ion-select>
+                  </ion-item>
+                  <ion-item *ngIf="historyEntry.person_id === otherConductor && historyEntry.otherConductor">
+                    <ion-input [(ngModel)]="historyEntry.otherConductor"></ion-input>
+                  </ion-item>
+                  <ion-button (click)="addSong(addHisModal)" expand="block">Hinzufügen</ion-button>
+                </ion-content>
+              </ng-template>
+            </ion-modal>
+          </ion-list-header>
+          <ion-item *ngFor="let entry of historyEntries; let i = index">
+            <ion-label>
+              <h2>{{ getSongInfo(entry) }}</h2>
+              <h3>{{ getConductorInfo(entry) }}</h3>
+            </ion-label>
+            <ion-button fill="clear" slot="end" (click)="historyEntries.splice(i, 1)">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
           </ion-item>
+        </ion-list>
+        @if (type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit') {
+        <ion-item lines="none">
+          <ion-toggle helperText="Ausgewählte Werke werden automatisch in die Werkhistorie übernommen"
+            [(ngModel)]="saveInHistory">In der Werkhistorie berücksichtigen</ion-toggle>
+        </ion-item>
         }
         <ion-item>
           <ion-label>Neutral</ion-label>

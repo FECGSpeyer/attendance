@@ -5,7 +5,7 @@ import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supab
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
-import { Attendance, FieldSelection, Person, PersonAttendance, Song } from 'src/app/utilities/interfaces';
+import { Attendance, FieldSelection, Person, PersonAttendance, Song, History } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -28,6 +28,14 @@ export class AttendancePage implements OnInit {
   public songs: Song[] = [];
   public selectedSongs: number[] = [];
   public mainGroup: number | undefined;
+  public historyEntry: History = {
+    songId: 1,
+    person_id: 0,
+    date: new Date().toISOString(),
+  };
+  public activeConductors: Person[] = [];
+  public otherConductor: number = 9999999999;
+  public historyEntries: History[] = [];
 
   constructor(
     private modalController: ModalController,
@@ -46,8 +54,11 @@ export class AttendancePage implements OnInit {
         this.subsribeOnChannels();
       }
     });
+    this.conductors = await this.db.getConductors(true);
+    this.activeConductors = this.conductors.filter((con: Person) => !con.left);
     this.withExcuses = this.db.tenant().withExcuses;
     this.attendance = await this.db.getAttendanceById(this.attendanceId);
+    this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendanceId);
     this.isHelper = await this.db.tenantUser().role === Role.HELPER;
     void this.listenOnNetworkChanges();
     this.songs = await this.db.getSongs();
@@ -250,11 +261,78 @@ export class AttendancePage implements OnInit {
       typeInfo: this.attendance.typeInfo,
       notes: this.attendance.notes,
       save_in_history: this.attendance.save_in_history,
-      songs: this.selectedSongs,
     }, this.attendance.id);
 
-    if (this.attendance.save_in_history && this.selectedSongs.length !== this.attendance.songs.length) {
-      await this.db.updateSongsInHistory(this.selectedSongs, this.attendance.date);
+    if (this.historyEntries.length && this.historyEntries[0].visible !== this.attendance.save_in_history) {
+      for (const entry of this.historyEntries) {
+        await this.db.updateHistoryEntry(entry.id, { visible: this.attendance.save_in_history });
+      }
+    }
+  }
+
+  async addSongsToHistory(modal: HTMLIonModalElement): Promise<void> {
+    for (const songId of this.selectedSongs) {
+      this.historyEntries.push({
+        ...this.historyEntry,
+        songId: Number(songId),
+        tenantId: this.db.tenant().id,
+        attendance_id: this.attendance.id,
+      });
+    }
+
+    await this.db.addSongsToHistory(this.historyEntries);
+    this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendance.id);
+
+    modal.dismiss();
+  }
+
+  async removeHistoryEntry(id: number): Promise<void> {
+    await this.db.removeHistoryEntry(id);
+    this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendance.id);
+  }
+
+  getSongInfo(entry: History): string {
+    const song: Song = this.songs.find((s: Song) => s.id === entry.songId);
+    if (!song) {
+      return "Unbekanntes Lied";
+    }
+    return `${song.number} ${song.name}`;
+  }
+
+  getConductorInfo(entry: History): string {
+    if (entry.otherConductor) {
+      return entry.otherConductor;
+    }
+
+    const conductor: Person | undefined = this.conductors.find((con: Person) => con.id === entry.person_id);
+    if (!conductor) {
+      return "Unbekannter Dirigent";
+    }
+    return `${conductor.firstName} ${conductor.lastName}`;
+  }
+
+  async onConChange() {
+    if (this.historyEntry.person_id === this.otherConductor) {
+      const alert = await this.alertController.create({
+        header: 'Dirigent eingeben',
+        inputs: [
+          {
+            type: "text",
+            name: "conductor",
+            placeholder: "Dirigent",
+          }
+        ],
+        buttons: ["Abbrechen", {
+          text: "Speichern",
+          handler: (data: any) => {
+            this.historyEntry.otherConductor = data.conductor;
+          }
+        }]
+      });
+
+      await alert.present();
+    } else {
+      delete this.historyEntry.otherConductor;
     }
   }
 }

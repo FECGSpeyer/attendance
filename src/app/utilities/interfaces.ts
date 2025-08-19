@@ -206,12 +206,16 @@ export interface History {
     songId: number;
     number?: number;
     name?: string;
-    conductor: number;
     conductorName?: string;
     otherConductor?: string;
     count?: number;
     tenantId?: number;
     person_id?: number;
+    attendance_id?: number;
+    visible?: boolean;
+    attendance?: {
+        date: string;
+    }
 }
 
 export interface Teacher {

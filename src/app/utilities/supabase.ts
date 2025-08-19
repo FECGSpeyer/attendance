@@ -172,7 +172,7 @@ export type Database = {
       }
       history: {
         Row: {
-          conductor: number | null
+          attendance_id: number | null
           created_at: string | null
           date: string | null
           id: number
@@ -180,9 +180,10 @@ export type Database = {
           person_id: number | null
           songId: number | null
           tenantId: number | null
+          visible: boolean | null
         }
         Insert: {
-          conductor?: number | null
+          attendance_id?: number | null
           created_at?: string | null
           date?: string | null
           id?: number
@@ -190,9 +191,10 @@ export type Database = {
           person_id?: number | null
           songId?: number | null
           tenantId?: number | null
+          visible?: boolean | null
         }
         Update: {
-          conductor?: number | null
+          attendance_id?: number | null
           created_at?: string | null
           date?: string | null
           id?: number
@@ -200,13 +202,14 @@ export type Database = {
           person_id?: number | null
           songId?: number | null
           tenantId?: number | null
+          visible?: boolean | null
         }
         Relationships: [
           {
-            foreignKeyName: "history_conductor_fkey"
-            columns: ["conductor"]
+            foreignKeyName: "history_attendance_id_fkey"
+            columns: ["attendance_id"]
             isOneToOne: false
-            referencedRelation: "conductors"
+            referencedRelation: "attendance"
             referencedColumns: ["id"]
           },
           {
@@ -588,6 +591,8 @@ export type Database = {
         Row: {
           created_at: string | null
           id: number
+          instrument_ids: number[] | null
+          instruments: number[] | null
           legacyId: number | null
           link: string | null
           name: string | null
@@ -599,6 +604,8 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: number
+          instrument_ids?: number[] | null
+          instruments?: number[] | null
           legacyId?: number | null
           link?: string | null
           name?: string | null
@@ -610,6 +617,8 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: number
+          instrument_ids?: number[] | null
+          instruments?: number[] | null
           legacyId?: number | null
           link?: string | null
           name?: string | null
@@ -776,6 +785,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: number
+          parent_id: number | null
           role: number
           tenantId: number
           userId: string
@@ -784,6 +794,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: number
+          parent_id?: number | null
           role: number
           tenantId: number
           userId: string
@@ -792,6 +803,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: number
+          parent_id?: number | null
           role?: number
           tenantId?: number
           userId?: string
@@ -802,6 +814,13 @@ export type Database = {
             columns: ["tenantId"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenantUsers_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "parents"
             referencedColumns: ["id"]
           },
         ]

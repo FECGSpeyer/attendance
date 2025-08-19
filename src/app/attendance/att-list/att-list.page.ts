@@ -3,7 +3,7 @@ import { AlertController, IonItemSliding, IonModal, ModalController } from '@ion
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { Attendance, PersonAttendance, Player, Song } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, Player, Song, History, Person } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import 'jspdf-autotable';
 import { AttendanceStatus, AttendanceType, Role } from 'src/app/utilities/constants';
@@ -35,6 +35,14 @@ export class AttListPage implements OnInit {
   public selectedSongs: number[] = [];
   public hasNeutral: boolean = false;
   public saveInHistory: boolean = true;
+  public historyEntry: History = {
+    songId: 1,
+    person_id: 0,
+    date: new Date().toISOString(),
+  };
+  public activeConductors: Person[] = [];
+  public otherConductor: number = 9999999999;
+  public historyEntries: History[] = [];
 
   constructor(
     private db: DbService,
@@ -55,6 +63,9 @@ export class AttListPage implements OnInit {
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
     this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isHelper = this.db.tenantUser().role === Role.HELPER;
+    const conductors = await this.db.getConductors(true);
+    this.activeConductors = conductors.filter((con: Person) => !con.left);
+    this.historyEntry.person_id = this.activeConductors[0].id;
     await this.getAttendance();
 
     this.subscribeOnAttChannel();
@@ -146,7 +157,6 @@ export class AttListPage implements OnInit {
       type: this.type,
       notes: this.notes,
       typeInfo: this.typeInfo,
-      songs: this.selectedSongs,
       save_in_history: this.saveInHistory,
     });
 
@@ -160,8 +170,15 @@ export class AttListPage implements OnInit {
     }
 
     await this.db.addPersonAttendances(persons);
-    if (this.saveInHistory && this.selectedSongs.length) {
-      await this.db.updateSongsInHistory(this.selectedSongs, this.date);
+    if (this.historyEntries.length) {
+      await this.db.addSongsToHistory(this.historyEntries.map((entry: History) => {
+        return {
+          ...entry,
+          attendance_id,
+          visible: this.saveInHistory,
+          tenantId: this.db.tenant().id,
+        }
+      }));
     }
 
     await modal.dismiss();
@@ -172,6 +189,7 @@ export class AttListPage implements OnInit {
     this.typeInfo = '';
     this.dateString = format(new Date(), 'dd.MM.yyyy');
     this.selectedSongs = [];
+    this.historyEntries = [];
   }
 
   formatDate(value: string): string {
@@ -214,6 +232,62 @@ export class AttListPage implements OnInit {
 
   onTypeChange(): void {
     this.hasNeutral = this.type !== 'uebung';
-    this.saveInHistory = this.type !== 'uebung' && Boolean(this.selectedSongs?.length);
+    this.saveInHistory = this.type !== 'uebung';
+  }
+
+  addSong(modal: IonModal): void {
+    for (const songId of this.selectedSongs) {
+      this.historyEntries.push({
+        ...this.historyEntry,
+        songId: Number(songId),
+      });
+    }
+
+    modal.dismiss();
+  }
+
+  getSongInfo(entry: History): string {
+    const song: Song = this.songs.find((s: Song) => s.id === entry.songId);
+    if (!song) {
+      return "Unbekanntes Lied";
+    }
+    return `${song.number} ${song.name}`;
+  }
+
+  getConductorInfo(entry: History): string {
+    if (entry.otherConductor) {
+      return entry.otherConductor;
+    }
+
+    const conductor: Person | undefined = this.activeConductors.find((con: Person) => con.id === entry.person_id);
+    if (!conductor) {
+      return "Unbekannter Dirigent";
+    }
+    return `${conductor.firstName} ${conductor.lastName}`;
+  }
+
+  async onConChange() {
+    if (this.historyEntry.person_id === this.otherConductor) {
+      const alert = await this.alertController.create({
+        header: 'Dirigent eingeben',
+        inputs: [
+          {
+            type: "text",
+            name: "conductor",
+            placeholder: "Dirigent",
+          }
+        ],
+        buttons: ["Abbrechen", {
+          text: "Speichern",
+          handler: (data: any) => {
+            this.historyEntry.otherConductor = data.conductor;
+          }
+        }]
+      });
+
+      await alert.present();
+    } else {
+      delete this.historyEntry.otherConductor;
+    }
   }
 }

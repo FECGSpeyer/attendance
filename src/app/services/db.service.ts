@@ -1075,11 +1075,39 @@ export class DbService {
   async getHistory(): Promise<History[]> {
     const { data } = await supabase
       .from('history')
-      .select('*')
+      .select('*, attendance:attendance_id(date)')
       .eq('tenantId', this.tenant().id)
+      .eq('visible', true)
       .order("date", {
         ascending: false,
       });
+
+    return data as any;
+  }
+
+  async getHistoryByAttendanceId(attendance_id: number): Promise<History[]> {
+    const { data } = await supabase
+      .from('history')
+      .select('*')
+      .eq('tenantId', this.tenant().id)
+      .eq('attendance_id', attendance_id)
+      .order("date", {
+        ascending: false,
+      });
+
+    return data;
+  }
+
+  async updateHistoryEntry(id: number, history: Partial<History>): Promise<History[]> {
+    const { data, error } = await supabase
+      .from('history')
+      .update(history)
+      .match({ id });
+
+    if (error) {
+      Utils.showToast("Fehler beim Updaten des Eintrags", "danger");
+      throw new Error("Fehler beim Updaten des Eintrags");
+    }
 
     return data;
   }
@@ -1113,42 +1141,14 @@ export class DbService {
     return data;
   }
 
-  async updateSongsInHistory(songs: number[], date: string) {
-    const { data } = await supabase
+  async addSongsToHistory(historyEntries: History[]) {
+    const { error } = await supabase
       .from('history')
-      .select('*')
-      .eq('tenantId', this.tenant().id);
+      .insert(historyEntries)
+      .select();
 
-    const filteredData = data.filter((h: History) => dayjs(h.date).isSame(dayjs(date), 'day'));
-    const historyToInsert: History[] = [];
-
-    for (const song of songs) {
-      if (!filteredData.some((h: History) => h.songId === song)) {
-        historyToInsert.push({
-          songId: song,
-          date: dayjs(date).toISOString(),
-          tenantId: this.tenant().id,
-          conductor: null,
-          otherConductor: "Keine Angabe",
-        });
-      }
-    }
-
-    for (const h of filteredData) {
-      if (!songs.includes(h.songId)) {
-        await this.removeHistoryEntry(h.id);
-      }
-    }
-
-    if (historyToInsert.length !== 0) {
-      const { error } = await supabase
-        .from('history')
-        .insert(historyToInsert)
-        .select();
-
-      if (error) {
-        throw new Error("Fehler beim Hinzufügen der Lieder zur Historie");
-      }
+    if (error) {
+      throw new Error("Fehler beim Hinzufügen der Lieder zur Historie");
     }
 
     return;
@@ -1426,7 +1426,7 @@ export class DbService {
       .from("history")
       .select(`
         id,
-        conductors (
+        person_id (
           firstName, lastName
         ),
         date,

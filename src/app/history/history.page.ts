@@ -24,7 +24,7 @@ export class HistoryPage implements OnInit {
   historyFiltered: History[] = [];
   historyEntry: History = {
     songId: 1,
-    conductor: 0,
+    person_id: 0,
     date: new Date().toISOString(),
   };
   searchTerm: string = "";
@@ -43,7 +43,7 @@ export class HistoryPage implements OnInit {
     this.selectedSongs = [this.songs[0].id];
     this.conductors = await this.db.getConductors(true);
     this.activeConductors = this.conductors.filter((con: Person) => !con.left);
-    this.historyEntry.conductor = this.activeConductors[0].id;
+    this.historyEntry.person_id = this.activeConductors[0].id;
 
     await this.getHistory();
   }
@@ -57,13 +57,13 @@ export class HistoryPage implements OnInit {
         conductorName: conductor ? `${conductor.firstName} ${conductor.lastName}` : entry.otherConductor,
         number: this.songs.find((song: Song) => song.id === entry.songId)?.number,
         name: this.songs.find((song: Song) => song.id === entry.songId)?.name || entry.name,
-        count: attendances.filter((att: Attendance) => this.isSongInPlan(att, entry.songId, entry.date)).length
+        count: attendances.filter((att: Attendance) => this.isSongInPlan(att, entry.songId, entry.attendance?.date ?? entry.date)).length
       }
     });
 
     const grouped: GroupedHistory = this.history.reduce((r: History, a: History) => {
-      r[dayjs(a.date).format("DD.MM.YYYY")] = r[dayjs(a.date).format("DD.MM.YYYY")] || [];
-      r[dayjs(a.date).format("DD.MM.YYYY")].push(a);
+      r[dayjs(a.attendance?.date ?? a.date).format("DD.MM.YYYY")] = r[dayjs(a.attendance?.date ?? a.date).format("DD.MM.YYYY")] || [];
+      r[dayjs(a.attendance?.date ?? a.date).format("DD.MM.YYYY")].push(a);
       return r;
     }, Object.create(null));
 
@@ -144,7 +144,7 @@ export class HistoryPage implements OnInit {
   }
 
   async onConChange() {
-    if (this.historyEntry.conductor === this.otherConductor) {
+    if (this.historyEntry.person_id === this.otherConductor) {
       const alert = await this.alertController.create({
         header: 'Dirigent eingeben',
         inputs: [
@@ -170,8 +170,8 @@ export class HistoryPage implements OnInit {
 
   async addHistoryEntry(modal: IonModal): Promise<void> {
     if (this.selectedSongs.length) {
-      if (this.historyEntry.conductor === this.otherConductor) {
-        delete this.historyEntry.conductor;
+      if (this.historyEntry.person_id === this.otherConductor) {
+        delete this.historyEntry.person_id;
       }
 
       const historyEntries: History[] = [];
@@ -191,7 +191,7 @@ export class HistoryPage implements OnInit {
       this.selectedSongs = [];
       this.historyEntry = {
         songId: this.historyEntry.songId,
-        conductor: this.conductors[0].id,
+        person_id: this.conductors[0].id,
         date: this.historyEntry.date,
       };
       this.dateString = format(new Date(this.historyEntry.date), 'dd.MM.yyyy');
