@@ -246,17 +246,23 @@ export class DbService {
   async createParent(parent: Partial<Parent>) {
     const appId: string = await this.registerUser(parent.email as string, parent.firstName as string, Role.PARENT);
 
-    const { error } = await supabase
+    const { error, data } = await supabase
       .from("parents")
       .insert({
         ...parent,
         tenantId: this.tenant().id,
         appId
-      });
+      })
+      .select()
+      .single();
 
     if (error) {
       throw new Error("Fehler beim hinzufügen des Elternteils.");
     }
+
+    await this.updateTenantUser({
+      parent_id: data.id
+    }, appId);
   }
 
   async registerUser(email: string, name: string, role: Role): Promise<string> {
@@ -461,6 +467,32 @@ export class DbService {
           history: player.history as any,
         }
       });
+    }
+
+    if (this.tenantUser().role === Role.PARENT) {
+      const { data, error } = await supabase
+        .from('player')
+        .select('*, person_attendances(*)')
+        .eq('tenantId', this.tenant().id)
+        .eq('parent_id', this.tenantUser().parent_id)
+        .is("left", null)
+        .order("instrument")
+        .order("isLeader", {
+          ascending: false
+        })
+        .order("lastName");
+
+      if (error) {
+        Utils.showToast("Fehler beim Laden der Kinder");
+        throw error;
+      }
+
+      return (data as any).map((player) => {
+        return {
+          ...player,
+          history: player.history.filter((his: PlayerHistoryEntry) => [PlayerHistoryType.PAUSED, PlayerHistoryType.UNPAUSED, PlayerHistoryType.INSTRUMENT_CHANGE].includes(his.type)) as any,
+        }
+      }) as any;
     }
 
     const { data, error } = await supabase
@@ -1473,11 +1505,11 @@ export class DbService {
     }
 
     const usersToAdd = [{
-        userId: "665fe2b4-d53f-4f17-a66b-46c0949af99a",
-        role: Role.ADMIN,
-        tenantId: data.id,
-        email: "developer@attendix.de"
-      }];
+      userId: "665fe2b4-d53f-4f17-a66b-46c0949af99a",
+      role: Role.ADMIN,
+      tenantId: data.id,
+      email: "developer@attendix.de"
+    }];
 
     if (this.user.email !== "developer@attendix.de") {
       usersToAdd.push({

@@ -66,6 +66,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public role: Role = Role.PLAYER;
   public parentsEnabled: boolean = false;
   public parents: Parent[] = [];
+  public isParent: boolean = false;
 
   constructor(
     private db: DbService,
@@ -80,6 +81,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.maintainTeachers = this.db.tenant().maintainTeachers;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
+    this.isParent = this.db.tenantUser().role === Role.PARENT;
     this.hasChanges = false;
     this.parentsEnabled = this.db.tenant().parents;
 
@@ -275,7 +277,7 @@ export class PersonPage implements OnInit, AfterViewInit {
         isCritical: this.solved ? false : this.player.isCritical,
         lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
       }, false, createAccount, this.role);
-      this.modalController.dismiss();
+
       Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
     } catch (error) {
       Utils.showToast("Fehler beim aktualisieren des Spielers", "danger");

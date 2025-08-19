@@ -1,6 +1,6 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
-import { AttendanceStatus, DEFAULT_IMAGE, Role } from "./constants";
+import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role } from "./constants";
 import { Attendance, FieldSelection, Instrument, PersonAttendance, Player } from "./interfaces";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -179,14 +179,16 @@ export class Utils {
     }
   }
 
-  public static getPlayerHistoryTypeText(key: number) {
+  public static getPlayerHistoryTypeText(key: PlayerHistoryType) {
     switch (key) {
-      case 1:
+      case PlayerHistoryType.PAUSED:
         return "Pausiert";
-      case 2:
+      case PlayerHistoryType.UNEXCUSED:
         return "Unentschuldigt";
-      case 3:
+      case PlayerHistoryType.MISSING_OFTEN:
         return "Fehlt oft";
+      case PlayerHistoryType.INSTRUMENT_CHANGE:
+        return "Wechsel";
       default:
         return "Sonstiges";
     }
