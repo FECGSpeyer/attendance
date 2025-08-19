@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { History, Person, Song } from '../utilities/interfaces';
+import { History, Instrument, Person, Song } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
 import { AlertController, IonModal } from '@ionic/angular';
 import { Utils } from '../utilities/Utils';
@@ -18,6 +18,9 @@ export class SongsPage implements OnInit {
   searchTerm: string = "";
   public isAdmin: boolean = false;
   public withChoir: boolean = false;
+  public isOrchestra: boolean = false;
+  public instruments: Instrument[] = [];
+  public selectedInstruments: number[] = [];
 
   constructor(
     private db: DbService,
@@ -28,17 +31,23 @@ export class SongsPage implements OnInit {
   }
 
   async getSongs(): Promise<void> {
+    this.isOrchestra = this.db.tenant().type === "orchestra";
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     const history: History[] = await this.db.getHistory();
     const conductors: Person[] = await this.db.getConductors(true);
+    if (this.isOrchestra) {
+      this.instruments = (await this.db.getInstruments()).filter((instrument: Instrument) => !instrument.maingroup);
+      this.selectedInstruments = this.instruments.map((instrument: Instrument) => instrument.id);
+    }
     this.songs = (await this.db.getSongs()).map((song: Song): Song => {
       const hisEntry: History | undefined = history.find((his: History): boolean => his.songId === song.id);
       const lastSung: string | undefined = hisEntry?.date;
-      const conductor: Person | undefined = hisEntry ? conductors.find((con: Person) => con.id === hisEntry.conductor) : undefined;
+      const conductor: Person | undefined = hisEntry ? conductors.find((con: Person) => con.id === hisEntry.person_id) : undefined;
       return {
         ...song,
         lastSung,
         conductor: conductor ? `${conductor.firstName} ${conductor.lastName}` : undefined,
+        instrument_ids: song.instrument_ids?.length ? song.instrument_ids : this.selectedInstruments,
       }
     });
     this.songsFiltered = this.songs;
@@ -73,7 +82,7 @@ export class SongsPage implements OnInit {
     this.getSongs();
   }
 
-  async editSong(id: number, modal: IonModal, number: any, name: any, link: any) {
+  async editSong(id: number, modal: IonModal, number: any, name: any, link: any, instrument_ids: any) {
     if (link && !this.isValidHttpUrl(link)) {
       Utils.showToast("Der angegebene Link ist nicht valide", "danger");
       return;
@@ -84,6 +93,7 @@ export class SongsPage implements OnInit {
       name,
       link,
       withChoir: this.songs.find((song: Song) => song.id === id).withChoir,
+      instrument_ids: instrument_ids ?? [],
     });
 
     await modal.dismiss();
@@ -168,6 +178,25 @@ export class SongsPage implements OnInit {
 
   onTextAreaFocus(evt: any) {
     evt.target.children[0].children[0].select();
+  }
+
+  getInstrumentText(instrumentIds: number[]): string {
+    const instruments: Instrument[] = this.instruments.filter((instrument: Instrument) => !instrumentIds.includes(instrument.id));
+    // last instrument should be connected with 'und'
+
+    if (instruments.length === 0) {
+      return "";
+    } else if (instruments.length === 1) {
+      return instruments[0].name + " fehlt";
+    }
+
+    // , should be connected with 'und'
+    if (instruments.length === 2) {
+      return instruments.map((instrument: Instrument) => instrument.name).join(" und ") + " fehlen";
+    }
+
+    // more than 2 instruments, last should be connected only with 'und'
+    return instruments.slice(0, -1).map((instrument: Instrument) => instrument.name).join(", ") + " und " + instruments[instruments.length - 1].name + " fehlen";
   }
 
 }

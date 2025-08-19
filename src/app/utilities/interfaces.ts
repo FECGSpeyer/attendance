@@ -116,6 +116,7 @@ export interface Player extends Person {
     percentage?: number;
     legacyId?: number;
     legacyConductorId?: number;
+    parent_id?: number;
 }
 
 export interface Instrument {
@@ -195,6 +196,7 @@ export interface Song {
     link?: string;
     conductor?: string;
     legacyId?: number;
+    instrument_ids?: number[];
 }
 
 export interface History {

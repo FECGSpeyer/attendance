@@ -22,18 +22,15 @@
     <ion-item *ngFor="let song of songsFiltered">
       <ion-label [id]="song.id + 'edit-button'">
         <h2>{{ song.number }} {{ song.name }}</h2>
-        <h3 *ngIf="song.lastSung">Zuletzt gespielt am {{ song.lastSung | date:'dd.MM.YYYY' }} | {{ song.conductor }}</h3>
+        <h3 style="color: var(--ion-color-danger);" *ngIf="isOrchestra && song.instrument_ids?.length">{{ getInstrumentText(song.instrument_ids) }}</h3>
+        <h3 *ngIf="song.lastSung">Zuletzt gespielt am {{ song.lastSung | date:'dd.MM.YYYY' }} | {{ song.conductor }}
+        </h3>
       </ion-label>
       <ion-badge (click)="openLink(song.link)" slot="end" *ngIf="song.link">
         <ion-icon name="link-outline"></ion-icon>
       </ion-badge>
-      <ion-modal
-       *ngIf="isAdmin"
-       #modal
-       [trigger]="song.id + 'edit-button'"
-       [breakpoints]="[0.6]"
-       [initialBreakpoint]="0.6"
-      >
+      <ion-modal *ngIf="isAdmin" #modal [trigger]="song.id + 'edit-button'" [breakpoints]="[0.9]"
+        [initialBreakpoint]="0.9">
         <ng-template>
           <ion-content>
             <ion-header>
@@ -42,18 +39,28 @@
               </ion-toolbar>
             </ion-header>
             <ion-item>
-              <ion-input label-placement="stacked" label="Nummer"  [(ngModel)]="song.number" type="number" #number></ion-input>
+              <ion-input label-placement="stacked" label="Nummer" [(ngModel)]="song.number" type="number"
+                #number></ion-input>
             </ion-item>
             <ion-item>
-              <ion-input label-placement="stacked" label="Name"  [(ngModel)]="song.name" #name ></ion-input>
+              <ion-input label-placement="stacked" label="Name" [(ngModel)]="song.name" #name></ion-input>
             </ion-item>
             <ion-item>
-              <ion-textarea label-placement="stacked" label="Link (optional)" [(ngModel)]="song.link" rows="2" #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
+              <ion-textarea label-placement="stacked" label="Link (optional)" [(ngModel)]="song.link" rows="2" #link
+                (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
             </ion-item>
             <ion-item>
               <ion-toggle aria-label="Chor & Orchester" [(ngModel)]="song.withChoir">Chor & Orchester</ion-toggle>
             </ion-item>
-            <ion-button [disabled]="(!number.value && number.value !== 0) || !name.value" (click)="editSong(song.id, modal, number.value, name.value, link.value)" expand="block">Aktualisieren</ion-button>
+            <ion-item *ngIf="isOrchestra">
+              <ion-select interface="modal" label="Besetzung" multiple="true" [(ngModel)]="song.instrument_ids">
+                <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{ instrument.name
+                  }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+            <ion-button [disabled]="(!number.value && number.value !== 0) || !name.value"
+              (click)="editSong(song.id, modal, number.value, name.value, link.value, song.instrument_ids)"
+              expand="block">Aktualisieren</ion-button>
             <ion-button color="danger" (click)="removeSong(song.id, modal)" expand="block">Werk entfernen</ion-button>
           </ion-content>
         </ng-template>
@@ -80,7 +87,7 @@
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Name</ion-label>
-          <ion-input #name ></ion-input>
+          <ion-input #name></ion-input>
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Link</ion-label>
@@ -89,7 +96,14 @@
         <ion-item>
           <ion-toggle [(ngModel)]="withChoir" aria-label="Chor & Orchester">Chor & Orchester</ion-toggle>
         </ion-item>
-        <ion-button [disabled]="(!number.value && number.value !== 0) || !name.value" (click)="addSong(modal, number.value, name.value, link.value)" expand="block">Hinzufügen</ion-button>
+        <ion-item *ngIf="isOrchestra">
+          <ion-select interface="modal" label="Besetzung" multiple="true" [(ngModel)]="selectedInstruments">
+            <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{ instrument.name
+              }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-button [disabled]="(!number.value && number.value !== 0) || !name.value"
+          (click)="addSong(modal, number.value, name.value, link.value)" expand="block">Hinzufügen</ion-button>
       </ion-content>
     </ng-template>
   </ion-modal>
