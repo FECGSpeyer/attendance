@@ -92,70 +92,8 @@ export class ListPage implements OnInit {
     this.onFilterChanged();
   }
 
-  async openCreateSheet() {
-    const actionSheet = await this.actionSheetController.create({
-      buttons: [{
-        text: "Person hinzufügen",
-        handler: () => {
-          this.openModal(undefined, false);
-        }
-      }, {
-        text: 'Beobachter hinzufügen',
-        handler: () => {
-          this.openViewerAlert();
-        }
-      }, {
-        text: 'Abbrechen',
-        role: 'cancel'
-      }]
-    });
-
-    await actionSheet.present();
-  }
-
   userById(_: number, person: Person): string {
     return String(person.id);
-  }
-
-  async openViewerAlert() {
-    const alert = await this.alertController.create({
-      header: 'Beobachter hinzufügen',
-      inputs: [{
-        type: "email",
-        name: "email",
-        placeholder: "E-Mail-Adresse",
-      }, {
-        name: "firstName",
-        placeholder: "Vorname",
-      }, {
-        name: "lastName",
-        placeholder: "Nachname",
-      }],
-      buttons: [{
-        text: "Abbrechen",
-      }, {
-        text: "Einladen",
-        handler: async (data: { email: string, firstName: string, lastName: string }) => {
-          if (Utils.validateEmail(data.email) && data.firstName.length && data.lastName.length) {
-            const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
-            loading.present();
-            try {
-              await this.db.createViewer(data);
-              Utils.showToast("Der Benutzer wurde erfolgreich angelegt.", "success");
-              await loading.dismiss();
-            } catch (error) {
-              Utils.showToast(error.message, "danger");
-              await loading.dismiss();
-            }
-          } else {
-            alert.message = "Bitte gib gültige Werte ein.";
-            return false;
-          }
-        }
-      }]
-    });
-
-    await alert.present();
   }
 
   async openModal(player?: Player | Person, isConductor?: boolean): Promise<void> {

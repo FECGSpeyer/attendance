@@ -27,12 +27,12 @@ export class AuthGuard  {
     if (state.url === "/tabs/attendance") {
       return role === Role.ADMIN || role === Role.HELPER || role === Role.VIEWER || role === Role.RESPONSIBLE;
     } else if (state.url === "/tabs/signout") {
-      return role === Role.HELPER || role === Role.PLAYER || role === Role.NONE;
+      return role === Role.HELPER || role === Role.PLAYER || role === Role.NONE || role === Role.PARENT;
     } else if (state.url === "/tabs/settings") {
       return Boolean(role);
     }
 
-    return role === Role.ADMIN || role === Role.RESPONSIBLE || role === Role.VIEWER;
+    return role === Role.ADMIN || role === Role.RESPONSIBLE || role === Role.VIEWER || role === Role.PARENT;
   }
 
 }

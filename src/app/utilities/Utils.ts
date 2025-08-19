@@ -1,8 +1,7 @@
-import { ToastController, LoadingController, Platform } from "@ionic/angular";
+import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
-import { environment } from "src/environments/environment";
 import { AttendanceStatus, DEFAULT_IMAGE, Role } from "./constants";
-import { Attendance, FieldSelection, Instrument, Person, PersonAttendance, Player } from "./interfaces";
+import { Attendance, FieldSelection, Instrument, PersonAttendance, Player } from "./interfaces";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
@@ -375,6 +374,7 @@ export class Utils {
       case Role.ADMIN:
       case Role.RESPONSIBLE:
       case Role.VIEWER:
+      case Role.PARENT:
         return "/tabs/player";
       case Role.HELPER:
       case Role.NONE:
@@ -403,10 +403,10 @@ export class Utils {
         attText = 'X';
         break;
       case AttendanceStatus.Excused:
-      case AttendanceStatus.LateExcused:
         attText = 'E';
         break;
       case AttendanceStatus.Late:
+      case AttendanceStatus.LateExcused:
         attText = 'L';
         break;
       case AttendanceStatus.Absent:

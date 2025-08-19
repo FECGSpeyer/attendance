@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '
 import { ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
-import { Instrument, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
+import { Instrument, Parent, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
@@ -64,6 +64,8 @@ export class PersonPage implements OnInit, AfterViewInit {
   public showTeachers: boolean = false;
   public isMainGroup: boolean = false;
   public role: Role = Role.PLAYER;
+  public parentsEnabled: boolean = false;
+  public parents: Parent[] = [];
 
   constructor(
     private db: DbService,
@@ -79,11 +81,18 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.hasChanges = false;
+    this.parentsEnabled = this.db.tenant().parents;
+
     this.showTeachers = this.db.tenant().maintainTeachers;
     if (this.db.tenant().maintainTeachers) {
       this.teachers = await this.db.getTeachers();
       this.allTeachers = this.teachers;
     }
+
+    if (this.parentsEnabled) {
+      this.parents = await this.db.getParents();
+    }
+
     if (this.existingPlayer) {
       this.player = { ...this.existingPlayer };
       this.birthdayString = this.formatDate(this.existingPlayer.birthday);

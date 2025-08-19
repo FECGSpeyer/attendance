@@ -3,12 +3,14 @@
   <ion-tab-bar slot="bottom">
     <ion-tab-button *ngIf="!isConductor" tab="signout">
       <ion-icon name="person-outline"></ion-icon>
-      <ion-label>Meine Anwesenheit</ion-label>
+      <ion-label *ngIf="isParent">An/Abmeldung</ion-label>
+      <ion-label *ngIf="!isParent">Meine Anwesenheit</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button *ngIf="isConductor" tab="player">
+    <ion-tab-button *ngIf="isConductor || isParent" tab="player">
       <ion-icon name="people-outline"></ion-icon>
-      <ion-label>Personen</ion-label>
+      <ion-label *ngIf="isParent">Meine Kinder</ion-label>
+      <ion-label *ngIf="!isParent">Personen</ion-label>
     </ion-tab-button>
 
     <ion-tab-button *ngIf="isHelper || isConductor" tab="attendance">

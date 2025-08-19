@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -27,6 +27,7 @@ export type Database = {
           plan: Json | null
           playerNotes: Json | null
           players: Json | null
+          save_in_history: boolean | null
           songs: number[]
           tenantId: number
           type: string | null
@@ -44,6 +45,7 @@ export type Database = {
           plan?: Json | null
           playerNotes?: Json | null
           players?: Json | null
+          save_in_history?: boolean | null
           songs?: number[]
           tenantId: number
           type?: string | null
@@ -61,6 +63,7 @@ export type Database = {
           plan?: Json | null
           playerNotes?: Json | null
           players?: Json | null
+          save_in_history?: boolean | null
           songs?: number[]
           tenantId?: number
           type?: string | null
@@ -214,7 +217,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "history_songid_fkey"
+            foreignKeyName: "history_songId_fkey"
             columns: ["songId"]
             isOneToOne: false
             referencedRelation: "songs"
@@ -341,6 +344,44 @@ export type Database = {
         }
         Relationships: []
       }
+      parents: {
+        Row: {
+          appId: string | null
+          created_at: string
+          email: string | null
+          firstName: string | null
+          id: number
+          lastName: string | null
+          tenantId: number | null
+        }
+        Insert: {
+          appId?: string | null
+          created_at?: string
+          email?: string | null
+          firstName?: string | null
+          id?: number
+          lastName?: string | null
+          tenantId?: number | null
+        }
+        Update: {
+          appId?: string | null
+          created_at?: string
+          email?: string | null
+          firstName?: string | null
+          id?: number
+          lastName?: string | null
+          tenantId?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parents_tenantId_fkey"
+            columns: ["tenantId"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       person_attendances: {
         Row: {
           attendance_id: number
@@ -407,6 +448,7 @@ export type Database = {
           notes: string | null
           otherExercise: string | null
           otherOrchestras: string[] | null
+          parent_id: number | null
           paused: boolean | null
           playsSince: string | null
           range: string | null
@@ -440,6 +482,7 @@ export type Database = {
           notes?: string | null
           otherExercise?: string | null
           otherOrchestras?: string[] | null
+          parent_id?: number | null
           paused?: boolean | null
           playsSince?: string | null
           range?: string | null
@@ -473,6 +516,7 @@ export type Database = {
           notes?: string | null
           otherExercise?: string | null
           otherOrchestras?: string[] | null
+          parent_id?: number | null
           paused?: boolean | null
           playsSince?: string | null
           range?: string | null
@@ -489,7 +533,14 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "public_player_teacher_fkey"
+            foreignKeyName: "player_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "parents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_teacher_fkey"
             columns: ["teacher"]
             isOneToOne: false
             referencedRelation: "teachers"
@@ -682,6 +733,7 @@ export type Database = {
           id: number
           longName: string | null
           maintainTeachers: boolean | null
+          parents: boolean | null
           practiceEnd: string | null
           practiceStart: string | null
           seasonStart: string | null
@@ -695,6 +747,7 @@ export type Database = {
           id?: number
           longName?: string | null
           maintainTeachers?: boolean | null
+          parents?: boolean | null
           practiceEnd?: string | null
           practiceStart?: string | null
           seasonStart?: string | null
@@ -708,6 +761,7 @@ export type Database = {
           id?: number
           longName?: string | null
           maintainTeachers?: boolean | null
+          parents?: boolean | null
           practiceEnd?: string | null
           practiceStart?: string | null
           seasonStart?: string | null

@@ -12,7 +12,7 @@ import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { StatsPage } from 'src/app/stats/stats.page';
 import { AttendanceType, Role } from 'src/app/utilities/constants';
-import { Instrument, Person, Player } from 'src/app/utilities/interfaces';
+import { Instrument, Parent, Person, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { Viewer } from '../../utilities/interfaces';
 import { Router } from '@angular/router';
@@ -33,6 +33,7 @@ export class SettingsPage implements OnInit {
   public maintainTeachers: boolean = false;
   public instruments: Instrument[] = [];
   public viewers: Viewer[] = [];
+  public parents: Parent[] = [];
   public isAdmin: boolean = false;
   public isSuperAdmin: boolean = false;
   public attDateString: string = format(new Date(), 'dd.MM.yyyy');
@@ -45,6 +46,7 @@ export class SettingsPage implements OnInit {
   public isHelper: boolean = false;
   public isPlayer: boolean = false;
   public max: string = new Date().toISOString();
+  public parentsEnabled: boolean = false;
 
   constructor(
     public db: DbService,
@@ -74,6 +76,7 @@ export class SettingsPage implements OnInit {
     this.maintainTeachers = this.db.tenant().maintainTeachers;
     this.practiceStart = this.db.tenant().practiceStart || '18:00';
     this.practiceEnd = this.db.tenant().practiceEnd || '20:00';
+    this.parentsEnabled = this.db.tenant().parents || false;
     this.attDateString = format(new Date(this.attDate), 'dd.MM.yyyy');
     const allConductors: Person[] = await this.db.getConductors(true);
     this.conductors = allConductors.filter((con: Person) => !con.left);
@@ -82,6 +85,9 @@ export class SettingsPage implements OnInit {
     this.leftPlayers = Utils.getModifiedPlayersForList(await this.db.getLeftPlayers(), this.instruments, [], this.instruments.find(ins => ins.maingroup)?.id);
     this.leftConductors = allConductors.filter((con: Person) => Boolean(con.left));
     this.viewers = await this.db.getViewers();
+    if (this.parentsEnabled) {
+      this.parents = await this.db.getParents();
+    }
     this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
   }
 
@@ -102,6 +108,7 @@ export class SettingsPage implements OnInit {
         seasonStart: this.attDate,
         shortName: this.shortName,
         longName: this.longName,
+        parents: this.parentsEnabled,
       });
       Utils.showToast("Einstellungen gespeichert", "success");
 
@@ -285,8 +292,26 @@ export class SettingsPage implements OnInit {
       }, {
         text: "Ja",
         handler: async () => {
-          await this.db.removeEmailFromAuth(viewer.appId, viewer.email);
+          await this.db.deleteViewer(viewer);
           this.viewers = await this.db.getViewers();
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  async removeParent(parent: Parent): Promise<void> {
+    const alert = await new AlertController().create({
+      header: 'Elternteil entfernen?',
+      message: `Möchtest du ${parent.firstName} wirklich entfernen?`,
+      buttons: [{
+        text: "Abbrechen"
+      }, {
+        text: "Ja",
+        handler: async () => {
+          await this.db.deleteParent(parent);
+          this.parents = await this.db.getParents();
         }
       }]
     });
@@ -316,5 +341,91 @@ export class SettingsPage implements OnInit {
     });
 
     await modal.present();
+  }
+
+
+
+  async openViewerAlert() {
+    const alert = await new AlertController().create({
+      header: 'Beobachter hinzufügen',
+      inputs: [{
+        type: "email",
+        name: "email",
+        placeholder: "E-Mail-Adresse",
+      }, {
+        name: "firstName",
+        placeholder: "Vorname",
+      }, {
+        name: "lastName",
+        placeholder: "Nachname",
+      }],
+      buttons: [{
+        text: "Abbrechen",
+      }, {
+        text: "Einladen",
+        handler: async (data: { email: string, firstName: string, lastName: string }) => {
+          if (Utils.validateEmail(data.email) && data.firstName.length && data.lastName.length) {
+            const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
+            loading.present();
+            try {
+              await this.db.createViewer(data);
+              this.viewers = await this.db.getViewers();
+              Utils.showToast("Der Benutzer wurde erfolgreich angelegt.", "success");
+              await loading.dismiss();
+            } catch (error) {
+              Utils.showToast(error.message, "danger");
+              await loading.dismiss();
+            }
+          } else {
+            alert.message = "Bitte gib gültige Werte ein.";
+            return false;
+          }
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  async openParentsAlert() {
+    const alert = await new AlertController().create({
+      header: 'Elternteil hinzufügen',
+      inputs: [{
+        type: "email",
+        name: "email",
+        placeholder: "E-Mail-Adresse",
+      }, {
+        name: "firstName",
+        placeholder: "Vorname",
+      }, {
+        name: "lastName",
+        placeholder: "Nachname",
+      }],
+      buttons: [{
+        text: "Abbrechen",
+      }, {
+        text: "Einladen",
+        handler: async (data: { email: string, firstName: string, lastName: string }) => {
+          if (Utils.validateEmail(data.email) && data.firstName.length && data.lastName.length) {
+            const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
+            loading.present();
+            try {
+              await this.db.createParent(data);
+              this.parents = await this.db.getParents();
+              Utils.showToast("Der Benutzer wurde erfolgreich angelegt.", "success");
+              await loading.dismiss();
+            } catch (error) {
+              Utils.showToast(error.message, "danger");
+              await loading.dismiss();
+            }
+          } else {
+            alert.message = "Bitte gib gültige Werte ein.";
+            return false;
+          }
+        }
+      }]
+    });
+
+    await alert.present();
   }
 }

@@ -15,6 +15,7 @@ export interface Tenant {
     practiceStart?: string;
     practiceEnd?: string;
     seasonStart?: string;
+    parents?: boolean;
     betaProgram: boolean;
 }
 
@@ -46,6 +47,16 @@ export interface Viewer {
     firstName: string;
     lastName: string;
 }
+
+export interface Parent {
+    id?: number;
+    created_at?: string;
+    appId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+}
+
 
 export interface Person {
     id?: number;

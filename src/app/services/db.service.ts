@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Instrument, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig } from '../utilities/interfaces';
+import { Attendance, History, Instrument, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 
@@ -161,6 +161,25 @@ export class DbService {
     this.router.navigateByUrl("/login");
   }
 
+  async deleteViewer(viewer: Viewer): Promise<void> {
+    try {
+      await this.removeEmailFromAuth(viewer.appId, viewer.email);
+    } catch (error) {
+      Utils.showToast("Fehler beim Entfernen der E-Mail aus der Authentifizierung", "danger");
+      throw error;
+    }
+
+    const { error } = await supabase
+      .from(SupabaseTable.VIEWERS)
+      .delete()
+      .match({ id: viewer.id });
+
+    if (error) {
+      Utils.showToast("Fehler beim Löschen des Beobachters", "danger");
+      throw error;
+    }
+  }
+
   async getViewers(): Promise<Viewer[]> {
     const { data, error } = await supabase
       .from(SupabaseTable.VIEWERS)
@@ -169,6 +188,39 @@ export class DbService {
 
     if (error) {
       Utils.showToast("Fehler beim Laden der Beobachter", "danger");
+      throw error;
+    }
+
+    return data;
+  }
+
+  async deleteParent(parent: Parent): Promise<void> {
+    try {
+      await this.removeEmailFromAuth(parent.appId, parent.email);
+    } catch (error) {
+      Utils.showToast("Fehler beim Entfernen der E-Mail aus der Authentifizierung", "danger");
+      throw error;
+    }
+
+    const { error } = await supabase
+      .from("parents")
+      .delete()
+      .match({ id: parent.id });
+
+    if (error) {
+      Utils.showToast("Fehler beim Löschen des Elternteils", "danger");
+      throw error;
+    }
+  }
+
+  async getParents(): Promise<Parent[]> {
+    const { data, error } = await supabase
+      .from("parents")
+      .select('*')
+      .eq('tenantId', this.tenant().id);
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Elternteile", "danger");
       throw error;
     }
 
@@ -188,6 +240,22 @@ export class DbService {
 
     if (error) {
       throw new Error("Fehler beim hinzufügen des Beobachters.");
+    }
+  }
+
+  async createParent(parent: Partial<Parent>) {
+    const appId: string = await this.registerUser(parent.email as string, parent.firstName as string, Role.PARENT);
+
+    const { error } = await supabase
+      .from("parents")
+      .insert({
+        ...parent,
+        tenantId: this.tenant().id,
+        appId
+      });
+
+    if (error) {
+      throw new Error("Fehler beim hinzufügen des Elternteils.");
     }
   }
 

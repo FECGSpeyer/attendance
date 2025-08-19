@@ -146,6 +146,19 @@
               </ion-item>
             </ion-col>
           </ion-row>
+          <ion-row *ngIf="parentsEnabled && !isMainGroup">
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Eltern</ion-label>
+                <ion-select interface="modal" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.parent_id">
+                  <ion-select-option [value]="null">Nicht festgelegt</ion-select-option>
+                  <ion-select-option [value]="parent.id" *ngFor="let parent of parents">
+                    {{ parent.firstName }} {{ parent.lastName }}
+                  </ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+          </ion-row>
           <ion-row *ngIf="showTeachers && !isMainGroup">
             <ion-col>
               <ion-item>
