@@ -270,7 +270,7 @@ export class AttendancePage implements OnInit {
     }
   }
 
-  async addSongsToHistory(modal: HTMLIonModalElement): Promise<void> {
+  async addSongsToHistory(modal: any): Promise<void> {
     for (const songId of this.selectedSongs) {
       this.historyEntries.push({
         ...this.historyEntry,
