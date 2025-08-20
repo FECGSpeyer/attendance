@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { DbService } from '../services/db.service';
-import { Instrument, Teacher } from '../utilities/interfaces';
+import { Instrument, Player, Teacher } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
 @Component({
@@ -12,8 +12,10 @@ import { Utils } from '../utilities/Utils';
 export class TeacherPage implements OnInit {
   @Input() teacher: Teacher;
   @Input() instruments: Instrument[];
+  @Input() players: Player[];
 
   editedTeacher: Teacher;
+  playersFromTeacher: Player[] = [];
 
   constructor(
     private modalController: ModalController,
@@ -22,6 +24,7 @@ export class TeacherPage implements OnInit {
 
   ngOnInit() {
     this.editedTeacher = { ...this.teacher };
+    this.playersFromTeacher = this.players.filter(p => p.teacher === this.teacher.id);
   }
 
   dismiss() {

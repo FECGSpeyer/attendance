@@ -5,7 +5,7 @@ import { ActionSheetController, IonAccordionGroup, IonModal } from '@ionic/angul
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
-import { Attendance, PersonAttendance, Player, Song, Tenant, TenantUser } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, Player, Song, Tenant, TenantUser, History } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -100,6 +100,12 @@ export class SignoutPage implements OnInit {
         this.selAttIds = [this.attendances[0].id as any];
       } else {
         this.selAttIds = [];
+      }
+    }
+
+    for (const att of allPersonAttendances) {
+      if (att.title && att.attId) {
+        att.history = await this.db.getHistoryByAttendanceId(att.attId);
       }
     }
 
@@ -228,6 +234,12 @@ export class SignoutPage implements OnInit {
   getSongNames(songIds: number[]): string {
     return songIds.map((id: number) => {
       return `${this.songs.find((s: Song) => s.id === id).number} ${this.songs.find((s: Song) => s.id === id).name}`;
+    }).join(", ");
+  }
+
+  getHistorySongNames(historyEntry: History[]): string {
+    return historyEntry.map((h: History) => {
+      return `${this.songs.find((s: Song) => s.id === h.songId).number} ${this.songs.find((s: Song) => s.id === h.songId).name}`;
     }).join(", ");
   }
 }

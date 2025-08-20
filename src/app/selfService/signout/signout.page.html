@@ -71,7 +71,8 @@
               <ion-label>
                 <h2>{{ getReadableDate(att.date) }}</h2>
                 <h3>{{ att.title ? att.title : 'Übung' }}</h3>
-                <h3 *ngIf="att.songs?.length">{{ getSongNames(att.songs) }}</h3>
+                <h3 *ngIf="att.songs?.length && !att.history?.length">{{ getSongNames(att.songs) }}</h3>
+                <h3 *ngIf="att.history?.length">{{ getHistorySongNames(att.history) }}</h3>
               </ion-label>
               <ion-badge slot="end"
                 [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? 'tertiary' : att.text === 'N' ? 'medium' : 'warning'">

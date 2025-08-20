@@ -1076,7 +1076,7 @@ export class DbService {
   async getPersonAttendances(id: number, all: boolean = false): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(date, type, typeInfo, songs)')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs)')
       .eq('person_id', id)
       .gt("attendance.date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate());
 
@@ -1091,6 +1091,7 @@ export class DbService {
         text: attText,
         notes: att.notes,
         songs: (att.attendance as any).songs,
+        attId: (att.attendance as any).id,
       } as any;
     });
   }

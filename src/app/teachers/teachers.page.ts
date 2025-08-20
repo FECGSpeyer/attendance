@@ -67,6 +67,7 @@ export class TeachersPage implements OnInit {
       presentingElement: this.routerOutlet.nativeEl,
       componentProps: {
         teacher,
+        players: this.players,
         instruments: this.instruments,
       }
     });

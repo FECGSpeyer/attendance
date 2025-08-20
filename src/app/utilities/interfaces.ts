@@ -183,6 +183,8 @@ export interface PersonAttendance {
     text?: string;
     title?: string;
     songs?: number[];
+    history?: History[];
+    attId?: number;
 }
 
 export interface Song {

@@ -20,8 +20,7 @@
     </ion-select>
   </ion-item>
   <ion-item>
-    <ion-label>Privatlehrer</ion-label>
-    <ion-toggle label="Privatlehrer" [(ngModel)]="editedTeacher.private"></ion-toggle>
+    <ion-toggle label="Privatlehrer" [(ngModel)]="editedTeacher.private">Privatlehrer</ion-toggle>
   </ion-item>
   <ion-item>
     <ion-label position="stacked">Kontakt</ion-label>
@@ -31,5 +30,19 @@
     <ion-label position="stacked">Notizen</ion-label>
     <ion-textarea [(ngModel)]="editedTeacher.notes"></ion-textarea>
   </ion-item>
-  <ion-button (click)="editTeacher()" expand="full">Lehrer updaten</ion-button>
+  <ion-accordion-group value="players" *ngIf="playersFromTeacher?.length">
+    <ion-accordion value="players">
+      <ion-item class="accordion-header" slot="header">
+        <ion-label>Spieler</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-list>
+          <ion-item *ngFor="let player of playersFromTeacher">
+            <ion-label>{{ player.firstName }} {{ player.lastName }}</ion-label>
+          </ion-item>
+        </ion-list>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
+  <ion-button expand="block" (click)="editTeacher()" >Lehrer updaten</ion-button>
 </ion-content>
