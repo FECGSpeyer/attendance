@@ -1626,6 +1626,6 @@ export class DbService {
   }
 
   isDemo() {
-    this.user?.email === environment.demoMail;
+    return this.user?.email === environment.demoMail;
   }
 }
