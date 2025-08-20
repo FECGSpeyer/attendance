@@ -87,7 +87,7 @@
                 [(ngModel)]="parentsEnabled">Eltern-Funktion</ion-toggle>
             </ion-item>
             <ion-button (click)="saveGeneralSettings(generalModal)" expand="block">Änderungen speichern</ion-button>
-            <ion-button *ngIf="isSuperAdmin && !isDemo" color="danger" (click)="deleteInstance(generalModal)" expand="block">Instanz löschen</ion-button>
+            <ion-button *ngIf="isSuperAdmin && !db.isDemo()" color="danger" (click)="deleteInstance(generalModal)" expand="block">Instanz löschen</ion-button>
           </ion-content>
         </ng-template>
       </ion-modal>
