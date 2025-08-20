@@ -115,7 +115,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="!isChoir && !isMainGroup">
+          <ion-row *ngIf="!isGeneral && !isChoir && !isMainGroup">
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
@@ -183,7 +183,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="!isMainGroup">
+          <ion-row *ngIf="!isGeneral && !isMainGroup">
             <ion-col>
               <ion-item>
                 <ion-toggle label="Stimmführer" [disabled]="readOnly" (ionChange)="onChange()"
@@ -224,7 +224,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="!isMainGroup && (!readOnly || player.otherExercise)">
+          <ion-row *ngIf="!readOnly || player.otherExercise">
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Sonstige Dienste</ion-label>

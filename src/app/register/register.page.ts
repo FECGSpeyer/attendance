@@ -15,11 +15,14 @@ export class RegisterPage implements OnInit {
     longName: '',
     maintainTeachers: false,
     withExcuses: true,
-    type: 'orchestra',
+    type: 'general',
     betaProgram: true,
   };
   public mainGroupName: string = '';
   public canDismiss: boolean = true;
+  public namePlaceholder: string = 'z.B. Gruppe 1';
+  public shortNamePlaceholder: string = 'z.B. G1';
+  public mainGroupPlaceholder: string = 'z.B. Verantwortliche, Dirigenten, etc.';
 
   constructor(
     private db: DbService,
@@ -39,6 +42,22 @@ export class RegisterPage implements OnInit {
     await this.db.createInstance(this.tenant, this.mainGroupName);
     if (this.canDismiss) {
       await this.modalController.dismiss();
+    }
+  }
+
+  async onTypeChange() {
+    if (this.tenant.type === 'general') {
+      this.namePlaceholder = 'z.B. Gruppe 1';
+      this.shortNamePlaceholder = 'z.B. G1';
+      this.mainGroupPlaceholder = 'z.B. Verantwortliche, Leiter, etc.';
+    } else if (this.tenant.type === 'choir') {
+      this.namePlaceholder = 'z.B. Jugendchor';
+      this.shortNamePlaceholder = 'z.B. JC';
+      this.mainGroupPlaceholder = 'z.B. Jugendchorleitung, Dirigenten, etc.';
+    } else if (this.tenant.type === 'orchestra') {
+      this.namePlaceholder = 'z.B. Sinfonieorchester';
+      this.shortNamePlaceholder = 'z.B. SO';
+      this.mainGroupPlaceholder = 'z.B. Orchesterleitung, Dirigenten, etc.';
     }
   }
 

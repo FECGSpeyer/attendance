@@ -19,7 +19,7 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-row *ngIf="!isChoir">
+    <ion-row *ngIf="!isChoir && !isGeneral">
       <ion-col>
         <ion-item>
           <ion-select label="Stimmung" [(ngModel)]="instrument.tuning">
@@ -37,7 +37,7 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-row *ngIf="!isChoir">
+    <ion-row *ngIf="!isChoir && !isGeneral">
       <ion-col>
         <ion-item>
           <ion-select label="Stimmung" multiple="true" [(ngModel)]="instrument.clefs">

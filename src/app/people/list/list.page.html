@@ -24,10 +24,9 @@
               <ion-icon slot="start" name="funnel" size="small"></ion-icon>
               <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="filterOpt">
                 <ion-select-option value="all">Alle Anzeigen</ion-select-option>
-                <ion-select-option *ngIf="isChoir" value="active">Aktive Sänger</ion-select-option>
-                <ion-select-option *ngIf="!isChoir" value="active">Aktive Spieler</ion-select-option>
+                <ion-select-option value="active">Aktive Personen</ion-select-option>
                 <ion-select-option value="criticals">Problemfälle</ion-select-option>
-                <ion-select-option value="leaders">Stimmführer</ion-select-option>
+                <ion-select-option *ngIf="!isGeneral" value="leaders">Stimmführer</ion-select-option>
                 <ion-select-option value="withoutAccount">Ohne Account</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="examinee">Prüflinge</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="new">Neue Spieler</ion-select-option>
@@ -39,8 +38,7 @@
             <ion-item lines="none">
               <ion-icon slot="start" name="filter" size="small"></ion-icon>
               <ion-select slot="end" (ionChange)="onSortChanged()" interface="popover" [(ngModel)]="sortOpt">
-                <ion-select-option *ngIf="isChoir" value="instrument">Stimme</ion-select-option>
-                <ion-select-option *ngIf="!isChoir" value="instrument">Instrument</ion-select-option>
+                <ion-select-option value="instrument">Gruppe</ion-select-option>
                 <ion-select-option value="vorname">Vorname</ion-select-option>
                 <ion-select-option value="nachname">Nachname</ion-select-option>
                 <ion-select-option value="birthdayAsc">Geburtsdatum ↑</ion-select-option>
@@ -54,14 +52,13 @@
               <ion-icon slot="start" name="eye" size="small"></ion-icon>
               <ion-select multiple="true" slot="end" (ionChange)="onViewChanged()" interface="popover"
                 [(ngModel)]="viewOpts">
-                <ion-select-option *ngIf="!isChoir" value="instrument">Instrument</ion-select-option>
-                <ion-select-option *ngIf="isChoir" value="instrument">Stimme</ion-select-option>
+                <ion-select-option value="instrument">Gruppe</ion-select-option>
                 <ion-select-option value="attendance">Anwesenheit</ion-select-option>
                 <ion-select-option value="birthday">Geburtsdatum</ion-select-option>
                 <ion-select-option *ngIf="isChoir" value="instruments">Instrumente</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="test">Testergebnis</ion-select-option>
                 <ion-select-option value="exercises">Sonstige Dienste</ion-select-option>
-                <ion-select-option value="leader">Stimmführer</ion-select-option>
+                <ion-select-option *ngIf="!isGeneral" value="leader">Stimmführer</ion-select-option>
                 <ion-select-option value="critical">Problemfälle</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="new">Neu</ion-select-option>
                 <ion-select-option value="paused">Pausiert</ion-select-option>

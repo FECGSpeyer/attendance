@@ -14,6 +14,7 @@ export class InstrumentPage implements OnInit {
   @Input() existingInstrument: Instrument;
   public instrument: Instrument;
   public isChoir: boolean = false;
+  public isGeneral: boolean = false;
 
   constructor(
     private db: DbService,
@@ -23,6 +24,7 @@ export class InstrumentPage implements OnInit {
 
   ngOnInit() {
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
+    this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
     this.instrument = { ...this.existingInstrument };
   }
 

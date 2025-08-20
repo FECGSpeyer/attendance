@@ -39,6 +39,7 @@ export class ListPage implements OnInit {
   public archiveNote: string = "";
   public isAdmin: boolean = false;
   public isChoir: boolean = false;
+  public isGeneral: boolean = false;
   public sub: RealtimeChannel;
   public mainGroup: number | undefined;
   public attendances: Attendance[] = [];
@@ -63,6 +64,7 @@ export class ListPage implements OnInit {
     this.viewOpts = JSON.parse(await this.storage.get("viewOpts") || JSON.stringify(['instrument', 'leader', 'notes', 'critical', 'paused']));
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
+    this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.filterOpt = (await this.storage.get("filterOpt")) || "all";
     this.instruments = await this.db.getInstruments();

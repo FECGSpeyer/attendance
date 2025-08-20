@@ -121,7 +121,7 @@
     </ion-item>
   </ion-list>
 
-  <ion-modal #addAttModal trigger="add-att-button" [breakpoints]="[0.6, 1]" [initialBreakpoint]="0.6">
+  <ion-modal #addAttModal trigger="add-att-button" [breakpoints]="[0.7, 1]" [initialBreakpoint]="0.7">
     <ng-template>
       <ion-content>
         <ion-header>
@@ -143,8 +143,12 @@
         </ion-item>
         <ion-item>
           <ion-select label="Kategorie" (ionChange)="onTypeChange()" [(ngModel)]="type">
-            <ion-select-option value="uebung">Übung</ion-select-option>
-            <ion-select-option value="vortrag">Vortrag</ion-select-option>
+            @if (isGeneral) {
+              <ion-select-option value="uebung">Zusammenkunft</ion-select-option>
+            } @else {
+              <ion-select-option value="uebung">Probe</ion-select-option>
+            }
+            <ion-select-option *ngIf="!isGeneral" value="vortrag">Vortrag</ion-select-option>
             <ion-select-option *ngIf="isChoir" value="hochzeit">Hochzeit</ion-select-option>
             <ion-select-option value="sonstiges">Sonstiges</ion-select-option>
           </ion-select>
@@ -153,7 +157,7 @@
           <ion-label position="stacked">Veranstaltung</ion-label>
           <ion-textarea [(ngModel)]="typeInfo"></ion-textarea>
         </ion-item>
-        <ion-list *ngIf="type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit'">
+        <ion-list *ngIf="!isGeneral && (type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit')">
           <ion-list-header>
             <ion-label>Werke</ion-label>
             <ion-button id="add-his-button">
@@ -200,15 +204,14 @@
             </ion-button>
           </ion-item>
         </ion-list>
-        @if (type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit') {
+        @if (!isGeneral && (type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit')) {
         <ion-item lines="none">
           <ion-toggle helperText="Ausgewählte Werke werden automatisch in die Werkhistorie übernommen"
             [(ngModel)]="saveInHistory">In der Werkhistorie berücksichtigen</ion-toggle>
         </ion-item>
         }
         <ion-item>
-          <ion-label>Neutral</ion-label>
-          <ion-toggle slot="end" [(ngModel)]="hasNeutral"></ion-toggle>
+          <ion-toggle helperText="Der Status wird bei allen Personen auf Neutral gesetzt. So kann man einfach nachvollziehen, wer sich schon an- oder abgemeldet hat." slot="end" [(ngModel)]="hasNeutral">Neutral</ion-toggle>
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>

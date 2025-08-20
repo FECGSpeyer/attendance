@@ -13,13 +13,15 @@ export class MeetingPage implements OnInit {
   public allConductors: Person[];
   public isEditMode: boolean;
   public attendeesNames: string = "";
+  public isGeneral: boolean = false;
 
   constructor(
     private db: DbService
   ) { }
 
   async ngOnInit() {
-    this.allConductors = await this.db.getConductors(true);
+    this.isGeneral = this.db.tenant().type === 'general';
+    this.allConductors = this.isGeneral ? await this.db.getPlayers() : await this.db.getConductors(true);
     this.conductors = this.allConductors.filter((c: Person) => !c.left);
     this.meeting = await this.db.getMeeting(Number(window.location.pathname.split("/")[4]));
     this.isEditMode = !this.meeting.notes;

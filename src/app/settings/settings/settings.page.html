@@ -48,7 +48,7 @@
                 </ng-template>
               </ion-modal>
             </ion-item>
-            <ion-item lines="none">
+            <ion-item *ngIf="!isGeneral" lines="none">
               <ion-label>Probenbeginn</ion-label>
               <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
@@ -64,7 +64,7 @@
                 </ng-template>
               </ion-modal>
             </ion-item>
-            <ion-item lines="none">
+            <ion-item *ngIf="!isGeneral" lines="none">
               <ion-label>Probenende</ion-label>
               <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
@@ -92,10 +92,10 @@
         </ng-template>
       </ion-modal>
     </ion-item>
-    <ion-item routerLink="songs" button>
+    <ion-item *ngIf="!isGeneral" routerLink="songs" button>
       <ion-label>Werke</ion-label>
     </ion-item>
-    <ion-item *ngIf="isAdmin || isHelper" button (click)="openHistoryModal()">
+    <ion-item *ngIf="!isGeneral && (isAdmin || isHelper)" button (click)="openHistoryModal()">
       <ion-label>
         Werkhistorie
       </ion-label>
@@ -115,12 +115,12 @@
         Lehrer
       </ion-label>
     </ion-item>
-    <ion-item *ngIf="isAdmin" button (click)="openPlanning()">
+    <ion-item *ngIf="!isGeneral && isAdmin" button (click)="openPlanning()">
       <ion-label>
         Probenplan erstellen
       </ion-label>
     </ion-item>
-    <ion-item *ngIf="isAdmin" detail="false" button id="trigger-button">
+    <ion-item *ngIf="!isGeneral && isAdmin" detail="false" button id="trigger-button">
       <ion-label>
         Registerprobenplan erstellen
       </ion-label>

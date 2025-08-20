@@ -45,6 +45,7 @@ export class SettingsPage implements OnInit {
   public tenantId: number;
   public isHelper: boolean = false;
   public isPlayer: boolean = false;
+  public isGeneral: boolean = false;
   public max: string = new Date().toISOString();
   public parentsEnabled: boolean = false;
 
@@ -56,10 +57,6 @@ export class SettingsPage implements OnInit {
   ) {
     effect(async () => {
       this.db.tenant();
-      if (!this.db.tenant()) {
-        this.router.navigateByUrl("/register");
-        return;
-      }
       this.shortName = this.db.tenant().shortName;
       this.longName = this.db.tenant().longName;
       await this.initialize();
@@ -71,6 +68,7 @@ export class SettingsPage implements OnInit {
   }
 
   async initialize(): Promise<void> {
+    this.isGeneral = this.db.tenant().type === 'general';
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isHelper = this.db.tenantUser().role === Role.HELPER;
     this.isPlayer = this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.NONE;

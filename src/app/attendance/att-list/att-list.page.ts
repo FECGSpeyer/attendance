@@ -26,6 +26,7 @@ export class AttListPage implements OnInit {
   public isConductor: boolean = false;
   public isHelper: boolean = false;
   public isChoir: boolean = false;
+  public isGeneral: boolean = false;
   public notes: string;
   public typeInfo: string;
   public perc: number = 0;
@@ -60,12 +61,13 @@ export class AttListPage implements OnInit {
   }
 
   async ngOnInit() {
+    this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
     this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isHelper = this.db.tenantUser().role === Role.HELPER;
     const conductors = await this.db.getConductors(true);
     this.activeConductors = conductors.filter((con: Person) => !con.left);
-    this.historyEntry.person_id = this.activeConductors[0].id;
+    this.historyEntry.person_id = this.activeConductors[0]?.id;
     await this.getAttendance();
 
     this.subscribeOnAttChannel();

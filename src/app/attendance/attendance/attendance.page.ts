@@ -4,7 +4,7 @@ import { AlertController, IonItemSliding, ModalController } from '@ionic/angular
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { AttendanceStatus, Role } from 'src/app/utilities/constants';
+import { AttendanceType, AttendanceStatus, Role } from 'src/app/utilities/constants';
 import { Attendance, FieldSelection, Person, PersonAttendance, Song, History } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
@@ -36,6 +36,7 @@ export class AttendancePage implements OnInit {
   public activeConductors: Person[] = [];
   public otherConductor: number = 9999999999;
   public historyEntries: History[] = [];
+  public isGeneral: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -54,6 +55,7 @@ export class AttendancePage implements OnInit {
         this.subsribeOnChannels();
       }
     });
+    this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
     this.conductors = await this.db.getConductors(true);
     this.activeConductors = this.conductors.filter((con: Person) => !con.left);
     this.withExcuses = this.db.tenant().withExcuses;

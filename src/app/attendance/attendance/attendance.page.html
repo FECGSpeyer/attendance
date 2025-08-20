@@ -18,7 +18,11 @@
       <div slot="content">
         <ion-item lines="none">
           <ion-select disabled="true" label="Kategorie" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.type">
-            <ion-select-option value="uebung">Übung</ion-select-option>
+            @if (isGeneral) {
+              <ion-select-option value="uebung">Zusammenkunft</ion-select-option>
+            } @else {
+              <ion-select-option value="uebung">Probe</ion-select-option>
+            }
             <ion-select-option value="vortrag">Vortrag</ion-select-option>
             <ion-select-option value="hochzeit">Hochzeit</ion-select-option>
             <ion-select-option value="sonstiges">Sonstiges</ion-select-option>
@@ -28,7 +32,7 @@
           <ion-label position="stacked">Probenart</ion-label>
           <ion-input (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.typeInfo"></ion-input>
         </ion-item>
-        <ion-list *ngIf="attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit'">
+        <ion-list *ngIf="!isGeneral && (attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit')">
           <ion-list-header>
             <ion-label>Werke</ion-label>
             <ion-button id="add-his-button">
@@ -75,7 +79,7 @@
             </ion-button>
           </ion-item>
         </ion-list>
-        @if (attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit') {
+        @if (!isGeneral && (attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit')) {
           <ion-item>
             <ion-toggle (ionChange)="onInfoChanged()" helperText="Ausgewählte Werke werden automatisch in die Werkhistorie übernommen" [(ngModel)]="attendance.save_in_history">In der Werkhistorie berücksichtigen</ion-toggle>
           </ion-item>

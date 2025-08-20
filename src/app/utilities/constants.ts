@@ -37,7 +37,7 @@ export enum SupabaseTable {
 export enum AttendanceType {
     ORCHESTRA = "orchestra",
     CHOIR = "choir",
-    GROUP = "group",
+    GENERAL = "general",
 }
 
 export const DEFAULT_IMAGE = "https://ionicframework.com/docs/img/demos/avatar.svg";

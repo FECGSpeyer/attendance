@@ -15,6 +15,7 @@ export class InstrumentListPage implements OnInit {
   public instruments: Instrument[] = [];
   public isAdmin: boolean = false;
   public isChoir: boolean = false;
+  public isGeneral: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -23,6 +24,7 @@ export class InstrumentListPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     await this.getInstruments();

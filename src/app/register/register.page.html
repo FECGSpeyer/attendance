@@ -19,23 +19,23 @@
   <ion-list>
     <ion-item>
       <ion-label position="stacked">Gruppenname</ion-label>
-      <ion-input placeholder="z.B. Blasorchester" [(ngModel)]="tenant.longName"></ion-input>
+      <ion-input [placeholder]="namePlaceholder" [(ngModel)]="tenant.longName"></ion-input>
     </ion-item>
     <ion-item>
       <ion-label position="stacked">Kürzel</ion-label>
-      <ion-input placeholder="z.B. BO" [(ngModel)]="tenant.shortName"></ion-input>
+      <ion-input [placeholder]="shortNamePlaceholder" [(ngModel)]="tenant.shortName"></ion-input>
     </ion-item>
     <ion-item>
       <ion-label position="stacked">Typ</ion-label>
-      <ion-select [(ngModel)]="tenant.type">
-        <ion-select-option disabled="true" value="general">Allgemein (kommt bald)</ion-select-option>
+      <ion-select (onChange)="onTypeChange()" [(ngModel)]="tenant.type">
+        <ion-select-option value="general">Allgemein</ion-select-option>
         <ion-select-option value="choir">Chor</ion-select-option>
         <ion-select-option value="orchestra">Orchester</ion-select-option>
       </ion-select>
     </ion-item>
     <ion-item>
       <ion-label position="stacked">Hauptgruppen-Name</ion-label>
-      <ion-input placeholder="z.B. Verantwortliche, Dirigenten, etc." [(ngModel)]="mainGroupName"></ion-input>
+      <ion-input helperText="Die Hauptgruppe unterscheidet sich zu allen anderen Gruppen. Sie kann nicht mehr gelöscht werden und alle Personen darin, haben automatisch die Rolle 'Verantwortliche'" [placeholder]="mainGroupPlaceholder" [(ngModel)]="mainGroupName"></ion-input>
     </ion-item>
   </ion-list>
   <ion-button expand="block" (click)="createInstance()">Instanz anlegen</ion-button>

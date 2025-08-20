@@ -60,6 +60,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public notes: string = "";
   public isAdmin: boolean = false;
   public isChoir: boolean = false;
+  public isGeneral: boolean = false;
   public lateCount: number = 0;
   public showTeachers: boolean = false;
   public isMainGroup: boolean = false;
@@ -80,6 +81,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.maintainTeachers = this.db.tenant().maintainTeachers;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
+    this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isParent = this.db.tenantUser().role === Role.PARENT;
     this.hasChanges = false;

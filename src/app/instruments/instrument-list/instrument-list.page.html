@@ -19,9 +19,9 @@
         @if (instrument.maingroup) {
           <h2>{{ instrument.name }} (Hauptgruppe)</h2>
         } @else {
-          <h2 *ngIf="!isChoir">{{ instrument.name }} ({{ instrument.tuning }})</h2>
-          <h2 *ngIf="isChoir">{{ instrument.name }}</h2>
-          <h3 *ngIf="!isChoir">{{ instrument.clefText }}</h3>
+          <h2 *ngIf="!isChoir && !isGeneral">{{ instrument.name }} ({{ instrument.tuning }})</h2>
+          <h2 *ngIf="isChoir || isGeneral">{{ instrument.name }}</h2>
+          <h3 *ngIf="!isChoir && !isGeneral">{{ instrument.clefText }}</h3>
         }
       </ion-label>
       <ion-badge [color]="instrument.count ? '' : 'danger'">{{ instrument.count }} Personen</ion-badge>
@@ -38,9 +38,9 @@
         </ion-header>
         <ion-item>
           <ion-label position="stacked">Gruppe</ion-label>
-          <ion-input placeholder="z.B. Posaune, Alt 1, etc." #input></ion-input>
+          <ion-input placeholder="z.B. Mädchen, Posaune, Alt 1, etc." #input></ion-input>
         </ion-item>
-        <ion-button (click)="addInstrument(input.value, modal)" expand="full">Hinzufügen</ion-button>
+        <ion-button expand="block" (click)="addInstrument(input.value, modal)" expand="full">Hinzufügen</ion-button>
       </ion-content>
     </ng-template>
   </ion-modal>

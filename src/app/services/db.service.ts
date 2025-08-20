@@ -1541,6 +1541,8 @@ export class DbService {
 
     if (this.tenantUser()) {
       this.router.navigateByUrl(Utils.getUrl(this.tenantUser().role));
+    } else {
+      this.router.navigateByUrl("/register");
     }
 
     Utils.showToast("Instanz wurde erfolgreich gelöscht!");
