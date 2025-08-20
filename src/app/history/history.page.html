@@ -40,7 +40,7 @@
         <ion-item-sliding #sliding *ngFor="let his of group.parts">
           <ion-item>
             <ion-label>
-              <h2>{{ his.name }}</h2>
+              <h2>{{ his.number }} {{ his.name }}</h2>
               <h3 *ngIf="his.attendance?.date">{{ his.attendance.date | date:'dd.MM.yyyy' }} | {{ his.conductorName }}
               </h3>
               <h3 *ngIf="!his.attendance?.date">{{ his.date | date:'dd.MM.yyyy' }} | {{ his.conductorName }}</h3>

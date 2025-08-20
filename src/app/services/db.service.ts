@@ -1125,8 +1125,8 @@ export class DbService {
       .select('*')
       .eq('tenantId', this.tenant().id)
       .eq('attendance_id', attendance_id)
-      .order("date", {
-        ascending: false,
+      .order("songId", {
+        ascending: true,
       });
 
     return data;
