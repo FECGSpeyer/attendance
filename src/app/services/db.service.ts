@@ -71,6 +71,7 @@ export class DbService {
 
     if (this.tenantUsers().length === 0) {
       this.tenants.set([]);
+      this.tenantUser.set(undefined);
       this.tenant.set(undefined);
       return;
     }
@@ -1537,6 +1538,10 @@ export class DbService {
     }
 
     await this.setTenant();
+
+    if (this.tenantUser()) {
+      this.router.navigateByUrl(Utils.getUrl(this.tenantUser().role));
+    }
 
     Utils.showToast("Instanz wurde erfolgreich gelöscht!");
   }
