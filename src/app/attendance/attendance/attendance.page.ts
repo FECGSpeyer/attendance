@@ -58,6 +58,7 @@ export class AttendancePage implements OnInit {
     this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
     this.conductors = await this.db.getConductors(true);
     this.activeConductors = this.conductors.filter((con: Person) => !con.left);
+    this.historyEntry.person_id = this.activeConductors[0]?.id;
     this.withExcuses = this.db.tenant().withExcuses;
     this.attendance = await this.db.getAttendanceById(this.attendanceId);
     this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendanceId);
@@ -273,17 +274,27 @@ export class AttendancePage implements OnInit {
   }
 
   async addSongsToHistory(modal: any): Promise<void> {
+    const songsToAdd: History[] = [];
     for (const songId of this.selectedSongs) {
-      this.historyEntries.push({
+      songsToAdd.push({
         ...this.historyEntry,
         songId: Number(songId),
         tenantId: this.db.tenant().id,
         attendance_id: this.attendance.id,
+        person_id: Boolean(this.historyEntry.otherConductor) ? null : this.historyEntry.person_id,
       });
     }
 
-    await this.db.addSongsToHistory(this.historyEntries);
+    await this.db.addSongsToHistory(songsToAdd);
     this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendance.id);
+
+    this.selectedSongs = [];
+    this.historyEntry = {
+      person_id: this.activeConductors[0]?.id,
+      otherConductor: undefined,
+      date: this.historyEntry.date,
+      songId: 1,
+    };
 
     modal.dismiss();
   }

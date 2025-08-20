@@ -242,8 +242,17 @@ export class AttListPage implements OnInit {
       this.historyEntries.push({
         ...this.historyEntry,
         songId: Number(songId),
+        person_id: Boolean(this.historyEntry.otherConductor) ? null : this.historyEntry.person_id,
       });
     }
+
+    this.selectedSongs = [];
+    this.historyEntry = {
+      person_id: this.activeConductors[0]?.id,
+      otherConductor: undefined,
+      date: this.historyEntry.date,
+      songId: 1,
+    };
 
     modal.dismiss();
   }
