@@ -15,6 +15,7 @@ export class LoginPage implements OnInit {
   @ViewChild('passwordInput', { static: true }) passwordInput: IonInput;
   loginForm: UntypedFormGroup;
   registerCredentials = { password: '', email: '' };
+  regCredentials = { password: '', email: '', passwordConfirm: '' };
   public version: string = require('../../../package.json').version;
 
   constructor(
@@ -102,6 +103,57 @@ export class LoginPage implements OnInit {
   }
 
   async register() {
-    Utils.showToast("Kommt bald! Schau doch schonmal in die Demo rein.", "warning", 4000);
+    const alert = await new AlertController().create({
+      header: "Registrieren",
+      inputs: [
+        {
+          name: 'email',
+          type: 'email',
+          placeholder: "E-Mail eingeben...",
+          value: this.regCredentials.email
+        },
+        {
+          name: 'password',
+          type: 'password',
+          placeholder: "Passwort eingeben...",
+          value: this.regCredentials.password
+        },
+        {
+          name: 'passwordConfirm',
+          type: 'password',
+          placeholder: "Passwort bestätigen...",
+          value: this.regCredentials.passwordConfirm
+        }
+      ],
+      buttons: [
+        {
+          text: "Abbrechen",
+          role: 'cancel'
+        }, {
+          text: "Registrieren",
+          handler: async (values: any) => {
+            if (values.password !== values.passwordConfirm) {
+              Utils.showToast("Passwörter stimmen nicht überein", "danger");
+              return false;
+            }
+
+            if (!Utils.validateEmail(values.email)) {
+              Utils.showToast("Ungültige E-Mail-Adresse", "danger");
+              return false;
+            }
+
+            this.regCredentials.email = values.email;
+            this.regCredentials.password = values.password;
+            const res = await this.db.register(this.regCredentials.email, this.regCredentials.password);
+
+            if (res) {
+              Utils.showToast("Registrierung erfolgreich, bitte bestätige deine E-Mail-Adresse.", "success");
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 }

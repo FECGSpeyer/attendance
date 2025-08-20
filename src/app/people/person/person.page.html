@@ -68,7 +68,7 @@
         <ion-grid>
           <ion-row *ngIf="existingPlayer && !readOnly">
             <ion-col>
-              <input style="display: 'none';" name="file" #chooser (change)="onImageSelect($event)" accept="image/*"
+              <input style="display: none;" name="file" #chooser (change)="onImageSelect($event)" accept="image/*"
                 class="inputFile" type="file" />
               <ion-item button lines="none" (click)="changeImg()">
                 <ion-label>Profilbild</ion-label>

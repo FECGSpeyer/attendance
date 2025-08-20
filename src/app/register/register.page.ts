@@ -19,6 +19,7 @@ export class RegisterPage implements OnInit {
     betaProgram: true,
   };
   public mainGroupName: string = '';
+  public canDismiss: boolean = true;
 
   constructor(
     private db: DbService,
@@ -26,6 +27,7 @@ export class RegisterPage implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.canDismiss = Boolean(this.db.tenantUser());
   }
 
   async createInstance() {
@@ -35,7 +37,9 @@ export class RegisterPage implements OnInit {
     }
 
     await this.db.createInstance(this.tenant, this.mainGroupName);
-    await this.modalController.dismiss();
+    if (this.canDismiss) {
+      await this.modalController.dismiss();
+    }
   }
 
   async close() {

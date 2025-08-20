@@ -1,6 +1,6 @@
 import { Injectable, WritableSignal, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Platform } from '@ionic/angular';
+import { ModalController, Platform } from '@ionic/angular';
 import { createClient, SupabaseClient, SupabaseClientOptions, User } from '@supabase/supabase-js';
 import axios from 'axios';
 import * as dayjs from 'dayjs';
@@ -9,6 +9,7 @@ import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable
 import { Attendance, History, Instrument, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
+import { RegisterPage } from 'src/app/register/register.page';
 
 const options: SupabaseClientOptions<any> = {
   auth: {
@@ -67,6 +68,13 @@ export class DbService {
 
   async setTenant(tenantId?: number) {
     this.tenantUsers.set((await this.getTenantsByUserId()));
+
+    if (this.tenantUsers().length === 0) {
+      this.tenants.set([]);
+      this.tenant.set(undefined);
+      return;
+    }
+
     this.tenants.set(await this.getTenants(this.tenantUsers().map((tenantUser: TenantUser) => tenantUser.tenantId)));
     const storedTenantId: string | null = tenantId || this.user.user_metadata?.currentTenantId;
     if (storedTenantId && this.tenants().find((t: Tenant) => t.id === Number(storedTenantId))) {
@@ -381,19 +389,44 @@ export class DbService {
   }
 
   async login(email: string, password: string) {
-    const { data } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email, password,
     });
+
+    if (error) {
+      Utils.showToast(error.code === "email_not_confirmed" ? "Bitte bestätige zuerst deine E-Mail-Adresse." : "Fehler beim Anmelden", "danger");
+      throw error;
+    }
 
     if (data.user) {
       this.user = data.user;
       await this.setTenant();
-      this.router.navigateByUrl(Utils.getUrl(this.tenantUser().role));
+      if (this.tenantUser()) {
+        this.router.navigateByUrl(Utils.getUrl(this.tenantUser().role));
+      } else {
+        this.router.navigateByUrl("/register");
+      }
     } else {
       Utils.showToast("Bitte gib die richtigen Daten an!", "danger");
     }
 
     return Boolean(data.user);
+  }
+
+  async register(email: string, password: string): Promise<boolean> {
+    const { error } = await supabase.auth.signUp({
+      email, password,
+      options: {
+        emailRedirectTo: `https://attendix.de/login`,
+      }
+    });
+
+    if (error) {
+      Utils.showToast("Fehler beim Registrieren", "danger");
+      return false;
+    }
+
+    return true;
   }
 
   async getPlayerProfile(): Promise<Player | undefined> {
@@ -1490,6 +1523,22 @@ export class DbService {
     }
 
     return;
+  }
+
+  async deleteInstance(tenantId: number): Promise<void> {
+    const { error } = await supabase
+      .from("tenants")
+      .delete()
+      .match({ id: tenantId });
+
+    if (error) {
+      Utils.showToast("Fehler beim Löschen der Instanz, bitte versuche es später erneut.", "danger");
+      throw new Error(error.message);
+    }
+
+    await this.setTenant();
+
+    Utils.showToast("Instanz wurde erfolgreich gelöscht!");
   }
 
   async createInstance(tenant: Tenant, mainGroupName: string): Promise<void> {

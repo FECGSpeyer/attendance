@@ -56,6 +56,10 @@ export class SettingsPage implements OnInit {
   ) {
     effect(async () => {
       this.db.tenant();
+      if (!this.db.tenant()) {
+        this.router.navigateByUrl("/register");
+        return;
+      }
       this.shortName = this.db.tenant().shortName;
       this.longName = this.db.tenant().longName;
       await this.initialize();
@@ -422,6 +426,24 @@ export class SettingsPage implements OnInit {
             alert.message = "Bitte gib gültige Werte ein.";
             return false;
           }
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  async deleteInstance(generalModal: IonModal) {
+    const alert = await new AlertController().create({
+      header: 'Instanz löschen?',
+      message: `Möchtest du ${this.db.tenant().longName} wirklich löschen? Dies kann nicht rückgängig gemacht werden!`,
+      buttons: [{
+        text: "Abbrechen"
+      }, {
+        text: "Ja",
+        handler: async () => {
+          await this.db.deleteInstance(this.db.tenant().id);
+          await generalModal.dismiss();
         }
       }]
     });

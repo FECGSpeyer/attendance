@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>Neue Instanz anlegen</ion-title>
-    <ion-buttons slot="end">
+    <ion-buttons *ngIf="canDismiss" slot="end">
       <ion-button (click)="close()">
         <ion-icon name="close"></ion-icon>
       </ion-button>
@@ -38,5 +38,5 @@
       <ion-input placeholder="z.B. Verantwortliche, Dirigenten, etc." [(ngModel)]="mainGroupName"></ion-input>
     </ion-item>
   </ion-list>
-  <ion-button expand="full" (click)="createInstance()">Instanz anlegen</ion-button>
+  <ion-button expand="block" (click)="createInstance()">Instanz anlegen</ion-button>
 </ion-content>

@@ -17,8 +17,8 @@
     </ion-list-header>
     <ion-item *ngIf="isAdmin" button id="general-item">
       <ion-label>Allgemeine Einstellungen</ion-label>
-      <ion-modal #generalModal [breakpoints]="[0.9]" [initialBreakpoint]="0.9" trigger="general-item">
-        <ng-template>
+      <ion-modal #generalModal [breakpoints]="[1]" [initialBreakpoint]="1" trigger="general-item">
+        <ng-template>6
           <ion-content>
             <ion-header>
               <ion-toolbar>
@@ -87,6 +87,7 @@
                 [(ngModel)]="parentsEnabled">Eltern-Funktion</ion-toggle>
             </ion-item>
             <ion-button (click)="saveGeneralSettings(generalModal)" expand="block">Änderungen speichern</ion-button>
+            <ion-button *ngIf="isSuperAdmin" color="danger" (click)="deleteInstance(generalModal)" expand="block">Instanz löschen</ion-button>
           </ion-content>
         </ng-template>
       </ion-modal>

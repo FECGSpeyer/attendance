@@ -383,7 +383,7 @@ export class Utils {
       case Role.PLAYER:
         return "/tabs/signout";
       default:
-        return "/tabs/settings";
+        return "/register";
     }
   }
 
