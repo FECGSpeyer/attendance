@@ -12,7 +12,7 @@ export class RegisterGuard  {
   async canActivate(): Promise<boolean> {
     await this.db.checkToken();
 
-    if (Boolean(this.db.tenants()?.length === 0)) {
+    if (this.db.user && Boolean(this.db.tenants()?.length === 0)) {
       return true;
     } else if (this.db.tenantUser()) {
       const url: string = Utils.getUrl(this.db.tenantUser().role);

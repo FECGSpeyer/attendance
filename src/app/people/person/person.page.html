@@ -242,6 +242,9 @@
                 <ion-button *ngIf="!player.appId && !readOnly" slot="end" (click)="searchPerson()">
                   <ion-icon name="search"></ion-icon>
                 </ion-button>
+                <ion-button color="danger" *ngIf="player.appId && !readOnly" slot="end" (click)="removeUserFromTenant()">
+                  <ion-icon name="trash"></ion-icon>
+                </ion-button>
               </ion-item>
             </ion-col>
           </ion-row>

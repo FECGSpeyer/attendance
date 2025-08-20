@@ -218,19 +218,25 @@ export class PersonPage implements OnInit, AfterViewInit {
       return;
     }
 
-    if (this.existingPlayer.email !== this.player.email) {
+    const loading: HTMLIonLoadingElement = await this.loadingController.create();
+
+    if (this.existingPlayer.email !== this.player.email && Utils.validateEmail(this.player.email)) {
       const alert = await this.alertController.create({
         header: 'E-Mail Adresse hinzugefügt',
         message: 'Möchtest du gleich ein Konto für die Person anlegen?',
         buttons: [
           {
             text: 'Abbrechen',
+            handler: () => {
+              loading.dismiss();
+            },
             role: 'cancel',
           },
           {
             text: 'Ja',
             handler: async () => {
-              await this.continueUpdatingPlayer(true);
+              loading.present();
+              await this.continueUpdatingPlayer(true, loading);
             },
           },
         ],
@@ -239,12 +245,13 @@ export class PersonPage implements OnInit, AfterViewInit {
       return;
     }
 
-    await this.continueUpdatingPlayer();
+    loading.present();
+    await this.continueUpdatingPlayer(false, loading);
   }
 
-  async continueUpdatingPlayer(createAccount = false): Promise<void> {
+  async continueUpdatingPlayer(createAccount = false, loading: HTMLIonLoadingElement): Promise<void> {
     const mainGroupId = this.instruments.find((i: Instrument) => i.maingroup)?.id;
-    if (this.player.appId && this.existingPlayer.instrument !== this.player.instrument && this.player.instrument === mainGroupId || this.existingPlayer.instrument === mainGroupId) {
+    if (this.player.appId && (this.existingPlayer.instrument !== this.player.instrument && this.player.instrument === mainGroupId || this.existingPlayer.instrument === mainGroupId)) {
       await this.db.updateTenantUser({ role: this.player.instrument === mainGroupId ? Role.RESPONSIBLE : Role.PLAYER }, this.player.appId);
     }
 
@@ -280,8 +287,13 @@ export class PersonPage implements OnInit, AfterViewInit {
         lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
       }, false, createAccount, this.role);
 
+      loading.dismiss();
+      this.hasChanges = false;
+      this.dismiss();
+
       Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
     } catch (error) {
+      loading.dismiss();
       Utils.showToast("Fehler beim aktualisieren des Spielers", "danger");
     }
   }
@@ -289,6 +301,38 @@ export class PersonPage implements OnInit, AfterViewInit {
   async onRoleChange() {
     await this.db.updateTenantUser({ role: this.role }, this.player.appId);
     Utils.showToast("Die Rolle wurde erfolgreich aktualisiert.", "success");
+  }
+
+  async removeUserFromTenant() {
+    const alert = await this.alertController.create({
+      header: 'Benutzer entfernen',
+      message: 'Möchtest du den Benutzer wirklich aus der Instanz entfernen?',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel',
+        }, {
+          text: 'Ja',
+          handler: async () => {
+            try {
+              await this.db.removeUserFromTenant(this.player.appId);
+              await this.db.updatePlayer({
+                ...this.player,
+                email: null,
+                appId: null,
+              });
+              this.hasChanges = false;
+              this.dismiss();
+              Utils.showToast("Der Benutzer wurde erfolgreich entfernt", "success");
+            } catch (error) {
+              Utils.showToast("Fehler beim Entfernen des Benutzers", "danger");
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   onChange() {

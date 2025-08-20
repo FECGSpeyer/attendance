@@ -1,6 +1,6 @@
 import { Injectable, WritableSignal, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { ModalController, Platform } from '@ionic/angular';
+import { Platform } from '@ionic/angular';
 import { createClient, SupabaseClient, SupabaseClientOptions, User } from '@supabase/supabase-js';
 import axios from 'axios';
 import * as dayjs from 'dayjs';
@@ -30,7 +30,7 @@ const attendanceSelect: string = `*, persons:person_attendances(
   providedIn: 'root'
 })
 export class DbService {
-  private user: User;
+  public user: User;
   public attDate: string;
   public tenant: WritableSignal<Tenant | undefined>;
   public tenants: WritableSignal<Tenant[] | undefined>;
@@ -735,6 +735,11 @@ export class DbService {
     delete dataToUpdate.person_attendances;
     delete dataToUpdate.percentage;
 
+    if (createAccount && player.email && role) {
+      const appId: string = await this.registerUser(player.email, player.firstName, role);
+      dataToUpdate.appId = appId;
+    }
+
     const { data, error } = await supabase
       .from('player')
       .update({
@@ -754,11 +759,6 @@ export class DbService {
       } else {
         this.addPlayerToUpcomingAttendances(player.id);
       }
-    }
-
-    if (createAccount && player.email && role) {
-      const appId: string = await this.registerUser(player.email, player.firstName, role);
-      player.appId = appId;
     }
 
     return data.map((player) => {
@@ -826,13 +826,13 @@ export class DbService {
       return;
     }
 
-    const res = await axios.post(`https://staccato-server.vercel.app/api/deleteUserFromAttendix`, {
-      id: appId,
-    });
+    // const res = await axios.post(`https://staccato-server.vercel.app/api/deleteUserFromAttendix`, {
+    //   id: appId,
+    // });
 
-    if (res.status !== 200) {
-      throw new Error('Fehler beim Löschen des Accounts');
-    }
+    // if (res.status !== 200) {
+    //   throw new Error('Fehler beim Löschen des Accounts');
+    // }
   }
 
   async archivePlayer(player: Player, left: string, notes: string): Promise<void> {
@@ -1623,5 +1623,9 @@ export class DbService {
     return data.filter((p: Person) => {
       return linkedTenants.includes((p as any).tenantId.id);
     });
+  }
+
+  isDemo() {
+    this.user?.email === environment.demoMail;
   }
 }
