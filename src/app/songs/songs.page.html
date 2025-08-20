@@ -46,7 +46,7 @@
               <ion-input label-placement="stacked" label="Name" [(ngModel)]="song.name" #name></ion-input>
             </ion-item>
             <ion-item>
-              <ion-textarea label-placement="stacked" label="Link (optional)" [(ngModel)]="song.link" rows="2" #link
+              <ion-textarea label-placement="stacked" label="Link (optional)" [(ngModel)]="song.link" autoGrow="true" #link
                 (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
             </ion-item>
             <ion-item>
