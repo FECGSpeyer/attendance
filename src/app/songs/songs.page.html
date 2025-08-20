@@ -91,7 +91,7 @@
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Link</ion-label>
-          <ion-textarea rows="3" #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
+          <ion-textarea autoGrow="true" #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
         </ion-item>
         <ion-item>
           <ion-toggle [(ngModel)]="withChoir" aria-label="Chor & Orchester">Chor & Orchester</ion-toggle>
