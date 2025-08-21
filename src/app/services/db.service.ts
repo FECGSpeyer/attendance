@@ -1466,13 +1466,12 @@ export class DbService {
         ),
         date,
         otherConductor,
-        songId
+        songId,
+        attendance_id (
+          date
+        )
       `)
-      .gt("date", dayjs().startOf("day").toISOString())
-      .eq("tenantId", this.tenant().id)
-      .order("date", {
-        ascending: false,
-      });
+      .eq("tenantId", this.tenant().id);
 
     if (error) {
       throw new Error(error.message);
@@ -1483,6 +1482,9 @@ export class DbService {
         ...his,
         conductorName: his.person_id ? `${his.person_id.firstName} ${his.person_id.lastName}` : his.otherConductor || "",
       };
+    }).filter((h: any) => {
+      const date = h.attendance_id ? dayjs(h.attendance_id.date) : dayjs(h.date);
+      return date.isAfter(dayjs().startOf("day"));
     });
   }
 

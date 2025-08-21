@@ -278,6 +278,7 @@ export class AttendancePage implements OnInit {
     for (const songId of this.selectedSongs) {
       songsToAdd.push({
         ...this.historyEntry,
+        date: this.attendance.date,
         songId: Number(songId),
         tenantId: this.db.tenant().id,
         attendance_id: this.attendance.id,

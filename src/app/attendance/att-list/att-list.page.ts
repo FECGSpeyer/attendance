@@ -178,6 +178,7 @@ export class AttListPage implements OnInit {
           ...entry,
           attendance_id,
           visible: this.saveInHistory,
+          date: this.date,
           tenantId: this.db.tenant().id,
         }
       }));
