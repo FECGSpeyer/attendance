@@ -322,17 +322,17 @@ export class Utils {
       if (hasConductors) {
         data.push([
           { content: row.toString(), styles: { fontSize: 14 } },
+          { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
           { content: fieldName, styles: { fontSize: 14 } },
           { content: field.conductor || "", styles: { fontSize: 14 } },
           { content: `${field.time} min`, styles: { fontSize: 14 } },
-          { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
         ]);
       } else {
         data.push([
           { content: row.toString(), styles: { fontSize: 14 } },
+          { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
           { content: fieldName, styles: { fontSize: 14 } },
           { content: `${field.time} min`, styles: { fontSize: 14 } },
-          { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
         ]);
       }
       currentTime = currentTime.add(parseInt(field.time), "minutes");
