@@ -52,15 +52,13 @@ export class PlanningPage implements OnInit {
           }
         });
       } else {
-        this.time = this.db.tenant().practiceStart || "17:50";
+        const isPractice = this.attendances.find((att: Attendance) => att.id === this.attendance)?.type === "uebung";
+        this.time = isPractice ? (this.db.tenant().practiceStart || "17:50") : "10:00";
       }
     }
 
     if (this.history.length && this.selectedFields.length === 1) {
-      for (let his of this.history) {
-        const song: Song = this.songs.find((s: Song): boolean => s.id === his.songId);
-        this.onSongsChange([String(song.id)], this.attendances.find((att: Attendance) => att.id === this.attendance)?.type === "uebung");
-      }
+      this.onAttChange();
     }
   }
 
@@ -122,6 +120,9 @@ export class PlanningPage implements OnInit {
 
   onAttChange() {
     const attendance: Attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
+
+    if (!attendance) return;
+
     this.notes = attendance.notes;
     if (attendance.plan) {
       this.end = attendance.plan.end;
@@ -131,7 +132,7 @@ export class PlanningPage implements OnInit {
           ...field,
           conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || "")
         }
-      });;
+      });
     } else if (this.history.length) {
       if (attendance.type === "uebung") {
         this.time = this.db.tenant().practiceStart || "17:50";
