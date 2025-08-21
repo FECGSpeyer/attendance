@@ -18,7 +18,7 @@
     </ion-item>
     <ion-item *ngIf="attendance && notes">
       <ion-label position="stacked">Anwesenheitsnotizen</ion-label>
-      <ion-textarea rows="1" disabled="true">{{ notes }}</ion-textarea>
+      <ion-textarea autoGrow="true" disabled="true">{{ notes }}</ion-textarea>
     </ion-item>
     <ion-item *ngIf="songs.length">
       <ion-select interface="modal" label="Werke hinzufügen" multiple="true" (ionDismiss)="onSongsChange($event.target.value)">
