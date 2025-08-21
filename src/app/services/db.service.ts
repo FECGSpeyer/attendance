@@ -1469,6 +1469,7 @@ export class DbService {
         songId
       `)
       .gt("date", dayjs().startOf("day").toISOString())
+      .eq("tenantId", this.tenant().id)
       .order("date", {
         ascending: false,
       });
@@ -1480,7 +1481,7 @@ export class DbService {
     return data.map((his: any) => {
       return {
         ...his,
-        conductorName: his.conductors ? `${his.conductors.firstName} ${his.conductors.lastName}` : his.otherConductor || "",
+        conductorName: his.person_id ? `${his.person_id.firstName} ${his.person_id.lastName}` : his.otherConductor || "",
       };
     });
   }
