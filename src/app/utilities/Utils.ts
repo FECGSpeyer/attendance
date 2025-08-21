@@ -232,7 +232,7 @@ export class Utils {
     return attendance.typeInfo ? attendance.typeInfo : attendance.type === "vortrag" ? "Vortrag" : "";
   }
 
-  public static createPlanExport(props: any) {
+  public static createPlanExport(props: any, isPractice: boolean = true) {
     const startingTime: dayjs.Dayjs = dayjs(props.time).isValid() ? dayjs(props.time) : dayjs().hour(Number(props.time.substring(0, 2))).minute(Number(props.time.substring(3, 5)));
     const date: string = props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).format("DD.MM.YYYY") : startingTime.format("DD.MM.YYYY");
     const hasConductors = Boolean(props.fields.find((field: FieldSelection) => field.conductor));
@@ -341,12 +341,12 @@ export class Utils {
 
     const doc = new jsPDF();
     doc.setFontSize(20);
-    doc.text(`Probenplan: ${date}`, 14, 25);
+    doc.text(`${isPractice ? "Probenplan" : "Gottesdienst"} ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
       head: hasConductors ? [[
         { content: "", styles: { fontSize: 14 } },
         { content: "Werk", styles: { fontSize: 14 } },
-        { content: "Dirigent", styles: { fontSize: 14 } },
+        { content: "Ausführung", styles: { fontSize: 14 } },
         { content: "Dauer", styles: { fontSize: 14 } },
         { content: "Uhrzeit", styles: { fontSize: 14 } },
       ]] : [[
@@ -367,7 +367,7 @@ export class Utils {
     if (props.asBlob) {
       return doc.output("blob");
     } else {
-      doc.save(`Probenplan_${date}.pdf`);
+      doc.save(`${isPractice ? "Probenplan" : "Gottesdienst"}_${date}.pdf`);
     }
   }
 

@@ -18,7 +18,7 @@ export class PlanningPage implements OnInit {
   public selectedFields: FieldSelection[] = [{
     id: "",
     name: "Wort ",
-    time: "5",
+    time: "10",
   }];
   public attendances: Attendance[] = [];
   public attendance: number;
@@ -59,7 +59,7 @@ export class PlanningPage implements OnInit {
     if (this.history.length && this.selectedFields.length === 1) {
       for (let his of this.history) {
         const song: Song = this.songs.find((s: Song): boolean => s.id === his.songId);
-        this.onSongsChange([String(song.id)]);
+        this.onSongsChange([String(song.id)], this.attendances.find((att: Attendance) => att.id === this.attendance)?.type === "uebung");
       }
     }
   }
@@ -107,6 +107,7 @@ export class PlanningPage implements OnInit {
   }
 
   send() {
+    const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
     const name: string = this.attendance ? dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format("DD_MM_YYYY") : dayjs().format("DD_MM_YYYY");
     const blob: Blob = Utils.createPlanExport({
       time: this.time,
@@ -115,8 +116,8 @@ export class PlanningPage implements OnInit {
       asBlob: true,
       attendance: this.attendance,
       attendances: this.attendances
-    });
-    this.db.sendPlanPerTelegram(blob, `Probenplan_${name}`);
+    }, attendance?.type === "uebung");
+    this.db.sendPlanPerTelegram(blob, `${attendance?.type === "uebung" ? "Probenplan" : "Gottesdienst"}_${name}`);
   }
 
   onAttChange() {
@@ -132,16 +133,73 @@ export class PlanningPage implements OnInit {
         }
       });;
     } else if (this.history.length) {
-      this.selectedFields = [{
-        id: "",
-        name: "Wort ",
-        time: "5",
-      }];
-      for (let his of this.history) {
-        const song: Song = this.songs.find((s: Song): boolean => s.id === his.songId);
-        this.onSongsChange([String(song.id)]);
+      if (attendance.type === "uebung") {
+        this.time = this.db.tenant().practiceStart || "17:50";
+        this.selectedFields = [{
+          id: "",
+          name: "Wort ",
+          time: "10",
+        }];
+
+        for (let his of this.history) {
+          const song: Song = this.songs.find((s: Song): boolean => s.id === his.songId);
+          this.onSongsChange([String(song.id)], true);
+        }
+      } else {
+        const attDate = dayjs(attendance.date);
+        this.time = attDate.day() === 0 ? "10:00" : "19:00";
+        // add default fields
+        this.selectedFields = [{
+          id: "",
+          name: "Segensgebet ",
+          time: "5",
+        }, {
+          id: "",
+          name: "Gemeinsamer Gesang ",
+          time: "5",
+        }, {
+          id: "",
+          name: "1. Predigt mit Gebet ",
+          time: "20",
+          conductor: this.history?.find((his: History) => his.songId === this.songs[1].id)?.conductorName || ""
+        }, {
+          id: "",
+          name: "Gemeinsamer Gesang ",
+          time: "5",
+        }];
+
+        for (let his of this.history) {
+          const song: Song = this.songs.find((s: Song): boolean => s.id === his.songId);
+          this.onSongsChange([String(song.id)], false);
+        }
+
+          this.selectedFields.push({
+            id: "",
+            name: "Programm ",
+            time: "20",
+          });
+
+        if (attDate.day() === 0) {
+          this.selectedFields.push({
+            id: "",
+            name: "2. Predigt ",
+            time: "15",
+          });
+          this.selectedFields.push({
+            id: "",
+            name: "Gemeinsamer Gesang ",
+            time: "5",
+          });
+        }
+        this.selectedFields.push({
+          id: "",
+          name: "Abschlusspredigt ",
+          time: "25",
+        });
       }
     }
+
+    this.calculateEnd();
   }
 
   dismiss() {
@@ -207,7 +265,7 @@ export class PlanningPage implements OnInit {
     await alert.present();
   }
 
-  onSongsChange(ids: string[]) {
+  onSongsChange(ids: string[], isPractice: boolean = true) {
     for (let id of ids) {
       const song: Song = this.songs.find((song: Song) => song.id === parseInt(id));
       const conductor: string | undefined = this.history?.find((his: History) => his.songId === song.id)?.conductorName;
@@ -215,7 +273,7 @@ export class PlanningPage implements OnInit {
       this.selectedFields.push({
         id,
         name: `${song.number}. ${song.name}`,
-        time: "20",
+        time: isPractice ? "20" : "5",
         conductor: conductor || "",
       });
     }
@@ -244,7 +302,7 @@ export class PlanningPage implements OnInit {
       history: this.history,
       attendance: this.attendance,
       attendances: this.attendances,
-    });
+    }, Boolean(this.attendances.find((a: Attendance) => a.id === this.attendance).type === "uebung"));
   }
 
   async addToAttendance() {
@@ -261,6 +319,15 @@ export class PlanningPage implements OnInit {
 
     await loading.dismiss();
     Utils.showToast("Probenplan wurde hinzugefügt!", "success");
+  }
+
+  getAttTypeText(type: string, typeInfo?: string): string {
+    if (type === 'uebung') {
+      return '';
+    } else if (type === "sonstiges") {
+      return typeInfo || '';
+    }
+    return Utils.getTypeText(type);
   }
 
 }
