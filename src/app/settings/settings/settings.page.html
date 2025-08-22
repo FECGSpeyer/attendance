@@ -17,7 +17,7 @@
         <ion-label *ngIf="db.tenant().type === 'orchestra'">Orchester-Einstellungen</ion-label>
         <ion-label *ngIf="db.tenant().type === 'choir'">Chor-Einstellungen</ion-label>
         <ion-label *ngIf="db.tenant().type === 'general'">Gruppen-Einstellungen</ion-label>
-        <ion-modal #generalModal [breakpoints]="[1]" [initialBreakpoint]="1" trigger="general-item">
+        <ion-modal #generalModal [breakpoints]="[0.8, 1]" [initialBreakpoint]="0.8" trigger="general-item">
           <ng-template>
             <ion-content>
               <ion-header>
