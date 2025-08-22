@@ -79,11 +79,11 @@
             </ion-button>
           </ion-item>
         </ion-list>
-        @if (!isGeneral && (attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit')) {
+        <!-- @if (!isGeneral && (attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit')) {
           <ion-item>
             <ion-toggle (ionChange)="onInfoChanged()" helperText="Ausgewählte Werke werden automatisch in die Werkhistorie übernommen" [(ngModel)]="attendance.save_in_history">In der Werkhistorie berücksichtigen</ion-toggle>
           </ion-item>
-        }
+        } -->
         <ion-item lines="none">
           <ion-label position="stacked">Notizen</ion-label>
           <ion-textarea (ionBlur)="onInfoChanged()" autoGrow="true" [(ngModel)]="attendance.notes"></ion-textarea>

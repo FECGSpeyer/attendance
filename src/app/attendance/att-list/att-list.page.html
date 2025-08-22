@@ -204,12 +204,12 @@
             </ion-button>
           </ion-item>
         </ion-list>
-        @if (!isGeneral && (type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit')) {
+        <!-- @if (!isGeneral && (type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit')) {
         <ion-item lines="none">
           <ion-toggle helperText="Ausgewählte Werke werden automatisch in die Werkhistorie übernommen"
             [(ngModel)]="saveInHistory">In der Werkhistorie berücksichtigen</ion-toggle>
         </ion-item>
-        }
+        } -->
         <ion-item>
           <ion-toggle helperText="Der Status wird bei allen Personen auf Neutral gesetzt. So kann man einfach nachvollziehen, wer sich schon an- oder abgemeldet hat." slot="end" [(ngModel)]="hasNeutral">Neutral</ion-toggle>
         </ion-item>
