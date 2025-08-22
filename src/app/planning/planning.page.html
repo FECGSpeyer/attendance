@@ -25,6 +25,14 @@
         <ion-select-option [value]="song.id.toString()" *ngFor="let song of songs">{{ song.number }} {{ song.name }}</ion-select-option>
       </ion-select>
     </ion-item>
+
+    <ion-list-header>
+      <ion-label>Ablauf</ion-label>
+      <ion-button fill="clear" (click)="addExtraField()">
+        <ion-icon name="add"></ion-icon>
+      </ion-button>
+    </ion-list-header>
+
     <ion-item>
       <ion-label>Start</ion-label>
       <ion-datetime-button datetime="datetime"></ion-datetime-button>
@@ -69,8 +77,6 @@
         </ion-item-sliding>
       </ion-reorder-group>
     </ion-list>
-
-    <ion-button (click)="addExtraField()" style="margin-left: '16px'" size="small">Extrafeld hinzufügen</ion-button>
 
     <ion-item *ngIf="end">
       <ion-label>Ende</ion-label>

@@ -1,6 +1,5 @@
 /* eslint-disable arrow-body-style */
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
 import { ActionSheetController, IonAccordionGroup, IonModal } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
@@ -34,8 +33,7 @@ export class SignoutPage implements OnInit {
 
   constructor(
     public db: DbService,
-    private actionSheetController: ActionSheetController,
-    private router: Router,
+    private actionSheetController: ActionSheetController
   ) {
     effect(async () => {
       if (this.db.tenant()) {
@@ -159,7 +157,7 @@ export class SignoutPage implements OnInit {
         },
       },
       {
-        text: 'Cancel',
+        text: 'Abbrechen',
         handler: () => { },
         role: 'cancel',
         data: {

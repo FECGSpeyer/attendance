@@ -54,6 +54,10 @@ const routes: Routes = [
         loadChildren: () => import('./../register/register.module').then(m => m.RegisterPageModule)
       },
       {
+        path: 'parents',
+        loadChildren: () => import('./../selfService/parents/parents.module').then( m => m.ParentsPageModule)
+      },
+      {
         path: '',
         redirectTo: '/tabs/player',
         pathMatch: 'full'

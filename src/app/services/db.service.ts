@@ -1096,6 +1096,25 @@ export class DbService {
     });
   }
 
+  async getParentAttendances(player: Person[], attendances: Attendance[]): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('person_attendances')
+      .select('*, person:person_id(firstName)')
+      .in('person_id', player.map(p => p.id))
+      .in('attendance_id', attendances.map(a => a.id));
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Anwesenheiten", "danger");
+      throw error;
+    }
+
+    if (!data || !data.length) {
+      return [];
+    }
+
+    return data;
+  }
+
   async updatePersonAttendance(id: string, att: Partial<PersonAttendance>): Promise<void> {
     const { error } = await supabase
       .from('person_attendances')
