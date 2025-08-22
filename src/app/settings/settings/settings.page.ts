@@ -431,7 +431,7 @@ export class SettingsPage implements OnInit {
     await alert.present();
   }
 
-  async deleteInstance(generalModal: IonModal) {
+  async deleteInstance() {
     const alert = await new AlertController().create({
       header: 'Instanz löschen?',
       message: `Möchtest du ${this.db.tenant().longName} wirklich löschen? Dies kann nicht rückgängig gemacht werden!`,
@@ -441,7 +441,6 @@ export class SettingsPage implements OnInit {
         text: "Ja",
         handler: async () => {
           await this.db.deleteInstance(this.db.tenant().id);
-          await generalModal.dismiss();
         }
       }]
     });
