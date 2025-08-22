@@ -41,7 +41,7 @@ export class ParentsPage implements OnInit {
     }
   }
 
-  async openActionSheet(attendance: PersonAttendance, allKids: boolean = false) {
+  async openActionSheet(attendance: any, allKids: boolean = false) {
     let reasonSelection = 'Krankheitsbedingt';
     let buttons = [
       {
