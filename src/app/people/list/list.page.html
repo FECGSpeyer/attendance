@@ -64,6 +64,7 @@
                 <ion-select-option value="paused">Pausiert</ion-select-option>
                 <ion-select-option value="notes">Hat Notizen</ion-select-option>
                 <ion-select-option value="img">Profilbild</ion-select-option>
+                <ion-select-option value="teachers" *ngIf="db.tenant().maintainTeachers">Lehrer</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="examinee">Prüfling</ion-select-option>
                 <!-- <ion-select-option *ngIf="isVoS" value="teacher">Lehrer</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="otherOrchestra">Anderes Orchester</ion-select-option> -->
@@ -92,7 +93,14 @@
             <h2>{{ player.firstName }} {{ player.lastName }}</h2>
             <h3 *ngIf="player.text">{{ player.text }}</h3>
             @if (showInstruments) {
-              <h3 *ngIf="!player.text">{{ player.instrumentName }}</h3>
+            <h3 *ngIf="!player.text">{{ player.instrumentName }}</h3>
+            }
+            @if (player.instrument !== mainGroup) {
+              @if (showTeachers && player.teacher) {
+                <h3>Lehrer: {{ getTeacherName(player.teacher) }}</h3>
+              } @else if (showTeachers && !player.teacher) {
+                <h3>Kein Lehrer</h3>
+              }
             }
           </ion-label>
           <ion-badge color="secondary"
@@ -105,7 +113,8 @@
             *ngIf="((showPaused && !player.paused) || !showPaused) && showCritical && player.isCritical" slot="end">
             Problemfall</ion-badge>
           <ion-badge color="warning" *ngIf="showPaused && player.paused" slot="end">Pausiert</ion-badge>
-          <ion-badge [color]="player.percentage >= 75 ? 'success' : player.percentage >= 50 ? 'warning' : 'danger'" *ngIf="showAttendance" slot="end">{{ player.percentage }}%</ion-badge>
+          <ion-badge [color]="player.percentage >= 75 ? 'success' : player.percentage >= 50 ? 'warning' : 'danger'"
+            *ngIf="showAttendance" slot="end">{{ player.percentage }}%</ion-badge>
           <ion-badge color="warning"
             *ngIf="((showPaused && !player.paused) || !showPaused) && showNotes && player.notes" slot="end">
             <ion-icon name="pencil"></ion-icon>

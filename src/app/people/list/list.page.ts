@@ -2,7 +2,7 @@ import { Component, OnInit, effect } from '@angular/core';
 import { ActionSheetController, AlertController, IonItemSliding, IonRouterOutlet, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { Attendance, Instrument, Person, Player, PlayerHistoryEntry } from 'src/app/utilities/interfaces';
+import { Attendance, Instrument, Person, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
 import { PersonPage } from '../person/person.page';
 import { AttendanceType, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Storage } from '@ionic/storage-angular';
@@ -33,6 +33,7 @@ export class ListPage implements OnInit {
   public showImg = true;
   public showExaminee = false;
   public showAttendance = false;
+  public showTeachers = false;
   public showInstruments = false;
   public isArchiveModalOpen: boolean = false;
   public archiveDate: string = dayjs().format("YYYY-MM-DD");
@@ -43,6 +44,7 @@ export class ListPage implements OnInit {
   public sub: RealtimeChannel;
   public mainGroup: number | undefined;
   public attendances: Attendance[] = [];
+  public teachers: Teacher[] = [];
 
   constructor(
     private modalController: ModalController,
@@ -61,6 +63,10 @@ export class ListPage implements OnInit {
   }
 
   async ngOnInit() {
+    if (this.db.tenant().maintainTeachers) {
+      this.teachers = await this.db.getTeachers();
+    }
+
     this.viewOpts = JSON.parse(await this.storage.get("viewOpts") || JSON.stringify(['instrument', 'leader', 'notes', 'critical', 'paused']));
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
@@ -69,6 +75,7 @@ export class ListPage implements OnInit {
     this.filterOpt = (await this.storage.get("filterOpt")) || "all";
     this.instruments = await this.db.getInstruments();
     this.mainGroup = this.instruments.find(ins => ins.maingroup)?.id;
+
     await this.getPlayers();
 
     this.sub = this.db.getSupabase()
@@ -226,6 +233,7 @@ export class ListPage implements OnInit {
     this.showImg = this.viewOpts.includes("img");
     this.showInstruments = this.viewOpts.includes("instrument");
     this.showAttendance = this.viewOpts.includes("attendance");
+    this.showTeachers = this.viewOpts.includes("teachers") && this.db.tenant().maintainTeachers;
 
     this.storage.set("viewOpts", JSON.stringify(this.viewOpts));
   }
@@ -407,5 +415,10 @@ export class ListPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  getTeacherName(teacherId?: number): string {
+    const teacher = this.teachers.find(t => t.id === teacherId);
+    return teacher ? teacher.name : 'Unbekannt';
   }
 }
