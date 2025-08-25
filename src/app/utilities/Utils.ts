@@ -158,7 +158,7 @@ export class Utils {
     const overallCount: number = personAttendances.length;
     let presentCount: number = 0;
     for (const p of personAttendances) {
-      if (p.status === AttendanceStatus.Present || p.status === AttendanceStatus.Late) {
+      if (p.status === AttendanceStatus.Present || p.status === AttendanceStatus.Late || p.status === AttendanceStatus.LateExcused) {
         presentCount++;
       }
     }
