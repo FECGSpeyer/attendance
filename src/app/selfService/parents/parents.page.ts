@@ -29,7 +29,7 @@ export class ParentsPage implements OnInit {
 
   async ngOnInit() {
     this.kids = await this.db.getPlayers();
-    this.attendances = await this.db.getUpcomingAttendances();
+    this.attendances = (await this.db.getUpcomingAttendances()).reverse();
     this.personAttendances = await this.db.getParentAttendances(this.kids, this.attendances);
   }
 
