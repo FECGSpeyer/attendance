@@ -137,13 +137,13 @@
           <ion-badge [color]="player.status === 0 ? 'medium' :
                               player.status === 1 ? 'success' :
                               player.status === 2 ? 'warning' :
-                              player.status === 3 ? 'tertiary' : 'danger'"
+                              (player.status === 5 || player.status === 3) ? 'tertiary' : 'danger'"
                      slot="end">
                                 {{
                                   player.status === 0 ? 'N' :
                                   player.status === 1 ? '✓' :
                                   player.status === 2 ? 'E' :
-                                  player.status === 3 ? 'L' : 'A'
+                                  (player.status === 5 || player.status === 3) ? 'L' : 'A'
                                 }}
           </ion-badge>
         </ion-item>
