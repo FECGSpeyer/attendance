@@ -74,6 +74,7 @@ export class SongsPage implements OnInit {
       name,
       link,
       withChoir: this.withChoir,
+      instrument_ids: this.selectedInstruments,
     });
 
     this.withChoir = false;
@@ -177,7 +178,7 @@ export class SongsPage implements OnInit {
   }
 
   onTextAreaFocus(evt: any) {
-    evt.target.children[0].children[0].select();
+    evt.target?.children?.[0]?.children?.[0]?.select();
   }
 
   getInstrumentText(instrumentIds: number[]): string {

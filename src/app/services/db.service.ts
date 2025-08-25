@@ -711,8 +711,8 @@ export class DbService {
     }
   }
 
-  async removePlayerFromUpcomingAttendances(id: number) {
-    const attData: Attendance[] = await this.getUpcomingAttendances();
+  async removePlayerFromUpcomingAttendances(id: number, left?: string) {
+    const attData: Attendance[] = left ? await this.getAttendancesByDate(left) : await this.getUpcomingAttendances();
 
     if (attData?.length) {
       await this.deletePersonAttendances(attData.map((att: Attendance) => att.id), id);
@@ -854,6 +854,8 @@ export class DbService {
       .from('player')
       .update({ left, notes, history: player.history as any })
       .match({ id: player.id });
+
+    await this.removePlayerFromUpcomingAttendances(player.id, left);
   }
 
   async getInstruments(): Promise<Instrument[]> {
