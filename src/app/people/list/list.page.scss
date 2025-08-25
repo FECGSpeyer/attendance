@@ -6,3 +6,7 @@
 ion-searchbar {
     padding-right: 0;
 }
+
+ion-select::part(text) {
+    width: 7rem;
+}
