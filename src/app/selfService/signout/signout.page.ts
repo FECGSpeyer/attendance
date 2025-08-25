@@ -25,7 +25,6 @@ export class SignoutPage implements OnInit {
   public isLateComingEvent: boolean;
   public reasonSelection;
   public signoutTitle: string;
-  public attIsToday: boolean;
   public lateCount: number = 0;
   public songs: Song[] = [];
   public tenantId: number;
@@ -128,11 +127,9 @@ export class SignoutPage implements OnInit {
         text: 'Abmelden',
         handler: () => {
           if (this.isAttToday(attendance)) {
-            this.attIsToday = true;
             this.reasonSelection = 'Sonstiger Grund';
             this.reason = '';
           } else {
-            this.attIsToday = false;
             this.reason = 'Krankheitsbedingt';
           }
           this.excuseModal.present();
@@ -144,11 +141,9 @@ export class SignoutPage implements OnInit {
         text: 'Verspätung eintragen',
         handler: () => {
           if (this.isAttToday(attendance)) {
-            this.attIsToday = true;
             this.reasonSelection = 'Sonstiger Grund';
             this.reason = '';
           } else {
-            this.attIsToday = false;
             this.reason = 'Krankheitsbedingt';
           }
           this.excuseModal.present();

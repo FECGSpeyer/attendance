@@ -1344,7 +1344,7 @@ export class DbService {
     return;
   }
 
-  async signout(attIds: string[], reason: string, isLateExcused: Boolean): Promise<void> {
+  async signout(attIds: string[], reason: string, isLateExcused: boolean, isParents: boolean = false): Promise<void> {
     for (const attId of attIds) {
       await this.updatePersonAttendance(attId, {
         notes: reason,
@@ -1352,7 +1352,7 @@ export class DbService {
       });
     }
 
-    this.notifyPerTelegram(attIds[0], isLateExcused === true ? 'lateSignout' : "signout", reason);
+    this.notifyPerTelegram(attIds[0], isLateExcused === true ? 'lateSignout' : "signout", reason, isParents);
 
     return;
   }
@@ -1409,12 +1409,13 @@ export class DbService {
     }, 10000);
   }
 
-  async notifyPerTelegram(attId: string, type: string = "signin", reason?: string): Promise<void> {
+  async notifyPerTelegram(attId: string, type: string = "signin", reason?: string, isParents: boolean = false): Promise<void> {
     await supabase.functions.invoke("quick-processor", {
       body: {
         attId,
         type,
         reason,
+        isParents
       },
       method: "POST",
     });
