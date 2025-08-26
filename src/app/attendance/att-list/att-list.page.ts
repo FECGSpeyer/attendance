@@ -224,7 +224,8 @@ export class AttListPage implements OnInit {
       component: AttendancePage,
       componentProps: {
         attendanceId: attendance.id,
-      }
+      },
+      swipeToClose: true,
     });
 
     await modal.present();
