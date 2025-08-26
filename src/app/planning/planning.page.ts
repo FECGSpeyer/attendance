@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, IonItemSliding, ItemReorderEventDetail, ModalController } from '@ionic/angular';
+import { AlertController, IonItemSliding, ItemReorderEventDetail, ModalController, IonPopover } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
 import { Attendance, FieldSelection, History, Song } from '../utilities/interfaces';
@@ -266,7 +266,7 @@ export class PlanningPage implements OnInit {
     await alert.present();
   }
 
-  onAddSong(id: string, popover: HTMLIonPopoverElement) {
+  onAddSong(id: string, popover: IonPopover) {
     popover?.dismiss();
     const attendance: Attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
     if (!id) return;
