@@ -1,5 +1,5 @@
 import { Component, OnInit, effect } from '@angular/core';
-import { AlertController, IonItemSliding, IonModal, ModalController } from '@ionic/angular';
+import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
@@ -49,6 +49,7 @@ export class AttListPage implements OnInit {
     private db: DbService,
     private modalController: ModalController,
     private alertController: AlertController,
+    private routerOutlet: IonRouterOutlet,
   ) {
     effect(async () => {
       this.db.tenant();
@@ -225,7 +226,7 @@ export class AttListPage implements OnInit {
       componentProps: {
         attendanceId: attendance.id,
       },
-      swipeToClose: true,
+      presentingElement: this.routerOutlet.nativeEl,
     });
 
     await modal.present();
