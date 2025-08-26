@@ -334,6 +334,7 @@ export class SettingsPage implements OnInit {
   async onTenantChange(): Promise<void> {
     await this.db.setTenant(this.tenantId);
     this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser().role));
+    window.location.reload();
   }
 
   async openCreateInstanceModal() {
