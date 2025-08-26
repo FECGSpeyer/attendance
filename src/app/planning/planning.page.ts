@@ -75,8 +75,8 @@ export class PlanningPage implements OnInit {
     return `${time.add(minutesToAdd, "minute").format("HH:mm")} ${field.conductor ? `| ${field.conductor}` : ""}`;
   }
 
-  async changeField(field: FieldSelection, slider: IonItemSliding) {
-    slider.close();
+  async changeField(field: FieldSelection, slider?: IonItemSliding) {
+    slider?.close();
     const clone: FieldSelection = JSON.parse(JSON.stringify(field));
     const alert = await this.alertController.create({
       header: 'Feld bearbeiten',
@@ -266,6 +266,13 @@ export class PlanningPage implements OnInit {
     await alert.present();
   }
 
+  onAddSong(id: string, popover: HTMLIonPopoverElement) {
+    popover?.dismiss();
+    const attendance: Attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
+    if (!id) return;
+    this.onSongsChange([id], attendance?.type === "uebung");
+  }
+
   onSongsChange(ids: string[], isPractice: boolean = true) {
     for (let id of ids) {
       const song: Song = this.songs.find((song: Song) => song.id === parseInt(id));
@@ -329,6 +336,10 @@ export class PlanningPage implements OnInit {
       return typeInfo || '';
     }
     return Utils.getTypeText(type);
+  }
+
+  test() {
+
   }
 
 }

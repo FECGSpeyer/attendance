@@ -11,31 +11,37 @@
 
 <ion-content>
   <ion-card>
-      <ion-item *ngIf="attendances.length">
-        <ion-select interface="modal" label="Zugehörige Anwesenheit" (ionChange)="onAttChange()"
-          [(ngModel)]="attendance">
-          <ion-select-option [value]="att.id" *ngFor="let att of attendances">{{ att.date | date:'dd.MM.yyyy' }} {{
-            this.getAttTypeText(att.type, att.typeInfo) }}</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item *ngIf="attendance && notes">
-        <ion-label position="stacked">Anwesenheitsnotizen</ion-label>
-        <ion-textarea autoGrow="true" disabled="true">{{ notes }}</ion-textarea>
-      </ion-item>
-      <ion-item lines="none" *ngIf="songs.length">
-        <ion-select interface="modal" label="Werke hinzufügen" multiple="true"
-          (ionDismiss)="onSongsChange($event.target.value)">
-          <ion-select-option [value]="song.id.toString()" *ngFor="let song of songs">{{ song.number }} {{ song.name
-            }}</ion-select-option>
-        </ion-select>
-      </ion-item>
+    <ion-item *ngIf="attendances.length">
+      <ion-select interface="modal" label="Zugehörige Anwesenheit" (ionChange)="onAttChange()" [(ngModel)]="attendance">
+        <ion-select-option [value]="att.id" *ngFor="let att of attendances">{{ att.date | date:'dd.MM.yyyy' }} {{
+          this.getAttTypeText(att.type, att.typeInfo) }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item *ngIf="attendance && notes">
+      <ion-label position="stacked">Anwesenheitsnotizen</ion-label>
+      <ion-textarea autoGrow="true" disabled="true">{{ notes }}</ion-textarea>
+    </ion-item>
   </ion-card>
 
   <ion-list-header>
     <ion-label>Ablauf</ion-label>
-    <ion-button fill="clear" (click)="addExtraField()">
+    <ion-button id="add-trigger" fill="clear">
       <ion-icon name="add"></ion-icon>
     </ion-button>
+    <ion-popover #addPopover trigger="add-trigger" triggerAction="click">
+      <ng-template>
+        <ion-item (click)="addExtraField()">
+          <ion-label>Feld hinzufügen</ion-label>
+        </ion-item>
+        <ion-item lines="none" *ngIf="songs.length">
+          <ion-select interface="modal" label="Werk hinzufügen" multiple="false"
+            (ionDismiss)="onAddSong($event.target.value, addPopover)">
+            <ion-select-option [value]="song.id.toString()" *ngFor="let song of songs">{{ song.number }} {{ song.name
+              }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ng-template>
+    </ion-popover>
   </ion-list-header>
 
   <ion-item>
@@ -58,19 +64,16 @@
     <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
       <ion-item-sliding #slider *ngFor="let field of selectedFields; let i = index">
         <ion-item>
-          <ion-label>
+          <ion-label (click)="changeField(field)">
             <h2>{{ field.name }}</h2>
             <h3>{{ calculateTime(field, i) }}</h3>
           </ion-label>
-          <ion-input (ionBlur)="calculateEnd()" [(ngModel)]="field.time" placeholder="min" type="number"
-            slot="end"></ion-input>
+          <ion-input style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time" placeholder="min"
+            type="number" slot="end"></ion-input>
           <ion-reorder slot="end"></ion-reorder>
         </ion-item>
-        <ion-item-options>
-          <ion-item-option color="warning" (click)="changeField(field, slider)">
-            <ion-icon name="pencil"></ion-icon>
-          </ion-item-option>
-          <ion-item-option color="danger" (click)="removeField(i, slider)">
+        <ion-item-options (ionSwipe)="removeField(i, slider)">
+          <ion-item-option expandable color="danger" (click)="removeField(i, slider)">
             <ion-icon name="trash"></ion-icon>
           </ion-item-option>
         </ion-item-options>
@@ -100,7 +103,8 @@
       <ion-icon name="ellipsis-horizontal"></ion-icon>
     </ion-fab-button>
     <ion-fab-list side="top">
-      <ion-fab-button *ngIf="attendances.length && attendance" (click)="addToAttendance()" [disabled]="!selectedFields.length">
+      <ion-fab-button *ngIf="attendances.length && attendance" (click)="addToAttendance()"
+        [disabled]="!selectedFields.length">
         <ion-icon name="save-outline"></ion-icon>
       </ion-fab-button>
       <ion-fab-button [disabled]="!selectedFields.length" (click)="export()">
