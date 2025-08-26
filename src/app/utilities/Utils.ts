@@ -345,15 +345,15 @@ export class Utils {
     ((doc as any).autoTable as AutoTable)({
       head: hasConductors ? [[
         { content: "", styles: { fontSize: 14 } },
+        { content: "Uhrzeit", styles: { fontSize: 14 } },
         { content: "Werk", styles: { fontSize: 14 } },
         { content: "Ausführung", styles: { fontSize: 14 } },
         { content: "Dauer", styles: { fontSize: 14 } },
-        { content: "Uhrzeit", styles: { fontSize: 14 } },
       ]] : [[
         { content: "", styles: { fontSize: 14 } },
+        { content: "Uhrzeit", styles: { fontSize: 14 } },
         { content: "Werk", styles: { fontSize: 14 } },
         { content: "Dauer", styles: { fontSize: 14 } },
-        { content: "Uhrzeit", styles: { fontSize: 14 } },
       ]],
       body: data,
       margin: { top: 40 },
