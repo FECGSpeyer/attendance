@@ -29,7 +29,7 @@
       <ion-badge (click)="openLink(song.link)" slot="end" *ngIf="song.link">
         <ion-icon name="link-outline"></ion-icon>
       </ion-badge>
-      <ion-modal *ngIf="isAdmin" #modal [trigger]="song.id + 'edit-button'" [breakpoints]="[0.9]"
+      <ion-modal *ngIf="isAdmin" #modal [trigger]="song.id + 'edit-button'" [breakpoints]="[0, 0.9]"
         [initialBreakpoint]="0.9">
         <ng-template>
           <ion-content>
@@ -73,7 +73,7 @@
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
-  <ion-modal #modal trigger="add-button" [breakpoints]="[0.9]" [initialBreakpoint]="0.9">
+  <ion-modal #modal trigger="add-button" [breakpoints]="[0, 0.9]" [initialBreakpoint]="0.9">
     <ng-template>
       <ion-content>
         <ion-header>
