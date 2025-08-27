@@ -18,9 +18,15 @@ export class SongsPage implements OnInit {
   searchTerm: string = "";
   public isAdmin: boolean = false;
   public withChoir: boolean = false;
+  public withSolo: boolean = false;
   public isOrchestra: boolean = false;
   public instruments: Instrument[] = [];
   public selectedInstruments: number[] = [];
+  public customModalOptions = {
+    header: 'Instrumente wählen',
+    breakpoints: [0, 0.7, 1],
+    initialBreakpoint: 0.7,
+  };
 
   constructor(
     private db: DbService,
@@ -74,10 +80,12 @@ export class SongsPage implements OnInit {
       name,
       link,
       withChoir: this.withChoir,
+      withSolo: this.withSolo,
       instrument_ids: this.selectedInstruments,
     });
 
     this.withChoir = false;
+    this.withSolo = false;
 
     await modal.dismiss();
     this.getSongs();
@@ -94,6 +102,7 @@ export class SongsPage implements OnInit {
       name,
       link,
       withChoir: this.songs.find((song: Song) => song.id === id).withChoir,
+      withSolo: this.songs.find((song: Song) => song.id === id).withSolo,
       instrument_ids: instrument_ids ?? [],
     });
 

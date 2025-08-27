@@ -194,6 +194,7 @@ export interface Song {
     name: string;
     number: number;
     withChoir: boolean;
+    withSolo: boolean;
     lastSung?: string;
     link?: string;
     conductor?: string;

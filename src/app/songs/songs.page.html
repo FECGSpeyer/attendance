@@ -26,6 +26,16 @@
         <h3 *ngIf="song.lastSung">Zuletzt gespielt am {{ song.lastSung | date:'dd.MM.YYYY' }} | {{ song.conductor }}
         </h3>
       </ion-label>
+      <ion-badge *ngIf="song.withSolo" color="success" slot="end">
+        Solo
+      </ion-badge>
+      <ion-badge *ngIf="song.withChoir" color="tertiary" slot="end">
+        @if (isOrchestra) {
+          Chor
+        } @else {
+          Orchester
+        }
+      </ion-badge>
       <ion-badge (click)="openLink(song.link)" slot="end" *ngIf="song.link">
         <ion-icon name="link-outline"></ion-icon>
       </ion-badge>
@@ -52,8 +62,11 @@
             <ion-item>
               <ion-toggle aria-label="Chor & Orchester" [(ngModel)]="song.withChoir">Chor & Orchester</ion-toggle>
             </ion-item>
+            <ion-item>
+              <ion-toggle aria-label="Mit Solo-Gesang" [(ngModel)]="song.withSolo">Mit Solo-Gesang</ion-toggle>
+            </ion-item>
             <ion-item *ngIf="isOrchestra">
-              <ion-select interface="modal" label="Besetzung" multiple="true" [(ngModel)]="song.instrument_ids">
+              <ion-select interface="modal" [interfaceOptions]="customModalOptions" label="Besetzung" multiple="true" [(ngModel)]="song.instrument_ids">
                 <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{ instrument.name
                   }}</ion-select-option>
               </ion-select>
@@ -95,6 +108,9 @@
         </ion-item>
         <ion-item>
           <ion-toggle [(ngModel)]="withChoir" aria-label="Chor & Orchester">Chor & Orchester</ion-toggle>
+        </ion-item>
+        <ion-item>
+          <ion-toggle [(ngModel)]="withSolo" aria-label="Mit Solo-Gesang">Mit Solo-Gesang</ion-toggle>
         </ion-item>
         <ion-item *ngIf="isOrchestra">
           <ion-select interface="modal" label="Besetzung" multiple="true" [(ngModel)]="selectedInstruments">

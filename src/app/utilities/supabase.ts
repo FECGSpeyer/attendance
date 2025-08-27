@@ -600,6 +600,7 @@ export type Database = {
           tenantId: number | null
           withChoir: boolean | null
           withOrchestra: boolean | null
+          withSolo: boolean | null
         }
         Insert: {
           created_at?: string | null
@@ -613,6 +614,7 @@ export type Database = {
           tenantId?: number | null
           withChoir?: boolean | null
           withOrchestra?: boolean | null
+          withSolo?: boolean | null
         }
         Update: {
           created_at?: string | null
@@ -626,6 +628,7 @@ export type Database = {
           tenantId?: number | null
           withChoir?: boolean | null
           withOrchestra?: boolean | null
+          withSolo?: boolean | null
         }
         Relationships: [
           {
