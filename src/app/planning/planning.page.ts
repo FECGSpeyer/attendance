@@ -32,6 +32,11 @@ export class PlanningPage implements OnInit {
   public isPlanModalOpen: boolean = false;
   public conductors: Person[] = [];
   public selConductors: number[] = [];
+  public customModalOptions = {
+    header: 'Werk hinzufügen',
+    breakpoints: [0, 0.7, 1],
+    initialBreakpoint: 0.7,
+  };
 
   constructor(
     private modalController: ModalController,
@@ -230,7 +235,8 @@ export class PlanningPage implements OnInit {
     this.calculateEnd();
   }
 
-  async addExtraField() {
+  async addExtraField(popover: IonPopover) {
+    popover?.dismiss();
     const alert = await this.alertController.create({
       header: 'Feld hinzufügen',
       inputs: [{

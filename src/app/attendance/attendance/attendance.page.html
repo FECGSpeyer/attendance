@@ -119,6 +119,7 @@
           <ion-badge slot="end">{{ attendance.plan.end | date:'HH:mm' }} Uhr</ion-badge>
         </ion-item>
         <ion-button (click)="exportPlan()" style="margin-left: '16px'" size="small">Exportieren</ion-button>
+        <ion-button (click)="send()" style="margin-left: '16px'" size="small">Per Telegram senden</ion-button>
       </div>
     </ion-accordion>
   </ion-accordion-group>

@@ -31,11 +31,11 @@
     </ion-button>
     <ion-popover #addPopover trigger="add-trigger" triggerAction="click">
       <ng-template>
-        <ion-item (click)="addExtraField()">
+        <ion-item (click)="addExtraField(addPopover)">
           <ion-label>Feld hinzufügen</ion-label>
         </ion-item>
         <ion-item lines="none" *ngIf="songs.length">
-          <ion-select interface="modal" label="Werk hinzufügen" multiple="false"
+          <ion-select [interfaceOptions]="customModalOptions" interface="modal" label="Werk hinzufügen" multiple="false"
             (ionDismiss)="onAddSong($event.target.value, addPopover)">
             <ion-select-option [value]="song.id.toString()" *ngFor="let song of songs">{{ song.number }} {{ song.name
               }}</ion-select-option>

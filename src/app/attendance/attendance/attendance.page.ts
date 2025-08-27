@@ -255,7 +255,18 @@ export class AttendancePage implements OnInit {
       ...this.attendance.plan,
       attendance: this.attendance.id,
       attendances: await this.db.getAttendance(),
-    });
+    }, this.attendance.type === "uebung");
+  }
+
+  async send() {
+    const blob = Utils.createPlanExport({
+      ...this.attendance.plan,
+      attendance: this.attendance.id,
+      attendances: await this.db.getAttendance(),
+      asBlob: true,
+    }, this.attendance.type === "uebung");
+
+    this.db.sendPlanPerTelegram(blob, `${this.attendance?.type === "uebung" ? "Probenplan" : "Gottesdienst"}_${dayjs(this.attendance.date).format("DD_MM_YYYY")}`);
   }
 
   async onInfoChanged() {
