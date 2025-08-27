@@ -17,7 +17,7 @@
         <ion-label *ngIf="db.tenant().type === 'orchestra'">Orchester-Einstellungen</ion-label>
         <ion-label *ngIf="db.tenant().type === 'choir'">Chor-Einstellungen</ion-label>
         <ion-label *ngIf="db.tenant().type === 'general'">Gruppen-Einstellungen</ion-label>
-        <ion-modal #generalModal [breakpoints]="[0.8, 1]" [initialBreakpoint]="0.8" trigger="general-item">
+        <ion-modal #generalModal [breakpoints]="[0, 0.8, 1]" [initialBreakpoint]="0.8" trigger="general-item">
           <ng-template>
             <ion-content>
               <ion-header>
@@ -141,7 +141,7 @@
         <ion-label>
           Eltern
         </ion-label>
-        <ion-modal trigger="parents-button" [breakpoints]="[1]" [initialBreakpoint]="1">
+        <ion-modal trigger="parents-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
           <ng-template>
             <ion-content>
               <ion-header>
@@ -171,7 +171,7 @@
         <ion-label>
           Beobachter
         </ion-label>
-        <ion-modal trigger="viewer-button" [breakpoints]="[1]" [initialBreakpoint]="1">
+        <ion-modal trigger="viewer-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
           <ng-template>
             <ion-content>
               <ion-header>
@@ -209,7 +209,7 @@
         <ion-label>
           Archiv
         </ion-label>
-        <ion-modal trigger="archive-button" [breakpoints]="[0.5, 1]" [initialBreakpoint]="0.5">
+        <ion-modal trigger="archive-button" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
           <ng-template>
             <ion-content>
               <ion-header>
@@ -289,7 +289,7 @@
           Version
         </ion-label>
         <ion-badge slot="end">{{ version }}</ion-badge>
-        <ion-modal trigger="whatsnew-button" [breakpoints]="[0.5, 1]" [initialBreakpoint]="0.5">
+        <ion-modal trigger="whatsnew-button" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
           <ng-template>
             <ion-content>
               <ion-header>
