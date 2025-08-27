@@ -59,6 +59,7 @@ export class ListPage implements OnInit {
       this.instruments = await this.db.getInstruments();
       this.mainGroup = this.instruments.find(ins => ins.maingroup)?.id;
       await this.getPlayers();
+      this.onViewChanged();
     });
   }
 
