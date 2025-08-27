@@ -35,7 +35,7 @@ export class PlanningPage implements OnInit {
 
   constructor(
     private modalController: ModalController,
-    private db: DbService,
+    public db: DbService,
     private alertController: AlertController,
     private actionSheetController: ActionSheetController,
   ) { }
