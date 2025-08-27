@@ -2,9 +2,6 @@ import { Component, OnInit, effect } from '@angular/core';
 import { AlertController, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
-import { jsPDF } from "jspdf";
-import 'jspdf-autotable';
-import { autoTable as AutoTable } from 'jspdf-autotable';
 import { ExportPage } from 'src/app/export/export.page';
 import { HistoryPage } from 'src/app/history/history.page';
 import { PersonPage } from 'src/app/people/person/person.page';
@@ -24,8 +21,6 @@ import { RegisterPage } from 'src/app/register/register.page';
   styleUrls: ['./settings.page.scss'],
 })
 export class SettingsPage implements OnInit {
-  public conductors: Person[] = [];
-  public selConductors: number[] = [];
   public leftPlayers: Player[] = [];
   public leftConductors: Person[] = [];
   public playersWithoutAccount: Player[] = [];
@@ -81,8 +76,6 @@ export class SettingsPage implements OnInit {
     this.parentsEnabled = this.db.tenant().parents || false;
     this.attDateString = format(new Date(this.attDate), 'dd.MM.yyyy');
     const allConductors: Person[] = await this.db.getConductors(true);
-    this.conductors = allConductors.filter((con: Person) => !con.left);
-    this.selConductors = this.conductors.filter((con: Person) => Boolean(!con.left)).map((c: Person): number => c.id);
     this.instruments = await this.db.getInstruments();
     this.leftPlayers = Utils.getModifiedPlayersForList(await this.db.getLeftPlayers(), this.instruments, [], this.instruments.find(ins => ins.maingroup)?.id);
     this.leftConductors = allConductors.filter((con: Person) => Boolean(con.left));
@@ -145,55 +138,6 @@ export class SettingsPage implements OnInit {
 
   formatDate(value: string): string {
     return format(parseISO(value), 'dd.MM.yyyy');
-  }
-
-  createPlan(conductors: number[], timeString: string | number, modal: IonModal, perTelegram?: boolean): void {
-    const shuffledConductors: string[] = this.shuffle(conductors.map((id: number): string => {
-      const con: Person = this.conductors.find((c: Person): boolean => id === c.id);
-      return `${con.firstName} ${con.lastName.substr(0, 1)}.`;
-    }));
-    const date: string = dayjs().format('DD.MM.YYYY');
-    const data = [];
-    const timePerUnit: number = Number(timeString) / shuffledConductors.length;
-
-    for (let index = 0; index < conductors.length; index++) {
-      const slotTime = Math.round(timePerUnit * index);
-      data.push([
-        String(slotTime),
-        shuffledConductors[(index) % (shuffledConductors.length)],
-        shuffledConductors[(index + 1) % (shuffledConductors.length)],
-        shuffledConductors[(index + 2) % (shuffledConductors.length)]
-      ]); // TODO attendance type
-    }
-
-    const doc = new jsPDF();
-    doc.text(`${this.db.tenant().shortName} Registerprobenplan: ${date}`, 14, 25);
-    ((doc as any).autoTable as AutoTable)({
-      head: this.db.tenant().type === AttendanceType.CHOIR ? [["Minuten", "Sopran", "Alt", "Tenor", "Bass"]] : this.db.tenant().shortName === "BoS" ? [['Minuten', 'Blechbläser', 'Holzbläser']] : [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']], // TODO attendance type
-      body: data,
-      margin: { top: 40 },
-      theme: 'grid',
-      headStyles: {
-        halign: 'center',
-        fillColor: [0, 82, 56]
-      }
-    });
-
-    if (perTelegram) {
-      this.db.sendPlanPerTelegram(doc.output('blob'), `Registerprobenplan_${dayjs().format('DD_MM_YYYY')}`);
-    } else {
-      doc.save(`${this.db.tenant().shortName} Registerprobenplan: ${date}.pdf`);
-    }
-
-    modal.dismiss();
-  }
-
-  shuffle(a: string[]) {
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
   }
 
   async openHistoryModal(): Promise<void> {

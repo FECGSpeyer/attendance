@@ -105,43 +105,11 @@
           Werkhistorie
         </ion-label>
       </ion-item>
-      <ion-item detail="false" *ngIf="!isGeneral && isAdmin" button (click)="openPlanning()">
+      <ion-item lines="none" detail="false" *ngIf="!isGeneral && isAdmin" button (click)="openPlanning()">
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
         <ion-label>
           Probenplan erstellen
         </ion-label>
-      </ion-item>
-      <ion-item lines="none" *ngIf="!isGeneral && isAdmin" detail="false" button id="trigger-button">
-        <ion-icon name="document-outline" slot="start"></ion-icon>
-        <ion-label>
-          Registerprobenplan erstellen
-        </ion-label>
-        <ion-modal #planModal trigger="trigger-button" [breakpoints]="[0.5]" [initialBreakpoint]="0.5">
-          <ng-template>
-            <ion-content>
-              <ion-header>
-                <ion-toolbar>
-                  <ion-title>Plan erstellen</ion-title>
-                </ion-toolbar>
-              </ion-header>
-              <ion-item>
-                <ion-select label="Dirigenten" [(ngModel)]="selConductors" #select multiple="true">
-                  <ion-select-option [value]="con.id" *ngFor="let con of conductors">{{ con.firstName }} {{ con.lastName
-                    }}</ion-select-option>
-                </ion-select>
-              </ion-item>
-              <ion-item>
-                <ion-label position="stacked">Zeit in Minuten</ion-label>
-                <ion-input value="60" #input type="number"></ion-input>
-              </ion-item>
-              <ion-button [disabled]="!select.value?.length || !input.value"
-                (click)="createPlan(select.value, input.value, planModal)" expand="block">Exportieren</ion-button>
-              <ion-button *ngIf="db.tenantUser().telegram_chat_id" [disabled]="!select.value?.length || !input.value"
-                (click)="createPlan(select.value, input.value, planModal, true)" expand="block">Per Telegram
-                senden</ion-button>
-            </ion-content>
-          </ng-template>
-        </ion-modal>
       </ion-item>
   </ion-card>
 

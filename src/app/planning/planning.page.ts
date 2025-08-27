@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, IonItemSliding, ItemReorderEventDetail, ModalController, IonPopover } from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
-import { Attendance, FieldSelection, History, Song } from '../utilities/interfaces';
-
+import { Attendance, FieldSelection, History, Person, Song } from '../utilities/interfaces';
+import { jsPDF } from "jspdf";
+import 'jspdf-autotable';
+import { autoTable as AutoTable } from 'jspdf-autotable';
 import { Utils } from '../utilities/Utils';
+import { AttendanceType } from 'src/app/utilities/constants';
 
 @Component({
   selector: 'app-planning',
@@ -26,14 +29,20 @@ export class PlanningPage implements OnInit {
   public end: string;
   public notes: string = "";
   public hasChatId: boolean = false;
+  public isPlanModalOpen: boolean = false;
+  public conductors: Person[] = [];
+  public selConductors: number[] = [];
 
   constructor(
     private modalController: ModalController,
     private db: DbService,
     private alertController: AlertController,
+    private actionSheetController: ActionSheetController,
   ) { }
 
   async ngOnInit() {
+    this.conductors = (await this.db.getConductors()).filter((con: Person) => !con.left);
+    this.selConductors = this.conductors.filter((con: Person) => Boolean(!con.left)).map((c: Person): number => c.id);
     this.hasChatId = Boolean(this.db.tenantUser().telegram_chat_id);
     this.songs = await this.db.getSongs();
     this.history = await this.db.getUpcomingHistory();
@@ -174,11 +183,11 @@ export class PlanningPage implements OnInit {
           this.onSongsChange([String(song.id)], false);
         }
 
-          this.selectedFields.push({
-            id: "",
-            name: "Programm ",
-            time: "20",
-          });
+        this.selectedFields.push({
+          id: "",
+          name: "Programm ",
+          time: "20",
+        });
 
         if (attDate.day() === 0) {
           this.selectedFields.push({
@@ -338,8 +347,97 @@ export class PlanningPage implements OnInit {
     return Utils.getTypeText(type);
   }
 
-  test() {
+  async showOptions() {
+    const buttons: ActionSheetButton[] = [];
 
+    if (this.selectedFields.length) {
+      if (this.attendances.length && this.attendance) {
+        buttons.push({
+          text: 'Zu Anwesenheit hinzufügen',
+          handler: () => this.addToAttendance()
+        });
+      }
+
+      buttons.push({
+        text: 'PDF exportieren',
+        handler: () => this.export()
+      });
+
+      if (this.hasChatId) {
+        buttons.push({
+          text: 'Per Telegram senden',
+          handler: () => this.send()
+        });
+      }
+    }
+
+    buttons.push({
+      text: 'Registerprobenplan erstellen',
+      handler: () => {
+        this.isPlanModalOpen = true;
+      }
+    });
+
+    buttons.push({
+      text: 'Abbrechen',
+      role: 'cancel',
+    });
+
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Aktionen',
+      buttons
+    });
+    await actionSheet.present();
+  }
+
+  createPlan(conductors: number[], timeString: string | number, modal: IonModal, perTelegram?: boolean): void {
+    const shuffledConductors: string[] = this.shuffle(conductors.map((id: number): string => {
+      const con: Person = this.conductors.find((c: Person): boolean => id === c.id);
+      return `${con.firstName} ${con.lastName.substr(0, 1)}.`;
+    }));
+    const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
+    const date: string = attendance ? dayjs(attendance.date).format('DD.MM.YYYY') : dayjs().format('DD.MM.YYYY');
+    const data = [];
+    const timePerUnit: number = Number(timeString) / shuffledConductors.length;
+
+    for (let index = 0; index < conductors.length; index++) {
+      const slotTime = Math.round(timePerUnit * index);
+      data.push([
+        String(slotTime),
+        shuffledConductors[(index) % (shuffledConductors.length)],
+        shuffledConductors[(index + 1) % (shuffledConductors.length)],
+        shuffledConductors[(index + 2) % (shuffledConductors.length)]
+      ]); // TODO attendance type
+    }
+
+    const doc = new jsPDF();
+    doc.text(`${this.db.tenant().shortName} Registerprobenplan: ${date}`, 14, 25);
+    ((doc as any).autoTable as AutoTable)({
+      head: this.db.tenant().type === AttendanceType.CHOIR ? [["Minuten", "Sopran", "Alt", "Tenor", "Bass"]] : this.db.tenant().shortName === "BoS" ? [['Minuten', 'Blechbläser', 'Holzbläser']] : [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']], // TODO attendance type
+      body: data,
+      margin: { top: 40 },
+      theme: 'grid',
+      headStyles: {
+        halign: 'center',
+        fillColor: [0, 82, 56]
+      }
+    });
+
+    if (perTelegram) {
+      this.db.sendPlanPerTelegram(doc.output('blob'), `Registerprobenplan_${dayjs().format('DD_MM_YYYY')}`);
+    } else {
+      doc.save(`${this.db.tenant().shortName} Registerprobenplan: ${date}.pdf`);
+    }
+
+    modal.dismiss();
+  }
+
+  shuffle(a: string[]) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
   }
 
 }

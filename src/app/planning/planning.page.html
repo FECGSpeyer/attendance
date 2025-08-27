@@ -12,12 +12,13 @@
 <ion-content>
   <ion-card>
     <ion-item *ngIf="attendances.length">
-      <ion-select interface="modal" label="Zugehörige Anwesenheit" (ionChange)="onAttChange()" [(ngModel)]="attendance">
+      <ion-select [lines]="attendance && notes ? '' : 'none'" interface="modal" label="Zugehörige Anwesenheit"
+        (ionChange)="onAttChange()" [(ngModel)]="attendance">
         <ion-select-option [value]="att.id" *ngFor="let att of attendances">{{ att.date | date:'dd.MM.yyyy' }} {{
           this.getAttTypeText(att.type, att.typeInfo) }}</ion-select-option>
       </ion-select>
     </ion-item>
-    <ion-item *ngIf="attendance && notes">
+    <ion-item lines="none" *ngIf="attendance && notes">
       <ion-label position="stacked">Anwesenheitsnotizen</ion-label>
       <ion-textarea autoGrow="true" disabled="true">{{ notes }}</ion-textarea>
     </ion-item>
@@ -98,21 +99,37 @@
     </ion-modal>
   </ion-item>
 
+  <ion-modal [isOpen]="isPlanModalOpen" #planModal trigger="trigger-button" [breakpoints]="[0.5]"
+    [initialBreakpoint]="0.5">
+    <ng-template>
+      <ion-content>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Plan erstellen</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-item>
+          <ion-select label="Dirigenten" [(ngModel)]="selConductors" #select multiple="true">
+            <ion-select-option [value]="con.id" *ngFor="let con of conductors">{{ con.firstName }} {{ con.lastName
+              }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Zeit in Minuten</ion-label>
+          <ion-input value="60" #input type="number"></ion-input>
+        </ion-item>
+        <ion-button [disabled]="!select.value?.length || !input.value"
+          (click)="createPlan(select.value, input.value, planModal)" expand="block">Exportieren</ion-button>
+        <ion-button *ngIf="db.tenantUser().telegram_chat_id" [disabled]="!select.value?.length || !input.value"
+          (click)="createPlan(select.value, input.value, planModal, true)" expand="block">Per Telegram
+          senden</ion-button>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
   <ion-fab horizontal="end" vertical="bottom" slot="fixed">
-    <ion-fab-button>
+    <ion-fab-button (click)="showOptions()">
       <ion-icon name="ellipsis-horizontal"></ion-icon>
     </ion-fab-button>
-    <ion-fab-list side="top">
-      <ion-fab-button *ngIf="attendances.length && attendance" (click)="addToAttendance()"
-        [disabled]="!selectedFields.length">
-        <ion-icon name="save-outline"></ion-icon>
-      </ion-fab-button>
-      <ion-fab-button [disabled]="!selectedFields.length" (click)="export()">
-        <ion-icon name="download-outline"></ion-icon>
-      </ion-fab-button>
-      <ion-fab-button *ngIf="hasChatId" [disabled]="!selectedFields.length" (click)="send()">
-        <ion-icon name="send-outline"></ion-icon>
-      </ion-fab-button>
-    </ion-fab-list>
   </ion-fab>
 </ion-content>
