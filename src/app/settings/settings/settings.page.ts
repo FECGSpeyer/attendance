@@ -43,6 +43,11 @@ export class SettingsPage implements OnInit {
   public isGeneral: boolean = false;
   public max: string = new Date().toISOString();
   public parentsEnabled: boolean = false;
+  public customModalOptions = {
+    header: 'Instanz wechseln',
+    breakpoints: [0, 0.5, 1],
+    initialBreakpoint: 0.5,
+  };
 
   constructor(
     public db: DbService,

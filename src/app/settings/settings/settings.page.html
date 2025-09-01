@@ -108,7 +108,7 @@
       <ion-item lines="none" detail="false" *ngIf="!isGeneral && isAdmin" button (click)="openPlanning()">
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
         <ion-label>
-          Probenplan erstellen
+          Probenpläne
         </ion-label>
       </ion-item>
   </ion-card>
@@ -253,7 +253,7 @@
     </ion-list-header> -->
       <ion-item *ngIf="db.tenants().length > 1">
         <ion-icon name="apps-outline" slot="start"></ion-icon>
-        <ion-select label="App wechseln" [(ngModel)]="tenantId" (ionChange)="onTenantChange()">
+        <ion-select interface="modal" [interfaceOptions]="customModalOptions" label="Instanz wechseln" [(ngModel)]="tenantId" (ionChange)="onTenantChange()">
           <ion-select-option [value]="tenant.id" *ngFor="let tenant of db.tenants()">{{ tenant.shortName
             }}</ion-select-option>
         </ion-select>
