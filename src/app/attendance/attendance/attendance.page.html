@@ -148,8 +148,8 @@
                                 }}
           </ion-badge>
         </ion-item>
-        <ion-item-options>
-          <ion-item-option color="warning" (click)="addNote(player, slider)">
+        <ion-item-options (ionSwipe)="addNote(player, slider)">
+          <ion-item-option expandable color="warning" (click)="addNote(player, slider)">
             <ion-icon name="pencil"></ion-icon>
           </ion-item-option>
         </ion-item-options>

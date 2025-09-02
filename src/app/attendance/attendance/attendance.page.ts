@@ -189,6 +189,8 @@ export class AttendancePage implements OnInit {
     slider.close();
 
     const buttons = [{
+      text: "Abbrechen",
+    }, {
       text: "Notiz löschen",
       handler: async (): Promise<void> => {
         this.db.updatePersonAttendance(player.id, { notes: "" });
@@ -198,12 +200,10 @@ export class AttendancePage implements OnInit {
       handler: async (evt: { note: string }): Promise<void> => {
         this.db.updatePersonAttendance(player.id, { notes: evt.note });
       }
-    }, {
-      text: "Abbrechen",
     }];
 
     if (!player.notes || player.notes === "") {
-      buttons.splice(0, 1);
+      buttons.splice(1, 1);
     }
 
     const alert: HTMLIonAlertElement = await this.alertController.create({
