@@ -95,21 +95,29 @@ export class PlanningPage implements OnInit {
     const alert = await this.alertController.create({
       header: 'Feld bearbeiten',
       inputs: [{
-        type: "textarea",
+        label: "Programmpunkt",
+        type: "text",
         name: "field",
         value: clone.name,
-        placeholder: "Werknummer oder Freitext eingeben..."
+        placeholder: "Programmpunkt eingeben..."
+      }, {
+        label: "Ausführender",
+        type: "text",
+        name: "conductor",
+        value: clone.conductor,
+        placeholder: "Ausführenden eingeben..."
       }],
       buttons: [{
         text: "Abbrechen"
       }, {
         text: "Updaten",
         handler: (evt: any) => {
-          if (evt.field.includes("(") && evt.field.includes(")")) {
-            field.conductor = evt.field.substring(evt.field.indexOf("(") + 1, evt.field.indexOf(")"));
-            evt.field = evt.field.substring(0, evt.field.indexOf("("));
+          if (!evt.field) {
+            alert.message = "Bitte einen Programmpunkt eingeben.";
+            return false;
           }
           field.name = evt.field;
+          field.conductor = evt.conductor;
           this.calculateEnd();
         }
       }]
