@@ -121,15 +121,15 @@
           </ion-badge>
           <ion-badge color="dark" *ngIf="showExaminee && player.examinee" slot="end">Prüfling</ion-badge>
         </ion-item>
-        <ion-item-options *ngIf="isAdmin">
-          <ion-item-option *ngIf="!player.paused" (click)="pausePlayer(player, slider)" color="primary">
-            <ion-icon name="pause"></ion-icon>
-          </ion-item-option>
-          <ion-item-option *ngIf="player.paused" (click)="unpausePlayer(player, slider)" color="primary">
-            <ion-icon name="play"></ion-icon>
-          </ion-item-option>
+        <ion-item-options (ionSwipe)="player.paused ? unpausePlayer(player, slider) : pausePlayer(player, slider)" *ngIf="isAdmin">
           <ion-item-option (click)="remove(player, slider)" color="danger">
             <ion-icon name="trash"></ion-icon>
+          </ion-item-option>
+          <ion-item-option expandable *ngIf="!player.paused" (click)="pausePlayer(player, slider)" color="warning">
+            <ion-icon name="pause"></ion-icon>
+          </ion-item-option>
+          <ion-item-option expandable *ngIf="player.paused" (click)="unpausePlayer(player, slider)" color="success">
+            <ion-icon name="play"></ion-icon>
           </ion-item-option>
         </ion-item-options>
       </ion-item-sliding>
