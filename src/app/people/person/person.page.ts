@@ -142,18 +142,43 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async getHistoryInfo(): Promise<void> {
-    this.personAttendance = (await this.db.getPersonAttendances(this.player.id, this.hasLeft)).filter((att: PersonAttendance) => dayjs((att as any).date).isBefore(dayjs()));
-    this.perc = Math.round(this.personAttendance.filter((att: PersonAttendance) => att.attended).length / this.personAttendance.length * 100);
-    this.lateCount = this.personAttendance.filter((a) => a.status === AttendanceStatus.Late).length;
-    this.history = this.personAttendance.map((att: PersonAttendance) => {
-      return {
-        date: (att as any).date,
-        text: (att as any).text,
-        type: PlayerHistoryType.ATTENDANCE,
-        title: (att as any).title,
-        notes: att.notes,
-      };
-    }).concat(this.existingPlayer.history.filter(async (his: PlayerHistoryEntry) => dayjs(await this.db.getCurrentAttDate()).isBefore(dayjs(his.date))).map((his: PlayerHistoryEntry) => { return { ...his, title: "", notes: "" }; })).sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    // Get all attendances up to today
+    const attendances = (await this.db.getPersonAttendances(this.player.id, this.hasLeft))
+      .filter((att: PersonAttendance) => dayjs((att as any).date).isBefore(dayjs()));
+
+    // Calculate attendance percentage
+    const attendedCount = attendances.filter((att: PersonAttendance) => att.attended).length;
+    this.perc = attendances.length ? Math.round(attendedCount / attendances.length * 100) : 0;
+
+    // Count late attendances
+    this.lateCount = attendances.filter((a) => a.status === AttendanceStatus.Late).length;
+
+    // Map attendance history
+    const attendanceHistory = attendances.map((att: PersonAttendance) => ({
+      date: (att as any).date,
+      text: (att as any).text,
+      type: PlayerHistoryType.ATTENDANCE,
+      title: (att as any).title,
+      notes: att.notes,
+    }));
+
+    // Filter and map player history
+    const currentAttDate = await this.db.getCurrentAttDate();
+    const playerHistory = this.existingPlayer.history
+      .filter((his: PlayerHistoryEntry) =>
+        this.isAdmin ||
+        [PlayerHistoryType.INSTRUMENT_CHANGE, PlayerHistoryType.PAUSED, PlayerHistoryType.UNPAUSED].includes(his.type)
+      )
+      .filter((his: PlayerHistoryEntry) => dayjs(currentAttDate).isBefore(dayjs(his.date)))
+      .map((his: PlayerHistoryEntry) => ({
+        ...his,
+        title: "",
+        notes: "",
+      }));
+
+    // Combine and sort history
+    this.history = [...attendanceHistory, ...playerHistory]
+      .sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
   onInstrumentChange(byUser = true) {

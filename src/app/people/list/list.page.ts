@@ -58,11 +58,10 @@ export class ListPage implements OnInit {
       this.db.tenant();
       this.instruments = await this.db.getInstruments();
       this.mainGroup = this.instruments.find(ins => ins.maingroup)?.id;
-      await this.getPlayers();
-      if (this.db.tenant().maintainTeachers) {
+            if (this.db.tenant().maintainTeachers) {
         this.teachers = await this.db.getTeachers();
       }
-      this.onViewChanged();
+      await this.getPlayers();
 
       this.subscribe();
     });
@@ -85,8 +84,6 @@ export class ListPage implements OnInit {
     await this.getPlayers();
 
     this.subscribe();
-
-    this.onViewChanged();
   }
 
   subscribe() {
@@ -111,6 +108,7 @@ export class ListPage implements OnInit {
     this.searchTerm = "";
     this.initializeItems();
     this.onFilterChanged();
+    this.onViewChanged();
   }
 
   userById(_: number, person: Person): string {
