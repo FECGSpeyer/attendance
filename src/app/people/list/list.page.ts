@@ -59,7 +59,12 @@ export class ListPage implements OnInit {
       this.instruments = await this.db.getInstruments();
       this.mainGroup = this.instruments.find(ins => ins.maingroup)?.id;
       await this.getPlayers();
+      if (this.db.tenant().maintainTeachers) {
+        this.teachers = await this.db.getTeachers();
+      }
       this.onViewChanged();
+
+      this.subscribe();
     });
   }
 
@@ -79,6 +84,14 @@ export class ListPage implements OnInit {
 
     await this.getPlayers();
 
+    this.subscribe();
+
+    this.onViewChanged();
+  }
+
+  subscribe() {
+    this.sub?.unsubscribe();
+
     this.sub = this.db.getSupabase()
       .channel('player-changes').on(
         'postgres_changes',
@@ -89,8 +102,6 @@ export class ListPage implements OnInit {
           }
         })
       .subscribe();
-
-    this.onViewChanged();
   }
 
   async getPlayers(): Promise<void> {
@@ -106,7 +117,7 @@ export class ListPage implements OnInit {
     return String(person.id);
   }
 
-  async openModal(player?: Player | Person, isConductor?: boolean): Promise<void> {
+  async openModal(player?: Player | Person): Promise<void> {
     if (this.instruments.length === 0) {
       this.instruments = await this.db.getInstruments();
       if (this.instruments.length === 0) {
