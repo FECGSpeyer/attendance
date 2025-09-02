@@ -325,10 +325,28 @@ export class PlanningPage implements OnInit {
       history: this.history,
       attendance: this.attendance,
       attendances: this.attendances,
-    }, Boolean(this.attendances.find((a: Attendance) => a.id === this.attendance).type === "uebung"));
+    }, Boolean(this.attendances.find((a: Attendance) => a.id === this.attendance)?.type === "uebung"));
+  }
+
+  validate() {
+    if (!this.time || !this.selectedFields.length) {
+      Utils.showToast("Bitte wähle mindestens ein Feld aus.", "warning");
+      return false;
+    }
+
+    if (!this.selectedFields.every(field => field.time)) {
+      Utils.showToast("Bitte fülle alle erforderlichen Felder aus.", "warning");
+      return false;
+    }
+
+    return true;
   }
 
   async addToAttendance() {
+    if (!this.validate()) {
+      return;
+    }
+
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999);
     await loading.present();
 

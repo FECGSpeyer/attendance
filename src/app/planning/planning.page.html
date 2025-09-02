@@ -69,7 +69,7 @@
             <h2>{{ field.name }}</h2>
             <h3>{{ calculateTime(field, i) }}</h3>
           </ion-label>
-          <ion-input style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time" placeholder="min"
+          <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time" placeholder="min"
             type="number" slot="end"></ion-input>
           <ion-reorder slot="end"></ion-reorder>
         </ion-item>
