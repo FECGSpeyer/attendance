@@ -50,8 +50,6 @@ export class AttendancePage implements OnInit {
       if (!document.hidden) {
         this.attendance = await this.db.getAttendanceById(this.attendanceId);
         this.initializeAttObjects();
-        this.sub.unsubscribe();
-        this.personAttSub.unsubscribe();
         this.subsribeOnChannels();
       }
     });
@@ -72,6 +70,8 @@ export class AttendancePage implements OnInit {
   }
 
   subsribeOnChannels() {
+    this.sub?.unsubscribe();
+    this.personAttSub?.unsubscribe();
     this.sub = this.db.getSupabase()
       .channel('att-changes').on(
         'postgres_changes',
@@ -79,7 +79,7 @@ export class AttendancePage implements OnInit {
         (payload: RealtimePostgresChangesPayload<any>) => this.onAttRealtimeChanges(payload))
       .subscribe();
     this.personAttSub = this.db.getSupabase()
-      .channel('att-changes').on(
+      .channel('person-changes').on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'person_attendances' },
         (payload: RealtimePostgresChangesPayload<any>) => this.onPersonAttRealtimeChanges(payload))
@@ -187,6 +187,25 @@ export class AttendancePage implements OnInit {
 
   async addNote(player: PersonAttendance, slider: IonItemSliding) {
     slider.close();
+
+    const buttons = [{
+      text: "Notiz löschen",
+      handler: async (): Promise<void> => {
+        this.db.updatePersonAttendance(player.id, { notes: "" });
+      }
+    }, {
+      text: "Speichern",
+      handler: async (evt: { note: string }): Promise<void> => {
+        this.db.updatePersonAttendance(player.id, { notes: evt.note });
+      }
+    }, {
+      text: "Abbrechen",
+    }];
+
+    if (!player.notes || player.notes === "") {
+      buttons.splice(0, 1);
+    }
+
     const alert: HTMLIonAlertElement = await this.alertController.create({
       header: "Notiz hinzufügen",
       inputs: [{
@@ -195,19 +214,7 @@ export class AttendancePage implements OnInit {
         value: player.notes,
         name: "note",
       }],
-      buttons: [{
-        text: "Abbrechen",
-      }, {
-        text: "Notiz löschen",
-        handler: async (): Promise<void> => {
-          this.db.updatePersonAttendance(player.id, { notes: "" });
-        }
-      }, {
-        text: "Speichern",
-        handler: async (evt: { note: string }): Promise<void> => {
-          this.db.updatePersonAttendance(player.id, { notes: evt.note });
-        }
-      }]
+      buttons,
     });
 
     await alert.present();
