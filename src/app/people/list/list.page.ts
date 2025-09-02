@@ -106,9 +106,9 @@ export class ListPage implements OnInit {
     this.attendances = await this.db.getAttendance();
     this.players = Utils.getModifiedPlayersForList(this.players, this.instruments, this.attendances, this.mainGroup);
     this.searchTerm = "";
-    this.initializeItems();
-    this.onFilterChanged();
     this.onViewChanged();
+    this.initializeItems();
+    this.onSortChanged();
   }
 
   userById(_: number, person: Person): string {
@@ -305,7 +305,7 @@ export class ListPage implements OnInit {
   }
 
   initializeItems(): void {
-    this.playersFiltered = this.players;
+    this.playersFiltered = [...this.players];
   }
 
   async remove(player: Person, slider: IonItemSliding): Promise<void> {
