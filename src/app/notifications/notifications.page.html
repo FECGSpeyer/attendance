@@ -71,7 +71,7 @@
     <ion-card>
 
       @for (tenant of db.tenants(); track tenant.id; let idx = $index) {
-      <ion-item [lines]="(idx + 1) === db.tenants().length ? 'none' : ''" *ngIf="tenant.id !== tenantId">
+      <ion-item [lines]="(idx + 1) === db.tenants().length ? 'none' : ''">
         <ion-label>{{ tenant.longName }}</ion-label>
         <ion-toggle (ionChange)="toggleTenant(tenant.id)"
           [checked]="notificationConfig.enabled_tenants?.includes(tenant.id)" slot="end"></ion-toggle>
