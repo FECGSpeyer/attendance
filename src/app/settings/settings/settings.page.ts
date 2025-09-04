@@ -381,15 +381,27 @@ export class SettingsPage implements OnInit {
   }
 
   async deleteInstance() {
+    const message = `Möchtest du die Instanz '${this.db.tenant().longName}' wirklich löschen? Dies kann nicht rückgängig gemacht werden! Wenn du die Instanz wirklich löschen willst, dann gebe den Namen der Instanz ein:`;
+
     const alert = await new AlertController().create({
       header: 'Instanz löschen?',
-      message: `Möchtest du ${this.db.tenant().longName} wirklich löschen? Dies kann nicht rückgängig gemacht werden!`,
+      message,
+      inputs: [{
+        type: "text",
+        placeholder: "Name der Instanz eingeben...",
+        name: "name"
+      }],
       buttons: [{
         text: "Abbrechen"
       }, {
-        text: "Ja",
-        handler: async () => {
-          await this.db.deleteInstance(this.db.tenant().id);
+        text: "Löschen",
+        handler: async (evt) => {
+          if (evt.name === this.db.tenant().longName) {
+            await this.db.deleteInstance(this.db.tenant().id);
+          } else {
+            alert.message = "Der eingegebene Name ist nicht korrekt.";
+            return false;
+          }
         }
       }]
     });
