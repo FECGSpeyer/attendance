@@ -15,33 +15,35 @@
   </ion-header>
 
   <ion-list *ngIf="notificationConfig">
-    <ion-item>
-      <ion-label>Benachrichtigungen aktivieren</ion-label>
-      <ion-toggle (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.enabled" slot="end"
-        label="Benachrichtigungen aktivieren"></ion-toggle>
-    </ion-item>
-    @if (!notificationConfig.telegram_chat_id) {
+    <ion-card class="top-card">
+      <ion-item>
+        <ion-label>Benachrichtigungen aktivieren</ion-label>
+        <ion-toggle (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.enabled" slot="end"
+          label="Benachrichtigungen aktivieren"></ion-toggle>
+      </ion-item>
+      @if (!notificationConfig.telegram_chat_id) {
       <ion-item>
         <ion-label position="stacked">Benutzer-Id</ion-label>
         <ion-input type="text" readonly="true" [(ngModel)]="notificationConfig.id"></ion-input>
       </ion-item>
-    }
-    <ion-item>
-      <ion-label>
-        <h2>Telegramverknüpfung</h2>
-        <h4 color="success" *ngIf="notificationConfig.telegram_chat_id">Konto erfolgreich verknüpft</h4>
-      </ion-label>
-      <ion-button *ngIf="!notificationConfig.telegram_chat_id" (click)="connectTelegram()">Verbinden</ion-button>
-      <ion-button color="danger" *ngIf="notificationConfig.telegram_chat_id"
-        (click)="disconnectTelegram()">Trennen</ion-button>
-    </ion-item>
+      }
+      <ion-item lines="none">
+        <ion-label>
+          <h2>Telegramverknüpfung</h2>
+          <h4 color="success" *ngIf="notificationConfig.telegram_chat_id">Konto erfolgreich verknüpft</h4>
+        </ion-label>
+        <ion-button *ngIf="!notificationConfig.telegram_chat_id" (click)="connectTelegram()">Verbinden</ion-button>
+        <ion-button color="danger" *ngIf="notificationConfig.telegram_chat_id"
+          (click)="disconnectTelegram()">Trennen</ion-button>
+      </ion-item>
+    </ion-card>
 
     @if (notificationConfig.enabled) {
-    <ion-list-header>
-      Einstellungen
-    </ion-list-header>
+    <ion-card-subtitle>Benachrichtigungen</ion-card-subtitle>
+    <ion-card>
       <ion-item>
-        <ion-toggle helperText="Erhalte täglich um 8:00 Uhr eine Benachrichtigung, falls jemand heute Geburtstag hat" (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.birthdays"
+        <ion-toggle helperText="Erhalte täglich um 8:00 Uhr eine Benachrichtigung, falls jemand heute Geburtstag hat"
+          (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.birthdays"
           label="Geburtstage">Geburtstage</ion-toggle>
       </ion-item>
       <!-- <ion-item>
@@ -53,13 +55,30 @@
           label="Geburtstage">Terminerinnerungen (1 Stunde vorher)</ion-toggle>
       </ion-item> -->
       <ion-item>
-        <ion-toggle helperText="Nur möglich, wenn du Verantwortlicher einer Gruppe bist." (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.signins"
+        <ion-toggle helperText="Nur möglich, wenn du Verantwortlicher einer Gruppe bist."
+          (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.signins"
           label="Anmeldungen">Anmeldungen</ion-toggle>
       </ion-item>
-      <ion-item>
-        <ion-toggle helperText="Nur möglich, wenn du Verantwortlicher einer Gruppe bist." (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.signouts"
+      <ion-item lines="none">
+        <ion-toggle helperText="Nur möglich, wenn du Verantwortlicher einer Gruppe bist."
+          (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.signouts"
           label="Abmeldungen">Abmeldungen</ion-toggle>
       </ion-item>
+    </ion-card>
+
+    @if (db.tenants().length > 1) {
+    <ion-card-subtitle>Instanz-Einstellungen</ion-card-subtitle>
+    <ion-card>
+
+      @for (tenant of db.tenants(); track tenant.id; let idx = $index) {
+      <ion-item [lines]="(idx + 1) === db.tenants().length ? 'none' : ''" *ngIf="tenant.id !== tenantId">
+        <ion-label>{{ tenant.longName }}</ion-label>
+        <ion-toggle (ionChange)="toggleTenant(tenant.id)"
+          [checked]="notificationConfig.enabled_tenants?.includes(tenant.id)" slot="end"></ion-toggle>
+      </ion-item>
+      }
+    </ion-card>
+    }
     }
   </ion-list>
 </ion-content>

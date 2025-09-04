@@ -322,6 +322,7 @@ export type Database = {
           birthdays: boolean
           created_at: string
           enabled: boolean
+          enabled_tenants: number[] | null
           id: string
           signins: boolean
           signouts: boolean
@@ -331,6 +332,7 @@ export type Database = {
           birthdays?: boolean
           created_at?: string
           enabled?: boolean
+          enabled_tenants?: number[] | null
           id: string
           signins?: boolean
           signouts?: boolean
@@ -340,6 +342,7 @@ export type Database = {
           birthdays?: boolean
           created_at?: string
           enabled?: boolean
+          enabled_tenants?: number[] | null
           id?: string
           signins?: boolean
           signouts?: boolean

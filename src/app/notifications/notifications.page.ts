@@ -63,4 +63,14 @@ export class NotificationsPage implements OnInit {
     await alert.present();
   }
 
+  toggleTenant(tenantId: number) {
+    const tenants = this.notificationConfig.enabled_tenants || [];
+    if (tenants.includes(tenantId)) {
+      this.notificationConfig.enabled_tenants = tenants.filter(id => id !== tenantId);
+    } else {
+      this.notificationConfig.enabled_tenants = [...tenants, tenantId];
+    }
+    this.updateNotificationConfig();
+  }
+
 }

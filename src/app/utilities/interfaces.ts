@@ -38,6 +38,7 @@ export interface NotificationConfig {
     birthdays: boolean;
     signins: boolean;
     signouts: boolean;
+    enabled_tenants?: number[];
 }
 
 export interface Viewer {
