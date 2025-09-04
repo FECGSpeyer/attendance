@@ -15,7 +15,7 @@ export class NotificationsPage implements OnInit {
   public isAdmin: boolean;
 
   constructor(
-    private db: DbService,
+    public db: DbService,
     private alertController: AlertController,
   ) { }
 
