@@ -432,7 +432,7 @@ export class Utils {
     // check if all instruments of one category are missing
     // also check if there are multiple categories with missing instruments, separate those with ',' and 'und'
     const categoryMap: { [key: number]: Instrument[] } = {};
-    instruments.forEach((instrument: Instrument) => {
+    filteredInstruments.forEach((instrument: Instrument) => {
       if (instrument.category) {
         if (!categoryMap[instrument.category]) {
           categoryMap[instrument.category] = [];
