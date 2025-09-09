@@ -22,7 +22,7 @@
     <ion-item *ngFor="let song of songsFiltered">
       <ion-label [id]="song.id + 'edit-button'">
         <h2>{{ song.number }} {{ song.name }}</h2>
-        <h3 style="color: var(--ion-color-danger);" *ngIf="isOrchestra && song.instrument_ids?.length">{{ getInstrumentText(song.instrument_ids) }}</h3>
+        <h3 style="color: var(--ion-color-warning);" *ngIf="isOrchestra && song.instrument_ids?.length">{{ getInstrumentText(song.instrument_ids) }}</h3>
         <h3 *ngIf="song.lastSung">Zuletzt gespielt am {{ song.lastSung | date:'dd.MM.YYYY' }} | {{ song.conductor }}
         </h3>
       </ion-label>

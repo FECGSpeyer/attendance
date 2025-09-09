@@ -255,6 +255,7 @@ export interface FieldSelection {
     time: string;
     conductor?: string;
     currentTime?: string;
+    songId?: number;
 }
 
 export interface GroupCategory {

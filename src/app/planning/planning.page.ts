@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
@@ -15,6 +15,7 @@ import { AttendanceType } from 'src/app/utilities/constants';
   styleUrls: ['./planning.page.scss'],
 })
 export class PlanningPage implements OnInit {
+  @Input() attendanceId?: number;
   public type: string = "pdf";
   public songs: Song[] = [];
   public history: History[] = [];
@@ -53,7 +54,24 @@ export class PlanningPage implements OnInit {
     this.history = await this.db.getUpcomingHistory();
     this.attendances = await this.db.getAttendance();
     const upcomingAttendances: Attendance[] = (await this.db.getUpcomingAttendances()).reverse();
-    if (upcomingAttendances.length) {
+    if (this.attendanceId) {
+      this.attendance = this.attendanceId;
+      this.notes = this.attendances.find((att: Attendance) => att.id === this.attendanceId)?.notes || "";
+      const att = this.attendances.find((att: Attendance) => att.id === this.attendanceId);
+      if (att?.plan) {
+        this.end = att.plan.end;
+        this.time = att.plan.time;
+        this.selectedFields = att.plan.fields.map((field: FieldSelection) => {
+          return {
+            ...field,
+            conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || "")
+          }
+        });
+      } else {
+        const isPractice = this.attendances.find((att: Attendance) => att.id === this.attendance)?.type === "uebung";
+        this.time = isPractice ? (this.db.tenant().practiceStart || "17:50") : "10:00";
+      }
+    } else if (upcomingAttendances.length) {
       this.attendance = upcomingAttendances[0].id;
       this.notes = upcomingAttendances[0].notes;
       if (upcomingAttendances[0].plan) {
@@ -306,6 +324,7 @@ export class PlanningPage implements OnInit {
         name: `${song.number}. ${song.name}`,
         time: isPractice ? "20" : "5",
         conductor: conductor || "",
+        songId: song.id,
       });
     }
 
@@ -367,7 +386,11 @@ export class PlanningPage implements OnInit {
     }, this.attendance);
 
     await loading.dismiss();
-    Utils.showToast("Probenplan wurde hinzugefügt!", "success");
+    Utils.showToast("Probenplan wurde gespeichert!", "success");
+
+    if (this.attendanceId) {
+      this.dismiss();
+    }
   }
 
   getAttTypeText(type: string, typeInfo?: string): string {
@@ -385,7 +408,7 @@ export class PlanningPage implements OnInit {
     if (this.selectedFields.length) {
       if (this.attendances.length && this.attendance) {
         buttons.push({
-          text: 'Zu Anwesenheit hinzufügen',
+          text: 'Speichern',
           handler: () => this.addToAttendance()
         });
       }

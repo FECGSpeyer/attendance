@@ -1,7 +1,7 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role } from "./constants";
-import { Attendance, FieldSelection, Instrument, PersonAttendance, Player } from "./interfaces";
+import { Attendance, FieldSelection, GroupCategory, Instrument, PersonAttendance, Player } from "./interfaces";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
@@ -417,5 +417,62 @@ export class Utils {
     }
 
     return attText;
+  }
+
+  public static getInstrumentText(instrumentIds: number[], instruments: Instrument[], groupCategories: GroupCategory[]): string {
+    const filteredInstruments: Instrument[] = instruments.filter((instrument: Instrument) => !instrumentIds.includes(instrument.id));
+    // last instrument should be connected with 'und'
+
+    if (filteredInstruments.length === 0) {
+      return "";
+    } else if (filteredInstruments.length === 1) {
+      return "Ohne " + filteredInstruments[0].name;
+    }
+
+    // check if all instruments of one category are missing
+    // also check if there are multiple categories with missing instruments, separate those with ',' and 'und'
+    const categoryMap: { [key: number]: Instrument[] } = {};
+    instruments.forEach((instrument: Instrument) => {
+      if (instrument.category) {
+        if (!categoryMap[instrument.category]) {
+          categoryMap[instrument.category] = [];
+        }
+        categoryMap[instrument.category].push(instrument);
+      } else {
+        // no category, add to own category with id -1
+        if (!categoryMap[-1]) {
+          categoryMap[-1] = [];
+        }
+        categoryMap[-1].push(instrument);
+      }
+    });
+
+    const categoriesMissingAllInstruments: string[] = [];
+    Object.keys(categoryMap).forEach((categoryId: string) => {
+      const catIdNum = Number(categoryId);
+      const totalInstrumentsInCategory = instruments.filter((instrument: Instrument) => instrument.category === catIdNum).length;
+      if (categoryMap[catIdNum].length === totalInstrumentsInCategory) {
+        // all instruments of this category are missing
+        const categoryName = catIdNum === -1 ? "Sonstige" : groupCategories.find(cat => cat.id === catIdNum)?.name || "Unbekannt";
+        categoriesMissingAllInstruments.push(categoryName);
+        // remove this category from categoryMap
+        delete categoryMap[catIdNum];
+      }
+    });
+
+    // now, categoryMap only contains categories with some missing instruments
+    const individualInstruments: Instrument[] = [];
+    Object.keys(categoryMap).forEach((categoryId: string) => {
+      const catIdNum = Number(categoryId);
+      individualInstruments.push(...categoryMap[catIdNum]);
+    });
+
+    const allParts: string[] = categoriesMissingAllInstruments.concat(individualInstruments.map(inst => inst.name));
+
+    if (allParts.length === 1) {
+      return "Ohne " + allParts[0];
+    }
+
+    return "Ohne " + allParts.slice(0, -1).join(", ") + " und " + allParts.slice(-1);
   }
 }

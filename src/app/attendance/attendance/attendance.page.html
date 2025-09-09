@@ -97,12 +97,12 @@
       </div>
     </ion-accordion>
   </ion-accordion-group>
-  <ion-accordion-group *ngIf="attendance.plan">
+  <ion-accordion-group *ngIf="!isGeneral">
     <ion-accordion value="plan">
       <ion-item slot="header" color="light">
         <ion-label>Probenplan</ion-label>
       </ion-item>
-      <div slot="content">
+      <div slot="content" *ngIf="attendance.plan">
         <ion-item lines="none">
           <ion-label>Start</ion-label>
           <ion-badge slot="end">{{ attendance.plan.time }} Uhr</ion-badge>
@@ -110,6 +110,7 @@
         <ion-item *ngFor="let field of attendance.plan.fields; let i = index">
           <ion-label>
             <h2>{{ field.name }}</h2>
+            <h3 class="warning" *ngIf="field.songId">{{ getMissingGroups(field.songId) }}</h3>
             <h3>{{ calculateTime(field, i) }}</h3>
           </ion-label>
           <ion-badge slot="end">{{ field.time }} min</ion-badge>
@@ -118,8 +119,12 @@
           <ion-label>Ende</ion-label>
           <ion-badge slot="end">{{ attendance.plan.end | date:'HH:mm' }} Uhr</ion-badge>
         </ion-item>
+        <ion-button (click)="editPlan()" style="margin-left: '16px'" size="small">Bearbeiten</ion-button>
         <ion-button (click)="exportPlan()" style="margin-left: '16px'" size="small">Exportieren</ion-button>
         <ion-button (click)="send()" style="margin-left: '16px'" size="small">Per Telegram senden</ion-button>
+      </div>
+      <div slot="content" *ngIf="!attendance.plan">
+        <ion-button (click)="editPlan()" style="margin-left: '16px'" size="small">Probenplan erstellen</ion-button>
       </div>
     </ion-accordion>
   </ion-accordion-group>

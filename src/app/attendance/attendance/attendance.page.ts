@@ -3,9 +3,10 @@ import { ConnectionStatus, Network } from '@capacitor/network';
 import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import * as dayjs from 'dayjs';
+import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceType, AttendanceStatus, Role } from 'src/app/utilities/constants';
-import { Attendance, FieldSelection, Person, PersonAttendance, Song, History } from 'src/app/utilities/interfaces';
+import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Instrument, GroupCategory } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -37,6 +38,8 @@ export class AttendancePage implements OnInit {
   public otherConductor: number = 9999999999;
   public historyEntries: History[] = [];
   public isGeneral: boolean = false;
+  public instruments: Instrument[] = [];
+  public groupCategories: GroupCategory[] = [];
 
   constructor(
     private modalController: ModalController,
@@ -45,6 +48,9 @@ export class AttendancePage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
+    this.songs = await this.db.getSongs();
+    this.instruments = (await this.db.getInstruments()).filter((instrument: Instrument) => !instrument.maingroup);
+    this.groupCategories = await this.db.getGroupCategories();
     this.mainGroup = (await this.db.getMainGroup()).id;
     document.addEventListener("visibilitychange", async () => {
       if (!document.hidden) {
@@ -62,7 +68,6 @@ export class AttendancePage implements OnInit {
     this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendanceId);
     this.isHelper = await this.db.tenantUser().role === Role.HELPER;
     void this.listenOnNetworkChanges();
-    this.songs = await this.db.getSongs();
     this.selectedSongs = this.attendance.songs || [];
 
     this.subsribeOnChannels();
@@ -276,6 +281,17 @@ export class AttendancePage implements OnInit {
     this.db.sendPlanPerTelegram(blob, `${this.attendance?.type === "uebung" ? "Probenplan" : "Gottesdienst"}_${dayjs(this.attendance.date).format("DD_MM_YYYY")}`);
   }
 
+  async editPlan() {
+    const modal: HTMLIonModalElement = await this.modalController.create({
+      component: PlanningPage,
+      componentProps: {
+        attendanceId: this.attendance.id,
+      },
+    });
+
+    await modal.present();
+  }
+
   async onInfoChanged() {
     await this.db.updateAttendance({
       type: this.attendance.type,
@@ -366,5 +382,16 @@ export class AttendancePage implements OnInit {
     } else {
       delete this.historyEntry.otherConductor;
     }
+  }
+
+  getMissingGroups(songId: number): string {
+    const song = this.songs.find((s: Song) => s.id === songId);
+
+    if (!song || !song.instrument_ids || !song.instrument_ids.length) {
+      return "";
+    }
+
+    const text = Utils.getInstrumentText(song.instrument_ids, this.instruments, this.groupCategories);
+    return text;
   }
 }
