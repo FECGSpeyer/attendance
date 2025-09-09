@@ -170,6 +170,35 @@ export type Database = {
           },
         ]
       }
+      group_categories: {
+        Row: {
+          created_at: string
+          id: number
+          name: string | null
+          tenant_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name?: string | null
+          tenant_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string | null
+          tenant_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       history: {
         Row: {
           attendance_id: number | null

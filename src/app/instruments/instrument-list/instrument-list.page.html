@@ -4,6 +4,36 @@
       <ion-back-button text="Zurück" defaultHref="tabs/settings"></ion-back-button>
     </ion-buttons>
     <ion-title>Gruppen ({{ instruments?.length }})</ion-title>
+    <ion-buttons *ngIf="isAdmin" slot="end">
+      <ion-button id="cat-button">Kategorien</ion-button>
+      <ion-modal trigger="cat-button" [breakpoints]="[0, 0.6, 1]" [initialBreakpoint]="0.6">
+        <ng-template>
+          <ion-content>
+            <ion-header>
+              <ion-toolbar>
+                <ion-title>Kategorien</ion-title>
+                <ion-buttons slot="end">
+                  <ion-button (click)="addCategory()">
+                    <ion-icon name="add"></ion-icon>
+                  </ion-button>
+                </ion-buttons>
+              </ion-toolbar>
+            </ion-header>
+            <ion-list>
+              <ion-item *ngFor="let cat of categories">
+                <ion-label>{{ cat.name }}</ion-label>
+                <ion-button color="warning" (click)="editCategory(cat.id)">
+                  <ion-icon name="pencil"></ion-icon>
+                </ion-button>
+                <ion-button color="danger" (click)="deleteCategory(cat.id)">
+                  <ion-icon name="trash"></ion-icon>
+                </ion-button>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -14,39 +44,44 @@
     </ion-toolbar>
   </ion-header>
   <ion-list class="marginBottom">
-    <ion-item (click)="openModal(instrument)" *ngFor="let instrument of instruments">
+    @for (instrument of instruments; track instrument.id) {
+    <ion-item-divider color="primary" sticky="true" *ngIf="instrument.firstOfCategory">
+      <ion-label>{{ instrument.categoryName }} ({{ instrument.categoryLength }})</ion-label>
+    </ion-item-divider>
+    <ion-item (click)="openModal(instrument)">
       <ion-label>
         @if (instrument.maingroup) {
-          <h2>{{ instrument.name }} (Hauptgruppe)</h2>
+        <h2>{{ instrument.name }} (Hauptgruppe)</h2>
         } @else {
-          <h2 *ngIf="!isChoir && !isGeneral">{{ instrument.name }} ({{ instrument.tuning }})</h2>
-          <h2 *ngIf="isChoir || isGeneral">{{ instrument.name }}</h2>
-          <h3 *ngIf="!isChoir && !isGeneral">{{ instrument.clefText }}</h3>
+        <h2 *ngIf="!isChoir && !isGeneral">{{ instrument.name }} ({{ instrument.tuning }})</h2>
+        <h2 *ngIf="isChoir || isGeneral">{{ instrument.name }}</h2>
+        <h3 *ngIf="!isChoir && !isGeneral">{{ instrument.clefText }}</h3>
         }
       </ion-label>
       <ion-badge [color]="instrument.count ? '' : 'danger'">{{ instrument.count }} Personen</ion-badge>
     </ion-item>
+    }
   </ion-list>
 
-  <ion-modal #modal trigger="add-instrument-button" [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
-    <ng-template>
-      <ion-content>
-        <ion-header>
-          <ion-toolbar>
-            <ion-title>Gruppe hinzufügen</ion-title>
-          </ion-toolbar>
-        </ion-header>
-        <ion-item>
-          <ion-label position="stacked">Gruppe</ion-label>
-          <ion-input placeholder="z.B. Mädchen, Posaune, Alt 1, etc." #input></ion-input>
-        </ion-item>
-        <ion-button expand="block" (click)="addInstrument(input.value, modal)" expand="full">Hinzufügen</ion-button>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
   <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button id="add-instrument-button">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
+    <ion-modal #modal trigger="add-instrument-button" [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
+      <ng-template>
+        <ion-content>
+          <ion-header>
+            <ion-toolbar>
+              <ion-title>Gruppe hinzufügen</ion-title>
+            </ion-toolbar>
+          </ion-header>
+          <ion-item>
+            <ion-label position="stacked">Gruppe</ion-label>
+            <ion-input placeholder="z.B. Mädchen, Posaune, Alt 1, etc." #input></ion-input>
+          </ion-item>
+          <ion-button expand="block" (click)="addInstrument(input.value, modal)" expand="full">Hinzufügen</ion-button>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
   </ion-fab>
 </ion-content>

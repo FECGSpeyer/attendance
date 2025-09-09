@@ -133,6 +133,11 @@ export interface Instrument {
     tenantId: number;
     maingroup: boolean;
     legacyId?: number;
+    category?: number;
+    firstOfCategory?: boolean;
+    categoryName?: string;
+    categoryLength?: number;
+    categoryData?: GroupCategory;
 }
 
 export interface Attendance {
@@ -250,4 +255,11 @@ export interface FieldSelection {
     time: string;
     conductor?: string;
     currentTime?: string;
+}
+
+export interface GroupCategory {
+    id?: number;
+    created_at?: string;
+    name: string;
+    tenant_id?: number;
 }

@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { IonRouterOutlet, ModalController } from '@ionic/angular';
+import { AlertController, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceType, Role } from 'src/app/utilities/constants';
-import { Instrument, Player, Tenant } from 'src/app/utilities/interfaces';
+import { GroupCategory, Instrument, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { InstrumentPage } from '../instrument/instrument.page';
 
@@ -16,11 +16,13 @@ export class InstrumentListPage implements OnInit {
   public isAdmin: boolean = false;
   public isChoir: boolean = false;
   public isGeneral: boolean = false;
+  public categories: GroupCategory[];
 
   constructor(
     private modalController: ModalController,
     private db: DbService,
     private routerOutlet: IonRouterOutlet,
+    private alertController: AlertController
   ) { }
 
   async ngOnInit() {
@@ -31,14 +33,51 @@ export class InstrumentListPage implements OnInit {
   }
 
   async getInstruments(): Promise<void> {
+    const categoryMap: { [props: number]: boolean } = {};
+    this.categories = await this.db.getGroupCategories();
     const players: Player[] = await this.db.getPlayers();
-    this.instruments = (await this.db.getInstruments()).map((ins: Instrument): Instrument => {
-      return {
-        ...ins,
-        count: players.filter((player: Player): boolean => player.instrument === ins.id).length,
-        clefText: ins.clefs?.map((key: string) => Utils.getClefText(key)).join(", ") || "",
-      }
-    });
+    const instrumentsRaw: Instrument[] = await this.db.getInstruments();
+    this.instruments = instrumentsRaw
+      .sort((a: Instrument, b: Instrument): number => {
+        // sort by category name (find it here: a.categoryData.name)
+        if (a.categoryData?.name && b.categoryData?.name) {
+          if (a.categoryData.name < b.categoryData.name) {
+            return -1;
+          }
+          if (a.categoryData.name > b.categoryData.name) {
+            return 1;
+          }
+        } else if (a.categoryData?.name && !b.categoryData?.name) {
+          return -1;
+        } else if (!a.categoryData?.name && b.categoryData?.name) {
+          return 1;
+        }
+
+        // if same category or no category, sort by name
+        if (a.name < b.name) {
+          return -1;
+        }
+        if (a.name > b.name) {
+          return 1;
+        }
+        return 0;
+      }).map((ins: Instrument): Instrument => {
+        let firstOfCategory = false;
+
+        if (!categoryMap[ins.category]) {
+          categoryMap[ins.category] = true;
+          firstOfCategory = true;
+        }
+
+        return {
+          ...ins,
+          count: players.filter((player: Player): boolean => player.instrument === ins.id).length,
+          clefText: ins.clefs?.map((key: string) => Utils.getClefText(key)).join(", ") || "",
+          firstOfCategory,
+          categoryName: this.categories.find(cat => cat.id === ins.category)?.name || "Keine Kategorie",
+          categoryLength: this.categories.filter(cat => cat.id === ins.category).length,
+        }
+      });
   }
 
   async openModal(instrument: Instrument): Promise<void> {
@@ -76,4 +115,94 @@ export class InstrumentListPage implements OnInit {
     modal.dismiss();
   }
 
+  async addCategory() {
+    const alert = await this.alertController.create({
+      header: 'Neue Kategorie',
+      inputs: [
+        {
+          name: 'name',
+          type: 'text',
+          placeholder: 'Name der Kategorie'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel'
+        }, {
+          text: 'Hinzufügen',
+          handler: async (data) => {
+            if (data.name) {
+              await this.db.addGroupCategory(data.name);
+              this.categories = await this.db.getGroupCategories();
+            } else {
+              Utils.showToast("Bitte gib einem Namen an", "danger");
+              return false;
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async deleteCategory(id: number) {
+    const alert = await this.alertController.create({
+      header: 'Bestätigen',
+      message: 'Kategorie wirklich löschen? Alle Gruppen in dieser Kategorie verlieren die Kategorisierung.',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel'
+        }, {
+          text: 'Ja',
+          handler: async () => {
+            await this.db.deleteGroupCategory(id);
+            this.categories = await this.db.getGroupCategories();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async editCategory(id: number) {
+    const category = this.categories.find(cat => cat.id === id);
+    if (!category) {
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Kategorie bearbeiten',
+      inputs: [
+        {
+          name: 'name',
+          type: 'text',
+          value: category.name,
+          placeholder: 'Name der Kategorie'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel'
+        }, {
+          text: 'Speichern',
+          handler: async (data) => {
+            if (data.name) {
+              await this.db.updateGroupCategory(id, data.name);
+              this.categories = await this.db.getGroupCategories();
+            } else {
+              Utils.showToast("Bitte gib einem Namen an", "danger");
+              return false;
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
 }

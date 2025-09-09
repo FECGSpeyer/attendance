@@ -860,14 +860,12 @@ export class DbService {
   async getInstruments(): Promise<Instrument[]> {
     const { data } = await supabase
       .from('instruments')
-      .select('*')
+      .select('*, categoryData:category(*)')
       .eq('tenantId', this.tenant().id)
-      .order("maingroup", {
-        ascending: false,
-      })
-      .order("name");
+      .order("category")
+      .order("name", { ascending: true });
 
-    return data;
+    return data as any;
   }
 
   async getMainGroup(): Promise<Instrument | undefined> {
@@ -1652,5 +1650,68 @@ export class DbService {
 
   isDemo() {
     return this.user?.email === environment.demoMail;
+  }
+
+  async getGroupCategories() {
+    const { data, error } = await supabase
+      .from('group_categories')
+      .select('*')
+      .eq('tenant_id', this.tenant().id)
+      .order('name', { ascending: true });
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Kategorien", "danger");
+      throw error;
+    }
+
+    return data;
+  }
+
+  async addGroupCategory(name: string) {
+    const { data, error } = await supabase
+      .from('group_categories')
+      .insert({
+        name,
+        tenant_id: this.tenant().id,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast("Fehler beim Hinzufügen der Kategorie", "danger");
+      throw error;
+    }
+
+    return data;
+  }
+
+  async updateGroupCategory(id: number, name: string) {
+    const { data, error } = await supabase
+      .from('group_categories')
+      .update({ name })
+      .match({ id })
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast("Fehler beim Aktualisieren der Kategorie", "danger");
+      throw error;
+    }
+
+    return data;
+  }
+
+  async deleteGroupCategory(id: number) {
+    const { error } = await supabase
+      .from('group_categories')
+      .delete()
+      .match({ id });
+
+    if (error) {
+      Utils.showToast("Fehler beim Löschen der Kategorie", "danger");
+      throw error;
+    }
+
+    return;
   }
 }

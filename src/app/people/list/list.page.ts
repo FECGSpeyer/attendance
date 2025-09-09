@@ -128,7 +128,6 @@ export class ListPage implements OnInit {
       presentingElement: this.routerOutlet.nativeEl,
       componentProps: {
         existingPlayer: player ? { ...player } : undefined,
-        instruments: this.instruments,
         readOnly: !this.isAdmin,
       },
       backdropDismiss: false,
@@ -157,6 +156,16 @@ export class ListPage implements OnInit {
 
     if (this.sortOpt === "birthdayDesc") {
       this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => new Date(b.birthday).getTime() - new Date(a.birthday).getTime());
+      return;
+    }
+
+    if (this.sortOpt === "attAsc") {
+      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => ((a.percentage || 0) - (b.percentage || 0)));
+      return;
+    }
+
+    if (this.sortOpt === "attDesc") {
+      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => ((b.percentage || 0) - (a.percentage || 0)));
       return;
     }
 

@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceType } from 'src/app/utilities/constants';
-import { Instrument, Player } from 'src/app/utilities/interfaces';
+import { GroupCategory, Instrument, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -15,6 +15,7 @@ export class InstrumentPage implements OnInit {
   public instrument: Instrument;
   public isChoir: boolean = false;
   public isGeneral: boolean = false;
+  public categories: GroupCategory[] = [];
 
   constructor(
     private db: DbService,
@@ -22,7 +23,8 @@ export class InstrumentPage implements OnInit {
     private alertController: AlertController
   ) { }
 
-  ngOnInit() {
+  async ngOnInit() {
+    this.categories = await this.db.getGroupCategories();
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
     this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
     this.instrument = { ...this.existingInstrument };
@@ -41,6 +43,7 @@ export class InstrumentPage implements OnInit {
       clefs: this.instrument.clefs,
       name: this.instrument.name,
       maingroup: this.instrument.maingroup,
+      category: this.instrument.category,
     }, this.instrument.id);
 
     Utils.showToast(`${this.instrument.name} wurde erfolgreich geupdated`);

@@ -17,7 +17,6 @@ dayjs.extend(utc);
 export class PersonPage implements OnInit, AfterViewInit {
   @Input() existingPlayer: Player;
   @Input() readOnly: boolean;
-  @Input() instruments: Instrument[];
   @Input() hasLeft: boolean;
   @ViewChild('select') select: IonSelect;
   @ViewChild('content') content: IonContent;
@@ -68,6 +67,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public parentsEnabled: boolean = false;
   public parents: Parent[] = [];
   public isParent: boolean = false;
+  public instruments: Instrument[] = [];
 
   constructor(
     private db: DbService,
@@ -78,6 +78,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   ) { }
 
   async ngOnInit() {
+    this.instruments = await this.db.getInstruments();
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.maintainTeachers = this.db.tenant().maintainTeachers;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
