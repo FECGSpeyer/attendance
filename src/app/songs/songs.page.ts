@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { History, Instrument, Person, Song } from '../utilities/interfaces';
+import { GroupCategory, History, Instrument, Person, Song } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
 import { AlertController, IonModal } from '@ionic/angular';
 import { Utils } from '../utilities/Utils';
@@ -27,6 +27,7 @@ export class SongsPage implements OnInit {
     breakpoints: [0, 0.7, 1],
     initialBreakpoint: 0.7,
   };
+  public groupCategories: GroupCategory[] = [];
 
   constructor(
     private db: DbService,
@@ -41,6 +42,7 @@ export class SongsPage implements OnInit {
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     const history: History[] = await this.db.getHistory();
     const conductors: Person[] = await this.db.getConductors(true);
+    this.groupCategories = await this.db.getGroupCategories();
     if (this.isOrchestra) {
       this.instruments = (await this.db.getInstruments()).filter((instrument: Instrument) => !instrument.maingroup);
       this.selectedInstruments = this.instruments.map((instrument: Instrument) => instrument.id);
@@ -200,13 +202,51 @@ export class SongsPage implements OnInit {
       return instruments[0].name + " fehlt";
     }
 
-    // , should be connected with 'und'
-    if (instruments.length === 2) {
-      return instruments.map((instrument: Instrument) => instrument.name).join(" und ") + " fehlen";
+    // check if all instruments of one category are missing
+    // also check if there are multiple categories with missing instruments, separate those with ',' and 'und'
+    const categoryMap: { [key: number]: Instrument[] } = {};
+    instruments.forEach((instrument: Instrument) => {
+      if (instrument.category) {
+        if (!categoryMap[instrument.category]) {
+          categoryMap[instrument.category] = [];
+        }
+        categoryMap[instrument.category].push(instrument);
+      } else {
+        // no category, add to own category with id -1
+        if (!categoryMap[-1]) {
+          categoryMap[-1] = [];
+        }
+        categoryMap[-1].push(instrument);
+      }
+    });
+
+    const categoriesMissingAllInstruments: string[] = [];
+    Object.keys(categoryMap).forEach((categoryId: string) => {
+      const catIdNum = Number(categoryId);
+      const totalInstrumentsInCategory = this.instruments.filter((instrument: Instrument) => instrument.category === catIdNum).length;
+      if (categoryMap[catIdNum].length === totalInstrumentsInCategory) {
+        // all instruments of this category are missing
+        const categoryName = catIdNum === -1 ? "Sonstige" : this.groupCategories.find(cat => cat.id === catIdNum)?.name || "Unbekannt";
+        categoriesMissingAllInstruments.push(categoryName);
+        // remove this category from categoryMap
+        delete categoryMap[catIdNum];
+      }
+    });
+
+    // now, categoryMap only contains categories with some missing instruments
+    const individualInstruments: Instrument[] = [];
+    Object.keys(categoryMap).forEach((categoryId: string) => {
+      const catIdNum = Number(categoryId);
+      individualInstruments.push(...categoryMap[catIdNum]);
+    });
+
+    const allParts: string[] = categoriesMissingAllInstruments.concat(individualInstruments.map(inst => inst.name));
+
+    if (allParts.length === 1) {
+      return allParts[0] + " fehlt";
     }
 
-    // more than 2 instruments, last should be connected only with 'und'
-    return instruments.slice(0, -1).map((instrument: Instrument) => instrument.name).join(", ") + " und " + instruments[instruments.length - 1].name + " fehlen";
+    return allParts.slice(0, -1).join(", ") + " und " + allParts.slice(-1) + " fehlen";
   }
 
 }

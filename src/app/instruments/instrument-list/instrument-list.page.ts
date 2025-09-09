@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceType, Role } from 'src/app/utilities/constants';
-import { GroupCategory, Instrument, Player, Tenant } from 'src/app/utilities/interfaces';
+import { GroupCategory, Instrument, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { InstrumentPage } from '../instrument/instrument.page';
 
@@ -75,7 +75,7 @@ export class InstrumentListPage implements OnInit {
           clefText: ins.clefs?.map((key: string) => Utils.getClefText(key)).join(", ") || "",
           firstOfCategory,
           categoryName: this.categories.find(cat => cat.id === ins.category)?.name || "Keine Kategorie",
-          categoryLength: this.categories.filter(cat => cat.id === ins.category).length,
+          categoryLength: instrumentsRaw.filter(instrument => instrument.category === ins.category).length,
         }
       });
   }
