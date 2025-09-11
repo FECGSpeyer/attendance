@@ -253,7 +253,7 @@
               <ion-item>
                 <ion-select (ionChange)="onRoleChange()" label="Rolle" type="number"
                   [disabled]="readOnly || isMainGroup" [(ngModel)]="role">
-                  <ion-select-option [value]="PLAYER">Keine Rolle</ion-select-option>
+                  <ion-select-option [value]="PLAYER">Mitglied</ion-select-option>
                   <ion-select-option [value]="RESPONSIBLE">Verantwortlicher</ion-select-option>
                   <ion-select-option [value]="HELPER">Helfer</ion-select-option>
                 </ion-select>

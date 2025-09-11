@@ -191,7 +191,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.role = Role.RESPONSIBLE;
       this.isMainGroup = true;
     } else {
-      if (this.role === Role.RESPONSIBLE) {
+      if (this.role === Role.RESPONSIBLE && !this.player.appId) {
         this.role = Role.PLAYER;
       }
       this.isMainGroup = false;
