@@ -110,7 +110,7 @@
         <ion-item *ngFor="let field of attendance.plan.fields; let i = index">
           <ion-label>
             <h2>{{ field.name }}</h2>
-            <h3 class="warning" *ngIf="field.songId">{{ getMissingGroups(field.songId) }}</h3>
+            <h3 class="danger" *ngIf="field.songId">{{ getMissingGroups(field.songId) }}</h3>
             <h3>{{ calculateTime(field, i) }}</h3>
           </ion-label>
           <ion-badge slot="end">{{ field.time }} min</ion-badge>

@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
-import { Attendance, FieldSelection, History, Person, Song } from '../utilities/interfaces';
+import { Attendance, FieldSelection, GroupCategory, History, Instrument, Person, Song } from '../utilities/interfaces';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
@@ -33,6 +33,8 @@ export class PlanningPage implements OnInit {
   public isPlanModalOpen: boolean = false;
   public conductors: Person[] = [];
   public selConductors: number[] = [];
+  public instruments: Instrument[] = [];
+  public groupCategories: GroupCategory[];
   public customModalOptions = {
     header: 'Werk hinzufügen',
     breakpoints: [0, 0.7, 1],
@@ -47,10 +49,12 @@ export class PlanningPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.songs = await this.db.getSongs();
+    this.instruments = (await this.db.getInstruments()).filter((instrument: Instrument) => !instrument.maingroup);
+    this.groupCategories = await this.db.getGroupCategories();
     this.conductors = (await this.db.getConductors()).filter((con: Person) => !con.left);
     this.selConductors = this.conductors.filter((con: Person) => Boolean(!con.left)).map((c: Person): number => c.id);
     this.hasChatId = Boolean(this.db.tenantUser().telegram_chat_id);
-    this.songs = await this.db.getSongs();
     this.history = await this.db.getUpcomingHistory();
     this.attendances = await this.db.getAttendance();
     const upcomingAttendances: Attendance[] = (await this.db.getUpcomingAttendances()).reverse();
@@ -494,5 +498,16 @@ export class PlanningPage implements OnInit {
     }
     return a;
   }
+
+    getMissingGroups(songId: number): string {
+      const song = this.songs.find((s: Song) => s.id === songId);
+
+      if (!song || !song.instrument_ids || !song.instrument_ids.length) {
+        return "";
+      }
+
+      const text = Utils.getInstrumentText(song.instrument_ids, this.instruments, this.groupCategories);
+      return text;
+    }
 
 }

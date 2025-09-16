@@ -67,6 +67,7 @@
         <ion-item>
           <ion-label (click)="changeField(field)">
             <h2>{{ field.name }}</h2>
+            <h3 class="danger" *ngIf="field.songId">{{ getMissingGroups(field.songId) }}</h3>
             <h3>{{ calculateTime(field, i) }}</h3>
           </ion-label>
           <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time" placeholder="min"
