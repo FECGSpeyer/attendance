@@ -19,30 +19,79 @@
 
   <div class="flex">
     <ion-searchbar (ionInput)="search($event)" animated placeholder="Werk suchen..."></ion-searchbar>
-    <ion-button (click)="openFilterOptions()" fill="none">
-      <ion-icon [color]="filterOpts ? 'primary' : ''" size="medium" name="options"></ion-icon>
+    <ion-button id="filter-trigger-songs" fill="none">
+      <ion-icon size="medium" name="options"></ion-icon>
     </ion-button>
+    <ion-popover trigger="filter-trigger-songs" triggerAction="click">
+      <ng-template>
+        <ion-content>
+          <ion-list>
+            <ion-item lines="none">
+              <ion-icon slot="start" name="filter" size="small"></ion-icon>
+              <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="sortOpt">
+                <ion-select-option value="numberAsc">Nummer ↑</ion-select-option>
+                <ion-select-option value="numberDesc">Nummer ↓</ion-select-option>
+                <ion-select-option value="nameAsc">Name ↑</ion-select-option>
+                <ion-select-option value="nameDesc">Name ↓</ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <ion-item lines="none">
+              <ion-icon slot="start" name="people" size="small"></ion-icon>
+              <ion-toggle [(ngModel)]="inclChoir" (ionChange)="onFilterChanged()">Chor & Orchester</ion-toggle>
+            </ion-item>
+
+            <ion-item lines="none">
+              <ion-icon slot="start" name="person" size="small"></ion-icon>
+              <ion-toggle [(ngModel)]="inclSolo" (ionChange)="onFilterChanged()">Solo</ion-toggle>
+            </ion-item>
+
+            <ion-item lines="none">
+              <ion-icon slot="start" name="musical-notes" size="small"></ion-icon>
+              <ion-select slot="end" (ionChange)="onFilterChanged()" multiple="true"
+                [(ngModel)]="instrumentsToFilter">
+                <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{
+                  instrument.name }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <ion-item lines="none">
+              <ion-icon slot="start" name="eye" size="small"></ion-icon>
+              <ion-select multiple="true" slot="end" (ionChange)="onViewChanged()" interface="popover"
+                [(ngModel)]="viewOpts">
+                <ion-select-option value="link">Link</ion-select-option>
+                <ion-select-option value="withChoir">Chor & Orchester</ion-select-option>
+                <ion-select-option value="withSolo">Solo</ion-select-option>
+                <ion-select-option value="missingInstruments">Fehlende Instrumente</ion-select-option>
+                <ion-select-option value="lastSung">Zuletzt gespielt</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-list>
+        </ion-content>
+      </ng-template>
+    </ion-popover>
   </div>
   <ion-list class="marginBottom">
     <ion-item *ngFor="let song of songsFiltered">
       <ion-label [id]="song.id + 'edit-button'">
         <h2>{{ song.number }} {{ song.name }}</h2>
-        <h3 style="color: var(--ion-color-danger);" *ngIf="isOrchestra && song.instrument_ids?.length">{{ getInstrumentText(song.instrument_ids) }}</h3>
-        <h3 *ngIf="song.lastSung">Zuletzt gespielt am {{ song.lastSung | date:'dd.MM.YYYY' }} | {{ song.conductor }}
+        <h3 style="color: var(--ion-color-danger);" *ngIf="isOrchestra && song.instrument_ids?.length && viewOpts.includes('missingInstruments')">{{
+          getInstrumentText(song.instrument_ids) }}</h3>
+        <h3 *ngIf="song.lastSung && viewOpts.includes('lastSung')">Zuletzt gespielt am {{ song.lastSung | date:'dd.MM.YYYY' }} | {{ song.conductor }}
         </h3>
       </ion-label>
-      <ion-badge *ngIf="song.withSolo" color="success" slot="end">
+      <ion-badge *ngIf="song.withSolo && viewOpts.includes('withSolo')" color="success" slot="end">
         Solo
       </ion-badge>
-      <ion-badge *ngIf="song.withChoir" color="tertiary" slot="end">
+      <ion-badge *ngIf="song.withChoir && viewOpts.includes('withChoir')" color="tertiary" slot="end">
         @if (isOrchestra) {
-          Chor
+        Chor
         } @else {
-          Orchester
+        Orchester
         }
       </ion-badge>
-      <ion-badge (click)="openLink(song.link)" slot="end" *ngIf="song.link">
-        <ion-icon name="link-outline"></ion-icon>
+      <ion-badge (click)="openLink(song.link)" slot="end" *ngIf="song.link && viewOpts.includes('link')" color="primary">
+        <ion-icon name="link"></ion-icon>
       </ion-badge>
       <ion-modal *ngIf="isAdmin" #modal [trigger]="song.id + 'edit-button'" [breakpoints]="[0, 0.9]"
         [initialBreakpoint]="0.9">
@@ -61,8 +110,8 @@
               <ion-input label-placement="stacked" label="Name" [(ngModel)]="song.name" #name></ion-input>
             </ion-item>
             <ion-item>
-              <ion-textarea label-placement="stacked" label="Link (optional)" [(ngModel)]="song.link" autoGrow="true" #link
-                (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
+              <ion-textarea label-placement="stacked" label="Link (optional)" [(ngModel)]="song.link" autoGrow="true"
+                #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
             </ion-item>
             <ion-item>
               <ion-toggle aria-label="Chor & Orchester" [(ngModel)]="song.withChoir">Chor & Orchester</ion-toggle>
@@ -71,7 +120,8 @@
               <ion-toggle aria-label="Mit Solo-Gesang" [(ngModel)]="song.withSolo">Mit Solo-Gesang</ion-toggle>
             </ion-item>
             <ion-item *ngIf="isOrchestra">
-              <ion-select interface="modal" [interfaceOptions]="customModalOptions" label="Besetzung" multiple="true" [(ngModel)]="song.instrument_ids">
+              <ion-select interface="modal" [interfaceOptions]="customModalOptions" label="Besetzung" multiple="true"
+                [(ngModel)]="song.instrument_ids">
                 <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{ instrument.name
                   }}</ion-select-option>
               </ion-select>

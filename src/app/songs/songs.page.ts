@@ -5,6 +5,7 @@ import { AlertController, IonModal } from '@ionic/angular';
 import { Utils } from '../utilities/Utils';
 import { Browser } from '@capacitor/browser';
 import { Role } from '../utilities/constants';
+import { Storage } from '@ionic/storage-angular';
 
 @Component({
   selector: 'app-songs',
@@ -12,30 +13,43 @@ import { Role } from '../utilities/constants';
   styleUrls: ['./songs.page.scss'],
 })
 export class SongsPage implements OnInit {
-
   public songs: Song[] = [];
   public songsFiltered: Song[] = [];
   searchTerm: string = "";
   public isAdmin: boolean = false;
   public withChoir: boolean = false;
   public withSolo: boolean = false;
+  public inclChoir: boolean = false;
+  public inclSolo: boolean = false;
   public isOrchestra: boolean = false;
   public instruments: Instrument[] = [];
   public selectedInstruments: number[] = [];
   public customModalOptions = {
-    header: 'Instrumente wählen',
+    header: 'Gruppen wählen',
     breakpoints: [0, 0.7, 1],
     initialBreakpoint: 0.7,
   };
   public groupCategories: GroupCategory[] = [];
   public filterOpts = {};
+  public sortOpt = "numberAsc";
+  public viewOpts: string[] = ["withChoir", "withSolo", "missingInstruments", "link", "lastSung"];
+  public instrumentsToFilter: number[] = [];
 
   constructor(
     private db: DbService,
+    private storage: Storage,
   ) { }
 
   async ngOnInit() {
     await this.getSongs();
+
+    this.sortOpt = await this.storage.get(`sortOptSongs${this.db.tenant().id}`) || "numberAsc";
+    this.viewOpts = JSON.parse(await this.storage.get(`viewOptsSongs${this.db.tenant().id}`) || JSON.stringify(['withChoir', 'withSolo', 'missingInstruments', 'link', 'lastSung']));
+    this.inclChoir = await this.storage.get(`inclChoirSongs${this.db.tenant().id}`) === "true";
+    this.inclSolo = await this.storage.get(`inclSoloSongs${this.db.tenant().id}`) === "true";
+    this.instrumentsToFilter = JSON.parse(await this.storage.get(`instrumentsToFilterSongs${this.db.tenant().id}`) || "[]");
+
+    this.onFilterChanged();
   }
 
   async getSongs(): Promise<void> {
@@ -153,7 +167,7 @@ export class SongsPage implements OnInit {
     });
   }
 
-  search(event: any): void {
+  search(event: any) {
     if (this.songs) {
       this.searchTerm = '';
       this.initializeItems();
@@ -168,7 +182,7 @@ export class SongsPage implements OnInit {
     }
   }
 
-  filter(): Song[] {
+  filter() {
     if (this.searchTerm === '') {
       return this.songs;
     } else {
@@ -183,6 +197,62 @@ export class SongsPage implements OnInit {
         }
       });
     }
+  }
+
+  async onFilterChanged() {
+    await this.storage.set(`inclChoirSongs${this.db.tenant().id}`, this.inclChoir ? "true" : "false");
+    await this.storage.set(`inclSoloSongs${this.db.tenant().id}`, this.inclSolo ? "true" : "false");
+    await this.storage.set(`instrumentsToFilterSongs${this.db.tenant().id}`, JSON.stringify(this.instrumentsToFilter));
+
+    this.searchTerm = "";
+    this.initializeItems();
+
+    this.songsFiltered = this.songsFiltered.filter((song: Song) => {
+      if (this.instrumentsToFilter.length) {
+        if (song.instrument_ids && !song.instrument_ids.some(r => this.instrumentsToFilter.includes(r))) {
+          return false;
+        }
+
+        return this.filterChoirSolo(song);
+      } else {
+        return this.filterChoirSolo(song);
+      }
+    });
+
+    this.onSortChanged();
+  }
+
+  async onSortChanged() {
+    await this.storage.set(`sortOptSongs${this.db.tenant().id}`, this.sortOpt);
+
+    if (this.sortOpt === "numberAsc") {
+      this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => (a.number > b.number) ? 1 : -1);
+    } else if (this.sortOpt === "numberDesc") {
+      this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => (a.number < b.number) ? 1 : -1);
+    } else if (this.sortOpt === "nameAsc") {
+      this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : -1);
+    } else if (this.sortOpt === "nameDesc") {
+      this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => (a.name.toLowerCase() < b.name.toLowerCase()) ? 1 : -1);
+    }
+  }
+
+  filterChoirSolo(song: Song): boolean {
+    if (!this.inclChoir && !this.inclSolo) {
+      return true;
+    }
+
+    if (this.inclChoir && this.inclSolo) {
+      return song.withChoir && song.withSolo;
+    } else if (this.inclChoir) {
+      return song.withChoir;
+    } else if (this.inclSolo) {
+      return song.withSolo;
+    }
+    return true;
+  }
+
+  async onViewChanged() {
+    await this.storage.set(`viewOptsSongs${this.db.tenant().id}`, JSON.stringify(this.viewOpts));
   }
 
   initializeItems(): void {

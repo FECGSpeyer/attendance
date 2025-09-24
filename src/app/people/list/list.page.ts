@@ -63,6 +63,10 @@ export class ListPage implements OnInit {
             if (this.db.tenant().maintainTeachers) {
         this.teachers = await this.db.getTeachers();
       }
+
+      this.viewOpts = JSON.parse(await this.storage.get(`viewOpts${this.db.tenant().id}`) || JSON.stringify(['instrument', 'leader', 'attendance', 'critical', 'paused']));
+      this.filterOpt = (await this.storage.get(`filterOpt${this.db.tenant().id}`)) || "all";
+
       await this.getPlayers();
 
       this.linkedTenants = await this.db.getLinkedTenants();
@@ -76,12 +80,12 @@ export class ListPage implements OnInit {
       this.teachers = await this.db.getTeachers();
     }
 
-    this.viewOpts = JSON.parse(await this.storage.get("viewOpts") || JSON.stringify(['instrument', 'leader', 'notes', 'critical', 'paused']));
+    this.viewOpts = JSON.parse(await this.storage.get(`viewOpts${this.db.tenant().id}`) || JSON.stringify(['instrument', 'leader', 'attendance', 'critical', 'paused']));
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
     this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
     this.isVoS = this.db.tenant().shortName === 'VoS';
-    this.filterOpt = (await this.storage.get("filterOpt")) || "all";
+    this.filterOpt = (await this.storage.get(`filterOpt${this.db.tenant().id}`)) || "all";
     this.instruments = await this.db.getInstruments();
     this.mainGroup = this.instruments.find(ins => ins.maingroup)?.id;
 
@@ -207,7 +211,7 @@ export class ListPage implements OnInit {
 
     if (this.filterOpt === 'all') {
       this.initializeItems();
-      await this.storage.set("filterOpt", this.filterOpt);
+      await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
       return;
     }
 
@@ -248,7 +252,7 @@ export class ListPage implements OnInit {
                 return usersPerTenant.find((u) => u.userId === player.appId);
               }), this.instruments, this.attendances, this.mainGroup);
               this.tenantName = this.linkedTenants.find((t) => t.id === value)?.longName || "";
-              await this.storage.set("filterOpt", this.filterOpt);
+              await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
             }
           }
         ]
@@ -277,7 +281,7 @@ export class ListPage implements OnInit {
       }
     }), this.instruments, this.attendances, this.mainGroup);
 
-    await this.storage.set("filterOpt", this.filterOpt);
+    await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
   }
 
   onViewChanged() {
@@ -304,7 +308,7 @@ export class ListPage implements OnInit {
     this.showAttendance = this.viewOpts.includes("attendance");
     this.showTeachers = this.viewOpts.includes("teachers") && this.db.tenant().maintainTeachers;
 
-    this.storage.set("viewOpts", JSON.stringify(this.viewOpts));
+    this.storage.set(`viewOpts${this.db.tenant().id}`, JSON.stringify(this.viewOpts));
   }
 
   getSubText(player: Player): string {
