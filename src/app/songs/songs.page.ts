@@ -41,15 +41,13 @@ export class SongsPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    await this.getSongs();
-
     this.sortOpt = await this.storage.get(`sortOptSongs${this.db.tenant().id}`) || "numberAsc";
     this.viewOpts = JSON.parse(await this.storage.get(`viewOptsSongs${this.db.tenant().id}`) || JSON.stringify(['withChoir', 'withSolo', 'missingInstruments', 'link', 'lastSung']));
     this.inclChoir = await this.storage.get(`inclChoirSongs${this.db.tenant().id}`) === "true";
     this.inclSolo = await this.storage.get(`inclSoloSongs${this.db.tenant().id}`) === "true";
     this.instrumentsToFilter = JSON.parse(await this.storage.get(`instrumentsToFilterSongs${this.db.tenant().id}`) || "[]");
 
-    this.onFilterChanged();
+    await this.getSongs();
   }
 
   async getSongs(): Promise<void> {
@@ -74,6 +72,8 @@ export class SongsPage implements OnInit {
       }
     });
     this.songsFiltered = this.songs;
+
+    await this.onFilterChanged();
   }
 
   async doRefresh(event: any) {
@@ -174,22 +174,24 @@ export class SongsPage implements OnInit {
 
       this.searchTerm = event.srcElement.value;
 
+      this.filter();
+
       if (!this.searchTerm) {
         return;
       }
 
-      this.songsFiltered = this.filter();
+      this.songsFiltered = this.searchSongs();
     }
   }
 
-  filter() {
+  searchSongs() {
     if (this.searchTerm === '') {
-      return this.songs;
+      return this.songsFiltered;
     } else {
-      return this.songs.filter((entry: Song) => {
+      return this.songsFiltered.filter((entry: Song) => {
         if (this.searchTerm) {
           if (entry.name.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1 ||
-            entry.conductor.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1 ||
+            entry.conductor?.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1 ||
             String(entry.number).toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1) {
             return true;
           }
@@ -207,6 +209,10 @@ export class SongsPage implements OnInit {
     this.searchTerm = "";
     this.initializeItems();
 
+    this.filter();
+  }
+
+  filter() {
     this.songsFiltered = this.songsFiltered.filter((song: Song) => {
       if (this.instrumentsToFilter.length) {
         if (song.instrument_ids && !song.instrument_ids.some(r => this.instrumentsToFilter.includes(r))) {
