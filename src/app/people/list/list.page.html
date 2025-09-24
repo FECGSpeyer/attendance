@@ -32,6 +32,7 @@
                 <ion-select-option *ngIf="isVoS" value="new">Neue Spieler</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="withoutTeacher">Ohne Lehrer</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="withoutTest">Testergebnis fehlt</ion-select-option>
+                <ion-select-option *ngIf="linkedTenants.length" value="otherInstance">Mitglied anderer Instanz</ion-select-option>
               </ion-select>
             </ion-item>
 
@@ -103,6 +104,9 @@
               } @else if (showTeachers && !player.teacher) {
                 <h3>Kein Lehrer</h3>
               }
+            }
+            @if (this.filterOpt === 'otherInstance') {
+              <h3>{{ tenantName }}</h3>
             }
           </ion-label>
           <ion-badge color="secondary"

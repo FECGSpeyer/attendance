@@ -17,7 +17,7 @@ require('dayjs/locale/de');
   styleUrls: ['./att-list.page.scss'],
 })
 export class AttListPage implements OnInit {
-  public date: string = new Date().toISOString();
+  public dates: string[] = [new Date().toISOString()];
   public dateString: string = format(new Date(), 'dd.MM.yyyy');
   public type: string = 'uebung';
   public attendances: Attendance[] = [];
@@ -145,51 +145,65 @@ export class AttListPage implements OnInit {
   }
 
   onDateChanged(value: string | string[], dateModal: IonModal): void {
-    if (parseInt(this.dateString.substring(0, 2), 10) !== dayjs(this.date).date()) {
-      dateModal.dismiss();
+    if (!value || (Array.isArray(value) && value.length === 0)) {
+      this.dateString = 'Kein Datum ausgewählt';
+      return;
     }
 
-    this.dateString = this.formatDate(String(value));
+    this.dateString = value.length === 1 ? this.formatDate(value[0]) : `${value.length} Termine ausgewählt`;
   }
 
   async addAttendance(modal: IonModal): Promise<void> {
+    if (!this.dates?.length) {
+      Utils.showToast("Bitte wähle mindestens ein Datum aus", "warning");
+      return;
+    }
+
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+
     const persons: PersonAttendance[] = [];
+    const allPlayers = (await this.db.getPlayers()).filter((player: Player) => !player.paused);
 
-    const attendance_id: number = await this.db.addAttendance({
-      date: this.date,
-      type: this.type,
-      notes: this.notes,
-      typeInfo: this.typeInfo,
-      save_in_history: this.saveInHistory,
-    });
-
-    for (const player of (await this.db.getPlayers()).filter((player: Player) => !player.paused)) {
-      persons.push({
-        attendance_id,
-        person_id: player.id,
-        status: this.hasNeutral ? AttendanceStatus.Neutral : AttendanceStatus.Present,
-        notes: '',
+    for (const date of this.dates) {
+      const attendance_id: number = await this.db.addAttendance({
+        date: date,
+        type: this.type,
+        notes: this.notes,
+        typeInfo: this.typeInfo,
+        save_in_history: this.saveInHistory,
       });
-    }
 
-    await this.db.addPersonAttendances(persons);
-    if (this.historyEntries.length) {
-      await this.db.addSongsToHistory(this.historyEntries.map((entry: History) => {
-        return {
-          ...entry,
+      for (const player of allPlayers) {
+        persons.push({
           attendance_id,
-          visible: this.saveInHistory,
-          date: this.date,
-          tenantId: this.db.tenant().id,
-        }
-      }));
+          person_id: player.id,
+          status: this.hasNeutral ? AttendanceStatus.Neutral : AttendanceStatus.Present,
+          notes: '',
+        });
+      }
+
+      await this.db.addPersonAttendances(persons);
+      if (this.historyEntries.length) {
+        await this.db.addSongsToHistory(this.historyEntries.map((entry: History) => {
+          return {
+            ...entry,
+            attendance_id,
+            visible: this.saveInHistory,
+            date: date,
+            tenantId: this.db.tenant().id,
+          }
+        }));
+      }
     }
 
+    await loading.dismiss();
+    Utils.showToast(this.dates.length === 1 ? "Anwesenheit hinzugefügt" : "Anwesenheiten hinzugefügt", "success");
     await modal.dismiss();
 
     this.notes = '';
     this.type = 'uebung';
-    this.date = new Date().toISOString();
+    this.dates = [new Date().toISOString()];
     this.typeInfo = '';
     this.dateString = format(new Date(), 'dd.MM.yyyy');
     this.selectedSongs = [];

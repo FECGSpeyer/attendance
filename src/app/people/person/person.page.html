@@ -265,6 +265,24 @@
     </ion-accordion>
   </ion-accordion-group>
 
+  <ion-accordion-group *ngIf="otherTenants.length">
+    <ion-accordion value="otherTenants">
+      <ion-item slot="header" color="light">
+        <ion-label>Andere Instanzen</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-list>
+          <ion-item lines="none" *ngFor="let tenant of otherTenants">
+            <ion-label>
+              <h2>{{ tenant.longName }}</h2>
+            </ion-label>
+            <ion-badge color="primary" slot="end">{{ getRoleText(tenant.role) }}</ion-badge>
+          </ion-item>
+        </ion-list>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
+
   <ion-accordion-group [value]="existingPlayer ? 'first' : ''" *ngIf="personAttendance.length || history.length">
     <ion-accordion value="first">
       <ion-item slot="header" color="light">

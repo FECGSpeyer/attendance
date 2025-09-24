@@ -1624,28 +1624,70 @@ export class DbService {
       .ilike('lastName', `%${lastName.trim()}%`)
       .neq('email', null);
 
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Personen", "danger");
+      throw error;
+    }
+
+    const linkedTenants = await this.getLinkedTenants();
+
+    return data.filter((p: Person) => {
+      return linkedTenants.find((lt) => lt.id === (p as any).tenantId.id);
+    });
+  }
+
+  async getLinkedTenants(): Promise<Tenant[]> {
     const { data: tenantGroupTenants, error: tenantGroupTenantsError } = await supabase
       .from('tenant_group_tenants')
-      .select('*');
+      .select('*, tenant:tenant_id(*)');
 
     if (tenantGroupTenantsError) {
       Utils.showToast("Fehler beim Laden der Gruppenteilnehmer", "danger");
       throw tenantGroupTenantsError;
     }
 
+    const groups = tenantGroupTenants.filter((tgt) => tgt.tenant_id === this.tenant().id);
+    return tenantGroupTenants.filter((tgt) =>
+      groups.some((g) => g.tenant_group === tgt.tenant_group) && tgt.tenant_id !== this.tenant().id
+    ).map((tgt) => tgt.tenant);
+  }
+
+  async getTenantsFromUser(userId: string): Promise<Tenant[]> {
+    const { data, error } = await supabase
+      .from('tenantUsers')
+      .select('*, tenantId(*)')
+      .eq('userId', userId);
+
     if (error) {
-      Utils.showToast("Fehler beim Laden der Personen", "danger");
+      Utils.showToast("Fehler beim Laden der Mandanten", "danger");
       throw error;
     }
 
-    const groups = tenantGroupTenants.filter((tgt) => tgt.tenant_id === this.tenant().id);
-    const linkedTenants = tenantGroupTenants.filter((tgt) =>
-      groups.some((g) => g.tenant_group === tgt.tenant_group) && tgt.tenant_id !== this.tenant().id
-    ).map((tgt) => tgt.tenant_id);
+    const linkedTenants = await this.getLinkedTenants();
 
-    return data.filter((p: Person) => {
-      return linkedTenants.includes((p as any).tenantId.id);
-    });
+    return data
+      .map((tu) => {
+        return {
+          ...(tu as any).tenantId,
+          role: tu.role,
+        }
+      })
+      .filter((t: Tenant) => linkedTenants.find((lt) => lt.id === t.id) && t.role !== Role.VIEWER);
+  }
+
+  async getUsersFromTenant(tenantId: number): Promise<TenantUser[]> {
+    const { data, error } = await supabase
+      .from('tenantUsers')
+      .select('*')
+      .eq('tenantId', tenantId)
+      .neq('role', Role.VIEWER);
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Benutzer", "danger");
+      throw error;
+    }
+
+    return data;
   }
 
   isDemo() {

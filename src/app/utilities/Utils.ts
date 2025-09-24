@@ -179,6 +179,27 @@ export class Utils {
     }
   }
 
+  public static getRoleText(role: Role): string {
+    switch (role) {
+      case Role.ADMIN:
+        return "Admin";
+      case Role.PLAYER:
+        return "Mitglied";
+      case Role.VIEWER:
+        return "Beobachter";
+      case Role.HELPER:
+        return "Helfer";
+      case Role.RESPONSIBLE:
+        return "Verantwortlicher";
+      case Role.PARENT:
+        return "Elternteil";
+      case Role.NONE:
+        return "Mitglied";
+      default:
+        return "Unbekannt";
+    }
+  }
+
   public static getPlayerHistoryTypeText(key: PlayerHistoryType) {
     switch (key) {
       case PlayerHistoryType.PAUSED:

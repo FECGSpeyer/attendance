@@ -1,4 +1,4 @@
-import { AttendanceStatus, PlayerHistoryType } from "./constants";
+import { AttendanceStatus, PlayerHistoryType, Role } from "./constants";
 
 export interface AuthObject {
     login: boolean;
@@ -17,6 +17,7 @@ export interface Tenant {
     seasonStart?: string;
     parents?: boolean;
     betaProgram: boolean;
+    role?: Role;
 }
 
 export interface TenantUser {

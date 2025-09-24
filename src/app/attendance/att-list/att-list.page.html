@@ -135,7 +135,7 @@
           <ion-modal #dateModal class="dateModal" trigger="att-date-modal">
             <ng-template>
               <ion-content>
-                <ion-datetime [(ngModel)]="date" (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)"
+                <ion-datetime multiple="true" [(ngModel)]="dates" (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)"
                   presentation="date" #dateTimePickerDate></ion-datetime>
               </ion-content>
             </ng-template>

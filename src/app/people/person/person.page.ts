@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '
 import { ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
-import { Instrument, Parent, PersonAttendance, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
+import { Instrument, Parent, PersonAttendance, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
@@ -68,6 +68,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public parents: Parent[] = [];
   public isParent: boolean = false;
   public instruments: Instrument[] = [];
+  public otherTenants: Tenant[] = [];
 
   constructor(
     private db: DbService,
@@ -121,6 +122,12 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     this.onInstrumentChange(false);
+
+    this.otherTenants = await this.db.getTenantsFromUser(this.player.appId);
+  }
+
+  getRoleText(role: Role) {
+    return Utils.getRoleText(role);
   }
 
   ngAfterViewInit() {
@@ -526,7 +533,7 @@ export class PersonPage implements OnInit, AfterViewInit {
    const names = await this.db.getPossiblePersonsByName(this.player.firstName, this.player.lastName);
 
    if (names.length === 0) {
-      Utils.showToast("Es wurde keine Person gefunden", "danger");
+      Utils.showToast("Es wurde keine passende Person in einer anderen Instanz gefunden", "danger");
       return;
     }
 

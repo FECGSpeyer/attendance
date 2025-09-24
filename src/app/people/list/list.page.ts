@@ -2,7 +2,7 @@ import { Component, OnInit, effect } from '@angular/core';
 import { ActionSheetController, AlertController, IonItemSliding, IonRouterOutlet, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { Attendance, Instrument, Person, Player, PlayerHistoryEntry, Teacher } from 'src/app/utilities/interfaces';
+import { Attendance, Instrument, Person, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
 import { PersonPage } from '../person/person.page';
 import { AttendanceType, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Storage } from '@ionic/storage-angular';
@@ -45,6 +45,8 @@ export class ListPage implements OnInit {
   public mainGroup: number | undefined;
   public attendances: Attendance[] = [];
   public teachers: Teacher[] = [];
+  public linkedTenants: Tenant[] = [];
+  public tenantName: string = "";
 
   constructor(
     private modalController: ModalController,
@@ -62,6 +64,8 @@ export class ListPage implements OnInit {
         this.teachers = await this.db.getTeachers();
       }
       await this.getPlayers();
+
+      this.linkedTenants = await this.db.getLinkedTenants();
 
       this.subscribe();
     });
@@ -204,6 +208,52 @@ export class ListPage implements OnInit {
     if (this.filterOpt === 'all') {
       this.initializeItems();
       await this.storage.set("filterOpt", this.filterOpt);
+      return;
+    }
+
+    if (this.filterOpt === 'otherInstance') {
+      if (!this.linkedTenants.length) {
+        this.filterOpt = 'all';
+        this.onFilterChanged();
+        return;
+      }
+
+      const alert = await this.alertController.create({
+        header: 'Instanz wählen',
+        inputs: this.linkedTenants.map((t) => ({
+          type: 'radio',
+          label: t.longName,
+          value: t.id,
+        })),
+        buttons: [
+          {
+            text: 'Abbrechen',
+            role: 'cancel',
+            handler: () => {
+              this.filterOpt = 'all';
+              this.onFilterChanged();
+            }
+          },
+          {
+            text: 'Filtern',
+            handler: async (value) => {
+              if (!value) {
+                this.filterOpt = 'all';
+                this.onFilterChanged();
+                return;
+              }
+
+              const usersPerTenant = await this.db.getUsersFromTenant(value);
+              this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
+                return usersPerTenant.find((u) => u.userId === player.appId);
+              }), this.instruments, this.attendances, this.mainGroup);
+              this.tenantName = this.linkedTenants.find((t) => t.id === value)?.longName || "";
+              await this.storage.set("filterOpt", this.filterOpt);
+            }
+          }
+        ]
+      });
+      await alert.present();
       return;
     }
 
