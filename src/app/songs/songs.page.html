@@ -19,8 +19,8 @@
 
   <div class="flex">
     <ion-searchbar (ionInput)="search($event)" animated placeholder="Werk suchen..."></ion-searchbar>
-    <ion-button id="filter-trigger" fill="none">
-      <ion-icon [color]="filterOpt === 'all' ? '' : 'primary'" size="medium" name="options"></ion-icon>
+    <ion-button (click)="openFilterOptions()" fill="none">
+      <ion-icon [color]="filterOpts ? 'primary' : ''" size="medium" name="options"></ion-icon>
     </ion-button>
   </div>
   <ion-list class="marginBottom">

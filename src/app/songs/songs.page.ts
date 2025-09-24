@@ -28,6 +28,7 @@ export class SongsPage implements OnInit {
     initialBreakpoint: 0.7,
   };
   public groupCategories: GroupCategory[] = [];
+  public filterOpts = {};
 
   constructor(
     private db: DbService,
@@ -194,6 +195,10 @@ export class SongsPage implements OnInit {
 
   getInstrumentText(instrumentIds: number[]): string {
     return Utils.getInstrumentText(instrumentIds, this.instruments, this.groupCategories);
+  }
+
+  async openFilterOptions() {
+    Utils.showToast("Filteroptionen sind noch nicht implementiert", "warning");
   }
 
 }
