@@ -266,6 +266,7 @@ export type Database = {
       }
       instruments: {
         Row: {
+          category: number | null
           clefs: string[] | null
           created_at: string | null
           id: number
@@ -278,6 +279,7 @@ export type Database = {
           tuning: string | null
         }
         Insert: {
+          category?: number | null
           clefs?: string[] | null
           created_at?: string | null
           id?: number
@@ -290,6 +292,7 @@ export type Database = {
           tuning?: string | null
         }
         Update: {
+          category?: number | null
           clefs?: string[] | null
           created_at?: string | null
           id?: number
@@ -302,6 +305,13 @@ export type Database = {
           tuning?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "instruments_category_fkey"
+            columns: ["category"]
+            isOneToOne: false
+            referencedRelation: "group_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "public_instruments_tenantId_fkey"
             columns: ["tenantId"]
@@ -356,6 +366,7 @@ export type Database = {
           signins: boolean
           signouts: boolean
           telegram_chat_id: string | null
+          updates: boolean | null
         }
         Insert: {
           birthdays?: boolean
@@ -366,6 +377,7 @@ export type Database = {
           signins?: boolean
           signouts?: boolean
           telegram_chat_id?: string | null
+          updates?: boolean | null
         }
         Update: {
           birthdays?: boolean
@@ -376,6 +388,7 @@ export type Database = {
           signins?: boolean
           signouts?: boolean
           telegram_chat_id?: string | null
+          updates?: boolean | null
         }
         Relationships: []
       }
@@ -780,8 +793,10 @@ export type Database = {
           parents: boolean | null
           practiceEnd: string | null
           practiceStart: string | null
+          region: string | null
           seasonStart: string | null
           shortName: string | null
+          showHolidays: boolean | null
           type: string | null
           withExcuses: boolean | null
         }
@@ -794,8 +809,10 @@ export type Database = {
           parents?: boolean | null
           practiceEnd?: string | null
           practiceStart?: string | null
+          region?: string | null
           seasonStart?: string | null
           shortName?: string | null
+          showHolidays?: boolean | null
           type?: string | null
           withExcuses?: boolean | null
         }
@@ -808,8 +825,10 @@ export type Database = {
           parents?: boolean | null
           practiceEnd?: string | null
           practiceStart?: string | null
+          region?: string | null
           seasonStart?: string | null
           shortName?: string | null
+          showHolidays?: boolean | null
           type?: string | null
           withExcuses?: boolean | null
         }

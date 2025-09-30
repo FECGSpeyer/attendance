@@ -273,8 +273,4 @@ export class SongsPage implements OnInit {
     return Utils.getInstrumentText(instrumentIds, this.instruments, this.groupCategories);
   }
 
-  async openFilterOptions() {
-    Utils.showToast("Filteroptionen sind noch nicht implementiert", "warning");
-  }
-
 }

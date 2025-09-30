@@ -132,11 +132,91 @@
         <ion-item>
           <ion-label position="stacked">Datum</ion-label>
           <ion-input readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
+          <ion-button id="info-button" (click)="showHolidayInfo = true" fill="clear" slot="end">
+            <ion-icon name="information"></ion-icon>
+          </ion-button>
+          <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="info-button">
+            <ng-template>
+              <ion-content>
+                <ion-card>
+                  <ion-card-header>
+                    <ion-card-title>Legende</ion-card-title>
+                  </ion-card-header>
+                    <ion-list>
+                      <ion-item lines="none">
+                        @if (isGeneral) {
+                        <ion-badge slot="start" color="primary">Zusammenkünfte</ion-badge>
+                        } @else {
+                        <ion-badge slot="start" color="primary">Übungen</ion-badge>
+                        }
+                        @if (isGeneral) {
+                        <ion-label>Regelmäßige Zusammenkünfte</ion-label>
+                        } @else {
+                        <ion-label>Regelmäßige Proben</ion-label>
+                        }
+                      </ion-item>
+                      @if (!isGeneral) {
+                      <ion-item lines="none">
+                        <ion-badge slot="start" color="success">Vorträge</ion-badge>
+                        <ion-label>Vorträge</ion-label>
+                      </ion-item>
+                      @if (isChoir) {
+                      <ion-item lines="none">
+                        <ion-badge slot="start" color="warning">Hochzeiten</ion-badge>
+                        <ion-label>Hochzeiten</ion-label>
+                      </ion-item>
+                      }
+                      <ion-item lines="none">
+                        <ion-badge slot="start" color="secondary">Sonstiges</ion-badge>
+                        <ion-label>Sonstige Veranstaltungen</ion-label>
+                      </ion-item>
+                      }
+                      @if (holidays.publicHolidays.length || holidays.schoolHolidays.length) {
+                      <ion-item lines="none">
+                        <ion-badge slot="start" color="danger">Feiertage</ion-badge>
+                        <ion-label>Feiertage des ausgewählten Bundeslandes</ion-label>
+                      </ion-item>
+                      <ion-item lines="none">
+                        <ion-badge slot="start" color="medium">Ferien</ion-badge>
+                        <ion-label>Ferien des ausgewählten Bundeslandes</ion-label>
+                      </ion-item>
+                      }
+                    </ion-list>
+                </ion-card>
+                <ion-list-header>
+                  <ion-label>Ferien</ion-label>
+                </ion-list-header>
+                @for (holiday of holidays.schoolHolidays; track holiday.id) {
+                <ion-item *ngIf="!holiday.gone">
+                  <ion-label>
+                    <h2>{{ holiday.startDate | date:'dd.MM.yyyy' }} - {{ holiday.endDate | date:'dd.MM.yyyy' }}: {{
+                      holiday.name[0].text }}</h2>
+                  </ion-label>
+                </ion-item>
+                }
+                <ion-list>
+                  <ion-list-header>
+                    <ion-label>Feiertage</ion-label>
+                  </ion-list-header>
+                  @for (holiday of holidays.publicHolidays; track holiday.id) {
+                  <ion-item *ngIf="!holiday.gone">
+                    <ion-label>
+                      <h2>{{ holiday.startDate | date:'dd.MM.yyyy' }}: {{ holiday.name[0].text }}</h2>
+                    </ion-label>
+                  </ion-item>
+                  }
+                </ion-list>
+              </ion-content>
+            </ng-template>
+          </ion-modal>
           <ion-modal #dateModal class="dateModal" trigger="att-date-modal">
             <ng-template>
               <ion-content>
-                <ion-datetime multiple="true" [(ngModel)]="dates" (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)"
-                  presentation="date" #dateTimePickerDate></ion-datetime>
+                <ion-datetime [highlightedDates]="highlightedDates" show-adjacent-days="true" locale="de-DE"
+                  [firstDayOfWeek]="1" multiple="true" [(ngModel)]="dates"
+                  (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)" presentation="date"
+                  #dateTimePickerDate>
+                </ion-datetime>
               </ion-content>
             </ng-template>
           </ion-modal>
@@ -144,9 +224,9 @@
         <ion-item>
           <ion-select label="Kategorie" (ionChange)="onTypeChange()" [(ngModel)]="type">
             @if (isGeneral) {
-              <ion-select-option value="uebung">Zusammenkunft</ion-select-option>
+            <ion-select-option value="uebung">Zusammenkunft</ion-select-option>
             } @else {
-              <ion-select-option value="uebung">Probe</ion-select-option>
+            <ion-select-option value="uebung">Probe</ion-select-option>
             }
             <ion-select-option *ngIf="!isGeneral" value="vortrag">Vortrag</ion-select-option>
             <ion-select-option *ngIf="isChoir" value="hochzeit">Hochzeit</ion-select-option>
@@ -211,7 +291,9 @@
         </ion-item>
         } -->
         <ion-item>
-          <ion-toggle helperText="Der Status wird bei allen Personen auf Neutral gesetzt. So kann man einfach nachvollziehen, wer sich schon an- oder abgemeldet hat." slot="end" [(ngModel)]="hasNeutral">Neutral</ion-toggle>
+          <ion-toggle
+            helperText="Der Status wird bei allen Personen auf Neutral gesetzt. So kann man einfach nachvollziehen, wer sich schon an- oder abgemeldet hat."
+            slot="end" [(ngModel)]="hasNeutral">Neutral</ion-toggle>
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>

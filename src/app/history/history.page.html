@@ -93,7 +93,7 @@
           <ion-modal #dateModal class="dateModal" trigger="att-date-modal">
             <ng-template>
               <ion-content>
-                <ion-datetime [(ngModel)]="historyEntry.date"
+                <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [(ngModel)]="historyEntry.date"
                   (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)" presentation="date"
                   #dateTimePickerDate></ion-datetime>
               </ion-content>

@@ -9,6 +9,7 @@ import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable
 import { Attendance, History, Instrument, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
+import { Holiday } from 'open-holiday-js';
 
 const options: SupabaseClientOptions<any> = {
   auth: {
@@ -1523,6 +1524,7 @@ export class DbService {
         birthdays: true,
         signins: true,
         signouts: true,
+        updates: true,
       };
 
       await supabase
@@ -1755,5 +1757,24 @@ export class DbService {
     }
 
     return;
+  }
+
+  async getHolidays(region: string) {
+    const holiday = new Holiday();
+    const start = dayjs().startOf("year").toDate();
+    const end = dayjs().add(1, "year").endOf("year").toDate();
+    const publicHolidays = (await holiday.getPublicHolidays("DE", start, end, `DE-${region}`)).map((h) => {
+      return {
+        ...h,
+        gone: dayjs(h.startDate).isBefore(dayjs(), 'day'),
+      }
+    });
+    const schoolHolidays = (await holiday.getSchoolHolidays("DE", start, end, `DE-${region}`, "DE")).map((h) => {
+      return {
+        ...h,
+        gone: dayjs(h.startDate).isBefore(dayjs(), 'day'),
+      }
+    });
+    return {publicHolidays, schoolHolidays};
   }
 }

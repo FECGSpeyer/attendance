@@ -111,8 +111,8 @@ export class SignoutPage implements OnInit {
     if (vergangene.length) {
       this.lateCount = vergangene.filter((a) => a.status === AttendanceStatus.Late).length;
       vergangene[0].showDivider = true;
-      this.perc = Math.round(vergangene.filter((att: PersonAttendance) =>
-        att.status === AttendanceStatus.Present || att.status === AttendanceStatus.Late).length / vergangene.length * 100);
+      const attended = vergangene.filter((att: PersonAttendance) => att.attended);
+      this.perc = Math.round(attended.length / vergangene.length * 100);
     }
   }
 

@@ -10,6 +10,7 @@ export interface Tenant {
     shortName: string;
     longName: string;
     maintainTeachers: boolean;
+    showHolidays: boolean;
     type: string;
     withExcuses: boolean;
     practiceStart?: string;
@@ -17,6 +18,7 @@ export interface Tenant {
     seasonStart?: string;
     parents?: boolean;
     betaProgram: boolean;
+    region?: string;
     role?: Role;
 }
 
@@ -40,6 +42,7 @@ export interface NotificationConfig {
     signins: boolean;
     signouts: boolean;
     enabled_tenants?: number[];
+    updates: boolean;
 }
 
 export interface Viewer {

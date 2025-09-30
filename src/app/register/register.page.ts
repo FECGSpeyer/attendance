@@ -17,6 +17,7 @@ export class RegisterPage implements OnInit {
     withExcuses: true,
     type: 'general',
     betaProgram: true,
+    showHolidays: false,
   };
   public mainGroupName: string = '';
   public canDismiss: boolean = true;

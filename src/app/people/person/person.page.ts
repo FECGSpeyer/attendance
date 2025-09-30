@@ -513,7 +513,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   getAttText(text: string) {
     return text === 'X' ? '✓' :
       text === 'L' ? 'L' :
-        text === 'E' ? 'E' : 'A';
+        text === 'E' ? 'E' : text === 'N' ? 'N' : 'A';
   }
 
   async onHisItemClicked(his: PlayerHistoryEntry) {

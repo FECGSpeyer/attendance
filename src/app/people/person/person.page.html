@@ -106,7 +106,7 @@
                 <ion-modal #birthdayModal trigger="date-modal">
                   <ng-template>
                     <ion-content>
-                      <ion-datetime [max]="max" [(ngModel)]="player.birthday"
+                      <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max" [(ngModel)]="player.birthday"
                         (ionChange)="onBirthdayChange(dateTimePickerBirthday.value, birthdayModal)" presentation="date"
                         #dateTimePickerBirthday></ion-datetime>
                     </ion-content>
@@ -123,7 +123,7 @@
                 <ion-modal #playsSinceModal trigger="plays-modal">
                   <ng-template>
                     <ion-content>
-                      <ion-datetime [max]="max" [(ngModel)]="player.playsSince"
+                      <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max" [(ngModel)]="player.playsSince"
                         (ionChange)="onPlaysSinceChange(dateTimePickerPlays.value, playsSinceModal)" presentation="date"
                         #dateTimePickerPlays></ion-datetime>
                     </ion-content>
@@ -140,7 +140,7 @@
                 <ion-modal #joinedModal trigger="joined-modal">
                   <ng-template>
                     <ion-content>
-                      <ion-datetime [max]="max" [(ngModel)]="player.joined"
+                      <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max" [(ngModel)]="player.joined"
                         (ionChange)="onJoinedChange(dateTimePickerJoined.value, joinedModal)" presentation="date"
                         #dateTimePickerJoined></ion-datetime>
                     </ion-content>
@@ -315,6 +315,7 @@
 
               <ion-badge *ngIf="att.type === 4" slot="end" [color]="att.text === 'X' ? 'success' :
                                                                     att.text === 'A' ? 'danger' :
+                                                                    att.text === 'N' ? 'medium' :
                                                                     att.text === 'L' ? 'tertiary' : 'warning'">
                 {{ getAttText(att.text) }}</ion-badge>
             </ion-item>

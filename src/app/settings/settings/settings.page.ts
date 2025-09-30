@@ -26,6 +26,8 @@ export class SettingsPage implements OnInit {
   public playersWithoutAccount: Player[] = [];
   public version: string = require('../../../../package.json').version;
   public maintainTeachers: boolean = false;
+  public showHolidays: boolean = false;
+  public region: string = 'RLP';
   public instruments: Instrument[] = [];
   public viewers: Viewer[] = [];
   public parents: Parent[] = [];
@@ -48,6 +50,25 @@ export class SettingsPage implements OnInit {
     breakpoints: [0, 0.5, 1],
     initialBreakpoint: 0.5,
   };
+  public isOrchestra: boolean = false;
+  public holidayStates = [
+    { name: "Baden-Württemberg", code: "BW" },
+    { name: "Bayern", code: "BY" },
+    { name: "Berlin", code: "BE" },
+    { name: "Brandenburg", code: "BB" },
+    { name: "Bremen", code: "HB" },
+    { name: "Hamburg", code: "HH" },
+    { name: "Hessen", code: "HE" },
+    { name: "Mecklenburg-Vorpommern", code: "MV" },
+    { name: "Niedersachsen", code: "NI" },
+    { name: "Nordrhein-Westfalen", code: "NW" },
+    { name: "Rheinland-Pfalz", code: "RP" },
+    { name: "Saarland", code: "SL" },
+    { name: "Sachsen", code: "SN" },
+    { name: "Sachsen-Anhalt", code: "ST" },
+    { name: "Schleswig-Holstein", code: "SH" },
+    { name: "Thüringen", code: "TH" },
+  ];
 
   constructor(
     public db: DbService,
@@ -68,6 +89,7 @@ export class SettingsPage implements OnInit {
   }
 
   async initialize(): Promise<void> {
+    this.isOrchestra = this.db.tenant().type === 'orchestra';
     this.isGeneral = this.db.tenant().type === 'general';
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isHelper = this.db.tenantUser().role === Role.HELPER;
@@ -76,6 +98,8 @@ export class SettingsPage implements OnInit {
     this.attDate = await this.db.getCurrentAttDate();
     this.tenantId = this.db.tenant().id;
     this.maintainTeachers = this.db.tenant().maintainTeachers;
+    this.region = this.db.tenant().region;
+    this.showHolidays = this.db.tenant().showHolidays;
     this.practiceStart = this.db.tenant().practiceStart || '18:00';
     this.practiceEnd = this.db.tenant().practiceEnd || '20:00';
     this.parentsEnabled = this.db.tenant().parents || false;
@@ -109,6 +133,9 @@ export class SettingsPage implements OnInit {
         shortName: this.shortName,
         longName: this.longName,
         parents: this.parentsEnabled,
+        region: this.region,
+        maintainTeachers: this.maintainTeachers,
+        showHolidays: this.showHolidays,
       });
       Utils.showToast("Einstellungen gespeichert", "success");
 

@@ -1,6 +1,6 @@
 {
   "name": "attendix",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "author": "Matthias Eckstaedt",
   "homepage": "https://attendix.de/",
   "scripts": {
@@ -41,6 +41,7 @@
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.23",
     "ngx-quill": "^26.0.8",
+    "open-holiday-js": "^1.0.3",
     "quill": "^2.0.2",
     "rxjs": "^7.5.0",
     "tslib": "^2.2.0",

@@ -36,6 +36,8 @@
             <ng-template>
               <ion-content>
                 <ion-datetime
+                  locale="de-DE"
+                  [firstDayOfWeek]="1"
                   [(ngModel)]="date"
                   (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)"
                   presentation="date"

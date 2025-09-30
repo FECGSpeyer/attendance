@@ -22,6 +22,7 @@ export class AttListPage implements OnInit {
   public type: string = 'uebung';
   public attendances: Attendance[] = [];
   public oldAttendances: Attendance[] = [];
+  public allAttendances: Attendance[] = [];
   public currentAttendance: Attendance;
   public isConductor: boolean = false;
   public isHelper: boolean = false;
@@ -41,9 +42,75 @@ export class AttListPage implements OnInit {
     person_id: 0,
     date: new Date().toISOString(),
   };
+  public holidays: { schoolHolidays: any[], publicHolidays: any[] } = { schoolHolidays: [], publicHolidays: [] };
   public activeConductors: Person[] = [];
   public otherConductor: number = 9999999999;
   public historyEntries: History[] = [];
+
+  highlightedDates = (isoString: string) => {
+    const date = new Date(isoString);
+    const day = date.getDay();
+
+    const att = this.allAttendances.find((att: Attendance) => dayjs(att.date).isSame(dayjs(date), 'day'));
+    if (att) {
+      switch (att.type) {
+        case "uebung":
+          return {
+            textColor: 'var(--ion-color-primary)',
+            backgroundColor: 'rgb(var(--ion-color-primary-rgb), 0.18)',
+          };
+        case "vortrag":
+          return {
+            textColor: 'var(--ion-color-success)',
+            backgroundColor: 'rgb(var(--ion-color-success-rgb), 0.18)',
+          };
+        case "hochzeit":
+          return {
+            textColor: 'var(--ion-color-warning)',
+            backgroundColor: 'rgb(var(--ion-color-warning-rgb), 0.18)',
+          };
+        case "sonstiges":
+          return {
+            textColor: 'var(--ion-color-secondary)',
+            backgroundColor: 'rgb(var(--ion-color-secondary-rgb), 0.18)',
+          };
+        default:
+          return undefined;
+      }
+    }
+
+    if (this.holidays.publicHolidays.find(h => {
+      if (dayjs(date).isSame(dayjs(h.startDate), 'day')) { return true; }
+      if (dayjs(date).isSame(dayjs(h.endDate), 'day')) { return true; }
+      if (dayjs(date).isAfter(dayjs(h.startDate)) && dayjs(date).isBefore(dayjs(h.endDate))) { return true; }
+      return false;
+    })) {
+      return {
+        textColor: 'var(--ion-color-danger)',
+        backgroundColor: 'rgb(var(--ion-color-danger-rgb), 0.18)',
+      };
+    }
+
+    if (this.holidays.schoolHolidays.find(h => {
+      if (dayjs(date).isSame(dayjs(h.startDate), 'day')) { return true; }
+      if (dayjs(date).isSame(dayjs(h.endDate), 'day')) { return true; }
+      if (dayjs(date).isAfter(dayjs(h.startDate)) && dayjs(date).isBefore(dayjs(h.endDate))) { return true; }
+      return false;
+    })) {
+      return {
+        textColor: 'var(--ion-color-medium)',
+        backgroundColor: 'rgb(var(--ion-color-medium-rgb), 0.18)',
+      };
+    }
+
+    // if (day === 0 || day === 6) {
+    //   return {
+    //     textColor: 'rgb(var(--ion-color-medium-rgb), .5)',
+    //   };
+    // }
+
+    return undefined;
+  };
 
   constructor(
     private db: DbService,
@@ -70,6 +137,10 @@ export class AttListPage implements OnInit {
     this.activeConductors = conductors.filter((con: Person) => !con.left);
     this.historyEntry.person_id = this.activeConductors[0]?.id;
     await this.getAttendance();
+
+    if (this.db.tenant().showHolidays && this.db.tenant().region) {
+      this.holidays = await this.db.getHolidays(this.db.tenant().region);
+    }
 
     this.subscribeOnAttChannel();
 
@@ -113,6 +184,7 @@ export class AttListPage implements OnInit {
       }
     });
 
+    this.allAttendances = attendances;
     this.attendances = attendances.filter((att: Attendance) => dayjs(att.date).isAfter(dayjs().startOf("day"))).reverse();
     this.oldAttendances = attendances.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
     if (this.attendances.length) {
