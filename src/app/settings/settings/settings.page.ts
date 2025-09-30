@@ -27,7 +27,7 @@ export class SettingsPage implements OnInit {
   public version: string = require('../../../../package.json').version;
   public maintainTeachers: boolean = false;
   public showHolidays: boolean = false;
-  public region: string = 'RLP';
+  public region: string = 'RP';
   public instruments: Instrument[] = [];
   public viewers: Viewer[] = [];
   public parents: Parent[] = [];
