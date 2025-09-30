@@ -287,7 +287,7 @@
               </ion-toolbar>
             </ion-header>
             <ion-list>
-              <ion-item-sliding *ngFor="let tenant of tenantsFromUser" #sliding>
+              <ion-item-sliding *ngFor="let tenant of db.tenants()" #sliding>
                 <ion-item detail="false" button (click)="onTenantChange(tenant.id, instancesModal)">
                   <ion-label>
                     <h2>{{ tenant.shortName }}</h2>
@@ -295,7 +295,7 @@
                   </ion-label>
                   <ion-badge *ngIf="db.tenant().id === tenant.id" color="primary">Aktuell</ion-badge>
                 </ion-item>
-                <ion-item-options *ngIf="tenant.role === 1 && !db.isDemo()" (ionSwipe)="deleteInstance(tenant, sliding)"
+                <ion-item-options *ngIf="canDeleteTenant(tenant)" (ionSwipe)="deleteInstance(tenant, sliding)"
                   side="end">
                   <ion-item-option (click)="deleteInstance(tenant, sliding)" color="danger">
                     <ion-icon size="small" slot="icon-only" name="trash"></ion-icon>

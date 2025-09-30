@@ -438,4 +438,13 @@ export class SettingsPage implements OnInit {
 
     await alert.present();
   }
+
+  canDeleteTenant(tenant: Tenant): boolean {
+    if (tenant.id === this.db.tenant().id) {
+      return this.isSuperAdmin && !this.db.isDemo();
+    }
+
+    const found = this.tenantsFromUser.find(t => t.id === tenant.id);
+    return found?.role === Role.ADMIN && !this.db.isDemo();
+  }
 }
