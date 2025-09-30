@@ -15,9 +15,3 @@ ion-modal.dateModal ion-datetime {
 ion-card {
   margin-top: 1rem;
 }
-
-ion-datetime.ios::part(calendar-day active),
-ion-datetime.ios::part(calendar-day active):focus {
-  background-color: rgb(154 209 98 / 0.2);
-  color: #9ad162;
-}

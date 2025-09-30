@@ -1,5 +1,5 @@
 import { Component, OnInit, effect } from '@angular/core';
-import { AlertController, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
+import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { ExportPage } from 'src/app/export/export.page';
@@ -9,7 +9,7 @@ import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { StatsPage } from 'src/app/stats/stats.page';
 import { AttendanceType, Role } from 'src/app/utilities/constants';
-import { Instrument, Parent, Person, Player } from 'src/app/utilities/interfaces';
+import { Instrument, Parent, Person, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { Viewer } from '../../utilities/interfaces';
 import { Router } from '@angular/router';
@@ -38,19 +38,14 @@ export class SettingsPage implements OnInit {
   public practiceStart: string;
   public practiceEnd: string;
   public shortName: string = '';
-  public longName: string = ''
-  public tenantId: number;
+  public longName: string = '';
   public isHelper: boolean = false;
   public isPlayer: boolean = false;
   public isGeneral: boolean = false;
   public max: string = new Date().toISOString();
   public parentsEnabled: boolean = false;
-  public customModalOptions = {
-    header: 'Instanz wechseln',
-    breakpoints: [0, 0.5, 1],
-    initialBreakpoint: 0.5,
-  };
   public isOrchestra: boolean = false;
+  public tenantsFromUser: Tenant[] = [];
   public holidayStates = [
     { name: "Baden-Württemberg", code: "BW" },
     { name: "Bayern", code: "BY" },
@@ -96,7 +91,6 @@ export class SettingsPage implements OnInit {
     this.isPlayer = this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.NONE;
     this.isSuperAdmin = this.db.tenantUser().role === Role.ADMIN;
     this.attDate = await this.db.getCurrentAttDate();
-    this.tenantId = this.db.tenant().id;
     this.maintainTeachers = this.db.tenant().maintainTeachers;
     this.region = this.db.tenant().region;
     this.showHolidays = this.db.tenant().showHolidays;
@@ -113,6 +107,7 @@ export class SettingsPage implements OnInit {
       this.parents = await this.db.getParents();
     }
     this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
+    this.tenantsFromUser = await this.db.getTenantsFromUser(this.db.tenantUser().userId);
   }
 
   async ionViewWillEnter() {
@@ -307,12 +302,19 @@ export class SettingsPage implements OnInit {
     }
   }
 
-  async onTenantChange(): Promise<void> {
-    await this.db.setTenant(this.tenantId);
+  async onTenantChange(tenantId: number, modal: IonModal): Promise<void> {
+    if (this.db.tenant().id === tenantId) {
+      return;
+    }
+
+    modal?.dismiss();
+
+    await this.db.setTenant(tenantId);
     this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser().role));
   }
 
-  async openCreateInstanceModal() {
+  async openCreateInstanceModal(instancesModal: IonModal) {
+    instancesModal?.dismiss();
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: RegisterPage,
       presentingElement: this.routerOutlet.nativeEl,
@@ -407,8 +409,9 @@ export class SettingsPage implements OnInit {
     await alert.present();
   }
 
-  async deleteInstance() {
-    const message = `Möchtest du die Instanz '${this.db.tenant().longName}' wirklich löschen? Dies kann nicht rückgängig gemacht werden! Wenn du die Instanz wirklich löschen willst, dann gebe den Namen der Instanz ein:`;
+  async deleteInstance(tenant: Tenant, slider: IonItemSliding) {
+    slider.close();
+    const message = `Möchtest du die Instanz '${tenant.longName}' wirklich löschen? Dies kann nicht rückgängig gemacht werden! Wenn du die Instanz wirklich löschen willst, dann gebe den Namen der Instanz ein:`;
 
     const alert = await new AlertController().create({
       header: 'Instanz löschen?',
@@ -423,8 +426,8 @@ export class SettingsPage implements OnInit {
       }, {
         text: "Löschen",
         handler: async (evt) => {
-          if (evt.name === this.db.tenant().longName) {
-            await this.db.deleteInstance(this.db.tenant().id);
+          if (evt.name === tenant.longName) {
+            await this.db.deleteInstance(tenant.id);
           } else {
             alert.message = "Der eingegebene Name ist nicht korrekt.";
             return false;

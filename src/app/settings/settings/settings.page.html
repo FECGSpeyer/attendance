@@ -96,7 +96,8 @@
             </ion-item>
             }
             <ion-item *ngIf="isOrchestra">
-              <ion-toggle helperText="Aktivieren, um die Lehrer der Spieler verwalten zu können." [(ngModel)]="maintainTeachers">Lehrer
+              <ion-toggle helperText="Aktivieren, um die Lehrer der Spieler verwalten zu können."
+                [(ngModel)]="maintainTeachers">Lehrer
                 pflegen</ion-toggle>
             </ion-item>
             <ion-item>
@@ -266,16 +267,50 @@
 
   <ion-card-subtitle>System</ion-card-subtitle>
   <ion-card>
-    <!-- <ion-list-header>
-      <ion-label>System</ion-label>
-    </ion-list-header> -->
-    <ion-item *ngIf="db.tenants().length > 1">
+    <ion-item id="instances-button" button detail="false">
       <ion-icon name="apps-outline" slot="start"></ion-icon>
-      <ion-select interface="modal" [interfaceOptions]="customModalOptions" label="Instanz wechseln"
-        [(ngModel)]="tenantId" (ionChange)="onTenantChange()">
-        <ion-select-option [value]="tenant.id" *ngFor="let tenant of db.tenants()">{{ tenant.longName
-          }}</ion-select-option>
-      </ion-select>
+      <ion-label>
+        <h2>Instanzen</h2>
+        <h3>Aktuell: {{ db.tenant().longName }}</h3>
+      </ion-label>
+      <ion-modal #instancesModal trigger="instances-button" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]=".5">
+        <ng-template>
+          <ion-content>
+            <ion-header>
+              <ion-toolbar>
+                <ion-title>Instanzen</ion-title>
+                <ion-buttons slot="end">
+                  <ion-button (click)="instancesModal.dismiss()">
+                    <ion-icon name="close-outline" slot="start"></ion-icon>
+                  </ion-button>
+                </ion-buttons>
+              </ion-toolbar>
+            </ion-header>
+            <ion-list>
+              <ion-item-sliding *ngFor="let tenant of tenantsFromUser" #sliding>
+                <ion-item detail="false" button (click)="onTenantChange(tenant.id, instancesModal)">
+                  <ion-label>
+                    <h2>{{ tenant.shortName }}</h2>
+                    <h3>{{ tenant.longName }}</h3>
+                  </ion-label>
+                  <ion-badge *ngIf="db.tenant().id === tenant.id" color="primary">Aktuell</ion-badge>
+                </ion-item>
+                <ion-item-options *ngIf="tenant.role === 1 && !db.isDemo()" (ionSwipe)="deleteInstance(tenant, sliding)"
+                  side="end">
+                  <ion-item-option (click)="deleteInstance(tenant, sliding)" color="danger">
+                    <ion-icon size="small" slot="icon-only" name="trash"></ion-icon>
+                  </ion-item-option>
+                </ion-item-options>
+              </ion-item-sliding>
+            </ion-list>
+            <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+              <ion-fab-button (click)="openCreateInstanceModal(instancesModal)">
+                <ion-icon name="add"></ion-icon>
+              </ion-fab-button>
+            </ion-fab>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
     </ion-item>
 
     @if (isAdmin || isHelper || isPlayer) {
@@ -291,16 +326,6 @@
       (click)="showAlertForAccountsCreation()">
       <ion-icon name="create-outline" slot="start"></ion-icon>
       <ion-label>Fehlende Benutzeraccounts anlegen</ion-label>
-    </ion-item>
-
-    <ion-item detail="false" button (click)="openCreateInstanceModal()">
-      <ion-icon name="add-outline" slot="start"></ion-icon>
-      <ion-label>Neue Instanz anlegen</ion-label>
-    </ion-item>
-
-    <ion-item detail="false" button *ngIf="isSuperAdmin && !db.isDemo()" (click)="deleteInstance()">
-      <ion-icon name="trash-outline" slot="start"></ion-icon>
-      <ion-label>Instanz löschen</ion-label>
     </ion-item>
 
     <ion-item button detail="false" id="whatsnew-button">
@@ -326,6 +351,8 @@
                   <h2>- Der Kalender beim erstellen von Anwesenheiten wurde verbessert (farbliche Anpassungen)</h2>
                   <h2>- Feiertage/Schulferien können nun berücksichtigt werden</h2>
                   <h2>- Lehrerpflege für Orchester</h2>
+                  <h2>- Neue Anordnung bei den Personen-Informationen</h2>
+                  <h2>- Instanzeinstellungen optimiert</h2>
                 </ion-label>
               </ion-item>
               <ion-list-header>Version 3.0.0</ion-list-header>

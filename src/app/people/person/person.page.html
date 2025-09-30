@@ -62,22 +62,10 @@
   <ion-accordion-group *ngIf="player" [value]="existingPlayer && !readOnly ? '' : 'more'">
     <ion-accordion value="more">
       <ion-item slot="header" color="light">
-        <ion-label>Allgemeine Infos</ion-label>
+        <ion-label>Allgemein</ion-label>
       </ion-item>
       <div slot="content">
         <ion-grid>
-          <ion-row *ngIf="existingPlayer && !readOnly">
-            <ion-col>
-              <input style="display: none;" name="file" #chooser (change)="onImageSelect($event)" accept="image/*"
-                class="inputFile" type="file" />
-              <ion-item button lines="none" (click)="changeImg()">
-                <ion-label>Profilbild</ion-label>
-                <ion-avatar slot="end">
-                  <img [src]="player.img" />
-                </ion-avatar>
-              </ion-item>
-            </ion-col>
-          </ion-row>
           <ion-row>
             <ion-col>
               <ion-item>
@@ -106,7 +94,8 @@
                 <ion-modal #birthdayModal trigger="date-modal">
                   <ng-template>
                     <ion-content>
-                      <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max" [(ngModel)]="player.birthday"
+                      <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+                        [(ngModel)]="player.birthday"
                         (ionChange)="onBirthdayChange(dateTimePickerBirthday.value, birthdayModal)" presentation="date"
                         #dateTimePickerBirthday></ion-datetime>
                     </ion-content>
@@ -123,7 +112,8 @@
                 <ion-modal #playsSinceModal trigger="plays-modal">
                   <ng-template>
                     <ion-content>
-                      <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max" [(ngModel)]="player.playsSince"
+                      <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+                        [(ngModel)]="player.playsSince"
                         (ionChange)="onPlaysSinceChange(dateTimePickerPlays.value, playsSinceModal)" presentation="date"
                         #dateTimePickerPlays></ion-datetime>
                     </ion-content>
@@ -140,7 +130,8 @@
                 <ion-modal #joinedModal trigger="joined-modal">
                   <ng-template>
                     <ion-content>
-                      <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max" [(ngModel)]="player.joined"
+                      <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+                        [(ngModel)]="player.joined"
                         (ionChange)="onJoinedChange(dateTimePickerJoined.value, joinedModal)" presentation="date"
                         #dateTimePickerJoined></ion-datetime>
                     </ion-content>
@@ -233,40 +224,58 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="!isParent">
+          <ion-row *ngIf="existingPlayer && !readOnly">
             <ion-col>
-              <ion-item>
-                <ion-label position="stacked">E-Mail</ion-label>
-                <ion-input [disabled]="player.appId || readOnly" (ionChange)="onChange()"
-                  [(ngModel)]="player.email"></ion-input>
-                <ion-button *ngIf="!player.appId && !readOnly" slot="end" (click)="searchPerson()">
-                  <ion-icon name="search"></ion-icon>
-                </ion-button>
-                <ion-button color="danger" *ngIf="player.appId && !readOnly" slot="end" (click)="removeUserFromTenant()">
-                  <ion-icon name="trash"></ion-icon>
-                </ion-button>
-              </ion-item>
-            </ion-col>
-          </ion-row>
-          <ion-row *ngIf="!isMainGroup && player.email && player.appId">
-            <ion-col>
-              <ion-item>
-                <ion-select (ionChange)="onRoleChange()" label="Rolle" type="number"
-                  [disabled]="readOnly || isMainGroup" [(ngModel)]="role">
-                  <ion-select-option [value]="PLAYER">Mitglied</ion-select-option>
-                  <ion-select-option [value]="RESPONSIBLE">Verantwortlicher</ion-select-option>
-                  <ion-select-option [value]="HELPER">Helfer</ion-select-option>
-                </ion-select>
+              <input style="display: none;" name="file" #chooser (change)="onImageSelect($event)" accept="image/*"
+                class="inputFile" type="file" />
+              <ion-item button lines="none" (click)="changeImg()">
+                <ion-label>Profilbild</ion-label>
+                <ion-avatar slot="end">
+                  <img [src]="player.img" />
+                </ion-avatar>
               </ion-item>
             </ion-col>
           </ion-row>
         </ion-grid>
       </div>
     </ion-accordion>
-  </ion-accordion-group>
 
-  <ion-accordion-group *ngIf="otherTenants.length">
-    <ion-accordion value="otherTenants">
+    <ion-accordion *ngIf="!isParent">
+      <ion-item slot="header" color="light">
+        <ion-label>Account</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-row>
+          <ion-col>
+            <ion-item>
+              <ion-label position="stacked">E-Mail</ion-label>
+              <ion-input [disabled]="player.appId || readOnly" (ionChange)="onChange()"
+                [(ngModel)]="player.email"></ion-input>
+              <ion-button *ngIf="!player.appId && !readOnly" slot="end" (click)="searchPerson()">
+                <ion-icon name="search"></ion-icon>
+              </ion-button>
+              <ion-button color="danger" *ngIf="player.appId && !readOnly" slot="end" (click)="removeUserFromTenant()">
+                <ion-icon name="trash"></ion-icon>
+              </ion-button>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row *ngIf="!isMainGroup && player.email && player.appId">
+          <ion-col>
+            <ion-item>
+              <ion-select (ionChange)="onRoleChange()" label="Rolle" type="number" [disabled]="readOnly || isMainGroup"
+                [(ngModel)]="role">
+                <ion-select-option [value]="PLAYER">Mitglied</ion-select-option>
+                <ion-select-option [value]="RESPONSIBLE">Verantwortlicher</ion-select-option>
+                <ion-select-option [value]="HELPER">Helfer</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </div>
+    </ion-accordion>
+
+    <ion-accordion *ngIf="otherTenants.length" value="otherTenants">
       <ion-item slot="header" color="light">
         <ion-label>Andere Instanzen</ion-label>
       </ion-item>
