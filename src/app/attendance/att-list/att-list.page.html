@@ -132,7 +132,7 @@
         <ion-item>
           <ion-label position="stacked">Datum</ion-label>
           <ion-input readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
-          <ion-button id="info-button" (click)="showHolidayInfo = true" fill="clear" slot="end">
+          <ion-button id="info-button" fill="clear" slot="end">
             <ion-icon name="information"></ion-icon>
           </ion-button>
           <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="info-button">
