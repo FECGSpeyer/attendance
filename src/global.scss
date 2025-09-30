@@ -50,3 +50,10 @@ ion-modal ion-datetime {
 ion-badge {
     margin-left: .25rem;
 }
+
+ion-datetime.ios::part(calendar-day active),
+ion-datetime.ios::part(calendar-day active):focus {
+  background-color: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  font-weight: 300;
+}
