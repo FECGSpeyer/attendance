@@ -45,7 +45,7 @@ export class SettingsPage implements OnInit {
   public max: string = new Date().toISOString();
   public parentsEnabled: boolean = false;
   public isOrchestra: boolean = false;
-  public tenantsFromUser: Tenant[] = [];
+  public tenantsFromUser: { tenantId: number, role: Role }[] = [];
   public holidayStates = [
     { name: "Baden-Württemberg", code: "BW" },
     { name: "Bayern", code: "BY" },
@@ -107,7 +107,7 @@ export class SettingsPage implements OnInit {
       this.parents = await this.db.getParents();
     }
     this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
-    this.tenantsFromUser = await this.db.getTenantsFromUser(this.db.tenantUser().userId);
+    this.tenantsFromUser = await this.db.getUserRolesForTenants(this.db.tenantUser().userId);
   }
 
   async ionViewWillEnter() {
@@ -411,6 +411,12 @@ export class SettingsPage implements OnInit {
 
   async deleteInstance(tenant: Tenant, slider: IonItemSliding) {
     slider.close();
+
+    if (!this.canDeleteTenant(tenant)) {
+      Utils.showToast("Du kannst diese Instanz nicht löschen.", "danger");
+      return;
+    }
+
     const message = `Möchtest du die Instanz '${tenant.longName}' wirklich löschen? Dies kann nicht rückgängig gemacht werden! Wenn du die Instanz wirklich löschen willst, dann gebe den Namen der Instanz ein:`;
 
     const alert = await new AlertController().create({
@@ -440,11 +446,7 @@ export class SettingsPage implements OnInit {
   }
 
   canDeleteTenant(tenant: Tenant): boolean {
-    if (tenant.id === this.db.tenant().id) {
-      return this.isSuperAdmin && !this.db.isDemo();
-    }
-
-    const found = this.tenantsFromUser.find(t => t.id === tenant.id);
+    const found = this.tenantsFromUser.find(t => t.tenantId === tenant.id);
     return found?.role === Role.ADMIN && !this.db.isDemo();
   }
 }

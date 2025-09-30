@@ -1654,6 +1654,20 @@ export class DbService {
     ).map((tgt) => tgt.tenant);
   }
 
+  async getUserRolesForTenants(userId: string): Promise<{ tenantId: number, role: Role }[]> {
+    const { data, error } = await supabase
+      .from('tenantUsers')
+      .select('tenantId, role')
+      .eq('userId', userId);
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Mandanten", "danger");
+      throw error;
+    }
+
+    return data;
+  }
+
   async getTenantsFromUser(userId: string): Promise<Tenant[]> {
     const { data, error } = await supabase
       .from('tenantUsers')
