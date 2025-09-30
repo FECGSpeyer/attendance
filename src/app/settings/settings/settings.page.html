@@ -86,10 +86,6 @@
                 helperText="Aktivieren, um beim Anlegen der Anwesenheiten die Ferien und Feiertage hervorzuheben. (nur verfügbar für Deutschland)"
                 [(ngModel)]="showHolidays">Ferien/Feiertage anzeigen</ion-toggle>
             </ion-item>
-            <ion-item *ngIf="isOrchestra">
-              <ion-toggle helperText="Aktivieren, um die Lehrer der Spieler verwalten zu können." [(ngModel)]="maintainTeachers">Lehrer
-                pflegen</ion-toggle>
-            </ion-item>
             @if (showHolidays) {
             <ion-item lines="none">
               <ion-label position="stacked">Bundesland für Ferien/Feiertage</ion-label>
@@ -99,6 +95,10 @@
               </ion-select>
             </ion-item>
             }
+            <ion-item *ngIf="isOrchestra">
+              <ion-toggle helperText="Aktivieren, um die Lehrer der Spieler verwalten zu können." [(ngModel)]="maintainTeachers">Lehrer
+                pflegen</ion-toggle>
+            </ion-item>
             <ion-item>
               <ion-toggle
                 helperText="Aktivieren, um Eltern die Möglichkeit zu geben, Einsicht in die Anwesenheiten ihrer Kinder zu geben und Abwesenheiten pflegen zu können."
