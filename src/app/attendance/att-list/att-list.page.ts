@@ -234,7 +234,7 @@ export class AttListPage implements OnInit {
     const loading = await Utils.getLoadingElement();
     await loading.present();
 
-    const persons: PersonAttendance[] = [];
+    let persons: PersonAttendance[] = [];
     const allPlayers = (await this.db.getPlayers()).filter((player: Player) => !player.paused);
 
     for (const date of this.dates) {
@@ -256,6 +256,7 @@ export class AttListPage implements OnInit {
       }
 
       await this.db.addPersonAttendances(persons);
+      persons = [];
       if (this.historyEntries.length) {
         await this.db.addSongsToHistory(this.historyEntries.map((entry: History) => {
           return {

@@ -78,7 +78,7 @@ export class SignoutPage implements OnInit {
   }
 
   async getAttendances() {
-    const allPersonAttendances = await this.db.getPersonAttendances(this.player.id);
+    const allPersonAttendances = (await this.db.getPersonAttendances(this.player.id)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     if (!this.player.paused) {
       const allAttendances: Attendance[] = await this.db.getAttendance();
 
@@ -106,7 +106,7 @@ export class SignoutPage implements OnInit {
       }
     }
 
-    this.personAttendances = allPersonAttendances.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    this.personAttendances = allPersonAttendances;
     const vergangene: PersonAttendance[] = this.personAttendances.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
     if (vergangene.length) {
       this.lateCount = vergangene.filter((a) => a.status === AttendanceStatus.Late).length;

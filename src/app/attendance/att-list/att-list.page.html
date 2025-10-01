@@ -212,7 +212,7 @@
           <ion-modal #dateModal class="dateModal" trigger="att-date-modal">
             <ng-template>
               <ion-content>
-                <ion-datetime [highlightedDates]="highlightedDates" show-adjacent-days="true" locale="de-DE"
+                <ion-datetime [highlightedDates]="highlightedDates" locale="de-DE"
                   [firstDayOfWeek]="1" multiple="true" [(ngModel)]="dates"
                   (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)" presentation="date"
                   #dateTimePickerDate>
