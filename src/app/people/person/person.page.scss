@@ -1,4 +1,4 @@
-ion-modal {
+ion-modal.dateModal {
   --width: 290px;
   --height: 382px;
   --border-radius: 8px;
@@ -11,4 +11,8 @@ ion-modal ion-datetime {
 .bottom-padding {
   height: 40px;
   width: auto;
+}
+
+#accountHelpButton {
+  margin-left: 1rem;
 }

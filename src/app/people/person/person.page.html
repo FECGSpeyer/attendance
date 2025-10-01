@@ -91,7 +91,7 @@
               <ion-item [color]="!existingPlayer || player.correctBirthday || readOnly ? '' : 'warning'">
                 <ion-label position="stacked">Geburtsdatum</ion-label>
                 <ion-input [disabled]="readOnly" readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
-                <ion-modal #birthdayModal trigger="date-modal">
+                <ion-modal class="dateModal" #birthdayModal trigger="date-modal">
                   <ng-template>
                     <ion-content>
                       <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
@@ -109,7 +109,7 @@
               <ion-item>
                 <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
                 <ion-input [disabled]="readOnly" readonly [(ngModel)]="playsSinceString" id="plays-modal"></ion-input>
-                <ion-modal #playsSinceModal trigger="plays-modal">
+                <ion-modal class="dateModal" #playsSinceModal trigger="plays-modal">
                   <ng-template>
                     <ion-content>
                       <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
@@ -127,7 +127,7 @@
               <ion-item>
                 <ion-label position="stacked">Beigetreten am</ion-label>
                 <ion-input [disabled]="readOnly" readonly [(ngModel)]="joinedString" id="joined-modal"></ion-input>
-                <ion-modal #joinedModal trigger="joined-modal">
+                <ion-modal class="dateModal" #joinedModal trigger="joined-modal">
                   <ng-template>
                     <ion-content>
                       <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
@@ -290,18 +290,16 @@
             </ion-header>
             <ion-content>
               <ion-item *ngIf="!player.appId" lines="none">
-                <ion-icon name="information-circle" slot="start"></ion-icon>
                 <ion-label>Sobald die E-Mail Adresse eingeben wurde, kann ein Account erstellt werden. Der Benutzer wird
                   per
                   E-Mail über die Erstellung benachrichtigt. Das Passwort wird automatisch generiert und an die E-Mail
                   Adresse
-                  gesendet. Falls schon ein Benutzer für die E-Mail Adresse existiert, wird dieser automatisch der
+                  gesendet.</ion-label>
+              </ion-item>
+              <ion-item lines="none">
+                <ion-label>Falls schon ein Benutzer für die E-Mail Adresse existiert, wird dieser automatisch der
                   Instanz zugewiesen.</ion-label>
               </ion-item>
-              <p>Um einen Account zu erstellen, geben Sie bitte die E-Mail Adresse der Person ein und klicken Sie auf
-                "Suchen".</p>
-              <p>Falls die E-Mail Adresse bereits einem Benutzer zugeordnet ist, wird dieser automatisch der Instanz
-                zugewiesen.</p>
             </ion-content>
           </ng-template>
         </ion-modal>

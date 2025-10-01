@@ -237,4 +237,11 @@ export class SignoutPage implements OnInit {
       return `${this.songs.find((s: Song) => s.id === h.songId).number} ${this.songs.find((s: Song) => s.id === h.songId).name}`;
     }).join(", ");
   }
+
+  isReasonSelectionInvalid(reason: string): boolean {
+    if (!(reason && reason.length > 4) || /\S/.test(reason) === false) {
+      return true;
+    }
+    return false;
+  }
 }
