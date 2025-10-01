@@ -18,6 +18,7 @@ export class SignoutPage implements OnInit {
   public player: Player;
   public attendances: Attendance[] = [];
   public personAttendances: PersonAttendance[] = [];
+  public actualAttendances: PersonAttendance[] = [];
   public selAttIds: string[] = [];
   public reason: string;
   public perc: number;
@@ -107,6 +108,7 @@ export class SignoutPage implements OnInit {
     }
 
     this.personAttendances = allPersonAttendances;
+    this.actualAttendances = [...allPersonAttendances].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     const vergangene: PersonAttendance[] = this.personAttendances.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
     if (vergangene.length) {
       this.lateCount = vergangene.filter((a) => a.status === AttendanceStatus.Late).length;

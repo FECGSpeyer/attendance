@@ -65,7 +65,7 @@
       </ion-item>
       <div slot="content">
         <ion-list>
-          <ng-container *ngFor="let att of personAttendances">
+          <ng-container *ngFor="let att of actualAttendances">
             <ion-item button *ngIf="attIsInFuture(att) || !attHasPassed(att)" (click)="presentActionSheetForChoice(att)"
               color="light">
               <ion-label>
