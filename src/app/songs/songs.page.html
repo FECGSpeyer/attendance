@@ -141,7 +141,7 @@
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
-  <ion-modal #modal trigger="add-songs-button" [breakpoints]="[0, 0.9]" [initialBreakpoint]="0.9">
+  <ion-modal #addSongsModal trigger="add-songs-button" [breakpoints]="[0, 0.9]" [initialBreakpoint]="0.9">
     <ng-template>
       <ion-content>
         <ion-header>
@@ -174,7 +174,7 @@
           </ion-select>
         </ion-item>
         <ion-button [disabled]="(!number.value && number.value !== 0) || !name.value"
-          (click)="addSong(modal, number.value, name.value, link.value)" expand="block">Hinzufügen</ion-button>
+          (click)="addSong(addSongsModal, number.value, name.value, link.value)" expand="block">Hinzufügen</ion-button>
       </ion-content>
     </ng-template>
   </ion-modal>
