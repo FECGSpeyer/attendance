@@ -48,8 +48,7 @@
 
             <ion-item lines="none">
               <ion-icon slot="start" name="musical-notes" size="small"></ion-icon>
-              <ion-select slot="end" (ionChange)="onFilterChanged()" multiple="true"
-                [(ngModel)]="instrumentsToFilter">
+              <ion-select slot="end" (ionChange)="onFilterChanged()" multiple="true" [(ngModel)]="instrumentsToFilter">
                 <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{
                   instrument.name }}</ion-select-option>
               </ion-select>
@@ -75,9 +74,11 @@
     <ion-item *ngFor="let song of songsFiltered">
       <ion-label [id]="song.id + 'edit-button'">
         <h2>{{ song.number }} {{ song.name }}</h2>
-        <h3 style="color: var(--ion-color-danger);" *ngIf="isOrchestra && song.instrument_ids?.length && viewOpts.includes('missingInstruments')">{{
+        <h3 style="color: var(--ion-color-danger);"
+          *ngIf="isOrchestra && song.instrument_ids?.length && viewOpts.includes('missingInstruments')">{{
           getInstrumentText(song.instrument_ids) }}</h3>
-        <h3 *ngIf="song.lastSung && viewOpts.includes('lastSung')">Zuletzt gespielt am {{ song.lastSung | date:'dd.MM.YYYY' }} | {{ song.conductor }}
+        <h3 *ngIf="song.lastSung && viewOpts.includes('lastSung')">Zuletzt gespielt am {{ song.lastSung |
+          date:'dd.MM.YYYY' }} | {{ song.conductor }}
         </h3>
       </ion-label>
       <ion-badge *ngIf="song.withSolo && viewOpts.includes('withSolo')" color="success" slot="end">
@@ -90,7 +91,8 @@
         Orchester
         }
       </ion-badge>
-      <ion-badge (click)="openLink(song.link)" slot="end" *ngIf="song.link && viewOpts.includes('link')" color="primary">
+      <ion-badge (click)="openLink(song.link)" slot="end" *ngIf="song.link && viewOpts.includes('link')"
+        color="primary">
         <ion-icon name="link"></ion-icon>
       </ion-badge>
       <ion-modal *ngIf="isAdmin" #modal [trigger]="song.id + 'edit-button'" [breakpoints]="[0, 0.9]"
@@ -140,42 +142,43 @@
     <ion-fab-button id="add-songs-button">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
+    <ion-modal #addSongsModal trigger="add-songs-button" [breakpoints]="[0, 0.9]" [initialBreakpoint]="0.9">
+      <ng-template>
+        <ion-content>
+          <ion-header>
+            <ion-toolbar>
+              <ion-title>Werk hinzufügen</ion-title>
+            </ion-toolbar>
+          </ion-header>
+          <ion-item>
+            <ion-label position="stacked">Nummer</ion-label>
+            <ion-input type="number" #number></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Name</ion-label>
+            <ion-input #name></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Link</ion-label>
+            <ion-textarea autoGrow="true" #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
+          </ion-item>
+          <ion-item>
+            <ion-toggle [(ngModel)]="withChoir" aria-label="Chor & Orchester">Chor & Orchester</ion-toggle>
+          </ion-item>
+          <ion-item>
+            <ion-toggle [(ngModel)]="withSolo" aria-label="Mit Solo-Gesang">Mit Solo-Gesang</ion-toggle>
+          </ion-item>
+          <ion-item *ngIf="isOrchestra">
+            <ion-select interface="modal" label="Besetzung" multiple="true" [(ngModel)]="selectedInstruments">
+              <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{ instrument.name
+                }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-button [disabled]="(!number.value && number.value !== 0) || !name.value"
+            (click)="addSong(addSongsModal, number.value, name.value, link.value)"
+            expand="block">Hinzufügen</ion-button>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
   </ion-fab>
-  <ion-modal #addSongsModal trigger="add-songs-button" [breakpoints]="[0, 0.9]" [initialBreakpoint]="0.9">
-    <ng-template>
-      <ion-content>
-        <ion-header>
-          <ion-toolbar>
-            <ion-title>Werk hinzufügen</ion-title>
-          </ion-toolbar>
-        </ion-header>
-        <ion-item>
-          <ion-label position="stacked">Nummer</ion-label>
-          <ion-input type="number" #number></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Name</ion-label>
-          <ion-input #name></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Link</ion-label>
-          <ion-textarea autoGrow="true" #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
-        </ion-item>
-        <ion-item>
-          <ion-toggle [(ngModel)]="withChoir" aria-label="Chor & Orchester">Chor & Orchester</ion-toggle>
-        </ion-item>
-        <ion-item>
-          <ion-toggle [(ngModel)]="withSolo" aria-label="Mit Solo-Gesang">Mit Solo-Gesang</ion-toggle>
-        </ion-item>
-        <ion-item *ngIf="isOrchestra">
-          <ion-select interface="modal" label="Besetzung" multiple="true" [(ngModel)]="selectedInstruments">
-            <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{ instrument.name
-              }}</ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-button [disabled]="(!number.value && number.value !== 0) || !name.value"
-          (click)="addSong(addSongsModal, number.value, name.value, link.value)" expand="block">Hinzufügen</ion-button>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
 </ion-content>
