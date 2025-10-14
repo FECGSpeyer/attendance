@@ -1,8 +1,8 @@
 import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
-import { Instrument, Parent, PersonAttendance, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
+import { Instrument, Parent, Person, PersonAttendance, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
@@ -69,6 +69,9 @@ export class PersonPage implements OnInit, AfterViewInit {
   public isParent: boolean = false;
   public instruments: Instrument[] = [];
   public otherTenants: Tenant[] = [];
+  public isArchiveModalOpen: boolean = false;
+  public archiveDate: string = dayjs().format("YYYY-MM-DD");
+  public archiveNote: string = "";
 
   constructor(
     private db: DbService,
@@ -228,7 +231,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
       await alert.present();
     } else {
-      this.modalController.dismiss();
+      await this.modalController.dismiss();
     }
   }
 
@@ -238,7 +241,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     if (this.player.firstName && this.player.lastName) {
       await this.db.addPlayer(this.player, Boolean(this.player.email), this.role);
       this.modalController.dismiss();
-      Utils.showToast(`Der Spieler wurde erfolgreich hinzugefügt`, "success");
+      Utils.showToast(`Die Person wurde erfolgreich hinzugefügt`, "success");
     } else {
       Utils.showToast("Bitte gib den Vornamen und Nachnamen an.", "danger");
     }
@@ -322,7 +325,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
       loading.dismiss();
       this.hasChanges = false;
-      this.dismiss();
+      await this.dismiss();
 
       Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
     } catch (error) {
@@ -355,7 +358,7 @@ export class PersonPage implements OnInit, AfterViewInit {
                 appId: null,
               });
               this.hasChanges = false;
-              this.dismiss();
+              await this.dismiss();
               Utils.showToast("Der Benutzer wurde erfolgreich entfernt", "success");
             } catch (error) {
               Utils.showToast("Fehler beim Entfernen des Benutzers", "danger");
@@ -366,6 +369,52 @@ export class PersonPage implements OnInit, AfterViewInit {
     });
 
     await alert.present();
+  }
+
+  async onChangeName() {
+    if (this.player.firstName?.length && this.player.lastName?.length) {
+      const names = await this.db.getPossiblePersonsByName(this.player.firstName, this.player.lastName, false);
+
+      if (names.length) {
+        const alert = await this.alertController.create({
+          header: 'Mögliche Übereinstimmung',
+          message: 'Es wurden mögliche Übereinstimmungen in anderen Instanzen gefunden. Möchtest du die Daten übernehmen?',
+          inputs: names.map((person: Person, index: number) => ({
+            type: 'radio',
+            checked: index === 0,
+            label: `${(person as any).instrument.name} (${(person as any).tenantId.longName})`,
+            value: person,
+          })),
+          buttons: [
+            {
+              text: 'Abbrechen',
+              role: 'cancel',
+            }, {
+              text: 'Ja',
+              handler: async (value: Player) => {
+                this.player.email = value.email;
+                if (value.correctBirthday) {
+                  this.player.birthday = value.birthday;
+                  this.birthdayString = this.formatDate(this.player.birthday);
+                }
+                this.player.img = value.img || DEFAULT_IMAGE;
+                this.player.otherExercise = value.otherExercise;
+                this.player.range = value.range;
+
+                const instrument = this.instruments.find((i: Instrument) => i.name === (value as any).instrument.name);
+                if (instrument) {
+                  this.player.instrument = instrument.id;
+                }
+
+                Utils.showToast("Die Daten wurden erfolgreich übernommen", "success");
+              }
+            }
+          ]
+        });
+
+        await alert.present();
+      }
+    }
   }
 
   onChange() {
@@ -530,18 +579,18 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async searchPerson() {
-   const names = await this.db.getPossiblePersonsByName(this.player.firstName, this.player.lastName);
+    const names = await this.db.getPossiblePersonsByName(this.player.firstName, this.player.lastName);
 
-   if (names.length === 0) {
+    if (names.length === 0) {
       Utils.showToast("Es wurde keine passende Person in einer anderen Instanz gefunden", "danger");
       return;
     }
 
     const actionSheet = await this.actionSheetController.create({
-      header: "Gefundene Personen",
+      header: "Eintrag auswählen",
       buttons: names.map((name) => {
         return {
-          text: `${name.firstName} ${name.lastName}, ${(name as any).instrument.name} (${(name as any).tenantId.shortName})`,
+          text: `${(name as any).instrument.name} (${(name as any).tenantId.longName})`,
           handler: async () => {
             this.player.email = name.email;
             await this.db.updatePlayer({
@@ -555,6 +604,148 @@ export class PersonPage implements OnInit, AfterViewInit {
     });
 
     await actionSheet.present();
+  }
+
+  async openMoreMenu() {
+    const buttons: ActionSheetButton[] = [];
+
+    if (this.player.paused) {
+      buttons.push({
+        text: 'Person wieder aktivieren',
+        handler: async () => {
+          const history: PlayerHistoryEntry[] = this.player.history;
+          history.push({
+            date: new Date().toISOString(),
+            text: "Person wieder aktiv",
+            type: PlayerHistoryType.UNPAUSED,
+          });
+          try {
+            await this.db.updatePlayer({
+              ...this.player,
+              paused: false,
+              history,
+            }, true);
+            this.hasChanges = false;
+            await this.dismiss();
+          } catch (error) {
+            Utils.showToast(error, "danger");
+          }
+        }
+      });
+    } else {
+      buttons.push({
+        text: 'Person pausieren',
+        handler: async () => {
+          const alert = await this.alertController.create({
+            header: 'Person pausieren',
+            subHeader: 'Gib einen Grund an.',
+            inputs: [{
+              type: "textarea",
+              name: "reason"
+            }],
+            buttons: [{
+              text: "Abbrechen",
+            }, {
+              text: "Pausieren",
+              handler: async (evt: { reason: string }) => {
+                if (!evt.reason) {
+                  alert.message = "Bitte gib einen Grund an!";
+                  return false;
+                }
+                const history: PlayerHistoryEntry[] = this.player.history;
+                history.push({
+                  date: new Date().toISOString(),
+                  text: evt.reason,
+                  type: PlayerHistoryType.PAUSED,
+                });
+                try {
+                  await this.db.updatePlayer({
+                    ...this.player,
+                    paused: true,
+                    history,
+                  }, true);
+                  this.hasChanges = false;
+                  await this.dismiss();
+                } catch (error) {
+                  Utils.showToast(error, "danger");
+                }
+              }
+            }]
+          });
+
+          await alert.present();
+        }
+      });
+    }
+
+    buttons.push({
+      text: "Person archivieren",
+      handler: (): void => {
+        this.isArchiveModalOpen = true;
+      },
+    });
+
+    if (this.player.appId !== this.db.tenantUser().userId) {
+      buttons.push({
+        text: "Person entfernen",
+        handler: async (): Promise<void> => {
+          await this.db.removePlayer(this.player);
+          this.modalController.dismiss();
+          Utils.showToast("Die Person wurde erfolgreich entfernt", "success");
+        },
+      });
+    }
+
+    buttons.push({
+      text: 'Abbrechen',
+      role: 'cancel',
+    });
+
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Aktionen',
+      buttons
+    });
+    await actionSheet.present();
+  }
+
+  async archivePlayer(): Promise<void> {
+    await this.db.archivePlayer(this.player, dayjs(this.archiveDate).toISOString(), this.archiveNote);
+    await this.dismissArchiveModal();
+    this.hasChanges = false;
+    setTimeout(async () => {
+      await this.dismiss();
+    }, 500);
+    Utils.showToast("Die Person wurde erfolgreich archiviert", "success");
+  }
+
+  async dismissArchiveModal(): Promise<void> {
+    this.archiveNote = "";
+    this.isArchiveModalOpen = false;
+  }
+
+  async activate(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Person reaktivieren',
+      message: 'Möchtest du die Person wirklich reaktivieren?',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel',
+        }, {
+          text: 'Ja',
+          handler: () => this.activateConfirmed()
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async activateConfirmed(): Promise<void> {
+    await this.db.activatePlayer(this.player);
+    this.hasChanges = false;
+    this.modalController.dismiss({ activated: true });
+    Utils.showToast("Die Person wurde erfolgreich wieder aktiviert", "success");
   }
 
 }

@@ -9,7 +9,7 @@ import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { StatsPage } from 'src/app/stats/stats.page';
 import { AttendanceType, Role } from 'src/app/utilities/constants';
-import { Instrument, Parent, Person, Player, Tenant } from 'src/app/utilities/interfaces';
+import { Admin, Instrument, Organisation, Parent, Person, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { Viewer } from '../../utilities/interfaces';
 import { Router } from '@angular/router';
@@ -31,6 +31,7 @@ export class SettingsPage implements OnInit {
   public instruments: Instrument[] = [];
   public viewers: Viewer[] = [];
   public parents: Parent[] = [];
+  public admins: Admin[] = [];
   public isAdmin: boolean = false;
   public isSuperAdmin: boolean = false;
   public attDateString: string = format(new Date(), 'dd.MM.yyyy');
@@ -46,6 +47,7 @@ export class SettingsPage implements OnInit {
   public parentsEnabled: boolean = false;
   public isOrchestra: boolean = false;
   public tenantsFromUser: { tenantId: number, role: Role }[] = [];
+  public organisation: Organisation | null = null;
   public holidayStates = [
     { name: "Baden-Württemberg", code: "BW" },
     { name: "Bayern", code: "BY" },
@@ -106,8 +108,10 @@ export class SettingsPage implements OnInit {
     if (this.parentsEnabled) {
       this.parents = await this.db.getParents();
     }
+    this.admins = await this.db.getAdmins();
     this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
     this.tenantsFromUser = await this.db.getUserRolesForTenants(this.db.tenantUser().userId);
+    this.organisation = await this.db.getOrganisationFromTenant();
   }
 
   async ionViewWillEnter() {
@@ -216,6 +220,12 @@ export class SettingsPage implements OnInit {
     });
 
     await modal.present();
+
+    const data = await modal.onDidDismiss();
+
+    if (data?.data?.activated) {
+      this.leftPlayers = Utils.getModifiedPlayersForList(await this.db.getLeftPlayers(), this.instruments, [], this.instruments.find(ins => ins.maingroup)?.id);
+    }
   }
 
   async showAlertForAccountsCreation() {
@@ -290,16 +300,6 @@ export class SettingsPage implements OnInit {
     });
 
     await alert.present();
-  }
-
-  getAttendanceTypePersonaText(): string {
-    if (this.db.tenant().type === AttendanceType.CHOIR) {
-      return "Sänger";
-    } else if (this.db.tenant().type === AttendanceType.ORCHESTRA) {
-      return "Spieler";
-    } else {
-      return "Personen";
-    }
   }
 
   async onTenantChange(tenantId: number, modal: IonModal): Promise<void> {
@@ -409,7 +409,7 @@ export class SettingsPage implements OnInit {
     await alert.present();
   }
 
-  async deleteInstance(tenant: Tenant, slider: IonItemSliding) {
+  async deleteInstance(tenant: Tenant, slider: IonItemSliding, modal: IonModal) {
     slider.close();
 
     if (!this.canDeleteTenant(tenant)) {
@@ -433,6 +433,7 @@ export class SettingsPage implements OnInit {
         text: "Löschen",
         handler: async (evt) => {
           if (evt.name === tenant.longName) {
+            modal?.dismiss();
             await this.db.deleteInstance(tenant.id);
           } else {
             alert.message = "Der eingegebene Name ist nicht korrekt.";
@@ -448,5 +449,174 @@ export class SettingsPage implements OnInit {
   canDeleteTenant(tenant: Tenant): boolean {
     const found = this.tenantsFromUser.find(t => t.tenantId === tenant.id);
     return found?.role === Role.ADMIN && !this.db.isDemo();
+  }
+
+    async openAdminsAlert() {
+    const alert = await new AlertController().create({
+      header: 'Admin hinzufügen',
+      inputs: [{
+        type: "email",
+        name: "email",
+        placeholder: "E-Mail-Adresse",
+      }],
+      buttons: [{
+        text: "Abbrechen",
+      }, {
+        text: "Hinzufügen",
+        handler: async (data: { email: string }) => {
+          if (Utils.validateEmail(data.email)) {
+            const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
+            loading.present();
+            try {
+              await this.db.createAdmin(data.email);
+              this.admins = await this.db.getAdmins();
+              Utils.showToast("Der Admin wurde erfolgreich hinzugefügt.", "success");
+              await loading.dismiss();
+            } catch (error) {
+              Utils.showToast(error.message, "danger");
+              await loading.dismiss();
+            }
+          } else {
+            alert.message = "Bitte gib gültige Werte ein.";
+            return false;
+          }
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  async removeAdmin(admin: Admin): Promise<void> {
+    if (admin.userId === this.db.tenantUser().userId) {
+      Utils.showToast("Du kannst dich nicht selbst entfernen.", "danger");
+      return;
+    }
+
+    const alert = await new AlertController().create({
+      header: 'Admin entfernen?',
+      message: `Möchtest du ${admin.email} wirklich entfernen?`,
+      buttons: [{
+        text: "Abbrechen"
+      }, {
+        text: "Ja",
+        handler: async () => {
+          await this.db.removeEmailFromAuth(admin.userId, admin.email, true);
+          this.admins = await this.db.getAdmins();
+          Utils.showToast("Der Admin wurde erfolgreich entfernt.", "success");
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  async openOrganisationAlert() {
+    const organisations = await this.db.getOrganisationsFromUser();
+
+    if (organisations.length) {
+      const alert = await new AlertController().create({
+        header: 'Organisation auswählen',
+        inputs: organisations.map((org: Organisation, index: number) => ({
+          type: 'radio',
+          checked: index === 0,
+          label: org.name,
+          value: org,
+        })),
+        buttons: [{
+          text: "Abbrechen",
+        }, {
+          text: "Auswählen",
+          handler: async (data: Organisation) => {
+            if (data) {
+              const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
+              loading.present();
+              try {
+                await this.db.linkTenantToOrganisation(this.db.tenant().id, data.id);
+                this.organisation = data;
+                Utils.showToast("Die Organisation wurde erfolgreich ausgewählt.", "success");
+                await loading.dismiss();
+              } catch (error) {
+                Utils.showToast(error.message, "danger");
+                await loading.dismiss();
+              }
+            } else {
+              alert.message = "Bitte wähle eine Organisation aus.";
+              return false;
+            }
+          }
+        }, {
+          text: "Neue Organisation erstellen",
+          handler: async () => {
+            alert.dismiss();
+            this.openCreateOrganisationAlert();
+          }
+        }]
+      });
+
+      await alert.present();
+      return;
+    }
+
+    this.openCreateOrganisationAlert();
+  }
+
+  async openCreateOrganisationAlert() {
+    const alert = await new AlertController().create({
+      header: 'Organisation erstellen',
+      inputs: [{
+        type: "text",
+        name: "name",
+        placeholder: "Name eingeben...",
+      }],
+      buttons: [{
+        text: "Abbrechen",
+      }, {
+        text: "Hinzufügen",
+        handler: async (data: { name: string }) => {
+          if (data.name.length) {
+            const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
+            loading.present();
+            try {
+              await this.db.createOrganisation(data.name);
+              Utils.showToast("Die Organisation wurde erfolgreich erstellt.", "success");
+              await loading.dismiss();
+              this.organisation = await this.db.getOrganisationFromTenant();
+            } catch (error) {
+              Utils.showToast(error.message, "danger");
+              await loading.dismiss();
+            }
+          } else {
+            alert.message = "Bitte gib gültige Werte ein.";
+            return false;
+          }
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  async deleteOrganisation() {
+    if (!this.organisation) {
+      return;
+    }
+
+    const alert = await new AlertController().create({
+      header: 'Organisation von Instanz trennen?',
+      message: `Möchtest du die Organisation '${this.organisation.name}' wirklich von der Instanz trennen? Dies kann nicht rückgängig gemacht werden!`,
+      buttons: [{
+        text: "Abbrechen"
+      }, {
+        text: "Trennen",
+        handler: async () => {
+          await this.db.unlinkTenantFromOrganisation(this.organisation.id);
+          this.organisation = null;
+          Utils.showToast("Die Organisation wurde erfolgreich von der Instanz getrennt.", "success");
+        }
+      }]
+    });
+
+    await alert.present();
   }
 }

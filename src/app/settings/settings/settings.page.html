@@ -105,6 +105,19 @@
                 helperText="Aktivieren, um Eltern die Möglichkeit zu geben, Einsicht in die Anwesenheiten ihrer Kinder zu geben und Abwesenheiten pflegen zu können."
                 [(ngModel)]="parentsEnabled">Eltern-Funktion</ion-toggle>
             </ion-item>
+            <ion-item>
+              <ion-label>
+                <h2 *ngIf="!organisation">Organisation zuweisen</h2>
+                <h2 *ngIf="organisation">Organisation ({{ organisation.name }})</h2>
+                <h3>Weise die Instanz einer bestehenden Organisation zu oder erstelle eine. Damit können Personen innerhalb der Organisation verknüpft werden</h3>
+              </ion-label>
+              <ion-badge *ngIf="isSuperAdmin && organisation" (click)="deleteOrganisation()" color="danger">
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-badge>
+              <ion-badge *ngIf="!organisation" (click)="openOrganisationAlert()" color="primary">
+                <ion-icon name="add-outline"></ion-icon>
+              </ion-badge>
+            </ion-item>
             <ion-button (click)="saveGeneralSettings(generalModal)" expand="block">Änderungen speichern</ion-button>
           </ion-content>
         </ng-template>
@@ -134,28 +147,60 @@
 
   <ion-card-subtitle *ngIf="isAdmin">Organisation</ion-card-subtitle>
   <ion-card *ngIf="isAdmin">
-    <!-- <ion-list-header>
-        <ion-label>Organisation</ion-label>
-      </ion-list-header> -->
-    <ion-item *ngIf="isAdmin" routerLink="meetings" button>
+    <ion-item *ngIf="!db.isDemo() && isSuperAdmin" detail="false" button id="admins-button">
+      <ion-icon name="key-outline" slot="start"></ion-icon>
+      <ion-label>
+        Admins
+      </ion-label>
+      <ion-modal trigger="admins-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+        <ng-template>
+          <ion-content>
+            <ion-header>
+              <ion-toolbar>
+                <ion-title>Admins</ion-title>
+              </ion-toolbar>
+            </ion-header>
+            <ion-list>
+              <ion-item button (click)="removeAdmin(a)" *ngFor="let a of admins">
+                <ion-label>
+                  <h3>{{ a.email }}</h3>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+          <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+            <ion-fab-button (click)="openAdminsAlert()">
+              <ion-icon name="add"></ion-icon>
+            </ion-fab-button>
+          </ion-fab>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+    <ion-item routerLink="meetings" button>
       <ion-icon name="chatbubbles-outline" slot="start"></ion-icon>
       <ion-label>
         Besprechungen
       </ion-label>
     </ion-item>
-    <ion-item *ngIf="isAdmin" routerLink="instruments" button>
+    <ion-item routerLink="instruments" button>
       <ion-icon name="people-outline" slot="start"></ion-icon>
       <ion-label>
         Gruppen
       </ion-label>
     </ion-item>
-    <ion-item routerLink="teachers" *ngIf="maintainTeachers && isAdmin" button>
+    <!-- <ion-item button routerLink="handover">
+      <ion-icon name="walk-outline" slot="start"></ion-icon>
+      <ion-label>
+        Personenübergabe
+      </ion-label>
+    </ion-item> -->
+    <ion-item routerLink="teachers" *ngIf="maintainTeachers" button>
       <ion-icon name="school-outline" slot="start"></ion-icon>
       <ion-label>
         Lehrer
       </ion-label>
     </ion-item>
-    <ion-item *ngIf="isAdmin && parentsEnabled" detail="false" button id="parents-button">
+    <ion-item *ngIf="parentsEnabled" detail="false" button id="parents-button">
       <ion-icon name="footsteps-outline" slot="start"></ion-icon>
       <ion-label>
         Eltern
@@ -237,7 +282,6 @@
               </ion-toolbar>
             </ion-header>
             <ion-list>
-              <ion-list-header>{{ getAttendanceTypePersonaText() }}</ion-list-header>
               <ion-item button (click)="openPlayerModal(p)" *ngFor="let p of leftPlayers">
                 <ion-label>
                   <h2>{{ p.firstName }} {{ p.lastName }} ({{ p.instrumentName }})</h2>
@@ -300,9 +344,8 @@
                   </ion-label>
                   <ion-badge *ngIf="db.tenant().id === tenant.id" color="primary">Aktuell</ion-badge>
                 </ion-item>
-                <ion-item-options (ionSwipe)="deleteInstance(tenant, sliding)"
-                  side="end">
-                  <ion-item-option (click)="deleteInstance(tenant, sliding)" color="danger">
+                <ion-item-options (ionSwipe)="deleteInstance(tenant, sliding, instancesModal)" side="end">
+                  <ion-item-option (click)="deleteInstance(tenant, sliding, instancesModal)" color="danger">
                     <ion-icon size="small" slot="icon-only" name="trash"></ion-icon>
                   </ion-item-option>
                 </ion-item-options>

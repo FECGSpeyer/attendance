@@ -210,6 +210,10 @@ export class Utils {
         return "Fehlt oft";
       case PlayerHistoryType.INSTRUMENT_CHANGE:
         return "Wechsel";
+      case PlayerHistoryType.ARCHIVED:
+        return "Archiviert";
+      case PlayerHistoryType.RETURNED:
+        return "Reaktiviert";
       default:
         return "Sonstiges";
     }

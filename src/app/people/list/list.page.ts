@@ -372,6 +372,12 @@ export class ListPage implements OnInit {
   }
 
   async remove(player: Person, slider: IonItemSliding): Promise<void> {
+    if (player.appId && player.appId === this.db.tenantUser().userId) {
+      Utils.showToast("Du kannst dich nicht selbst entfernen!", "danger");
+      slider.close();
+      return;
+    }
+
     const sheet: HTMLIonActionSheetElement = await this.actionSheetController.create({
       buttons: [{
         text: "Archivieren",
@@ -415,7 +421,7 @@ export class ListPage implements OnInit {
 
   async pausePlayer(player: Player, slider: IonItemSliding) {
     const alert = await this.alertController.create({
-      header: 'Spieler pausieren',
+      header: 'Person pausieren',
       subHeader: 'Gib einen Grund an.',
       inputs: [{
         type: "textarea",
@@ -458,7 +464,7 @@ export class ListPage implements OnInit {
 
   async unpausePlayer(player: Player, slider: IonItemSliding) {
     const alert = await this.alertController.create({
-      header: 'Spieler wieder aktivieren?',
+      header: 'Person wieder aktivieren?',
       buttons: [{
         text: "Abbrechen",
         handler: () => {
@@ -470,7 +476,7 @@ export class ListPage implements OnInit {
           const history: PlayerHistoryEntry[] = player.history;
           history.push({
             date: new Date().toISOString(),
-            text: "Spieler wieder aktiv",
+            text: "Person wieder aktiv",
             type: PlayerHistoryType.UNPAUSED,
           });
           try {

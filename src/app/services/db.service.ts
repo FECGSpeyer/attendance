@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Instrument, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent } from '../utilities/interfaces';
+import { Attendance, History, Instrument, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 import { Holiday } from 'open-holiday-js';
@@ -282,6 +282,17 @@ export class DbService {
         return userId;
       }
       await this.addUserToTenant(userId, role, email);
+      const res = await axios.post(`https://staccato-server.vercel.app/api/informAttendixUser`, {
+        email,
+        name,
+        role: Utils.getRoleText(role),
+        tenant: this.tenant().longName,
+      });
+
+      if (!res.data.mailSent) {
+        throw new Error('Fehler beim Informieren des Benutzers');
+      }
+
       return userId;
     }
 
@@ -491,7 +502,7 @@ export class DbService {
         .eq('tenantId', this.tenant().id);
 
       if (error) {
-        Utils.showToast("Fehler beim Laden der Spieler", "danger");
+        Utils.showToast("Fehler beim Laden der Personen", "danger");
         throw error;
       }
 
@@ -541,7 +552,7 @@ export class DbService {
       .order("lastName");
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Spieler", "danger");
+      Utils.showToast("Fehler beim Laden der Personen", "danger");
       throw error;
     }
 
@@ -645,7 +656,7 @@ export class DbService {
 
     if (error) {
       Utils.showToast("Fehler beim Laden der Hauptgruppen-Personen", "danger");
-      throw new Error("Fehler beim Laden der Spieler");
+      throw new Error("Fehler beim Laden der Personen");
     }
 
     return (all ? data : data.filter((c: Person) => !c.left)).map((con: Person) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
@@ -795,7 +806,21 @@ export class DbService {
     }
   }
 
-  async removeUserFromTenant(appId: string) {
+  async removeUserFromTenant(appId: string, deleteAdmin: boolean = false): Promise<void> {
+    if (deleteAdmin) {
+      const { error } = await supabase
+        .from('tenantUsers')
+        .delete()
+        .eq('tenantId', this.tenant().id)
+        .eq('role', Role.ADMIN)
+        .match({ userId: appId });
+
+      if (error) {
+        throw new Error('Fehler beim Löschen des Accounts vom Mandanten');
+      }
+      return;
+    }
+
     const { data } = await supabase
       .from('tenantUsers')
       .select('*')
@@ -819,8 +844,8 @@ export class DbService {
     }
   }
 
-  async removeEmailFromAuth(appId: string, email: string) {
-    await this.removeUserFromTenant(appId);
+  async removeEmailFromAuth(appId: string, email: string, deleteAdmin: boolean = false): Promise<void> {
+    await this.removeUserFromTenant(appId, deleteAdmin);
 
     if (await this.getAppIdByEmail(email)) {
       return;
@@ -839,20 +864,17 @@ export class DbService {
     if (player.appId && player.email) {
       await this.removeEmailFromAuth(player.appId, player.email);
       delete player.appId;
-      delete player.email;
     }
 
-    if ((player.notes || "") !== notes) {
-      player.history.push({
-        date: new Date().toISOString(),
-        text: player.notes || "Keine Notiz",
-        type: PlayerHistoryType.NOTES,
-      });
-    }
+    player.history.push({
+      date: new Date().toISOString(),
+      text: notes || "Kein Grund angegeben",
+      type: PlayerHistoryType.ARCHIVED,
+    });
 
     await supabase
       .from('player')
-      .update({ left, notes, history: player.history as any })
+      .update({ left, history: player.history as any })
       .match({ id: player.id });
 
     await this.removePlayerFromUpcomingAttendances(player.id, left);
@@ -1618,13 +1640,29 @@ export class DbService {
     this.router.navigateByUrl(Utils.getUrl(Role.ADMIN));
   }
 
-  async getPossiblePersonsByName(firstName: string, lastName: string): Promise<Person[]> {
-    const { data, error } = await supabase
-      .from('player')
-      .select('*, instrument(name), tenantId(id, shortName)')
-      .ilike('firstName', `%${firstName.trim()}%`)
-      .ilike('lastName', `%${lastName.trim()}%`)
-      .neq('email', null);
+  async getPossiblePersonsByName(firstName: string, lastName: string, onlyWithAccount: boolean = true): Promise<Person[]> {
+    let data;
+    let error;
+    if (onlyWithAccount) {
+      const res = await supabase
+        .from('player')
+        .select('*, instrument(name), tenantId(id, shortName, longName)')
+        .ilike('firstName', `%${firstName.trim()}%`)
+        .ilike('lastName', `%${lastName.trim()}%`)
+        .neq('email', null);
+
+      data = res.data;
+      error = res.error;
+    } else {
+      const res = await supabase
+        .from('player')
+        .select('*, instrument(name), tenantId(id, shortName, longName)')
+        .ilike('firstName', `%${firstName.trim()}%`)
+        .ilike('lastName', `%${lastName.trim()}%`);
+
+      data = res.data;
+      error = res.error;
+    }
 
     if (error) {
       Utils.showToast("Fehler beim Laden der Personen", "danger");
@@ -1789,6 +1827,161 @@ export class DbService {
         gone: dayjs(h.startDate).isBefore(dayjs(), 'day'),
       }
     });
-    return {publicHolidays, schoolHolidays};
+    return { publicHolidays, schoolHolidays };
+  }
+
+  async getAdmins(): Promise<Admin[]> {
+    const { data, error } = await supabase
+      .from('tenantUsers')
+      .select('email, userId')
+      .eq('role', Role.ADMIN)
+      .eq('tenantId', this.tenant().id);
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Admins", "danger");
+      throw error;
+    }
+
+    return data.filter((e: Admin) => Boolean(e) && e.email !== "developer@attendix.de");
+  }
+
+  async createAdmin(admin: string) {
+    return await this.registerUser(admin as string, "" as string, Role.ADMIN);
+  }
+
+  async activatePlayer(player: Player): Promise<void> {
+    if (player.email) {
+      await this.createAccount(player);
+    }
+
+    player.history.push({
+      date: new Date().toISOString(),
+      text: "Person wieder aktiviert",
+      type: PlayerHistoryType.RETURNED,
+    });
+
+    await supabase
+      .from('player')
+      .update({ left: null, history: player.history as any })
+      .match({ id: player.id });
+
+    await this.addPlayerToUpcomingAttendances(player.id);
+  }
+
+  async createOrganisation(name: string): Promise<Organisation> {
+    const { data, error } = await supabase
+      .from('tenant_groups')
+      .insert({
+        name,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast("Fehler beim Erstellen der Organisation", "danger");
+      throw error;
+    }
+
+    await this.linkTenantToOrganisation(this.tenant().id, data.id);
+
+    return data;
+  }
+
+  async linkTenantToOrganisation(tenantId: number, orgId: number): Promise<void> {
+    const { error } = await supabase
+      .from('tenant_group_tenants')
+      .insert({
+        tenant_id: tenantId,
+        tenant_group: orgId,
+      });
+
+    if (error) {
+      Utils.showToast("Fehler beim Verknüpfen der Organisation", "danger");
+      throw error;
+    }
+
+    return;
+  }
+
+  async unlinkTenantFromOrganisation(orgId: number): Promise<void> {
+    const { error } = await supabase
+      .from('tenant_group_tenants')
+      .delete()
+      .eq('tenant_id', this.tenant().id)
+      .eq('tenant_group', orgId);
+
+    if (error) {
+      Utils.showToast("Fehler beim Entfernen der Organisation", "danger");
+      throw error;
+    }
+
+    // check if there are still tenants in the organisation if not delete the organisation
+    const { data, error: fetchError } = await supabase
+      .from('tenant_group_tenants')
+      .select('*')
+      .eq('tenant_group', orgId);
+
+    if (fetchError) {
+      Utils.showToast("Fehler beim Entfernen der Organisation", "danger");
+      throw fetchError;
+    }
+
+    if (data.length === 0) {
+      await supabase
+        .from('tenant_groups')
+        .delete()
+        .match({ id: orgId });
+    }
+
+    return;
+  }
+
+  async getOrganisationFromTenant(): Promise<Organisation | null> {
+    const { data, error } = await supabase
+      .from('tenant_group_tenants')
+      .select('*, tenant_group_data:tenant_group(*)')
+      .eq('tenant_id', this.tenant().id)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      Utils.showToast("Fehler beim Laden der Organisation", "danger");
+      throw error;
+    }
+
+    return data.tenant_group_data;
+  }
+
+  async getOrganisationsFromUser(): Promise<Organisation[]> {
+    const { data: tenants, error: fetchError } = await supabase
+      .from('tenantUsers')
+      .select('*, tenantId(*)')
+      .eq('userId', this.tenantUser().userId)
+      .or('role.eq.1, role.eq.5');
+
+    if (fetchError) {
+      Utils.showToast("Fehler beim Laden der Mandanten", "danger");
+      throw fetchError;
+    }
+
+    const { data, error } = await supabase
+      .from('tenant_group_tenants')
+      .select('*, tenant_group_data:tenant_group(*)')
+      .in('tenant_id', tenants.map(t => t.tenantId.id));
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Organisationen", "danger");
+      throw error;
+    }
+
+    // make sure there are no duplicates
+    const uniqueOrgs = Array.from(new Set(data.map(d => d.tenant_group_data.id)))
+      .map(id => {
+        return data.find(d => d.tenant_group_data.id === id).tenant_group_data;
+      });
+
+    return uniqueOrgs;
   }
 }

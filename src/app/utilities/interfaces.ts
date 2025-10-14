@@ -268,3 +268,14 @@ export interface GroupCategory {
     name: string;
     tenant_id?: number;
 }
+
+export interface Admin {
+    userId: string;
+    email: string;
+}
+
+export interface Organisation {
+    id?: number;
+    created_at?: string;
+    name: string;
+}
