@@ -142,46 +142,46 @@
                   <ion-card-header>
                     <ion-card-title>Legende</ion-card-title>
                   </ion-card-header>
-                    <ion-list>
-                      <ion-item lines="none">
-                        @if (isGeneral) {
-                        <ion-badge slot="start" color="primary">Zusammenkünfte</ion-badge>
-                        } @else {
-                        <ion-badge slot="start" color="primary">Übungen</ion-badge>
-                        }
-                        @if (isGeneral) {
-                        <ion-label>Regelmäßige Zusammenkünfte</ion-label>
-                        } @else {
-                        <ion-label>Regelmäßige Proben</ion-label>
-                        }
-                      </ion-item>
-                      @if (!isGeneral) {
-                      <ion-item lines="none">
-                        <ion-badge slot="start" color="success">Vorträge</ion-badge>
-                        <ion-label>Vorträge</ion-label>
-                      </ion-item>
-                      @if (isChoir) {
-                      <ion-item lines="none">
-                        <ion-badge slot="start" color="warning">Hochzeiten</ion-badge>
-                        <ion-label>Hochzeiten</ion-label>
-                      </ion-item>
+                  <ion-list>
+                    <ion-item lines="none">
+                      @if (isGeneral) {
+                      <ion-badge slot="start" color="primary">Zusammenkünfte</ion-badge>
+                      } @else {
+                      <ion-badge slot="start" color="primary">Übungen</ion-badge>
                       }
-                      <ion-item lines="none">
-                        <ion-badge slot="start" color="secondary">Sonstiges</ion-badge>
-                        <ion-label>Sonstige Veranstaltungen</ion-label>
-                      </ion-item>
+                      @if (isGeneral) {
+                      <ion-label>Regelmäßige Zusammenkünfte</ion-label>
+                      } @else {
+                      <ion-label>Regelmäßige Proben</ion-label>
                       }
-                      @if (holidays.publicHolidays.length || holidays.schoolHolidays.length) {
-                      <ion-item lines="none">
-                        <ion-badge slot="start" color="danger">Feiertage</ion-badge>
-                        <ion-label>Feiertage des ausgewählten Bundeslandes</ion-label>
-                      </ion-item>
-                      <ion-item lines="none">
-                        <ion-badge slot="start" color="medium">Ferien</ion-badge>
-                        <ion-label>Ferien des ausgewählten Bundeslandes</ion-label>
-                      </ion-item>
-                      }
-                    </ion-list>
+                    </ion-item>
+                    @if (!isGeneral) {
+                    <ion-item lines="none">
+                      <ion-badge slot="start" color="success">Vorträge</ion-badge>
+                      <ion-label>Vorträge</ion-label>
+                    </ion-item>
+                    @if (isChoir) {
+                    <ion-item lines="none">
+                      <ion-badge slot="start" color="warning">Hochzeiten</ion-badge>
+                      <ion-label>Hochzeiten</ion-label>
+                    </ion-item>
+                    }
+                    <ion-item lines="none">
+                      <ion-badge slot="start" color="secondary">Sonstiges</ion-badge>
+                      <ion-label>Sonstige Veranstaltungen</ion-label>
+                    </ion-item>
+                    }
+                    @if (holidays.publicHolidays.length || holidays.schoolHolidays.length) {
+                    <ion-item lines="none">
+                      <ion-badge slot="start" color="danger">Feiertage</ion-badge>
+                      <ion-label>Feiertage des ausgewählten Bundeslandes</ion-label>
+                    </ion-item>
+                    <ion-item lines="none">
+                      <ion-badge slot="start" color="medium">Ferien</ion-badge>
+                      <ion-label>Ferien des ausgewählten Bundeslandes</ion-label>
+                    </ion-item>
+                    }
+                  </ion-list>
                 </ion-card>
                 <ion-list-header>
                   <ion-label>Ferien</ion-label>
@@ -211,13 +211,10 @@
           </ion-modal>
           <ion-modal #dateModal class="dateModal" trigger="att-date-modal">
             <ng-template>
-              <ion-content>
-                <ion-datetime [highlightedDates]="highlightedDates" locale="de-DE"
-                  [firstDayOfWeek]="1" multiple="true" [(ngModel)]="dates"
-                  (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)" presentation="date"
-                  #dateTimePickerDate>
-                </ion-datetime>
-              </ion-content>
+              <ion-datetime [highlightedDates]="highlightedDates" locale="de-DE" [firstDayOfWeek]="1" multiple="true"
+                [(ngModel)]="dates" (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)" presentation="date"
+                #dateTimePickerDate>
+              </ion-datetime>
             </ng-template>
           </ion-modal>
         </ion-item>
@@ -280,7 +277,7 @@
               <h3>{{ getConductorInfo(entry) }}</h3>
             </ion-label>
             <ion-button fill="clear" slot="end" (click)="historyEntries.splice(i, 1)">
-              <ion-icon name="close"></ion-icon>
+              <ion-icon slot="icon-only" name="close"></ion-icon>
             </ion-button>
           </ion-item>
         </ion-list>

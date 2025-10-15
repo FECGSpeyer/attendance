@@ -205,6 +205,7 @@ export class SettingsPage implements OnInit {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: PlanningPage,
       presentingElement: this.routerOutlet.nativeEl,
+      cssClass: "planningModal",
     });
 
     await modal.present();

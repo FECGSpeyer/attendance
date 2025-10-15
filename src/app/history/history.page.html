@@ -3,7 +3,7 @@
     <ion-title>Werkhistorie</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
-        <ion-icon name="close"></ion-icon>
+        <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -92,11 +92,9 @@
           <ion-input readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
           <ion-modal #dateModal class="dateModal" trigger="att-date-modal">
             <ng-template>
-              <ion-content>
-                <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [(ngModel)]="historyEntry.date"
-                  (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)" presentation="date"
-                  #dateTimePickerDate></ion-datetime>
-              </ion-content>
+              <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1"
+                [(ngModel)]="historyEntry.date" (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)"
+                presentation="date" #dateTimePickerDate></ion-datetime>
             </ng-template>
           </ion-modal>
         </ion-item>

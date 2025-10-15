@@ -4,7 +4,7 @@
     <ion-title *ngIf="!readOnly && existingPlayer">Person bearbeiten</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
-        <ion-icon name="close"></ion-icon>
+        <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -93,12 +93,10 @@
                 <ion-input [disabled]="readOnly" readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
                 <ion-modal class="dateModal" #birthdayModal trigger="date-modal">
                   <ng-template>
-                    <ion-content>
                       <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
                         [(ngModel)]="player.birthday"
                         (ionChange)="onBirthdayChange(dateTimePickerBirthday.value, birthdayModal)" presentation="date"
                         #dateTimePickerBirthday></ion-datetime>
-                    </ion-content>
                   </ng-template>
                 </ion-modal>
               </ion-item>
@@ -111,12 +109,10 @@
                 <ion-input [disabled]="readOnly" readonly [(ngModel)]="playsSinceString" id="plays-modal"></ion-input>
                 <ion-modal class="dateModal" #playsSinceModal trigger="plays-modal">
                   <ng-template>
-                    <ion-content>
                       <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
                         [(ngModel)]="player.playsSince"
                         (ionChange)="onPlaysSinceChange(dateTimePickerPlays.value, playsSinceModal)" presentation="date"
                         #dateTimePickerPlays></ion-datetime>
-                    </ion-content>
                   </ng-template>
                 </ion-modal>
               </ion-item>
@@ -129,12 +125,10 @@
                 <ion-input [disabled]="readOnly" readonly [(ngModel)]="joinedString" id="joined-modal"></ion-input>
                 <ion-modal class="dateModal" #joinedModal trigger="joined-modal">
                   <ng-template>
-                    <ion-content>
                       <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
                         [(ngModel)]="player.joined"
                         (ionChange)="onJoinedChange(dateTimePickerJoined.value, joinedModal)" presentation="date"
                         #dateTimePickerJoined></ion-datetime>
-                    </ion-content>
                   </ng-template>
                 </ion-modal>
               </ion-item>
@@ -283,7 +277,7 @@
                 <ion-title>Hilfe</ion-title>
                 <ion-buttons slot="end">
                   <ion-button (click)="accountHelpModal.dismiss()">
-                    <ion-icon name="close"></ion-icon>
+                    <ion-icon slot="icon-only" name="close"></ion-icon>
                   </ion-button>
                 </ion-buttons>
               </ion-toolbar>
@@ -398,7 +392,7 @@
           <ion-title>{{ player?.firstName }} {{ player?.lastName }} Archivieren</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="dismissArchiveModal()">
-              <ion-icon name="close"></ion-icon>
+              <ion-icon slot="icon-only" name="close"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>

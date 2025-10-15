@@ -3,7 +3,7 @@
     <ion-title *ngIf="players">{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(players) }}/{{ players.length }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="close()">
-        <ion-icon name="close"></ion-icon>
+        <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -75,7 +75,7 @@
               <h3>{{ getConductorInfo(entry) }}</h3>
             </ion-label>
             <ion-button fill="clear" slot="end" (click)="removeHistoryEntry(entry.id)">
-              <ion-icon name="close"></ion-icon>
+              <ion-icon slot="icon-only" name="close"></ion-icon>
             </ion-button>
           </ion-item>
         </ion-list>

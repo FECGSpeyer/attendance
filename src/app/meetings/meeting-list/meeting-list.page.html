@@ -1,4 +1,4 @@
-<ion-header translucent="true">
+<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
@@ -34,16 +34,9 @@
           <ion-input readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
           <ion-modal #dateModal class="dateModal" trigger="att-date-modal">
             <ng-template>
-              <ion-content>
-                <ion-datetime
-                  locale="de-DE"
-                  [firstDayOfWeek]="1"
-                  [(ngModel)]="date"
-                  (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)"
-                  presentation="date"
-                  #dateTimePickerDate
-                ></ion-datetime>
-              </ion-content>
+              <ion-datetime locale="de-DE" [firstDayOfWeek]="1" [(ngModel)]="date"
+                (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)" presentation="date"
+                #dateTimePickerDate></ion-datetime>
             </ng-template>
           </ion-modal>
         </ion-item>

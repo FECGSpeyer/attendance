@@ -3,13 +3,13 @@
     <ion-title>Probenplan erstellen</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
-        <ion-icon name="close"></ion-icon>
+        <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="ios26-disabled">
   <ion-card>
     <ion-item [lines]="attendance && notes ? '' : 'none'" *ngIf="attendances.length">
       <ion-select interface="modal" label="Zugehörige Anwesenheit"
