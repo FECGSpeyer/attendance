@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Probenplan erstellen</ion-title>
+    <ion-title>Ablaufplan erstellen</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -12,8 +12,7 @@
 <ion-content class="ios26-disabled">
   <ion-card>
     <ion-item [lines]="attendance && notes ? '' : 'none'" *ngIf="attendances.length">
-      <ion-select interface="modal" label="Zugehörige Anwesenheit"
-        (ionChange)="onAttChange()" [(ngModel)]="attendance">
+      <ion-select interface="modal" label="Zugehörige Anwesenheit" (ionChange)="onAttChange()" [(ngModel)]="attendance">
         <ion-select-option [value]="att.id" *ngFor="let att of attendances">{{ att.date | date:'dd.MM.yyyy' }} {{
           this.getAttTypeText(att.type, att.typeInfo) }}</ion-select-option>
       </ion-select>
@@ -70,8 +69,8 @@
             <h3 class="danger" *ngIf="field.songId">{{ getMissingGroups(field.songId) }}</h3>
             <h3>{{ calculateTime(field, i) }}</h3>
           </ion-label>
-          <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time" placeholder="min"
-            type="number" slot="end"></ion-input>
+          <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
+            placeholder="min" type="number" slot="end"></ion-input>
           <ion-reorder slot="end"></ion-reorder>
         </ion-item>
         <ion-item-options (ionSwipe)="removeField(i, slider)">

@@ -149,6 +149,10 @@ export class PlanningPage implements OnInit {
   }
 
   send() {
+    if (!this.validate()) {
+      return;
+    }
+
     const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
     const name: string = this.attendance ? dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format("DD_MM_YYYY") : dayjs().format("DD_MM_YYYY");
     const blob: Blob = Utils.createPlanExport({
@@ -251,12 +255,10 @@ export class PlanningPage implements OnInit {
     this.modalController.dismiss();
   }
 
-  onSegmentChange() {
-    this.selectedFields = [];
-  }
-
   handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
     ev.detail.complete(this.selectedFields);
+
+    this.calculateEnd();
   }
 
   removeField(index: number, slider: IonItemSliding) {
@@ -272,7 +274,7 @@ export class PlanningPage implements OnInit {
       inputs: [{
         type: "textarea",
         name: "field",
-        placeholder: "Werknummer oder Freitext eingeben..."
+        placeholder: "Freitext eingeben..."
       }],
       buttons: [{
         text: "Abbrechen"
@@ -346,9 +348,15 @@ export class PlanningPage implements OnInit {
     }
 
     this.end = currentTime.format("YYYY-MM-DDTHH:mm");
+
+    this.updateAttendance();
   }
 
   export() {
+    if (!this.validate()) {
+      return;
+    }
+
     Utils.createPlanExport({
       time: this.time,
       end: this.end,
@@ -359,42 +367,22 @@ export class PlanningPage implements OnInit {
     }, Boolean(this.attendances.find((a: Attendance) => a.id === this.attendance)?.type === "uebung"));
   }
 
-  validate() {
+  validate(showToast: boolean = true): boolean {
     if (!this.time || !this.selectedFields.length) {
-      Utils.showToast("Bitte wähle mindestens ein Feld aus.", "warning");
+      if (showToast) {
+        Utils.showToast("Bitte wähle mindestens ein Feld aus.", "warning");
+      }
       return false;
     }
 
     if (!this.selectedFields.every(field => field.time)) {
-      Utils.showToast("Bitte fülle alle erforderlichen Felder aus.", "warning");
+      if (showToast) {
+        Utils.showToast("Bitte fülle alle erforderlichen Felder aus.", "warning");
+      }
       return false;
     }
 
     return true;
-  }
-
-  async addToAttendance() {
-    if (!this.validate()) {
-      return;
-    }
-
-    const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999);
-    await loading.present();
-
-    this.db.updateAttendance({
-      plan: {
-        time: this.time,
-        fields: this.selectedFields,
-        end: this.end,
-      }
-    }, this.attendance);
-
-    await loading.dismiss();
-    Utils.showToast("Probenplan wurde gespeichert!", "success");
-
-    if (this.attendanceId) {
-      this.dismiss();
-    }
   }
 
   getAttTypeText(type: string, typeInfo?: string): string {
@@ -410,13 +398,6 @@ export class PlanningPage implements OnInit {
     const buttons: ActionSheetButton[] = [];
 
     if (this.selectedFields.length) {
-      if (this.attendances.length && this.attendance) {
-        buttons.push({
-          text: 'Speichern',
-          handler: () => this.addToAttendance()
-        });
-      }
-
       buttons.push({
         text: 'PDF exportieren',
         handler: () => this.export()
@@ -499,15 +480,31 @@ export class PlanningPage implements OnInit {
     return a;
   }
 
-    getMissingGroups(songId: number): string {
-      const song = this.songs.find((s: Song) => s.id === songId);
+  getMissingGroups(songId: number): string {
+    const song = this.songs.find((s: Song) => s.id === songId);
 
-      if (!song || !song.instrument_ids || !song.instrument_ids.length) {
-        return "";
+    if (!song || !song.instrument_ids || !song.instrument_ids.length) {
+      return "";
+    }
+
+    const text = Utils.getInstrumentText(song.instrument_ids, this.instruments, this.groupCategories);
+    return text;
+  }
+
+  updateAttendance() {
+    if (this.attendances.length && this.attendance) {
+      if (!this.validate(false)) {
+        return;
       }
 
-      const text = Utils.getInstrumentText(song.instrument_ids, this.instruments, this.groupCategories);
-      return text;
+      this.db.updateAttendance({
+        plan: {
+          time: this.time,
+          fields: this.selectedFields,
+          end: this.end,
+        }
+      }, this.attendance);
     }
+  }
 
 }

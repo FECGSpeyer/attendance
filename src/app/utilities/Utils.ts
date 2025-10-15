@@ -232,11 +232,12 @@ export class Utils {
     }
   }
 
-  public static async showToast(message: string, color: string = "success", duration: number = 1500): Promise<void> {
+  public static async showToast(message: string, color: string = "success", duration: number = 2000): Promise<void> {
     const toast: HTMLIonToastElement = await new ToastController().create({
-      message, color,
+      message,
+      color,
       position: "top",
-      duration,
+      duration: 100000,
     });
 
     return await toast.present();

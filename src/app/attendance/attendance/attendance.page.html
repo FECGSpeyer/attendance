@@ -100,7 +100,7 @@
   <ion-accordion-group *ngIf="!isGeneral">
     <ion-accordion value="plan">
       <ion-item slot="header" color="light">
-        <ion-label>Probenplan</ion-label>
+        <ion-label>Ablaufplan</ion-label>
       </ion-item>
       <div slot="content" *ngIf="attendance.plan">
         <ion-item lines="none">
@@ -124,7 +124,7 @@
         <ion-button (click)="send()" style="margin-left: '16px'" size="small">Per Telegram senden</ion-button>
       </div>
       <div slot="content" *ngIf="!attendance.plan">
-        <ion-button (click)="editPlan()" style="margin-left: '16px'" size="small">Probenplan erstellen</ion-button>
+        <ion-button (click)="editPlan()" style="margin-left: '16px'" size="small">Ablaufplan erstellen</ion-button>
       </div>
     </ion-accordion>
   </ion-accordion-group>

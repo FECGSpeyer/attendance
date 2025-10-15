@@ -76,3 +76,7 @@ ion-modal.ios:not(.ios26-disabled):has(.ion-delegate-host):has(ion-datetime).pla
         --background: #000;
     }
 }
+
+ion-toast.ios:not(.ios26-disabled) {
+    --border-radius: 24px;
+}
