@@ -7,6 +7,10 @@ ion-searchbar {
     padding-right: 0;
 }
 
+.ios #filter-trigger {
+    margin-right: 1rem;
+}
+
 ion-select::part(text) {
     width: 7rem;
 }

@@ -3,6 +3,10 @@
     align-items: center;
 }
 
+.ios #filter-trigger-songs {
+    margin-right: 1rem;
+}
+
 ion-select::part(text) {
     width: 7rem;
 }

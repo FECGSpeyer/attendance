@@ -1,7 +1,7 @@
-<ion-header>
+<ion-header translucent="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button text="Zurück" defaultHref="tabs/settings"></ion-back-button>
+      <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
     </ion-buttons>
     <ion-title>Werke ({{ songs?.length }})</ion-title>
   </ion-toolbar>
@@ -18,13 +18,12 @@
   </ion-header>
 
   <div class="flex">
-    <ion-searchbar (ionInput)="search($event)" animated placeholder="Werk suchen..."></ion-searchbar>
+    <ion-searchbar (ionInput)="search($event)" placeholder="Werk suchen..."></ion-searchbar>
     <ion-button id="filter-trigger-songs" fill="none">
       <ion-icon size="medium" name="options"></ion-icon>
     </ion-button>
     <ion-popover trigger="filter-trigger-songs" triggerAction="click">
       <ng-template>
-        <ion-content>
           <ion-list>
             <ion-item lines="none">
               <ion-icon slot="start" name="filter" size="small"></ion-icon>
@@ -66,7 +65,6 @@
               </ion-select>
             </ion-item>
           </ion-list>
-        </ion-content>
       </ng-template>
     </ion-popover>
   </div>

@@ -109,7 +109,8 @@
               <ion-label>
                 <h2 *ngIf="!organisation">Organisation zuweisen</h2>
                 <h2 *ngIf="organisation">Organisation ({{ organisation.name }})</h2>
-                <h3>Weise die Instanz einer bestehenden Organisation zu oder erstelle eine. Damit können Personen innerhalb der Organisation verknüpft werden</h3>
+                <h3>Weise die Instanz einer bestehenden Organisation zu oder erstelle eine. Damit können Personen
+                  innerhalb der Organisation verknüpft werden</h3>
               </ion-label>
               <ion-badge *ngIf="isSuperAdmin && organisation" (click)="deleteOrganisation()" color="danger">
                 <ion-icon name="trash-outline"></ion-icon>
@@ -311,49 +312,12 @@
 
   <ion-card-subtitle>System</ion-card-subtitle>
   <ion-card>
-    <ion-item id="instances-button" button detail="false">
+    <ion-item (click)="isInstancesModalOpen = true" button detail="false">
       <ion-icon name="apps-outline" slot="start"></ion-icon>
       <ion-label>
         <h2>Instanzen</h2>
         <h3>Aktuell: {{ db.tenant().longName }}</h3>
       </ion-label>
-      <ion-modal #instancesModal trigger="instances-button" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]=".5">
-        <ng-template>
-          <ion-content>
-            <ion-header>
-              <ion-toolbar>
-                <ion-buttons slot="start">
-                  <ion-button (click)="openCreateInstanceModal(instancesModal)">
-                    <ion-icon name="add-outline" slot="start"></ion-icon>
-                  </ion-button>
-                </ion-buttons>
-                <ion-title>Instanzen</ion-title>
-                <ion-buttons slot="end">
-                  <ion-button (click)="instancesModal.dismiss()">
-                    <ion-icon name="close-outline" slot="start"></ion-icon>
-                  </ion-button>
-                </ion-buttons>
-              </ion-toolbar>
-            </ion-header>
-            <ion-list>
-              <ion-item-sliding *ngFor="let tenant of db.tenants()" #sliding>
-                <ion-item detail="false" button (click)="onTenantChange(tenant.id, instancesModal)">
-                  <ion-label>
-                    <h2>{{ tenant.shortName }}</h2>
-                    <h3>{{ tenant.longName }}</h3>
-                  </ion-label>
-                  <ion-badge *ngIf="db.tenant().id === tenant.id" color="primary">Aktuell</ion-badge>
-                </ion-item>
-                <ion-item-options (ionSwipe)="deleteInstance(tenant, sliding, instancesModal)" side="end">
-                  <ion-item-option (click)="deleteInstance(tenant, sliding, instancesModal)" color="danger">
-                    <ion-icon size="small" slot="icon-only" name="trash"></ion-icon>
-                  </ion-item-option>
-                </ion-item-options>
-              </ion-item-sliding>
-            </ion-list>
-          </ion-content>
-        </ng-template>
-      </ion-modal>
     </ion-item>
 
     @if (isAdmin || isHelper || isPlayer) {
@@ -387,6 +351,17 @@
             </ion-header>
 
             <ion-list>
+              <ion-list-header>Version 3.2.0</ion-list-header>
+              <ion-item>
+                <ion-label>
+                  <h2>- Organisationen sind da! Füge jetzt deine Instanzen einer Organisation hinzu, um die Verwaltung
+                    zu erleichtern. (Personendaten können übernommen werden und zu anderen Instanzen kopiert/verschoben
+                    werden)</h2>
+                  <h2>- Sobald ein bestehender Account zu einer Instanz hinzugefügt wird, wird der Benutzer per E-Mail
+                    benachrichtigt.</h2>
+                  <h2>- Neues Apple Design für die Benutzeroberfläche</h2>
+                </ion-label>
+              </ion-item>
               <ion-list-header>Version 3.1.0</ion-list-header>
               <ion-item>
                 <ion-label>
@@ -737,4 +712,48 @@
       <ion-label>Ausloggen</ion-label>
     </ion-item>
   </ion-card>
+
+  <ion-fab *ngIf="isIos" vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="isInstancesModalOpen = true">
+      <ion-icon name="apps-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-modal (ionModalDidDismiss)="isInstancesModalOpen = false" #instancesModal [isOpen]="isInstancesModalOpen" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]=".5">
+    <ng-template>
+      <ion-content>
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <ion-button (click)="openCreateInstanceModal(instancesModal)">
+                <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+            <ion-title>Instanzen</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="isInstancesModalOpen = false">
+                <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-list>
+          <ion-item-sliding *ngFor="let tenant of db.tenants()" #sliding>
+            <ion-item detail="false" button (click)="onTenantChange(tenant.id, instancesModal)">
+              <ion-label>
+                <h2>{{ tenant.shortName }}</h2>
+                <h3>{{ tenant.longName }}</h3>
+              </ion-label>
+              <ion-badge *ngIf="db.tenant().id === tenant.id" color="primary">Aktuell</ion-badge>
+            </ion-item>
+            <ion-item-options (ionSwipe)="deleteInstance(tenant, sliding, instancesModal)" side="end">
+              <ion-item-option (click)="deleteInstance(tenant, sliding, instancesModal)" color="danger">
+                <ion-icon size="small" slot="icon-only" name="trash"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ion-list>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

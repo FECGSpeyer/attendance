@@ -10,7 +10,7 @@
 </ion-header>
 
 <ion-content>
-  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" animated placeholder="Werk suchen...">
+  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" placeholder="Werk suchen...">
   </ion-searchbar>
   <ion-list *ngIf="searchTerm" class="marginBottom">
     <ion-item-sliding #sliding *ngFor="let entry of historyFiltered">

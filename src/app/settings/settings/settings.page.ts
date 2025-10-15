@@ -1,5 +1,5 @@
 import { Component, OnInit, effect } from '@angular/core';
-import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
+import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, isPlatform, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { ExportPage } from 'src/app/export/export.page';
@@ -66,6 +66,7 @@ export class SettingsPage implements OnInit {
     { name: "Schleswig-Holstein", code: "SH" },
     { name: "Thüringen", code: "TH" },
   ];
+  public isIos: boolean = false;
 
   constructor(
     public db: DbService,
@@ -82,6 +83,7 @@ export class SettingsPage implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    this.isIos = isPlatform('ios');
     await this.initialize();
   }
 
