@@ -67,6 +67,7 @@ export class SettingsPage implements OnInit {
     { name: "Thüringen", code: "TH" },
   ];
   public isIos: boolean = false;
+  public isInstancesModalOpen: boolean = false;
 
   constructor(
     public db: DbService,
