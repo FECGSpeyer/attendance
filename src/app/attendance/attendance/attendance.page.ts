@@ -284,6 +284,7 @@ export class AttendancePage implements OnInit {
   async editPlan() {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: PlanningPage,
+      cssClass: "planningModal",
       componentProps: {
         attendanceId: this.attendance.id,
       },
