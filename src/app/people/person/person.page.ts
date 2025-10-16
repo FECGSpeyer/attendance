@@ -782,12 +782,12 @@ export class PersonPage implements OnInit, AfterViewInit {
           handler: async () => {
             try {
               await this.db.handoverPerson(this.player, this.tenants.find(t => t.id === this.tenantId), this.targetGroupId, this.copy, this.isMainGroup ? this.player.instrument : null);
+              this.isTransferModalOpen = false;
               if (!this.copy) {
                 this.hasChanges = false;
                 await this.dismiss();
               }
               Utils.showToast(this.copy ? "Die Person wurde erfolgreich kopiert" : "Die Person wurde erfolgreich übertragen", "success");
-              this.isTransferModalOpen = false;
             } catch (error) {
               Utils.showToast(error, "danger");
               return;
