@@ -632,17 +632,13 @@ export class SettingsPage implements OnInit {
     const link = `https://n8n.srv1053762.hstgr.cloud/webhook/attendix?tenantId=${this.db.tenant().id}`;
     const alert = await new AlertController().create({
       header: 'Kalender abonnieren',
-      message: 'Kopiere den folgenden Link in deine Kalender-App, um die Termine zu abonnieren:',
-      inputs: [{
-        type: 'text',
-        name: 'link',
-        value: link,
-      }],
+      message: `Kopiere den folgenden Link in deine Kalender-App, um die Termine zu abonnieren:\n\n${link}`,
       buttons: [{
         text: "Link kopieren",
         handler: () => {
            navigator?.clipboard.writeText(link);
            Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
+           return false;
         }
       }, {
         text: "Anleitung öffen",
