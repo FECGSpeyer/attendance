@@ -1,5 +1,5 @@
 <ion-header translucent="true">
-  <ion-toolbar>
+  <ion-toolbar color="light">
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
     </ion-buttons>
@@ -7,10 +7,71 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content color="light" [fullscreen]="true">
   <ion-header collapse="condense">
-    <ion-toolbar>
+    <ion-toolbar color="light">
       <ion-title size="large">Personenübergabe</ion-title>
     </ion-toolbar>
   </ion-header>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-icon class="headerIcon" name="walk-outline"></ion-icon>
+    </ion-card-header>
+    <ion-card-content>
+      Hiermit kannst du Personen innerhalb einer Organisation weitergeben. Falls die Person ein Account hat, wird diese
+      informiert.
+    </ion-card-content>
+  </ion-card>
+
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Einstellungen</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item>
+        <ion-toggle
+          helperText="Die Person wird in der aktuellen Instanz nicht archiviert sonern bleibt aktiv"
+          [(ngModel)]="stayInInstance">
+          Personen in Instanz behalten
+        </ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-toggle
+          (ionChange)="onMainGroupChanged()"
+          helperText="Personen die in der Hauptgruppe sind, werden auch angezeigt"
+          [(ngModel)]="includeMainGroup">
+          Hauptgruppe beachten
+        </ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-select label="Ziel-Instanz" (ionChange)="onTenantChange()" [(ngModel)]="tenant">
+          <ion-select-option [value]="tnt.id" *ngFor="let tnt of tenants">{{ tnt.longName }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+
+  <ion-list [inset]="true">
+    <ion-list-header>
+      <ion-label>Personenliste</ion-label>
+      <ion-button size="small" fill="clear" (click)="selectAll()">
+        Alle auswählen
+      </ion-button>
+    </ion-list-header>
+    <ion-item-group>
+      <ion-item *ngFor="let person of filteredPersons">
+        <ion-checkbox (ionChange)="togglePersonSelection(person)" [checked]="selectedPersons.includes(person.id)">
+          <ion-label>
+            <h2>{{ person.firstName }} {{ person.lastName }}</h2>
+            <p>{{ person.birthday | date:'dd.MM.yyyy' }} | {{ person.instrumentName }}</p>
+          </ion-label>
+        </ion-checkbox>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="toDetail()" [disabled]="!tenant || !selectedPersons.length">
+      <ion-icon name="arrow-forward-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

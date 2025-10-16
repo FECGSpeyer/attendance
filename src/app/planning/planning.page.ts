@@ -190,7 +190,12 @@ export class PlanningPage implements OnInit {
           time: "10",
         }];
 
+        const songsAdded: Set<string> = new Set<string>();
         for (let his of this.history) {
+          if (songsAdded.has(String(his.songId))) {
+            continue;
+          }
+          songsAdded.add(String(his.songId));
           const song: Song = this.songs.find((s: Song): boolean => s.id === his.songId);
           this.onSongsChange([String(song.id)], true);
         }
@@ -217,7 +222,12 @@ export class PlanningPage implements OnInit {
           time: "5",
         }];
 
+        const songsAdded: Set<string> = new Set<string>();
         for (let his of this.history) {
+          if (songsAdded.has(String(his.songId))) {
+            continue;
+          }
+          songsAdded.add(String(his.songId));
           const song: Song = this.songs.find((s: Song): boolean => s.id === his.songId);
           this.onSongsChange([String(song.id)], false);
         }
@@ -489,6 +499,26 @@ export class PlanningPage implements OnInit {
 
     const text = Utils.getInstrumentText(song.instrument_ids, this.instruments, this.groupCategories);
     return text;
+  }
+
+  nextAtt() {
+    const currentIndex = this.attendances.findIndex((att: Attendance) => att.id === this.attendance);
+    if (currentIndex > 0) {
+      this.attendance = this.attendances[currentIndex - 1].id;
+      this.onAttChange();
+    } else {
+      Utils.showToast("Dies ist die aktuell erste Veranstaltung", "warning");
+    }
+  }
+
+  prevAtt() {
+    const currentIndex = this.attendances.findIndex((att: Attendance) => att.id === this.attendance);
+    if (currentIndex < this.attendances.length - 1) {
+      this.attendance = this.attendances[currentIndex + 1].id;
+      this.onAttChange();
+    } else {
+      Utils.showToast("Dies ist die aktuell letzte Veranstaltung", "warning");
+    }
   }
 
   updateAttendance() {

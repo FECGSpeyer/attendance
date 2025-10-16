@@ -237,7 +237,7 @@ export class Utils {
       message,
       color,
       position: "top",
-      duration: 100000,
+      duration,
     });
 
     return await toast.present();

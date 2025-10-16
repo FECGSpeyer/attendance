@@ -1833,7 +1833,7 @@ export class DbService {
   async getAdmins(): Promise<Admin[]> {
     const { data, error } = await supabase
       .from('tenantUsers')
-      .select('email, userId')
+      .select('email, userId, created_at')
       .eq('role', Role.ADMIN)
       .eq('tenantId', this.tenant().id);
 
@@ -1983,5 +1983,24 @@ export class DbService {
       });
 
     return uniqueOrgs;
+  }
+
+  async getTenantsFromOrganisation(): Promise<Tenant[]> {
+    const organisation = await this.getOrganisationFromTenant();
+    if (!organisation) {
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from('tenant_group_tenants')
+      .select('*, tenant:tenant_id(*)')
+      .eq('tenant_group', organisation.id);
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Mandanten", "danger");
+      throw error;
+    }
+
+    return data.map(d => d.tenant).filter(t => t.id !== this.tenant().id);
   }
 }

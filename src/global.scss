@@ -45,7 +45,11 @@
 }
 
 .marginBottom {
-    margin-bottom: 4rem;
+    margin-bottom: 1rem;
+}
+
+.marginTop {
+    margin-top: 1rem !important;
 }
 
 .attDateModal {
@@ -79,4 +83,8 @@ ion-modal.ios:not(.ios26-disabled):has(.ion-delegate-host):has(ion-datetime).pla
 
 ion-toast.ios:not(.ios26-disabled) {
     --border-radius: 24px;
+}
+
+ion-card-content {
+    text-align: center !important;
 }

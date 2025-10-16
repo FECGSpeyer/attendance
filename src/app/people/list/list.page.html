@@ -18,65 +18,67 @@
     </ion-button>
     <ion-popover trigger="filter-trigger" triggerAction="click">
       <ng-template>
-                  <ion-list>
-            <ion-item lines="none">
-              <ion-icon slot="start" name="funnel" size="small"></ion-icon>
-              <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="filterOpt">
-                <ion-select-option value="all">Alle Anzeigen</ion-select-option>
-                <ion-select-option value="active">Aktive Personen</ion-select-option>
-                <ion-select-option value="criticals">Problemfälle</ion-select-option>
-                <ion-select-option *ngIf="!isGeneral" value="leaders">Stimmführer</ion-select-option>
-                <ion-select-option value="withoutAccount">Ohne Account</ion-select-option>
-                <ion-select-option *ngIf="isVoS" value="examinee">Prüflinge</ion-select-option>
-                <ion-select-option *ngIf="isVoS" value="new">Neue Spieler</ion-select-option>
-                <ion-select-option *ngIf="isVoS" value="withoutTeacher">Ohne Lehrer</ion-select-option>
-                <ion-select-option *ngIf="isVoS" value="withoutTest">Testergebnis fehlt</ion-select-option>
-                <ion-select-option *ngIf="linkedTenants.length" value="otherInstance">Mitglied anderer Instanz</ion-select-option>
-              </ion-select>
-            </ion-item>
+        <ion-list>
+          <ion-item lines="none">
+            <ion-icon slot="start" name="funnel" size="small"></ion-icon>
+            <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="filterOpt">
+              <ion-select-option value="all">Alle Anzeigen</ion-select-option>
+              <ion-select-option value="active">Aktive Personen</ion-select-option>
+              <ion-select-option value="criticals">Problemfälle</ion-select-option>
+              <ion-select-option *ngIf="!isGeneral" value="leaders">Stimmführer</ion-select-option>
+              <ion-select-option value="withoutAccount">Ohne Account</ion-select-option>
+              <ion-select-option *ngIf="isVoS" value="examinee">Prüflinge</ion-select-option>
+              <ion-select-option *ngIf="isVoS" value="new">Neue Spieler</ion-select-option>
+              <ion-select-option *ngIf="isVoS" value="withoutTeacher">Ohne Lehrer</ion-select-option>
+              <ion-select-option *ngIf="isVoS" value="withoutTest">Testergebnis fehlt</ion-select-option>
+              <ion-select-option *ngIf="linkedTenants.length" value="otherInstance">Mitglied anderer
+                Instanz</ion-select-option>
+            </ion-select>
+          </ion-item>
 
-            <ion-item lines="none">
-              <ion-icon slot="start" name="filter" size="small"></ion-icon>
-              <ion-select slot="end" (ionChange)="onSortChanged()" interface="popover" [(ngModel)]="sortOpt">
-                <ion-select-option value="instrument">Gruppe</ion-select-option>
-                <ion-select-option value="vorname">Vorname</ion-select-option>
-                <ion-select-option value="nachname">Nachname</ion-select-option>
-                <ion-select-option value="attAsc">Anwesenheit ↑</ion-select-option>
-                <ion-select-option value="attDesc">Anwesenheit ↓</ion-select-option>
-                <ion-select-option value="birthdayAsc">Geburtsdatum ↑</ion-select-option>
-                <ion-select-option value="birthdayDesc">Geburtsdatum ↓</ion-select-option>
-                <ion-select-option value="nextBirthday">Nächster Geburtstag</ion-select-option>
-                <ion-select-option *ngIf="isVoS" value="test">Testergebnis</ion-select-option>
-              </ion-select>
-            </ion-item>
+          <ion-item lines="none">
+            <ion-icon slot="start" name="filter" size="small"></ion-icon>
+            <ion-select slot="end" (ionChange)="onSortChanged()" interface="popover" [(ngModel)]="sortOpt">
+              <ion-select-option value="instrument">Gruppe</ion-select-option>
+              <ion-select-option value="vorname">Vorname</ion-select-option>
+              <ion-select-option value="nachname">Nachname</ion-select-option>
+              <ion-select-option value="attAsc">Anwesenheit ↑</ion-select-option>
+              <ion-select-option value="attDesc">Anwesenheit ↓</ion-select-option>
+              <ion-select-option value="birthdayAsc">Geburtsdatum ↑</ion-select-option>
+              <ion-select-option value="birthdayDesc">Geburtsdatum ↓</ion-select-option>
+              <ion-select-option value="nextBirthday">Nächster Geburtstag</ion-select-option>
+              <ion-select-option *ngIf="isVoS" value="test">Testergebnis</ion-select-option>
+            </ion-select>
+          </ion-item>
 
-            <ion-item lines="none">
-              <ion-icon slot="start" name="eye" size="small"></ion-icon>
-              <ion-select multiple="true" slot="end" (ionChange)="onViewChanged()" interface="popover"
-                [(ngModel)]="viewOpts">
-                <ion-select-option value="instrument">Gruppe</ion-select-option>
-                <ion-select-option value="attendance">Anwesenheit</ion-select-option>
-                <ion-select-option value="birthday">Geburtsdatum</ion-select-option>
-                <ion-select-option *ngIf="isChoir" value="instruments">Instrumente</ion-select-option>
-                <ion-select-option *ngIf="isVoS" value="test">Testergebnis</ion-select-option>
-                <ion-select-option value="exercises">Sonstige Dienste</ion-select-option>
-                <ion-select-option *ngIf="!isGeneral" value="leader">Stimmführer</ion-select-option>
-                <ion-select-option value="critical">Problemfälle</ion-select-option>
-                <ion-select-option *ngIf="isVoS" value="new">Neu</ion-select-option>
-                <ion-select-option value="paused">Pausiert</ion-select-option>
-                <ion-select-option value="notes">Hat Notizen</ion-select-option>
-                <ion-select-option value="img">Profilbild</ion-select-option>
-                <ion-select-option value="teachers" *ngIf="db.tenant().maintainTeachers">Lehrer</ion-select-option>
-                <ion-select-option *ngIf="isVoS" value="examinee">Prüfling</ion-select-option>
-                <!-- <ion-select-option *ngIf="isVoS" value="teacher">Lehrer</ion-select-option>
+          <ion-item lines="none">
+            <ion-icon slot="start" name="eye" size="small"></ion-icon>
+            <ion-select multiple="true" slot="end" (ionChange)="onViewChanged()" interface="popover"
+              [(ngModel)]="viewOpts">
+              <ion-select-option value="instrument">Gruppe</ion-select-option>
+              <ion-select-option value="attendance">Anwesenheit</ion-select-option>
+              <ion-select-option value="birthday">Geburtsdatum</ion-select-option>
+              <ion-select-option *ngIf="isChoir" value="instruments">Instrumente</ion-select-option>
+              <ion-select-option *ngIf="isVoS" value="test">Testergebnis</ion-select-option>
+              <ion-select-option value="exercises">Sonstige Dienste</ion-select-option>
+              <ion-select-option *ngIf="!isGeneral" value="leader">Stimmführer</ion-select-option>
+              <ion-select-option value="critical">Problemfälle</ion-select-option>
+              <ion-select-option *ngIf="isVoS" value="new">Neu</ion-select-option>
+              <ion-select-option value="paused">Pausiert</ion-select-option>
+              <ion-select-option value="notes">Hat Notizen</ion-select-option>
+              <ion-select-option value="img">Profilbild</ion-select-option>
+              <ion-select-option value="teachers" *ngIf="db.tenant().maintainTeachers">Lehrer</ion-select-option>
+              <ion-select-option *ngIf="isVoS" value="examinee">Prüfling</ion-select-option>
+              <!-- <ion-select-option *ngIf="isVoS" value="teacher">Lehrer</ion-select-option>
                 <ion-select-option *ngIf="isVoS" value="otherOrchestra">Anderes Orchester</ion-select-option> -->
-              </ion-select>
-            </ion-item>
-          </ion-list>
+            </ion-select>
+          </ion-item>
+        </ion-list>
       </ng-template>
     </ion-popover>
   </div>
 
+  @if (players.length) {
   <ion-list style="padding-top: 0;" class="marginBottom">
     <ion-list-header>
       <ion-label>Personen ({{ playersFiltered?.length }})</ion-label>
@@ -97,14 +99,14 @@
             <h3 *ngIf="!player.text">{{ player.instrumentName }}</h3>
             }
             @if (player.instrument !== mainGroup) {
-              @if (showTeachers && player.teacher) {
-                <h3>Lehrer: {{ getTeacherName(player.teacher) }}</h3>
-              } @else if (showTeachers && !player.teacher) {
-                <h3>Kein Lehrer</h3>
-              }
+            @if (showTeachers && player.teacher) {
+            <h3>Lehrer: {{ getTeacherName(player.teacher) }}</h3>
+            } @else if (showTeachers && !player.teacher) {
+            <h3>Kein Lehrer</h3>
+            }
             }
             @if (this.filterOpt === 'otherInstance') {
-              <h3>{{ tenantName }}</h3>
+            <h3>{{ tenantName }}</h3>
             }
           </ion-label>
           <ion-badge color="secondary"
@@ -125,7 +127,8 @@
           </ion-badge>
           <ion-badge color="dark" *ngIf="showExaminee && player.examinee" slot="end">Prüfling</ion-badge>
         </ion-item>
-        <ion-item-options (ionSwipe)="player.paused ? unpausePlayer(player, slider) : pausePlayer(player, slider)" *ngIf="isAdmin">
+        <ion-item-options (ionSwipe)="player.paused ? unpausePlayer(player, slider) : pausePlayer(player, slider)"
+          *ngIf="isAdmin">
           <ion-item-option (click)="remove(player, slider)" color="danger">
             <ion-icon name="trash"></ion-icon>
           </ion-item-option>
@@ -139,6 +142,29 @@
       </ion-item-sliding>
     </ng-container>
   </ion-list>
+  } @else {
+  <ion-list>
+    <ion-list-header>
+      <ion-skeleton-text [animated]="true" style="width: 80px"></ion-skeleton-text>
+    </ion-list-header>
+    <ion-item *ngFor="let n of [1,2,3,4,5,6,7,8,9,10]">
+      <ion-thumbnail slot="start">
+        <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+      </ion-thumbnail>
+      <ion-label>
+        <h3>
+          <ion-skeleton-text [animated]="true" style="width: 80%;"></ion-skeleton-text>
+        </h3>
+        <p>
+          <ion-skeleton-text [animated]="true" style="width: 60%;"></ion-skeleton-text>
+        </p>
+        <p>
+          <ion-skeleton-text [animated]="true" style="width: 30%;"></ion-skeleton-text>
+        </p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+  }
   <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="openModal()">
       <ion-icon name="add"></ion-icon>

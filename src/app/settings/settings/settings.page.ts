@@ -311,10 +311,14 @@ export class SettingsPage implements OnInit {
       return;
     }
 
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+
     modal?.dismiss();
 
     await this.db.setTenant(tenantId);
-    this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser().role));
+    await this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser().role));
+    await loading.dismiss();
   }
 
   async openCreateInstanceModal(instancesModal: IonModal) {
@@ -618,6 +622,24 @@ export class SettingsPage implements OnInit {
           this.organisation = null;
           Utils.showToast("Die Organisation wurde erfolgreich von der Instanz getrennt.", "success");
         }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  async openCalendarSubscription() {
+    const link = `https://n8n.srv1053762.hstgr.cloud/webhook/attendix?tenantId=${this.db.tenant().id}`;
+    const alert = await new AlertController().create({
+      header: 'Kalender abonnieren',
+      message: 'Kopiere den folgenden Link in deine Kalender-App, um die Termine zu abonnieren:',
+      inputs: [{
+        type: 'text',
+        name: 'link',
+        value: link,
+      }],
+      buttons: [{
+        text: "Okay"
       }]
     });
 

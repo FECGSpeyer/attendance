@@ -270,6 +270,7 @@ export interface GroupCategory {
 }
 
 export interface Admin {
+    created_at?: string;
     userId: string;
     email: string;
 }

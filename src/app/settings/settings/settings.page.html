@@ -1,12 +1,12 @@
 <ion-header translucent="true">
-  <ion-toolbar>
+  <ion-toolbar color="light">
     <ion-title>Mehr</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen="true">
+<ion-content color="light" fullscreen="true">
   <ion-header collapse="condense">
-    <ion-toolbar>
+    <ion-toolbar color="light">
       <ion-title size="large">Mehr</ion-title>
     </ion-toolbar>
   </ion-header>
@@ -151,22 +151,36 @@
     <ion-item *ngIf="!db.isDemo() && isSuperAdmin" detail="false" button id="admins-button">
       <ion-icon name="key-outline" slot="start"></ion-icon>
       <ion-label>
-        Admins
+        Administratoren
       </ion-label>
       <ion-modal trigger="admins-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
         <ng-template>
-          <ion-content>
+          <ion-content color="light">
             <ion-header>
               <ion-toolbar>
-                <ion-title>Admins</ion-title>
+                <ion-title>Administratoren</ion-title>
               </ion-toolbar>
             </ion-header>
-            <ion-list>
-              <ion-item button (click)="removeAdmin(a)" *ngFor="let a of admins">
-                <ion-label>
-                  <h3>{{ a.email }}</h3>
-                </ion-label>
-              </ion-item>
+            <ion-card class="marginTop">
+              <ion-card-header>
+                <ion-icon class="headerIcon" name="key-outline"></ion-icon>
+              </ion-card-header>
+              <ion-card-content>
+                Administratoren haben alle Rechte in der Instanz. Administratoren werden nicht in der Anwesenheit
+                berücksichtigt können aber zusätzlich als Person hinzugefügt werden.<br><br><ion-label
+                  color="danger">ACHTUNG: Administratoren können die Instanz auch unwiderruflich löschen!</ion-label>
+              </ion-card-content>
+            </ion-card>
+
+            <ion-list [inset]="true">
+              <ion-item-group>
+                <ion-item detail="false" button (click)="removeAdmin(a)" *ngFor="let a of admins">
+                  <ion-label>
+                    <h3>{{ a.email }}</h3>
+                    <h4>Erstellt am: {{ a.created_at | date: 'dd.MM.yyyy' }}</h4>
+                  </ion-label>
+                </ion-item>
+              </ion-item-group>
             </ion-list>
           </ion-content>
           <ion-fab vertical="bottom" horizontal="end" slot="fixed">
@@ -189,12 +203,12 @@
         Gruppen
       </ion-label>
     </ion-item>
-    <!-- <ion-item button routerLink="handover">
+    <ion-item *ngIf="false && organisation" button routerLink="handover">
       <ion-icon name="walk-outline" slot="start"></ion-icon>
       <ion-label>
         Personenübergabe
       </ion-label>
-    </ion-item> -->
+    </ion-item>
     <ion-item routerLink="teachers" *ngIf="maintainTeachers" button>
       <ion-icon name="school-outline" slot="start"></ion-icon>
       <ion-label>
@@ -214,13 +228,24 @@
                 <ion-title>Eltern</ion-title>
               </ion-toolbar>
             </ion-header>
-            <ion-list>
-              <ion-item button (click)="removeParent(p)" *ngFor="let p of parents">
-                <ion-label>
-                  <h2>{{ p.firstName }} {{ p.lastName }}</h2>
-                  <h3>{{ p.email }}</h3>
-                </ion-label>
-              </ion-item>
+            <ion-card class="marginTop">
+              <ion-card-header>
+                <ion-icon class="headerIcon" name="footsteps-outline"></ion-icon>
+              </ion-card-header>
+              <ion-card-content>
+                Eltern können die Anwesenheiten ihrer Kinder einsehen und Abwesenheiten pflegen.
+              </ion-card-content>
+            </ion-card>
+
+            <ion-list [inset]="true">
+              <ion-item-group>
+                <ion-item button (click)="removeParent(p)" *ngFor="let p of parents">
+                  <ion-label>
+                    <h2>{{ p.firstName }} {{ p.lastName }}</h2>
+                    <h3>{{ p.email }}</h3>
+                  </ion-label>
+                </ion-item>
+              </ion-item-group>
             </ion-list>
           </ion-content>
           <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
@@ -238,19 +263,34 @@
       </ion-label>
       <ion-modal trigger="viewer-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
         <ng-template>
-          <ion-content>
+          <ion-content color="light">
             <ion-header>
               <ion-toolbar>
                 <ion-title>Beobachter</ion-title>
               </ion-toolbar>
             </ion-header>
-            <ion-list>
-              <ion-item button (click)="removeViewer(v)" *ngFor="let v of viewers">
-                <ion-label>
-                  <h2>{{ v.firstName }} {{ v.lastName }}</h2>
-                  <h3>{{ v.email }}</h3>
-                </ion-label>
-              </ion-item>
+
+            <ion-card class="marginTop">
+              <ion-card-header>
+                <ion-icon class="headerIcon" name="eye-outline"></ion-icon>
+              </ion-card-header>
+              <ion-card-content>
+                Beobachter haben nur Leserechte auf eine beschränkte Anzahl von Daten. Sie sehen nur die
+                Anwesenheitsübersicht und die Daten der Personen. Beobachter werden nicht in der Anwesenheit
+                berücksichtigt.<br><br><ion-label color="danger">ACHTUNG: Beobachter können auch personenbezogene Daten
+                  sehen!</ion-label>
+              </ion-card-content>
+            </ion-card>
+
+            <ion-list [inset]="true">
+              <ion-item-group>
+                <ion-item detail="false" button (click)="removeViewer(v)" *ngFor="let v of viewers">
+                  <ion-label>
+                    <h2>{{ v.firstName }} {{ v.lastName }}</h2>
+                    <h3>{{ v.email }}</h3>
+                  </ion-label>
+                </ion-item>
+              </ion-item-group>
             </ion-list>
           </ion-content>
           <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
@@ -269,6 +309,12 @@
         <ion-label>Daten & Auswertung</ion-label>
       </ion-list-header> -->
 
+    <ion-item (click)="openCalendarSubscription()" detail="false" button>
+      <ion-icon name="calendar-outline" slot="start"></ion-icon>
+      <ion-label>
+        Termine als Kalender abonnieren
+      </ion-label>
+    </ion-item>
     <ion-item *ngIf="isAdmin" detail="false" button id="archive-button">
       <ion-icon name="archive-outline" slot="start"></ion-icon>
       <ion-label>
@@ -719,7 +765,8 @@
     </ion-fab-button>
   </ion-fab>
 
-  <ion-modal (ionModalDidDismiss)="isInstancesModalOpen = false" #instancesModal [isOpen]="isInstancesModalOpen" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]=".5">
+  <ion-modal (ionModalDidDismiss)="isInstancesModalOpen = false" #instancesModal [isOpen]="isInstancesModalOpen"
+    [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]=".5">
     <ng-template>
       <ion-content>
         <ion-header>

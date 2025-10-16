@@ -58,6 +58,10 @@ const routes: Routes = [
         loadChildren: () => import('./../settings/handover/handover.module').then(m => m.HandoverPageModule)
       },
       {
+        path: 'settings/handover/detail',
+        loadChildren: () => import('./../settings/handover-detail/handover-detail.module').then(m => m.HandoverDetailPageModule)
+      },
+      {
         path: 'parents',
         loadChildren: () => import('./../selfService/parents/parents.module').then(m => m.ParentsPageModule)
       },
