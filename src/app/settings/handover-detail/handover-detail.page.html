@@ -1,13 +1,32 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>handoverDetail</ion-title>
+<ion-header translucent="true">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="tabs/settings/handover"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Personenübergabe</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content color="light" [fullscreen]="true">
   <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">handoverDetail</ion-title>
+    <ion-toolbar color="light">
+      <ion-title size="large">Personenübergabe</ion-title>
     </ion-toolbar>
   </ion-header>
+
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Gruppen-Zuordnung</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item button detail="false" (click)="changeGroup(person)" *ngFor="let person of handoverData.persons">
+        <ion-label>{{ person.firstName }} {{ person.lastName }}</ion-label>
+        <ion-note slot="end">{{ person.instrumentName }} -> {{ getInsName(groupMapping[person.id]) }}</ion-note>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="confirmProceed()">
+      <ion-icon name="walk-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

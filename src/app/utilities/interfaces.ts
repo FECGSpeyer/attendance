@@ -122,6 +122,7 @@ export interface Player extends Person {
     legacyId?: number;
     legacyConductorId?: number;
     parent_id?: number;
+    newInstrument?: Instrument;
 }
 
 export interface Instrument {

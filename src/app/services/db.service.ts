@@ -274,14 +274,14 @@ export class DbService {
     }, appId);
   }
 
-  async registerUser(email: string, name: string, role: Role): Promise<string> {
+  async registerUser(email: string, name: string, role: Role, tenantId?: number): Promise<string> {
     const { userId, alreadyThere } = await this.getAppIdByEmail(email) || {};
 
     if (userId) {
       if (alreadyThere) {
         return userId;
       }
-      await this.addUserToTenant(userId, role, email);
+      await this.addUserToTenant(userId, role, email, tenantId);
       const res = await axios.post(`https://staccato-server.vercel.app/api/informAttendixUser`, {
         email,
         name,
@@ -314,13 +314,13 @@ export class DbService {
     }
   }
 
-  async addUserToTenant(userId: string, role: Role, email: string) {
+  async addUserToTenant(userId: string, role: Role, email: string, tenantId?: number) {
     const { error } = await supabase
       .from('tenantUsers')
       .insert({
         userId,
         role,
-        tenantId: this.tenant().id,
+        tenantId: tenantId ?? this.tenant().id,
         email
       });
 
@@ -662,13 +662,13 @@ export class DbService {
     return (all ? data : data.filter((c: Person) => !c.left)).map((con: Person) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
   }
 
-  async addPlayer(player: Player, register: boolean, role: Role): Promise<void> {
+  async addPlayer(player: Player, register: boolean, role: Role, tenantId?: number): Promise<void> {
     if (!this.tenant().maintainTeachers) {
       delete player.teacher;
     }
 
     if (player.email && register && role) {
-      const appId: string = await this.registerUser(player.email, player.firstName, role);
+      const appId: string = await this.registerUser(player.email, player.firstName, role, tenantId);
       player.appId = appId;
     }
 
@@ -676,7 +676,7 @@ export class DbService {
       .from('player')
       .insert({
         ...player,
-        tenantId: this.tenant().id,
+        tenantId: tenantId ?? this.tenant().id,
         id: Utils.getId(),
         history: player.history as any
       })
@@ -687,11 +687,11 @@ export class DbService {
       throw new Error(error.message);
     }
 
-    await this.addPlayerToAttendancesByDate(data.id, data.joined);
+    await this.addPlayerToAttendancesByDate(data.id, data.joined, tenantId);
   }
 
-  async addPlayerToAttendancesByDate(id: number, joined: string) {
-    const attData: Attendance[] = await this.getAttendancesByDate(joined);
+  async addPlayerToAttendancesByDate(id: number, joined: string, tenantId?: number) {
+    const attData: Attendance[] = await this.getAttendancesByDate(joined, tenantId);
 
     if (attData?.length) {
       const attToAdd: PersonAttendance[] = await Promise.all(attData.map(async (att: Attendance) => {
@@ -880,11 +880,11 @@ export class DbService {
     await this.removePlayerFromUpcomingAttendances(player.id, left);
   }
 
-  async getInstruments(): Promise<Instrument[]> {
+  async getInstruments(tenantId?: number): Promise<Instrument[]> {
     const { data } = await supabase
       .from('instruments')
       .select('*, categoryData:category(*)')
-      .eq('tenantId', this.tenant().id)
+      .eq('tenantId', tenantId ?? this.tenant().id)
       .order("category")
       .order("name", { ascending: true });
 
@@ -1052,11 +1052,11 @@ export class DbService {
     return data as any;
   }
 
-  async getAttendancesByDate(date): Promise<Attendance[]> {
+  async getAttendancesByDate(date, tenantId?: number): Promise<Attendance[]> {
     const { data } = await supabase
       .from('attendance')
       .select('*')
-      .eq('tenantId', this.tenant().id)
+      .eq('tenantId', tenantId || this.tenant().id)
       .gt("date", dayjs(date).startOf("day").toISOString())
       .order("date", {
         ascending: false,
@@ -1391,7 +1391,7 @@ export class DbService {
   async sendPlanPerTelegram(blob: Blob, name: string): Promise<void> {
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999);
     await loading.present();
-    const fileName: string = name + "_" + Math.floor(Math.random() * 100) + ".pdf";
+    const fileName: string = name + "_" + Math.floor(Math.random() * 100) + ".jpg";
 
     const { error } = await supabase.storage
       .from("attendances")
@@ -2002,5 +2002,77 @@ export class DbService {
     }
 
     return data.map(d => d.tenant).filter(t => t.id !== this.tenant().id);
+  }
+
+  async handoverPersons(persons: Player[], targetTenant: Tenant, groupMapping: { [key: number]: number } = {}, stayInInstance: boolean): Promise<Player[]> {
+    const failedPersons: Player[] = [];
+
+    for (const person of persons) {
+      try {
+        this.handoverPerson(person, targetTenant, groupMapping[person.id], stayInInstance);
+      } catch (error) {
+        failedPersons.push(person);
+      }
+    }
+
+    return failedPersons;
+  }
+
+  async handoverPerson(person: Player, targetTenant: Tenant, groupId: number, stayInInstance: boolean = false): Promise<void> {
+    const newPerson: Player = {
+      tenantId: targetTenant.id,
+      firstName: person.firstName,
+      lastName: person.lastName,
+      instrument: groupId,
+      img: person.img || DEFAULT_IMAGE,
+      joined: new Date().toISOString(),
+      email: person.email,
+      appId: person.appId,
+      hasTeacher: person.hasTeacher,
+      teacher: person.teacher,
+      playsSince: person.playsSince,
+      correctBirthday: person.correctBirthday,
+      birthday: person.birthday,
+      isLeader: false,
+      isCritical: false,
+      notes: person.notes,
+      history: [],
+    };
+
+    if (stayInInstance) {
+      newPerson.history.push({
+        date: new Date().toISOString(),
+        text: `Person wurde in die neue Instanz "${this.tenant().longName}" übertragen.`,
+        type: PlayerHistoryType.COPIED_FROM,
+      });
+    } else {
+      newPerson.history.push({
+        date: new Date().toISOString(),
+        text: `Person wurde aus der Instanz "${this.tenant().longName}" übertragen.`,
+        type: PlayerHistoryType.TRANSFERRED_FROM,
+      });
+    }
+
+    await this.addPlayer(newPerson, true, Role.PLAYER, targetTenant.id);
+    if (stayInInstance) {
+      await this.updatePlayer({
+        ...person,
+        history: person.history.concat([{
+          date: new Date().toISOString(),
+          text: `Person wurde zu "${targetTenant.longName}" kopiert.`,
+          type: PlayerHistoryType.COPIED_TO,
+        }])
+      });
+    } else {
+      await this.updatePlayer({
+        ...person,
+        history: person.history.concat([{
+          date: new Date().toISOString(),
+          text: `Person wurde zu "${targetTenant.longName}" übertragen.`,
+          type: PlayerHistoryType.TRANSFERRED_TO,
+        }]),
+        left: new Date().toISOString(),
+      });
+    }
   }
 }

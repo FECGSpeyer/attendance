@@ -28,28 +28,70 @@
     <ion-list-header><ion-label>Einstellungen</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item>
-        <ion-toggle
-          helperText="Die Person wird in der aktuellen Instanz nicht archiviert sonern bleibt aktiv"
+        <ion-toggle helperText="Die Person wird in der aktuellen Instanz nicht archiviert sonern bleibt aktiv"
           [(ngModel)]="stayInInstance">
           Personen in Instanz behalten
         </ion-toggle>
       </ion-item>
       <ion-item>
-        <ion-toggle
-          (ionChange)="onMainGroupChanged()"
-          helperText="Personen die in der Hauptgruppe sind, werden auch angezeigt"
-          [(ngModel)]="includeMainGroup">
+        <ion-toggle (ionChange)="filter()"
+          helperText="Personen die in der Hauptgruppe sind, werden auch angezeigt" [(ngModel)]="includeMainGroup">
           Hauptgruppe beachten
         </ion-toggle>
       </ion-item>
       <ion-item>
-        <ion-select label="Ziel-Instanz" (ionChange)="onTenantChange()" [(ngModel)]="tenant">
+        <ion-select label="Ziel-Instanz" [(ngModel)]="tenant">
           <ion-select-option [value]="tnt.id" *ngFor="let tnt of tenants">{{ tnt.longName }}</ion-select-option>
         </ion-select>
+      </ion-item>
+      <ion-item id="filter-btn-handover" button detail="false">
+        <ion-label>Filter hinzufügen</ion-label>
+      </ion-item>
+      <ion-popover #handoverFilterPopover trigger="filter-btn-handover" triggerAction="click">
+        <ng-template>
+          <ion-list>
+            <ion-item button detail="false" *ngIf="!filters.includes('younger') && !filters.includes('older')"
+              (click)="filterBy('younger', handoverFilterPopover)">
+              <ion-label>Jünger als...</ion-label>
+            </ion-item>
+            <ion-item button detail="false" *ngIf="!filters.includes('older') && !filters.includes('younger') "
+              (click)="filterBy('older', handoverFilterPopover)">
+              <ion-label>Älter als...</ion-label>
+            </ion-item>
+            <ion-item button detail="false" *ngIf="!filters.includes('group')" (click)="filterBy('group', handoverFilterPopover)">
+              <ion-label>Ist in der Gruppe...</ion-label>
+            </ion-item>
+          </ion-list>
+        </ng-template>
+      </ion-popover>
+      <ion-item *ngIf="filters.includes('younger') || filters.includes('older')">
+        <ion-label *ngIf="filters.includes('younger')" position="stacked">Jünger als</ion-label>
+        <ion-label *ngIf="filters.includes('older')" position="stacked">Älter als</ion-label>
+        <ion-input [disabled]="readOnly" readonly [(ngModel)]="dateString" id="date-modal"></ion-input>
+        <ion-modal class="dateModal" #dateSelModal trigger="date-modal">
+          <ng-template>
+            <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max" [(ngModel)]="date"
+              (ionChange)="onDateChange(dateTimePickerDate.value, dateSelModal)" presentation="date"
+              #dateTimePickerDate></ion-datetime>
+          </ng-template>
+        </ion-modal>
+        <ion-button fill="clear" slot="end" (click)="removeFilter(filters.includes('younger') ? 'younger' : 'older')">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <ion-item *ngIf="filters.includes('group')">
+        <ion-label position="stacked">Gruppe</ion-label>
+        <ion-select (ionChange)="filter()" [(ngModel)]="groupId">
+          <ion-select-option *ngFor="let group of groups" [value]="group.id">{{ group.name }}</ion-select-option>
+        </ion-select>
+        <ion-button fill="clear" slot="end" (click)="removeFilter('group')">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
       </ion-item>
     </ion-item-group>
   </ion-list>
 
+  @if (filteredPersons.length) {
   <ion-list [inset]="true">
     <ion-list-header>
       <ion-label>Personenliste</ion-label>
@@ -68,6 +110,13 @@
       </ion-item>
     </ion-item-group>
   </ion-list>
+  } @else {
+  <ion-card>
+    <ion-card-content>
+      <ion-label color="danger">Keine Personen ausgewählt</ion-label>
+    </ion-card-content>
+  </ion-card>
+  }
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="toDetail()" [disabled]="!tenant || !selectedPersons.length">

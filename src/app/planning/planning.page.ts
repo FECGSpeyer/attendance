@@ -148,7 +148,7 @@ export class PlanningPage implements OnInit {
     await alert.present();
   }
 
-  send() {
+  async send() {
     if (!this.validate()) {
       return;
     }

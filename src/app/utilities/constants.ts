@@ -8,6 +8,10 @@ export enum PlayerHistoryType {
     INSTRUMENT_CHANGE = 7,
     ARCHIVED = 8,
     RETURNED = 9,
+    TRANSFERRED_FROM = 10,
+    TRANSFERRED_TO = 11,
+    COPIED_FROM = 12,
+    COPIED_TO = 13,
     OTHER = 99,
 };
 

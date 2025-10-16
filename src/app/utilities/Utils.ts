@@ -250,8 +250,8 @@ export class Utils {
     return regexp.test(email);
   }
 
-  public static async getLoadingElement(duration: number = 3000) {
-    return await new LoadingController().create({ duration });
+  public static async getLoadingElement(duration: number = 3000, message?: string) {
+    return await new LoadingController().create({ duration, message });
   }
 
   public static getAttendanceText(attendance: Attendance): string {

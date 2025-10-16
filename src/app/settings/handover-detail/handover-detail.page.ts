@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { NavController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
 import { DataService } from 'src/app/services/data.service';
+import { DbService } from 'src/app/services/db.service';
+import { DEFAULT_IMAGE, PlayerHistoryType } from 'src/app/utilities/constants';
+import { Instrument, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -9,20 +12,127 @@ import { Utils } from 'src/app/utilities/Utils';
   styleUrls: ['./handover-detail.page.scss'],
 })
 export class HandoverDetailPage implements OnInit {
-  public handoverData: any;
+  public handoverData: { persons: Player[], stayInInstance: boolean, tenant: Tenant };
+  public newTenantGroups: Instrument[] = [];
+  public groupMapping: { [playerId: number]: number } = {};
 
   constructor(
     private dataService: DataService,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private db: DbService
   ) { }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.handoverData = this.dataService.getHandoverData();
 
     if (!this.handoverData) {
       Utils.showToast('Keine Daten für die Personenübergabe vorhanden.', 'danger');
       this.navCtrl.navigateBack('/tabs/settings/handover');
+      return;
     }
+
+    this.newTenantGroups = await this.db.getInstruments(this.handoverData.tenant.id);
+
+    this.groupMapping = this.handoverData.persons.reduce((acc, player) => {
+      acc[player.id] = this.newTenantGroups.find((ins: Instrument) => {
+        if (ins.name === player.instrumentName) {
+          return true;
+        }
+        // find similar names (e.g. Trompete vs. Bb Trompete)
+        if (ins.name.length > 3 && player.instrumentName.length > 3) {
+          return ins.name.includes(player.instrumentName) || player.instrumentName.includes(ins.name);
+        }
+        // find other similar names (e.g. Flöte vs. Querflöte)
+        if (ins.name.length > 2 && player.instrumentName.length > 2) {
+          return ins.name.includes(player.instrumentName) || player.instrumentName.includes(ins.name);
+        }
+
+        return false;
+      })?.id ?? this.newTenantGroups[0]?.id;
+      return acc;
+    }, {} as { [playerId: number]: number });
+
   }
 
+  async changeGroup(person: Player) {
+    const alert = await new AlertController().create({
+      header: 'Gruppe auswählen',
+      inputs: this.newTenantGroups.map(g => ({
+        name: 'group',
+        type: 'radio',
+        label: g.name,
+        value: g.id,
+        checked: g.id === this.groupMapping[person.id]
+      })),
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel'
+        },
+        {
+          text: 'Ok',
+          handler: (data: number) => {
+            this.groupMapping[person.id] = data;
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  getInsName(insId: number): string {
+    return this.newTenantGroups.find(i => i.id === insId)?.name ?? 'Unbekannt';
+  }
+
+  async confirmProceed() {
+    const alert = await new AlertController().create({
+      header: 'Personenübergabe',
+      message: `Möchtest du die ${this.handoverData.persons.length} ausgewählten Personen wirklich in die Instanz "${this.handoverData.tenant.longName}" übertragen? ${this.handoverData.stayInInstance ? 'Die Personen bleiben in dieser Instanz erhalten.' : 'Die Personen werden in dieser Instanz archiviert.'}`,
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel'
+        },
+        {
+          text: 'Übertragen',
+          handler: () => {
+            this.proceed();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async proceed() {
+    const loading = await Utils.getLoadingElement(99999, 'Personen werden übertragen...');
+    await loading.present();
+
+    try {
+      const result = await this.db.handoverPersons(
+        this.handoverData.persons,
+        this.handoverData.tenant,
+        this.groupMapping,
+        this.handoverData.stayInInstance
+      );
+
+      await loading.dismiss();
+
+      if (result.length) {
+        const alert = await new AlertController().create({
+          header: 'Fehler bei der Personenübergabe',
+          message: `Die folgenden Personen konnten nicht übertragen werden, da sie bereits in der Zielinstanz vorhanden sind:<br><br>${result.map(r => `${r.firstName} ${r.lastName}`).join('<br>')}`,
+        });
+        await alert.present();
+      } else {
+        Utils.showToast(`${this.handoverData.persons.length} Personen wurden übertragen.`, 'success');
+      }
+      this.navCtrl.navigateBack('/tabs/settings');
+    } catch (error) {
+      await loading.dismiss();
+      Utils.showToast('Fehler bei der Personenübergabe: ' + error.message, 'danger');
+      return;
+    }
+  }
 }

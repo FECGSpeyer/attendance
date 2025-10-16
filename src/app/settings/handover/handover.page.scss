@@ -3,3 +3,13 @@
     height: 4rem;
     margin: auto;
 }
+
+ion-modal.dateModal {
+  --width: 290px;
+  --height: 382px;
+  --border-radius: 8px;
+}
+
+ion-modal.dateModal ion-datetime {
+  height: 382px;
+}
