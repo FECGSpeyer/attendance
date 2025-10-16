@@ -88,7 +88,7 @@ export class ParentsPage implements OnInit {
       {
         text: 'Abbrechen',
         handler: () => { },
-        role: 'cancel',
+        role: 'destructive',
         data: {
           action: 'cancel',
         },

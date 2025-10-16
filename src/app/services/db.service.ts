@@ -2004,12 +2004,12 @@ export class DbService {
     return data.map(d => d.tenant).filter(t => t.id !== this.tenant().id);
   }
 
-  async handoverPersons(persons: Player[], targetTenant: Tenant, groupMapping: { [key: number]: number } = {}, stayInInstance: boolean): Promise<Player[]> {
+  async handoverPersons(persons: Player[], targetTenant: Tenant, groupMapping: { [key: number]: number } = {}, stayInInstance: boolean, mainGroup: number | null): Promise<Player[]> {
     const failedPersons: Player[] = [];
 
     for (const person of persons) {
       try {
-        this.handoverPerson(person, targetTenant, groupMapping[person.id], stayInInstance);
+        await this.handoverPerson(person, targetTenant, groupMapping[person.id], stayInInstance, mainGroup);
       } catch (error) {
         failedPersons.push(person);
       }
@@ -2018,7 +2018,7 @@ export class DbService {
     return failedPersons;
   }
 
-  async handoverPerson(person: Player, targetTenant: Tenant, groupId: number, stayInInstance: boolean = false): Promise<void> {
+  async handoverPerson(person: Player, targetTenant: Tenant, groupId: number, stayInInstance: boolean = false, mainGroup: number | null): Promise<void> {
     const newPerson: Player = {
       tenantId: targetTenant.id,
       firstName: person.firstName,
@@ -2042,18 +2042,18 @@ export class DbService {
     if (stayInInstance) {
       newPerson.history.push({
         date: new Date().toISOString(),
-        text: `Person wurde in die neue Instanz "${this.tenant().longName}" übertragen.`,
+        text: `Person wurde von der Instanz "${this.tenant().longName}" übertragen.`,
         type: PlayerHistoryType.COPIED_FROM,
       });
     } else {
       newPerson.history.push({
         date: new Date().toISOString(),
-        text: `Person wurde aus der Instanz "${this.tenant().longName}" übertragen.`,
+        text: `Person wurde von der Instanz "${this.tenant().longName}" übertragen.`,
         type: PlayerHistoryType.TRANSFERRED_FROM,
       });
     }
 
-    await this.addPlayer(newPerson, true, Role.PLAYER, targetTenant.id);
+    await this.addPlayer(newPerson, true, groupId === mainGroup ? Role.RESPONSIBLE : Role.PLAYER, targetTenant.id);
     if (stayInInstance) {
       await this.updatePlayer({
         ...person,

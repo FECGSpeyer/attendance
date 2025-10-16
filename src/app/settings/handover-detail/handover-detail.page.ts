@@ -67,7 +67,7 @@ export class HandoverDetailPage implements OnInit {
       buttons: [
         {
           text: 'Abbrechen',
-          role: 'cancel'
+          role: 'destructive',
         },
         {
           text: 'Ok',
@@ -91,7 +91,7 @@ export class HandoverDetailPage implements OnInit {
       buttons: [
         {
           text: 'Abbrechen',
-          role: 'cancel'
+          role: 'destructive',
         },
         {
           text: 'Übertragen',
@@ -114,7 +114,8 @@ export class HandoverDetailPage implements OnInit {
         this.handoverData.persons,
         this.handoverData.tenant,
         this.groupMapping,
-        this.handoverData.stayInInstance
+        this.handoverData.stayInInstance,
+        this.newTenantGroups.find(g => g.maingroup)?.id || null
       );
 
       await loading.dismiss();

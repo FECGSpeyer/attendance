@@ -128,7 +128,7 @@ export class InstrumentListPage implements OnInit {
       buttons: [
         {
           text: 'Abbrechen',
-          role: 'cancel'
+          role: 'destructive',
         }, {
           text: 'Hinzufügen',
           handler: async (data) => {
@@ -154,7 +154,7 @@ export class InstrumentListPage implements OnInit {
       buttons: [
         {
           text: 'Abbrechen',
-          role: 'cancel'
+          role: 'destructive',
         }, {
           text: 'Ja',
           handler: async () => {
@@ -187,7 +187,7 @@ export class InstrumentListPage implements OnInit {
       buttons: [
         {
           text: 'Abbrechen',
-          role: 'cancel'
+          role: 'destructive',
         }, {
           text: 'Speichern',
           handler: async (data) => {

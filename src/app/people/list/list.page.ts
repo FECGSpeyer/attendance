@@ -234,7 +234,7 @@ export class ListPage implements OnInit {
         buttons: [
           {
             text: 'Abbrechen',
-            role: 'cancel',
+            role: 'destructive',
             handler: () => {
               this.filterOpt = 'all';
               this.onFilterChanged();

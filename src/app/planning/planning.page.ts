@@ -430,7 +430,7 @@ export class PlanningPage implements OnInit {
 
     buttons.push({
       text: 'Abbrechen',
-      role: 'cancel',
+      role: 'destructive',
     });
 
     const actionSheet = await this.actionSheetController.create({

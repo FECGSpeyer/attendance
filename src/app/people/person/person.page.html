@@ -16,13 +16,15 @@
       <ion-col>
         <ion-item lines="none">
           <ion-label position="stacked">Vorname</ion-label>
-          <ion-input [disabled]="readOnly" (ionBlur)="onChangeName()" (ionChange)="onChange()" [(ngModel)]="player.firstName"></ion-input>
+          <ion-input [disabled]="readOnly" (ionBlur)="onChangeName()" (ionChange)="onChange()"
+            [(ngModel)]="player.firstName"></ion-input>
         </ion-item>
       </ion-col>
       <ion-col>
         <ion-item lines="none">
           <ion-label position="stacked">Nachname</ion-label>
-          <ion-input [disabled]="readOnly" (ionBlur)="onChangeName()" (ionChange)="onChange()" [(ngModel)]="player.lastName"></ion-input>
+          <ion-input [disabled]="readOnly" (ionBlur)="onChangeName()" (ionChange)="onChange()"
+            [(ngModel)]="player.lastName"></ion-input>
         </ion-item>
       </ion-col>
     </ion-row>
@@ -93,10 +95,10 @@
                 <ion-input [disabled]="readOnly" readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
                 <ion-modal class="dateModal" #birthdayModal trigger="date-modal">
                   <ng-template>
-                      <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
-                        [(ngModel)]="player.birthday"
-                        (ionChange)="onBirthdayChange(dateTimePickerBirthday.value, birthdayModal)" presentation="date"
-                        #dateTimePickerBirthday></ion-datetime>
+                    <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+                      [(ngModel)]="player.birthday"
+                      (ionChange)="onBirthdayChange(dateTimePickerBirthday.value, birthdayModal)" presentation="date"
+                      #dateTimePickerBirthday></ion-datetime>
                   </ng-template>
                 </ion-modal>
               </ion-item>
@@ -109,10 +111,10 @@
                 <ion-input [disabled]="readOnly" readonly [(ngModel)]="playsSinceString" id="plays-modal"></ion-input>
                 <ion-modal class="dateModal" #playsSinceModal trigger="plays-modal">
                   <ng-template>
-                      <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
-                        [(ngModel)]="player.playsSince"
-                        (ionChange)="onPlaysSinceChange(dateTimePickerPlays.value, playsSinceModal)" presentation="date"
-                        #dateTimePickerPlays></ion-datetime>
+                    <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+                      [(ngModel)]="player.playsSince"
+                      (ionChange)="onPlaysSinceChange(dateTimePickerPlays.value, playsSinceModal)" presentation="date"
+                      #dateTimePickerPlays></ion-datetime>
                   </ng-template>
                 </ion-modal>
               </ion-item>
@@ -125,10 +127,9 @@
                 <ion-input [disabled]="readOnly" readonly [(ngModel)]="joinedString" id="joined-modal"></ion-input>
                 <ion-modal class="dateModal" #joinedModal trigger="joined-modal">
                   <ng-template>
-                      <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
-                        [(ngModel)]="player.joined"
-                        (ionChange)="onJoinedChange(dateTimePickerJoined.value, joinedModal)" presentation="date"
-                        #dateTimePickerJoined></ion-datetime>
+                    <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+                      [(ngModel)]="player.joined" (ionChange)="onJoinedChange(dateTimePickerJoined.value, joinedModal)"
+                      presentation="date" #dateTimePickerJoined></ion-datetime>
                   </ng-template>
                 </ion-modal>
               </ion-item>
@@ -343,10 +344,17 @@
                 <h2 *ngIf="att.type === 7 && att.date">{{ att.date | date:'dd.MM.yyyy' }}</h2>
                 <h2 *ngIf="att.type === 8 && att.date">Archiviert am {{ att.date | date:'dd.MM.yyyy' }}</h2>
                 <h2 *ngIf="att.type === 9 && att.date">Reaktiviert am {{ att.date | date:'dd.MM.yyyy' }}</h2>
-                <h3 *ngIf="att.type !== 8 && att.type !== 9 && att.type !== 4 && att.type !== 6 && att.type !== 5">{{ getTypeText(att.type) }}: {{ att.text
+                <h2 *ngIf="att.type === 10 || att.type === 11">Übertragen am {{ att.date | date:'dd.MM.yyyy' }}</h2>
+                <h2 *ngIf="att.type === 12 || att.type === 13">Kopiert am {{ att.date | date:'dd.MM.yyyy' }}</h2>
+                <h3
+                  *ngIf="att.type !== 10 && att.type !== 11 && att.type !== 12 && att.type !== 13 && att.type !== 8 && att.type !== 9 && att.type !== 4 && att.type !== 6 && att.type !== 5">
+                  {{ getTypeText(att.type) }}: {{ att.text
                   ? att.text : 'Keine Anmerkung' }}</h3>
                 <h3 *ngIf="att.type === 5 || att.type === 8">{{ att.text }}</h3>
                 <h3 *ngIf="att.type === 4 && att.notes">{{ att.notes }}</h3>
+                <h3 *ngIf="att.type === 10 || att.type === 11 || att.type === 12 || att.type === 13">
+                  {{ att.text }}
+                </h3>
               </ion-label>
 
               <ion-badge *ngIf="att.type === 4" slot="end" [color]="att.text === 'X' ? 'success' :
@@ -377,7 +385,8 @@
       (click)="register()">
       <ion-icon name="key-outline"></ion-icon>
     </ion-fab-button>
-    <ion-fab-button *ngIf="!readOnly && existingPlayer && !hasChanges && (player.appId || !player.email)" (click)="openMoreMenu()">
+    <ion-fab-button *ngIf="!readOnly && existingPlayer && !hasChanges && (player.appId || !player.email)"
+      (click)="openMoreMenu()">
       <ion-icon name="ellipsis-horizontal"></ion-icon>
     </ion-fab-button>
     <ion-fab-button *ngIf="hasLeft" (click)="activate()">
@@ -411,6 +420,41 @@
             <ion-icon name="archive-outline"></ion-icon>
           </ion-fab-button>
         </ion-fab>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal (ionModalDidDismiss)="isTransferModalOpen = false" backdropDismiss="true" [breakpoints]="[0, 0.5, 1]"
+    [initialBreakpoint]="0.5" [isOpen]="isTransferModalOpen">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{ copy ? 'Kopieren' : 'Übertragen' }} von {{ player?.firstName }} {{ player?.lastName
+            }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="isTransferModalOpen = false">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-list [inset]="true">
+          <ion-item-group>
+            <ion-item>
+              <ion-select (ionChange)="onTenantChange()" label="Ziel-Instanz" [(ngModel)]="tenantId">
+                <ion-select-option [value]="tnt.id" *ngFor="let tnt of tenants">{{ tnt.longName }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+            <ion-item *ngIf="tenantId && tenantGroups.length">
+              <ion-select label="Ziel-Gruppe" [(ngModel)]="targetGroupId">
+                <ion-select-option [value]="grp.id" *ngFor="let grp of tenantGroups">{{ grp.name }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-item-group>
+        </ion-list>
+        <ion-button [disabled]="!tenantId || !targetGroupId" (click)="transferPerson()" expand="block">{{
+          copy ? 'Kopieren' : 'Übertragen' }}</ion-button>
       </ion-content>
     </ng-template>
   </ion-modal>

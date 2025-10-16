@@ -134,7 +134,7 @@ export class SongsPage implements OnInit {
       buttons: [
         {
           text: 'Abbrechen',
-          role: 'cancel',
+          role: 'destructive',
         }, {
           text: 'Löschen',
           handler: async () => {

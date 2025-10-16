@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '
 import { ActionSheetButton, ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
-import { Instrument, Parent, Person, PersonAttendance, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
+import { Instrument, Organisation, Parent, Person, PersonAttendance, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
@@ -72,6 +72,13 @@ export class PersonPage implements OnInit, AfterViewInit {
   public isArchiveModalOpen: boolean = false;
   public archiveDate: string = dayjs().format("YYYY-MM-DD");
   public archiveNote: string = "";
+  public isTransferModalOpen = false;
+  public copy = false;
+  public tenantId: number;
+  public tenants: Tenant[] = [];
+  public organisation: Organisation | null;
+  public tenantGroups: Instrument[] = [];
+  public targetGroupId: number;
 
   constructor(
     private db: DbService,
@@ -127,6 +134,19 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.onInstrumentChange(false);
 
     this.otherTenants = await this.db.getTenantsFromUser(this.player.appId);
+    this.organisation = await this.db.getOrganisationFromTenant();
+    if (this.organisation) {
+      this.tenants = await this.db.getTenantsFromOrganisation();
+      if (this.tenants.length) {
+        this.tenantId = this.tenants[0].id;
+        this.tenantGroups = await this.db.getInstruments(this.tenantId);
+      }
+    }
+  }
+
+  async onTenantChange(): Promise<void> {
+    this.tenantGroups = [];
+    this.tenantGroups = await this.db.getInstruments(this.tenantId);
   }
 
   getRoleText(role: Role) {
@@ -220,6 +240,7 @@ export class PersonPage implements OnInit, AfterViewInit {
         buttons: [
           {
             text: 'Abbrechen',
+            role: 'destructive',
           }, {
             text: 'Ja',
             handler: () => {
@@ -266,7 +287,7 @@ export class PersonPage implements OnInit, AfterViewInit {
             handler: () => {
               loading.dismiss();
             },
-            role: 'cancel',
+            role: 'destructive',
           },
           {
             text: 'Ja',
@@ -346,7 +367,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       buttons: [
         {
           text: 'Abbrechen',
-          role: 'cancel',
+          role: 'destructive',
         }, {
           text: 'Ja',
           handler: async () => {
@@ -388,7 +409,7 @@ export class PersonPage implements OnInit, AfterViewInit {
           buttons: [
             {
               text: 'Abbrechen',
-              role: 'cancel',
+              role: 'destructive',
             }, {
               text: 'Ja',
               handler: async (value: Player) => {
@@ -464,6 +485,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       buttons: [
         {
           text: 'Abbrechen',
+          role: 'destructive',
           handler: () => slider.close()
         }, {
           text: 'Ja',
@@ -611,7 +633,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     if (this.player.paused) {
       buttons.push({
-        text: 'Person wieder aktivieren',
+        text: 'Wieder aktivieren',
         handler: async () => {
           const history: PlayerHistoryEntry[] = this.player.history;
           history.push({
@@ -634,7 +656,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       });
     } else {
       buttons.push({
-        text: 'Person pausieren',
+        text: 'Pausieren',
         handler: async () => {
           const alert = await this.alertController.create({
             header: 'Person pausieren',
@@ -678,27 +700,66 @@ export class PersonPage implements OnInit, AfterViewInit {
       });
     }
 
+    if (this.organisation && this.tenants.length) {
+      buttons.push({
+        text: "In andere Instanz übertragen",
+        handler: async (): Promise<void> => {
+          this.copy = false;
+          this.isTransferModalOpen = true;
+        }
+      });
+
+      buttons.push({
+        text: "In andere Instanz kopieren",
+        handler: async (): Promise<void> => {
+          this.copy = true;
+          this.isTransferModalOpen = true;
+        }
+      });
+    }
+
     buttons.push({
-      text: "Person archivieren",
+      text: "Archivieren",
       handler: (): void => {
         this.isArchiveModalOpen = true;
       },
+      role: 'destructive',
     });
 
     if (this.player.appId !== this.db.tenantUser().userId) {
       buttons.push({
-        text: "Person entfernen",
+        text: "Entfernen",
         handler: async (): Promise<void> => {
-          await this.db.removePlayer(this.player);
-          this.modalController.dismiss();
-          Utils.showToast("Die Person wurde erfolgreich entfernt", "success");
+          const alert = await this.alertController.create({
+            header: 'Person entfernen',
+            message: 'Möchtest du die Person wirklich entfernen? Alle zugehörigen Daten (Abwesenheiten, Notizen, etc.) gehen dabei verloren!',
+            buttons: [
+              {
+                text: 'Abbrechen',
+                role: 'destructive',
+              }, {
+                text: 'Ja',
+                handler: async () => {
+                  this.modalController.dismiss();
+                  try {
+                    await this.db.removePlayer(this.player);
+                    Utils.showToast("Die Person wurde erfolgreich entfernt", "success");
+                  } catch (error) {
+                    Utils.showToast(error, "danger");
+                  }
+                },
+              }
+            ]
+          });
+          await alert.present();
         },
+        role: 'destructive',
       });
     }
 
     buttons.push({
       text: 'Abbrechen',
-      role: 'cancel',
+      role: 'destructive',
     });
 
     const actionSheet = await this.actionSheetController.create({
@@ -706,6 +767,10 @@ export class PersonPage implements OnInit, AfterViewInit {
       buttons
     });
     await actionSheet.present();
+  }
+
+  async transferPerson() {
+    this.db.handoverPerson(this.player, this.tenants.find(t => t.id === this.tenantId), this.targetGroupId, this.copy, this.isMainGroup ? this.player.instrument : null);
   }
 
   async archivePlayer(): Promise<void> {
@@ -730,7 +795,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       buttons: [
         {
           text: 'Abbrechen',
-          role: 'cancel',
+          role: 'destructive',
         }, {
           text: 'Ja',
           handler: () => this.activateConfirmed()

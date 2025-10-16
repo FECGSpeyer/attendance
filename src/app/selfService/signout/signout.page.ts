@@ -156,7 +156,7 @@ export class SignoutPage implements OnInit {
       {
         text: 'Abbrechen',
         handler: () => { },
-        role: 'cancel',
+        role: 'destructive',
         data: {
           action: 'cancel',
         },

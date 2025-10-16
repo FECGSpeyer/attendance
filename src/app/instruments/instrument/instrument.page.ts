@@ -65,6 +65,7 @@ export class InstrumentPage implements OnInit {
       buttons: [
         {
           text: 'Abbrechen',
+          role: 'destructive',
         }, {
           text: 'Ja',
           handler: async () => {

@@ -214,6 +214,11 @@ export class Utils {
         return "Archiviert";
       case PlayerHistoryType.RETURNED:
         return "Reaktiviert";
+      case PlayerHistoryType.TRANSFERRED_FROM:
+      case PlayerHistoryType.TRANSFERRED_TO:
+      case PlayerHistoryType.COPIED_FROM:
+      case PlayerHistoryType.COPIED_TO:
+        return "";
       default:
         return "Sonstiges";
     }
