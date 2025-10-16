@@ -639,6 +639,11 @@ export class SettingsPage implements OnInit {
         value: link,
       }],
       buttons: [{
+        text: "Anleitung öffen",
+        handler: () => {
+           window.open(this.isIos ? "https://support.apple.com/de-de/102301" : "https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid", "_blank");
+        }
+      }, {
         text: "Okay"
       }]
     });
