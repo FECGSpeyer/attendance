@@ -770,7 +770,34 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async transferPerson() {
-    this.db.handoverPerson(this.player, this.tenants.find(t => t.id === this.tenantId), this.targetGroupId, this.copy, this.isMainGroup ? this.player.instrument : null);
+    const alert = await this.alertController.create({
+      header: this.copy ? 'Person kopieren' : 'Person übertragen',
+      message: this.copy ? 'Möchtest du die Person wirklich in die andere Instanz kopieren?' : 'Möchtest du die Person wirklich in die andere Instanz übertragen? Alle zugehörigen Daten (Abwesenheiten, Notizen, etc.) gehen dabei verloren!',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'destructive',
+        }, {
+          text: 'Ja',
+          handler: async () => {
+            try {
+              await this.db.handoverPerson(this.player, this.tenants.find(t => t.id === this.tenantId), this.targetGroupId, this.copy, this.isMainGroup ? this.player.instrument : null);
+              if (!this.copy) {
+                this.hasChanges = false;
+                await this.dismiss();
+              }
+              Utils.showToast(this.copy ? "Die Person wurde erfolgreich kopiert" : "Die Person wurde erfolgreich übertragen", "success");
+              this.isTransferModalOpen = false;
+            } catch (error) {
+              Utils.showToast(error, "danger");
+              return;
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   async archivePlayer(): Promise<void> {
