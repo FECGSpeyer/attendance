@@ -109,8 +109,9 @@
               <ion-label>
                 <h2 *ngIf="!organisation">Organisation zuweisen</h2>
                 <h2 *ngIf="organisation">Organisation ({{ organisation.name }})</h2>
-                <h3>Weise die Instanz einer bestehenden Organisation zu oder erstelle eine. Damit können Personen
+                <h3 *ngIf="isSuperAdmin">Weise die Instanz einer bestehenden Organisation zu oder erstelle eine. Damit können Personen
                   innerhalb der Organisation verknüpft werden</h3>
+                <h3 *ngIf="!isSuperAdmin">Du hast keine Berechtigung, um Organisationen zu verwalten. Dies können nur Administratoren.</h3>
               </ion-label>
               <ion-badge *ngIf="isSuperAdmin && organisation" (click)="deleteOrganisation()" color="danger">
                 <ion-icon name="trash-outline"></ion-icon>
