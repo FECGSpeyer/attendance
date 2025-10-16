@@ -639,6 +639,12 @@ export class SettingsPage implements OnInit {
         value: link,
       }],
       buttons: [{
+        text: "Link kopieren",
+        handler: () => {
+           navigator?.clipboard.writeText(link);
+           Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
+        }
+      }, {
         text: "Anleitung öffen",
         handler: () => {
            window.open(this.isIos ? "https://support.apple.com/de-de/102301" : "https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid", "_blank");
