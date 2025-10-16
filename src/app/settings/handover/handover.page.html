@@ -67,7 +67,7 @@
       <ion-item *ngIf="filters.includes('younger') || filters.includes('older')">
         <ion-label *ngIf="filters.includes('younger')" position="stacked">Jünger als</ion-label>
         <ion-label *ngIf="filters.includes('older')" position="stacked">Älter als</ion-label>
-        <ion-input [disabled]="readOnly" readonly [(ngModel)]="dateString" id="date-modal"></ion-input>
+        <ion-input readonly [(ngModel)]="dateString" id="date-modal"></ion-input>
         <ion-modal class="dateModal" #dateSelModal trigger="date-modal">
           <ng-template>
             <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max" [(ngModel)]="date"
