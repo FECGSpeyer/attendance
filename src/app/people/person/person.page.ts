@@ -146,6 +146,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   async onTenantChange(): Promise<void> {
     this.tenantGroups = [];
+    this.targetGroupId = null;
     this.tenantGroups = await this.db.getInstruments(this.tenantId);
   }
 
