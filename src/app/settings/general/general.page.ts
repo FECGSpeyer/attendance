@@ -45,7 +45,7 @@ export class GeneralPage implements OnInit {
   public isSuperAdmin: boolean = false;
 
   constructor(
-    private db: DbService,
+    public db: DbService,
   ) {
 
   }
