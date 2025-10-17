@@ -1,0 +1,34 @@
+<ion-header translucent="true">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Typen</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar color="light">
+      <ion-title size="large">Typen</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-icon class="headerIcon" name="list-outline"></ion-icon>
+    </ion-card-header>
+    <ion-card-content>
+      Pflege deine eigenen Typen für Anwesenheiten. So kannst du individuelle Bezeichnungen, einen Standard-Status, Probenvorlagen und Start- bzw. Endzeiten hinterlegen und auch Anwesenheiten nur für bestimmte Gruppen konfigurieren.
+    </ion-card-content>
+  </ion-card>
+
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Anwesenheitstypen</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item *ngFor="let type of attendanceTypes">
+        <ion-label>{{ type.name }}</ion-label>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+</ion-content>

@@ -5,8 +5,8 @@ import { createClient, SupabaseClient, SupabaseClientOptions, User } from '@supa
 import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
-import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Instrument, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation } from '../utilities/interfaces';
+import { AttendanceStatus, DefaultAttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
+import { Attendance, History, Instrument, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 import { Holiday } from 'open-holiday-js';
@@ -33,6 +33,7 @@ export class DbService {
   public user: User;
   public attDate: string;
   public tenant: WritableSignal<Tenant | undefined>;
+  public organisation: WritableSignal<Organisation | null>;
   public tenants: WritableSignal<Tenant[] | undefined>;
   public tenantUsers: WritableSignal<TenantUser[] | undefined>;
   public tenantUser: WritableSignal<TenantUser | undefined>;
@@ -44,6 +45,7 @@ export class DbService {
     this.tenant = signal(undefined);
     this.tenants = signal([]);
     this.tenantUser = signal(undefined);
+    this.organisation = signal(null);
     this.tenantUsers = signal([]);
     this.plt.ready().then(() => {
       this.checkToken();
@@ -99,6 +101,7 @@ export class DbService {
       ...user,
       telegram_chat_id: config?.telegram_chat_id,
     });
+    this.organisation.set(await this.getOrganisationFromTenant());
   }
 
   async getTenants(ids: number[]): Promise<Tenant[]> {
@@ -450,7 +453,7 @@ export class DbService {
     }
   }
 
-  async getCurrentAttDate(): Promise<string> {
+  getCurrentAttDate() {
     return this.tenant().seasonStart || dayjs("2023-01-01").toISOString();
   }
 
@@ -1882,23 +1885,25 @@ export class DbService {
       throw error;
     }
 
-    await this.linkTenantToOrganisation(this.tenant().id, data.id);
+    await this.linkTenantToOrganisation(this.tenant().id, data);
 
     return data;
   }
 
-  async linkTenantToOrganisation(tenantId: number, orgId: number): Promise<void> {
+  async linkTenantToOrganisation(tenantId: number, organisation: Organisation): Promise<void> {
     const { error } = await supabase
       .from('tenant_group_tenants')
       .insert({
         tenant_id: tenantId,
-        tenant_group: orgId,
+        tenant_group: organisation.id,
       });
 
     if (error) {
       Utils.showToast("Fehler beim Verknüpfen der Organisation", "danger");
       throw error;
     }
+
+    this.organisation.set(organisation);
 
     return;
   }
@@ -2074,5 +2079,25 @@ export class DbService {
         left: new Date().toISOString(),
       });
     }
+  }
+
+  async getAttendanceTypes(): Promise<AttendanceType[]> {
+    const { data, error } = await supabase
+      .from('attendance_types')
+      .select('*')
+      .eq('tenant_id', this.tenant().id)
+      .order('name', { ascending: true });
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Anwesenheitstypen", "danger");
+      throw error;
+    }
+
+    return data.map((att: any): AttendanceType => {
+      return {
+        ...att,
+        plan: att.plan as any,
+      };
+    });
   }
 }

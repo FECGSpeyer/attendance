@@ -1,6 +1,6 @@
 import { Component, effect } from '@angular/core';
 import { DbService } from '../services/db.service';
-import { AttendanceType, Role } from '../utilities/constants';
+import { DefaultAttendanceType, Role } from '../utilities/constants';
 
 @Component({
   selector: 'app-tabs',

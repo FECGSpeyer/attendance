@@ -1,0 +1,138 @@
+<ion-header translucent="true">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Einstellungen</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar color="light">
+      <ion-title size="large">Einstellungen</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Allgemein</ion-label></ion-list-header>
+
+    <ion-item-group>
+      <ion-item>
+        <ion-label position="stacked">Gruppenname</ion-label>
+        <ion-input [(ngModel)]="longName"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Kurzname</ion-label>
+        <ion-input helperText="Wird vor allem als Dateiname bei Exports verwendet" [(ngModel)]="shortName"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>
+          <h2 *ngIf="!db.organisation()">Organisation</h2>
+          <h2 *ngIf="db.organisation()">Organisation</h2>
+          <h3 *ngIf="isSuperAdmin && !db.organisation()">Weise die Instanz einer bestehenden Organisation zu oder erstelle eine. Damit können
+            Personen
+            innerhalb der Organisation verknüpft werden</h3>
+          <h3 *ngIf="isSuperAdmin && db.organisation()">Die Instanz ist der Organisation
+            "{{ db.organisation().name }}" zugewiesen. Personen können innerhalb der Organisation verknüpft werden.</h3>
+          <h3 *ngIf="!isSuperAdmin">Du hast keine Berechtigung, um Organisationen zu verwalten. Dies können nur
+            Administratoren.</h3>
+        </ion-label>
+        <ion-button fill="clear" *ngIf="isSuperAdmin && db.organisation()" (click)="deleteOrganisation()" color="danger">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" *ngIf="isSuperAdmin && !db.organisation()" (click)="openOrganisationAlert()" color="primary">
+          <ion-icon name="add-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-item-group>
+
+    <ion-list-header><ion-label>Anwesenheiten</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item>
+        <ion-label position="stacked">Saisonbeginn</ion-label>
+        <ion-input helperText="Anwesenheiten werden erst ab diesem Datum bei den Personen berücksichtigt"
+          [(ngModel)]="attDateString" id="date-modal"></ion-input>
+        <ion-modal class="attDateModal" #attModal trigger="date-modal">
+          <ng-template>
+            <ion-content>
+              <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+                [(ngModel)]="attDate" (ionChange)="onAttDateChange(attDatePicker.value, attModal)" presentation="date"
+                #attDatePicker></ion-datetime>
+            </ion-content>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+      <ion-item *ngIf="db.tenantUser().email === 'developer@attendix.de'" button [routerLink]="['/tabs/settings/general/types']">
+        <ion-label>Anwesenheits-Typen</ion-label>
+      </ion-item>
+      <ion-item *ngIf="!isGeneral">
+        <ion-label>Probenbeginn</ion-label>
+        <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime [(ngModel)]="practiceStart" presentation="time"
+              minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestart" [formatOptions]="{
+                      time: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      }
+                    }"></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+      <ion-item *ngIf="!isGeneral">
+        <ion-label>Probenende</ion-label>
+        <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime [(ngModel)]="practiceEnd" presentation="time" minuteValues="0,5,10,15,20,25,30,35,40,45,50,55"
+              id="datetimeend" [formatOptions]="{
+                      time: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      }
+                    }">
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+    </ion-item-group>
+
+    <ion-list-header><ion-label>Sonstiges</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item *ngIf="isOrchestra">
+        <ion-toggle helperText="Aktivieren, um die Lehrer der Spieler verwalten zu können."
+          [(ngModel)]="maintainTeachers">Lehrer
+          pflegen</ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-toggle
+          helperText="Aktivieren, um Eltern die Möglichkeit zu geben, Einsicht in die Anwesenheiten ihrer Kinder zu geben und Abwesenheiten pflegen zu können."
+          [(ngModel)]="parentsEnabled">Eltern-Funktion</ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-toggle
+          helperText="Aktivieren, um beim Anlegen der Anwesenheiten die Ferien und Feiertage hervorzuheben. (nur verfügbar für Deutschland)"
+          [(ngModel)]="showHolidays">Ferien/Feiertage anzeigen</ion-toggle>
+      </ion-item>
+      @if (showHolidays) {
+      <ion-item>
+        <ion-label position="stacked">Bundesland für Ferien/Feiertage</ion-label>
+        <ion-select [(ngModel)]="region">
+          <ion-select-option *ngFor="let state of holidayStates" [value]="state.code">{{ state.name
+            }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      }
+    </ion-item-group>
+  </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="saveGeneralSettings()">
+      <ion-icon name="save-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

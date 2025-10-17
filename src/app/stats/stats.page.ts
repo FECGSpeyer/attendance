@@ -4,7 +4,7 @@ import * as dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
 import { Attendance, Player } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
-import { AttendanceType } from '../utilities/constants';
+import { DefaultAttendanceType } from '../utilities/constants';
 
 @Component({
   selector: 'app-stats',
@@ -35,8 +35,8 @@ export class StatsPage implements OnInit {
 
   async ngOnInit() {
     this.curAttDate = new Date(await this.db.getCurrentAttDate());
-    this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
-    this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
+    this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
+    this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.attendances = (await this.db.getAttendance(false, true)).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().add(1, "day"))).map((att: Attendance) => {
       return {
         ...att,

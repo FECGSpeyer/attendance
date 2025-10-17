@@ -7,7 +7,7 @@ import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
 import { Utils } from '../utilities/Utils';
-import { AttendanceType } from 'src/app/utilities/constants';
+import { DefaultAttendanceType } from 'src/app/utilities/constants';
 
 @Component({
   selector: 'app-planning',
@@ -463,7 +463,7 @@ export class PlanningPage implements OnInit {
     const doc = new jsPDF();
     doc.text(`${this.db.tenant().shortName} Registerprobenplan: ${date}`, 14, 25);
     ((doc as any).autoTable as AutoTable)({
-      head: this.db.tenant().type === AttendanceType.CHOIR ? [["Minuten", "Sopran", "Alt", "Tenor", "Bass"]] : this.db.tenant().shortName === "BoS" ? [['Minuten', 'Blechbläser', 'Holzbläser']] : [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']], // TODO attendance type
+      head: this.db.tenant().type === DefaultAttendanceType.CHOIR ? [["Minuten", "Sopran", "Alt", "Tenor", "Bass"]] : this.db.tenant().shortName === "BoS" ? [['Minuten', 'Blechbläser', 'Holzbläser']] : [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']], // TODO attendance type
       body: data,
       margin: { top: 40 },
       theme: 'grid',

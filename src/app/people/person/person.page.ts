@@ -6,7 +6,7 @@ import { Instrument, Organisation, Parent, Person, PersonAttendance, Player, Pla
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
-import { AttendanceStatus, AttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role } from 'src/app/utilities/constants';
+import { AttendanceStatus, DefaultAttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 dayjs.extend(utc);
 
 @Component({
@@ -92,8 +92,8 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.instruments = await this.db.getInstruments();
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.maintainTeachers = this.db.tenant().maintainTeachers;
-    this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
-    this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
+    this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
+    this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isParent = this.db.tenantUser().role === Role.PARENT;
     this.hasChanges = false;

@@ -6,7 +6,7 @@ import { DbService } from 'src/app/services/db.service';
 import { Attendance, PersonAttendance, Player, Song, History, Person } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import 'jspdf-autotable';
-import { AttendanceStatus, AttendanceType, Role } from 'src/app/utilities/constants';
+import { AttendanceStatus, DefaultAttendanceType, Role } from 'src/app/utilities/constants';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { AttendancePage } from '../attendance/attendance.page';
 require('dayjs/locale/de');
@@ -129,8 +129,8 @@ export class AttListPage implements OnInit {
   }
 
   async ngOnInit() {
-    this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
-    this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
+    this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
+    this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
     this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isHelper = this.db.tenantUser().role === Role.HELPER;
     const conductors = await this.db.getConductors(true);

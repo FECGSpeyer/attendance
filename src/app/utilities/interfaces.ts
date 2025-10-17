@@ -281,3 +281,17 @@ export interface Organisation {
     created_at?: string;
     name: string;
 }
+
+export interface AttendanceType {
+    id?: string;
+    created_at?: string;
+    name: string;
+    default_status: AttendanceStatus;
+    available_statuses: AttendanceStatus[];
+    default_plan: Plan;
+    tenant_id: number;
+    relevant_groups: Instrument[];
+    start_time?: string;
+    end_time?: string;
+    manage_songs: boolean;
+}

@@ -4,7 +4,7 @@ import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Attendance, Instrument, Person, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
 import { PersonPage } from '../person/person.page';
-import { AttendanceType, PlayerHistoryType, Role } from 'src/app/utilities/constants';
+import { DefaultAttendanceType, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from 'src/app/utilities/Utils';
 import { RealtimeChannel } from '@supabase/supabase-js';
@@ -84,8 +84,8 @@ export class ListPage implements OnInit {
 
     this.viewOpts = JSON.parse(await this.storage.get(`viewOpts${this.db.tenant().id}`) || JSON.stringify(['instrument', 'leader', 'attendance', 'critical', 'paused']));
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
-    this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
-    this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
+    this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
+    this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.filterOpt = (await this.storage.get(`filterOpt${this.db.tenant().id}`)) || "all";
     this.instruments = await this.db.getInstruments();

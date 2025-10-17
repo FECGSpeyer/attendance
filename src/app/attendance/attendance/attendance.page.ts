@@ -5,7 +5,7 @@ import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supab
 import * as dayjs from 'dayjs';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
-import { AttendanceType, AttendanceStatus, Role } from 'src/app/utilities/constants';
+import { DefaultAttendanceType, AttendanceStatus, Role } from 'src/app/utilities/constants';
 import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Instrument, GroupCategory } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
@@ -59,7 +59,7 @@ export class AttendancePage implements OnInit {
         this.subsribeOnChannels();
       }
     });
-    this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
+    this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.conductors = await this.db.getConductors(true);
     this.activeConductors = this.conductors.filter((con: Person) => !con.left);
     this.historyEntry.person_id = this.activeConductors[0]?.id;

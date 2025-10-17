@@ -81,27 +81,42 @@ export type Database = {
       }
       attendance_types: {
         Row: {
+          available_statuses: number[]
           created_at: string
-          default_start: string | null
+          default_plan: Json | null
           default_status: number | null
+          end_time: string | null
           id: string
+          manage_songs: boolean | null
           name: string | null
+          relevant_groups: number[] | null
+          start_time: string | null
           tenant_id: number | null
         }
         Insert: {
+          available_statuses?: number[]
           created_at?: string
-          default_start?: string | null
+          default_plan?: Json | null
           default_status?: number | null
+          end_time?: string | null
           id?: string
+          manage_songs?: boolean | null
           name?: string | null
+          relevant_groups?: number[] | null
+          start_time?: string | null
           tenant_id?: number | null
         }
         Update: {
+          available_statuses?: number[]
           created_at?: string
-          default_start?: string | null
+          default_plan?: Json | null
           default_status?: number | null
+          end_time?: string | null
           id?: string
+          manage_songs?: boolean | null
           name?: string | null
+          relevant_groups?: number[] | null
+          start_time?: string | null
           tenant_id?: number | null
         }
         Relationships: [

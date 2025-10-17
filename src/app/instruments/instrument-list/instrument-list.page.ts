@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
-import { AttendanceType, Role } from 'src/app/utilities/constants';
+import { DefaultAttendanceType, Role } from 'src/app/utilities/constants';
 import { GroupCategory, Instrument, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { InstrumentPage } from '../instrument/instrument.page';
@@ -26,8 +26,8 @@ export class InstrumentListPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.isGeneral = this.db.tenant().type === AttendanceType.GENERAL;
-    this.isChoir = this.db.tenant().type === AttendanceType.CHOIR;
+    this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
+    this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     await this.getInstruments();
   }

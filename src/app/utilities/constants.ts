@@ -40,7 +40,7 @@ export enum SupabaseTable {
     VIEWERS = "viewers",
 }
 
-export enum AttendanceType {
+export enum DefaultAttendanceType {
     ORCHESTRA = "orchestra",
     CHOIR = "choir",
     GENERAL = "general",
