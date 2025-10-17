@@ -33,11 +33,11 @@ export class SettingsPage implements OnInit {
   public isHelper: boolean = false;
   public isPlayer: boolean = false;
   public isGeneral: boolean = false;
-  public max: string = new Date().toISOString();
   public tenantsFromUser: { tenantId: number, role: Role }[] = [];
   public isIos: boolean = false;
   public isInstancesModalOpen: boolean = false;
   public parentsEnabled: boolean = false;
+  public maintainTeachers: boolean = false;
 
   constructor(
     public db: DbService,
@@ -62,6 +62,7 @@ export class SettingsPage implements OnInit {
     this.isHelper = this.db.tenantUser().role === Role.HELPER;
     this.isPlayer = this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.NONE;
     this.isSuperAdmin = this.db.tenantUser().role === Role.ADMIN;
+    this.maintainTeachers = this.db.tenant().maintainTeachers;
 
     const allConductors: Person[] = await this.db.getConductors(true);
     this.instruments = await this.db.getInstruments();

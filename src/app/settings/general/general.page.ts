@@ -43,6 +43,8 @@ export class GeneralPage implements OnInit {
   public parentsEnabled: boolean = false;
   public isOrchestra: boolean = false;
   public isSuperAdmin: boolean = false;
+  public isGeneral: boolean = false;
+  public max: string = new Date().toISOString();
 
   constructor(
     public db: DbService,
@@ -50,7 +52,7 @@ export class GeneralPage implements OnInit {
 
   }
 
-  async ngOnInit() {
+  ngOnInit() {
     this.shortName = this.db.tenant().shortName;
     this.longName = this.db.tenant().longName;
     this.maintainTeachers = this.db.tenant().maintainTeachers;
@@ -63,6 +65,7 @@ export class GeneralPage implements OnInit {
     this.attDateString = format(new Date(this.attDate), 'dd.MM.yyyy');
     this.isOrchestra = this.db.tenant().type === 'orchestra';
     this.isSuperAdmin = this.db.tenantUser().role === Role.ADMIN;
+    this.isGeneral = this.db.tenant().type === 'general';
   }
 
   async saveGeneralSettings() {
