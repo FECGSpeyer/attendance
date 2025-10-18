@@ -14,3 +14,21 @@ ion-searchbar {
 ion-select::part(text) {
     width: 7rem;
 }
+
+.noDataContainer {
+    height: 70%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.noPersons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    ion-icon {
+        height: 80px;
+        width: 80px;
+    }
+}

@@ -47,6 +47,7 @@ export class ListPage implements OnInit {
   public teachers: Teacher[] = [];
   public linkedTenants: Tenant[] = [];
   public tenantName: string = "";
+  public loaded: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -57,6 +58,7 @@ export class ListPage implements OnInit {
     private storage: Storage,
   ) {
     effect(async () => {
+      this.loaded = false;
       this.players = [];
       this.playersFiltered = [];
       this.db.tenant();
@@ -119,6 +121,8 @@ export class ListPage implements OnInit {
     this.onViewChanged();
     this.initializeItems();
     this.onSortChanged();
+
+    this.loaded = true;
   }
 
   userById(_: number, person: Person): string {
