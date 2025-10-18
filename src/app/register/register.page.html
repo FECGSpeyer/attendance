@@ -13,20 +13,20 @@
   <ion-list [inset]="true">
     <ion-item-group>
       <ion-item>
+        <ion-label position="stacked">Typ</ion-label>
+        <ion-select (ionChange)="onTypeChange()" [(ngModel)]="tenant.type">
+          <ion-select-option value="general">Allgemein</ion-select-option>
+          <ion-select-option value="choir">Chor</ion-select-option>
+          <ion-select-option value="orchestra">Orchester</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
         <ion-label position="stacked">Instanz-Name</ion-label>
         <ion-input [placeholder]="namePlaceholder" [(ngModel)]="tenant.longName"></ion-input>
       </ion-item>
       <ion-item>
         <ion-label position="stacked">Kürzel der Instanz</ion-label>
         <ion-input [placeholder]="shortNamePlaceholder" [(ngModel)]="tenant.shortName"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Typ</ion-label>
-        <ion-select (onChange)="onTypeChange()" [(ngModel)]="tenant.type">
-          <ion-select-option value="general">Allgemein</ion-select-option>
-          <ion-select-option value="choir">Chor</ion-select-option>
-          <ion-select-option value="orchestra">Orchester</ion-select-option>
-        </ion-select>
       </ion-item>
       <ion-item>
         <ion-label position="stacked">Hauptgruppen-Name</ion-label>
