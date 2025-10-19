@@ -70,6 +70,10 @@ const routes: Routes = [
         loadChildren: () => import('./../settings/general/types/types.module').then(m => m.TypesPageModule)
       },
       {
+        path: 'settings/general/types/:id',
+        loadChildren: () => import('./../settings/general/type/type.module').then(m => m.TypePageModule)
+      },
+      {
         path: 'parents',
         loadChildren: () => import('./../selfService/parents/parents.module').then(m => m.ParentsPageModule)
       },

@@ -15,6 +15,7 @@ import { ExportPageModule } from './export/export.module';
 import { PlanningPageModule } from './planning/planning.module';
 import { InstrumentPageModule } from './instruments/instrument/instrument.module';
 import { AttendancePageModule } from './attendance/attendance/attendance.module';
+import { TypePageModule } from 'src/app/settings/general/type/type.module';
 
 @NgModule({
     declarations: [AppComponent],
@@ -31,6 +32,7 @@ import { AttendancePageModule } from './attendance/attendance/attendance.module'
         PlanningPageModule,
         InstrumentPageModule,
         AttendancePageModule,
+        TypePageModule,
     ],
     providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
     bootstrap: [AppComponent]

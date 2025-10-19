@@ -4,6 +4,14 @@
       <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
     </ion-buttons>
     <ion-title>Typen</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="reorder = true" *ngIf="!reorder">
+        <ion-icon slot="icon-only" name="repeat-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="saveOrder()" *ngIf="reorder">
+        <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -19,16 +27,33 @@
       <ion-icon class="headerIcon" name="list-outline"></ion-icon>
     </ion-card-header>
     <ion-card-content>
-      Pflege deine eigenen Typen für Anwesenheiten. So kannst du individuelle Bezeichnungen, einen Standard-Status, Probenvorlagen und Start- bzw. Endzeiten hinterlegen und auch Anwesenheiten nur für bestimmte Gruppen konfigurieren.
+      Pflege deine eigenen Typen für Anwesenheiten. So kannst du individuelle Bezeichnungen, einen Standard-Status,
+      Probenvorlagen und Start- bzw. Endzeiten hinterlegen und auch Anwesenheiten nur für bestimmte Gruppen
+      konfigurieren.
     </ion-card-content>
   </ion-card>
 
   <ion-list [inset]="true">
     <ion-list-header><ion-label>Anwesenheitstypen</ion-label></ion-list-header>
     <ion-item-group>
-      <ion-item *ngFor="let type of attendanceTypes">
+      @if (!reorder) {
+      <ion-item [routerLink]="['/tabs/settings/general/types', type.id]" *ngFor="let type of attendanceTypes">
         <ion-label>{{ type.name }}</ion-label>
       </ion-item>
+      } @else {
+      <ion-reorder-group disabled="false" (ionItemReorder)="attendanceTypes = $event.detail.complete(attendanceTypes)">
+        <ion-item *ngFor="let type of attendanceTypes">
+          <ion-label>{{ type.name }}</ion-label>
+          <ion-reorder slot="end"></ion-reorder>
+        </ion-item>
+      </ion-reorder-group>
+      }
     </ion-item-group>
   </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="openTypeModal()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

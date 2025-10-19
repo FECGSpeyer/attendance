@@ -294,4 +294,5 @@ export interface AttendanceType {
     start_time?: string;
     end_time?: string;
     manage_songs: boolean;
+    index?: number;
 }
