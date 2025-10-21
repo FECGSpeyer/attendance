@@ -123,7 +123,8 @@ export class HandoverDetailPage implements OnInit {
       if (result.length) {
         const alert = await new AlertController().create({
           header: 'Fehler bei der Personenübergabe',
-          message: `Die folgenden Personen konnten nicht übertragen werden, da sie bereits in der Zielinstanz vorhanden sind:<br><br>${result.map(r => `${r.firstName} ${r.lastName}`).join('<br>')}`,
+          message: `Die folgenden Personen konnten nicht übertragen werden, da sie bereits in der Zielinstanz vorhanden sind:\n${result.map(r => `${r.firstName} ${r.lastName}`).join('\n')}`,
+          buttons: ['Ok']
         });
         await alert.present();
       } else {

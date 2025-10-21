@@ -278,7 +278,7 @@ export class DbService {
   }
 
   async registerUser(email: string, name: string, role: Role, tenantId?: number): Promise<string> {
-    const { userId, alreadyThere } = await this.getAppIdByEmail(email) || {};
+    const { userId, alreadyThere } = await this.getAppIdByEmail(email, tenantId || this.tenant().id) || {};
 
     if (userId) {
       if (alreadyThere) {
@@ -346,13 +346,13 @@ export class DbService {
     return data;
   }
 
-  async getAppIdByEmail(email: string): Promise<{ userId: string, alreadyThere: boolean } | undefined> {
+  async getAppIdByEmail(email: string, tenantId: number): Promise<{ userId: string, alreadyThere: boolean } | undefined> {
     const { data, error } = await supabase
       .from('tenantUsers')
       .select('*')
       .ilike('email', `%${email}%`);
 
-    const foundTenantUser = data.find((tenantUser: TenantUser) => tenantUser.tenantId === this.tenant().id);
+    const foundTenantUser = data.find((tenantUser: TenantUser) => tenantUser.tenantId === tenantId);
 
     if (foundTenantUser && foundTenantUser.role !== Role.ADMIN) {
       throw new Error('Der Benutzer ist bereits in diesem Mandanten');
@@ -850,7 +850,7 @@ export class DbService {
   async removeEmailFromAuth(appId: string, email: string, deleteAdmin: boolean = false): Promise<void> {
     await this.removeUserFromTenant(appId, deleteAdmin);
 
-    if (await this.getAppIdByEmail(email)) {
+    if (await this.getAppIdByEmail(email, this.tenant().id)) {
       return;
     }
 

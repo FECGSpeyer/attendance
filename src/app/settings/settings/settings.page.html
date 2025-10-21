@@ -11,197 +11,203 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-card-subtitle *ngIf="isAdmin">Allgemein</ion-card-subtitle>
-  <ion-card class="general-settings" *ngIf="isAdmin">
-    <ion-item [routerLink]="['/tabs/settings/general']" button lines="none">
-      <ion-icon name="cog-outline" slot="start"></ion-icon>
-      <ion-label>Einstellungen</ion-label>
-    </ion-item>
-  </ion-card>
+  <ion-list *ngIf="isAdmin" [inset]="true">
+    <ion-list-header>
+      <ion-label>Allgemein</ion-label>
+    </ion-list-header>
+    <ion-item-group>
+      <ion-item [routerLink]="['/tabs/settings/general']" button lines="none">
+        <ion-icon name="cog-outline" slot="start"></ion-icon>
+        <ion-label>Einstellungen</ion-label>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
 
-  <ion-card-subtitle *ngIf="!isGeneral">Werke & Proben</ion-card-subtitle>
-  <ion-card *ngIf="!isGeneral">
-    <ion-item *ngIf="!isGeneral" routerLink="songs" button>
-      <ion-icon name="musical-notes-outline" slot="start"></ion-icon>
-      <ion-label>Werke</ion-label>
-    </ion-item>
-    <ion-item detail="false" *ngIf="!isGeneral && (isAdmin || isHelper)" button (click)="openHistoryModal()">
-      <ion-icon name="library-outline" slot="start"></ion-icon>
-      <ion-label>
-        Werkhistorie
-      </ion-label>
-    </ion-item>
-    <ion-item lines="none" detail="false" *ngIf="!isGeneral && isAdmin" button (click)="openPlanning()">
-      <ion-icon name="calendar-outline" slot="start"></ion-icon>
-      <ion-label>
-        Ablaufpläne
-      </ion-label>
-    </ion-item>
-  </ion-card>
+  <ion-list [inset]="true" *ngIf="!isGeneral">
+    <ion-list-header><ion-label>Werke & Proben</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item *ngIf="!isGeneral" routerLink="songs" button>
+        <ion-icon name="musical-notes-outline" slot="start"></ion-icon>
+        <ion-label>Werke</ion-label>
+      </ion-item>
+      <ion-item detail="false" *ngIf="!isGeneral && (isAdmin || isHelper)" button (click)="openHistoryModal()">
+        <ion-icon name="library-outline" slot="start"></ion-icon>
+        <ion-label>
+          Werkhistorie
+        </ion-label>
+      </ion-item>
+      <ion-item lines="none" detail="false" *ngIf="!isGeneral && isAdmin" button (click)="openPlanning()">
+        <ion-icon name="calendar-outline" slot="start"></ion-icon>
+        <ion-label>
+          Ablaufpläne
+        </ion-label>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
 
-  <ion-card-subtitle *ngIf="isAdmin">Organisation</ion-card-subtitle>
-  <ion-card *ngIf="isAdmin">
-    <ion-item *ngIf="!db.isDemo() && isSuperAdmin" detail="false" button id="admins-button">
-      <ion-icon name="key-outline" slot="start"></ion-icon>
-      <ion-label>
-        Administratoren
-      </ion-label>
-      <ion-modal trigger="admins-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
-        <ng-template>
-          <ion-content color="light">
-            <ion-header>
-              <ion-toolbar>
-                <ion-title>Administratoren</ion-title>
-              </ion-toolbar>
-            </ion-header>
-            <ion-card class="marginTop">
-              <ion-card-header>
-                <ion-icon class="headerIcon" name="key-outline"></ion-icon>
-              </ion-card-header>
-              <ion-card-content>
-                Administratoren haben alle Rechte in der Instanz. Administratoren werden nicht in der Anwesenheit
-                berücksichtigt können aber zusätzlich als Person hinzugefügt werden.<br><br><ion-label
-                  color="danger">ACHTUNG: Administratoren können die Instanz auch unwiderruflich löschen!</ion-label>
-              </ion-card-content>
-            </ion-card>
+  <ion-list [inset]="true" *ngIf="isAdmin">
+    <ion-list-header><ion-label>Organisation</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item *ngIf="!db.isDemo() && isSuperAdmin" detail="false" button id="admins-button">
+        <ion-icon name="key-outline" slot="start"></ion-icon>
+        <ion-label>
+          Administratoren
+        </ion-label>
+        <ion-modal trigger="admins-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+          <ng-template>
+            <ion-content color="light">
+              <ion-header>
+                <ion-toolbar>
+                  <ion-title>Administratoren</ion-title>
+                </ion-toolbar>
+              </ion-header>
+              <ion-card class="marginTop">
+                <ion-card-header>
+                  <ion-icon class="headerIcon" name="key-outline"></ion-icon>
+                </ion-card-header>
+                <ion-card-content>
+                  Administratoren haben alle Rechte in der Instanz. Administratoren werden nicht in der Anwesenheit
+                  berücksichtigt können aber zusätzlich als Person hinzugefügt werden.<br><br><ion-label
+                    color="danger">ACHTUNG: Administratoren können die Instanz auch unwiderruflich löschen!</ion-label>
+                </ion-card-content>
+              </ion-card>
 
-            <ion-list [inset]="true">
-              <ion-item-group>
-                <ion-item detail="false" button (click)="removeAdmin(a)" *ngFor="let a of admins">
-                  <ion-label>
-                    <h3>{{ a.email }}</h3>
-                    <h4>Erstellt am: {{ a.created_at | date: 'dd.MM.yyyy' }}</h4>
-                  </ion-label>
-                </ion-item>
-              </ion-item-group>
-            </ion-list>
-          </ion-content>
-          <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-            <ion-fab-button (click)="openAdminsAlert()">
-              <ion-icon name="add"></ion-icon>
-            </ion-fab-button>
-          </ion-fab>
-        </ng-template>
-      </ion-modal>
-    </ion-item>
-    <ion-item routerLink="meetings" button>
-      <ion-icon name="chatbubbles-outline" slot="start"></ion-icon>
-      <ion-label>
-        Besprechungen
-      </ion-label>
-    </ion-item>
-    <ion-item routerLink="instruments" button>
-      <ion-icon name="people-outline" slot="start"></ion-icon>
-      <ion-label>
-        Gruppen
-      </ion-label>
-    </ion-item>
-    <ion-item *ngIf="db.organisation()" button routerLink="handover">
-      <ion-icon name="walk-outline" slot="start"></ion-icon>
-      <ion-label>
-        Personenübergabe
-      </ion-label>
-    </ion-item>
-    <ion-item routerLink="teachers" *ngIf="maintainTeachers" button>
-      <ion-icon name="school-outline" slot="start"></ion-icon>
-      <ion-label>
-        Lehrer
-      </ion-label>
-    </ion-item>
-    <ion-item *ngIf="parentsEnabled" detail="false" button id="parents-button">
-      <ion-icon name="footsteps-outline" slot="start"></ion-icon>
-      <ion-label>
-        Eltern
-      </ion-label>
-      <ion-modal trigger="parents-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
-        <ng-template>
-          <ion-content>
-            <ion-header>
-              <ion-toolbar>
-                <ion-title>Eltern</ion-title>
-              </ion-toolbar>
-            </ion-header>
-            <ion-card class="marginTop">
-              <ion-card-header>
-                <ion-icon class="headerIcon" name="footsteps-outline"></ion-icon>
-              </ion-card-header>
-              <ion-card-content>
-                Eltern können die Anwesenheiten ihrer Kinder einsehen und Abwesenheiten pflegen.
-              </ion-card-content>
-            </ion-card>
+              <ion-list [inset]="true">
+                <ion-item-group>
+                  <ion-item detail="false" button (click)="removeAdmin(a)" *ngFor="let a of admins">
+                    <ion-label>
+                      <h3>{{ a.email }}</h3>
+                      <h4>Erstellt am: {{ a.created_at | date: 'dd.MM.yyyy' }}</h4>
+                    </ion-label>
+                  </ion-item>
+                </ion-item-group>
+              </ion-list>
+            </ion-content>
+            <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+              <ion-fab-button (click)="openAdminsAlert()">
+                <ion-icon name="add"></ion-icon>
+              </ion-fab-button>
+            </ion-fab>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+      <ion-item routerLink="meetings" button>
+        <ion-icon name="chatbubbles-outline" slot="start"></ion-icon>
+        <ion-label>
+          Besprechungen
+        </ion-label>
+      </ion-item>
+      <ion-item routerLink="instruments" button>
+        <ion-icon name="people-outline" slot="start"></ion-icon>
+        <ion-label>
+          Gruppen
+        </ion-label>
+      </ion-item>
+      <ion-item *ngIf="db.organisation()" button routerLink="handover">
+        <ion-icon name="walk-outline" slot="start"></ion-icon>
+        <ion-label>
+          Personenübergabe
+        </ion-label>
+      </ion-item>
+      <ion-item routerLink="teachers" *ngIf="maintainTeachers" button>
+        <ion-icon name="school-outline" slot="start"></ion-icon>
+        <ion-label>
+          Lehrer
+        </ion-label>
+      </ion-item>
+      <ion-item *ngIf="parentsEnabled" detail="false" button id="parents-button">
+        <ion-icon name="footsteps-outline" slot="start"></ion-icon>
+        <ion-label>
+          Eltern
+        </ion-label>
+        <ion-modal trigger="parents-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+          <ng-template>
+            <ion-content>
+              <ion-header>
+                <ion-toolbar>
+                  <ion-title>Eltern</ion-title>
+                </ion-toolbar>
+              </ion-header>
+              <ion-card class="marginTop">
+                <ion-card-header>
+                  <ion-icon class="headerIcon" name="footsteps-outline"></ion-icon>
+                </ion-card-header>
+                <ion-card-content>
+                  Eltern können die Anwesenheiten ihrer Kinder einsehen und Abwesenheiten pflegen.
+                </ion-card-content>
+              </ion-card>
 
-            <ion-list [inset]="true">
-              <ion-item-group>
-                <ion-item button (click)="removeParent(p)" *ngFor="let p of parents">
-                  <ion-label>
-                    <h2>{{ p.firstName }} {{ p.lastName }}</h2>
-                    <h3>{{ p.email }}</h3>
-                  </ion-label>
-                </ion-item>
-              </ion-item-group>
-            </ion-list>
-          </ion-content>
-          <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
-            <ion-fab-button (click)="openParentsAlert()">
-              <ion-icon name="add"></ion-icon>
-            </ion-fab-button>
-          </ion-fab>
-        </ng-template>
-      </ion-modal>
-    </ion-item>
-    <ion-item lines="none" *ngIf="isAdmin" detail="false" button id="viewer-button">
-      <ion-icon name="eye-outline" slot="start"></ion-icon>
-      <ion-label>
-        Beobachter
-      </ion-label>
-      <ion-modal trigger="viewer-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
-        <ng-template>
-          <ion-content color="light">
-            <ion-header>
-              <ion-toolbar>
-                <ion-title>Beobachter</ion-title>
-              </ion-toolbar>
-            </ion-header>
+              <ion-list [inset]="true">
+                <ion-item-group>
+                  <ion-item button (click)="removeParent(p)" *ngFor="let p of parents">
+                    <ion-label>
+                      <h2>{{ p.firstName }} {{ p.lastName }}</h2>
+                      <h3>{{ p.email }}</h3>
+                    </ion-label>
+                  </ion-item>
+                </ion-item-group>
+              </ion-list>
+            </ion-content>
+            <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
+              <ion-fab-button (click)="openParentsAlert()">
+                <ion-icon name="add"></ion-icon>
+              </ion-fab-button>
+            </ion-fab>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+      <ion-item lines="none" *ngIf="isAdmin" detail="false" button id="viewer-button">
+        <ion-icon name="eye-outline" slot="start"></ion-icon>
+        <ion-label>
+          Beobachter
+        </ion-label>
+        <ion-modal trigger="viewer-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+          <ng-template>
+            <ion-content color="light">
+              <ion-header>
+                <ion-toolbar>
+                  <ion-title>Beobachter</ion-title>
+                </ion-toolbar>
+              </ion-header>
 
-            <ion-card class="marginTop">
-              <ion-card-header>
-                <ion-icon class="headerIcon" name="eye-outline"></ion-icon>
-              </ion-card-header>
-              <ion-card-content>
-                Beobachter haben nur Leserechte auf eine beschränkte Anzahl von Daten. Sie sehen nur die
-                Anwesenheitsübersicht und die Daten der Personen. Beobachter werden nicht in der Anwesenheit
-                berücksichtigt.<br><br><ion-label color="danger">ACHTUNG: Beobachter können auch personenbezogene Daten
-                  sehen!</ion-label>
-              </ion-card-content>
-            </ion-card>
+              <ion-card class="marginTop">
+                <ion-card-header>
+                  <ion-icon class="headerIcon" name="eye-outline"></ion-icon>
+                </ion-card-header>
+                <ion-card-content>
+                  Beobachter haben nur Leserechte auf eine beschränkte Anzahl von Daten. Sie sehen nur die
+                  Anwesenheitsübersicht und die Daten der Personen. Beobachter werden nicht in der Anwesenheit
+                  berücksichtigt.<br><br><ion-label color="danger">ACHTUNG: Beobachter können auch personenbezogene
+                    Daten
+                    sehen!</ion-label>
+                </ion-card-content>
+              </ion-card>
 
-            <ion-list [inset]="true">
-              <ion-item-group>
-                <ion-item detail="false" button (click)="removeViewer(v)" *ngFor="let v of viewers">
-                  <ion-label>
-                    <h2>{{ v.firstName }} {{ v.lastName }}</h2>
-                    <h3>{{ v.email }}</h3>
-                  </ion-label>
-                </ion-item>
-              </ion-item-group>
-            </ion-list>
-          </ion-content>
-          <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
-            <ion-fab-button (click)="openViewerAlert()">
-              <ion-icon name="add"></ion-icon>
-            </ion-fab-button>
-          </ion-fab>
-        </ng-template>
-      </ion-modal>
-    </ion-item>
-  </ion-card>
+              <ion-list [inset]="true">
+                <ion-item-group>
+                  <ion-item detail="false" button (click)="removeViewer(v)" *ngFor="let v of viewers">
+                    <ion-label>
+                      <h2>{{ v.firstName }} {{ v.lastName }}</h2>
+                      <h3>{{ v.email }}</h3>
+                    </ion-label>
+                  </ion-item>
+                </ion-item-group>
+              </ion-list>
+            </ion-content>
+            <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
+              <ion-fab-button (click)="openViewerAlert()">
+                <ion-icon name="add"></ion-icon>
+              </ion-fab-button>
+            </ion-fab>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
 
-  <ion-card-subtitle>Daten & Auswertung</ion-card-subtitle>
-  <ion-card>
-    <!-- <ion-list-header>
-        <ion-label>Daten & Auswertung</ion-label>
-      </ion-list-header> -->
-
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Daten & Auswertung</ion-label></ion-list-header>
+    <ion-item-group>
     <ion-item (click)="openCalendarSubscription()" detail="false" button>
       <ion-icon name="calendar-outline" slot="start"></ion-icon>
       <ion-label>
@@ -247,10 +253,12 @@
         Export
       </ion-label>
     </ion-item>
-  </ion-card>
+    </ion-item-group>
+  </ion-list>
 
-  <ion-card-subtitle>System</ion-card-subtitle>
-  <ion-card>
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>System</ion-label></ion-list-header>
+    <ion-item-group>
     <ion-item (click)="isInstancesModalOpen = true" button detail="false">
       <ion-icon name="apps-outline" slot="start"></ion-icon>
       <ion-label>
@@ -650,7 +658,9 @@
       <ion-icon slot="start" name="log-out-outline"></ion-icon>
       <ion-label>Ausloggen</ion-label>
     </ion-item>
-  </ion-card>
+
+    </ion-item-group>
+  </ion-list>
 
   <ion-fab *ngIf="isIos" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="isInstancesModalOpen = true">
