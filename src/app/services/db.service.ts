@@ -2151,4 +2151,18 @@ export class DbService {
 
     return data as any;
   }
+
+  async deleteAttendanceType(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('attendance_types')
+      .delete()
+      .match({ id });
+
+    if (error) {
+      Utils.showToast("Fehler beim Löschen des Anwesenheitstyps", "danger");
+      throw error;
+    }
+
+    return;
+  }
 }

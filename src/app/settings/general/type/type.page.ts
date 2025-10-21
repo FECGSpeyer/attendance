@@ -80,6 +80,10 @@ export class TypePage implements OnInit {
   }
 
   async save() {
+    if (!this.validate()) {
+      return;
+    }
+
     try {
       await this.db.updateAttendanceType(this.type.id, this.type);
       Utils.showToast("Anwesenheitstyp erfolgreich aktualisiert", "success");
@@ -89,11 +93,49 @@ export class TypePage implements OnInit {
   }
 
   async createType() {
+    if (!this.validate()) {
+      return;
+    }
 
+    try {
+      this.type = await this.db.addAttendanceType(this.type);
+      Utils.showToast("Anwesenheitstyp erfolgreich erstellt", "success");
+    } catch (error) {
+      Utils.showToast("Fehler beim Erstellen des Anwesenheitstyps", "danger");
+    }
+  }
+
+  validate(): boolean {
+    if (!this.type.name || this.type.name.trim().length === 0) {
+      Utils.showToast("Bitte einen Namen für den Anwesenheitstyp eingeben.", "danger");
+      return false;
+    }
+
+    return true;
   }
 
   async deleteType() {
+    const alert = await this.alertController.create({
+      header: 'Anwesenheitstyp löschen',
+      message: `Möchtest du den Anwesenheitstyp "${this.type.name}" wirklich löschen? Alle Anwesenheiten dieses Typs werden ebenfalls gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.`,
+      buttons: [{
+        text: "Abbrechen",
+        role: "destructive",
+      }, {
+        text: "Löschen",
+        handler: async () => {
+          try {
+            await this.db.deleteAttendanceType(this.type.id);
+            Utils.showToast("Anwesenheitstyp erfolgreich gelöscht", "success");
+            this.dismiss();
+          } catch (error) {
+            Utils.showToast("Fehler beim Löschen des Anwesenheitstyps", "danger");
+          }
+        }
+      }]
+    });
 
+    await alert.present();
   }
 
   async dismiss() {
