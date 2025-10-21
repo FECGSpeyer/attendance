@@ -521,19 +521,23 @@ export class PlanningPage implements OnInit {
     }
   }
 
-  updateAttendance() {
+  async updateAttendance() {
     if (this.attendances.length && this.attendance) {
       if (!this.validate(false)) {
         return;
       }
 
-      this.db.updateAttendance({
+      const result = await this.db.updateAttendance({
         plan: {
           time: this.time,
           fields: this.selectedFields,
           end: this.end,
         }
       }, this.attendance);
+
+      const att = this.attendances.find((att: Attendance) => att.id === this.attendance);
+
+      att.plan = result.plan;
     }
   }
 

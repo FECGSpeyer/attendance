@@ -1081,12 +1081,17 @@ export class DbService {
     return Utils.getModifiedAttendanceData(data as any);
   }
 
-  async updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance[]> {
+  async updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance> {
     const { data, error } = await supabase
       .from('attendance')
       .update(att as any)
       .match({ id })
-      .select();
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error("Fehler beim updaten der Anwesenheit");
+    }
 
     return data as any;
   }
@@ -2096,8 +2101,54 @@ export class DbService {
     return data.map((att: any): AttendanceType => {
       return {
         ...att,
-        plan: att.plan as any,
+        default_plan: att.default_plan as any,
       };
     });
+  }
+
+  async getAttendanceType(id: string): Promise<AttendanceType> {
+    const { data, error } = await supabase
+      .from('attendance_types')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden des Anwesenheitstyps", "danger");
+      throw error;
+    }
+
+    return data as any;
+  }
+
+  async updateAttendanceType(id: string, attType: Partial<AttendanceType>): Promise<AttendanceType> {
+    const { data, error } = await supabase
+      .from('attendance_types')
+      .update(attType as any)
+      .match({ id })
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast("Fehler beim Aktualisieren des Anwesenheitstyps", "danger");
+      throw error;
+    }
+
+    return data as any;
+  }
+
+  async addAttendanceType(attType: AttendanceType): Promise<AttendanceType> {
+    const { data, error } = await supabase
+      .from('attendance_types')
+      .insert(attType as any)
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast("Fehler beim Hinzufügen des Anwesenheitstyps", "danger");
+      throw error;
+    }
+
+    return data as any;
   }
 }

@@ -4,7 +4,7 @@
       <ion-back-button text="" defaultHref="tabs/settings/general/types"></ion-back-button>
     </ion-buttons>
     <ion-buttons slot="end">
-      <ion-button *ngIf="!isNew" (click)="deleteType()">
+      <ion-button color="danger" *ngIf="!isNew" (click)="deleteType()">
         <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
       </ion-button>
       <ion-button *ngIf="isNew" (click)="dismiss()">
@@ -14,11 +14,157 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="light" [fullscreen]="true">
+<ion-content *ngIf="type" color="light" [fullscreen]="true">
+  <ion-list [inset]="true">
+    <ion-item-group>
+      <ion-item>
+        <ion-label position="stacked">Name</ion-label>
+        <ion-input [(ngModel)]="type.name"></ion-input>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Optionen</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item>
+        <ion-label position="stacked">Standard Anwesenheitsstatus</ion-label>
+        <ion-select [(ngModel)]="type.default_status">
+          <ion-select-option *ngFor="let status of attendanceStatuses" [value]="status">
+            {{ getAttendanceStatusDescription(status) }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Verfügbare Anwesenheitsstatus</ion-label>
+        <ion-select [(ngModel)]="type.available_statuses" multiple="true">
+          <ion-select-option *ngFor="let status of attendanceStatuses" [value]="status">
+            {{ getAttendanceStatusDescription(status) }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item *ngIf="!isGeneral">
+        <ion-toggle
+          helperText="Wenn du diese Option aktivierst, dann kannst du beim Anlegen einer Anwesenheit von diesem Typ, Werke hinzufügen, die für die kommenden Proben relevant sind und automatisch im Probenplan berücksichtigt werden."
+          [(ngModel)]="type.manage_songs">Werke verwalten</ion-toggle>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Beginn</ion-label>
+        <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime [(ngModel)]="type.start_time" presentation="time"
+              minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestart" [formatOptions]="{
+                      time: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      }
+                    }"></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+      <ion-item>
+        <ion-label>Ende</ion-label>
+        <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime [(ngModel)]="type.end_time" presentation="time"
+              minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimeend" [formatOptions]="{
+                      time: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      }
+                    }">
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+
+  <ion-list *ngIf="type.default_plan?.fields" [inset]="true">
+    <ion-list-header>
+      <ion-label>Ablaufplan</ion-label>
+      <ion-button id="add-field-trigger" fill="clear">
+        <ion-icon name="add"></ion-icon>
+      </ion-button>
+      <ion-popover #addFieldPopover trigger="add-field-trigger" triggerAction="click">
+        <ng-template>
+          <ion-item (click)="addExtraField(addFieldPopover)">
+            <ion-label>Feld hinzufügen</ion-label>
+          </ion-item>
+          <ion-item (click)="addSongPlaceholder(addFieldPopover)" lines="none">
+            <ion-label>Werk Platzhalter</ion-label>
+          </ion-item>
+        </ng-template>
+      </ion-popover>
+    </ion-list-header>
+    <ion-item-group>
+      <ion-item>
+        <ion-label>Start</ion-label>
+        <ion-datetime-button datetime="datetimestartplan"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime disabled="true" (ionChange)="calculateEnd()" [(ngModel)]="type.start_time" presentation="time"
+              id="datetimestartplan" [formatOptions]="{
+                      time: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      }
+                    }"></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+
+      <ion-list>
+        <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
+          <ion-item-sliding #slider *ngFor="let field of type.default_plan.fields; let i = index">
+            <ion-item>
+              <ion-label (click)="changeField(field)">
+                <h2>{{ field.name }}</h2>
+                <h3>{{ calculateTime(field, i) }}</h3>
+              </ion-label>
+              <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
+                placeholder="min" type="number" slot="end"></ion-input>
+              <ion-reorder slot="end"></ion-reorder>
+            </ion-item>
+            <ion-item-options (ionSwipe)="removeField(i, slider)">
+              <ion-item-option expandable color="danger" (click)="removeField(i, slider)">
+                <ion-icon name="trash"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ion-reorder-group>
+      </ion-list>
+
+      <ion-item class="marginBottom" *ngIf="end">
+        <ion-label>Ende</ion-label>
+        <ion-datetime-button datetime="datetimeendplan"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime disabled="true" [(ngModel)]="end" presentation="time" id="datetimeendplan" [formatOptions]="{
+                      time: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      }
+                    }">
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button *ngIf="!isNew" (click)="save()">
-      <ion-icon name="add"></ion-icon>
+      <ion-icon name="save-outline"></ion-icon>
     </ion-fab-button>
     <ion-fab-button *ngIf="isNew" (click)="createType()">
       <ion-icon name="add-outline"></ion-icon>

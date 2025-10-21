@@ -288,7 +288,7 @@ export interface AttendanceType {
     name: string;
     default_status: AttendanceStatus;
     available_statuses: AttendanceStatus[];
-    default_plan: Plan;
+    default_plan?: Plan;
     tenant_id: number;
     relevant_groups: Instrument[];
     start_time?: string;

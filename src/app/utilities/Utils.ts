@@ -450,6 +450,25 @@ export class Utils {
     return attText;
   }
 
+  public static getAttendanceStatusDescription(status: AttendanceStatus): string {
+    switch (status) {
+      case AttendanceStatus.Neutral:
+        return "Neutral";
+      case AttendanceStatus.Present:
+        return "Anwesend";
+      case AttendanceStatus.Excused:
+        return "Entschuldigt";
+      case AttendanceStatus.Late:
+        return "Verspätet anwesend";
+      case AttendanceStatus.LateExcused:
+        return "Verspätet entschuldigt";
+      case AttendanceStatus.Absent:
+        return "Abwesend";
+      default:
+        return "Unbekannt";
+    }
+  }
+
   public static getInstrumentText(instrumentIds: number[], instruments: Instrument[], groupCategories: GroupCategory[]): string {
     const filteredInstruments: Instrument[] = instruments.filter((instrument: Instrument) => !instrumentIds.includes(instrument.id));
     // last instrument should be connected with 'und'
