@@ -113,7 +113,7 @@ export class AttListPage implements OnInit {
   };
 
   constructor(
-    private db: DbService,
+    public db: DbService,
     private modalController: ModalController,
     private alertController: AlertController,
     private routerOutlet: IonRouterOutlet,
