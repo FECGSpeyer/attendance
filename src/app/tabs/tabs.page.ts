@@ -1,6 +1,7 @@
 import { Component, effect } from '@angular/core';
 import { DbService } from '../services/db.service';
-import { DefaultAttendanceType, Role } from '../utilities/constants';
+import { Role } from '../utilities/constants';
+import { registeredEffect, registerTabBarEffect } from '@rdlabo/ionic-theme-ios26';
 
 @Component({
   selector: 'app-tabs',
@@ -11,6 +12,7 @@ export class TabsPage {
   public isConductor: boolean = false;
   public isHelper: boolean = false;
   public isParent: boolean = false;
+  readonly registeredGestures: registeredEffect[] = [];
 
   constructor(
     private db: DbService,
@@ -27,6 +29,17 @@ export class TabsPage {
       this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.VIEWER || this.db.tenantUser().role === Role.RESPONSIBLE;
       this.isHelper = this.db.tenantUser().role === Role.HELPER;
     });
+  }
+
+  ionViewDidEnter() {
+    const registerGesture = registerTabBarEffect(document.querySelector<HTMLElement>('ion-tab-bar')!);
+    if (registerGesture) {
+      this.registeredGestures.push(registerGesture);
+    }
+  }
+
+  ionViewDidLeave() {
+    this.registeredGestures.forEach((gesture) => gesture.destroy());
   }
 
 }

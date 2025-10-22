@@ -20,6 +20,7 @@ export class AttListPage implements OnInit {
   public dates: string[] = [new Date().toISOString()];
   public dateString: string = format(new Date(), 'dd.MM.yyyy');
   public type: string = 'uebung';
+  public type_id: string = '';
   public attendances: Attendance[] = [];
   public oldAttendances: Attendance[] = [];
   public allAttendances: Attendance[] = [];
@@ -49,7 +50,6 @@ export class AttListPage implements OnInit {
 
   highlightedDates = (isoString: string) => {
     const date = new Date(isoString);
-    const day = date.getDay();
 
     const att = this.allAttendances.find((att: Attendance) => dayjs(att.date).isSame(dayjs(date), 'day'));
     if (att) {
@@ -197,6 +197,10 @@ export class AttListPage implements OnInit {
     if (this.oldAttendances.length) {
       this.perc = Math.round((this.oldAttendances.reduce((value: number, current: Attendance) => value + current.percentage, 0)) / this.oldAttendances.length);
     }
+
+    if (this.db.isBeta()) {
+      this.type_id = this.db.attendanceTypes().find(type => type.visible)?.id;
+    }
   }
 
   async remove(id: number, slider: IonItemSliding): Promise<void> {
@@ -238,7 +242,13 @@ export class AttListPage implements OnInit {
     const allPlayers = (await this.db.getPlayers()).filter((player: Player) => !player.paused);
 
     for (const date of this.dates) {
-      const attendance_id: number = await this.db.addAttendance({
+      const attendance_id: number = await this.db.addAttendance(this.db.isBeta() ? {
+        date: date,
+        type_id: this.type_id,
+        notes: this.notes,
+        save_in_history: true,
+        typeInfo: this.typeInfo,
+      } : {
         date: date,
         type: this.type,
         notes: this.notes,
@@ -390,5 +400,9 @@ export class AttListPage implements OnInit {
     } else {
       delete this.historyEntry.otherConductor;
     }
+  }
+
+  showSongsSelection(): boolean {
+    return this.db.isBeta() && Boolean(this.db.attendanceTypes().find(type => type.id === this.type_id && type.manage_songs));
   }
 }

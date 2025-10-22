@@ -63,7 +63,7 @@
           </ng-template>
         </ion-modal>
       </ion-item>
-      <ion-item *ngIf="db.tenantUser().email === 'developer@attendix.de'" button [routerLink]="['/tabs/settings/general/types']">
+      <ion-item *ngIf="db.isBeta()" button [routerLink]="['/tabs/settings/general/types']">
         <ion-label>Anwesenheits-Typen</ion-label>
       </ion-item>
       <ion-item *ngIf="!isGeneral">

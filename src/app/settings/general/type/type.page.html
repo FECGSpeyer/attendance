@@ -28,6 +28,10 @@
     <ion-list-header><ion-label>Optionen</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item>
+        <ion-toggle helperText="Wenn du diese Option deaktivierst, wird der Anwesenheitstyp beim Anlegen einer Anwesenheit nicht mehr als Option angezeigt." [(ngModel)]="type.visible">Aktiv</ion-toggle>
+      </ion-item>
+
+      <ion-item>
         <ion-label position="stacked">Standard Anwesenheitsstatus</ion-label>
         <ion-select [(ngModel)]="type.default_status">
           <ion-select-option *ngFor="let status of attendanceStatuses" [value]="status">
@@ -52,7 +56,10 @@
       </ion-item>
 
       <ion-item>
-        <ion-label>Beginn</ion-label>
+        <ion-label>
+          <h2>Beginn</h2>
+          <h3>Die Zeiten können nachträglich individuell in jeder Anwesenheit angepasst werden</h3>
+        </ion-label>
         <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>

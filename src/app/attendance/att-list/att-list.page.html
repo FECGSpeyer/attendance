@@ -218,7 +218,14 @@
             </ng-template>
           </ion-modal>
         </ion-item>
-        <ion-item>
+        <ion-item *ngIf="db.isBeta()">
+          <ion-select label="Typ" (ionChange)="onTypeChange()" [(ngModel)]="type_id">
+            @for (type of db.attendanceTypes(); track type.id) {
+              <ion-select-option *ngIf="type.visible" [value]="type.id">{{ type.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="!db.isBeta()">
           <ion-select label="Kategorie" (ionChange)="onTypeChange()" [(ngModel)]="type">
             @if (isGeneral) {
             <ion-select-option value="uebung">Zusammenkunft</ion-select-option>
@@ -234,7 +241,13 @@
           <ion-label position="stacked">Veranstaltung</ion-label>
           <ion-textarea [(ngModel)]="typeInfo"></ion-textarea>
         </ion-item>
-        <ion-list *ngIf="!isGeneral && (type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit')">
+        <ion-item *ngIf="db.isBeta()">
+          <ion-label position="stacked">Info-Text (optional)</ion-label>
+          <ion-textarea helperText="Dieser Text wird neben dem Typ als zusätzliche Info angezeigt"
+            [(ngModel)]="typeInfo"></ion-textarea>
+        </ion-item>
+        <ion-list [inset]="true"
+          *ngIf="(!isGeneral && (type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit')) || showSongsSelection()">
           <ion-list-header>
             <ion-label>Werke</ion-label>
             <ion-button id="add-his-button">
@@ -271,28 +284,25 @@
               </ng-template>
             </ion-modal>
           </ion-list-header>
-          <ion-item *ngFor="let entry of historyEntries; let i = index">
-            <ion-label>
-              <h2>{{ getSongInfo(entry) }}</h2>
-              <h3>{{ getConductorInfo(entry) }}</h3>
-            </ion-label>
-            <ion-button fill="clear" slot="end" (click)="historyEntries.splice(i, 1)">
-              <ion-icon slot="icon-only" name="close"></ion-icon>
-            </ion-button>
-          </ion-item>
+          <ion-item-group>
+            <ion-item *ngFor="let entry of historyEntries; let i = index">
+              <ion-label>
+                <h2>{{ getSongInfo(entry) }}</h2>
+                <h3>{{ getConductorInfo(entry) }}</h3>
+              </ion-label>
+              <ion-button fill="clear" slot="end" (click)="historyEntries.splice(i, 1)">
+                <ion-icon slot="icon-only" name="close"></ion-icon>
+              </ion-button>
+            </ion-item>
+          </ion-item-group>
         </ion-list>
-        <!-- @if (!isGeneral && (type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit')) {
-        <ion-item lines="none">
-          <ion-toggle helperText="Ausgewählte Werke werden automatisch in die Werkhistorie übernommen"
-            [(ngModel)]="saveInHistory">In der Werkhistorie berücksichtigen</ion-toggle>
-        </ion-item>
-        } -->
-        <ion-item>
+
+        <ion-item *ngIf="!db.isBeta()">
           <ion-toggle
             helperText="Der Status wird bei allen Personen auf Neutral gesetzt. So kann man einfach nachvollziehen, wer sich schon an- oder abgemeldet hat."
             slot="end" [(ngModel)]="hasNeutral">Neutral</ion-toggle>
         </ion-item>
-        <ion-item>
+        <ion-item *ngIf="!db.isBeta()">
           <ion-label position="stacked">Notizen</ion-label>
           <ion-textarea [(ngModel)]="notes"></ion-textarea>
         </ion-item>

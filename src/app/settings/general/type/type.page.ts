@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { AlertController, IonItemSliding, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AlertController, IonItemSliding, IonPopover, IonRouterOutlet, ItemReorderEventDetail, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
@@ -36,6 +36,7 @@ export class TypePage implements OnInit {
     public db: DbService,
     public dataService: DataService,
     public route: ActivatedRoute,
+    private router: Router,
     private alertController: AlertController,
   ) { }
 
@@ -58,6 +59,7 @@ export class TypePage implements OnInit {
         relevant_groups: [],
         tenant_id: this.db.tenant().id,
         index: 999,
+        visible: true,
       };
       this.type.default_plan = { ...this.defaultPlan };
     } else {
@@ -100,6 +102,7 @@ export class TypePage implements OnInit {
     try {
       this.type = await this.db.addAttendanceType(this.type);
       Utils.showToast("Anwesenheitstyp erfolgreich erstellt", "success");
+      this.dismiss();
     } catch (error) {
       Utils.showToast("Fehler beim Erstellen des Anwesenheitstyps", "danger");
     }
@@ -120,14 +123,14 @@ export class TypePage implements OnInit {
       message: `Möchtest du den Anwesenheitstyp "${this.type.name}" wirklich löschen? Alle Anwesenheiten dieses Typs werden ebenfalls gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.`,
       buttons: [{
         text: "Abbrechen",
-        role: "destructive",
       }, {
         text: "Löschen",
+        role: "destructive",
         handler: async () => {
           try {
             await this.db.deleteAttendanceType(this.type.id);
             Utils.showToast("Anwesenheitstyp erfolgreich gelöscht", "success");
-            this.dismiss();
+            this.router.navigate(['/tabs/settings/general/types']);
           } catch (error) {
             Utils.showToast("Fehler beim Löschen des Anwesenheitstyps", "danger");
           }

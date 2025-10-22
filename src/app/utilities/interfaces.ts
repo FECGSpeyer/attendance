@@ -149,7 +149,8 @@ export interface Attendance {
     id?: number;
     created_at?: string;
     date: string;
-    type: string;
+    type?: string;
+    type_id?: string;
     save_in_history: boolean;
     percentage?: number;
     excused?: string[];
@@ -295,4 +296,5 @@ export interface AttendanceType {
     end_time?: string;
     manage_songs: boolean;
     index?: number;
+    visible: boolean;
 }

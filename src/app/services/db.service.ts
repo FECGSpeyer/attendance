@@ -37,6 +37,7 @@ export class DbService {
   public tenants: WritableSignal<Tenant[] | undefined>;
   public tenantUsers: WritableSignal<TenantUser[] | undefined>;
   public tenantUser: WritableSignal<TenantUser | undefined>;
+  public attendanceTypes: WritableSignal<AttendanceType[]>;
 
   constructor(
     private plt: Platform,
@@ -45,11 +46,16 @@ export class DbService {
     this.tenant = signal(undefined);
     this.tenants = signal([]);
     this.tenantUser = signal(undefined);
+    this.attendanceTypes = signal([]);
     this.organisation = signal(null);
     this.tenantUsers = signal([]);
     this.plt.ready().then(() => {
       this.checkToken();
     });
+  }
+
+  isBeta() {
+    return this.tenantUser()?.email === "developer@attendix.de";
   }
 
   getSupabase(): SupabaseClient {
@@ -101,6 +107,9 @@ export class DbService {
       ...user,
       telegram_chat_id: config?.telegram_chat_id,
     });
+    if (this.isBeta()) {
+      this.attendanceTypes.set(await this.getAttendanceTypes());
+    }
     this.organisation.set(await this.getOrganisationFromTenant());
   }
 
@@ -2086,12 +2095,12 @@ export class DbService {
     }
   }
 
-  async getAttendanceTypes(): Promise<AttendanceType[]> {
+  private async getAttendanceTypes(): Promise<AttendanceType[]> {
     const { data, error } = await supabase
       .from('attendance_types')
       .select('*')
       .eq('tenant_id', this.tenant().id)
-      .order('name', { ascending: true });
+      .order('index', { ascending: true });
 
     if (error) {
       Utils.showToast("Fehler beim Laden der Anwesenheitstypen", "danger");
@@ -2134,6 +2143,8 @@ export class DbService {
       throw error;
     }
 
+    this.attendanceTypes.set(await this.getAttendanceTypes());
+
     return data as any;
   }
 
@@ -2149,6 +2160,8 @@ export class DbService {
       throw error;
     }
 
+    this.attendanceTypes.set(await this.getAttendanceTypes());
+
     return data as any;
   }
 
@@ -2162,6 +2175,8 @@ export class DbService {
       Utils.showToast("Fehler beim Löschen des Anwesenheitstyps", "danger");
       throw error;
     }
+
+    this.attendanceTypes.set(await this.getAttendanceTypes());
 
     return;
   }

@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { IonRouterOutlet, ModalController } from '@ionic/angular';
+import { IonRouterOutlet, ItemReorderEventDetail, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { TypePage } from 'src/app/settings/general/type/type.page';
 import { AttendanceType } from 'src/app/utilities/interfaces';
+import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
   selector: 'app-types',
@@ -10,22 +11,31 @@ import { AttendanceType } from 'src/app/utilities/interfaces';
   styleUrls: ['./types.page.scss'],
 })
 export class TypesPage implements OnInit {
-  public attendanceTypes: AttendanceType[] = [];
   public reorder: boolean = false;
 
   constructor(
-    private db: DbService,
+    public db: DbService,
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
   ) { }
 
-  async ngOnInit() {
-    this.attendanceTypes = await this.db.getAttendanceTypes();
-  }
+  ngOnInit() { }
 
   async saveOrder() {
+    const loading = await Utils.getLoadingElement(9999, 'Speichere Reihenfolge...');
+    await loading.present();
+
+    const attendanceTypes = [...this.db.attendanceTypes()];
+
+    for (let i = 0; i < attendanceTypes.length; i++) {
+      const type: AttendanceType = attendanceTypes[i];
+      type.index = i;
+      await this.db.updateAttendanceType(type.id, type);
+    }
+
+    await loading.dismiss();
+    await Utils.showToast('Reihenfolge gespeichert', 'success');
     this.reorder = false;
-    // this.db.updateAttendanceTypeOrder(this.attendanceTypes);
   }
 
   async openTypeModal() {
@@ -39,6 +49,10 @@ export class TypesPage implements OnInit {
       presentingElement: this.routerOutlet.nativeEl,
     });
     await modal.present();
+  }
+
+  onReorderAttendanceTypes(event: CustomEvent<ItemReorderEventDetail>) {
+    event.detail.complete(this.db.attendanceTypes());
   }
 
 }
