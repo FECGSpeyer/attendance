@@ -134,11 +134,29 @@
           <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="info-button">
             <ng-template>
               <ion-content>
-                <ion-card>
-                  <ion-card-header>
-                    <ion-card-title>Legende</ion-card-title>
-                  </ion-card-header>
-                  <ion-list>
+                <ion-list [inset]="true">
+                  <ion-list-header>
+                    <ion-label>Veranstaltungstypen</ion-label>
+                  </ion-list-header>
+                  <ion-item-group>
+                    @if (db.isBeta()) {
+                    @for (type of db.attendanceTypes(); track type.id) {
+                    <ion-item lines="none">
+                      <ion-icon slot="start" name="ellipse" [color]="type.color"></ion-icon>
+                      <ion-label>{{ type.name }}</ion-label>
+                    </ion-item>
+                    }
+                                        @if (holidays.publicHolidays.length || holidays.schoolHolidays.length) {
+                    <ion-item lines="none">
+                      <ion-icon slot="start" name="ellipse" color="danger"></ion-icon>
+                      <ion-label>Feiertage des ausgewählten Bundeslandes</ion-label>
+                    </ion-item>
+                    <ion-item lines="none">
+                      <ion-icon slot="start" name="ellipse" color="medium"></ion-icon>
+                      <ion-label>Ferien des ausgewählten Bundeslandes</ion-label>
+                    </ion-item>
+                    }
+                    } @else {
                     <ion-item lines="none">
                       @if (isGeneral) {
                       <ion-badge slot="start" color="primary">Zusammenkünfte</ion-badge>
@@ -167,7 +185,7 @@
                       <ion-label>Sonstige Veranstaltungen</ion-label>
                     </ion-item>
                     }
-                    @if (holidays.publicHolidays.length || holidays.schoolHolidays.length) {
+                                        @if (holidays.publicHolidays.length || holidays.schoolHolidays.length) {
                     <ion-item lines="none">
                       <ion-badge slot="start" color="danger">Feiertage</ion-badge>
                       <ion-label>Feiertage des ausgewählten Bundeslandes</ion-label>
@@ -177,8 +195,9 @@
                       <ion-label>Ferien des ausgewählten Bundeslandes</ion-label>
                     </ion-item>
                     }
-                  </ion-list>
-                </ion-card>
+                    }
+                  </ion-item-group>
+                </ion-list>
                 <ion-list-header>
                   <ion-label>Ferien</ion-label>
                 </ion-list-header>
@@ -217,7 +236,7 @@
         <ion-item *ngIf="db.isBeta()">
           <ion-select label="Typ" (ionChange)="onTypeChange()" [(ngModel)]="type_id">
             @for (type of db.attendanceTypes(); track type.id) {
-              <ion-select-option *ngIf="type.visible" [value]="type.id">{{ type.name }}</ion-select-option>
+            <ion-select-option *ngIf="type.visible" [value]="type.id">{{ type.name }}</ion-select-option>
             }
           </ion-select>
         </ion-item>
