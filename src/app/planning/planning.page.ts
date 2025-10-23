@@ -181,41 +181,7 @@ export class PlanningPage implements OnInit {
       });
     } else if (this.history.length) {
       if (this.db.isBeta() && attendance.type_id) {
-        const attType = this.db.attendanceTypes().find((at: AttendanceType) => at.id === attendance.type_id);
-
-        if (attType?.default_plan?.fields?.length) {
-          const songsAdded: Set<string> = new Set<string>();
-          this.selectedFields = [];
-
-          this.time = attType.start_time;
-
-          for (let field of attType.default_plan.fields) {
-            if (field.id.startsWith("song-placeholder-")) {
-              const historyItem = this.history.find((his: History) => !songsAdded.has(String(his.songId)));
-              if (historyItem) {
-                songsAdded.add(String(historyItem.songId));
-                const song: Song = this.songs.find((song: Song) => song.id === historyItem.songId);
-                const conductor: string | undefined = this.history?.find((his: History) => his.songId === song.id)?.conductorName;
-
-                this.selectedFields.push({
-                  ...field,
-                  id: String(song.id),
-                  name: `${song.number}. ${song.name}`,
-                  conductor: conductor || "",
-                  songId: song.id,
-                });
-              }
-              continue;
-            }
-
-            this.selectedFields.push({ ...field });
-          }
-
-          this.calculateEnd();
-          return;
-        }
-
-        return;
+        this.addDefaultFieldsFromAttendanceType(attendance.type_id);
       }
 
       if (attendance.type === "uebung") {
@@ -575,6 +541,61 @@ export class PlanningPage implements OnInit {
 
       att.plan = result.plan;
     }
+  }
+
+  async resetPlan() {
+    const alert = await this.alertController.create({
+      header: 'Plan zurücksetzen',
+      message: 'Möchtest du den Plan für diese Veranstaltung wirklich zurücksetzen? Alle Änderungen gehen verloren.',
+      buttons: [
+        {
+          text: 'Abbrechen',
+        },
+        {
+          text: 'Zurücksetzen',
+          handler: () => {
+            this.addDefaultFieldsFromAttendanceType(this.attendances.find((att: Attendance) => att.id === this.attendance)?.type_id);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  addDefaultFieldsFromAttendanceType(typeId: string) {
+    const attType = this.db.attendanceTypes().find((at: AttendanceType) => at.id === typeId);
+
+    if (attType?.default_plan?.fields?.length) {
+      const songsAdded: Set<string> = new Set<string>();
+      this.selectedFields = [];
+
+      this.time = attType.start_time;
+
+      for (let field of attType.default_plan.fields) {
+        if (field.id.startsWith("song-placeholder-")) {
+          const historyItem = this.history.find((his: History) => !songsAdded.has(String(his.songId)));
+          if (historyItem) {
+            songsAdded.add(String(historyItem.songId));
+            const song: Song = this.songs.find((song: Song) => song.id === historyItem.songId);
+            const conductor: string | undefined = this.history?.find((his: History) => his.songId === song.id)?.conductorName;
+
+            this.selectedFields.push({
+              ...field,
+              id: String(song.id),
+              name: `${song.number}. ${song.name}`,
+              conductor: conductor || "",
+              songId: song.id,
+            });
+          }
+          continue;
+        }
+
+        this.selectedFields.push({ ...field });
+      }
+    }
+
+    this.calculateEnd();
   }
 
 }

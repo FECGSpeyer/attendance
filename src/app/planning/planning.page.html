@@ -11,7 +11,12 @@
 
 <ion-content color="light">
   <ion-list [inset]="true">
-    <ion-list-header><ion-label>Zugehörige Anwesenheit</ion-label></ion-list-header>
+    <ion-list-header>
+      <ion-label>Zugehörige Anwesenheit</ion-label>
+      <ion-button *ngIf="db.isBeta()" (click)="resetPlan()" fill="clear">
+        <ion-icon name="refresh"></ion-icon>
+      </ion-button>
+    </ion-list-header>
     <ion-item-group>
       <ion-item [lines]="attendance && notes ? '' : 'none'" *ngIf="attendances.length">
         <ion-select interface="modal" label="Aktuelle" (ionChange)="onAttChange()" [(ngModel)]="attendance">
