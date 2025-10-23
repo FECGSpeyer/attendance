@@ -30,7 +30,8 @@
         <ion-label>
           <h2 *ngIf="!db.organisation()">Organisation</h2>
           <h2 *ngIf="db.organisation()">Organisation</h2>
-          <h3 *ngIf="isSuperAdmin && !db.organisation()">Weise die Instanz einer bestehenden Organisation zu oder erstelle eine. Damit können
+          <h3 *ngIf="isSuperAdmin && !db.organisation()">Weise die Instanz einer bestehenden Organisation zu oder
+            erstelle eine. Damit können
             Personen
             innerhalb der Organisation verknüpft werden</h3>
           <h3 *ngIf="isSuperAdmin && db.organisation()">Die Instanz ist der Organisation
@@ -38,10 +39,12 @@
           <h3 *ngIf="!isSuperAdmin">Du hast keine Berechtigung, um Organisationen zu verwalten. Dies können nur
             Administratoren.</h3>
         </ion-label>
-        <ion-button fill="clear" *ngIf="isSuperAdmin && db.organisation()" (click)="deleteOrganisation()" color="danger">
+        <ion-button fill="clear" *ngIf="isSuperAdmin && db.organisation()" (click)="deleteOrganisation()"
+          color="danger">
           <ion-icon name="trash-outline"></ion-icon>
         </ion-button>
-        <ion-button fill="clear" *ngIf="isSuperAdmin && !db.organisation()" (click)="openOrganisationAlert()" color="primary">
+        <ion-button fill="clear" *ngIf="isSuperAdmin && !db.organisation()" (click)="openOrganisationAlert()"
+          color="primary">
           <ion-icon name="add-outline"></ion-icon>
         </ion-button>
       </ion-item>
@@ -66,6 +69,7 @@
       <ion-item *ngIf="db.isBeta()" button [routerLink]="['/tabs/settings/general/types']">
         <ion-label>Anwesenheits-Typen</ion-label>
       </ion-item>
+      @if (!db.isBeta()) {
       <ion-item *ngIf="!isGeneral">
         <ion-label>Probenbeginn</ion-label>
         <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
@@ -99,6 +103,7 @@
           </ng-template>
         </ion-modal>
       </ion-item>
+      }
     </ion-item-group>
 
     <ion-list-header><ion-label>Sonstiges</ion-label></ion-list-header>

@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
-import { Attendance, FieldSelection, GroupCategory, History, Group, Person, Song } from '../utilities/interfaces';
+import { Attendance, FieldSelection, GroupCategory, History, Group, Person, Song, AttendanceType } from '../utilities/interfaces';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
@@ -180,6 +180,44 @@ export class PlanningPage implements OnInit {
         }
       });
     } else if (this.history.length) {
+      if (this.db.isBeta() && attendance.type_id) {
+        const attType = this.db.attendanceTypes().find((at: AttendanceType) => at.id === attendance.type_id);
+
+        if (attType?.default_plan?.fields?.length) {
+          const songsAdded: Set<string> = new Set<string>();
+          this.selectedFields = [];
+
+          this.time = attType.start_time;
+
+          for (let field of attType.default_plan.fields) {
+            if (field.id.startsWith("song-placeholder-")) {
+              const historyItem = this.history.find((his: History) => !songsAdded.has(String(his.songId)));
+              if (historyItem) {
+                songsAdded.add(String(historyItem.songId));
+                const song: Song = this.songs.find((song: Song) => song.id === historyItem.songId);
+                const conductor: string | undefined = this.history?.find((his: History) => his.songId === song.id)?.conductorName;
+
+                this.selectedFields.push({
+                  ...field,
+                  id: String(song.id),
+                  name: `${song.number}. ${song.name}`,
+                  conductor: conductor || "",
+                  songId: song.id,
+                });
+              }
+              continue;
+            }
+
+            this.selectedFields.push({ ...field });
+          }
+
+          this.calculateEnd();
+          return;
+        }
+
+        return;
+      }
+
       if (attendance.type === "uebung") {
         this.time = this.db.tenant().practiceStart || "17:50";
         this.selectedFields = [{

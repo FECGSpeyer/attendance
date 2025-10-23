@@ -54,10 +54,6 @@
           @for (att of attendances; track att.id) {
           <ion-item-sliding #slider>
             <ion-item button detail="false" (click)="openAttendance(att)">
-              <!-- <ion-label>
-                <ion-card-title>{{ getReadableDate(att.date) }}</ion-card-title>
-                <ion-card-subtitle>{{ getTypeText(att.type, att.typeInfo) }}</ion-card-subtitle>
-              </ion-label> -->
               <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
               <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
                 {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
