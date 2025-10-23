@@ -1,6 +1,7 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title *ngIf="players">{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(players) }}/{{ players.length }}</ion-title>
+    <ion-title *ngIf="players">{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(players) }}/{{
+      players.length }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="close()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -16,23 +17,29 @@
         <ion-label>Informationen</ion-label>
       </ion-item>
       <div slot="content">
-        <ion-item lines="none">
+        <ion-item *ngIf="!attendance.type_id" lines="none">
           <ion-select disabled="true" label="Kategorie" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.type">
             @if (isGeneral) {
-              <ion-select-option value="uebung">Zusammenkunft</ion-select-option>
+            <ion-select-option value="uebung">Zusammenkunft</ion-select-option>
             } @else {
-              <ion-select-option value="uebung">Probe</ion-select-option>
+            <ion-select-option value="uebung">Probe</ion-select-option>
             }
             <ion-select-option value="vortrag">Vortrag</ion-select-option>
             <ion-select-option value="hochzeit">Hochzeit</ion-select-option>
             <ion-select-option value="sonstiges">Sonstiges</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-item lines="none" *ngIf="attendance?.type === 'sonstiges'">
-          <ion-label position="stacked">Probenart</ion-label>
+        <ion-item *ngIf="attendance.type_id" lines="none">
+          <ion-label>Typ</ion-label>
+          <ion-badge slot="end">{{ getTypeName(attendance.type_id) }}</ion-badge>
+        </ion-item>
+        <ion-item lines="none" *ngIf="attendance.type === 'sonstiges' || attendance.type_id">
+          <ion-label *ngIf="attendance.type === 'sonstiges'" position="stacked">Probenart</ion-label>
+          <ion-label *ngIf="attendance.type_id" position="stacked">Info-Text</ion-label>
           <ion-input (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.typeInfo"></ion-input>
         </ion-item>
-        <ion-list *ngIf="!isGeneral && (attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit')">
+        <ion-list
+          *ngIf="!isGeneral && (attendance.type === 'vortrag' || attendance.type === 'sonstiges' || attendance.type === 'hochzeit')">
           <ion-list-header>
             <ion-label>Werke</ion-label>
             <ion-button id="add-his-button">
@@ -79,7 +86,7 @@
             </ion-button>
           </ion-item>
         </ion-list>
-        <!-- @if (!isGeneral && (attendance?.type === 'vortrag' || attendance?.type === 'sonstiges' || attendance?.type === 'hochzeit')) {
+        <!-- @if (!isGeneral && (attendance.type === 'vortrag' || attendance.type === 'sonstiges' || attendance.type === 'hochzeit')) {
           <ion-item>
             <ion-toggle (ionChange)="onInfoChanged()" helperText="Ausgewählte Werke werden automatisch in die Werkhistorie übernommen" [(ngModel)]="attendance.save_in_history">In der Werkhistorie berücksichtigen</ion-toggle>
           </ion-item>
@@ -88,6 +95,41 @@
           <ion-label position="stacked">Notizen</ion-label>
           <ion-textarea (ionBlur)="onInfoChanged()" autoGrow="true" [(ngModel)]="attendance.notes"></ion-textarea>
         </ion-item>
+
+        <ion-item>
+          <ion-label>Beginn</ion-label>
+          <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.start_time" presentation="time"
+                minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestart" [formatOptions]="{
+                      time: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      }
+                    }"></ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+        <ion-item>
+          <ion-label>Ende</ion-label>
+          <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.end_time" presentation="time"
+                minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimeend" [formatOptions]="{
+                      time: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      }
+                    }">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+
         <!-- <input style="display: 'none';" name="file" #chooser (change)="onImageSelect($event)" accept="image/*" class="inputFile" type="file" />
         <ion-item>
           <ion-avatar slot="end" *ngIf="attendance.img">
@@ -131,7 +173,7 @@
   <ion-list class="marginBottom">
     <ng-container *ngFor="let player of players; trackBy:userById">
       <ion-item-divider sticky="true" *ngIf="player.firstOfInstrument">
-        <ion-label>{{ player.instrumentName }} ({{ player.instrumentLength }})</ion-label>
+        <ion-label>{{ player.groupName }} ({{ player.instrumentLength }})</ion-label>
       </ion-item-divider>
       <ion-item-sliding #slider>
         <ion-item button detail="false" (click)="onAttChange(player)">
@@ -143,14 +185,13 @@
           <ion-badge [color]="player.status === 0 ? 'medium' :
                               player.status === 1 ? 'success' :
                               player.status === 2 ? 'warning' :
-                              (player.status === 5 || player.status === 3) ? 'tertiary' : 'danger'"
-                     slot="end">
-                                {{
-                                  player.status === 0 ? 'N' :
-                                  player.status === 1 ? '✓' :
-                                  player.status === 2 ? 'E' :
-                                  (player.status === 5 || player.status === 3) ? 'L' : 'A'
-                                }}
+                              (player.status === 5 || player.status === 3) ? 'tertiary' : 'danger'" slot="end">
+            {{
+            player.status === 0 ? 'N' :
+            player.status === 1 ? '✓' :
+            player.status === 2 ? 'E' :
+            (player.status === 5 || player.status === 3) ? 'L' : 'A'
+            }}
           </ion-badge>
         </ion-item>
         <ion-item-options (ionSwipe)="addNote(player, slider)">

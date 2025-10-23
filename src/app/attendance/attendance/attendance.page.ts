@@ -5,8 +5,8 @@ import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supab
 import * as dayjs from 'dayjs';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
-import { DefaultAttendanceType, AttendanceStatus, Role } from 'src/app/utilities/constants';
-import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Instrument, GroupCategory } from 'src/app/utilities/interfaces';
+import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING } from 'src/app/utilities/constants';
+import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -38,20 +38,20 @@ export class AttendancePage implements OnInit {
   public otherConductor: number = 9999999999;
   public historyEntries: History[] = [];
   public isGeneral: boolean = false;
-  public instruments: Instrument[] = [];
+  public instruments: Group[] = [];
   public groupCategories: GroupCategory[] = [];
 
   constructor(
     private modalController: ModalController,
-    private db: DbService,
+    public db: DbService,
     private alertController: AlertController,
   ) { }
 
   async ngOnInit(): Promise<void> {
     this.songs = await this.db.getSongs();
-    this.instruments = (await this.db.getInstruments()).filter((instrument: Instrument) => !instrument.maingroup);
+    this.instruments = this.db.groups().filter((instrument: Group) => !instrument.maingroup);
     this.groupCategories = await this.db.getGroupCategories();
-    this.mainGroup = (await this.db.getMainGroup()).id;
+    this.mainGroup = this.db.getMainGroup().id;
     document.addEventListener("visibilitychange", async () => {
       if (!document.hidden) {
         this.attendance = await this.db.getAttendanceById(this.attendanceId);
@@ -161,7 +161,41 @@ export class AttendancePage implements OnInit {
   }
 
   async onAttChange(individual: PersonAttendance) {
-    if (!this.withExcuses) {
+    if (this.db.isBeta()) {
+      const attType = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
+      let status;
+
+      if (attType.available_statuses.length === 5) {
+        status = ATTENDANCE_STATUS_MAPPING["DEFAULT"][individual.status];
+      } else if ([AttendanceStatus.Excused, AttendanceStatus.Late].every(status => attType.available_statuses.includes(status))) {
+        status = ATTENDANCE_STATUS_MAPPING["NO_NEUTRAL"][individual.status];
+      } else if ([AttendanceStatus.Late, AttendanceStatus.Neutral].every(status => attType.available_statuses.includes(status))) {
+        status = ATTENDANCE_STATUS_MAPPING["NO_EXCUSED"][individual.status];
+      } else if ([AttendanceStatus.Excused, AttendanceStatus.Neutral].every(status => attType.available_statuses.includes(status))) {
+        status = ATTENDANCE_STATUS_MAPPING["NO_LATE"][individual.status];
+      } else if ([AttendanceStatus.Late].every(status => attType.available_statuses.includes(status))) {
+        status = ATTENDANCE_STATUS_MAPPING["NO_NEUTRAL_NO_EXCUSED"][individual.status];
+      } else if ([AttendanceStatus.Neutral].every(status => attType.available_statuses.includes(status))) {
+        status = ATTENDANCE_STATUS_MAPPING["NO_LATE_NO_EXCUSED"][individual.status];
+      } else if ([AttendanceStatus.Excused].every(status => attType.available_statuses.includes(status))) {
+        status = ATTENDANCE_STATUS_MAPPING["NO_LATE_NO_NEUTRAL"][individual.status];
+      } else if (attType.available_statuses.length === 2 && attType.available_statuses.includes(AttendanceStatus.Present) && attType.available_statuses.includes(AttendanceStatus.Absent)) {
+        status = ATTENDANCE_STATUS_MAPPING["ONLY_PRESENT_ABSENT"][individual.status];
+      } else if (attType.available_statuses.length === 2 && attType.available_statuses.includes(AttendanceStatus.Present) && attType.available_statuses.includes(AttendanceStatus.Excused)) {
+        status = ATTENDANCE_STATUS_MAPPING["ONLY_PRESENT_EXCUSED"][individual.status];
+      } else {
+        Utils.showToast("Fehler beim Ändern des Anwesenheitsstatus, bitte versuche es später erneut", "danger");
+        return;
+      }
+
+      individual.status = status;
+
+      this.db.updatePersonAttendance(individual.id, { status: individual.status });
+
+      return;
+    }
+
+    if (!this.withExcuses) { // TODO remove this with beta removal
       if (individual.status === AttendanceStatus.Absent) {
         individual.status = AttendanceStatus.Present;
       } else {
@@ -299,6 +333,8 @@ export class AttendancePage implements OnInit {
       typeInfo: this.attendance.typeInfo,
       notes: this.attendance.notes,
       save_in_history: this.attendance.save_in_history,
+      start_time: this.attendance.start_time ?? '19:30', // start_time is defined with attendance in beta mode
+      end_time: this.attendance.end_time ?? '21:00', // end_time is defined with attendance in beta mode
     }, this.attendance.id);
 
     if (this.historyEntries.length && this.historyEntries[0].visible !== this.attendance.save_in_history) {
@@ -394,5 +430,9 @@ export class AttendancePage implements OnInit {
 
     const text = Utils.getInstrumentText(song.instrument_ids, this.instruments, this.groupCategories);
     return text;
+  }
+
+  getTypeName(type_id: string) {
+    return this.db.attendanceTypes().find(type => type.id === type_id)?.name || 'Unbekannt';
   }
 }

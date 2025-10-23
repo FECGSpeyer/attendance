@@ -9,8 +9,8 @@ import { DbService } from '../services/db.service';
 import { Attendance, Player } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
-const DEFAULT_PLAYER_FIELDS = ["Vorname", "Nachname", "Geburtsdatum", "Instrument"];
-const DEFAULT_ATT_FIELDS = ["Vorname", "Nachname", "Instrument"];
+const DEFAULT_PLAYER_FIELDS = ["Vorname", "Nachname", "Geburtsdatum", "Gruppe"];
+const DEFAULT_ATT_FIELDS = ["Vorname", "Nachname", "Gruppe"];
 
 @Component({
   selector: 'app-export',
@@ -24,7 +24,7 @@ export class ExportPage implements OnInit {
   public content: string = "player";
   public attendance: Attendance[] = [];
   public selectedFields: string[] = DEFAULT_PLAYER_FIELDS;
-  public fields: string[] = ["Vorname", "Nachname", "Geburtsdatum", "Instrument"];
+  public fields: string[] = ["Vorname", "Nachname", "Geburtsdatum", "Gruppe"];
 
   constructor(
     private modalController: ModalController,
@@ -33,7 +33,7 @@ export class ExportPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.players = Utils.getModifiedPlayersForList(await this.db.getPlayers(), await this.db.getInstruments(), [], (await this.db.getMainGroup())?.id);
+    this.players = Utils.getModifiedPlayersForList(await this.db.getPlayers(), this.db.groups(), [], this.db.getMainGroup()?.id);
     this.attendance = (await this.db.getAttendance(false, true)).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
   }
 
@@ -243,8 +243,8 @@ export class ExportPage implements OnInit {
         case "Geburtsdatum":
           values.push(dayjs(player.birthday).format('DD.MM.YYYY'));
           break;
-        case "Instrument":
-          values.push(player.instrumentName);
+        case "Gruppe":
+          values.push(player.groupName);
           break;
         case "Testergebnis":
           values.push(player.testResult || "Kein Ergebnis");

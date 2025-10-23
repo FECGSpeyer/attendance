@@ -8,7 +8,7 @@ import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { StatsPage } from 'src/app/stats/stats.page';
 import { Role } from 'src/app/utilities/constants';
-import { Admin, Instrument, Organisation, Parent, Person, Player, Tenant } from 'src/app/utilities/interfaces';
+import { Admin, Group, Organisation, Parent, Person, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { Viewer } from '../../utilities/interfaces';
 import { Router } from '@angular/router';
@@ -24,7 +24,6 @@ export class SettingsPage implements OnInit {
   public leftConductors: Person[] = [];
   public playersWithoutAccount: Player[] = [];
   public version: string = require('../../../../package.json').version;
-  public instruments: Instrument[] = [];
   public viewers: Viewer[] = [];
   public parents: Parent[] = [];
   public admins: Admin[] = [];
@@ -65,8 +64,7 @@ export class SettingsPage implements OnInit {
     this.maintainTeachers = this.db.tenant().maintainTeachers;
 
     const allConductors: Person[] = await this.db.getConductors(true);
-    this.instruments = await this.db.getInstruments();
-    this.leftPlayers = Utils.getModifiedPlayersForList(await this.db.getLeftPlayers(), this.instruments, [], this.instruments.find(ins => ins.maingroup)?.id);
+    this.leftPlayers = Utils.getModifiedPlayersForList(await this.db.getLeftPlayers(), this.db.groups(), [], this.db.getMainGroup()?.id);
     this.leftConductors = allConductors.filter((con: Person) => Boolean(con.left));
     this.viewers = await this.db.getViewers();
     this.parentsEnabled = this.db.tenant().parents || false;
@@ -130,7 +128,6 @@ export class SettingsPage implements OnInit {
       presentingElement: this.routerOutlet.nativeEl,
       componentProps: {
         existingPlayer: { ...p },
-        instruments: this.instruments,
         readOnly: true,
         hasLeft: true,
       }
@@ -141,7 +138,7 @@ export class SettingsPage implements OnInit {
     const data = await modal.onDidDismiss();
 
     if (data?.data?.activated) {
-      this.leftPlayers = Utils.getModifiedPlayersForList(await this.db.getLeftPlayers(), this.instruments, [], this.instruments.find(ins => ins.maingroup)?.id);
+      this.leftPlayers = Utils.getModifiedPlayersForList(await this.db.getLeftPlayers(), this.db.groups(), [], this.db.getMainGroup()?.id);
     }
   }
 

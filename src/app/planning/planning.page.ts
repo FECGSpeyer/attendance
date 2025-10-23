@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
-import { Attendance, FieldSelection, GroupCategory, History, Instrument, Person, Song } from '../utilities/interfaces';
+import { Attendance, FieldSelection, GroupCategory, History, Group, Person, Song } from '../utilities/interfaces';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
@@ -33,7 +33,6 @@ export class PlanningPage implements OnInit {
   public isPlanModalOpen: boolean = false;
   public conductors: Person[] = [];
   public selConductors: number[] = [];
-  public instruments: Instrument[] = [];
   public groupCategories: GroupCategory[];
   public customModalOptions = {
     header: 'Werk hinzufügen',
@@ -50,7 +49,6 @@ export class PlanningPage implements OnInit {
 
   async ngOnInit() {
     this.songs = await this.db.getSongs();
-    this.instruments = (await this.db.getInstruments()).filter((instrument: Instrument) => !instrument.maingroup);
     this.groupCategories = await this.db.getGroupCategories();
     this.conductors = (await this.db.getConductors()).filter((con: Person) => !con.left);
     this.selConductors = this.conductors.filter((con: Person) => Boolean(!con.left)).map((c: Person): number => c.id);
@@ -497,7 +495,7 @@ export class PlanningPage implements OnInit {
       return "";
     }
 
-    const text = Utils.getInstrumentText(song.instrument_ids, this.instruments, this.groupCategories);
+    const text = Utils.getInstrumentText(song.instrument_ids, this.db.groups().filter((group: Group) => !group.maingroup), this.groupCategories);
     return text;
   }
 

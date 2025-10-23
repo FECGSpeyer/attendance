@@ -3,7 +3,7 @@ import { IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from '../services/db.service';
 import { TeacherPage } from '../teacher/teacher.page';
 import { Role } from '../utilities/constants';
-import { Instrument, Player, Teacher } from '../utilities/interfaces';
+import { Group, Player, Teacher } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
 @Component({
@@ -12,11 +12,11 @@ import { Utils } from '../utilities/Utils';
   styleUrls: ['./teachers.page.scss'],
 })
 export class TeachersPage implements OnInit {
-  instruments: Instrument[] = [];
   teachers: Teacher[] = [];
   players: Player[] = [];
   isAdmin: boolean = false;
   selInstruments: number[] = [];
+  instruments: Group[] = [];
 
   constructor(
     private db: DbService,
@@ -27,7 +27,7 @@ export class TeachersPage implements OnInit {
   async ngOnInit() {
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.players = await this.db.getPlayers();
-    this.instruments = await this.db.getInstruments();
+    this.instruments = this.db.groups().filter((ins: Group) => !ins.maingroup);
     await this.getTeachers();
   }
 
@@ -35,7 +35,7 @@ export class TeachersPage implements OnInit {
     this.teachers = (await this.db.getTeachers()).map((t: Teacher) => {
       return {
         ...t,
-        insNames: t.instruments.map((i: number) => this.instruments.find((ins: Instrument) => ins.id === i).name).join(", "),
+        insNames: t.instruments.map((i: number) => this.db.groups().find((ins: Group) => ins.id === i).name).join(", "),
         playerCount: this.players.filter((p: Player) => p.teacher === t.id).length
       };
     });
@@ -68,7 +68,6 @@ export class TeachersPage implements OnInit {
       componentProps: {
         teacher,
         players: this.players,
-        instruments: this.instruments,
       }
     });
 

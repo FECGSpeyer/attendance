@@ -1,7 +1,7 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role } from "./constants";
-import { Attendance, FieldSelection, GroupCategory, Instrument, PersonAttendance, Player } from "./interfaces";
+import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player } from "./interfaces";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
@@ -11,7 +11,7 @@ export class Utils {
     return Math.floor(Math.random() * (999999999999 - 1000000000 + 1)) + 1000000000;
   }
 
-  public static getModifiedPlayersForList(players: Player[], instruments: Instrument[], attendances: Attendance[], mainGroup?: number): Player[] {
+  public static getModifiedPlayersForList(players: Player[], instruments: Group[], attendances: Attendance[], mainGroup?: number): Player[] {
     const instrumentsMap: { [props: number]: boolean } = {};
 
     return players.sort((a: Player, b: Player) => {
@@ -20,7 +20,7 @@ export class Utils {
       }
 
       // Sort by instrument but maingroup first
-      if (a.instrumentName === b.instrumentName) {
+      if (a.groupName === b.groupName) {
         return 0;
       } else if (a.instrument === mainGroup) {
         return -1;
@@ -61,12 +61,12 @@ export class Utils {
         instrumentLength,
         isNew,
         percentage,
-        instrumentName: instruments.find((ins: Instrument) => ins.id === player.instrument).name,
+        groupName: instruments.find((ins: Group) => ins.id === player.instrument).name,
         img: player.img || DEFAULT_IMAGE,
       }
     }).sort((a: Player, b: Player) => {
       // Sort by instrument but maingroup first
-      if (a.instrumentName === b.instrumentName) {
+      if (a.groupName === b.groupName) {
         return 0;
       } else if (a.instrument === mainGroup) {
         return -1;
@@ -114,12 +114,12 @@ export class Utils {
     const sortedMainGroup = mainGroup.sort((a, b) => (a.person?.lastName ?? a.lastName).localeCompare(b.person?.lastName ?? b.lastName));
 
     // Group others by groupId
-    const grouped = new Map<number, { instrumentName: string; players: PersonAttendance[] }>();
+    const grouped = new Map<number, { groupName: string; players: PersonAttendance[] }>();
 
     for (const player of otherGroups) {
       if (!grouped.has(player.instrument)) {
         grouped.set(player.instrument, {
-          instrumentName: player.instrumentName,
+          groupName: player.groupName,
           players: []
         });
       }
@@ -128,7 +128,7 @@ export class Utils {
 
     // Sort the groups by instrument name, then sort each group's players by lastName
     const sortedOtherGroups = [...grouped.entries()]
-      .sort(([, a], [, b]) => a.instrumentName.localeCompare(b.instrumentName))
+      .sort(([, a], [, b]) => a.groupName.localeCompare(b.groupName))
       .map(([, group]) =>
         group.players.sort((a, b) => (a.person?.lastName ?? a.lastName).localeCompare(b.person?.lastName ?? b.lastName))
       )
@@ -144,7 +144,7 @@ export class Utils {
         ...person,
         img: person.img || DEFAULT_IMAGE,
         instrument: (person.person.instrument as any).id,
-        instrumentName: (person.person.instrument as any).name,
+        groupName: (person.person.instrument as any).name,
       }
     });
 
@@ -469,8 +469,8 @@ export class Utils {
     }
   }
 
-  public static getInstrumentText(instrumentIds: number[], instruments: Instrument[], groupCategories: GroupCategory[]): string {
-    const filteredInstruments: Instrument[] = instruments.filter((instrument: Instrument) => !instrumentIds.includes(instrument.id));
+  public static getInstrumentText(instrumentIds: number[], instruments: Group[], groupCategories: GroupCategory[]): string {
+    const filteredInstruments: Group[] = instruments.filter((instrument: Group) => !instrumentIds.includes(instrument.id));
     // last instrument should be connected with 'und'
 
     if (filteredInstruments.length === 0) {
@@ -481,8 +481,8 @@ export class Utils {
 
     // check if all instruments of one category are missing
     // also check if there are multiple categories with missing instruments, separate those with ',' and 'und'
-    const categoryMap: { [key: number]: Instrument[] } = {};
-    filteredInstruments.forEach((instrument: Instrument) => {
+    const categoryMap: { [key: number]: Group[] } = {};
+    filteredInstruments.forEach((instrument: Group) => {
       if (instrument.category) {
         if (!categoryMap[instrument.category]) {
           categoryMap[instrument.category] = [];
@@ -500,7 +500,7 @@ export class Utils {
     const categoriesMissingAllInstruments: string[] = [];
     Object.keys(categoryMap).forEach((categoryId: string) => {
       const catIdNum = Number(categoryId);
-      const totalInstrumentsInCategory = instruments.filter((instrument: Instrument) => instrument.category === catIdNum).length;
+      const totalInstrumentsInCategory = instruments.filter((instrument: Group) => instrument.category === catIdNum).length;
       if (categoryMap[catIdNum].length === totalInstrumentsInCategory) {
         // all instruments of this category are missing
         const categoryName = catIdNum === -1 ? "Sonstige" : groupCategories.find(cat => cat.id === catIdNum)?.name || "Unbekannt";
@@ -511,7 +511,7 @@ export class Utils {
     });
 
     // now, categoryMap only contains categories with some missing instruments
-    const individualInstruments: Instrument[] = [];
+    const individualInstruments: Group[] = [];
     Object.keys(categoryMap).forEach((categoryId: string) => {
       const catIdNum = Number(categoryId);
       individualInstruments.push(...categoryMap[catIdNum]);

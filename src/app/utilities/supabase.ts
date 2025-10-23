@@ -20,6 +20,7 @@ export type Database = {
           created_at: string | null
           criticalPlayers: number[] | null
           date: string | null
+          end_time: string | null
           excused: string[]
           id: number
           img: string | null
@@ -29,8 +30,10 @@ export type Database = {
           players: Json | null
           save_in_history: boolean | null
           songs: number[]
+          start_time: string | null
           tenantId: number
           type: string | null
+          type_id: string | null
           typeInfo: string | null
         }
         Insert: {
@@ -38,6 +41,7 @@ export type Database = {
           created_at?: string | null
           criticalPlayers?: number[] | null
           date?: string | null
+          end_time?: string | null
           excused?: string[]
           id?: number
           img?: string | null
@@ -47,8 +51,10 @@ export type Database = {
           players?: Json | null
           save_in_history?: boolean | null
           songs?: number[]
+          start_time?: string | null
           tenantId: number
           type?: string | null
+          type_id?: string | null
           typeInfo?: string | null
         }
         Update: {
@@ -56,6 +62,7 @@ export type Database = {
           created_at?: string | null
           criticalPlayers?: number[] | null
           date?: string | null
+          end_time?: string | null
           excused?: string[]
           id?: number
           img?: string | null
@@ -65,11 +72,20 @@ export type Database = {
           players?: Json | null
           save_in_history?: boolean | null
           songs?: number[]
+          start_time?: string | null
           tenantId?: number
           type?: string | null
+          type_id?: string | null
           typeInfo?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "attendance_type_id_fkey"
+            columns: ["type_id"]
+            isOneToOne: false
+            referencedRelation: "attendance_types"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "public_attendance_tenantId_fkey"
             columns: ["tenantId"]
@@ -82,42 +98,51 @@ export type Database = {
       attendance_types: {
         Row: {
           available_statuses: number[]
+          color: string | null
           created_at: string
           default_plan: Json | null
           default_status: number | null
           end_time: string | null
           id: string
+          index: number | null
           manage_songs: boolean | null
           name: string | null
           relevant_groups: number[] | null
           start_time: string | null
           tenant_id: number | null
+          visible: boolean
         }
         Insert: {
           available_statuses?: number[]
+          color?: string | null
           created_at?: string
           default_plan?: Json | null
           default_status?: number | null
           end_time?: string | null
           id?: string
+          index?: number | null
           manage_songs?: boolean | null
           name?: string | null
           relevant_groups?: number[] | null
           start_time?: string | null
           tenant_id?: number | null
+          visible?: boolean
         }
         Update: {
           available_statuses?: number[]
+          color?: string | null
           created_at?: string
           default_plan?: Json | null
           default_status?: number | null
           end_time?: string | null
           id?: string
+          index?: number | null
           manage_songs?: boolean | null
           name?: string | null
           relevant_groups?: number[] | null
           start_time?: string | null
           tenant_id?: number | null
+          visible?: boolean
         }
         Relationships: [
           {

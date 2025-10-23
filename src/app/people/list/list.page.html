@@ -85,7 +85,7 @@
     </ion-list-header>
     <ng-container *ngFor="let player of playersFiltered; trackBy:userById">
       <ion-item-divider color="primary" *ngIf="player.firstOfInstrument && sortOpt === 'instrument'">
-        <ion-label>{{ player.instrumentName }} ({{ player.instrumentLength }})</ion-label>
+        <ion-label>{{ player.groupName }} ({{ player.instrumentLength }})</ion-label>
       </ion-item-divider>
       <ion-item-sliding #slider>
         <ion-item button detail="false" (click)="openModal(player)">
@@ -96,7 +96,7 @@
             <h2>{{ player.firstName }} {{ player.lastName }}</h2>
             <h3 *ngIf="player.text">{{ player.text }}</h3>
             @if (showInstruments) {
-            <h3 *ngIf="!player.text">{{ player.instrumentName }}</h3>
+            <h3 *ngIf="!player.text">{{ player.groupName }}</h3>
             }
             @if (player.instrument !== mainGroup) {
             @if (showTeachers && player.teacher) {

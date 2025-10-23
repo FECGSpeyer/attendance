@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DefaultAttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Instrument, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType } from '../utilities/interfaces';
+import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 import { Holiday } from 'open-holiday-js';
@@ -38,6 +38,7 @@ export class DbService {
   public tenantUsers: WritableSignal<TenantUser[] | undefined>;
   public tenantUser: WritableSignal<TenantUser | undefined>;
   public attendanceTypes: WritableSignal<AttendanceType[]>;
+  public groups: WritableSignal<Group[]>;
 
   constructor(
     private plt: Platform,
@@ -49,6 +50,7 @@ export class DbService {
     this.attendanceTypes = signal([]);
     this.organisation = signal(null);
     this.tenantUsers = signal([]);
+    this.groups = signal([]);
     this.plt.ready().then(() => {
       this.checkToken();
     });
@@ -107,6 +109,7 @@ export class DbService {
       ...user,
       telegram_chat_id: config?.telegram_chat_id,
     });
+    this.groups.set(await this.getGroups());
     if (this.isBeta()) {
       this.attendanceTypes.set(await this.getAttendanceTypes());
     }
@@ -386,7 +389,7 @@ export class DbService {
 
   async createAccount(user: Player) {
     try {
-      const mainGroupId = (await this.getMainGroup())?.id;
+      const mainGroupId = this.getMainGroup()?.id;
       const role = (mainGroupId === user.instrument ? Role.RESPONSIBLE : Role.PLAYER);
       let appId: string;
       try {
@@ -653,7 +656,7 @@ export class DbService {
   }
 
   async getConductors(all: boolean = false): Promise<Person[]> {
-    const mainGroupId = (await this.getMainGroup())?.id;
+    const mainGroupId = this.getMainGroup()?.id;
 
     if (!mainGroupId) {
       throw new Error("Hauptgruppe nicht gefunden");
@@ -718,16 +721,31 @@ export class DbService {
     }
   }
 
-  async addPlayerToUpcomingAttendances(id: number) {
+  async addPlayerToUpcomingAttendances(id: number, group: number) {
     const attData: Attendance[] = await this.getUpcomingAttendances();
 
     if (attData?.length) {
-      const attToAdd: PersonAttendance[] = attData.map((att: Attendance) => {
+      const attToAdd: PersonAttendance[] = attData
+      .filter((att: Attendance) => {
+        if (!this.isBeta()) {
+          return true;
+        }
+        const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
+        return attType.relevant_groups.length === 0 || attType.relevant_groups.includes(group);
+      })
+      .map((att: Attendance) => {
+        let status = AttendanceStatus.Present;
+
+        if (this.isBeta()) {
+          const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
+          status = attType?.default_status;
+        }
+
         return {
           attendance_id: att.id,
           person_id: id,
           notes: "",
-          status: AttendanceStatus.Present,
+          status,
         }
       });
       await this.addPersonAttendances(attToAdd);
@@ -746,7 +764,7 @@ export class DbService {
     const dataToUpdate: Player = { ...player };
     delete dataToUpdate.id;
     delete dataToUpdate.created_at;
-    delete dataToUpdate.instrumentName;
+    delete dataToUpdate.groupName;
     delete dataToUpdate.firstOfInstrument;
     delete dataToUpdate.isNew;
     delete dataToUpdate.instrumentLength;
@@ -780,7 +798,7 @@ export class DbService {
       if (player.paused) {
         this.removePlayerFromUpcomingAttendances(player.id);
       } else {
-        this.addPlayerToUpcomingAttendances(player.id);
+        this.addPlayerToUpcomingAttendances(player.id, player.instrument);
       }
     }
 
@@ -892,7 +910,7 @@ export class DbService {
     await this.removePlayerFromUpcomingAttendances(player.id, left);
   }
 
-  async getInstruments(tenantId?: number): Promise<Instrument[]> {
+  async getGroups(tenantId?: number): Promise<Group[]> {
     const { data } = await supabase
       .from('instruments')
       .select('*, categoryData:category(*)')
@@ -903,18 +921,11 @@ export class DbService {
     return data as any;
   }
 
-  async getMainGroup(): Promise<Instrument | undefined> {
-    const { data } = await supabase
-      .from('instruments')
-      .select('*')
-      .eq('tenantId', this.tenant().id)
-      .eq('maingroup', true)
-      .single();
-
-    return data;
+  getMainGroup(): Group | undefined {
+    return this.groups().find((inst: Group) => { return inst.maingroup; });
   }
 
-  async addInstrument(name: string, maingroup: boolean = false, tenantId?: number): Promise<Instrument[]> {
+  async addGroup(name: string, maingroup: boolean = false, tenantId?: number): Promise<Group[]> {
     const { data } = await supabase
       .from('instruments')
       .insert({
@@ -926,10 +937,14 @@ export class DbService {
       })
       .select();
 
+    if (this.tenant().id) {
+      this.groups.set(await this.getGroups());
+    }
+
     return data;
   }
 
-  async updateInstrument(att: Partial<Instrument>, id: number): Promise<Instrument[]> {
+  async updateGroup(att: Partial<Group>, id: number): Promise<Group[]> {
     const { data, error } = await supabase
       .from('instruments')
       .update(att)
@@ -945,14 +960,19 @@ export class DbService {
       throw new Error("Fehler beim updaten des Instruments");
     }
 
+    this.groups.set(await this.getGroups());
+
     return data;
   }
 
-  async removeInstrument(id: number): Promise<Instrument[]> {
+  async removeGroup(id: number): Promise<Group[]> {
     const { data } = await supabase
       .from('instruments')
       .delete()
-      .match({ id });
+      .match({ id })
+      .select();
+
+    this.groups.set(await this.getGroups());
 
     return data;
   }
@@ -1024,7 +1044,7 @@ export class DbService {
             lastName: (pa as any).person.lastName,
             img: (pa as any).person.img,
             instrument: (pa as any).person.instrument.id,
-            instrumentName: (pa as any).person.instrument.name,
+            groupName: (pa as any).person.instrument.name,
             joined: (pa as any).person.joined,
           };
         })
@@ -1649,7 +1669,7 @@ export class DbService {
       throw new Error(userError.message);
     }
 
-    await this.addInstrument(mainGroupName, true, data.id);
+    await this.addGroup(mainGroupName, true, data.id);
 
     Utils.showToast("Instanz wurde erfolgreich erstellt!");
 
@@ -1882,7 +1902,7 @@ export class DbService {
       .update({ left: null, history: player.history as any })
       .match({ id: player.id });
 
-    await this.addPlayerToUpcomingAttendances(player.id);
+    await this.addPlayerToUpcomingAttendances(player.id, player.instrument);
   }
 
   async createOrganisation(name: string): Promise<Organisation> {

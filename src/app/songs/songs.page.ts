@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { GroupCategory, History, Instrument, Person, Song } from '../utilities/interfaces';
+import { GroupCategory, History, Group, Person, Song } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
 import { AlertController, IonModal } from '@ionic/angular';
 import { Utils } from '../utilities/Utils';
@@ -22,7 +22,7 @@ export class SongsPage implements OnInit {
   public inclChoir: boolean = false;
   public inclSolo: boolean = false;
   public isOrchestra: boolean = false;
-  public instruments: Instrument[] = [];
+  public instruments: Group[] = [];
   public selectedInstruments: number[] = [];
   public customModalOptions = {
     header: 'Gruppen wählen',
@@ -57,8 +57,8 @@ export class SongsPage implements OnInit {
     const conductors: Person[] = await this.db.getConductors(true);
     this.groupCategories = await this.db.getGroupCategories();
     if (this.isOrchestra) {
-      this.instruments = (await this.db.getInstruments()).filter((instrument: Instrument) => !instrument.maingroup);
-      this.selectedInstruments = this.instruments.map((instrument: Instrument) => instrument.id);
+      this.instruments = this.db.groups().filter((instrument: Group) => !instrument.maingroup);
+      this.selectedInstruments = this.db.groups().map((instrument: Group) => instrument.id);
     }
     this.songs = (await this.db.getSongs()).map((song: Song): Song => {
       const hisEntry: History | undefined = history.find((his: History): boolean => his.songId === song.id);

@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '
 import { ActionSheetButton, ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
-import { Instrument, Organisation, Parent, Person, PersonAttendance, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
+import { Group, Organisation, Parent, Person, PersonAttendance, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
@@ -67,7 +67,6 @@ export class PersonPage implements OnInit, AfterViewInit {
   public parentsEnabled: boolean = false;
   public parents: Parent[] = [];
   public isParent: boolean = false;
-  public instruments: Instrument[] = [];
   public otherTenants: Tenant[] = [];
   public isArchiveModalOpen: boolean = false;
   public archiveDate: string = dayjs().format("YYYY-MM-DD");
@@ -77,7 +76,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public tenantId: number;
   public tenants: Tenant[] = [];
   public organisation: Organisation | null;
-  public tenantGroups: Instrument[] = [];
+  public tenantGroups: Group[] = [];
   public targetGroupId: number;
 
   constructor(
@@ -89,7 +88,6 @@ export class PersonPage implements OnInit, AfterViewInit {
   ) { }
 
   async ngOnInit() {
-    this.instruments = await this.db.getInstruments();
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.maintainTeachers = this.db.tenant().maintainTeachers;
     this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
@@ -127,7 +125,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     } else {
       this.player = { ...this.newPlayer };
       this.player.tenantId = this.db.tenant().id;
-      this.player.instrument = this.instruments[0].id;
+      this.player.instrument = this.db.groups()[0].id;
       this.role = Role.PLAYER;
     }
 
@@ -139,7 +137,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.tenants = await this.db.getTenantsFromOrganisation();
       if (this.tenants.length) {
         this.tenantId = this.tenants[0].id;
-        this.tenantGroups = await this.db.getInstruments(this.tenantId);
+        this.tenantGroups = await this.db.getGroups(this.tenantId);
       }
     }
   }
@@ -147,7 +145,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   async onTenantChange(): Promise<void> {
     this.tenantGroups = [];
     this.targetGroupId = null;
-    this.tenantGroups = await this.db.getInstruments(this.tenantId);
+    this.tenantGroups = await this.db.getGroups(this.tenantId);
   }
 
   getRoleText(role: Role) {
@@ -218,7 +216,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.onChange();
     }
     this.teachers = this.allTeachers.filter((t: Teacher) => t.instruments.includes(this.player.instrument));
-    if (this.instruments.find((i: Instrument) => i.id === this.player.instrument).maingroup) {
+    if (this.db.groups().find((i: Group) => i.id === this.player.instrument).maingroup) {
       this.role = Role.RESPONSIBLE;
       this.isMainGroup = true;
     } else {
@@ -308,7 +306,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async continueUpdatingPlayer(createAccount = false, loading: HTMLIonLoadingElement): Promise<void> {
-    const mainGroupId = this.instruments.find((i: Instrument) => i.maingroup)?.id;
+    const mainGroupId = this.db.getMainGroup()?.id;
     if (this.player.appId && (this.existingPlayer.instrument !== this.player.instrument && this.player.instrument === mainGroupId || this.existingPlayer.instrument === mainGroupId)) {
       await this.db.updateTenantUser({ role: this.player.instrument === mainGroupId ? Role.RESPONSIBLE : Role.PLAYER }, this.player.appId);
     }
@@ -325,7 +323,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     if (this.existingPlayer.instrument !== this.player.instrument) {
       history.push({
         date: new Date().toISOString(),
-        text: `${this.instruments.find((ins: Instrument) => ins.id === this.existingPlayer.instrument).name} -> ${this.instruments.find((ins: Instrument) => ins.id === this.player.instrument).name}`,
+        text: `${this.db.groups().find((ins: Group) => ins.id === this.existingPlayer.instrument).name} -> ${this.db.groups().find((ins: Group) => ins.id === this.player.instrument).name}`,
         type: PlayerHistoryType.INSTRUMENT_CHANGE,
       });
     }
@@ -423,7 +421,7 @@ export class PersonPage implements OnInit, AfterViewInit {
                 this.player.otherExercise = value.otherExercise;
                 this.player.range = value.range;
 
-                const instrument = this.instruments.find((i: Instrument) => i.name === (value as any).instrument.name);
+                const instrument = this.db.groups().find((i: Group) => i.name === (value as any).instrument.name);
                 if (instrument) {
                   this.player.instrument = instrument.id;
                 }

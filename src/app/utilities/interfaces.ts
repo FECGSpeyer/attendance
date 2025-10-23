@@ -93,7 +93,7 @@ export interface PlayerHistoryEntry {
 
 export interface Player extends Person {
     instrument: number;
-    instrumentName?: string;
+    groupName?: string;
     hasTeacher: boolean;
     playsSince: string;
     isLeader: boolean;
@@ -122,10 +122,10 @@ export interface Player extends Person {
     legacyId?: number;
     legacyConductorId?: number;
     parent_id?: number;
-    newInstrument?: Instrument;
+    newInstrument?: Group;
 }
 
-export interface Instrument {
+export interface Group {
     id?: number;
     created_at?: string;
     name: string;
@@ -165,6 +165,8 @@ export interface Attendance {
     tenantId?: number;
     persons?: PersonAttendance[];
     players?: { [prop: string]: AttendanceStatus | boolean };
+    start_time?: string;
+    end_time?: string;
 }
 
 export interface Plan {
@@ -183,7 +185,7 @@ export interface PersonAttendance {
     lastName?: string;
     img?: string;
     instrument?: number;
-    instrumentName?: string;
+    groupName?: string;
     joined?: string;
     person?: Partial<Player>;
     attendance?: Partial<Attendance>;
@@ -291,10 +293,11 @@ export interface AttendanceType {
     available_statuses: AttendanceStatus[];
     default_plan?: Plan;
     tenant_id: number;
-    relevant_groups: Instrument[];
+    relevant_groups: number[];
     start_time?: string;
     end_time?: string;
     manage_songs: boolean;
     index?: number;
     visible: boolean;
+    color: string;
 }

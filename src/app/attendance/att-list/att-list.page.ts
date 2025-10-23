@@ -239,7 +239,24 @@ export class AttListPage implements OnInit {
     await loading.present();
 
     let persons: PersonAttendance[] = [];
-    const allPlayers = (await this.db.getPlayers()).filter((player: Player) => !player.paused);
+    let allPersons: Person[];
+    let status: AttendanceStatus = this.hasNeutral ? AttendanceStatus.Neutral : AttendanceStatus.Present;
+
+    if (this.db.isBeta()) {
+      const attType = this.db.attendanceTypes().find(type => type.id === this.type_id);
+      allPersons = (await this.db.getPlayers()).filter((player: Player) => {
+        if (player.paused) {
+          return false;
+        }
+        if (attType.relevant_groups.length === 0) {
+          return true;
+        }
+        return attType.relevant_groups.includes(player.instrument);
+      });
+      status = attType.default_status;
+    } else {
+      allPersons = (await this.db.getPlayers()).filter((player: Player) => !player.paused);
+    }
 
     for (const date of this.dates) {
       const attendance_id: number = await this.db.addAttendance(this.db.isBeta() ? {
@@ -248,6 +265,8 @@ export class AttListPage implements OnInit {
         notes: this.notes,
         save_in_history: true,
         typeInfo: this.typeInfo,
+        start_time: this.db.attendanceTypes().find(type => type.id === this.type_id)?.start_time || '19:30', // TODO att type is defined after beta removal
+        end_time: this.db.attendanceTypes().find(type => type.id === this.type_id)?.end_time || '21:00',
       } : {
         date: date,
         type: this.type,
@@ -256,11 +275,11 @@ export class AttListPage implements OnInit {
         save_in_history: this.saveInHistory,
       });
 
-      for (const player of allPlayers) {
+      for (const player of allPersons) {
         persons.push({
           attendance_id,
           person_id: player.id,
-          status: this.hasNeutral ? AttendanceStatus.Neutral : AttendanceStatus.Present,
+          status,
           notes: '',
         });
       }

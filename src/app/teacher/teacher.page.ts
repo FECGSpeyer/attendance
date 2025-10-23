@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { DbService } from '../services/db.service';
-import { Instrument, Player, Teacher } from '../utilities/interfaces';
+import { Group, Player, Teacher } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
 @Component({
@@ -11,7 +11,6 @@ import { Utils } from '../utilities/Utils';
 })
 export class TeacherPage implements OnInit {
   @Input() teacher: Teacher;
-  @Input() instruments: Instrument[];
   @Input() players: Player[];
 
   editedTeacher: Teacher;
@@ -19,7 +18,7 @@ export class TeacherPage implements OnInit {
 
   constructor(
     private modalController: ModalController,
-    private db: DbService,
+    public db: DbService,
   ) { }
 
   ngOnInit() {

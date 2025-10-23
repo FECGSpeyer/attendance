@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType, Role } from 'src/app/utilities/constants';
-import { GroupCategory, Instrument, Player } from 'src/app/utilities/interfaces';
+import { GroupCategory, Group, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { InstrumentPage } from '../instrument/instrument.page';
 
@@ -12,7 +12,7 @@ import { InstrumentPage } from '../instrument/instrument.page';
   styleUrls: ['./instrument-list.page.scss'],
 })
 export class InstrumentListPage implements OnInit {
-  public instruments: Instrument[] = [];
+  public instruments: Group[] = [];
   public isAdmin: boolean = false;
   public isChoir: boolean = false;
   public isGeneral: boolean = false;
@@ -29,16 +29,16 @@ export class InstrumentListPage implements OnInit {
     this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
-    await this.getInstruments();
+    await this.getGroups();
   }
 
-  async getInstruments(): Promise<void> {
+  async getGroups(): Promise<void> {
     const categoryMap: { [props: number]: boolean } = {};
     this.categories = await this.db.getGroupCategories();
     const players: Player[] = await this.db.getPlayers();
-    const instrumentsRaw: Instrument[] = await this.db.getInstruments();
+    const instrumentsRaw: Group[] = this.db.groups();
     this.instruments = instrumentsRaw
-      .sort((a: Instrument, b: Instrument): number => {
+      .sort((a: Group, b: Group): number => {
         // sort by category name (find it here: a.categoryData.name)
         if (a.categoryData?.name && b.categoryData?.name) {
           if (a.categoryData.name < b.categoryData.name) {
@@ -61,7 +61,7 @@ export class InstrumentListPage implements OnInit {
           return 1;
         }
         return 0;
-      }).map((ins: Instrument): Instrument => {
+      }).map((ins: Group): Group => {
         let firstOfCategory = false;
 
         if (!categoryMap[ins.category]) {
@@ -80,7 +80,7 @@ export class InstrumentListPage implements OnInit {
       });
   }
 
-  async openModal(instrument: Instrument): Promise<void> {
+  async openModal(instrument: Group): Promise<void> {
     if (!this.isAdmin) {
       return;
     }
@@ -98,19 +98,19 @@ export class InstrumentListPage implements OnInit {
     const { data } = await modal.onWillDismiss();
 
     if (data?.updated) {
-      await this.getInstruments();
+      await this.getGroups();
     }
   }
 
   async addInstrument(value: string | number, modal: any) {
     if (value) {
-      await this.db.addInstrument(String(value));
+      await this.db.addGroup(String(value));
     } else {
       Utils.showToast("Bitte gib einem Namen an", "danger");
       return;
     }
 
-    await this.getInstruments();
+    await this.getGroups();
 
     modal.dismiss();
   }

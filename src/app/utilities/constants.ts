@@ -47,3 +47,58 @@ export enum DefaultAttendanceType {
 }
 
 export const DEFAULT_IMAGE = "https://ionicframework.com/docs/img/demos/avatar.svg";
+
+export const ATTENDANCE_STATUS_MAPPING = {
+    DEFAULT: {
+        [AttendanceStatus.Neutral]: AttendanceStatus.Present,
+        [AttendanceStatus.Absent]: AttendanceStatus.Present,
+        [AttendanceStatus.Present]: AttendanceStatus.Excused,
+        [AttendanceStatus.Excused]: AttendanceStatus.Late,
+        [AttendanceStatus.Late]: AttendanceStatus.Absent,
+        [AttendanceStatus.LateExcused]: AttendanceStatus.Absent,
+    },
+    NO_NEUTRAL: {
+        [AttendanceStatus.Present]: AttendanceStatus.Excused,
+        [AttendanceStatus.Excused]: AttendanceStatus.Late,
+        [AttendanceStatus.Late]: AttendanceStatus.Absent,
+        [AttendanceStatus.Absent]: AttendanceStatus.Present,
+        [AttendanceStatus.LateExcused]: AttendanceStatus.Absent,
+    },
+    NO_EXCUSED: {
+        [AttendanceStatus.Neutral]: AttendanceStatus.Present,
+        [AttendanceStatus.Absent]: AttendanceStatus.Present,
+        [AttendanceStatus.Present]: AttendanceStatus.Late,
+        [AttendanceStatus.Late]: AttendanceStatus.Absent,
+        [AttendanceStatus.LateExcused]: AttendanceStatus.Absent,
+    },
+    NO_LATE: {
+        [AttendanceStatus.Neutral]: AttendanceStatus.Present,
+        [AttendanceStatus.Absent]: AttendanceStatus.Present,
+        [AttendanceStatus.Present]: AttendanceStatus.Excused,
+        [AttendanceStatus.Excused]: AttendanceStatus.Absent,
+    },
+    NO_NEUTRAL_NO_EXCUSED: {
+        [AttendanceStatus.Present]: AttendanceStatus.Absent,
+        [AttendanceStatus.Late]: AttendanceStatus.Present,
+        [AttendanceStatus.LateExcused]: AttendanceStatus.Present,
+        [AttendanceStatus.Absent]: AttendanceStatus.Late,
+    },
+    NO_LATE_NO_EXCUSED: {
+        [AttendanceStatus.Neutral]: AttendanceStatus.Present,
+        [AttendanceStatus.Absent]: AttendanceStatus.Present,
+        [AttendanceStatus.Present]: AttendanceStatus.Absent,
+    },
+    NO_LATE_NO_NEUTRAL: {
+        [AttendanceStatus.Present]: AttendanceStatus.Excused,
+        [AttendanceStatus.Excused]: AttendanceStatus.Absent,
+        [AttendanceStatus.Absent]: AttendanceStatus.Present,
+    },
+    ONLY_PRESENT_ABSENT: {
+        [AttendanceStatus.Present]: AttendanceStatus.Absent,
+        [AttendanceStatus.Absent]: AttendanceStatus.Present,
+    },
+    ONLY_PRESENT_EXCUSED: {
+        [AttendanceStatus.Present]: AttendanceStatus.Excused,
+        [AttendanceStatus.Excused]: AttendanceStatus.Present,
+    },
+};

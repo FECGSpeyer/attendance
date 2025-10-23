@@ -1,3 +1,13 @@
 .danger {
     color: var(--ion-color-danger);
 }
+
+ion-content {
+    background: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+    ion-content {
+        background: #000;
+    }
+}

@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType } from 'src/app/utilities/constants';
-import { GroupCategory, Instrument, Player } from 'src/app/utilities/interfaces';
+import { GroupCategory, Group, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -11,8 +11,8 @@ import { Utils } from 'src/app/utilities/Utils';
   styleUrls: ['./instrument.page.scss'],
 })
 export class InstrumentPage implements OnInit {
-  @Input() existingInstrument: Instrument;
-  public instrument: Instrument;
+  @Input() existingInstrument: Group;
+  public instrument: Group;
   public isChoir: boolean = false;
   public isGeneral: boolean = false;
   public categories: GroupCategory[] = [];
@@ -36,7 +36,7 @@ export class InstrumentPage implements OnInit {
       return;
     }
 
-    await this.db.updateInstrument({
+    await this.db.updateGroup({
       notes: this.instrument.notes,
       range: this.instrument.range,
       tuning: this.instrument.tuning,
@@ -61,7 +61,7 @@ export class InstrumentPage implements OnInit {
 
     const alert = await this.alertController.create({
       header: 'Bestätigen',
-      message: 'Instrument wirklich löschen?',
+      message: 'Gruppe wirklich löschen?',
       buttons: [
         {
           text: 'Abbrechen',
@@ -69,7 +69,7 @@ export class InstrumentPage implements OnInit {
         }, {
           text: 'Ja',
           handler: async () => {
-            await this.db.removeInstrument(this.instrument.id);
+            await this.db.removeGroup(this.instrument.id);
             await this.modalController.dismiss({
               updated: true,
             });

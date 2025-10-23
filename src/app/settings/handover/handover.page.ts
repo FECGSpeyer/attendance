@@ -4,7 +4,7 @@ import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
-import { Instrument, Player, Tenant } from 'src/app/utilities/interfaces';
+import { Group, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -25,22 +25,20 @@ export class HandoverPage implements OnInit {
   public date = new Date().toISOString();
   public dateString = format(new Date(), 'dd.MM.yyyy');
   public groupId: number;
-  public groups: Instrument[] = [];
   public max: string = new Date().toISOString();
 
   constructor(
-    private db: DbService,
+    public db: DbService,
     private dataService: DataService,
     private navCtrl: NavController
   ) { }
 
   async ngOnInit() {
-    this.mainGroupId = (await this.db.getMainGroup()).id;
-    this.allPersons = Utils.getModifiedPlayersForList(await this.db.getPlayers(), await this.db.getInstruments(), [], this.mainGroupId);
+    this.mainGroupId = this.db.getMainGroup().id;
+    this.allPersons = Utils.getModifiedPlayersForList(await this.db.getPlayers(), this.db.groups(), [], this.mainGroupId);
     this.onMainGroupChanged();
     this.tenants = await this.db.getTenantsFromOrganisation();
-    this.groups = await this.db.getInstruments();
-    this.groupId = await this.groups[0]?.id;
+    this.groupId = await this.db.groups()[0]?.id;
     if (this.tenants.length > 0) {
       this.tenant = this.tenants[0].id;
     } else {

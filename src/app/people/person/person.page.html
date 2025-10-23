@@ -73,7 +73,7 @@
               <ion-item>
                 <ion-select interface="modal" label="Gruppe" [disabled]="readOnly" (ionChange)="onInstrumentChange()"
                   #select [(ngModel)]="player.instrument">
-                  <ion-select-option [value]="i.id" *ngFor="let i of instruments">
+                  <ion-select-option [value]="i.id" *ngFor="let i of db.groups()">
                     {{ i.name }}
                   </ion-select-option>
                 </ion-select>

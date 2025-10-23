@@ -19,7 +19,7 @@
     <ion-item-group>
       <ion-item button detail="false" (click)="changeGroup(person)" *ngFor="let person of handoverData.persons">
         <ion-label>{{ person.firstName }} {{ person.lastName }}</ion-label>
-        <ion-note slot="end">{{ person.instrumentName }} -> {{ getInsName(groupMapping[person.id]) }}</ion-note>
+        <ion-note slot="end">{{ person.groupName }} -> {{ getInsName(groupMapping[person.id]) }}</ion-note>
       </ion-item>
     </ion-item-group>
   </ion-list>

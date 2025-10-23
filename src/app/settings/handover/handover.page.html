@@ -82,7 +82,7 @@
       <ion-item *ngIf="filters.includes('group')">
         <ion-label position="stacked">Gruppe</ion-label>
         <ion-select (ionChange)="filter()" [(ngModel)]="groupId">
-          <ion-select-option *ngFor="let group of groups" [value]="group.id">{{ group.name }}</ion-select-option>
+          <ion-select-option *ngFor="let group of db.groups()" [value]="group.id">{{ group.name }}</ion-select-option>
         </ion-select>
         <ion-button fill="clear" slot="end" (click)="removeFilter('group')">
           <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
@@ -104,7 +104,7 @@
         <ion-checkbox (ionChange)="togglePersonSelection(person)" [checked]="selectedPersons.includes(person.id)">
           <ion-label>
             <h2>{{ person.firstName }} {{ person.lastName }}</h2>
-            <p>{{ person.birthday | date:'dd.MM.yyyy' }} | {{ person.instrumentName }}</p>
+            <p>{{ person.birthday | date:'dd.MM.yyyy' }} | {{ person.groupName }}</p>
           </ion-label>
         </ion-checkbox>
       </ion-item>

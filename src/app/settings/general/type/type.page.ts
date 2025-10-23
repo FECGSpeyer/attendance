@@ -30,6 +30,7 @@ export class TypePage implements OnInit {
     fields: [],
   };
   public end: string;
+  public colors: string[] = ['primary', 'secondary', 'tertiary', 'success', 'warning', 'danger', 'rosa', 'mint', 'orange'];
 
   constructor(
     public modalController: ModalController,
@@ -60,6 +61,7 @@ export class TypePage implements OnInit {
         tenant_id: this.db.tenant().id,
         index: 999,
         visible: true,
+        color: 'primary',
       };
       this.type.default_plan = { ...this.defaultPlan };
     } else {
@@ -111,6 +113,9 @@ export class TypePage implements OnInit {
   validate(): boolean {
     if (!this.type.name || this.type.name.trim().length === 0) {
       Utils.showToast("Bitte einen Namen für den Anwesenheitstyp eingeben.", "danger");
+      return false;
+    } else if (this.type.available_statuses.length === 1) {
+      Utils.showToast("Bitte mindestens zwei verfügbare Anwesenheitsstatus auswählen.", "danger");
       return false;
     }
 
@@ -265,5 +270,11 @@ export class TypePage implements OnInit {
     }
 
     this.end = currentTime.format("YYYY-MM-DDTHH:mm");
+  }
+
+  onAvailableStatusesChanged() {
+    if (!this.type.available_statuses.includes(this.type.default_status)) {
+      this.type.default_status = AttendanceStatus.Present;
+    }
   }
 }

@@ -3,7 +3,7 @@ import { AlertController, NavController } from '@ionic/angular';
 import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
 import { DEFAULT_IMAGE, PlayerHistoryType } from 'src/app/utilities/constants';
-import { Instrument, Player, Tenant } from 'src/app/utilities/interfaces';
+import { Group, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -13,7 +13,7 @@ import { Utils } from 'src/app/utilities/Utils';
 })
 export class HandoverDetailPage implements OnInit {
   public handoverData: { persons: Player[], stayInInstance: boolean, tenant: Tenant };
-  public newTenantGroups: Instrument[] = [];
+  public newTenantGroups: Group[] = [];
   public groupMapping: { [playerId: number]: number } = {};
 
   constructor(
@@ -31,20 +31,20 @@ export class HandoverDetailPage implements OnInit {
       return;
     }
 
-    this.newTenantGroups = await this.db.getInstruments(this.handoverData.tenant.id);
+    this.newTenantGroups = await this.db.getGroups(this.handoverData.tenant.id);
 
     this.groupMapping = this.handoverData.persons.reduce((acc, player) => {
-      acc[player.id] = this.newTenantGroups.find((ins: Instrument) => {
-        if (ins.name === player.instrumentName) {
+      acc[player.id] = this.newTenantGroups.find((ins: Group) => {
+        if (ins.name === player.groupName) {
           return true;
         }
         // find similar names (e.g. Trompete vs. Bb Trompete)
-        if (ins.name.length > 3 && player.instrumentName.length > 3) {
-          return ins.name.includes(player.instrumentName) || player.instrumentName.includes(ins.name);
+        if (ins.name.length > 3 && player.groupName.length > 3) {
+          return ins.name.includes(player.groupName) || player.groupName.includes(ins.name);
         }
         // find other similar names (e.g. Flöte vs. Querflöte)
-        if (ins.name.length > 2 && player.instrumentName.length > 2) {
-          return ins.name.includes(player.instrumentName) || player.instrumentName.includes(ins.name);
+        if (ins.name.length > 2 && player.groupName.length > 2) {
+          return ins.name.includes(player.groupName) || player.groupName.includes(ins.name);
         }
 
         return false;

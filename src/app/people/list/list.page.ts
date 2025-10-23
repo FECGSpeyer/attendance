@@ -2,7 +2,7 @@ import { Component, OnInit, effect } from '@angular/core';
 import { ActionSheetController, AlertController, IonItemSliding, IonRouterOutlet, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { Attendance, Instrument, Person, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
+import { Attendance, Group, Person, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
 import { PersonPage } from '../person/person.page';
 import { DefaultAttendanceType, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Storage } from '@ionic/storage-angular';
@@ -18,7 +18,7 @@ export class ListPage implements OnInit {
   public players: Player[] = [];
   public conductors: Person[] = [];
   public playersFiltered: Player[] = [];
-  public instruments: Instrument[] = [];
+  public instruments: Group[] = [];
   public playerToArchive: Player;
   public searchTerm: string = "";
   public filterOpt: string = "all";
@@ -62,9 +62,8 @@ export class ListPage implements OnInit {
       this.players = [];
       this.playersFiltered = [];
       this.db.tenant();
-      this.instruments = await this.db.getInstruments();
-      this.mainGroup = this.instruments.find(ins => ins.maingroup)?.id;
-            if (this.db.tenant().maintainTeachers) {
+      this.mainGroup = this.db.getMainGroup()?.id;
+      if (this.db.tenant().maintainTeachers) {
         this.teachers = await this.db.getTeachers();
       }
 
@@ -90,8 +89,7 @@ export class ListPage implements OnInit {
     this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.filterOpt = (await this.storage.get(`filterOpt${this.db.tenant().id}`)) || "all";
-    this.instruments = await this.db.getInstruments();
-    this.mainGroup = this.instruments.find(ins => ins.maingroup)?.id;
+    this.mainGroup = this.db.getMainGroup()?.id;
 
     await this.getPlayers();
 
@@ -116,7 +114,7 @@ export class ListPage implements OnInit {
   async getPlayers(): Promise<void> {
     this.players = await this.db.getPlayers();
     this.attendances = await this.db.getAttendance();
-    this.players = Utils.getModifiedPlayersForList(this.players, this.instruments, this.attendances, this.mainGroup);
+    this.players = Utils.getModifiedPlayersForList(this.players, this.db.groups(), this.attendances, this.mainGroup);
     this.searchTerm = "";
     this.onViewChanged();
     this.initializeItems();
@@ -130,13 +128,6 @@ export class ListPage implements OnInit {
   }
 
   async openModal(player?: Player | Person): Promise<void> {
-    if (this.instruments.length === 0) {
-      this.instruments = await this.db.getInstruments();
-      if (this.instruments.length === 0) {
-        Utils.showToast("Bitte erstelle zuerst ein Instrument", "danger");
-        return;
-      }
-    }
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: PersonPage,
       presentingElement: this.routerOutlet.nativeEl,
@@ -256,7 +247,7 @@ export class ListPage implements OnInit {
               const usersPerTenant = await this.db.getUsersFromTenant(value);
               this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
                 return usersPerTenant.find((u) => u.userId === player.appId);
-              }), this.instruments, this.attendances, this.mainGroup);
+              }), this.db.groups(), this.attendances, this.mainGroup);
               this.tenantName = this.linkedTenants.find((t) => t.id === value)?.longName || "";
               await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
             }
@@ -285,7 +276,7 @@ export class ListPage implements OnInit {
       } else {
         return player.isLeader;
       }
-    }), this.instruments, this.attendances, this.mainGroup);
+    }), this.db.groups(), this.attendances, this.mainGroup);
 
     await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
   }
@@ -320,7 +311,7 @@ export class ListPage implements OnInit {
   getSubText(player: Player): string {
     const props: string[] = [];
     if (this.viewOpts.includes("instrument")) {
-      props.push(player.instrumentName);
+      props.push(player.groupName);
     }
     if (this.viewOpts.includes("birthday")) {
       props.push(`${dayjs(player.birthday).format("DD.MM.YYYY")} (${Utils.calculateAge(new Date(player.birthday))} J.)`);
@@ -352,7 +343,7 @@ export class ListPage implements OnInit {
       }
 
       this.playersFiltered = this.filter();
-      this.playersFiltered = Utils.getModifiedPlayersForList(this.playersFiltered, this.instruments, this.attendances, this.mainGroup);
+      this.playersFiltered = Utils.getModifiedPlayersForList(this.playersFiltered, this.db.groups(), this.attendances, this.mainGroup);
     }
   }
 
@@ -364,7 +355,7 @@ export class ListPage implements OnInit {
         if (this.searchTerm) {
           if (player.firstName.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1 ||
             player.lastName.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1 ||
-            player.instrumentName.toString().toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1) {
+            player.groupName.toString().toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1) {
             return true;
           }
           return false;

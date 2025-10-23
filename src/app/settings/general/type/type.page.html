@@ -28,24 +28,29 @@
     <ion-list-header><ion-label>Optionen</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item>
-        <ion-toggle helperText="Wenn du diese Option deaktivierst, wird der Anwesenheitstyp beim Anlegen einer Anwesenheit nicht mehr als Option angezeigt." [(ngModel)]="type.visible">Aktiv</ion-toggle>
+        <ion-toggle
+          helperText="Wenn du diese Option deaktivierst, wird der Anwesenheitstyp beim Anlegen einer Anwesenheit nicht mehr als Option angezeigt."
+          [(ngModel)]="type.visible">Aktiv</ion-toggle>
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Standard Anwesenheitsstatus</ion-label>
-        <ion-select [(ngModel)]="type.default_status">
-          <ion-select-option *ngFor="let status of attendanceStatuses" [value]="status">
+        <ion-label position="stacked">Verfügbare Anwesenheitsstatus</ion-label>
+        <ion-select (ionChange)="onAvailableStatusesChanged()" [(ngModel)]="type.available_statuses" multiple="true">
+          <ion-select-option [disabled]="status === 1" *ngFor="let status of attendanceStatuses"
+            [value]="status">
             {{ getAttendanceStatusDescription(status) }}
           </ion-select-option>
         </ion-select>
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Verfügbare Anwesenheitsstatus</ion-label>
-        <ion-select [(ngModel)]="type.available_statuses" multiple="true">
-          <ion-select-option *ngFor="let status of attendanceStatuses" [value]="status">
+        <ion-label position="stacked">Standard Anwesenheitsstatus</ion-label>
+        <ion-select [(ngModel)]="type.default_status">
+          @for (status of attendanceStatuses; track status) {
+          <ion-select-option *ngIf="type.available_statuses.includes(status)" [value]="status">
             {{ getAttendanceStatusDescription(status) }}
           </ion-select-option>
+          }
         </ion-select>
       </ion-item>
 
@@ -91,6 +96,35 @@
           </ng-template>
         </ion-modal>
       </ion-item>
+
+      <ion-item>
+        <ion-select label="Relevante Gruppen"
+          helperText="Nur die relevanten Gruppen werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt. Wenn keine Gruppe ausgewählt ist, werden alle Gruppen berücksichtigt."
+          [(ngModel)]="type.relevant_groups" multiple="true">
+          <ion-select-option *ngFor="let group of db.groups()" [value]="group.id">
+            {{ group.name }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item id="color-btn" button detail="false">
+        <ion-label>Farbe</ion-label>
+        <ion-icon slot="end" name="ellipse" [color]="type.color"></ion-icon>
+      </ion-item>
+      <ion-popover #colorPopover trigger="color-btn" triggerAction="click">
+        <ng-template>
+          <ion-grid>
+            <ion-row>
+              <ion-col [style.paddingTop]="'.5rem'" [style.borderRadius]="'1rem'"
+                [style.backgroundColor]="type.color === color ? 'var(--ion-color-medium)' : ''"
+                [style.textAlign]="'center'" (click)="type.color = color; colorPopover.dismiss()" size="4"
+                *ngFor="let color of colors">
+                <ion-icon [style.fontSize]="'1.5rem'" name="ellipse" [color]="color"></ion-icon>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ng-template>
+      </ion-popover>
     </ion-item-group>
   </ion-list>
 
