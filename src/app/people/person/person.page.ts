@@ -80,7 +80,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public targetGroupId: number;
 
   constructor(
-    private db: DbService,
+    public db: DbService,
     private modalController: ModalController,
     private alertController: AlertController,
     private loadingController: LoadingController,
