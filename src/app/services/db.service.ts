@@ -57,7 +57,7 @@ export class DbService {
   }
 
   isBeta() {
-    return this.tenantUser()?.email === "developer@attendix.de";
+    return this.tenantUser()?.email === "developer@attendix.de" || this.tenantUser()?.email === "erwinfast98@gmail.com";
   }
 
   getSupabase(): SupabaseClient {
