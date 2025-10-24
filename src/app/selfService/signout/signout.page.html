@@ -65,7 +65,7 @@
       </ion-item>
       <div slot="content">
         <ion-list>
-          <ion-item button *ngIf="currentAttendance" (click)="presentActionSheetForChoice(att)"
+          <ion-item button *ngIf="currentAttendance" (click)="presentActionSheetForChoice(currentAttendance)"
             color="light">
             <ion-label>
               <h2>{{ getReadableDate(currentAttendance.date) }}</h2>

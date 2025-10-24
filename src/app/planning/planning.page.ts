@@ -182,6 +182,7 @@ export class PlanningPage implements OnInit {
     } else if (this.history.length) {
       if (this.db.isBeta() && attendance.type_id) {
         this.addDefaultFieldsFromAttendanceType(attendance.type_id);
+        return;
       }
 
       if (attendance.type === "uebung") {
