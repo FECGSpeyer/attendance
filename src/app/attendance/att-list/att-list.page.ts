@@ -47,11 +47,20 @@ export class AttListPage implements OnInit {
   public activeConductors: Person[] = [];
   public otherConductor: number = 9999999999;
   public historyEntries: History[] = [];
+  public highlightedTypes: string[] = [];
 
   highlightedDates = (isoString: string) => {
     const date = new Date(isoString);
 
     const att = this.allAttendances.find((att: Attendance) => dayjs(att.date).isSame(dayjs(date), 'day'));
+    if (att?.type_id) {
+      const attType = this.db.attendanceTypes().find(type => type.id === att.type_id);
+      return {
+        textColor: `var(--ion-color-${attType.color})`,
+        backgroundColor: `rgb(var(--ion-color-${attType.color}-rgb), 0.18)`,
+      };
+    }
+
     if (att) {
       switch (att.type) {
         case "uebung":
@@ -86,8 +95,8 @@ export class AttListPage implements OnInit {
       return false;
     })) {
       return {
-        textColor: 'var(--ion-color-danger)',
-        backgroundColor: 'rgb(var(--ion-color-danger-rgb), 0.18)',
+        textColor: 'var(--ion-color-holiday)',
+        backgroundColor: 'rgb(var(--ion-color-holiday-rgb), 0.18)',
       };
     }
 
@@ -200,6 +209,7 @@ export class AttListPage implements OnInit {
 
     if (this.db.isBeta()) {
       this.type_id = this.db.attendanceTypes().find(type => type.visible)?.id;
+      this.highlightedTypes = this.db.attendanceTypes().filter(type => type.highlight).map(type => type.id);
     }
   }
 
@@ -327,6 +337,27 @@ export class AttListPage implements OnInit {
   getReadableDate(date: string): string {
     dayjs.locale("de");
     return dayjs(date).format("ddd, DD.MM.YYYY");
+  }
+
+  getAttendanceTitle(att: Attendance): string {
+    if (!att.type_id) {
+      if (att.type === 'sonstiges' && att.typeInfo) {
+        return `${this.getReadableDate(att.date)} | ${att.typeInfo}`;
+      }
+      return `${this.getReadableDate(att.date)} | ${Utils.getTypeText(att.type)}`;
+    }
+
+    if (att.typeInfo) {
+      return `${this.getReadableDate(att.date)} | ${att.typeInfo}`;
+    }
+
+    const attType = this.db.attendanceTypes().find(type => type.id === att.type_id);
+
+    if (attType.hide_name) {
+      return this.getReadableDate(att.date);
+    }
+
+    return `${this.getReadableDate(att.date)} | ${attType.name}`;
   }
 
   async openAttendance(attendance): Promise<void> {

@@ -199,6 +199,7 @@ export interface PersonAttendance {
     songs?: number[];
     history?: History[];
     attId?: number;
+    highlight?: boolean;
 }
 
 export interface Song {
@@ -300,4 +301,6 @@ export interface AttendanceType {
     index?: number;
     visible: boolean;
     color: string;
+    highlight: boolean;
+    hide_name: boolean;
 }

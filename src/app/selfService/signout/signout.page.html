@@ -15,7 +15,7 @@
     <ion-label *ngIf="player.paused">Shalom {{ player.firstName }}! Du pausierst gerade.</ion-label>
   </ion-item>
 
-  <ion-accordion-group value="first">
+  <ion-accordion-group [multiple]="true" [value]="['current', 'first']">
     <ion-modal #excuseModal initialBreakpoint="0.8" [breakpoints]="[0, 0.8]">
       <ng-template>
         <ion-header>
@@ -59,32 +59,54 @@
       </ng-template>
     </ion-modal>
 
-    <ion-accordion value="first">
+    <ion-accordion value="current">
       <ion-item slot="header" color="primary">
-        <ion-label>Anstehende Termine</ion-label>
+        <ion-label>Aktuelle</ion-label>
       </ion-item>
       <div slot="content">
         <ion-list>
-          <ng-container *ngFor="let att of actualAttendances">
-            <ion-item button *ngIf="attIsInFuture(att) || !attHasPassed(att)" (click)="presentActionSheetForChoice(att)"
-              color="light">
-              <ion-label>
-                <h2>{{ getReadableDate(att.date) }}</h2>
-                <h3>{{ att.title ? att.title : 'Übung' }}</h3>
-                <h3 *ngIf="att.songs?.length && !att.history?.length">{{ getSongNames(att.songs) }}</h3>
-                <h3 *ngIf="att.history?.length">{{ getHistorySongNames(att.history) }}</h3>
-              </ion-label>
-              <ion-badge slot="end"
-                [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? 'tertiary' : att.text === 'N' ? 'medium' : 'warning'">
-                {{ att.text === 'X' ? '✓' : att.text }}</ion-badge>
-            </ion-item>
-          </ng-container>
+          <ion-item button *ngIf="currentAttendance" (click)="presentActionSheetForChoice(att)"
+            color="light">
+            <ion-label>
+              <h2>{{ getReadableDate(currentAttendance.date) }}</h2>
+              <h3 [style.fontWeight]="currentAttendance.highlight ? 'bold' : 'normal'">{{ currentAttendance.title }}</h3>
+              <h3 *ngIf="currentAttendance.songs?.length && !currentAttendance.history?.length">{{ getSongNames(currentAttendance.songs) }}</h3>
+              <h3 *ngIf="currentAttendance.history?.length">{{ getHistorySongNames(currentAttendance.history) }}</h3>
+            </ion-label>
+            <ion-badge slot="end"
+              [color]="currentAttendance.text === 'X' ? 'success' : currentAttendance.text === 'A' ? 'danger' : currentAttendance.text === 'L' ? 'tertiary' : currentAttendance.text === 'N' ? 'medium' : 'warning'">
+              {{ currentAttendance.text === 'X' ? '✓' : currentAttendance.text }}</ion-badge>
+          </ion-item>
+        </ion-list>
+      </div>
+    </ion-accordion>
+
+    <ion-accordion value="first">
+      <ion-item slot="header" color="primary">
+        <ion-label>Anstehende</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-list>
+          @for (att of actualAttendances; track att.id) {
+          <ion-item button (click)="presentActionSheetForChoice(att)"
+            color="light">
+            <ion-label>
+              <h2>{{ getReadableDate(att.date) }}</h2>
+              <h3>{{ att.title }}</h3>
+              <h3 *ngIf="att.songs?.length && !att.history?.length">{{ getSongNames(att.songs) }}</h3>
+              <h3 *ngIf="att.history?.length">{{ getHistorySongNames(att.history) }}</h3>
+            </ion-label>
+            <ion-badge slot="end"
+              [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? 'tertiary' : att.text === 'N' ? 'medium' : 'warning'">
+              {{ att.text === 'X' ? '✓' : att.text }}</ion-badge>
+          </ion-item>
+          }
         </ion-list>
       </div>
     </ion-accordion>
     <ion-accordion value="second">
       <ion-item slot="header" color="primary">
-        <ion-label>Vergangene Anwesenheit</ion-label>
+        <ion-label>Vergangene</ion-label>
       </ion-item>
       <div slot="content">
         <ion-list>
@@ -98,7 +120,7 @@
             <ion-item *ngIf="attHasPassed(att)">
               <ion-label>
                 <h2>{{ getReadableDate(att.date) }}</h2>
-                <h3>{{ att.title ? att.title : 'Übung' }}</h3>
+                <h3>{{ att.title }}</h3>
               </ion-label>
 
               <ion-badge slot="end"

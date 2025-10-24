@@ -24,12 +24,17 @@
       <div slot="content">
         <ion-item-sliding #slider>
           <ng-container>
-
             <ion-item button detail="false" (click)="openAttendance(currentAttendance)">
+              @if (db.isBeta()) {
+              <ion-label
+                [style.fontWeight]="highlightedTypes.includes(currentAttendance.type_id) ? 'bold' : 'normal'">{{
+                getAttendanceTitle(currentAttendance) }}</ion-label>
+              } @else {
               <ion-label *ngIf="currentAttendance.type === 'uebung'">{{ getReadableDate(currentAttendance.date)
                 }}</ion-label>
               <ion-label *ngIf="currentAttendance.type !== 'uebung'">{{ getReadableDate(currentAttendance.date) }} |
                 {{ getTypeText(currentAttendance.type, currentAttendance.typeInfo) }}</ion-label>
+              }
               <ion-badge
                 [color]="currentAttendance.percentage >= 75 ? 'success' : currentAttendance.percentage >= 50 ? 'warning' : 'danger'"
                 *ngIf="currentAttendance.percentage" slot="end">{{ currentAttendance.percentage }}%</ion-badge>
@@ -54,9 +59,14 @@
           @for (att of attendances; track att.id) {
           <ion-item-sliding #slider>
             <ion-item button detail="false" (click)="openAttendance(att)">
+              @if (db.isBeta()) {
+              <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
+                getAttendanceTitle(att) }}</ion-label>
+              } @else {
               <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
               <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
                 {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
+              }
               <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
                 *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
             </ion-item>
@@ -84,9 +94,14 @@
           </ion-item-divider>
           <ion-item-sliding #slider *ngFor="let att of oldAttendances">
             <ion-item button detail="false" (click)="openAttendance(att)">
+              @if (db.isBeta()) {
+              <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
+                getAttendanceTitle(att) }}</ion-label>
+              } @else {
               <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
               <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
                 {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
+              }
               <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
                 *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
             </ion-item>
@@ -109,9 +124,14 @@
         slot="end">{{ perc }}%</ion-badge>
     </ion-item-divider>
     <ion-item *ngFor="let att of oldAttendances" detail="false">
+      @if (db.isBeta()) {
+      <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
+        getAttendanceTitle(att) }}</ion-label>
+      } @else {
       <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
       <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
         {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
+      }
       <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
         *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
     </ion-item>
@@ -146,9 +166,9 @@
                       <ion-label>{{ type.name }}</ion-label>
                     </ion-item>
                     }
-                                        @if (holidays.publicHolidays.length || holidays.schoolHolidays.length) {
+                    @if (holidays.publicHolidays.length || holidays.schoolHolidays.length) {
                     <ion-item lines="none">
-                      <ion-icon slot="start" name="ellipse" color="danger"></ion-icon>
+                      <ion-icon slot="start" name="ellipse" color="holiday"></ion-icon>
                       <ion-label>Feiertage des ausgewählten Bundeslandes</ion-label>
                     </ion-item>
                     <ion-item lines="none">
@@ -185,7 +205,7 @@
                       <ion-label>Sonstige Veranstaltungen</ion-label>
                     </ion-item>
                     }
-                                        @if (holidays.publicHolidays.length || holidays.schoolHolidays.length) {
+                    @if (holidays.publicHolidays.length || holidays.schoolHolidays.length) {
                     <ion-item lines="none">
                       <ion-badge slot="start" color="danger">Feiertage</ion-badge>
                       <ion-label>Feiertage des ausgewählten Bundeslandes</ion-label>
@@ -258,7 +278,7 @@
         </ion-item>
         <ion-item *ngIf="db.isBeta()">
           <ion-label position="stacked">Info-Text (optional)</ion-label>
-          <ion-textarea helperText="Dieser Text wird neben dem Typ als zusätzliche Info angezeigt"
+          <ion-textarea helperText="Dieser Text wird anstelle des Typs angezeigt."
             [(ngModel)]="typeInfo"></ion-textarea>
         </ion-item>
         <ion-list [inset]="true"

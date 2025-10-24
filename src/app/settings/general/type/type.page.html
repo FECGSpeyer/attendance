@@ -107,8 +107,19 @@
         </ion-select>
       </ion-item>
 
+      <ion-item>
+        <ion-toggle label="Name verbergen" helperText="Wenn du diese Option aktivierst, wird der Name dieses Anwesenheitstyps in der Liste verborgen. Nur die Zusatzinfo (falls vorhanden) wird angezeigt." [(ngModel)]="type.hide_name">Name verbergen</ion-toggle>
+      </ion-item>
+
+      <ion-item>
+        <ion-toggle label="Hervorheben" helperText="Wenn du diese Option aktivierst, wird dieser Anwesenheitstyp in der Liste als Fett dargestellt." [(ngModel)]="type.highlight">Hervorheben</ion-toggle>
+      </ion-item>
+
       <ion-item id="color-btn" button detail="false">
-        <ion-label>Farbe</ion-label>
+        <ion-label>
+          <h2>Farbe</h2>
+          <h3>Die Farbe ist nur für den Kalender relevant (beim Anlegen einer Anwesenheit).</h3>
+        </ion-label>
         <ion-icon slot="end" name="ellipse" [color]="type.color"></ion-icon>
       </ion-item>
       <ion-popover #colorPopover trigger="color-btn" triggerAction="click">

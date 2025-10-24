@@ -96,13 +96,14 @@
           <ion-textarea (ionBlur)="onInfoChanged()" autoGrow="true" [(ngModel)]="attendance.notes"></ion-textarea>
         </ion-item>
 
+        @if (attendance.type_id) {
         <ion-item>
           <ion-label>Beginn</ion-label>
-          <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
+          <ion-datetime-button datetime="datetimestartatt"></ion-datetime-button>
           <ion-modal [keepContentsMounted]="true">
             <ng-template>
               <ion-datetime (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.start_time" presentation="time"
-                minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestart" [formatOptions]="{
+                minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestartatt" [formatOptions]="{
                       time: {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -114,11 +115,11 @@
         </ion-item>
         <ion-item>
           <ion-label>Ende</ion-label>
-          <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
+          <ion-datetime-button datetime="datetimeendatt"></ion-datetime-button>
           <ion-modal [keepContentsMounted]="true">
             <ng-template>
               <ion-datetime (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.end_time" presentation="time"
-                minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimeend" [formatOptions]="{
+                minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimeendatt" [formatOptions]="{
                       time: {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -129,6 +130,7 @@
             </ng-template>
           </ion-modal>
         </ion-item>
+        }
 
         <!-- <input style="display: 'none';" name="file" #chooser (change)="onImageSelect($event)" accept="image/*" class="inputFile" type="file" />
         <ion-item>

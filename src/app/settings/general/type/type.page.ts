@@ -62,6 +62,8 @@ export class TypePage implements OnInit {
         index: 999,
         visible: true,
         color: 'primary',
+        highlight: false,
+        hide_name: false,
       };
       this.type.default_plan = { ...this.defaultPlan };
     } else {

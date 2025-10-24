@@ -27,7 +27,7 @@
         </ion-row>
         <ion-row>
           <ion-col class="signup-col">
-            <ion-button expand="block" type="submit" [disabled]="!registerForm.form.valid">Anmelden</ion-button>
+            <ion-button (click)="login()" color="primary" expand="block" [disabled]="!registerForm.form.valid">Anmelden</ion-button>
           </ion-col>
         </ion-row>
       </form>

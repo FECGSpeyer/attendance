@@ -1030,7 +1030,7 @@ export class DbService {
           )
         )`)
         .eq('tenantId', this.tenant().id)
-        .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
+        .gt("date", all ? dayjs("2020-01-01").toISOString() : this.getCurrentAttDate())
         .order("date", {
           ascending: false,
         });
@@ -1055,7 +1055,7 @@ export class DbService {
         .from('attendance')
         .select('*')
         .eq('tenantId', this.tenant().id)
-        .gt("date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate())
+        .gt("date", all ? dayjs("2020-01-01").toISOString() : this.getCurrentAttDate())
         .order("date", {
           ascending: false,
         });
@@ -1135,22 +1135,24 @@ export class DbService {
   async getPersonAttendances(id: number, all: boolean = false): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs)')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id)')
       .eq('person_id', id)
-      .gt("attendance.date", all ? dayjs("2020-01-01").toISOString() : await this.getCurrentAttDate());
+      .gt("attendance.date", all ? dayjs("2020-01-01").toISOString() : this.getCurrentAttDate());
 
     return data.filter((a) => Boolean(a.attendance)).map((att): PersonAttendance => {
-      let attText = Utils.getAttText(att as any);
+      let attText = Utils.getAttText(att);
+      const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.attendance.type_id);
 
       return {
         id: att.id,
-        date: (att.attendance as any).date,
+        date: att.attendance.date,
         attended: attText === "L" || attText === "X",
-        title: (att.attendance as any).typeInfo ? (att.attendance as any).typeInfo : (att.attendance as any).type === "vortrag" ? "Vortrag" : "",
+        title: attType ? (att.attendance.typeInfo ?? attType.hide_name ? '' : attType.name) : att.attendance.typeInfo ? att.attendance.typeInfo : att.attendance.type === "vortrag" ? "Vortrag" : "Übung",
         text: attText,
         notes: att.notes,
-        songs: (att.attendance as any).songs,
-        attId: (att.attendance as any).id,
+        songs: att.attendance.songs,
+        attId: att.attendance.id,
+        highlight: attType ? attType.highlight : att.attendance.type === "vortrag",
       } as any;
     });
   }
