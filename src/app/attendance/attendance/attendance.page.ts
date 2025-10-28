@@ -161,7 +161,7 @@ export class AttendancePage implements OnInit {
   }
 
   async onAttChange(individual: PersonAttendance) {
-    if (this.db.isBeta()) {
+    if (this.db.isBeta() && this.attendance.type_id) {
       const attType = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
       let status;
 
