@@ -32,7 +32,7 @@ export class SignoutPage implements OnInit {
   public tenantId: number;
   public tenants: Tenant[] = [];
   public songsModalOpen: boolean = false;
-  public upcomingSongs: History[] = [];
+  public upcomingSongs: { date: string; history: History[] }[] = [];
 
   constructor(
     public db: DbService,

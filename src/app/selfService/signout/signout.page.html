@@ -22,9 +22,9 @@
         }}%</ion-label> der Termine anwesend.
 
       @if (lateCount !== 0) {
-        <br>
+      <br>
 
-        Davon bist du <ion-label color="tertiary">{{ lateCount }}x</ion-label> unentschuldigt zu spät gekommen.
+      Davon bist du <ion-label color="tertiary">{{ lateCount }}x</ion-label> unentschuldigt zu spät gekommen.
       }
 
       <br>
@@ -34,7 +34,8 @@
       </ion-button>
 
       <ion-modal class="songsModal" [isOpen]="songsModalOpen" (ionModalDidDismiss)="songsModalOpen = false" #songsModal
-        [initialBreakpoint]="upcomingSongs.length > 5 ? 0.8 : 0.5" [breakpoints]="upcomingSongs.length > 5 ? [0, 0.8] : [0, 0.5]">
+        [initialBreakpoint]="upcomingSongs.length > 1 ? 0.8 : 0.5"
+        [breakpoints]="upcomingSongs.length > 1 ? [0, 0.8, 1] : [0, 0.5, 1]">
         <ng-template>
           <ion-header>
             <ion-toolbar>
@@ -47,20 +48,26 @@
             </ion-toolbar>
           </ion-header>
           <ion-content color="light">
-
+            @for (group of upcomingSongs; track group.date) {
             <ion-list [inset]="true">
+              <ion-list-header>
+                <ion-label>
+                  <h2>{{ group.date }}</h2>
+                </ion-label>
+              </ion-list-header>
               <ion-item-group>
-                <ion-item *ngFor="let his of upcomingSongs">
+                <ion-item *ngFor="let his of group.history">
                   <ion-label *ngIf="his.song">
                     <h2>{{ his.song.number }}. {{ his.song.name }}</h2>
                     <h3>Dirigent: {{ his.conductorName }}</h3>
                   </ion-label>
                   <ion-button *ngIf="his.song.link" fill="clear" size="small" (click)="openSongLink(his.song.link)">
-                    <ion-icon name="link"></ion-icon>
+                    <ion-icon name="download-outline"></ion-icon>
                   </ion-button>
                 </ion-item>
               </ion-item-group>
             </ion-list>
+            }
           </ion-content>
         </ng-template>
       </ion-modal>

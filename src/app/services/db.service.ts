@@ -1538,7 +1538,7 @@ export class DbService {
     return data.publicUrl;
   }
 
-  async getCurrentSongs(): Promise<History[]> {
+  async getCurrentSongs(): Promise<{ date: string; history: History[] }[]> {
     const { data, error } = await supabase
       .from("history")
       .select(`
@@ -1560,12 +1560,26 @@ export class DbService {
       throw new Error(error.message);
     }
 
-    return data.map((his: any) => {
-      return {
+    const groupedData: { [key: string]: History[] } = {};
+
+    data.forEach((his: any) => {
+      const date = his.attendance_id ? dayjs(his.attendance_id.date).format("DD.MM.YYYY") : dayjs(his.date).format("DD.MM.YYYY");
+      if (!groupedData[date]) {
+        groupedData[date] = [];
+      }
+      groupedData[date].push({
         ...his,
         conductorName: his.person_id ? `${his.person_id.firstName} ${his.person_id.lastName}` : his.otherConductor || "",
-      };
+      });
     });
+
+    // sort by date descending
+    const sortedDates = Object.keys(groupedData).sort((a, b) => dayjs(b, "DD.MM.YYYY").diff(dayjs(a, "DD.MM.YYYY"))).reverse();
+
+    return sortedDates.map(date => ({
+      date,
+      history: groupedData[date],
+    }));
   }
 
 
