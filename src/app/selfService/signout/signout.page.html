@@ -51,7 +51,7 @@
             <ion-list [inset]="true">
               <ion-item-group>
                 <ion-item *ngFor="let his of upcomingSongs">
-                  <ion-label>
+                  <ion-label *ngIf="his.song">
                     <h2>{{ his.song.number }}. {{ his.song.name }}</h2>
                     <h3>Dirigent: {{ his.conductorName }}</h3>
                   </ion-label>

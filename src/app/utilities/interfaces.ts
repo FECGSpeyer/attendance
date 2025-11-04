@@ -234,6 +234,7 @@ export interface History {
     attendance?: {
         date: string;
     }
+    song?: Song;
 }
 
 export interface Teacher {
