@@ -132,7 +132,7 @@
               </h3>
             </ion-label>
             <ion-badge slot="end"
-              [color]="currentAttendance.text === 'X' ? 'success' : currentAttendance.text === 'A' ? 'danger' : currentAttendance.text === 'L' ? 'tertiary' : currentAttendance.text === 'N' ? 'medium' : 'warning'">
+              [color]="currentAttendance.text === 'X' ? 'success' : currentAttendance.text === 'A' ? 'danger' : currentAttendance.text === 'L' ? (att.status === 3 ? 'tertiary' : 'rosa') : currentAttendance.text === 'N' ? 'medium' : 'warning'">
               {{ currentAttendance.text === 'X' ? '✓' : currentAttendance.text }}</ion-badge>
           </ion-item>
         </ion-list>
@@ -152,7 +152,7 @@
               <h3>{{ att.title }}</h3>
             </ion-label>
             <ion-badge slot="end"
-              [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? 'tertiary' : att.text === 'N' ? 'medium' : 'warning'">
+              [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? (att.status === 3 ? 'tertiary' : 'rosa') : att.text === 'N' ? 'medium' : 'warning'">
               {{ att.text === 'X' ? '✓' : att.text }}</ion-badge>
           </ion-item>
           }
@@ -179,7 +179,7 @@
               </ion-label>
 
               <ion-badge slot="end"
-                [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? 'tertiary' : att.text === 'N' ? 'medium' : 'warning'">
+                [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? (att.status === 3 ? 'tertiary' : 'rosa') : att.text === 'N' ? 'medium' : 'warning'">
                 {{ att.text === 'X' ? '✓' : att.text}}
               </ion-badge>
             </ion-item>

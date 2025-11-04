@@ -187,7 +187,8 @@
           <ion-badge [color]="player.status === 0 ? 'medium' :
                               player.status === 1 ? 'success' :
                               player.status === 2 ? 'warning' :
-                              (player.status === 5 || player.status === 3) ? 'tertiary' : 'danger'" slot="end">
+                              player.status === 3 ? 'tertiary' :
+                              player.status === 5 ? 'rosa' : 'danger'" slot="end">
             {{
             player.status === 0 ? 'N' :
             player.status === 1 ? '✓' :

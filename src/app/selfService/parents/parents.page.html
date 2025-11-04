@@ -32,7 +32,7 @@
                   <h2>{{ pa.person.firstName }}</h2>
                 </ion-label>
                 <ion-badge slot="end"
-                  [color]="pa.status === 1 ? 'success' : pa.status === 4 ? 'danger' : (pa.status === 3 || pa.status === 5) ? 'tertiary' : pa.status === 0 ? 'medium' : 'warning'">
+                  [color]="pa.status === 1 ? 'success' : pa.status === 4 ? 'danger' : pa.status === 3 ? 'tertiary' : pa.status === 5 ? 'rosa' : pa.status === 0 ? 'medium' : 'warning'">
                   {{ getStatusText(pa.status) }}
                 </ion-badge>
               </ion-item>
