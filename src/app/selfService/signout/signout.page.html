@@ -16,9 +16,54 @@
 
   <ion-card *ngIf="perc">
     <ion-card-content>
-      <h1 *ngIf="!player.paused">Shalom {{ player.firstName }}!</h1>
-    <h1 *ngIf="player.paused">Shalom {{ player.firstName }}! Du pausierst gerade.</h1>
-      Du warst bisher an <ion-label [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'">{{ perc }}%</ion-label> der Termine anwesend.
+      <h1 class="title" *ngIf="!player.paused">Shalom {{ player.firstName }}!</h1>
+      <h1 class="title" *ngIf="player.paused">Shalom {{ player.firstName }}! Du pausierst gerade.</h1>
+      Du warst bisher an <ion-label [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'">{{ perc
+        }}%</ion-label> der Termine anwesend.
+
+      @if (lateCount !== 0) {
+        <br>
+
+        Davon bist du <ion-label color="tertiary">{{ lateCount }}x</ion-label> unentschuldigt zu spät gekommen.
+      }
+
+      <br>
+
+      <ion-button fill="clear" size="small" (click)="songsModalOpen = true">
+        Aktuelle Werke anzeigen
+      </ion-button>
+
+      <ion-modal class="songsModal" [isOpen]="songsModalOpen" (ionModalDidDismiss)="songsModalOpen = false" #songsModal
+        [initialBreakpoint]="upcomingSongs.length > 5 ? 0.8 : 0.5" [breakpoints]="upcomingSongs.length > 5 ? [0, 0.8] : [0, 0.5]">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar>
+              <ion-buttons slot="start">
+                <ion-button (click)="songsModalOpen = false">
+                  <ion-icon name="close"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+              <ion-title>Aktuelle Werke</ion-title>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content color="light">
+
+            <ion-list [inset]="true">
+              <ion-item-group>
+                <ion-item *ngFor="let his of upcomingSongs">
+                  <ion-label>
+                    <h2>{{ his.song.number }}. {{ his.song.name }}</h2>
+                    <h3>Dirigent: {{ his.conductorName }}</h3>
+                  </ion-label>
+                  <ion-button *ngIf="his.song.link" fill="clear" size="small" (click)="openSongLink(his.song.link)">
+                    <ion-icon name="link"></ion-icon>
+                  </ion-button>
+                </ion-item>
+              </ion-item-group>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
     </ion-card-content>
   </ion-card>
 
@@ -76,9 +121,8 @@
             color="light">
             <ion-label>
               <h2>{{ getReadableDate(currentAttendance.date) }}</h2>
-              <h3 [style.fontWeight]="currentAttendance.highlight ? 'bold' : 'normal'">{{ currentAttendance.title }}</h3>
-              <h3 *ngIf="currentAttendance.songs?.length && !currentAttendance.history?.length">{{ getSongNames(currentAttendance.songs) }}</h3>
-              <h3 *ngIf="currentAttendance.history?.length">{{ getHistorySongNames(currentAttendance.history) }}</h3>
+              <h3 [style.fontWeight]="currentAttendance.highlight ? 'bold' : 'normal'">{{ currentAttendance.title }}
+              </h3>
             </ion-label>
             <ion-badge slot="end"
               [color]="currentAttendance.text === 'X' ? 'success' : currentAttendance.text === 'A' ? 'danger' : currentAttendance.text === 'L' ? 'tertiary' : currentAttendance.text === 'N' ? 'medium' : 'warning'">
@@ -99,8 +143,6 @@
             <ion-label>
               <h2>{{ getReadableDate(att.date) }}</h2>
               <h3>{{ att.title }}</h3>
-              <h3 *ngIf="att.songs?.length && !att.history?.length">{{ getSongNames(att.songs) }}</h3>
-              <h3 *ngIf="att.history?.length">{{ getHistorySongNames(att.history) }}</h3>
             </ion-label>
             <ion-badge slot="end"
               [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? 'tertiary' : att.text === 'N' ? 'medium' : 'warning'">

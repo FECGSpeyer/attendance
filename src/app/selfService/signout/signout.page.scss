@@ -5,3 +5,19 @@
     text-align: center;
     color: #666666;
 }
+
+.songsModal {
+    ion-item-group {
+        background: #fff;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        ion-item-group {
+            background: #000;
+        }
+    }
+}
+
+.title {
+    margin-bottom: 17px;
+}

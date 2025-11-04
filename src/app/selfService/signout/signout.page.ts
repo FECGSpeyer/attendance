@@ -4,7 +4,7 @@ import { ActionSheetController, IonAccordionGroup, IonModal } from '@ionic/angul
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
-import { Attendance, PersonAttendance, Player, Song, Tenant, TenantUser, History } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, Player, Song, Tenant, History } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -31,6 +31,8 @@ export class SignoutPage implements OnInit {
   public songs: Song[] = [];
   public tenantId: number;
   public tenants: Tenant[] = [];
+  public songsModalOpen: boolean = false;
+  public upcomingSongs: History[] = [];
 
   constructor(
     public db: DbService,
@@ -56,6 +58,8 @@ export class SignoutPage implements OnInit {
       this.songs = await this.db.getSongs();
       await this.getAttendances();
     }
+
+    this.upcomingSongs = await this.db.getCurrentSongs();
   }
 
   async signout() {
@@ -99,12 +103,6 @@ export class SignoutPage implements OnInit {
         this.selAttIds = [this.attendances[0].id as any];
       } else {
         this.selAttIds = [];
-      }
-    }
-
-    for (const att of allPersonAttendances) {
-      if (att.title && att.attId) {
-        att.history = await this.db.getHistoryByAttendanceId(att.attId);
       }
     }
 
@@ -245,16 +243,16 @@ export class SignoutPage implements OnInit {
     }).join(", ");
   }
 
-  getHistorySongNames(historyEntry: History[]): string {
-    return historyEntry.map((h: History) => {
-      return `${this.songs.find((s: Song) => s.id === h.songId).number} ${this.songs.find((s: Song) => s.id === h.songId).name}`;
-    }).join(", ");
-  }
-
   isReasonSelectionInvalid(reason: string): boolean {
     if (!(reason && reason.length > 4) || /\S/.test(reason) === false) {
       return true;
     }
     return false;
+  }
+
+  openSongLink(link: string) {
+    if (link) {
+      window.open(link, "_blank");
+    }
   }
 }

@@ -1145,6 +1145,7 @@ export class DbService {
 
       return {
         id: att.id,
+        status: att.status,
         date: att.attendance.date,
         attended: attText === "L" || attText === "X",
         title: attType ? (att.attendance.typeInfo ?? attType.hide_name ? '' : attType.name) : att.attendance.typeInfo ? att.attendance.typeInfo : att.attendance.type === "vortrag" ? "Vortrag" : "Übung",
@@ -1536,6 +1537,37 @@ export class DbService {
 
     return data.publicUrl;
   }
+
+  async getCurrentSongs(): Promise<History[]> {
+    const { data, error } = await supabase
+      .from("history")
+      .select(`
+        id,
+        person_id (
+          firstName, lastName
+        ),
+        date,
+        otherConductor,
+        song:songId (id, name, link, number),
+        attendance_id (
+          date
+        )
+      `)
+      .eq("tenantId", this.tenant().id)
+      .gt("date", dayjs().startOf("day").toISOString());
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data.map((his: any) => {
+      return {
+        ...his,
+        conductorName: his.person_id ? `${his.person_id.firstName} ${his.person_id.lastName}` : his.otherConductor || "",
+      };
+    });
+  }
+
 
   async getUpcomingHistory(): Promise<History[]> {
     const { data, error } = await (supabase as any)
