@@ -57,7 +57,7 @@ export class DbService {
   }
 
   isBeta() {
-    return this.tenantUser()?.email === "developer@attendix.de" || this.tenantUser()?.email === "erwinfast98@gmail.com";
+    return this.tenantUser()?.email === "developer@attendix.de" || this.tenantUser()?.email === "erwinfast98@gmail.com" || this.tenantUser()?.email === "annettefast27@gmail.com";
   }
 
   getSupabase(): SupabaseClient {
@@ -1148,7 +1148,7 @@ export class DbService {
         status: att.status,
         date: att.attendance.date,
         attended: attText === "L" || attText === "X",
-        title: attType ? (att.attendance.typeInfo ?? attType.hide_name ? '' : attType.name) : att.attendance.typeInfo ? att.attendance.typeInfo : att.attendance.type === "vortrag" ? "Vortrag" : "Übung",
+        title: attType ? (att.attendance.typeInfo ? att.attendance.typeInfo : attType.hide_name ? '' : attType.name) : att.attendance.typeInfo ? att.attendance.typeInfo : att.attendance.type === "vortrag" ? "Vortrag" : "Übung",
         text: attText,
         notes: att.notes,
         songs: att.attendance.songs,
