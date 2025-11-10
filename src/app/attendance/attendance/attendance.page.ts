@@ -40,6 +40,7 @@ export class AttendancePage implements OnInit {
   public isGeneral: boolean = false;
   public instruments: Group[] = [];
   public groupCategories: GroupCategory[] = [];
+  public manageSongs: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -69,6 +70,7 @@ export class AttendancePage implements OnInit {
     this.isHelper = await this.db.tenantUser().role === Role.HELPER;
     void this.listenOnNetworkChanges();
     this.selectedSongs = this.attendance.songs || [];
+    this.manageSongs = this.db.attendanceTypes().find((type: AttendanceType) => type.id === this.attendance.type_id)?.manage_songs || false;
 
     this.subsribeOnChannels();
     this.initializeAttObjects();
