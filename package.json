@@ -41,6 +41,7 @@
     "dayjs": "^1.10.7",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.23",
+    "jszip": "^3.10.1",
     "ngx-quill": "^26.0.8",
     "open-holiday-js": "^1.0.3",
     "quill": "^2.0.2",

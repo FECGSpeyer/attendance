@@ -68,7 +68,7 @@ export class DbService {
   async uploadSongFile(songId: number, file: File, instrumentId: number | null): Promise<SongFile> {
     const tenantId = this.tenant().id;
     // Generate a unique fileId (timestamp + random)
-    const fileId = `${Date.now()}_${Math.floor(Math.random() * 10000)}.${file.name.split('.').pop()}`;
+    const fileId = `${Date.now()}-${Math.floor(Math.random() * 10000)}.${file.name.split('.').pop()}`;
     const filePath = `songs/${tenantId}/${songId}/${fileId}`;
     const fileName = file.name;
     // Upload to Supabase storage
@@ -82,6 +82,7 @@ export class DbService {
       .getPublicUrl(filePath);
     // Create SongFile object
     const songFile: SongFile = {
+      storageName: fileId,
       fileName,
       fileType: file.type,
       url: data.publicUrl,
@@ -92,6 +93,7 @@ export class DbService {
     const song = await this.getSong(songId);
     const files = song.files ? [...song.files, songFile] : [songFile];
     const filesJson = files.map(f => ({
+      storageName: f.storageName,
       fileName: f.fileName,
       fileType: f.fileType,
       url: f.url,
@@ -102,6 +104,19 @@ export class DbService {
       .update({ files: filesJson })
       .match({ id: songId });
     return songFile;
+  }
+
+  async downloadSongFile(fileName: string, songId: number): Promise<Blob> {
+    const tenantId = this.tenant().id;
+    const filePath = `songs/${tenantId}/${songId}/${fileName}`;
+
+    const { data, error } = await supabase.storage
+      .from('songs')
+      .download(filePath);
+
+    if (error) throw new Error(error.message);
+
+    return data;
   }
 
   async deleteSongFile(songId: number, file: SongFile): Promise<SongFile> {

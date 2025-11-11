@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, IonModal } from '@ionic/angular';
+import { AlertController, IonModal, IonPopover } from '@ionic/angular';
+import * as JSZip from 'jszip';
 import { DbService } from 'src/app/services/db.service';
 import { Group, Song, SongFile } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+
 
 @Component({
   selector: 'app-song',
@@ -15,7 +17,7 @@ export class SongPage implements OnInit {
   public instruments: Group[] = [];
   public fileSizeError: string = '';
   public selectedFileInfos: { file: File, instrumentId: number | null }[] = [];
-  public selectedInstruments: number[] = [];
+  public isFilesModalOpen: boolean = false;
 
   constructor(
     private db: DbService,
@@ -80,8 +82,18 @@ export class SongPage implements OnInit {
     return inst ? inst.name : 'Unbekannt';
   }
 
-  downloadFile(file: SongFile) {
+  openFile(file: SongFile) {
     window.open(file.url, '_blank');
+  }
+
+  async downloadFile(file: SongFile) {
+    const blob = await this.db.downloadSongFile(file.storageName, this.song.id);
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.fileName;
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 
   async deleteFile(file: SongFile) {
@@ -150,5 +162,60 @@ export class SongPage implements OnInit {
 
   removeSelectedFile(index: number) {
     this.selectedFileInfos.splice(index, 1);
+  }
+
+  async deleteAllFiles(filesPopover: IonPopover) {
+    filesPopover.dismiss();
+    const alert = await this.alertController.create({
+      header: 'Alle Dateien löschen',
+      message: `Möchten Sie wirklich alle Dateien dieses Werks löschen?`,
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel'
+        },
+        {
+          text: 'Löschen',
+          role: 'destructive',
+          handler: async () => {
+            const loading = await Utils.getLoadingElement(999999, 'Dateien werden gelöscht...');
+            await loading.present();
+            for (const file of this.song.files || []) {
+              await this.db.deleteSongFile(this.song.id, file);
+            }
+            this.song = await this.db.getSong(this.song.id); // Refresh file list
+            await loading.dismiss();
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async downloadAllFiles(filesPopover: IonPopover) {
+    filesPopover.dismiss();
+    const loading = await Utils.getLoadingElement(999999, 'Dateien werden heruntergeladen...');
+    await loading.present();
+    const blobs: { fileName: string, blob: Blob }[] = [];
+    for (const file of this.song.files || []) {
+      const blob = await this.db.downloadSongFile(file.storageName, this.song.id);
+      blobs.push({ fileName: file.fileName, blob });
+    }
+
+    const jszip = new JSZip();
+    for (const file of blobs) {
+      jszip.file(file.fileName, file.blob);
+    }
+
+    const result = await jszip.generateAsync({ type: "blob" });
+
+    const url = window.URL.createObjectURL(result);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${this.song.name || 'songs'}.zip`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    await loading.dismiss();
   }
 }

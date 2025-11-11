@@ -30,10 +30,34 @@
 
     <ion-list-header>
       <ion-label>Dateien</ion-label>
-      <ion-button id="file-upload-button" fill="clear" size="small">
+      @if (song.files && song.files.length > 0) {
+         <ion-button id="files-button" fill="clear" size="small">
+          <ion-icon name="ellipsis-horizontal"></ion-icon>
+          </ion-button>
+          <ion-popover #filesPopover trigger="files-button" triggerAction="click">
+            <ng-template>
+              <ion-list>
+                <ion-item button (click)="downloadAllFiles(filesPopover)">
+                  <ion-icon name="download-outline" slot="start"></ion-icon>
+                  Alle Dateien herunterladen
+                </ion-item>
+                <ion-item button (click)="filesPopover.dismiss(); isFilesModalOpen = true">
+                  <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+                  Dateien hochladen
+                </ion-item>
+                <ion-item button (click)="deleteAllFiles(filesPopover)">
+                  <ion-icon name="trash-outline" slot="start"></ion-icon>
+                  Alle Dateien löschen
+                </ion-item>
+              </ion-list>
+            </ng-template>
+          </ion-popover>
+      } @else {
+      <ion-button (click)="isFilesModalOpen = true" fill="clear" size="small">
         <ion-icon name="cloud-upload-outline"></ion-icon>
       </ion-button>
-      <ion-modal trigger="file-upload-button" #fileUploadModal [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+      }
+      <ion-modal [isOpen]="isFilesModalOpen" (ionModalDidDismiss)="isFilesModalOpen = false" #fileUploadModal [breakpoints]="[0, 1]" [initialBreakpoint]="1">
         <ng-template>
           <ion-header>
             <ion-toolbar>
@@ -87,7 +111,7 @@
     <ion-item-group>
       @if (song.files && song.files.length > 0) {
       <ion-item-sliding *ngFor="let file of song.files; let i = index">
-        <ion-item>
+        <ion-item button (click)="openFile(file)">
           <ion-label>
             {{ file.fileName }}
           </ion-label>
@@ -95,11 +119,11 @@
             getInstrumentName(file.instrumentId) }}</ion-badge>
         </ion-item>
         <ion-item-options side="end">
-          <ion-item-option color="primary" (click)="downloadFile(file)">
-            <ion-icon name="download-outline"></ion-icon>
-          </ion-item-option>
           <ion-item-option color="secondary" (click)="changeCategory(file)">
             <ion-icon name="create-outline"></ion-icon>
+          </ion-item-option>
+          <ion-item-option color="primary" (click)="downloadFile(file)">
+            <ion-icon name="download-outline"></ion-icon>
           </ion-item-option>
           <ion-item-option color="danger" (click)="deleteFile(file)">
             <ion-icon name="trash-outline"></ion-icon>
@@ -121,7 +145,7 @@
         <ion-textarea [(ngModel)]="song.link" autoGrow="true" #link></ion-textarea>
       </ion-item>
       <ion-item *ngIf="isOrchestra">
-        <ion-select interface="modal" label="Besetzung" multiple="true" [(ngModel)]="selectedInstruments">
+        <ion-select interface="modal" label="Besetzung" multiple="true" [(ngModel)]="song.instrument_ids">
           <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{ instrument.name
             }}</ion-select-option>
         </ion-select>

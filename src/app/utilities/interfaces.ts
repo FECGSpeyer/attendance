@@ -219,7 +219,7 @@ export interface Song {
 }
 
 export interface SongFile {
-    id?: number;
+    storageName?: string;
     created_at: string;
     fileName: string;
     fileType: string;
