@@ -15,6 +15,7 @@ export class SongPage implements OnInit {
   public instruments: Group[] = [];
   public fileSizeError: string = '';
   public selectedFileInfos: { file: File, instrumentId: number | null }[] = [];
+  public selectedInstruments: number[] = [];
 
   constructor(
     private db: DbService,
@@ -145,5 +146,9 @@ export class SongPage implements OnInit {
       ]
     });
     await alert.present();
+  }
+
+  removeSelectedFile(index: number) {
+    this.selectedFileInfos.splice(index, 1);
   }
 }

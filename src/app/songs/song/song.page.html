@@ -91,7 +91,7 @@
           <ion-label>
             {{ file.fileName }}
           </ion-label>
-          <ion-badge [color]="getInstrumentName(file.instrumentId) === 'Sonstige' ? 'medium' : 'primary'" slot="end">{{
+          <ion-badge [color]="getInstrumentName(file.instrumentId) === 'Sonstige' ? 'medium' : file.instrumentId === 1 ? 'primary' : 'secondary'" slot="end">{{
             getInstrumentName(file.instrumentId) }}</ion-badge>
         </ion-item>
         <ion-item-options side="end">
@@ -99,9 +99,9 @@
             <ion-icon name="download-outline"></ion-icon>
           </ion-item-option>
           <ion-item-option color="secondary" (click)="changeCategory(file)">
-            <ion-icon name="swap"></ion-icon>
+            <ion-icon name="create-outline"></ion-icon>
           </ion-item-option>
-          <ion-item-option color="danger" (click)="deleteFile(i)">
+          <ion-item-option color="danger" (click)="deleteFile(file)">
             <ion-icon name="trash-outline"></ion-icon>
           </ion-item-option>
         </ion-item-options>
@@ -118,7 +118,7 @@
     <ion-item-group>
       <ion-item>
         <ion-label position="stacked">Link</ion-label>
-        <ion-textarea [(ngModel)]="song.link" autoGrow="true" #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
+        <ion-textarea [(ngModel)]="song.link" autoGrow="true" #link></ion-textarea>
       </ion-item>
       <ion-item *ngIf="isOrchestra">
         <ion-select interface="modal" label="Besetzung" multiple="true" [(ngModel)]="selectedInstruments">
