@@ -143,6 +143,7 @@ export interface Group {
     categoryName?: string;
     categoryLength?: number;
     categoryData?: GroupCategory;
+    synonyms?: string;
 }
 
 export interface Attendance {

@@ -61,6 +61,14 @@
         </ion-item>
       </ion-col>
     </ion-row>
+    <ion-row *ngIf="!isGeneral">
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Synonyme</ion-label>
+          <ion-input helperText="Definiere Synonyme um beim Hinzufügen von Dateien zu Werken die Instrumente automatisch zuordnen zu können. Synonyme durch Komma trennen." [(ngModel)]="instrument.synonyms"></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
     <ion-row>
       <ion-col>
         <ion-item>

@@ -1405,7 +1405,10 @@ export class DbService {
       .match({ tenantId: this.tenant().id })
       .single();
 
-    return response.data as any;
+    return {
+      ...response.data,
+      files: response.data.files.sort((a, b) => ((a as any).instrumentId || 0) - ((b as any).instrumentId || 0)),
+    } as any;
   }
 
   async addSong(song: Song): Promise<Song[]> {
@@ -1558,6 +1561,22 @@ export class DbService {
         .from("attendances")
         .remove([fileName]);
     }, 10000);
+  }
+
+  async sendSongPerTelegram(url: string): Promise<void> {
+    const { error: sendError } = await supabase.functions.invoke("send-document", {
+      body: {
+        url: url,
+        chat_id: this.tenantUser().telegram_chat_id,
+      },
+      method: "POST",
+    });
+
+    if (!sendError) {
+      Utils.showToast("Nachricht wurde erfolgreich gesendet!");
+    } else {
+      Utils.showToast("Fehler beim Senden der Nachricht, versuche es später erneut!", "danger");
+    }
   }
 
   async notifyPerTelegram(attId: string, type: string = "signin", reason?: string, isParents: boolean = false): Promise<void> {

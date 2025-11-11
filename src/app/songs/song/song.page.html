@@ -1,5 +1,8 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="tabs/settings/songs"></ion-back-button>
+    </ion-buttons>
     <ion-title>Werk bearbeiten</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -70,6 +73,16 @@
             </ion-toolbar>
           </ion-header>
           <ion-content color="light">
+            <ion-card color="warning">
+              <ion-card-content>
+                <p><strong>Wichtige Infos:</strong>
+                  <br>- Die Besetzung wird nach dem Hochladen automatisch anhand der ausgewählten Instrumente aktualisiert.
+                  <br>- Füge den Instrumenten Synonyme hinzu (<a href="/tabs/settings/instruments">Gruppeneinstellungen</a>), um die automatische Zuordnung der Dateien zu verbessern.
+                  <br>- Beim Hochladen mehrerer Dateien kann es je nach Dateigröße und Internetverbindung einige Zeit dauern, bis alle Dateien vollständig hochgeladen sind. Bitte schließen Sie das Fenster nicht, bis der Upload abgeschlossen ist.
+                </p>
+              </ion-card-content>
+            </ion-card>
+
             <ion-list [inset]="true">
               <input type="file" #fileInput (change)="onFilesSelected($event)" multiple style="display:none;" />
               <ion-button expand="block" (click)="fileInput.click()">
@@ -124,6 +137,9 @@
           </ion-item-option>
           <ion-item-option color="primary" (click)="downloadFile(file)">
             <ion-icon name="download-outline"></ion-icon>
+          </ion-item-option>
+          <ion-item-option *ngIf="db.tenantUser().telegram_chat_id" color="mint" (click)="sendPerTelegram(file)">
+            <ion-icon name="send-outline"></ion-icon>
           </ion-item-option>
           <ion-item-option color="danger" (click)="deleteFile(file)">
             <ion-icon name="trash-outline"></ion-icon>

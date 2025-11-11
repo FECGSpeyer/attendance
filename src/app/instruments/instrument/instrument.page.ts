@@ -44,6 +44,7 @@ export class InstrumentPage implements OnInit {
       name: this.instrument.name,
       maingroup: this.instrument.maingroup,
       category: this.instrument.category,
+      synonyms: this.instrument.synonyms,
     }, this.instrument.id);
 
     Utils.showToast(`${this.instrument.name} wurde erfolgreich geupdated`);

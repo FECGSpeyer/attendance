@@ -20,7 +20,7 @@ export class SongPage implements OnInit {
   public isFilesModalOpen: boolean = false;
 
   constructor(
-    private db: DbService,
+    public db: DbService,
     private alertController: AlertController
   ) { }
 
@@ -45,7 +45,20 @@ export class SongPage implements OnInit {
       // Try to map instrument by filename
       let mappedId: number | null = null;
       if (this.instruments && this.instruments.length) {
-        const match = this.instruments.find(g => file.name.toLowerCase().includes(g.name.toLowerCase()));
+        const match = this.instruments.find(g => {
+          if (file.name.toLowerCase().includes(g.name.toLowerCase())) {
+            return true;
+          }
+
+          if (g.synonyms) {
+            const synonyms = g.synonyms.split(',').map(s => s.trim().toLowerCase());
+            if (synonyms.some(syn => file.name.toLowerCase().includes(syn))) {
+              return true;
+            }
+          }
+
+          return false;
+        });
         if (match) mappedId = match.id;
       }
       this.selectedFileInfos.push({ file, instrumentId: mappedId });
@@ -216,6 +229,13 @@ export class SongPage implements OnInit {
     a.click();
     window.URL.revokeObjectURL(url);
 
+    await loading.dismiss();
+  }
+
+  async sendPerTelegram(file: SongFile) {
+    const loading = await Utils.getLoadingElement(999999, 'Datei wird versendet...');
+    await loading.present();
+    await this.db.sendSongPerTelegram(file.url);
     await loading.dismiss();
   }
 }
