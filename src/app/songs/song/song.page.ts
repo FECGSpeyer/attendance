@@ -28,7 +28,7 @@ export class SongPage implements OnInit {
     this.isOrchestra = this.db.tenant().type === "orchestra";
     this.song = await this.db.getSong(Number(window.location.pathname.split("/")[4]));
     if (this.isOrchestra) {
-      this.instruments = await this.db.getGroups();
+      this.instruments = this.db.groups().filter((instrument: Group) => !instrument.maingroup);
     }
   }
 

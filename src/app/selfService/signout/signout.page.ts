@@ -255,4 +255,78 @@ export class SignoutPage implements OnInit {
       window.open(link, "_blank");
     }
   }
+
+  async openSongOptions(song: Song) {
+    const buttons = [];
+
+    if (song.link) {
+      buttons.push({
+        text: 'Notenlink öffnen',
+        handler: () => this.openSongLink(song.link),
+      });
+    }
+
+    if (song.files.find(f => f.instrumentId === this.player.instrument)) {
+      buttons.push({
+        text: 'Noten downloaden',
+        handler: async () => {
+          const file = song.files.find(f => f.instrumentId === this.player.instrument);
+          if (file) {
+            const blob = await this.db.downloadSongFile(file.storageName, song.id);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.fileName;
+            a.click();
+            window.URL.revokeObjectURL(url);
+          }
+        },
+      });
+    }
+
+    if (song.files.find(f => f.instrumentId === 1)) {
+      buttons.push({
+        text: 'Noten anzeigen',
+        handler: () => {
+          const file = song.files.find(f => f.instrumentId === this.player.instrument);
+          if (file) {
+            window.open(file.url, "_blank");
+          }
+        },
+      });
+    }
+
+    if (song.files.find(f => f.instrumentId === 1)) {
+      buttons.push({
+        text: 'Aufnahme anhören',
+        handler: () => {
+          const file = song.files.find(f => f.instrumentId === 1);
+          if (file) {
+            window.open(file.url, "_blank");
+          }
+        },
+      });
+    }
+
+    buttons.push({
+      text: 'Abbrechen',
+      handler: () => { },
+      role: 'destructive',
+      data: {
+        action: 'cancel',
+      },
+    });
+
+    if (buttons.length === 1) {
+      Utils.showToast("Für dieses Werk sind keine Aktionen verfügbar.", "warning", 4000);
+      return;
+    }
+
+    const actionSheet = await this.actionSheetController.create({
+      header: `${song.number}. ${song.name}`,
+      buttons,
+    });
+
+    await actionSheet.present();
+  }
 }

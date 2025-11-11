@@ -1639,7 +1639,7 @@ export class DbService {
         ),
         date,
         otherConductor,
-        song:songId (id, name, link, number),
+        song:songId (*),
         attendance_id (
           date
         )

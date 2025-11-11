@@ -58,7 +58,7 @@
                 </ion-label>
               </ion-list-header>
               <ion-item-group>
-                <ion-item *ngFor="let his of group.history">
+                <ion-item button (click)="openSongOptions(his.song)" *ngFor="let his of group.history">
                   <ion-label *ngIf="his.song">
                     <h2>{{ his.song.number }}. {{ his.song.name }}</h2>
                     <h3>Dirigent: {{ his.conductorName }}</h3>
