@@ -95,3 +95,15 @@ ion-card-content {
     height: 4rem;
     margin: auto;
 }
+
+.modalBackground {
+    ion-content {
+        background: #fff;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        ion-content {
+            background: #000;
+        }
+    }
+}

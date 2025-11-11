@@ -7,6 +7,7 @@ import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DefaultAttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
 import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType } from '../utilities/interfaces';
+import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 import { Holiday } from 'open-holiday-js';
@@ -62,6 +63,69 @@ export class DbService {
 
   getSupabase(): SupabaseClient {
     return supabase;
+  }
+
+  async uploadSongFile(songId: number, file: File, instrumentId: number | null): Promise<SongFile> {
+    const tenantId = this.tenant().id;
+    // Generate a unique fileId (timestamp + random)
+    const fileId = `${Date.now()}_${Math.floor(Math.random() * 10000)}.${file.name.split('.').pop()}`;
+    const filePath = `songs/${tenantId}/${songId}/${fileId}`;
+    const fileName = file.name;
+    // Upload to Supabase storage
+    const { error } = await supabase.storage
+      .from('songs')
+      .upload(filePath, file, { upsert: true });
+    if (error) throw new Error(error.message);
+    // Get public URL
+    const { data } = await supabase.storage
+      .from('songs')
+      .getPublicUrl(filePath);
+    // Create SongFile object
+    const songFile: SongFile = {
+      fileName,
+      fileType: file.type,
+      url: data.publicUrl,
+      instrumentId,
+      created_at: new Date().toISOString(),
+    };
+    // Update the song.files array
+    const song = await this.getSong(songId);
+    const files = song.files ? [...song.files, songFile] : [songFile];
+    const filesJson = files.map(f => ({
+      fileName: f.fileName,
+      fileType: f.fileType,
+      url: f.url,
+      instrumentId: f.instrumentId ?? null,
+    }));
+    await supabase
+      .from('songs')
+      .update({ files: filesJson })
+      .match({ id: songId });
+    return songFile;
+  }
+
+  async deleteSongFile(songId: number, file: SongFile): Promise<SongFile> {
+    const song = await this.getSong(songId);
+    const files = song.files ? song.files.filter(f => f.url !== file.url) : [];
+    const filesJson = files.map(f => ({
+      fileName: f.fileName,
+      fileType: f.fileType,
+      url: f.url,
+      instrumentId: f.instrumentId ?? null,
+    }));
+
+    const filePath = `${this.tenant().id}/${songId}/${file.fileName}`;
+    const { error } = await supabase.storage
+      .from('songs')
+      .remove([filePath]);
+
+    if (error) throw new Error(error.message);
+
+    await supabase
+      .from('songs')
+      .update({ files: filesJson })
+      .match({ id: songId });
+    return file;
   }
 
   async checkToken() {
@@ -726,28 +790,28 @@ export class DbService {
 
     if (attData?.length) {
       const attToAdd: PersonAttendance[] = attData
-      .filter((att: Attendance) => {
-        if (!this.isBeta()) {
-          return true;
-        }
-        const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
-        return attType.relevant_groups.length === 0 || attType.relevant_groups.includes(group);
-      })
-      .map((att: Attendance) => {
-        let status = AttendanceStatus.Present;
-
-        if (this.isBeta()) {
+        .filter((att: Attendance) => {
+          if (!this.isBeta()) {
+            return true;
+          }
           const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
-          status = attType?.default_status;
-        }
+          return attType.relevant_groups.length === 0 || attType.relevant_groups.includes(group);
+        })
+        .map((att: Attendance) => {
+          let status = AttendanceStatus.Present;
 
-        return {
-          attendance_id: att.id,
-          person_id: id,
-          notes: "",
-          status,
-        }
-      });
+          if (this.isBeta()) {
+            const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
+            status = attType?.default_status;
+          }
+
+          return {
+            attendance_id: att.id,
+            person_id: id,
+            notes: "",
+            status,
+          }
+        });
       await this.addPersonAttendances(attToAdd);
     }
   }
@@ -1315,7 +1379,18 @@ export class DbService {
         ascending: true,
       });
 
-    return response.data;
+    return response.data as any;
+  }
+
+  async getSong(id: number): Promise<Song> {
+    const response = await supabase
+      .from('songs')
+      .select('*')
+      .match({ id })
+      .match({ tenantId: this.tenant().id })
+      .single();
+
+    return response.data as any;
   }
 
   async addSong(song: Song): Promise<Song[]> {
@@ -1324,10 +1399,10 @@ export class DbService {
       .insert({
         ...song,
         tenantId: this.tenant().id,
-      })
+      } as any)
       .select();
 
-    return data;
+    return data as any;
   }
 
   async removeSong(id: number): Promise<void> {
@@ -1346,10 +1421,10 @@ export class DbService {
   async editSong(id: number, song: Song): Promise<Song[]> {
     const { data } = await supabase
       .from('songs')
-      .update(song)
+      .update(song as any)
       .match({ id });
 
-    return data;
+    return data as any;
   }
 
   async getMeetings(): Promise<Meeting[]> {
@@ -1369,6 +1444,7 @@ export class DbService {
       .from('meetings')
       .select('*')
       .match({ id })
+      .match({ tenantId: this.tenant().id })
       .single();
 
     return response.data;
@@ -1431,7 +1507,7 @@ export class DbService {
   async sendPlanPerTelegram(blob: Blob, name: string): Promise<void> {
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999);
     await loading.present();
-    const fileName: string = name + "_" + Math.floor(Math.random() * 100) + ".jpg";
+    const fileName: string = name + "_" + Math.floor(Math.random() * 100);
 
     const { error } = await supabase.storage
       .from("attendances")

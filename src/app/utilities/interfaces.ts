@@ -215,6 +215,16 @@ export interface Song {
     conductor?: string;
     legacyId?: number;
     instrument_ids?: number[];
+    files?: SongFile[];
+}
+
+export interface SongFile {
+    id?: number;
+    created_at: string;
+    fileName: string;
+    fileType: string;
+    url: string;
+    instrumentId?: number;
 }
 
 export interface History {

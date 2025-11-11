@@ -103,6 +103,8 @@ export type Database = {
           default_plan: Json | null
           default_status: number | null
           end_time: string | null
+          hide_name: boolean
+          highlight: boolean
           id: string
           index: number | null
           manage_songs: boolean | null
@@ -119,6 +121,8 @@ export type Database = {
           default_plan?: Json | null
           default_status?: number | null
           end_time?: string | null
+          hide_name?: boolean
+          highlight?: boolean
           id?: string
           index?: number | null
           manage_songs?: boolean | null
@@ -135,6 +139,8 @@ export type Database = {
           default_plan?: Json | null
           default_status?: number | null
           end_time?: string | null
+          hide_name?: boolean
+          highlight?: boolean
           id?: string
           index?: number | null
           manage_songs?: boolean | null
@@ -675,6 +681,7 @@ export type Database = {
       songs: {
         Row: {
           created_at: string | null
+          files: Json[] | null
           id: number
           instrument_ids: number[] | null
           instruments: number[] | null
@@ -689,6 +696,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          files?: Json[] | null
           id?: number
           instrument_ids?: number[] | null
           instruments?: number[] | null
@@ -703,6 +711,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          files?: Json[] | null
           id?: number
           instrument_ids?: number[] | null
           instruments?: number[] | null
