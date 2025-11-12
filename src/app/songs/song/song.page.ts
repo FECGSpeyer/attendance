@@ -81,7 +81,9 @@ export class SongPage implements OnInit {
       // Pass instrumentId to uploadSongFile if you want to override mapping
       await this.db.uploadSongFile(this.song.id, info.file, info.instrumentId);
     }
+
     this.song = await this.db.getSong(this.song.id); // Refresh file list
+
     this.selectedFileInfos = [];
     await fileUploadModal.dismiss();
     await loading.dismiss();
@@ -161,9 +163,11 @@ export class SongPage implements OnInit {
         {
           text: 'Speichern',
           handler: async (data) => {
+            const files = this.song.files?.map(f => f.fileName === file.fileName ? { ...f, instrumentId: data } : f);
             await this.db.editSong(this.song.id, {
               ...this.song,
-              files: this.song.files?.map(f => f.fileName === file.fileName ? { ...f, instrumentId: data } : f)
+              files,
+              instrument_ids: Array.from(new Set((files || []).map(f => f.instrumentId).filter(id => id !== null && id !== 1)))
             });
             this.song = await this.db.getSong(this.song.id); // Refresh file list
           }

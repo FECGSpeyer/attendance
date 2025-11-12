@@ -101,7 +101,10 @@ export class DbService {
     }));
     await supabase
       .from('songs')
-      .update({ files: filesJson })
+      .update({
+        files: filesJson,
+        instrument_ids: Array.from(new Set((filesJson || []).map(f => f.instrumentId).filter(id => id !== null && id !== 1)))
+      })
       .match({ id: songId });
     return songFile;
   }
@@ -138,7 +141,10 @@ export class DbService {
 
     await supabase
       .from('songs')
-      .update({ files: filesJson })
+      .update({
+        files: filesJson,
+        instrument_ids: Array.from(new Set((filesJson || []).map(f => f.instrumentId).filter(id => id !== null && id !== 1)))
+      })
       .match({ id: songId });
     return file;
   }
