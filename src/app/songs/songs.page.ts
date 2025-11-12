@@ -39,7 +39,7 @@ export class SongsPage implements OnInit {
   public tenantData?: Tenant;
 
   constructor(
-    private db: DbService,
+    public db: DbService,
     private storage: Storage,
     private router: Router,
   ) { }
