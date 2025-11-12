@@ -3,7 +3,7 @@ import { AlertController, IonModal, IonPopover } from '@ionic/angular';
 import * as JSZip from 'jszip';
 import { DbService } from 'src/app/services/db.service';
 import { Role } from 'src/app/utilities/constants';
-import { Group, Song, SongFile } from 'src/app/utilities/interfaces';
+import { Group, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 
@@ -13,14 +13,15 @@ import { Utils } from 'src/app/utilities/Utils';
   styleUrls: ['./song.page.scss'],
 })
 export class SongPage implements OnInit {
-  @Input("songId") songId?: number;
   public song: Song;
   public isOrchestra: boolean = false;
   public instruments: Group[] = [];
   public fileSizeError: string = '';
   public selectedFileInfos: { file: File, instrumentId: number | null }[] = [];
   public isFilesModalOpen: boolean = false;
-  public readOnly: boolean = false;
+  public readOnly: boolean = true;
+  public tenant?: Tenant;
+  public sharing_id?: string;
 
   constructor(
     public db: DbService,
@@ -28,11 +29,20 @@ export class SongPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.isOrchestra = this.db.tenant().type === "orchestra";
-    this.readOnly = this.db.tenant().role !== Role.RESPONSIBLE && this.db.tenant().role !== Role.ADMIN;
-    this.song = await this.db.getSong(this.songId ?? Number(window.location.pathname.split("/")[4]));
+    const songId = Number(window.location.pathname.split("/")[4] ?? window.location.pathname.split("/")[2]);
+    if (!window.location.pathname.split("/")[4]) {
+      this.sharing_id = window.location.pathname.split("/")[1];
+      this.tenant = await this.db.getTenantBySongSharingId(this.sharing_id);
+      this.isOrchestra = this.tenant?.type === "orchestra";
+    } else {
+      this.isOrchestra = this.db.tenant()?.type === "orchestra";
+      this.readOnly = this.db.tenantUser()?.role !== Role.RESPONSIBLE && this.db.tenantUser()?.role !== Role.ADMIN;
+    }
+
+    this.song = await this.db.getSong(songId, this.tenant?.id);
     if (this.isOrchestra) {
-      this.instruments = this.db.groups().filter((instrument: Group) => !instrument.maingroup);
+      const groups = this.tenant ? await this.db.getGroups(this.tenant.id) : this.db.groups();
+      this.instruments = groups.filter((instrument: Group) => !instrument.maingroup);
     }
   }
 
@@ -245,5 +255,14 @@ export class SongPage implements OnInit {
     await loading.present();
     await this.db.sendSongPerTelegram(file.url);
     await loading.dismiss();
+  }
+
+  getSongSharingLink(): string {
+    return `${window.location.origin}/${this.sharing_id ?? this.db.tenant()?.song_sharing_id}/${this.song.id}`;
+  }
+
+  copyShareLink() {
+    navigator?.clipboard.writeText(this.getSongSharingLink());
+    Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
   }
 }

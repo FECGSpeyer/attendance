@@ -117,6 +117,7 @@
         <ion-button fill="clear" size="small" (click)="copySongSharingLink()">
           <ion-icon name="copy-outline"></ion-icon>Link kopieren
         </ion-button>
+        <br>
         <ion-input readonly value="{{ getSongSharingLink() }}"></ion-input>
       </ion-item>
       <ion-item *ngIf="isOrchestra">

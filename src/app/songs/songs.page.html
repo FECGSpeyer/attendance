@@ -4,6 +4,11 @@
       <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
     </ion-buttons>
     <ion-title>Werke ({{ songs?.length }})</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="copyShareLink()" *ngIf="db.tenant()?.song_sharing_id">
+        <ion-icon slot="icon-only" name="link-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -24,47 +29,47 @@
     </ion-button>
     <ion-popover trigger="filter-trigger-songs" triggerAction="click">
       <ng-template>
-          <ion-list>
-            <ion-item lines="none">
-              <ion-icon slot="start" name="filter" size="small"></ion-icon>
-              <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="sortOpt">
-                <ion-select-option value="numberAsc">Nummer ↑</ion-select-option>
-                <ion-select-option value="numberDesc">Nummer ↓</ion-select-option>
-                <ion-select-option value="nameAsc">Name ↑</ion-select-option>
-                <ion-select-option value="nameDesc">Name ↓</ion-select-option>
-              </ion-select>
-            </ion-item>
+        <ion-list>
+          <ion-item lines="none">
+            <ion-icon slot="start" name="filter" size="small"></ion-icon>
+            <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="sortOpt">
+              <ion-select-option value="numberAsc">Nummer ↑</ion-select-option>
+              <ion-select-option value="numberDesc">Nummer ↓</ion-select-option>
+              <ion-select-option value="nameAsc">Name ↑</ion-select-option>
+              <ion-select-option value="nameDesc">Name ↓</ion-select-option>
+            </ion-select>
+          </ion-item>
 
-            <ion-item lines="none">
-              <ion-icon slot="start" name="people" size="small"></ion-icon>
-              <ion-toggle [(ngModel)]="inclChoir" (ionChange)="onFilterChanged()">Chor & Orchester</ion-toggle>
-            </ion-item>
+          <ion-item lines="none">
+            <ion-icon slot="start" name="people" size="small"></ion-icon>
+            <ion-toggle [(ngModel)]="inclChoir" (ionChange)="onFilterChanged()">Chor & Orchester</ion-toggle>
+          </ion-item>
 
-            <ion-item lines="none">
-              <ion-icon slot="start" name="person" size="small"></ion-icon>
-              <ion-toggle [(ngModel)]="inclSolo" (ionChange)="onFilterChanged()">Solo</ion-toggle>
-            </ion-item>
+          <ion-item lines="none">
+            <ion-icon slot="start" name="person" size="small"></ion-icon>
+            <ion-toggle [(ngModel)]="inclSolo" (ionChange)="onFilterChanged()">Solo</ion-toggle>
+          </ion-item>
 
-            <ion-item lines="none">
-              <ion-icon slot="start" name="musical-notes" size="small"></ion-icon>
-              <ion-select slot="end" (ionChange)="onFilterChanged()" multiple="true" [(ngModel)]="instrumentsToFilter">
-                <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{
-                  instrument.name }}</ion-select-option>
-              </ion-select>
-            </ion-item>
+          <ion-item lines="none">
+            <ion-icon slot="start" name="musical-notes" size="small"></ion-icon>
+            <ion-select slot="end" (ionChange)="onFilterChanged()" multiple="true" [(ngModel)]="instrumentsToFilter">
+              <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{
+                instrument.name }}</ion-select-option>
+            </ion-select>
+          </ion-item>
 
-            <ion-item lines="none">
-              <ion-icon slot="start" name="eye" size="small"></ion-icon>
-              <ion-select multiple="true" slot="end" (ionChange)="onViewChanged()" interface="popover"
-                [(ngModel)]="viewOpts">
-                <ion-select-option value="link">Link</ion-select-option>
-                <ion-select-option value="withChoir">Chor & Orchester</ion-select-option>
-                <ion-select-option value="withSolo">Solo</ion-select-option>
-                <ion-select-option value="missingInstruments">Fehlende Instrumente</ion-select-option>
-                <ion-select-option value="lastSung">Zuletzt gespielt</ion-select-option>
-              </ion-select>
-            </ion-item>
-          </ion-list>
+          <ion-item lines="none">
+            <ion-icon slot="start" name="eye" size="small"></ion-icon>
+            <ion-select multiple="true" slot="end" (ionChange)="onViewChanged()" interface="popover"
+              [(ngModel)]="viewOpts">
+              <ion-select-option value="link">Link</ion-select-option>
+              <ion-select-option value="withChoir">Chor & Orchester</ion-select-option>
+              <ion-select-option value="withSolo">Solo</ion-select-option>
+              <ion-select-option value="missingInstruments">Fehlende Instrumente</ion-select-option>
+              <ion-select-option value="lastSung">Zuletzt gespielt</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-list>
       </ng-template>
     </ion-popover>
   </div>

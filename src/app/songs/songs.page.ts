@@ -273,4 +273,13 @@ export class SongsPage implements OnInit {
     return Utils.getInstrumentText(instrumentIds, this.instruments, this.groupCategories);
   }
 
+  getSongSharingLink(): string {
+    return `${window.location.origin}/${this.db.tenant().song_sharing_id}`;
+  }
+
+  copyShareLink() {
+    navigator?.clipboard.writeText(this.getSongSharingLink());
+    Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
+  }
+
 }

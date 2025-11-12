@@ -99,11 +99,12 @@ export class DbService {
       url: f.url,
       instrumentId: f.instrumentId ?? null,
     }));
+    const mainGroupId = this.getMainGroup()?.id;
     await supabase
       .from('songs')
       .update({
         files: filesJson,
-        instrument_ids: Array.from(new Set((filesJson || []).map(f => f.instrumentId).filter(id => id !== null && id !== 1)))
+        instrument_ids: Array.from(new Set((filesJson || []).map(f => f.instrumentId).filter(id => id !== null && id !== 1 && id !== mainGroupId)))
       })
       .match({ id: songId });
     return songFile;
@@ -143,7 +144,7 @@ export class DbService {
       .from('songs')
       .update({
         files: filesJson,
-        instrument_ids: Array.from(new Set((filesJson || []).map(f => f.instrumentId).filter(id => id !== null && id !== 1)))
+        instrument_ids: Array.from(new Set((filesJson || []).map(f => f.instrumentId).filter(id => id !== null && id !== 1 && id !== this.getMainGroup()?.id)))
       })
       .match({ id: songId });
     return file;
@@ -1403,12 +1404,12 @@ export class DbService {
     return response.data as any;
   }
 
-  async getSong(id: number): Promise<Song> {
+  async getSong(id: number, tenantId?: number): Promise<Song> {
     const response = await supabase
       .from('songs')
       .select('*')
       .match({ id })
-      .match({ tenantId: this.tenant().id })
+      .match({ tenantId: tenantId ?? this.tenant().id })
       .single();
 
     return {
@@ -2365,10 +2366,10 @@ export class DbService {
     return;
   }
 
-  async getTenantDataBySongSharingId(sharingId: string): Promise<{id: number, longName: string, shortName: string} | null> {
+  async getTenantBySongSharingId(sharingId: string): Promise<Tenant | null> {
     const { data, error } = await supabase
       .from('tenants')
-      .select('id, longName, shortName')
+      .select('*')
       .eq('song_sharing_id', sharingId)
       .single();
 

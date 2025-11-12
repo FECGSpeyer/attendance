@@ -8,6 +8,11 @@
     } @else {
     <ion-title>Werk bearbeiten</ion-title>
     }
+    <ion-buttons slot="end">
+      <ion-button (click)="copyShareLink()" *ngIf="tenant || db.tenant()?.song_sharing_id">
+        <ion-icon slot="icon-only" name="link-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -22,8 +27,8 @@
     </ion-toolbar>
   </ion-header>
   <ion-list [inset]="true">
+    @if (!readOnly) {
     <ion-item-group>
-      @if (!readOnly) {
       <ion-item>
         <ion-label position="stacked">Nummer</ion-label>
         <ion-input [(ngModel)]="song.number" type="number" #number></ion-input>
@@ -32,30 +37,39 @@
         <ion-label position="stacked">Name</ion-label>
         <ion-input [(ngModel)]="song.name" #name></ion-input>
       </ion-item>
-      }
       <ion-item>
-        <ion-toggle [disabled]="readOnly" [(ngModel)]="song.withChoir" aria-label="Chor & Orchester">Chor &
+        <ion-toggle [(ngModel)]="song.withChoir" aria-label="Chor & Orchester">Chor &
           Orchester</ion-toggle>
       </ion-item>
       <ion-item>
-        <ion-toggle [disabled]="readOnly" [(ngModel)]="song.withSolo" aria-label="Mit Solo-Gesang">Mit
+        <ion-toggle [(ngModel)]="song.withSolo" aria-label="Mit Solo-Gesang">Mit
           Solo-Gesang</ion-toggle>
       </ion-item>
 
       <ion-item *ngIf="isOrchestra && !readOnly">
-        <ion-select interface="modal" label="Besetzung" multiple="true"
-          [(ngModel)]="song.instrument_ids">
+        <ion-select interface="modal" label="Besetzung" multiple="true" [(ngModel)]="song.instrument_ids">
           <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{ instrument.name
             }}</ion-select-option>
         </ion-select>
       </ion-item>
-      @if (isOrchestra && readOnly) {
-        <ion-label position="stacked">Besetzung:</ion-label>
-        <ion-chip *ngFor="let instrumentId of song.instrument_ids" style="margin-left: 5px;">
-          <ion-label>{{ getInstrumentName(instrumentId) }}</ion-label>
-        </ion-chip>
+    </ion-item-group>
+  }
+
+    @if (readOnly) {
+    <ion-list-header>
+      <ion-label>Besetzung</ion-label>
+    </ion-list-header>
+    <ion-item-group>
+      <ion-chip color="primary" *ngIf="song.withChoir">Chor & Orchester</ion-chip>
+      <ion-chip color="primary" *ngIf="song.withSolo">Mit Solo-Gesang</ion-chip>
+      <br>
+      @if (isOrchestra) {
+      <ion-chip [color]="song.instrument_ids?.includes(instrument.id) ? 'success' : 'danger'" *ngFor="let instrument of instruments" style="margin-left: 5px;">
+        <ion-label>{{ instrument.name }}</ion-label>
+      </ion-chip>
       }
     </ion-item-group>
+    }
 
     <ion-list-header>
       <ion-label>Dateien</ion-label>
@@ -176,7 +190,7 @@
           <ion-item-option color="primary" (click)="downloadFile(file)">
             <ion-icon name="download-outline"></ion-icon>
           </ion-item-option>
-          <ion-item-option *ngIf="db.tenantUser().telegram_chat_id" color="mint" (click)="sendPerTelegram(file)">
+          <ion-item-option *ngIf="db.tenantUser()?.telegram_chat_id" color="mint" (click)="sendPerTelegram(file)">
             <ion-icon name="send-outline"></ion-icon>
           </ion-item-option>
           <ion-item-option *ngIf="!readOnly" color="danger" (click)="deleteFile(file)">
