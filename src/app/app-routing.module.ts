@@ -19,6 +19,14 @@ const routes: Routes = [
     loadChildren: () => import('./register/register.module').then(m => m.RegisterPageModule),
     canActivate: [RegisterGuard]
   },
+  {
+    path: ':songSharingId',
+    loadChildren: () => import('./song-viewer/song-viewer.module').then( m => m.SongViewerPageModule)
+  },
+  {
+    path: ':songSharingId/:songId',
+    loadChildren: () => import('./songs/song/song.module').then( m => m.SongPageModule)
+  },
 ];
 @NgModule({
   imports: [

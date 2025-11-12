@@ -1,0 +1,30 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="light">
+    <ion-title>{{ tenantLongName }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar color="light">
+      <ion-title size="large">{{ tenantLongName }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-list [inset]="true">
+    <ion-list-header>
+      <ion-label>Alle Werke</ion-label>
+    </ion-list-header>
+    <ion-item-group>
+      <ion-item *ngFor="let song of songs" (click)="openSong(song.id)" button>
+        <ion-label>
+          <h2>{{ song.number }} - {{ song.name }}</h2>
+          <p *ngIf="song.withChoir || song.withSolo">
+            <span *ngIf="song.withChoir">Chor & Orchester</span>
+            <span *ngIf="song.withChoir && song.withSolo">, </span>
+            <span *ngIf="song.withSolo">Mit Solo-Gesang</span>
+          </p>
+        </ion-label>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+</ion-content>

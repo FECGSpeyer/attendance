@@ -45,6 +45,7 @@ export class GeneralPage implements OnInit {
   public isSuperAdmin: boolean = false;
   public isGeneral: boolean = false;
   public max: string = new Date().toISOString();
+  public songSharingEnabled: boolean = false;
 
   constructor(
     public db: DbService,
@@ -66,9 +67,15 @@ export class GeneralPage implements OnInit {
     this.isOrchestra = this.db.tenant().type === 'orchestra';
     this.isSuperAdmin = this.db.tenantUser().role === Role.ADMIN;
     this.isGeneral = this.db.tenant().type === 'general';
+    this.songSharingEnabled = !!this.db.tenant().song_sharing_id;
   }
 
   async saveGeneralSettings() {
+    let song_sharing_id = this.songSharingEnabled ? this.db.tenant().song_sharing_id : null;
+    if (this.songSharingEnabled && !this.db.tenant().song_sharing_id) {
+      song_sharing_id = crypto.randomUUID();
+    }
+
     try {
       await this.db.updateTenantData({
         practiceStart: this.practiceStart,
@@ -80,6 +87,7 @@ export class GeneralPage implements OnInit {
         region: this.region,
         maintainTeachers: this.maintainTeachers,
         showHolidays: this.showHolidays,
+        song_sharing_id: song_sharing_id || null,
       });
       Utils.showToast("Einstellungen gespeichert", "success");
 
@@ -102,7 +110,7 @@ export class GeneralPage implements OnInit {
     }
   }
 
-    async openOrganisationAlert() {
+  async openOrganisationAlert() {
     const organisations = await this.db.getOrganisationsFromUser();
 
     if (organisations.length) {
@@ -151,7 +159,7 @@ export class GeneralPage implements OnInit {
     this.openCreateOrganisationAlert();
   }
 
-    async openCreateOrganisationAlert() {
+  async openCreateOrganisationAlert() {
     const alert = await new AlertController().create({
       header: 'Organisation erstellen',
       inputs: [{
@@ -219,6 +227,15 @@ export class GeneralPage implements OnInit {
     }
 
     this.attDateString = this.formatDate(value as string);
+  }
+
+  getSongSharingLink(): string {
+    return `${window.location.origin}/${this.db.tenant().song_sharing_id}`;
+  }
+
+  copySongSharingLink() {
+    navigator?.clipboard.writeText(this.getSongSharingLink());
+    Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
   }
 
 }

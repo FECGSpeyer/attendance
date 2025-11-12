@@ -108,6 +108,17 @@
 
     <ion-list-header><ion-label>Sonstiges</ion-label></ion-list-header>
     <ion-item-group>
+      <ion-item lines="none">
+        <ion-toggle
+          helperText="Aktivieren, um Werke als öffentlichen link zu teilen. Jeder mit dem Link kann die Werke ansehen aber nicht bearbeiten."
+          [(ngModel)]="songSharingEnabled">Werke öffentlich teilen</ion-toggle>
+      </ion-item>
+      <ion-item *ngIf="db.tenant().song_sharing_id">
+        <ion-button fill="clear" size="small" (click)="copySongSharingLink()">
+          <ion-icon name="copy-outline"></ion-icon>Link kopieren
+        </ion-button>
+        <ion-input readonly value="{{ getSongSharingLink() }}"></ion-input>
+      </ion-item>
       <ion-item *ngIf="isOrchestra">
         <ion-toggle helperText="Aktivieren, um die Lehrer der Spieler verwalten zu können."
           [(ngModel)]="maintainTeachers">Lehrer

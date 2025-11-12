@@ -3,18 +3,27 @@
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="tabs/settings/songs"></ion-back-button>
     </ion-buttons>
+    @if (readOnly) {
+    <ion-title *ngIf="song">{{ song.id }} - {{ song.name }}</ion-title>
+    } @else {
     <ion-title>Werk bearbeiten</ion-title>
+    }
   </ion-toolbar>
 </ion-header>
 
 <ion-content color="light" *ngIf="song" [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar color="light">
+      @if (readOnly) {
+      <ion-title *ngIf="song" size="large">{{ song.id }} - {{ song.name }}</ion-title>
+      } @else {
       <ion-title size="large">Werk bearbeiten</ion-title>
+      }
     </ion-toolbar>
   </ion-header>
   <ion-list [inset]="true">
     <ion-item-group>
+      @if (!readOnly) {
       <ion-item>
         <ion-label position="stacked">Nummer</ion-label>
         <ion-input [(ngModel)]="song.number" type="number" #number></ion-input>
@@ -23,44 +32,66 @@
         <ion-label position="stacked">Name</ion-label>
         <ion-input [(ngModel)]="song.name" #name></ion-input>
       </ion-item>
+      }
       <ion-item>
-        <ion-toggle [(ngModel)]="song.withChoir" aria-label="Chor & Orchester">Chor & Orchester</ion-toggle>
+        <ion-toggle [disabled]="readOnly" [(ngModel)]="song.withChoir" aria-label="Chor & Orchester">Chor &
+          Orchester</ion-toggle>
       </ion-item>
       <ion-item>
-        <ion-toggle [(ngModel)]="song.withSolo" aria-label="Mit Solo-Gesang">Mit Solo-Gesang</ion-toggle>
+        <ion-toggle [disabled]="readOnly" [(ngModel)]="song.withSolo" aria-label="Mit Solo-Gesang">Mit
+          Solo-Gesang</ion-toggle>
       </ion-item>
+
+      <ion-item *ngIf="isOrchestra && !readOnly">
+        <ion-select interface="modal" label="Besetzung" multiple="true"
+          [(ngModel)]="song.instrument_ids">
+          <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{ instrument.name
+            }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      @if (isOrchestra && readOnly) {
+        <ion-label position="stacked">Besetzung:</ion-label>
+        <ion-chip *ngFor="let instrumentId of song.instrument_ids" style="margin-left: 5px;">
+          <ion-label>{{ getInstrumentName(instrumentId) }}</ion-label>
+        </ion-chip>
+      }
     </ion-item-group>
 
     <ion-list-header>
       <ion-label>Dateien</ion-label>
-      @if (song.files && song.files.length > 0) {
-         <ion-button id="files-button" fill="clear" size="small">
-          <ion-icon name="ellipsis-horizontal"></ion-icon>
-          </ion-button>
-          <ion-popover #filesPopover trigger="files-button" triggerAction="click">
-            <ng-template>
-              <ion-list>
-                <ion-item button (click)="downloadAllFiles(filesPopover)">
-                  <ion-icon name="download-outline" slot="start"></ion-icon>
-                  Alle Dateien herunterladen
-                </ion-item>
-                <ion-item button (click)="filesPopover.dismiss(); isFilesModalOpen = true">
-                  <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
-                  Dateien hochladen
-                </ion-item>
-                <ion-item button (click)="deleteAllFiles(filesPopover)">
-                  <ion-icon name="trash-outline" slot="start"></ion-icon>
-                  Alle Dateien löschen
-                </ion-item>
-              </ion-list>
-            </ng-template>
-          </ion-popover>
+      @if (readOnly && song.files && song.files.length > 0) {
+      <ion-button (click)="downloadAllFiles()" fill="clear" size="small">
+        <ion-icon name="download-outline"></ion-icon>
+      </ion-button>
+      } @else if (song.files && song.files.length > 0) {
+      <ion-button id="files-button" fill="clear" size="small">
+        <ion-icon name="ellipsis-horizontal"></ion-icon>
+      </ion-button>
+      <ion-popover #filesPopover trigger="files-button" triggerAction="click">
+        <ng-template>
+          <ion-list>
+            <ion-item button (click)="downloadAllFiles(filesPopover)">
+              <ion-icon name="download-outline" slot="start"></ion-icon>
+              Alle Dateien herunterladen
+            </ion-item>
+            <ion-item button (click)="filesPopover.dismiss(); isFilesModalOpen = true">
+              <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+              Dateien hochladen
+            </ion-item>
+            <ion-item button (click)="deleteAllFiles(filesPopover)">
+              <ion-icon name="trash-outline" slot="start"></ion-icon>
+              Alle Dateien löschen
+            </ion-item>
+          </ion-list>
+        </ng-template>
+      </ion-popover>
       } @else {
       <ion-button (click)="isFilesModalOpen = true" fill="clear" size="small">
         <ion-icon name="cloud-upload-outline"></ion-icon>
       </ion-button>
       }
-      <ion-modal [isOpen]="isFilesModalOpen" (ionModalDidDismiss)="isFilesModalOpen = false" #fileUploadModal [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+      <ion-modal [isOpen]="isFilesModalOpen" (ionModalDidDismiss)="isFilesModalOpen = false" #fileUploadModal
+        [breakpoints]="[0, 1]" [initialBreakpoint]="1">
         <ng-template>
           <ion-header>
             <ion-toolbar>
@@ -76,9 +107,14 @@
             <ion-card color="warning">
               <ion-card-content>
                 <p><strong>Wichtige Infos:</strong>
-                  <br>- Die Besetzung wird nach dem Hochladen automatisch anhand der ausgewählten Instrumente aktualisiert.
-                  <br>- Füge den Instrumenten Synonyme hinzu (<a href="/tabs/settings/instruments">Gruppeneinstellungen</a>), um die automatische Zuordnung der Dateien zu verbessern.
-                  <br>- Beim Hochladen mehrerer Dateien kann es je nach Dateigröße und Internetverbindung einige Zeit dauern, bis alle Dateien vollständig hochgeladen sind. Bitte schließen Sie das Fenster nicht, bis der Upload abgeschlossen ist.
+                  <br>- Die Besetzung wird nach dem Hochladen automatisch anhand der ausgewählten Instrumente
+                  aktualisiert.
+                  <br>- Füge den Instrumenten Synonyme hinzu (<a
+                    href="/tabs/settings/instruments">Gruppeneinstellungen</a>), um die automatische Zuordnung der
+                  Dateien zu verbessern.
+                  <br>- Beim Hochladen mehrerer Dateien kann es je nach Dateigröße und Internetverbindung einige Zeit
+                  dauern, bis alle Dateien vollständig hochgeladen sind. Bitte schließen Sie das Fenster nicht, bis der
+                  Upload abgeschlossen ist.
                 </p>
               </ion-card-content>
             </ion-card>
@@ -128,11 +164,13 @@
           <ion-label>
             {{ file.fileName }}
           </ion-label>
-          <ion-badge [color]="getInstrumentName(file.instrumentId) === 'Sonstige' ? 'medium' : file.instrumentId === 1 ? 'primary' : 'secondary'" slot="end">{{
+          <ion-badge
+            [color]="getInstrumentName(file.instrumentId) === 'Sonstige' ? 'medium' : file.instrumentId === 1 ? 'primary' : 'secondary'"
+            slot="end">{{
             getInstrumentName(file.instrumentId) }}</ion-badge>
         </ion-item>
         <ion-item-options side="end">
-          <ion-item-option color="secondary" (click)="changeCategory(file)">
+          <ion-item-option *ngIf="!readOnly" color="secondary" (click)="changeCategory(file)">
             <ion-icon name="create-outline"></ion-icon>
           </ion-item-option>
           <ion-item-option color="primary" (click)="downloadFile(file)">
@@ -141,7 +179,7 @@
           <ion-item-option *ngIf="db.tenantUser().telegram_chat_id" color="mint" (click)="sendPerTelegram(file)">
             <ion-icon name="send-outline"></ion-icon>
           </ion-item-option>
-          <ion-item-option color="danger" (click)="deleteFile(file)">
+          <ion-item-option *ngIf="!readOnly" color="danger" (click)="deleteFile(file)">
             <ion-icon name="trash-outline"></ion-icon>
           </ion-item-option>
         </ion-item-options>
@@ -155,17 +193,17 @@
 
     <br>
 
-    <ion-item-group>
+    <ion-item-group *ngIf="!readOnly || song.link">
+      @if (readOnly) {
+      <ion-item button>
+        <ion-label color="primary">Link öffnen</ion-label>
+      </ion-item>
+      } @else {
       <ion-item>
         <ion-label position="stacked">Link</ion-label>
         <ion-textarea [(ngModel)]="song.link" autoGrow="true" #link></ion-textarea>
       </ion-item>
-      <ion-item *ngIf="isOrchestra">
-        <ion-select interface="modal" label="Besetzung" multiple="true" [(ngModel)]="song.instrument_ids">
-          <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{ instrument.name
-            }}</ion-select-option>
-        </ion-select>
-      </ion-item>
+      }
     </ion-item-group>
   </ion-list>
 </ion-content>

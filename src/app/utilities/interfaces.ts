@@ -20,6 +20,7 @@ export interface Tenant {
     betaProgram: boolean;
     region?: string;
     role?: Role;
+    song_sharing_id?: string;
 }
 
 export interface TenantUser {

@@ -321,6 +321,7 @@ export type Database = {
           name: string | null
           notes: string | null
           range: string | null
+          synonyms: string | null
           tenantId: number
           tuning: string | null
         }
@@ -334,6 +335,7 @@ export type Database = {
           name?: string | null
           notes?: string | null
           range?: string | null
+          synonyms?: string | null
           tenantId: number
           tuning?: string | null
         }
@@ -347,6 +349,7 @@ export type Database = {
           name?: string | null
           notes?: string | null
           range?: string | null
+          synonyms?: string | null
           tenantId?: number
           tuning?: string | null
         }
@@ -846,6 +849,7 @@ export type Database = {
           seasonStart: string | null
           shortName: string | null
           showHolidays: boolean | null
+          song_sharing_id: string | null
           type: string | null
           withExcuses: boolean | null
         }
@@ -862,6 +866,7 @@ export type Database = {
           seasonStart?: string | null
           shortName?: string | null
           showHolidays?: boolean | null
+          song_sharing_id?: string | null
           type?: string | null
           withExcuses?: boolean | null
         }
@@ -878,6 +883,7 @@ export type Database = {
           seasonStart?: string | null
           shortName?: string | null
           showHolidays?: boolean | null
+          song_sharing_id?: string | null
           type?: string | null
           withExcuses?: boolean | null
         }

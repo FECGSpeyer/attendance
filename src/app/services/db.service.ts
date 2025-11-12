@@ -1391,11 +1391,11 @@ export class DbService {
     return data;
   }
 
-  async getSongs(): Promise<Song[]> {
+  async getSongs(tenantId?: number): Promise<Song[]> {
     const response = await supabase
       .from('songs')
       .select('*')
-      .eq('tenantId', this.tenant().id)
+      .eq('tenantId', tenantId ?? this.tenant().id)
       .order("number", {
         ascending: true,
       });
@@ -1654,7 +1654,7 @@ export class DbService {
     return data.publicUrl;
   }
 
-  async getCurrentSongs(): Promise<{ date: string; history: History[] }[]> {
+  async getCurrentSongs(tenantId?: number): Promise<{ date: string; history: History[] }[]> {
     const { data, error } = await supabase
       .from("history")
       .select(`
@@ -1669,7 +1669,7 @@ export class DbService {
           date
         )
       `)
-      .eq("tenantId", this.tenant().id)
+      .eq("tenantId", tenantId ?? this.tenant().id)
       .gt("date", dayjs().startOf("day").toISOString());
 
     if (error) {
@@ -2363,5 +2363,23 @@ export class DbService {
     this.attendanceTypes.set(await this.getAttendanceTypes());
 
     return;
+  }
+
+  async getTenantDataBySongSharingId(sharingId: string): Promise<{id: number, longName: string, shortName: string} | null> {
+    const { data, error } = await supabase
+      .from('tenants')
+      .select('id, longName, shortName')
+      .eq('song_sharing_id', sharingId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      Utils.showToast("Fehler beim Laden des Tenants", "danger");
+      throw error;
+    }
+
+    return data;
   }
 }
