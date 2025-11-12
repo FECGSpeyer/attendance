@@ -282,9 +282,7 @@ export class SignoutPage implements OnInit {
           }
         },
       });
-    }
 
-    if (song.files.find(f => f.instrumentId === 1)) {
       buttons.push({
         text: 'Noten anzeigen',
         handler: () => {
