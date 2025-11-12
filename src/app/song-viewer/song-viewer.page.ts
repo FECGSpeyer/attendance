@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { IonRouterOutlet, ModalController } from '@ionic/angular';
+import { Router } from '@angular/router';
+import { IonModal } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
-import { SongPage } from 'src/app/songs/song/song.page';
 import { History, Song, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
@@ -15,13 +15,12 @@ export class SongViewerPage implements OnInit {
   private tenantId: number;
   public tenantLongName: string;
   public tenantShortName: string;
-  public currentSongs: { date: string; history: History[] }[] = [];
+  public currentSongs: { date: string, history: History[] }[] = [];
   public songSharingId: string;
 
   constructor(
     private db: DbService,
-    private modalController: ModalController,
-    private routerOutlet: IonRouterOutlet
+    private router: Router,
   ) { }
 
   async ngOnInit() {
@@ -36,7 +35,12 @@ export class SongViewerPage implements OnInit {
     this.tenantLongName = tenantData.longName;
     this.tenantShortName = tenantData.shortName;
     this.songs = await this.db.getSongs(this.tenantId);
-    this.currentSongs = await this.db.getCurrentSongs(this.tenantId);
+    this.currentSongs = (await this.db.getCurrentSongs(this.tenantId));
+  }
+
+  openSong(songId: number, modal: IonModal) {
+    modal.dismiss();
+    this.router.navigate([`${this.songSharingId}`, `${songId}`]);
   }
 
 }

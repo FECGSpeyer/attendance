@@ -741,18 +741,18 @@ export class DbService {
     }).filter((p: Player) => p.email.length);
   }
 
-  async getConductors(all: boolean = false): Promise<Person[]> {
-    const mainGroupId = this.getMainGroup()?.id;
+  async getConductors(all: boolean = false, tenantId?: number, mainGroupId?: number): Promise<Person[]> {
+    const mainGroupIdLocal = mainGroupId ?? this.getMainGroup()?.id;
 
-    if (!mainGroupId) {
+    if (!mainGroupIdLocal) {
       throw new Error("Hauptgruppe nicht gefunden");
     }
 
     const { data, error } = await supabase
       .from('player')
       .select('*')
-      .eq('instrument', mainGroupId)
-      .eq('tenantId', this.tenant().id)
+      .eq('instrument', mainGroupIdLocal)
+      .eq('tenantId', tenantId ?? this.tenant().id)
       .order("lastName");
 
     if (error) {
@@ -1274,11 +1274,11 @@ export class DbService {
     }
   }
 
-  async getHistory(): Promise<History[]> {
+  async getHistory(tenantId?: number): Promise<History[]> {
     const { data } = await supabase
       .from('history')
       .select('*, attendance:attendance_id(date)')
-      .eq('tenantId', this.tenant().id)
+      .eq('tenantId', tenantId ?? this.tenant().id)
       .eq('visible', true)
       .order("date", {
         ascending: false,
@@ -1950,11 +1950,11 @@ export class DbService {
     return this.user?.email === environment.demoMail;
   }
 
-  async getGroupCategories() {
+  async getGroupCategories(tenantId?: number) {
     const { data, error } = await supabase
       .from('group_categories')
       .select('*')
-      .eq('tenant_id', this.tenant().id)
+      .eq('tenant_id', tenantId ?? this.tenant().id)
       .order('name', { ascending: true });
 
     if (error) {

@@ -21,7 +21,7 @@ const routes: Routes = [
   },
   {
     path: ':songSharingId',
-    loadChildren: () => import('./song-viewer/song-viewer.module').then( m => m.SongViewerPageModule)
+    loadChildren: () => import('./songs/songs.module').then( m => m.SongsPageModule)
   },
   {
     path: ':songSharingId/:songId',

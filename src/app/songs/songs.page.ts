@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { GroupCategory, History, Group, Person, Song } from '../utilities/interfaces';
+import { GroupCategory, History, Group, Person, Song, Tenant } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
 import { AlertController, IonModal } from '@ionic/angular';
 import { Utils } from '../utilities/Utils';
 import { Browser } from '@capacitor/browser';
 import { Role } from '../utilities/constants';
 import { Storage } from '@ionic/storage-angular';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-songs',
@@ -34,33 +35,51 @@ export class SongsPage implements OnInit {
   public sortOpt = "numberAsc";
   public viewOpts: string[] = ["withChoir", "withSolo", "missingInstruments", "link", "lastSung"];
   public instrumentsToFilter: number[] = [];
+  public currentSongs: { date: string, history: History[] }[] = [];
+  public tenantData?: Tenant;
 
   constructor(
     private db: DbService,
     private storage: Storage,
+    private router: Router,
   ) { }
 
   async ngOnInit() {
-    this.sortOpt = await this.storage.get(`sortOptSongs${this.db.tenant().id}`) || "numberAsc";
-    this.viewOpts = JSON.parse(await this.storage.get(`viewOptsSongs${this.db.tenant().id}`) || JSON.stringify(['withChoir', 'withSolo', 'missingInstruments', 'link', 'lastSung']));
-    this.inclChoir = await this.storage.get(`inclChoirSongs${this.db.tenant().id}`) === "true";
-    this.inclSolo = await this.storage.get(`inclSoloSongs${this.db.tenant().id}`) === "true";
-    this.instrumentsToFilter = JSON.parse(await this.storage.get(`instrumentsToFilterSongs${this.db.tenant().id}`) || "[]");
+  }
+
+  async ionViewWillEnter() {
+    const pathParts = window.location.pathname.split('/');
+    const songSharingId = pathParts[pathParts.length - 1];
+    if (songSharingId !== "songs") {
+      this.tenantData = await this.db.getTenantBySongSharingId(songSharingId);
+      if (!this.tenantData) {
+        Utils.showToast("Ungültiger Freigabe-Link.");
+        return;
+      }
+    }
+
+    this.sortOpt = await this.storage.get(`sortOptSongs${this.tenantData?.id ?? this.db.tenant().id}`) || "numberAsc";
+    this.viewOpts = JSON.parse(await this.storage.get(`viewOptsSongs${this.tenantData?.id ?? this.db.tenant().id}`) || JSON.stringify(['withChoir', 'withSolo', 'missingInstruments', 'link', 'lastSung']));
+    this.inclChoir = await this.storage.get(`inclChoirSongs${this.tenantData?.id ?? this.db.tenant().id}`) === "true";
+    this.inclSolo = await this.storage.get(`inclSoloSongs${this.tenantData?.id ?? this.db.tenant().id}`) === "true";
+    this.instrumentsToFilter = JSON.parse(await this.storage.get(`instrumentsToFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`) || "[]");
+    this.currentSongs = await this.db.getCurrentSongs(this.tenantData?.id ?? this.db.tenant().id);
 
     await this.getSongs();
   }
 
   async getSongs(): Promise<void> {
-    this.isOrchestra = this.db.tenant().type === "orchestra";
-    this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
-    const history: History[] = await this.db.getHistory();
-    const conductors: Person[] = await this.db.getConductors(true);
-    this.groupCategories = await this.db.getGroupCategories();
+    this.isOrchestra = (this.tenantData ?? this.db.tenant()).type === "orchestra";
+    this.isAdmin = this.db.tenantUser()?.role === Role.ADMIN || this.db.tenantUser()?.role === Role.RESPONSIBLE;
+    const history: History[] = await this.db.getHistory(this.tenantData?.id);
+    const groups = this.tenantData ? await this.db.getGroups(this.tenantData.id) : this.db.groups();
+    const conductors: Person[] = await this.db.getConductors(true, this.tenantData?.id, groups.find((g: Group) => g.maingroup)?.id);
+    this.groupCategories = await this.db.getGroupCategories(this.tenantData?.id);
     if (this.isOrchestra) {
-      this.instruments = this.db.groups().filter((instrument: Group) => !instrument.maingroup);
-      this.selectedInstruments = this.db.groups().map((instrument: Group) => instrument.id);
+      this.instruments = groups.filter((instrument: Group) => !instrument.maingroup);
+      this.selectedInstruments = groups.map((instrument: Group) => instrument.id);
     }
-    this.songs = (await this.db.getSongs()).map((song: Song): Song => {
+    this.songs = (await this.db.getSongs(this.tenantData?.id)).map((song: Song): Song => {
       const hisEntry: History | undefined = history.find((his: History): boolean => his.songId === song.id);
       const lastSung: string | undefined = hisEntry?.date;
       const conductor: Person | undefined = hisEntry ? conductors.find((con: Person) => con.id === hisEntry.person_id) : undefined;
@@ -161,12 +180,6 @@ export class SongsPage implements OnInit {
     return url.protocol === "http:" || url.protocol === "https:";
   }
 
-  openLink(link: string) {
-    Browser.open({
-      url: link
-    });
-  }
-
   search(event: any) {
     if (this.songs) {
       this.searchTerm = '';
@@ -202,9 +215,9 @@ export class SongsPage implements OnInit {
   }
 
   async onFilterChanged() {
-    await this.storage.set(`inclChoirSongs${this.db.tenant().id}`, this.inclChoir ? "true" : "false");
-    await this.storage.set(`inclSoloSongs${this.db.tenant().id}`, this.inclSolo ? "true" : "false");
-    await this.storage.set(`instrumentsToFilterSongs${this.db.tenant().id}`, JSON.stringify(this.instrumentsToFilter));
+    await this.storage.set(`inclChoirSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.inclChoir ? "true" : "false");
+    await this.storage.set(`inclSoloSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.inclSolo ? "true" : "false");
+    await this.storage.set(`instrumentsToFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`, JSON.stringify(this.instrumentsToFilter));
 
     this.searchTerm = "";
     this.initializeItems();
@@ -229,7 +242,7 @@ export class SongsPage implements OnInit {
   }
 
   async onSortChanged() {
-    await this.storage.set(`sortOptSongs${this.db.tenant().id}`, this.sortOpt);
+    await this.storage.set(`sortOptSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.sortOpt);
 
     if (this.sortOpt === "numberAsc") {
       this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => (a.number > b.number) ? 1 : -1);
@@ -258,7 +271,7 @@ export class SongsPage implements OnInit {
   }
 
   async onViewChanged() {
-    await this.storage.set(`viewOptsSongs${this.db.tenant().id}`, JSON.stringify(this.viewOpts));
+    await this.storage.set(`viewOptsSongs${this.tenantData?.id ?? this.db.tenant().id}`, JSON.stringify(this.viewOpts));
   }
 
   initializeItems(): void {
@@ -274,12 +287,21 @@ export class SongsPage implements OnInit {
   }
 
   getSongSharingLink(): string {
-    return `${window.location.origin}/${this.db.tenant().song_sharing_id}`;
+    return `${window.location.origin}/${this.tenantData?.song_sharing_id ?? this.db.tenant().song_sharing_id}`;
   }
 
   copyShareLink() {
     navigator?.clipboard.writeText(this.getSongSharingLink());
     Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
+  }
+
+  openSong(songId: number, modal: IonModal) {
+    modal.dismiss();
+    if (!this.tenantData) {
+      this.router.navigate([`/tabs/settings/songs/`, songId]);
+      return;
+    }
+    this.router.navigate([`${this.tenantData?.song_sharing_id ?? this.db.tenant().song_sharing_id}`, `${songId}`]);
   }
 
 }

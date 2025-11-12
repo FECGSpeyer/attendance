@@ -1,24 +1,32 @@
 <ion-header translucent="true">
-  <ion-toolbar>
+  <ion-toolbar color="light">
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
     </ion-buttons>
+    @if (tenantData) {
+    <ion-title>{{ tenantData.longName }}</ion-title>
+    } @else {
     <ion-title>Werke ({{ songs?.length }})</ion-title>
+    }
     <ion-buttons slot="end">
-      <ion-button (click)="copyShareLink()" *ngIf="db.tenant()?.song_sharing_id">
+      <ion-button (click)="copyShareLink()" *ngIf="tenantData?.song_sharing_id ?? db.tenant()?.song_sharing_id">
         <ion-icon slot="icon-only" name="link-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen="true">
+<ion-content color="light" fullscreen="true">
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
   <ion-header collapse="condense">
-    <ion-toolbar>
+    <ion-toolbar color="light">
+      @if (tenantData) {
+      <ion-title size="large">{{ tenantData.longName }}</ion-title>
+      } @else {
       <ion-title size="large">Werke ({{ songs?.length }})</ion-title>
+      }
     </ion-toolbar>
   </ion-header>
 
@@ -66,39 +74,77 @@
               <ion-select-option value="withChoir">Chor & Orchester</ion-select-option>
               <ion-select-option value="withSolo">Solo</ion-select-option>
               <ion-select-option value="missingInstruments">Fehlende Instrumente</ion-select-option>
-              <ion-select-option value="lastSung">Zuletzt gespielt</ion-select-option>
+              <ion-select-option *ngIf="!tenantData" value="lastSung">Zuletzt gespielt</ion-select-option>
             </ion-select>
           </ion-item>
         </ion-list>
       </ng-template>
     </ion-popover>
   </div>
-  <ion-list class="marginBottom">
-    <ion-item [routerLink]="['/tabs/settings/songs/', song.id]" *ngFor="let song of songsFiltered">
-      <ion-label>
-        <h2>{{ song.number }} {{ song.name }}</h2>
-        <h3 style="color: var(--ion-color-danger);"
-          *ngIf="isOrchestra && song.instrument_ids?.length && viewOpts.includes('missingInstruments')">{{
-          getInstrumentText(song.instrument_ids) }}</h3>
-        <h3 *ngIf="song.lastSung && viewOpts.includes('lastSung')">Zuletzt gespielt am {{ song.lastSung |
-          date:'dd.MM.YYYY' }} | {{ song.conductor }}
-        </h3>
-      </ion-label>
-      <ion-badge *ngIf="song.withSolo && viewOpts.includes('withSolo')" color="success" slot="end">
-        Solo
-      </ion-badge>
-      <ion-badge *ngIf="song.withChoir && viewOpts.includes('withChoir')" color="tertiary" slot="end">
-        @if (isOrchestra) {
-        Chor
-        } @else {
-        Orchester
-        }
-      </ion-badge>
-      <ion-badge (click)="openLink(song.link)" slot="end" *ngIf="song.link && viewOpts.includes('link')"
-        color="primary">
-        <ion-icon name="link"></ion-icon>
-      </ion-badge>
-    </ion-item>
+  <ion-list [inset]="true">
+        <ion-item-group *ngIf="currentSongs?.length > 0">
+      <ion-item lines="none" id="current-songs-button" button>
+        <ion-label color="primary">Aktuelle Werke anzeigen</ion-label>
+      </ion-item>
+      <ion-modal #currentSongsModal trigger="current-songs-button"
+        [initialBreakpoint]="currentSongs.length > 1 ? 0.8 : 0.5"
+        [breakpoints]="currentSongs.length > 1 ? [0, 0.8, 1] : [0, 0.5, 1]">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar>
+              <ion-title>Aktuelle Werke</ion-title>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content color="light">
+            <ion-list [inset]="true">
+              @for (data of currentSongs; track data.date) {
+              <ion-list-header>
+                <ion-label>{{ data.date }}</ion-label>
+              </ion-list-header>
+              <ion-item-group>
+                <ion-item *ngFor="let his of data.history" (click)="openSong(his.song.id, currentSongsModal)" button>
+                  <ion-label>
+                    {{ his.song.number }} {{ his.song.name }}
+                  </ion-label>
+                </ion-item>
+              </ion-item-group>
+              }
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-item-group>
+
+    <ion-list-header>
+      <ion-label>Werke ({{ songsFiltered.length }})</ion-label>
+    </ion-list-header>
+    <ion-item-group>
+      <ion-item detail="false" [routerLink]="tenantData ? [song.id] : ['/tabs/settings/songs/', song.id]" *ngFor="let song of songsFiltered">
+        <ion-label>
+          <h2>{{ song.number }} {{ song.name }}</h2>
+          <h3 style="color: var(--ion-color-danger);"
+            *ngIf="isOrchestra && song.instrument_ids?.length && viewOpts.includes('missingInstruments')">{{
+            getInstrumentText(song.instrument_ids) }}</h3>
+          <h3 *ngIf="!tenantData && song.lastSung && viewOpts.includes('lastSung')">Zuletzt gespielt am {{ song.lastSung |
+            date:'dd.MM.YYYY' }} | {{ song.conductor }}
+          </h3>
+        </ion-label>
+        <ion-badge *ngIf="song.withSolo && viewOpts.includes('withSolo')" color="success" slot="end">
+          Solo
+        </ion-badge>
+        <ion-badge *ngIf="song.withChoir && viewOpts.includes('withChoir')" color="tertiary" slot="end">
+          @if (isOrchestra) {
+          Chor
+          } @else {
+          Orchester
+          }
+        </ion-badge>
+        <ion-badge slot="end" *ngIf="song.link && viewOpts.includes('link')"
+          color="primary">
+          <ion-icon name="link"></ion-icon>
+        </ion-badge>
+      </ion-item>
+    </ion-item-group>
   </ion-list>
 
   <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">

@@ -1,10 +1,10 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="light">
     <ion-buttons slot="start">
-      <ion-back-button text="" defaultHref="tabs/settings/songs"></ion-back-button>
+      <ion-back-button text="" [defaultHref]="tenant ? sharing_id : 'tabs/settings/songs'"></ion-back-button>
     </ion-buttons>
     @if (readOnly) {
-    <ion-title *ngIf="song">{{ song.id }} - {{ song.name }}</ion-title>
+    <ion-title *ngIf="song">{{ song.id }} {{ song.name }}</ion-title>
     } @else {
     <ion-title>Werk bearbeiten</ion-title>
     }
@@ -20,7 +20,7 @@
   <ion-header collapse="condense">
     <ion-toolbar color="light">
       @if (readOnly) {
-      <ion-title *ngIf="song" size="large">{{ song.id }} - {{ song.name }}</ion-title>
+      <ion-title *ngIf="song" size="large">{{ song.id }} {{ song.name }}</ion-title>
       } @else {
       <ion-title size="large">Werk bearbeiten</ion-title>
       }
@@ -31,23 +31,23 @@
     <ion-item-group>
       <ion-item>
         <ion-label position="stacked">Nummer</ion-label>
-        <ion-input [(ngModel)]="song.number" type="number" #number></ion-input>
+        <ion-input (ionBlur)="update()" [(ngModel)]="song.number" type="number" #number></ion-input>
       </ion-item>
       <ion-item>
         <ion-label position="stacked">Name</ion-label>
-        <ion-input [(ngModel)]="song.name" #name></ion-input>
+        <ion-input (ionBlur)="update()" [(ngModel)]="song.name" #name></ion-input>
       </ion-item>
       <ion-item>
-        <ion-toggle [(ngModel)]="song.withChoir" aria-label="Chor & Orchester">Chor &
+        <ion-toggle (ionChange)="update()" [(ngModel)]="song.withChoir" aria-label="Chor & Orchester">Chor &
           Orchester</ion-toggle>
       </ion-item>
       <ion-item>
-        <ion-toggle [(ngModel)]="song.withSolo" aria-label="Mit Solo-Gesang">Mit
+        <ion-toggle (ionChange)="update()" [(ngModel)]="song.withSolo" aria-label="Mit Solo-Gesang">Mit
           Solo-Gesang</ion-toggle>
       </ion-item>
 
       <ion-item *ngIf="isOrchestra && !readOnly">
-        <ion-select interface="modal" label="Besetzung" multiple="true" [(ngModel)]="song.instrument_ids">
+        <ion-select (ionDismiss)="update()" interface="modal" label="Besetzung" multiple="true" [(ngModel)]="song.instrument_ids">
           <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{ instrument.name
             }}</ion-select-option>
         </ion-select>
@@ -55,7 +55,7 @@
     </ion-item-group>
   }
 
-    @if (readOnly) {
+    @if (readOnly && (song.withChoir || song.withSolo || (isOrchestra && song.instrument_ids?.length))) {
     <ion-list-header>
       <ion-label>Besetzung</ion-label>
     </ion-list-header>
@@ -63,7 +63,7 @@
       <ion-chip color="primary" *ngIf="song.withChoir">Chor & Orchester</ion-chip>
       <ion-chip color="primary" *ngIf="song.withSolo">Mit Solo-Gesang</ion-chip>
       <br>
-      @if (isOrchestra) {
+      @if (isOrchestra && song.instrument_ids?.length) {
       <ion-chip [color]="song.instrument_ids?.includes(instrument.id) ? 'success' : 'danger'" *ngFor="let instrument of instruments" style="margin-left: 5px;">
         <ion-label>{{ instrument.name }}</ion-label>
       </ion-chip>
@@ -99,7 +99,7 @@
           </ion-list>
         </ng-template>
       </ion-popover>
-      } @else {
+      } @else if (!readOnly) {
       <ion-button (click)="isFilesModalOpen = true" fill="clear" size="small">
         <ion-icon name="cloud-upload-outline"></ion-icon>
       </ion-button>
@@ -209,13 +209,13 @@
 
     <ion-item-group *ngIf="!readOnly || song.link">
       @if (readOnly) {
-      <ion-item button>
-        <ion-label color="primary">Link öffnen</ion-label>
+      <ion-item button (click)="openLink(song.link)">
+        <ion-label color="primary">Externen Noten-Link öffnen</ion-label>
       </ion-item>
       } @else {
       <ion-item>
         <ion-label position="stacked">Link</ion-label>
-        <ion-textarea [(ngModel)]="song.link" autoGrow="true" #link></ion-textarea>
+        <ion-textarea (ionBlur)="update()" [(ngModel)]="song.link" autoGrow="true" #link></ion-textarea>
       </ion-item>
       }
     </ion-item-group>

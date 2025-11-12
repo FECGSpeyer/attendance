@@ -115,6 +115,10 @@ export class SongPage implements OnInit {
     window.open(file.url, '_blank');
   }
 
+  openLink(link: string) {
+    window.open(link, '_blank');
+  }
+
   async downloadFile(file: SongFile) {
     const blob = await this.db.downloadSongFile(file.storageName, this.song.id);
     const url = window.URL.createObjectURL(blob);
@@ -264,5 +268,9 @@ export class SongPage implements OnInit {
   copyShareLink() {
     navigator?.clipboard.writeText(this.getSongSharingLink());
     Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
+  }
+
+  async update() {
+    await this.db.editSong(this.song.id, this.song);
   }
 }

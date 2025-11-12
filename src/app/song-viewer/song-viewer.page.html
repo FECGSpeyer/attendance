@@ -10,14 +10,98 @@
       <ion-title size="large">{{ tenantLongName }}</ion-title>
     </ion-toolbar>
   </ion-header>
+  <div class="flex">
+    <ion-searchbar (ionInput)="search($event)" placeholder="Werk suchen..."></ion-searchbar>
+    <ion-button id="filter-trigger-songs" fill="none">
+      <ion-icon size="medium" name="options"></ion-icon>
+    </ion-button>
+    <ion-popover trigger="filter-trigger-songs" triggerAction="click">
+      <ng-template>
+        <ion-list>
+          <ion-item lines="none">
+            <ion-icon slot="start" name="filter" size="small"></ion-icon>
+            <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="sortOpt">
+              <ion-select-option value="numberAsc">Nummer ↑</ion-select-option>
+              <ion-select-option value="numberDesc">Nummer ↓</ion-select-option>
+              <ion-select-option value="nameAsc">Name ↑</ion-select-option>
+              <ion-select-option value="nameDesc">Name ↓</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-icon slot="start" name="people" size="small"></ion-icon>
+            <ion-toggle [(ngModel)]="inclChoir" (ionChange)="onFilterChanged()">Chor & Orchester</ion-toggle>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-icon slot="start" name="person" size="small"></ion-icon>
+            <ion-toggle [(ngModel)]="inclSolo" (ionChange)="onFilterChanged()">Solo</ion-toggle>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-icon slot="start" name="musical-notes" size="small"></ion-icon>
+            <ion-select slot="end" (ionChange)="onFilterChanged()" multiple="true" [(ngModel)]="instrumentsToFilter">
+              <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{
+                instrument.name }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-icon slot="start" name="eye" size="small"></ion-icon>
+            <ion-select multiple="true" slot="end" (ionChange)="onViewChanged()" interface="popover"
+              [(ngModel)]="viewOpts">
+              <ion-select-option value="link">Link</ion-select-option>
+              <ion-select-option value="withChoir">Chor & Orchester</ion-select-option>
+              <ion-select-option value="withSolo">Solo</ion-select-option>
+              <ion-select-option value="missingInstruments">Fehlende Instrumente</ion-select-option>
+              <ion-select-option value="lastSung">Zuletzt gespielt</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-list>
+      </ng-template>
+    </ion-popover>
+  </div>
   <ion-list [inset]="true">
+    <ion-item-group *ngIf="currentSongs?.length > 0">
+      <ion-item lines="none" id="current-songs-button" button>
+        <ion-label color="primary">Aktuelle Werke anzeigen</ion-label>
+      </ion-item>
+      <ion-modal #currentSongsModal trigger="current-songs-button"
+        [initialBreakpoint]="currentSongs.length > 1 ? 0.8 : 0.5"
+        [breakpoints]="currentSongs.length > 1 ? [0, 0.8, 1] : [0, 0.5, 1]">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar>
+              <ion-title>Aktuelle Werke</ion-title>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content color="light">
+            <ion-list [inset]="true">
+              @for (data of currentSongs; track data.date) {
+              <ion-list-header>
+                <ion-label>{{ data.date }}</ion-label>
+              </ion-list-header>
+              <ion-item-group>
+                <ion-item *ngFor="let his of data.history" (click)="openSong(his.song.id, currentSongsModal)" button>
+                  <ion-label>
+                    {{ his.song.number }} {{ his.song.name }}
+                  </ion-label>
+                </ion-item>
+              </ion-item-group>
+              }
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-item-group>
+
     <ion-list-header>
       <ion-label>Alle Werke</ion-label>
     </ion-list-header>
     <ion-item-group>
       <ion-item *ngFor="let song of songs" [routerLink]="[song.id]" button>
         <ion-label>
-          <h2>{{ song.number }} - {{ song.name }}</h2>
+          <h2>{{ song.number }} {{ song.name }}</h2>
           <p *ngIf="song.withChoir || song.withSolo">
             <span *ngIf="song.withChoir">Chor & Orchester</span>
             <span *ngIf="song.withChoir && song.withSolo">, </span>
