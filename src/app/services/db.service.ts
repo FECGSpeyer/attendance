@@ -5,7 +5,7 @@ import { createClient, SupabaseClient, SupabaseClientOptions, User } from '@supa
 import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
-import { AttendanceStatus, DefaultAttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
+import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
 import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
@@ -65,10 +65,27 @@ export class DbService {
     return supabase;
   }
 
+  encodeFilename(filename: string) {
+       const nameParts = filename.split('.')
+       const ext = nameParts.pop() || ''
+       const name = nameParts.join('.')
+
+       const sanitizedName = name
+         .normalize('NFD') // Normalize unicode (convert accents to ASCII equivalents where possible)
+         .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (e.g. é -> e)
+         .replace(/[^\w\s-]/g, '-') // Replace non-word chars with hyphens (e.g. # -> -)
+         .replace(/\s+/g, '-') // Replace spaces with hyphens (e.g. "hello world" -> "hello-world")
+         .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen (e.g. "hello--world" -> "hello-world")
+         .replace(/^-+|-+$/g, '') // Trim hyphens from start and end (e.g. "-hello-world-" -> "hello-world")
+      // number between 100 and 999
+      const randomNumber = Math.floor(100 + Math.random() * 900);
+      return `${sanitizedName}_${randomNumber}.${ext}`;
+  }
+
   async uploadSongFile(songId: number, file: File, instrumentId: number | null): Promise<SongFile> {
     const tenantId = this.tenant().id;
     // Generate a unique fileId (timestamp + random)
-    const fileId = `${Date.now()}-${Math.floor(Math.random() * 10000)}.${file.name.split('.').pop()}`;
+    const fileId = this.encodeFilename(file.name);
     const filePath = `songs/${tenantId}/${songId}/${fileId}`;
     const fileName = file.name;
     // Upload to Supabase storage

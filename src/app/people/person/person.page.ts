@@ -361,8 +361,8 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   async removeUserFromTenant() {
     const alert = await this.alertController.create({
-      header: 'Benutzer entfernen',
-      message: 'Möchtest du den Benutzer wirklich aus der Instanz entfernen?',
+      header: 'Account entfernen',
+      message: 'Möchtest du den Account wirklich aus der Instanz entfernen? Die Personendaten bleiben erhalten.',
       buttons: [
         {
           text: 'Abbrechen',

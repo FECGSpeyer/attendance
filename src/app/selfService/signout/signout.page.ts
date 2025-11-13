@@ -1,6 +1,6 @@
 /* eslint-disable arrow-body-style */
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, IonAccordionGroup, IonModal } from '@ionic/angular';
+import { ActionSheetController, IonAccordionGroup, IonModal, isPlatform } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
@@ -266,7 +266,7 @@ export class SignoutPage implements OnInit {
       });
     }
 
-    if (song.files.find(f => f.instrumentId === this.player.instrument)) {
+    if (song.files.find(f => f.instrumentId === this.player.instrument) && !isPlatform('ios')) {
       buttons.push({
         text: 'Noten downloaden',
         handler: async () => {

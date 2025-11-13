@@ -1,6 +1,5 @@
 import { Component, OnInit, effect } from '@angular/core';
 import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, isPlatform, ModalController } from '@ionic/angular';
-import { format, parseISO } from 'date-fns';
 import { ExportPage } from 'src/app/export/export.page';
 import { HistoryPage } from 'src/app/history/history.page';
 import { PersonPage } from 'src/app/people/person/person.page';
