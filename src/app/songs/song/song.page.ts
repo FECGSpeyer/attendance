@@ -16,7 +16,6 @@ export class SongPage implements OnInit {
   public song: Song;
   public isOrchestra: boolean = false;
   public instruments: Group[] = [];
-  public fileSizeError: string = '';
   public selectedFileInfos: { file: File, instrumentId: number | null }[] = [];
   public isFilesModalOpen: boolean = false;
   public readOnly: boolean = true;
@@ -49,11 +48,10 @@ export class SongPage implements OnInit {
   onFilesSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files) return;
-    this.fileSizeError = '';
     for (let i = 0; i < input.files.length; i++) {
       const file = input.files[i];
       if (file.size > 10 * 1024 * 1024) {
-        this.fileSizeError = `Die Datei ${file.name} überschreitet die maximale Größe von 10MB.`;
+        Utils.showToast(`Die Datei ${file.name} überschreitet die maximale Größe von 10MB.`, 'danger', 5000);
         continue;
       }
       // Try to map instrument by filename
