@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { AlertController, IonModal, IonPopover } from '@ionic/angular';
+import { AlertController, IonItemSliding, IonModal, IonPopover } from '@ionic/angular';
 import * as JSZip from 'jszip';
 import { DbService } from 'src/app/services/db.service';
 import { Role } from 'src/app/utilities/constants';
@@ -119,7 +119,8 @@ export class SongPage implements OnInit {
     window.open(link, '_blank');
   }
 
-  async downloadFile(file: SongFile) {
+  async downloadFile(file: SongFile, slider?: IonItemSliding) {
+    slider?.close();
     const blob = await this.db.downloadSongFile(file.storageName, this.song.id);
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -129,7 +130,8 @@ export class SongPage implements OnInit {
     window.URL.revokeObjectURL(url);
   }
 
-  async deleteFile(file: SongFile) {
+  async deleteFile(file: SongFile, slider?: IonItemSliding) {
+    slider?.close();
     const alert = await this.alertController.create({
       header: 'Datei löschen',
       message: `Möchten Sie die Datei "${file.fileName}" wirklich löschen?`,
@@ -151,7 +153,8 @@ export class SongPage implements OnInit {
     await alert.present();
   }
 
-  async changeCategory(file: SongFile) {
+  async changeCategory(file: SongFile, slider?: IonItemSliding) {
+    slider?.close();
     const alert = await this.alertController.create({
       header: 'Kategorie ändern',
       inputs: [{
@@ -195,7 +198,8 @@ export class SongPage implements OnInit {
     await alert.present();
   }
 
-  removeSelectedFile(index: number) {
+  removeSelectedFile(index: number, slider?: IonItemSliding) {
+    slider?.close();
     this.selectedFileInfos.splice(index, 1);
   }
 
@@ -254,7 +258,8 @@ export class SongPage implements OnInit {
     await loading.dismiss();
   }
 
-  async sendPerTelegram(file: SongFile) {
+  async sendPerTelegram(file: SongFile, slider?: IonItemSliding) {
+    slider?.close();
     const loading = await Utils.getLoadingElement(999999, 'Datei wird versendet...');
     await loading.present();
     await this.db.sendSongPerTelegram(file.url);

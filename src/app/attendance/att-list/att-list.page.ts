@@ -1,6 +1,6 @@
 import { Component, OnInit, effect } from '@angular/core';
 import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
-import { format, parseISO } from 'date-fns';
+import { format, isSameDay, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Attendance, PersonAttendance, Player, Song, History, Person } from 'src/app/utilities/interfaces';
@@ -332,6 +332,14 @@ export class AttListPage implements OnInit {
     }
 
     return Utils.getTypeText(key);
+  }
+
+  onDateClick() {
+    if (this.dates.length === 1 && isSameDay(new Date(this.dates[0]), new Date())) {
+      this.dates = [];
+      this.dateString = 'Kein Datum ausgewählt';
+      Utils.showToast("Das aktuelle Datum wurde deselektiert", "light", 3000);
+    }
   }
 
   getReadableDate(date: string): string {

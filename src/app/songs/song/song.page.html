@@ -141,7 +141,7 @@
               </ion-button>
 
               <ion-item-group *ngIf="selectedFileInfos?.length">
-                <ion-item-sliding *ngFor="let fileInfo of selectedFileInfos; let i = index">
+                <ion-item-sliding #sliderFile *ngFor="let fileInfo of selectedFileInfos; let i = index">
                   <ion-item>
                     <ion-label>
                       <h2>{{ fileInfo.file.name }}</h2>
@@ -154,8 +154,8 @@
                         instrument.name }}</ion-select-option>
                     </ion-select>
                   </ion-item>
-                  <ion-item-options side="end">
-                    <ion-item-option color="danger" (click)="removeSelectedFile(i)">
+                  <ion-item-options (ionSwipe)="removeSelectedFile(i)" side="end">
+                    <ion-item-option color="danger" (click)="removeSelectedFile(i, sliderFile)">
                       <ion-icon name="trash-outline"></ion-icon>
                     </ion-item-option>
                   </ion-item-options>
@@ -173,7 +173,7 @@
     </ion-list-header>
     <ion-item-group>
       @if (song.files && song.files.length > 0) {
-      <ion-item-sliding *ngFor="let file of song.files; let i = index">
+      <ion-item-sliding #fileSliding *ngFor="let file of song.files; let i = index">
         <ion-item button (click)="openFile(file)">
           <ion-label>
             {{ file.fileName }}
@@ -183,17 +183,17 @@
             slot="end">{{
             getInstrumentName(file.instrumentId) }}</ion-badge>
         </ion-item>
-        <ion-item-options side="end">
-          <ion-item-option *ngIf="!readOnly" color="secondary" (click)="changeCategory(file)">
+        <ion-item-options (ionSwipe)="readOnly ? downloadFile(file) : deleteFile(file)" side="end">
+          <ion-item-option *ngIf="!readOnly" color="secondary" (click)="changeCategory(file, fileSliding)">
             <ion-icon name="create-outline"></ion-icon>
           </ion-item-option>
-          <ion-item-option color="primary" (click)="downloadFile(file)">
+          <ion-item-option color="primary" (click)="downloadFile(file, fileSliding)">
             <ion-icon name="download-outline"></ion-icon>
           </ion-item-option>
-          <ion-item-option *ngIf="db.tenantUser()?.telegram_chat_id" color="mint" (click)="sendPerTelegram(file)">
+          <ion-item-option *ngIf="db.tenantUser()?.telegram_chat_id" color="mint" (click)="sendPerTelegram(file, fileSliding)">
             <ion-icon name="send-outline"></ion-icon>
           </ion-item-option>
-          <ion-item-option *ngIf="!readOnly" color="danger" (click)="deleteFile(file)">
+          <ion-item-option *ngIf="!readOnly" color="danger" (click)="deleteFile(file, fileSliding)">
             <ion-icon name="trash-outline"></ion-icon>
           </ion-item-option>
         </ion-item-options>

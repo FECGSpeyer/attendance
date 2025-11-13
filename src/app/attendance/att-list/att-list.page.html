@@ -146,8 +146,8 @@
           </ion-toolbar>
         </ion-header>
         <ion-item>
-          <ion-label position="stacked">Datum</ion-label>
-          <ion-input readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
+          <ion-label position="stacked">Datum (Mehrfachauswahl möglich)</ion-label>
+          <ion-input (click)="onDateClick()" readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
           <ion-button id="info-button" fill="clear" slot="end">
             <ion-icon name="information"></ion-icon>
           </ion-button>
