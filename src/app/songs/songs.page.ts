@@ -45,9 +45,6 @@ export class SongsPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-  }
-
-  async ionViewWillEnter() {
     const pathParts = window.location.pathname.split('/');
     const songSharingId = pathParts[pathParts.length - 1];
     if (songSharingId !== "songs") {
@@ -64,7 +61,9 @@ export class SongsPage implements OnInit {
     this.inclSolo = await this.storage.get(`inclSoloSongs${this.tenantData?.id ?? this.db.tenant().id}`) === "true";
     this.instrumentsToFilter = JSON.parse(await this.storage.get(`instrumentsToFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`) || "[]");
     this.currentSongs = await this.db.getCurrentSongs(this.tenantData?.id ?? this.db.tenant().id);
+  }
 
+  async ionViewWillEnter() {
     await this.getSongs();
   }
 
