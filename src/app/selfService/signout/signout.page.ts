@@ -266,7 +266,8 @@ export class SignoutPage implements OnInit {
       });
     }
 
-    if (song.files.find(f => f.instrumentId === this.player.instrument) && !isPlatform('ios')) {
+    if (song.files.find(f => f.instrumentId === this.player.instrument)) {
+      if (!isPlatform('ios')) {
       buttons.push({
         text: 'Noten downloaden',
         handler: async () => {
@@ -282,6 +283,7 @@ export class SignoutPage implements OnInit {
           }
         },
       });
+      }
 
       buttons.push({
         text: 'Noten anzeigen',
