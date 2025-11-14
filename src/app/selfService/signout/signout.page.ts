@@ -257,6 +257,10 @@ export class SignoutPage implements OnInit {
   }
 
   async openSongOptions(song: Song) {
+    if (!song.instrument_ids.includes(this.player.instrument)) {
+      Utils.showToast("Für dein Instrument sind leider keine Noten verfügbar.", "danger", 4000);
+    }
+
     const buttons = [];
 
     if (song.link) {
