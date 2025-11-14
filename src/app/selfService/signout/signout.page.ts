@@ -4,7 +4,7 @@ import { ActionSheetController, IonAccordionGroup, IonModal, isPlatform } from '
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
-import { Attendance, PersonAttendance, Player, Song, Tenant, History } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, Player, Song, Tenant, History, SongFile } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -266,23 +266,25 @@ export class SignoutPage implements OnInit {
       });
     }
 
-    if (song.files.find(f => f.instrumentId === this.player.instrument)) {
+    const files = song.files.filter((file: SongFile) => file.instrumentId === this.player.instrument)
+
+    if (files.length === 1) {
       if (!isPlatform('ios')) {
-      buttons.push({
-        text: 'Noten downloaden',
-        handler: async () => {
-          const file = song.files.find(f => f.instrumentId === this.player.instrument);
-          if (file) {
-            const blob = await this.db.downloadSongFile(file.storageName, song.id);
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = file.fileName;
-            a.click();
-            window.URL.revokeObjectURL(url);
-          }
-        },
-      });
+        buttons.push({
+          text: 'Noten downloaden',
+          handler: async () => {
+            const file = song.files.find(f => f.instrumentId === this.player.instrument);
+            if (file) {
+              const blob = await this.db.downloadSongFile(file.storageName, song.id);
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = file.fileName;
+              a.click();
+              window.URL.revokeObjectURL(url);
+            }
+          },
+        });
       }
 
       buttons.push({
@@ -292,6 +294,70 @@ export class SignoutPage implements OnInit {
           if (file) {
             window.open(file.url, "_blank");
           }
+        },
+      });
+    } else if (files.length > 1) {
+      if (!isPlatform('ios')) {
+        buttons.push({
+          text: 'Noten downloaden',
+          handler: async () => {
+            const fileOptions = files.map((file: SongFile) => {
+              return {
+                text: file.fileName,
+                role: '',
+                handler: async () => {
+                  const blob = await this.db.downloadSongFile(file.storageName, song.id);
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = file.fileName;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                },
+              };
+            });
+
+            fileOptions.push({
+              text: 'Abbrechen',
+              role: 'destructive',
+              handler: () => Promise.resolve(),
+            });
+
+            const fileActionSheet = await this.actionSheetController.create({
+              header: `Noten für ${song.number}. ${song.name} auswählen`,
+              buttons: fileOptions,
+            });
+
+            await fileActionSheet.present();
+          },
+        });
+      }
+
+      buttons.push({
+        text: 'Noten anzeigen',
+        handler: async () => {
+          const fileOptions = files.map((file: SongFile) => {
+            return {
+              text: file.fileName,
+              role: '',
+              handler: () => {
+                window.open(file.url, "_blank");
+              },
+            };
+          });
+
+          fileOptions.push({
+            text: 'Abbrechen',
+            role: 'destructive',
+            handler: () => Promise.resolve(),
+          });
+
+          const fileActionSheet = await this.actionSheetController.create({
+            header: `Noten für ${song.number}. ${song.name} auswählen`,
+            buttons: fileOptions,
+          });
+
+          await fileActionSheet.present();
         },
       });
     }
