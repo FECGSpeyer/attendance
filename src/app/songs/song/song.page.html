@@ -4,7 +4,7 @@
       <ion-back-button text="" [defaultHref]="tenant ? sharing_id : 'tabs/settings/songs'"></ion-back-button>
     </ion-buttons>
     @if (readOnly) {
-    <ion-title *ngIf="song">{{ song.id }} {{ song.name }}</ion-title>
+    <ion-title *ngIf="song">{{ song.number }} {{ song.name }}</ion-title>
     } @else {
     <ion-title>Werk bearbeiten</ion-title>
     }
@@ -20,7 +20,7 @@
   <ion-header collapse="condense">
     <ion-toolbar color="light">
       @if (readOnly) {
-      <ion-title *ngIf="song" size="large">{{ song.id }} {{ song.name }}</ion-title>
+      <ion-title *ngIf="song" size="large">{{ song.number }} {{ song.name }}</ion-title>
       } @else {
       <ion-title size="large">Werk bearbeiten</ion-title>
       }
