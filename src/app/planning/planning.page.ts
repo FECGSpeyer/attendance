@@ -288,35 +288,22 @@ export class PlanningPage implements OnInit {
         type: "textarea",
         name: "field",
         placeholder: "Freitext eingeben..."
+      }, {
+        type: "text",
+        name: "conductor",
+        placeholder: "Ausführenden eingeben..."
       }],
       buttons: [{
         text: "Abbrechen"
       }, {
         text: "Hinzufügen",
         handler: (evt: any) => {
-          if (!isNaN(evt.field) && Boolean(this.songs.find((song: Song) => song.number === Number(evt.field)))) {
-            const song: Song = this.songs.find((song: Song) => song.number === Number(evt.field));
-            const conductor: string | undefined = this.history?.find((his: History) => his.songId === song.id)?.conductorName;
-            this.selectedFields.push({
-              id: song.id.toString(),
-              name: `${song.number}. ${song.name}`,
-              time: "20",
-              conductor: conductor || "",
-            });
-          } else if (evt.field.includes("(") && evt.field.includes(")")) {
-            this.selectedFields.push({
-              id: evt.field.substring(0, evt.field.indexOf("(")),
-              name: evt.field.substring(0, evt.field.indexOf("(")),
-              conductor: evt.field.substring(evt.field.indexOf("(") + 1, evt.field.indexOf(")")),
-              time: "20",
-            });
-          } else {
-            this.selectedFields.push({
-              id: evt.field,
-              name: evt.field,
-              time: "20",
-            });
-          }
+          this.selectedFields.push({
+            id: evt.field,
+            name: evt.field,
+            conductor: evt.conductor ?? "",
+            time: "20",
+          });
 
           this.calculateEnd();
         }
