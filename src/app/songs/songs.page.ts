@@ -7,6 +7,7 @@ import { Browser } from '@capacitor/browser';
 import { Role } from '../utilities/constants';
 import { Storage } from '@ionic/storage-angular';
 import { Router } from '@angular/router';
+import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 @Component({
   selector: 'app-songs',
@@ -37,6 +38,7 @@ export class SongsPage implements OnInit {
   public instrumentsToFilter: number[] = [];
   public currentSongs: { date: string, history: History[] }[] = [];
   public tenantData?: Tenant;
+  private sub: RealtimeChannel;
 
   constructor(
     public db: DbService,
@@ -61,10 +63,28 @@ export class SongsPage implements OnInit {
     this.inclSolo = await this.storage.get(`inclSoloSongs${this.tenantData?.id ?? this.db.tenant().id}`) === "true";
     this.instrumentsToFilter = JSON.parse(await this.storage.get(`instrumentsToFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`) || "[]");
     this.currentSongs = await this.db.getCurrentSongs(this.tenantData?.id ?? this.db.tenant().id);
+
+    await this.getSongs();
+
+    this.subscribeToUpdates();
   }
 
-  async ionViewWillEnter() {
-    await this.getSongs();
+  async ngOnDestroy() {
+    this.sub?.unsubscribe();
+  }
+
+  subscribeToUpdates() {
+    this.sub?.unsubscribe();
+    this.sub = this.db.getSupabase()
+      .channel('att-changes').on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'songs' },
+        (payload: RealtimePostgresChangesPayload<Song>) => {
+          if ((payload.new as Song)?.tenantId === (this.tenantData?.id ?? this.db.tenant().id) || (payload.old as Song)?.id) {
+            this.getSongs();
+          }
+        })
+      .subscribe();
   }
 
   async getSongs(): Promise<void> {
