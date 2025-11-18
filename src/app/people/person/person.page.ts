@@ -6,7 +6,7 @@ import { Group, Organisation, Parent, Person, PersonAttendance, Player, PlayerHi
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
-import { AttendanceStatus, DefaultAttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role } from 'src/app/utilities/constants';
+import { AttendanceStatus, DefaultAttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role, FieldType } from 'src/app/utilities/constants';
 dayjs.extend(utc);
 
 @Component({
@@ -38,6 +38,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     history: [],
     paused: false,
     tenantId: 999999999,
+    phone: "",
   };
   public readonly PLAYER: Role = Role.PLAYER;
   public readonly HELPER: Role = Role.HELPER;
@@ -78,6 +79,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public organisation: Organisation | null;
   public tenantGroups: Group[] = [];
   public targetGroupId: number;
+  public fieldTypes = FieldType;
 
   constructor(
     public db: DbService,
@@ -108,7 +110,16 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     if (this.existingPlayer) {
-      this.player = { ...this.existingPlayer };
+      if (!this.existingPlayer.additional_fields) {
+        this.existingPlayer.additional_fields = {};
+      }
+      if (this.db.tenant().additional_fields?.length) {
+        for (const field of this.db.tenant().additional_fields) {
+          this.existingPlayer.additional_fields[field.id] = this.existingPlayer.additional_fields[field.id] ?? this.getFieldTypeDefaultValue(field.type, field.options);
+        }
+      }
+
+      this.player = { ...this.existingPlayer, additional_fields: { ...this.existingPlayer.additional_fields } };
       this.birthdayString = this.formatDate(this.existingPlayer.birthday);
       this.playsSinceString = this.existingPlayer.playsSince ? this.formatDate(this.existingPlayer.playsSince) : "";
       this.joinedString = this.formatDate(this.existingPlayer.joined);
@@ -127,6 +138,16 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.player.tenantId = this.db.tenant().id;
       this.player.instrument = this.db.groups()[0].id;
       this.role = Role.PLAYER;
+
+      if (this.db.tenant().additional_fields?.length) {
+        if (!this.player.additional_fields) {
+          this.player.additional_fields = {};
+        }
+
+        for (const field of this.db.tenant().additional_fields) {
+          this.player.additional_fields[field.id] = this.player.additional_fields[field.id] ?? this.getFieldTypeDefaultValue(field.type, field.options);
+        }
+      }
     }
 
     this.onInstrumentChange(false);
@@ -139,6 +160,26 @@ export class PersonPage implements OnInit, AfterViewInit {
         this.tenantId = this.tenants[0].id;
         this.tenantGroups = await this.db.getGroups(this.tenantId);
       }
+    }
+  }
+
+  getFieldTypeDefaultValue(fieldType: FieldType, options?: string[]): any {
+    if (fieldType === FieldType.SELECT) {
+      return options && options.length ? options[0] : "";
+    }
+
+    switch (fieldType) {
+      case FieldType.TEXT:
+      case FieldType.TEXT_AREA:
+        return "";
+      case FieldType.NUMBER:
+        return 0;
+      case FieldType.DATE:
+        return new Date().toISOString();
+      case FieldType.BOOLEAN:
+        return true;
+      default:
+        return "";
     }
   }
 

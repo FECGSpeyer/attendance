@@ -1,4 +1,4 @@
-import { AttendanceStatus, PlayerHistoryType, Role } from "./constants";
+import { AttendanceStatus, FieldType, PlayerHistoryType, Role } from "./constants";
 
 export interface AuthObject {
     login: boolean;
@@ -21,6 +21,14 @@ export interface Tenant {
     region?: string;
     role?: Role;
     song_sharing_id?: string;
+    additional_fields?: ExtraField[];
+}
+
+export interface ExtraField {
+    id: string;
+    name: string;
+    type: FieldType;
+    options?: string[];
 }
 
 export interface TenantUser {
@@ -84,6 +92,8 @@ export interface Person {
     telegramId?: string;
     paused?: boolean;
     tenantId?: number;
+    additional_fields?: { [key: string]: any };
+    phone?: string;
 }
 
 export interface PlayerHistoryEntry {

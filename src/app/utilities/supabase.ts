@@ -520,6 +520,7 @@ export type Database = {
       }
       player: {
         Row: {
+          additional_fields: Json | null
           appId: string | null
           birthday: string | null
           correctBirthday: boolean | null
@@ -547,6 +548,7 @@ export type Database = {
           otherOrchestras: string[] | null
           parent_id: number | null
           paused: boolean | null
+          phone: string | null
           playsSince: string | null
           range: string | null
           teacher: number | null
@@ -554,6 +556,7 @@ export type Database = {
           testResult: string | null
         }
         Insert: {
+          additional_fields?: Json | null
           appId?: string | null
           birthday?: string | null
           correctBirthday?: boolean | null
@@ -581,6 +584,7 @@ export type Database = {
           otherOrchestras?: string[] | null
           parent_id?: number | null
           paused?: boolean | null
+          phone?: string | null
           playsSince?: string | null
           range?: string | null
           teacher?: number | null
@@ -588,6 +592,7 @@ export type Database = {
           testResult?: string | null
         }
         Update: {
+          additional_fields?: Json | null
           appId?: string | null
           birthday?: string | null
           correctBirthday?: boolean | null
@@ -615,6 +620,7 @@ export type Database = {
           otherOrchestras?: string[] | null
           parent_id?: number | null
           paused?: boolean | null
+          phone?: string | null
           playsSince?: string | null
           range?: string | null
           teacher?: number | null
@@ -837,6 +843,7 @@ export type Database = {
       }
       tenants: {
         Row: {
+          additional_fields: Json[] | null
           betaProgram: boolean
           created_at: string
           id: number
@@ -854,6 +861,7 @@ export type Database = {
           withExcuses: boolean | null
         }
         Insert: {
+          additional_fields?: Json[] | null
           betaProgram?: boolean
           created_at?: string
           id?: number
@@ -871,6 +879,7 @@ export type Database = {
           withExcuses?: boolean | null
         }
         Update: {
+          additional_fields?: Json[] | null
           betaProgram?: boolean
           created_at?: string
           id?: number

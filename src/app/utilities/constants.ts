@@ -116,3 +116,12 @@ export const ATTENDANCE_STATUS_MAPPING = {
         [AttendanceStatus.LateExcused]: AttendanceStatus.Present,
     },
 };
+
+export enum FieldType {
+    TEXT = "text",
+    TEXT_AREA = "text_area",
+    NUMBER = "number",
+    DATE = "date",
+    BOOLEAN = "boolean",
+    SELECT = "select",
+}

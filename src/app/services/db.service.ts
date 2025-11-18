@@ -233,13 +233,13 @@ export class DbService {
       throw new Error("Fehler beim Laden der Tenants");
     }
 
-    return data;
+    return data as unknown as Tenant[];
   }
 
   async updateTenantData(tenant: Partial<Tenant>): Promise<Tenant> {
     const { data, error } = await supabase
       .from('tenants')
-      .update(tenant)
+      .update(tenant as any)
       .match({ id: this.tenant().id })
       .select()
       .single();
@@ -249,9 +249,9 @@ export class DbService {
       throw new Error("Fehler beim Aktualisieren der Mandantendaten");
     }
 
-    this.tenant.set(data);
+    this.tenant.set(data as unknown as Tenant);
 
-    return data;
+    return data as unknown as Tenant;
   }
 
   async getTenantsByUserId(): Promise<TenantUser[]> {
@@ -612,7 +612,7 @@ export class DbService {
     return {
       ...player,
       history: player.history as any,
-    }
+    } as any
   }
 
   async getPlayers(all: boolean = false): Promise<Player[]> {
@@ -632,7 +632,7 @@ export class DbService {
           ...player,
           history: player.history as any,
         }
-      });
+      }) as any;
     }
 
     if (this.tenantUser().role === Role.PARENT) {
@@ -736,7 +736,7 @@ export class DbService {
         ascending: false,
       });
 
-    return data.map((player) => {
+    return data.map((player: any) => {
       return {
         ...player,
         history: player.history as any,
@@ -753,12 +753,12 @@ export class DbService {
       .is("appId", null)
       .is("left", null);
 
-    return data.map((player) => {
+    return data.map((player: any) => {
       return {
         ...player,
         history: player.history as any,
       }
-    }).filter((p: Player) => p.email.length);
+    }).filter((p: any) => p.email.length);
   }
 
   async getConductors(all: boolean = false, tenantId?: number, mainGroupId?: number): Promise<Person[]> {
@@ -780,7 +780,7 @@ export class DbService {
       throw new Error("Fehler beim Laden der Personen");
     }
 
-    return (all ? data : data.filter((c: Person) => !c.left)).map((con: Person) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
+    return (all ? data : data.filter((c: any) => !c.left) as unknown as Person[]).map((con: any) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
   }
 
   async addPlayer(player: Player, register: boolean, role: Role, tenantId?: number): Promise<void> {
@@ -913,7 +913,7 @@ export class DbService {
         ...player,
         history: player.history as any,
       }
-    });
+    }) as unknown as Player[];
   }
 
   async updatePlayerHistory(id: number, history: PlayerHistoryEntry[]) {
@@ -1821,7 +1821,7 @@ export class DbService {
   async createInstance(tenant: Tenant, mainGroupName: string): Promise<void> {
     const { data, error } = await supabase
       .from("tenants")
-      .insert(tenant)
+      .insert(tenant as any)
       .select()
       .single();
 
@@ -1912,7 +1912,7 @@ export class DbService {
     const groups = tenantGroupTenants.filter((tgt) => tgt.tenant_id === this.tenant().id);
     return tenantGroupTenants.filter((tgt) =>
       groups.some((g) => g.tenant_group === tgt.tenant_group) && tgt.tenant_id !== this.tenant().id
-    ).map((tgt) => tgt.tenant);
+    ).map((tgt) => tgt.tenant) as unknown as Tenant[];
   }
 
   async getUserRolesForTenants(userId: string): Promise<{ tenantId: number, role: Role }[]> {
@@ -2226,7 +2226,7 @@ export class DbService {
       throw error;
     }
 
-    return data.map(d => d.tenant).filter(t => t.id !== this.tenant().id);
+    return data.map(d => d.tenant).filter(t => t.id !== this.tenant().id) as unknown as Tenant[];
   }
 
   async handoverPersons(persons: Player[], targetTenant: Tenant, groupMapping: { [key: number]: number } = {}, stayInInstance: boolean, mainGroup: number | null): Promise<Player[]> {
@@ -2402,7 +2402,7 @@ export class DbService {
       throw error;
     }
 
-    return data;
+    return data as unknown as Tenant;
   }
 
   async migrateAttendanceTypes(): Promise<void> {
@@ -2465,3 +2465,4 @@ export class DbService {
     }
   }
 }
+

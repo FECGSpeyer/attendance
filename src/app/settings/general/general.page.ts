@@ -3,8 +3,8 @@ import { AlertController, IonModal } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { Role } from 'src/app/utilities/constants';
-import { Organisation } from 'src/app/utilities/interfaces';
+import { FieldType, Role } from 'src/app/utilities/constants';
+import { ExtraField, Organisation } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -46,6 +46,13 @@ export class GeneralPage implements OnInit {
   public isGeneral: boolean = false;
   public max: string = new Date().toISOString();
   public songSharingEnabled: boolean = false;
+  public newExtraField: ExtraField = {
+    id: '',
+    name: '',
+    type: FieldType.TEXT,
+  };
+  public fieldTypes = FieldType;
+  public extraFields: ExtraField[] = [];
 
   constructor(
     public db: DbService,
@@ -68,6 +75,7 @@ export class GeneralPage implements OnInit {
     this.isSuperAdmin = this.db.tenantUser().role === Role.ADMIN;
     this.isGeneral = this.db.tenant().type === 'general';
     this.songSharingEnabled = !!this.db.tenant().song_sharing_id;
+    this.extraFields = [...this.db.tenant().additional_fields ?? []];
   }
 
   async saveGeneralSettings() {
@@ -88,6 +96,7 @@ export class GeneralPage implements OnInit {
         maintainTeachers: this.maintainTeachers,
         showHolidays: this.showHolidays,
         song_sharing_id: song_sharing_id || null,
+        additional_fields: this.extraFields,
       });
       Utils.showToast("Einstellungen gespeichert", "success");
 
@@ -236,6 +245,70 @@ export class GeneralPage implements OnInit {
   copySongSharingLink() {
     navigator?.clipboard.writeText(this.getSongSharingLink());
     Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
+  }
+
+  addExtraField(modal: IonModal) {
+    if (this.newExtraField.name.trim().length === 0) {
+      Utils.showToast("Bitte gib einen gültigen Namen für das Zusatzfeld ein.", "danger");
+      return;
+    }
+
+    // id should have no spaces and be lowercase and remove special characters
+    this.newExtraField.id = this.newExtraField.id.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+
+    if (this.extraFields.find((f) => f.id === this.newExtraField.id)) {
+      Utils.showToast("Ein Zusatzfeld mit dieser ID existiert bereits. Bitte wähle einen anderen Namen.", "danger");
+      return;
+    }
+
+    if (this.newExtraField.id.length === 0) {
+      Utils.showToast("Die ID des Zusatzfeldes darf nicht leer sein.", "danger");
+      return;
+    }
+
+    this.extraFields.push({ ...this.newExtraField });
+    this.newExtraField = {
+      id: '',
+      name: '',
+      type: FieldType.TEXT,
+    };
+    modal.dismiss();
+  }
+
+  async removeExtraField(index: number) {
+    const alert = await new AlertController().create({
+      header: 'Zusatzfeld löschen?',
+      message: `Möchtest du das Zusatzfeld '${this.extraFields[index].name}' wirklich löschen? Dies kann nicht rückgängig gemacht werden!`,
+      buttons: [{
+        text: "Abbrechen"
+      }, {
+        text: "Löschen",
+        handler: () => {
+          this.extraFields.splice(index, 1);
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  getFieldTypeName(type: FieldType): string {
+    switch (type) {
+      case FieldType.TEXT:
+        return "Text";
+      case FieldType.TEXT_AREA:
+        return "Textbereich";
+      case FieldType.NUMBER:
+        return "Zahl";
+      case FieldType.SELECT:
+        return "Auswahl";
+      case FieldType.DATE:
+        return "Datum";
+      case FieldType.BOOLEAN:
+        return "Ja/Nein";
+      default:
+        return "Unbekannt";
+    }
   }
 
 }
