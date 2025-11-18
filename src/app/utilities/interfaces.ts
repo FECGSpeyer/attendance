@@ -227,6 +227,7 @@ export interface SongFile {
     fileType: string;
     url: string;
     instrumentId?: number;
+    note?: string;
 }
 
 export interface History {

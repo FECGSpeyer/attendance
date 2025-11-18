@@ -16,7 +16,11 @@ export class SongPage implements OnInit {
   public song: Song;
   public isOrchestra: boolean = false;
   public instruments: Group[] = [];
-  public selectedFileInfos: { file: File, instrumentId: number | null }[] = [];
+  public selectedFileInfos: {
+    file: File,
+    instrumentId: number | null,
+    note?: string
+  }[] = [];
   public isFilesModalOpen: boolean = false;
   public readOnly: boolean = true;
   public tenant?: Tenant;
@@ -50,13 +54,14 @@ export class SongPage implements OnInit {
     if (!input.files) return;
     for (let i = 0; i < input.files.length; i++) {
       const file = input.files[i];
-      if (file.size > 10 * 1024 * 1024) {
-        Utils.showToast(`Die Datei ${file.name} überschreitet die maximale Größe von 10MB.`, 'danger', 5000);
+      if (file.size > 20 * 1024 * 1024) {
+        Utils.showToast(`Die Datei ${file.name} überschreitet die maximale Größe von 20MB.`, 'danger', 5000);
         continue;
       }
       // Try to map instrument by filename
       let mappedId: number | null = null;
-      if (this.instruments && this.instruments.length) {
+      let note: string | undefined = undefined;
+      if (this.instruments?.length) {
         const match = this.instruments.find(g => {
           if (file.name.toLowerCase().includes(g.name.toLowerCase())) {
             return true;
@@ -73,12 +78,45 @@ export class SongPage implements OnInit {
         });
         if (match) mappedId = match.id;
       }
-      this.selectedFileInfos.push({ file, instrumentId: mappedId });
+
+      if (!mappedId) {
+        if (file.type.startsWith('audio/')) {
+          mappedId = 1; // Default to "Cembalo"/"Klavier" for audio files
+        } else if (file.name.includes(".sib")) {
+          note = "Sibelius";
+        }
+      }
+
+      this.selectedFileInfos.push({ file, instrumentId: mappedId, note });
     }
   }
 
-  changeFileInstrument(index: number, instrumentId: number | null) {
-    this.selectedFileInfos[index].instrumentId = instrumentId;
+  async changeFileInstrument(index: number, instrumentId: number | null, note?: string) {
+    if (!instrumentId) {
+      const alert = await this.alertController.create({
+        header: 'Sonstige Kategorie eingeben',
+        inputs: [
+          {
+            name: 'note',
+            type: 'text',
+            placeholder: 'Beliebige Kategorie eingeben...',
+            value: note || ''
+          }
+        ],
+        buttons: [
+          {
+            text: 'Speichern',
+            handler: async (data) => {
+              this.selectedFileInfos[index].instrumentId = null;
+              this.selectedFileInfos[index].note = data.note ?? "";
+            }
+          }
+        ]
+      });
+      await alert.present();
+    } else {
+      this.selectedFileInfos[index].instrumentId = instrumentId;
+    }
   }
 
   async uploadFiles(event: Event, fileUploadModal: IonModal) {
@@ -91,7 +129,7 @@ export class SongPage implements OnInit {
     }
     for (const info of this.selectedFileInfos) {
       // Pass instrumentId to uploadSongFile if you want to override mapping
-      await this.db.uploadSongFile(this.song.id, info.file, info.instrumentId);
+      await this.db.uploadSongFile(this.song.id, info.file, info.instrumentId, info.note);
     }
 
     this.song = await this.db.getSong(this.song.id); // Refresh file list
@@ -101,8 +139,8 @@ export class SongPage implements OnInit {
     await loading.dismiss();
   }
 
-  getInstrumentName(id: number | null): string {
-    if (!id) return 'Sonstige';
+  getInstrumentName(id: number | null, note?: string): string {
+    if (!id) return note ?? 'Sonstige';
     if (id === 1) return 'Aufnahme';
 
     const inst = this.instruments.find(i => i.id === id);
@@ -158,7 +196,7 @@ export class SongPage implements OnInit {
       inputs: [{
         name: 'instrument',
         type: 'radio' as const,
-        label: 'Sonstige',
+        label: 'Sonstige (Freitext möglich)',
         value: null,
         checked: file.instrumentId === null
       }, {
@@ -182,18 +220,49 @@ export class SongPage implements OnInit {
         {
           text: 'Speichern',
           handler: async (data) => {
-            const files = this.song.files?.map(f => f.fileName === file.fileName ? { ...f, instrumentId: data } : f);
-            await this.db.editSong(this.song.id, {
-              ...this.song,
-              files,
-              instrument_ids: Array.from(new Set((files || []).map(f => f.instrumentId).filter(id => id !== null && id !== 1)))
-            });
-            this.song = await this.db.getSong(this.song.id); // Refresh file list
+            if (!data) {
+              await this.showNoteInputAlert(file);
+            } else {
+              this.saveFileChange(file, data);
+            }
           }
         }
       ]
     });
     await alert.present();
+  }
+
+  async showNoteInputAlert(file: SongFile) {
+    const alert = await this.alertController.create({
+      header: 'Sonstige Kategorie eingeben',
+      inputs: [
+        {
+          name: 'note',
+          type: 'text',
+          placeholder: 'Beliebige Kategorie eingeben...',
+          value: file.note || ''
+        }
+      ],
+      buttons: [
+        {
+          text: 'Speichern',
+          handler: async (data) => {
+            await this.saveFileChange(file, null, data.note ?? "");
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async saveFileChange(file: SongFile, instrumentId?: number | null, note?: string) {
+    const files = this.song.files?.map(f => f.fileName === file.fileName ? { ...f, instrumentId, note } : f);
+    await this.db.editSong(this.song.id, {
+      ...this.song,
+      files,
+      instrument_ids: Array.from(new Set((files || []).map(f => f.instrumentId).filter(id => id !== null && id !== 1)))
+    });
+    this.song = await this.db.getSong(this.song.id); // Refresh file list
   }
 
   removeSelectedFile(index: number, slider?: IonItemSliding) {

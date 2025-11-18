@@ -82,7 +82,7 @@ export class DbService {
       return `${sanitizedName}_${randomNumber}.${ext}`;
   }
 
-  async uploadSongFile(songId: number, file: File, instrumentId: number | null): Promise<SongFile> {
+  async uploadSongFile(songId: number, file: File, instrumentId: number | null, note?: string): Promise<SongFile> {
     const tenantId = this.tenant().id;
     // Generate a unique fileId (timestamp + random)
     const fileId = this.encodeFilename(file.name);
@@ -104,6 +104,7 @@ export class DbService {
       fileType: file.type,
       url: data.publicUrl,
       instrumentId,
+      note,
       created_at: new Date().toISOString(),
     };
     // Update the song.files array
@@ -115,6 +116,7 @@ export class DbService {
       fileType: f.fileType,
       url: f.url,
       instrumentId: f.instrumentId ?? null,
+      note: f.note,
     }));
     const mainGroupId = this.getMainGroup()?.id;
     await supabase
@@ -148,6 +150,7 @@ export class DbService {
       fileType: f.fileType,
       url: f.url,
       instrumentId: f.instrumentId ?? null,
+      note: f.note,
     }));
 
     const filePath = `${this.tenant().id}/${songId}/${file.fileName}`;
@@ -1591,6 +1594,7 @@ export class DbService {
     const { error: sendError } = await supabase.functions.invoke("send-document", {
       body: {
         url: url,
+        sendAsUrl: url.includes(".sib"),
         chat_id: this.tenantUser().telegram_chat_id,
       },
       method: "POST",
