@@ -325,8 +325,7 @@
             } @else if (field.type === fieldTypes.BOOLEAN) {
             <ion-item lines="none">
               <ion-label>{{ field.name }}</ion-label>
-              <ion-toggle (ionChange)="onChange()" [(ngModel)]="player.additional_fields[field.id]" slot="end"
-                [label]="field.name"></ion-toggle>
+              <ion-toggle (ionChange)="onChange()" [(ngModel)]="player.additional_fields[field.id]" slot="end"></ion-toggle>
             </ion-item>
             } @else if (field.type === fieldTypes.DATE) {
             <ion-item>

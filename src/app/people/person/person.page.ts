@@ -170,7 +170,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     switch (fieldType) {
       case FieldType.TEXT:
-      case FieldType.TEXT_AREA:
+      case FieldType.TEXTAREA:
         return "";
       case FieldType.NUMBER:
         return 0;
@@ -879,6 +879,20 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.hasChanges = false;
     this.modalController.dismiss({ activated: true });
     Utils.showToast("Die Person wurde erfolgreich wieder aktiviert", "success");
+  }
+
+  getExtraFieldDateString(dateString: string): string {
+    return format(parseISO(dateString), 'dd.MM.yyyy');
+  }
+
+  onExtraFieldDateChange(fieldId: string, value: string | string[], modal: IonModal) {
+    this.onChange();
+
+    if (parseInt((this.player.additional_fields[fieldId] as string).substring(0, 2), 10) !== dayjs(String(value)).date()) {
+      modal.dismiss();
+    }
+
+    this.player.additional_fields[fieldId] = String(value);
   }
 
 }

@@ -296,7 +296,7 @@ export class GeneralPage implements OnInit {
     switch (type) {
       case FieldType.TEXT:
         return "Text";
-      case FieldType.TEXT_AREA:
+      case FieldType.TEXTAREA:
         return "Textbereich";
       case FieldType.NUMBER:
         return "Zahl";

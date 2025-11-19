@@ -119,7 +119,7 @@ export const ATTENDANCE_STATUS_MAPPING = {
 
 export enum FieldType {
     TEXT = "text",
-    TEXT_AREA = "text_area",
+    TEXTAREA = "textarea",
     NUMBER = "number",
     DATE = "date",
     BOOLEAN = "boolean",
