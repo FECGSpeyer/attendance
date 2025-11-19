@@ -47,6 +47,11 @@ export class Utils {
       if (player.person_attendances && attendances?.length) {
         const personAttendancesTillNow = player.person_attendances.filter((personAttendance: PersonAttendance) => {
           const attendance = attendances.find((attendance: Attendance) => personAttendance.attendance_id === attendance.id);
+
+          if (attendance?.type === "hochzeit" || attendance?.typeInfo?.toLowerCase().includes("hochzeit")) {
+            return false;
+          }
+
           return attendance && dayjs(attendance.date).isBefore(dayjs().add(1, "day"));
         });
         percentage = Utils.getPercentage(personAttendancesTillNow);

@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { GroupCategory, History, Group, Person, Song, Tenant } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
-import { AlertController, IonModal } from '@ionic/angular';
+import { IonModal } from '@ionic/angular';
 import { Utils } from '../utilities/Utils';
-import { Browser } from '@capacitor/browser';
 import { Role } from '../utilities/constants';
 import { Storage } from '@ionic/storage-angular';
 import { Router } from '@angular/router';
@@ -122,28 +121,32 @@ export class SongsPage implements OnInit {
     }, 700);
   }
 
-  async addSong(modal: IonModal, number: any, name: any, link: any) {
-    if (this.songs.find((song: Song) => song.number === Number(number))) {
+  async addSong(modal: IonModal, number: any, name: any, link: any, prefix: any) {
+    if (this.songs.find((song: Song) => `${song.prefix ?? ""}${song.number}` === `${prefix ?? ""}${number}`)) {
       Utils.showToast("Die Liednummer ist bereits vergeben", "danger");
       return;
     } else if (link && !this.isValidHttpUrl(link)) {
       Utils.showToast("Der angegebene Link ist nicht valide", "danger");
       return;
     }
-    await this.db.addSong({
+    const song = await this.db.addSong({
       number,
       name,
       link,
       withChoir: this.withChoir,
       withSolo: this.withSolo,
       instrument_ids: this.selectedInstruments,
+      prefix: prefix || "",
     });
 
     this.withChoir = false;
     this.withSolo = false;
 
     await modal.dismiss();
-    this.getSongs();
+
+    if (song?.id) {
+      this.router.navigate([`tabs`, `settings`, "songs", `${song.id}`]);
+    }
   }
 
   async editSong(id: number, modal: IonModal, number: any, name: any, link: any, instrument_ids: any) {
@@ -162,29 +165,6 @@ export class SongsPage implements OnInit {
     });
 
     await modal.dismiss();
-    this.getSongs();
-  }
-
-  async removeSong(id: number, modal: IonModal) {
-    const alert = await new AlertController().create({
-      header: 'Werk löschen',
-      message: 'Soll das Werk wirklich gelöscht werden?',
-      buttons: [
-        {
-          text: 'Abbrechen',
-          role: 'destructive',
-        }, {
-          text: 'Löschen',
-          handler: async () => {
-            await this.db.removeSong(id);
-            await modal.dismiss();
-            await this.getSongs();
-          }
-        }
-      ]
-    });
-
-    await alert.present();
   }
 
   isValidHttpUrl(link: string) {

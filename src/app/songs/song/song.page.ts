@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { AlertController, IonItemSliding, IonModal, IonPopover } from '@ionic/angular';
 import * as JSZip from 'jszip';
 import { DbService } from 'src/app/services/db.service';
@@ -28,7 +29,8 @@ export class SongPage implements OnInit {
 
   constructor(
     public db: DbService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private router: Router
   ) { }
 
   async ngOnInit() {
@@ -344,5 +346,29 @@ export class SongPage implements OnInit {
 
   async update() {
     await this.db.editSong(this.song.id, this.song);
+  }
+
+  async confirmDeleteSong() {
+    const alert = await new AlertController().create({
+      header: 'Werk löschen',
+      message: 'Soll das Werk wirklich gelöscht werden?',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'destructive',
+        }, {
+          text: 'Löschen',
+          handler: async () => {
+            const loading = await Utils.getLoadingElement(999999, 'Werk wird gelöscht...');
+            await loading.present();
+            await this.db.removeSong(this.song);
+            await loading.dismiss();
+            this.router.navigate(['tabs', 'settings', 'songs']);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 }

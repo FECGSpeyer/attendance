@@ -113,7 +113,8 @@ export class SignoutPage implements OnInit {
       this.lateCount = vergangene.filter((a) => a.status === AttendanceStatus.Late).length;
       vergangene[0].showDivider = true;
       const attended = vergangene.filter((att: PersonAttendance) => att.attended);
-      this.perc = Math.round(attended.length / vergangene.length * 100);
+      this.perc = Math.round(
+        attended.filter((att: PersonAttendance) => att.title.toLowerCase() !== "hochzeit").length / vergangene.filter((att: PersonAttendance) => att.title.toLowerCase() !== "hochzeit").length * 100);
     }
 
     this.actualAttendances = allPersonAttendances.filter((att: PersonAttendance) => dayjs(att.date).isAfter(dayjs().startOf("day"))).reverse();

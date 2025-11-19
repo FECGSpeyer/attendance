@@ -220,6 +220,7 @@ export interface Song {
     tenantId?: number;
     name: string;
     number: number;
+    prefix?: string;
     withChoir: boolean;
     withSolo: boolean;
     lastSung?: string;

@@ -104,7 +104,7 @@
               <ion-item-group>
                 <ion-item *ngFor="let his of data.history" (click)="openSong(his.song.id, currentSongsModal)" button>
                   <ion-label>
-                    {{ his.song.number }} {{ his.song.name }}
+                    {{ his.song.prefix }}{{ his.song.number }} {{ his.song.name }}
                   </ion-label>
                 </ion-item>
               </ion-item-group>
@@ -121,7 +121,7 @@
     <ion-item-group>
       <ion-item detail="false" [routerLink]="tenantData ? [song.id] : ['/tabs/settings/songs/', song.id]" *ngFor="let song of songsFiltered">
         <ion-label>
-          <h2>{{ song.number }} {{ song.name }}</h2>
+          <h2>{{ song.prefix }}{{ song.number }} {{ song.name }}</h2>
           <h3 style="color: var(--ion-color-danger);"
             *ngIf="isOrchestra && song.instrument_ids?.length && viewOpts.includes('missingInstruments')">{{
             getInstrumentText(song.instrument_ids) }}</h3>
@@ -160,6 +160,10 @@
             </ion-toolbar>
           </ion-header>
           <ion-item>
+            <ion-label position="stacked">Präfix (optional)</ion-label>
+            <ion-input  helperText="Bspw. um Weihnachtslieder kennzeichnen zu können (z.B. W für Weihnachten -> W1)" type="text" #prefix></ion-input>
+          </ion-item>
+          <ion-item>
             <ion-label position="stacked">Nummer</ion-label>
             <ion-input type="number" #number></ion-input>
           </ion-item>
@@ -184,7 +188,7 @@
             </ion-select>
           </ion-item>
           <ion-button [disabled]="(!number.value && number.value !== 0) || !name.value"
-            (click)="addSong(addSongsModal, number.value, name.value, link.value)"
+            (click)="addSong(addSongsModal, number.value, name.value, link.value, prefix.value)"
             expand="block">Hinzufügen</ion-button>
         </ion-content>
       </ng-template>

@@ -12,6 +12,9 @@
       <ion-button (click)="copyShareLink()" *ngIf="tenant || db.tenant()?.song_sharing_id">
         <ion-icon slot="icon-only" name="link-outline"></ion-icon>
       </ion-button>
+      <ion-button *ngIf="!readOnly" (click)="confirmDeleteSong()">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -29,6 +32,10 @@
   <ion-list [inset]="true">
     @if (!readOnly) {
     <ion-item-group>
+      <ion-item>
+        <ion-label position="stacked">Präfix (optional)</ion-label>
+        <ion-input helperText="Bspw. um Weihnachtslieder kennzeichnen zu können (z.B. W für Weihnachten -> W1)" (ionBlur)="update()" [(ngModel)]="song.prefix" type="text" #prefix></ion-input>
+      </ion-item>
       <ion-item>
         <ion-label position="stacked">Nummer</ion-label>
         <ion-input (ionBlur)="update()" [(ngModel)]="song.number" type="number" #number></ion-input>

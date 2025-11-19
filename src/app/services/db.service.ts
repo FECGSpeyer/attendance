@@ -1248,13 +1248,28 @@ export class DbService {
     return data.filter((a) => Boolean(a.attendance)).map((att): PersonAttendance => {
       let attText = Utils.getAttText(att);
       const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.attendance.type_id);
+      let title = '';
+
+      if (attType) {
+        if (att.attendance.typeInfo) {
+          title = att.attendance.typeInfo;
+        } else {
+          title = attType.hide_name ? '' : attType.name;
+        }
+      } else {
+        if (att.attendance.typeInfo) {
+          title = att.attendance.typeInfo;
+        } else {
+          title = att.attendance.type === "vortrag" ? "Vortrag" : att.attendance.type === "hochzeit" ? "Hochzeit" : "Übung";
+        }
+      }
 
       return {
         id: att.id,
         status: att.status,
         date: att.attendance.date,
-        attended: attText === "L" || attText === "X",
-        title: attType ? (att.attendance.typeInfo ? att.attendance.typeInfo : attType.hide_name ? '' : attType.name) : att.attendance.typeInfo ? att.attendance.typeInfo : att.attendance.type === "vortrag" ? "Vortrag" : "Übung",
+        attended: att.status === AttendanceStatus.Present || att.status === AttendanceStatus.Late || att.status === AttendanceStatus.LateExcused,
+        title,
         text: attText,
         notes: att.notes,
         songs: att.attendance.songs,
@@ -1438,26 +1453,37 @@ export class DbService {
     } as any;
   }
 
-  async addSong(song: Song): Promise<Song[]> {
+  async addSong(song: Song): Promise<Song> {
     const { data } = await supabase
       .from('songs')
       .insert({
         ...song,
         tenantId: this.tenant().id,
       } as any)
-      .select();
+      .select()
+      .single();
 
-    return data as any;
+    return data as unknown as Song;
   }
 
-  async removeSong(id: number): Promise<void> {
+  async removeSong(song: Song): Promise<void> {
+    if (song.files && song.files.length) {
+      const paths: string[] = song.files.map((file) => {
+        return `${this.tenant().id}/${song.id}/${file.fileName}`;
+      });
+
+      await supabase.storage
+        .from('songs')
+        .remove(paths);
+    }
+
     const { error } = await supabase
       .from('songs')
       .delete()
-      .match({ id });
+      .match({ id: song.id });
 
     if (error) {
-      throw new Error("Fehler beim Löschen des Liedes");
+      throw new Error("Fehler beim Löschen des Werks");
     }
 
     return;
@@ -2465,4 +2491,3 @@ export class DbService {
     }
   }
 }
-
