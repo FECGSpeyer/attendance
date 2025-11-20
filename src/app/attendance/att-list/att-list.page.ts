@@ -466,4 +466,8 @@ export class AttListPage implements OnInit {
   showSongsSelection(): boolean {
     return this.db.isBeta() && Boolean(this.db.attendanceTypes().find(type => type.id === this.type_id && type.manage_songs));
   }
+
+  getCountText(att: Attendance) {
+    return Math.round((att.percentage / 100) * att.persons.length);
+  }
 }
