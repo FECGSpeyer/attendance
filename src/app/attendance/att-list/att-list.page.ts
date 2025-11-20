@@ -23,6 +23,7 @@ export class AttListPage implements OnInit {
   public type_id: string = '';
   public attendances: Attendance[] = [];
   public oldAttendances: Attendance[] = [];
+  public viewerAttendances: Attendance[] = [];
   public allAttendances: Attendance[] = [];
   public currentAttendance: Attendance;
   public isConductor: boolean = false;
@@ -196,8 +197,10 @@ export class AttListPage implements OnInit {
     this.allAttendances = attendances;
     this.attendances = attendances.filter((att: Attendance) => dayjs(att.date).isAfter(dayjs().startOf("day"))).reverse();
     this.oldAttendances = attendances.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
+    this.viewerAttendances = attendances.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
     if (this.attendances.length) {
       this.currentAttendance = { ...this.attendances[0] };
+      this.viewerAttendances.unshift(this.attendances[0]);
       this.attendances.splice(0, 1);
     } else {
       this.currentAttendance = undefined;
