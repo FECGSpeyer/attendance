@@ -123,7 +123,7 @@
       <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'"
         slot="end">{{ perc }}%</ion-badge>
     </ion-item-divider>
-    <ion-item *ngFor="let att of oldAttendances" detail="false">
+    <ion-item *ngFor="let att of viewerAttendances" detail="false">
       @if (db.isBeta()) {
       <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
         getAttendanceTitle(att) }}</ion-label>
