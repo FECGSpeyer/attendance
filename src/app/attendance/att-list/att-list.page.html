@@ -132,7 +132,7 @@
       <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
         {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
       }
-      <ion-text>{{ Math.round(100 / att.percentage * att.persons.length) }}</ion-text>
+      <ion-text>{{ 100 / att.percentage * att.persons.length }}</ion-text>
       <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
         *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
     </ion-item>
