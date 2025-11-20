@@ -126,11 +126,11 @@
     <ion-item *ngFor="let att of viewerAttendances" detail="false">
       @if (db.isBeta()) {
       <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
-        getAttendanceTitle(att) }}</ion-label>
+        getAttendanceTitle(att) }}<p>{{ getCountText(att) }}</p></ion-label>
       } @else {
-      <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}</ion-label>
+      <ion-label *ngIf="att.type === 'uebung'">{{ getReadableDate(att.date) }}<p>{{ getCountText(att) }}</p></ion-label>
       <ion-label *ngIf="att.type !== 'uebung'">{{ getReadableDate(att.date) }} |
-        {{ getTypeText(att.type, att.typeInfo) }}</ion-label>
+        {{ getTypeText(att.type, att.typeInfo) }}<p>{{ getCountText(att) }}</p></ion-label>
       }
       <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
         *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
