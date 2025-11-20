@@ -468,6 +468,6 @@ export class AttListPage implements OnInit {
   }
 
   getCountText(att: Attendance) {
-    return Math.round((att.percentage / 100) * att.persons.length);
+    return Math.round((att.percentage / 100) * att.persons.length) + " von " + att.persons.length + " anwesend";
   }
 }
