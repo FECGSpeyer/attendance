@@ -698,6 +698,7 @@ export type Database = {
           link: string | null
           name: string | null
           number: number | null
+          prefix: string | null
           tenantId: number | null
           withChoir: boolean | null
           withOrchestra: boolean | null
@@ -713,6 +714,7 @@ export type Database = {
           link?: string | null
           name?: string | null
           number?: number | null
+          prefix?: string | null
           tenantId?: number | null
           withChoir?: boolean | null
           withOrchestra?: boolean | null
@@ -728,6 +730,7 @@ export type Database = {
           link?: string | null
           name?: string | null
           number?: number | null
+          prefix?: string | null
           tenantId?: number | null
           withChoir?: boolean | null
           withOrchestra?: boolean | null
@@ -989,6 +992,12 @@ export type Database = {
       get_active_players_with_attendance: {
         Args: { p_tenant_id: number }
         Returns: Json
+      }
+      get_user_id_by_email: {
+        Args: { email: string }
+        Returns: {
+          id: string
+        }[]
       }
     }
     Enums: {

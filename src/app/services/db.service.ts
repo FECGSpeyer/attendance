@@ -66,20 +66,20 @@ export class DbService {
   }
 
   encodeFilename(filename: string) {
-       const nameParts = filename.split('.')
-       const ext = nameParts.pop() || ''
-       const name = nameParts.join('.')
+    const nameParts = filename.split('.')
+    const ext = nameParts.pop() || ''
+    const name = nameParts.join('.')
 
-       const sanitizedName = name
-         .normalize('NFD') // Normalize unicode (convert accents to ASCII equivalents where possible)
-         .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (e.g. é -> e)
-         .replace(/[^\w\s-]/g, '-') // Replace non-word chars with hyphens (e.g. # -> -)
-         .replace(/\s+/g, '-') // Replace spaces with hyphens (e.g. "hello world" -> "hello-world")
-         .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen (e.g. "hello--world" -> "hello-world")
-         .replace(/^-+|-+$/g, '') // Trim hyphens from start and end (e.g. "-hello-world-" -> "hello-world")
-      // number between 100 and 999
-      const randomNumber = Math.floor(100 + Math.random() * 900);
-      return `${sanitizedName}_${randomNumber}.${ext}`;
+    const sanitizedName = name
+      .normalize('NFD') // Normalize unicode (convert accents to ASCII equivalents where possible)
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (e.g. é -> e)
+      .replace(/[^\w\s-]/g, '-') // Replace non-word chars with hyphens (e.g. # -> -)
+      .replace(/\s+/g, '-') // Replace spaces with hyphens (e.g. "hello world" -> "hello-world")
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen (e.g. "hello--world" -> "hello-world")
+      .replace(/^-+|-+$/g, '') // Trim hyphens from start and end (e.g. "-hello-world-" -> "hello-world")
+    // number between 100 and 999
+    const randomNumber = Math.floor(100 + Math.random() * 900);
+    return `${sanitizedName}_${randomNumber}.${ext}`;
   }
 
   async uploadSongFile(songId: number, file: File, instrumentId: number | null, note?: string): Promise<SongFile> {
@@ -415,6 +415,17 @@ export class DbService {
       }
 
       return userId;
+    } else {
+      const { data } = await supabase.rpc(
+        "get_user_id_by_email",
+        {
+          email: email.toLowerCase(),
+        }
+      );
+
+      if (data?.length && data[0].id) {
+        return data[0].id;
+      }
     }
 
     try {
