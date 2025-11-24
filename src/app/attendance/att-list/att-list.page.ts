@@ -39,6 +39,7 @@ export class AttListPage implements OnInit {
   public selectedSongs: number[] = [];
   public hasNeutral: boolean = false;
   public saveInHistory: boolean = true;
+  public loaded: boolean = false;
   public historyEntry: History = {
     songId: 1,
     person_id: 0,
@@ -49,6 +50,7 @@ export class AttListPage implements OnInit {
   public otherConductor: number = 9999999999;
   public historyEntries: History[] = [];
   public highlightedTypes: string[] = [];
+  public isAddModalOpen: boolean = false;
 
   highlightedDates = (isoString: string) => {
     const date = new Date(isoString);
@@ -214,6 +216,8 @@ export class AttListPage implements OnInit {
       this.type_id = this.db.attendanceTypes().find(type => type.visible)?.id;
       this.highlightedTypes = this.db.attendanceTypes().filter(type => type.highlight).map(type => type.id);
     }
+
+    this.loaded = true;
   }
 
   async remove(id: number, slider: IonItemSliding): Promise<void> {

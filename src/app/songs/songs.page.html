@@ -74,7 +74,11 @@
               <ion-select-option value="withChoir">Chor & Orchester</ion-select-option>
               <ion-select-option value="withSolo">Solo</ion-select-option>
               <ion-select-option value="missingInstruments">Fehlende Instrumente</ion-select-option>
+              @if (tenantType === 'orchestra') {
               <ion-select-option *ngIf="!tenantData" value="lastSung">Zuletzt gespielt</ion-select-option>
+              } @else {
+              <ion-select-option *ngIf="!tenantData" value="lastSung">Zuletzt gesungen</ion-select-option>
+              }
             </ion-select>
           </ion-item>
         </ion-list>
@@ -125,7 +129,7 @@
           <h3 style="color: var(--ion-color-danger);"
             *ngIf="isOrchestra && song.instrument_ids?.length && viewOpts.includes('missingInstruments')">{{
             getInstrumentText(song.instrument_ids) }}</h3>
-          <h3 *ngIf="!tenantData && song.lastSung && viewOpts.includes('lastSung')">Zuletzt gespielt am {{ song.lastSung |
+          <h3 *ngIf="!tenantData && song.lastSung && viewOpts.includes('lastSung')">Zuletzt {{ tenantType === 'orchestra' ? 'gespielt' : 'gesungen' }} am {{ song.lastSung |
             date:'dd.MM.YYYY' }} | {{ song.conductor }}
           </h3>
         </ion-label>

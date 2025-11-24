@@ -9,13 +9,27 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen="true">
+<ion-content class="attPage" fullscreen="true">
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">Anwesenheit</ion-title>
     </ion-toolbar>
   </ion-header>
 
+  @if (!loaded) {
+  <ion-list>
+    <ion-list-header>
+      <ion-skeleton-text [animated]="true" style="width: 80px"></ion-skeleton-text>
+    </ion-list-header>
+    <ion-item *ngFor="let n of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]">
+      <ion-label>
+        <h3>
+          <ion-skeleton-text [animated]="true" style="width: 60%;"></ion-skeleton-text>
+        </h3>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+  } @else if (loaded && allAttendances.length) {
   <ion-accordion-group [multiple]="true" [value]="['current', 'future']">
     <ion-accordion *ngIf="currentAttendance && (isConductor || isHelper)" value="current">
       <ion-item class="accordion-header" slot="header" color="primary">
@@ -136,8 +150,17 @@
         *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
     </ion-item>
   </ion-list>
+  } @else {
+  <div class="noDataContainer">
+    <div class="noPersons">
+      <ion-icon name="checkbox-outline" size="large"></ion-icon>
+      <ion-label>Bisher wurden noch keine Termine angelegt</ion-label>
+      <ion-button size="small" (click)="isAddModalOpen = true">Termin hinzufügen</ion-button>
+    </div>
+  </div>
+  }
 
-  <ion-modal #addAttModal trigger="add-att-button" [breakpoints]="[0, 0.7, 1]" [initialBreakpoint]="0.7">
+  <ion-modal #addAttModal (ionModalDidDismiss)="isAddModalOpen = false" [isOpen]="isAddModalOpen" [breakpoints]="[0, 0.7, 1]" [initialBreakpoint]="0.7">
     <ng-template>
       <ion-content>
         <ion-header>
@@ -346,7 +369,7 @@
     </ng-template>
   </ion-modal>
   <ion-fab [class]="isConductor ? '' : 'invisible'" vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button id="add-att-button">
+    <ion-fab-button (click)="isAddModalOpen = true">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>

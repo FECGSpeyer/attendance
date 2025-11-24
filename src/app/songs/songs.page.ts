@@ -38,6 +38,7 @@ export class SongsPage implements OnInit {
   public currentSongs: { date: string, history: History[] }[] = [];
   public tenantData?: Tenant;
   private sub: RealtimeChannel;
+  public tenantType: string;
 
   constructor(
     public db: DbService,
@@ -56,6 +57,7 @@ export class SongsPage implements OnInit {
       }
     }
 
+    this.tenantType = (this.tenantData ?? this.db.tenant()).type;
     this.sortOpt = await this.storage.get(`sortOptSongs${this.tenantData?.id ?? this.db.tenant().id}`) || "numberAsc";
     this.viewOpts = JSON.parse(await this.storage.get(`viewOptsSongs${this.tenantData?.id ?? this.db.tenant().id}`) || JSON.stringify(['withChoir', 'withSolo', 'missingInstruments', 'link', 'lastSung']));
     this.inclChoir = await this.storage.get(`inclChoirSongs${this.tenantData?.id ?? this.db.tenant().id}`) === "true";

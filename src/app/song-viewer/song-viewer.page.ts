@@ -17,9 +17,10 @@ export class SongViewerPage implements OnInit {
   public tenantShortName: string;
   public currentSongs: { date: string, history: History[] }[] = [];
   public songSharingId: string;
+  public tenantType: string;
 
   constructor(
-    private db: DbService,
+    public db: DbService,
     private router: Router,
   ) { }
 
@@ -34,6 +35,7 @@ export class SongViewerPage implements OnInit {
     this.tenantId = tenantData.id;
     this.tenantLongName = tenantData.longName;
     this.tenantShortName = tenantData.shortName;
+    this.tenantType = tenantData.type;
     this.songs = await this.db.getSongs(this.tenantId);
     this.currentSongs = (await this.db.getCurrentSongs(this.tenantId));
   }
