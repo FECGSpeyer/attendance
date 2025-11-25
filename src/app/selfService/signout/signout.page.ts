@@ -112,7 +112,7 @@ export class SignoutPage implements OnInit {
     if (vergangene.length) {
       this.lateCount = vergangene.filter((a) => a.status === AttendanceStatus.Late).length;
       const vergangeneToCalcPerc = [...vergangene].filter((att: PersonAttendance) => {
-        const type = this.db.attendanceTypes().find((t) => t.id === att.attendance.type_id);
+        const type = this.db.attendanceTypes().find((t) => t.id === att.attendance?.type_id); // TODO
         return type.include_in_average;
       });
       vergangene[0].showDivider = true;
