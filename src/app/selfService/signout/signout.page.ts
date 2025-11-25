@@ -4,7 +4,7 @@ import { ActionSheetController, IonAccordionGroup, IonModal, isPlatform } from '
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
-import { Attendance, PersonAttendance, Player, Song, Tenant, History, SongFile } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, Player, Song, Tenant, History, SongFile, AttendanceType } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -173,9 +173,7 @@ export class SignoutPage implements OnInit {
       },
     ];
 
-    let attType;
-      const att = this.attendances.find((a: Attendance) => a.id === attendance.attId);
-      attType = this.db.attendanceTypes().find((type: any) => type.id === att.type_id);
+    const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === attendance.typeId);
 
     if (attendance.text === "X") {
       buttons = buttons.filter((btn) => btn.text !== 'Anmelden');
