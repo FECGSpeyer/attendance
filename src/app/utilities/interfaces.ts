@@ -96,6 +96,8 @@ export interface Person {
     tenantId?: number;
     additional_fields?: { [key: string]: any };
     phone?: string;
+    shift_id?: string;
+    shift_start?: string;
 }
 
 export interface PlayerHistoryEntry {

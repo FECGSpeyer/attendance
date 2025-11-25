@@ -218,6 +218,18 @@
               </ion-item>
             </ion-col>
           </ion-row>
+          <ion-row *ngIf="db.shifts()?.length">
+            <ion-col>
+              <ion-item>
+                <ion-select label="Schicht" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.shift_id">
+                  <ion-select-option [value]="null">Keine Schicht zugewiesen</ion-select-option>
+                  <ion-select-option [value]="shift.id" *ngFor="let shift of db.shifts()">
+                    {{ shift.name }}
+                  </ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+          </ion-row>
           <ion-row *ngIf="!readOnly || player.otherExercise">
             <ion-col>
               <ion-item>
