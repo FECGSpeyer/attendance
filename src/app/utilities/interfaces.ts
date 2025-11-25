@@ -216,6 +216,7 @@ export interface PersonAttendance {
     history?: History[];
     attId?: number;
     highlight?: boolean;
+    typeId?: string;
 }
 
 export interface Song {

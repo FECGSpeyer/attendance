@@ -1272,6 +1272,7 @@ export class DbService {
         notes: att.notes,
         songs: att.attendance.songs,
         attId: att.attendance.id,
+        typeId: att.attendance.type_id,
         highlight: attType ? attType.highlight : att.attendance.type === "vortrag",
       } as any;
     });
