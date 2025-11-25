@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType } from '../utilities/interfaces';
+import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, Shift } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
@@ -40,6 +40,7 @@ export class DbService {
   public tenantUser: WritableSignal<TenantUser | undefined>;
   public attendanceTypes: WritableSignal<AttendanceType[]>;
   public groups: WritableSignal<Group[]>;
+  public shifts: WritableSignal<Shift[]>;
 
   constructor(
     private plt: Platform,
@@ -52,6 +53,7 @@ export class DbService {
     this.organisation = signal(null);
     this.tenantUsers = signal([]);
     this.groups = signal([]);
+    this.shifts = signal([]);
     this.plt.ready().then(() => {
       this.checkToken();
     });
@@ -214,6 +216,12 @@ export class DbService {
     this.groups.set(await this.getGroups());
     this.attendanceTypes.set(await this.getAttendanceTypes());
     this.organisation.set(await this.getOrganisationFromTenant());
+
+    void this.loadShifts();
+  }
+
+  isBeta() {
+    return this.tenantUser()?.email?.endsWith("@attendix.de");
   }
 
   async getTenants(ids: number[]): Promise<Tenant[]> {
@@ -2434,5 +2442,38 @@ export class DbService {
     }
 
     return data as unknown as Tenant;
+  }
+
+  async loadShifts(): Promise<void> {
+    const { data, error } = await supabase
+      .from('shifts')
+      .select('*')
+      .eq('tenant_id', this.tenant().id);
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Schichten", "danger");
+      throw error;
+    }
+
+    this.shifts.set(data as any);
+  }
+
+  async addShift(shift: Shift): Promise<Shift> {
+    const { data, error } = await supabase
+      .from('shifts')
+      .insert({
+        ...shift,
+        tenant_id: this.tenant().id,
+        entries: [],
+      });
+
+    if (error) {
+      Utils.showToast("Fehler beim Hinzufügen der Schicht", "danger");
+      throw error;
+    }
+
+    await this.loadShifts();
+
+    return;
   }
 }

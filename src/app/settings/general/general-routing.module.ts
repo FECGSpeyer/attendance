@@ -7,7 +7,11 @@ const routes: Routes = [
   {
     path: '',
     component: GeneralPage
+  },  {
+    path: 'shifts',
+    loadChildren: () => import('./shifts/shifts.module').then( m => m.ShiftsPageModule)
   },
+
 ];
 
 @NgModule({

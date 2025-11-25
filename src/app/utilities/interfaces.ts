@@ -332,3 +332,18 @@ export interface AttendanceType {
     hide_name: boolean;
     include_in_average: boolean;
 }
+
+export interface Shift {
+    id?: number;
+    created_at?: string;
+    name: string;
+    description: string;
+    tenant_id?: number;
+    entries: ShiftEntry[];
+}
+
+export interface ShiftEntry {
+    id?: number;
+    start_time: string;
+    duration: string;
+}

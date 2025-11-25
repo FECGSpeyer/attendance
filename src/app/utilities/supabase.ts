@@ -690,6 +690,41 @@ export type Database = {
           },
         ]
       }
+      shifts: {
+        Row: {
+          created_at: string
+          description: string | null
+          entries: Json[] | null
+          id: number
+          name: string | null
+          tenant_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          entries?: Json[] | null
+          id?: number
+          name?: string | null
+          tenant_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          entries?: Json[] | null
+          id?: number
+          name?: string | null
+          tenant_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shifts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       songs: {
         Row: {
           created_at: string | null
