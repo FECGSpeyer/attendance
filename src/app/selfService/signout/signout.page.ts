@@ -111,7 +111,7 @@ export class SignoutPage implements OnInit {
     const vergangene: PersonAttendance[] = this.personAttendances.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
     if (vergangene.length) {
       this.lateCount = vergangene.filter((a) => a.status === AttendanceStatus.Late).length;
-      const vergangeneToCalcPerc = vergangene.filter((att: PersonAttendance) => {
+      const vergangeneToCalcPerc = [...vergangene].filter((att: PersonAttendance) => {
         const type = this.db.attendanceTypes().find((t) => t.id === att.attendance.type_id);
         return type.include_in_average;
       });
