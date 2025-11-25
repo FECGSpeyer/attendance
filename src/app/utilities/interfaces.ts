@@ -22,6 +22,8 @@ export interface Tenant {
     role?: Role;
     song_sharing_id?: string;
     additional_fields?: ExtraField[];
+    perc?: string;
+    percColor?: string;
 }
 
 export interface ExtraField {
@@ -328,4 +330,5 @@ export interface AttendanceType {
     color: string;
     highlight: boolean;
     hide_name: boolean;
+    include_in_average: boolean;
 }

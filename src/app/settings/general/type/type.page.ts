@@ -64,6 +64,7 @@ export class TypePage implements OnInit {
         color: 'primary',
         highlight: false,
         hide_name: false,
+        include_in_average: true,
       };
       this.type.default_plan = { ...this.defaultPlan };
     } else {

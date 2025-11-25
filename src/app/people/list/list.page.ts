@@ -8,6 +8,7 @@ import { DefaultAttendanceType, PlayerHistoryType, Role } from 'src/app/utilitie
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from 'src/app/utilities/Utils';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-list',
@@ -56,6 +57,7 @@ export class ListPage implements OnInit {
     private actionSheetController: ActionSheetController,
     private alertController: AlertController,
     private storage: Storage,
+    private router: Router
   ) {
     effect(async () => {
       this.loaded = false;
@@ -91,9 +93,35 @@ export class ListPage implements OnInit {
     this.filterOpt = (await this.storage.get(`filterOpt${this.db.tenant().id}`)) || "all";
     this.mainGroup = this.db.getMainGroup()?.id;
 
+    if (this.isAdmin) {
+      await this.showReleaseNotesAlert();
+    }
+
     await this.getPlayers();
 
     this.subscribe();
+  }
+
+  async showReleaseNotesAlert() {
+    const hasSeen = await this.storage.get(`seenReleaseNotes_v3_4_0`);
+    if (hasSeen) {
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Neu in Version 3.4.0',
+      message: "Anwesenheits-Typen sind da! Definiere verschiedene Arten von Anwesenheiten für mehr Flexibilität. Um mehr zu erfahren, gehe einfach in den allgemeinen Einstellungen auf Anwesenheits-Typen.",
+      buttons: [{
+        text: 'Zu den Anwesenheits-Typen',
+        handler: () => {
+          this.modalController.dismiss();
+          this.router.navigate(['/tabs/settings/general/types']);
+        }
+      }, 'OK']
+    });
+
+    await alert.present();
+    await this.storage.set(`seenReleaseNotes_v3_4_0`, true);
   }
 
   subscribe() {
@@ -114,7 +142,7 @@ export class ListPage implements OnInit {
   async getPlayers(): Promise<void> {
     this.players = await this.db.getPlayers();
     this.attendances = await this.db.getAttendance();
-    this.players = Utils.getModifiedPlayersForList(this.players, this.db.groups(), this.attendances, this.mainGroup);
+    this.players = Utils.getModifiedPlayersForList(this.players, this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup);
     this.searchTerm = "";
     this.onViewChanged();
     this.initializeItems();
@@ -247,7 +275,7 @@ export class ListPage implements OnInit {
               const usersPerTenant = await this.db.getUsersFromTenant(value);
               this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
                 return usersPerTenant.find((u) => u.userId === player.appId);
-              }), this.db.groups(), this.attendances, this.mainGroup);
+              }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup);
               this.tenantName = this.linkedTenants.find((t) => t.id === value)?.longName || "";
               await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
             }
@@ -276,7 +304,7 @@ export class ListPage implements OnInit {
       } else {
         return player.isLeader;
       }
-    }), this.db.groups(), this.attendances, this.mainGroup);
+    }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup);
 
     await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
   }
@@ -343,7 +371,7 @@ export class ListPage implements OnInit {
       }
 
       this.playersFiltered = this.filter();
-      this.playersFiltered = Utils.getModifiedPlayersForList(this.playersFiltered, this.db.groups(), this.attendances, this.mainGroup);
+      this.playersFiltered = Utils.getModifiedPlayersForList(this.playersFiltered, this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup);
     }
   }
 

@@ -19,26 +19,13 @@
       <ion-label>Anwesenheiten Gesamt</ion-label>
       <ion-badge>{{ attendances?.length }}</ion-badge>
     </ion-item>
-    <ion-item>
-      @if (isGeneral) {
-        <ion-label>Treffen</ion-label>
-      } @else {
-        <ion-label>Proben</ion-label>
-      }
-      <ion-badge>{{ pratices?.length }}</ion-badge>
-    </ion-item>
-    <ion-item *ngIf="!isGeneral">
-      <ion-label>Vorträge</ion-label>
-      <ion-badge>{{ vortraege?.length }}</ion-badge>
-    </ion-item>
-    <ion-item *ngIf="!isGeneral">
-      <ion-label>Hochzeiten</ion-label>
-      <ion-badge>{{ hochzeiten?.length }}</ion-badge>
-    </ion-item>
-    <ion-item>
-      <ion-label>Sonstige Anwesenheiten</ion-label>
-      <ion-badge>{{ otherAttendances?.length }}</ion-badge>
-    </ion-item>
+
+    @for(type of this.db.attendanceTypes(); track type.id) {
+      <ion-item>
+        <ion-label>{{ type.name }}</ion-label>
+        <ion-badge>{{ getAttTypeLength(type.id) }}</ion-badge>
+      </ion-item>
+    }
 
     <ion-item>
       <ion-label>Ø Teilnehmer pro Termin</ion-label>

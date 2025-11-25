@@ -64,33 +64,6 @@ export class AttListPage implements OnInit {
       };
     }
 
-    if (att) {
-      switch (att.type) {
-        case "uebung":
-          return {
-            textColor: 'var(--ion-color-primary)',
-            backgroundColor: 'rgb(var(--ion-color-primary-rgb), 0.18)',
-          };
-        case "vortrag":
-          return {
-            textColor: 'var(--ion-color-success)',
-            backgroundColor: 'rgb(var(--ion-color-success-rgb), 0.18)',
-          };
-        case "hochzeit":
-          return {
-            textColor: 'var(--ion-color-warning)',
-            backgroundColor: 'rgb(var(--ion-color-warning-rgb), 0.18)',
-          };
-        case "sonstiges":
-          return {
-            textColor: 'var(--ion-color-secondary)',
-            backgroundColor: 'rgb(var(--ion-color-secondary-rgb), 0.18)',
-          };
-        default:
-          return undefined;
-      }
-    }
-
     if (this.holidays.publicHolidays.find(h => {
       if (dayjs(date).isSame(dayjs(h.startDate), 'day')) { return true; }
       if (dayjs(date).isSame(dayjs(h.endDate), 'day')) { return true; }
@@ -321,14 +294,6 @@ export class AttListPage implements OnInit {
     return format(parseISO(value), 'dd.MM.yyyy');
   }
 
-  getTypeText(key: string, notes: string): string {
-    if (key === "sonstiges" && notes) {
-      return notes;
-    }
-
-    return Utils.getTypeText(key);
-  }
-
   onDateClick() {
     if (this.dates.length === 1 && isSameDay(new Date(this.dates[0]), new Date())) {
       this.dates = [];
@@ -343,13 +308,6 @@ export class AttListPage implements OnInit {
   }
 
   getAttendanceTitle(att: Attendance): string {
-    if (!att.type_id) {
-      if (att.type === 'sonstiges' && att.typeInfo) {
-        return `${this.getReadableDate(att.date)} | ${att.typeInfo}`;
-      }
-      return `${this.getReadableDate(att.date)} | ${Utils.getTypeText(att.type)}`;
-    }
-
     if (att.typeInfo) {
       return `${this.getReadableDate(att.date)} | ${att.typeInfo}`;
     }

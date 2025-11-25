@@ -17,29 +17,16 @@
         <ion-label>Informationen</ion-label>
       </ion-item>
       <div slot="content">
-        <ion-item *ngIf="!attendance.type_id" lines="none">
-          <ion-select disabled="true" label="Kategorie" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.type">
-            @if (isGeneral) {
-            <ion-select-option value="uebung">Treffen</ion-select-option>
-            } @else {
-            <ion-select-option value="uebung">Probe</ion-select-option>
-            }
-            <ion-select-option value="vortrag">Vortrag</ion-select-option>
-            <ion-select-option value="hochzeit">Hochzeit</ion-select-option>
-            <ion-select-option value="sonstiges">Sonstiges</ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-item *ngIf="attendance.type_id" lines="none">
+        <ion-item lines="none">
           <ion-label>Typ</ion-label>
           <ion-badge slot="end">{{ getTypeName(attendance.type_id) }}</ion-badge>
         </ion-item>
-        <ion-item lines="none" *ngIf="attendance.type === 'sonstiges' || attendance.type_id">
-          <ion-label *ngIf="attendance.type === 'sonstiges'" position="stacked">Probenart</ion-label>
-          <ion-label *ngIf="attendance.type_id" position="stacked">Info-Text</ion-label>
+        <ion-item lines="none">
+          <ion-label position="stacked">Info-Text</ion-label>
           <ion-input (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.typeInfo"></ion-input>
         </ion-item>
         <ion-list
-          *ngIf="!isGeneral && (manageSongs || attendance.type === 'vortrag' || attendance.type === 'sonstiges' || attendance.type === 'hochzeit')">
+          *ngIf="manageSongs">
           <ion-list-header>
             <ion-label>Werke</ion-label>
             <ion-button id="add-his-button">
@@ -86,17 +73,12 @@
             </ion-button>
           </ion-item>
         </ion-list>
-        <!-- @if (!isGeneral && (attendance.type === 'vortrag' || attendance.type === 'sonstiges' || attendance.type === 'hochzeit')) {
-          <ion-item>
-            <ion-toggle (ionChange)="onInfoChanged()" helperText="Ausgewählte Werke werden automatisch in die Werkhistorie übernommen" [(ngModel)]="attendance.save_in_history">In der Werkhistorie berücksichtigen</ion-toggle>
-          </ion-item>
-        } -->
+
         <ion-item lines="none">
           <ion-label position="stacked">Notizen</ion-label>
           <ion-textarea (ionBlur)="onInfoChanged()" autoGrow="true" [(ngModel)]="attendance.notes"></ion-textarea>
         </ion-item>
 
-        @if (attendance.type_id) {
         <ion-item>
           <ion-label>Beginn</ion-label>
           <ion-datetime-button datetime="datetimestartatt"></ion-datetime-button>
@@ -130,7 +112,6 @@
             </ng-template>
           </ion-modal>
         </ion-item>
-        }
 
         <!-- <input style="display: 'none';" name="file" #chooser (change)="onImageSelect($event)" accept="image/*" class="inputFile" type="file" />
         <ion-item>

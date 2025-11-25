@@ -152,7 +152,6 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     this.onInstrumentChange(false);
 
-    this.otherTenants = await this.db.getTenantsFromUser(this.player.appId);
     this.organisation = await this.db.getOrganisationFromTenant();
     if (this.organisation) {
       this.tenants = await this.db.getTenantsFromOrganisation();
@@ -161,6 +160,30 @@ export class PersonPage implements OnInit, AfterViewInit {
         this.tenantGroups = await this.db.getGroups(this.tenantId);
       }
     }
+
+    void this.loadOtherTenants();
+  }
+
+  async loadOtherTenants(): Promise<void> {
+    this.otherTenants = await this.db.getTenantsFromUser(this.player.appId);
+
+    for (const tenant of this.otherTenants) {
+      const perc = await this.getAttendanceFromOtherTenant(tenant);
+      tenant.perc = perc === 1000 ? "Nicht verfügbar" : `${Math.round(perc)}%`;
+      if (perc === 1000) {
+        tenant.percColor = 'warning';
+      } else {
+        tenant.percColor = perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger';
+      }
+    }
+  }
+
+  async getAttendanceFromOtherTenant(tenant: Tenant): Promise<number> {
+    const personId = (await this.db.getPersonIdFromTenant(this.player.appId, tenant.id)).id;
+    const personAttendances = await this.db.getPersonAttendances(personId);
+    const tillNow = personAttendances.filter((att: PersonAttendance) => dayjs((att as any).date).isBefore(dayjs()));
+
+    return tillNow.length ? tillNow.filter((att: PersonAttendance) => att.attended).length / tillNow.length * 100 : 1000;
   }
 
   getFieldTypeDefaultValue(fieldType: FieldType, options?: string[]): any {
@@ -894,5 +917,4 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     this.player.additional_fields[fieldId] = String(value);
   }
-
 }

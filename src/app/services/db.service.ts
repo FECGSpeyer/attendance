@@ -1251,17 +1251,7 @@ export class DbService {
       let title = '';
 
       if (attType) {
-        if (att.attendance.typeInfo) {
-          title = att.attendance.typeInfo;
-        } else {
-          title = attType.hide_name ? '' : attType.name;
-        }
-      } else {
-        if (att.attendance.typeInfo) {
-          title = att.attendance.typeInfo;
-        } else {
-          title = att.attendance.type === "vortrag" ? "Vortrag" : att.attendance.type === "hochzeit" ? "Hochzeit" : "Übung";
-        }
+        title = Utils.getTypeTitle(attType, att.attendance.typeInfo);
       }
 
       return {
@@ -1988,6 +1978,21 @@ export class DbService {
     if (error) {
       Utils.showToast("Fehler beim Laden der Benutzer", "danger");
       throw error;
+    }
+
+    return data;
+  }
+
+  async getPersonIdFromTenant(userId: string, tenantId: number): Promise<{ id: number } | null> {
+    const { data, error } = await supabase
+      .from('player')
+      .select('id')
+      .eq('appId', userId)
+      .eq('tenantId', tenantId)
+      .single();
+
+    if (error) {
+      console.error(error);
     }
 
     return data;

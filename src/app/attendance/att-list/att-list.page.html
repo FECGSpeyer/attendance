@@ -228,7 +228,7 @@
             [(ngModel)]="typeInfo"></ion-textarea>
         </ion-item>
         <ion-list [inset]="true"
-          *ngIf="(!isGeneral && (type === 'vortrag' || type === 'sonstiges' || type === 'hochzeit')) || showSongsSelection()">
+          *ngIf="showSongsSelection()">
           <ion-list-header>
             <ion-label>Werke</ion-label>
             <ion-button id="add-his-button">

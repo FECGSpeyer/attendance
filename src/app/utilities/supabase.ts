@@ -106,6 +106,7 @@ export type Database = {
           hide_name: boolean
           highlight: boolean
           id: string
+          include_in_average: boolean | null
           index: number | null
           manage_songs: boolean | null
           name: string | null
@@ -124,6 +125,7 @@ export type Database = {
           hide_name?: boolean
           highlight?: boolean
           id?: string
+          include_in_average?: boolean | null
           index?: number | null
           manage_songs?: boolean | null
           name?: string | null
@@ -142,6 +144,7 @@ export type Database = {
           hide_name?: boolean
           highlight?: boolean
           id?: string
+          include_in_average?: boolean | null
           index?: number | null
           manage_songs?: boolean | null
           name?: string | null

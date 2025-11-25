@@ -1,7 +1,7 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role } from "./constants";
-import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player } from "./interfaces";
+import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType } from "./interfaces";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
@@ -11,7 +11,13 @@ export class Utils {
     return Math.floor(Math.random() * (999999999999 - 1000000000 + 1)) + 1000000000;
   }
 
-  public static getModifiedPlayersForList(players: Player[], instruments: Group[], attendances: Attendance[], mainGroup?: number): Player[] {
+  public static getModifiedPlayersForList(
+    players: Player[],
+    instruments: Group[],
+    attendances: Attendance[],
+    types: AttendanceType[],
+    mainGroup?: number
+  ): Player[] {
     const instrumentsMap: { [props: number]: boolean } = {};
 
     return players.sort((a: Player, b: Player) => {
@@ -47,8 +53,9 @@ export class Utils {
       if (player.person_attendances && attendances?.length) {
         const personAttendancesTillNow = player.person_attendances.filter((personAttendance: PersonAttendance) => {
           const attendance = attendances.find((attendance: Attendance) => personAttendance.attendance_id === attendance.id);
+          const type = types.find((t: AttendanceType) => t.id === attendance?.type_id);
 
-          if (attendance?.type === "hochzeit" || attendance?.typeInfo?.toLowerCase().includes("hochzeit")) {
+          if (!type.include_in_average || attendance?.typeInfo?.toLowerCase().includes("hochzeit")) {
             return false;
           }
 
@@ -205,6 +212,14 @@ export class Utils {
     }
   }
 
+  public static getTypeTitle(type: AttendanceType, typeInfo: string): string {
+    if (typeInfo) {
+      return typeInfo;
+    } else {
+      return type.hide_name ? '' : type.name;
+    }
+  }
+
   public static getPlayerHistoryTypeText(key: PlayerHistoryType) {
     switch (key) {
       case PlayerHistoryType.PAUSED:
@@ -224,19 +239,6 @@ export class Utils {
       case PlayerHistoryType.COPIED_FROM:
       case PlayerHistoryType.COPIED_TO:
         return "";
-      default:
-        return "Sonstiges";
-    }
-  }
-
-  public static getTypeText(key: string): string {
-    switch (key) {
-      case "uebung":
-        return "Übung";
-      case "vortrag":
-        return "Vortrag";
-      case "hochzeit":
-        return "Hochzeit";
       default:
         return "Sonstiges";
     }

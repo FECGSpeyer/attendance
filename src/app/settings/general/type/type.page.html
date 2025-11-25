@@ -115,6 +115,10 @@
         <ion-toggle label="Hervorheben" helperText="Wenn du diese Option aktivierst, wird dieser Anwesenheitstyp in der Liste als Fett dargestellt." [(ngModel)]="type.highlight">Hervorheben</ion-toggle>
       </ion-item>
 
+      <ion-item>
+        <ion-toggle label="Für Ø berücksichtigen" helperText="Wenn diese Option aktiviert ist, wird dieser Typ beim Anwesenheitsdurchschnitt berücksichtigt." [(ngModel)]="type.include_in_average">Für Ø berücksichtigen</ion-toggle>
+      </ion-item>
+
       <ion-item id="color-btn" button detail="false">
         <ion-label>
           <h2>Farbe</h2>

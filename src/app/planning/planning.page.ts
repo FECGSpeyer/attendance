@@ -307,13 +307,9 @@ export class PlanningPage implements OnInit {
     return true;
   }
 
-  getAttTypeText(type: string, typeInfo?: string): string {
-    if (type === 'uebung') {
-      return '';
-    } else if (type === "sonstiges") {
-      return typeInfo || '';
-    }
-    return Utils.getTypeText(type);
+  getAttTypeText(attendance: Attendance): string {
+    const type = this.db.attendanceTypes().find((t: AttendanceType) => t.id === attendance.type_id);
+    return Utils.getTypeTitle(type, attendance.typeInfo);
   }
 
   async showOptions() {

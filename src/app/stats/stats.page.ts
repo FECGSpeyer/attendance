@@ -13,9 +13,6 @@ import { DefaultAttendanceType } from '../utilities/constants';
 })
 export class StatsPage implements OnInit {
   public attendances: Attendance[] = [];
-  public pratices: Attendance[] = [];
-  public vortraege: Attendance[] = [];
-  public hochzeiten: Attendance[] = [];
   public otherAttendances: Attendance[] = [];
   public players: Player[] = [];
   public leftPlayers: Player[] = [];
@@ -29,7 +26,7 @@ export class StatsPage implements OnInit {
   public isGeneral: boolean = false;
 
   constructor(
-    private db: DbService,
+    public db: DbService,
     private modalController: ModalController,
   ) { }
 
@@ -51,15 +48,20 @@ export class StatsPage implements OnInit {
     const sort: Attendance[] = this.attendances.sort((a: Attendance, b: Attendance) => a.percentage - b.percentage);
     this.worstAttendance = sort[0];
     this.bestAttendance = sort[sort.length - 1];
-    this.pratices = this.attendances.filter((att: Attendance) => att.type === "uebung");
-    this.vortraege = this.attendances.filter((att: Attendance) => att.type === "vortrag");
-    this.hochzeiten = this.attendances.filter((att: Attendance) => att.type === "hochzeit");
-    this.otherAttendances = this.attendances.filter((att: Attendance) => att.type === "sonstiges");
-    this.attPerc = Math.round(((this.attendances.map((att: Attendance) => att.percentage).reduce((a: number, b: number) => a + b, 0)) / (this.attendances.length * 100)) * 100);
+
+    const attendancesToCalcPerc = this.attendances.filter((att: Attendance) => {
+      const type = this.db.attendanceTypes().find((t) => t.id === att.type_id);
+      return type.include_in_average;
+    });
+    this.attPerc = Math.round(((attendancesToCalcPerc.map((att: Attendance) => att.percentage).reduce((a: number, b: number) => a + b, 0)) / (attendancesToCalcPerc.length * 100)) * 100);
   }
 
   dismiss() {
     this.modalController.dismiss();
+  }
+
+  getAttTypeLength(typeId: string): number {
+    return this.attendances.filter((att: Attendance) => att.type_id === typeId).length;
   }
 
 }
