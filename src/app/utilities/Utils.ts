@@ -55,7 +55,7 @@ export class Utils {
           const attendance = attendances.find((attendance: Attendance) => personAttendance.attendance_id === attendance.id);
           const type = types.find((t: AttendanceType) => t.id === attendance?.type_id);
 
-          if (!type.include_in_average || attendance?.typeInfo?.toLowerCase().includes("hochzeit")) {
+          if (!type?.include_in_average || attendance?.typeInfo?.toLowerCase().includes("hochzeit")) {
             return false;
           }
 
