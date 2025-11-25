@@ -20,7 +20,7 @@
         <ion-item *ngIf="!attendance.type_id" lines="none">
           <ion-select disabled="true" label="Kategorie" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.type">
             @if (isGeneral) {
-            <ion-select-option value="uebung">Zusammenkunft</ion-select-option>
+            <ion-select-option value="uebung">Treffen</ion-select-option>
             } @else {
             <ion-select-option value="uebung">Probe</ion-select-option>
             }

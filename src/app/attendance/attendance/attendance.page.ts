@@ -163,7 +163,6 @@ export class AttendancePage implements OnInit {
   }
 
   async onAttChange(individual: PersonAttendance) {
-    if (this.db.isBeta() && this.attendance.type_id) {
       const attType = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
       let status;
 
@@ -193,33 +192,6 @@ export class AttendancePage implements OnInit {
       individual.status = status;
 
       this.db.updatePersonAttendance(individual.id, { status: individual.status });
-
-      return;
-    }
-
-    if (!this.withExcuses) { // TODO remove this with beta removal
-      if (individual.status === AttendanceStatus.Absent) {
-        individual.status = AttendanceStatus.Present;
-      } else {
-        individual.status = AttendanceStatus.Absent;
-      }
-    } else {
-      // First Case is for: Condition ('N' OR 'A') to '✓'
-      // Second Case is for: Condition '✓' to 'L'
-      // Third Case is for: Condition 'L to 'E'
-      // Fourth Case is for: Condition  'E' to 'A'
-      if (individual.status === AttendanceStatus.Neutral || individual.status === AttendanceStatus.Absent) {
-        individual.status = AttendanceStatus.Present;
-      } else if (individual.status === AttendanceStatus.Present) {
-        individual.status = AttendanceStatus.Excused;
-      } else if (individual.status === AttendanceStatus.Excused || individual.status === AttendanceStatus.LateExcused) {
-        individual.status = AttendanceStatus.Late;
-      } else if (individual.status === AttendanceStatus.Late) {
-        individual.status = AttendanceStatus.Absent;
-      }
-    }
-
-    this.db.updatePersonAttendance(individual.id, { status: individual.status });
   }
 
   getAttendedPlayers(players: PersonAttendance[]): number {

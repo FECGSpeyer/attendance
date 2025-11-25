@@ -66,44 +66,9 @@
           </ng-template>
         </ion-modal>
       </ion-item>
-      <ion-item *ngIf="db.isBeta()" button [routerLink]="['/tabs/settings/general/types']">
+      <ion-item button [routerLink]="['/tabs/settings/general/types']">
         <ion-label>Anwesenheits-Typen</ion-label>
       </ion-item>
-      @if (!db.isBeta()) {
-      <ion-item *ngIf="!isGeneral">
-        <ion-label>Probenbeginn</ion-label>
-        <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
-        <ion-modal [keepContentsMounted]="true">
-          <ng-template>
-            <ion-datetime [(ngModel)]="practiceStart" presentation="time"
-              minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestart" [formatOptions]="{
-                      time: {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                      }
-                    }"></ion-datetime>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
-      <ion-item *ngIf="!isGeneral">
-        <ion-label>Probenende</ion-label>
-        <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
-        <ion-modal [keepContentsMounted]="true">
-          <ng-template>
-            <ion-datetime [(ngModel)]="practiceEnd" presentation="time" minuteValues="0,5,10,15,20,25,30,35,40,45,50,55"
-              id="datetimeend" [formatOptions]="{
-                      time: {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                      }
-                    }">
-            </ion-datetime>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
-      }
     </ion-item-group>
 
     <ion-list-header><ion-label>Sonstiges</ion-label></ion-list-header>

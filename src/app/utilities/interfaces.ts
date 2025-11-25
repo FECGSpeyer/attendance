@@ -162,7 +162,7 @@ export interface Attendance {
     created_at?: string;
     date: string;
     type?: string;
-    type_id?: string;
+    type_id: string;
     save_in_history: boolean;
     percentage?: number;
     excused?: string[];

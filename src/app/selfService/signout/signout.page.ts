@@ -170,16 +170,14 @@ export class SignoutPage implements OnInit {
     ];
 
     let attType;
-    if (this.db.isBeta()) {
       const att = this.attendances.find((a: Attendance) => a.id === attendance.attId);
       attType = this.db.attendanceTypes().find((type: any) => type.id === att.type_id);
-    }
 
     if (attendance.text === "X") {
       buttons = buttons.filter((btn) => btn.text !== 'Anmelden');
-    } else if (attendance.text === "E" || (attType && !attType.available_statuses.includes(AttendanceStatus.Excused))) {
+    } else if (attType && !attType.available_statuses.includes(AttendanceStatus.Excused)) {
       buttons = buttons.filter((btn) => btn.text !== 'Abmelden');
-    } else if (attendance.text === "L" || (attType && !attType.available_statuses.includes(AttendanceStatus.Late))) {
+    } else if (attType && !attType.available_statuses.includes(AttendanceStatus.Late)) {
       buttons = buttons.filter((btn) => btn.text !== 'Verspätung eintragen');
     }
     this.selAttIds = [attendance.id];

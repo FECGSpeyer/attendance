@@ -57,10 +57,6 @@ export class DbService {
     });
   }
 
-  isBeta() {
-    return this.tenantUser()?.email === "developer@attendix.de" || this.tenantUser()?.email === "erwinfast98@gmail.com" || this.tenantUser()?.email === "annettefast27@gmail.com";
-  }
-
   getSupabase(): SupabaseClient {
     return supabase;
   }
@@ -216,9 +212,7 @@ export class DbService {
       telegram_chat_id: config?.telegram_chat_id,
     });
     this.groups.set(await this.getGroups());
-    if (this.isBeta()) {
-      this.attendanceTypes.set(await this.getAttendanceTypes());
-    }
+    this.attendanceTypes.set(await this.getAttendanceTypes());
     this.organisation.set(await this.getOrganisationFromTenant());
   }
 
@@ -844,19 +838,14 @@ export class DbService {
     if (attData?.length) {
       const attToAdd: PersonAttendance[] = attData
         .filter((att: Attendance) => {
-          if (!this.isBeta()) {
-            return true;
-          }
           const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
           return attType.relevant_groups.length === 0 || attType.relevant_groups.includes(group);
         })
         .map((att: Attendance) => {
           let status = AttendanceStatus.Present;
 
-          if (this.isBeta()) {
-            const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
-            status = attType?.default_status;
-          }
+          const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
+          status = attType?.default_status;
 
           return {
             attendance_id: att.id,
@@ -2440,65 +2429,5 @@ export class DbService {
     }
 
     return data as unknown as Tenant;
-  }
-
-  async migrateAttendanceTypes(): Promise<void> {
-    const { data } = await supabase
-      .from('tenants')
-      .select('*');
-
-    for (const tenant of data) {
-      const { data: attTypes } = await supabase
-        .from('attendance_types')
-        .select('*')
-        .eq('tenant_id', tenant.id);
-
-      if (attTypes.length === 0) {
-        const defaultTypes: AttendanceType[] = [
-          {
-            name: "Vortrag",
-            hide_name: false,
-            highlight: true,
-            default_plan: null,
-            tenant_id: tenant.id,
-            index: 1,
-            default_status: AttendanceStatus.Neutral,
-            available_statuses: [AttendanceStatus.Present, AttendanceStatus.Excused, AttendanceStatus.Neutral],
-            manage_songs: true,
-            relevant_groups: [],
-            visible: true,
-            color: ""
-          },
-          {
-            name: "Probe",
-            hide_name: false,
-            highlight: false,
-            default_plan: null,
-            tenant_id: tenant.id,
-            index: 2,
-            default_status: AttendanceStatus.Present,
-            available_statuses: [AttendanceStatus.Present, AttendanceStatus.LateExcused, AttendanceStatus.Excused, AttendanceStatus.Neutral],
-            manage_songs: true,
-            relevant_groups: [],
-            visible: true,
-            color: "secondary"
-          },
-          {
-            name: "Sonstiges",
-            hide_name: false,
-            highlight: false,
-            default_plan: null,
-            tenant_id: tenant.id,
-            index: 3,
-            default_status: AttendanceStatus.Neutral,
-            available_statuses: [AttendanceStatus.Present, AttendanceStatus.Excused, AttendanceStatus.Neutral],
-            manage_songs: false,
-            relevant_groups: [],
-            visible: true,
-            color: "tertiary"
-          },
-        ];
-      }
-    }
   }
 }

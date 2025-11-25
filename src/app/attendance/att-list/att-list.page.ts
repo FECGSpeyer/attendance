@@ -212,10 +212,8 @@ export class AttListPage implements OnInit {
       this.perc = Math.round((this.oldAttendances.reduce((value: number, current: Attendance) => value + current.percentage, 0)) / this.oldAttendances.length);
     }
 
-    if (this.db.isBeta()) {
-      this.type_id = this.db.attendanceTypes().find(type => type.visible)?.id;
-      this.highlightedTypes = this.db.attendanceTypes().filter(type => type.highlight).map(type => type.id);
-    }
+    this.type_id = this.db.attendanceTypes().find(type => type.visible)?.id;
+    this.highlightedTypes = this.db.attendanceTypes().filter(type => type.highlight).map(type => type.id);
 
     this.loaded = true;
   }
@@ -259,24 +257,20 @@ export class AttListPage implements OnInit {
     let allPersons: Person[];
     let status: AttendanceStatus = this.hasNeutral ? AttendanceStatus.Neutral : AttendanceStatus.Present;
 
-    if (this.db.isBeta()) {
-      const attType = this.db.attendanceTypes().find(type => type.id === this.type_id);
-      allPersons = (await this.db.getPlayers()).filter((player: Player) => {
-        if (player.paused) {
-          return false;
-        }
-        if (attType.relevant_groups.length === 0) {
-          return true;
-        }
-        return attType.relevant_groups.includes(player.instrument);
-      });
-      status = attType.default_status;
-    } else {
-      allPersons = (await this.db.getPlayers()).filter((player: Player) => !player.paused);
-    }
+    const attType = this.db.attendanceTypes().find(type => type.id === this.type_id);
+    allPersons = (await this.db.getPlayers()).filter((player: Player) => {
+      if (player.paused) {
+        return false;
+      }
+      if (attType.relevant_groups.length === 0) {
+        return true;
+      }
+      return attType.relevant_groups.includes(player.instrument);
+    });
+    status = attType.default_status;
 
     for (const date of this.dates) {
-      const attendance_id: number = await this.db.addAttendance(this.db.isBeta() ? {
+      const attendance_id: number = await this.db.addAttendance({
         date: date,
         type_id: this.type_id,
         notes: this.notes,
@@ -284,12 +278,6 @@ export class AttListPage implements OnInit {
         typeInfo: this.typeInfo,
         start_time: this.db.attendanceTypes().find(type => type.id === this.type_id)?.start_time || '19:30', // TODO att type is defined after beta removal
         end_time: this.db.attendanceTypes().find(type => type.id === this.type_id)?.end_time || '21:00',
-      } : {
-        date: date,
-        type: this.type,
-        notes: this.notes,
-        typeInfo: this.typeInfo,
-        save_in_history: this.saveInHistory,
       });
 
       for (const player of allPersons) {
@@ -468,7 +456,7 @@ export class AttListPage implements OnInit {
   }
 
   showSongsSelection(): boolean {
-    return this.db.isBeta() && Boolean(this.db.attendanceTypes().find(type => type.id === this.type_id && type.manage_songs));
+    return Boolean(this.db.attendanceTypes().find(type => type.id === this.type_id && type.manage_songs));
   }
 
   getCountText(att: Attendance) {
