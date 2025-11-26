@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, Shift } from '../utilities/interfaces';
+import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
@@ -40,7 +40,7 @@ export class DbService {
   public tenantUser: WritableSignal<TenantUser | undefined>;
   public attendanceTypes: WritableSignal<AttendanceType[]>;
   public groups: WritableSignal<Group[]>;
-  public shifts: WritableSignal<Shift[]>;
+  public shifts: WritableSignal<ShiftPlan[]>;
 
   constructor(
     private plt: Platform,
@@ -217,7 +217,7 @@ export class DbService {
     this.attendanceTypes.set(await this.getAttendanceTypes());
     this.organisation.set(await this.getOrganisationFromTenant());
 
-    void this.loadShifts();
+    await this.loadShifts();
   }
 
   isBeta() {
@@ -2449,27 +2449,69 @@ export class DbService {
     const { data, error } = await supabase
       .from('shifts')
       .select('*')
-      .eq('tenant_id', this.tenant().id);
+      .eq('tenant_id', this.tenant().id)
+      .order('name', { ascending: true });
 
     if (error) {
       Utils.showToast("Fehler beim Laden der Schichten", "danger");
       throw error;
     }
 
-    this.shifts.set(data as any);
+    this.shifts.set((data as any).map((shift: ShiftPlan) => {
+      return {
+        ...shift,
+        definition: (shift.definition || []).sort((a: ShiftDefinition, b: ShiftDefinition) => {
+          return a.index - b.index;
+        }),
+      }
+    }));
+    return;
   }
 
-  async addShift(shift: Shift): Promise<Shift> {
-    const { data, error } = await supabase
+  async addShift(shift: ShiftPlan): Promise<ShiftPlan> {
+    const { error } = await supabase
       .from('shifts')
       .insert({
         ...shift,
         tenant_id: this.tenant().id,
-        entries: [],
+        definition: [],
+        shifts: [],
       });
 
     if (error) {
       Utils.showToast("Fehler beim Hinzufügen der Schicht", "danger");
+      throw error;
+    }
+
+    await this.loadShifts();
+
+    return this.shifts().find(s => s.name === shift.name);
+  }
+
+  async updateShift(shift: ShiftPlan): Promise<ShiftPlan> {
+    const { error } = await supabase
+      .from('shifts')
+      .update(shift as any)
+      .match({ id: shift.id });
+
+    if (error) {
+      Utils.showToast("Fehler beim Aktualisieren der Schicht", "danger");
+      throw error;
+    }
+
+    await this.loadShifts();
+
+    return;
+  }
+
+  async deleteShift(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('shifts')
+      .delete()
+      .match({ id });
+
+    if (error) {
+      Utils.showToast("Fehler beim Löschen der Schicht", "danger");
       throw error;
     }
 

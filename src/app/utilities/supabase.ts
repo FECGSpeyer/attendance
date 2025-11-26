@@ -554,6 +554,9 @@ export type Database = {
           phone: string | null
           playsSince: string | null
           range: string | null
+          shift_id: string | null
+          shift_name: string | null
+          shift_start: string | null
           teacher: number | null
           tenantId: number
           testResult: string | null
@@ -590,6 +593,9 @@ export type Database = {
           phone?: string | null
           playsSince?: string | null
           range?: string | null
+          shift_id?: string | null
+          shift_name?: string | null
+          shift_start?: string | null
           teacher?: number | null
           tenantId: number
           testResult?: string | null
@@ -626,6 +632,9 @@ export type Database = {
           phone?: string | null
           playsSince?: string | null
           range?: string | null
+          shift_id?: string | null
+          shift_name?: string | null
+          shift_start?: string | null
           teacher?: number | null
           tenantId?: number
           testResult?: string | null
@@ -643,6 +652,13 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "parents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "shifts"
             referencedColumns: ["id"]
           },
           {
@@ -693,26 +709,29 @@ export type Database = {
       shifts: {
         Row: {
           created_at: string
+          definition: Json[] | null
           description: string | null
-          entries: Json[] | null
-          id: number
+          id: string
           name: string | null
+          shifts: Json[] | null
           tenant_id: number | null
         }
         Insert: {
           created_at?: string
+          definition?: Json[] | null
           description?: string | null
-          entries?: Json[] | null
-          id?: number
+          id?: string
           name?: string | null
+          shifts?: Json[] | null
           tenant_id?: number | null
         }
         Update: {
           created_at?: string
+          definition?: Json[] | null
           description?: string | null
-          entries?: Json[] | null
-          id?: number
+          id?: string
           name?: string | null
+          shifts?: Json[] | null
           tenant_id?: number | null
         }
         Relationships: [

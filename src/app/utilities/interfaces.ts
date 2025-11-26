@@ -97,6 +97,7 @@ export interface Person {
     additional_fields?: { [key: string]: any };
     phone?: string;
     shift_id?: string;
+    shift_name?: string;
     shift_start?: string;
 }
 
@@ -336,17 +337,26 @@ export interface AttendanceType {
     include_in_average: boolean;
 }
 
-export interface Shift {
-    id?: number;
+export interface ShiftPlan {
+    id?: string;
     created_at?: string;
     name: string;
     description: string;
     tenant_id?: number;
-    entries: ShiftEntry[];
+    definition: ShiftDefinition[];
+    shifts?: ShiftInstance[];
 }
 
-export interface ShiftEntry {
+export interface ShiftDefinition {
     id?: number;
     start_time: string;
-    duration: string;
+    duration: number;
+    free: boolean;
+    index: number;
+    repeat_count: number;
+}
+
+export interface ShiftInstance {
+    date: string;
+    name: string;
 }

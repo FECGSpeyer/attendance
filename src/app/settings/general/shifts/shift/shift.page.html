@@ -4,13 +4,188 @@
       <ion-back-button text="" defaultHref="tabs/settings/general/shifts"></ion-back-button>
     </ion-buttons>
     <ion-title>Schichtplan anpassen</ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="danger" (click)="delete()">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content color="light" [fullscreen]="true">
   <ion-header collapse="condense">
-    <ion-toolbar>
+    <ion-toolbar color="light">
       <ion-title size="large">Schichtplan anpassen</ion-title>
     </ion-toolbar>
   </ion-header>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-icon class="headerIcon" name="time-outline"></ion-icon>
+    </ion-card-header>
+    <ion-card-content>
+      Füge hier die verschiedenen Schichten hinzu, aus denen sich der Schichtplan zusammensetzt. Jede Schicht
+      entspricht einem Tag, an dem eine Person Schicht hat. Der Schichtplan beginnt wieder von vorne, wenn alle
+      Schichten
+      durchlaufen sind.
+    </ion-card-content>
+  </ion-card>
+
+  @if (shift) {
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Allgemein</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item>
+        <ion-label position="stacked">Name</ion-label>
+        <ion-input [(ngModel)]="shift.name"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Beschreibung</ion-label>
+        <ion-input [(ngModel)]="shift.description"></ion-input>
+      </ion-item>
+    </ion-item-group>
+
+    <ion-list-header>
+      <ion-label>Definition</ion-label>
+      <ion-button fill="clear" color="primary" (click)="addEntry()">
+        <ion-icon name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-list-header>
+    <ion-item-group>
+      @if (shift.definition && shift.definition.length > 0) {
+      @for (s of shift.definition; let i = $index; track s) {
+      <ion-item color="primary" lines="none">
+        <ion-label>Abschnitt {{ i + 1 }}</ion-label>
+        <ion-button slot="end" fill="clear" color="light" (click)="removeEntry(i)">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-label>
+          <p>Frei</p>
+        </ion-label>
+        <ion-toggle slot="end" [(ngModel)]="s.free"></ion-toggle>
+      </ion-item>
+      <ion-item *ngIf="!s.free" lines="none">
+        <ion-label>
+          <p>Startzeit</p>
+        </ion-label>
+        <ion-datetime-button [datetime]="'datetimestartatt' + i"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime locale="de-DE" [(ngModel)]="s.start_time" presentation="time"
+              minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" [id]="'datetimestartatt' + i" [formatOptions]="{
+                      time: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      }
+                    }"></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+      <ion-item *ngIf="!s.free">
+        <ion-label position="stacked">
+          <p>Dauer (in Stunden)</p>
+        </ion-label>
+        <ion-input
+          helperText="Wenn die Schichtdauer keine ganze Zahl ist, bitte Dezimalstellen mit Punkt angeben. (z.B. 8.5 für 8 1/2 Stunden)"
+          type="number" [(ngModel)]="s.duration"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="stacked">
+          <p>Wiederholungen</p>
+        </ion-label>
+        <ion-input helperText="Anzahl der Wiederholungen dieser Schicht im Plan." type="number"
+          [(ngModel)]="s.repeat_count"></ion-input>
+      </ion-item>
+      }
+      <ion-item button (click)="calculateShifts()">
+        <ion-label color="primary">Beispiel-Rechnung</ion-label>
+      </ion-item>
+      } @else {
+      <ion-item>
+        <ion-label>Keine Schichten hinzugefügt.</ion-label>
+      </ion-item>
+      }
+    </ion-item-group>
+
+    <ion-list-header>
+      <ion-label>Feste Schichten (optional)</ion-label>
+      <ion-button fill="clear" color="primary" (click)="addShift()">
+        <ion-icon name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-list-header>
+    <ion-item-group>
+      <ion-item>
+        <p>Lege feste Schichten fest, die regelmäßig wiederkehren. Falls keine Schichten festgelegt sind, kann mein
+          Zuweisen der Schicht einer Person, das Anfangsdatum festgelegt werden.</p>
+      </ion-item>
+      @if (shift.shifts && shift.shifts.length > 0) {
+      @for (s of shift.shifts; let i = $index; track s) {
+      <ion-item lines="none">
+        <ion-label position="stacked">Bezeichnung</ion-label>
+        <ion-button slot="end" fill="clear" color="danger" (click)="removeShift(i)">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
+        <ion-input [(ngModel)]="s.name"></ion-input>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-label>Anfangsdatum</ion-label>
+        <ion-datetime-button [datetime]="'datetimestartshift' + i"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime [(ngModel)]="s.date" presentation="date" [id]="'datetimestartshift' + i"
+              locale="de-DE"></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+      <ion-item button (click)="calculateShifts(s)">
+        <ion-label color="primary">Beispiel-Rechnung</ion-label>
+      </ion-item>
+      }
+      } @else {
+      <ion-item>
+        <ion-label>Keine Schichten hinzugefügt.</ion-label>
+      </ion-item>
+      }
+    </ion-item-group>
+  </ion-list>
+  }
+
+  <ion-modal (ionModalDidDismiss)="isCalculateModalOpen = false" #calculateModal [isOpen]="isCalculateModalOpen"
+    [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+    <ng-template>
+      <ion-content>
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="end">
+              <ion-button (click)="isCalculateModalOpen = false">
+                <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-list>
+          <ion-list-header>
+            <ion-label>Berechnete Schichten</ion-label>
+          </ion-list-header>
+          <ion-item *ngFor="let cs of calculatedShifts">
+            <ion-label>
+              <h2>{{ cs.date }}</h2>
+              <h3 *ngIf="!cs.free">{{ cs.start_time }} - {{ cs.end_time }}, {{ cs.duration }} Stunden
+              </h3>
+              <h3 *ngIf="cs.free">Frei</h3>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="save()">
+      <ion-icon name="save-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

@@ -27,9 +27,13 @@
   <ion-list [inset]="true">
     <ion-list-header><ion-label>Schichtpläne</ion-label></ion-list-header>
     <ion-item-group>
+      @if (db.shifts() && db.shifts().length > 0) {
       <ion-item [routerLink]="['/tabs/settings/general/shifts', shift.id]" *ngFor="let shift of db.shifts()">
         <ion-label>{{ shift.name }}</ion-label>
       </ion-item>
+      } @else {
+      <ion-item>Keine Schichtpläne vorhanden.</ion-item>
+      }
     </ion-item-group>
   </ion-list>
 

@@ -68,7 +68,7 @@
         <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime [(ngModel)]="type.start_time" presentation="time"
+            <ion-datetime [(ngModel)]="type.start_time" presentation="time" locale="de-DE"
               minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestart" [formatOptions]="{
                       time: {
                         hour: '2-digit',
@@ -84,7 +84,7 @@
         <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime [(ngModel)]="type.end_time" presentation="time"
+            <ion-datetime [(ngModel)]="type.end_time" presentation="time" locale="de-DE"
               minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimeend" [formatOptions]="{
                       time: {
                         hour: '2-digit',
@@ -166,7 +166,7 @@
         <ion-datetime-button datetime="datetimestartplan"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime disabled="true" (ionChange)="calculateEnd()" [(ngModel)]="type.start_time" presentation="time"
+            <ion-datetime locale="de-DE" disabled="true" (ionChange)="calculateEnd()" [(ngModel)]="type.start_time" presentation="time"
               id="datetimestartplan" [formatOptions]="{
                       time: {
                         hour: '2-digit',
@@ -204,7 +204,7 @@
         <ion-datetime-button datetime="datetimeendplan"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime disabled="true" [(ngModel)]="end" presentation="time" id="datetimeendplan" [formatOptions]="{
+            <ion-datetime locale="de-DE" disabled="true" [(ngModel)]="end" presentation="time" id="datetimeendplan" [formatOptions]="{
                       time: {
                         hour: '2-digit',
                         minute: '2-digit',

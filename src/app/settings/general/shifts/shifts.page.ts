@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { IonModal } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { Utils } from 'src/app/utilities/Utils';
@@ -14,6 +15,7 @@ export class ShiftsPage implements OnInit {
 
   constructor(
     public db: DbService,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -30,11 +32,13 @@ export class ShiftsPage implements OnInit {
     const newShift = {
       name: this.newShiftName,
       description: this.newShiftDescription,
-      entries: [],
+      definition: [],
+      shifts: []
     };
 
-    await this.db.addShift(newShift);
+    const shift = await this.db.addShift(newShift);
     this.newShiftName = '';
     this.newShiftDescription = '';
+    this.router.navigate(['/tabs/settings/general/shifts/', shift.id]);
   }
 }

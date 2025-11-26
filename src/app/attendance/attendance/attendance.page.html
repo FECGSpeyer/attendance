@@ -84,7 +84,7 @@
           <ion-datetime-button datetime="datetimestartatt"></ion-datetime-button>
           <ion-modal [keepContentsMounted]="true">
             <ng-template>
-              <ion-datetime (ionChange)="onInfoChanged()" [(ngModel)]="attendance.start_time" presentation="time"
+              <ion-datetime locale="de-DE" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.start_time" presentation="time"
                 minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestartatt" [formatOptions]="{
                       time: {
                         hour: '2-digit',
@@ -100,7 +100,7 @@
           <ion-datetime-button datetime="datetimeendatt"></ion-datetime-button>
           <ion-modal [keepContentsMounted]="true">
             <ng-template>
-              <ion-datetime (ionChange)="onInfoChanged()" [(ngModel)]="attendance.end_time" presentation="time"
+              <ion-datetime locale="de-DE" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.end_time" presentation="time"
                 minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimeendatt" [formatOptions]="{
                       time: {
                         hour: '2-digit',

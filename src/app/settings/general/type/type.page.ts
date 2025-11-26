@@ -68,12 +68,8 @@ export class TypePage implements OnInit {
       };
       this.type.default_plan = { ...this.defaultPlan };
     } else {
-      let existingType = this.dataService.getAttendanceTypeData();
-
-      if (!existingType) {
-        const id = this.route.snapshot.paramMap.get('id');
-        existingType = await this.db.getAttendanceType(id);
-      }
+      const id = this.route.snapshot.paramMap.get('id');
+      const existingType = await this.db.getAttendanceType(id);
 
       this.type = {
         ...existingType,

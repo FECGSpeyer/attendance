@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '
 import { ActionSheetButton, ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
-import { Group, Organisation, Parent, Person, PersonAttendance, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
+import { Group, Organisation, Parent, Person, PersonAttendance, Player, PlayerHistoryEntry, ShiftPlan, Teacher, Tenant } from 'src/app/utilities/interfaces';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
@@ -80,6 +80,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public tenantGroups: Group[] = [];
   public targetGroupId: number;
   public fieldTypes = FieldType;
+  public shift: ShiftPlan = null;
 
   constructor(
     public db: DbService,
@@ -148,6 +149,10 @@ export class PersonPage implements OnInit, AfterViewInit {
           this.player.additional_fields[field.id] = this.player.additional_fields[field.id] ?? this.getFieldTypeDefaultValue(field.type, field.options);
         }
       }
+    }
+
+    if (this.player.shift_id) {
+      this.shift = this.db.shifts().find(s => s.id === this.player.shift_id);
     }
 
     this.onInstrumentChange(false);
@@ -916,5 +921,26 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     this.player.additional_fields[fieldId] = String(value);
+  }
+
+  onShiftChange() {
+    this.shift = this.db.shifts().find(s => s.id === this.player.shift_id);
+
+    if (!this.shift) {
+      this.player.shift_name = null;
+      this.player.shift_start = null;
+      this.onChange();
+      return;
+    }
+
+    if (this.shift?.shifts.length) {
+      this.player.shift_name = this.shift.shifts[0].name;
+      this.player.shift_start = null;
+    } else {
+      this.player.shift_start = new Date().toISOString();
+      this.player.shift_name = null;
+    }
+
+    this.onChange();
   }
 }
