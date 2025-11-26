@@ -266,10 +266,6 @@ export class Utils {
     return await new LoadingController().create({ duration, message });
   }
 
-  public static getAttendanceText(attendance: Attendance): string {
-    return attendance.typeInfo ? attendance.typeInfo : attendance.type === "vortrag" ? "Vortrag" : "";
-  }
-
   public static createPlanExport(props: any, isPractice: boolean = true) {
     const startingTime: dayjs.Dayjs = dayjs(props.time).isValid() ? dayjs(props.time) : dayjs().hour(Number(props.time.substring(0, 2))).minute(Number(props.time.substring(3, 5)));
     const date: string = props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).format("DD.MM.YYYY") : startingTime.format("DD.MM.YYYY");

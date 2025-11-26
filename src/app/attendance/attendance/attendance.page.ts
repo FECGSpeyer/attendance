@@ -302,13 +302,23 @@ export class AttendancePage implements OnInit {
   }
 
   async onInfoChanged() {
+    // start_time is a date string and need to be converted to "HH:mm"
+    if (!this.attendance.start_time || this.attendance.start_time === "Invalid Date") {
+      this.attendance.start_time = "19:30";
+    }
+    if (!this.attendance.end_time || this.attendance.end_time === "Invalid Date") {
+      this.attendance.end_time = "21:00";
+    }
+    const start_time = this.attendance.start_time.length !== 5 ? dayjs(this.attendance.start_time).format("HH:mm") : this.attendance.start_time;
+    const end_time = this.attendance.end_time.length !== 5 ? dayjs(this.attendance.end_time).format("HH:mm") : this.attendance.end_time;
+
     await this.db.updateAttendance({
       type: this.attendance.type,
       typeInfo: this.attendance.typeInfo,
       notes: this.attendance.notes,
       save_in_history: this.attendance.save_in_history,
-      start_time: this.attendance.start_time ?? '19:30', // start_time is defined with attendance in beta mode
-      end_time: this.attendance.end_time ?? '21:00', // end_time is defined with attendance in beta mode
+      start_time,
+      end_time,
     }, this.attendance.id);
 
     if (this.historyEntries.length && this.historyEntries[0].visible !== this.attendance.save_in_history) {

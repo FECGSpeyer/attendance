@@ -86,24 +86,7 @@ export class SignoutPage implements OnInit {
   async getAttendances() {
     const allPersonAttendances = (await this.db.getPersonAttendances(this.player.id)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     if (!this.player.paused) {
-      const allAttendances: Attendance[] = await this.db.getAttendance();
-
-      this.attendances = allAttendances.filter((attendance: Attendance) => {
-        if (!dayjs(attendance.date).isAfter(dayjs(), "day")) {
-          return false;
-        }
-
-        return allPersonAttendances.some((personAtt: PersonAttendance) => {
-          return personAtt.person_id === this.player.id &&
-            personAtt.status !== AttendanceStatus.Excused && personAtt.status !== AttendanceStatus.LateExcused;
-        });
-      }).sort((a: Attendance, b: Attendance) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-      if (this.attendances.length) {
-        this.selAttIds = [this.attendances[0].id as any];
-      } else {
-        this.selAttIds = [];
-      }
+      this.selAttIds = [];
     }
 
     this.personAttendances = allPersonAttendances;
