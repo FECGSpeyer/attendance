@@ -364,8 +364,11 @@ export class SettingsPage implements OnInit {
         text: "Löschen",
         handler: async (evt) => {
           if (evt.name === tenant.longName) {
+            const loading = await Utils.getLoadingElement(9999, 'Instanz wird entfernt...');
+            await loading.present();
             modal?.dismiss();
             await this.db.deleteInstance(tenant.id);
+            await loading.dismiss();
           } else {
             alert.message = "Der eingegebene Name ist nicht korrekt.";
             return false;
