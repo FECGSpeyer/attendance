@@ -50,6 +50,7 @@ export class GeneralPage implements OnInit {
     id: '',
     name: '',
     type: FieldType.TEXT,
+    defaultValue: '',
   };
   public fieldTypes = FieldType;
   public extraFields: ExtraField[] = [];
@@ -254,7 +255,7 @@ export class GeneralPage implements OnInit {
     }
 
     // id should have no spaces and be lowercase and remove special characters
-    this.newExtraField.id = this.newExtraField.id.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    this.newExtraField.id = this.newExtraField.name.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
 
     if (this.extraFields.find((f) => f.id === this.newExtraField.id)) {
       Utils.showToast("Ein Zusatzfeld mit dieser ID existiert bereits. Bitte wähle einen anderen Namen.", "danger");
@@ -271,6 +272,7 @@ export class GeneralPage implements OnInit {
       id: '',
       name: '',
       type: FieldType.TEXT,
+      defaultValue: '',
     };
     modal.dismiss();
   }
@@ -311,4 +313,7 @@ export class GeneralPage implements OnInit {
     }
   }
 
+  setDefaultValue() {
+    this.newExtraField.defaultValue = Utils.getFieldTypeDefaultValue(this.newExtraField.type, this.newExtraField.defaultValue, this.newExtraField.options);
+  }
 }

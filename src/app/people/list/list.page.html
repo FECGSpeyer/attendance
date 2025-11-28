@@ -33,6 +33,13 @@
               <ion-select-option *ngIf="isVoS" value="withoutTest">Testergebnis fehlt</ion-select-option>
               <ion-select-option *ngIf="linkedTenants.length" value="otherInstance">Mitglied anderer
                 Instanz</ion-select-option>
+              @if (db.tenant().additional_fields?.length) {
+              @for (field of db.tenant().additional_fields; track field.id) {
+              @if (field.type === "boolean") {
+              <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>
+              }
+              }
+              }
             </ion-select>
           </ion-item>
 
@@ -69,8 +76,13 @@
               <ion-select-option value="img">Profilbild</ion-select-option>
               <ion-select-option value="teachers" *ngIf="db.tenant().maintainTeachers">Lehrer</ion-select-option>
               <ion-select-option *ngIf="isVoS" value="examinee">Prüfling</ion-select-option>
-              <!-- <ion-select-option *ngIf="isVoS" value="teacher">Lehrer</ion-select-option>
-                <ion-select-option *ngIf="isVoS" value="otherOrchestra">Anderes Orchester</ion-select-option> -->
+              @if (db.tenant().additional_fields?.length) {
+              @for (field of db.tenant().additional_fields; track field.id) {
+              @if (field.type === "boolean") {
+              <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>
+              }
+              }
+              }
             </ion-select>
           </ion-item>
         </ion-list>
@@ -119,13 +131,20 @@
             *ngIf="((showPaused && !player.paused) || !showPaused) && showCritical && player.isCritical" slot="end">
             Problemfall</ion-badge>
           <ion-badge color="warning" *ngIf="showPaused && player.paused" slot="end">Pausiert</ion-badge>
-          <ion-badge [color]="player.percentage >= 75 ? 'success' : player.percentage >= 50 ? 'warning' : 'danger'"
-            *ngIf="showAttendance" slot="end">{{ player.percentage }}%</ion-badge>
           <ion-badge color="warning"
             *ngIf="((showPaused && !player.paused) || !showPaused) && showNotes && player.notes" slot="end">
             <ion-icon name="pencil"></ion-icon>
           </ion-badge>
           <ion-badge color="dark" *ngIf="showExaminee && player.examinee" slot="end">Prüfling</ion-badge>
+          @if (db.tenant().additional_fields?.length) {
+          @for (field of db.tenant().additional_fields; track field.id) {
+          @if (viewOpts.includes(field.id)) {
+          <ion-badge *ngIf="player.additional_fields[field.id]" color="dark" slot="end">{{ field.name }}</ion-badge>
+          }
+          }
+          }
+          <ion-badge [color]="player.percentage >= 75 ? 'success' : player.percentage >= 50 ? 'warning' : 'danger'"
+            *ngIf="showAttendance" slot="end">{{ player.percentage }}%</ion-badge>
         </ion-item>
         <ion-item-options (ionSwipe)="player.paused ? unpausePlayer(player, slider) : pausePlayer(player, slider)"
           *ngIf="isAdmin">

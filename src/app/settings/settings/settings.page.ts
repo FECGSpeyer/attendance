@@ -63,7 +63,14 @@ export class SettingsPage implements OnInit {
     this.maintainTeachers = this.db.tenant().maintainTeachers;
 
     const allConductors: Person[] = await this.db.getConductors(true);
-    this.leftPlayers = Utils.getModifiedPlayersForList(await this.db.getLeftPlayers(), this.db.groups(), [], this.db.attendanceTypes(), this.db.getMainGroup()?.id);
+    this.leftPlayers = Utils.getModifiedPlayersForList(
+      await this.db.getLeftPlayers(),
+      this.db.groups(),
+      [],
+      this.db.attendanceTypes(),
+      this.db.getMainGroup()?.id,
+      this.db.tenant().additional_fields
+    );
     this.leftConductors = allConductors.filter((con: Person) => Boolean(con.left));
     this.viewers = await this.db.getViewers();
     this.parentsEnabled = this.db.tenant().parents || false;
@@ -137,7 +144,14 @@ export class SettingsPage implements OnInit {
     const data = await modal.onDidDismiss();
 
     if (data?.data?.activated) {
-      this.leftPlayers = Utils.getModifiedPlayersForList(await this.db.getLeftPlayers(), this.db.groups(), [], this.db.attendanceTypes(), this.db.getMainGroup()?.id);
+      this.leftPlayers = Utils.getModifiedPlayersForList(
+        await this.db.getLeftPlayers(),
+        this.db.groups(),
+        [],
+        this.db.attendanceTypes(),
+        this.db.getMainGroup()?.id,
+        this.db.tenant().additional_fields
+      );
     }
   }
 

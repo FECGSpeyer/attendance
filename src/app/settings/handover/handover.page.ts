@@ -35,7 +35,14 @@ export class HandoverPage implements OnInit {
 
   async ngOnInit() {
     this.mainGroupId = this.db.getMainGroup().id;
-    this.allPersons = Utils.getModifiedPlayersForList(await this.db.getPlayers(), this.db.groups(), [], this.db.attendanceTypes(), this.mainGroupId);
+    this.allPersons = Utils.getModifiedPlayersForList(
+      await this.db.getPlayers(),
+      this.db.groups(),
+      [],
+      this.db.attendanceTypes(),
+      this.mainGroupId,
+      this.db.tenant().additional_fields
+    );
     this.onMainGroupChanged();
     this.tenants = await this.db.getTenantsFromOrganisation();
     this.groupId = await this.db.groups()[0]?.id;

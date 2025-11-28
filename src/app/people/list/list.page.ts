@@ -142,7 +142,14 @@ export class ListPage implements OnInit {
   async getPlayers(): Promise<void> {
     this.players = await this.db.getPlayers();
     this.attendances = await this.db.getAttendance();
-    this.players = Utils.getModifiedPlayersForList(this.players, this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup);
+    this.players = Utils.getModifiedPlayersForList(
+      this.players,
+      this.db.groups(),
+      this.attendances,
+      this.db.attendanceTypes(),
+      this.mainGroup,
+      this.db.tenant().additional_fields
+    );
     this.searchTerm = "";
     this.onViewChanged();
     this.initializeItems();
@@ -275,7 +282,7 @@ export class ListPage implements OnInit {
               const usersPerTenant = await this.db.getUsersFromTenant(value);
               this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
                 return usersPerTenant.find((u) => u.userId === player.appId);
-              }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup);
+              }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields);
               this.tenantName = this.linkedTenants.find((t) => t.id === value)?.longName || "";
               await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
             }
@@ -301,10 +308,23 @@ export class ListPage implements OnInit {
         return !player.appId;
       } else if (this.filterOpt === "withoutTest") {
         return !player.testResult;
-      } else {
+      } else if (this.filterOpt === "leaders") {
         return player.isLeader;
       }
-    }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup);
+
+      if (this.db.tenant().additional_fields) {
+        for (const field of this.db.tenant().additional_fields) {
+          if (field.type === "boolean" && this.filterOpt === field.id) {
+            if (player.additional_fields?.[field.id] === undefined || player.additional_fields?.[field.id] === null) {
+              player.additional_fields[field.id] = Utils.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options);
+            }
+            return player.additional_fields ? player.additional_fields[field.id] === true : false;
+          }
+        }
+      }
+
+      return true;
+    }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields);
 
     await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
   }
@@ -371,7 +391,14 @@ export class ListPage implements OnInit {
       }
 
       this.playersFiltered = this.filter();
-      this.playersFiltered = Utils.getModifiedPlayersForList(this.playersFiltered, this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup);
+      this.playersFiltered = Utils.getModifiedPlayersForList(
+        this.playersFiltered,
+        this.db.groups(),
+        this.attendances,
+        this.db.attendanceTypes(),
+        this.mainGroup,
+        this.db.tenant().additional_fields
+      );
     }
   }
 

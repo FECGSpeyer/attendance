@@ -25,8 +25,7 @@
           <ion-label position="stacked">Info-Text</ion-label>
           <ion-input (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.typeInfo"></ion-input>
         </ion-item>
-        <ion-list
-          *ngIf="manageSongs">
+        <ion-list *ngIf="manageSongs">
           <ion-list-header>
             <ion-label>Werke</ion-label>
             <ion-button id="add-his-button">
@@ -84,8 +83,9 @@
           <ion-datetime-button datetime="datetimestartatt"></ion-datetime-button>
           <ion-modal [keepContentsMounted]="true">
             <ng-template>
-              <ion-datetime locale="de-DE" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.start_time" presentation="time"
-                minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestartatt" [formatOptions]="{
+              <ion-datetime locale="de-DE" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.start_time"
+                presentation="time" minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestartatt"
+                [formatOptions]="{
                       time: {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -100,8 +100,9 @@
           <ion-datetime-button datetime="datetimeendatt"></ion-datetime-button>
           <ion-modal [keepContentsMounted]="true">
             <ng-template>
-              <ion-datetime locale="de-DE" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.end_time" presentation="time"
-                minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimeendatt" [formatOptions]="{
+              <ion-datetime locale="de-DE" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.end_time"
+                presentation="time" minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimeendatt"
+                [formatOptions]="{
                       time: {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -179,6 +180,9 @@
           </ion-badge>
         </ion-item>
         <ion-item-options (ionSwipe)="addNote(player, slider)">
+          <ion-item-option *ngIf="player.status !== 0" expandable color="medium" (click)="toNeutral(player, slider)">
+            N
+          </ion-item-option>
           <ion-item-option expandable color="warning" (click)="addNote(player, slider)">
             <ion-icon name="pencil"></ion-icon>
           </ion-item-option>

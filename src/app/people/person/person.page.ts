@@ -116,7 +116,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       }
       if (this.db.tenant().additional_fields?.length) {
         for (const field of this.db.tenant().additional_fields) {
-          this.existingPlayer.additional_fields[field.id] = this.existingPlayer.additional_fields[field.id] ?? this.getFieldTypeDefaultValue(field.type, field.options);
+          this.existingPlayer.additional_fields[field.id] = this.existingPlayer.additional_fields[field.id] ?? this.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options);
         }
       }
 
@@ -191,24 +191,8 @@ export class PersonPage implements OnInit, AfterViewInit {
     return tillNow.length ? tillNow.filter((att: PersonAttendance) => att.attended).length / tillNow.length * 100 : 1000;
   }
 
-  getFieldTypeDefaultValue(fieldType: FieldType, options?: string[]): any {
-    if (fieldType === FieldType.SELECT) {
-      return options && options.length ? options[0] : "";
-    }
-
-    switch (fieldType) {
-      case FieldType.TEXT:
-      case FieldType.TEXTAREA:
-        return "";
-      case FieldType.NUMBER:
-        return 0;
-      case FieldType.DATE:
-        return new Date().toISOString();
-      case FieldType.BOOLEAN:
-        return true;
-      default:
-        return "";
-    }
+  getFieldTypeDefaultValue(fieldType: FieldType, defaultValue: any, options?: string[]): any {
+    return Utils.getFieldTypeDefaultValue(fieldType, defaultValue, options);
   }
 
   async onTenantChange(): Promise<void> {

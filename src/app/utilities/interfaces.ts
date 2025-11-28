@@ -30,6 +30,7 @@ export interface ExtraField {
     id: string;
     name: string;
     type: FieldType;
+    defaultValue: any;
     options?: string[];
 }
 

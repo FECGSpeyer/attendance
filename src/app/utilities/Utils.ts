@@ -1,7 +1,7 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
-import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role } from "./constants";
-import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType } from "./interfaces";
+import { AttendanceStatus, DEFAULT_IMAGE, FieldType, PlayerHistoryType, Role } from "./constants";
+import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField } from "./interfaces";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
@@ -16,7 +16,8 @@ export class Utils {
     instruments: Group[],
     attendances: Attendance[],
     types: AttendanceType[],
-    mainGroup?: number
+    mainGroup?: number,
+    additionalFields?: ExtraField[],
   ): Player[] {
     const instrumentsMap: { [props: number]: boolean } = {};
 
@@ -46,6 +47,14 @@ export class Utils {
 
       if (dayjs().subtract(1, "month").isBefore(dayjs(player.joined))) {
         isNew = true;
+      }
+
+      if (additionalFields) {
+        for (const field of additionalFields) {
+          if (player.additional_fields?.[field.id] === undefined || player.additional_fields?.[field.id] === null) {
+            player.additional_fields[field.id] = Utils.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options);
+          }
+        }
       }
 
       let percentage: number = 0;
@@ -527,5 +536,29 @@ export class Utils {
     }
 
     return "Ohne " + allParts.slice(0, -1).join(", ") + " und " + allParts.slice(-1);
+  }
+
+  public static getFieldTypeDefaultValue(fieldType: FieldType, defaultValue?: any, options?: string[]): any {
+    if (defaultValue !== undefined && defaultValue !== null) {
+      return defaultValue;
+    }
+
+    if (fieldType === FieldType.SELECT) {
+      return options && options.length ? options[0] : "";
+    }
+
+    switch (fieldType) {
+      case FieldType.TEXT:
+      case FieldType.TEXTAREA:
+        return "";
+      case FieldType.NUMBER:
+        return 0;
+      case FieldType.DATE:
+        return new Date().toISOString();
+      case FieldType.BOOLEAN:
+        return true;
+      default:
+        return "";
+    }
   }
 }

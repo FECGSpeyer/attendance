@@ -419,4 +419,10 @@ export class AttendancePage implements OnInit {
   getTypeName(type_id: string) {
     return this.db.attendanceTypes().find(type => type.id === type_id)?.name || 'Unbekannt';
   }
+
+  toNeutral(player: PersonAttendance, slider: IonItemSliding) {
+    slider.close();
+    player.status = AttendanceStatus.Neutral;
+    this.db.updatePersonAttendance(player.id, { status: player.status });
+  }
 }
