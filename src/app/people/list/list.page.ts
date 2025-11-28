@@ -291,6 +291,43 @@ export class ListPage implements OnInit {
       });
       await alert.present();
       return;
+    } else if (this.db.tenant().additional_fields?.find(field => field.type === "select" && this.filterOpt === field.id)) {
+      const extraField = this.db.tenant().additional_fields?.find(field => field.type === "select" && this.filterOpt === field.id);
+      const alert = await this.alertController.create({
+        header: 'Instanz wählen',
+        inputs: extraField.options.map((t) => ({
+          type: 'radio',
+          label: t,
+          value: t,
+        })),
+        buttons: [
+          {
+            text: 'Abbrechen',
+            role: 'destructive',
+            handler: () => {
+              this.filterOpt = 'all';
+              this.onFilterChanged();
+            }
+          },
+          {
+            text: 'Filtern',
+            handler: async (value) => {
+              if (!value) {
+                this.filterOpt = 'all';
+                this.onFilterChanged();
+                return;
+              }
+
+              this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
+                return player.additional_fields?.[value] === value;
+              }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields);
+
+              await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
+            }
+          }
+        ]
+      });
+      await alert.present();
     }
 
     this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {

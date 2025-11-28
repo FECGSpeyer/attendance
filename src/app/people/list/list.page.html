@@ -35,7 +35,7 @@
                 Instanz</ion-select-option>
               @if (db.tenant().additional_fields?.length) {
               @for (field of db.tenant().additional_fields; track field.id) {
-              @if (field.type === "boolean") {
+              @if (field.type === "boolean" || field.type === "select") {
               <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>
               }
               }
