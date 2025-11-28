@@ -41,6 +41,7 @@ export class RegisterPage implements OnInit {
     }
 
     const loading = await Utils.getLoadingElement(9999, 'Instanz wird erstellt...');
+    await loading.present();
 
     try {
       await this.db.createInstance(this.tenant, this.mainGroupName);
