@@ -319,7 +319,7 @@ export class ListPage implements OnInit {
               }
 
               this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
-                return player.additional_fields?.[value] === value;
+                return player.additional_fields?.[this.filterOpt] === value;
               }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields);
 
               await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
