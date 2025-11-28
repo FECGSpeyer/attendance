@@ -117,7 +117,7 @@
       <ion-button id="addExtraFieldBtn" fill="clear" size="small">
         <ion-icon name="add-outline"></ion-icon>
       </ion-button>
-      <ion-modal trigger="addExtraFieldBtn" #addCustomFieldModal initialBreakpoint="0.8" [breakpoints]="[0, 0.8]">
+      <ion-modal trigger="addExtraFieldBtn" #addCustomFieldModal initialBreakpoint="1" [breakpoints]="[0, 1]">
         <ng-template>
           <ion-header>
             <ion-toolbar>
@@ -126,27 +126,57 @@
           </ion-header>
           <ion-content color="light">
             <ion-list [inset]="true">
-              <ion-item>
-                <ion-input labelPlacement="stacked" label="Name" [(ngModel)]="newExtraField.name"></ion-input>
-              </ion-item>
-              <ion-item>
-                <ion-select (ionChange)="setDefaultValue()" label="Typ" [(ngModel)]="newExtraField.type">
-                  <ion-select-option [value]="fieldTypes.TEXT">Text</ion-select-option>
-                  <ion-select-option [value]="fieldTypes.NUMBER">Zahl</ion-select-option>
-                  <!-- <ion-select-option [value]="fieldTypes.DATE">Datum</ion-select-option> -->
-                  <ion-select-option [value]="fieldTypes.BOOLEAN">Ja/Nein</ion-select-option>
-                </ion-select>
-              </ion-item>
-              <ion-item>
-                @if (newExtraField.type === fieldTypes.BOOLEAN) {
-                <ion-label>Standardwert</ion-label>
-                <ion-toggle slot="end" [(ngModel)]="newExtraField.defaultValue"></ion-toggle>
+              <ion-item-group>
+                <ion-item>
+                  <ion-input labelPlacement="stacked" label="Name" [(ngModel)]="newExtraField.name"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-select (ionChange)="setDefaultValue()" label="Typ" [(ngModel)]="newExtraField.type">
+                    <ion-select-option [value]="fieldTypes.TEXT">Text</ion-select-option>
+                    <ion-select-option [value]="fieldTypes.NUMBER">Zahl</ion-select-option>
+                    <!-- <ion-select-option [value]="fieldTypes.DATE">Datum</ion-select-option> -->
+                    <ion-select-option [value]="fieldTypes.BOOLEAN">Ja/Nein</ion-select-option>
+                    <ion-select-option [value]="fieldTypes.SELECT">Auswahl</ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </ion-item-group>
+              @if (newExtraField.type === fieldTypes.SELECT) {
+              <ion-list-header>
+                <ion-label>Optionen</ion-label>
+                <ion-button fill="clear" size="small"
+                  (click)="newExtraField.options.push('')">
+                  <ion-icon name="add-outline"></ion-icon>
+                </ion-button>
+              </ion-list-header>
+              <ion-item-group>
+                @if (!newExtraField.options?.length) {
+                <ion-item>
+                  <ion-label>Keine Optionen ausgewählt</ion-label>
+                </ion-item>
                 } @else {
-                <ion-input [type]="newExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
-                  labelPlacement="stacked" label="Standardwert (optional)"
-                  [(ngModel)]="newExtraField.defaultValue"></ion-input>
+                @for (option of newExtraField.options; track option; let i = $index) {
+                <ion-item>
+                  <ion-input [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined" placeholder="Wert eingeben..." [(ngModel)]="option" (ionChange)="onExtraOptionChanged($event, i)"></ion-input>
+                  <ion-button slot="end" (click)="newExtraField.options.splice(i, 1)" fill="clear">
+                    <ion-icon color="danger" name="trash-outline"></ion-icon>
+                  </ion-button>
+                </ion-item>
                 }
-              </ion-item>
+                }
+              </ion-item-group>
+              }
+              <ion-item-group *ngIf="newExtraField.type !== fieldTypes.SELECT">
+                <ion-item>
+                  @if (newExtraField.type === fieldTypes.BOOLEAN) {
+                  <ion-label>Standardwert</ion-label>
+                  <ion-toggle slot="end" [(ngModel)]="newExtraField.defaultValue"></ion-toggle>
+                  } @else {
+                  <ion-input [type]="newExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
+                    labelPlacement="stacked" label="Standardwert (optional)"
+                    [(ngModel)]="newExtraField.defaultValue"></ion-input>
+                  }
+                </ion-item>
+              </ion-item-group>
             </ion-list>
             <ion-button expand="block" (click)="addExtraField(addCustomFieldModal)">Feld
               hinzufügen</ion-button>

@@ -51,6 +51,7 @@ export class GeneralPage implements OnInit {
     name: '',
     type: FieldType.TEXT,
     defaultValue: '',
+    options: [],
   };
   public fieldTypes = FieldType;
   public extraFields: ExtraField[] = [];
@@ -262,6 +263,20 @@ export class GeneralPage implements OnInit {
       return;
     }
 
+    if (this.newExtraField.type === FieldType.SELECT) {
+      if (!this.newExtraField.options || this.newExtraField.options.length === 0) {
+        Utils.showToast("Bitte füge mindestens eine Option für das Auswahlfeld hinzu.", "danger");
+        return;
+      }
+
+      if (this.newExtraField.options.some((opt) => opt.trim().length === 0)) {
+        Utils.showToast("Optionen dürfen nicht leer sein.", "danger");
+        return;
+      }
+
+      this.newExtraField.defaultValue = this.newExtraField.options[0];
+    }
+
     if (this.newExtraField.id.length === 0) {
       Utils.showToast("Die ID des Zusatzfeldes darf nicht leer sein.", "danger");
       return;
@@ -315,5 +330,9 @@ export class GeneralPage implements OnInit {
 
   setDefaultValue() {
     this.newExtraField.defaultValue = Utils.getFieldTypeDefaultValue(this.newExtraField.type, this.newExtraField.defaultValue, this.newExtraField.options);
+  }
+
+  onExtraOptionChanged(event: any, index: number) {
+    this.newExtraField.options[index] = event.detail.value;
   }
 }

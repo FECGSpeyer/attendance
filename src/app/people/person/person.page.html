@@ -376,8 +376,7 @@
                 </ng-template>
               </ion-modal>
             } @else if (field.type === fieldTypes.SELECT) {
-            <ion-select [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name" labelPlacement="stacked"
-              [(ngModel)]="player.additional_fields[field.id]">
+            <ion-select [(ngModel)]="player.additional_fields[field.id]" [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name">
               <ion-select-option *ngFor="let option of field.options" [value]="option">{{ option }}</ion-select-option>
             </ion-select>
             } @else if (field.type === fieldTypes.TEXTAREA) {
