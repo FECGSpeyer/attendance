@@ -40,9 +40,17 @@ export class RegisterPage implements OnInit {
       return;
     }
 
-    await this.db.createInstance(this.tenant, this.mainGroupName);
-    if (this.canDismiss) {
-      await this.modalController.dismiss();
+    const loading = await Utils.getLoadingElement(9999, 'Instanz wird erstellt...');
+
+    try {
+      await this.db.createInstance(this.tenant, this.mainGroupName);
+      if (this.canDismiss) {
+        await this.modalController.dismiss();
+      }
+      await loading.dismiss();
+    } catch (error) {
+      Utils.showToast('Fehler beim Erstellen der Instanz: ' + error.message, 'danger');
+      await loading.dismiss();
     }
   }
 
