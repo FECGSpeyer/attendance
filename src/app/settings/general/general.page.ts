@@ -288,6 +288,7 @@ export class GeneralPage implements OnInit {
       name: '',
       type: FieldType.TEXT,
       defaultValue: '',
+      options: [],
     };
     modal.dismiss();
   }

@@ -156,7 +156,7 @@
                 } @else {
                 @for (option of newExtraField.options; track option; let i = $index) {
                 <ion-item>
-                  <ion-input [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined" placeholder="Wert eingeben..." [(ngModel)]="option" (ionChange)="onExtraOptionChanged($event, i)"></ion-input>
+                  <ion-input [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined" placeholder="Wert eingeben..." [value]="option" (ionChange)="onExtraOptionChanged($event, i)"></ion-input>
                   <ion-button slot="end" (click)="newExtraField.options.splice(i, 1)" fill="clear">
                     <ion-icon color="danger" name="trash-outline"></ion-icon>
                   </ion-button>
