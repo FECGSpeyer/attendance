@@ -2519,4 +2519,13 @@ export class DbService {
 
     return;
   }
+
+  // async syncShiftAssignments(): Promise<void> {
+  //   const { data } = await supabase
+  //     .from('player')
+  //     .select('id, shift:shift_id(*)')
+  //     .not("shift_id", "is", null)
+  //     .order("tenantId");
+
+  //   const
 }

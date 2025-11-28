@@ -16,7 +16,6 @@
 
   <ion-list [inset]="true">
     <ion-list-header><ion-label>Allgemein</ion-label></ion-list-header>
-
     <ion-item-group>
       <ion-item>
         <ion-label position="stacked">Gruppenname</ion-label>
@@ -78,15 +77,14 @@
           helperText="Aktivieren, um Werke als öffentlichen link zu teilen. Jeder mit dem Link kann die Werke ansehen aber nicht bearbeiten."
           [(ngModel)]="songSharingEnabled">Werke öffentlich teilen</ion-toggle>
       </ion-item>
-      <ion-item *ngIf="db.isBeta()" button [routerLink]="['/tabs/settings/general/shifts']">
-        <ion-label>Schichtpläne</ion-label>
-      </ion-item>
       <ion-item *ngIf="db.tenant().song_sharing_id">
-        <ion-button fill="clear" size="small" (click)="copySongSharingLink()">
+        <ion-input readonly value="{{ getSongSharingLink() }}"></ion-input>
+        <ion-button slot="end" fill="clear" size="small" (click)="copySongSharingLink()">
           <ion-icon name="copy-outline"></ion-icon>Link kopieren
         </ion-button>
-        <br>
-        <ion-input readonly value="{{ getSongSharingLink() }}"></ion-input>
+      </ion-item>
+            <ion-item *ngIf="db.isBeta()" button [routerLink]="['/tabs/settings/general/shifts']">
+        <ion-label>Schichtpläne</ion-label>
       </ion-item>
       <ion-item *ngIf="isOrchestra">
         <ion-toggle helperText="Aktivieren, um die Lehrer der Spieler verwalten zu können."
@@ -150,6 +148,11 @@
       </ion-modal>
     </ion-list-header>
     <ion-item-group>
+      @if (extraFields.length === 0) {
+      <ion-item>
+        <ion-label>Es wurden noch keine zusätzlichen Felder hinzugefügt.</ion-label>
+      </ion-item>
+      }
       <ion-item *ngFor="let field of extraFields; let i = index">
         <ion-label>
           <h2>{{ field.name }} ({{ field.id }})</h2>
