@@ -294,11 +294,12 @@ export class ListPage implements OnInit {
     } else if (this.db.tenant().additional_fields?.find(field => field.type === "select" && this.filterOpt === field.id)) {
       const extraField = this.db.tenant().additional_fields?.find(field => field.type === "select" && this.filterOpt === field.id);
       const alert = await this.alertController.create({
-        header: 'Instanz wählen',
-        inputs: extraField.options.map((t) => ({
+        header: extraField.name,
+        inputs: extraField.options.map((t, index) => ({
           type: 'radio',
           label: t,
           value: t,
+          selected: index === 0,
         })),
         buttons: [
           {
