@@ -5,7 +5,7 @@ import { createClient, SupabaseClient, SupabaseClientOptions, User } from '@supa
 import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
-import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
+import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
 import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
@@ -1882,10 +1882,25 @@ export class DbService {
 
     await this.addGroup(mainGroupName, true, data.id);
 
+    await this.addDefaultAttendanceTypes(data.id, tenant.type);
+
     Utils.showToast("Instanz wurde erfolgreich erstellt!");
 
     await this.setTenant(data.id);
     this.router.navigateByUrl(Utils.getUrl(Role.ADMIN));
+  }
+
+  async addDefaultAttendanceTypes(tenantId: number, type: string): Promise<void> {
+    const defaultTypes = Utils.getDefaultAttendanceTypes(tenantId, type);
+
+    const { error } = await supabase
+      .from('attendance_types')
+      .insert(defaultTypes as any[]);
+
+    if (error) {
+      Utils.showToast("Fehler beim Hinzufügen der Standard Anwesenheitstypen", "danger");
+      throw error;
+    }
   }
 
   async getPossiblePersonsByName(firstName: string, lastName: string, onlyWithAccount: boolean = true): Promise<Person[]> {

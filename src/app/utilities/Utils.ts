@@ -1,6 +1,6 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
-import { AttendanceStatus, DEFAULT_IMAGE, FieldType, PlayerHistoryType, Role } from "./constants";
+import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, FieldType, PlayerHistoryType, Role } from "./constants";
 import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField } from "./interfaces";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -560,5 +560,55 @@ export class Utils {
       default:
         return "";
     }
+  }
+
+  public static getDefaultAttendanceTypes(tenantId: number, type: string): AttendanceType[] {
+    const attendanceTypes: AttendanceType[] = [
+      {
+        name: type === DefaultAttendanceType.GENERAL ? "Treffen" : "Probe",
+        color: "primary",
+        include_in_average: true,
+        available_statuses: [AttendanceStatus.Present, AttendanceStatus.Excused, AttendanceStatus.Late, AttendanceStatus.Absent],
+        default_status: AttendanceStatus.Present,
+        hide_name: true,
+        highlight: false,
+        visible: true,
+        manage_songs: false,
+        relevant_groups: [],
+        tenant_id: tenantId,
+      }
+    ];
+
+    if (type !== DefaultAttendanceType.GENERAL) {
+      attendanceTypes.push({
+        name: "Vortrag",
+        color: "secondary",
+        include_in_average: true,
+        available_statuses: [AttendanceStatus.Present, AttendanceStatus.Excused, AttendanceStatus.Late, AttendanceStatus.Absent, AttendanceStatus.Neutral],
+        default_status: AttendanceStatus.Neutral,
+        hide_name: false,
+        highlight: true,
+        visible: true,
+        manage_songs: true,
+        relevant_groups: [],
+        tenant_id: tenantId,
+      });
+    }
+
+    attendanceTypes.push({
+      name: "Sonstiges",
+      color: "tertiary",
+      include_in_average: true,
+      available_statuses: [AttendanceStatus.Present, AttendanceStatus.Excused, AttendanceStatus.Late, AttendanceStatus.Absent, AttendanceStatus.Neutral],
+      default_status: AttendanceStatus.Neutral,
+      hide_name: false,
+      highlight: false,
+      visible: true,
+      manage_songs: false,
+      relevant_groups: [],
+      tenant_id: tenantId,
+    });
+
+    return attendanceTypes;
   }
 }
