@@ -107,6 +107,10 @@ export class AttListPage implements OnInit {
       this.db.tenant();
       await this.getAttendance();
     });
+
+    effect(() => {
+      this.type_id = this.db.attendanceTypes().find(type => type.visible)?.id;
+    });
   }
 
   async logout() {
