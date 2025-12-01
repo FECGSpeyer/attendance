@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { IonicStorageModule } from '@ionic/storage-angular';
 
-import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+import { IonicModule, IonicRouteStrategy, isPlatform } from '@ionic/angular';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -16,12 +16,17 @@ import { PlanningPageModule } from './planning/planning.module';
 import { InstrumentPageModule } from './instruments/instrument/instrument.module';
 import { AttendancePageModule } from './attendance/attendance/attendance.module';
 import { TypePageModule } from 'src/app/settings/general/type/type.module';
+import { iosTransitionAnimation, popoverEnterAnimation, popoverLeaveAnimation } from '@rdlabo/ionic-theme-ios26';
 
 @NgModule({
     declarations: [AppComponent],
     imports: [
         BrowserModule,
-        IonicModule.forRoot(),
+        IonicModule.forRoot({
+            navAnimation: isPlatform('ios') ? iosTransitionAnimation: undefined,
+            popoverEnter: isPlatform('ios') ? popoverEnterAnimation: undefined,
+            popoverLeave: isPlatform('ios') ? popoverLeaveAnimation: undefined,
+        }),
         AppRoutingModule,
         PersonPageModule,
         IonicStorageModule.forRoot(),
