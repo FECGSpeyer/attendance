@@ -230,8 +230,15 @@ export class PersonPage implements OnInit, AfterViewInit {
       .filter((att: PersonAttendance) => dayjs((att as any).date).isBefore(dayjs()));
 
     // Calculate attendance percentage
-    const attendedCount = attendances.filter((att: PersonAttendance) => !att.title.includes("ochzeit") && att.attended).length;
-    const allCount = attendances.filter((att: PersonAttendance) => !att.title.includes("ochzeit")).length;
+    const attendedCount = attendances.filter((att: PersonAttendance) => {
+      const attendanceType = this.db.attendanceTypes().find((type) => type.id === att.typeId);
+
+      return att.attended && attendanceType?.include_in_average;
+    }).length;
+    const allCount = attendances.filter((att: PersonAttendance) => {
+      const attendanceType = this.db.attendanceTypes().find((type) => type.id === att.typeId);
+      return attendanceType?.include_in_average;
+    }).length;
     this.perc = attendances.length ? Math.round(attendedCount / allCount * 100) : 0;
 
     // Count late attendances
