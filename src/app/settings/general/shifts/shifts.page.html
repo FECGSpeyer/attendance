@@ -20,7 +20,8 @@
     </ion-card-header>
     <ion-card-content>
       Pflege Schichtpläne um automatisiert Personen bei Anwesenheiten zu entschuldigen wenn diese aufgrund von Schichten
-      nicht verfügbar sind. Du kannst verschiedene Schichtpläne anlegen und diese dann den Personen zuweisen.
+      nicht verfügbar sind. Du kannst verschiedene Schichtpläne anlegen und diese dann den Personen zuweisen. Personen werden nur dann als "entschuldigt" markiert, wenn sie einer Schicht zugewiesen sind und die Schicht zur Zeit des Termins stattfindet. Die Notiz "Schichtbedingt" wird dann automatisch bei der Anwesenheit hinzugefügt.<br><br>
+      <ion-label color="warning">WICHTIG: Die Anwesenheiten der Personen werden immer nach dem Anlegen einer neuen Anwesenheit und beim Zuweisen eines Schichtplans einer Person aktualisiert.</ion-label>
     </ion-card-content>
   </ion-card>
 
@@ -35,6 +36,12 @@
       <ion-item>Keine Schichtpläne vorhanden.</ion-item>
       }
     </ion-item-group>
+
+    <!-- <ion-item-group>
+      <ion-item button>
+        Schichtplan aus anderer Instanz übernehmen
+      </ion-item>
+    </ion-item-group> -->
   </ion-list>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">

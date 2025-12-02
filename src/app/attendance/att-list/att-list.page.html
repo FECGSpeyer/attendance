@@ -45,6 +45,7 @@
               <ion-badge
                 [color]="currentAttendance.percentage >= 75 ? 'success' : currentAttendance.percentage >= 50 ? 'warning' : 'danger'"
                 *ngIf="currentAttendance.percentage" slot="end">{{ currentAttendance.percentage }}%</ion-badge>
+              <ion-badge *ngIf="!currentAttendance.percentage" color="danger" slot="end">0%</ion-badge>
             </ion-item>
 
             <ion-item-options side="end" (ionSwipe)="remove(currentAttendance.id, slider)">

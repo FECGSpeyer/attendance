@@ -1,7 +1,7 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, FieldType, PlayerHistoryType, Role } from "./constants";
-import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField } from "./interfaces";
+import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftDefinition, ShiftPlan } from "./interfaces";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
@@ -610,5 +610,106 @@ export class Utils {
     });
 
     return attendanceTypes;
+  }
+
+  public static getStatusByShift(
+    shift: ShiftPlan,
+    attDate: string,
+    attendanceStart: string,
+    attendanceEnd: string,
+    defaultStatus: AttendanceStatus,
+    shiftStart?: string,
+    shiftName?: string,
+  ): { status: AttendanceStatus; note: string } {
+    if (!shift || !shift.definition || shift.definition.length === 0) {
+      return {
+        status: defaultStatus,
+        note: ""
+      };
+    }
+
+    const attendanceStartTime = dayjs(`${dayjs(attDate).format("YYYY-MM-DD")}T${attendanceStart}`);
+    const attendanceEndTime = dayjs(`${dayjs(attDate).format("YYYY-MM-DD")}T${attendanceEnd}`);
+
+    /*
+  async calculateShifts(shiftInstance?: ShiftInstance) {
+    this.calculatedShifts = [];
+
+    const shiftDefinitions = this.shift.definition;
+    let currentDate = dayjs(shiftInstance?.date || dayjs().add(1, 'week').day(1).startOf('day'));
+    let nextDate = currentDate.clone();
+    const endDate = dayjs(currentDate).add(30, 'day');
+
+    while (currentDate.isBefore(endDate)) {
+      for (const def of shiftDefinitions) {
+        for (let i = 0; i < def.repeat_count; i++) {
+          const shift = {
+            date: nextDate.locale('de').format('ddd, DD.MM.YYYY'),
+            start_time: def.start_time,
+            duration: def.duration,
+            free: def.free,
+            end_time: ''
+          };
+
+          let end_time = dayjs(`${nextDate.format('YYYY-MM-DD')}T${def.start_time}`).add(def.duration, 'hour');
+
+          if (!dayjs(end_time).isSame(nextDate, 'day')) {
+            shift.end_time = `${end_time.format('HH:mm')} (+1)`;
+          } else {
+            shift.end_time = end_time.format('HH:mm');
+          }
+
+          this.calculatedShifts.push(shift);
+
+          nextDate = nextDate.add(1, 'day');
+        }
+      }
+      currentDate = currentDate.add(shiftDefinitions.length, 'day');
+    }
+
+    this.isCalculateModalOpen = true;
+  }
+    */
+
+    // use comment as reference for shift calculation
+    let currentDate;
+    if (shiftName) {
+      const matchingShift = shift.shifts.find(def => def.name === shiftName);
+      if (matchingShift) {
+        currentDate = dayjs(matchingShift.date);
+      } else {
+        throw new Error("Shift name not found in shift plan");
+      }
+    } else {
+      currentDate = dayjs(shiftStart);
+    }
+    const endDate = dayjs(attDate).add(2, 'day');
+
+    while (currentDate.isBefore(endDate)) {
+      for (const def of shift.definition) {
+        for (let i = 0; i < def.repeat_count; i++) {
+          if (currentDate.isAfter(dayjs(attDate).subtract(2, 'day')) || currentDate.isSame(dayjs(attDate), 'day') || currentDate.isAfter(dayjs(attDate), 'day')) {
+            const shiftStartTime = dayjs(`${currentDate.format('YYYY-MM-DD')}T${def.start_time}`);
+            const shiftEndTime = shiftStartTime.add(def.duration, 'hour');
+
+            // Check for overlap
+            if (!def.free && attendanceStartTime.isBefore(shiftEndTime) && attendanceEndTime.isAfter(shiftStartTime)) {
+              return {
+                status: AttendanceStatus.Excused,
+                note: "Schichtbedingt"
+              };
+            }
+          }
+
+          currentDate = currentDate.add(1, 'day');
+        }
+      }
+    }
+
+
+    return {
+      status: defaultStatus,
+      note: ""
+    };
   }
 }

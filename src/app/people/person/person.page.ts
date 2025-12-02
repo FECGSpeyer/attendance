@@ -389,7 +389,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       });
     }
 
-    if ((this.existingPlayer.notes || "") !== this.player.notes) {
+    if ((this.existingPlayer.notes || "") !== (this.player.notes || "")) {
       history.push({
         date: new Date().toISOString(),
         text: this.existingPlayer.notes || "Keine Notiz",
@@ -402,7 +402,7 @@ export class PersonPage implements OnInit, AfterViewInit {
         ...this.player,
         isCritical: this.solved ? false : this.player.isCritical,
         lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
-      }, false, createAccount, this.role);
+      }, false, createAccount, this.role, this.existingPlayer.shift_id !== this.player.shift_id);
 
       loading.dismiss();
       this.hasChanges = false;

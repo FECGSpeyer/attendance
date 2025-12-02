@@ -218,7 +218,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="db.shifts()?.length && db.isBeta()">
+          <ion-row *ngIf="db.shifts()?.length">
             <ion-col>
               <ion-item>
                 <ion-select label="Schichtplan" [disabled]="readOnly" (ionChange)="onShiftChange()"
@@ -231,9 +231,9 @@
               </ion-item>
             </ion-col>
           </ion-row>
-          <ion-row *ngIf="player.shift_id && db.isBeta()">
+          <ion-row *ngIf="player.shift_id">
             <ion-col>
-              @if (shift && shift.shifts.length > 1) {
+              @if (shift && shift.shifts.length > 0) {
               <ion-item>
                 <ion-select label="Schicht" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.shift_name">
                   <ion-select-option [value]="sh.name"
@@ -248,7 +248,7 @@
                 <ion-datetime-button [disabled]="readOnly" datetime="shift_start_date"></ion-datetime-button>
                 <ion-modal [keepContentsMounted]="true">
                   <ng-template>
-                    <ion-datetime [(ngModel)]="player.shift_start" presentation="date" id="shift_start_date"
+                    <ion-datetime (ionChange)="onChange()" [(ngModel)]="player.shift_start" presentation="date" id="shift_start_date"
                       locale="de-DE"></ion-datetime>
                   </ng-template>
                 </ion-modal>

@@ -246,6 +246,14 @@ export class AttListPage implements OnInit {
     });
     status = attType.default_status;
 
+    const type = this.db.attendanceTypes().find(type => type.id === this.type_id);
+
+    if (!type) {
+      Utils.showToast("Ungültiger Anwesenheitstyp ausgewählt", "danger");
+      await loading.dismiss();
+      return;
+    }
+
     for (const date of this.dates) {
       const attendance_id: number = await this.db.addAttendance({
         date: date,
@@ -253,16 +261,35 @@ export class AttListPage implements OnInit {
         notes: this.notes,
         save_in_history: true,
         typeInfo: this.typeInfo,
-        start_time: this.db.attendanceTypes().find(type => type.id === this.type_id)?.start_time || '19:30', // TODO att type is defined after beta removal
-        end_time: this.db.attendanceTypes().find(type => type.id === this.type_id)?.end_time || '21:00',
+        start_time: type.start_time,
+        end_time: type.end_time,
       });
 
       for (const player of allPersons) {
+        let playerStatus = status;
+        let notes = '';
+        if (player.shift_id) {
+          const shift = this.db.shifts().find(s => s.id === player.shift_id);
+
+          const result = Utils.getStatusByShift(
+            shift,
+            date,
+            type.start_time || '19:00',
+            type.end_time || '21:00',
+            status,
+            player.shift_start,
+            player.shift_name,
+          );
+
+          playerStatus = result.status;
+          notes = result.note;
+        }
+
         persons.push({
           attendance_id,
           person_id: player.id,
-          status,
-          notes: '',
+          status: playerStatus,
+          notes,
         });
       }
 

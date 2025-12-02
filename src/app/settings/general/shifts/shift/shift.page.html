@@ -27,7 +27,8 @@
       Füge hier die verschiedenen Schichten hinzu, aus denen sich der Schichtplan zusammensetzt. Jede Schicht
       entspricht einem Tag, an dem eine Person Schicht hat. Der Schichtplan beginnt wieder von vorne, wenn alle
       Schichten
-      durchlaufen sind.
+      durchlaufen sind.<br><br><ion-label
+                    color="danger">ACHTUNG: Das Ändern der Schichtdefinition kann zu Inkonsistenzen führen. Falls der Schichtplan bereits einer Person zugewiesen wurde, können feste Schichten nicht mehr geändert oder entfernt werden! Lege stattdessen einen neuen Schichtplan an.</ion-label>
     </ion-card-content>
   </ion-card>
 
@@ -125,14 +126,14 @@
       @for (s of shift.shifts; let i = $index; track s) {
       <ion-item lines="none">
         <ion-label position="stacked">Bezeichnung</ion-label>
-        <ion-button slot="end" fill="clear" color="danger" (click)="removeShift(i)">
+        <ion-button [disabled]="isUsed" slot="end" fill="clear" color="danger" (click)="removeShift(i)">
           <ion-icon name="trash-outline"></ion-icon>
         </ion-button>
-        <ion-input [(ngModel)]="s.name"></ion-input>
+        <ion-input [disabled]="isUsed" [(ngModel)]="s.name"></ion-input>
       </ion-item>
       <ion-item lines="none">
         <ion-label>Anfangsdatum</ion-label>
-        <ion-datetime-button [datetime]="'datetimestartshift' + i"></ion-datetime-button>
+        <ion-datetime-button [disabled]="isUsed" [datetime]="'datetimestartshift' + i"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
             <ion-datetime [(ngModel)]="s.date" presentation="date" [id]="'datetimestartshift' + i"

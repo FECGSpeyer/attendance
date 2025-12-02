@@ -15,6 +15,7 @@ export class ShiftPage implements OnInit {
   public shift: ShiftPlan;
   public calculatedShifts: any[] = [];
   public isCalculateModalOpen: boolean = false;
+  public isUsed: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -26,6 +27,8 @@ export class ShiftPage implements OnInit {
   async ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     this.shift = await this.db.shifts().find(s => s.id === id);
+
+    this.isUsed = await this.db.isShiftUsed(this.shift.id);
   }
 
   async save() {

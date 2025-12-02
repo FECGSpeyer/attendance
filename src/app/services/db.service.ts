@@ -840,7 +840,7 @@ export class DbService {
     }
   }
 
-  async addPlayerToUpcomingAttendances(id: number, group: number) {
+  async addPlayerToUpcomingAttendances(person: Person, group: number, shiftId?: string) {
     const attData: Attendance[] = await this.getUpcomingAttendances();
 
     if (attData?.length) {
@@ -850,15 +850,36 @@ export class DbService {
           return attType.relevant_groups.length === 0 || attType.relevant_groups.includes(group);
         })
         .map((att: Attendance) => {
-          let status = AttendanceStatus.Present;
-
           const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
-          status = attType?.default_status;
+
+          if (!attType) {
+            throw new Error("Fehler beim Laden des Anwesenheitstyps");
+          }
+
+          let status = attType?.default_status;
+          let notes = "";
+
+          if (shiftId) {
+            const shift = this.shifts().find((s: ShiftPlan) => s.id === shiftId);
+
+            const result = Utils.getStatusByShift(
+              shift,
+              att.date,
+              att.start_time,
+              att.end_time,
+              status,
+              person.shift_start,
+              person.shift_name
+            );
+
+            status = result.status;
+            notes = result.note;
+          }
 
           return {
             attendance_id: att.id,
-            person_id: id,
-            notes: "",
+            person_id: person.id,
+            notes,
             status,
           }
         });
@@ -874,7 +895,13 @@ export class DbService {
     }
   }
 
-  async updatePlayer(player: Player, pausedAction?: boolean, createAccount?: boolean, role?: Role): Promise<Player[]> {
+  async updatePlayer(
+    player: Player,
+    pausedAction?: boolean,
+    createAccount?: boolean,
+    role?: Role,
+    updateShifts?: boolean
+  ): Promise<Player[]> {
     const dataToUpdate: Player = { ...player };
     delete dataToUpdate.id;
     delete dataToUpdate.created_at;
@@ -912,8 +939,12 @@ export class DbService {
       if (player.paused) {
         this.removePlayerFromUpcomingAttendances(player.id);
       } else {
-        this.addPlayerToUpcomingAttendances(player.id, player.instrument);
+        this.addPlayerToUpcomingAttendances(player, player.instrument, player.shift_id);
       }
+    }
+
+    if (updateShifts) {
+      await this.updateShiftAssignmentsForPerson(player);
     }
 
     return data.map((player) => {
@@ -922,6 +953,57 @@ export class DbService {
         history: player.history as any,
       }
     }) as unknown as Player[];
+  }
+
+  async updateShiftAssignmentsForPerson(person: Person) {
+    const attData: PersonAttendance[] = await this.getPersonAttendances(person.id);
+    const shift = this.shifts().find((s: ShiftPlan) => s.id === person.shift_id);
+    if (shift) {
+      for (const att of attData) {
+        if (dayjs(att.attendance.date).isBefore(dayjs(), 'day')) {
+          continue;
+        }
+
+        const type = this.attendanceTypes().find((type: AttendanceType) => type.id === att.attendance.type_id);
+        if (!type) {
+          continue;
+        }
+        const result = Utils.getStatusByShift(
+          shift,
+          att.attendance?.date,
+          att.attendance?.start_time ?? type.start_time,
+          att.attendance?.end_time ?? type.end_time,
+          type.default_status,
+          person.shift_start,
+          person.shift_name
+        );
+
+        if (result.status === AttendanceStatus.Excused && att.status === type.default_status) {
+          await this.updatePersonAttendance(att.id, {
+            status: result.status,
+            notes: result.note,
+          });
+        }
+      }
+    } else {
+      for (const att of attData) {
+        if (dayjs(att.attendance.date).isBefore(dayjs(), 'day')) {
+          continue;
+        }
+
+        if (att.notes?.includes("Schichtbedingt")) {
+          const type = this.attendanceTypes().find((type: AttendanceType) => type.id === att.attendance.type_id);
+          if (!type) {
+            continue;
+          }
+
+          await this.updatePersonAttendance(att.id, {
+            status: type.default_status,
+            notes: "",
+          });
+        }
+      }
+    }
   }
 
   async updatePlayerHistory(id: number, history: PlayerHistoryEntry[]) {
@@ -1249,7 +1331,7 @@ export class DbService {
   async getPersonAttendances(id: number, all: boolean = false): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id)')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time)')
       .eq('person_id', id)
       .gt("attendance.date", all ? dayjs("2020-01-01").toISOString() : this.getCurrentAttDate());
 
@@ -1273,6 +1355,7 @@ export class DbService {
         songs: att.attendance.songs,
         attId: att.attendance.id,
         typeId: att.attendance.type_id,
+        attendance: att.attendance,
         highlight: attType ? attType.highlight : att.attendance.type === "vortrag",
       } as any;
     });
@@ -2143,7 +2226,7 @@ export class DbService {
       .update({ left: null, history: player.history as any })
       .match({ id: player.id });
 
-    await this.addPlayerToUpcomingAttendances(player.id, player.instrument);
+    await this.addPlayerToUpcomingAttendances(player, player.instrument, player.shift_id);
   }
 
   async createOrganisation(name: string): Promise<Organisation> {
@@ -2481,6 +2564,21 @@ export class DbService {
       }
     }));
     return;
+  }
+
+  async isShiftUsed(id: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('player')
+      .select('id')
+      .eq('shift_id', id)
+      .limit(1);
+
+    if (error) {
+      Utils.showToast("Fehler beim Überprüfen der Schichtverwendung", "danger");
+      throw error;
+    }
+
+    return data.length > 0;
   }
 
   async addShift(shift: ShiftPlan): Promise<ShiftPlan> {
