@@ -55,6 +55,16 @@ export class GeneralPage implements OnInit {
   };
   public fieldTypes = FieldType;
   public extraFields: ExtraField[] = [];
+  public registerAllowed: boolean = false;
+  public autoApproveRegistrations: boolean = false;
+  public registerFields: { key: string, label: string, disabled: boolean }[] = [
+    { key: 'firstName', label: 'Vorname', disabled: true },
+    { key: 'lastName', label: 'Nachname', disabled: true },
+    { key: 'group', label: 'Gruppe', disabled: true },
+    { key: 'email', label: 'E-Mail', disabled: true },
+    { key: 'birthDate', label: 'Geburtsdatum', disabled: false },
+  ];
+  public selectedRegisterFields: string[] = ['firstName', 'lastName', 'birthDate', 'group'];
 
   constructor(
     public db: DbService,
@@ -77,6 +87,16 @@ export class GeneralPage implements OnInit {
     this.isSuperAdmin = this.db.tenantUser().role === Role.ADMIN;
     this.isGeneral = this.db.tenant().type === 'general';
     this.songSharingEnabled = !!this.db.tenant().song_sharing_id;
+    this.registerAllowed = !!this.db.tenant().register_id;
+    this.autoApproveRegistrations = this.db.tenant().auto_approve_registrations || false;
+    if (this.db.tenant().additional_fields?.length) {
+      this.registerFields = this.registerFields.concat( this.db.tenant().additional_fields.map(field => ({
+        key: field.id,
+        label: field.name,
+        disabled: false,
+      })));
+    }
+    this.selectedRegisterFields = this.db.tenant().registration_fields?.length ? this.db.tenant().registration_fields : this.registerFields.filter(f => f.disabled).map(f => f.key);
     this.extraFields = [...this.db.tenant().additional_fields ?? []];
   }
 
@@ -84,6 +104,11 @@ export class GeneralPage implements OnInit {
     let song_sharing_id = this.songSharingEnabled ? this.db.tenant().song_sharing_id : null;
     if (this.songSharingEnabled && !this.db.tenant().song_sharing_id) {
       song_sharing_id = crypto.randomUUID();
+    }
+
+    let register_id = this.registerAllowed ? this.db.tenant().register_id : null;
+    if (this.registerAllowed && !this.db.tenant().register_id) {
+      register_id = crypto.randomUUID();
     }
 
     try {
@@ -99,6 +124,9 @@ export class GeneralPage implements OnInit {
         showHolidays: this.showHolidays,
         song_sharing_id: song_sharing_id || null,
         additional_fields: this.extraFields,
+        register_id: register_id || null,
+        auto_approve_registrations: this.registerAllowed ? this.autoApproveRegistrations : false,
+        registration_fields: this.registerAllowed ? this.selectedRegisterFields : [],
       });
       Utils.showToast("Einstellungen gespeichert", "success");
 
@@ -246,6 +274,15 @@ export class GeneralPage implements OnInit {
 
   copySongSharingLink() {
     navigator?.clipboard.writeText(this.getSongSharingLink());
+    Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
+  }
+
+  getRegisterLink(): string {
+    return `${window.location.origin}/register/${this.db.tenant().register_id}`;
+  }
+
+  copyRegisterLink() {
+    navigator?.clipboard.writeText(this.getRegisterLink());
     Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
   }
 

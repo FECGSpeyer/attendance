@@ -130,3 +130,7 @@ ion-content.modalBackground {
         }
     }
 }
+
+ion-list.list-inset.ios:not(.ios26-disabled) ion-item-group {
+    margin-top: 0 !important
+}

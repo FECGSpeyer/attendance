@@ -100,6 +100,7 @@ export type Database = {
       }
       attendance_types: {
         Row: {
+          additional_fields_filter: Json | null
           available_statuses: number[]
           color: string | null
           created_at: string
@@ -119,6 +120,7 @@ export type Database = {
           visible: boolean
         }
         Insert: {
+          additional_fields_filter?: Json | null
           available_statuses?: number[]
           color?: string | null
           created_at?: string
@@ -138,6 +140,7 @@ export type Database = {
           visible?: boolean
         }
         Update: {
+          additional_fields_filter?: Json | null
           available_statuses?: number[]
           color?: string | null
           created_at?: string
@@ -907,6 +910,7 @@ export type Database = {
       tenants: {
         Row: {
           additional_fields: Json[] | null
+          auto_approve_registrations: boolean | null
           betaProgram: boolean
           created_at: string
           id: number
@@ -916,6 +920,8 @@ export type Database = {
           practiceEnd: string | null
           practiceStart: string | null
           region: string | null
+          register_id: string | null
+          registration_fields: string[] | null
           seasonStart: string | null
           shortName: string | null
           showHolidays: boolean | null
@@ -925,6 +931,7 @@ export type Database = {
         }
         Insert: {
           additional_fields?: Json[] | null
+          auto_approve_registrations?: boolean | null
           betaProgram?: boolean
           created_at?: string
           id?: number
@@ -934,6 +941,8 @@ export type Database = {
           practiceEnd?: string | null
           practiceStart?: string | null
           region?: string | null
+          register_id?: string | null
+          registration_fields?: string[] | null
           seasonStart?: string | null
           shortName?: string | null
           showHolidays?: boolean | null
@@ -943,6 +952,7 @@ export type Database = {
         }
         Update: {
           additional_fields?: Json[] | null
+          auto_approve_registrations?: boolean | null
           betaProgram?: boolean
           created_at?: string
           id?: number
@@ -952,6 +962,8 @@ export type Database = {
           practiceEnd?: string | null
           practiceStart?: string | null
           region?: string | null
+          register_id?: string | null
+          registration_fields?: string[] | null
           seasonStart?: string | null
           shortName?: string | null
           showHolidays?: boolean | null

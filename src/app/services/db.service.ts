@@ -2411,6 +2411,7 @@ export class DbService {
       isCritical: false,
       notes: person.notes,
       history: [],
+      pending: false,
     };
 
     if (stayInInstance) {

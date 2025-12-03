@@ -24,6 +24,9 @@ export interface Tenant {
     additional_fields?: ExtraField[];
     perc?: string;
     percColor?: string;
+    register_id?: string;
+    auto_approve_registrations?: boolean;
+    registration_fields?: string[];
 }
 
 export interface ExtraField {
@@ -100,6 +103,7 @@ export interface Person {
     shift_id?: string;
     shift_name?: string;
     shift_start?: string;
+    pending: boolean;
 }
 
 export interface PlayerHistoryEntry {

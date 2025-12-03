@@ -39,6 +39,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     paused: false,
     tenantId: 999999999,
     phone: "",
+    pending: false,
   };
   public readonly PLAYER: Role = Role.PLAYER;
   public readonly HELPER: Role = Role.HELPER;
