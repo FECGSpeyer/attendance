@@ -19,6 +19,7 @@ export class TenantRegisterPage implements OnInit {
   public birthDate: string = dayjs().subtract(18, 'year').toISOString();
   public email: string = '';
   public password: string = '';
+  public phone: string = '';
   public confirmPassword: string = '';
   public selectedGroupId: number | null = null;
 
@@ -86,5 +87,13 @@ export class TenantRegisterPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  async register() {
+    console.log("Registering user...");
+    if (!this.firstName || !this.lastName || !this.email || !this.password || !this.confirmPassword) {
+      Utils.showToast('Bitte füllen Sie alle Pflichtfelder aus.', 'danger');
+      return;
+    }
   }
 }
