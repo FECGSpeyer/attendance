@@ -1331,7 +1331,7 @@ export class DbService {
   async getPersonAttendances(id: number, all: boolean = false): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time)')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline)')
       .eq('person_id', id)
       .gt("attendance.date", all ? dayjs("2020-01-01").toISOString() : this.getCurrentAttDate());
 
@@ -1646,13 +1646,13 @@ export class DbService {
     return;
   }
 
-  async signin(attId: string, status: string): Promise<void> {
+  async signin(attId: string, status: string, notes: string = ""): Promise<void> {
     await this.updatePersonAttendance(attId, {
-      notes: "",
+      notes,
       status: AttendanceStatus.Present,
     });
 
-    this.notifyPerTelegram(attId, status);
+    this.notifyPerTelegram(attId, status, undefined, false, notes);
 
     return;
   }
@@ -1715,13 +1715,14 @@ export class DbService {
     }
   }
 
-  async notifyPerTelegram(attId: string, type: string = "signin", reason?: string, isParents: boolean = false): Promise<void> {
+  async notifyPerTelegram(attId: string, type: string = "signin", reason?: string, isParents: boolean = false, notes: string = ""): Promise<void> {
     await supabase.functions.invoke("quick-processor", {
       body: {
         attId,
         type,
         reason,
-        isParents
+        isParents,
+        notes
       },
       method: "POST",
     });

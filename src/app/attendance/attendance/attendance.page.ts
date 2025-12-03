@@ -41,6 +41,10 @@ export class AttendancePage implements OnInit {
   public instruments: Group[] = [];
   public groupCategories: GroupCategory[] = [];
   public manageSongs: boolean = false;
+  public hasDeadline: boolean = false;
+  public maxDeadlineDate: string = '';
+  public minDeadlineDate: string = new Date().toISOString();
+  public isDeadlineReadonly: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -71,6 +75,12 @@ export class AttendancePage implements OnInit {
     void this.listenOnNetworkChanges();
     this.selectedSongs = this.attendance.songs || [];
     this.manageSongs = this.db.attendanceTypes().find((type: AttendanceType) => type.id === this.attendance.type_id)?.manage_songs || false;
+    this.hasDeadline = !!this.attendance.deadline;
+    if (this.hasDeadline) {
+      const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
+      this.maxDeadlineDate = dayjs(this.attendance.date).hour(type.start_time ? Number(type.start_time.substring(0, 2)) : 19).minute(type.start_time ? Number(type.start_time.substring(3, 5)) : 30).toISOString();
+      this.isDeadlineReadonly = dayjs(this.attendance.date).isBefore(dayjs());
+    }
 
     this.subsribeOnChannels();
     this.initializeAttObjects();
@@ -312,6 +322,10 @@ export class AttendancePage implements OnInit {
     const start_time = this.attendance.start_time.length !== 5 ? dayjs(this.attendance.start_time).format("HH:mm") : this.attendance.start_time;
     const end_time = this.attendance.end_time.length !== 5 ? dayjs(this.attendance.end_time).format("HH:mm") : this.attendance.end_time;
 
+    if (!this.hasDeadline) {
+      this.attendance.deadline = null;
+    }
+
     await this.db.updateAttendance({
       type: this.attendance.type,
       typeInfo: this.attendance.typeInfo,
@@ -319,6 +333,7 @@ export class AttendancePage implements OnInit {
       save_in_history: this.attendance.save_in_history,
       start_time,
       end_time,
+      deadline: this.attendance.deadline,
     }, this.attendance.id);
 
     if (this.historyEntries.length && this.historyEntries[0].visible !== this.attendance.save_in_history) {
@@ -424,5 +439,32 @@ export class AttendancePage implements OnInit {
     slider.close();
     player.status = AttendanceStatus.Neutral;
     this.db.updatePersonAttendance(player.id, { status: player.status });
+  }
+
+  exportToExcel() {
+    Utils.exportAttendanceToExcel(
+      this.attendance,
+      this.players,
+      this.db.attendanceTypes().find(type => type.id === this.attendance.type_id)
+    );
+  }
+
+  onDeadlineToggleChanged() {
+    if (this.hasDeadline) {
+      const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
+      const hour = type.start_time ? Number(type.start_time.substring(0, 2)) + 2 : 19;
+      let deadline = dayjs(this.attendance.date).subtract(1, 'day').hour(hour).minute(0).second(0).toISOString();
+
+      if (dayjs(deadline).isBefore(dayjs())) {
+        deadline = dayjs(this.attendance.date).hour(hour).minute(0).toISOString();
+      }
+
+      this.attendance.deadline = deadline;
+      this.maxDeadlineDate = dayjs(this.attendance.date).hour(hour).minute(0).toISOString();
+    } else {
+      this.attendance.deadline = null;
+    }
+
+    this.db.updateAttendance({ deadline: this.attendance.deadline }, this.attendance.id);
   }
 }

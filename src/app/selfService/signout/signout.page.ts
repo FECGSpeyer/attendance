@@ -1,6 +1,6 @@
 /* eslint-disable arrow-body-style */
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, IonAccordionGroup, IonModal, isPlatform } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, isPlatform } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
@@ -36,7 +36,8 @@ export class SignoutPage implements OnInit {
 
   constructor(
     public db: DbService,
-    private actionSheetController: ActionSheetController
+    private actionSheetController: ActionSheetController,
+    private alertController: AlertController
   ) {
     effect(async () => {
       if (this.db.tenant()) {
@@ -75,8 +76,42 @@ export class SignoutPage implements OnInit {
     await this.getAttendances();
   }
 
-  async signin(attendance: PersonAttendance) {
-    await this.db.signin(attendance.id, attendance.status === AttendanceStatus.LateExcused ? 'lateSignIn' : attendance.status === AttendanceStatus.Neutral ? "neutralSignin" : 'signin');
+  async showNoteAlertForSignin(attendance: PersonAttendance) {
+    let note = '';
+    const alert = await this.alertController.create({
+      header: 'Notiz für Anmeldung',
+      inputs: [
+        {
+          name: 'note',
+          type: 'textarea',
+          placeholder: 'Gib hier deine Notiz ein',
+          value: note,
+        },
+      ],
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel',
+        },
+        {
+          text: 'Anmelden',
+          handler: (data) => {
+            note = data.note;
+            this.signin(attendance, note);
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  async signin(attendance: PersonAttendance, notes: string = "") {
+    await this.db.signin(
+      attendance.id,
+      attendance.status === AttendanceStatus.LateExcused ? 'lateSignIn' : attendance.status === AttendanceStatus.Neutral ? "neutralSignin" : 'signin',
+      notes
+    );
 
     Utils.showToast("Schön, dass du dabei bist 🙂", "success", 4000);
 
@@ -119,6 +154,10 @@ export class SignoutPage implements OnInit {
         handler: () => this.signin(attendance),
       },
       {
+        text: 'Anmelden mit Notiz',
+        handler: () => this.showNoteAlertForSignin(attendance),
+      },
+      {
         text: 'Abmelden',
         handler: () => {
           if (this.isAttToday(attendance)) {
@@ -158,13 +197,29 @@ export class SignoutPage implements OnInit {
 
     const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === attendance.typeId);
 
-    if (attendance.text === "X") {
-      buttons = buttons.filter((btn) => btn.text !== 'Anmelden');
+    let canSignin = true;
+    if (attendance.attendance.deadline) {
+      const deadline = dayjs(attendance.attendance.deadline);
+      const localDeadline = deadline.subtract(dayjs().utcOffset(), 'minute');
+      const now = dayjs();
+      if (now.isAfter(localDeadline)) {
+        canSignin = false;
+      }
+    }
+
+    if (attendance.text === "X" || !canSignin) {
+      buttons = buttons.filter((btn) => btn.text !== 'Anmelden' && btn.text !== 'Anmelden mit Notiz');
     } else if (attType && !attType.available_statuses.includes(AttendanceStatus.Excused)) {
       buttons = buttons.filter((btn) => btn.text !== 'Abmelden');
     } else if (attType && !attType.available_statuses.includes(AttendanceStatus.Late)) {
       buttons = buttons.filter((btn) => btn.text !== 'Verspätung eintragen');
     }
+
+    if (buttons.length <= 1) {
+      Utils.showToast("Für diesen Termin sind keine Aktionen verfügbar.", "warning", 4000);
+      return;
+    }
+
     this.selAttIds = [attendance.id];
     const actionSheet = await this.actionSheetController.create({
       buttons,
@@ -382,5 +437,21 @@ export class SignoutPage implements OnInit {
     });
 
     await actionSheet.present();
+  }
+
+  showDeadlineInfo(attendance: PersonAttendance): boolean {
+    return Boolean(attendance.attendance.deadline);
+  }
+
+  getDeadlineText(attendance: PersonAttendance): string {
+    const deadline = dayjs(attendance.attendance.deadline);
+    const localDeadline = deadline.subtract(dayjs().utcOffset(), 'minute');
+    const now = dayjs();
+
+    if (now.isAfter(localDeadline)) {
+      return `Anmeldefrist abgelaufen`;
+    } else {
+      return `Anmeldefrist: ${localDeadline.format('DD.MM.YYYY HH:mm')} Uhr`;
+    }
   }
 }

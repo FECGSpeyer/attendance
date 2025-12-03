@@ -103,25 +103,25 @@ export class ListPage implements OnInit {
   }
 
   async showReleaseNotesAlert() {
-    const hasSeen = await this.storage.get(`seenReleaseNotes_v3_4_0`);
-    if (hasSeen) {
+    const hasSeen = await this.storage.get(`seenReleaseNotes_v3_5_0`);
+    if (hasSeen || true) { // TODO: remove "|| true" to enable alert again
       return;
     }
 
     const alert = await this.alertController.create({
-      header: 'Neu in Version 3.4.0',
-      message: "Anwesenheits-Typen sind da! Definiere verschiedene Arten von Anwesenheiten für mehr Flexibilität. Um mehr zu erfahren, gehe einfach in den allgemeinen Einstellungen auf Anwesenheits-Typen.",
+      header: 'Neu in Version 3.5.0',
+      message: "Schichtpläne sind da! Automatisiere die Planung und Verwaltung deiner Schichten für mehr Effizienz. Auch neu: Anmeldefristen. Setze Anmeldefristen für Termine fest, um eine bessere Organisation zu gewährleisten.",
       buttons: [{
-        text: 'Zu den Anwesenheits-Typen',
+        text: 'Zu den Schichtplänen',
         handler: () => {
           this.modalController.dismiss();
-          this.router.navigate(['/tabs/settings/general/types']);
+          this.router.navigate(['/tabs/settings/general/shifts']);
         }
       }, 'OK']
     });
 
     await alert.present();
-    await this.storage.set(`seenReleaseNotes_v3_4_0`, true);
+    await this.storage.set(`seenReleaseNotes_v3_5_0`, true);
   }
 
   subscribe() {

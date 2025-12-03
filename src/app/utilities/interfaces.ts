@@ -185,6 +185,7 @@ export interface Attendance {
     players?: { [prop: string]: AttendanceStatus | boolean };
     start_time?: string;
     end_time?: string;
+    deadline?: string;
 }
 
 export interface Plan {

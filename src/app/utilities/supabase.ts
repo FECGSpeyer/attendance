@@ -20,6 +20,7 @@ export type Database = {
           created_at: string | null
           criticalPlayers: number[] | null
           date: string | null
+          deadline: string | null
           end_time: string | null
           excused: string[]
           id: number
@@ -41,6 +42,7 @@ export type Database = {
           created_at?: string | null
           criticalPlayers?: number[] | null
           date?: string | null
+          deadline?: string | null
           end_time?: string | null
           excused?: string[]
           id?: number
@@ -62,6 +64,7 @@ export type Database = {
           created_at?: string | null
           criticalPlayers?: number[] | null
           date?: string | null
+          deadline?: string | null
           end_time?: string | null
           excused?: string[]
           id?: number

@@ -2,12 +2,12 @@
     color: var(--ion-color-danger);
 }
 
-ion-content {
+ion-item-group {
     background: #fff;
 }
 
 @media (prefers-color-scheme: dark) {
-    ion-content {
+    ion-item-group {
         background: #000;
     }
 }

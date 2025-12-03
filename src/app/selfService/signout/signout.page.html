@@ -58,7 +58,8 @@
                 </ion-label>
               </ion-list-header>
               <ion-item-group>
-                <ion-item [color]="his.song.instrument_ids.includes(player.instrument) ? '' : 'danger'" button (click)="openSongOptions(his.song)" *ngFor="let his of group.history">
+                <ion-item [color]="his.song.instrument_ids.includes(player.instrument) ? '' : 'danger'" button
+                  (click)="openSongOptions(his.song)" *ngFor="let his of group.history">
                   <ion-label *ngIf="his.song">
                     <h2>{{ his.song.number }}. {{ his.song.name }}</h2>
                     <h3>Dirigent: {{ his.conductorName }}</h3>
@@ -133,6 +134,9 @@
               <h2>{{ getReadableDate(currentAttendance.date) }}</h2>
               <h3 [style.fontWeight]="currentAttendance.highlight ? 'bold' : 'normal'">{{ currentAttendance.title }}
               </h3>
+              @if (showDeadlineInfo(currentAttendance)) {
+              <ion-note [style.fontSize]="'.9rem'" color="danger">{{ getDeadlineText(currentAttendance) }}</ion-note>
+              }
             </ion-label>
             <ion-badge slot="end"
               [color]="currentAttendance.text === 'X' ? 'success' : currentAttendance.text === 'A' ? 'danger' : currentAttendance.text === 'L' ? (currentAttendance.status === 3 ? 'tertiary' : 'rosa') : currentAttendance.text === 'N' ? 'medium' : 'warning'">
@@ -153,6 +157,9 @@
             <ion-label>
               <h2>{{ getReadableDate(att.date) }}</h2>
               <h3 [style.fontWeight]="att.highlight ? 'bold' : 'normal'">{{ att.title }}</h3>
+              @if (showDeadlineInfo(att)) {
+              <ion-note [style.fontSize]="'.9rem'" color="danger">{{ getDeadlineText(att) }}</ion-note>
+              }
             </ion-label>
             <ion-badge slot="end"
               [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? (att.status === 3 ? 'tertiary' : 'rosa') : att.text === 'N' ? 'medium' : 'warning'">

@@ -5,6 +5,7 @@ import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Pla
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
+import { utils, WorkBook, WorkSheet, writeFile } from "xlsx";
 
 export class Utils {
   public static getId(): number {
@@ -414,6 +415,27 @@ export class Utils {
     }
   }
 
+  public static exportAttendanceToExcel(
+    attendance: Attendance,
+    players: PersonAttendance[],
+    type: AttendanceType,
+  ): void {
+    let row = 1;
+
+    const data = [['', 'Nachname', 'Vorname', 'Gruppe', 'Status', 'Bemerkung']];
+
+    for (const user of players) {
+      data.push([row.toString(), user.lastName, user.firstName, user.groupName, Utils.getAttText(user), user.notes || '']);
+      row++;
+    }
+
+    const ws: WorkSheet = utils.aoa_to_sheet(data);
+    const wb: WorkBook = utils.book_new();
+    utils.book_append_sheet(wb, ws, 'Anwesenheit');
+
+    writeFile(wb, `${attendance.typeInfo ?? type.name}_${dayjs(attendance.date).format('DD_MM_YYYY')}_Anwesenheit.xlsx`);
+  }
+
   public static getUrl(role: Role) {
     switch (role) {
       case Role.ADMIN:
@@ -631,47 +653,6 @@ export class Utils {
     const attendanceStartTime = dayjs(`${dayjs(attDate).format("YYYY-MM-DD")}T${attendanceStart}`);
     const attendanceEndTime = dayjs(`${dayjs(attDate).format("YYYY-MM-DD")}T${attendanceEnd}`);
 
-    /*
-  async calculateShifts(shiftInstance?: ShiftInstance) {
-    this.calculatedShifts = [];
-
-    const shiftDefinitions = this.shift.definition;
-    let currentDate = dayjs(shiftInstance?.date || dayjs().add(1, 'week').day(1).startOf('day'));
-    let nextDate = currentDate.clone();
-    const endDate = dayjs(currentDate).add(30, 'day');
-
-    while (currentDate.isBefore(endDate)) {
-      for (const def of shiftDefinitions) {
-        for (let i = 0; i < def.repeat_count; i++) {
-          const shift = {
-            date: nextDate.locale('de').format('ddd, DD.MM.YYYY'),
-            start_time: def.start_time,
-            duration: def.duration,
-            free: def.free,
-            end_time: ''
-          };
-
-          let end_time = dayjs(`${nextDate.format('YYYY-MM-DD')}T${def.start_time}`).add(def.duration, 'hour');
-
-          if (!dayjs(end_time).isSame(nextDate, 'day')) {
-            shift.end_time = `${end_time.format('HH:mm')} (+1)`;
-          } else {
-            shift.end_time = end_time.format('HH:mm');
-          }
-
-          this.calculatedShifts.push(shift);
-
-          nextDate = nextDate.add(1, 'day');
-        }
-      }
-      currentDate = currentDate.add(shiftDefinitions.length, 'day');
-    }
-
-    this.isCalculateModalOpen = true;
-  }
-    */
-
-    // use comment as reference for shift calculation
     let currentDate;
     if (shiftName) {
       const matchingShift = shift.shifts.find(def => def.name === shiftName);
