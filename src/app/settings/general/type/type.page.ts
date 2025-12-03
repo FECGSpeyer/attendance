@@ -31,6 +31,7 @@ export class TypePage implements OnInit {
   };
   public end: string;
   public colors: string[] = ['primary', 'secondary', 'tertiary', 'success', 'warning', 'danger', 'rosa', 'mint', 'orange'];
+  public additionalFieldFilter: string = null;
 
   constructor(
     public modalController: ModalController,
@@ -65,6 +66,7 @@ export class TypePage implements OnInit {
         highlight: false,
         hide_name: false,
         include_in_average: true,
+        additional_fields_filter: null,
       };
       this.type.default_plan = { ...this.defaultPlan };
     } else {
@@ -80,6 +82,8 @@ export class TypePage implements OnInit {
         this.type.default_plan = { ...this.defaultPlan };
       }
     }
+
+    this.additionalFieldFilter = this.db.tenant().additional_fields.find(field => field.id === this.type.additional_fields_filter?.key) ? this.type.additional_fields_filter?.key ?? null : null;
   }
 
   async save() {
@@ -274,6 +278,22 @@ export class TypePage implements OnInit {
   onAvailableStatusesChanged() {
     if (!this.type.available_statuses.includes(this.type.default_status)) {
       this.type.default_status = AttendanceStatus.Present;
+    }
+  }
+
+  areSelectFieldsAvailable(): boolean {
+    return Boolean(this.db.tenant().additional_fields?.length && this.db.tenant().additional_fields.find(field => field.type ===
+      "select"));
+  }
+
+  onAdditionalFieldFilterChanged() {
+    if (this.additionalFieldFilter) {
+      this.type.additional_fields_filter = {
+        key: this.additionalFieldFilter,
+        option: this.db.tenant().additional_fields.find(field => field.id === this.additionalFieldFilter)?.options?.[0]
+      };
+    } else {
+      this.type.additional_fields_filter = null;
     }
   }
 }

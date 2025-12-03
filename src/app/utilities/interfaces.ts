@@ -337,6 +337,10 @@ export interface AttendanceType {
     highlight: boolean;
     hide_name: boolean;
     include_in_average: boolean;
+    additional_fields_filter?: {
+        key: string;
+        option: string;
+    };
 }
 
 export interface ShiftPlan {

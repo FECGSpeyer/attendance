@@ -849,6 +849,16 @@ export class DbService {
           const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
           return attType.relevant_groups.length === 0 || attType.relevant_groups.includes(group);
         })
+        .filter((att: Attendance) => {
+          const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
+          if (attType.additional_fields_filter?.key && attType.additional_fields_filter?.option && this.tenant().additional_fields?.find(field => field.id === attType.additional_fields_filter.key)) {
+            const defaultValue = this.tenant().additional_fields.find(field => field.id === attType.additional_fields_filter.key)?.defaultValue;
+            const additionalField = person.additional_fields[attType.additional_fields_filter.key] ?? defaultValue;
+            return additionalField === attType.additional_fields_filter.option;
+          }
+
+          return true;
+        })
         .map((att: Attendance) => {
           const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
 

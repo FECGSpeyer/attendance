@@ -244,6 +244,15 @@ export class AttListPage implements OnInit {
       }
       return attType.relevant_groups.includes(player.instrument);
     });
+
+    if (attType.additional_fields_filter?.key && attType.additional_fields_filter?.option && this.db.tenant().additional_fields?.find(field => field.id === attType.additional_fields_filter.key)) {
+      allPersons = allPersons.filter((player: Player) => {
+        const defaultValue = this.db.tenant().additional_fields.find(field => field.id === attType.additional_fields_filter.key)?.defaultValue;
+        const additionalField = player.additional_fields[attType.additional_fields_filter.key] ?? defaultValue;
+        return additionalField === attType.additional_fields_filter.option;
+      });
+    }
+
     status = attType.default_status;
 
     const type = this.db.attendanceTypes().find(type => type.id === this.type_id);

@@ -298,8 +298,14 @@
           }
 
           <ion-item-group>
-            <ion-item button detail="false" (click)="addAttendance(addAttModal)">
-              <ion-label color="primary">Termine hinzufügen</ion-label>
+            <ion-item [disabled]="dates.length === 0" button detail="false" (click)="addAttendance(addAttModal)">
+              @if (dates.length === 1) {
+                <ion-label color="primary">Termin hinzufügen</ion-label>
+              } @else if (dates.length > 1) {
+                <ion-label color="primary">Termine hinzufügen</ion-label>
+              } @else {
+                <ion-label color="primary">Termin hinzufügen</ion-label>
+              }
             </ion-item>
           </ion-item-group>
         </ion-list>

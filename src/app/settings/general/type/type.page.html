@@ -36,8 +36,7 @@
       <ion-item>
         <ion-label position="stacked">Verfügbare Anwesenheitsstatus</ion-label>
         <ion-select (ionChange)="onAvailableStatusesChanged()" [(ngModel)]="type.available_statuses" multiple="true">
-          <ion-select-option [disabled]="status === 1" *ngFor="let status of attendanceStatuses"
-            [value]="status">
+          <ion-select-option [disabled]="status === 1" *ngFor="let status of attendanceStatuses" [value]="status">
             {{ getAttendanceStatusDescription(status) }}
           </ion-select-option>
         </ion-select>
@@ -98,25 +97,21 @@
       </ion-item>
 
       <ion-item>
-        <ion-select label="Relevante Gruppen"
-          helperText="Nur die relevanten Gruppen werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt. Wenn keine Gruppe ausgewählt ist, werden alle Gruppen berücksichtigt."
-          [(ngModel)]="type.relevant_groups" multiple="true">
-          <ion-select-option *ngFor="let group of db.groups()" [value]="group.id">
-            {{ group.name }}
-          </ion-select-option>
-        </ion-select>
+        <ion-toggle label="Name verbergen"
+          helperText="Wenn du diese Option aktivierst, wird der Name dieses Anwesenheitstyps in der Liste verborgen. Nur die Zusatzinfo (falls vorhanden) wird angezeigt."
+          [(ngModel)]="type.hide_name">Name verbergen</ion-toggle>
       </ion-item>
 
       <ion-item>
-        <ion-toggle label="Name verbergen" helperText="Wenn du diese Option aktivierst, wird der Name dieses Anwesenheitstyps in der Liste verborgen. Nur die Zusatzinfo (falls vorhanden) wird angezeigt." [(ngModel)]="type.hide_name">Name verbergen</ion-toggle>
+        <ion-toggle label="Hervorheben"
+          helperText="Wenn du diese Option aktivierst, wird dieser Anwesenheitstyp in der Liste als Fett dargestellt."
+          [(ngModel)]="type.highlight">Hervorheben</ion-toggle>
       </ion-item>
 
       <ion-item>
-        <ion-toggle label="Hervorheben" helperText="Wenn du diese Option aktivierst, wird dieser Anwesenheitstyp in der Liste als Fett dargestellt." [(ngModel)]="type.highlight">Hervorheben</ion-toggle>
-      </ion-item>
-
-      <ion-item>
-        <ion-toggle label="Für Ø berücksichtigen" helperText="Wenn diese Option aktiviert ist, wird dieser Typ beim Anwesenheitsdurchschnitt berücksichtigt." [(ngModel)]="type.include_in_average">Für Ø berücksichtigen</ion-toggle>
+        <ion-toggle label="Für Ø berücksichtigen"
+          helperText="Wenn diese Option aktiviert ist, wird dieser Typ beim Anwesenheitsdurchschnitt berücksichtigt."
+          [(ngModel)]="type.include_in_average">Für Ø berücksichtigen</ion-toggle>
       </ion-item>
 
       <ion-item id="color-btn" button detail="false">
@@ -143,10 +138,58 @@
     </ion-item-group>
   </ion-list>
 
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Filter</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item>
+        <ion-select label="Relevante Gruppen"
+          helperText="Nur die relevanten Gruppen werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt. Wenn keine Gruppe ausgewählt ist, werden alle Gruppen berücksichtigt."
+          [(ngModel)]="type.relevant_groups" multiple="true">
+          <ion-select-option *ngFor="let group of db.groups()" [value]="group.id">
+            {{ group.name }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      @if (areSelectFieldsAvailable()) {
+      <ion-item>
+        <ion-select label="Zusatzfeld-Filter"
+          (ionChange)="onAdditionalFieldFilterChanged()"
+          helperText="Nur Personen mit dem ausgewählten Zusatzfeld-Wert werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt."
+          [(ngModel)]="additionalFieldFilter" multiple="false">
+          <ion-select-option [value]="null">Kein Filter</ion-select-option>
+          @for (field of db.tenant().additional_fields; track field) {
+          @if (field.type === "select") {
+          <ion-select-option [value]="field.id">
+            {{ field.name }}
+          </ion-select-option>
+          }
+          }
+        </ion-select>
+      </ion-item>
+      @if (additionalFieldFilter && type.additional_fields_filter?.option) {
+      <ion-item>
+        <ion-select [(ngModel)]="type.additional_fields_filter.option" label="Option">
+          @for (field of db.tenant().additional_fields; track field) {
+          @if (field.type === "select" && field.id === additionalFieldFilter) {
+          @for (option of field.options; track option) {
+          <ion-select-option [value]="option">
+            {{ option }}
+          </ion-select-option>
+          }
+          }
+          }
+        </ion-select>
+      </ion-item>
+      }
+      }
+    </ion-item-group>
+  </ion-list>
+
   <ion-list *ngIf="type.default_plan?.fields" [inset]="true">
     <ion-list-header>
       <ion-label>Ablaufplan</ion-label>
-      <ion-button id="add-field-trigger" fill="clear">
+      <ion-button size="small" id="add-field-trigger" fill="clear">
         <ion-icon name="add"></ion-icon>
       </ion-button>
       <ion-popover #addFieldPopover trigger="add-field-trigger" triggerAction="click">
@@ -166,8 +209,8 @@
         <ion-datetime-button datetime="datetimestartplan"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime locale="de-DE" disabled="true" (ionChange)="calculateEnd()" [(ngModel)]="type.start_time" presentation="time"
-              id="datetimestartplan" [formatOptions]="{
+            <ion-datetime locale="de-DE" disabled="true" (ionChange)="calculateEnd()" [(ngModel)]="type.start_time"
+              presentation="time" id="datetimestartplan" [formatOptions]="{
                       time: {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -204,7 +247,8 @@
         <ion-datetime-button datetime="datetimeendplan"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime locale="de-DE" disabled="true" [(ngModel)]="end" presentation="time" id="datetimeendplan" [formatOptions]="{
+            <ion-datetime locale="de-DE" disabled="true" [(ngModel)]="end" presentation="time" id="datetimeendplan"
+              [formatOptions]="{
                       time: {
                         hour: '2-digit',
                         minute: '2-digit',
