@@ -49,6 +49,7 @@ export class ListPage implements OnInit {
   public linkedTenants: Tenant[] = [];
   public tenantName: string = "";
   public loaded: boolean = false;
+  public prevFilterValue: string = "";
 
   constructor(
     private modalController: ModalController,
@@ -234,23 +235,51 @@ export class ListPage implements OnInit {
 
     if (this.sortOpt === "instrument") {
       this.initializeItems();
+      this.onFilterChanged(true);
+    }
+  }
+
+  onFilterFocused() {
+    this.prevFilterValue = this.filterOpt;
+  }
+
+  onFilterDismissed() {
+    if (
+      this.prevFilterValue === this.filterOpt &&
+      (this.filterOpt === 'otherInstance' || (this.db.tenant().additional_fields?.find(field => field.type === "select" && this.filterOpt === field.id)))) {
       this.onFilterChanged();
     }
   }
 
-  async onFilterChanged() {
+  async onFilterChanged(implicit = false) {
     this.searchTerm = '';
 
     if (this.filterOpt === 'all') {
       this.initializeItems();
       await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
+      await this.storage.set(`filterOptAdd${this.db.tenant().id}`, "");
       return;
     }
 
     if (this.filterOpt === 'otherInstance') {
+      const option = await this.storage.get(`filterOptAdd${this.db.tenant().id}`);
+
       if (!this.linkedTenants.length) {
         this.filterOpt = 'all';
         this.onFilterChanged();
+        return;
+      }
+
+      if (implicit) {
+        if (option) {
+          const usersPerTenant = await this.db.getUsersFromTenant(this.linkedTenants.find((t) => t.longName === option)?.id || 0);
+          this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
+            return usersPerTenant.find((u) => u.userId === player.appId);
+          }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields);
+          this.tenantName = option;
+          await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
+          await this.storage.set(`filterOptAdd${this.db.tenant().id}`, this.tenantName);
+        }
         return;
       }
 
@@ -260,6 +289,7 @@ export class ListPage implements OnInit {
           type: 'radio',
           label: t.longName,
           value: t.id,
+          selected: t.longName === option,
         })),
         buttons: [
           {
@@ -285,6 +315,7 @@ export class ListPage implements OnInit {
               }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields);
               this.tenantName = this.linkedTenants.find((t) => t.id === value)?.longName || "";
               await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
+              await this.storage.set(`filterOptAdd${this.db.tenant().id}`, this.tenantName);
             }
           }
         ]
@@ -293,13 +324,26 @@ export class ListPage implements OnInit {
       return;
     } else if (this.db.tenant().additional_fields?.find(field => field.type === "select" && this.filterOpt === field.id)) {
       const extraField = this.db.tenant().additional_fields?.find(field => field.type === "select" && this.filterOpt === field.id);
+      const option = await this.storage.get(`filterOptAdd${this.db.tenant().id}`);
+
+      if (implicit) {
+        if (option) {
+          this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
+            return player.additional_fields?.[this.filterOpt] === option;
+          }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields);
+          await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
+          await this.storage.set(`filterOptAdd${this.db.tenant().id}`, option);
+        }
+        return;
+      }
+
       const alert = await this.alertController.create({
         header: extraField.name,
         inputs: extraField.options.map((t, index) => ({
           type: 'radio',
           label: t,
           value: t,
-          selected: index === 0,
+          selected: option ? t === option : index === 0,
         })),
         buttons: [
           {
@@ -324,11 +368,13 @@ export class ListPage implements OnInit {
               }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields);
 
               await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
+              await this.storage.set(`filterOptAdd${this.db.tenant().id}`, value);
             }
           }
         ]
       });
       await alert.present();
+      return;
     }
 
     this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
@@ -365,6 +411,7 @@ export class ListPage implements OnInit {
     }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields);
 
     await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
+    await this.storage.set(`filterOptAdd${this.db.tenant().id}`, "");
   }
 
   onViewChanged() {
