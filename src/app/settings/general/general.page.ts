@@ -61,8 +61,8 @@ export class GeneralPage implements OnInit {
     { key: 'firstName', label: 'Vorname', disabled: true },
     { key: 'lastName', label: 'Nachname', disabled: true },
     { key: 'group', label: 'Gruppe', disabled: true },
-    { key: 'email', label: 'E-Mail', disabled: true },
     { key: 'birthDate', label: 'Geburtsdatum', disabled: false },
+    { key: 'phone', label: 'Handynummer', disabled: false },
   ];
   public selectedRegisterFields: string[] = ['firstName', 'lastName', 'birthDate', 'group'];
 

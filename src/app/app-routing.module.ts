@@ -20,6 +20,10 @@ const routes: Routes = [
     canActivate: [RegisterGuard]
   },
   {
+    path: 'register/:id',
+    loadChildren: () => import('./register/tenant-register/tenant-register.module').then( m => m.TenantRegisterPageModule)
+  },
+  {
     path: ':songSharingId',
     loadChildren: () => import('./songs/songs.module').then( m => m.SongsPageModule)
   },

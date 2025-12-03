@@ -534,18 +534,54 @@ export class DbService {
     }
   }
 
-  async login(email: string, password: string) {
+  async login(email: string, password: string, returnEarly: boolean = false): Promise<boolean> {
     const { data, error } = await supabase.auth.signInWithPassword({
       email, password,
     });
 
     if (error) {
-      Utils.showToast(error.code === "email_not_confirmed" ? "Bitte bestätige zuerst deine E-Mail-Adresse." : "Fehler beim Anmelden", "danger");
+      switch (error.code) {
+        case "invalid_login_credentials":
+          Utils.showToast("Ungültige Anmeldedaten", "danger");
+          break;
+        case "user_disabled":
+          Utils.showToast("Dein Konto wurde deaktiviert. Bitte wende dich an den Administrator deiner Instanz.", "danger");
+          break;
+        case "too_many_requests":
+          Utils.showToast("Zu viele Anmeldeversuche. Bitte versuche es später erneut.", "danger");
+          break;
+        case "invalid_email":
+          Utils.showToast("Ungültige E-Mail Adresse", "danger");
+          break;
+        case "invalid_password":
+          Utils.showToast("Ungültiges Passwort", "danger");
+          break;
+        case "user_not_found":
+          Utils.showToast("Benutzer nicht gefunden", "danger");
+          break;
+        case "email_not_confirmed":
+          Utils.showToast("Bitte bestätige zuerst deine E-Mail-Adresse.", "danger");
+          break;
+        case "password_strength_insufficient":
+          Utils.showToast("Das Passwort erfüllt nicht die Sicherheitsanforderungen.", "danger");
+          break;
+        case "invalid_credentials":
+          Utils.showToast("Ungültige Anmeldedaten", "danger");
+          break;
+        default:
+          Utils.showToast(error.code === "email_not_confirmed" ? "Bitte bestätige zuerst deine E-Mail-Adresse." : "Fehler beim Anmelden", "danger");
+          break;
+      }
       throw error;
     }
 
     if (data.user) {
       this.user = data.user;
+
+      if (returnEarly) {
+        return true;
+      }
+
       await this.setTenant();
       if (this.tenantUser()) {
         this.router.navigateByUrl(Utils.getUrl(this.tenantUser().role));
@@ -2542,6 +2578,24 @@ export class DbService {
       .from('tenants')
       .select('*')
       .eq('song_sharing_id', sharingId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      Utils.showToast("Fehler beim Laden des Tenants", "danger");
+      throw error;
+    }
+
+    return data as unknown as Tenant;
+  }
+
+  async getTenantByRegisterId(registerId: string): Promise<Tenant | null> {
+    const { data, error } = await supabase
+      .from('tenants')
+      .select('*')
+      .eq('register_id', registerId)
       .single();
 
     if (error) {
