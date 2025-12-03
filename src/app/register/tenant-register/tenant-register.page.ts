@@ -39,17 +39,21 @@ export class TenantRegisterPage implements OnInit {
     }
 
     if (this.db.user) {
-      const tenantUsers = await this.db.getTenantsByUserId();
-      const tenant = tenantUsers.find(t => t.tenantId === this.tenantData.id);
-      if (tenant) {
-        Utils.showToast("Sie sind bereits in dieser Instanz registriert.", 'warning');
-        this.router.navigate(['/login']);
-        return;
-      }
+      await this.checkExistent();
     }
 
     this.groups = (await this.db.getGroups(this.tenantData.id)).filter(g => !g.maingroup);
     this.selectedGroupId = this.groups.length > 0 ? this.groups[0].id : null;
+  }
+
+  async checkExistent() {
+    const tenantUsers = await this.db.getTenantsByUserId();
+    const tenant = tenantUsers.find(t => t.tenantId === this.tenantData.id);
+    if (tenant) {
+      Utils.showToast("Sie sind bereits in dieser Instanz registriert.", 'warning', 5000);
+      this.router.navigate(['/login']);
+      return;
+    }
   }
 
   async login() {
@@ -77,6 +81,7 @@ export class TenantRegisterPage implements OnInit {
           handler: async (data) => {
             try {
               await this.db.login(data.email, data.password, true);
+              await this.checkExistent();
               return true;
             } catch (error) {
               return false;
