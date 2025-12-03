@@ -80,7 +80,7 @@
           helperText="Aktivieren, um neuen Personen die Registrierung in dieser Instanz zu erlauben. Der Link wird automatisch generiert und kann nach dem Speichern kopiert werden."
           [(ngModel)]="registerAllowed">Registrierung erlauben</ion-toggle>
       </ion-item>
-      <ion-item (click)="copyRegisterLink()" button *ngIf="db.tenant().register_id" detail="false">
+      <ion-item (click)="copyRegisterLink()" button *ngIf="db.tenant().register_id && registerAllowed" detail="false">
         <ion-label color="primary">Link kopieren</ion-label>
       </ion-item>
       @if (registerAllowed) {
