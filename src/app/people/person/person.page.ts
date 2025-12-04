@@ -597,7 +597,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       additionalButtons.push({
         text: 'Profilbild entfernen',
         handler: () => {
-          this.db.removeImage(this.player.id, this.player.img.split("/")[this.player.img.split("/").length - 1]);
+          this.db.removeImage(this.player.id, this.player.img.split("/")[this.player.img.split("/").length - 1], true);
           this.player.img = DEFAULT_IMAGE;
           Utils.showToast("Das Profilbild wurde erfolgreich entfernt", "success");
         }

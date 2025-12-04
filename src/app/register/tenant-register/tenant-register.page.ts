@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController } from '@ionic/angular';
+import { ActionSheetController, AlertController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
+import { DEFAULT_IMAGE, FieldType } from 'src/app/utilities/constants';
 import { Group, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
@@ -12,6 +13,7 @@ import { Utils } from 'src/app/utilities/Utils';
   styleUrls: ['./tenant-register.page.scss'],
 })
 export class TenantRegisterPage implements OnInit {
+  @ViewChild('chooser') chooser: ElementRef;
   public tenantData: Tenant | null = null;
   public groups: Group[] = [];
   public firstName: string = '';
@@ -22,11 +24,14 @@ export class TenantRegisterPage implements OnInit {
   public phone: string = '';
   public confirmPassword: string = '';
   public selectedGroupId: number | null = null;
+  public profilePicture: string = DEFAULT_IMAGE;
+  public additionalFields: { name: string, value: any, type: FieldType, options?: string[] }[] = [];
 
   constructor(
     public db: DbService,
     private router: Router,
     private alertController: AlertController,
+    private actionSheetController: ActionSheetController,
   ) { }
 
   async ngOnInit() {
@@ -40,6 +45,18 @@ export class TenantRegisterPage implements OnInit {
 
     if (this.db.user) {
       await this.checkExistent();
+    }
+
+    for (const fieldName of this.tenantData.registration_fields || []) {
+      const field = this.tenantData.additional_fields.find(f => f.id === fieldName);
+      if (field) {
+        this.additionalFields.push({
+          name: field.name,
+          value: field.defaultValue,
+          type: field.type,
+          options: field.options
+        });
+      }
     }
 
     this.groups = (await this.db.getGroups(this.tenantData.id)).filter(g => !g.maingroup);
@@ -99,6 +116,50 @@ export class TenantRegisterPage implements OnInit {
     if (!this.firstName || !this.lastName || !this.email || !this.password || !this.confirmPassword) {
       Utils.showToast('Bitte füllen Sie alle Pflichtfelder aus.', 'danger');
       return;
+    }
+  }
+
+  async changeImg() {
+    if (this.profilePicture !== DEFAULT_IMAGE) {
+      const actionSheet = await this.actionSheetController.create({
+        buttons: [{
+          text: 'Profilbild ersetzen',
+          handler: () => {
+            this.chooser.nativeElement.click();
+          }
+        }, {
+          text: 'Abbrechen'
+        }]
+      });
+      await actionSheet.present();
+      return;
+    }
+
+    this.chooser.nativeElement.click();
+  }
+
+  async onImageSelect(evt: any) {
+    const loading = await Utils.getLoadingElement();
+    loading.present();
+    const imgFile: File = evt.target.files[0];
+
+    if (imgFile) {
+      if (imgFile.type.substring(0, 5) === 'image') {
+        const reader: FileReader = new FileReader();
+
+        reader.readAsDataURL(imgFile);
+
+        try {
+          // TODO
+          const url: string = await this.db.updateImage(0, imgFile, true);
+          this.profilePicture = url;
+        } catch (error) {
+          Utils.showToast(error, "danger");
+        }
+      } else {
+        loading.dismiss();
+        Utils.showToast("Fehler beim ändern des Profilbildes, versuche es später erneut", "danger");
+      }
     }
   }
 }

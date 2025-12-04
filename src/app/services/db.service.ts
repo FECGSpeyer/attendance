@@ -1774,18 +1774,20 @@ export class DbService {
     });
   }
 
-  async removeImage(id: number, imgPath: string) {
-    await supabase
-      .from("player")
-      .update({ img: "" })
-      .match({ id });
+  async removeImage(id: number, imgPath: string, newUser: boolean = false) {
+    if (!newUser) {
+      await supabase
+        .from("player")
+        .update({ img: "" })
+        .match({ id });
+    }
 
     await supabase.storage
       .from("profiles")
-      .remove([String(id)]);
+      .remove([imgPath]);
   }
 
-  async updateImage(id: number, image: File) {
+  async updateImage(id: number, image: File, newUser: boolean = false) {
     const fileName: string = `${id}`;
 
     const { error } = await supabase.storage
@@ -1801,10 +1803,12 @@ export class DbService {
       .from("profiles")
       .getPublicUrl(fileName);
 
-    await supabase
-      .from("player")
-      .update({ img: data.publicUrl })
-      .match({ id });
+    if (!newUser) {
+      await supabase
+        .from("player")
+        .update({ img: data.publicUrl })
+        .match({ id });
+    }
 
     return data.publicUrl;
   }
