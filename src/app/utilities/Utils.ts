@@ -273,8 +273,7 @@ export class Utils {
   }
 
   public static validatePhoneNumber(phone: string): boolean {
-    // Simple regex for phone number validation (can be adjusted as needed)
-    const regexp: any = new RegExp(/^\+?[1-9]\d{1,14}$/);
+    const regexp: any = new RegExp(/^(\+?[1-9]\d{1,14}|0\d+)$/);
     return regexp.test(phone);
   }
 
