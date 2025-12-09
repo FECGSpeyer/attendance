@@ -1290,7 +1290,7 @@ export class DbService {
       })
       .select();
 
-    if (this.tenant().id) {
+    if (this.tenant() && this.tenant().id) {
       this.groups.set(await this.getGroups());
     }
 
