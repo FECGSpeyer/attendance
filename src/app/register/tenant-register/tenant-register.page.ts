@@ -192,7 +192,7 @@ export class TenantRegisterPage implements OnInit {
 
     if (this.tenantData?.registration_fields?.includes('picture')) {
       if (this.profilePicture === DEFAULT_IMAGE) {
-        Utils.showToast("Bitte wählen Sie ein Profilbild aus.", "danger");
+        Utils.showToast("Bitte wählen Sie ein Passbild aus.", "danger");
         return false;
       }
     }
@@ -247,7 +247,7 @@ export class TenantRegisterPage implements OnInit {
     if (this.profilePicture !== DEFAULT_IMAGE) {
       const actionSheet = await this.actionSheetController.create({
         buttons: [{
-          text: 'Profilbild ersetzen',
+          text: 'Passbild ersetzen',
           handler: () => {
             this.chooser.nativeElement.click();
           }
@@ -280,7 +280,7 @@ export class TenantRegisterPage implements OnInit {
         };
       } else {
         loading.dismiss();
-        Utils.showToast("Fehler beim ändern des Profilbildes, versuche es später erneut", "danger");
+        Utils.showToast("Fehler beim ändern des Passbildes, versuche es später erneut", "danger");
       }
     }
   }

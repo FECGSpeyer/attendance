@@ -73,7 +73,7 @@
               <ion-select-option *ngIf="isVoS" value="new">Neu</ion-select-option>
               <ion-select-option value="paused">Pausiert</ion-select-option>
               <ion-select-option value="notes">Hat Notizen</ion-select-option>
-              <ion-select-option value="img">Profilbild</ion-select-option>
+              <ion-select-option value="img">Passbild</ion-select-option>
               <ion-select-option value="teachers" *ngIf="db.tenant().maintainTeachers">Lehrer</ion-select-option>
               <ion-select-option *ngIf="isVoS" value="examinee">Prüfling</ion-select-option>
               @if (db.tenant().additional_fields?.length) {

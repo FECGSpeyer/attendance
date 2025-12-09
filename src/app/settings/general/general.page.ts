@@ -58,7 +58,7 @@ export class GeneralPage implements OnInit {
   public registerAllowed: boolean = false;
   public autoApproveRegistrations: boolean = false;
   public registerFields: { key: string, label: string, disabled: boolean }[] = [
-    { key: 'picture', label: 'Profilbild', disabled: false },
+    { key: 'picture', label: 'Passbild', disabled: false },
     { key: 'firstName', label: 'Vorname', disabled: true },
     { key: 'lastName', label: 'Nachname', disabled: true },
     { key: 'group', label: 'Gruppe', disabled: true },

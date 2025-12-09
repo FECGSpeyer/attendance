@@ -596,18 +596,18 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     if (this.player.img !== DEFAULT_IMAGE) {
       additionalButtons.push({
-        text: 'Profilbild entfernen',
+        text: 'Passbild entfernen',
         handler: () => {
           this.db.removeImage(this.player.id, this.player.img.split("/")[this.player.img.split("/").length - 1], true);
           this.player.img = DEFAULT_IMAGE;
-          Utils.showToast("Das Profilbild wurde erfolgreich entfernt", "success");
+          Utils.showToast("Das Passbild wurde erfolgreich entfernt", "success");
         }
       });
     }
 
     const actionSheet = await this.actionSheetController.create({
       buttons: [{
-        text: 'Profilbild ersetzen',
+        text: 'Passbild ersetzen',
         handler: () => {
           this.chooser.nativeElement.click();
         }
@@ -638,7 +638,7 @@ export class PersonPage implements OnInit, AfterViewInit {
         }
       } else {
         loading.dismiss();
-        Utils.showToast("Fehler beim ändern des Profilbildes, versuche es später erneut", "danger");
+        Utils.showToast("Fehler beim ändern des Passbildes, versuche es später erneut", "danger");
       }
     }
   }
