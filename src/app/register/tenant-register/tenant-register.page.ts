@@ -25,7 +25,7 @@ export class TenantRegisterPage implements OnInit {
   public confirmPassword: string = '';
   public selectedGroupId: number | null = null;
   public profilePicture: string = DEFAULT_IMAGE;
-  public additionalFields: { name: string, value: any, type: FieldType, options?: string[] }[] = [];
+  public additionalFields: { id: string, name: string, value: any, type: FieldType, options?: string[] }[] = [];
   private profileImgFile: File | null = null;
 
   constructor(
@@ -52,6 +52,7 @@ export class TenantRegisterPage implements OnInit {
       const field = this.tenantData.additional_fields.find(f => f.id === fieldName);
       if (field) {
         this.additionalFields.push({
+          id: field.id,
           name: field.name,
           value: field.defaultValue,
           type: field.type,
@@ -126,13 +127,13 @@ export class TenantRegisterPage implements OnInit {
 
     const additional_fields: { [key: string]: any } = {};
     for (const field of this.additionalFields) {
-      additional_fields[field.name] = field.value;
+      additional_fields[field.id] = field.value;
     }
 
     const playerId = await this.db.addPlayer({
       firstName: this.firstName,
       lastName: this.lastName,
-      email: this.email,
+      email: this.db.user?.email ?? this.email,
       pending: !Boolean(this.tenantData?.auto_approve_registrations),
       birthday: this.birthDate,
       phone: this.phone,
@@ -148,7 +149,7 @@ export class TenantRegisterPage implements OnInit {
       tenantId: this.tenantData.id,
       joined: new Date().toISOString(),
       notes: "",
-    }, true, Role.APPLICANT, this.tenantData.id, this.password);
+    }, true, Role.APPLICANT, this.tenantData.id, this.password, this.tenantData.longName);
 
     if (this.tenantData?.registration_fields?.includes('picture')) {
       const url: string = await this.db.updateImage(playerId, this.profileImgFile);
@@ -156,14 +157,14 @@ export class TenantRegisterPage implements OnInit {
     }
 
     await loading.dismiss();
+    this.router.navigate(['/login']);
     const alert = await this.alertController.create({
       header: 'Registrierung erfolgreich',
-      message: this.tenantData.auto_approve_registrations ? 'Dein Konto wurde erstellt. Um dich anmelden zu können, bestätige bitte deine E-Mail. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner. Im Anschluss kannst du dich anmelden.' : 'Dein Konto wurde erstellt und wartet auf die Genehmigung durch einen Administrator. Bitte bestätige deine E-Mail, um dich anmelden zu können. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner.',
+      message: this.tenantData.auto_approve_registrations ?
+        this.db.user ? "Deine Registrierung war erfolgreich! Du bist nun teil der Instanz." : `Dein Konto wurde erstellt. Um dich anmelden zu können, bestätige bitte deine E-Mail. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner. Im Anschluss kannst du dich anmelden.` :
+        this.db.user ? "Deine Registrierung war erfolgreich! Bitte warte auf die Genehmigung durch einen Administrator." : `Dein Konto wurde erstellt und wartet auf die Genehmigung durch einen Administrator. Bitte bestätige deine E-Mail, um dich anmelden zu können. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner.`,
       buttons: [{
-        text: 'OK',
-        handler: () => {
-          this.router.navigate(['/login']);
-        }
+        text: 'OK'
       }]
     });
 

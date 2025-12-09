@@ -16,6 +16,7 @@ dayjs.extend(utc);
 })
 export class PersonPage implements OnInit, AfterViewInit {
   @Input() existingPlayer: Player;
+  @Input() approveMode: boolean;
   @Input() readOnly: boolean;
   @Input() hasLeft: boolean;
   @ViewChild('select') select: IonSelect;
@@ -293,7 +294,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     return format(parseISO(value || new Date().toISOString()), 'dd.MM.yyyy');
   }
 
-  async dismiss(): Promise<void> {
+  async dismiss(data?: any): Promise<void> {
     if (this.hasChanges) {
       const alert = await this.alertController.create({
         header: 'Änderungen verwerfen?',
@@ -305,7 +306,7 @@ export class PersonPage implements OnInit, AfterViewInit {
           }, {
             text: 'Ja',
             handler: () => {
-              this.modalController.dismiss();
+              this.modalController.dismiss(data);
             }
           }
         ]
@@ -313,7 +314,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
       await alert.present();
     } else {
-      await this.modalController.dismiss();
+      await this.modalController.dismiss(data);
     }
   }
 
@@ -500,7 +501,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   onChange() {
-    if (!this.readOnly && this.existingPlayer) {
+    if (!this.approveMode && !this.readOnly && this.existingPlayer) {
       const existingPerson: Player = { ...this.existingPlayer, email: this.player.email === null ? null : this.existingPlayer.email || "", teacherName: this.player.teacherName, notes: this.player.notes === null ? null : this.existingPlayer.notes || "", criticalReasonText: this.player.criticalReasonText };
 
       this.hasChanges =
@@ -934,5 +935,115 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     this.onChange();
+  }
+
+  async showApproveActionSheet(): Promise<void> {
+    const actionSheet = await this.actionSheetController.create({
+      buttons: [
+        {
+          text: 'Person genehmigen',
+          handler: () => this.approvePlayer(),
+        },
+        {
+          text: 'Person ablehnen',
+          role: 'destructive',
+          handler: () => this.declinePlayer(),
+        },
+        {
+          text: 'Abbrechen',
+          role: 'destructive',
+        }
+      ]
+    });
+
+    await actionSheet.present();
+  }
+
+  async declinePlayer(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Person ablehnen',
+      subHeader: 'Gib einen Grund an.',
+      inputs: [{
+        type: "textarea",
+        name: "reason"
+      }],
+      buttons: [{
+        text: "Abbrechen",
+      }, {
+        text: "Ablehnen",
+        handler: async (evt: { reason: string }) => {
+          if (!evt.reason) {
+            alert.message = "Bitte gib einen Grund an!";
+            return false;
+          }
+
+          const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(10000, 'Die Person wird abgelehnt...');
+          loading.present();
+
+          this.player.history.push({
+            date: new Date().toISOString(),
+            text: `Person abgelehnt von ${this.db.tenantUser().email}: ${evt.reason}`,
+            type: PlayerHistoryType.DECLINED,
+          });
+
+          try {
+            await this.db.updatePlayer({
+              ...this.player,
+              pending: false,
+              left: new Date().toISOString(),
+            });
+            await this.db.removeUserFromTenant(this.player.appId);
+            await this.db.informUserAboutReject(this.player.email, this.player.firstName);
+
+            loading.dismiss();
+            this.hasChanges = false;
+            await this.dismiss({ approved: true });
+
+            Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
+          } catch (error) {
+            loading.dismiss();
+            Utils.showToast("Fehler beim aktualisieren des Spielers", "danger");
+          }
+
+          loading.dismiss();
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  async approvePlayer(): Promise<void> {
+    const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(10000, 'Die Person wird genehmigt...');
+    loading.present();
+
+    this.player.history.push({
+      date: new Date().toISOString(),
+      text: `Person genehmigt von ${this.db.tenantUser().email}`,
+      type: PlayerHistoryType.APPROVED,
+    });
+
+    try {
+      await this.db.updatePlayer({
+        ...this.player,
+        isCritical: this.solved ? false : this.player.isCritical,
+        lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
+        pending: false,
+      });
+      await this.db.updateTenantUser({ role: Role.PLAYER }, this.player.appId);
+      await this.db.informUserAboutApproval(this.player.email, this.player.firstName, Role.PLAYER);
+      await this.db.addPlayerToAttendancesByDate(this.player);
+
+      loading.dismiss();
+      this.hasChanges = false;
+      await this.dismiss({ approved: true });
+
+      Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
+    } catch (error) {
+      loading.dismiss();
+      Utils.showToast("Fehler beim aktualisieren des Spielers", "danger");
+    }
+
+    loading.dismiss();
   }
 }

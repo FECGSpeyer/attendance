@@ -474,4 +474,23 @@ export class SettingsPage implements OnInit {
 
     await alert.present();
   }
+
+  async openApprovePersonModal(p: Player) {
+    const modal = await this.modalController.create({
+      component: PersonPage,
+      presentingElement: this.routerOutlet.nativeEl,
+      componentProps: {
+        existingPlayer: { ...p },
+        approveMode: true,
+      }
+    });
+
+    await modal.present();
+
+    const data = await modal.onDidDismiss();
+
+    if (data?.data?.approved) {
+      this.pendingPersons = await this.db.getPendingPersons();
+    }
+  }
 }

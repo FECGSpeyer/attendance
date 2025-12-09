@@ -12,6 +12,8 @@ export enum PlayerHistoryType {
     TRANSFERRED_TO = 11,
     COPIED_FROM = 12,
     COPIED_TO = 13,
+    APPROVED = 14,
+    DECLINED = 15,
     OTHER = 99,
 };
 

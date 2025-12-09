@@ -35,6 +35,10 @@
           [placeholder]="mainGroupPlaceholder" [(ngModel)]="mainGroupName"></ion-input>
       </ion-item>
     </ion-item-group>
+    <ion-item-group>
+      <ion-item button detail="false" (click)="createInstance()">
+        <ion-label color="primary">Instanz anlegen</ion-label>
+      </ion-item>
+    </ion-item-group>
   </ion-list>
-  <ion-button expand="block" (click)="createInstance()">Instanz anlegen</ion-button>
 </ion-content>

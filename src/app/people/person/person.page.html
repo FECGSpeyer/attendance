@@ -1,7 +1,8 @@
 <ion-header>
   <ion-toolbar [color]="player?.isCritical ? 'danger' : ''">
     <ion-title *ngIf="!existingPlayer">Person hinzufügen</ion-title>
-    <ion-title *ngIf="!readOnly && existingPlayer">Person bearbeiten</ion-title>
+    <ion-title *ngIf="!approveMode && !readOnly && existingPlayer">Person bearbeiten</ion-title>
+    <ion-title *ngIf="approveMode">Person genehmigen</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -281,7 +282,7 @@
       </div>
     </ion-accordion>
 
-    <ion-accordion *ngIf="!isParent && !readOnly">
+    <ion-accordion *ngIf="!isParent && !readOnly && !approveMode">
       <ion-item slot="header" color="light">
         <ion-label>Account</ion-label>
       </ion-item>
@@ -462,6 +463,13 @@
     </ion-accordion>
   </ion-accordion-group>
 
+  @if (approveMode) {
+  <ion-fab *ngIf="player" vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="showApproveActionSheet()">
+      <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+  } @else {
   <ion-fab *ngIf="player" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button *ngIf="!readOnly && existingPlayer && hasChanges" (click)="updatePlayer()">
       <ion-icon name="save-outline"></ion-icon>
@@ -481,6 +489,7 @@
       <ion-icon name="arrow-undo-outline"></ion-icon>
     </ion-fab-button>
   </ion-fab>
+  }
 
   <ion-modal backdropDismiss="false" [isOpen]="isArchiveModalOpen">
     <ng-template>

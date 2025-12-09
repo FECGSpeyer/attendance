@@ -397,7 +397,14 @@ export class DbService {
     }, appId);
   }
 
-  async registerUser(email: string, name: string, role: Role, tenantId?: number, password?: string): Promise<string> {
+  async registerUser(
+    email: string,
+    name: string,
+    role: Role,
+    tenantId?: number,
+    password?: string,
+    tenantName?: string,
+  ): Promise<string> {
     const { userId, alreadyThere } = await this.getAppIdByEmail(email, tenantId || this.tenant().id) || {};
 
     if (userId) {
@@ -410,7 +417,7 @@ export class DbService {
         name,
         password,
         role: Utils.getRoleText(role),
-        tenant: this.tenant().longName,
+        tenant: tenantName ?? this.tenant().longName,
       });
 
       if (!res.data.mailSent) {
@@ -427,6 +434,7 @@ export class DbService {
       );
 
       if (data?.length && data[0].id) {
+        await this.addUserToTenant(data[0].id, role, email, tenantId);
         return data[0].id;
       }
     }
@@ -446,6 +454,31 @@ export class DbService {
       return res.data.user.id;
     } catch (e) {
       throw new Error(e.response.data?.error?.message || "Fehler beim Erstellen des Accounts");
+    }
+  }
+
+  async informUserAboutApproval(email: string, name: string, role: Role): Promise<void> {
+    const res = await axios.post(`https://staccato-server.vercel.app/api/approveAttendixUser`, {
+      email,
+      name,
+      role: Utils.getRoleText(role),
+      tenant: this.tenant().longName,
+    });
+
+    if (!res.data.mailSent) {
+      throw new Error('Fehler beim Informieren des Benutzers');
+    }
+  }
+
+  async informUserAboutReject(email: string, name: string): Promise<void> {
+    const res = await axios.post(`https://staccato-server.vercel.app/api/rejectAttendixUser`, {
+      email,
+      name,
+      tenant: this.tenant().longName,
+    });
+
+    if (!res.data.mailSent) {
+      throw new Error('Fehler beim Informieren des Benutzers');
     }
   }
 
@@ -863,7 +896,14 @@ export class DbService {
     return (all ? data : data.filter((c: any) => !c.left) as unknown as Person[]).map((con: any) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
   }
 
-  async addPlayer(player: Player, register: boolean, role: Role, tenantId?: number, password?: string): Promise<number> {
+  async addPlayer(
+    player: Player,
+    register: boolean,
+    role: Role,
+    tenantId?: number,
+    password?: string,
+    tenantName?: string,
+  ): Promise<number> {
     if (!this.tenant()?.maintainTeachers) {
       delete player.teacher;
     }
@@ -882,7 +922,8 @@ export class DbService {
         player.firstName,
         role,
         tenantId,
-        password
+        password,
+        tenantName,
       );
       player.appId = appId;
     }
@@ -902,23 +943,46 @@ export class DbService {
       throw new Error(error.message);
     }
 
-    await this.addPlayerToAttendancesByDate(data.id, data.joined, tenantId);
+    if (!player.pending) {
+      await this.addPlayerToAttendancesByDate(data as unknown as Player, tenantId);
+    }
 
     return data.id;
   }
 
-  async addPlayerToAttendancesByDate(id: number, joined: string, tenantId?: number) {
-    const attData: Attendance[] = await this.getAttendancesByDate(joined, tenantId);
+  async addPlayerToAttendancesByDate(player: Player, tenantId?: number) {
+    const attData: Attendance[] = await this.getAttendancesByDate(player.joined, tenantId);
 
     if (attData?.length) {
-      const attToAdd: PersonAttendance[] = await Promise.all(attData.map(async (att: Attendance) => {
-        return {
-          attendance_id: att.id,
-          person_id: id,
-          notes: "",
-          status: AttendanceStatus.Present,
-        }
-      }));
+      const attToAdd: PersonAttendance[] = attData
+        .filter((att: Attendance) => {
+          const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
+          return attType.relevant_groups.length === 0 || attType.relevant_groups.includes(player.instrument);
+        })
+        .filter((att: Attendance) => {
+          const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
+          if (attType.additional_fields_filter?.key && attType.additional_fields_filter?.option && this.tenant().additional_fields?.find(field => field.id === attType.additional_fields_filter.key)) {
+            const defaultValue = this.tenant().additional_fields.find(field => field.id === attType.additional_fields_filter.key)?.defaultValue;
+            const additionalField = player.additional_fields[attType.additional_fields_filter.key] ?? defaultValue;
+            return additionalField === attType.additional_fields_filter.option;
+          }
+
+          return true;
+        })
+        .map((att: Attendance) => {
+          const type = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
+
+          return {
+            attendance_id: att.id,
+            person_id: player.id,
+            notes: "",
+            status: type.default_status,
+          }
+        });
+
+      if (attToAdd.length === 0) {
+        return;
+      }
       await this.addPersonAttendances(attToAdd);
     }
   }
