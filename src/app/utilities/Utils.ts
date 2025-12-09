@@ -452,6 +452,7 @@ export class Utils {
       case Role.HELPER:
       case Role.NONE:
       case Role.PLAYER:
+      case Role.APPLICANT:
         return "/tabs/signout";
       default:
         return "/register";

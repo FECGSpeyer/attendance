@@ -33,6 +33,7 @@ export class SignoutPage implements OnInit {
   public tenants: Tenant[] = [];
   public songsModalOpen: boolean = false;
   public upcomingSongs: { date: string; history: History[] }[] = [];
+  public isApplicant: boolean = false;
 
   constructor(
     public db: DbService,
@@ -58,6 +59,9 @@ export class SignoutPage implements OnInit {
       this.player = await this.db.getPlayerByAppId();
       this.songs = await this.db.getSongs();
       await this.getAttendances();
+    } if (this.db.tenantUser()?.role === Role.APPLICANT) {
+      this.player = await this.db.getPlayerByAppId();
+      this.isApplicant = true;
     }
 
     this.upcomingSongs = await this.db.getCurrentSongs();

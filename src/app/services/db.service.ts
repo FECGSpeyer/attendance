@@ -569,6 +569,9 @@ export class DbService {
         case "invalid_credentials":
           Utils.showToast("Ungültige Anmeldedaten", "danger");
           break;
+        case "email_not_confirmed":
+          Utils.showToast("Bitte bestätige zuerst deine E-Mail-Adresse.", "danger");
+          break;
         default:
           Utils.showToast(error.code === "email_not_confirmed" ? "Bitte bestätige zuerst deine E-Mail-Adresse." : "Fehler beim Anmelden", "danger");
           break;
@@ -868,6 +871,7 @@ export class DbService {
     if (password) {
       try {
         const user = await this.register(player.email, password);
+        await this.addUserToTenant(user?.id, role, player.email, tenantId);
         player.appId = user?.id;
       } catch (error) {
         throw new Error(`Fehler beim Erstellen des Accounts: ${error.message}`);

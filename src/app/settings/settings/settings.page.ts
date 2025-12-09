@@ -37,6 +37,7 @@ export class SettingsPage implements OnInit {
   public parentsEnabled: boolean = false;
   public maintainTeachers: boolean = false;
   public pendingPersons: Player[] = [];
+  public isApplicant: boolean = false;
 
   constructor(
     public db: DbService,
@@ -61,6 +62,7 @@ export class SettingsPage implements OnInit {
     this.isHelper = this.db.tenantUser().role === Role.HELPER;
     this.isPlayer = this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.NONE;
     this.isSuperAdmin = this.db.tenantUser().role === Role.ADMIN;
+    this.isApplicant = this.db.tenantUser().role === Role.APPLICANT;
     this.maintainTeachers = this.db.tenant().maintainTeachers;
 
     this.pendingPersons = await this.db.getPendingPersons();

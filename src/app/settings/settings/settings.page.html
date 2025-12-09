@@ -23,7 +23,7 @@
     </ion-item-group>
   </ion-list>
 
-  <ion-list [inset]="true" *ngIf="!isGeneral">
+  <ion-list [inset]="true" *ngIf="!isGeneral && !isApplicant">
     <ion-list-header><ion-label>Werke & Proben</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item *ngIf="!isGeneral" routerLink="songs" button>
@@ -212,7 +212,7 @@
     </ion-item-group>
   </ion-list>
 
-  <ion-list [inset]="true">
+  <ion-list [inset]="true" *ngIf="!isApplicant">
     <ion-list-header><ion-label>Daten & Auswertung</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item (click)="openCalendarSubscription()" detail="false" button>

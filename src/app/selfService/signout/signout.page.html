@@ -4,6 +4,17 @@
   </ion-toolbar>
 </ion-header>
 
+@if (isApplicant) {
+<ion-content fullscreen="true">
+  <ion-card>
+    <ion-card-content>
+      <h1 *ngIf="player" class="title">Shalom {{ player?.firstName }}!</h1>
+      Deine Registrierung wurde erfolgreich übermittelt. Du wirst benachrichtigt, sobald
+      diese bearbeitet wurde.
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+} @else {
 <ion-content fullscreen="true" *ngIf="player">
   <ion-header collapse="condense">
     <ion-toolbar>
@@ -199,3 +210,4 @@
     </ion-accordion>
   </ion-accordion-group>
 </ion-content>
+}
