@@ -51,7 +51,7 @@
             </ion-item>
             }
 
-            <ion-item>
+            <ion-item *ngIf="!type?.all_day">
               <ion-label>Beginn</ion-label>
               <ion-datetime-button datetime="datetimestartatt"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
@@ -68,7 +68,7 @@
                 </ng-template>
               </ion-modal>
             </ion-item>
-            <ion-item>
+            <ion-item *ngIf="!type?.all_day">
               <ion-label>Ende</ion-label>
               <ion-datetime-button datetime="datetimeendatt"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
@@ -85,6 +85,11 @@
                   </ion-datetime>
                 </ng-template>
               </ion-modal>
+            </ion-item>
+
+            <ion-item *ngIf="type?.all_day">
+              <ion-label position="stacked">Dauer (in Tagen)</ion-label>
+              <ion-input type="number" [(ngModel)]="attendance.duration_days" (ionBlur)="onInfoChanged()"></ion-input>
             </ion-item>
 
             <ion-item button (click)="exportToExcel()" detail="false">
@@ -205,7 +210,9 @@
             </ion-item>
           </div>
           <div slot="content" *ngIf="!attendance.plan">
-            <ion-button (click)="editPlan()" style="margin-left: '16px'" size="small">Ablaufplan erstellen</ion-button>
+            <ion-item button (click)="editPlan()" detail="false">
+              <ion-label color="primary">Ablaufplan erstellen</ion-label>
+            </ion-item>
           </div>
         </ion-accordion>
       </ion-accordion-group>

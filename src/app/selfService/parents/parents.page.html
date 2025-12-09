@@ -15,7 +15,7 @@
     @for (att of attendances; track att.id) {
       <ion-accordion>
         <ion-item color="primary" slot="header">
-          <ion-label>{{ att.date | date:'dd.MM.yyyy' }}</ion-label>
+          <ion-label>{{ getReadableDate(att.date, att.type_id) }}</ion-label>
         </ion-item>
         <div slot="content">
           <ion-list>

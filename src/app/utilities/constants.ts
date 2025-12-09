@@ -22,6 +22,7 @@ export enum Role {
     HELPER = 4,
     RESPONSIBLE = 5,
     PARENT = 6,
+    APPLICANT = 7,
     NONE = 99,
 };
 

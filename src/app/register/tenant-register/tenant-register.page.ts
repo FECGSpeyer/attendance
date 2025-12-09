@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { ActionSheetController, AlertController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { DEFAULT_IMAGE, FieldType } from 'src/app/utilities/constants';
+import { DEFAULT_IMAGE, FieldType, Role } from 'src/app/utilities/constants';
 import { Group, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
@@ -26,6 +26,7 @@ export class TenantRegisterPage implements OnInit {
   public selectedGroupId: number | null = null;
   public profilePicture: string = DEFAULT_IMAGE;
   public additionalFields: { name: string, value: any, type: FieldType, options?: string[] }[] = [];
+  private profileImgFile: File | null = null;
 
   constructor(
     public db: DbService,
@@ -64,13 +65,17 @@ export class TenantRegisterPage implements OnInit {
   }
 
   async checkExistent() {
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
     const tenantUsers = await this.db.getTenantsByUserId();
     const tenant = tenantUsers.find(t => t.tenantId === this.tenantData.id);
     if (tenant) {
       Utils.showToast("Sie sind bereits in dieser Instanz registriert.", 'warning', 5000);
       this.router.navigate(['/login']);
+      await loading.dismiss();
       return;
     }
+    await loading.dismiss();
   }
 
   async login() {
@@ -112,11 +117,129 @@ export class TenantRegisterPage implements OnInit {
   }
 
   async register() {
-    console.log("Registering user...");
-    if (!this.firstName || !this.lastName || !this.email || !this.password || !this.confirmPassword) {
-      Utils.showToast('Bitte füllen Sie alle Pflichtfelder aus.', 'danger');
+    if (!this.validate()) {
       return;
     }
+
+    const loading = await Utils.getLoadingElement(10000, 'Registrierung läuft...');
+    await loading.present();
+
+    const additional_fields: { [key: string]: any } = {};
+    for (const field of this.additionalFields) {
+      additional_fields[field.name] = field.value;
+    }
+
+    const playerId = await this.db.addPlayer({
+      firstName: this.firstName,
+      lastName: this.lastName,
+      email: this.email,
+      pending: !Boolean(this.tenantData?.auto_approve_registrations),
+      birthday: this.birthDate,
+      phone: this.phone,
+      img: this.profilePicture,
+      additional_fields,
+      instrument: this.selectedGroupId,
+      hasTeacher: false,
+      playsSince: new Date().toISOString(),
+      isCritical: false,
+      isLeader: false,
+      correctBirthday: true,
+      history: [],
+      tenantId: this.tenantData.id,
+      joined: new Date().toISOString(),
+      notes: "",
+    }, true, Role.APPLICANT, this.tenantData.id, this.password);
+
+    if (this.tenantData?.registration_fields?.includes('picture')) {
+      const url: string = await this.db.updateImage(playerId, this.profileImgFile);
+      this.profilePicture = url;
+    }
+
+    await loading.dismiss();
+    const alert = await this.alertController.create({
+      header: 'Registrierung erfolgreich',
+      message: this.tenantData.auto_approve_registrations ? 'Dein Konto wurde erstellt. Um dich anmelden zu können, bestätige bitte deine E-Mail. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner. Im Anschluss kannst du dich anmelden.' : 'Dein Konto wurde erstellt und wartet auf die Genehmigung durch einen Administrator. Bitte bestätige deine E-Mail, um dich anmelden zu können. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner.',
+      buttons: [{
+        text: 'OK',
+        handler: () => {
+          this.router.navigate(['/login']);
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  validate(): boolean {
+    if (!this.db.user) {
+      if (!Utils.validateEmail(this.email)) {
+        Utils.showToast("Bitte eine gültige E-Mail Adresse eingeben.", "danger");
+        return false;
+      } else if (this.password.length < 6) {
+        Utils.showToast("Das Passwort muss mindestens 6 Zeichen lang sein.", "danger");
+        return false;
+      } else if (this.password !== this.confirmPassword) {
+        Utils.showToast("Die Passwörter stimmen nicht überein.", "danger");
+        return false;
+      }
+    }
+
+    if (!this.firstName || !this.lastName) {
+      Utils.showToast("Bitte geben Sie Ihren Vor- und Nachnamen an.", "danger");
+      return false;
+    }
+
+    if (this.tenantData?.registration_fields?.includes('picture')) {
+      if (this.profilePicture === DEFAULT_IMAGE) {
+        Utils.showToast("Bitte wählen Sie ein Profilbild aus.", "danger");
+        return false;
+      }
+    }
+
+    if (this.tenantData.registration_fields?.includes('birthDate')) {
+      const birthDateObj = dayjs(this.birthDate);
+      if (!birthDateObj.isValid()) {
+        Utils.showToast("Bitte geben Sie ein gültiges Geburtsdatum an.", "danger");
+        return false;
+      }
+    }
+
+    if (this.tenantData.registration_fields?.includes('phone')) {
+      if (!Utils.validatePhoneNumber(this.phone)) {
+        Utils.showToast("Bitte geben Sie eine gültige Telefonnummer an.", "danger");
+        return false;
+      }
+    }
+
+    for (const field of this.additionalFields) {
+      if (field.type === FieldType.TEXT || field.type === FieldType.TEXTAREA) {
+        if (typeof field.value !== 'string' || field.value.trim() === '') {
+          Utils.showToast(`Bitte füllen Sie das Feld "${field.name}" aus.`, "danger");
+          return false;
+        }
+      } else if (field.type === FieldType.NUMBER) {
+        if (isNaN(Number(field.value))) {
+          Utils.showToast(`Bitte geben Sie eine gültige Zahl für das Feld "${field.name}" ein.`, "danger");
+          return false;
+        }
+      } else if (field.type === FieldType.DATE) {
+        if (isNaN(Date.parse(field.value))) {
+          Utils.showToast(`Bitte geben Sie ein gültiges Datum für das Feld "${field.name}" ein.`, "danger");
+          return false;
+        }
+      } else if (field.type === FieldType.BOOLEAN) {
+        if (typeof field.value !== 'boolean') {
+          Utils.showToast(`Bitte geben Sie einen gültigen Wert für das Feld "${field.name}" ein.`, "danger");
+          return false;
+        }
+        if (field.value === false && field.name.toLowerCase().includes("einverständnis")) {
+          Utils.showToast(`Sie müssen dem Feld "${field.name}" zustimmen, um fortzufahren.`, "danger");
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   async changeImg() {
@@ -149,13 +272,11 @@ export class TenantRegisterPage implements OnInit {
 
         reader.readAsDataURL(imgFile);
 
-        try {
-          // TODO
-          const url: string = await this.db.updateImage(0, imgFile, true);
-          this.profilePicture = url;
-        } catch (error) {
-          Utils.showToast(error, "danger");
-        }
+        reader.onload = async () => {
+          this.profilePicture = String(reader.result);
+          this.profileImgFile = imgFile;
+          loading.dismiss();
+        };
       } else {
         loading.dismiss();
         Utils.showToast("Fehler beim ändern des Profilbildes, versuche es später erneut", "danger");

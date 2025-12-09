@@ -33,6 +33,10 @@ export class ParentsPage implements OnInit {
     this.personAttendances = await this.db.getParentAttendances(this.kids, this.attendances);
   }
 
+  getReadableDate(date: string, type_id: string): string {
+    return Utils.getReadableDate(date, this.db.attendanceTypes().find(type => type.id === type_id));
+  }
+
   getStatusText(status: AttendanceStatus): string {
     switch (status) {
       case AttendanceStatus.Present:

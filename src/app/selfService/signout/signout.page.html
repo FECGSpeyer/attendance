@@ -131,7 +131,7 @@
           <ion-item button *ngIf="currentAttendance" (click)="presentActionSheetForChoice(currentAttendance)"
             color="light">
             <ion-label>
-              <h2>{{ getReadableDate(currentAttendance.date) }}</h2>
+              <h2>{{ getReadableDate(currentAttendance.date, currentAttendance.typeId) }}</h2>
               <h3 [style.fontWeight]="currentAttendance.highlight ? 'bold' : 'normal'">{{ currentAttendance.title }}
               </h3>
               @if (showDeadlineInfo(currentAttendance)) {
@@ -155,7 +155,7 @@
           @for (att of actualAttendances; track att.id) {
           <ion-item button (click)="presentActionSheetForChoice(att)">
             <ion-label>
-              <h2>{{ getReadableDate(att.date) }}</h2>
+              <h2>{{ getReadableDate(att.date, att.typeId) }}</h2>
               <h3 [style.fontWeight]="att.highlight ? 'bold' : 'normal'">{{ att.title }}</h3>
               @if (showDeadlineInfo(att)) {
               <ion-note [style.fontSize]="'.9rem'" color="danger">{{ getDeadlineText(att) }}</ion-note>
@@ -184,7 +184,7 @@
           <ng-container *ngFor="let att of personAttendances">
             <ion-item *ngIf="attHasPassed(att)">
               <ion-label>
-                <h2>{{ getReadableDate(att.date) }}</h2>
+                <h2>{{ getReadableDate(att.date, att.typeId) }}</h2>
                 <h3 [style.fontWeight]="att.highlight ? 'bold' : 'normal'">{{ att.title }}</h3>
               </ion-label>
 

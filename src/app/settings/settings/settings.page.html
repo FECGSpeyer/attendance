@@ -48,6 +48,13 @@
   <ion-list [inset]="true" *ngIf="isAdmin">
     <ion-list-header><ion-label>Organisation</ion-label></ion-list-header>
     <ion-item-group>
+      <ion-item *ngIf="pendingPersons.length && isAdmin">
+        <ion-icon name="person-add-outline" slot="start"></ion-icon>
+        <ion-label>
+          Ausstehende Personen
+        </ion-label>
+        <ion-badge slot="end" color="warning">{{ pendingPersons.length }}</ion-badge>
+      </ion-item>
       <ion-item *ngIf="!db.isDemo() && isSuperAdmin" detail="false" button id="admins-button">
         <ion-icon name="key-outline" slot="start"></ion-icon>
         <ion-label>

@@ -397,7 +397,7 @@ export class DbService {
     }, appId);
   }
 
-  async registerUser(email: string, name: string, role: Role, tenantId?: number): Promise<string> {
+  async registerUser(email: string, name: string, role: Role, tenantId?: number, password?: string): Promise<string> {
     const { userId, alreadyThere } = await this.getAppIdByEmail(email, tenantId || this.tenant().id) || {};
 
     if (userId) {
@@ -408,6 +408,7 @@ export class DbService {
       const res = await axios.post(`https://staccato-server.vercel.app/api/informAttendixUser`, {
         email,
         name,
+        password,
         role: Utils.getRoleText(role),
         tenant: this.tenant().longName,
       });
@@ -595,8 +596,8 @@ export class DbService {
     return Boolean(data.user);
   }
 
-  async register(email: string, password: string): Promise<boolean> {
-    const { error } = await supabase.auth.signUp({
+  async register(email: string, password: string): Promise<User | null> {
+    const { error, data } = await supabase.auth.signUp({
       email, password,
       options: {
         emailRedirectTo: `https://attendix.de/login`,
@@ -605,10 +606,10 @@ export class DbService {
 
     if (error) {
       Utils.showToast("Fehler beim Registrieren", "danger");
-      return false;
+      return null;
     }
 
-    return true;
+    return data.user;
   }
 
   async getPlayerProfile(): Promise<Player | undefined> {
@@ -669,6 +670,7 @@ export class DbService {
       const { data, error } = await supabase
         .from('player')
         .select('*')
+        .is('pending', false)
         .eq('tenantId', this.tenant().id);
 
       if (error) {
@@ -689,6 +691,7 @@ export class DbService {
         .from('player')
         .select('*, person_attendances(*)')
         .eq('tenantId', this.tenant().id)
+        .is('pending', false)
         .eq('parent_id', this.tenantUser().parent_id)
         .is("left", null)
         .order("instrument")
@@ -715,6 +718,7 @@ export class DbService {
       .select('*, person_attendances(*)')
       .eq('tenantId', this.tenant().id)
       .is("left", null)
+      .is('pending', false)
       .order("instrument")
       .order("isLeader", {
         ascending: false
@@ -732,6 +736,27 @@ export class DbService {
         history: player.history as any,
       }
     }) as any;
+  }
+
+  async getPendingPersons(): Promise<Player[]> {
+    const { data, error } = await supabase
+      .from('player')
+      .select('*')
+      .is('pending', true)
+      .eq('tenantId', this.tenant().id)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Personen", "danger");
+      throw error;
+    }
+
+    return data.map((player: any) => {
+      return {
+        ...player,
+        history: player.history as any,
+      }
+    });
   }
 
   async resetPassword(email: string) {
@@ -780,6 +805,7 @@ export class DbService {
       .from('player')
       .select('*')
       .eq('tenantId', this.tenant().id)
+      .is('pending', false)
       .not("left", "is", null)
       .order("left", {
         ascending: false,
@@ -797,6 +823,7 @@ export class DbService {
     const { data } = await supabase
       .from('player')
       .select('*')
+      .is('pending', false)
       .eq('tenantId', this.tenant().id)
       .not("email", "is", null)
       .is("appId", null)
@@ -821,6 +848,7 @@ export class DbService {
       .from('player')
       .select('*')
       .eq('instrument', mainGroupIdLocal)
+      .is('pending', false)
       .eq('tenantId', tenantId ?? this.tenant().id)
       .order("lastName");
 
@@ -832,13 +860,26 @@ export class DbService {
     return (all ? data : data.filter((c: any) => !c.left) as unknown as Person[]).map((con: any) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
   }
 
-  async addPlayer(player: Player, register: boolean, role: Role, tenantId?: number): Promise<void> {
-    if (!this.tenant().maintainTeachers) {
+  async addPlayer(player: Player, register: boolean, role: Role, tenantId?: number, password?: string): Promise<number> {
+    if (!this.tenant()?.maintainTeachers) {
       delete player.teacher;
     }
 
-    if (player.email && register && role) {
-      const appId: string = await this.registerUser(player.email, player.firstName, role, tenantId);
+    if (password) {
+      try {
+        const user = await this.register(player.email, password);
+        player.appId = user?.id;
+      } catch (error) {
+        throw new Error(`Fehler beim Erstellen des Accounts: ${error.message}`);
+      }
+    } else if (player.email && register && role) {
+      const appId: string = await this.registerUser(
+        player.email,
+        player.firstName,
+        role,
+        tenantId,
+        password
+      );
       player.appId = appId;
     }
 
@@ -858,6 +899,8 @@ export class DbService {
     }
 
     await this.addPlayerToAttendancesByDate(data.id, data.joined, tenantId);
+
+    return data.id;
   }
 
   async addPlayerToAttendancesByDate(id: number, joined: string, tenantId?: number) {
@@ -902,10 +945,10 @@ export class DbService {
             throw new Error("Fehler beim Laden des Anwesenheitstyps");
           }
 
-          let status = attType?.default_status;
+          let status = attType.default_status;
           let notes = "";
 
-          if (shiftId) {
+          if (shiftId && !attType.all_day) {
             const shift = this.shifts().find((s: ShiftPlan) => s.id === shiftId);
 
             const result = Utils.getStatusByShift(
@@ -1748,7 +1791,7 @@ export class DbService {
     const { error: sendError } = await supabase.functions.invoke("send-document", {
       body: {
         url: url,
-        sendAsUrl: url.includes(".sib"),
+        sendAsUrl: !url.includes(".pdf"),
         chat_id: this.tenantUser().telegram_chat_id,
       },
       method: "POST",
@@ -1787,7 +1830,7 @@ export class DbService {
       .remove([imgPath]);
   }
 
-  async updateImage(id: number, image: File, newUser: boolean = false) {
+  async updateImage(id: number, image: File) {
     const fileName: string = `${id}`;
 
     const { error } = await supabase.storage
@@ -1803,12 +1846,10 @@ export class DbService {
       .from("profiles")
       .getPublicUrl(fileName);
 
-    if (!newUser) {
-      await supabase
-        .from("player")
-        .update({ img: data.publicUrl })
-        .match({ id });
-    }
+    await supabase
+      .from("player")
+      .update({ img: data.publicUrl })
+      .match({ id });
 
     return data.publicUrl;
   }
@@ -2046,6 +2087,7 @@ export class DbService {
         .select('*, instrument(name), tenantId(id, shortName, longName)')
         .ilike('firstName', `%${firstName.trim()}%`)
         .ilike('lastName', `%${lastName.trim()}%`)
+        .is('pending', false)
         .neq('email', null);
 
       data = res.data;
@@ -2055,7 +2097,8 @@ export class DbService {
         .from('player')
         .select('*, instrument(name), tenantId(id, shortName, longName)')
         .ilike('firstName', `%${firstName.trim()}%`)
-        .ilike('lastName', `%${lastName.trim()}%`);
+        .ilike('lastName', `%${lastName.trim()}%`)
+        .is('pending', false);
 
       data = res.data;
       error = res.error;
@@ -2147,6 +2190,7 @@ export class DbService {
       .select('id')
       .eq('appId', userId)
       .eq('tenantId', tenantId)
+      .is('pending', false)
       .single();
 
     if (error) {

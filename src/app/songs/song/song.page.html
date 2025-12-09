@@ -34,7 +34,8 @@
     <ion-item-group>
       <ion-item>
         <ion-label position="stacked">Präfix (optional)</ion-label>
-        <ion-input helperText="Bspw. um Weihnachtslieder kennzeichnen zu können (z.B. W für Weihnachten -> W1)" (ionBlur)="update()" [(ngModel)]="song.prefix" type="text" #prefix></ion-input>
+        <ion-input helperText="Bspw. um Weihnachtslieder kennzeichnen zu können (z.B. W für Weihnachten -> W1)"
+          (ionBlur)="update()" [(ngModel)]="song.prefix" type="text" #prefix></ion-input>
       </ion-item>
       <ion-item>
         <ion-label position="stacked">Nummer</ion-label>
@@ -54,13 +55,14 @@
       </ion-item>
 
       <ion-item *ngIf="isOrchestra && !readOnly">
-        <ion-select (ionDismiss)="update()" interface="modal" label="Besetzung" multiple="true" [(ngModel)]="song.instrument_ids">
+        <ion-select (ionDismiss)="update()" interface="modal" label="Besetzung" multiple="true"
+          [(ngModel)]="song.instrument_ids">
           <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{ instrument.name
             }}</ion-select-option>
         </ion-select>
       </ion-item>
     </ion-item-group>
-  }
+    }
 
     @if (readOnly && (song.withChoir || song.withSolo || (isOrchestra && song.instrument_ids?.length))) {
     <ion-list-header>
@@ -71,7 +73,8 @@
       <ion-chip color="primary" *ngIf="song.withSolo">Mit Solo-Gesang</ion-chip>
       <br>
       @if (isOrchestra && song.instrument_ids?.length) {
-      <ion-chip [color]="song.instrument_ids?.includes(instrument.id) ? 'success' : 'danger'" *ngFor="let instrument of instruments" style="margin-left: 5px;">
+      <ion-chip [color]="song.instrument_ids?.includes(instrument.id) ? 'success' : 'danger'"
+        *ngFor="let instrument of instruments" style="margin-left: 5px;">
         <ion-label>{{ instrument.name }}</ion-label>
       </ion-chip>
       }
@@ -154,8 +157,10 @@
                       <h2>{{ fileInfo.file.name }}</h2>
                     </ion-label>
                     <ion-select slot="end" placeholder="Instrument"
-                      (ionChange)="changeFileInstrument(i, $event.detail.value, fileInfo.note)" [value]="fileInfo.instrumentId">
-                      <ion-select-option  [value]="null">{{ fileInfo.note ? fileInfo.note + ' (Sonstige)' : 'Sonstige (Freitext möglich)' }}</ion-select-option>
+                      (ionChange)="changeFileInstrument(i, $event.detail.value, fileInfo.note)"
+                      [value]="fileInfo.instrumentId">
+                      <ion-select-option [value]="null">{{ fileInfo.note ? fileInfo.note + ' (Sonstige)' : 'Sonstige
+                        (Freitext möglich)' }}</ion-select-option>
                       <ion-select-option [value]="1">Aufnahme</ion-select-option>
                       <ion-select-option *ngFor="let instrument of instruments" [value]="instrument.id">{{
                         instrument.name }}</ion-select-option>
@@ -180,31 +185,15 @@
     </ion-list-header>
     <ion-item-group>
       @if (song.files && song.files.length > 0) {
-      <ion-item-sliding #fileSliding *ngFor="let file of song.files; let i = index">
-        <ion-item button (click)="openFile(file)">
-          <ion-label>
-            {{ file.fileName }}
-          </ion-label>
-          <ion-badge
-            [color]="getInstrumentName(file.instrumentId, file.note) === 'Sonstige' ? 'medium' : file.instrumentId === 1 ? 'primary' : 'secondary'"
-            slot="end">{{
-            getInstrumentName(file.instrumentId, file.note) }}</ion-badge>
-        </ion-item>
-        <ion-item-options (ionSwipe)="readOnly ? downloadFile(file) : changeCategory(file)" side="end">
-                    <ion-item-option *ngIf="!readOnly" color="danger" (click)="deleteFile(file, fileSliding)">
-            <ion-icon name="trash-outline"></ion-icon>
-          </ion-item-option>
-          <ion-item-option color="primary" (click)="downloadFile(file, fileSliding)">
-            <ion-icon name="download-outline"></ion-icon>
-          </ion-item-option>
-          <ion-item-option *ngIf="db.tenantUser()?.telegram_chat_id" color="mint" (click)="sendPerTelegram(file, fileSliding)">
-            <ion-icon name="send-outline"></ion-icon>
-          </ion-item-option>
-          <ion-item-option *ngIf="!readOnly" color="secondary" (click)="changeCategory(file, fileSliding)">
-            <ion-icon name="create-outline"></ion-icon>
-          </ion-item-option>
-        </ion-item-options>
-      </ion-item-sliding>
+      <ion-item detail="false" *ngFor="let file of song.files; let i = index" (click)="openFileActionSheet(file)" button>
+        <ion-label>
+          {{ file.fileName }}
+        </ion-label>
+        <ion-badge
+          [color]="getInstrumentName(file.instrumentId, file.note) === 'Sonstige' ? 'medium' : file.instrumentId === 1 ? 'primary' : 'secondary'"
+          slot="end">{{
+          getInstrumentName(file.instrumentId, file.note) }}</ion-badge>
+      </ion-item>
       } @else {
       <ion-item>
         <ion-label>Keine Dateien vorhanden.</ion-label>

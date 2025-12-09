@@ -30,7 +30,7 @@
       <ion-item lines="none">
         <ion-label>
           <h2>Telegramverknüpfung</h2>
-          <h4 color="success" *ngIf="notificationConfig.telegram_chat_id">Konto erfolgreich verknüpft</h4>
+          <ion-note color="success" *ngIf="notificationConfig.telegram_chat_id">Konto erfolgreich verknüpft</ion-note>
         </ion-label>
         <ion-button *ngIf="!notificationConfig.telegram_chat_id" (click)="connectTelegram()">Verbinden</ion-button>
         <ion-button color="danger" *ngIf="notificationConfig.telegram_chat_id"

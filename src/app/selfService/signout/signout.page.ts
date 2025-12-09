@@ -265,9 +265,8 @@ export class SignoutPage implements OnInit {
     return dayjs(att.date).isSame(dayjs(), "day");
   }
 
-  getReadableDate(date: string): string {
-    dayjs.locale("de");
-    return dayjs(date).format("ddd, DD.MM.YYYY");
+  getReadableDate(date: string, type_id: string): string {
+    return Utils.getReadableDate(date, this.db.attendanceTypes().find(type => type.id === type_id));
   }
 
   async handleRefresh(event) {

@@ -42,10 +42,13 @@
               <ion-label
                 [style.fontWeight]="highlightedTypes.includes(currentAttendance.type_id) ? 'bold' : 'normal'">{{
                 getAttendanceTitle(currentAttendance) }}</ion-label>
+              @if (currentAttendance.percentage) {
               <ion-badge
                 [color]="currentAttendance.percentage >= 75 ? 'success' : currentAttendance.percentage >= 50 ? 'warning' : 'danger'"
-                *ngIf="currentAttendance.percentage" slot="end">{{ currentAttendance.percentage }}%</ion-badge>
-              <ion-badge *ngIf="!currentAttendance.percentage" color="danger" slot="end">0%</ion-badge>
+                slot="end">{{ currentAttendance.percentage }}%</ion-badge>
+              } @else {
+              <ion-badge color="danger" slot="end">0%</ion-badge>
+              }
             </ion-item>
 
             <ion-item-options side="end" (ionSwipe)="remove(currentAttendance.id, slider)">
@@ -69,8 +72,12 @@
             <ion-item button detail="false" (click)="openAttendance(att)">
               <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
                 getAttendanceTitle(att) }}</ion-label>
+              @if (att.percentage) {
               <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
-                *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
+                slot="end">{{ att.percentage }}%</ion-badge>
+              } @else {
+              <ion-badge color="danger" slot="end">0%</ion-badge>
+              }
             </ion-item>
 
             <ion-item-options *ngIf="isConductor" side="end" (ionSwipe)="remove(att.id, slider)">
@@ -98,8 +105,12 @@
             <ion-item button detail="false" (click)="openAttendance(att)">
               <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
                 getAttendanceTitle(att) }}</ion-label>
+              @if (att.percentage) {
               <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
-                *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
+              slot="end">{{ att.percentage }}%</ion-badge>
+              } @else {
+              <ion-badge color="danger" slot="end">0%</ion-badge>
+              }
             </ion-item>
 
             <ion-item-options side="end" (ionSwipe)="remove(att.id, slider)">
@@ -122,8 +133,12 @@
     <ion-item *ngFor="let att of viewerAttendances" detail="false">
       <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
         getAttendanceTitle(att) }}<p>{{ getCountText(att) }}</p></ion-label>
+      @if (att.percentage) {
       <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
-        *ngIf="att.percentage" slot="end">{{ att.percentage }}%</ion-badge>
+        slot="end">{{ att.percentage }}%</ion-badge>
+      } @else {
+      <ion-badge color="danger" slot="end">0%</ion-badge>
+      }
     </ion-item>
   </ion-list>
   } @else {
@@ -137,7 +152,7 @@
   }
 
   <ion-modal #addAttModal (ionModalDidDismiss)="isAddModalOpen = false" [isOpen]="isAddModalOpen"
-    [breakpoints]="[0, 0.7, 1]" [initialBreakpoint]="0.7">
+    [breakpoints]="[0, 0.8, 1]" [initialBreakpoint]="0.8">
     <ng-template>
       <ion-content color="light">
         <ion-header>
@@ -221,9 +236,9 @@
                 }
               </ion-select>
             </ion-item>
-            <ion-item *ngIf="type === 'sonstiges'">
-              <ion-label position="stacked">Veranstaltung</ion-label>
-              <ion-textarea [(ngModel)]="typeInfo"></ion-textarea>
+            <ion-item *ngIf="isAllDay()">
+              <ion-label position="stacked">Dauer (in Tagen)</ion-label>
+              <ion-input type="number" min="1" [(ngModel)]="allDayDuration"></ion-input>
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Info-Text (optional)</ion-label>

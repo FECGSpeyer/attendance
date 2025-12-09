@@ -60,6 +60,17 @@
       </ion-item>
 
       <ion-item>
+        <ion-toggle label="Ganztägig"
+          helperText="Wenn du diese Option aktivierst, wird bei einer Anwesenheit von diesem Typ keine Uhrzeit festgelegt aber eine Dauer angegeben."
+          [(ngModel)]="type.all_day">Ganztägig</ion-toggle>
+      </ion-item>
+
+      <ion-item *ngIf="type.all_day">
+        <ion-label position="stacked">Standarddauer (in Tagen)</ion-label>
+        <ion-input type="number" [(ngModel)]="type.duration_days"></ion-input>
+      </ion-item>
+
+      <ion-item *ngIf="!type.all_day">
         <ion-label>
           <h2>Beginn</h2>
           <h3>Die Zeiten können nachträglich individuell in jeder Anwesenheit angepasst werden</h3>
@@ -77,8 +88,8 @@
                     }"></ion-datetime>
           </ng-template>
         </ion-modal>
-      </ion-item>
-      <ion-item>
+      </ion-item >
+      <ion-item *ngIf="!type.all_day">
         <ion-label>Ende</ion-label>
         <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
@@ -112,6 +123,12 @@
         <ion-toggle label="Für Ø berücksichtigen"
           helperText="Wenn diese Option aktiviert ist, wird dieser Typ beim Anwesenheitsdurchschnitt berücksichtigt."
           [(ngModel)]="type.include_in_average">Für Ø berücksichtigen</ion-toggle>
+      </ion-item>
+
+      <ion-item>
+        <ion-toggle label="Terminerinnerung"
+          helperText="Wenn diese Option aktiviert ist und die Benachrichtigungen aktiviert sind, erhalten Personen 24 Stunden vor dem Termin eine Erinnerung."
+          [(ngModel)]="type.notification">Terminerinnerung</ion-toggle>
       </ion-item>
 
       <ion-item id="color-btn" button detail="false">

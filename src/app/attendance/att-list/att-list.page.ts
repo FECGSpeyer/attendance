@@ -6,7 +6,7 @@ import { DbService } from 'src/app/services/db.service';
 import { Attendance, PersonAttendance, Player, Song, History, Person } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import 'jspdf-autotable';
-import { AttendanceStatus, DefaultAttendanceType, Role } from 'src/app/utilities/constants';
+import { DefaultAttendanceType, Role } from 'src/app/utilities/constants';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { AttendancePage } from '../attendance/attendance.page';
 require('dayjs/locale/de');
@@ -37,9 +37,8 @@ export class AttListPage implements OnInit {
   private persSub: RealtimeChannel;
   public songs: Song[] = [];
   public selectedSongs: number[] = [];
-  public hasNeutral: boolean = false;
-  public saveInHistory: boolean = true;
   public loaded: boolean = false;
+  public allDayDuration: number = 1;
   public historyEntry: History = {
     songId: 1,
     person_id: 0,
@@ -232,7 +231,6 @@ export class AttListPage implements OnInit {
 
     let persons: PersonAttendance[] = [];
     let allPersons: Person[];
-    let status: AttendanceStatus = this.hasNeutral ? AttendanceStatus.Neutral : AttendanceStatus.Present;
 
     const attType = this.db.attendanceTypes().find(type => type.id === this.type_id);
     allPersons = (await this.db.getPlayers()).filter((player: Player) => {
@@ -253,7 +251,7 @@ export class AttListPage implements OnInit {
       });
     }
 
-    status = attType.default_status;
+    const status = attType.default_status;
 
     const type = this.db.attendanceTypes().find(type => type.id === this.type_id);
 
@@ -272,12 +270,13 @@ export class AttListPage implements OnInit {
         typeInfo: this.typeInfo,
         start_time: type.start_time,
         end_time: type.end_time,
+        duration_days: this.allDayDuration,
       });
 
       for (const player of allPersons) {
         let playerStatus = status;
         let notes = '';
-        if (player.shift_id) {
+        if (player.shift_id && !type.all_day) {
           const shift = this.db.shifts().find(s => s.id === player.shift_id);
 
           const result = Utils.getStatusByShift(
@@ -309,7 +308,7 @@ export class AttListPage implements OnInit {
           return {
             ...entry,
             attendance_id,
-            visible: this.saveInHistory,
+            visible: true,
             date: date,
             tenantId: this.db.tenant().id,
           }
@@ -330,6 +329,16 @@ export class AttListPage implements OnInit {
     this.historyEntries = [];
   }
 
+  onTypeChange(): void {
+    const attType = this.db.attendanceTypes().find(type => type.id === this.type_id);
+    this.allDayDuration = attType.all_day ? attType.duration_days : 1;
+  }
+
+  isAllDay(): boolean {
+    const attType = this.db.attendanceTypes().find(type => type.id === this.type_id);
+    return attType?.all_day || false;
+  }
+
   formatDate(value: string): string {
     return format(parseISO(value), 'dd.MM.yyyy');
   }
@@ -342,23 +351,22 @@ export class AttListPage implements OnInit {
     }
   }
 
-  getReadableDate(date: string): string {
-    dayjs.locale("de");
-    return dayjs(date).format("ddd, DD.MM.YYYY");
+  getReadableDate(date: string, type_id: string): string {
+    return Utils.getReadableDate(date, this.db.attendanceTypes().find(type => type.id === type_id));
   }
 
   getAttendanceTitle(att: Attendance): string {
     if (att.typeInfo) {
-      return `${this.getReadableDate(att.date)} | ${att.typeInfo}`;
+      return `${this.getReadableDate(att.date, att.type_id)} | ${att.typeInfo}`;
     }
 
     const attType = this.db.attendanceTypes().find(type => type.id === att.type_id);
 
     if (attType.hide_name) {
-      return this.getReadableDate(att.date);
+      return this.getReadableDate(att.date, att.type_id);
     }
 
-    return `${this.getReadableDate(att.date)} | ${attType.name}`;
+    return `${this.getReadableDate(att.date, att.type_id)} | ${attType.name}`;
   }
 
   async openAttendance(attendance): Promise<void> {
@@ -381,11 +389,6 @@ export class AttListPage implements OnInit {
     await modal.onWillDismiss();
     await this.getAttendance();
     this.subscribeOnAttChannel();
-  }
-
-  onTypeChange(): void {
-    this.hasNeutral = this.type !== 'uebung';
-    this.saveInHistory = this.type !== 'uebung';
   }
 
   addSong(modal: IonModal): void {

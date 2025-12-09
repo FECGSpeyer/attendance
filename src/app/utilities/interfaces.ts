@@ -190,6 +190,7 @@ export interface Attendance {
     start_time?: string;
     end_time?: string;
     deadline?: string;
+    duration_days?: number;
 }
 
 export interface Plan {
@@ -341,6 +342,9 @@ export interface AttendanceType {
     highlight: boolean;
     hide_name: boolean;
     include_in_average: boolean;
+    all_day?: boolean;
+    duration_days?: number;
+    notification?: boolean;
     additional_fields_filter?: {
         key: string;
         option: string;

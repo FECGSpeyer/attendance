@@ -45,6 +45,7 @@ export class AttendancePage implements OnInit {
   public maxDeadlineDate: string = '';
   public minDeadlineDate: string = new Date().toISOString();
   public isDeadlineReadonly: boolean = false;
+  public type: AttendanceType;
 
   constructor(
     private modalController: ModalController,
@@ -74,11 +75,11 @@ export class AttendancePage implements OnInit {
     this.isHelper = await this.db.tenantUser().role === Role.HELPER;
     void this.listenOnNetworkChanges();
     this.selectedSongs = this.attendance.songs || [];
-    this.manageSongs = this.db.attendanceTypes().find((type: AttendanceType) => type.id === this.attendance.type_id)?.manage_songs || false;
+    this.type = this.db.attendanceTypes().find((type: AttendanceType) => type.id === this.attendance.type_id)
+    this.manageSongs = this.type.manage_songs || false;
     this.hasDeadline = !!this.attendance.deadline;
     if (this.hasDeadline) {
-      const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
-      this.maxDeadlineDate = dayjs(this.attendance.date).hour(type.start_time ? Number(type.start_time.substring(0, 2)) : 19).minute(type.start_time ? Number(type.start_time.substring(3, 5)) : 30).toISOString();
+      this.maxDeadlineDate = dayjs(this.attendance.date).hour(this.type.start_time ? Number(this.type.start_time.substring(0, 2)) : 19).minute(this.type.start_time ? Number(this.type.start_time.substring(3, 5)) : 30).toISOString();
       this.isDeadlineReadonly = dayjs(this.attendance.date).isBefore(dayjs());
     }
 

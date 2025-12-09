@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController, IonItemSliding, IonModal, IonPopover } from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover } from '@ionic/angular';
 import * as JSZip from 'jszip';
 import { DbService } from 'src/app/services/db.service';
 import { Role } from 'src/app/utilities/constants';
@@ -30,6 +30,7 @@ export class SongPage implements OnInit {
   constructor(
     public db: DbService,
     private alertController: AlertController,
+    private actionSheetController: ActionSheetController,
     private router: Router
   ) { }
 
@@ -157,8 +158,7 @@ export class SongPage implements OnInit {
     window.open(link, '_blank');
   }
 
-  async downloadFile(file: SongFile, slider?: IonItemSliding) {
-    slider?.close();
+  async downloadFile(file: SongFile) {
     const blob = await this.db.downloadSongFile(file.storageName, this.song.id);
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -168,8 +168,7 @@ export class SongPage implements OnInit {
     window.URL.revokeObjectURL(url);
   }
 
-  async deleteFile(file: SongFile, slider?: IonItemSliding) {
-    slider?.close();
+  async deleteFile(file: SongFile) {
     const alert = await this.alertController.create({
       header: 'Datei löschen',
       message: `Möchten Sie die Datei "${file.fileName}" wirklich löschen?`,
@@ -191,8 +190,7 @@ export class SongPage implements OnInit {
     await alert.present();
   }
 
-  async changeCategory(file: SongFile, slider?: IonItemSliding) {
-    slider?.close();
+  async changeCategory(file: SongFile) {
     const alert = await this.alertController.create({
       header: 'Kategorie ändern',
       inputs: [{
@@ -327,8 +325,71 @@ export class SongPage implements OnInit {
     await loading.dismiss();
   }
 
-  async sendPerTelegram(file: SongFile, slider?: IonItemSliding) {
-    slider?.close();
+  async openFileActionSheet(file: SongFile) {
+    const buttons: ActionSheetButton[] = [
+      {
+        text: 'Datei öffnen',
+        icon: 'open-outline',
+        handler: () => {
+          window.open(file.url, '_blank');
+        }
+      },
+      {
+        text: 'Datei herunterladen',
+        icon: 'download-outline',
+        handler: () => {
+          this.downloadFile(file);
+        }
+      },
+    ];
+
+    if (!this.readOnly) {
+      buttons.push(
+        {
+          text: 'Kategorie ändern',
+          icon: 'swap-horizontal-outline',
+          handler: () => {
+            this.changeCategory(file);
+          }
+        },
+      );
+    }
+
+    if (this.db.tenantUser()?.telegram_chat_id) {
+      buttons.push({
+        text: 'Per Telegram senden',
+        icon: 'send-outline',
+        handler: () => {
+          this.sendPerTelegram(file);
+        }
+      });
+    }
+
+    if (!this.readOnly) {
+      buttons.push({
+        text: 'Datei löschen',
+        icon: 'trash-outline',
+        role: 'destructive',
+        handler: () => {
+          this.deleteFile(file);
+        }
+      });
+    }
+
+    buttons.push({
+      text: 'Abbrechen',
+      icon: 'close-outline',
+      role: 'destructive'
+    });
+
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Datei Aktionen',
+      buttons
+    });
+    await actionSheet.present();
+  }
+
+  async sendPerTelegram(file: SongFile) {
     const loading = await Utils.getLoadingElement(999999, 'Datei wird versendet...');
     await loading.present();
     await this.db.sendSongPerTelegram(file.url);

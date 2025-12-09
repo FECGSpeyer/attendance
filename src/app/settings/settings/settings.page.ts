@@ -36,6 +36,7 @@ export class SettingsPage implements OnInit {
   public isInstancesModalOpen: boolean = false;
   public parentsEnabled: boolean = false;
   public maintainTeachers: boolean = false;
+  public pendingPersons: Player[] = [];
 
   constructor(
     public db: DbService,
@@ -62,6 +63,7 @@ export class SettingsPage implements OnInit {
     this.isSuperAdmin = this.db.tenantUser().role === Role.ADMIN;
     this.maintainTeachers = this.db.tenant().maintainTeachers;
 
+    this.pendingPersons = await this.db.getPendingPersons();
     const allConductors: Person[] = await this.db.getConductors(true);
     this.leftPlayers = Utils.getModifiedPlayersForList(
       await this.db.getLeftPlayers(),

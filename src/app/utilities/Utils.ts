@@ -272,6 +272,12 @@ export class Utils {
     return regexp.test(email);
   }
 
+  public static validatePhoneNumber(phone: string): boolean {
+    // Simple regex for phone number validation (can be adjusted as needed)
+    const regexp: any = new RegExp(/^\+?[1-9]\d{1,14}$/);
+    return regexp.test(phone);
+  }
+
   public static async getLoadingElement(duration: number = 3000, message?: string) {
     return await new LoadingController().create({ duration, message });
   }
@@ -692,5 +698,21 @@ export class Utils {
       status: defaultStatus,
       note: ""
     };
+  }
+
+  public static getReadableDate(date: string, type: AttendanceType): string {
+    if (type.all_day) {
+      const endDate = dayjs(date).add((type.duration_days || 1) - 1, 'day');
+      if (type.duration_days && type.duration_days > 1) {
+        dayjs.locale("de");
+        return `${dayjs(date).format("ddd, DD.MM.YYYY")} - ${endDate.format("ddd, DD.MM.YYYY")}`;
+      } else {
+        dayjs.locale("de");
+        return dayjs(date).format("ddd, DD.MM.YYYY");
+      }
+    }
+
+    dayjs.locale("de");
+    return dayjs(date).format("ddd, DD.MM.YYYY");
   }
 }
