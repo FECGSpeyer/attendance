@@ -175,7 +175,7 @@ export class TenantRegisterPage implements OnInit {
       return;
     }
 
-    void this.db.notifyAboutRegistration(
+    await this.db.notifyAboutRegistration(
       `${this.firstName} ${this.lastName}`,
       this.phone,
       this.groups.find(g => g.id === this.selectedGroupId)?.name || '',
