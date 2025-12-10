@@ -74,7 +74,8 @@ export class SettingsPage implements OnInit {
       [],
       this.db.attendanceTypes(),
       this.db.getMainGroup()?.id,
-      this.db.tenant().additional_fields
+      this.db.tenant().additional_fields,
+      this.db.churches()
     );
     this.leftConductors = allConductors.filter((con: Person) => Boolean(con.left));
     this.viewers = await this.db.getViewers();
@@ -160,7 +161,8 @@ export class SettingsPage implements OnInit {
         [],
         this.db.attendanceTypes(),
         this.db.getMainGroup()?.id,
-        this.db.tenant().additional_fields
+        this.db.tenant().additional_fields,
+        this.db.churches()
       );
     }
   }

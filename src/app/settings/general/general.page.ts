@@ -373,7 +373,7 @@ export class GeneralPage implements OnInit {
   }
 
   setDefaultValue() {
-    this.newExtraField.defaultValue = Utils.getFieldTypeDefaultValue(this.newExtraField.type, this.newExtraField.defaultValue, this.newExtraField.options);
+    this.newExtraField.defaultValue = Utils.getFieldTypeDefaultValue(this.newExtraField.type, this.newExtraField.defaultValue, this.newExtraField.options, this.db.churches());
   }
 
   onExtraOptionChanged(event: any, index: number) {

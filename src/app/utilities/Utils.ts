@@ -1,7 +1,7 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, FieldType, PlayerHistoryType, Role } from "./constants";
-import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftDefinition, ShiftPlan } from "./interfaces";
+import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftDefinition, ShiftPlan, Church } from "./interfaces";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { autoTable as AutoTable } from 'jspdf-autotable';
@@ -19,6 +19,7 @@ export class Utils {
     types: AttendanceType[],
     mainGroup?: number,
     additionalFields?: ExtraField[],
+    churches?: Church[],
   ): Player[] {
     const instrumentsMap: { [props: number]: boolean } = {};
 
@@ -53,7 +54,7 @@ export class Utils {
       if (additionalFields) {
         for (const field of additionalFields) {
           if (player.additional_fields?.[field.id] === undefined || player.additional_fields?.[field.id] === null) {
-            player.additional_fields[field.id] = Utils.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options);
+            player.additional_fields[field.id] = Utils.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options, churches);
           }
         }
       }
@@ -566,9 +567,13 @@ export class Utils {
     return "Ohne " + allParts.slice(0, -1).join(", ") + " und " + allParts.slice(-1);
   }
 
-  public static getFieldTypeDefaultValue(fieldType: FieldType, defaultValue?: any, options?: string[]): any {
+  public static getFieldTypeDefaultValue(fieldType: FieldType, defaultValue?: any, options?: string[], churches?: Church[]): any {
     if (defaultValue !== undefined && defaultValue !== null) {
       return defaultValue;
+    }
+
+    if (fieldType === FieldType.BFECG_CHURCH && churches?.length) {
+      return churches[0].id;
     }
 
     if (fieldType === FieldType.SELECT) {

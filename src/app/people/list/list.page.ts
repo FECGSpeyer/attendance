@@ -149,7 +149,8 @@ export class ListPage implements OnInit {
       this.attendances,
       this.db.attendanceTypes(),
       this.mainGroup,
-      this.db.tenant().additional_fields
+      this.db.tenant().additional_fields,
+      this.db.churches()
     );
     this.searchTerm = "";
     this.onViewChanged();
@@ -285,7 +286,7 @@ export class ListPage implements OnInit {
           const usersPerTenant = await this.db.getUsersFromTenant(this.linkedTenants.find((t) => t.longName === option)?.id || 0);
           this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
             return usersPerTenant.find((u) => u.userId === player.appId);
-          }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields);
+          }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches());
           this.tenantName = option;
           await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
           await this.storage.set(`filterOptAdd${this.db.tenant().id}`, this.tenantName);
@@ -322,7 +323,7 @@ export class ListPage implements OnInit {
               const usersPerTenant = await this.db.getUsersFromTenant(value);
               this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
                 return usersPerTenant.find((u) => u.userId === player.appId);
-              }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields);
+              }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches());
               this.tenantName = this.linkedTenants.find((t) => t.id === value)?.longName || "";
               await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
               await this.storage.set(`filterOptAdd${this.db.tenant().id}`, this.tenantName);
@@ -340,7 +341,7 @@ export class ListPage implements OnInit {
         if (option) {
           this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
             return player.additional_fields?.[this.filterOpt] === option;
-          }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields);
+          }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches());
           await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
           await this.storage.set(`filterOptAdd${this.db.tenant().id}`, option);
         }
@@ -375,7 +376,7 @@ export class ListPage implements OnInit {
 
               this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
                 return player.additional_fields?.[this.filterOpt] === value;
-              }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields);
+              }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches());
 
               await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
               await this.storage.set(`filterOptAdd${this.db.tenant().id}`, value);
@@ -410,7 +411,7 @@ export class ListPage implements OnInit {
         for (const field of this.db.tenant().additional_fields) {
           if (field.type === "boolean" && this.filterOpt === field.id) {
             if (player.additional_fields?.[field.id] === undefined || player.additional_fields?.[field.id] === null) {
-              player.additional_fields[field.id] = Utils.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options);
+              player.additional_fields[field.id] = Utils.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options, this.db.churches());
             }
             return player.additional_fields ? player.additional_fields[field.id] === true : false;
           }
@@ -418,7 +419,7 @@ export class ListPage implements OnInit {
       }
 
       return true;
-    }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields);
+    }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches());
 
     await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
     await this.storage.set(`filterOptAdd${this.db.tenant().id}`, "");
@@ -492,7 +493,8 @@ export class ListPage implements OnInit {
         this.attendances,
         this.db.attendanceTypes(),
         this.mainGroup,
-        this.db.tenant().additional_fields
+        this.db.tenant().additional_fields,
+        this.db.churches()
       );
     }
   }

@@ -41,7 +41,8 @@ export class HandoverPage implements OnInit {
       [],
       this.db.attendanceTypes(),
       this.mainGroupId,
-      this.db.tenant().additional_fields
+      this.db.tenant().additional_fields,
+      this.db.churches()
     );
     this.onMainGroupChanged();
     this.tenants = await this.db.getTenantsFromOrganisation();

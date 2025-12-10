@@ -195,7 +195,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   getFieldTypeDefaultValue(fieldType: FieldType, defaultValue: any, options?: string[]): any {
-    return Utils.getFieldTypeDefaultValue(fieldType, defaultValue, options);
+    return Utils.getFieldTypeDefaultValue(fieldType, defaultValue, options, this.db.churches());
   }
 
   async onTenantChange(): Promise<void> {
