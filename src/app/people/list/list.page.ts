@@ -377,6 +377,11 @@ export class ListPage implements OnInit {
               }
 
               this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
+                if (extraField.type === "bfecg_church") {
+                  const church = this.db.churches().find(c => c.name === value);
+                  return player.additional_fields?.[this.filterOpt] === church?.id;
+                }
+
                 return player.additional_fields?.[this.filterOpt] === value;
               }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches());
 
