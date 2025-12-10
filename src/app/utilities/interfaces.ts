@@ -376,9 +376,9 @@ export interface ShiftInstance {
     name: string;
 }
 
-export interface Churches {
+export interface Church {
     id?: string;
     created_at?: string;
-    creator: string;
+    created_from: string;
     name: string;
 }

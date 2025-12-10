@@ -7,7 +7,7 @@ import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { StatsPage } from 'src/app/stats/stats.page';
 import { Role } from 'src/app/utilities/constants';
-import { Admin, Group, Organisation, Parent, Person, Player, Tenant } from 'src/app/utilities/interfaces';
+import { Admin, Church, Group, Organisation, Parent, Person, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { Viewer } from '../../utilities/interfaces';
 import { Router } from '@angular/router';
@@ -38,6 +38,7 @@ export class SettingsPage implements OnInit {
   public maintainTeachers: boolean = false;
   public pendingPersons: Player[] = [];
   public isApplicant: boolean = false;
+  public churches: Church[] = [];
 
   constructor(
     public db: DbService,
@@ -82,6 +83,11 @@ export class SettingsPage implements OnInit {
       this.parents = await this.db.getParents();
     }
     this.admins = await this.db.getAdmins();
+
+    if (this.db.isBeta()) {
+      this.churches = await this.db.getChurches();
+    }
+
     this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
     this.tenantsFromUser = await this.db.getUserRolesForTenants(this.db.tenantUser().userId);
   }
@@ -409,6 +415,42 @@ export class SettingsPage implements OnInit {
               await this.db.createAdmin(data.email);
               this.admins = await this.db.getAdmins();
               Utils.showToast("Der Admin wurde erfolgreich hinzugefügt.", "success");
+              await loading.dismiss();
+            } catch (error) {
+              Utils.showToast(error.message, "danger");
+              await loading.dismiss();
+            }
+          } else {
+            alert.message = "Bitte gib gültige Werte ein.";
+            return false;
+          }
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  async openChurchInput() {
+    const alert = await new AlertController().create({
+      header: 'Gemeinde hinzufügen',
+      inputs: [{
+        type: "text",
+        name: "name",
+        placeholder: "Name der Gemeinde",
+      }],
+      buttons: [{
+        text: "Abbrechen",
+      }, {
+        text: "Hinzufügen",
+        handler: async (data: { name: string }) => {
+          if (data.name.length) {
+            const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
+            loading.present();
+            try {
+              await this.db.createChurch(data.name);
+              Utils.showToast("Die Gemeinde wurde erfolgreich hinzugefügt.", "success");
+              this.churches = await this.db.getChurches();
               await loading.dismiss();
             } catch (error) {
               Utils.showToast(error.message, "danger");

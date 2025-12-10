@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition } from '../utilities/interfaces';
+import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
@@ -221,7 +221,7 @@ export class DbService {
   }
 
   isBeta() {
-    return this.tenantUser()?.email?.endsWith("@attendix.de");
+    return this.tenantUser()?.email?.endsWith("@attendix.de") || this.user?.email?.toLocaleLowerCase().endsWith("erwinfast98@gmail.com");
   }
 
   async getTenants(ids: number[]): Promise<Tenant[]> {
@@ -2828,6 +2828,38 @@ export class DbService {
     await this.loadShifts();
 
     return;
+  }
+
+  async getChurches(): Promise<Church[]> {
+    const { data, error } = await supabase
+      .from('churches')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Kirchen", "danger");
+      throw error;
+    }
+
+    return data;
+  }
+
+  async createChurch(name: string) {
+    const { data, error } = await supabase
+      .from('churches')
+      .insert({
+        name,
+        created_from: this.user.id
+      })
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast("Fehler beim Erstellen der Kirche", "danger");
+      throw error;
+    }
+
+    return data;
   }
 
   // async syncShiftAssignments(): Promise<void> {

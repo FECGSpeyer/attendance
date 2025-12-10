@@ -76,6 +76,37 @@
           </ng-template>
         </ion-modal>
       </ion-item>
+      <ion-item id="churches-button" *ngIf="db.isBeta()">
+        <ion-icon name="people-circle-outline" slot="start"></ion-icon>
+        <ion-label>
+          Gemeinden
+        </ion-label>
+        <ion-modal trigger="churches-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+          <ng-template>
+            <ion-content color="light">
+              <ion-header>
+                <ion-toolbar>
+                  <ion-title>Gemeinden</ion-title>
+                </ion-toolbar>
+              </ion-header>
+              <ion-list [inset]="true">
+                <ion-item-group>
+                  <ion-item *ngFor="let c of churches">
+                    <ion-label>
+                      <h3>{{ c.name }}</h3>
+                    </ion-label>
+                  </ion-item>
+                </ion-item-group>
+              </ion-list>
+            </ion-content>
+            <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+              <ion-fab-button (click)="openChurchInput()">
+                <ion-icon name="add"></ion-icon>
+              </ion-fab-button>
+            </ion-fab>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
       <ion-item *ngIf="!db.isDemo() && isSuperAdmin" detail="false" button id="admins-button">
         <ion-icon name="key-outline" slot="start"></ion-icon>
         <ion-label>
@@ -329,15 +360,20 @@
                 <ion-list-header>Version 3.5.0</ion-list-header>
                 <ion-item>
                   <ion-label>
-                    <h2>- Schichtpläne sind da! Automatisiere die Planung und Verwaltung deiner Schichten für mehr Effizienz.</h2>
-                    <h2>- Anmeldefristen: Setze Anmeldefristen für Termine fest, um eine bessere Organisation zu gewährleisten.</h2>
-                    <h2>- Anwesenheits-Export (Excel): Exportiere einzelne Anwesenheiten für eine bessere Auswertung und Archivierung.</h2>
+                    <h2>- Schichtpläne sind da! Automatisiere die Planung und Verwaltung deiner Schichten für mehr
+                      Effizienz.</h2>
+                    <h2>- Anmeldefristen: Setze Anmeldefristen für Termine fest, um eine bessere Organisation zu
+                      gewährleisten.</h2>
+                    <h2>- Anwesenheits-Export (Excel): Exportiere einzelne Anwesenheiten für eine bessere Auswertung und
+                      Archivierung.</h2>
                   </ion-label>
                 </ion-item>
                 <ion-list-header>Version 3.4.0</ion-list-header>
                 <ion-item>
                   <ion-label>
-                    <h2>- Anwesenheits-Typen sind da! Definiere verschiedene Arten von Anwesenheiten für mehr Flexibilität. Gehe dazu einfach in den allgemeinen Einstellungen auf Anwesenheits-Typen. Die Standard typen sind immer noch vorhanden und können weiterhin genutzt werden.</h2>
+                    <h2>- Anwesenheits-Typen sind da! Definiere verschiedene Arten von Anwesenheiten für mehr
+                      Flexibilität. Gehe dazu einfach in den allgemeinen Einstellungen auf Anwesenheits-Typen. Die
+                      Standard typen sind immer noch vorhanden und können weiterhin genutzt werden.</h2>
                   </ion-label>
                 </ion-item>
                 <ion-list-header>Version 3.3.1</ion-list-header>
