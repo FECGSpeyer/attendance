@@ -90,6 +90,7 @@ export class GeneralPage implements OnInit {
     this.songSharingEnabled = !!this.db.tenant().song_sharing_id;
     this.registerAllowed = !!this.db.tenant().register_id;
     this.autoApproveRegistrations = this.db.tenant().auto_approve_registrations || false;
+
     if (this.db.tenant().additional_fields?.length) {
       this.registerFields = this.registerFields.concat( this.db.tenant().additional_fields.map(field => ({
         key: field.id,
@@ -293,8 +294,12 @@ export class GeneralPage implements OnInit {
       return;
     }
 
-    // id should have no spaces and be lowercase and remove special characters
-    this.newExtraField.id = this.newExtraField.name.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    if (this.newExtraField.type === FieldType.BFECG_CHURCH) {
+      this.newExtraField.id = 'bfecg_church';
+    } else {
+      // id should have no spaces and be lowercase and remove special characters
+      this.newExtraField.id = this.newExtraField.name.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    }
 
     if (this.extraFields.find((f) => f.id === this.newExtraField.id)) {
       Utils.showToast("Ein Zusatzfeld mit dieser ID existiert bereits. Bitte wähle einen anderen Namen.", "danger");

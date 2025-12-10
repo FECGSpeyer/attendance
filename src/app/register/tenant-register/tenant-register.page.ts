@@ -4,7 +4,7 @@ import { ActionSheetController, AlertController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { DEFAULT_IMAGE, FieldType, Role } from 'src/app/utilities/constants';
-import { Group, Tenant } from 'src/app/utilities/interfaces';
+import { Church, Group, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -28,6 +28,8 @@ export class TenantRegisterPage implements OnInit {
   public additionalFields: { id: string, name: string, value: any, type: FieldType, options?: string[] }[] = [];
   private profileImgFile: File | null = null;
   public notes: string = '';
+  public churches: Church[] = [];
+  public customChurchName: string = '';
 
   constructor(
     public db: DbService,
@@ -51,11 +53,16 @@ export class TenantRegisterPage implements OnInit {
 
     for (const fieldName of this.tenantData.registration_fields || []) {
       const field = this.tenantData.additional_fields.find(f => f.id === fieldName);
+
+      if (field?.id === 'bfecg_church') {
+        this.churches = await this.db.getChurches();
+      }
+
       if (field) {
         this.additionalFields.push({
           id: field.id,
           name: field.name,
-          value: field.defaultValue,
+          value: field?.id === 'bfecg_church' ? this.churches[0].id : field.defaultValue,
           type: field.type,
           options: field.options
         });
@@ -132,6 +139,11 @@ export class TenantRegisterPage implements OnInit {
     }
 
     try {
+      if (additional_fields && additional_fields['bfecg_church'] === '') {
+        const churchId = await this.db.createChurch(this.customChurchName);
+        additional_fields['bfecg_church'] = churchId;
+      }
+
       const playerId = await this.db.addPlayer({
         firstName: this.firstName,
         lastName: this.lastName,
@@ -251,6 +263,15 @@ export class TenantRegisterPage implements OnInit {
         }
         if (field.value === false && field.name.toLowerCase().includes("einverständnis")) {
           Utils.showToast(`Sie müssen dem Feld "${field.name}" zustimmen, um fortzufahren.`, "danger");
+          return false;
+        }
+      } else if (field.type === FieldType.BFECG_CHURCH) {
+        if (typeof field.value !== 'string') {
+          Utils.showToast(`Bitte wählen Sie eine Gemeinde aus.`, "danger");
+          return false;
+        }
+        if (field.value === '' && (!this.customChurchName || this.customChurchName.trim().length < 5)) {
+          Utils.showToast(`Bitte geben Sie den Namen Ihrer Gemeinde ein.`, "danger");
           return false;
         }
       }

@@ -393,6 +393,11 @@
             } @else if (field.type === fieldTypes.TEXTAREA) {
             <ion-textarea [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()" [label]="field.name"
               labelPlacement="stacked" [(ngModel)]="player.additional_fields[field.id]"></ion-textarea>
+            } @else if (field.type === fieldTypes.BFECG_CHURCH) {
+            <ion-select (ionChange)="onChange()" interface="modal" [label]="field.name" [(ngModel)]="player.additional_fields[field.id]">
+              <ion-select-option *ngFor="let church of db.churches()" [value]="church.id">{{ church.name
+                }}</ion-select-option>
+            </ion-select>
             }
           </ion-item>
         </ion-list>

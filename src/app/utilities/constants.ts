@@ -127,4 +127,5 @@ export enum FieldType {
     DATE = "date",
     BOOLEAN = "boolean",
     SELECT = "select",
+    BFECG_CHURCH = "bfecg_church",
 }

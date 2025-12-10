@@ -41,6 +41,7 @@ export class DbService {
   public attendanceTypes: WritableSignal<AttendanceType[]>;
   public groups: WritableSignal<Group[]>;
   public shifts: WritableSignal<ShiftPlan[]>;
+  public churches: WritableSignal<Church[] | undefined>;
 
   constructor(
     private plt: Platform,
@@ -54,6 +55,7 @@ export class DbService {
     this.tenantUsers = signal([]);
     this.groups = signal([]);
     this.shifts = signal([]);
+    this.churches = signal([]);
     this.plt.ready().then(() => {
       this.checkToken();
     });
@@ -216,6 +218,12 @@ export class DbService {
     this.groups.set(await this.getGroups());
     this.attendanceTypes.set(await this.getAttendanceTypes());
     this.organisation.set(await this.getOrganisationFromTenant());
+
+    if (this.tenant().additional_fields?.find(field => field.id === 'bfecg_church')) {
+      if (!this.churches() || this.churches().length === 0) {
+        this.churches.set(await this.getChurches());
+      }
+    }
 
     await this.loadShifts();
   }
@@ -2844,14 +2852,14 @@ export class DbService {
     return data;
   }
 
-  async createChurch(name: string) {
+  async createChurch(name: string): Promise<string> {
     const { data, error } = await supabase
       .from('churches')
       .insert({
         name,
-        created_from: this.user.id
+        created_from: this.user?.id ?? null,
       })
-      .select()
+      .select('id')
       .single();
 
     if (error) {
@@ -2859,7 +2867,7 @@ export class DbService {
       throw error;
     }
 
-    return data;
+    return data.id;
   }
 
   // async syncShiftAssignments(): Promise<void> {

@@ -106,8 +106,19 @@
         } @else if (field.type === 'boolean') {
         <ion-label>{{ field.name }}</ion-label>
         <ion-toggle slot="end" [(ngModel)]="field.value"></ion-toggle>
+        } @else if (field.type === 'bfecg_church') {
+        <ion-select interface="modal" [label]="field.name" [(ngModel)]="field.value">
+          <ion-select-option value="">Nicht gelistet</ion-select-option>
+          <ion-select-option *ngFor="let church of churches" [value]="church.id">{{ church.name }}</ion-select-option>
+        </ion-select>
         }
       </ion-item>
+      @if (field.type === 'bfecg_church' && field.value === '') {
+      <ion-item>
+        <ion-label position="stacked">Bitte gib den Namen deiner Gemeinde ein</ion-label>
+        <ion-input [(ngModel)]="customChurchName" type="text"></ion-input>
+      </ion-item>
+      }
       }
       <ion-item>
         <ion-label position="stacked">Bemerkungen (optional)</ion-label>
