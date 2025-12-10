@@ -333,8 +333,8 @@ export class ListPage implements OnInit {
       });
       await alert.present();
       return;
-    } else if (this.db.tenant().additional_fields?.find(field => field.type === "select" && this.filterOpt === field.id)) {
-      const extraField = this.db.tenant().additional_fields?.find(field => field.type === "select" && this.filterOpt === field.id);
+    } else if (this.db.tenant().additional_fields?.find(field => (field.type === "select" || field.type === "bfecg_church") && this.filterOpt === field.id)) {
+      const extraField = this.db.tenant().additional_fields?.find(field => (field.type === "select" || field.type === "bfecg_church") && this.filterOpt === field.id);
       const option = await this.storage.get(`filterOptAdd${this.db.tenant().id}`);
 
       if (implicit) {
@@ -348,9 +348,11 @@ export class ListPage implements OnInit {
         return;
       }
 
+      const options = extraField.type === "bfecg_church" ? this.db.churches().map(c => c.name) : extraField.options;
+
       const alert = await this.alertController.create({
         header: extraField.name,
-        inputs: extraField.options.map((t, index) => ({
+        inputs: options.map((t, index) => ({
           type: 'radio',
           label: t,
           value: t,

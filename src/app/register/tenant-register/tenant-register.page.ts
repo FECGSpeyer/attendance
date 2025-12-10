@@ -62,7 +62,7 @@ export class TenantRegisterPage implements OnInit {
         this.additionalFields.push({
           id: field.id,
           name: field.name,
-          value: field?.id === 'bfecg_church' ? this.churches[0].id : field.defaultValue,
+          value: field?.id === 'bfecg_church' ? "" : field.defaultValue,
           type: field.type,
           options: field.options
         });
