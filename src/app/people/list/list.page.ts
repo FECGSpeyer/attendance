@@ -200,6 +200,16 @@ export class ListPage implements OnInit {
       return;
     }
 
+    if (this.sortOpt === "joinedAsc") {
+      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => new Date(a.joined).getTime() - new Date(b.joined).getTime());
+      return;
+    }
+
+    if (this.sortOpt === "joinedDesc") {
+      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => new Date(b.joined).getTime() - new Date(a.joined).getTime());
+      return;
+    }
+
     if (this.sortOpt === "attAsc") {
       this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => ((a.percentage || 0) - (b.percentage || 0)));
       return;

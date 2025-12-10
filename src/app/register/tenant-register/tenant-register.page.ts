@@ -131,35 +131,41 @@ export class TenantRegisterPage implements OnInit {
       additional_fields[field.id] = field.value;
     }
 
-    const playerId = await this.db.addPlayer({
-      firstName: this.firstName,
-      lastName: this.lastName,
-      email: this.db.user?.email ?? this.email,
-      pending: !Boolean(this.tenantData?.auto_approve_registrations),
-      birthday: this.birthDate,
-      phone: this.phone,
-      img: this.profilePicture,
-      additional_fields,
-      instrument: this.selectedGroupId,
-      hasTeacher: false,
-      playsSince: new Date().toISOString(),
-      isCritical: false,
-      isLeader: false,
-      correctBirthday: true,
-      history: [],
-      tenantId: this.tenantData.id,
-      joined: new Date().toISOString(),
-      notes: this.notes ?? "",
-    }, true, Role.APPLICANT, this.tenantData.id, this.password, this.tenantData.longName);
+    try {
+      const playerId = await this.db.addPlayer({
+        firstName: this.firstName,
+        lastName: this.lastName,
+        email: this.db.user?.email ?? this.email,
+        pending: !Boolean(this.tenantData?.auto_approve_registrations),
+        birthday: this.birthDate,
+        phone: this.phone,
+        img: this.profilePicture,
+        additional_fields,
+        instrument: this.selectedGroupId,
+        hasTeacher: false,
+        playsSince: new Date().toISOString(),
+        isCritical: false,
+        isLeader: false,
+        correctBirthday: true,
+        history: [],
+        tenantId: this.tenantData.id,
+        joined: new Date().toISOString(),
+        notes: this.notes ?? "",
+      }, true, Role.APPLICANT, this.tenantData.id, this.password, this.tenantData.longName);
 
-    if (this.tenantData?.registration_fields?.includes('picture')) {
-      const url: string = await this.db.updateImage(playerId, this.profileImgFile);
-      this.profilePicture = url;
+      if (this.tenantData?.registration_fields?.includes('picture')) {
+        const url: string = await this.db.updateImage(playerId, this.profileImgFile);
+        this.profilePicture = url;
+      }
+    } catch (error) {
+      await loading.dismiss();
+      Utils.showToast("Fehler bei der Registrierung, bitte überprüfe deine Eingaben und versuche es erneut.", "danger");
+      return;
     }
 
     void this.db.notifyAboutRegistration(
       `${this.firstName} ${this.lastName}`,
-      this.email,
+      this.db.user?.email ?? this.email,
       this.phone,
       this.groups.find(g => g.id === this.selectedGroupId)?.name || '',
       !Boolean(this.tenantData?.auto_approve_registrations),
