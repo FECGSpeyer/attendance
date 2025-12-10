@@ -166,7 +166,7 @@ export class TenantRegisterPage implements OnInit {
       }, true, Role.APPLICANT, this.tenantData.id, this.password, this.tenantData.longName);
 
       if (this.tenantData?.registration_fields?.includes('picture')) {
-        const url: string = await this.db.updateImage(playerId, this.profileImgFile);
+        const url: string = await this.db.updateImage(playerId, this.profileImgFile, this.db.user?.id);
         this.profilePicture = url;
       }
     } catch (error) {

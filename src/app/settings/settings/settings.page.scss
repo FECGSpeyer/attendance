@@ -24,3 +24,13 @@ ion-card {
     height: 4rem;
     margin: auto;
 }
+
+ion-item-group {
+    background: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+    ion-item-group {
+        background: #000;
+    }
+}

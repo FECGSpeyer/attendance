@@ -633,13 +633,19 @@ export class PersonPage implements OnInit, AfterViewInit {
     const imgFile: File = evt.target.files[0];
 
     if (imgFile) {
+      if (imgFile.size > 2 * 1024 * 1024) {
+        loading.dismiss();
+        Utils.showToast("Das Bild darf maximal 2MB groß sein.", "danger");
+        return;
+      }
+
       if (imgFile.type.substring(0, 5) === 'image') {
         const reader: FileReader = new FileReader();
 
         reader.readAsDataURL(imgFile);
 
         try {
-          const url: string = await this.db.updateImage(this.player.id, imgFile);
+          const url: string = await this.db.updateImage(this.player.id, imgFile, this.player.appId);
           this.player.img = url;
         } catch (error) {
           Utils.showToast(error, "danger");

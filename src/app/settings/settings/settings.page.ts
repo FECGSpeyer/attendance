@@ -1,13 +1,13 @@
-import { Component, OnInit, effect } from '@angular/core';
-import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, isPlatform, ModalController } from '@ionic/angular';
+import { Component, ElementRef, OnInit, ViewChild, effect } from '@angular/core';
+import { AlertButton, AlertController, IonItemSliding, IonModal, IonRouterOutlet, isPlatform, ModalController } from '@ionic/angular';
 import { ExportPage } from 'src/app/export/export.page';
 import { HistoryPage } from 'src/app/history/history.page';
 import { PersonPage } from 'src/app/people/person/person.page';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { StatsPage } from 'src/app/stats/stats.page';
-import { Role } from 'src/app/utilities/constants';
-import { Admin, Church, Group, Organisation, Parent, Person, Player, Tenant } from 'src/app/utilities/interfaces';
+import { DEFAULT_IMAGE, FieldType, Role } from 'src/app/utilities/constants';
+import { Admin, Church, Parent, Person, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { Viewer } from '../../utilities/interfaces';
 import { Router } from '@angular/router';
@@ -19,6 +19,7 @@ import { RegisterPage } from 'src/app/register/register.page';
   styleUrls: ['./settings.page.scss'],
 })
 export class SettingsPage implements OnInit {
+  @ViewChild('imgChooser') chooser: ElementRef;
   public leftPlayers: Player[] = [];
   public leftConductors: Person[] = [];
   public playersWithoutAccount: Player[] = [];
@@ -39,12 +40,17 @@ export class SettingsPage implements OnInit {
   public pendingPersons: Player[] = [];
   public isApplicant: boolean = false;
   public churches: Church[] = [];
+  public userData: Person | null = null;
+  public oldUserData: Person | null = null;
+  public isImageViewerOpen: boolean = false;
+  public max: string = new Date().toISOString();
 
   constructor(
     public db: DbService,
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
     private router: Router,
+    private actionSheetController: AlertController,
   ) {
     effect(async () => {
       this.db.tenant();
@@ -91,6 +97,12 @@ export class SettingsPage implements OnInit {
 
     this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
     this.tenantsFromUser = await this.db.getUserRolesForTenants(this.db.tenantUser().userId);
+
+    this.oldUserData = await this.db.getPlayerProfile();
+
+    if (this.oldUserData) {
+      this.userData = { ...this.oldUserData };
+    }
   }
 
   async ionViewWillEnter() {
@@ -397,7 +409,7 @@ export class SettingsPage implements OnInit {
     return found?.role === Role.ADMIN && !this.db.isDemo();
   }
 
-    async openAdminsAlert() {
+  async openAdminsAlert() {
     const alert = await new AlertController().create({
       header: 'Admin hinzufügen',
       inputs: [{
@@ -493,6 +505,10 @@ export class SettingsPage implements OnInit {
     await alert.present();
   }
 
+  hasChurches(): boolean {
+    return this.db.churches()?.length && this.db.tenant()?.additional_fields?.find((f => f.type === FieldType.BFECG_CHURCH)) !== undefined;
+  }
+
   async openCalendarSubscription() {
     const link = `https://n8n.srv1053762.hstgr.cloud/webhook/attendix?tenantId=${this.db.tenant().id}`;
     const alert = await new AlertController().create({
@@ -501,14 +517,14 @@ export class SettingsPage implements OnInit {
       buttons: [{
         text: "Link kopieren",
         handler: () => {
-           navigator?.clipboard.writeText(link);
-           Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
-           return false;
+          navigator?.clipboard.writeText(link);
+          Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
+          return false;
         }
       }, {
         text: "Anleitung öffen",
         handler: () => {
-           window.open(this.isIos ? "https://support.apple.com/de-de/102301" : "https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid", "_blank");
+          window.open(this.isIos ? "https://support.apple.com/de-de/102301" : "https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid", "_blank");
         }
       }, {
         text: "Schließen",
@@ -535,6 +551,84 @@ export class SettingsPage implements OnInit {
 
     if (data?.data?.approved) {
       this.pendingPersons = await this.db.getPendingPersons();
+    }
+  }
+
+  async changeImg() {
+    const additionalButtons: AlertButton[] = [];
+
+    if (this.userData.img !== DEFAULT_IMAGE) {
+      additionalButtons.push({
+        text: 'Passbild ansehen',
+        handler: () => {
+          this.isImageViewerOpen = true;
+        }
+      });
+    }
+
+    const actionSheet = await this.actionSheetController.create({
+      buttons: [{
+        text: 'Passbild ersetzen',
+        handler: () => {
+          this.chooser.nativeElement.click();
+        }
+      }, ...additionalButtons, {
+        text: 'Abbrechen'
+      }]
+    });
+
+    await actionSheet.present();
+  }
+
+  async updateUserData() {
+    let churchId;
+
+    if (this.userData.additional_fields?.bfecg_church !== this.oldUserData.additional_fields?.bfecg_church) {
+      churchId = this.userData.additional_fields?.bfecg_church;
+    }
+
+    await this.db.updateProfile({
+      firstName: this.userData.firstName,
+      lastName: this.userData.lastName,
+      phone: this.userData.phone,
+      birthday: this.userData.birthday,
+      img: this.userData.img,
+      correctBirthday: true,
+    }, churchId);
+
+    Utils.showToast("Die Profildaten wurden erfolgreich aktualisiert.", "success");
+  }
+
+  async onImageSelect(evt: any) {
+    const loading = await Utils.getLoadingElement();
+    loading.present();
+    const imgFile: File = evt.target.files[0];
+
+    if (imgFile) {
+      if (imgFile.size > 2 * 1024 * 1024) {
+        loading.dismiss();
+        Utils.showToast("Das Bild darf maximal 2MB groß sein.", "danger");
+        return;
+      }
+
+      if (imgFile.type.substring(0, 5) === 'image') {
+        const reader: FileReader = new FileReader();
+
+        reader.readAsDataURL(imgFile);
+
+        try {
+          const url: string = await this.db.updateImage(this.userData.id, imgFile, this.userData.appId);
+          this.userData.img = url;
+          loading.dismiss();
+          Utils.showToast("Das Passbild wurde erfolgreich geändert.", "success");
+        } catch (error) {
+          Utils.showToast(error, "danger");
+          loading.dismiss();
+        }
+      } else {
+        loading.dismiss();
+        Utils.showToast("Fehler beim ändern des Passbildes, versuche es später erneut", "danger");
+      }
     }
   }
 }

@@ -267,6 +267,82 @@
   <ion-list [inset]="true" *ngIf="!isApplicant">
     <ion-list-header><ion-label>Daten & Auswertung</ion-label></ion-list-header>
     <ion-item-group>
+      @if (userData) {
+      <ion-item id="master-data-button" button detail="false">
+        <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+        <ion-label>
+          Meine Stammdaten
+        </ion-label>
+        <ion-modal trigger="master-data-button" [breakpoints]="[0, .9]" [initialBreakpoint]="0.9">
+          <ng-template>
+            <ion-content color="light">
+              <ion-header>
+                <ion-toolbar>
+                  <ion-title>Meine Stammdaten</ion-title>
+                </ion-toolbar>
+              </ion-header>
+              <ion-list [inset]="true">
+                <ion-item-group>
+                  <ion-item button lines="none" (click)="changeImg()">
+                    <input style="display: none;" name="file" #imgChooser (change)="onImageSelect($event)"
+                      accept="image/*" type="file" />
+                    <ion-label>Passbild</ion-label>
+                    <ion-avatar slot="end">
+                      <img [src]="userData.img" />
+                    </ion-avatar>
+                    <ion-modal (ionModalDidDismiss)="isImageViewerOpen = false" [isOpen]="isImageViewerOpen"
+                      [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
+                      <ng-template>
+                        <ion-content>
+                          <ion-img [src]="userData.img"></ion-img>
+                        </ion-content>
+                      </ng-template>
+                    </ion-modal>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label position="stacked">Vorname</ion-label>
+                    <ion-input [(ngModel)]="userData.firstName" type="text"></ion-input>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label position="stacked">Nachname</ion-label>
+                    <ion-input [(ngModel)]="userData.lastName" type="text"></ion-input>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label position="stacked">Handynummer</ion-label>
+                    <ion-input [(ngModel)]="userData.phone" type="tel"></ion-input>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label>Geburtsdatum</ion-label>
+                    <ion-datetime-button [disabled]="readOnly" datetime="birthday-master-data"></ion-datetime-button>
+                    <ion-modal [keepContentsMounted]="true">
+                      <ng-template>
+                        <ion-datetime id="birthday-master-data" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+                          [(ngModel)]="userData.birthday"
+                          presentation="date"></ion-datetime>
+                      </ng-template>
+                    </ion-modal>
+                  </ion-item>
+                  @if (hasChurches() && false) {
+                  <ion-item>
+                    <ion-select label="Gemeinde" interface="modal"
+                      [(ngModel)]="userData.additional_fields['bfecg_church']">
+                      <ion-select-option *ngFor="let church of db.churches()" [value]="church.id">{{ church.name
+                        }}</ion-select-option>
+                    </ion-select>
+                  </ion-item>
+                  }
+                </ion-item-group>
+                <ion-item-group>
+                  <ion-item (click)="updateUserData()" button detail="false">
+                    <ion-label color="primary">Speichern</ion-label>
+                  </ion-item>
+                </ion-item-group>
+              </ion-list>
+            </ion-content>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+      }
       <ion-item (click)="openCalendarSubscription()" detail="false" button>
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
         <ion-label>

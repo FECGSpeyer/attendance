@@ -656,13 +656,52 @@ export class DbService {
     return data.user;
   }
 
-  async getPlayerProfile(): Promise<Player | undefined> {
+  async getPlayerProfile(): Promise<Player | null> {
     try {
       const player: Player = await this.getPlayerByAppId(false);
       return player;
     } catch (_) {
-      return undefined;
+      return null;
     }
+  }
+
+  async updateProfile(updates: Partial<Player>, churchId?: string): Promise<void> {
+    const { error } = await supabase
+      .from('player')
+      .update(updates as any)
+      .match({ appId: this.user.id });
+
+    if (error) {
+      Utils.showToast("Fehler beim Aktualisieren des Profils", "danger");
+      throw error;
+    }
+
+    if (churchId) {
+      const { data: players } = await supabase
+        .from('player')
+        .select('*')
+        .eq('appId', this.user.id);
+
+      if (players && players.length > 0) {
+        for (const player of players) {
+          const additional_fields: any = player.additional_fields || {};
+          if (additional_fields?.bfecg_church && additional_fields.bfecg_church !== churchId) {
+            additional_fields.bfecg_church = churchId;
+            const { error: updateError } = await supabase
+              .from('player')
+              .update({ additional_fields })
+              .match({ id: player.id });
+
+            if (updateError) {
+              Utils.showToast("Fehler beim Aktualisieren der Kirchenzuordnung", "danger");
+              throw updateError;
+            }
+          }
+        }
+      }
+    }
+
+    return;
   }
 
   getCurrentAttDate() {
@@ -916,7 +955,7 @@ export class DbService {
       delete player.teacher;
     }
 
-    if (password) {
+    if (!this.user && password) {
       try {
         const user = await this.register(player.email, password);
         await this.addUserToTenant(user?.id, role, player.email, tenantId);
@@ -1907,12 +1946,19 @@ export class DbService {
     });
   }
 
-  async removeImage(id: number, imgPath: string, newUser: boolean = false) {
+  async removeImage(id: number, imgPath: string, newUser: boolean = false, appId: string = "") {
     if (!newUser) {
-      await supabase
-        .from("player")
-        .update({ img: "" })
-        .match({ id });
+      if (appId && this.user?.id === appId) {
+        await supabase
+          .from("player")
+          .update({ img: "" })
+          .match({ appId });
+      } else {
+        await supabase
+          .from("player")
+          .update({ img: "" })
+          .match({ id });
+      }
     }
 
     await supabase.storage
@@ -1920,7 +1966,7 @@ export class DbService {
       .remove([imgPath]);
   }
 
-  async updateImage(id: number, image: File) {
+  async updateImage(id: number, image: File, appId: string) {
     const fileName: string = `${id}`;
 
     const { error } = await supabase.storage
@@ -1936,10 +1982,17 @@ export class DbService {
       .from("profiles")
       .getPublicUrl(fileName);
 
-    await supabase
-      .from("player")
-      .update({ img: data.publicUrl })
-      .match({ id });
+    if (appId && this.user?.id === appId) {
+      await supabase
+        .from("player")
+        .update({ img: data.publicUrl })
+        .match({ appId });
+    } else {
+      await supabase
+        .from("player")
+        .update({ img: data.publicUrl })
+        .match({ id });
+    }
 
     return data.publicUrl;
   }
