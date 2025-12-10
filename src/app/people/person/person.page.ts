@@ -83,6 +83,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public targetGroupId: number;
   public fieldTypes = FieldType;
   public shift: ShiftPlan = null;
+  public isImageViewerOpen: boolean = false;
 
   constructor(
     public db: DbService,
@@ -601,6 +602,13 @@ export class PersonPage implements OnInit, AfterViewInit {
           this.db.removeImage(this.player.id, this.player.img.split("/")[this.player.img.split("/").length - 1], true);
           this.player.img = DEFAULT_IMAGE;
           Utils.showToast("Das Passbild wurde erfolgreich entfernt", "success");
+        }
+      });
+
+      additionalButtons.push({
+        text: 'Passbild ansehen',
+        handler: () => {
+          this.isImageViewerOpen = true;
         }
       });
     }

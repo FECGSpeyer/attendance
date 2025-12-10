@@ -165,7 +165,6 @@ export class TenantRegisterPage implements OnInit {
 
     void this.db.notifyAboutRegistration(
       `${this.firstName} ${this.lastName}`,
-      this.db.user?.email ?? this.email,
       this.phone,
       this.groups.find(g => g.id === this.selectedGroupId)?.name || '',
       !Boolean(this.tenantData?.auto_approve_registrations),

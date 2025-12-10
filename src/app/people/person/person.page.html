@@ -236,9 +236,9 @@
             <ion-col>
               @if (shift && shift.shifts.length > 0) {
               <ion-item>
-                <ion-select label="Schicht" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.shift_name">
-                  <ion-select-option [value]="sh.name"
-                    *ngFor="let sh of shift.shifts">
+                <ion-select label="Schicht" [disabled]="readOnly" (ionChange)="onChange()"
+                  [(ngModel)]="player.shift_name">
+                  <ion-select-option [value]="sh.name" *ngFor="let sh of shift.shifts">
                     {{ sh.name }}
                   </ion-select-option>
                 </ion-select>
@@ -249,8 +249,8 @@
                 <ion-datetime-button [disabled]="readOnly" datetime="shift_start_date"></ion-datetime-button>
                 <ion-modal [keepContentsMounted]="true">
                   <ng-template>
-                    <ion-datetime (ionChange)="onChange()" [(ngModel)]="player.shift_start" presentation="date" id="shift_start_date"
-                      locale="de-DE"></ion-datetime>
+                    <ion-datetime (ionChange)="onChange()" [(ngModel)]="player.shift_start" presentation="date"
+                      id="shift_start_date" locale="de-DE"></ion-datetime>
                   </ng-template>
                 </ion-modal>
               </ion-item>
@@ -275,6 +275,14 @@
                 <ion-avatar slot="end">
                   <img [src]="player.img" />
                 </ion-avatar>
+                <ion-modal #imageViewer (ionModalDidDismiss)="isImageViewerOpen = false" [isOpen]="isImageViewerOpen"
+                  [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
+                  <ng-template>
+                    <ion-content>
+                      <ion-img [src]="player.img"></ion-img>
+                    </ion-content>
+                  </ng-template>
+                </ion-modal>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -362,22 +370,24 @@
             <ion-input type="number" [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name"
               labelPlacement="stacked" [(ngModel)]="player.additional_fields[field.id]"></ion-input>
             } @else if (field.type === fieldTypes.BOOLEAN) {
-              <ion-label>{{ field.name }}</ion-label>
-              <ion-toggle slot="end" (ionChange)="onChange()" [(ngModel)]="player.additional_fields[field.id]"></ion-toggle>
+            <ion-label>{{ field.name }}</ion-label>
+            <ion-toggle slot="end" (ionChange)="onChange()"
+              [(ngModel)]="player.additional_fields[field.id]"></ion-toggle>
             } @else if (field.type === fieldTypes.DATE) {
-              <ion-label position="stacked">{{ field.name }}</ion-label>
-              <ion-input [disabled]="readOnly" [value]="getExtraFieldDateString(player.additional_fields[field.id])"
-                [id]="'extra-field-date-' + field.id"></ion-input>
-              <ion-modal class="dateModal" #extraFieldDateModal [trigger]="'extra-field-date-' + field.id">
-                <ng-template>
-                  <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
-                    [(ngModel)]="player.additional_fields[field.id]"
-                    (ionChange)="onExtraFieldDateChange(field.id, extraFieldDatePicker.value, extraFieldDateModal)"
-                    presentation="date" #extraFieldDatePicker></ion-datetime>
-                </ng-template>
-              </ion-modal>
+            <ion-label position="stacked">{{ field.name }}</ion-label>
+            <ion-input [disabled]="readOnly" [value]="getExtraFieldDateString(player.additional_fields[field.id])"
+              [id]="'extra-field-date-' + field.id"></ion-input>
+            <ion-modal class="dateModal" #extraFieldDateModal [trigger]="'extra-field-date-' + field.id">
+              <ng-template>
+                <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+                  [(ngModel)]="player.additional_fields[field.id]"
+                  (ionChange)="onExtraFieldDateChange(field.id, extraFieldDatePicker.value, extraFieldDateModal)"
+                  presentation="date" #extraFieldDatePicker></ion-datetime>
+              </ng-template>
+            </ion-modal>
             } @else if (field.type === fieldTypes.SELECT) {
-            <ion-select [(ngModel)]="player.additional_fields[field.id]" [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name">
+            <ion-select [(ngModel)]="player.additional_fields[field.id]" [disabled]="readOnly" (ionChange)="onChange()"
+              [label]="field.name">
               <ion-select-option *ngFor="let option of field.options" [value]="option">{{ option }}</ion-select-option>
             </ion-select>
             } @else if (field.type === fieldTypes.TEXTAREA) {

@@ -1885,13 +1885,12 @@ export class DbService {
     });
   }
 
-  async notifyAboutRegistration(name: string, email: string, phone: string, group: string, pending: boolean, tenantId: number, tenantName: string): Promise<void> {
+  async notifyAboutRegistration(name: string, phone: string, group: string, pending: boolean, tenantId: number, tenantName: string): Promise<void> {
     await supabase.functions.invoke("new-registration-notifier", {
       body: {
         name,
         pending,
         tenantId,
-        email,
         phone,
         group,
         tenantName
