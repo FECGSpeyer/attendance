@@ -2867,6 +2867,8 @@ export class DbService {
       throw error;
     }
 
+    await this.churches.set(await this.getChurches());
+
     return data.id;
   }
 
