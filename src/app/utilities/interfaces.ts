@@ -58,6 +58,7 @@ export interface NotificationConfig {
     signouts: boolean;
     enabled_tenants?: number[];
     updates: boolean;
+    registrations: boolean;
 }
 
 export interface Viewer {
@@ -372,5 +373,12 @@ export interface ShiftDefinition {
 
 export interface ShiftInstance {
     date: string;
+    name: string;
+}
+
+export interface Churches {
+    id?: string;
+    created_at?: string;
+    creator: string;
     name: string;
 }

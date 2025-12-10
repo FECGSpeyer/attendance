@@ -57,7 +57,7 @@
         <ion-avatar slot="start">
           <img [src]="profilePicture" />
         </ion-avatar>
-        <ion-label color="primary">Wähle ein Passbild aus</ion-label>
+        <ion-label color="primary">Wähle ein Passbild aus (max. 2 MB)</ion-label>
         <input style="display: none;" name="file" #chooser (change)="onImageSelect($event)" accept="image/*"
           class="inputFile" type="file" />
       </ion-item>
@@ -104,10 +104,15 @@
           <ion-select-option *ngFor="let option of field.options" [value]="option">{{ option }}</ion-select-option>
         </ion-select>
         } @else if (field.type === 'boolean') {
-        <ion-toggle [(ngModel)]="field.value">{{ field.name }}</ion-toggle>
+        <ion-label>{{ field.name }}</ion-label>
+        <ion-toggle slot="end" [(ngModel)]="field.value"></ion-toggle>
         }
       </ion-item>
       }
+      <ion-item>
+        <ion-label position="stacked">Bemerkungen (optional)</ion-label>
+        <ion-textarea [(ngModel)]="notes"></ion-textarea>
+      </ion-item>
     </ion-item-group>
     }
 

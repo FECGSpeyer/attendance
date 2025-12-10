@@ -63,10 +63,15 @@
           (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.signins"
           label="Anmeldungen">Anmeldungen</ion-toggle>
       </ion-item>
-      <ion-item lines="none">
+      <ion-item>
         <ion-toggle helperText="Nur möglich, wenn du Verantwortlicher einer Gruppe bist."
           (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.signouts"
           label="Abmeldungen">Abmeldungen</ion-toggle>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-toggle helperText="Nur möglich, wenn du Verantwortlicher einer Gruppe bist."
+          (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.registrations"
+          label="Abmeldungen">Neu-Registrierungen</ion-toggle>
       </ion-item>
     </ion-card>
 

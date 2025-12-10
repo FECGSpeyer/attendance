@@ -21,6 +21,7 @@ export type Database = {
           criticalPlayers: number[] | null
           date: string | null
           deadline: string | null
+          duration_days: number | null
           end_time: string | null
           excused: string[]
           id: number
@@ -43,6 +44,7 @@ export type Database = {
           criticalPlayers?: number[] | null
           date?: string | null
           deadline?: string | null
+          duration_days?: number | null
           end_time?: string | null
           excused?: string[]
           id?: number
@@ -65,6 +67,7 @@ export type Database = {
           criticalPlayers?: number[] | null
           date?: string | null
           deadline?: string | null
+          duration_days?: number | null
           end_time?: string | null
           excused?: string[]
           id?: number
@@ -101,11 +104,13 @@ export type Database = {
       attendance_types: {
         Row: {
           additional_fields_filter: Json | null
+          all_day: boolean | null
           available_statuses: number[]
           color: string | null
           created_at: string
           default_plan: Json | null
           default_status: number | null
+          duration_days: number | null
           end_time: string | null
           hide_name: boolean
           highlight: boolean
@@ -114,6 +119,7 @@ export type Database = {
           index: number | null
           manage_songs: boolean | null
           name: string | null
+          notification: boolean | null
           relevant_groups: number[] | null
           start_time: string | null
           tenant_id: number | null
@@ -121,11 +127,13 @@ export type Database = {
         }
         Insert: {
           additional_fields_filter?: Json | null
+          all_day?: boolean | null
           available_statuses?: number[]
           color?: string | null
           created_at?: string
           default_plan?: Json | null
           default_status?: number | null
+          duration_days?: number | null
           end_time?: string | null
           hide_name?: boolean
           highlight?: boolean
@@ -134,6 +142,7 @@ export type Database = {
           index?: number | null
           manage_songs?: boolean | null
           name?: string | null
+          notification?: boolean | null
           relevant_groups?: number[] | null
           start_time?: string | null
           tenant_id?: number | null
@@ -141,11 +150,13 @@ export type Database = {
         }
         Update: {
           additional_fields_filter?: Json | null
+          all_day?: boolean | null
           available_statuses?: number[]
           color?: string | null
           created_at?: string
           default_plan?: Json | null
           default_status?: number | null
+          duration_days?: number | null
           end_time?: string | null
           hide_name?: boolean
           highlight?: boolean
@@ -154,6 +165,7 @@ export type Database = {
           index?: number | null
           manage_songs?: boolean | null
           name?: string | null
+          notification?: boolean | null
           relevant_groups?: number[] | null
           start_time?: string | null
           tenant_id?: number | null
@@ -168,6 +180,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      churches: {
+        Row: {
+          created_at: string
+          created_from: string | null
+          id: string
+          name: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_from?: string | null
+          id?: string
+          name?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_from?: string | null
+          id?: string
+          name?: string | null
+        }
+        Relationships: []
       }
       conductors: {
         Row: {
@@ -421,6 +454,7 @@ export type Database = {
           enabled: boolean
           enabled_tenants: number[] | null
           id: string
+          registrations: boolean | null
           signins: boolean
           signouts: boolean
           telegram_chat_id: string | null
@@ -432,6 +466,7 @@ export type Database = {
           enabled?: boolean
           enabled_tenants?: number[] | null
           id: string
+          registrations?: boolean | null
           signins?: boolean
           signouts?: boolean
           telegram_chat_id?: string | null
@@ -443,6 +478,7 @@ export type Database = {
           enabled?: boolean
           enabled_tenants?: number[] | null
           id?: string
+          registrations?: boolean | null
           signins?: boolean
           signouts?: boolean
           telegram_chat_id?: string | null
@@ -557,6 +593,7 @@ export type Database = {
           otherOrchestras: string[] | null
           parent_id: number | null
           paused: boolean | null
+          pending: boolean | null
           phone: string | null
           playsSince: string | null
           range: string | null
@@ -596,6 +633,7 @@ export type Database = {
           otherOrchestras?: string[] | null
           parent_id?: number | null
           paused?: boolean | null
+          pending?: boolean | null
           phone?: string | null
           playsSince?: string | null
           range?: string | null
@@ -635,6 +673,7 @@ export type Database = {
           otherOrchestras?: string[] | null
           parent_id?: number | null
           paused?: boolean | null
+          pending?: boolean | null
           phone?: string | null
           playsSince?: string | null
           range?: string | null

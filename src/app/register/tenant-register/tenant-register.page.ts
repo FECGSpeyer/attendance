@@ -27,6 +27,7 @@ export class TenantRegisterPage implements OnInit {
   public profilePicture: string = DEFAULT_IMAGE;
   public additionalFields: { id: string, name: string, value: any, type: FieldType, options?: string[] }[] = [];
   private profileImgFile: File | null = null;
+  public notes: string = '';
 
   constructor(
     public db: DbService,
@@ -148,13 +149,23 @@ export class TenantRegisterPage implements OnInit {
       history: [],
       tenantId: this.tenantData.id,
       joined: new Date().toISOString(),
-      notes: "",
+      notes: this.notes ?? "",
     }, true, Role.APPLICANT, this.tenantData.id, this.password, this.tenantData.longName);
 
     if (this.tenantData?.registration_fields?.includes('picture')) {
       const url: string = await this.db.updateImage(playerId, this.profileImgFile);
       this.profilePicture = url;
     }
+
+    void this.db.notifyAboutRegistration(
+      `${this.firstName} ${this.lastName}`,
+      this.email,
+      this.phone,
+      this.groups.find(g => g.id === this.selectedGroupId)?.name || '',
+      !Boolean(this.tenantData?.auto_approve_registrations),
+      this.tenantData.id,
+      this.tenantData.longName
+    );
 
     await loading.dismiss();
     this.router.navigate(['/login']);
@@ -268,6 +279,12 @@ export class TenantRegisterPage implements OnInit {
     const imgFile: File = evt.target.files[0];
 
     if (imgFile) {
+      if (imgFile.size > 2 * 1024 * 1024) {
+        loading.dismiss();
+        Utils.showToast("Das ausgewählte Bild ist zu groß. Bitte wähle ein Bild unter 2 MB.", "danger");
+        return;
+      }
+
       if (imgFile.type.substring(0, 5) === 'image') {
         const reader: FileReader = new FileReader();
 
