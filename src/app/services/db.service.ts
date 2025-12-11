@@ -192,7 +192,7 @@ export class DbService {
       return;
     }
 
-    this.tenants.set(await this.getTenants(this.tenantUsers().map((tenantUser: TenantUser) => tenantUser.tenantId)));
+    this.tenants.set(await this.getTenants());
     const storedTenantId: string | null = tenantId || this.user.user_metadata?.currentTenantId;
     if (storedTenantId && this.tenants().find((t: Tenant) => t.id === Number(storedTenantId))) {
       this.tenant.set(this.tenants().find((t: Tenant) => t.id === Number(storedTenantId)));
@@ -232,21 +232,29 @@ export class DbService {
     return this.tenantUser()?.email?.endsWith("@attendix.de") || this.user?.email?.toLocaleLowerCase().endsWith("erwinfast98@gmail.com");
   }
 
-  async getTenants(ids: number[]): Promise<Tenant[]> {
+  async getTenants(): Promise<Tenant[]> {
     const { data, error } = await supabase
       .from('tenants')
       .select('*')
-      .in('id', ids)
+      .in('id', this.tenantUsers().map(tu => tu.tenantId))
       .order('longName', { ascending: true });
 
     if (error) {
       throw new Error("Fehler beim Laden der Tenants");
     }
 
-    return data as unknown as Tenant[];
+    return data.map(t => {
+      return {
+        ...t,
+        favorite: this.tenantUsers().find(tu => tu.tenantId === t.id)?.favorite || false,
+      }
+    }).sort((a, b) => {
+      if (a.favorite && !b.favorite) return -1;
+    }) as unknown as Tenant[];
   }
 
   async updateTenantData(tenant: Partial<Tenant>): Promise<Tenant> {
+    delete tenant.favorite;
     const { data, error } = await supabase
       .from('tenants')
       .update(tenant as any)
@@ -2160,6 +2168,22 @@ export class DbService {
     }
 
     Utils.showToast("Instanz wurde erfolgreich gelöscht!");
+  }
+
+  async setFavoriteTenant(tenantId: number, favorite: boolean): Promise<void> {
+    const { error } = await supabase
+      .from("tenantUsers")
+      .update({ favorite })
+      .eq("userId", this.user.id)
+      .eq("tenantId", tenantId);
+
+    this.tenantUsers.set((await this.getTenantsByUserId()));
+    this.tenants.set(await this.getTenants());
+
+    if (error) {
+      Utils.showToast("Fehler beim Setzen des Favoriten, bitte versuche es später erneut.", "danger");
+      throw new Error(error.message);
+    }
   }
 
   async createInstance(tenant: Tenant, mainGroupName: string): Promise<void> {

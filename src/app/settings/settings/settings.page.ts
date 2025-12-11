@@ -404,6 +404,21 @@ export class SettingsPage implements OnInit {
     await alert.present();
   }
 
+  async setInstanceAsFavorite(tenant: Tenant, slider: IonItemSliding) {
+    const loading = await Utils.getLoadingElement(5000);
+    await loading.present();
+
+    slider.close();
+
+    try {
+      await this.db.setFavoriteTenant(tenant.id, !tenant.favorite);
+      await loading.dismiss();
+      await Utils.showToast(`Die Instanz '${tenant.longName}' wurde ${!tenant.favorite ? 'als Favorit gesetzt' : 'als Favorit entfernt'}.`, 'success', 3000);
+    } catch (error) {
+      await loading.dismiss();
+    }
+  }
+
   canDeleteTenant(tenant: Tenant): boolean {
     const found = this.tenantsFromUser.find(t => t.tenantId === tenant.id);
     return found?.role === Role.ADMIN && !this.db.isDemo();

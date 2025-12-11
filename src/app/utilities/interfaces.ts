@@ -27,6 +27,7 @@ export interface Tenant {
     register_id?: string;
     auto_approve_registrations?: boolean;
     registration_fields?: string[];
+    favorite?: boolean;
 }
 
 export interface ExtraField {
@@ -45,6 +46,7 @@ export interface TenantUser {
     role: number;
     email: string;
     telegram_chat_id?: string;
+        favorite: boolean;
     parent_id?: number;
 }
 
