@@ -572,7 +572,30 @@ export class ListPage implements OnInit {
   }
 
   async removePlayer(player: Person): Promise<void> {
-    await this.db.removePlayer(player);
+    const alert = await this.alertController.create({
+      header: 'Person wirklich entfernen?',
+      message: 'Diese Aktion kann nicht rückgängig gemacht werden!',
+      buttons: [{
+        text: 'Abbrechen',
+        role: 'cancel',
+      }, {
+        text: 'Entfernen',
+        handler: async () => {
+          const loading = await Utils.getLoadingElement(5000, 'Person wird entfernt...');
+          await loading.present();
+          try {
+            await this.db.removePlayer(player);
+            Utils.showToast('Person wurde entfernt.', 'success');
+            await loading.dismiss();
+          } catch (error) {
+            Utils.showToast(error, 'danger');
+            await loading.dismiss();
+          }
+        }
+      }]
+    });
+
+    await alert.present();
   }
 
   async pausePlayer(player: Player, slider: IonItemSliding) {

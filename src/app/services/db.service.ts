@@ -648,7 +648,7 @@ export class DbService {
     return Boolean(data.user);
   }
 
-  async register(email: string, password: string): Promise<User | null> {
+  async register(email: string, password: string): Promise<{ user: User, new: boolean } | null> {
     const { error, data } = await supabase.auth.signUp({
       email, password,
       options: {
@@ -661,7 +661,25 @@ export class DbService {
       return null;
     }
 
-    return data.user;
+    if (!data.user?.identities?.length) {
+      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+        email, password,
+      });
+
+      if (loginError) {
+        throw new Error('Deine E-Mail-Adresse existiert bereits. Bitte melde dich an.');
+      }
+
+      return {
+        user: loginData.user,
+        new: false,
+      };
+    }
+
+    return {
+      user: data.user,
+      new: true,
+    };
   }
 
   async getPlayerProfile(): Promise<Player | null> {
@@ -958,14 +976,16 @@ export class DbService {
     tenantId?: number,
     password?: string,
     tenantName?: string,
-  ): Promise<number> {
+  ): Promise<{ userId: number; created: boolean }> {
+    let created = false;
     if (!this.tenant()?.maintainTeachers) {
       delete player.teacher;
     }
 
     if (!this.user && password) {
       try {
-        const user = await this.register(player.email, password);
+        const { user, new: isNew } = await this.register(player.email, password);
+        created = isNew;
         await this.addUserToTenant(user?.id, role, player.email, tenantId);
         player.appId = user?.id;
       } catch (error) {
@@ -1002,7 +1022,10 @@ export class DbService {
       await this.addPlayerToAttendancesByDate(data as unknown as Player, tenantId);
     }
 
-    return data.id;
+    return {
+      userId: data.id,
+      created,
+    };
   }
 
   async addPlayerToAttendancesByDate(player: Player, tenantId?: number) {

@@ -138,13 +138,15 @@ export class TenantRegisterPage implements OnInit {
       additional_fields[field.id] = field.value;
     }
 
+    let isNew;
+
     try {
       if (additional_fields && additional_fields['bfecg_church'] === '') {
         const churchId = await this.db.createChurch(this.customChurchName);
         additional_fields['bfecg_church'] = churchId;
       }
 
-      const playerId = await this.db.addPlayer({
+      const { userId, created } = await this.db.addPlayer({
         firstName: this.firstName,
         lastName: this.lastName,
         email: this.db.user?.email ?? this.email,
@@ -165,13 +167,21 @@ export class TenantRegisterPage implements OnInit {
         notes: this.notes ?? "",
       }, true, Role.APPLICANT, this.tenantData.id, this.password, this.tenantData.longName);
 
+      isNew = created && !this.db.user;
+
       if (this.tenantData?.registration_fields?.includes('picture')) {
-        const url: string = await this.db.updateImage(playerId, this.profileImgFile, this.db.user?.id);
+        const url: string = await this.db.updateImage(userId, this.profileImgFile, this.db.user?.id);
         this.profilePicture = url;
       }
     } catch (error) {
       await loading.dismiss();
-      Utils.showToast("Fehler bei der Registrierung, bitte überprüfe deine Eingaben und versuche es erneut.", "danger");
+
+      if (error?.message === 'Fehler beim Erstellen des Accounts: Deine E-Mail-Adresse existiert bereits. Bitte melde dich an.') {
+        Utils.showToast(error.message, "danger", 4000);
+        return;
+      }
+
+      Utils.showToast("Fehler bei der Registrierung, bitte überprüfe deine Eingaben und versuche es erneut.", "danger", 4000);
       return;
     }
 
@@ -189,8 +199,8 @@ export class TenantRegisterPage implements OnInit {
     const alert = await this.alertController.create({
       header: 'Registrierung erfolgreich',
       message: this.tenantData.auto_approve_registrations ?
-        this.db.user ? "Deine Registrierung war erfolgreich! Du bist nun teil der Instanz." : `Dein Konto wurde erstellt. Um dich anmelden zu können, bestätige bitte deine E-Mail. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner. Im Anschluss kannst du dich anmelden.` :
-        this.db.user ? "Deine Registrierung war erfolgreich! Bitte warte auf die Genehmigung durch einen Administrator." : `Dein Konto wurde erstellt und wartet auf die Genehmigung durch einen Administrator. Bitte bestätige deine E-Mail, um dich anmelden zu können. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner.`,
+        !isNew ? "Deine Registrierung war erfolgreich! Du bist nun teil der Instanz." : `Dein Konto wurde erstellt. Um dich anmelden zu können, bestätige bitte deine E-Mail. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner. Im Anschluss kannst du dich anmelden.` :
+        !isNew ? "Deine Registrierung war erfolgreich! Bitte warte auf die Genehmigung durch einen Administrator." : `Dein Konto wurde erstellt und wartet auf die Genehmigung durch einen Administrator. Bitte bestätige deine E-Mail, um dich anmelden zu können. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner.`,
       buttons: [{
         text: 'OK'
       }]
