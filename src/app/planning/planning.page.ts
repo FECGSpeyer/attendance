@@ -235,14 +235,27 @@ export class PlanningPage implements OnInit {
     await alert.present();
   }
 
+  addCurrentSongs(popover: IonPopover) {
+    popover?.dismiss();
+    const songsToAdd: string[] = [];
+
+    for (let historyItem of this.history) {
+      if (!this.selectedFields.find((field: FieldSelection) => Number(field.id) === historyItem.songId)) {
+        songsToAdd.push(String(historyItem.songId));
+      }
+    }
+
+    this.onSongsChange(songsToAdd);
+  }
+
   onAddSong(id: string, popover: IonPopover) {
     popover?.dismiss();
     const attendance: Attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
     if (!id) return;
-    this.onSongsChange([id], attendance?.type === "uebung");
+    this.onSongsChange([id]);
   }
 
-  onSongsChange(ids: string[], isPractice: boolean = true) {
+  onSongsChange(ids: string[]) {
     for (let id of ids) {
       const song: Song = this.songs.find((song: Song) => song.id === parseInt(id));
       const conductor: string | undefined = this.history?.find((his: History) => his.songId === song.id)?.conductorName;
@@ -250,7 +263,7 @@ export class PlanningPage implements OnInit {
       this.selectedFields.push({
         id,
         name: `${song.number}. ${song.name}`,
-        time: isPractice ? "20" : "5",
+        time: "20",
         conductor: conductor || "",
         songId: song.id,
       });
