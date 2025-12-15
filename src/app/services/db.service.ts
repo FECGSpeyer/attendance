@@ -2972,6 +2972,44 @@ export class DbService {
     return data.id;
   }
 
+  async sendQuestion(message: string, phone: string): Promise<void> {
+    const { error } = await supabase
+      .from('questions')
+      .insert({
+        message,
+        phone,
+        tenant_id: this.tenant().id,
+        user_id: this.user?.id,
+      });
+
+    if (error) {
+      Utils.showToast("Fehler beim Senden der Frage", "danger");
+      throw error;
+    }
+
+    return;
+  }
+
+  async sendFeedback(message: string, rating: number, anonymous: boolean, phone: string): Promise<void> {
+    const { error } = await supabase
+      .from('feedback')
+      .insert({
+        message,
+        rating,
+        anonymous,
+        phone,
+        tenant_id: anonymous ? null : this.tenant().id,
+        user_id: anonymous ? null : this.user?.id,
+      });
+
+    if (error) {
+      Utils.showToast("Fehler beim Senden des Feedbacks", "danger");
+      throw error;
+    }
+
+    return;
+  }
+
   // async syncShiftAssignments(): Promise<void> {
   //   const { data } = await supabase
   //     .from('player')

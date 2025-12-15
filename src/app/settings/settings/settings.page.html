@@ -317,8 +317,7 @@
                     <ion-modal [keepContentsMounted]="true">
                       <ng-template>
                         <ion-datetime id="birthday-master-data" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
-                          [(ngModel)]="userData.birthday"
-                          presentation="date"></ion-datetime>
+                          [(ngModel)]="userData.birthday" presentation="date"></ion-datetime>
                       </ng-template>
                     </ion-modal>
                   </ion-item>
@@ -415,6 +414,104 @@
         (click)="showAlertForAccountsCreation()">
         <ion-icon name="create-outline" slot="start"></ion-icon>
         <ion-label>Fehlende Benutzeraccounts anlegen</ion-label>
+      </ion-item>
+
+      <ion-item detail="false" button id="feedback-button">
+        <ion-icon name="help-outline" slot="start"></ion-icon>
+        <ion-label>Hilfe/Feedback</ion-label>
+        <ion-modal #feedbackModal trigger="feedback-button" [breakpoints]="[0, .9, 1]" [initialBreakpoint]=".9">
+          <ng-template>
+            <ion-content color="light">
+              <ion-header>
+                <ion-toolbar>
+                  <ion-title>Hilfe/Feedback</ion-title>
+                </ion-toolbar>
+              </ion-header>
+              <ion-list [inset]="true">
+                <ion-item-group>
+                  <ion-item button detail="false" (click)="openTelegramSupport()">
+                    <ion-icon color="primary" name="send-outline" slot="start"></ion-icon>
+                    <ion-label color="primary">
+                      Per Telegram kontaktieren
+                    </ion-label>
+                  </ion-item>
+                </ion-item-group>
+
+                <ion-text color="medium">
+                  <p [style.textAlign]="'center'">oder</p>
+                </ion-text>
+
+                <ion-item-group>
+                  <ion-segment>
+                    <ion-segment-button value="help" content-id="help">
+                      <ion-label>Hilfe/Frage</ion-label>
+                    </ion-segment-button>
+                    <ion-segment-button value="feedback" content-id="feedback">
+                      <ion-label>Feedback</ion-label>
+                    </ion-segment-button>
+                  </ion-segment>
+                </ion-item-group>
+                <ion-segment-view>
+                  <ion-segment-content id="help">
+                    <ion-item-group>
+                      <ion-item>
+                        <ion-label position="stacked">Deine Frage</ion-label>
+                        <ion-textarea placeholder="Deine Frage eingeben..." [(ngModel)]="helpQuestion"
+                          rows="6"></ion-textarea>
+                      </ion-item>
+
+                      <ion-item>
+                        <ion-label position="stacked">Deine Handynummer (optional)</ion-label>
+                        <ion-input helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel" placeholder="Handynummer eingeben..."
+                          [(ngModel)]="feedbackPhone"></ion-input>
+                      </ion-item>
+                    </ion-item-group>
+
+                    <ion-item-group>
+                      <ion-item detail="false" button (click)="sendQuestion(feedbackModal)">
+                        <ion-label color="primary">Absenden</ion-label>
+                      </ion-item>
+                    </ion-item-group>
+                  </ion-segment-content>
+                  <ion-segment-content id="feedback">
+                    <ion-item-group>
+                      <ion-item>
+                        <ion-label>Deine Bewertung</ion-label>
+                        @for (rating of [1,2,3,4,5]; track rating) {
+                        <ion-icon name="star" [color]="rating <= feedbackRating ? 'warning' : 'medium'" slot="end"
+                          (click)="feedbackRating = rating"></ion-icon>
+                        }
+                      </ion-item>
+                      <ion-item>
+                        <ion-label position="stacked">Dein Feedback</ion-label>
+                        <ion-textarea placeholder="Dein Feedback eingeben..." [(ngModel)]="feedbackText"
+                          rows="6"></ion-textarea>
+                      </ion-item>
+
+                      <ion-item>
+                        <ion-toggle label="Anonym" [(ngModel)]="anonymous">Anonym</ion-toggle>
+                      </ion-item>
+
+                      @if (!anonymous) {
+                      <ion-item>
+                        <ion-label position="stacked">Deine Handynummer (optional)</ion-label>
+                        <ion-input helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel" placeholder="Handynummer eingeben..."
+                          [(ngModel)]="feedbackPhone"></ion-input>
+                      </ion-item>
+                      }
+                    </ion-item-group>
+
+                    <ion-item-group>
+                      <ion-item detail="false" button (click)="sendFeedback(feedbackModal)">
+                        <ion-label color="primary">Absenden</ion-label>
+                      </ion-item>
+                    </ion-item-group>
+                  </ion-segment-content>
+                </ion-segment-view>
+              </ion-list>
+            </ion-content>
+          </ng-template>
+        </ion-modal>
       </ion-item>
 
       <ion-item button detail="false" id="whatsnew-button">
@@ -864,7 +961,8 @@
                 <h2>{{ tenant.shortName }}</h2>
                 <h3>{{ tenant.longName }}</h3>
               </ion-label>
-              <ion-badge [style.marginRight.px]="5" *ngIf="db.tenant().id === tenant.id" color="primary">Aktuell</ion-badge>
+              <ion-badge [style.marginRight.px]="5" *ngIf="db.tenant().id === tenant.id"
+                color="primary">Aktuell</ion-badge>
               <ion-icon size="small" color="warning" *ngIf="tenant.favorite" slot="end" name="star"></ion-icon>
             </ion-item>
             <ion-item-options (ionSwipe)="setInstanceAsFavorite(tenant, sliding)" side="end">

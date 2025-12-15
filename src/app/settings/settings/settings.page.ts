@@ -44,6 +44,11 @@ export class SettingsPage implements OnInit {
   public oldUserData: Person | null = null;
   public isImageViewerOpen: boolean = false;
   public max: string = new Date().toISOString();
+  public helpQuestion: string = '';
+  public feedbackText: string = '';
+  public anonymous: boolean = false;
+  public feedbackRating: number = 0;
+  public feedbackPhone: string = '';
 
   constructor(
     public db: DbService,
@@ -644,6 +649,63 @@ export class SettingsPage implements OnInit {
         loading.dismiss();
         Utils.showToast("Fehler beim ändern des Passbildes, versuche es später erneut", "danger");
       }
+    }
+  }
+
+  openTelegramSupport() {
+    window.open("https://t.me/Eckstaedt", "_blank");
+  }
+
+  async sendQuestion(modal: IonModal) {
+    const loading = await Utils.getLoadingElement();
+    loading.present();
+
+    try {
+      await this.db.sendQuestion(
+        this.helpQuestion,
+        this.feedbackPhone
+      );
+      modal.dismiss();
+      this.helpQuestion = '';
+      this.anonymous = false;
+      this.feedbackPhone = '';
+
+      Utils.showToast("Deine Anfrage wurde erfolgreich gesendet. Wir melden uns so schnell wie möglich bei dir.", "success");
+      loading.dismiss();
+    } catch (error) {
+      Utils.showToast("Fehler beim Senden der Anfrage: " + error.message, "danger");
+      loading.dismiss();
+    }
+  }
+
+  async sendFeedback(modal: IonModal) {
+    const loading = await Utils.getLoadingElement();
+    loading.present();
+
+    if (this.feedbackRating === 0) {
+      Utils.showToast("Bitte gib eine Bewertung ab.", "danger");
+      loading.dismiss();
+      return;
+    }
+
+    try {
+      await this.db.sendFeedback(
+        this.feedbackText,
+        this.feedbackRating,
+        this.anonymous,
+        this.feedbackPhone
+      );
+      modal.dismiss();
+      this.feedbackText = '';
+      this.feedbackRating = 0;
+      this.anonymous = false;
+      this.feedbackPhone = '';
+
+      Utils.showToast("Dein Feedback wurde erfolgreich gesendet. Vielen Dank!", "success");
+      loading.dismiss();
+    } catch (error) {
+      Utils.showToast("Fehler beim Senden des Feedbacks: " + error.message, "danger");
+      loading.dismiss();
     }
   }
 }

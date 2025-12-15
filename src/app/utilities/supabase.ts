@@ -258,6 +258,47 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          anonymous: boolean | null
+          created_at: string
+          id: number
+          message: string | null
+          phone: string | null
+          rating: number | null
+          tenant_id: number | null
+          user_id: string | null
+        }
+        Insert: {
+          anonymous?: boolean | null
+          created_at?: string
+          id?: number
+          message?: string | null
+          phone?: string | null
+          rating?: number | null
+          tenant_id?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          anonymous?: boolean | null
+          created_at?: string
+          id?: number
+          message?: string | null
+          phone?: string | null
+          rating?: number | null
+          tenant_id?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_categories: {
         Row: {
           created_at: string
@@ -716,6 +757,41 @@ export type Database = {
           {
             foreignKeyName: "public_player_tenantId_fkey"
             columns: ["tenantId"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      questions: {
+        Row: {
+          created_at: string
+          id: number
+          message: string | null
+          phone: string | null
+          tenant_id: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          message?: string | null
+          phone?: string | null
+          tenant_id?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          message?: string | null
+          phone?: string | null
+          tenant_id?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_tenant_id_fkey"
+            columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]

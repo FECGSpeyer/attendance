@@ -384,3 +384,23 @@ export interface Church {
     created_from: string;
     name: string;
 }
+
+export interface Feedback {
+    id?: number;
+    created_at?: string;
+    message: string;
+    rating: number;
+    anonymous: boolean;
+    tenant_id?: number;
+    user_id?: string;
+    phone?: string;
+}
+
+export interface Question {
+    id?: number;
+    created_at?: string;
+    message: string;
+    anonymous: boolean;
+    tenant_id?: number;
+    user_id?: string;
+}
