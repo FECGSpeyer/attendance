@@ -12,6 +12,7 @@ import { Utils } from 'src/app/utilities/Utils';
 import { Viewer } from '../../utilities/interfaces';
 import { Router } from '@angular/router';
 import { RegisterPage } from 'src/app/register/register.page';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 @Component({
   selector: 'app-settings',
@@ -49,6 +50,7 @@ export class SettingsPage implements OnInit {
   public anonymous: boolean = false;
   public feedbackRating: number = 0;
   public feedbackPhone: string = '';
+  private sub: RealtimeChannel | null = null;
 
   constructor(
     public db: DbService,
@@ -108,10 +110,28 @@ export class SettingsPage implements OnInit {
     if (this.oldUserData) {
       this.userData = { ...this.oldUserData };
     }
+
+    this.subscribe();
+  }
+
+  subscribe() {
+    this.sub?.unsubscribe();
+
+    this.sub = this.db.getSupabase()
+      .channel('pending-player-changes').on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'player' },
+        async (event: any) => {
+          if ((event.new?.tenantId === this.db.tenant().id && event.new?.pending) || event.old?.id) {
+            this.pendingPersons = await this.db.getPendingPersons();
+          }
+        })
+      .subscribe();
   }
 
   async ionViewWillEnter() {
     this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
+    this.pendingPersons = await this.db.getPendingPersons();
     this.viewers = await this.db.getViewers();
   }
 
