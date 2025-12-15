@@ -420,6 +420,7 @@ export class DbService {
     tenantId?: number,
     password?: string,
     tenantName?: string,
+    self_register?: boolean,
   ): Promise<string> {
     const { userId, alreadyThere } = await this.getAppIdByEmail(email, tenantId || this.tenant().id) || {};
 
@@ -428,16 +429,18 @@ export class DbService {
         return userId;
       }
       await this.addUserToTenant(userId, role, email, tenantId);
-      const res = await axios.post(`https://staccato-server.vercel.app/api/informAttendixUser`, {
-        email,
-        name,
-        password,
-        role: Utils.getRoleText(role),
-        tenant: tenantName ?? this.tenant().longName,
-      });
+      if (!self_register) {
+        const res = await axios.post(`https://staccato-server.vercel.app/api/informAttendixUser`, {
+          email,
+          name,
+          password,
+          role: Utils.getRoleText(role),
+          tenant: tenantName ?? this.tenant().longName,
+        });
 
-      if (!res.data.mailSent) {
-        throw new Error('Fehler beim Informieren des Benutzers');
+        if (!res.data.mailSent) {
+          throw new Error('Fehler beim Informieren des Benutzers');
+        }
       }
 
       return userId;
@@ -999,6 +1002,7 @@ export class DbService {
         tenantId,
         password,
         tenantName,
+        player.self_register,
       );
       player.appId = appId;
     }
