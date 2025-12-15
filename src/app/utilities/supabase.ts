@@ -638,6 +638,7 @@ export type Database = {
           phone: string | null
           playsSince: string | null
           range: string | null
+          self_register: boolean | null
           shift_id: string | null
           shift_name: string | null
           shift_start: string | null
@@ -678,6 +679,7 @@ export type Database = {
           phone?: string | null
           playsSince?: string | null
           range?: string | null
+          self_register?: boolean | null
           shift_id?: string | null
           shift_name?: string | null
           shift_start?: string | null
@@ -718,6 +720,7 @@ export type Database = {
           phone?: string | null
           playsSince?: string | null
           range?: string | null
+          self_register?: boolean | null
           shift_id?: string | null
           shift_name?: string | null
           shift_start?: string | null

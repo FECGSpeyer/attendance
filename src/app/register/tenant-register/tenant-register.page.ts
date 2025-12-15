@@ -165,6 +165,7 @@ export class TenantRegisterPage implements OnInit {
         tenantId: this.tenantData.id,
         joined: new Date().toISOString(),
         notes: this.notes ?? "",
+        self_register: true
       }, true, Role.APPLICANT, this.tenantData.id, this.password, this.tenantData.longName);
 
       isNew = created && !this.db.user;
@@ -184,15 +185,6 @@ export class TenantRegisterPage implements OnInit {
       Utils.showToast("Fehler bei der Registrierung, bitte überprüfe deine Eingaben und versuche es erneut.", "danger", 4000);
       return;
     }
-
-    await this.db.notifyAboutRegistration(
-      `${this.firstName} ${this.lastName}`,
-      this.phone,
-      this.groups.find(g => g.id === this.selectedGroupId)?.name || '',
-      !Boolean(this.tenantData?.auto_approve_registrations),
-      this.tenantData.id,
-      this.tenantData.longName
-    );
 
     await loading.dismiss();
     this.router.navigate(['/login']);

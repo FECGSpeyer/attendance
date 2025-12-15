@@ -1963,20 +1963,6 @@ export class DbService {
     });
   }
 
-  async notifyAboutRegistration(name: string, phone: string, group: string, pending: boolean, tenantId: number, tenantName: string): Promise<void> {
-    await supabase.functions.invoke("new-registration-notifier", {
-      body: {
-        name,
-        pending,
-        tenantId,
-        phone,
-        group,
-        tenantName
-      },
-      method: "POST",
-    });
-  }
-
   async removeImage(id: number, imgPath: string, newUser: boolean = false, appId: string = "") {
     if (!newUser) {
       if (appId && this.user?.id === appId) {
@@ -2687,6 +2673,7 @@ export class DbService {
       notes: person.notes,
       history: [],
       pending: false,
+      self_register: false,
     };
 
     if (stayInInstance) {

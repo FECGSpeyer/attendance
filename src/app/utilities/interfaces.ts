@@ -107,6 +107,7 @@ export interface Person {
     shift_name?: string;
     shift_start?: string;
     pending: boolean;
+    self_register: boolean;
 }
 
 export interface PlayerHistoryEntry {
