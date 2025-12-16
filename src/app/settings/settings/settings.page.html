@@ -365,7 +365,7 @@
                 <ion-item button (click)="openPlayerModal(p)" *ngFor="let p of leftPlayers">
                   <ion-label>
                     <h2>{{ p.firstName }} {{ p.lastName }} ({{ p.groupName }})</h2>
-                    <h3>Ausgetreten: {{ p.left | date:"dd.MM.YYYY" }}</h3>
+                    <h3>Ausgetreten: {{ p.left | date:"dd.MM.yyyy" }}</h3>
                   </ion-label>
                 </ion-item>
               </ion-list>

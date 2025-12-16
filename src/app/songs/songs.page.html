@@ -130,7 +130,7 @@
             *ngIf="isOrchestra && song.instrument_ids?.length && viewOpts.includes('missingInstruments')">{{
             getInstrumentText(song.instrument_ids) }}</h3>
           <h3 *ngIf="!tenantData && song.lastSung && viewOpts.includes('lastSung')">Zuletzt {{ tenantType === 'orchestra' ? 'gespielt' : 'gesungen' }} am {{ song.lastSung |
-            date:'dd.MM.YYYY' }} | {{ song.conductor }}
+            date:'dd.MM.yyyy' }} | {{ song.conductor }}
           </h3>
         </ion-label>
         <ion-badge *ngIf="song.withSolo && viewOpts.includes('withSolo')" color="success" slot="end">

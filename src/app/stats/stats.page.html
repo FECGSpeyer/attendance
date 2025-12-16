@@ -12,7 +12,7 @@
 <ion-content>
   <ion-list>
     <ion-list-header>
-      Anwesenheiten (Ab {{ curAttDate | date: 'dd.MM.YYYY' }})
+      Anwesenheiten (Ab {{ curAttDate | date: 'dd.MM.yyyy' }})
     </ion-list-header>
 
     <ion-item>
@@ -34,11 +34,11 @@
 
     <ion-item>
       <ion-label>Beste Anwesenheit</ion-label>
-      <ion-badge>{{ bestAttendance?.date | date:'dd.MM.YYYY' }} ({{ bestAttendance?.percentage }}%)</ion-badge>
+      <ion-badge>{{ bestAttendance?.date | date:'dd.MM.yyyy' }} ({{ bestAttendance?.percentage }}%)</ion-badge>
     </ion-item>
     <ion-item>
       <ion-label>Schlechteste Anwesenheit</ion-label>
-      <ion-badge>{{ worstAttendance?.date | date:'dd.MM.YYYY' }} ({{ worstAttendance?.percentage }}%)</ion-badge>
+      <ion-badge>{{ worstAttendance?.date | date:'dd.MM.yyyy' }} ({{ worstAttendance?.percentage }}%)</ion-badge>
     </ion-item>
 
     <ion-list-header>
