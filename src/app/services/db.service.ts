@@ -539,7 +539,12 @@ export class DbService {
     const foundTenantUser = data.find((tenantUser: TenantUser) => tenantUser.tenantId === tenantId);
 
     if (foundTenantUser && foundTenantUser.role !== Role.ADMIN) {
-      if (foundTenantUser.role === Role.PLAYER || foundTenantUser.role === Role.RESPONSIBLE || foundTenantUser.role === Role.APPLICANT) {
+      if (
+        foundTenantUser.role === Role.PLAYER ||
+        foundTenantUser.role === Role.RESPONSIBLE ||
+        foundTenantUser.role === Role.APPLICANT ||
+        foundTenantUser.role === Role.HELPER
+      ) {
         const { data: playersData, error: playersError } = await supabase
           .from('player')
           .select('*')
@@ -551,7 +556,7 @@ export class DbService {
         }
 
         if (playersData.length) {
-          throw new Error(`Der Benutzer ist bereits in diesem Mandanten: ${playersData[0].firstName} ${playersData[0].lastName} (${foundTenantUser.role === Role.PLAYER ? 'Mitglied' : foundTenantUser.role === Role.RESPONSIBLE ? 'Verantwortlicher' : 'Antragsteller'})`);
+          throw new Error(`Der Benutzer ist bereits in diesem Mandanten: ${playersData[0].firstName} ${playersData[0].lastName} (${Utils.getRoleText(foundTenantUser.role)})`);
         } else {
           await supabase
             .from('tenantUsers')
