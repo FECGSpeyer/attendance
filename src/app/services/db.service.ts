@@ -539,7 +539,70 @@ export class DbService {
     const foundTenantUser = data.find((tenantUser: TenantUser) => tenantUser.tenantId === tenantId);
 
     if (foundTenantUser && foundTenantUser.role !== Role.ADMIN) {
-      throw new Error('Der Benutzer ist bereits in diesem Mandanten');
+      if (foundTenantUser.role === Role.PLAYER || foundTenantUser.role === Role.RESPONSIBLE || foundTenantUser.role === Role.APPLICANT) {
+        const { data: playersData, error: playersError } = await supabase
+          .from('player')
+          .select('*')
+          .eq('tenantId', tenantId)
+          .eq('appId', foundTenantUser.userId);
+
+        if (playersError) {
+          throw new Error('Fehler beim Laden des Benutzers');
+        }
+
+        if (playersData.length) {
+          throw new Error(`Der Benutzer ist bereits in diesem Mandanten: ${playersData[0].firstName} ${playersData[0].lastName} (${foundTenantUser.role === Role.PLAYER ? 'Mitglied' : foundTenantUser.role === Role.RESPONSIBLE ? 'Verantwortlicher' : 'Antragsteller'})`);
+        } else {
+          await supabase
+            .from('tenantUsers')
+            .delete()
+            .match({ tenantId, userId: foundTenantUser.userId });
+
+          return undefined;
+        }
+      } else if (foundTenantUser.role === Role.PARENT) {
+        const { data: parentsData, error: parentsError } = await supabase
+          .from('parents')
+          .select('*')
+          .eq('tenantId', tenantId)
+          .eq('appId', foundTenantUser.userId);
+
+        if (parentsError) {
+          throw new Error('Fehler beim Laden des Benutzers');
+        }
+
+        if (parentsData.length) {
+          throw new Error(`Der Benutzer ist bereits in dieser Instanz: ${parentsData[0].firstName} ${parentsData[0].lastName} (Elternteil)`);
+        } else {
+          await supabase
+            .from('tenantUsers')
+            .delete()
+            .match({ tenantId, userId: foundTenantUser.userId });
+          return undefined;
+        }
+      } else if (foundTenantUser.role === Role.VIEWER) {
+        const { data: viewersData, error: viewersError } = await supabase
+          .from('viewers')
+          .select('*')
+          .eq('tenantId', tenantId)
+          .eq('appId', foundTenantUser.userId);
+
+        if (viewersError) {
+          throw new Error('Fehler beim Laden des Benutzers');
+        }
+
+        if (viewersData.length) {
+          throw new Error(`Der Benutzer ist bereits in diesem Mandanten: ${viewersData[0].firstName} ${viewersData[0].lastName} (Beobachter)`);
+        } else {
+          await supabase
+            .from('tenantUsers')
+            .delete()
+            .match({ tenantId, userId: foundTenantUser.userId });
+          return undefined;
+        }
+      } else {
+        throw new Error('Der Benutzer ist bereits in diesem Mandanten');
+      }
     }
 
     if (foundTenantUser?.role === Role.ADMIN) {
@@ -897,19 +960,6 @@ export class DbService {
 
     if (data) { Utils.showToast('Passwort wurde erfolgreich aktualisiert', 'success'); }
     if (error) { Utils.showToast('Fehler beim zurücksetzen, versuche es noch einmal', "danger"); }
-  }
-
-  async syncCriticalPlayers(): Promise<boolean> {
-    const res = await axios.post(`https://staccato-server.vercel.app/api/syncCriticalPlayers`, {
-      isChoir: "TODO",
-      shortName: "UNDEFINED", // TODO
-    });
-
-    if (res.status !== 200) {
-      throw new Error('Fehler beim Löschen des Accounts');
-    }
-
-    return res.data.updated;
   }
 
   async getLeftPlayers(): Promise<Player[]> {

@@ -324,9 +324,13 @@ export class PersonPage implements OnInit, AfterViewInit {
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
     loading.present();
     if (this.player.firstName && this.player.lastName) {
-      await this.db.addPlayer(this.player, Boolean(this.player.email), this.role);
-      this.modalController.dismiss();
-      Utils.showToast(`Die Person wurde erfolgreich hinzugefügt`, "success");
+      try {
+        await this.db.addPlayer(this.player, Boolean(this.player.email), this.role);
+        this.modalController.dismiss();
+        Utils.showToast(`Die Person wurde erfolgreich hinzugefügt`, "success");
+      } catch (error) {
+        Utils.showToast(`Fehler beim hinzufügen der Person: ${error.message ?? "Unbekannter Fehler"}`, "danger");
+      }
     } else {
       Utils.showToast("Bitte gib den Vornamen und Nachnamen an.", "danger");
     }
@@ -415,7 +419,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
     } catch (error) {
       loading.dismiss();
-      Utils.showToast("Fehler beim aktualisieren des Spielers", "danger");
+      Utils.showToast(`Fehler beim aktualisieren des Spielers: ${error.message ?? "Unbekannter Fehler"}`, "danger");
     }
   }
 
