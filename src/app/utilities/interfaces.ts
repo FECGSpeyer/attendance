@@ -108,6 +108,7 @@ export interface Person {
     shift_start?: string;
     pending: boolean;
     self_register: boolean;
+    tenants?: Tenant[];
 }
 
 export interface PlayerHistoryEntry {

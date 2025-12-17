@@ -1,6 +1,6 @@
 import { Injectable, WritableSignal, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Platform } from '@ionic/angular';
+import { AlertController, Platform } from '@ionic/angular';
 import { createClient, SupabaseClient, SupabaseClientOptions, User } from '@supabase/supabase-js';
 import axios from 'axios';
 import * as dayjs from 'dayjs';
@@ -170,7 +170,7 @@ export class DbService {
     return file;
   }
 
-  async checkToken() {
+  async checkToken(showSelector: boolean = false) {
     if (this.tenantUser()) {
       return;
     }
@@ -178,11 +178,11 @@ export class DbService {
 
     if (data?.user?.email) {
       this.user = data.user;
-      await this.setTenant();
+      await this.setTenant(undefined, showSelector);
     }
   }
 
-  async setTenant(tenantId?: number) {
+  async setTenant(tenantId?: number, showSelector: boolean = false) {
     this.tenantUsers.set((await this.getTenantsByUserId()));
 
     if (this.tenantUsers().length === 0) {
@@ -194,8 +194,12 @@ export class DbService {
 
     this.tenants.set(await this.getTenants());
     const storedTenantId: string | null = tenantId || this.user.user_metadata?.currentTenantId;
-    if (storedTenantId && this.tenants().find((t: Tenant) => t.id === Number(storedTenantId))) {
+    const wantSelection: boolean = (this.user.user_metadata?.wantInstanceSelection || false) && showSelector;
+    if (!wantSelection && storedTenantId && this.tenants().find((t: Tenant) => t.id === Number(storedTenantId))) {
       this.tenant.set(this.tenants().find((t: Tenant) => t.id === Number(storedTenantId)));
+    } else if (wantSelection) {
+      const tenantId = await this.getWantedTenant(Number(storedTenantId));
+      this.tenant.set(this.tenants().find((t: Tenant) => t.id === tenantId));
     } else {
       this.tenant.set(this.tenants()[0]);
     }
@@ -205,6 +209,7 @@ export class DbService {
       supabase.auth.updateUser({
         data: {
           currentTenantId: this.tenant().id,
+          wantInstanceSelection: this.user.user_metadata?.wantInstanceSelection || false,
         }
       });
     }
@@ -226,6 +231,33 @@ export class DbService {
     }
 
     await this.loadShifts();
+  }
+
+  async getWantedTenant(tenantId?: number): Promise<number> {
+    return new Promise<number>(async (resolve) => {
+      const alert = await new AlertController().create({
+        header: 'Instanz auswählen',
+        message: 'Bitte wähle die Instanz aus, die du öffnen möchtest:',
+        backdropDismiss: false,
+        inputs: this.tenants().map(t => ({
+          name: t.longName,
+          type: 'radio',
+          label: t.longName,
+          value: t.id.toString(),
+          checked: tenantId ? t.id === tenantId : false,
+        })),
+        buttons: [
+          {
+            text: 'Öffnen',
+            handler: (tenantId: string) => {
+              resolve(Number(tenantId));
+            }
+          }
+        ]
+      });
+
+      await alert.present();
+    });
   }
 
   isBeta() {
@@ -724,7 +756,7 @@ export class DbService {
         return true;
       }
 
-      await this.setTenant();
+      await this.setTenant(undefined, true);
       if (this.tenantUser()) {
         this.router.navigateByUrl(Utils.getUrl(this.tenantUser().role));
       } else {

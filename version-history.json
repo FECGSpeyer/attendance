@@ -4,7 +4,8 @@
             "version": "3.5.1",
             "date": "17.12.2025",
             "changes": [
-                "Statistiken für Organisationen: Sieh dir Statistiken über alle Instanzen deiner Organisation an, um einen besseren Überblick zu erhalten."
+                "Statistiken für Organisationen: Sieh dir Statistiken über alle Instanzen deiner Organisation an, um einen besseren Überblick zu erhalten.",
+                "Instanz-Schnellauswahl: Wähle beim Start der App schnell und einfach die gewünschte Instanz aus, um Zeit zu sparen. Diese Funktion kann in den Instanz-Einstellungen aktiviert werden."
             ]
         },
         {

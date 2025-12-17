@@ -52,6 +52,7 @@ export class SettingsPage implements OnInit {
   public feedbackPhone: string = '';
   private sub: RealtimeChannel | null = null;
   public versionHistory = require('../../../../version-history.json').versions;
+  public wantInstanceSelection: boolean = false;
 
   constructor(
     public db: DbService,
@@ -111,6 +112,8 @@ export class SettingsPage implements OnInit {
     if (this.oldUserData) {
       this.userData = { ...this.oldUserData };
     }
+
+    this.wantInstanceSelection = this.db.user.user_metadata?.wantInstanceSelection || false;
 
     this.subscribe();
   }
@@ -728,5 +731,14 @@ export class SettingsPage implements OnInit {
       Utils.showToast("Fehler beim Senden des Feedbacks: " + error.message, "danger");
       loading.dismiss();
     }
+  }
+
+  async onTenantSelectionChange() {
+    this.db.getSupabase().auth.updateUser({
+      data: {
+        currentTenantId: this.db.user.user_metadata?.currentTenantId ?? null,
+        wantInstanceSelection: this.wantInstanceSelection,
+      }
+    });
   }
 }
