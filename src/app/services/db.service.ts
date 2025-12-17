@@ -422,10 +422,18 @@ export class DbService {
     tenantName?: string,
     self_register?: boolean,
   ): Promise<string> {
-    const { userId, alreadyThere } = await this.getAppIdByEmail(email, tenantId || this.tenant().id) || {};
+    const { userId, alreadyThere } = await this.getAppIdByEmail(email, tenantId || this.tenant().id, role) || {};
 
     if (userId) {
       if (alreadyThere) {
+        if (role === Role.ADMIN) {
+          try {
+            await this.updateTenantUser({ role: Role.ADMIN }, userId);
+          } catch (error) {
+            throw new Error('Fehler beim Aktualisieren der Benutzerrolle');
+          }
+        }
+
         return userId;
       }
       await this.addUserToTenant(userId, role, email, tenantId);
@@ -530,7 +538,10 @@ export class DbService {
     return data;
   }
 
-  async getAppIdByEmail(email: string, tenantId: number): Promise<{ userId: string, alreadyThere: boolean } | undefined> {
+  async getAppIdByEmail(email: string, tenantId: number, role?: Role): Promise<{
+    userId: string,
+    alreadyThere: boolean,
+  } | undefined> {
     const { data, error } = await supabase
       .from('tenantUsers')
       .select('*')
@@ -539,6 +550,13 @@ export class DbService {
     const foundTenantUser = data.find((tenantUser: TenantUser) => tenantUser.tenantId === tenantId);
 
     if (foundTenantUser && foundTenantUser.role !== Role.ADMIN) {
+      if (role === Role.ADMIN) {
+        return {
+          userId: foundTenantUser.userId,
+          alreadyThere: true,
+        }
+      }
+
       if (
         foundTenantUser.role === Role.PLAYER ||
         foundTenantUser.role === Role.RESPONSIBLE ||
