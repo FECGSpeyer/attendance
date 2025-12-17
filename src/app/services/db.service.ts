@@ -201,7 +201,7 @@ export class DbService {
     } else if (wantSelection) {
       await loading?.dismiss();
       const tenantId = await this.getWantedTenant(Number(storedTenantId));
-      if (!loading && tenantId !== Number(storedTenantId)) {
+      if (tenantId !== Number(storedTenantId)) {
         loader = await Utils.getLoadingElement();
         await loader.present();
         this.tenant.set(this.tenants().find((t: Tenant) => t.id === tenantId));
