@@ -206,7 +206,10 @@ export class DbService {
         await loader.present();
         this.tenant.set(this.tenants().find((t: Tenant) => t.id === tenantId));
       } else {
-        await loading?.present();
+        if (loading) {
+          const load = await Utils.getLoadingElement(1500);
+          await load.present();
+        }
         return;
       }
     } else {
