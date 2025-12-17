@@ -16,7 +16,7 @@ export class AuthGuard  {
   async canActivate(
     _: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Promise<boolean> {
-    await this.db.checkToken(true);
+    await this.db.checkToken();
     const role = this.db.tenantUser()?.role;
 
     if (!role) {

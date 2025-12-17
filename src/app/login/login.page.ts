@@ -54,7 +54,7 @@ export class LoginPage implements OnInit {
   async login() {
     const loading = await Utils.getLoadingElement();
     loading.present();
-    const res: boolean = await this.db.login(this.registerCredentials.email, this.registerCredentials.password);
+    const res: boolean = await this.db.login(this.registerCredentials.email, this.registerCredentials.password, false, loading);
 
     loading.dismiss();
 
@@ -66,7 +66,7 @@ export class LoginPage implements OnInit {
   async startDemo() {
     const loading = await Utils.getLoadingElement();
     loading.present();
-    const res: boolean = await this.db.login(environment.demoMail, environment.demoPassword);
+    const res: boolean = await this.db.login(environment.demoMail, environment.demoPassword, false, loading);
 
     loading.dismiss();
 

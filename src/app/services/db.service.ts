@@ -57,7 +57,7 @@ export class DbService {
     this.shifts = signal([]);
     this.churches = signal([]);
     this.plt.ready().then(() => {
-      this.checkToken();
+      this.checkToken(true);
     });
   }
 
@@ -182,7 +182,8 @@ export class DbService {
     }
   }
 
-  async setTenant(tenantId?: number, showSelector: boolean = false) {
+  async setTenant(tenantId?: number, showSelector: boolean = false, loading?: HTMLIonLoadingElement) {
+    let loader;
     this.tenantUsers.set((await this.getTenantsByUserId()));
 
     if (this.tenantUsers().length === 0) {
@@ -198,8 +199,15 @@ export class DbService {
     if (!wantSelection && storedTenantId && this.tenants().find((t: Tenant) => t.id === Number(storedTenantId))) {
       this.tenant.set(this.tenants().find((t: Tenant) => t.id === Number(storedTenantId)));
     } else if (wantSelection) {
+      await loading?.dismiss();
       const tenantId = await this.getWantedTenant(Number(storedTenantId));
-      this.tenant.set(this.tenants().find((t: Tenant) => t.id === tenantId));
+      if (tenantId !== Number(storedTenantId)) {
+        loader = await Utils.getLoadingElement();
+        await loader.present();
+        this.tenant.set(this.tenants().find((t: Tenant) => t.id === tenantId));
+      } else {
+        return;
+      }
     } else {
       this.tenant.set(this.tenants()[0]);
     }
@@ -231,6 +239,7 @@ export class DbService {
     }
 
     await this.loadShifts();
+    await loader?.dismiss();
   }
 
   async getWantedTenant(tenantId?: number): Promise<number> {
@@ -247,6 +256,13 @@ export class DbService {
           checked: tenantId ? t.id === tenantId : false,
         })),
         buttons: [
+          {
+            text: 'Abbrechen',
+            role: 'destructive',
+            handler: () => {
+              resolve(tenantId ?? this.tenants()[0].id);
+            }
+          },
           {
             text: 'Öffnen',
             handler: (tenantId: string) => {
@@ -705,7 +721,7 @@ export class DbService {
     }
   }
 
-  async login(email: string, password: string, returnEarly: boolean = false): Promise<boolean> {
+  async login(email: string, password: string, returnEarly: boolean = false, loading?: HTMLIonLoadingElement): Promise<boolean> {
     const { data, error } = await supabase.auth.signInWithPassword({
       email, password,
     });
@@ -756,7 +772,7 @@ export class DbService {
         return true;
       }
 
-      await this.setTenant(undefined, true);
+      await this.setTenant(undefined, true, loading);
       if (this.tenantUser()) {
         this.router.navigateByUrl(Utils.getUrl(this.tenantUser().role));
       } else {
