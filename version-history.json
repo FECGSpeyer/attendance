@@ -1,0 +1,384 @@
+{
+    "versions": [
+        {
+            "version": "3.5.1",
+            "date": "17.12.2025",
+            "changes": [
+                "Statistiken für Organisationen: Sieh dir Statistiken über alle Instanzen deiner Organisation an, um einen besseren Überblick zu erhalten."
+            ]
+        },
+        {
+            "version": "3.5.0",
+            "changes": [
+                "Schichtpläne sind da! Automatisiere die Planung und Verwaltung deiner Schichten für mehr Effizienz.",
+                "Anmeldefristen: Setze Anmeldefristen für Termine fest, um eine bessere Organisation zu gewährleisten.",
+                "Anwesenheits-Export (Excel): Exportiere einzelne Anwesenheiten für eine bessere Auswertung und Archivierung."
+            ]
+        },
+        {
+            "version": "3.4.0",
+            "changes": [
+                "Anwesenheits-Typen sind da! Definiere verschiedene Arten von Anwesenheiten für mehr Flexibilität. Gehe dazu einfach in den allgemeinen Einstellungen auf Anwesenheits-Typen. Die Standard typen sind immer noch vorhanden und können weiterhin genutzt werden."
+            ]
+        },
+        {
+            "version": "3.3.1",
+            "changes": [
+                "Fehlerbehebung: Benutzer ohne zugewiesener Instanz können wieder einer zugewiesen werden."
+            ]
+        },
+        {
+            "version": "3.3.0",
+            "changes": [
+                "Die Werkdatenbank ist da! Füge jetzt einfach deine Dateien zu den Werken hinzu und ordne sie automatisch den Instrumenten zu.",
+                "Neu: Verbesserte Benutzeroberfläche für die Werkverwaltung",
+                "Werke können jetzt als externe Links geteilt werden, auch für Benutzer ohne Account."
+            ]
+        },
+        {
+            "version": "3.2.0",
+            "changes": [
+                "Organisationen sind da! Füge jetzt deine Instanzen einer Organisation hinzu, um die Verwaltung zu erleichtern. (Personendaten können übernommen werden und zu anderen Instanzen kopiert/verschoben werden)",
+                "Sobald ein bestehender Account zu einer Instanz hinzugefügt wird, wird der Benutzer per E-Mail benachrichtigt.",
+                "Neues Apple Design für die Benutzeroberfläche"
+            ]
+        },
+        {
+            "version": "3.1.0",
+            "changes": [
+                "Es können nun mehrere Anwesenheiten gleichzeitig angelegt werden",
+                "Der Kalender beim erstellen von Anwesenheiten wurde verbessert (farbliche Anpassungen)",
+                "Feiertage/Schulferien können nun berücksichtigt werden",
+                "Lehrerpflege für Orchester",
+                "Neue Anordnung bei den Personen-Informationen",
+                "Instanzeinstellungen optimiert"
+            ]
+        },
+        {
+            "version": "3.0.0",
+            "changes": [
+                "Anwesenheiten werden ab jetzt pro Person gespeichert",
+                "Die Anwesenheit pro Person kann einfach in der Personenliste angezeigt werden",
+                "Dirigenten sind nicht mehr separiert"
+            ]
+        },
+        {
+            "version": "2.1.1",
+            "changes": [
+                "Neue Sortierfunktion: Nach anstehenden Geburtstagen sortieren"
+            ]
+        },
+        {
+            "version": "2.1.0",
+            "changes": [
+                "Beta Funktion: Neue Speichermethode für Anwesenheiten",
+                "Neutral-Status: Lege den Status beim Anlegen der Anwesenheit fest"
+            ]
+        },
+        {
+            "version": "2.0.3",
+            "changes": [
+                "Fehlerbehebungen"
+            ]
+        },
+        {
+            "version": "2.0.2",
+            "changes": [
+                "Fehlerbehebungen für das parallele Arbeiten"
+            ]
+        },
+        {
+            "version": "2.0.1",
+            "changes": [
+                "Demo Login möglich"
+            ]
+        },
+        {
+            "version": "2.0.0",
+            "changes": [
+                "Attendix",
+                "Verwalte alle Anwesenheiten in einer App!"
+            ]
+        },
+        {
+            "version": "1.8.3",
+            "changes": [
+                "Werke können direkt Vorträgen zugeordnet werden"
+            ]
+        },
+        {
+            "version": "1.8.2",
+            "changes": [
+                "Neue Spieler werden zu Anwesenheiten ab Eintrittsdatum hinzugefügt"
+            ]
+        },
+        {
+            "version": "1.8.1",
+            "changes": [
+                "Benutzer mit bestehendem Konto konnten nicht archiviert werden"
+            ]
+        },
+        {
+            "version": "1.8.0",
+            "changes": [
+                "Die Anwesenheitsliste wird jetzt in Echtzeit aktualisiert",
+                "Echtzeit Anwesenheit: Fehler bei gleichzeitiger Nutzung behoben"
+            ]
+        },
+        {
+            "version": "1.7.9",
+            "changes": [
+                "Fehlerbehebungen"
+            ]
+        },
+        {
+            "version": "1.7.8",
+            "changes": [
+                "Probenplan minütlich planbar",
+                "Fehlerbehebungen"
+            ]
+        },
+        {
+            "version": "1.7.7",
+            "changes": [
+                "Pausieren von Dirigenten möglich"
+            ]
+        },
+        {
+            "version": "1.7.6",
+            "changes": [
+                "Export Bug gefixt"
+            ]
+        },
+        {
+            "version": "1.7.5",
+            "changes": [
+                "Echtzeit-Anwesenheit ab jetzt standard"
+            ]
+        },
+        {
+            "version": "1.7.4",
+            "changes": [
+                "Fehlerbehebungen beim Beobachter"
+            ]
+        },
+        {
+            "version": "1.7.3",
+            "changes": [
+                "Anzahl zu spät gekommen bei Spielern sichtbar",
+                "Kleinere Verbesserungen"
+            ]
+        },
+        {
+            "version": "1.7.2",
+            "changes": [
+                "Werkhistorie: Mehrere Werke auf einmal"
+            ]
+        },
+        {
+            "version": "1.7.1",
+            "changes": [
+                "Spieler/Sänger können eine Helfer Rolle bekommen um die Anwesenheit zu pflegen"
+            ]
+        },
+        {
+            "version": "1.7.0",
+            "changes": [
+                "Anwesenheit wird in Echtzeit aktualisiert"
+            ]
+        },
+        {
+            "version": "1.6.18",
+            "changes": [
+                "Beobachter können eingesehen und entfernt werden"
+            ]
+        },
+        {
+            "version": "1.6.17",
+            "changes": [
+                "Performance und Fehlerbehebungen"
+            ]
+        },
+        {
+            "version": "1.6.16",
+            "changes": [
+                "Fehlerbehebungen (Probenplan Export & Versand)"
+            ]
+        },
+        {
+            "version": "1.6.15",
+            "changes": [
+                "Fehlerbehebungen (Anwesenheit einzelner Personen wurde nicht angezeigt)"
+            ]
+        },
+        {
+            "version": "1.6.14",
+            "changes": [
+                "Benachrichtigung, wenn update da ist."
+            ]
+        },
+        {
+            "version": "1.6.13",
+            "changes": [
+                "UI für Abwesenheit angepasst.",
+                "Bug fix beim Schließen von einer Anwesenheit."
+            ]
+        },
+        {
+            "version": "1.6.12",
+            "changes": [
+                "UI für Abmeldungen bei den Spielern verändert."
+            ]
+        },
+        {
+            "version": "1.6.11",
+            "changes": [
+                "Neutraler Status hinzugefügt und Spieler können sich für Vorträge anmelden."
+            ]
+        },
+        {
+            "version": "1.6.10",
+            "changes": [
+                "Fehler behoben"
+            ]
+        },
+        {
+            "version": "1.6.9",
+            "changes": [
+                "Dropdown für Gründe beim Abmelden hinzugefügt"
+            ]
+        },
+        {
+            "version": "1.6.8",
+            "changes": [
+                "Telegram Bot meldet jetzt auch Zuspätkommer."
+            ]
+        },
+        {
+            "version": "1.6.7",
+            "changes": [
+                "Fehlerbehebungen"
+            ]
+        },
+        {
+            "version": "1.6.6",
+            "changes": [
+                "Personen können sich jetzt zum Zuspätkommen abmelden.",
+                "Fehlerbehebungen und Rechtschreibkorrektur"
+            ]
+        },
+        {
+            "version": "1.6.5",
+            "changes": [
+                "Alter der Person in der Listenansicht",
+                "Gesamte Notiz in der Historie per Klick einsehbar",
+                "Fehlerbehebungen"
+            ]
+        },
+        {
+            "version": "1.6.4",
+            "changes": [
+                "Fehlerbehebungen"
+            ]
+        },
+        {
+            "version": "1.6.3",
+            "changes": [
+                "Saisonbeginn definierbar",
+                "Probenzeiten definierbar",
+                "Probenanzahl je Werk in Historie"
+            ]
+        },
+        {
+            "version": "1.6.2",
+            "changes": [
+                "Offline Warnung bei der Anwesenheit",
+                "Performance Verbesserungen",
+                "Fehlerbehebungungen"
+            ]
+        },
+        {
+            "version": "1.6.1",
+            "changes": [
+                "Fehlerbehebungungen"
+            ]
+        },
+        {
+            "version": "1.6.0",
+            "changes": [
+                "Chor & Orchester App zusammengeführt"
+            ]
+        },
+        {
+            "version": "1.5.3",
+            "changes": [
+                "Dirigenten werden immer als Entschuldigt angezeigt"
+            ]
+        },
+        {
+            "version": "1.5.2",
+            "changes": [
+                "Probenplanung: Ältere Anwesenheiten sind nun auch auswählbar"
+            ]
+        },
+        {
+            "version": "1.5.1",
+            "changes": [
+                "VoS: Spieler können als Prüflinge markiert werden"
+            ]
+        },
+        {
+            "version": "1.5.0",
+            "changes": [
+                "Beobachterrolle hinzugefügt"
+            ]
+        },
+        {
+            "version": "1.4.5",
+            "changes": [
+                "Anderer Dirigent bei Historie eingebbar",
+                "Mehrfachauswahl der Werke bei Probenplanung möglich",
+                "Uhrzeit bei Probenplan-Punkten ersichtlich",
+                "Anwesenheitsnotizen im Probenplan ersichtlich"
+            ]
+        },
+        {
+            "version": "1.4.4",
+            "changes": [
+                "Probenplan export vergrößert",
+                "Wort als erster Eintrag im Probenplan",
+                "Probenplan: Bei Freitexteingabe in Klammern Dirigent mit eingebbar z.B. Wort (Max Mustermann)"
+            ]
+        },
+        {
+            "version": "1.4.3",
+            "changes": [
+                "Senden der Pläne per Telgram möglich"
+            ]
+        },
+        {
+            "version": "1.4.2",
+            "changes": [
+                "Leseansicht und Export für Probenpläne in der Anwesenheit",
+                "Probenplan zu Anwesenheit zuteilbar",
+                "Pull to refresh für Anwesenheit und Spieler eingebaut",
+                "Fehlerbehebung: Aktuelle Anwesenheit löschbar"
+            ]
+        },
+        {
+            "version": "1.4.1",
+            "changes": [
+                "Datumsauswahl schließt automatisch",
+                "Email Template angepasst",
+                "Fehlerbehebung: Instrumente nicht editierbar"
+            ]
+        },
+        {
+            "version": "1.4.0",
+            "changes": [
+                "Probenplanung hinzugefügt",
+                "Werk aus Historie löschbar"
+            ]
+        }
+    ]
+}

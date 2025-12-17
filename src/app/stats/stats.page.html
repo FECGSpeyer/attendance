@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="light">
     <ion-title>Statistiken (bis Heute)</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
@@ -9,60 +9,121 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-list>
+<ion-content color="light">
+  <ion-list [inset]="true">
     <ion-list-header>
       Anwesenheiten (Ab {{ curAttDate | date: 'dd.MM.yyyy' }})
     </ion-list-header>
 
-    <ion-item>
-      <ion-label>Anwesenheiten Gesamt</ion-label>
-      <ion-badge>{{ attendances?.length }}</ion-badge>
-    </ion-item>
+    <ion-item-group>
+      <ion-item>
+        <ion-label>Anwesenheiten Gesamt</ion-label>
+        <ion-badge>{{ attendances?.length }}</ion-badge>
+      </ion-item>
 
-    @for(type of this.db.attendanceTypes(); track type.id) {
+      @for(type of this.db.attendanceTypes(); track type.id) {
       <ion-item>
         <ion-label>{{ type.name }}</ion-label>
         <ion-badge>{{ getAttTypeLength(type.id) }}</ion-badge>
       </ion-item>
-    }
+      }
 
-    <ion-item>
-      <ion-label>Ø Teilnehmer pro Termin</ion-label>
-      <ion-badge>{{ attPerc }}%</ion-badge>
-    </ion-item>
+      <ion-item>
+        <ion-label>Ø Teilnehmer pro Termin</ion-label>
+        <ion-badge>{{ attPerc }}%</ion-badge>
+      </ion-item>
 
-    <ion-item>
-      <ion-label>Beste Anwesenheit</ion-label>
-      <ion-badge>{{ bestAttendance?.date | date:'dd.MM.yyyy' }} ({{ bestAttendance?.percentage }}%)</ion-badge>
-    </ion-item>
-    <ion-item>
-      <ion-label>Schlechteste Anwesenheit</ion-label>
-      <ion-badge>{{ worstAttendance?.date | date:'dd.MM.yyyy' }} ({{ worstAttendance?.percentage }}%)</ion-badge>
-    </ion-item>
+      <ion-item>
+        <ion-label>Beste Anwesenheit</ion-label>
+        <ion-badge>{{ bestAttendance?.date | date:'dd.MM.yyyy' }} ({{ bestAttendance?.percentage }}%)</ion-badge>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-label>Schlechteste Anwesenheit</ion-label>
+        <ion-badge>{{ worstAttendance?.date | date:'dd.MM.yyyy' }} ({{ worstAttendance?.percentage }}%)</ion-badge>
+      </ion-item>
+    </ion-item-group>
 
     <ion-list-header>
       Personen
     </ion-list-header>
 
-    <ion-item>
-      <ion-label>Personen Gesamt</ion-label>
-      <ion-badge>{{ players?.length }}</ion-badge>
-    </ion-item>
+    <ion-item-group>
+      <ion-item>
+        <ion-label>Personen Gesamt</ion-label>
+        <ion-badge>{{ players?.length }}</ion-badge>
+      </ion-item>
 
-    <ion-item>
-      <ion-label>Aktive Personen</ion-label>
-      <ion-badge>{{ activePlayers?.length }}</ion-badge>
-    </ion-item>
+      <ion-item>
+        <ion-label>Aktive Personen</ion-label>
+        <ion-badge>{{ activePlayers?.length }}</ion-badge>
+      </ion-item>
 
-    <ion-item>
-      <ion-label>Pausierende Personen</ion-label>
-      <ion-badge>{{ pausedPlayers?.length }}</ion-badge>
-    </ion-item>
+      <ion-item>
+        <ion-label>Pausierende Personen</ion-label>
+        <ion-badge>{{ pausedPlayers?.length }}</ion-badge>
+      </ion-item>
 
-    <ion-item>
-      <ion-label>Ausgetretene Personen</ion-label>
-      <ion-badge>{{ leftPlayers?.length }}</ion-badge>
-    </ion-item>
+      <ion-item lines="none">
+        <ion-label>Ausgetretene Personen</ion-label>
+        <ion-badge>{{ leftPlayers?.length }}</ion-badge>
+      </ion-item>
+    </ion-item-group>
+
+    @if (db.organisation()) {
+    <ion-list-header>
+      {{ db.organisation().name }} Statistiken
+    </ion-list-header>
+
+    <ion-item-group>
+      <ion-item>
+        <ion-select (ionDismiss)="filterInstances()" label="Instanzen auswählen" [(ngModel)]="selectedInstances"
+          interface="modal" multiple="true">
+          @for(tenant of tenants; track tenant.id) {
+          <ion-select-option [value]="tenant.id">{{ tenant.longName }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+    </ion-item-group>
+
+    <ion-item-group>
+      <ion-item button detail="false" (click)="openInstancesAlert()">
+        <ion-label color="primary">Instanzen</ion-label>
+        @if (selectedInstances.length === 0) {
+        <ion-badge>Alle ({{ tenants.length }})</ion-badge>
+        } @else {
+        <ion-badge>{{ selectedInstances.length }}</ion-badge>
+        }
+      </ion-item>
+      <ion-item button detail="false" id="persons-button">
+        <ion-label color="primary">Personen Gesamt</ion-label>
+        <ion-badge>{{ uniquePersons.length }}</ion-badge>
+        <ion-modal trigger="persons-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+          <ng-template>
+            <ion-content color="light">
+              <ion-header>
+                <ion-toolbar>
+                  <ion-title>Personen Gesamt</ion-title>
+                </ion-toolbar>
+              </ion-header>
+
+              <ion-list [inset]="true">
+                <ion-item-group>
+                  <ion-item *ngFor="let u of uniquePersons">
+                    <ion-label>
+                      <h2>{{ u.firstName }} {{ u.lastName }}</h2>
+                      @for (tenant of u.tenants; track tenant.id) {
+                      <p>{{ tenant.longName }}</p>
+                      }
+                    </ion-label>
+                    <ion-badge>{{ u.tenants.length }}</ion-badge>
+                  </ion-item>
+                </ion-item-group>
+              </ion-list>
+            </ion-content>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+    </ion-item-group>
+    }
   </ion-list>
 </ion-content>

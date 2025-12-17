@@ -2666,6 +2666,38 @@ export class DbService {
     return data.tenant_group_data;
   }
 
+  async getInstancesOfOrganisations(orgId: number): Promise<Tenant[]> {
+    const { data, error } = await supabase
+      .from('tenant_group_tenants')
+      .select('tenant:tenant_id(*)')
+      .eq('tenant_group', orgId);
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Organisationen", "danger");
+      throw error;
+    }
+
+    return data.map(d => d.tenant as any);
+  }
+
+  async getAllPersonsFromOrganisation(tenants: Tenant[]): Promise<Player[]> {
+    const { data, error } = await supabase
+      .from('player')
+      .select('*')
+      .in('tenantId', tenants.map(t => t.id))
+      .is('pending', false)
+      .is("left", null)
+      .order('lastName', { ascending: true })
+      .order('firstName', { ascending: true });
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Personen", "danger");
+      throw error;
+    }
+
+    return data as any;
+  }
+
   async getOrganisationsFromUser(): Promise<Organisation[]> {
     const { data: tenants, error: fetchError } = await supabase
       .from('tenantUsers')

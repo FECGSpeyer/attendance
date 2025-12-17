@@ -51,6 +51,7 @@ export class SettingsPage implements OnInit {
   public feedbackRating: number = 0;
   public feedbackPhone: string = '';
   private sub: RealtimeChannel | null = null;
+  public versionHistory = require('../../../../version-history.json').versions;
 
   constructor(
     public db: DbService,
