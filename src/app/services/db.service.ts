@@ -206,6 +206,7 @@ export class DbService {
         await loader.present();
         this.tenant.set(this.tenants().find((t: Tenant) => t.id === tenantId));
       } else {
+        await loading?.present();
         return;
       }
     } else {
