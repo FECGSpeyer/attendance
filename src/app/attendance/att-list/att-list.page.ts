@@ -87,12 +87,6 @@ export class AttListPage implements OnInit {
       };
     }
 
-    // if (day === 0 || day === 6) {
-    //   return {
-    //     textColor: 'rgb(var(--ion-color-medium-rgb), .5)',
-    //   };
-    // }
-
     return undefined;
   };
 
@@ -104,7 +98,7 @@ export class AttListPage implements OnInit {
   ) {
     effect(async () => {
       this.db.tenant();
-      await this.getAttendance();
+      await this.init();
     });
 
     effect(() => {
@@ -112,18 +106,15 @@ export class AttListPage implements OnInit {
     });
   }
 
-  async logout() {
-    await this.db.logout();
+  async ngOnInit() {
+    await this.init();
   }
 
-  async ngOnInit() {
-    this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
+  async init(): Promise<void> {
+        this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
     this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isHelper = this.db.tenantUser().role === Role.HELPER;
-    const conductors = await this.db.getConductors(true);
-    this.activeConductors = conductors.filter((con: Person) => !con.left);
-    this.historyEntry.person_id = this.activeConductors[0]?.id;
     await this.getAttendance();
 
     if (this.db.tenant().showHolidays && this.db.tenant().region) {
@@ -132,7 +123,14 @@ export class AttListPage implements OnInit {
 
     this.subscribeOnAttChannel();
 
+    await this.loadSongData();
+  }
+
+  async loadSongData(): Promise<void> {
     this.songs = await this.db.getSongs();
+    const conductors = await this.db.getConductors(true);
+    this.activeConductors = conductors.filter((con: Person) => !con.left);
+    this.historyEntry.person_id = this.activeConductors[0]?.id;
   }
 
   subscribeOnAttChannel() {
