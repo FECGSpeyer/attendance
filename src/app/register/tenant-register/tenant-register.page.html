@@ -87,7 +87,7 @@
     <ion-list-header><ion-label>Weitere Informationen</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item>
-        <ion-select label="Gruppe" [(ngModel)]="selectedGroupId" #select>
+        <ion-select [label]="tenantData.type === 'choir' ? 'Stimme' : tenantData.type === 'orchestra' ? 'Instrument' : 'Gruppe'" [(ngModel)]="selectedGroupId" #select>
           <ion-select-option [value]="group.id" *ngFor="let group of groups">{{ group.name }}</ion-select-option>
         </ion-select>
       </ion-item>
