@@ -307,9 +307,9 @@ export class TenantRegisterPage implements OnInit {
     const imgFile: File = evt.target.files[0];
 
     if (imgFile) {
-      if (imgFile.size > 2 * 1024 * 1024) {
+      if (imgFile.size > 15 * 1024 * 1024) {
         loading.dismiss();
-        Utils.showToast("Das ausgewählte Bild ist zu groß. Bitte wähle ein Bild unter 2 MB.", "danger");
+        Utils.showToast("Das ausgewählte Bild ist zu groß. Bitte wähle ein Bild unter 15 MB.", "danger");
         return;
       }
 
