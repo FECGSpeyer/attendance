@@ -78,6 +78,12 @@ export class Utils {
         }
       }
 
+      let img = player.img || DEFAULT_IMAGE;
+
+      if (img.includes("/storage/v1/object/public/profiles/") && !img.includes("?width=100&height=100")) {
+        img = `${img}?width=100&height=100`
+      }
+
       return {
         ...player,
         firstOfInstrument,
@@ -85,7 +91,7 @@ export class Utils {
         isNew,
         percentage,
         groupName: instruments.find((ins: Group) => ins.id === player.instrument).name,
-        img: player.img || DEFAULT_IMAGE,
+        img,
       }
     }).sort((a: Player, b: Player) => {
       // Sort by instrument but maingroup first
