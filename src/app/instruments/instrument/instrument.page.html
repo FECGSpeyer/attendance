@@ -66,6 +66,9 @@
         <ion-item>
           <ion-label position="stacked">Synonyme</ion-label>
           <ion-input helperText="Definiere Synonyme um beim Hinzufügen von Dateien zu Werken die Instrumente automatisch zuordnen zu können. Synonyme durch Komma trennen." [(ngModel)]="instrument.synonyms"></ion-input>
+          <ion-button slot="end" fill="clear" (click)="generateSynonyms()">
+            <ion-icon slot="icon-only" name="sparkles-outline"></ion-icon>
+          </ion-button>
         </ion-item>
       </ion-col>
     </ion-row>

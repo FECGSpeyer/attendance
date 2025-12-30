@@ -725,6 +725,12 @@ export class DbService {
     }
   }
 
+  async changePassword(password: string) {
+    await supabase.auth.updateUser({
+      password,
+    })
+  }
+
   async login(email: string, password: string, returnEarly: boolean = false, loading?: HTMLIonLoadingElement): Promise<boolean> {
     const { data, error } = await supabase.auth.signInWithPassword({
       email, password,

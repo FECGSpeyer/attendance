@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
+import { AiService } from 'src/app/services/ai.service';
 import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType } from 'src/app/utilities/constants';
 import { GroupCategory, Group, Player } from 'src/app/utilities/interfaces';
@@ -19,6 +20,7 @@ export class InstrumentPage implements OnInit {
 
   constructor(
     private db: DbService,
+    private ai: AiService,
     private modalController: ModalController,
     private alertController: AlertController
   ) { }
@@ -28,6 +30,22 @@ export class InstrumentPage implements OnInit {
     this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
     this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.instrument = { ...this.existingInstrument };
+  }
+
+  async generateSynonyms() {
+    if (!this.instrument.name || this.instrument.name.trim().length === 0) {
+      Utils.showToast("Bitte gib zuerst einen Namen an!", "danger");
+      return;
+    }
+
+    try {
+      const synonyms = await this.ai.getGroupSynonyms(this.instrument.name);
+      this.instrument.synonyms = synonyms;
+      Utils.showToast("Synonyme erfolgreich generiert!");
+    } catch (error) {
+      console.error("Fehler beim Generieren der Synonyme:", error);
+      Utils.showToast("Fehler beim Generieren der Synonyme", "danger");
+    }
   }
 
   async update() {

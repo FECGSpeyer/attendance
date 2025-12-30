@@ -741,4 +741,42 @@ export class SettingsPage implements OnInit {
       }
     });
   }
+
+  async changePassword() {
+    const alert = await new AlertController().create({
+      header: 'Instanz löschen?',
+      inputs: [{
+        type: "password",
+        placeholder: "Neues Passwort eingeben...",
+        name: "password"
+      }, {
+        type: "password",
+        placeholder: "Passwort wiederholen...",
+        name: "passwordConfirm"
+      }],
+      buttons: [{
+        text: "Abbrechen"
+      }, {
+        text: "Ändern",
+        handler: async (evt) => {
+          if (evt.password !== evt.passwordConfirm) {
+            Utils.showToast("Die Passwörter stimmen nicht überein.", "danger");
+            return false;
+          } else if (evt.password.length < 6) {
+            Utils.showToast("Das Passwort muss mindestens 6 Zeichen lang sein.", "danger");
+            return false;
+          } else {
+            try {
+              await this.db.changePassword(evt.password);
+              Utils.showToast("Das Passwort wurde erfolgreich geändert");
+            } catch (error) {
+              Utils.showToast("Fehler beim Ändern deines Passworts. Bitte versuche es später erneut.", "danger");
+            }
+          }
+        }
+      }]
+    });
+
+    await alert.present();
+  }
 }

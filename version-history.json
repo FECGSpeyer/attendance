@@ -1,6 +1,14 @@
 {
     "versions": [
         {
+            "version": "3.5.2",
+            "date": "30.12.2025",
+            "changes": [
+                "Passwort ändern Funktion: Ändere dein Passwort einfach in den Einstellungen.",
+                "KI-Synonym-Generator für Gruppen: Erstelle jetzt einfach Synonyme für eine Gruppe mithilfe künstlicher Intelligenz."
+            ]
+        },
+        {
             "version": "3.5.1",
             "date": "17.12.2025",
             "changes": [
