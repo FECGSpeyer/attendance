@@ -39,6 +39,7 @@ export class InstrumentPage implements OnInit {
     }
 
     const loading = await Utils.getLoadingElement(10000, "Synonyme werden generiert...");
+    await loading.present();
 
     try {
       const synonyms = await this.ai.getGroupSynonyms(this.instrument.name);
