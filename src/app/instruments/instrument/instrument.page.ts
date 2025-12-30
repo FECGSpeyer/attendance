@@ -38,12 +38,16 @@ export class InstrumentPage implements OnInit {
       return;
     }
 
+    const loading = await Utils.getLoadingElement(10000, "Synonyme werden generiert...");
+
     try {
       const synonyms = await this.ai.getGroupSynonyms(this.instrument.name);
       this.instrument.synonyms = synonyms;
+      await loading.dismiss();
       Utils.showToast("Synonyme erfolgreich generiert!");
     } catch (error) {
       console.error("Fehler beim Generieren der Synonyme:", error);
+      await loading.dismiss();
       Utils.showToast("Fehler beim Generieren der Synonyme", "danger");
     }
   }
