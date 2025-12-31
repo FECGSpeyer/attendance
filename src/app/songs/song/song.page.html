@@ -45,6 +45,16 @@
         <ion-label position="stacked">Name</ion-label>
         <ion-input (ionBlur)="update()" [(ngModel)]="song.name" #name></ion-input>
       </ion-item>
+
+      <ion-item>
+        <ion-select (ionChange)="update()" interface="popover" label="Schwierigkeitsgrad" [(ngModel)]="song.difficulty">
+          <ion-select-option [value]="null">Nicht definiert</ion-select-option>
+          <ion-select-option [value]="1">1 - Leicht</ion-select-option>
+          <ion-select-option [value]="2">2 - Mittel</ion-select-option>
+          <ion-select-option [value]="3">3 - Schwer</ion-select-option>
+        </ion-select>
+      </ion-item>
+
       <ion-item>
         <ion-toggle (ionChange)="update()" [(ngModel)]="song.withChoir" aria-label="Chor & Orchester">Chor &
           Orchester</ion-toggle>

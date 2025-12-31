@@ -34,6 +34,7 @@ export class SongsPage implements OnInit {
   public filterOpts = {};
   public sortOpt = "numberAsc";
   public viewOpts: string[] = ["withChoir", "withSolo", "missingInstruments", "link", "lastSung"];
+  public difficulty: number | null = null;
   public instrumentsToFilter: number[] = [];
   public currentSongs: { date: string, history: History[] }[] = [];
   public tenantData?: Tenant;
@@ -219,6 +220,7 @@ export class SongsPage implements OnInit {
     await this.storage.set(`inclChoirSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.inclChoir ? "true" : "false");
     await this.storage.set(`inclSoloSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.inclSolo ? "true" : "false");
     await this.storage.set(`instrumentsToFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`, JSON.stringify(this.instrumentsToFilter));
+    await this.storage.set(`difficultyFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.difficulty);
 
     this.searchTerm = "";
     this.initializeItems();
@@ -237,6 +239,11 @@ export class SongsPage implements OnInit {
       } else {
         return this.filterChoirSolo(song);
       }
+    }).filter((song: Song) => {
+      if (this.difficulty !== null && this.difficulty !== undefined) {
+        return song.difficulty === this.difficulty;
+      }
+      return true;
     });
 
     this.onSortChanged();

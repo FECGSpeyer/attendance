@@ -1,6 +1,13 @@
 {
     "versions": [
         {
+            "version": "3.5.3",
+            "date": "31.12.2025",
+            "changes": [
+                "Schwierigkeitsgrad für Werke: Weise deinen Werken jetzt einen Schwierigkeitsgrad zu, um die Auswahl und Planung zu erleichtern."
+            ]
+        },
+        {
             "version": "3.5.2",
             "date": "30.12.2025",
             "changes": [

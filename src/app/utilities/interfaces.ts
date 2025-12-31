@@ -247,6 +247,7 @@ export interface Song {
     legacyId?: number;
     instrument_ids?: number[];
     files?: SongFile[];
+    difficulty?: number;
 }
 
 export interface SongFile {

@@ -49,6 +49,16 @@
           </ion-item>
 
           <ion-item lines="none">
+            <ion-icon slot="start" name="speedometer-outline" size="small"></ion-icon>
+            <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="difficulty">
+              <ion-select-option [value]="null">Alle</ion-select-option>
+              <ion-select-option [value]="1">1 - Leicht</ion-select-option>
+              <ion-select-option [value]="2">2 - Mittel</ion-select-option>
+              <ion-select-option [value]="3">3 - Schwer</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item lines="none">
             <ion-icon slot="start" name="people" size="small"></ion-icon>
             <ion-toggle [(ngModel)]="inclChoir" (ionChange)="onFilterChanged()">Chor & Orchester</ion-toggle>
           </ion-item>
@@ -71,6 +81,7 @@
             <ion-select multiple="true" slot="end" (ionChange)="onViewChanged()" interface="popover"
               [(ngModel)]="viewOpts">
               <ion-select-option value="link">Link</ion-select-option>
+              <ion-select-option value="difficulty">Schwierigkeitsgrad</ion-select-option>
               <ion-select-option value="withChoir">Chor & Orchester</ion-select-option>
               <ion-select-option value="withSolo">Solo</ion-select-option>
               <ion-select-option value="missingInstruments">Fehlende Instrumente</ion-select-option>
@@ -146,6 +157,17 @@
         <ion-badge slot="end" *ngIf="song.link && viewOpts.includes('link')"
           color="primary">
           <ion-icon name="link"></ion-icon>
+        </ion-badge>
+        <ion-badge slot="end" *ngIf="viewOpts.includes('difficulty')" [color]="song.difficulty === 1 ? 'success' : song.difficulty === 2 ? 'warning' : song.difficulty === 3 ? 'danger' : 'medium'">
+          @if (song.difficulty === 1) {
+          1 - Leicht
+          } @else if (song.difficulty === 2) {
+          2 - Mittel
+          } @else if (song.difficulty === 3) {
+          3 - Schwer
+          } @else {
+          Nicht definiert
+          }
         </ion-badge>
       </ion-item>
     </ion-item-group>
