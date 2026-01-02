@@ -80,8 +80,9 @@ export class Utils {
 
       let img = player.img || DEFAULT_IMAGE;
 
-      if (img.includes("/storage/v1/object/public/profiles/") && !img.includes("?width=100&height=100")) {
-        img = `${img}?width=100&height=100`
+      if (img.includes("/storage/v1/object/public/profiles/") && !img.includes("?quality=20")) {
+        img = img.replace("object/public/profiles/", "render/image/public/profiles/") ;
+        img = `${img}?quality=20`;
       }
 
       return {
