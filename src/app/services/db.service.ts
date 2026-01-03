@@ -2027,6 +2027,14 @@ export class DbService {
     return;
   }
 
+  async updateAttendanceNote(attId: string, notes: string): Promise<void> {
+    await this.updatePersonAttendance(attId, {
+      notes,
+    });
+
+    return;
+  }
+
   async sendPlanPerTelegram(blob: Blob, name: string): Promise<void> {
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999);
     await loading.present();

@@ -190,6 +190,41 @@ export class SignoutPage implements OnInit {
         },
       },
       {
+        text: 'Notiz anpassen',
+        handler: async () => {
+          let note = attendance.notes || '';
+          const alert = await this.alertController.create({
+            header: 'Notiz anpassen',
+            inputs: [
+              {
+                name: 'note',
+                type: 'textarea',
+                placeholder: 'Gib hier deine Notiz ein',
+                value: note,
+              },
+            ],
+            buttons: [
+              {
+                text: 'Abbrechen',
+                role: 'cancel',
+              },
+              {
+                text: 'Speichern',
+                handler: async (data) => {
+                  note = data.note;
+                  await this.db.updateAttendanceNote(attendance.id, note);
+                  Utils.showToast("Notiz erfolgreich aktualisiert.", "success", 4000);
+                  await this.getAttendances();
+                },
+              },
+            ],
+          });
+
+          await alert.present();
+          this.actionSheetController.dismiss();
+        },
+      },
+      {
         text: 'Abbrechen',
         handler: () => { },
         role: 'destructive',
@@ -217,6 +252,14 @@ export class SignoutPage implements OnInit {
       buttons = buttons.filter((btn) => btn.text !== 'Abmelden');
     } else if (attType && !attType.available_statuses.includes(AttendanceStatus.Late)) {
       buttons = buttons.filter((btn) => btn.text !== 'Verspätung eintragen');
+    }
+
+    if (attendance.text !== "X") {
+      buttons = buttons.filter((btn) => btn.text !== 'Notiz anpassen');
+    }
+
+    if (attendance.text === "E" || attendance.text === "A") {
+      buttons = buttons.filter((btn) => btn.text !== 'Abmelden' && btn.text !== 'Verspätung eintragen');
     }
 
     if (buttons.length <= 1) {
