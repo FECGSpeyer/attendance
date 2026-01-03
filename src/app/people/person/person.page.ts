@@ -604,7 +604,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       additionalButtons.push({
         text: 'Passbild entfernen',
         handler: () => {
-          this.db.removeImage(this.player.id, this.player.img.split("/")[this.player.img.split("/").length - 1], true);
+          this.db.removeImage(this.player.id, this.player.img.split("/")[this.player.img.split("/").length - 1].replace("?quality=20", ""), true);
           this.player.img = DEFAULT_IMAGE;
           Utils.showToast("Das Passbild wurde erfolgreich entfernt", "success");
         }

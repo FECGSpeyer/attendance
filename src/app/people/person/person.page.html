@@ -279,7 +279,7 @@
                   [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
                   <ng-template>
                     <ion-content>
-                      <ion-img [src]="player.img"></ion-img>
+                      <ion-img [src]="player.img.replace('?quality=20', '')"></ion-img>
                     </ion-content>
                   </ng-template>
                 </ion-modal>
