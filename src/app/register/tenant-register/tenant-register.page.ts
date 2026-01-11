@@ -130,7 +130,7 @@ export class TenantRegisterPage implements OnInit {
       return;
     }
 
-    const loading = await Utils.getLoadingElement(10000, 'Registrierung läuft...');
+    const loading = await Utils.getLoadingElement(25000, 'Registrierung läuft...');
     await loading.present();
 
     const additional_fields: { [key: string]: any } = {};
