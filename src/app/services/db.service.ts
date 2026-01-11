@@ -1165,15 +1165,20 @@ export class DbService {
 
   async addPlayerToAttendancesByDate(player: Player, tenantId?: number) {
     const attData: Attendance[] = await this.getAttendancesByDate(player.joined, tenantId);
+    let attendanceTypes: AttendanceType[] = this.attendanceTypes();
+
+    if (tenantId) {
+      attendanceTypes = await this.getAttendanceTypes(tenantId);
+    }
 
     if (attData?.length) {
       const attToAdd: PersonAttendance[] = attData
         .filter((att: Attendance) => {
-          const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
+          const attType = attendanceTypes.find((type: AttendanceType) => type.id === att.type_id);
           return attType.relevant_groups.length === 0 || attType.relevant_groups.includes(player.instrument);
         })
         .filter((att: Attendance) => {
-          const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
+          const attType = attendanceTypes.find((type: AttendanceType) => type.id === att.type_id);
           if (attType.additional_fields_filter?.key && attType.additional_fields_filter?.option && this.tenant().additional_fields?.find(field => field.id === attType.additional_fields_filter.key)) {
             const defaultValue = this.tenant().additional_fields.find(field => field.id === attType.additional_fields_filter.key)?.defaultValue;
             const additionalField = player.additional_fields[attType.additional_fields_filter.key] ?? defaultValue;
@@ -1183,7 +1188,7 @@ export class DbService {
           return true;
         })
         .map((att: Attendance) => {
-          const type = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
+          const type = attendanceTypes.find((type: AttendanceType) => type.id === att.type_id);
 
           return {
             attendance_id: att.id,
@@ -2888,11 +2893,11 @@ export class DbService {
     }
   }
 
-  private async getAttendanceTypes(): Promise<AttendanceType[]> {
+  private async getAttendanceTypes(tenantId?: number): Promise<AttendanceType[]> {
     const { data, error } = await supabase
       .from('attendance_types')
       .select('*')
-      .eq('tenant_id', this.tenant().id)
+      .eq('tenant_id', tenantId || this.tenant().id)
       .order('index', { ascending: true });
 
     if (error) {

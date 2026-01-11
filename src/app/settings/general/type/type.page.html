@@ -88,7 +88,7 @@
                     }"></ion-datetime>
           </ng-template>
         </ion-modal>
-      </ion-item >
+      </ion-item>
       <ion-item *ngIf="!type.all_day">
         <ion-label>Ende</ion-label>
         <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
@@ -170,8 +170,7 @@
 
       @if (areSelectFieldsAvailable()) {
       <ion-item>
-        <ion-select label="Zusatzfeld-Filter"
-          (ionChange)="onAdditionalFieldFilterChanged()"
+        <ion-select label="Zusatzfeld-Filter" (ionChange)="onAdditionalFieldFilterChanged()"
           helperText="Nur Personen mit dem ausgewählten Zusatzfeld-Wert werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt."
           [(ngModel)]="additionalFieldFilter" multiple="false">
           <ion-select-option [value]="null">Kein Filter</ion-select-option>
@@ -206,6 +205,82 @@
   <ion-list *ngIf="type.default_plan?.fields" [inset]="true">
     <ion-list-header>
       <ion-label>Ablaufplan</ion-label>
+      <ion-button size="small" id="add-field-trigger" fill="clear">
+        <ion-icon name="add"></ion-icon>
+      </ion-button>
+      <ion-popover #addFieldPopover trigger="add-field-trigger" triggerAction="click">
+        <ng-template>
+          <ion-item (click)="addExtraField(addFieldPopover)">
+            <ion-label>Feld hinzufügen</ion-label>
+          </ion-item>
+          <ion-item (click)="addSongPlaceholder(addFieldPopover)" lines="none">
+            <ion-label>Werk Platzhalter</ion-label>
+          </ion-item>
+        </ng-template>
+      </ion-popover>
+    </ion-list-header>
+    <ion-item-group>
+      <ion-item>
+        <ion-label>Start</ion-label>
+        <ion-datetime-button datetime="datetimestartplan"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime locale="de-DE" disabled="true" (ionChange)="calculateEnd()" [(ngModel)]="type.start_time"
+              presentation="time" id="datetimestartplan" [formatOptions]="{
+                      time: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      }
+                    }"></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+
+      <ion-list>
+        <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
+          <ion-item-sliding #slider *ngFor="let field of type.default_plan.fields; let i = index">
+            <ion-item>
+              <ion-label (click)="changeField(field)">
+                <h2>{{ field.name }}</h2>
+                <h3>{{ calculateTime(field, i) }}</h3>
+              </ion-label>
+              <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
+                placeholder="min" type="number" slot="end"></ion-input>
+              <ion-reorder slot="end"></ion-reorder>
+            </ion-item>
+            <ion-item-options (ionSwipe)="removeField(i, slider)">
+              <ion-item-option expandable color="danger" (click)="removeField(i, slider)">
+                <ion-icon name="trash"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ion-reorder-group>
+      </ion-list>
+
+      <ion-item class="marginBottom" *ngIf="end">
+        <ion-label>Ende</ion-label>
+        <ion-datetime-button datetime="datetimeendplan"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime locale="de-DE" disabled="true" [(ngModel)]="end" presentation="time" id="datetimeendplan"
+              [formatOptions]="{
+                      time: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      }
+                    }">
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+
+  <ion-list *ngIf="type.checklist" [inset]="true">
+    <ion-list-header>
+      <ion-label>Checkliste</ion-label>
       <ion-button size="small" id="add-field-trigger" fill="clear">
         <ion-icon name="add"></ion-icon>
       </ion-button>

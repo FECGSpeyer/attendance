@@ -355,6 +355,12 @@ export interface AttendanceType {
         key: string;
         option: string;
     };
+    checklist?: ChecklistItem[];
+}
+
+export interface ChecklistItem {
+    text: string;
+
 }
 
 export interface ShiftPlan {
