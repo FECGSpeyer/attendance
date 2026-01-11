@@ -66,13 +66,13 @@ export class SongPage implements OnInit {
       let note: string | undefined = undefined;
       if (this.instruments?.length) {
         const match = this.instruments.find(g => {
-          if (file.name.toLowerCase().includes(g.name.toLowerCase())) {
+          if (file.name.normalize().toLowerCase().includes(g.name.normalize().toLowerCase())) {
             return true;
           }
 
           if (g.synonyms) {
-            const synonyms = g.synonyms.split(',').map(s => s.trim().toLowerCase());
-            if (synonyms.some(syn => file.name.toLowerCase().includes(syn))) {
+            const synonyms = g.synonyms.split(',').map(s => s.trim().normalize().toLowerCase());
+            if (synonyms.some(syn => file.name.normalize().toLowerCase().includes(syn))) {
               return true;
             }
           }
