@@ -141,6 +141,8 @@ export class SignoutPage implements OnInit {
       const attended = vergangeneToCalcPerc.filter((att: PersonAttendance) => att.attended);
       this.perc = Math.round(
         attended.length / vergangeneToCalcPerc.length * 100);
+    } else {
+      this.perc = 0;
     }
 
     this.actualAttendances = allPersonAttendances.filter((att: PersonAttendance) => dayjs(att.date).isAfter(dayjs().startOf("day"))).reverse();
