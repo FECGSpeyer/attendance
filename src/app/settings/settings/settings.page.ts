@@ -744,7 +744,7 @@ export class SettingsPage implements OnInit {
 
   async changePassword() {
     const alert = await new AlertController().create({
-      header: 'Instanz löschen?',
+      header: 'Passwort ändern',
       inputs: [{
         type: "password",
         placeholder: "Neues Passwort eingeben...",
