@@ -1,6 +1,13 @@
 {
     "versions": [
         {
+            "version": "3.5.5",
+            "date": "14.1.2026",
+            "changes": [
+                "Fehlerbehebungen"
+            ]
+        },
+        {
             "version": "3.5.4",
             "date": "11.1.2026",
             "changes": [

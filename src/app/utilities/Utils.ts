@@ -466,6 +466,54 @@ export class Utils {
     }
   }
 
+  public static isUrlAccessAllowed(url: string, role: Role) {
+    switch (url) {
+      case "/tabs/settings":
+      case "/tabs/settings/songs":
+        return true;
+      case "/tabs/signout":
+        return [Role.HELPER, Role.PLAYER, Role.APPLICANT].includes(role);
+      case "/tabs/player":
+        return [Role.ADMIN, Role.RESPONSIBLE, Role.VIEWER, Role.PARENT].includes(role);
+      case "/tabs/settings/notifications":
+        return [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER, Role.PLAYER].includes(role);
+      case "/tabs/attendance":
+      case "/tabs/settings/teachers":
+        return [Role.ADMIN, Role.RESPONSIBLE, Role.VIEWER].includes(role);
+      case "/tabs/settings/general":
+      case "/tabs/settings/general/types":
+      case "/tabs/settings/instruments":
+      case "/tabs/settings/meetings":
+      case "/tabs/settings/handover":
+      case "/tabs/settings/handover/detail":
+        return [Role.ADMIN, Role.RESPONSIBLE].includes(role);
+      case "/tabs/parents":
+        return [Role.PARENT].includes(role);
+      default:
+        return false;
+    }
+  }
+
+  // TODO!!!
+  /*
+      {
+        path: 'settings/songs/:id',
+        loadChildren: () => import('./../songs/song/song.module').then(m => m.SongPageModule)
+      },
+      {
+        path: 'settings/meetings/:id',
+        loadChildren: () => import('./../meetings/meeting/meeting.module').then(m => m.MeetingPageModule),
+      },
+      {
+        path: 'settings/general/types/:id',
+        loadChildren: () => import('./../settings/general/type/type.module').then(m => m.TypePageModule)
+      },
+      {
+        path: 'settings/register',
+        loadChildren: () => import('./../register/register.module').then(m => m.RegisterPageModule)
+      },
+  */
+
   public static calculateAge(birthdate: Date): number {
     const msDiff = Date.now() - birthdate.getTime();
     const ageDiff = new Date(msDiff);

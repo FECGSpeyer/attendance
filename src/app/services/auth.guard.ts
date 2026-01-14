@@ -6,7 +6,7 @@ import { DbService } from './db.service';
 @Injectable({
   providedIn: 'root'
 })
-export class AuthGuard  {
+export class AuthGuard {
 
   constructor(
     public db: DbService,

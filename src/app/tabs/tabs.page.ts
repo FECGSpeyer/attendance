@@ -2,6 +2,8 @@ import { Component, effect } from '@angular/core';
 import { DbService } from '../services/db.service';
 import { Role } from '../utilities/constants';
 import { registeredEffect, registerTabBarEffect } from '@rdlabo/ionic-theme-ios26';
+import { Utils } from 'src/app/utilities/Utils';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-tabs',
@@ -16,6 +18,7 @@ export class TabsPage {
 
   constructor(
     private db: DbService,
+    private router: Router
   ) {
     this.initialize();
   }
@@ -28,6 +31,11 @@ export class TabsPage {
     effect(() => {
       this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.VIEWER || this.db.tenantUser().role === Role.RESPONSIBLE;
       this.isHelper = this.db.tenantUser().role === Role.HELPER;
+
+      const url: string = Utils.getUrl(this.db.tenantUser().role);
+      if (this.router.url !== url && !Utils.isUrlAccessAllowed(this.router.url, this.db.tenantUser().role)) {
+        this.router.navigateByUrl(url);
+      }
     });
   }
 
