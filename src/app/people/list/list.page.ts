@@ -69,6 +69,7 @@ export class ListPage implements OnInit {
       if (this.db.tenant().maintainTeachers) {
         this.teachers = await this.db.getTeachers();
       }
+      this.isVoS = this.db.tenant().shortName === 'VoS';
 
       this.viewOpts = JSON.parse(await this.storage.get(`viewOpts${this.db.tenant().id}`) || JSON.stringify(['instrument', 'leader', 'attendance', 'critical', 'paused']));
       this.filterOpt = (await this.storage.get(`filterOpt${this.db.tenant().id}`)) || "all";

@@ -470,6 +470,7 @@ export class Utils {
     switch (url) {
       case "/tabs/settings":
       case "/tabs/settings/songs":
+      case "/tabs/settings/register":
         return true;
       case "/tabs/signout":
         return [Role.HELPER, Role.PLAYER, Role.APPLICANT].includes(role);
@@ -490,29 +491,18 @@ export class Utils {
       case "/tabs/parents":
         return [Role.PARENT].includes(role);
       default:
+        if (url.includes("/tabs/settings/songs/")) {
+          return true;
+        } else if (url.includes("/tabs/settings/meetings/")) {
+          return [Role.ADMIN, Role.RESPONSIBLE].includes(role);
+        } else if (url.includes("/tabs/settings/general/types/")) {
+          return [Role.ADMIN, Role.RESPONSIBLE].includes(role);
+        }
+
+
         return false;
     }
   }
-
-  // TODO!!!
-  /*
-      {
-        path: 'settings/songs/:id',
-        loadChildren: () => import('./../songs/song/song.module').then(m => m.SongPageModule)
-      },
-      {
-        path: 'settings/meetings/:id',
-        loadChildren: () => import('./../meetings/meeting/meeting.module').then(m => m.MeetingPageModule),
-      },
-      {
-        path: 'settings/general/types/:id',
-        loadChildren: () => import('./../settings/general/type/type.module').then(m => m.TypePageModule)
-      },
-      {
-        path: 'settings/register',
-        loadChildren: () => import('./../register/register.module').then(m => m.RegisterPageModule)
-      },
-  */
 
   public static calculateAge(birthdate: Date): number {
     const msDiff = Date.now() - birthdate.getTime();
