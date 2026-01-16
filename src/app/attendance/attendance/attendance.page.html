@@ -243,6 +243,9 @@
           </ion-badge>
         </ion-item>
         <ion-item-options (ionSwipe)="addNote(player, slider)">
+          <ion-item-option *ngIf="!isHelper" expandable color="primary" (click)="getModifierInfo(player, slider)">
+            <ion-icon name="information-outline"></ion-icon>
+          </ion-item-option>
           <ion-item-option *ngIf="player.status !== 0" expandable color="medium" (click)="toNeutral(player, slider)">
             N
           </ion-item-option>

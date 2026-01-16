@@ -23,7 +23,7 @@ const supabase = createClient<Database>(environment.apiUrl, environment.apiKey, 
 
 const attendanceSelect: string = `*, persons:person_attendances(
           *, person:person_id(
-            firstName, lastName, img, instrument(id, name), joined
+            firstName, lastName, img, instrument(id, name), joined, appId
           )
         )`;
 
@@ -1758,7 +1758,11 @@ export class DbService {
   async updatePersonAttendance(id: string, att: Partial<PersonAttendance>): Promise<void> {
     const { error } = await supabase
       .from('person_attendances')
-      .update(att)
+      .update({
+        ...att,
+        changed_by: this.user?.id || null,
+        changed_at: new Date().toISOString(),
+      })
       .match({ id });
 
     if (error) {

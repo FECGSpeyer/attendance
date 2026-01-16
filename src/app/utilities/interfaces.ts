@@ -175,6 +175,7 @@ export interface Group {
 export interface Attendance {
     id?: number;
     created_at?: string;
+    created_by?: string;
     date: string;
     type?: string;
     type_id: string;
@@ -230,6 +231,8 @@ export interface PersonAttendance {
     attId?: number;
     highlight?: boolean;
     typeId?: string;
+    changed_by?: string;
+    changed_at?: string;
 }
 
 export interface Song {

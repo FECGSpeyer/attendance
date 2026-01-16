@@ -2,6 +2,7 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { format } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
@@ -440,6 +441,36 @@ export class AttendancePage implements OnInit {
     slider.close();
     player.status = AttendanceStatus.Neutral;
     this.db.updatePersonAttendance(player.id, { status: player.status });
+  }
+
+  async getModifierInfo(player: PersonAttendance, slider: IonItemSliding) {
+    slider.close();
+
+    if (!player.changed_by) {
+      await Utils.showToast("Der Status wurde bisher nicht verändert", "warning");
+      return;
+    }
+
+    let message;
+
+    const person = this.players.find((p: PersonAttendance) => player.changed_by === p.person.appId);
+
+    if (!person) {
+      message = player.changed_by === '665fe2b4-d53f-4f17-a66b-46c0949af99a' ? "Zuletzt geändert von Matthias Eckstädt" : "Zuletzt geänderrt von 'Unbekannt'";
+    } else {
+      message = `Zuletzt geändert von ${person.firstName} ${person.lastName}`;
+    }
+
+    if (player.changed_at) {
+      message += ` am ${format(new Date(player.changed_at), "dd.MM.yyyy")} um ${format(new Date(player.changed_at), "HH:mm")} Uhr`;
+    }
+
+    const alert = await this.alertController.create({
+      message,
+      buttons: ["Ok"],
+    });
+
+    await alert.present();
   }
 
   exportToExcel() {

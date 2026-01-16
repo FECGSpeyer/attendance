@@ -1,6 +1,13 @@
 {
     "versions": [
         {
+            "version": "3.5.6",
+            "date": "16.1.2026",
+            "changes": [
+                "Du kannst jetzt bei der Anwesenheit mit einem Swipe nach Links bei einer Person sehen, wer den Status zuletzt geändert hat."
+            ]
+        },
+        {
             "version": "3.5.5",
             "date": "14.1.2026",
             "changes": [
