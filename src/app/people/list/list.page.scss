@@ -7,5 +7,9 @@ ion-searchbar {
 }
 
 ion-select::part(text) {
-    width: 7rem;
+    width: 9rem;
+}
+
+ion-popover {
+    --width: 15rem;
 }

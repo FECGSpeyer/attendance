@@ -2135,7 +2135,7 @@ export class DbService {
       .remove([imgPath]);
   }
 
-  async updateImage(id: number, image: File, appId: string) {
+  async updateImage(id: number, image: File | Blob, appId: string) {
     const fileName: string = `${id}`;
 
     const { error } = await supabase.storage

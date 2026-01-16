@@ -8,5 +8,9 @@
 }
 
 ion-select::part(text) {
-    width: 7rem;
+    width: 11rem;
+}
+
+ion-popover {
+    --width: 17rem;
 }
