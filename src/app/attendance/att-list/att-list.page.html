@@ -322,7 +322,7 @@
       </ion-content>
     </ng-template>
   </ion-modal>
-  <ion-fab [class]="isConductor ? '' : 'invisible'" vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab [class]="isHelper || isConductor ? '' : 'invisible'" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="isAddModalOpen = true">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
