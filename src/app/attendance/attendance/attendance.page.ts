@@ -206,6 +206,10 @@ export class AttendancePage implements OnInit {
       this.db.updatePersonAttendance(individual.id, { status: individual.status });
   }
 
+  onAttStaticChange(individual: PersonAttendance, event: any) {
+    this.db.updatePersonAttendance(individual.id, { status: event.detail.value });
+  }
+
   getAttendedPlayers(players: PersonAttendance[]): number {
     return players.filter((p: PersonAttendance) => p.status === AttendanceStatus.Late || p.status === AttendanceStatus.Present).length;
   }

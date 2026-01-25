@@ -1,6 +1,13 @@
 {
     "versions": [
         {
+            "version": "3.5.7",
+            "date": "25.1.2026",
+            "changes": [
+                "Notizfelder für Ablaufpläne hinzugefügt."
+            ]
+        },
+        {
             "version": "3.5.6",
             "date": "16.1.2026",
             "changes": [

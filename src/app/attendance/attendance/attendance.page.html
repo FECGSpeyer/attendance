@@ -223,6 +223,22 @@
         <ion-label>{{ player.groupName }} ({{ player.instrumentLength }})</ion-label>
       </ion-item-divider>
       <ion-item-sliding #slider>
+        @if (false) {
+        <ion-item>
+          <ion-label>
+            <h2>{{ player.firstName }} {{ player.lastName }}</h2>
+            <h3 *ngIf="!isHelper && player.notes">{{ player.notes }}</h3>
+            <h3 *ngIf="isHelper && player.notes">Notiz hinzugefügt</h3>
+          </ion-label>
+          <ion-select interface="popover" (ionChange)="onAttStaticChange(player, $event)" [value]="player.status" slot="end">
+            <ion-select-option *ngIf="type?.available_statuses.includes(0)" [value]="0">Neutral (N)</ion-select-option>
+            <ion-select-option *ngIf="type?.available_statuses.includes(1)" [value]="1">Anwesend (✓)</ion-select-option>
+            <ion-select-option *ngIf="type?.available_statuses.includes(2)" [value]="2">Entschuldigt (E)</ion-select-option>
+            <ion-select-option *ngIf="type?.available_statuses.includes(3)" [value]="3">Verspätet anwesend (L)</ion-select-option>
+            <ion-select-option *ngIf="type?.available_statuses.includes(4)" [value]="4">Abwesend (A)</ion-select-option>
+          </ion-select>
+        </ion-item>
+        } @else {
         <ion-item button detail="false" (click)="onAttChange(player)">
           <ion-label>
             <h2>{{ player.firstName }} {{ player.lastName }}</h2>
@@ -242,6 +258,7 @@
             }}
           </ion-badge>
         </ion-item>
+        }
         <ion-item-options (ionSwipe)="addNote(player, slider)">
           <ion-item-option *ngIf="!isHelper" expandable color="primary" (click)="getModifierInfo(player, slider)">
             <ion-icon name="information-outline"></ion-icon>

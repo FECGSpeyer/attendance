@@ -56,6 +56,9 @@
           <ion-item (click)="addExtraField(addPopover)">
             <ion-label>Feld hinzufügen</ion-label>
           </ion-item>
+          <ion-item (click)="addNoteField(addPopover)">
+            <ion-label>Notizfeld hinzufügen</ion-label>
+          </ion-item>
           <ion-item (click)="addCurrentSongs(addPopover)">
             <ion-label>Aktuelle Werke hinzufügen</ion-label>
           </ion-item>
@@ -95,9 +98,9 @@
               <ion-label (click)="changeField(field)">
                 <h2>{{ field.name }}</h2>
                 <h3 class="danger" *ngIf="field.songId">{{ getMissingGroups(field.songId) }}</h3>
-                <h3>{{ calculateTime(field, i) }}</h3>
+                <h3 *ngIf="!field.id.includes('noteFld')">{{ calculateTime(field, i) }}</h3>
               </ion-label>
-              <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
+              <ion-input *ngIf="!field.id.includes('noteFld')" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
                 placeholder="min" type="number" slot="end"></ion-input>
               <ion-reorder slot="end"></ion-reorder>
             </ion-item>

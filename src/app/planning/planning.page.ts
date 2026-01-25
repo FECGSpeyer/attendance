@@ -112,21 +112,30 @@ export class PlanningPage implements OnInit {
   async changeField(field: FieldSelection, slider?: IonItemSliding) {
     slider?.close();
     const clone: FieldSelection = JSON.parse(JSON.stringify(field));
-    const alert = await this.alertController.create({
-      header: 'Feld bearbeiten',
-      inputs: [{
+    let inputs = [{
         label: "Programmpunkt",
-        type: "text",
         name: "field",
         value: clone.name,
         placeholder: "Programmpunkt eingeben..."
       }, {
         label: "Ausführender",
-        type: "text",
         name: "conductor",
         value: clone.conductor,
         placeholder: "Ausführenden eingeben..."
-      }],
+      }];
+
+    if (field.id.includes("noteFld")) {
+      inputs = [{
+        label: "Notiz",
+        name: "field",
+        value: clone.name,
+        placeholder: "Notiz eingeben..."
+      }];
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Feld bearbeiten',
+      inputs,
       buttons: [{
         text: "Abbrechen"
       }, {
@@ -137,7 +146,7 @@ export class PlanningPage implements OnInit {
             return false;
           }
           field.name = evt.field;
-          field.conductor = evt.conductor;
+          field.conductor = evt.conductor ?? "";
           this.calculateEnd();
         }
       }]
@@ -225,6 +234,36 @@ export class PlanningPage implements OnInit {
             name: evt.field,
             conductor: evt.conductor ?? "",
             time: "20",
+          });
+
+          this.calculateEnd();
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  async addNoteField(popover: IonPopover) {
+    popover?.dismiss();
+
+    const alert = await this.alertController.create({
+      header: 'Notizfeld hinzufügen',
+      inputs: [{
+        type: "textarea",
+        name: "field",
+        placeholder: "Notiz eingeben..."
+      }],
+      buttons: [{
+        text: "Abbrechen"
+      }, {
+        text: "Hinzufügen",
+        handler: (evt: any) => {
+          this.selectedFields.push({
+            id: `noteFld ${evt.field}`,
+            name: evt.field,
+            conductor: "",
+            time: "0",
           });
 
           this.calculateEnd();

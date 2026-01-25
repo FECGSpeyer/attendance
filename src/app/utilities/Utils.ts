@@ -376,7 +376,12 @@ export class Utils {
       fieldName = fieldName.replace(/ü/g, 'ue');
       fieldName = fieldName.replace(/ß/g, 'ss');
 
-      if (hasConductors) {
+      if (field.id.includes("noteFld")) {
+        data.push([
+          { content: fieldName, styles: { fontSize: 14 }, colSpan: hasConductors ? 5 : 4 }
+        ]);
+      } else {
+        if (hasConductors) {
         data.push([
           { content: row.toString(), styles: { fontSize: 14 } },
           { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
@@ -392,8 +397,10 @@ export class Utils {
           { content: `${field.time} min`, styles: { fontSize: 14 } },
         ]);
       }
-      currentTime = currentTime.add(parseInt(field.time), "minutes");
-      row++;
+
+        currentTime = currentTime.add(parseInt(field.time), "minutes");
+        row++;
+      }
     }
 
     const doc = new jsPDF();
