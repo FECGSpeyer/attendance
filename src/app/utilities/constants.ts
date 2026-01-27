@@ -129,3 +129,8 @@ export enum FieldType {
     SELECT = "select",
     BFECG_CHURCH = "bfecg_church",
 }
+
+export enum AttendanceViewMode {
+    CLICK = "click",
+    SELECT = "select",
+}

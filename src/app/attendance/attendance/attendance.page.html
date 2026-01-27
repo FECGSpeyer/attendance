@@ -3,6 +3,9 @@
     <ion-title *ngIf="players">{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(players) }}/{{
       players.length }}</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="switchMode()">
+        <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+      </ion-button>
       <ion-button (click)="close()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
@@ -223,7 +226,7 @@
         <ion-label>{{ player.groupName }} ({{ player.instrumentLength }})</ion-label>
       </ion-item-divider>
       <ion-item-sliding #slider>
-        @if (false) {
+        @if (attendanceViewMode === AttendanceViewMode.SELECT) {
         <ion-item>
           <ion-label>
             <h2>{{ player.firstName }} {{ player.lastName }}</h2>
@@ -231,11 +234,12 @@
             <h3 *ngIf="isHelper && player.notes">Notiz hinzugefügt</h3>
           </ion-label>
           <ion-select interface="popover" (ionChange)="onAttStaticChange(player, $event)" [value]="player.status" slot="end">
-            <ion-select-option *ngIf="type?.available_statuses.includes(0)" [value]="0">Neutral (N)</ion-select-option>
-            <ion-select-option *ngIf="type?.available_statuses.includes(1)" [value]="1">Anwesend (✓)</ion-select-option>
-            <ion-select-option *ngIf="type?.available_statuses.includes(2)" [value]="2">Entschuldigt (E)</ion-select-option>
-            <ion-select-option *ngIf="type?.available_statuses.includes(3)" [value]="3">Verspätet anwesend (L)</ion-select-option>
-            <ion-select-option *ngIf="type?.available_statuses.includes(4)" [value]="4">Abwesend (A)</ion-select-option>
+            <ion-select-option *ngIf="type?.available_statuses.includes(0)" [value]="0">Neutral</ion-select-option>
+            <ion-select-option *ngIf="type?.available_statuses.includes(1)" [value]="1">Anwesend</ion-select-option>
+            <ion-select-option *ngIf="type?.available_statuses.includes(2)" [value]="2">Entschuldigt</ion-select-option>
+            <ion-select-option *ngIf="type?.available_statuses.includes(3)" [value]="3">Verspätet</ion-select-option>
+            <ion-select-option *ngIf="type?.available_statuses.includes(3)" [value]="5">Verspätet entschuldigt</ion-select-option>
+            <ion-select-option *ngIf="type?.available_statuses.includes(4)" [value]="4">Abwesend</ion-select-option>
           </ion-select>
         </ion-item>
         } @else {
@@ -254,7 +258,8 @@
             player.status === 0 ? 'N' :
             player.status === 1 ? '✓' :
             player.status === 2 ? 'E' :
-            (player.status === 5 || player.status === 3) ? 'L' : 'A'
+            player.status === 3 ? 'L' :
+            player.status === 5 ? 'LE' : 'A'
             }}
           </ion-badge>
         </ion-item>
@@ -265,6 +270,14 @@
           </ion-item-option>
           <ion-item-option *ngIf="player.status !== 0" expandable color="medium" (click)="toNeutral(player, slider)">
             N
+          </ion-item-option>
+          <ion-item-option
+            color="rosa"
+            *ngIf="type?.available_statuses.includes(3) && attendanceViewMode === AttendanceViewMode.CLICK"
+            expandable
+            (click)="toLateExcused(player, slider)"
+          >
+            LE
           </ion-item-option>
           <ion-item-option expandable color="warning" (click)="addNote(player, slider)">
             <ion-icon name="pencil"></ion-icon>

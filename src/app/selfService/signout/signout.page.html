@@ -1,6 +1,48 @@
 <ion-header translucent="true">
   <ion-toolbar>
     <ion-title>{{ db.tenant()?.longName }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button id="legend-button">
+        <ion-icon name="information-outline"></ion-icon>
+      </ion-button>
+      <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="legend-button">
+        <ng-template>
+          <ion-content color="light">
+            <ion-list [inset]="true">
+              <ion-list-header>
+                <ion-label>Legende</ion-label>
+              </ion-list-header>
+              <ion-item-group>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="success">✓</ion-badge>
+                  <ion-label>Anwesend</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="warning">E</ion-badge>
+                  <ion-label>Entschuldigt</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="danger">A</ion-badge>
+                  <ion-label>Abwesend</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="tertiary">L</ion-badge>
+                  <ion-label>Verspätet anwesend</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="rosa">LE</ion-badge>
+                  <ion-label>Verspätet entschuldigt</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="medium">N</ion-badge>
+                  <ion-label>Neutral</ion-label>
+                </ion-item>
+              </ion-item-group>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 

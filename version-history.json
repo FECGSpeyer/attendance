@@ -1,6 +1,15 @@
 {
     "versions": [
         {
+            "version": "3.5.8",
+            "date": "27.1.2026",
+            "changes": [
+                "Neue Anwesenheits Layout-Auswahlmöglichkeit: Wähle zwischen dem bekannten Kürzel-Layout und dem neuen Text-Layout für eine bessere Übersicht.",
+                "Neues Kürzel für 'Verspätet entschuldigt' hinzugefügt: LE",
+                "Legende in der Veranstaltungsübersicht und im Selbstbedienungsbereich hinzugefügt"
+            ]
+        },
+        {
             "version": "3.5.7",
             "date": "25.1.2026",
             "changes": [

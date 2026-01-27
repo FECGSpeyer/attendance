@@ -1,12 +1,13 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
+import { Storage } from '@ionic/storage-angular';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { format } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
-import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING } from 'src/app/utilities/constants';
+import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode } from 'src/app/utilities/constants';
 import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
@@ -47,11 +48,14 @@ export class AttendancePage implements OnInit {
   public minDeadlineDate: string = new Date().toISOString();
   public isDeadlineReadonly: boolean = false;
   public type: AttendanceType;
+  public attendanceViewMode: AttendanceViewMode = AttendanceViewMode.CLICK;
+  public AttendanceViewMode = AttendanceViewMode;
 
   constructor(
     private modalController: ModalController,
     public db: DbService,
     private alertController: AlertController,
+    private storage: Storage
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -74,6 +78,9 @@ export class AttendancePage implements OnInit {
     this.attendance = await this.db.getAttendanceById(this.attendanceId);
     this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendanceId);
     this.isHelper = await this.db.tenantUser().role === Role.HELPER;
+
+    this.attendanceViewMode = await this.storage.get('attendanceViewMode') || AttendanceViewMode.CLICK;
+
     void this.listenOnNetworkChanges();
     this.selectedSongs = this.attendance.songs || [];
     this.type = this.db.attendanceTypes().find((type: AttendanceType) => type.id === this.attendance.type_id)
@@ -447,6 +454,12 @@ export class AttendancePage implements OnInit {
     this.db.updatePersonAttendance(player.id, { status: player.status });
   }
 
+  toLateExcused(player: PersonAttendance, slider: IonItemSliding) {
+    slider.close();
+    player.status = AttendanceStatus.LateExcused;
+    this.db.updatePersonAttendance(player.id, { status: player.status });
+  }
+
   async getModifierInfo(player: PersonAttendance, slider: IonItemSliding) {
     slider.close();
 
@@ -502,5 +515,11 @@ export class AttendancePage implements OnInit {
     }
 
     this.db.updateAttendance({ deadline: this.attendance.deadline }, this.attendance.id);
+  }
+
+  async switchMode() {
+    this.attendanceViewMode = this.attendanceViewMode === AttendanceViewMode.CLICK ? AttendanceViewMode.SELECT : AttendanceViewMode.CLICK;
+
+    await this.storage.set('attendanceViewMode', this.attendanceViewMode);
   }
 }

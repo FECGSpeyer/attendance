@@ -1,6 +1,48 @@
 <ion-header translucent="true">
   <ion-toolbar>
     <ion-title>Anwesenheit</ion-title>
+    <ion-buttons slot="end">
+      <ion-button id="info-legend-button">
+        <ion-icon name="information-outline"></ion-icon>
+      </ion-button>
+      <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="info-legend-button">
+        <ng-template>
+          <ion-content color="light">
+            <ion-list [inset]="true">
+              <ion-list-header>
+                <ion-label>Legende</ion-label>
+              </ion-list-header>
+              <ion-item-group>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="success">✓</ion-badge>
+                  <ion-label>Anwesend</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="warning">E</ion-badge>
+                  <ion-label>Entschuldigt</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="danger">A</ion-badge>
+                  <ion-label>Abwesend</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="tertiary">L</ion-badge>
+                  <ion-label>Verspätet anwesend</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="rosa">LE</ion-badge>
+                  <ion-label>Verspätet entschuldigt</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="medium">N</ion-badge>
+                  <ion-label>Neutral</ion-label>
+                </ion-item>
+              </ion-item-group>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -102,7 +144,7 @@
                 getAttendanceTitle(att) }}</ion-label>
               @if (att.percentage) {
               <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
-              slot="end">{{ att.percentage }}%</ion-badge>
+                slot="end">{{ att.percentage }}%</ion-badge>
               } @else {
               <ion-badge color="danger" slot="end">0%</ion-badge>
               }
@@ -129,8 +171,8 @@
       <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
         getAttendanceTitle(att) }}<p>{{ getCountText(att) }}</p></ion-label>
       @if (att.percentage) {
-      <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
-        slot="end">{{ att.percentage }}%</ion-badge>
+      <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'" slot="end">{{
+        att.percentage }}%</ion-badge>
       } @else {
       <ion-badge color="danger" slot="end">0%</ion-badge>
       }
@@ -308,13 +350,14 @@
           }
 
           <ion-item-group>
-            <ion-item color="primary" [disabled]="dates.length === 0" button detail="false" (click)="addAttendance(addAttModal)">
+            <ion-item color="primary" [disabled]="dates.length === 0" button detail="false"
+              (click)="addAttendance(addAttModal)">
               @if (dates.length === 1) {
-                <ion-label>Termin hinzufügen</ion-label>
+              <ion-label>Termin hinzufügen</ion-label>
               } @else if (dates.length > 1) {
-                <ion-label>Termine hinzufügen</ion-label>
+              <ion-label>Termine hinzufügen</ion-label>
               } @else {
-                <ion-label>Termin hinzufügen</ion-label>
+              <ion-label>Termin hinzufügen</ion-label>
               }
             </ion-item>
           </ion-item-group>
