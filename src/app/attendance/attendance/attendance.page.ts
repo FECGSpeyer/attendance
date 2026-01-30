@@ -494,7 +494,8 @@ export class AttendancePage implements OnInit {
     Utils.exportAttendanceToExcel(
       this.attendance,
       this.players,
-      this.db.attendanceTypes().find(type => type.id === this.attendance.type_id)
+      this.db.attendanceTypes().find(type => type.id === this.attendance.type_id),
+      this.db.churches(),
     );
   }
 

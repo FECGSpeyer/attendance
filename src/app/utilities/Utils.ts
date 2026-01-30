@@ -81,7 +81,7 @@ export class Utils {
       let img = player.img || DEFAULT_IMAGE;
 
       if (img.includes("/storage/v1/object/public/profiles/") && !img.includes("?quality=20")) {
-        img = img.replace("object/public/profiles/", "render/image/public/profiles/") ;
+        img = img.replace("object/public/profiles/", "render/image/public/profiles/");
         img = `${img}?quality=20`;
       }
 
@@ -382,21 +382,21 @@ export class Utils {
         ]);
       } else {
         if (hasConductors) {
-        data.push([
-          { content: row.toString(), styles: { fontSize: 14 } },
-          { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
-          { content: fieldName, styles: { fontSize: 14 } },
-          { content: field.conductor || "", styles: { fontSize: 14 } },
-          { content: `${field.time} min`, styles: { fontSize: 14 } },
-        ]);
-      } else {
-        data.push([
-          { content: row.toString(), styles: { fontSize: 14 } },
-          { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
-          { content: fieldName, styles: { fontSize: 14 } },
-          { content: `${field.time} min`, styles: { fontSize: 14 } },
-        ]);
-      }
+          data.push([
+            { content: row.toString(), styles: { fontSize: 14 } },
+            { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
+            { content: fieldName, styles: { fontSize: 14 } },
+            { content: field.conductor || "", styles: { fontSize: 14 } },
+            { content: `${field.time} min`, styles: { fontSize: 14 } },
+          ]);
+        } else {
+          data.push([
+            { content: row.toString(), styles: { fontSize: 14 } },
+            { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
+            { content: fieldName, styles: { fontSize: 14 } },
+            { content: `${field.time} min`, styles: { fontSize: 14 } },
+          ]);
+        }
 
         currentTime = currentTime.add(parseInt(field.time), "minutes");
         row++;
@@ -439,14 +439,33 @@ export class Utils {
     attendance: Attendance,
     players: PersonAttendance[],
     type: AttendanceType,
+    churches?: Church[],
   ): void {
     let row = 1;
+    let data;
 
-    const data = [['', 'Nachname', 'Vorname', 'Gruppe', 'Status', 'Bemerkung']];
+    if (churches?.length) {
+      data = [['', 'Nachname', 'Vorname', 'Gruppe', 'Gemeinde', 'Status', 'Bemerkung']];
 
-    for (const user of players) {
-      data.push([row.toString(), user.lastName, user.firstName, user.groupName, Utils.getAttText(user), user.notes || '']);
-      row++;
+      for (const user of players) {
+        data.push([
+          row.toString(),
+          user.lastName,
+          user.firstName,
+          user.groupName,
+          churches.find(ch => ch.id === user.person.additional_fields?.bfecg_church)?.name || '',
+          Utils.getAttText(user),
+          user.notes || ''
+        ]);
+        row++;
+      }
+    } else {
+      data = [['', 'Nachname', 'Vorname', 'Gruppe', 'Status', 'Bemerkung']];
+
+      for (const user of players) {
+        data.push([row.toString(), user.lastName, user.firstName, user.groupName, Utils.getAttText(user), user.notes || '']);
+        row++;
+      }
     }
 
     const ws: WorkSheet = utils.aoa_to_sheet(data);

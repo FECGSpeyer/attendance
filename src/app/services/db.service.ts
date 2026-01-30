@@ -23,7 +23,7 @@ const supabase = createClient<Database>(environment.apiUrl, environment.apiKey, 
 
 const attendanceSelect: string = `*, persons:person_attendances(
           *, person:person_id(
-            firstName, lastName, img, instrument(id, name), joined, appId
+            firstName, lastName, img, instrument(id, name), joined, appId, additional_fields
           )
         )`;
 
