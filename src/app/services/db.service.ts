@@ -1,4 +1,4 @@
-import { Injectable, WritableSignal, signal } from '@angular/core';
+import { Injectable, WritableSignal, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, Platform } from '@ionic/angular';
 import { createClient, SupabaseClient, SupabaseClientOptions, User } from '@supabase/supabase-js';
@@ -11,6 +11,37 @@ import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 import { Holiday } from 'open-holiday-js';
+
+// Import new modular services
+import { AuthService } from './auth/auth.service';
+import { PlayerService } from './player/player.service';
+import { AttendanceService } from './attendance/attendance.service';
+import { SongService } from './song/song.service';
+import { TenantService } from './tenant/tenant.service';
+import { GroupService } from './group/group.service';
+import { HistoryService } from './history/history.service';
+import { MeetingService } from './meeting/meeting.service';
+import { NotificationService } from './notification/notification.service';
+import { ImageService } from './image/image.service';
+import { ShiftService } from './shift/shift.service';
+import { AttendanceTypeService } from './attendance-type/attendance-type.service';
+import { OrganisationService } from './organisation/organisation.service';
+import { ChurchService } from './church/church.service';
+import { FeedbackService } from './feedback/feedback.service';
+import { HolidayService } from './holiday/holiday.service';
+import { CrossTenantService } from './cross-tenant/cross-tenant.service';
+import { AdminService } from './admin/admin.service';
+import { HandoverService } from './handover/handover.service';
+import { GroupCategoryService } from './group-category/group-category.service';
+import { InstanceService } from './instance/instance.service';
+import { ProfileService } from './profile/profile.service';
+import { UserRegistrationService } from './user-registration/user-registration.service';
+import { ViewerParentService } from './viewer-parent/viewer-parent.service';
+import { ConductorService } from './conductor/conductor.service';
+import { TeacherService } from './teacher/teacher.service';
+import { TelegramService } from './telegram/telegram.service';
+import { SignInOutService } from './sign-in-out/sign-in-out.service';
+import { SongCategoryService } from './song-category/song-category.service';
 
 const options: SupabaseClientOptions<any> = {
   auth: {
@@ -43,6 +74,37 @@ export class DbService {
   public shifts: WritableSignal<ShiftPlan[]>;
   public churches: WritableSignal<Church[] | undefined>;
   public songCategories: WritableSignal<SongCategory[]>;
+
+  // Injected modular services - use these for new code
+  public readonly authSvc = inject(AuthService);
+  public readonly playerSvc = inject(PlayerService);
+  public readonly attendanceSvc = inject(AttendanceService);
+  public readonly songSvc = inject(SongService);
+  public readonly tenantSvc = inject(TenantService);
+  public readonly groupSvc = inject(GroupService);
+  public readonly historySvc = inject(HistoryService);
+  public readonly meetingSvc = inject(MeetingService);
+  public readonly notificationSvc = inject(NotificationService);
+  public readonly imageSvc = inject(ImageService);
+  public readonly shiftSvc = inject(ShiftService);
+  public readonly attTypeSvc = inject(AttendanceTypeService);
+  public readonly orgSvc = inject(OrganisationService);
+  public readonly churchSvc = inject(ChurchService);
+  public readonly feedbackSvc = inject(FeedbackService);
+  public readonly holidaySvc = inject(HolidayService);
+  public readonly crossTenantSvc = inject(CrossTenantService);
+  public readonly adminSvc = inject(AdminService);
+  public readonly handoverSvc = inject(HandoverService);
+  public readonly groupCategorySvc = inject(GroupCategoryService);
+  public readonly instanceSvc = inject(InstanceService);
+  public readonly profileSvc = inject(ProfileService);
+  public readonly userRegistrationSvc = inject(UserRegistrationService);
+  public readonly viewerParentSvc = inject(ViewerParentService);
+  public readonly conductorSvc = inject(ConductorService);
+  public readonly teacherSvc = inject(TeacherService);
+  public readonly telegramSvc = inject(TelegramService);
+  public readonly signInOutSvc = inject(SignInOutService);
+  public readonly songCategorySvc = inject(SongCategoryService);
 
   constructor(
     private plt: Platform,
@@ -441,49 +503,17 @@ export class DbService {
   }
 
   async updateTenantData(tenant: Partial<Tenant>): Promise<Tenant> {
-    delete tenant.favorite;
-    const { data, error } = await supabase
-      .from('tenants')
-      .update(tenant as any)
-      .match({ id: this.tenant().id })
-      .select()
-      .single();
-
-    if (error) {
-      Utils.showToast("Fehler beim Aktualisieren der Einstellungen", "danger");
-      throw new Error("Fehler beim Aktualisieren der Mandantendaten");
-    }
-
-    this.tenant.set(data as unknown as Tenant);
-
-    return data as unknown as Tenant;
+    const data = await this.tenantSvc.updateTenantData(tenant, this.tenant().id);
+    this.tenant.set(data);
+    return data;
   }
 
   async getTenantsByUserId(): Promise<TenantUser[]> {
-    const { data, error } = await supabase
-      .from('tenantUsers')
-      .select('*')
-      .eq('userId', this.user.id);
-
-    if (error) {
-      throw new Error("Fehler beim Laden der Mandanten");
-    }
-
-    return data;
+    return this.tenantSvc.getTenantsByUserId(this.user.id);
   }
 
   async getTenantUserById(id: string): Promise<TenantUser> {
-    const { data, error } = await supabase
-      .from('tenantUsers')
-      .select('*')
-      .match({ tenantId: this.tenant().id, userId: id })
-      .single();
-
-    if (error) {
-      throw new Error("Fehler beim Laden des Mandanten");
-    }
-
-    return data;
+    return this.tenantSvc.getTenantUserById(this.tenant().id, id);
   }
 
   async logout() {
@@ -516,17 +546,7 @@ export class DbService {
   }
 
   async getViewers(): Promise<Viewer[]> {
-    const { data, error } = await supabase
-      .from(SupabaseTable.VIEWERS)
-      .select('*')
-      .eq('tenantId', this.tenant().id);
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Beobachter", "danger");
-      throw error;
-    }
-
-    return data;
+    return this.viewerParentSvc.getViewers(this.tenant().id);
   }
 
   async deleteParent(parent: Parent): Promise<void> {
@@ -549,17 +569,7 @@ export class DbService {
   }
 
   async getParents(): Promise<Parent[]> {
-    const { data, error } = await supabase
-      .from("parents")
-      .select('*')
-      .eq('tenantId', this.tenant().id);
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Elternteile", "danger");
-      throw error;
-    }
-
-    return data;
+    return this.viewerParentSvc.getParents(this.tenant().id);
   }
 
   async createViewer(viewer: Partial<Viewer>) {
@@ -672,44 +682,15 @@ export class DbService {
   }
 
   async informUserAboutApproval(email: string, name: string, role: Role): Promise<void> {
-    const res = await axios.post(`https://staccato-server.vercel.app/api/approveAttendixUser`, {
-      email,
-      name,
-      role: Utils.getRoleText(role),
-      tenant: this.tenant().longName,
-    });
-
-    if (!res.data.mailSent) {
-      throw new Error('Fehler beim Informieren des Benutzers');
-    }
+    return this.userRegistrationSvc.informUserAboutApproval(email, name, role, this.tenant().longName);
   }
 
   async informUserAboutReject(email: string, name: string): Promise<void> {
-    const res = await axios.post(`https://staccato-server.vercel.app/api/rejectAttendixUser`, {
-      email,
-      name,
-      tenant: this.tenant().longName,
-    });
-
-    if (!res.data.mailSent) {
-      throw new Error('Fehler beim Informieren des Benutzers');
-    }
+    return this.userRegistrationSvc.informUserAboutReject(email, name, this.tenant().longName);
   }
 
   async addUserToTenant(userId: string, role: Role, email: string, tenantId?: number) {
-    const { error } = await supabase
-      .from('tenantUsers')
-      .insert({
-        userId,
-        role,
-        tenantId: tenantId ?? this.tenant().id,
-        email
-      });
-
-    if (error) {
-      Utils.showToast("Fehler beim Hinzufügen des Benutzers zum Mandanten", "danger");
-      throw new Error('Fehler beim Hinzufügen des Benutzers zum Mandanten');
-    }
+    return this.userRegistrationSvc.addUserToTenant(userId, role, email, tenantId ?? this.tenant().id);
   }
 
   async updateTenantUser(updates: Partial<TenantUser>, userId: string): Promise<void> {
@@ -861,9 +842,7 @@ export class DbService {
   }
 
   async changePassword(password: string) {
-    await supabase.auth.updateUser({
-      password,
-    })
+    return this.authSvc.changePassword(password);
   }
 
   async login(email: string, password: string, returnEarly: boolean = false, loading?: HTMLIonLoadingElement): Promise<boolean> {
@@ -965,12 +944,7 @@ export class DbService {
   }
 
   async getPlayerProfile(): Promise<Player | null> {
-    try {
-      const player: Player = await this.getPlayerByAppId(false);
-      return player;
-    } catch (_) {
-      return null;
-    }
+    return this.playerSvc.getPlayerProfile(this.user.id, this.tenant().id);
   }
 
   async updateProfile(updates: Partial<Player>, churchId?: string): Promise<void> {
@@ -1036,24 +1010,7 @@ export class DbService {
   }
 
   async getPlayerByAppId(showToast: boolean = true): Promise<Player> {
-    const { data: player, error } = await supabase
-      .from('player')
-      .select('*')
-      .eq('tenantId', this.tenant().id)
-      .match({ appId: this.user.id })
-      .single();
-
-    if (error) {
-      if (showToast) {
-        Utils.showToast("Es konnte kein Spieler gefunden werden.", "danger");
-      }
-      throw error;
-    }
-
-    return {
-      ...player,
-      history: player.history as any,
-    } as any
+    return this.playerSvc.getPlayerByAppId(this.user.id, this.tenant().id, showToast);
   }
 
   async getPlayers(all: boolean = false): Promise<Player[]> {
@@ -1130,24 +1087,7 @@ export class DbService {
   }
 
   async getPendingPersons(): Promise<Player[]> {
-    const { data, error } = await supabase
-      .from('player')
-      .select('*')
-      .is('pending', true)
-      .eq('tenantId', this.tenant().id)
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Personen", "danger");
-      throw error;
-    }
-
-    return data.map((player: any) => {
-      return {
-        ...player,
-        history: player.history as any,
-      }
-    });
+    return this.playerSvc.getPendingPersons(this.tenant().id);
   }
 
   async resetPassword(email: string) {
@@ -1179,63 +1119,19 @@ export class DbService {
   }
 
   async getLeftPlayers(): Promise<Player[]> {
-    const { data } = await supabase
-      .from('player')
-      .select('*')
-      .eq('tenantId', this.tenant().id)
-      .is('pending', false)
-      .not("left", "is", null)
-      .order("left", {
-        ascending: false,
-      });
-
-    return data.map((player: any) => {
-      return {
-        ...player,
-        history: player.history as any,
-      }
-    });
+    return this.playerSvc.getLeftPlayers(this.tenant().id);
   }
 
   async getPlayersWithoutAccount(): Promise<Player[]> {
-    const { data } = await supabase
-      .from('player')
-      .select('*')
-      .is('pending', false)
-      .eq('tenantId', this.tenant().id)
-      .not("email", "is", null)
-      .is("appId", null)
-      .is("left", null);
-
-    return data.map((player: any) => {
-      return {
-        ...player,
-        history: player.history as any,
-      }
-    }).filter((p: any) => p.email.length);
+    return this.playerSvc.getPlayersWithoutAccount(this.tenant().id);
   }
 
   async getConductors(all: boolean = false, tenantId?: number, mainGroupId?: number): Promise<Person[]> {
     const mainGroupIdLocal = mainGroupId ?? this.getMainGroup()?.id;
-
     if (!mainGroupIdLocal) {
       throw new Error("Hauptgruppe nicht gefunden");
     }
-
-    const { data, error } = await supabase
-      .from('player')
-      .select('*')
-      .eq('instrument', mainGroupIdLocal)
-      .is('pending', false)
-      .eq('tenantId', tenantId ?? this.tenant().id)
-      .order("lastName");
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Hauptgruppen-Personen", "danger");
-      throw new Error("Fehler beim Laden der Personen");
-    }
-
-    return (all ? data : data.filter((c: any) => !c.left) as unknown as Person[]).map((con: any) => { return { ...con, img: con.img || DEFAULT_IMAGE } });
+    return this.conductorSvc.getConductors(mainGroupIdLocal, tenantId ?? this.tenant().id, all);
   }
 
   async addPlayer(
@@ -1552,26 +1448,11 @@ export class DbService {
   }
 
   async updatePlayerHistory(id: number, history: PlayerHistoryEntry[]) {
-    const { data, error } = await supabase
-      .from('player')
-      .update({ history: history as any[] })
-      .match({ id })
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error("Fehler beim updaten des Spielers");
-    }
-
-    return data;
+    return this.playerSvc.updatePlayerHistory(id, history);
   }
 
   async removePlayer(player: Person): Promise<void> {
-    await supabase
-      .from('player')
-      .delete()
-      .match({ id: player.id });
-
+    await this.playerSvc.removePlayer(player);
     if (player.appId) {
       await this.removeEmailFromAuth(player.appId, player.email);
     }
@@ -1652,14 +1533,7 @@ export class DbService {
   }
 
   async getGroups(tenantId?: number): Promise<Group[]> {
-    const { data } = await supabase
-      .from('instruments')
-      .select('*, categoryData:category(*)')
-      .eq('tenantId', tenantId ?? this.tenant().id)
-      .order("category")
-      .order("name", { ascending: true });
-
-    return data as any;
+    return this.groupSvc.getGroups(tenantId ?? this.tenant().id);
   }
 
   getMainGroup(): Group | undefined {
@@ -1667,97 +1541,35 @@ export class DbService {
   }
 
   async addGroup(name: string, maingroup: boolean = false, tenantId?: number): Promise<Group[]> {
-    const { data } = await supabase
-      .from('instruments')
-      .insert({
-        name,
-        tuning: "C",
-        clefs: ["g"],
-        tenantId: tenantId || this.tenant().id,
-        maingroup,
-      })
-      .select();
-
+    const data = await this.groupSvc.addGroup(name, tenantId || this.tenant().id, maingroup);
     if (this.tenant() && this.tenant().id) {
       this.groups.set(await this.getGroups());
     }
-
     return data;
   }
 
   async updateGroup(att: Partial<Group>, id: number): Promise<Group[]> {
-    const { data, error } = await supabase
-      .from('instruments')
-      .update(att)
-      .match({ id })
-      .select();
-
-    if (error) {
-      if (error.code === '23505') {
-        Utils.showToast("Es kann nur eine Hauptgruppe existieren", "danger");
-      } else {
-        Utils.showToast("Fehler beim updaten des Instruments", "danger");
-      }
-      throw new Error("Fehler beim updaten des Instruments");
-    }
-
+    const data = await this.groupSvc.updateGroup(att, id);
     this.groups.set(await this.getGroups());
-
     return data;
   }
 
   async removeGroup(id: number): Promise<Group[]> {
-    const { data } = await supabase
-      .from('instruments')
-      .delete()
-      .match({ id })
-      .select();
-
+    const data = await this.groupSvc.removeGroup(id);
     this.groups.set(await this.getGroups());
-
     return data;
   }
 
   async addAttendance(attendance: Attendance): Promise<number> {
-    const { data, error } = await supabase
-      .from('attendance')
-      .insert({
-        ...attendance as any,
-        tenantId: this.tenant().id,
-      })
-      .select().single();
-
-    if (error) {
-      throw new Error("Fehler beim hinzufügen der Anwesenheit");
-    }
-
-    return data.id;
+    return this.attendanceSvc.addAttendance(attendance, this.tenant().id);
   }
 
   async addPersonAttendances(personAttendances: PersonAttendance[]): Promise<void> {
-    const { error } = await supabase
-      .from('person_attendances')
-      .insert(personAttendances);
-
-    if (error) {
-      throw new Error("");
-    }
-
-    return;
+    return this.attendanceSvc.addPersonAttendances(personAttendances);
   }
 
   async deletePersonAttendances(ids: number[], personId: number): Promise<void> {
-    const { error } = await supabase
-      .from('person_attendances')
-      .delete()
-      .in('attendance_id', ids)
-      .eq('person_id', personId);
-
-    if (error) {
-      throw new Error("");
-    }
-
-    return;
+    return this.attendanceSvc.deletePersonAttendances(ids, personId);
   }
 
   async getAttendance(all: boolean = false, withPersonAttendance: boolean = false): Promise<Attendance[]> {
@@ -1839,38 +1651,15 @@ export class DbService {
   }
 
   async getAttendanceById(id: number): Promise<Attendance> {
-    const { data } = await supabase
-      .from('attendance')
-      .select(attendanceSelect)
-      .match({ id })
-      .order("date", {
-        ascending: false,
-      })
-      .single();
-
-    return Utils.getModifiedAttendanceData(data as any);
+    return this.attendanceSvc.getAttendanceById(id);
   }
 
   async updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance> {
-    const { data, error } = await supabase
-      .from('attendance')
-      .update(att as any)
-      .match({ id })
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error("Fehler beim updaten der Anwesenheit");
-    }
-
-    return data as any;
+    return this.attendanceSvc.updateAttendance(att, id);
   }
 
   async removeAttendance(id: number): Promise<void> {
-    await supabase
-      .from('attendance')
-      .delete()
-      .match({ id });
+    return this.attendanceSvc.removeAttendance(id);
   }
 
   async getPersonAttendances(id: number, all: boolean = false): Promise<PersonAttendance[]> {
@@ -1907,509 +1696,148 @@ export class DbService {
   }
 
   async getParentAttendances(player: Person[], attendances: Attendance[]): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('person_attendances')
-      .select('*, person:person_id(firstName)')
-      .in('person_id', player.map(p => p.id))
-      .in('attendance_id', attendances.map(a => a.id));
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Anwesenheiten", "danger");
-      throw error;
-    }
-
-    if (!data || !data.length) {
-      return [];
-    }
-
-    return data;
+    return this.attendanceSvc.getParentAttendances(
+      player.map(p => p.id),
+      attendances.map(a => a.id)
+    );
   }
 
   async updatePersonAttendance(id: string, att: Partial<PersonAttendance>): Promise<void> {
-    const { error } = await supabase
-      .from('person_attendances')
-      .update({
-        ...att,
-        changed_by: this.user?.id || null,
-        changed_at: new Date().toISOString(),
-      })
-      .match({ id });
-
-    if (error) {
-      throw new Error("Fehler beim updaten der Anwesenheit");
-    }
+    return this.attendanceSvc.updatePersonAttendance(id, att, this.user?.id);
   }
 
   async getHistory(tenantId?: number): Promise<History[]> {
-    const { data } = await supabase
-      .from('history')
-      .select('*, attendance:attendance_id(date)')
-      .eq('tenantId', tenantId ?? this.tenant().id)
-      .eq('visible', true)
-      .order("date", {
-        ascending: false,
-      });
-
-    return data as any;
+    return this.historySvc.getHistory(tenantId ?? this.tenant().id);
   }
 
   async getHistoryByAttendanceId(attendance_id: number): Promise<History[]> {
-    const { data } = await supabase
-      .from('history')
-      .select('*')
-      .eq('tenantId', this.tenant().id)
-      .eq('attendance_id', attendance_id)
-      .order("songId", {
-        ascending: true,
-      });
-
-    return data;
+    return this.historySvc.getHistoryByAttendanceId(attendance_id, this.tenant().id);
   }
 
   async updateHistoryEntry(id: number, history: Partial<History>): Promise<History[]> {
-    const { data, error } = await supabase
-      .from('history')
-      .update(history)
-      .match({ id });
-
-    if (error) {
-      Utils.showToast("Fehler beim Updaten des Eintrags", "danger");
-      throw new Error("Fehler beim Updaten des Eintrags");
-    }
-
-    return data;
+    return this.historySvc.updateHistoryEntry(id, history);
   }
 
   async addHistoryEntry(history: History[]): Promise<History[]> {
-    const { data } = await supabase
-      .from('history')
-      .insert(
-        history.map((h: History) => {
-          return {
-            ...h,
-            tenantId: this.tenant().id,
-          }
-        })
-      )
-      .select();
-
-    return data;
+    return this.historySvc.addHistoryEntry(history, this.tenant().id);
   }
 
   async removeHistoryEntry(id: number): Promise<History[]> {
-    const { data, error } = await supabase
-      .from('history')
-      .delete()
-      .match({ id });
-
-    if (error) {
-      throw new Error("Fehler beim Löschen des Eintrags");
-    }
-
-    return data;
+    return this.historySvc.removeHistoryEntry(id);
   }
 
   async addSongsToHistory(historyEntries: History[]) {
-    const { error } = await supabase
-      .from('history')
-      .insert(historyEntries)
-      .select();
-
-    if (error) {
-      throw new Error("Fehler beim Hinzufügen der Lieder zur Historie");
-    }
-
-    return;
+    return this.historySvc.addSongsToHistory(historyEntries);
   }
 
   async getTeachers(): Promise<Teacher[]> {
-    const { data } = await supabase
-      .from('teachers')
-      .select('*')
-      .eq('tenantId', this.tenant().id)
-      .order("name", {
-        ascending: true,
-      });
-
-    return data;
+    return this.teacherSvc.getTeachers(this.tenant().id);
   }
 
   async addTeacher(teacher: Teacher): Promise<Teacher[]> {
-    const { data } = await supabase
-      .from('teachers')
-      .insert({
-        ...teacher,
-        tenantId: this.tenant().id
-      })
-      .select();
-
-    return data;
+    return this.teacherSvc.addTeacher(teacher, this.tenant().id);
   }
 
   async updateTeacher(teacher: Partial<Teacher>, id: number): Promise<Teacher[]> {
-    delete teacher.insNames;
-    delete teacher.playerCount;
-
-    const { data } = await supabase
-      .from('teachers')
-      .update(teacher)
-      .match({ id });
-
-    return data;
+    return this.teacherSvc.updateTeacher(teacher, id);
   }
 
   async getSongs(tenantId?: number): Promise<Song[]> {
-    const response = await supabase
-      .from('songs')
-      .select('*')
-      .eq('tenantId', tenantId ?? this.tenant().id)
-      .order("number", {
-        ascending: true,
-      });
-
-    return response.data as any;
+    return this.songSvc.getSongs(tenantId ?? this.tenant().id);
   }
 
   async getSong(id: number, tenantId?: number): Promise<Song> {
-    const response = await supabase
-      .from('songs')
-      .select('*')
-      .match({ id })
-      .match({ tenantId: tenantId ?? this.tenant().id })
-      .single();
-
-    return {
-      ...response.data,
-      files: response.data.files.sort((a, b) => ((a as any).instrumentId || 0) - ((b as any).instrumentId || 0)),
-    } as any;
+    return this.songSvc.getSong(id, tenantId ?? this.tenant().id);
   }
 
   async addSong(song: Song): Promise<Song> {
-    const { data } = await supabase
-      .from('songs')
-      .insert({
-        ...song,
-        tenantId: this.tenant().id,
-      } as any)
-      .select()
-      .single();
-
-    return data as unknown as Song;
+    return this.songSvc.addSong(song, this.tenant().id);
   }
 
   async removeSong(song: Song): Promise<void> {
-    if (song.files && song.files.length) {
-      const paths: string[] = song.files.map((file) => {
-        return `${this.tenant().id}/${song.id}/${file.fileName}`;
-      });
-
-      await supabase.storage
-        .from('songs')
-        .remove(paths);
-    }
-
-    const { error } = await supabase
-      .from('songs')
-      .delete()
-      .match({ id: song.id });
-
-    if (error) {
-      throw new Error("Fehler beim Löschen des Werks");
-    }
-
-    return;
+    return this.songSvc.removeSong(song, this.tenant().id);
   }
 
   async editSong(id: number, song: Song): Promise<Song[]> {
-    const { data } = await supabase
-      .from('songs')
-      .update(song as any)
-      .match({ id });
-
-    return data as any;
+    return this.songSvc.editSong(id, song);
   }
 
   async getSongCategories(): Promise<SongCategory[]> {
-    const { data } = await supabase
-      .from('song_categories')
-      .select('*')
-      .eq('tenant_id', this.tenant().id)
-      .order("index", {
-        ascending: true,
-      });
-
+    const data = await this.songCategorySvc.getSongCategories(this.tenant().id);
     this.songCategories.set(data);
-
     return data;
   }
 
   async addSongCategory(category: Partial<SongCategory>) {
-    const { error } = await supabase
-      .from('song_categories')
-      .insert({
-        ...category,
-        tenant_id: this.tenant().id,
-      } as SongCategory)
-      .select();
-
-    if (error) {
-      throw new Error("Fehler beim hinzufügen der Werkkategorie");
-    }
-
+    await this.songCategorySvc.addSongCategory(category, this.tenant().id);
     await this.getSongCategories();
-
-    return;
   }
 
   async updateSongCategory(category: Partial<SongCategory>, id: string): Promise<SongCategory[]> {
-    const { data } = await supabase
-      .from('song_categories')
-      .update(category)
-      .match({ id });
-
+    const data = await this.songCategorySvc.updateSongCategory(category, id);
     await this.getSongCategories();
-
     return data;
   }
 
   async removeSongCategory(id: string): Promise<void> {
-    await supabase
-      .from('song_categories')
-      .delete()
-      .match({ id });
-
+    await this.songCategorySvc.removeSongCategory(id);
     await this.getSongCategories();
-
-    return;
   }
 
   async getMeetings(): Promise<Meeting[]> {
-    const response = await supabase
-      .from('meetings')
-      .select('*')
-      .eq('tenantId', this.tenant().id)
-      .order("date", {
-        ascending: true,
-      });
-
-    return response.data;
+    return this.meetingSvc.getMeetings(this.tenant().id);
   }
 
   async getMeeting(id: number): Promise<Meeting> {
-    const response = await supabase
-      .from('meetings')
-      .select('*')
-      .match({ id })
-      .match({ tenantId: this.tenant().id })
-      .single();
-
-    return response.data;
+    return this.meetingSvc.getMeeting(id, this.tenant().id);
   }
 
   async addMeeting(meeting: Meeting): Promise<Meeting[]> {
-    const { data } = await supabase
-      .from('meetings')
-      .insert({
-        ...meeting,
-        tenantId: this.tenant().id
-      })
-      .select();
-
-    return data;
+    return this.meetingSvc.addMeeting(meeting, this.tenant().id);
   }
 
   async editMeeting(id: number, meeting: Meeting): Promise<Meeting[]> {
-    const { data } = await supabase
-      .from('meetings')
-      .update(meeting)
-      .match({ id });
-
-    return data;
+    return this.meetingSvc.editMeeting(id, meeting);
   }
 
   async removeMeeting(id: number): Promise<void> {
-    await supabase
-      .from('meetings')
-      .delete()
-      .match({ id });
-
-    return;
+    return this.meetingSvc.removeMeeting(id);
   }
 
   async signout(attIds: string[], reason: string, isLateExcused: boolean, isParents: boolean = false): Promise<void> {
-    for (const attId of attIds) {
-      await this.updatePersonAttendance(attId, {
-        notes: reason,
-        status: isLateExcused ? AttendanceStatus.LateExcused : AttendanceStatus.Excused,
-      });
-    }
-
-    this.notifyPerTelegram(attIds[0], isLateExcused === true ? 'lateSignout' : "signout", reason, isParents);
-
-    return;
+    return this.signInOutSvc.signout(attIds, reason, isLateExcused, isParents);
   }
 
   async signin(attId: string, status: string, notes: string = ""): Promise<void> {
-    await this.updatePersonAttendance(attId, {
-      notes,
-      status: AttendanceStatus.Present,
-    });
-
-    this.notifyPerTelegram(attId, status, undefined, false, notes);
-
-    return;
+    return this.signInOutSvc.signin(attId, status, notes, this.user?.id);
   }
 
   async updateAttendanceNote(attId: string, notes: string): Promise<void> {
-    await this.updatePersonAttendance(attId, {
-      notes,
-    });
-
-    return;
+    return this.signInOutSvc.updateAttendanceNote(attId, notes, this.user?.id);
   }
 
   async sendPlanPerTelegram(blob: Blob, name: string): Promise<void> {
-    const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999);
-    await loading.present();
-    const fileName: string = name + "_" + Math.floor(Math.random() * 100);
-
-    const { error } = await supabase.storage
-      .from("attendances")
-      .upload(fileName, blob, { upsert: true });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    const { data: urlData } = await supabase
-      .storage
-      .from("attendances")
-      .getPublicUrl(fileName);
-
-    const { error: sendError } = await supabase.functions.invoke("send-document", {
-      body: {
-        url: urlData.publicUrl,
-        chat_id: this.tenantUser().telegram_chat_id,
-      },
-      method: "POST",
-    });
-
-    loading.dismiss();
-
-    if (!sendError) {
-      Utils.showToast("Nachricht wurde erfolgreich gesendet!");
-    } else {
-      Utils.showToast("Fehler beim Senden der Nachricht, versuche es später erneut!", "danger");
-    }
-
-    window.setTimeout(async () => {
-      await supabase.storage
-        .from("attendances")
-        .remove([fileName]);
-    }, 10000);
+    return this.telegramSvc.sendPlanPerTelegram(blob, name, this.tenantUser().telegram_chat_id);
   }
 
   async sendSongPerTelegram(url: string): Promise<void> {
-    const { error: sendError } = await supabase.functions.invoke("send-document", {
-      body: {
-        url: url,
-        sendAsUrl: !url.includes(".pdf"),
-        chat_id: this.tenantUser().telegram_chat_id,
-      },
-      method: "POST",
-    });
-
-    if (!sendError) {
-      Utils.showToast("Nachricht wurde erfolgreich gesendet!");
-    } else {
-      Utils.showToast("Fehler beim Senden der Nachricht, versuche es später erneut!", "danger");
-    }
+    return this.telegramSvc.sendSongPerTelegram(url, this.tenantUser().telegram_chat_id);
   }
 
   async notifyPerTelegram(attId: string, type: string = "signin", reason?: string, isParents: boolean = false, notes: string = ""): Promise<void> {
-    await supabase.functions.invoke("quick-processor", {
-      body: {
-        attId,
-        type,
-        reason,
-        isParents,
-        notes
-      },
-      method: "POST",
-    });
+    return this.telegramSvc.notifyPerTelegram(attId, type, reason, isParents, notes);
   }
 
   async removeImage(id: number, imgPath: string, newUser: boolean = false, appId: string = "") {
-    if (!newUser) {
-      if (appId && this.user?.id === appId) {
-        await supabase
-          .from("player")
-          .update({ img: "" })
-          .match({ appId });
-      } else {
-        await supabase
-          .from("player")
-          .update({ img: "" })
-          .match({ id });
-      }
-    }
-
-    await supabase.storage
-      .from("profiles")
-      .remove([imgPath]);
+    return this.imageSvc.removeImage(id, imgPath, newUser, appId, this.user?.id);
   }
 
   async updateImage(id: number, image: File | Blob, appId: string) {
-    const fileName: string = `${id}`;
-
-    const { error } = await supabase.storage
-      .from("profiles")
-      .upload(fileName, image, { upsert: true });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    const { data } = await supabase
-      .storage
-      .from("profiles")
-      .getPublicUrl(fileName);
-
-    if (appId && this.user?.id === appId) {
-      await supabase
-        .from("player")
-        .update({ img: data.publicUrl })
-        .match({ appId });
-    } else {
-      await supabase
-        .from("player")
-        .update({ img: data.publicUrl })
-        .match({ id });
-    }
-
-    return data.publicUrl;
+    return this.imageSvc.updateImage(id, image, appId, this.user?.id);
   }
 
   async updateAttImage(id: number, image: File) {
-    const { error } = await supabase.storage
-      .from("attendances")
-      .upload(id.toString(), image, { upsert: true });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    const { data } = await supabase
-      .storage
-      .from("attendances")
-      .getPublicUrl(id.toString());
-
-    await supabase
-      .from("attendance")
-      .update({ img: data.publicUrl })
-      .match({ id });
-
-    return data.publicUrl;
+    return this.imageSvc.updateAttendanceImage(id, image);
   }
 
   async getCurrentSongs(tenantId?: number): Promise<{ date: string; history: History[] }[]> {
@@ -2490,47 +1918,11 @@ export class DbService {
   }
 
   async getNotifcationConfig(userId: string) {
-    const { data } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('id', userId)
-      .single();
-
-    if (!data) {
-      const newData = {
-        id: userId,
-        created_at: new Date().toISOString(),
-        enabled: false,
-        telegram_chat_id: "",
-        birthdays: true,
-        signins: true,
-        signouts: true,
-        updates: true,
-        registrations: true,
-      };
-
-      await supabase
-        .from('notifications')
-        .insert(newData);
-
-      return newData;
-    }
-
-    return data;
+    return this.notificationSvc.getNotificationConfig(userId);
   }
 
   async updateNotificationConfig(config: NotificationConfig) {
-    const { error } = await supabase
-      .from("notifications")
-      .update(config)
-      .eq("id", config.id);
-
-    if (error) {
-      Utils.showToast("Fehler beim Updaten der Konfiguration, bitte versuche es später erneut.", "danger")
-      throw new Error(error.message);
-    }
-
-    return;
+    return this.notificationSvc.updateNotificationConfig(config);
   }
 
   async deleteInstance(tenantId: number): Promise<void> {
@@ -2632,41 +2024,8 @@ export class DbService {
   }
 
   async getPossiblePersonsByName(firstName: string, lastName: string, onlyWithAccount: boolean = true): Promise<Person[]> {
-    let data;
-    let error;
-    if (onlyWithAccount) {
-      const res = await supabase
-        .from('player')
-        .select('*, instrument(name), tenantId(id, shortName, longName)')
-        .ilike('firstName', `%${firstName.trim()}%`)
-        .ilike('lastName', `%${lastName.trim()}%`)
-        .is('pending', false)
-        .neq('email', null);
-
-      data = res.data;
-      error = res.error;
-    } else {
-      const res = await supabase
-        .from('player')
-        .select('*, instrument(name), tenantId(id, shortName, longName)')
-        .ilike('firstName', `%${firstName.trim()}%`)
-        .ilike('lastName', `%${lastName.trim()}%`)
-        .is('pending', false);
-
-      data = res.data;
-      error = res.error;
-    }
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Personen", "danger");
-      throw error;
-    }
-
     const linkedTenants = await this.getLinkedTenants();
-
-    return data.filter((p: Person) => {
-      return linkedTenants.find((lt) => lt.id === (p as any).tenantId.id);
-    });
+    return this.crossTenantSvc.getPossiblePersonsByName(firstName, lastName, linkedTenants, onlyWithAccount);
   }
 
   async getLinkedTenants(): Promise<Tenant[]> {
@@ -2686,17 +2045,7 @@ export class DbService {
   }
 
   async getUserRolesForTenants(userId: string): Promise<{ tenantId: number, role: Role }[]> {
-    const { data, error } = await supabase
-      .from('tenantUsers')
-      .select('tenantId, role')
-      .eq('userId', userId);
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Mandanten", "danger");
-      throw error;
-    }
-
-    return data;
+    return this.crossTenantSvc.getUserRolesForTenants(userId);
   }
 
   async getTenantsFromUser(userId: string): Promise<Tenant[]> {
@@ -2723,34 +2072,11 @@ export class DbService {
   }
 
   async getUsersFromTenant(tenantId: number): Promise<TenantUser[]> {
-    const { data, error } = await supabase
-      .from('tenantUsers')
-      .select('*')
-      .eq('tenantId', tenantId)
-      .neq('role', Role.VIEWER);
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Benutzer", "danger");
-      throw error;
-    }
-
-    return data;
+    return this.crossTenantSvc.getUsersFromTenant(tenantId);
   }
 
   async getPersonIdFromTenant(userId: string, tenantId: number): Promise<{ id: number } | null> {
-    const { data, error } = await supabase
-      .from('player')
-      .select('id')
-      .eq('appId', userId)
-      .eq('tenantId', tenantId)
-      .is('pending', false)
-      .single();
-
-    if (error) {
-      console.error(error);
-    }
-
-    return data;
+    return this.crossTenantSvc.getPersonIdFromTenant(userId, tenantId);
   }
 
   isDemo() {
@@ -2758,100 +2084,27 @@ export class DbService {
   }
 
   async getGroupCategories(tenantId?: number) {
-    const { data, error } = await supabase
-      .from('group_categories')
-      .select('*')
-      .eq('tenant_id', tenantId ?? this.tenant().id)
-      .order('name', { ascending: true });
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Kategorien", "danger");
-      throw error;
-    }
-
-    return data;
+    return this.groupCategorySvc.getGroupCategories(tenantId ?? this.tenant().id);
   }
 
   async addGroupCategory(name: string) {
-    const { data, error } = await supabase
-      .from('group_categories')
-      .insert({
-        name,
-        tenant_id: this.tenant().id,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      Utils.showToast("Fehler beim Hinzufügen der Kategorie", "danger");
-      throw error;
-    }
-
-    return data;
+    return this.groupCategorySvc.addGroupCategory(name, this.tenant().id);
   }
 
   async updateGroupCategory(id: number, name: string) {
-    const { data, error } = await supabase
-      .from('group_categories')
-      .update({ name })
-      .match({ id })
-      .select()
-      .single();
-
-    if (error) {
-      Utils.showToast("Fehler beim Aktualisieren der Kategorie", "danger");
-      throw error;
-    }
-
-    return data;
+    return this.groupCategorySvc.updateGroupCategory(id, name);
   }
 
   async deleteGroupCategory(id: number) {
-    const { error } = await supabase
-      .from('group_categories')
-      .delete()
-      .match({ id });
-
-    if (error) {
-      Utils.showToast("Fehler beim Löschen der Kategorie", "danger");
-      throw error;
-    }
-
-    return;
+    return this.groupCategorySvc.deleteGroupCategory(id);
   }
 
   async getHolidays(region: string) {
-    const holiday = new Holiday();
-    const start = dayjs().startOf("year").toDate();
-    const end = dayjs().add(1, "year").endOf("year").toDate();
-    const publicHolidays = (await holiday.getPublicHolidays("DE", start, end, `DE-${region}`)).map((h) => {
-      return {
-        ...h,
-        gone: dayjs(h.startDate).isBefore(dayjs(), 'day'),
-      }
-    });
-    const schoolHolidays = (await holiday.getSchoolHolidays("DE", start, end, `DE-${region}`, "DE")).map((h) => {
-      return {
-        ...h,
-        gone: dayjs(h.startDate).isBefore(dayjs(), 'day'),
-      }
-    });
-    return { publicHolidays, schoolHolidays };
+    return this.holidaySvc.getHolidays(region);
   }
 
   async getAdmins(): Promise<Admin[]> {
-    const { data, error } = await supabase
-      .from('tenantUsers')
-      .select('email, userId, created_at')
-      .eq('role', Role.ADMIN)
-      .eq('tenantId', this.tenant().id);
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Admins", "danger");
-      throw error;
-    }
-
-    return data.filter((e: Admin) => Boolean(e) && e.email !== "developer@attendix.de");
+    return this.adminSvc.getAdmins(this.tenant().id);
   }
 
   async createAdmin(admin: string) {
@@ -2878,173 +2131,38 @@ export class DbService {
   }
 
   async createOrganisation(name: string): Promise<Organisation> {
-    const { data, error } = await supabase
-      .from('tenant_groups')
-      .insert({
-        name,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      Utils.showToast("Fehler beim Erstellen der Organisation", "danger");
-      throw error;
-    }
-
+    const data = await this.orgSvc.createOrganisation(name);
     await this.linkTenantToOrganisation(this.tenant().id, data);
-
     return data;
   }
 
   async linkTenantToOrganisation(tenantId: number, organisation: Organisation): Promise<void> {
-    const { error } = await supabase
-      .from('tenant_group_tenants')
-      .insert({
-        tenant_id: tenantId,
-        tenant_group: organisation.id,
-      });
-
-    if (error) {
-      Utils.showToast("Fehler beim Verknüpfen der Organisation", "danger");
-      throw error;
-    }
-
+    await this.orgSvc.linkTenantToOrganisation(tenantId, organisation);
     this.organisation.set(organisation);
-
-    return;
   }
 
   async unlinkTenantFromOrganisation(orgId: number): Promise<void> {
-    const { error } = await supabase
-      .from('tenant_group_tenants')
-      .delete()
-      .eq('tenant_id', this.tenant().id)
-      .eq('tenant_group', orgId);
-
-    if (error) {
-      Utils.showToast("Fehler beim Entfernen der Organisation", "danger");
-      throw error;
-    }
-
-    // check if there are still tenants in the organisation if not delete the organisation
-    const { data, error: fetchError } = await supabase
-      .from('tenant_group_tenants')
-      .select('*')
-      .eq('tenant_group', orgId);
-
-    if (fetchError) {
-      Utils.showToast("Fehler beim Entfernen der Organisation", "danger");
-      throw fetchError;
-    }
-
-    if (data.length === 0) {
-      await supabase
-        .from('tenant_groups')
-        .delete()
-        .match({ id: orgId });
-    }
-
-    return;
+    await this.orgSvc.unlinkTenantFromOrganisation(this.tenant().id, orgId);
   }
 
   async getOrganisationFromTenant(): Promise<Organisation | null> {
-    const { data, error } = await supabase
-      .from('tenant_group_tenants')
-      .select('*, tenant_group_data:tenant_group(*)')
-      .eq('tenant_id', this.tenant().id)
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return null;
-      }
-      Utils.showToast("Fehler beim Laden der Organisation", "danger");
-      throw error;
-    }
-
-    return data.tenant_group_data;
+    return this.orgSvc.getOrganisationFromTenant(this.tenant().id);
   }
 
   async getInstancesOfOrganisations(orgId: number): Promise<Tenant[]> {
-    const { data, error } = await supabase
-      .from('tenant_group_tenants')
-      .select('tenant:tenant_id(*)')
-      .eq('tenant_group', orgId);
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Organisationen", "danger");
-      throw error;
-    }
-
-    return data.map(d => d.tenant as any);
+    return this.orgSvc.getInstancesOfOrganisation(orgId);
   }
 
   async getAllPersonsFromOrganisation(tenants: Tenant[]): Promise<Player[]> {
-    const { data, error } = await supabase
-      .from('player')
-      .select('*')
-      .in('tenantId', tenants.map(t => t.id))
-      .is('pending', false)
-      .is("left", null)
-      .order('lastName', { ascending: true })
-      .order('firstName', { ascending: true });
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Personen", "danger");
-      throw error;
-    }
-
-    return data as any;
+    return this.orgSvc.getAllPersonsFromOrganisation(tenants);
   }
 
   async getOrganisationsFromUser(): Promise<Organisation[]> {
-    const { data: tenants, error: fetchError } = await supabase
-      .from('tenantUsers')
-      .select('*, tenantId(*)')
-      .eq('userId', this.tenantUser().userId)
-      .or('role.eq.1, role.eq.5');
-
-    if (fetchError) {
-      Utils.showToast("Fehler beim Laden der Mandanten", "danger");
-      throw fetchError;
-    }
-
-    const { data, error } = await supabase
-      .from('tenant_group_tenants')
-      .select('*, tenant_group_data:tenant_group(*)')
-      .in('tenant_id', tenants.map(t => t.tenantId.id));
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Organisationen", "danger");
-      throw error;
-    }
-
-    // make sure there are no duplicates
-    const uniqueOrgs = Array.from(new Set(data.map(d => d.tenant_group_data.id)))
-      .map(id => {
-        return data.find(d => d.tenant_group_data.id === id).tenant_group_data;
-      });
-
-    return uniqueOrgs;
+    return this.orgSvc.getOrganisationsFromUser(this.tenantUser().userId);
   }
 
   async getTenantsFromOrganisation(): Promise<Tenant[]> {
-    const organisation = await this.getOrganisationFromTenant();
-    if (!organisation) {
-      return [];
-    }
-
-    const { data, error } = await supabase
-      .from('tenant_group_tenants')
-      .select('*, tenant:tenant_id(*)')
-      .eq('tenant_group', organisation.id);
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Mandanten", "danger");
-      throw error;
-    }
-
-    return data.map(d => d.tenant).filter(t => t.id !== this.tenant().id) as unknown as Tenant[];
+    return this.orgSvc.getTenantsFromOrganisation(this.tenant().id);
   }
 
   async handoverPersons(persons: Player[], targetTenant: Tenant, groupMapping: { [key: number]: number } = {}, stayInInstance: boolean, mainGroup: number | null): Promise<Player[]> {
@@ -3122,287 +2240,80 @@ export class DbService {
   }
 
   private async getAttendanceTypes(tenantId?: number): Promise<AttendanceType[]> {
-    const { data, error } = await supabase
-      .from('attendance_types')
-      .select('*')
-      .eq('tenant_id', tenantId || this.tenant().id)
-      .order('index', { ascending: true });
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Anwesenheitstypen", "danger");
-      throw error;
-    }
-
-    return data.map((att: any): AttendanceType => {
-      return {
-        ...att,
-        default_plan: att.default_plan as any,
-      };
-    });
+    return this.attTypeSvc.getAttendanceTypes(tenantId || this.tenant().id);
   }
 
   async getAttendanceType(id: string): Promise<AttendanceType> {
-    const { data, error } = await supabase
-      .from('attendance_types')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden des Anwesenheitstyps", "danger");
-      throw error;
-    }
-
-    return data as any;
+    return this.attTypeSvc.getAttendanceType(id);
   }
 
   async updateAttendanceType(id: string, attType: Partial<AttendanceType>): Promise<AttendanceType> {
-    const { data, error } = await supabase
-      .from('attendance_types')
-      .update(attType as any)
-      .match({ id })
-      .select()
-      .single();
-
-    if (error) {
-      Utils.showToast("Fehler beim Aktualisieren des Anwesenheitstyps", "danger");
-      throw error;
-    }
-
+    const data = await this.attTypeSvc.updateAttendanceType(id, attType);
     this.attendanceTypes.set(await this.getAttendanceTypes());
-
-    return data as any;
+    return data;
   }
 
   async addAttendanceType(attType: AttendanceType): Promise<AttendanceType> {
-    const { data, error } = await supabase
-      .from('attendance_types')
-      .insert(attType as any)
-      .select()
-      .single();
-
-    if (error) {
-      Utils.showToast("Fehler beim Hinzufügen des Anwesenheitstyps", "danger");
-      throw error;
-    }
-
+    const data = await this.attTypeSvc.addAttendanceType(attType);
     this.attendanceTypes.set(await this.getAttendanceTypes());
-
-    return data as any;
+    return data;
   }
 
   async deleteAttendanceType(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('attendance_types')
-      .delete()
-      .match({ id });
-
-    if (error) {
-      Utils.showToast("Fehler beim Löschen des Anwesenheitstyps", "danger");
-      throw error;
-    }
-
+    await this.attTypeSvc.deleteAttendanceType(id);
     this.attendanceTypes.set(await this.getAttendanceTypes());
-
-    return;
   }
 
   async getTenantBySongSharingId(sharingId: string): Promise<Tenant | null> {
-    const { data, error } = await supabase
-      .from('tenants')
-      .select('*')
-      .eq('song_sharing_id', sharingId)
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return null;
-      }
-      Utils.showToast("Fehler beim Laden des Tenants", "danger");
-      throw error;
-    }
-
-    return data as unknown as Tenant;
+    return this.tenantSvc.getTenantBySongSharingId(sharingId);
   }
 
   async getTenantByRegisterId(registerId: string): Promise<Tenant | null> {
-    const { data, error } = await supabase
-      .from('tenants')
-      .select('*')
-      .eq('register_id', registerId)
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return null;
-      }
-      Utils.showToast("Fehler beim Laden des Tenants", "danger");
-      throw error;
-    }
-
-    return data as unknown as Tenant;
+    return this.tenantSvc.getTenantByRegisterId(registerId);
   }
 
   async loadShifts(): Promise<void> {
-    const { data, error } = await supabase
-      .from('shifts')
-      .select('*')
-      .eq('tenant_id', this.tenant().id)
-      .order('name', { ascending: true });
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Schichten", "danger");
-      throw error;
-    }
-
-    this.shifts.set((data as any).map((shift: ShiftPlan) => {
-      return {
-        ...shift,
-        definition: (shift.definition || []).sort((a: ShiftDefinition, b: ShiftDefinition) => {
-          return a.index - b.index;
-        }),
-      }
-    }));
-    return;
+    const data = await this.shiftSvc.loadShifts(this.tenant().id);
+    this.shifts.set(data);
   }
 
   async isShiftUsed(id: string): Promise<boolean> {
-    const { data, error } = await supabase
-      .from('player')
-      .select('id')
-      .eq('shift_id', id)
-      .limit(1);
-
-    if (error) {
-      Utils.showToast("Fehler beim Überprüfen der Schichtverwendung", "danger");
-      throw error;
-    }
-
-    return data.length > 0;
+    return this.shiftSvc.isShiftUsed(id);
   }
 
   async addShift(shift: ShiftPlan): Promise<ShiftPlan> {
-    const { error } = await supabase
-      .from('shifts')
-      .insert({
-        ...shift,
-        tenant_id: this.tenant().id,
-        definition: [],
-        shifts: [],
-      });
-
-    if (error) {
-      Utils.showToast("Fehler beim Hinzufügen der Schicht", "danger");
-      throw error;
-    }
-
+    const result = await this.shiftSvc.addShift(shift, this.tenant().id);
     await this.loadShifts();
-
     return this.shifts().find(s => s.name === shift.name);
   }
 
   async updateShift(shift: ShiftPlan): Promise<ShiftPlan> {
-    const { error } = await supabase
-      .from('shifts')
-      .update(shift as any)
-      .match({ id: shift.id });
-
-    if (error) {
-      Utils.showToast("Fehler beim Aktualisieren der Schicht", "danger");
-      throw error;
-    }
-
+    await this.shiftSvc.updateShift(shift);
     await this.loadShifts();
-
     return;
   }
 
   async deleteShift(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('shifts')
-      .delete()
-      .match({ id });
-
-    if (error) {
-      Utils.showToast("Fehler beim Löschen der Schicht", "danger");
-      throw error;
-    }
-
+    await this.shiftSvc.deleteShift(id);
     await this.loadShifts();
-
-    return;
   }
 
   async getChurches(): Promise<Church[]> {
-    const { data, error } = await supabase
-      .from('churches')
-      .select('*')
-      .order('name', { ascending: true });
-
-    if (error) {
-      Utils.showToast("Fehler beim Laden der Kirchen", "danger");
-      throw error;
-    }
-
-    return data;
+    return this.churchSvc.getChurches();
   }
 
   async createChurch(name: string): Promise<string> {
-    const { data, error } = await supabase
-      .from('churches')
-      .insert({
-        name,
-        created_from: this.user?.id ?? null,
-      })
-      .select('id')
-      .single();
-
-    if (error) {
-      Utils.showToast("Fehler beim Erstellen der Kirche", "danger");
-      throw error;
-    }
-
-    await this.churches.set(await this.getChurches());
-
-    return data.id;
+    const id = await this.churchSvc.createChurch(name, this.user?.id);
+    this.churches.set(await this.getChurches());
+    return id;
   }
 
   async sendQuestion(message: string, phone: string): Promise<void> {
-    const { error } = await supabase
-      .from('questions')
-      .insert({
-        message,
-        phone,
-        tenant_id: this.tenant().id,
-        user_id: this.user?.id,
-      });
-
-    if (error) {
-      Utils.showToast("Fehler beim Senden der Frage", "danger");
-      throw error;
-    }
-
-    return;
+    return this.feedbackSvc.sendQuestion(message, phone, this.tenant().id, this.user?.id);
   }
 
   async sendFeedback(message: string, rating: number, anonymous: boolean, phone: string): Promise<void> {
-    const { error } = await supabase
-      .from('feedback')
-      .insert({
-        message,
-        rating,
-        anonymous,
-        phone,
-        tenant_id: anonymous ? null : this.tenant().id,
-        user_id: anonymous ? null : this.user?.id,
-      });
-
-    if (error) {
-      Utils.showToast("Fehler beim Senden des Feedbacks", "danger");
-      throw error;
-    }
-
-    return;
+    return this.feedbackSvc.sendFeedback(message, rating, anonymous, phone, anonymous ? null : this.tenant().id, anonymous ? null : this.user?.id);
   }
 
   // Cross-Tenant Attendance Overview - Signal-based cache
