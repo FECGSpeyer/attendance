@@ -144,6 +144,138 @@ export class DbService {
     return data;
   }
 
+  async downloadSongFileFromTenant(filePath): Promise<Blob> {
+    const { data, error } = await supabase.storage
+      .from('songs')
+      .download(filePath);
+
+    if (error) throw new Error(error.message);
+
+    return data;
+  }
+
+  async uploadSongFileToTenant(
+    songId: number,
+    blob: Blob,
+    fileName: string,
+    fileType: string,
+    targetTenantId: number,
+    instrumentId: number | null,
+    note?: string
+  ): Promise<SongFile> {
+    const fileId = this.encodeFilename(fileName);
+    const filePath = `songs/${targetTenantId}/${songId}/${fileId}`;
+
+    const { error } = await supabase.storage
+      .from('songs')
+      .upload(filePath, blob, { upsert: true });
+    if (error) throw new Error(error.message);
+
+    const { data } = await supabase.storage
+      .from('songs')
+      .getPublicUrl(filePath);
+
+    return {
+      storageName: fileId,
+      fileName,
+      fileType,
+      url: data.publicUrl,
+      instrumentId,
+      note,
+      created_at: new Date().toISOString(),
+    };
+  }
+
+  async copySongToTenant(
+    song: Song,
+    targetTenantId: number,
+    instrumentMapping: { [key: number]: number | null },
+    onProgress?: (current: number, total: number) => void
+  ): Promise<Song> {
+    const sourceTenantId = this.tenant().id;
+
+    // 1. Create new song in target tenant (without files, category = null)
+    const newSong: Song = {
+      name: song.name,
+      number: song.number,
+      prefix: song.prefix,
+      withChoir: song.withChoir,
+      withSolo: song.withSolo,
+      link: song.link,
+      difficulty: song.difficulty,
+      instrument_ids: [],
+      category: null,
+    };
+
+    const { data, error: insertError } = await supabase
+      .from('songs')
+      .insert({ ...newSong, tenantId: targetTenantId } as any)
+      .select()
+      .single();
+
+    if (insertError) throw new Error(insertError.message);
+
+    const createdSong = data as unknown as Song;
+
+    // 2. Copy all files
+    if (song.files?.length) {
+      const newFiles: SongFile[] = [];
+      const totalFiles = song.files.length;
+
+      for (let i = 0; i < song.files.length; i++) {
+        const file = song.files[i];
+        if (onProgress) onProgress(i + 1, totalFiles);
+
+        // Download from source tenant
+        const blob = await this.downloadSongFileFromTenant(
+          file.url.split("https://ultyjzgwejpehfjuyenr.supabase.co/storage/v1/object/public/songs/")[1]
+        );
+
+        // Map instrument ID
+        const mappedInstrumentId = file.instrumentId
+          ? (instrumentMapping[file.instrumentId] ?? null)
+          : null;
+
+        // Upload to target tenant
+        const newFile = await this.uploadSongFileToTenant(
+          createdSong.id,
+          blob,
+          file.fileName,
+          file.fileType,
+          targetTenantId,
+          mappedInstrumentId,
+          file.note
+        );
+
+        newFiles.push(newFile);
+      }
+
+      // Update song with files and instrument_ids
+      const filesJson = newFiles.map(f => ({
+        storageName: f.storageName,
+        fileName: f.fileName,
+        fileType: f.fileType,
+        url: f.url,
+        instrumentId: f.instrumentId ?? null,
+        note: f.note,
+      }));
+
+      await supabase
+        .from('songs')
+        .update({
+          files: filesJson,
+          instrument_ids: Array.from(new Set(
+            filesJson
+              .map(f => f.instrumentId)
+              .filter(id => id !== null && id !== 1 && id !== 2)
+          ))
+        })
+        .match({ id: createdSong.id });
+    }
+
+    return createdSong;
+  }
+
   async deleteSongFile(songId: number, file: SongFile): Promise<SongFile> {
     const song = await this.getSong(songId);
     const files = song.files ? song.files.filter(f => f.url !== file.url) : [];

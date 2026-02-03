@@ -1,10 +1,10 @@
 import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover } from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, LoadingController } from '@ionic/angular';
 import * as JSZip from 'jszip';
 import { DbService } from 'src/app/services/db.service';
 import { Role } from 'src/app/utilities/constants';
-import { Group, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
+import { Group, Organisation, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 
@@ -27,12 +27,20 @@ export class SongPage implements OnInit {
   public tenant?: Tenant;
   public sharing_id?: string;
 
+  // Copy to other instance
+  public isCopyModalOpen: boolean = false;
+  public targetTenantId: number;
+  public availableTenants: Tenant[] = [];
+  public organisation: Organisation | null;
+  public targetGroups: Group[] = [];
+
   constructor(
     public db: DbService,
     private alertController: AlertController,
     private actionSheetController: ActionSheetController,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private loadingController: LoadingController
   ) { }
 
   async ngOnInit() {
@@ -50,6 +58,25 @@ export class SongPage implements OnInit {
     if (this.isOrchestra) {
       const groups = this.tenant ? await this.db.getGroups(this.tenant.id) : this.db.groups();
       this.instruments = groups.filter((instrument: Group) => !instrument.maingroup);
+    }
+
+    // Load organisation and tenants for copy feature (only for admin/responsible)
+    if (!this.readOnly) {
+      this.organisation = await this.db.getOrganisationFromTenant();
+      if (this.organisation) {
+        this.availableTenants = await this.db.getTenantsFromOrganisation();
+        if (this.availableTenants.length > 0) {
+          this.targetTenantId = this.availableTenants[0].id;
+          this.targetGroups = await this.db.getGroups(this.targetTenantId);
+        }
+      }
+    }
+  }
+
+  async onTargetTenantChange(): Promise<void> {
+    this.targetGroups = [];
+    if (this.targetTenantId) {
+      this.targetGroups = await this.db.getGroups(this.targetTenantId);
     }
   }
 
@@ -483,5 +510,73 @@ export class SongPage implements OnInit {
     if (!categoryId) return 'Keine Kategorie';
     const category = this.db.songCategories().find(cat => cat.id === categoryId);
     return category ? category.name : 'Unbekannte Kategorie';
+  }
+
+  /**
+   * Map instrument ID from source tenant to target tenant by name matching
+   */
+  private mapInstrumentId(sourceInstrumentId: number | undefined): number | null {
+    // Reserved IDs remain unchanged
+    if (!sourceInstrumentId) return null;
+    if (sourceInstrumentId === 1 || sourceInstrumentId === 2) {
+      return sourceInstrumentId;
+    }
+
+    const sourceGroup = this.instruments.find(g => g.id === sourceInstrumentId);
+    if (!sourceGroup) return null;
+
+    // Try exact name match first (case-insensitive)
+    let targetGroup = this.targetGroups.find(g =>
+      g.name.normalize().toLowerCase() === sourceGroup.name.normalize().toLowerCase()
+    );
+
+    // Try synonyms if no exact match
+    if (!targetGroup && sourceGroup.synonyms) {
+      const synonyms = sourceGroup.synonyms.split(',').map(s => s.trim().normalize().toLowerCase());
+      targetGroup = this.targetGroups.find(g =>
+        synonyms.includes(g.name.normalize().toLowerCase()) ||
+        (g.synonyms && g.synonyms.split(',').map(s => s.trim().normalize().toLowerCase())
+          .some(s => s === sourceGroup.name.normalize().toLowerCase() || synonyms.includes(s)))
+      );
+    }
+
+    return targetGroup?.id ?? null;
+  }
+
+  async copySong(): Promise<void> {
+    const loading = await this.loadingController.create({
+      message: 'Werk wird kopiert...',
+      duration: 9999999
+    });
+    await loading.present();
+
+    try {
+      // Build instrument mapping for all files
+      const instrumentMapping: { [key: number]: number | null } = {};
+      if (this.song.files?.length) {
+        for (const file of this.song.files) {
+          if (file.instrumentId && !instrumentMapping.hasOwnProperty(file.instrumentId)) {
+            instrumentMapping[file.instrumentId] = this.mapInstrumentId(file.instrumentId);
+          }
+        }
+      }
+
+      await this.db.copySongToTenant(
+        this.song,
+        this.targetTenantId,
+        instrumentMapping,
+        (current, total) => {
+          loading.message = `Datei ${current} von ${total} wird kopiert...`;
+        }
+      );
+
+      await loading.dismiss();
+      this.isCopyModalOpen = false;
+      Utils.showToast('Werk wurde erfolgreich kopiert', 'success');
+    } catch (error) {
+      await loading.dismiss();
+      console.error('Error copying song:', error);
+      Utils.showToast('Fehler beim Kopieren des Werks: ' + error.message, 'danger');
+    }
   }
 }

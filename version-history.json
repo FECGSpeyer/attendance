@@ -8,7 +8,8 @@
                 "Kategoriefilter für Werke: Werke können jetzt nach Kategorien gefiltert werden. Ein Segment Control zeigt alle verfügbaren Kategorien an, wenn mindestens eine Kategorie vorhanden ist.",
                 "Kategorie-Auswahl bei Werken: Du kannst jetzt jedem Werk eine Kategorie zuweisen und diese im Read-Only-Modus anschauen.",
                 "Verbesserungen bei der Datei-Upload: Warnung wird angezeigt, wenn Liedtext-Dateien hochgeladen werden, die keine PDF sind, da diese dann nicht in der Übersicht sichtbar sind.",
-                "Fehlerbehebung: Datei-Kategorie wird jetzt sofort aktualisiert, nachdem sie geändert wurde."
+                "Fehlerbehebung: Datei-Kategorie wird jetzt sofort aktualisiert, nachdem sie geändert wurde.",
+                "Werke können jetzt kopiert werden: Dupliziere ein Werk inklusive aller zugehörigen Dateien in eine andere Instanz deiner Organisation."
             ]
         },
         {

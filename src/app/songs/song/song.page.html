@@ -12,6 +12,9 @@
       <ion-button (click)="copyShareLink()" *ngIf="tenant || db.tenant()?.song_sharing_id">
         <ion-icon slot="icon-only" name="link-outline"></ion-icon>
       </ion-button>
+      <ion-button *ngIf="!readOnly && organisation && availableTenants.length > 0" (click)="isCopyModalOpen = true">
+        <ion-icon slot="icon-only" name="copy-outline"></ion-icon>
+      </ion-button>
       <ion-button *ngIf="!readOnly" (click)="confirmDeleteSong()">
         <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
       </ion-button>
@@ -178,7 +181,8 @@
               </ion-button>
 
               <ion-item-group *ngIf="selectedFileInfos?.length">
-                <ion-item-sliding #sliderFile *ngFor="let fileInfo of selectedFileInfos; let i = index; trackBy: trackByFileInfo">
+                <ion-item-sliding #sliderFile
+                  *ngFor="let fileInfo of selectedFileInfos; let i = index; trackBy: trackByFileInfo">
                   <ion-item>
                     <ion-label>
                       <h2>{{ fileInfo.file.name }}</h2>
@@ -213,7 +217,8 @@
     </ion-list-header>
     <ion-item-group>
       @if (song.files && song.files.length > 0) {
-      <ion-item detail="false" *ngFor="let file of song.files; let i = index" (click)="openFileActionSheet(file)" button>
+      <ion-item detail="false" *ngFor="let file of song.files; let i = index" (click)="openFileActionSheet(file)"
+        button>
         <ion-label>
           {{ file.fileName }}
         </ion-label>
@@ -245,3 +250,47 @@
     </ion-item-group>
   </ion-list>
 </ion-content>
+
+<!-- Copy to other instance modal -->
+<ion-modal (ionModalDidDismiss)="isCopyModalOpen = false" backdropDismiss="true" [breakpoints]="[0, 0.5, 1]"
+  [initialBreakpoint]="0.5" [isOpen]="isCopyModalOpen">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Werk kopieren</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="isCopyModalOpen = false">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content color="light">
+      <ion-list [inset]="true">
+        <ion-item-group>
+          <ion-item>
+            <ion-select (ionChange)="onTargetTenantChange()" label="Ziel-Instanz" [(ngModel)]="targetTenantId">
+              <ion-select-option [value]="tnt.id" *ngFor="let tnt of availableTenants">{{ tnt.longName
+                }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-item-group>
+      </ion-list>
+
+      <ion-list [inset]="true">
+        <ion-item-group>
+          <ion-item>
+            <ion-note color="medium">
+              Das Werk "{{ song?.name }}" wird in die ausgewählte Instanz kopiert. Alle Dateien werden ebenfalls
+              kopiert.
+              Die Kategorie wird nicht übernommen. Instrumentenzuordnungen werden automatisch anhand des Namens gemappt.
+            </ion-note>
+          </ion-item>
+        </ion-item-group>
+      </ion-list>
+
+      <ion-button [disabled]="!targetTenantId" (click)="copySong()" expand="block"
+        class="ion-margin">Kopieren</ion-button>
+    </ion-content>
+  </ng-template>
+</ion-modal>
