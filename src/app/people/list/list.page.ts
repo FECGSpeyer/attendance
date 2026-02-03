@@ -1,5 +1,5 @@
 import { Component, OnInit, effect } from '@angular/core';
-import { ActionSheetController, AlertController, IonItemSliding, IonRouterOutlet, ModalController } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Attendance, Group, Person, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
@@ -39,6 +39,13 @@ export class ListPage implements OnInit {
   public isArchiveModalOpen: boolean = false;
   public archiveDate: string = dayjs().format("YYYY-MM-DD");
   public archiveNote: string = "";
+  public isPauseModalOpen: boolean = false;
+  public pauseReason: string = "";
+  public pauseUntil: string = "";
+  public pauseUntilDisplay: string = "";
+  public minPauseDate: string = dayjs().format("YYYY-MM-DD");
+  public playerToPause: Player | null = null;
+  public sliderToPause: IonItemSliding | null = null;
   public isAdmin: boolean = false;
   public isChoir: boolean = false;
   public isGeneral: boolean = false;
@@ -97,6 +104,7 @@ export class ListPage implements OnInit {
 
     if (this.isAdmin) {
       await this.showReleaseNotesAlert();
+      await this.db.checkAndUnpausePlayers();
     }
 
     await this.getPlayers();
@@ -602,46 +610,60 @@ export class ListPage implements OnInit {
   }
 
   async pausePlayer(player: Player, slider: IonItemSliding) {
-    const alert = await this.alertController.create({
-      header: 'Person pausieren',
-      subHeader: 'Gib einen Grund an.',
-      inputs: [{
-        type: "textarea",
-        name: "reason"
-      }],
-      buttons: [{
-        text: "Abbrechen",
-        handler: () => {
-          slider.close();
-        }
-      }, {
-        text: "Pausieren",
-        handler: async (evt: { reason: string }) => {
-          if (!evt.reason) {
-            alert.message = "Bitte gib einen Grund an!";
-            return false;
-          }
-          const history: PlayerHistoryEntry[] = player.history;
-          history.push({
-            date: new Date().toISOString(),
-            text: evt.reason,
-            type: PlayerHistoryType.PAUSED,
-          });
-          try {
-            await this.db.updatePlayer({
-              ...player,
-              paused: true,
-              history,
-            }, true);
-          } catch (error) {
-            Utils.showToast(error, "danger");
-          }
-          slider.close();
-        }
-      }]
+    this.playerToPause = player;
+    this.sliderToPause = slider;
+    this.pauseReason = "";
+    this.pauseUntil = "";
+    this.pauseUntilDisplay = "";
+    this.isPauseModalOpen = true;
+  }
+
+  async confirmPause() {
+    if (!this.pauseReason) {
+      Utils.showToast("Bitte gib einen Grund an!", "warning");
+      return;
+    }
+
+    const history: PlayerHistoryEntry[] = [...this.playerToPause.history];
+    const pauseText = this.pauseUntil
+      ? `${this.pauseReason} (bis ${dayjs(this.pauseUntil).format('DD.MM.YYYY')})`
+      : this.pauseReason;
+
+    history.push({
+      date: new Date().toISOString(),
+      text: pauseText,
+      type: PlayerHistoryType.PAUSED,
     });
 
-    await alert.present();
+    try {
+      await this.db.updatePlayer({
+        ...this.playerToPause,
+        paused: true,
+        paused_until: this.pauseUntil || null,
+        history,
+      }, true);
+    } catch (error) {
+      Utils.showToast(error, "danger");
+    }
+
+    this.dismissPauseModal();
+  }
+
+  dismissPauseModal() {
+    this.isPauseModalOpen = false;
+    this.sliderToPause?.close();
+    this.playerToPause = null;
+    this.sliderToPause = null;
+    this.pauseReason = "";
+    this.pauseUntil = "";
+    this.pauseUntilDisplay = "";
+  }
+
+  onPauseDateChange(value: string, modal: IonModal) {
+    if (value) {
+      this.pauseUntilDisplay = dayjs(value).format('DD.MM.YYYY');
+      modal.dismiss();
+    }
   }
 
   async unpausePlayer(player: Player, slider: IonItemSliding) {
@@ -665,6 +687,7 @@ export class ListPage implements OnInit {
             await this.db.updatePlayer({
               ...player,
               paused: false,
+              paused_until: null,
               history,
             }, true);
           } catch (error) {

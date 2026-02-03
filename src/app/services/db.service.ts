@@ -1465,6 +1465,39 @@ export class DbService {
     }) as unknown as Player[];
   }
 
+  async checkAndUnpausePlayers(): Promise<void> {
+    const today = dayjs().format('YYYY-MM-DD');
+
+    const { data: pausedPlayers, error } = await supabase
+      .from('player')
+      .select('*')
+      .eq('tenantId', this.tenant().id)
+      .eq('paused', true)
+      .not('paused_until', 'is', null)
+      .lte('paused_until', today);
+
+    if (error) {
+      console.error("Fehler beim Prüfen pausierter Personen", error);
+      return;
+    }
+
+    for (const player of pausedPlayers || []) {
+      const history: PlayerHistoryEntry[] = (player.history as unknown as PlayerHistoryEntry[]) || [];
+      history.push({
+        date: new Date().toISOString(),
+        text: "Automatisch reaktiviert (Pausendatum erreicht)",
+        type: PlayerHistoryType.UNPAUSED,
+      });
+
+      await this.updatePlayer({
+        ...player,
+        paused: false,
+        paused_until: null,
+        history,
+      } as Player, true);
+    }
+  }
+
   async updateShiftAssignmentsForPerson(person: Person) {
     const attData: PersonAttendance[] = await this.getPersonAttendances(person.id);
     const shift = this.shifts().find((s: ShiftPlan) => s.id === person.shift_id);

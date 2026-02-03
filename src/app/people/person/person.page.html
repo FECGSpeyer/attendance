@@ -506,7 +506,42 @@
   </ion-fab>
   }
 
-  <ion-modal backdropDismiss="false" [isOpen]="isArchiveModalOpen">
+  <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" backdropDismiss="true" [isOpen]="isPauseModalOpen" (ionModalDidDismiss)="dismissPauseModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{ player?.firstName }} {{ player?.lastName }} pausieren</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="dismissPauseModal()">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-item>
+          <ion-label position="stacked">Grund</ion-label>
+          <ion-textarea [(ngModel)]="pauseReason" placeholder="Gib einen Grund für die Pause an..."></ion-textarea>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Pausiert bis (optional)</ion-label>
+          <ion-input helperText="Wenn ein Datum angegeben ist, wird die Person nach diesem Datum automatisch wieder aktiviert." readonly [(ngModel)]="pauseUntilDisplay" id="pause-date-modal-person" placeholder="Datum wählen..."></ion-input>
+          <ion-modal class="dateModal" trigger="pause-date-modal-person" #pauseDateModal>
+            <ng-template>
+              <ion-datetime show-default-buttons="true" done-text="Fertig" cancel-text="Abbrechen" show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [min]="minPauseDate" [(ngModel)]="pauseUntil"
+                (ionChange)="onPauseDateChange(pauseUntil, pauseDateModal)" presentation="date"></ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+        <ion-button expand="block" class="ion-margin-top" (click)="confirmPause()" [disabled]="!pauseReason">
+          <ion-icon slot="start" name="pause-outline"></ion-icon>
+          Pausieren
+        </ion-button>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal backdropDismiss="false" [isOpen]="isArchiveModalOpen">>
     <ng-template>
       <ion-header>
         <ion-toolbar>

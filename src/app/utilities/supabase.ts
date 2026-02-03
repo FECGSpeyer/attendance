@@ -643,6 +643,7 @@ export type Database = {
           otherOrchestras: string[] | null
           parent_id: number | null
           paused: boolean | null
+          paused_until: string | null
           pending: boolean | null
           phone: string | null
           playsSince: string | null
@@ -684,6 +685,7 @@ export type Database = {
           otherOrchestras?: string[] | null
           parent_id?: number | null
           paused?: boolean | null
+          paused_until?: string | null
           pending?: boolean | null
           phone?: string | null
           playsSince?: string | null
@@ -725,6 +727,7 @@ export type Database = {
           otherOrchestras?: string[] | null
           parent_id?: number | null
           paused?: boolean | null
+          paused_until?: string | null
           pending?: boolean | null
           phone?: string | null
           playsSince?: string | null
@@ -911,6 +914,7 @@ export type Database = {
       }
       songs: {
         Row: {
+          category: string | null
           created_at: string | null
           difficulty: number | null
           files: Json[] | null
@@ -928,6 +932,7 @@ export type Database = {
           withSolo: boolean | null
         }
         Insert: {
+          category?: string | null
           created_at?: string | null
           difficulty?: number | null
           files?: Json[] | null
@@ -945,6 +950,7 @@ export type Database = {
           withSolo?: boolean | null
         }
         Update: {
+          category?: string | null
           created_at?: string | null
           difficulty?: number | null
           files?: Json[] | null
@@ -967,6 +973,13 @@ export type Database = {
             columns: ["tenantId"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "songs_category_fkey"
+            columns: ["category"]
+            isOneToOne: false
+            referencedRelation: "song_categories"
             referencedColumns: ["id"]
           },
         ]

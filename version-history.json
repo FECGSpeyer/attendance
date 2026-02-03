@@ -8,7 +8,7 @@
                 "Termine können nach 'Chronologisch' oder 'Nach Instanz' sortiert angezeigt werden.",
                 "Farbige Kennzeichnung der Termine nach Instanz für bessere Übersichtlichkeit.",
                 "Vollständige An-/Abmeldefunktion direkt aus der Gesamtübersicht.",
-                "Signal-basierter Cache mit Pull-to-Refresh für schnelle Ladezeiten."
+                "Pausieren mit Enddatum: Beim Pausieren einer Person kannst du jetzt ein Enddatum angeben, an dem die Person automatisch reaktiviert wird."
             ]
         },
         {

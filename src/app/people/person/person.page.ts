@@ -75,6 +75,11 @@ export class PersonPage implements OnInit, AfterViewInit {
   public isArchiveModalOpen: boolean = false;
   public archiveDate: string = dayjs().format("YYYY-MM-DD");
   public archiveNote: string = "";
+  public isPauseModalOpen: boolean = false;
+  public pauseReason: string = "";
+  public pauseUntil: string = "";
+  public pauseUntilDisplay: string = "";
+  public minPauseDate: string = dayjs().format("YYYY-MM-DD");
   public isTransferModalOpen = false;
   public copy = false;
   public tenantId: number;
@@ -726,6 +731,7 @@ export class PersonPage implements OnInit, AfterViewInit {
             await this.db.updatePlayer({
               ...this.player,
               paused: false,
+              paused_until: null,
               history,
             }, true);
             this.hasChanges = false;
@@ -739,44 +745,10 @@ export class PersonPage implements OnInit, AfterViewInit {
       buttons.push({
         text: 'Pausieren',
         handler: async () => {
-          const alert = await this.alertController.create({
-            header: 'Person pausieren',
-            subHeader: 'Gib einen Grund an.',
-            inputs: [{
-              type: "textarea",
-              name: "reason"
-            }],
-            buttons: [{
-              text: "Abbrechen",
-            }, {
-              text: "Pausieren",
-              handler: async (evt: { reason: string }) => {
-                if (!evt.reason) {
-                  alert.message = "Bitte gib einen Grund an!";
-                  return false;
-                }
-                const history: PlayerHistoryEntry[] = this.player.history;
-                history.push({
-                  date: new Date().toISOString(),
-                  text: evt.reason,
-                  type: PlayerHistoryType.PAUSED,
-                });
-                try {
-                  await this.db.updatePlayer({
-                    ...this.player,
-                    paused: true,
-                    history,
-                  }, true);
-                  this.hasChanges = false;
-                  await this.dismiss();
-                } catch (error) {
-                  Utils.showToast(error, "danger");
-                }
-              }
-            }]
-          });
-
-          await alert.present();
+          this.pauseReason = "";
+          this.pauseUntil = "";
+          this.pauseUntilDisplay = "";
+          this.isPauseModalOpen = true;
         }
       });
     }
@@ -894,6 +866,46 @@ export class PersonPage implements OnInit, AfterViewInit {
   async dismissArchiveModal(): Promise<void> {
     this.archiveNote = "";
     this.isArchiveModalOpen = false;
+  }
+
+  async confirmPause(): Promise<void> {
+    if (!this.pauseReason) {
+      Utils.showToast("Bitte gib einen Grund an!", "danger");
+      return;
+    }
+    const history: PlayerHistoryEntry[] = this.player.history;
+    history.push({
+      date: new Date().toISOString(),
+      text: this.pauseReason + (this.pauseUntil ? ` (bis ${dayjs(this.pauseUntil).format("DD.MM.YYYY")})` : ""),
+      type: PlayerHistoryType.PAUSED,
+    });
+    try {
+      await this.db.updatePlayer({
+        ...this.player,
+        paused: true,
+        paused_until: this.pauseUntil || null,
+        history,
+      }, true);
+      this.hasChanges = false;
+      this.isPauseModalOpen = false;
+      await this.dismiss();
+    } catch (error) {
+      Utils.showToast(error, "danger");
+    }
+  }
+
+  dismissPauseModal(): void {
+    this.isPauseModalOpen = false;
+    this.pauseReason = "";
+    this.pauseUntil = "";
+    this.pauseUntilDisplay = "";
+  }
+
+  onPauseDateChange(value: string, modal: IonModal): void {
+    if (value) {
+      this.pauseUntilDisplay = dayjs(value).format('DD.MM.YYYY');
+      modal.dismiss();
+    }
   }
 
   async activate(): Promise<void> {

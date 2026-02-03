@@ -100,6 +100,7 @@ export interface Person {
     isConductor?: boolean;
     telegramId?: string;
     paused?: boolean;
+    paused_until?: string;
     tenantId?: number;
     additional_fields?: { [key: string]: any };
     phone?: string;
