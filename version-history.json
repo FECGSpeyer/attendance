@@ -4,7 +4,11 @@
             "version": "3.5.9",
             "date": "3.2.2026",
             "changes": [
-                "Kategorien für Werke: Weise deinen Werken jetzt Kategorien zu, um die Organisation und Suche zu verbessern. Du kannst Kategorien in den Werk-Einstellungen verwalten."
+                "Neue Datei-Kategorie 'Liedtext' hinzugefügt: PDF-Dateien werden automatisch als Liedtext erkannt und können von Spielern/Sängern in der Übersicht der aktuellen Werke angesehen werden.",
+                "Kategoriefilter für Werke: Werke können jetzt nach Kategorien gefiltert werden. Ein Segment Control zeigt alle verfügbaren Kategorien an, wenn mindestens eine Kategorie vorhanden ist.",
+                "Kategorie-Auswahl bei Werken: Du kannst jetzt jedem Werk eine Kategorie zuweisen und diese im Read-Only-Modus anschauen.",
+                "Verbesserungen bei der Datei-Upload: Warnung wird angezeigt, wenn Liedtext-Dateien hochgeladen werden, die keine PDF sind, da diese dann nicht in der Übersicht sichtbar sind.",
+                "Fehlerbehebung: Datei-Kategorie wird jetzt sofort aktualisiert, nachdem sie geändert wurde."
             ]
         },
         {

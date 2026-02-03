@@ -178,7 +178,7 @@
               </ion-button>
 
               <ion-item-group *ngIf="selectedFileInfos?.length">
-                <ion-item-sliding #sliderFile *ngFor="let fileInfo of selectedFileInfos; let i = index">
+                <ion-item-sliding #sliderFile *ngFor="let fileInfo of selectedFileInfos; let i = index; trackBy: trackByFileInfo">
                   <ion-item>
                     <ion-label>
                       <h2>{{ fileInfo.file.name }}</h2>
@@ -189,6 +189,7 @@
                       <ion-select-option [value]="null">{{ fileInfo.note ? fileInfo.note + ' (Sonstige)' : 'Sonstige
                         (Freitext möglich)' }}</ion-select-option>
                       <ion-select-option [value]="1">Aufnahme</ion-select-option>
+                      <ion-select-option [value]="2">Liedtext</ion-select-option>
                       <ion-select-option *ngFor="let instrument of instruments" [value]="instrument.id">{{
                         instrument.name }}</ion-select-option>
                     </ion-select>

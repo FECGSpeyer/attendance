@@ -465,6 +465,45 @@ export class SignoutPage implements OnInit {
       });
     }
 
+    const liedtextFiles = song.files.filter((file: SongFile) => file.instrumentId === 2);
+    if (liedtextFiles.length === 1) {
+      buttons.push({
+        text: 'Liedtext ansehen',
+        handler: () => {
+          const file = liedtextFiles[0];
+          window.open(file.url, "_blank");
+        },
+      });
+    } else if (liedtextFiles.length > 1) {
+      buttons.push({
+        text: 'Liedtext ansehen',
+        handler: async () => {
+          const fileOptions = liedtextFiles.map((file: SongFile) => {
+            return {
+              text: file.fileName,
+              role: '',
+              handler: () => {
+                window.open(file.url, "_blank");
+              },
+            };
+          });
+
+          fileOptions.push({
+            text: 'Abbrechen',
+            role: 'destructive',
+            handler: () => Promise.resolve(),
+          });
+
+          const fileActionSheet = await this.actionSheetController.create({
+            header: `Liedtext für ${song.number}. ${song.name} auswählen`,
+            buttons: fileOptions,
+          });
+
+          await fileActionSheet.present();
+        },
+      });
+    }
+
     buttons.push({
       text: 'Abbrechen',
       handler: () => { },

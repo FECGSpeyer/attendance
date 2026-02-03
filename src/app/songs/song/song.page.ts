@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover } from '@ionic/angular';
 import * as JSZip from 'jszip';
@@ -31,7 +31,8 @@ export class SongPage implements OnInit {
     public db: DbService,
     private alertController: AlertController,
     private actionSheetController: ActionSheetController,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) { }
 
   async ngOnInit() {
@@ -97,6 +98,10 @@ export class SongPage implements OnInit {
     }
   }
 
+  trackByFileInfo(index: number, fileInfo: any): string {
+    return `${index}-${fileInfo.note || ''}-${fileInfo.instrumentId}`;
+  }
+
   async changeFileInstrument(index: number, instrumentId: number | null, note?: string) {
     if (!instrumentId) {
       const alert = await this.alertController.create({
@@ -113,8 +118,8 @@ export class SongPage implements OnInit {
           {
             text: 'Speichern',
             handler: async (data) => {
-              this.selectedFileInfos[index].instrumentId = null;
               this.selectedFileInfos[index].note = data.note ?? "";
+              this.selectedFileInfos[index].instrumentId = null;
             }
           }
         ]
@@ -126,15 +131,45 @@ export class SongPage implements OnInit {
   }
 
   async uploadFiles(event: Event, fileUploadModal: IonModal) {
-    const loading = await Utils.getLoadingElement(999999, 'Dateien werden hochgeladen...');
-    await loading.present();
     event.preventDefault();
     if (!this.selectedFileInfos.length) {
-      await loading.dismiss();
       return;
     }
+
+    // Check for non-PDF files marked as Liedtext
+    const invalidLiedtextFiles = this.selectedFileInfos.filter(info =>
+      info.instrumentId === 2 &&
+      info.file.type !== 'application/pdf' &&
+      !info.file.name.toLowerCase().endsWith('.pdf')
+    );
+
+    if (invalidLiedtextFiles.length > 0) {
+      const alert = await this.alertController.create({
+        header: 'Warnung: Liedtext-Format',
+        message: `${invalidLiedtextFiles.length} Datei(en) wurden als "Liedtext" kategorisiert, sind aber keine PDF-Dateien. Die Spieler und Sänger können diese Dateien daher nicht in ihrer Übersicht bei den aktuellen Werken sehen.`,
+        buttons: [
+          {
+            text: 'Abbrechen',
+            role: 'cancel'
+          },
+          {
+            text: 'Trotzdem hochladen',
+            handler: async () => {
+              await this.performUpload(fileUploadModal);
+            }
+          }
+        ]
+      });
+      await alert.present();
+    } else {
+      await this.performUpload(fileUploadModal);
+    }
+  }
+
+  private async performUpload(fileUploadModal: IonModal) {
+    const loading = await Utils.getLoadingElement(999999, 'Dateien werden hochgeladen...');
+    await loading.present();
     for (const info of this.selectedFileInfos) {
-      // Pass instrumentId to uploadSongFile if you want to override mapping
       await this.db.uploadSongFile(this.song.id, info.file, info.instrumentId, info.note);
     }
 
@@ -148,6 +183,7 @@ export class SongPage implements OnInit {
   getInstrumentName(id: number | null, note?: string): string {
     if (!id) return note ?? 'Sonstige';
     if (id === 1) return 'Aufnahme';
+    if (id === 2) return 'Liedtext';
 
     const inst = this.instruments.find(i => i.id === id);
     return inst ? inst.name : 'Unbekannt';
@@ -208,6 +244,12 @@ export class SongPage implements OnInit {
         label: 'Aufnahme',
         value: 1,
         checked: file.instrumentId === 1
+      }, {
+        name: 'instrument',
+        type: 'radio' as const,
+        label: 'Liedtext',
+        value: 2,
+        checked: file.instrumentId === 2
       }].concat(this.instruments.map(inst => ({
         name: 'instrument',
         type: 'radio' as const,
@@ -226,7 +268,7 @@ export class SongPage implements OnInit {
             if (!data) {
               await this.showNoteInputAlert(file);
             } else {
-              this.saveFileChange(file, data);
+              await this.saveFileChange(file, data);
             }
           }
         }
@@ -266,6 +308,7 @@ export class SongPage implements OnInit {
       instrument_ids: Array.from(new Set((files || []).map(f => f.instrumentId).filter(id => id !== null && id !== 1)))
     });
     this.song = await this.db.getSong(this.song.id); // Refresh file list
+    this.cdr.detectChanges();
   }
 
   removeSelectedFile(index: number, slider?: IonItemSliding) {
@@ -351,8 +394,8 @@ export class SongPage implements OnInit {
         {
           text: 'Kategorie ändern',
           icon: 'swap-horizontal-outline',
-          handler: () => {
-            this.changeCategory(file);
+          handler: async () => {
+            await this.changeCategory(file);
           }
         },
       );
@@ -362,8 +405,8 @@ export class SongPage implements OnInit {
       buttons.push({
         text: 'Per Telegram senden',
         icon: 'send-outline',
-        handler: () => {
-          this.sendPerTelegram(file);
+        handler: async () => {
+          await this.sendPerTelegram(file);
         }
       });
     }
