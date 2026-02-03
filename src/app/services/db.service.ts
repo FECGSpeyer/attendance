@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church } from '../utilities/interfaces';
+import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
@@ -42,6 +42,7 @@ export class DbService {
   public groups: WritableSignal<Group[]>;
   public shifts: WritableSignal<ShiftPlan[]>;
   public churches: WritableSignal<Church[] | undefined>;
+  public songCategories: WritableSignal<SongCategory[]>;
 
   constructor(
     private plt: Platform,
@@ -56,6 +57,7 @@ export class DbService {
     this.groups = signal([]);
     this.shifts = signal([]);
     this.churches = signal([]);
+    this.songCategories = signal([]);
     this.plt.ready().then(() => {
       this.checkToken(true);
     });
@@ -242,6 +244,7 @@ export class DbService {
       }
     }
 
+    await this.getSongCategories();
     await this.loadShifts();
     await loader?.dismiss();
   }
@@ -1957,6 +1960,60 @@ export class DbService {
       .match({ id });
 
     return data as any;
+  }
+
+  async getSongCategories(): Promise<SongCategory[]> {
+    const { data } = await supabase
+      .from('song_categories')
+      .select('*')
+      .eq('tenant_id', this.tenant().id)
+      .order("index", {
+        ascending: true,
+      });
+
+    this.songCategories.set(data);
+
+    return data;
+  }
+
+  async addSongCategory(category: Partial<SongCategory>) {
+    const { error } = await supabase
+      .from('song_categories')
+      .insert({
+        ...category,
+        tenant_id: this.tenant().id,
+      } as SongCategory)
+      .select();
+
+    if (error) {
+      throw new Error("Fehler beim hinzufügen der Werkkategorie");
+    }
+
+    await this.getSongCategories();
+
+    return;
+  }
+
+  async updateSongCategory(category: Partial<SongCategory>, id: string): Promise<SongCategory[]> {
+    const { data } = await supabase
+      .from('song_categories')
+      .update(category)
+      .match({ id });
+
+    await this.getSongCategories();
+
+    return data;
+  }
+
+  async removeSongCategory(id: string): Promise<void> {
+    await supabase
+      .from('song_categories')
+      .delete()
+      .match({ id });
+
+    await this.getSongCategories();
+
+    return;
   }
 
   async getMeetings(): Promise<Meeting[]> {

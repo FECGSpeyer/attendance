@@ -251,6 +251,7 @@ export interface Song {
     instrument_ids?: number[];
     files?: SongFile[];
     difficulty?: number;
+    category?: string;
 }
 
 export interface SongFile {
@@ -415,4 +416,12 @@ export interface Question {
     anonymous: boolean;
     tenant_id?: number;
     user_id?: string;
+}
+
+export interface SongCategory {
+    created_at?: string;
+    id?: string;
+    name: string;
+    tenant_id: number;
+    index: number;
 }

@@ -1,6 +1,13 @@
 {
     "versions": [
         {
+            "version": "3.5.9",
+            "date": "3.2.2026",
+            "changes": [
+                "Kategorien für Werke: Weise deinen Werken jetzt Kategorien zu, um die Organisation und Suche zu verbessern. Du kannst Kategorien in den Werk-Einstellungen verwalten."
+            ]
+        },
+        {
             "version": "3.5.8",
             "date": "27.1.2026",
             "changes": [

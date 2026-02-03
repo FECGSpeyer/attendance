@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           conductors: Json | null
           created_at: string | null
+          created_by: string | null
           criticalPlayers: number[] | null
           date: string | null
           deadline: string | null
@@ -41,6 +42,7 @@ export type Database = {
         Insert: {
           conductors?: Json | null
           created_at?: string | null
+          created_by?: string | null
           criticalPlayers?: number[] | null
           date?: string | null
           deadline?: string | null
@@ -64,6 +66,7 @@ export type Database = {
         Update: {
           conductors?: Json | null
           created_at?: string | null
+          created_by?: string | null
           criticalPlayers?: number[] | null
           date?: string | null
           deadline?: string | null
@@ -568,6 +571,8 @@ export type Database = {
       person_attendances: {
         Row: {
           attendance_id: number
+          changed_at: string | null
+          changed_by: string | null
           id: string
           notes: string | null
           person_id: number
@@ -575,6 +580,8 @@ export type Database = {
         }
         Insert: {
           attendance_id: number
+          changed_at?: string | null
+          changed_by?: string | null
           id?: string
           notes?: string | null
           person_id: number
@@ -582,6 +589,8 @@ export type Database = {
         }
         Update: {
           attendance_id?: number
+          changed_at?: string | null
+          changed_by?: string | null
           id?: string
           notes?: string | null
           person_id?: number
@@ -868,9 +877,42 @@ export type Database = {
           },
         ]
       }
+      song_categories: {
+        Row: {
+          created_at: string
+          id: string
+          index: number | null
+          name: string
+          tenant_id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          index?: number | null
+          name: string
+          tenant_id: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          index?: number | null
+          name?: string
+          tenant_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "song_categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       songs: {
         Row: {
           created_at: string | null
+          difficulty: number | null
           files: Json[] | null
           id: number
           instrument_ids: number[] | null
@@ -887,6 +929,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          difficulty?: number | null
           files?: Json[] | null
           id?: number
           instrument_ids?: number[] | null
@@ -903,6 +946,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          difficulty?: number | null
           files?: Json[] | null
           id?: number
           instrument_ids?: number[] | null

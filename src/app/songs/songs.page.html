@@ -9,6 +9,49 @@
     <ion-title>Werke ({{ songs?.length }})</ion-title>
     }
     <ion-buttons slot="end">
+      <ion-button id="song-categories-button" fill="clear">
+        <ion-icon slot="icon-only" name="library-outline"></ion-icon>
+      </ion-button>
+      <ion-modal trigger="song-categories-button" [breakpoints]="[0, 0.6, 1]" [initialBreakpoint]="0.6">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar>
+              <ion-title>Werk-Kategorien</ion-title>
+              <ion-buttons slot="end">
+                <ion-button (click)="addCategory()">
+                  <ion-icon name="add"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content color="light">
+            <ion-list [inset]="true">
+              <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
+                @for (category of db.songCategories(); track category.id) {
+                <ion-item detail="false">
+                  <ion-label>
+                    <h2>{{ category.name }}</h2>
+                  </ion-label>
+                  <ion-button fill="clear" color="warning" (click)="editCategory(category)">
+                    <ion-icon name="pencil"></ion-icon>
+                  </ion-button>
+                  <ion-button fill="clear" color="danger" (click)="deleteCategory(category.id)">
+                    <ion-icon name="trash"></ion-icon>
+                  </ion-button>
+                  <ion-reorder slot="end"></ion-reorder>
+                </ion-item>
+                }
+              </ion-reorder-group>
+            </ion-list>
+
+            @if (db.songCategories().length === 0) {
+            <div class="ion-padding">
+              <p style="text-align: center;">Es wurden noch keine Kategorien angelegt.</p>
+            </div>
+            }
+          </ion-content>
+        </ng-template>
+      </ion-modal>
       <ion-button (click)="copyShareLink()" *ngIf="tenantData?.song_sharing_id ?? db.tenant()?.song_sharing_id">
         <ion-icon slot="icon-only" name="link-outline"></ion-icon>
       </ion-button>
@@ -29,6 +72,19 @@
       }
     </ion-toolbar>
   </ion-header>
+
+  @if (db.songCategories().length > 0) {
+  <ion-segment mode="md" [(ngModel)]="selectedCategory" (ionChange)="onCategoryChanged()">
+    <ion-segment-button value="">
+      <ion-label>Alle</ion-label>
+    </ion-segment-button>
+    @for (category of db.songCategories(); track category.id) {
+    <ion-segment-button [value]="category.id">
+      <ion-label>{{ category.name }}</ion-label>
+    </ion-segment-button>
+    }
+  </ion-segment>
+  }
 
   <div class="flex">
     <ion-searchbar (ionInput)="search($event)" placeholder="Werk suchen..."></ion-searchbar>
@@ -97,7 +153,7 @@
     </ion-popover>
   </div>
   <ion-list [inset]="true">
-        <ion-item-group *ngIf="currentSongs?.length > 0">
+    <ion-item-group *ngIf="currentSongs?.length > 0">
       <ion-item lines="none" id="current-songs-button" button>
         <ion-label color="primary">Aktuelle Werke anzeigen</ion-label>
       </ion-item>
@@ -134,13 +190,15 @@
       <ion-label>Werke ({{ songsFiltered.length }})</ion-label>
     </ion-list-header>
     <ion-item-group>
-      <ion-item detail="false" [routerLink]="tenantData ? [song.id] : ['/tabs/settings/songs/', song.id]" *ngFor="let song of songsFiltered">
+      <ion-item detail="false" [routerLink]="tenantData ? [song.id] : ['/tabs/settings/songs/', song.id]"
+        *ngFor="let song of songsFiltered">
         <ion-label>
           <h2>{{ song.prefix }}{{ song.number }} {{ song.name }}</h2>
           <h3 style="color: var(--ion-color-danger);"
             *ngIf="isOrchestra && song.instrument_ids?.length && viewOpts.includes('missingInstruments')">{{
             getInstrumentText(song.instrument_ids) }}</h3>
-          <h3 *ngIf="!tenantData && song.lastSung && viewOpts.includes('lastSung')">Zuletzt {{ tenantType === 'orchestra' ? 'gespielt' : 'gesungen' }} am {{ song.lastSung |
+          <h3 *ngIf="!tenantData && song.lastSung && viewOpts.includes('lastSung')">Zuletzt {{ tenantType ===
+            'orchestra' ? 'gespielt' : 'gesungen' }} am {{ song.lastSung |
             date:'dd.MM.yyyy' }} | {{ song.conductor }}
           </h3>
         </ion-label>
@@ -154,11 +212,11 @@
           Orchester
           }
         </ion-badge>
-        <ion-badge slot="end" *ngIf="song.link && viewOpts.includes('link')"
-          color="primary">
+        <ion-badge slot="end" *ngIf="song.link && viewOpts.includes('link')" color="primary">
           <ion-icon name="link"></ion-icon>
         </ion-badge>
-        <ion-badge slot="end" *ngIf="viewOpts.includes('difficulty')" [color]="song.difficulty === 1 ? 'success' : song.difficulty === 2 ? 'warning' : song.difficulty === 3 ? 'danger' : 'medium'">
+        <ion-badge slot="end" *ngIf="viewOpts.includes('difficulty')"
+          [color]="song.difficulty === 1 ? 'success' : song.difficulty === 2 ? 'warning' : song.difficulty === 3 ? 'danger' : 'medium'">
           @if (song.difficulty === 1) {
           1 - Leicht
           } @else if (song.difficulty === 2) {
@@ -187,7 +245,8 @@
           </ion-header>
           <ion-item>
             <ion-label position="stacked">Präfix (optional)</ion-label>
-            <ion-input  helperText="Bspw. um Weihnachtslieder kennzeichnen zu können (z.B. W für Weihnachten -> W1)" type="text" #prefix></ion-input>
+            <ion-input helperText="Bspw. um Weihnachtslieder kennzeichnen zu können (z.B. W für Weihnachten -> W1)"
+              type="text" #prefix></ion-input>
           </ion-item>
           <ion-item>
             <ion-label position="stacked">Nummer</ion-label>

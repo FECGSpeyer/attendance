@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { GroupCategory, History, Group, Person, Song, Tenant } from '../utilities/interfaces';
+import { GroupCategory, History, Group, Person, Song, Tenant, SongCategory } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
-import { IonModal } from '@ionic/angular';
+import { AlertController, IonModal, ItemReorderEventDetail } from '@ionic/angular';
 import { Utils } from '../utilities/Utils';
 import { Role } from '../utilities/constants';
 import { Storage } from '@ionic/storage-angular';
@@ -38,6 +38,7 @@ export class SongsPage implements OnInit {
   public instrumentsToFilter: number[] = [];
   public currentSongs: { date: string, history: History[] }[] = [];
   public tenantData?: Tenant;
+  public selectedCategory: string = "";
   private sub: RealtimeChannel;
   public tenantType: string;
 
@@ -45,6 +46,7 @@ export class SongsPage implements OnInit {
     public db: DbService,
     private storage: Storage,
     private router: Router,
+    private alertController: AlertController,
   ) { }
 
   async ngOnInit() {
@@ -64,6 +66,7 @@ export class SongsPage implements OnInit {
     this.inclChoir = await this.storage.get(`inclChoirSongs${this.tenantData?.id ?? this.db.tenant().id}`) === "true";
     this.inclSolo = await this.storage.get(`inclSoloSongs${this.tenantData?.id ?? this.db.tenant().id}`) === "true";
     this.instrumentsToFilter = JSON.parse(await this.storage.get(`instrumentsToFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`) || "[]");
+    this.selectedCategory = await this.storage.get(`selectedCategorySongs${this.tenantData?.id ?? this.db.tenant().id}`) || "";
     this.currentSongs = await this.db.getCurrentSongs(this.tenantData?.id ?? this.db.tenant().id);
 
     await this.getSongs();
@@ -230,6 +233,11 @@ export class SongsPage implements OnInit {
 
   filter() {
     this.songsFiltered = this.songsFiltered.filter((song: Song) => {
+      // Filter by category if selected
+      if (this.selectedCategory && song.category !== this.selectedCategory) {
+        return false;
+      }
+
       if (this.instrumentsToFilter.length) {
         if (song.instrument_ids && !song.instrument_ids.some(r => this.instrumentsToFilter.includes(r))) {
           return false;
@@ -282,6 +290,13 @@ export class SongsPage implements OnInit {
     await this.storage.set(`viewOptsSongs${this.tenantData?.id ?? this.db.tenant().id}`, JSON.stringify(this.viewOpts));
   }
 
+  async onCategoryChanged() {
+    await this.storage.set(`selectedCategorySongs${this.tenantData?.id ?? this.db.tenant().id}`, this.selectedCategory);
+    this.searchTerm = "";
+    this.initializeItems();
+    this.filter();
+  }
+
   initializeItems(): void {
     this.songsFiltered = this.songs;
   }
@@ -310,6 +325,114 @@ export class SongsPage implements OnInit {
       return;
     }
     this.router.navigate([`${this.tenantData?.song_sharing_id ?? this.db.tenant().song_sharing_id}`, `${songId}`]);
+  }
+
+  async addCategory() {
+    const alert = await this.alertController.create({
+      header: 'Kategorie hinzufügen',
+      inputs: [
+        {
+          name: 'name',
+          type: 'text',
+          placeholder: 'Name der Kategorie'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel',
+          cssClass: 'secondary',
+        }, {
+          text: 'Hinzufügen',
+          handler: async (data) => {
+            if (data.name && data.name.trim().length > 0) {
+              this.db.addSongCategory({
+                name: data.name.trim(),
+                index: this.db.songCategories().length,
+              }).then(() => {
+                Utils.showToast("Kategorie hinzugefügt", "success");
+                this.getSongs();
+              });
+            } else {
+              Utils.showToast("Der Name der Kategorie darf nicht leer sein", "danger");
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async editCategory(category: SongCategory) {
+    const alert = await this.alertController.create({
+      header: 'Kategorie bearbeiten',
+      inputs: [
+        {
+          name: 'name',
+          type: 'text',
+          value: category.name,
+          placeholder: 'Name der Kategorie'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel',
+          cssClass: 'secondary',
+        }, {
+          text: 'Speichern',
+          handler: async (data) => {
+            if (data.name && data.name.trim().length > 0) {
+              this.db.updateSongCategory({
+                name: data.name.trim(),
+              }, category.id).then(() => {
+                Utils.showToast("Kategorie gespeichert", "success");
+                this.getSongs();
+              });
+            } else {
+              Utils.showToast("Der Name der Kategorie darf nicht leer sein", "danger");
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async deleteCategory(categoryId: string) {
+    const alert = await this.alertController.create({
+      header: 'Kategorie löschen',
+      message: 'Möchten Sie diese Kategorie wirklich löschen? Alle Werke in dieser Kategorie werden keiner neuen Kategorie zugewiesen.',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel',
+          cssClass: 'secondary',
+        }, {
+          text: 'Löschen',
+          handler: async () => {
+            this.db.removeSongCategory(categoryId).then(async () => {
+              Utils.showToast("Kategorie gelöscht", "success");
+              await this.getSongs();
+            });
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
+    const data = ev.detail.complete(this.db.songCategories());
+
+    for (let i = 0; i < data.length; i++) {
+      const category = data[i];
+      category.index = i;
+      await this.db.updateSongCategory({index: category.index, ...category}, category.id);
+    }
   }
 
 }

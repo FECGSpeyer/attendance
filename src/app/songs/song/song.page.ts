@@ -435,4 +435,10 @@ export class SongPage implements OnInit {
 
     await alert.present();
   }
+
+  getCategoryName(categoryId: string | undefined): string {
+    if (!categoryId) return 'Keine Kategorie';
+    const category = this.db.songCategories().find(cat => cat.id === categoryId);
+    return category ? category.name : 'Unbekannte Kategorie';
+  }
 }
