@@ -113,11 +113,15 @@ export class SongPage implements OnInit {
       if (!mappedId) {
         const fileName = file.name.normalize().toLowerCase();
         if (file.type.startsWith('audio/')) {
-          mappedId = 1; // Default to "Cembalo"/"Klavier" for audio files
+          mappedId = 1;
         } else if (file.name.includes(".sib")) {
           note = "Sibelius";
         } else if (fileName.includes("partitur") || fileName.includes("score") || fileName.includes("full")) {
           note = "Partitur";
+        } else if (fileName.includes("liedtext") || fileName.includes("text")) {
+          mappedId = 2;
+        } else if (fileName.includes("chior") || fileName.includes("chor")) {
+          note = "Chor";
         }
       }
 

@@ -1495,6 +1495,8 @@ export class DbService {
         paused_until: null,
         history,
       } as Player, true);
+
+      await this.addPlayerToUpcomingAttendances(player as Person, player.instrument, player.shift_id);
     }
   }
 
