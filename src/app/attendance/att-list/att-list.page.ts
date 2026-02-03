@@ -260,8 +260,10 @@ export class AttListPage implements OnInit {
     }
 
     for (const date of this.dates) {
+      // Normalize date to noon (12:00) to avoid timezone issues between 22:00-02:00
+      const normalizedDate = dayjs(date).hour(12).minute(0).second(0).millisecond(0).toISOString();
       const attendance_id: number = await this.db.addAttendance({
-        date: date,
+        date: normalizedDate,
         type_id: this.type_id,
         notes: this.notes,
         save_in_history: true,
