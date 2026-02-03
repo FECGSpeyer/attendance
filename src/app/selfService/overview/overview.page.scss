@@ -1,0 +1,48 @@
+.title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.tenant-indicator {
+  width: 4px;
+  height: 100%;
+  min-height: 40px;
+  border-radius: 2px;
+  margin-right: 12px;
+}
+
+.tenant-name {
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+  margin-top: 2px;
+}
+
+ion-accordion-group {
+  margin-top: 8px;
+}
+
+ion-card {
+  margin: 16px;
+}
+
+ion-card-content {
+  ion-spinner {
+    display: block;
+    margin: 0 auto 8px auto;
+  }
+}
+
+.margin-auto {
+  margin: auto;
+}
+
+ion-segment {
+  padding: 8px;
+}
+
+ion-item-divider {
+  --background: var(--ion-color-light);
+  --color: var(--ion-color-dark);
+  font-weight: 500;
+}

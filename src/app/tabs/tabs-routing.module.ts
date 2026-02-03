@@ -14,6 +14,10 @@ const routes: Routes = [
         loadChildren: () => import('./../selfService/signout/signout.module').then(m => m.SignoutPageModule),
       },
       {
+        path: 'overview',
+        loadChildren: () => import('./../selfService/overview/overview.module').then(m => m.OverviewPageModule),
+      },
+      {
         path: 'player',
         loadChildren: () => import('./../people/list/list.module').then(m => m.ListPageModule),
       },

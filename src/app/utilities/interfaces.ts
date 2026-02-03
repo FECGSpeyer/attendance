@@ -425,3 +425,10 @@ export interface SongCategory {
     tenant_id: number;
     index: number;
 }
+
+export interface CrossTenantPersonAttendance extends PersonAttendance {
+    tenantId: number;
+    tenantName: string;
+    tenantColor: string;
+    attendanceType?: AttendanceType;
+}

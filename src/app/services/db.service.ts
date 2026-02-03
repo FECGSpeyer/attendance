@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory } from '../utilities/interfaces';
+import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
@@ -3368,5 +3368,213 @@ export class DbService {
     }
 
     return;
+  }
+
+  // Cross-Tenant Attendance Overview - Signal-based cache
+  public crossTenantAttendances: WritableSignal<CrossTenantPersonAttendance[]> = signal([]);
+  public crossTenantAttendancesLoading: WritableSignal<boolean> = signal(false);
+  private crossTenantAttendanceTypes: Map<number, AttendanceType[]> = new Map();
+  private tenantColors: Map<number, string> = new Map();
+
+  // Predefined distinct colors for better visual separation
+  private readonly distinctColors: string[] = [
+    '#E53935', // Red
+    '#1E88E5', // Blue
+    '#43A047', // Green
+    '#FB8C00', // Orange
+    '#8E24AA', // Purple
+    '#00ACC1', // Cyan
+    '#F4511E', // Deep Orange
+    '#3949AB', // Indigo
+    '#7CB342', // Light Green
+    '#C2185B', // Pink
+    '#00897B', // Teal
+    '#6D4C41', // Brown
+    '#5E35B1', // Deep Purple
+    '#039BE5', // Light Blue
+    '#D81B60', // Pink Dark
+    '#FFB300', // Amber
+  ];
+
+  /**
+   * Generates a deterministic color for a tenant based on its index in the user's tenant list
+   */
+  private getTenantColor(tenantId: number): string {
+    if (this.tenantColors.has(tenantId)) {
+      return this.tenantColors.get(tenantId)!;
+    }
+    // Use tenant index in the list for color assignment to ensure distinct colors
+    const tenantIds = this.tenantUsers()?.map(tu => tu.tenantId) || [];
+    const index = tenantIds.indexOf(tenantId);
+    const colorIndex = index >= 0 ? index % this.distinctColors.length : Math.abs(tenantId) % this.distinctColors.length;
+    const color = this.distinctColors[colorIndex];
+    this.tenantColors.set(tenantId, color);
+    return color;
+  }
+
+  /**
+   * Gets person ID for the current user in a specific tenant
+   */
+  async getPersonIdForTenant(tenantId: number): Promise<number | null> {
+    const { data, error } = await supabase
+      .from('player')
+      .select('id')
+      .eq('tenantId', tenantId)
+      .eq('appId', this.user.id)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+    return data.id;
+  }
+
+  /**
+   * Gets person attendances for a specific person in a specific tenant
+   */
+  async getPersonAttendancesForTenant(personId: number, tenantId: number): Promise<PersonAttendance[]> {
+    const { data } = await supabase
+      .from('person_attendances')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline)')
+      .eq('person_id', personId)
+      .gt("attendance.date", this.getCurrentAttDate());
+
+    if (!data) return [];
+
+    const attendanceTypes = this.crossTenantAttendanceTypes.get(tenantId) || [];
+
+    return data.filter((a) => Boolean(a.attendance)).map((att): PersonAttendance => {
+      let attText = Utils.getAttText(att);
+      const attType = attendanceTypes.find((type: AttendanceType) => type.id === att.attendance.type_id);
+      let title = '';
+
+      if (attType) {
+        title = Utils.getTypeTitle(attType, att.attendance.typeInfo);
+      }
+
+      return {
+        id: att.id,
+        status: att.status,
+        date: att.attendance.date,
+        attended: att.status === AttendanceStatus.Present || att.status === AttendanceStatus.Late || att.status === AttendanceStatus.LateExcused,
+        title,
+        text: attText,
+        notes: att.notes,
+        songs: att.attendance.songs,
+        attId: att.attendance.id,
+        typeId: att.attendance.type_id,
+        attendance: att.attendance,
+        highlight: attType ? attType.highlight : att.attendance.type === "vortrag",
+      } as any;
+    });
+  }
+
+  /**
+   * Gets attendance types for multiple tenants in parallel
+   */
+  async getAttendanceTypesForTenants(tenantIds: number[]): Promise<Map<number, AttendanceType[]>> {
+    const results = await Promise.all(
+      tenantIds.map(async (tenantId) => {
+        const { data, error } = await supabase
+          .from('attendance_types')
+          .select('*')
+          .eq('tenant_id', tenantId)
+          .order('index', { ascending: true });
+
+        if (error || !data) {
+          return { tenantId, types: [] };
+        }
+
+        return {
+          tenantId,
+          types: data.map((att: any): AttendanceType => ({
+            ...att,
+            default_plan: att.default_plan as any,
+          }))
+        };
+      })
+    );
+
+    const typeMap = new Map<number, AttendanceType[]>();
+    results.forEach(({ tenantId, types }) => {
+      typeMap.set(tenantId, types);
+    });
+
+    return typeMap;
+  }
+
+  /**
+   * Loads all person attendances across all tenants the user belongs to
+   * Uses Promise.all for parallel loading and caches results in a signal
+   */
+  async loadAllPersonAttendancesAcrossTenants(forceRefresh: boolean = false): Promise<CrossTenantPersonAttendance[]> {
+    // Return cached data if available and not forcing refresh
+    if (!forceRefresh && this.crossTenantAttendances().length > 0) {
+      return this.crossTenantAttendances();
+    }
+
+    this.crossTenantAttendancesLoading.set(true);
+
+    try {
+      const tenantUsers = this.tenantUsers();
+      if (!tenantUsers || tenantUsers.length === 0) {
+        this.crossTenantAttendances.set([]);
+        return [];
+      }
+
+      const tenants = this.tenants();
+      const tenantIds = tenantUsers.map(tu => tu.tenantId);
+
+      // Load attendance types for all tenants in parallel
+      this.crossTenantAttendanceTypes = await this.getAttendanceTypesForTenants(tenantIds);
+
+      // Load person IDs and attendances for all tenants in parallel
+      const attendanceResults = await Promise.all(
+        tenantUsers.map(async (tu) => {
+          const personId = await this.getPersonIdForTenant(tu.tenantId);
+          if (!personId) {
+            return [];
+          }
+
+          const attendances = await this.getPersonAttendancesForTenant(personId, tu.tenantId);
+          const tenant = tenants?.find(t => t.id === tu.tenantId);
+          const tenantColor = this.getTenantColor(tu.tenantId);
+          const attendanceTypes = this.crossTenantAttendanceTypes.get(tu.tenantId) || [];
+
+          return attendances.map((att): CrossTenantPersonAttendance => ({
+            ...att,
+            tenantId: tu.tenantId,
+            tenantName: tenant?.longName || tenant?.shortName || 'Unbekannt',
+            tenantColor,
+            attendanceType: attendanceTypes.find(t => t.id === att.typeId),
+          }));
+        })
+      );
+
+      // Flatten and sort by date
+      const allAttendances = attendanceResults
+        .reduce((acc, curr) => acc.concat(curr), [])
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      this.crossTenantAttendances.set(allAttendances);
+      return allAttendances;
+    } finally {
+      this.crossTenantAttendancesLoading.set(false);
+    }
+  }
+
+  /**
+   * Gets the attendance type for a cross-tenant attendance
+   */
+  getCrossTenantAttendanceType(att: CrossTenantPersonAttendance): AttendanceType | undefined {
+    return this.crossTenantAttendanceTypes.get(att.tenantId)?.find(t => t.id === att.typeId);
+  }
+
+  /**
+   * Clears the cross-tenant attendance cache
+   */
+  clearCrossTenantCache(): void {
+    this.crossTenantAttendances.set([]);
+    this.crossTenantAttendanceTypes.clear();
   }
 }

@@ -1,5 +1,16 @@
-{
+    {
     "versions": [
+        {
+            "version": "3.6.0",
+            "date": "3.2.2026",
+            "changes": [
+                "Neue Gesamtübersicht für Spieler/Sänger: Wenn du Mitglied in mehreren Gruppen bist, siehst du jetzt alle Termine aus allen Instanzen in einer einzigen Übersicht.",
+                "Termine können nach 'Chronologisch' oder 'Nach Instanz' sortiert angezeigt werden.",
+                "Farbige Kennzeichnung der Termine nach Instanz für bessere Übersichtlichkeit.",
+                "Vollständige An-/Abmeldefunktion direkt aus der Gesamtübersicht.",
+                "Signal-basierter Cache mit Pull-to-Refresh für schnelle Ladezeiten."
+            ]
+        },
         {
             "version": "3.5.9",
             "date": "3.2.2026",

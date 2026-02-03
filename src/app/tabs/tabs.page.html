@@ -11,6 +11,11 @@
       <ion-label>Meine Termine</ion-label>
     </ion-tab-button>
 
+    <ion-tab-button *ngIf="(isPlayer || isHelper) && hasMultipleTenants" tab="overview">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <ion-label>Übersicht</ion-label>
+    </ion-tab-button>
+
     <ion-tab-button *ngIf="isConductor || isParent" tab="player">
       <ion-icon name="people-outline"></ion-icon>
       <ion-label *ngIf="isParent">Meine Kinder</ion-label>
