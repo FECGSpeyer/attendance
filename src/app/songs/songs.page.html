@@ -233,7 +233,7 @@
     </ion-list-header>
     <ion-item-group>
       <ion-item detail="false" [routerLink]="tenantData ? [song.id] : ['/tabs/settings/songs/', song.id]"
-        *ngFor="let song of songsFiltered">
+        *ngFor="let song of songsFiltered; trackBy: trackBySongId">
         <ion-label>
           <h2>{{ song.prefix }}{{ song.number }} {{ song.name }}</h2>
           <h3 style="color: var(--ion-color-danger);"
