@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild, effect } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
 import { AlertButton, AlertController, IonItemSliding, IonModal, IonRouterOutlet, isPlatform, ModalController } from '@ionic/angular';
 import { ExportPage } from 'src/app/export/export.page';
 import { HistoryPage } from 'src/app/history/history.page';
@@ -19,7 +19,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
 })
-export class SettingsPage implements OnInit {
+export class SettingsPage implements OnInit, OnDestroy {
   @ViewChild('imgChooser') chooser: ElementRef;
   public leftPlayers: Player[] = [];
   public leftConductors: Person[] = [];
@@ -795,5 +795,9 @@ export class SettingsPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  async ngOnDestroy() {
+    await this.sub?.unsubscribe();
   }
 }

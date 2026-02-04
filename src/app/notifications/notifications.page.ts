@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
-import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { DbService } from 'src/app/services/db.service';
 import { Role } from 'src/app/utilities/constants';
 import { NotificationConfig } from 'src/app/utilities/interfaces';
@@ -10,9 +10,10 @@ import { NotificationConfig } from 'src/app/utilities/interfaces';
   templateUrl: './notifications.page.html',
   styleUrls: ['./notifications.page.scss'],
 })
-export class NotificationsPage implements OnInit {
-  public notificationConfig: NotificationConfig
+export class NotificationsPage implements OnInit, OnDestroy {
+  public notificationConfig: NotificationConfig;
   public isAdmin: boolean;
+  private sub: RealtimeChannel;
 
   constructor(
     public db: DbService,
@@ -23,16 +24,20 @@ export class NotificationsPage implements OnInit {
     this.notificationConfig = await this.db.getNotifcationConfig(this.db.tenantUser().userId);
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
 
-    this.db.getSupabase()
+    this.sub = this.db.getSupabase()
       .channel('noti-changes').on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'notifications' },
         (payload: RealtimePostgresChangesPayload<any>) => {
-          if (payload.new.id === this.notificationConfig.id) {
-            this.notificationConfig = payload.new;
+          if ((payload.new as any)?.id === this.notificationConfig?.id) {
+            this.notificationConfig = payload.new as NotificationConfig;
           }
         })
       .subscribe();
+  }
+
+  async ngOnDestroy() {
+    await this.sub?.unsubscribe();
   }
 
   async updateNotificationConfig() {

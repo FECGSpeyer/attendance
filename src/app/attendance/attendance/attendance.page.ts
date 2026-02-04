@@ -141,8 +141,9 @@ export class AttendancePage implements OnInit {
       // await this.updateCriticalPlayers(unexcusedPlayers);
     }
 
-    await this.sub.unsubscribe();
-    await this.personAttSub.unsubscribe();
+    await Network.removeAllListeners();
+    await this.sub?.unsubscribe();
+    await this.personAttSub?.unsubscribe();
     this.modalController.dismiss();
   }
 

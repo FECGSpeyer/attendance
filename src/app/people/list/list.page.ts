@@ -1,4 +1,4 @@
-import { Component, OnInit, effect } from '@angular/core';
+import { Component, OnDestroy, OnInit, effect } from '@angular/core';
 import { ActionSheetController, AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
@@ -15,7 +15,7 @@ import { Router } from '@angular/router';
   templateUrl: './list.page.html',
   styleUrls: ['./list.page.scss'],
 })
-export class ListPage implements OnInit {
+export class ListPage implements OnInit, OnDestroy {
   public players: Player[] = [];
   public conductors: Person[] = [];
   public playersFiltered: Player[] = [];
@@ -740,4 +740,8 @@ export class ListPage implements OnInit {
 
 
   // }
+
+  async ngOnDestroy() {
+    await this.sub?.unsubscribe();
+  }
 }
