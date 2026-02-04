@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { ShiftInstance, ShiftPlan } from 'src/app/utilities/interfaces';
+import { ShiftInstance, ShiftPlan, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -16,6 +16,7 @@ export class ShiftPage implements OnInit {
   public calculatedShifts: any[] = [];
   public isCalculateModalOpen: boolean = false;
   public isUsed: boolean = false;
+  public linkedTenants: Tenant[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -29,6 +30,7 @@ export class ShiftPage implements OnInit {
     this.shift = await this.db.shifts().find(s => s.id === id);
 
     this.isUsed = await this.db.isShiftUsed(this.shift.id);
+    this.linkedTenants = (await this.db.getTenantsFromUser(this.db.user.id)).filter(t => t.id !== this.db.tenant().id);
   }
 
   async save() {
@@ -104,6 +106,69 @@ export class ShiftPage implements OnInit {
             Utils.showToast('Schichtplan gelöscht', 'success');
           } catch (error) {
             Utils.showToast('Fehler beim Löschen des Schichtplans', 'danger');
+          }
+        }
+      }]
+    });
+    await alert.present();
+  }
+
+  async copyToInstance() {
+    if (this.linkedTenants.length === 0) {
+      Utils.showToast('Keine anderen Instanzen verfügbar.', 'warning');
+      return;
+    }
+
+    const inputs = this.linkedTenants.map(t => ({
+      type: 'radio' as const,
+      label: t.longName,
+      value: t.id.toString(),
+    }));
+
+    const alert = await this.alertController.create({
+      header: 'In Instanz kopieren',
+      message: 'Wähle die Ziel-Instanz, in die der Schichtplan kopiert werden soll.',
+      inputs,
+      buttons: [{
+        text: 'Abbrechen',
+      }, {
+        text: 'Kopieren',
+        handler: async (tenantId: string) => {
+          if (!tenantId) {
+            Utils.showToast('Bitte wähle eine Instanz aus.', 'warning');
+            return false;
+          }
+
+          try {
+            const loading = await Utils.getLoadingElement(9999, 'Schichtplan wird kopiert...');
+            await loading.present();
+
+            // Create a clean copy without IDs and dependencies
+            const copiedShift: ShiftPlan = {
+              name: `${this.shift.name} (Kopie)`,
+              description: this.shift.description || '',
+              tenant_id: Number(tenantId),
+              definition: this.shift.definition.map(def => ({
+                start_time: def.start_time,
+                duration: def.duration,
+                free: def.free,
+                index: def.index,
+                repeat_count: def.repeat_count,
+              })),
+              shifts: (this.shift.shifts || []).map(s => ({
+                name: s.name,
+                date: s.date,
+              })),
+            };
+
+            await this.db.addShiftToTenant(copiedShift, Number(tenantId));
+
+            await loading.dismiss();
+            const targetTenant = this.linkedTenants.find(t => t.id === Number(tenantId));
+            Utils.showToast(`Schichtplan nach "${targetTenant?.longName}" kopiert.`, 'success');
+          } catch (error) {
+            console.error('Error copying shift:', error);
+            Utils.showToast('Fehler beim Kopieren des Schichtplans.', 'danger');
           }
         }
       }]

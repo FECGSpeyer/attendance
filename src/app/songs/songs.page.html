@@ -154,72 +154,79 @@
   </div>
   <ion-list [inset]="true">
     <ion-item-group *ngIf="selectedCategory === ''">
-      <ion-item *ngIf="currentSongs?.length > 0" lines="none" id="current-songs-button" button>
+      <ion-item *ngIf="currentSongs?.length > 0" lines="none" (click)="isCurrentSongsModalOpen = true" button>
         <ion-label color="primary">Aktuelle Werke anzeigen</ion-label>
       </ion-item>
-      <ion-modal #currentSongsModal trigger="current-songs-button"
-        [initialBreakpoint]="currentSongs.length > 1 ? 0.8 : 0.5"
-        [breakpoints]="currentSongs.length > 1 ? [0, 0.8, 1] : [0, 0.5, 1]">
-        <ng-template>
-          <ion-header>
-            <ion-toolbar>
-              <ion-title>Aktuelle Werke</ion-title>
-            </ion-toolbar>
-          </ion-header>
-          <ion-content color="light">
-            <ion-list [inset]="true">
-              @for (data of currentSongs; track data.date) {
-              <ion-list-header>
-                <ion-label>{{ data.date }}</ion-label>
-              </ion-list-header>
-              <ion-item-group>
-                <ion-item *ngFor="let his of data.history" (click)="openSong(his.song.id, currentSongsModal)" button>
-                  <ion-label>
-                    {{ his.song.prefix }}{{ his.song.number }} {{ his.song.name }}
-                  </ion-label>
-                </ion-item>
-              </ion-item-group>
-              }
-            </ion-list>
-          </ion-content>
-        </ng-template>
-      </ion-modal>
 
-      <ion-item *ngIf="groupsWithFiles?.length > 0" lines="none" id="group-directory-button" button>
+      <ion-item *ngIf="groupsWithFiles?.length > 0" lines="none" (click)="isGroupDirectoryModalOpen = true" button>
         <ion-label color="primary">Gruppenverzeichnis</ion-label>
       </ion-item>
-      <ion-modal #groupDirectoryModal trigger="group-directory-button" [initialBreakpoint]="0.9" [breakpoints]="[0, 0.9, 1]" (ionModalDidDismiss)="resetGroupSelection()">
-        <ng-template>
-          <ion-header>
-            <ion-toolbar>
-              <ion-buttons slot="start" *ngIf="selectedGroupName">
-                <ion-button (click)="resetGroupSelection()">
-                  <ion-icon name="arrow-back"></ion-icon>
-                </ion-button>
-              </ion-buttons>
-              <ion-title>{{ selectedGroupName || 'Gruppe wählen' }}</ion-title>
-            </ion-toolbar>
-          </ion-header>
-          <ion-content color="light">
-            <!-- Gruppenauswahl -->
-            <ion-list [inset]="true" *ngIf="!selectedGroupName">
-              <ion-item *ngFor="let group of groupsWithFiles" (click)="selectGroup(group)" button>
-                <ion-label>{{ group.name }}</ion-label>
-              </ion-item>
-            </ion-list>
-            <!-- Dateien der Gruppe -->
-            <ion-list [inset]="true" *ngIf="selectedGroupName">
-              <ion-item *ngFor="let entry of selectedGroupFiles" (click)="openFile(entry.file.url)" button>
+    </ion-item-group>
+
+    <!-- Modals outside of conditional item-group -->
+    <ion-modal #currentSongsModal [isOpen]="isCurrentSongsModalOpen" (ionModalDidDismiss)="isCurrentSongsModalOpen = false"
+      [initialBreakpoint]="currentSongs.length > 1 ? 0.8 : 0.5"
+      [breakpoints]="currentSongs.length > 1 ? [0, 0.8, 1] : [0, 0.5, 1]">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Aktuelle Werke</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content color="light">
+          <ion-list [inset]="true">
+            @for (data of currentSongs; track data.date) {
+            <ion-list-header>
+              <ion-label>{{ data.date }}</ion-label>
+            </ion-list-header>
+            <ion-item-group>
+              <ion-item *ngFor="let his of data.history" (click)="openSong(his.song.id, currentSongsModal)" button>
                 <ion-label>
-                  <h2>{{ entry.file.fileName }}</h2>
-                  <h3>{{ entry.song.prefix }}{{ entry.song.number }} {{ entry.song.name }}</h3>
+                  {{ his.song.prefix }}{{ his.song.number }} {{ his.song.name }}
                 </ion-label>
               </ion-item>
-            </ion-list>
-          </ion-content>
-        </ng-template>
-      </ion-modal>
-    </ion-item-group>
+            </ion-item-group>
+            }
+          </ion-list>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+
+    <ion-modal #groupDirectoryModal [isOpen]="isGroupDirectoryModalOpen" (ionModalDidDismiss)="isGroupDirectoryModalOpen = false; resetGroupSelection()" [initialBreakpoint]="0.9" [breakpoints]="[0, 0.9, 1]">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start" *ngIf="selectedGroupName">
+              <ion-button (click)="resetGroupSelection()">
+                <ion-icon name="arrow-back"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+            <ion-title>{{ selectedGroupName || 'Gruppe wählen' }}</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content color="light">
+          <!-- Info-Hinweis -->
+          <ion-note class="ion-padding" style="display: block; text-align: center; font-size: 0.85rem;" color="medium">
+            Es werden nur Gruppen angezeigt, für die Dateien vorhanden sind.
+          </ion-note>
+          <!-- Gruppenauswahl -->
+          <ion-list [inset]="true" *ngIf="!selectedGroupName">
+            <ion-item *ngFor="let group of groupsWithFiles" (click)="selectGroup(group)" button>
+              <ion-label>{{ group.name }}</ion-label>
+            </ion-item>
+          </ion-list>
+          <!-- Dateien der Gruppe -->
+          <ion-list [inset]="true" *ngIf="selectedGroupName">
+            <ion-item *ngFor="let entry of selectedGroupFiles" (click)="openFile(entry.file.url)" button>
+              <ion-label>
+                <h2>{{ entry.file.fileName }}</h2>
+                <h3>{{ entry.song.prefix }}{{ entry.song.number }} {{ entry.song.name }}</h3>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
 
     <ion-list-header>
       <ion-label>Werke ({{ songsFiltered.length }})</ion-label>
