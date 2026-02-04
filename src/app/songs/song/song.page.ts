@@ -2,9 +2,10 @@ import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, LoadingController } from '@ionic/angular';
 import * as JSZip from 'jszip';
+import { PDFDocument } from 'pdf-lib';
 import { DbService } from 'src/app/services/db.service';
 import { Role } from 'src/app/utilities/constants';
-import { Group, Organisation, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
+import { Group, Organisation, Player, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 
@@ -33,6 +34,9 @@ export class SongPage implements OnInit {
   public availableTenants: Tenant[] = [];
   public organisation: Organisation | null;
   public targetGroups: Group[] = [];
+
+  // Print feature
+  private players: Player[] = [];
 
   constructor(
     public db: DbService,
@@ -581,6 +585,185 @@ export class SongPage implements OnInit {
       await loading.dismiss();
       console.error('Error copying song:', error);
       Utils.showToast('Fehler beim Kopieren des Werks: ' + error.message, 'danger');
+    }
+  }
+
+  /**
+   * Get the count of active players for a specific group/instrument
+   */
+  private getPlayerCountByGroup(groupId: number): number {
+    return this.players.filter(p => p.instrument === groupId && !p.left && !p.paused).length;
+  }
+
+  /**
+   * Print all group PDFs with copies based on player count
+   */
+  async printSongFiles(filesPopover?: IonPopover): Promise<void> {
+    if (!this.players.length) {
+      this.players = await this.db.getPlayers(true);
+    }
+    filesPopover?.dismiss();
+
+    // Filter PDFs with real group assignments (instrumentId > 2)
+    const groupPdfs = (this.song.files || []).filter(f =>
+      f.instrumentId &&
+      f.instrumentId > 2 &&
+      (f.fileType === 'application/pdf' || f.fileName.toLowerCase().endsWith('.pdf'))
+    );
+
+    if (groupPdfs.length === 0) {
+      Utils.showToast('Keine Gruppen-PDFs zum Drucken gefunden', 'warning');
+      return;
+    }
+
+    // Check which groups have players
+    const groupsWithPlayers = groupPdfs.filter(f => this.getPlayerCountByGroup(f.instrumentId) > 0);
+
+    if (groupsWithPlayers.length === 0) {
+      Utils.showToast('Keine Gruppen mit zugewiesenen Personen gefunden', 'warning');
+      return;
+    }
+
+    // Ask for print ratio
+    const alert = await this.alertController.create({
+      header: 'Druckoptionen',
+      message: 'Wie viele Ausdrucke pro Gruppe?',
+      inputs: [
+        {
+          name: 'ratio',
+          type: 'radio',
+          label: 'Alle Personen (1 pro Person)',
+          value: '1',
+          checked: true
+        },
+        {
+          name: 'ratio',
+          type: 'radio',
+          label: 'Jede 2. Person',
+          value: '2'
+        },
+        {
+          name: 'ratio',
+          type: 'radio',
+          label: 'Jede 3. Person',
+          value: '3'
+        },
+        {
+          name: 'ratio',
+          type: 'radio',
+          label: 'Jede 4. Person',
+          value: '4'
+        },
+        {
+          name: 'ratio',
+          type: 'radio',
+          label: '1 pro Gruppe',
+          value: '0'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel'
+        },
+        {
+          text: 'Drucken',
+          handler: async (ratio: string) => {
+            await this.generatePrintPdf(groupsWithPlayers, parseInt(ratio, 10));
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Generate merged PDF with correct copy counts
+   */
+  private async generatePrintPdf(groupPdfs: SongFile[], ratio: number): Promise<void> {
+    const loading = await Utils.getLoadingElement(999999, 'PDF wird erstellt...');
+    await loading.present();
+
+    try {
+      const mergedPdf = await PDFDocument.create();
+      let totalPages = 0;
+
+      for (const file of groupPdfs) {
+        const playerCount = this.getPlayerCountByGroup(file.instrumentId);
+
+        // Calculate copies needed
+        let copies: number;
+        if (ratio === 0) {
+          copies = 1; // 1 per group
+        } else {
+          copies = Math.ceil(playerCount / ratio);
+        }
+
+        if (copies === 0) continue;
+
+        loading.message = `Lade ${this.getInstrumentName(file.instrumentId)}... (${copies} Kopien)`;
+
+        // Download the PDF
+        const pdfBlob = await this.db.downloadSongFile(file.storageName, this.song.id);
+        const pdfBytes = await pdfBlob.arrayBuffer();
+
+        // Load the source PDF
+        const sourcePdf = await PDFDocument.load(pdfBytes);
+        const pageCount = sourcePdf.getPageCount();
+
+        // Add copies to merged PDF
+        for (let copy = 0; copy < copies; copy++) {
+          const copiedPages = await mergedPdf.copyPages(sourcePdf, Array.from({ length: pageCount }, (_, i) => i));
+          copiedPages.forEach(page => mergedPdf.addPage(page));
+          totalPages += pageCount;
+        }
+      }
+
+      if (totalPages === 0) {
+        await loading.dismiss();
+        Utils.showToast('Keine Seiten zum Drucken', 'warning');
+        return;
+      }
+
+      loading.message = 'PDF wird finalisiert...';
+
+      // Save and download/print
+      const mergedPdfBytes = await mergedPdf.save();
+      const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+
+      // Open in new tab for printing
+      const printWindow = window.open(url, '_blank');
+
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.print();
+        };
+      } else {
+        // Fallback: download the file
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${this.song.name || 'song'}_print.pdf`;
+        a.click();
+        Utils.showToast('PDF heruntergeladen - bitte manuell drucken', 'success');
+      }
+
+      await loading.dismiss();
+
+      // Show summary
+      const groupSummary = groupPdfs.map(f => {
+        const count = this.getPlayerCountByGroup(f.instrumentId);
+        const copies = ratio === 0 ? 1 : Math.ceil(count / ratio);
+        return `${this.getInstrumentName(f.instrumentId)}: ${copies}x`;
+      }).join(', ');
+
+      Utils.showToast(`Druck vorbereitet: ${groupSummary}`, 'success', 5000);
+
+    } catch (error) {
+      await loading.dismiss();
+      console.error('Error generating print PDF:', error);
+      Utils.showToast('Fehler beim Erstellen des PDFs: ' + error.message, 'danger');
     }
   }
 }

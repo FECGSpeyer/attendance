@@ -124,6 +124,10 @@
       <ion-popover #filesPopover trigger="files-button" triggerAction="click">
         <ng-template>
           <ion-list>
+            <ion-item *ngIf="!readOnly" button (click)="printSongFiles(filesPopover)">
+              <ion-icon name="print-outline" slot="start"></ion-icon>
+              Gruppen-PDFs drucken
+            </ion-item>
             <ion-item button (click)="downloadAllFiles(filesPopover)">
               <ion-icon name="download-outline" slot="start"></ion-icon>
               Alle Dateien herunterladen
