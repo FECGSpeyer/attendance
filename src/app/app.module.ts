@@ -23,10 +23,9 @@ import { popoverEnterAnimation, popoverLeaveAnimation } from '@rdlabo/ionic-them
     imports: [
         BrowserModule,
         IonicModule.forRoot({
-            // iosTransitionAnimation disabled - causes double-back on swipe gesture
             popoverEnter: isPlatform('ios') ? popoverEnterAnimation : undefined,
             popoverLeave: isPlatform('ios') ? popoverLeaveAnimation : undefined,
-            swipeBackEnabled: false,
+            swipeBackEnabled: true,
         }),
         AppRoutingModule,
         PersonPageModule,

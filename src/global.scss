@@ -40,6 +40,23 @@
 @import 'quill/dist/quill.core.css';
 @import 'quill/dist/quill.snow.css';
 
+// Block Safari's native swipe-back gesture to prevent double navigation
+html {
+    overscroll-behavior-x: none;
+}
+
+// Prevent horizontal scroll/swipe on body
+body {
+    overscroll-behavior-x: none;
+    overflow-x: hidden;
+}
+
+// Prevent iOS Safari pull-to-refresh and swipe navigation
+ion-app {
+    overscroll-behavior: none;
+    touch-action: pan-y pinch-zoom;
+}
+
 [contenteditable] {
     -webkit-user-select: text;
     user-select: text;
