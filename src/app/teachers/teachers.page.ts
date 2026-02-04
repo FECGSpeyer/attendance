@@ -25,7 +25,6 @@ export class TeachersPage implements OnInit {
   ) { }
 
   trackByTeacherId = (_: number, teacher: Teacher): number => teacher.id;
-  trackByGroupId = (_: number, group: Group): number => group.id;
 
   async ngOnInit() {
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;

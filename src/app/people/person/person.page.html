@@ -590,12 +590,12 @@
           <ion-item-group>
             <ion-item>
               <ion-select (ionChange)="onTenantChange()" label="Ziel-Instanz" [(ngModel)]="tenantId">
-                <ion-select-option [value]="tnt.id" *ngFor="let tnt of tenants; trackBy: trackByTenantId">{{ tnt.longName }}</ion-select-option>
+                <ion-select-option [value]="tnt.id" *ngFor="let tnt of tenants">{{ tnt.longName }}</ion-select-option>
               </ion-select>
             </ion-item>
             <ion-item *ngIf="tenantId && tenantGroups.length">
               <ion-select label="Ziel-Gruppe" [(ngModel)]="targetGroupId">
-                <ion-select-option [value]="grp.id" *ngFor="let grp of tenantGroups; trackBy: trackByGroupId">{{ grp.name }}</ion-select-option>
+                <ion-select-option [value]="grp.id" *ngFor="let grp of tenantGroups">{{ grp.name }}</ion-select-option>
               </ion-select>
             </ion-item>
           </ion-item-group>
