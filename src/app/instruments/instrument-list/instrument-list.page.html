@@ -20,7 +20,7 @@
               </ion-toolbar>
             </ion-header>
             <ion-list>
-              <ion-item *ngFor="let cat of categories">
+              <ion-item *ngFor="let cat of categories; trackBy: trackByCategoryId">
                 <ion-label>{{ cat.name }}</ion-label>
                 <ion-button fill="clear" color="warning" (click)="editCategory(cat.id)">
                   <ion-icon name="pencil"></ion-icon>

@@ -14,7 +14,7 @@
     </ion-toolbar>
   </ion-header>
   <ion-list class="marginBottom">
-    <ion-item (click)="openModal(teacher)" *ngFor="let teacher of teachers">
+    <ion-item (click)="openModal(teacher)" *ngFor="let teacher of teachers; trackBy: trackByTeacherId">
       <ion-label>
         <h2>{{ teacher.name }}</h2>
         <h3>{{ teacher.insNames }}</h3>
@@ -37,7 +37,7 @@
         </ion-item>
         <ion-item>
           <ion-select interface="modal" label="Instrumente" [(ngModel)]="selInstruments" #select multiple="true">
-            <ion-select-option [value]="ins.id" *ngFor="let ins of instruments">{{ ins.name }}</ion-select-option>
+            <ion-select-option [value]="ins.id" *ngFor="let ins of instruments; trackBy: trackByGroupId">{{ ins.name }}</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item>

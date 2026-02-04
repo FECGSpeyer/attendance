@@ -108,7 +108,7 @@
 
               <ion-list [inset]="true">
                 <ion-item-group>
-                  <ion-item *ngFor="let u of uniquePersons">
+                  <ion-item *ngFor="let u of uniquePersons; trackBy: trackByPersonId">
                     <ion-label>
                       <h2>{{ u.firstName }} {{ u.lastName }}</h2>
                       @for (tenant of u.tenants; track tenant.id) {
