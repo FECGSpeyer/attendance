@@ -499,7 +499,7 @@ export class StatsPage implements OnInit {
       maintainAspectRatio: false,
       indexAxis: 'y',
       plugins: {
-        title: { display: true, text: 'Diva-Index (Unentschuldigte Abwesenheiten) 💅' },
+        title: { display: true, text: 'Kurzfristige Absagen' },
         legend: { display: false }
       }
     };
