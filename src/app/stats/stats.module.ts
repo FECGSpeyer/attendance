@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
+import { BaseChartDirective } from 'ng2-charts';
 
 import { StatsPageRoutingModule } from './stats-routing.module';
 
@@ -13,7 +14,8 @@ import { StatsPage } from './stats.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    StatsPageRoutingModule
+    StatsPageRoutingModule,
+    BaseChartDirective
   ],
   declarations: [StatsPage]
 })

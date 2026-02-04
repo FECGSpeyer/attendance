@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="light">
-    <ion-title>Statistiken (bis Heute)</ion-title>
+    <ion-title>Statistiken & Dashboard</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -10,6 +10,104 @@
 </ion-header>
 
 <ion-content color="light">
+  <!-- Charts Section -->
+  @if (chartsReady) {
+    <ion-list [inset]="true">
+      <ion-list-header>
+        📊 Dashboard
+      </ion-list-header>
+
+      <!-- Attendance Trend -->
+      <ion-item lines="none">
+        <div class="chart-container chart-line">
+          <canvas baseChart
+            [data]="attendanceTrendData"
+            [options]="attendanceTrendOptions"
+            type="line">
+          </canvas>
+        </div>
+      </ion-item>
+    </ion-list>
+
+    <ion-list [inset]="true">
+      <!-- Status Pie Chart -->
+      <ion-item lines="none">
+        <div class="chart-container chart-pie">
+          <canvas baseChart
+            [data]="statusPieData"
+            [options]="statusPieOptions"
+            type="pie">
+          </canvas>
+        </div>
+      </ion-item>
+    </ion-list>
+
+    <ion-list [inset]="true">
+      <!-- Top 20 Chart -->
+      <ion-item lines="none">
+        <div class="chart-container chart-horizontal">
+          <canvas baseChart
+            [data]="top20Data"
+            [options]="top20Options"
+            type="bar">
+          </canvas>
+        </div>
+      </ion-item>
+    </ion-list>
+
+    <ion-list [inset]="true">
+      <!-- Diva Index Chart -->
+      <ion-item lines="none">
+        <div class="chart-container chart-horizontal-small">
+          <canvas baseChart
+            [data]="divaIndexData"
+            [options]="divaIndexOptions"
+            type="bar">
+          </canvas>
+        </div>
+      </ion-item>
+    </ion-list>
+
+    <ion-list [inset]="true">
+      <!-- Register Bar Chart -->
+      <ion-item lines="none">
+        <div class="chart-container chart-horizontal-small">
+          <canvas baseChart
+            [data]="registerBarData"
+            [options]="registerBarOptions"
+            type="bar">
+          </canvas>
+        </div>
+      </ion-item>
+    </ion-list>
+
+    <ion-list [inset]="true">
+      <!-- Age Distribution Chart -->
+      <ion-item lines="none">
+        <div class="chart-container">
+          <canvas baseChart
+            [data]="ageDistributionData"
+            [options]="ageDistributionOptions"
+            type="bar">
+          </canvas>
+        </div>
+      </ion-item>
+    </ion-list>
+
+    <ion-list [inset]="true">
+      <!-- Average Age per Register Chart -->
+      <ion-item lines="none">
+        <div class="chart-container chart-horizontal-small">
+          <canvas baseChart
+            [data]="avgAgePerRegisterData"
+            [options]="avgAgePerRegisterOptions"
+            type="bar">
+          </canvas>
+        </div>
+      </ion-item>
+    </ion-list>
+  }
+
   <ion-list [inset]="true">
     <ion-list-header>
       Anwesenheiten (Ab {{ curAttDate | date: 'dd.MM.yyyy' }})

@@ -1,0 +1,27 @@
+.chart-container {
+  width: 100%;
+  height: 300px;
+  padding: 16px 0;
+}
+
+.chart-line {
+  height: 250px;
+}
+
+.chart-pie {
+  height: 280px;
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+.chart-horizontal {
+  height: 450px;
+}
+
+.chart-horizontal-small {
+  height: 350px;
+}
+
+ion-list-header {
+  font-weight: 600;
+}

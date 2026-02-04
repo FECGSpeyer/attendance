@@ -1,10 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import dayjs from 'dayjs';
+import { Chart, ChartConfiguration, ChartData, registerables } from 'chart.js';
 import { DbService } from '../services/db.service';
-import { Attendance, Person, Player, Tenant } from '../utilities/interfaces';
+import { Attendance, Group, Person, Player, Tenant } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
-import { DefaultAttendanceType } from '../utilities/constants';
+import { AttendanceStatus, DefaultAttendanceType } from '../utilities/constants';
+
+// Register Chart.js components
+Chart.register(...registerables);
 
 @Component({
     selector: 'app-stats',
@@ -30,6 +34,25 @@ export class StatsPage implements OnInit {
   public uniquePersons: Person[] = [];
   public allUniquePersons: Person[] = [];
   public selectedInstances: number[] = [];
+  public groups: Group[] = [];
+
+  // Chart data
+  public attendanceTrendData: ChartData<'line'>;
+  public attendanceTrendOptions: ChartConfiguration<'line'>['options'];
+  public statusPieData: ChartData<'pie'>;
+  public statusPieOptions: ChartConfiguration<'pie'>['options'];
+  public registerBarData: ChartData<'bar'>;
+  public registerBarOptions: ChartConfiguration<'bar'>['options'];
+  public top20Data: ChartData<'bar'>;
+  public top20Options: ChartConfiguration<'bar'>['options'];
+  public ageDistributionData: ChartData<'bar'>;
+  public ageDistributionOptions: ChartConfiguration<'bar'>['options'];
+  public avgAgePerRegisterData: ChartData<'bar'>;
+  public avgAgePerRegisterOptions: ChartConfiguration<'bar'>['options'];
+  public divaIndexData: ChartData<'bar'>;
+  public divaIndexOptions: ChartConfiguration<'bar'>['options'];
+
+  public chartsReady = false;
 
   constructor(
     public db: DbService,
@@ -64,7 +87,313 @@ export class StatsPage implements OnInit {
     });
     this.attPerc = Math.round(((attendancesToCalcPerc.map((att: Attendance) => att.percentage).reduce((a: number, b: number) => a + b, 0)) / (attendancesToCalcPerc.length * 100)) * 100);
 
+    // Load groups and initialize charts
+    this.groups = this.db.groups();
+    await this.initializeCharts();
+
     await this.getOrganizationStats();
+  }
+
+  private async initializeCharts() {
+    this.initAttendanceTrendChart();
+    this.initStatusPieChart();
+    this.initRegisterBarChart();
+    this.initTop20Chart();
+    this.initAgeDistributionChart();
+    this.initAvgAgePerRegisterChart();
+    this.initDivaIndexChart();
+    this.chartsReady = true;
+  }
+
+  private initAttendanceTrendChart() {
+    // Sort attendances by date and get last 20
+    const sortedAttendances = [...this.attendances]
+      .sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf())
+      .slice(-20);
+
+    this.attendanceTrendData = {
+      labels: sortedAttendances.map(a => dayjs(a.date).format('DD.MM')),
+      datasets: [{
+        data: sortedAttendances.map(a => a.percentage),
+        label: 'Anwesenheit %',
+        fill: true,
+        tension: 0.3,
+        borderColor: '#3880ff',
+        backgroundColor: 'rgba(56, 128, 255, 0.2)',
+      }]
+    };
+
+    this.attendanceTrendOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: 'Anwesenheitsverlauf (letzte 20 Termine)' }
+      },
+      scales: {
+        y: { min: 0, max: 100, title: { display: true, text: '%' } }
+      }
+    };
+  }
+
+  private initStatusPieChart() {
+    // Aggregate all person attendances
+    const statusCounts = { present: 0, excused: 0, late: 0, absent: 0 };
+    
+    this.attendances.forEach(att => {
+      att.persons?.forEach(pa => {
+        switch (pa.status) {
+          case AttendanceStatus.Present: statusCounts.present++; break;
+          case AttendanceStatus.Excused: statusCounts.excused++; break;
+          case AttendanceStatus.Late:
+          case AttendanceStatus.LateExcused: statusCounts.late++; break;
+          case AttendanceStatus.Absent: statusCounts.absent++; break;
+        }
+      });
+    });
+
+    this.statusPieData = {
+      labels: ['Anwesend', 'Entschuldigt', 'Verspätet', 'Abwesend'],
+      datasets: [{
+        data: [statusCounts.present, statusCounts.excused, statusCounts.late, statusCounts.absent],
+        backgroundColor: ['#2dd36f', '#3dc2ff', '#ffc409', '#eb445a']
+      }]
+    };
+
+    this.statusPieOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: 'Statusverteilung aller Termine' }
+      }
+    };
+  }
+
+  private initRegisterBarChart() {
+    // Calculate attendance rate per group/register
+    const groupStats: { [groupId: number]: { present: number; total: number; name: string } } = {};
+
+    this.groups.forEach(g => {
+      groupStats[g.id] = { present: 0, total: 0, name: g.name };
+    });
+
+    this.attendances.forEach(att => {
+      att.persons?.forEach(pa => {
+        const player = this.activePlayers.find(p => p.id === pa.person_id);
+        if (player && groupStats[player.instrument]) {
+          groupStats[player.instrument].total++;
+          if (pa.status === AttendanceStatus.Present || pa.status === AttendanceStatus.Late || pa.status === AttendanceStatus.LateExcused) {
+            groupStats[player.instrument].present++;
+          }
+        }
+      });
+    });
+
+    const groupData = Object.values(groupStats)
+      .filter(g => g.total > 0)
+      .map(g => ({ name: g.name, percentage: Math.round((g.present / g.total) * 100) }))
+      .sort((a, b) => b.percentage - a.percentage);
+
+    this.registerBarData = {
+      labels: groupData.map(g => g.name),
+      datasets: [{
+        data: groupData.map(g => g.percentage),
+        label: 'Anwesenheit %',
+        backgroundColor: '#3880ff'
+      }]
+    };
+
+    this.registerBarOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        title: { display: true, text: 'Anwesenheitsquote nach Register' },
+        legend: { display: false }
+      },
+      scales: {
+        x: { min: 0, max: 100, title: { display: true, text: '%' } }
+      }
+    };
+  }
+
+  private initTop20Chart() {
+    // Calculate attendance percentage per active player
+    const playerStats: { name: string; percentage: number }[] = [];
+
+    this.activePlayers.forEach(player => {
+      const playerAttendances = this.attendances.flatMap(att => 
+        att.persons?.filter(pa => pa.person_id === player.id) || []
+      );
+      
+      if (playerAttendances.length > 0) {
+        const presentCount = playerAttendances.filter(pa => 
+          pa.status === AttendanceStatus.Present || 
+          pa.status === AttendanceStatus.Late || 
+          pa.status === AttendanceStatus.LateExcused
+        ).length;
+        
+        playerStats.push({
+          name: `${player.firstName} ${player.lastName.charAt(0)}.`,
+          percentage: Math.round((presentCount / playerAttendances.length) * 100)
+        });
+      }
+    });
+
+    const top20 = playerStats
+      .sort((a, b) => b.percentage - a.percentage)
+      .slice(0, 20);
+
+    this.top20Data = {
+      labels: top20.map(p => p.name),
+      datasets: [{
+        data: top20.map(p => p.percentage),
+        label: 'Anwesenheit %',
+        backgroundColor: '#2dd36f'
+      }]
+    };
+
+    this.top20Options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        title: { display: true, text: 'Top 20 - Anwesenheits-Elite 🏆' },
+        legend: { display: false }
+      },
+      scales: {
+        x: { min: 0, max: 100, title: { display: true, text: '%' } }
+      }
+    };
+  }
+
+  private initAgeDistributionChart() {
+    // Age distribution of active players
+    const ageBuckets: { [key: string]: number } = {
+      '0-10': 0, '11-15': 0, '16-20': 0, '21-30': 0, 
+      '31-40': 0, '41-50': 0, '51-60': 0, '60+': 0
+    };
+
+    this.activePlayers.forEach(player => {
+      if (player.birthday) {
+        const age = dayjs().diff(dayjs(player.birthday), 'year');
+        if (age <= 10) ageBuckets['0-10']++;
+        else if (age <= 15) ageBuckets['11-15']++;
+        else if (age <= 20) ageBuckets['16-20']++;
+        else if (age <= 30) ageBuckets['21-30']++;
+        else if (age <= 40) ageBuckets['31-40']++;
+        else if (age <= 50) ageBuckets['41-50']++;
+        else if (age <= 60) ageBuckets['51-60']++;
+        else ageBuckets['60+']++;
+      }
+    });
+
+    this.ageDistributionData = {
+      labels: Object.keys(ageBuckets),
+      datasets: [{
+        data: Object.values(ageBuckets),
+        label: 'Anzahl Personen',
+        backgroundColor: '#5260ff'
+      }]
+    };
+
+    this.ageDistributionOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: 'Altersverteilung 🎂' },
+        legend: { display: false }
+      }
+    };
+  }
+
+  private initAvgAgePerRegisterChart() {
+    // Average age per register/group
+    const groupAges: { [groupId: number]: { ages: number[]; name: string } } = {};
+
+    this.groups.forEach(g => {
+      groupAges[g.id] = { ages: [], name: g.name };
+    });
+
+    this.activePlayers.forEach(player => {
+      if (player.birthday && groupAges[player.instrument]) {
+        const age = dayjs().diff(dayjs(player.birthday), 'year');
+        groupAges[player.instrument].ages.push(age);
+      }
+    });
+
+    const avgAgeData = Object.values(groupAges)
+      .filter(g => g.ages.length > 0)
+      .map(g => ({
+        name: g.name,
+        avgAge: Math.round(g.ages.reduce((a, b) => a + b, 0) / g.ages.length)
+      }))
+      .sort((a, b) => b.avgAge - a.avgAge);
+
+    this.avgAgePerRegisterData = {
+      labels: avgAgeData.map(g => g.name),
+      datasets: [{
+        data: avgAgeData.map(g => g.avgAge),
+        label: 'Ø Alter',
+        backgroundColor: '#ff9f0a'
+      }]
+    };
+
+    this.avgAgePerRegisterOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        title: { display: true, text: 'Durchschnittsalter pro Register' },
+        legend: { display: false }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Jahre' } }
+      }
+    };
+  }
+
+  private initDivaIndexChart() {
+    // Diva Index: unexcused absences per player
+    const playerAbsences: { name: string; absences: number }[] = [];
+
+    this.activePlayers.forEach(player => {
+      const unexcusedAbsences = this.attendances.flatMap(att => 
+        att.persons?.filter(pa => 
+          pa.person_id === player.id && pa.status === AttendanceStatus.Absent
+        ) || []
+      ).length;
+      
+      if (unexcusedAbsences > 0) {
+        playerAbsences.push({
+          name: `${player.firstName} ${player.lastName.charAt(0)}.`,
+          absences: unexcusedAbsences
+        });
+      }
+    });
+
+    const topDivas = playerAbsences
+      .sort((a, b) => b.absences - a.absences)
+      .slice(0, 15);
+
+    this.divaIndexData = {
+      labels: topDivas.map(p => p.name),
+      datasets: [{
+        data: topDivas.map(p => p.absences),
+        label: 'Unentschuldigte Fehlzeiten',
+        backgroundColor: '#eb445a'
+      }]
+    };
+
+    this.divaIndexOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        title: { display: true, text: 'Diva-Index (Unentschuldigte Abwesenheiten) 💅' },
+        legend: { display: false }
+      }
+    };
   }
 
   async getOrganizationStats() {
