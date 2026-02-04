@@ -176,8 +176,11 @@
       (click)="createPlan(select.value, input.value, planModal)" expand="block">Exportieren</ion-button>
       @if (db.tenantUser().telegram_chat_id) {
         <ion-button [disabled]="!select.value?.length || !input.value"
-          (click)="createPlan(select.value, input.value, planModal, true)" expand="block">Per Telegram
-        senden</ion-button>
+          (click)="createPlan(select.value, input.value, planModal, true, false)" expand="block">Per Telegram (PDF)
+        </ion-button>
+        <ion-button [disabled]="!select.value?.length || !input.value"
+          (click)="createPlan(select.value, input.value, planModal, true, true)" expand="block">Per Telegram (Bild)
+        </ion-button>
       }
     </ion-content>
   </ng-template>

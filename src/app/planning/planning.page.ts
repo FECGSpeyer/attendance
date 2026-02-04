@@ -157,7 +157,7 @@ export class PlanningPage implements OnInit {
     await alert.present();
   }
 
-  async send() {
+  async send(asImage: boolean = false) {
     if (!this.validate()) {
       return;
     }
@@ -169,10 +169,11 @@ export class PlanningPage implements OnInit {
       end: this.end,
       fields: this.selectedFields,
       asBlob: true,
+      asImage,
       attendance: this.attendance,
       attendances: this.attendances
     }, attendance?.type === "uebung");
-    this.db.sendPlanPerTelegram(blob, `${attendance?.type === "uebung" ? "Probenplan" : "Gottesdienst"}_${name}`);
+    this.db.sendPlanPerTelegram(blob, `${attendance?.type === "uebung" ? "Probenplan" : "Gottesdienst"}_${name}`, asImage);
   }
 
   onAttChange() {
@@ -377,8 +378,12 @@ export class PlanningPage implements OnInit {
 
       if (this.hasChatId) {
         buttons.push({
-          text: 'Per Telegram senden',
-          handler: () => this.send()
+          text: 'Per Telegram senden (PDF)',
+          handler: () => this.send(false)
+        });
+        buttons.push({
+          text: 'Per Telegram senden (Bild)',
+          handler: () => this.send(true)
         });
       }
     }
@@ -402,7 +407,7 @@ export class PlanningPage implements OnInit {
     await actionSheet.present();
   }
 
-  async createPlan(conductors: number[], timeString: string | number, modal: IonModal, perTelegram?: boolean): Promise<void> {
+  async createPlan(conductors: number[], timeString: string | number, modal: IonModal, perTelegram?: boolean, asImage?: boolean): Promise<void> {
     const shuffledConductors: string[] = this.shuffle(conductors.map((id: number): string => {
       const con: Person = this.conductors.find((c: Person): boolean => id === c.id);
       return `${con.firstName} ${con.lastName.substr(0, 1)}.`;
@@ -439,7 +444,12 @@ export class PlanningPage implements OnInit {
     });
 
     if (perTelegram) {
-      this.db.sendPlanPerTelegram(doc.output('blob'), `Registerprobenplan_${dayjs().format('DD_MM_YYYY')}`);
+      let blob: Blob = doc.output('blob');
+      if (asImage) {
+        const pdfDataUri = doc.output('datauristring');
+        blob = await Utils.pdfDataUriToImageBlob(pdfDataUri);
+      }
+      this.db.sendPlanPerTelegram(blob, `Registerprobenplan_${dayjs().format('DD_MM_YYYY')}`, asImage);
     } else {
       doc.save(`${this.db.tenant().shortName} Registerprobenplan: ${date}.pdf`);
     }

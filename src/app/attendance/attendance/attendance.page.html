@@ -237,8 +237,11 @@
               <ion-item button (click)="exportPlan()" detail="false">
                 <ion-label color="primary">Ablaufplan exportieren</ion-label>
               </ion-item>
-              <ion-item button (click)="send()" detail="false">
-                <ion-label color="primary">Ablaufplan per Telegram senden</ion-label>
+              <ion-item button (click)="send(false)" detail="false">
+                <ion-label color="primary">Per Telegram senden (PDF)</ion-label>
+              </ion-item>
+              <ion-item button (click)="send(true)" detail="false">
+                <ion-label color="primary">Per Telegram senden (Bild)</ion-label>
               </ion-item>
             </div>
           }
