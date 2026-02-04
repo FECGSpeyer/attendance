@@ -14,11 +14,11 @@
               <ion-input #emailInput class="inputFontBlack" type="text" placeholder="E-Mail" name="email" [(ngModel)]="registerCredentials.email" required></ion-input>
             </ion-item>
             <ion-item>
-              <ion-label class="inputFontBlack" position="stacked">Passwort</ion-label>
-              <ion-input #passwordInput class="inputFontBlack" [type]="showPassword ? 'text' : 'password'" placeholder="Passwort" name="password" [(ngModel)]="registerCredentials.password" required></ion-input>
-              <ion-button fill="clear" slot="end" (click)="showPassword = !showPassword">
-                <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" slot="icon-only"></ion-icon>
-              </ion-button>
+              <ion-input #passwordInput class="inputFontBlack" [type]="showPassword ? 'text' : 'password'" label="Passwort" labelPlacement="stacked" placeholder="Passwort" name="password" [(ngModel)]="registerCredentials.password" required>
+                <ion-button fill="clear" slot="end" (click)="showPassword = !showPassword" aria-label="Passwort anzeigen">
+                  <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" slot="icon-only"></ion-icon>
+                </ion-button>
+              </ion-input>
             </ion-item>
           </ion-col>
         </ion-row>
