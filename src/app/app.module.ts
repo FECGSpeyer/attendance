@@ -16,15 +16,14 @@ import { PlanningPageModule } from './planning/planning.module';
 import { InstrumentPageModule } from './instruments/instrument/instrument.module';
 import { AttendancePageModule } from './attendance/attendance/attendance.module';
 import { TypePageModule } from 'src/app/settings/general/type/type.module';
-import { popoverEnterAnimation, popoverLeaveAnimation } from '@rdlabo/ionic-theme-ios26';
+import { iosTransitionAnimation, popoverEnterAnimation, popoverLeaveAnimation } from '@rdlabo/ionic-theme-ios26';
 
 @NgModule({
     declarations: [AppComponent],
     imports: [
         BrowserModule,
         IonicModule.forRoot({
-            // iosTransitionAnimation disabled due to swipe-back double navigation bug
-            // navAnimation: isPlatform('ios') ? iosTransitionAnimation : undefined,
+            navAnimation: isPlatform('ios') ? iosTransitionAnimation : undefined,
             popoverEnter: isPlatform('ios') ? popoverEnterAnimation : undefined,
             popoverLeave: isPlatform('ios') ? popoverLeaveAnimation : undefined,
             swipeBackEnabled: true,
