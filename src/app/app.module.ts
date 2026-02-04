@@ -23,9 +23,9 @@ import { iosTransitionAnimation, popoverEnterAnimation, popoverLeaveAnimation } 
     imports: [
         BrowserModule,
         IonicModule.forRoot({
-            navAnimation: isPlatform('ios') ? iosTransitionAnimation: undefined,
-            popoverEnter: isPlatform('ios') ? popoverEnterAnimation: undefined,
-            popoverLeave: isPlatform('ios') ? popoverLeaveAnimation: undefined,
+            navAnimation: isPlatform('ios') ? iosTransitionAnimation : undefined,
+            popoverEnter: isPlatform('ios') ? popoverEnterAnimation : undefined,
+            popoverLeave: isPlatform('ios') ? popoverLeaveAnimation : undefined,
             swipeBackEnabled: true,
         }),
         AppRoutingModule,
