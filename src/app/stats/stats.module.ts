@@ -19,4 +19,4 @@ import { StatsPage } from './stats.page';
   ],
   declarations: [StatsPage]
 })
-export class StatsPageModule {}
+export class StatsPageModule { }

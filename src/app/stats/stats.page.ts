@@ -11,10 +11,10 @@ import { AttendanceStatus, DefaultAttendanceType } from '../utilities/constants'
 Chart.register(...registerables);
 
 @Component({
-    selector: 'app-stats',
-    templateUrl: './stats.page.html',
-    styleUrls: ['./stats.page.scss'],
-    standalone: false
+  selector: 'app-stats',
+  templateUrl: './stats.page.html',
+  styleUrls: ['./stats.page.scss'],
+  standalone: false
 })
 export class StatsPage implements OnInit {
   public attendances: Attendance[] = [];
@@ -139,7 +139,7 @@ export class StatsPage implements OnInit {
   private initStatusPieChart() {
     // Aggregate all person attendances
     const statusCounts = { present: 0, excused: 0, late: 0, absent: 0 };
-    
+
     this.attendances.forEach(att => {
       att.persons?.forEach(pa => {
         switch (pa.status) {
@@ -222,17 +222,17 @@ export class StatsPage implements OnInit {
     const playerStats: { name: string; percentage: number }[] = [];
 
     this.activePlayers.forEach(player => {
-      const playerAttendances = this.attendances.flatMap(att => 
+      const playerAttendances = this.attendances.flatMap(att =>
         att.persons?.filter(pa => pa.person_id === player.id) || []
       );
-      
+
       if (playerAttendances.length > 0) {
-        const presentCount = playerAttendances.filter(pa => 
-          pa.status === AttendanceStatus.Present || 
-          pa.status === AttendanceStatus.Late || 
+        const presentCount = playerAttendances.filter(pa =>
+          pa.status === AttendanceStatus.Present ||
+          pa.status === AttendanceStatus.Late ||
           pa.status === AttendanceStatus.LateExcused
         ).length;
-        
+
         playerStats.push({
           name: `${player.firstName} ${player.lastName.charAt(0)}.`,
           percentage: Math.round((presentCount / playerAttendances.length) * 100)
@@ -268,30 +268,47 @@ export class StatsPage implements OnInit {
   }
 
   private initAgeDistributionChart() {
-    // Age distribution of active players
-    const ageBuckets: { [key: string]: number } = {
-      '0-10': 0, '11-15': 0, '16-20': 0, '21-30': 0, 
-      '31-40': 0, '41-50': 0, '51-60': 0, '60+': 0
-    };
-
+    // Calculate ages and find min/max
+    const ages: number[] = [];
     this.activePlayers.forEach(player => {
       if (player.birthday) {
         const age = dayjs().diff(dayjs(player.birthday), 'year');
-        if (age <= 10) ageBuckets['0-10']++;
-        else if (age <= 15) ageBuckets['11-15']++;
-        else if (age <= 20) ageBuckets['16-20']++;
-        else if (age <= 30) ageBuckets['21-30']++;
-        else if (age <= 40) ageBuckets['31-40']++;
-        else if (age <= 50) ageBuckets['41-50']++;
-        else if (age <= 60) ageBuckets['51-60']++;
-        else ageBuckets['60+']++;
+        ages.push(age);
       }
     });
 
+    if (ages.length === 0) {
+      this.ageDistributionData = { labels: [], datasets: [{ data: [], label: 'Anzahl' }] };
+      return;
+    }
+
+    const minAge = Math.min(...ages);
+    const maxAge = Math.max(...ages);
+
+    // Create 3-year buckets dynamically based on actual age range
+    const bucketSize = 3;
+    const startBucket = Math.floor(minAge / bucketSize) * bucketSize;
+    const endBucket = Math.ceil((maxAge + 1) / bucketSize) * bucketSize;
+
+    const ageBuckets: { label: string; count: number }[] = [];
+
+    for (let i = startBucket; i < endBucket; i += bucketSize) {
+      const bucketEnd = i + bucketSize - 1;
+      const label = `${i}-${bucketEnd}`;
+      const count = ages.filter(age => age >= i && age <= bucketEnd).length;
+      ageBuckets.push({ label, count });
+    }
+
+    // Filter out empty buckets at the start and end
+    let firstNonEmpty = ageBuckets.findIndex(b => b.count > 0);
+    let lastNonEmpty = ageBuckets.length - 1 - [...ageBuckets].reverse().findIndex(b => b.count > 0);
+
+    const filteredBuckets = ageBuckets.slice(firstNonEmpty, lastNonEmpty + 1);
+
     this.ageDistributionData = {
-      labels: Object.keys(ageBuckets),
+      labels: filteredBuckets.map(b => b.label),
       datasets: [{
-        data: Object.values(ageBuckets),
+        data: filteredBuckets.map(b => b.count),
         label: 'Anzahl Personen',
         backgroundColor: '#5260ff'
       }]
@@ -303,6 +320,12 @@ export class StatsPage implements OnInit {
       plugins: {
         title: { display: true, text: 'Altersverteilung 🎂' },
         legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 }
+        }
       }
     };
   }
@@ -358,12 +381,12 @@ export class StatsPage implements OnInit {
     const playerAbsences: { name: string; absences: number }[] = [];
 
     this.activePlayers.forEach(player => {
-      const unexcusedAbsences = this.attendances.flatMap(att => 
-        att.persons?.filter(pa => 
+      const unexcusedAbsences = this.attendances.flatMap(att =>
+        att.persons?.filter(pa =>
           pa.person_id === player.id && pa.status === AttendanceStatus.Absent
         ) || []
       ).length;
-      
+
       if (unexcusedAbsences > 0) {
         playerAbsences.push({
           name: `${player.firstName} ${player.lastName.charAt(0)}.`,
