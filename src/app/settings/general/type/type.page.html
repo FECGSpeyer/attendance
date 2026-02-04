@@ -145,7 +145,7 @@
               <ion-col [style.paddingTop]="'.5rem'" [style.borderRadius]="'1rem'"
                 [style.backgroundColor]="type.color === color ? 'var(--ion-color-medium)' : ''"
                 [style.textAlign]="'center'" (click)="type.color = color; colorPopover.dismiss()" size="4"
-                *ngFor="let color of colors; trackBy: trackByColor">
+                *ngFor="let color of colors">
                 <ion-icon [style.fontSize]="'1.5rem'" name="ellipse" [color]="color"></ion-icon>
               </ion-col>
             </ion-row>
@@ -162,7 +162,7 @@
         <ion-select label="Relevante Gruppen"
           helperText="Nur die relevanten Gruppen werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt. Wenn keine Gruppe ausgewählt ist, werden alle Gruppen berücksichtigt."
           [(ngModel)]="type.relevant_groups" multiple="true">
-          <ion-select-option *ngFor="let group of db.groups(); trackBy: trackByGroupId" [value]="group.id">
+          <ion-select-option *ngFor="let group of db.groups()" [value]="group.id">
             {{ group.name }}
           </ion-select-option>
         </ion-select>

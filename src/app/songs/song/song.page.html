@@ -278,7 +278,7 @@
         <ion-item-group>
           <ion-item>
             <ion-select (ionChange)="onTargetTenantChange()" label="Ziel-Instanz" [(ngModel)]="targetTenantId">
-              <ion-select-option [value]="tnt.id" *ngFor="let tnt of availableTenants; trackBy: trackByTenantId">{{ tnt.longName
+              <ion-select-option [value]="tnt.id" *ngFor="let tnt of availableTenants">{{ tnt.longName
                 }}</ion-select-option>
             </ion-select>
           </ion-item>
