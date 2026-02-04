@@ -88,7 +88,7 @@
     <ion-item-group>
       <ion-item>
         <ion-select [label]="tenantData.type === 'choir' ? 'Stimme' : tenantData.type === 'orchestra' ? 'Instrument' : 'Gruppe'" [(ngModel)]="selectedGroupId" #select>
-          <ion-select-option [value]="group.id" *ngFor="let group of groups">{{ group.name }}</ion-select-option>
+          <ion-select-option [value]="group.id" *ngFor="let group of groups; trackBy: trackByGroupId">{{ group.name }}</ion-select-option>
         </ion-select>
       </ion-item>
       @for (field of additionalFields; track field.name) {
@@ -101,7 +101,7 @@
         <ion-input [(ngModel)]="field.value" type="number"></ion-input>
         } @else if (field.type === 'select') {
         <ion-select [label]="field.name" [(ngModel)]="field.value">
-          <ion-select-option *ngFor="let option of field.options" [value]="option">{{ option }}</ion-select-option>
+          <ion-select-option *ngFor="let option of field.options; trackBy: trackByOption" [value]="option">{{ option }}</ion-select-option>
         </ion-select>
         } @else if (field.type === 'boolean') {
         <ion-label>{{ field.name }}</ion-label>
@@ -109,7 +109,7 @@
         } @else if (field.type === 'bfecg_church') {
         <ion-select interface="modal" [label]="field.name" [(ngModel)]="field.value">
           <ion-select-option value="">Nicht gelistet</ion-select-option>
-          <ion-select-option *ngFor="let church of churches" [value]="church.id">{{ church.name }}</ion-select-option>
+          <ion-select-option *ngFor="let church of churches; trackBy: trackByChurchId" [value]="church.id">{{ church.name }}</ion-select-option>
         </ion-select>
         }
       </ion-item>
