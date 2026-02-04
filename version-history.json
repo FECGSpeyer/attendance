@@ -11,15 +11,7 @@
           "version": "3.6.2",
           "date": "4.2.2026",
           "changes": [
-            "📊 Umfangreiches Statistik-Dashboard hinzugefügt: Visualisiere deine Anwesenheitsdaten mit interaktiven Charts und detaillierten Übersichten.",
-            "📈 Anwesenheits-Trend: Verfolge die Entwicklung der Anwesenheit über Zeit mit einem übersichtlichen Liniendiagramm.",
-            "🏆 Top 20 Anwesenheits-Ranking: Erkenne die fleißigsten Mitglieder auf einen Blick.",
-            "🎻 Anwesenheit nach Instrument: Detaillierte Aufschlüsselung der Teilnahme pro Instrument oder Register.",
-            "⚠️ Unentschuldigte Abwesenheiten: Übersicht über Fehlzeiten ohne Entschuldigung.",
-            "🎂 Demografie-Analysen: Altersverteilung und Durchschnittsalter pro Instrument im Überblick.",
-            "📅 Flexibler Zeitraum-Filter: Alle Statistiken lassen sich per Datumsbereich filtern.",
-            "🎨 Farbcodierte Anwesenheitsrate: Schnelle Einordnung der durchschnittlichen Anwesenheit (Grün ≥70%, Gelb ≥50%, Rot <50%).",
-            "🔄 Technologie-Updates: Angular 21 und Capacitor 8 für verbesserte Performance und Zukunftssicherheit."
+            "📊 Umfangreiches Statistik-Dashboard hinzugefügt: Visualisiere deine Anwesenheitsdaten mit interaktiven Charts und detaillierten Übersichten."
           ]
         },
         {
