@@ -41,7 +41,9 @@
       </ion-item>
       <ion-item>
         <ion-select label="Ziel-Instanz" [(ngModel)]="tenant">
-          <ion-select-option [value]="tnt.id" *ngFor="let tnt of tenants">{{ tnt.longName }}</ion-select-option>
+          @for (tnt of tenants; track tnt) {
+            <ion-select-option [value]="tnt.id">{{ tnt.longName }}</ion-select-option>
+          }
         </ion-select>
       </ion-item>
       <ion-item id="filter-btn-handover" button detail="false">
@@ -50,72 +52,90 @@
       <ion-popover #handoverFilterPopover trigger="filter-btn-handover" triggerAction="click">
         <ng-template>
           <ion-list>
-            <ion-item button detail="false" *ngIf="!filters.includes('younger') && !filters.includes('older')"
-              (click)="filterBy('younger', handoverFilterPopover)">
-              <ion-label>Jünger als...</ion-label>
-            </ion-item>
-            <ion-item button detail="false" *ngIf="!filters.includes('older') && !filters.includes('younger') "
-              (click)="filterBy('older', handoverFilterPopover)">
-              <ion-label>Älter als...</ion-label>
-            </ion-item>
-            <ion-item button detail="false" *ngIf="!filters.includes('group')" (click)="filterBy('group', handoverFilterPopover)">
-              <ion-label>Ist in der Gruppe...</ion-label>
-            </ion-item>
+            @if (!filters.includes('younger') && !filters.includes('older')) {
+              <ion-item button detail="false"
+                (click)="filterBy('younger', handoverFilterPopover)">
+                <ion-label>Jünger als...</ion-label>
+              </ion-item>
+            }
+            @if (!filters.includes('older') && !filters.includes('younger') ) {
+              <ion-item button detail="false"
+                (click)="filterBy('older', handoverFilterPopover)">
+                <ion-label>Älter als...</ion-label>
+              </ion-item>
+            }
+            @if (!filters.includes('group')) {
+              <ion-item button detail="false" (click)="filterBy('group', handoverFilterPopover)">
+                <ion-label>Ist in der Gruppe...</ion-label>
+              </ion-item>
+            }
           </ion-list>
         </ng-template>
       </ion-popover>
-      <ion-item *ngIf="filters.includes('younger') || filters.includes('older')">
-        <ion-label *ngIf="filters.includes('younger')" position="stacked">Jünger als</ion-label>
-        <ion-label *ngIf="filters.includes('older')" position="stacked">Älter als</ion-label>
-        <ion-input readonly [(ngModel)]="dateString" id="date-modal"></ion-input>
-        <ion-modal class="dateModal" #dateSelModal trigger="date-modal">
-          <ng-template>
-            <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max" [(ngModel)]="date"
-              (ionChange)="onDateChange(dateTimePickerDate.value, dateSelModal)" presentation="date"
+      @if (filters.includes('younger') || filters.includes('older')) {
+        <ion-item>
+          @if (filters.includes('younger')) {
+            <ion-label position="stacked">Jünger als</ion-label>
+          }
+          @if (filters.includes('older')) {
+            <ion-label position="stacked">Älter als</ion-label>
+          }
+          <ion-input readonly [(ngModel)]="dateString" id="date-modal"></ion-input>
+          <ion-modal class="dateModal" #dateSelModal trigger="date-modal">
+            <ng-template>
+              <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max" [(ngModel)]="date"
+                (ionChange)="onDateChange(dateTimePickerDate.value, dateSelModal)" presentation="date"
               #dateTimePickerDate></ion-datetime>
-          </ng-template>
-        </ion-modal>
-        <ion-button fill="clear" slot="end" (click)="removeFilter(filters.includes('younger') ? 'younger' : 'older')">
-          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-        </ion-button>
-      </ion-item>
-      <ion-item *ngIf="filters.includes('group')">
-        <ion-label position="stacked">Gruppe</ion-label>
-        <ion-select (ionChange)="filter()" [(ngModel)]="groupId">
-          <ion-select-option *ngFor="let group of db.groups()" [value]="group.id">{{ group.name }}</ion-select-option>
-        </ion-select>
-        <ion-button fill="clear" slot="end" (click)="removeFilter('group')">
-          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-        </ion-button>
-      </ion-item>
+            </ng-template>
+          </ion-modal>
+          <ion-button fill="clear" slot="end" (click)="removeFilter(filters.includes('younger') ? 'younger' : 'older')">
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      }
+      @if (filters.includes('group')) {
+        <ion-item>
+          <ion-label position="stacked">Gruppe</ion-label>
+          <ion-select (ionChange)="filter()" [(ngModel)]="groupId">
+            @for (group of db.groups(); track group) {
+              <ion-select-option [value]="group.id">{{ group.name }}</ion-select-option>
+            }
+          </ion-select>
+          <ion-button fill="clear" slot="end" (click)="removeFilter('group')">
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      }
     </ion-item-group>
   </ion-list>
 
   @if (filteredPersons.length) {
-  <ion-list [inset]="true">
-    <ion-list-header>
-      <ion-label>Personenliste</ion-label>
-      <ion-button size="small" fill="clear" (click)="selectAll()">
-        Alle auswählen
-      </ion-button>
-    </ion-list-header>
-    <ion-item-group>
-      <ion-item *ngFor="let person of filteredPersons; trackBy: trackByPersonId">
-        <ion-checkbox (ionChange)="togglePersonSelection(person)" [checked]="selectedPersons.includes(person.id)">
-          <ion-label>
-            <h2>{{ person.firstName }} {{ person.lastName }}</h2>
-            <p>{{ person.birthday | date:'dd.MM.yyyy' }} | {{ person.groupName }}</p>
-          </ion-label>
-        </ion-checkbox>
-      </ion-item>
-    </ion-item-group>
-  </ion-list>
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-label>Personenliste</ion-label>
+        <ion-button size="small" fill="clear" (click)="selectAll()">
+          Alle auswählen
+        </ion-button>
+      </ion-list-header>
+      <ion-item-group>
+        @for (person of filteredPersons; track trackByPersonId($index, person)) {
+          <ion-item>
+            <ion-checkbox (ionChange)="togglePersonSelection(person)" [checked]="selectedPersons.includes(person.id)">
+              <ion-label>
+                <h2>{{ person.firstName }} {{ person.lastName }}</h2>
+                <p>{{ person.birthday | date:'dd.MM.yyyy' }} | {{ person.groupName }}</p>
+              </ion-label>
+            </ion-checkbox>
+          </ion-item>
+        }
+      </ion-item-group>
+    </ion-list>
   } @else {
-  <ion-card>
-    <ion-card-content>
-      <ion-label color="danger">Keine Personen ausgewählt</ion-label>
-    </ion-card-content>
-  </ion-card>
+    <ion-card>
+      <ion-card-content>
+        <ion-label color="danger">Keine Personen ausgewählt</ion-label>
+      </ion-card-content>
+    </ion-card>
   }
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">

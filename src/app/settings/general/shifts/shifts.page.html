@@ -29,51 +29,53 @@
     <ion-list-header><ion-label>Schichtpläne</ion-label></ion-list-header>
     <ion-item-group>
       @if (db.shifts() && db.shifts().length > 0) {
-      <ion-item [routerLink]="['/tabs/settings/general/shifts', shift.id]" *ngFor="let shift of db.shifts(); trackBy: trackByShiftId">
-        <ion-label>{{ shift.name }}</ion-label>
-      </ion-item>
+        @for (shift of db.shifts(); track trackByShiftId($index, shift)) {
+          <ion-item [routerLink]="['/tabs/settings/general/shifts', shift.id]">
+            <ion-label>{{ shift.name }}</ion-label>
+          </ion-item>
+        }
       } @else {
-      <ion-item>Keine Schichtpläne vorhanden.</ion-item>
+        <ion-item>Keine Schichtpläne vorhanden.</ion-item>
       }
     </ion-item-group>
 
     <!-- <ion-item-group>
-      <ion-item button>
-        Schichtplan aus anderer Instanz übernehmen
-      </ion-item>
-    </ion-item-group> -->
-  </ion-list>
+    <ion-item button>
+      Schichtplan aus anderer Instanz übernehmen
+    </ion-item>
+  </ion-item-group> -->
+</ion-list>
 
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button id="add-shift-button">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
+<ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab-button id="add-shift-button">
+    <ion-icon name="add"></ion-icon>
+  </ion-fab-button>
 
-    <ion-modal #addShiftModal [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7" trigger="add-shift-button">
-      <ng-template>
-        <ion-header>
-          <ion-toolbar color="light">
-            <ion-title>Schichtplan erstellen</ion-title>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content color="light">
-          <ion-list [inset]="true">
-            <ion-item-group>
-              <ion-item>
-                <ion-label position="stacked">Name</ion-label>
-                <ion-input [(ngModel)]="newShiftName"></ion-input>
-              </ion-item>
-              <ion-item>
-                <ion-label position="stacked">Beschreibung</ion-label>
-                <ion-input [(ngModel)]="newShiftDescription"></ion-input>
-              </ion-item>
-            </ion-item-group>
+  <ion-modal #addShiftModal [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7" trigger="add-shift-button">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="light">
+          <ion-title>Schichtplan erstellen</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content color="light">
+        <ion-list [inset]="true">
+          <ion-item-group>
+            <ion-item>
+              <ion-label position="stacked">Name</ion-label>
+              <ion-input [(ngModel)]="newShiftName"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Beschreibung</ion-label>
+              <ion-input [(ngModel)]="newShiftDescription"></ion-input>
+            </ion-item>
+          </ion-item-group>
 
-            <ion-button [style]="{'margin-top': '10px'}" expand="block" (click)="createShift(addShiftModal)">Erstellen</ion-button>
-          </ion-list>
+          <ion-button [style]="{'margin-top': '10px'}" expand="block" (click)="createShift(addShiftModal)">Erstellen</ion-button>
+        </ion-list>
 
-        </ion-content>
-      </ng-template>
-    </ion-modal>
-  </ion-fab>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-fab>
 </ion-content>

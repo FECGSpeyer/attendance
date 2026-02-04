@@ -9,29 +9,31 @@
 
 <ion-content class="ion-padding">
   @if (meeting && isEditMode) {
-  <ion-item>
-    <ion-select label="Anwesende" placeholder="Personen auswählen..." [(ngModel)]="meeting.attendees" #select multiple="true">
-      <ion-select-option multiple="true" [value]="con.id" *ngFor="let con of conductors">{{ con.firstName }} {{ con.lastName }}</ion-select-option>
-    </ion-select>
-  </ion-item>
-  <quill-editor placeholder="Notiz eingeben..." [(ngModel)]="meeting.notes"></quill-editor>
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="save()">
-      <ion-icon name="save-outline"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+    <ion-item>
+      <ion-select label="Anwesende" placeholder="Personen auswählen..." [(ngModel)]="meeting.attendees" #select multiple="true">
+        @for (con of conductors; track con) {
+          <ion-select-option multiple="true" [value]="con.id">{{ con.firstName }} {{ con.lastName }}</ion-select-option>
+        }
+      </ion-select>
+    </ion-item>
+    <quill-editor placeholder="Notiz eingeben..." [(ngModel)]="meeting.notes"></quill-editor>
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab-button (click)="save()">
+        <ion-icon name="save-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
   }
 
   @if (meeting && !isEditMode) {
-  <ion-item lines="none">
-    <ion-label position="stacked">Anwesende Personen</ion-label>
-    <ion-text>{{ attendeesNames }}</ion-text>
-  </ion-item>
-  <quill-view [content]="meeting.notes"></quill-view>
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="isEditMode = true">
-      <ion-icon name="pencil"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+    <ion-item lines="none">
+      <ion-label position="stacked">Anwesende Personen</ion-label>
+      <ion-text>{{ attendeesNames }}</ion-text>
+    </ion-item>
+    <quill-view [content]="meeting.notes"></quill-view>
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab-button (click)="isEditMode = true">
+        <ion-icon name="pencil"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
   }
 </ion-content>

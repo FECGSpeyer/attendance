@@ -18,16 +18,22 @@
       </ion-button>
     </ion-list-header>
     <ion-item-group>
-      <ion-item [lines]="attendance && notes ? '' : 'none'" *ngIf="attendances.length">
-        <ion-select interface="modal" label="Aktuelle" (ionChange)="onAttChange()" [(ngModel)]="attendance">
-          <ion-select-option [value]="att.id" *ngFor="let att of attendances">{{ att.date | date:'dd.MM.yyyy' }} {{
-            getAttTypeText(att) }}</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item lines="none" *ngIf="attendance && notes">
-        <ion-label position="stacked">Anwesenheitsnotizen</ion-label>
-        <ion-textarea autoGrow="true" disabled="true">{{ notes }}</ion-textarea>
-      </ion-item>
+      @if (attendances.length) {
+        <ion-item [lines]="attendance && notes ? '' : 'none'">
+          <ion-select interface="modal" label="Aktuelle" (ionChange)="onAttChange()" [(ngModel)]="attendance">
+            @for (att of attendances; track att) {
+              <ion-select-option [value]="att.id">{{ att.date | date:'dd.MM.yyyy' }} {{
+              getAttTypeText(att) }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      }
+      @if (attendance && notes) {
+        <ion-item lines="none">
+          <ion-label position="stacked">Anwesenheitsnotizen</ion-label>
+          <ion-textarea autoGrow="true" disabled="true">{{ notes }}</ion-textarea>
+        </ion-item>
+      }
       <ion-row>
         <ion-col>
           <ion-button (click)="prevAtt()" size="small" fill="clear" expand="full">
@@ -62,12 +68,16 @@
           <ion-item (click)="addCurrentSongs(addPopover)">
             <ion-label>Aktuelle Werke hinzufügen</ion-label>
           </ion-item>
-          <ion-item lines="none" *ngIf="songs.length">
-            <ion-select [interfaceOptions]="customModalOptions" interface="modal" label="Werk hinzufügen"
-              multiple="false" (ionDismiss)="onAddSong($event.target.value, addPopover)">
-                <ion-select-option [value]="song.id.toString()" *ngFor="let song of songs">{{ song.prefix }}{{ song.number }} {{ song.name }}</ion-select-option>
-            </ion-select>
-          </ion-item>
+          @if (songs.length) {
+            <ion-item lines="none">
+              <ion-select [interfaceOptions]="customModalOptions" interface="modal" label="Werk hinzufügen"
+                multiple="false" (ionDismiss)="onAddSong($event.target.value, addPopover)">
+                @for (song of songs; track song) {
+                  <ion-select-option [value]="song.id.toString()">{{ song.prefix }}{{ song.number }} {{ song.name }}</ion-select-option>
+                }
+              </ion-select>
+            </ion-item>
+          }
         </ng-template>
       </ion-popover>
     </ion-list-header>
@@ -86,21 +96,28 @@
                         hour12: false
                       }
                     }"></ion-datetime>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
 
-      <ion-list>
-        <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
-          <ion-item-sliding #slider *ngFor="let field of selectedFields; let i = index; trackBy: trackByFieldId">
+    <ion-list>
+      <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
+        @for (field of selectedFields; track trackByFieldId(i, field); let i = $index) {
+          <ion-item-sliding #slider>
             <ion-item>
               <ion-label (click)="changeField(field)">
                 <h2>{{ field.name }}</h2>
-                <h3 class="danger" *ngIf="field.songId">{{ getMissingGroups(field.songId) }}</h3>
-                <h3 *ngIf="!field.id.includes('noteFld')">{{ calculateTime(field, i) }}</h3>
+                @if (field.songId) {
+                  <h3 class="danger">{{ getMissingGroups(field.songId) }}</h3>
+                }
+                @if (!field.id.includes('noteFld')) {
+                  <h3>{{ calculateTime(field, i) }}</h3>
+                }
               </ion-label>
-              <ion-input *ngIf="!field.id.includes('noteFld')" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
+              @if (!field.id.includes('noteFld')) {
+                <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
                 placeholder="min" type="number" slot="end"></ion-input>
+              }
               <ion-reorder slot="end"></ion-reorder>
             </ion-item>
             <ion-item-options (ionSwipe)="removeField(i, slider)">
@@ -109,10 +126,12 @@
               </ion-item-option>
             </ion-item-options>
           </ion-item-sliding>
-        </ion-reorder-group>
-      </ion-list>
+        }
+      </ion-reorder-group>
+    </ion-list>
 
-      <ion-item class="marginBottom" *ngIf="end">
+    @if (end) {
+      <ion-item class="marginBottom">
         <ion-label>Ende</ion-label>
         <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
@@ -124,44 +143,49 @@
                         hour12: false
                       }
                     }">
-            </ion-datetime>
-          </ng-template>
-        </ion-modal>
+          </ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+  }
+</ion-item-group>
+</ion-list>
+
+<ion-modal [isOpen]="isPlanModalOpen" #planModal trigger="trigger-button" [breakpoints]="[0, 0.5]"
+  [initialBreakpoint]="0.5">
+  <ng-template>
+    <ion-content>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Plan erstellen</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-item>
+        <ion-select label="Dirigenten" [(ngModel)]="selConductors" #select multiple="true">
+          @for (con of conductors; track con) {
+            <ion-select-option [value]="con.id">{{ con.firstName }} {{ con.lastName
+            }}</ion-select-option>
+          }
+        </ion-select>
       </ion-item>
-    </ion-item-group>
-  </ion-list>
-
-  <ion-modal [isOpen]="isPlanModalOpen" #planModal trigger="trigger-button" [breakpoints]="[0, 0.5]"
-    [initialBreakpoint]="0.5">
-    <ng-template>
-      <ion-content>
-        <ion-header>
-          <ion-toolbar>
-            <ion-title>Plan erstellen</ion-title>
-          </ion-toolbar>
-        </ion-header>
-        <ion-item>
-          <ion-select label="Dirigenten" [(ngModel)]="selConductors" #select multiple="true">
-            <ion-select-option [value]="con.id" *ngFor="let con of conductors">{{ con.firstName }} {{ con.lastName
-              }}</ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Zeit in Minuten</ion-label>
-          <ion-input value="60" #input type="number"></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Zeit in Minuten</ion-label>
+        <ion-input value="60" #input type="number"></ion-input>
+      </ion-item>
+      <ion-button [disabled]="!select.value?.length || !input.value"
+      (click)="createPlan(select.value, input.value, planModal)" expand="block">Exportieren</ion-button>
+      @if (db.tenantUser().telegram_chat_id) {
         <ion-button [disabled]="!select.value?.length || !input.value"
-          (click)="createPlan(select.value, input.value, planModal)" expand="block">Exportieren</ion-button>
-        <ion-button *ngIf="db.tenantUser().telegram_chat_id" [disabled]="!select.value?.length || !input.value"
           (click)="createPlan(select.value, input.value, planModal, true)" expand="block">Per Telegram
-          senden</ion-button>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
+        senden</ion-button>
+      }
+    </ion-content>
+  </ng-template>
+</ion-modal>
 
-  <ion-fab horizontal="end" vertical="bottom" slot="fixed">
-    <ion-fab-button (click)="showOptions()">
-      <ion-icon name="ellipsis-horizontal"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+<ion-fab horizontal="end" vertical="bottom" slot="fixed">
+  <ion-fab-button (click)="showOptions()">
+    <ion-icon name="ellipsis-horizontal"></ion-icon>
+  </ion-fab-button>
+</ion-fab>
 </ion-content>

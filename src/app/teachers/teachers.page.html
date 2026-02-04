@@ -14,13 +14,15 @@
     </ion-toolbar>
   </ion-header>
   <ion-list class="marginBottom">
-    <ion-item (click)="openModal(teacher)" *ngFor="let teacher of teachers; trackBy: trackByTeacherId">
-      <ion-label>
-        <h2>{{ teacher.name }}</h2>
-        <h3>{{ teacher.insNames }}</h3>
-      </ion-label>
-      <ion-badge [color]="teacher.playerCount ? '' : 'danger'">{{ teacher.playerCount }} Spieler</ion-badge>
-    </ion-item>
+    @for (teacher of teachers; track trackByTeacherId($index, teacher)) {
+      <ion-item (click)="openModal(teacher)">
+        <ion-label>
+          <h2>{{ teacher.name }}</h2>
+          <h3>{{ teacher.insNames }}</h3>
+        </ion-label>
+        <ion-badge [color]="teacher.playerCount ? '' : 'danger'">{{ teacher.playerCount }} Spieler</ion-badge>
+      </ion-item>
+    }
   </ion-list>
 
   <ion-modal #modal trigger="add-teacher-button" [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7">
@@ -37,7 +39,9 @@
         </ion-item>
         <ion-item>
           <ion-select interface="modal" label="Instrumente" [(ngModel)]="selInstruments" #select multiple="true">
-            <ion-select-option [value]="ins.id" *ngFor="let ins of instruments">{{ ins.name }}</ion-select-option>
+            @for (ins of instruments; track ins) {
+              <ion-select-option [value]="ins.id">{{ ins.name }}</ion-select-option>
+            }
           </ion-select>
         </ion-item>
         <ion-item>
@@ -56,9 +60,11 @@
       </ion-content>
     </ng-template>
   </ion-modal>
-  <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button id="add-teacher-button">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+  @if (isAdmin) {
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab-button id="add-teacher-button">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+  }
 </ion-content>

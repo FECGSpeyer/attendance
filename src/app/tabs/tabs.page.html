@@ -1,31 +1,45 @@
 <ion-tabs>
 
   <ion-tab-bar slot="bottom">
-    <ion-tab-button *ngIf="isParent" tab="parents">
-      <ion-icon name="person-outline"></ion-icon>
-      <ion-label>Termine</ion-label>
-    </ion-tab-button>
+    @if (isParent) {
+      <ion-tab-button tab="parents">
+        <ion-icon name="person-outline"></ion-icon>
+        <ion-label>Termine</ion-label>
+      </ion-tab-button>
+    }
 
-    <ion-tab-button *ngIf="!isConductor && !isParent" tab="signout">
-      <ion-icon name="person-outline"></ion-icon>
-      <ion-label>Meine Termine</ion-label>
-    </ion-tab-button>
+    @if (!isConductor && !isParent) {
+      <ion-tab-button tab="signout">
+        <ion-icon name="person-outline"></ion-icon>
+        <ion-label>Meine Termine</ion-label>
+      </ion-tab-button>
+    }
 
-    <ion-tab-button *ngIf="(isPlayer || isHelper) && hasMultipleTenants" tab="overview">
-      <ion-icon name="calendar-outline"></ion-icon>
-      <ion-label>Übersicht</ion-label>
-    </ion-tab-button>
+    @if ((isPlayer || isHelper) && hasMultipleTenants) {
+      <ion-tab-button tab="overview">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <ion-label>Übersicht</ion-label>
+      </ion-tab-button>
+    }
 
-    <ion-tab-button *ngIf="isConductor || isParent" tab="player">
-      <ion-icon name="people-outline"></ion-icon>
-      <ion-label *ngIf="isParent">Meine Kinder</ion-label>
-      <ion-label *ngIf="!isParent">Personen</ion-label>
-    </ion-tab-button>
+    @if (isConductor || isParent) {
+      <ion-tab-button tab="player">
+        <ion-icon name="people-outline"></ion-icon>
+        @if (isParent) {
+          <ion-label>Meine Kinder</ion-label>
+        }
+        @if (!isParent) {
+          <ion-label>Personen</ion-label>
+        }
+      </ion-tab-button>
+    }
 
-    <ion-tab-button *ngIf="isHelper || isConductor" tab="attendance">
-      <ion-icon name="checkbox-outline"></ion-icon>
-      <ion-label>Anwesenheit</ion-label>
-    </ion-tab-button>
+    @if (isHelper || isConductor) {
+      <ion-tab-button tab="attendance">
+        <ion-icon name="checkbox-outline"></ion-icon>
+        <ion-label>Anwesenheit</ion-label>
+      </ion-tab-button>
+    }
 
     <ion-tab-button tab="settings">
       <ion-icon name="ellipsis-horizontal"></ion-icon>

@@ -17,10 +17,12 @@
   <ion-list [inset]="true">
     <ion-list-header><ion-label>Gruppen-Zuordnung</ion-label></ion-list-header>
     <ion-item-group>
-      <ion-item button detail="false" (click)="changeGroup(person)" *ngFor="let person of handoverData.persons; trackBy: trackByPersonId">
-        <ion-label>{{ person.firstName }} {{ person.lastName }}</ion-label>
-        <ion-note slot="end">{{ person.groupName }} -> {{ getInsName(groupMapping[person.id]) }}</ion-note>
-      </ion-item>
+      @for (person of handoverData.persons; track trackByPersonId($index, person)) {
+        <ion-item button detail="false" (click)="changeGroup(person)">
+          <ion-label>{{ person.firstName }} {{ person.lastName }}</ion-label>
+          <ion-note slot="end">{{ person.groupName }} -> {{ getInsName(groupMapping[person.id]) }}</ion-note>
+        </ion-item>
+      }
     </ion-item-group>
   </ion-list>
 

@@ -27,25 +27,39 @@
       </ion-item>
       <ion-item>
         <ion-label>
-          <h2 *ngIf="!db.organisation()">Organisation</h2>
-          <h2 *ngIf="db.organisation()">Organisation</h2>
-          <h3 *ngIf="isSuperAdmin && !db.organisation()">Weise die Instanz einer bestehenden Organisation zu oder
-            erstelle eine. Damit können
-            Personen
+          @if (!db.organisation()) {
+            <h2>Organisation</h2>
+          }
+          @if (db.organisation()) {
+            <h2>Organisation</h2>
+          }
+          @if (isSuperAdmin && !db.organisation()) {
+            <h3>Weise die Instanz einer bestehenden Organisation zu oder
+              erstelle eine. Damit können
+              Personen
             innerhalb der Organisation verknüpft werden</h3>
-          <h3 *ngIf="isSuperAdmin && db.organisation()">Die Instanz ist der Organisation
+          }
+          @if (isSuperAdmin && db.organisation()) {
+            <h3>Die Instanz ist der Organisation
             "{{ db.organisation().name }}" zugewiesen. Personen können innerhalb der Organisation verknüpft werden.</h3>
-          <h3 *ngIf="!isSuperAdmin">Du hast keine Berechtigung, um Organisationen zu verwalten. Dies können nur
+          }
+          @if (!isSuperAdmin) {
+            <h3>Du hast keine Berechtigung, um Organisationen zu verwalten. Dies können nur
             Administratoren.</h3>
+          }
         </ion-label>
-        <ion-button fill="clear" *ngIf="isSuperAdmin && db.organisation()" (click)="deleteOrganisation()"
-          color="danger">
-          <ion-icon name="trash-outline"></ion-icon>
-        </ion-button>
-        <ion-button fill="clear" *ngIf="isSuperAdmin && !db.organisation()" (click)="openOrganisationAlert()"
-          color="primary">
-          <ion-icon name="add-outline"></ion-icon>
-        </ion-button>
+        @if (isSuperAdmin && db.organisation()) {
+          <ion-button fill="clear" (click)="deleteOrganisation()"
+            color="danger">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        }
+        @if (isSuperAdmin && !db.organisation()) {
+          <ion-button fill="clear" (click)="openOrganisationAlert()"
+            color="primary">
+            <ion-icon name="add-outline"></ion-icon>
+          </ion-button>
+        }
       </ion-item>
     </ion-item-group>
 
@@ -54,13 +68,13 @@
       <ion-item>
         <ion-label position="stacked">Saisonbeginn</ion-label>
         <ion-input helperText="Anwesenheiten werden erst ab diesem Datum bei den Personen berücksichtigt"
-          [(ngModel)]="attDateString" id="date-modal"></ion-input>
+        [(ngModel)]="attDateString" id="date-modal"></ion-input>
         <ion-modal class="attDateModal" #attModal trigger="date-modal">
           <ng-template>
             <ion-content>
               <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
                 [(ngModel)]="attDate" (ionChange)="onAttDateChange(attDatePicker.value, attModal)" presentation="date"
-                #attDatePicker></ion-datetime>
+              #attDatePicker></ion-datetime>
             </ion-content>
           </ng-template>
         </ion-modal>
@@ -78,29 +92,31 @@
       <ion-item>
         <ion-toggle
           helperText="Aktivieren, um neuen Personen die Registrierung in dieser Instanz zu erlauben. Der Link wird automatisch generiert und kann nach dem Speichern kopiert werden."
-          [(ngModel)]="registerAllowed">Registrierung erlauben</ion-toggle>
+        [(ngModel)]="registerAllowed">Registrierung erlauben</ion-toggle>
       </ion-item>
-      <ion-item (click)="copyRegisterLink()" button *ngIf="db.tenant().register_id && registerAllowed" detail="false">
-        <ion-label color="primary">Link kopieren</ion-label>
-      </ion-item>
+      @if (db.tenant().register_id && registerAllowed) {
+        <ion-item (click)="copyRegisterLink()" button detail="false">
+          <ion-label color="primary">Link kopieren</ion-label>
+        </ion-item>
+      }
       @if (registerAllowed) {
-      <ion-item>
-        <ion-toggle
-          helperText="Aktivieren, um neue Registrierungen automatisch zu genehmigen. Andernfalls müssen neue Registrierungen manuell genehmigt werden."
+        <ion-item>
+          <ion-toggle
+            helperText="Aktivieren, um neue Registrierungen automatisch zu genehmigen. Andernfalls müssen neue Registrierungen manuell genehmigt werden."
           [(ngModel)]="autoApproveRegistrations">Auto-Genehmigung</ion-toggle>
-      </ion-item>
-      <ion-item lines="none">
-        <ion-label position="stacked">Registrierungsfelder</ion-label>
-        <ion-select multiple="true" [(ngModel)]="selectedRegisterFields">
-          @for (field of registerFields; track field.key) {
-          <ion-select-option [disabled]="field.disabled" [value]="field.key">{{ field.label }}</ion-select-option>
-          }
-        </ion-select>
-      </ion-item>
-      <ion-item lines="none">
-        <ion-note [style.marginBottom]="'5px'">Wähle die Felder aus, die bei der Registrierung angezeigt werden sollen. Alle ausgewählten Felder sind Pflichtfelder.</ion-note>
-      </ion-item>
-    }
+        </ion-item>
+        <ion-item lines="none">
+          <ion-label position="stacked">Registrierungsfelder</ion-label>
+          <ion-select multiple="true" [(ngModel)]="selectedRegisterFields">
+            @for (field of registerFields; track field.key) {
+              <ion-select-option [disabled]="field.disabled" [value]="field.key">{{ field.label }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-note [style.marginBottom]="'5px'">Wähle die Felder aus, die bei der Registrierung angezeigt werden sollen. Alle ausgewählten Felder sind Pflichtfelder.</ion-note>
+        </ion-item>
+      }
     </ion-item-group>
 
     <ion-list-header><ion-label>Werk-Datenbank</ion-label></ion-list-header>
@@ -108,38 +124,44 @@
       <ion-item>
         <ion-toggle
           helperText="Aktivieren, um Werke als öffentlichen link zu teilen. Jeder mit dem Link kann die Werke ansehen aber nicht bearbeiten. Der Link wird automatisch generiert und kann nach dem Speichern kopiert werden."
-          [(ngModel)]="songSharingEnabled">Werke öffentlich teilen</ion-toggle>
+        [(ngModel)]="songSharingEnabled">Werke öffentlich teilen</ion-toggle>
       </ion-item>
-      <ion-item (click)="copySongSharingLink()" button *ngIf="db.tenant().song_sharing_id" detail="false">
-        <ion-label color="primary">Link kopieren</ion-label>
-      </ion-item>
+      @if (db.tenant().song_sharing_id) {
+        <ion-item (click)="copySongSharingLink()" button detail="false">
+          <ion-label color="primary">Link kopieren</ion-label>
+        </ion-item>
+      }
     </ion-item-group>
 
     <ion-list-header><ion-label>Sonstiges</ion-label></ion-list-header>
     <ion-item-group>
-      <ion-item *ngIf="isOrchestra">
-        <ion-toggle helperText="Aktivieren, um die Lehrer der Spieler verwalten zu können."
-          [(ngModel)]="maintainTeachers">Lehrer
+      @if (isOrchestra) {
+        <ion-item>
+          <ion-toggle helperText="Aktivieren, um die Lehrer der Spieler verwalten zu können."
+            [(ngModel)]="maintainTeachers">Lehrer
           pflegen</ion-toggle>
-      </ion-item>
+        </ion-item>
+      }
       <ion-item>
         <ion-toggle
           helperText="Aktivieren, um Eltern die Möglichkeit zu geben, Einsicht in die Anwesenheiten ihrer Kinder zu geben und Abwesenheiten pflegen zu können."
-          [(ngModel)]="parentsEnabled">Eltern-Funktion</ion-toggle>
+        [(ngModel)]="parentsEnabled">Eltern-Funktion</ion-toggle>
       </ion-item>
       <ion-item>
         <ion-toggle
           helperText="Aktivieren, um beim Anlegen der Anwesenheiten die Ferien und Feiertage hervorzuheben. (nur verfügbar für Deutschland)"
-          [(ngModel)]="showHolidays">Ferien/Feiertage anzeigen</ion-toggle>
+        [(ngModel)]="showHolidays">Ferien/Feiertage anzeigen</ion-toggle>
       </ion-item>
       @if (showHolidays) {
-      <ion-item>
-        <ion-label position="stacked">Bundesland für Ferien/Feiertage</ion-label>
-        <ion-select [(ngModel)]="region">
-          <ion-select-option *ngFor="let state of holidayStates" [value]="state.code">{{ state.name
-            }}</ion-select-option>
-        </ion-select>
-      </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Bundesland für Ferien/Feiertage</ion-label>
+          <ion-select [(ngModel)]="region">
+            @for (state of holidayStates; track state) {
+              <ion-select-option [value]="state.code">{{ state.name
+              }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
       }
     </ion-item-group>
 
@@ -165,7 +187,9 @@
                     <!-- <ion-select-option [value]="fieldTypes.DATE">Datum</ion-select-option> -->
                     <ion-select-option [value]="fieldTypes.BOOLEAN">Ja/Nein</ion-select-option>
                     <ion-select-option [value]="fieldTypes.SELECT">Auswahl</ion-select-option>
-                    <ion-select-option *ngIf="db.isBeta()" [value]="fieldTypes.BFECG_CHURCH">BFECG Gemeinde</ion-select-option>
+                    @if (db.isBeta()) {
+                      <ion-select-option [value]="fieldTypes.BFECG_CHURCH">BFECG Gemeinde</ion-select-option>
+                    }
                   </ion-select>
                 </ion-item>
                 <ion-item>
@@ -173,42 +197,44 @@
                 </ion-item>
               </ion-item-group>
               @if (newExtraField.type === fieldTypes.SELECT) {
-              <ion-list-header>
-                <ion-label>Optionen</ion-label>
-                <ion-button fill="clear" size="small"
-                  (click)="newExtraField.options.push('')">
-                  <ion-icon name="add-outline"></ion-icon>
-                </ion-button>
-              </ion-list-header>
-              <ion-item-group>
-                @if (!newExtraField.options?.length) {
-                <ion-item>
-                  <ion-label>Keine Optionen ausgewählt</ion-label>
-                </ion-item>
-                } @else {
-                @for (option of newExtraField.options; track option; let i = $index) {
-                <ion-item>
-                  <ion-input [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined" placeholder="Wert eingeben..." [value]="option" (ionChange)="onExtraOptionChanged($event, i)"></ion-input>
-                  <ion-button slot="end" (click)="newExtraField.options.splice(i, 1)" fill="clear">
-                    <ion-icon color="danger" name="trash-outline"></ion-icon>
+                <ion-list-header>
+                  <ion-label>Optionen</ion-label>
+                  <ion-button fill="clear" size="small"
+                    (click)="newExtraField.options.push('')">
+                    <ion-icon name="add-outline"></ion-icon>
                   </ion-button>
-                </ion-item>
-                }
-                }
-              </ion-item-group>
-              }
-              <ion-item-group *ngIf="newExtraField.type !== fieldTypes.BFECG_CHURCH && newExtraField.type !== fieldTypes.SELECT">
-                <ion-item>
-                  @if (newExtraField.type === fieldTypes.BOOLEAN) {
-                  <ion-label>Standardwert</ion-label>
-                  <ion-toggle slot="end" [(ngModel)]="newExtraField.defaultValue"></ion-toggle>
+                </ion-list-header>
+                <ion-item-group>
+                  @if (!newExtraField.options?.length) {
+                    <ion-item>
+                      <ion-label>Keine Optionen ausgewählt</ion-label>
+                    </ion-item>
                   } @else {
-                  <ion-input [type]="newExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
-                    labelPlacement="stacked" label="Standardwert (optional)"
-                    [(ngModel)]="newExtraField.defaultValue"></ion-input>
+                    @for (option of newExtraField.options; track option; let i = $index) {
+                      <ion-item>
+                        <ion-input [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined" placeholder="Wert eingeben..." [value]="option" (ionChange)="onExtraOptionChanged($event, i)"></ion-input>
+                        <ion-button slot="end" (click)="newExtraField.options.splice(i, 1)" fill="clear">
+                          <ion-icon color="danger" name="trash-outline"></ion-icon>
+                        </ion-button>
+                      </ion-item>
+                    }
                   }
-                </ion-item>
-              </ion-item-group>
+                </ion-item-group>
+              }
+              @if (newExtraField.type !== fieldTypes.BFECG_CHURCH && newExtraField.type !== fieldTypes.SELECT) {
+                <ion-item-group>
+                  <ion-item>
+                    @if (newExtraField.type === fieldTypes.BOOLEAN) {
+                      <ion-label>Standardwert</ion-label>
+                      <ion-toggle slot="end" [(ngModel)]="newExtraField.defaultValue"></ion-toggle>
+                    } @else {
+                      <ion-input [type]="newExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
+                        labelPlacement="stacked" label="Standardwert (optional)"
+                      [(ngModel)]="newExtraField.defaultValue"></ion-input>
+                    }
+                  </ion-item>
+                </ion-item-group>
+              }
               <ion-item-group>
                 <ion-item (click)="addExtraField(addCustomFieldModal)" button detail="false">
                   <ion-label color="primary">Feld hinzufügen</ion-label>
@@ -221,19 +247,23 @@
     </ion-list-header>
     <ion-item-group>
       @if (extraFields.length === 0) {
-      <ion-item>
-        <ion-label>Es wurden noch keine zusätzlichen Felder hinzugefügt.</ion-label>
-      </ion-item>
+        <ion-item>
+          <ion-label>Es wurden noch keine zusätzlichen Felder hinzugefügt.</ion-label>
+        </ion-item>
       }
-      <ion-item *ngFor="let field of extraFields; let i = index">
-        <ion-label>
-          <h2>{{ field.name }}</h2>
-          <h3 *ngIf="field.id !== 'bfecg_church'">Typ: {{ getFieldTypeName(field.type) }}</h3>
-        </ion-label>
-        <ion-button fill="clear" color="danger" size="small" (click)="removeExtraField(i)">
-          <ion-icon name="trash-outline"></ion-icon>
-        </ion-button>
-      </ion-item>
+      @for (field of extraFields; track field; let i = $index) {
+        <ion-item>
+          <ion-label>
+            <h2>{{ field.name }}</h2>
+            @if (field.id !== 'bfecg_church') {
+              <h3>Typ: {{ getFieldTypeName(field.type) }}</h3>
+            }
+          </ion-label>
+          <ion-button fill="clear" color="danger" size="small" (click)="removeExtraField(i)">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      }
     </ion-item-group>
   </ion-list>
 

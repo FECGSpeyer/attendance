@@ -5,12 +5,16 @@
     </ion-buttons>
     <ion-title>Typen</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="reorder = true" *ngIf="!reorder">
-        <ion-icon slot="icon-only" name="repeat-outline"></ion-icon>
-      </ion-button>
-      <ion-button (click)="saveOrder()" *ngIf="reorder">
-        <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
-      </ion-button>
+      @if (!reorder) {
+        <ion-button (click)="reorder = true">
+          <ion-icon slot="icon-only" name="repeat-outline"></ion-icon>
+        </ion-button>
+      }
+      @if (reorder) {
+        <ion-button (click)="saveOrder()">
+          <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+        </ion-button>
+      }
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -37,16 +41,20 @@
     <ion-list-header><ion-label>Anwesenheitstypen</ion-label></ion-list-header>
     <ion-item-group>
       @if (!reorder) {
-      <ion-item [routerLink]="['/tabs/settings/general/types', type.id]" *ngFor="let type of db.attendanceTypes()">
-        <ion-label>{{ type.name }}</ion-label>
-      </ion-item>
+        @for (type of db.attendanceTypes(); track type) {
+          <ion-item [routerLink]="['/tabs/settings/general/types', type.id]">
+            <ion-label>{{ type.name }}</ion-label>
+          </ion-item>
+        }
       } @else {
-      <ion-reorder-group disabled="false" (ionItemReorder)="onReorderAttendanceTypes($event)">
-        <ion-item *ngFor="let type of db.attendanceTypes()">
-          <ion-label>{{ type.name }}</ion-label>
-          <ion-reorder slot="end"></ion-reorder>
-        </ion-item>
-      </ion-reorder-group>
+        <ion-reorder-group disabled="false" (ionItemReorder)="onReorderAttendanceTypes($event)">
+          @for (type of db.attendanceTypes(); track type) {
+            <ion-item>
+              <ion-label>{{ type.name }}</ion-label>
+              <ion-reorder slot="end"></ion-reorder>
+            </ion-item>
+          }
+        </ion-reorder-group>
       }
     </ion-item-group>
   </ion-list>

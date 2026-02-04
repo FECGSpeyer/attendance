@@ -1,11 +1,13 @@
 <ion-header>
   <ion-toolbar color="light">
     <ion-title>Neue Instanz anlegen</ion-title>
-    <ion-buttons *ngIf="canDismiss" slot="end">
-      <ion-button (click)="close()">
-        <ion-icon slot="icon-only" name="close"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+    @if (canDismiss) {
+      <ion-buttons slot="end">
+        <ion-button (click)="close()">
+          <ion-icon slot="icon-only" name="close"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    }
   </ion-toolbar>
 </ion-header>
 
@@ -41,7 +43,7 @@
         <ion-label position="stacked">Hauptgruppen-Name</ion-label>
         <ion-input
           helperText="Die Hauptgruppe unterscheidet sich zu allen anderen Gruppen. Sie kann nicht mehr gelöscht werden und alle Personen darin, haben automatisch die Rolle 'Verantwortliche'"
-          [placeholder]="mainGroupPlaceholder" [(ngModel)]="mainGroupName"></ion-input>
+        [placeholder]="mainGroupPlaceholder" [(ngModel)]="mainGroupName"></ion-input>
       </ion-item>
     </ion-item-group>
     <ion-item-group>

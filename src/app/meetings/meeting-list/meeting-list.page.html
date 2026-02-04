@@ -13,23 +13,25 @@
   </ion-refresher>
 
   @if (meetings.length === 0) {
-  <div class="noDataContainer">
-    <ion-icon name="calendar-outline" size="large"></ion-icon>
-    <p>Keine Besprechungen vorhanden</p>
-  </div>
+    <div class="noDataContainer">
+      <ion-icon name="calendar-outline" size="large"></ion-icon>
+      <p>Keine Besprechungen vorhanden</p>
+    </div>
   } @else {
-  <ion-list>
-    <ion-item-sliding #slider *ngFor="let meeting of meetings; trackBy: trackByMeetingId">
-      <ion-item [routerLink]="meeting.id.toString()">
-        <ion-label>{{ meeting.date | date:'dd.MM.yyyy' }}</ion-label>
-      </ion-item>
-      <ion-item-options>
-        <ion-item-option color="danger" (click)="removeMeeting(meeting.id)">
-          <ion-icon name="trash"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
-  </ion-list>
+    <ion-list>
+      @for (meeting of meetings; track trackByMeetingId($index, meeting)) {
+        <ion-item-sliding #slider>
+          <ion-item [routerLink]="meeting.id.toString()">
+            <ion-label>{{ meeting.date | date:'dd.MM.yyyy' }}</ion-label>
+          </ion-item>
+          <ion-item-options>
+            <ion-item-option color="danger" (click)="removeMeeting(meeting.id)">
+              <ion-icon name="trash"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      }
+    </ion-list>
   }
 
   <ion-modal #addAttModal trigger="addBtn" [breakpoints]="[0, 0.3]" [initialBreakpoint]="0.3">
@@ -47,7 +49,7 @@
             <ng-template>
               <ion-datetime locale="de-DE" [firstDayOfWeek]="1" [(ngModel)]="date"
                 (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)" presentation="date"
-                #dateTimePickerDate></ion-datetime>
+              #dateTimePickerDate></ion-datetime>
             </ng-template>
           </ion-modal>
         </ion-item>

@@ -16,173 +16,195 @@
 
   <!-- PWA Installation Hint -->
   @if (showPwaHint) {
-  <ion-card color="tertiary">
-    <ion-card-header>
-      <ion-card-title style="display: flex; justify-content: space-between; align-items: center;">
-        <span>📱 App installieren</span>
-        <ion-button fill="clear" size="small" (click)="dismissPwaHint()">
-          <ion-icon name="close" color="light"></ion-icon>
-        </ion-button>
-      </ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      @if (isIos) {
-      <p>Für ein besseres Erlebnis kannst du diese App auf deinem Startbildschirm installieren:</p>
-      <ol style="margin: 8px 0; padding-left: 20px;">
-        <li>Tippe auf das <strong>Teilen-Symbol</strong> <ion-icon name="share-outline"></ion-icon> unten</li>
-        <li>Scrolle und wähle <strong>"Zum Home-Bildschirm"</strong></li>
-        <li>Tippe auf <strong>"Hinzufügen"</strong></li>
-      </ol>
-      } @else {
-      <p>Für ein besseres Erlebnis kannst du diese App auf deinem Startbildschirm installieren:</p>
-      <ol style="margin: 8px 0; padding-left: 20px;">
-        <li>Tippe auf das <strong>Menü-Symbol</strong> <ion-icon name="ellipsis-vertical"></ion-icon> oben rechts</li>
-        <li>Wähle <strong>"App installieren"</strong> oder <strong>"Zum Startbildschirm hinzufügen"</strong></li>
-      </ol>
-      }
-    </ion-card-content>
-  </ion-card>
+    <ion-card color="tertiary">
+      <ion-card-header>
+        <ion-card-title style="display: flex; justify-content: space-between; align-items: center;">
+          <span>📱 App installieren</span>
+          <ion-button fill="clear" size="small" (click)="dismissPwaHint()">
+            <ion-icon name="close" color="light"></ion-icon>
+          </ion-button>
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        @if (isIos) {
+          <p>Für ein besseres Erlebnis kannst du diese App auf deinem Startbildschirm installieren:</p>
+          <ol style="margin: 8px 0; padding-left: 20px;">
+            <li>Tippe auf das <strong>Teilen-Symbol</strong> <ion-icon name="share-outline"></ion-icon> unten</li>
+            <li>Scrolle und wähle <strong>"Zum Home-Bildschirm"</strong></li>
+            <li>Tippe auf <strong>"Hinzufügen"</strong></li>
+          </ol>
+        } @else {
+          <p>Für ein besseres Erlebnis kannst du diese App auf deinem Startbildschirm installieren:</p>
+          <ol style="margin: 8px 0; padding-left: 20px;">
+            <li>Tippe auf das <strong>Menü-Symbol</strong> <ion-icon name="ellipsis-vertical"></ion-icon> oben rechts</li>
+            <li>Wähle <strong>"App installieren"</strong> oder <strong>"Zum Startbildschirm hinzufügen"</strong></li>
+          </ol>
+        }
+      </ion-card-content>
+    </ion-card>
   }
 
-  <ion-list *ngIf="isAdmin" [inset]="true">
-    <ion-list-header>
-      <ion-label>Allgemein</ion-label>
-    </ion-list-header>
-    <ion-item-group>
-      <ion-item [routerLink]="['/tabs/settings/general']" button lines="none">
-        <ion-icon name="cog-outline" slot="start"></ion-icon>
-        <ion-label>Einstellungen</ion-label>
-      </ion-item>
-    </ion-item-group>
-  </ion-list>
+  @if (isAdmin) {
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-label>Allgemein</ion-label>
+      </ion-list-header>
+      <ion-item-group>
+        <ion-item [routerLink]="['/tabs/settings/general']" button lines="none">
+          <ion-icon name="cog-outline" slot="start"></ion-icon>
+          <ion-label>Einstellungen</ion-label>
+        </ion-item>
+      </ion-item-group>
+    </ion-list>
+  }
 
-  <ion-list [inset]="true" *ngIf="!isGeneral && !isApplicant">
-    <ion-list-header><ion-label>Werke & Proben</ion-label></ion-list-header>
-    <ion-item-group>
-      <ion-item *ngIf="!isGeneral" routerLink="songs" button>
-        <ion-icon name="musical-notes-outline" slot="start"></ion-icon>
-        <ion-label>Werke</ion-label>
-      </ion-item>
-      <ion-item detail="false" *ngIf="!isGeneral && (isAdmin || isHelper)" button (click)="openHistoryModal()">
-        <ion-icon name="library-outline" slot="start"></ion-icon>
-        <ion-label>
-          Werkhistorie
-        </ion-label>
-      </ion-item>
-      <ion-item lines="none" detail="false" *ngIf="!isGeneral && isAdmin" button (click)="openPlanning()">
-        <ion-icon name="calendar-outline" slot="start"></ion-icon>
-        <ion-label>
-          Ablaufpläne
-        </ion-label>
-      </ion-item>
-    </ion-item-group>
-  </ion-list>
+  @if (!isGeneral && !isApplicant) {
+    <ion-list [inset]="true">
+      <ion-list-header><ion-label>Werke & Proben</ion-label></ion-list-header>
+      <ion-item-group>
+        @if (!isGeneral) {
+          <ion-item routerLink="songs" button>
+            <ion-icon name="musical-notes-outline" slot="start"></ion-icon>
+            <ion-label>Werke</ion-label>
+          </ion-item>
+        }
+        @if (!isGeneral && (isAdmin || isHelper)) {
+          <ion-item detail="false" button (click)="openHistoryModal()">
+            <ion-icon name="library-outline" slot="start"></ion-icon>
+            <ion-label>
+              Werkhistorie
+            </ion-label>
+          </ion-item>
+        }
+        @if (!isGeneral && isAdmin) {
+          <ion-item lines="none" detail="false" button (click)="openPlanning()">
+            <ion-icon name="calendar-outline" slot="start"></ion-icon>
+            <ion-label>
+              Ablaufpläne
+            </ion-label>
+          </ion-item>
+        }
+      </ion-item-group>
+    </ion-list>
+  }
 
-  <ion-list [inset]="true" *ngIf="isAdmin">
-    <ion-list-header><ion-label>Organisation</ion-label></ion-list-header>
-    <ion-item-group>
-      <ion-item id="pending-button" *ngIf="pendingPersons.length && isAdmin">
-        <ion-icon name="person-add-outline" slot="start"></ion-icon>
-        <ion-label>
-          Ausstehende Personen
-        </ion-label>
-        <ion-badge slot="end" color="warning">{{ pendingPersons.length }}</ion-badge>
-        <ion-modal trigger="pending-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
-          <ng-template>
-            <ion-content color="light">
-              <ion-header>
-                <ion-toolbar>
-                  <ion-title>Ausstehende Personen</ion-title>
-                </ion-toolbar>
-              </ion-header>
-              <ion-list [inset]="true">
-                <ion-item-group>
-                  <ion-item detail="false" button (click)="openApprovePersonModal(p)" *ngFor="let p of pendingPersons">
-                    <ion-label>
-                      <h2>{{ p.firstName }} {{ p.lastName }}</h2>
-                      <h3>{{ p.email }}</h3>
-                    </ion-label>
-                  </ion-item>
-                </ion-item-group>
-              </ion-list>
-            </ion-content>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
-      <ion-item id="churches-button" *ngIf="db.isBeta()">
-        <ion-icon name="people-circle-outline" slot="start"></ion-icon>
-        <ion-label>
-          Gemeinden
-        </ion-label>
-        <ion-modal trigger="churches-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
-          <ng-template>
-            <ion-content color="light">
-              <ion-header>
-                <ion-toolbar>
-                  <ion-title>Gemeinden</ion-title>
-                </ion-toolbar>
-              </ion-header>
-              <ion-list [inset]="true">
-                <ion-item-group>
-                  <ion-item *ngFor="let c of churches">
-                    <ion-label>
-                      <h3>{{ c.name }}</h3>
-                    </ion-label>
-                  </ion-item>
-                </ion-item-group>
-              </ion-list>
-            </ion-content>
-            <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-              <ion-fab-button (click)="openChurchInput()">
-                <ion-icon name="add"></ion-icon>
-              </ion-fab-button>
-            </ion-fab>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
-      <ion-item *ngIf="!db.isDemo() && isSuperAdmin" detail="false" button id="admins-button">
-        <ion-icon name="key-outline" slot="start"></ion-icon>
-        <ion-label>
-          Administratoren
-        </ion-label>
-        <ion-modal trigger="admins-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
-          <ng-template>
-            <ion-content color="light">
-              <ion-header>
-                <ion-toolbar>
-                  <ion-title>Administratoren</ion-title>
-                </ion-toolbar>
-              </ion-header>
-              <ion-card class="marginTop">
-                <ion-card-header>
-                  <ion-icon class="headerIcon" name="key-outline"></ion-icon>
-                </ion-card-header>
-                <ion-card-content>
-                  Administratoren haben alle Rechte in der Instanz. Administratoren werden nicht in der Anwesenheit
-                  berücksichtigt können aber zusätzlich als Person hinzugefügt werden.<br><br><ion-label
+  @if (isAdmin) {
+    <ion-list [inset]="true">
+      <ion-list-header><ion-label>Organisation</ion-label></ion-list-header>
+      <ion-item-group>
+        @if (pendingPersons.length && isAdmin) {
+          <ion-item id="pending-button">
+            <ion-icon name="person-add-outline" slot="start"></ion-icon>
+            <ion-label>
+              Ausstehende Personen
+            </ion-label>
+            <ion-badge slot="end" color="warning">{{ pendingPersons.length }}</ion-badge>
+            <ion-modal trigger="pending-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+              <ng-template>
+                <ion-content color="light">
+                  <ion-header>
+                    <ion-toolbar>
+                      <ion-title>Ausstehende Personen</ion-title>
+                    </ion-toolbar>
+                  </ion-header>
+                  <ion-list [inset]="true">
+                    <ion-item-group>
+                      @for (p of pendingPersons; track p) {
+                        <ion-item detail="false" button (click)="openApprovePersonModal(p)">
+                          <ion-label>
+                            <h2>{{ p.firstName }} {{ p.lastName }}</h2>
+                            <h3>{{ p.email }}</h3>
+                          </ion-label>
+                        </ion-item>
+                      }
+                    </ion-item-group>
+                  </ion-list>
+                </ion-content>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+        }
+        @if (db.isBeta()) {
+          <ion-item id="churches-button">
+            <ion-icon name="people-circle-outline" slot="start"></ion-icon>
+            <ion-label>
+              Gemeinden
+            </ion-label>
+            <ion-modal trigger="churches-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+              <ng-template>
+                <ion-content color="light">
+                  <ion-header>
+                    <ion-toolbar>
+                      <ion-title>Gemeinden</ion-title>
+                    </ion-toolbar>
+                  </ion-header>
+                  <ion-list [inset]="true">
+                    <ion-item-group>
+                      @for (c of churches; track c) {
+                        <ion-item>
+                          <ion-label>
+                            <h3>{{ c.name }}</h3>
+                          </ion-label>
+                        </ion-item>
+                      }
+                    </ion-item-group>
+                  </ion-list>
+                </ion-content>
+                <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+                  <ion-fab-button (click)="openChurchInput()">
+                    <ion-icon name="add"></ion-icon>
+                  </ion-fab-button>
+                </ion-fab>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+        }
+        @if (!db.isDemo() && isSuperAdmin) {
+          <ion-item detail="false" button id="admins-button">
+            <ion-icon name="key-outline" slot="start"></ion-icon>
+            <ion-label>
+              Administratoren
+            </ion-label>
+            <ion-modal trigger="admins-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+              <ng-template>
+                <ion-content color="light">
+                  <ion-header>
+                    <ion-toolbar>
+                      <ion-title>Administratoren</ion-title>
+                    </ion-toolbar>
+                  </ion-header>
+                  <ion-card class="marginTop">
+                    <ion-card-header>
+                      <ion-icon class="headerIcon" name="key-outline"></ion-icon>
+                    </ion-card-header>
+                    <ion-card-content>
+                      Administratoren haben alle Rechte in der Instanz. Administratoren werden nicht in der Anwesenheit
+                      berücksichtigt können aber zusätzlich als Person hinzugefügt werden.<br><br><ion-label
                     color="danger">ACHTUNG: Administratoren können die Instanz auch unwiderruflich löschen!</ion-label>
-                </ion-card-content>
-              </ion-card>
-
-              <ion-list [inset]="true">
-                <ion-item-group>
-                  <ion-item detail="false" button (click)="removeAdmin(a)" *ngFor="let a of admins">
-                    <ion-label>
-                      <h3>{{ a.email }}</h3>
-                      <h4>Erstellt am: {{ a.created_at | date: 'dd.MM.yyyy' }}</h4>
-                    </ion-label>
-                  </ion-item>
-                </ion-item-group>
-              </ion-list>
-            </ion-content>
-            <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-              <ion-fab-button (click)="openAdminsAlert()">
-                <ion-icon name="add"></ion-icon>
-              </ion-fab-button>
-            </ion-fab>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
+                  </ion-card-content>
+                </ion-card>
+                <ion-list [inset]="true">
+                  <ion-item-group>
+                    @for (a of admins; track a) {
+                      <ion-item detail="false" button (click)="removeAdmin(a)">
+                        <ion-label>
+                          <h3>{{ a.email }}</h3>
+                          <h4>Erstellt am: {{ a.created_at | date: 'dd.MM.yyyy' }}</h4>
+                        </ion-label>
+                      </ion-item>
+                    }
+                  </ion-item-group>
+                </ion-list>
+              </ion-content>
+              <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+                <ion-fab-button (click)="openAdminsAlert()">
+                  <ion-icon name="add"></ion-icon>
+                </ion-fab-button>
+              </ion-fab>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+      }
       <ion-item routerLink="meetings" button>
         <ion-icon name="chatbubbles-outline" slot="start"></ion-icon>
         <ion-label>
@@ -195,185 +217,202 @@
           Gruppen
         </ion-label>
       </ion-item>
-      <ion-item *ngIf="db.organisation()" button routerLink="handover">
-        <ion-icon name="walk-outline" slot="start"></ion-icon>
-        <ion-label>
-          Personenübergabe
-        </ion-label>
-      </ion-item>
-      <ion-item routerLink="teachers" *ngIf="maintainTeachers" button>
-        <ion-icon name="school-outline" slot="start"></ion-icon>
-        <ion-label>
-          Lehrer
-        </ion-label>
-      </ion-item>
-      <ion-item *ngIf="parentsEnabled" detail="false" button id="parents-button">
-        <ion-icon name="footsteps-outline" slot="start"></ion-icon>
-        <ion-label>
-          Eltern
-        </ion-label>
-        <ion-modal trigger="parents-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
-          <ng-template>
-            <ion-content>
-              <ion-header>
-                <ion-toolbar>
-                  <ion-title>Eltern</ion-title>
-                </ion-toolbar>
-              </ion-header>
-              <ion-card class="marginTop">
-                <ion-card-header>
-                  <ion-icon class="headerIcon" name="footsteps-outline"></ion-icon>
-                </ion-card-header>
-                <ion-card-content>
-                  Eltern können die Anwesenheiten ihrer Kinder einsehen und Abwesenheiten pflegen.
-                </ion-card-content>
-              </ion-card>
-
-              <ion-list [inset]="true">
-                <ion-item-group>
-                  <ion-item button (click)="removeParent(p)" *ngFor="let p of parents">
-                    <ion-label>
-                      <h2>{{ p.firstName }} {{ p.lastName }}</h2>
-                      <h3>{{ p.email }}</h3>
-                    </ion-label>
-                  </ion-item>
-                </ion-item-group>
-              </ion-list>
-            </ion-content>
-            <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
-              <ion-fab-button (click)="openParentsAlert()">
-                <ion-icon name="add"></ion-icon>
-              </ion-fab-button>
-            </ion-fab>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
-      <ion-item lines="none" *ngIf="isAdmin" detail="false" button id="viewer-button">
-        <ion-icon name="eye-outline" slot="start"></ion-icon>
-        <ion-label>
-          Beobachter
-        </ion-label>
-        <ion-modal trigger="viewer-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
-          <ng-template>
-            <ion-content color="light">
-              <ion-header>
-                <ion-toolbar>
-                  <ion-title>Beobachter</ion-title>
-                </ion-toolbar>
-              </ion-header>
-
-              <ion-card class="marginTop">
-                <ion-card-header>
-                  <ion-icon class="headerIcon" name="eye-outline"></ion-icon>
-                </ion-card-header>
-                <ion-card-content>
-                  Beobachter haben nur Leserechte auf eine beschränkte Anzahl von Daten. Sie sehen nur die
-                  Anwesenheitsübersicht und die Daten der Personen. Beobachter werden nicht in der Anwesenheit
-                  berücksichtigt.<br><br><ion-label color="danger">ACHTUNG: Beobachter können auch personenbezogene
+      @if (db.organisation()) {
+        <ion-item button routerLink="handover">
+          <ion-icon name="walk-outline" slot="start"></ion-icon>
+          <ion-label>
+            Personenübergabe
+          </ion-label>
+        </ion-item>
+      }
+      @if (maintainTeachers) {
+        <ion-item routerLink="teachers" button>
+          <ion-icon name="school-outline" slot="start"></ion-icon>
+          <ion-label>
+            Lehrer
+          </ion-label>
+        </ion-item>
+      }
+      @if (parentsEnabled) {
+        <ion-item detail="false" button id="parents-button">
+          <ion-icon name="footsteps-outline" slot="start"></ion-icon>
+          <ion-label>
+            Eltern
+          </ion-label>
+          <ion-modal trigger="parents-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+            <ng-template>
+              <ion-content>
+                <ion-header>
+                  <ion-toolbar>
+                    <ion-title>Eltern</ion-title>
+                  </ion-toolbar>
+                </ion-header>
+                <ion-card class="marginTop">
+                  <ion-card-header>
+                    <ion-icon class="headerIcon" name="footsteps-outline"></ion-icon>
+                  </ion-card-header>
+                  <ion-card-content>
+                    Eltern können die Anwesenheiten ihrer Kinder einsehen und Abwesenheiten pflegen.
+                  </ion-card-content>
+                </ion-card>
+                <ion-list [inset]="true">
+                  <ion-item-group>
+                    @for (p of parents; track p) {
+                      <ion-item button (click)="removeParent(p)">
+                        <ion-label>
+                          <h2>{{ p.firstName }} {{ p.lastName }}</h2>
+                          <h3>{{ p.email }}</h3>
+                        </ion-label>
+                      </ion-item>
+                    }
+                  </ion-item-group>
+                </ion-list>
+              </ion-content>
+              @if (isAdmin) {
+                <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+                  <ion-fab-button (click)="openParentsAlert()">
+                    <ion-icon name="add"></ion-icon>
+                  </ion-fab-button>
+                </ion-fab>
+              }
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+      }
+      @if (isAdmin) {
+        <ion-item lines="none" detail="false" button id="viewer-button">
+          <ion-icon name="eye-outline" slot="start"></ion-icon>
+          <ion-label>
+            Beobachter
+          </ion-label>
+          <ion-modal trigger="viewer-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+            <ng-template>
+              <ion-content color="light">
+                <ion-header>
+                  <ion-toolbar>
+                    <ion-title>Beobachter</ion-title>
+                  </ion-toolbar>
+                </ion-header>
+                <ion-card class="marginTop">
+                  <ion-card-header>
+                    <ion-icon class="headerIcon" name="eye-outline"></ion-icon>
+                  </ion-card-header>
+                  <ion-card-content>
+                    Beobachter haben nur Leserechte auf eine beschränkte Anzahl von Daten. Sie sehen nur die
+                    Anwesenheitsübersicht und die Daten der Personen. Beobachter werden nicht in der Anwesenheit
+                    berücksichtigt.<br><br><ion-label color="danger">ACHTUNG: Beobachter können auch personenbezogene
                     Daten
-                    sehen!</ion-label>
+                  sehen!</ion-label>
                 </ion-card-content>
               </ion-card>
-
               <ion-list [inset]="true">
                 <ion-item-group>
-                  <ion-item detail="false" button (click)="removeViewer(v)" *ngFor="let v of viewers">
-                    <ion-label>
-                      <h2>{{ v.firstName }} {{ v.lastName }}</h2>
-                      <h3>{{ v.email }}</h3>
-                    </ion-label>
-                  </ion-item>
+                  @for (v of viewers; track v) {
+                    <ion-item detail="false" button (click)="removeViewer(v)">
+                      <ion-label>
+                        <h2>{{ v.firstName }} {{ v.lastName }}</h2>
+                        <h3>{{ v.email }}</h3>
+                      </ion-label>
+                    </ion-item>
+                  }
                 </ion-item-group>
               </ion-list>
             </ion-content>
-            <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
-              <ion-fab-button (click)="openViewerAlert()">
-                <ion-icon name="add"></ion-icon>
-              </ion-fab-button>
-            </ion-fab>
+            @if (isAdmin) {
+              <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+                <ion-fab-button (click)="openViewerAlert()">
+                  <ion-icon name="add"></ion-icon>
+                </ion-fab-button>
+              </ion-fab>
+            }
           </ng-template>
         </ion-modal>
       </ion-item>
-    </ion-item-group>
-  </ion-list>
+    }
+  </ion-item-group>
+</ion-list>
+}
 
-  <ion-list [inset]="true" *ngIf="!isApplicant">
+@if (!isApplicant) {
+  <ion-list [inset]="true">
     <ion-list-header><ion-label>Daten & Auswertung</ion-label></ion-list-header>
     <ion-item-group>
       @if (userData) {
-      <ion-item id="master-data-button" button detail="false">
-        <ion-icon name="person-circle-outline" slot="start"></ion-icon>
-        <ion-label>
-          Meine Stammdaten
-        </ion-label>
-        <ion-modal trigger="master-data-button" [breakpoints]="[0, .9]" [initialBreakpoint]="0.9">
-          <ng-template>
-            <ion-content color="light">
-              <ion-header>
-                <ion-toolbar>
-                  <ion-title>Meine Stammdaten</ion-title>
-                </ion-toolbar>
-              </ion-header>
-              <ion-list [inset]="true">
-                <ion-item-group>
-                  <ion-item button lines="none" (click)="changeImg()">
-                    <input style="display: none;" name="file" #imgChooser (change)="onImageSelect($event)"
-                      accept="image/*" type="file" />
-                    <ion-label>Passbild</ion-label>
-                    <ion-avatar slot="end">
-                      <img [src]="userData.img" />
-                    </ion-avatar>
-                    <ion-modal (ionModalDidDismiss)="isImageViewerOpen = false" [isOpen]="isImageViewerOpen"
-                      [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
-                      <ng-template>
-                        <ion-content>
-                          <ion-img [src]="userData.img"></ion-img>
-                        </ion-content>
-                      </ng-template>
-                    </ion-modal>
-                  </ion-item>
-                  <ion-item>
-                    <ion-label position="stacked">Vorname</ion-label>
-                    <ion-input [(ngModel)]="userData.firstName" type="text"></ion-input>
-                  </ion-item>
-                  <ion-item>
-                    <ion-label position="stacked">Nachname</ion-label>
-                    <ion-input [(ngModel)]="userData.lastName" type="text"></ion-input>
-                  </ion-item>
-                  <ion-item>
-                    <ion-label position="stacked">Handynummer</ion-label>
-                    <ion-input [(ngModel)]="userData.phone" type="tel"></ion-input>
-                  </ion-item>
-                  <ion-item>
-                    <ion-label>Geburtsdatum</ion-label>
-                    <ion-datetime-button datetime="birthday-master-data"></ion-datetime-button>
-                    <ion-modal [keepContentsMounted]="true">
-                      <ng-template>
-                        <ion-datetime id="birthday-master-data" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+        <ion-item id="master-data-button" button detail="false">
+          <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+          <ion-label>
+            Meine Stammdaten
+          </ion-label>
+          <ion-modal trigger="master-data-button" [breakpoints]="[0, .9]" [initialBreakpoint]="0.9">
+            <ng-template>
+              <ion-content color="light">
+                <ion-header>
+                  <ion-toolbar>
+                    <ion-title>Meine Stammdaten</ion-title>
+                  </ion-toolbar>
+                </ion-header>
+                <ion-list [inset]="true">
+                  <ion-item-group>
+                    <ion-item button lines="none" (click)="changeImg()">
+                      <input style="display: none;" name="file" #imgChooser (change)="onImageSelect($event)"
+                        accept="image/*" type="file" />
+                      <ion-label>Passbild</ion-label>
+                      <ion-avatar slot="end">
+                        <img [src]="userData.img" />
+                      </ion-avatar>
+                      <ion-modal (ionModalDidDismiss)="isImageViewerOpen = false" [isOpen]="isImageViewerOpen"
+                        [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
+                        <ng-template>
+                          <ion-content>
+                            <ion-img [src]="userData.img"></ion-img>
+                          </ion-content>
+                        </ng-template>
+                      </ion-modal>
+                    </ion-item>
+                    <ion-item>
+                      <ion-label position="stacked">Vorname</ion-label>
+                      <ion-input [(ngModel)]="userData.firstName" type="text"></ion-input>
+                    </ion-item>
+                    <ion-item>
+                      <ion-label position="stacked">Nachname</ion-label>
+                      <ion-input [(ngModel)]="userData.lastName" type="text"></ion-input>
+                    </ion-item>
+                    <ion-item>
+                      <ion-label position="stacked">Handynummer</ion-label>
+                      <ion-input [(ngModel)]="userData.phone" type="tel"></ion-input>
+                    </ion-item>
+                    <ion-item>
+                      <ion-label>Geburtsdatum</ion-label>
+                      <ion-datetime-button datetime="birthday-master-data"></ion-datetime-button>
+                      <ion-modal [keepContentsMounted]="true">
+                        <ng-template>
+                          <ion-datetime id="birthday-master-data" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
                           [(ngModel)]="userData.birthday" presentation="date"></ion-datetime>
-                      </ng-template>
-                    </ion-modal>
-                  </ion-item>
-                  @if (hasChurches() && false) {
-                  <ion-item>
-                    <ion-select label="Gemeinde" interface="modal"
-                      [(ngModel)]="userData.additional_fields['bfecg_church']">
-                      <ion-select-option *ngFor="let church of db.churches()" [value]="church.id">{{ church.name
-                        }}</ion-select-option>
-                    </ion-select>
-                  </ion-item>
-                  }
-                </ion-item-group>
-                <ion-item-group>
-                  <ion-item (click)="updateUserData()" button detail="false">
-                    <ion-label color="primary">Speichern</ion-label>
-                  </ion-item>
-                </ion-item-group>
-              </ion-list>
-            </ion-content>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
+                        </ng-template>
+                      </ion-modal>
+                    </ion-item>
+                    @if (hasChurches() && false) {
+                      <ion-item>
+                        <ion-select label="Gemeinde" interface="modal"
+                          [(ngModel)]="userData.additional_fields['bfecg_church']">
+                          @for (church of db.churches(); track church) {
+                            <ion-select-option [value]="church.id">{{ church.name
+                            }}</ion-select-option>
+                          }
+                        </ion-select>
+                      </ion-item>
+                    }
+                  </ion-item-group>
+                  <ion-item-group>
+                    <ion-item (click)="updateUserData()" button detail="false">
+                      <ion-label color="primary">Speichern</ion-label>
+                    </ion-item>
+                  </ion-item-group>
+                </ion-list>
+              </ion-content>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
       }
       <ion-item (click)="openCalendarSubscription()" detail="false" button>
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
@@ -381,276 +420,292 @@
           Termine als Kalender abonnieren
         </ion-label>
       </ion-item>
-      <ion-item *ngIf="isAdmin" detail="false" button id="archive-button">
-        <ion-icon name="archive-outline" slot="start"></ion-icon>
-        <ion-label>
-          Archiv
-        </ion-label>
-        <ion-modal trigger="archive-button" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
-          <ng-template>
-            <ion-content>
-              <ion-header>
-                <ion-toolbar>
-                  <ion-title>Archiv</ion-title>
-                </ion-toolbar>
-              </ion-header>
-              <ion-list>
-                <ion-item button (click)="openPlayerModal(p)" *ngFor="let p of leftPlayers">
-                  <ion-label>
-                    <h2>{{ p.firstName }} {{ p.lastName }} ({{ p.groupName }})</h2>
-                    <h3>Ausgetreten: {{ p.left | date:"dd.MM.yyyy" }}</h3>
-                  </ion-label>
-                </ion-item>
-              </ion-list>
-            </ion-content>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
-
-      <ion-item *ngIf="isAdmin" detail="false" button (click)="openStats()">
-        <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
-        <ion-label>
-          Statistiken
-        </ion-label>
-      </ion-item>
-
-      <ion-item lines="none" detail="false" *ngIf="isAdmin" button (click)="openExport()">
-        <ion-icon name="download-outline" slot="start"></ion-icon>
-        <ion-label>
-          Export
-        </ion-label>
-      </ion-item>
+      @if (isAdmin) {
+        <ion-item detail="false" button id="archive-button">
+          <ion-icon name="archive-outline" slot="start"></ion-icon>
+          <ion-label>
+            Archiv
+          </ion-label>
+          <ion-modal trigger="archive-button" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
+            <ng-template>
+              <ion-content>
+                <ion-header>
+                  <ion-toolbar>
+                    <ion-title>Archiv</ion-title>
+                  </ion-toolbar>
+                </ion-header>
+                <ion-list>
+                  @for (p of leftPlayers; track p) {
+                    <ion-item button (click)="openPlayerModal(p)">
+                      <ion-label>
+                        <h2>{{ p.firstName }} {{ p.lastName }} ({{ p.groupName }})</h2>
+                        <h3>Ausgetreten: {{ p.left | date:"dd.MM.yyyy" }}</h3>
+                      </ion-label>
+                    </ion-item>
+                  }
+                </ion-list>
+              </ion-content>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+      }
+      @if (isAdmin) {
+        <ion-item detail="false" button (click)="openStats()">
+          <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
+          <ion-label>
+            Statistiken
+          </ion-label>
+        </ion-item>
+      }
+      @if (isAdmin) {
+        <ion-item lines="none" detail="false" button (click)="openExport()">
+          <ion-icon name="download-outline" slot="start"></ion-icon>
+          <ion-label>
+            Export
+          </ion-label>
+        </ion-item>
+      }
     </ion-item-group>
   </ion-list>
+}
 
-  <ion-list [inset]="true">
-    <ion-list-header><ion-label>System</ion-label></ion-list-header>
-    <ion-item-group>
-      <ion-item (click)="isInstancesModalOpen = true" button detail="false">
-        <ion-icon name="apps-outline" slot="start"></ion-icon>
-        <ion-label>
-          <h2>Instanzen</h2>
-          <h3>Aktuell: {{ db.tenant().longName }}</h3>
-        </ion-label>
-      </ion-item>
+<ion-list [inset]="true">
+  <ion-list-header><ion-label>System</ion-label></ion-list-header>
+  <ion-item-group>
+    <ion-item (click)="isInstancesModalOpen = true" button detail="false">
+      <ion-icon name="apps-outline" slot="start"></ion-icon>
+      <ion-label>
+        <h2>Instanzen</h2>
+        <h3>Aktuell: {{ db.tenant().longName }}</h3>
+      </ion-label>
+    </ion-item>
 
-      @if (isAdmin || isHelper || isPlayer) {
+    @if (isAdmin || isHelper || isPlayer) {
       <ion-item routerLink="notifications">
         <ion-icon name="notifications-outline" slot="start"></ion-icon>
         <ion-label>
           Benachrichtigungen
         </ion-label>
       </ion-item>
-      }
+    }
 
-      <ion-item detail="false" button *ngIf="isAdmin && playersWithoutAccount.length"
+    @if (isAdmin && playersWithoutAccount.length) {
+      <ion-item detail="false" button
         (click)="showAlertForAccountsCreation()">
         <ion-icon name="create-outline" slot="start"></ion-icon>
         <ion-label>Fehlende Benutzeraccounts anlegen</ion-label>
       </ion-item>
+    }
 
-      <ion-item detail="false" button id="feedback-button">
-        <ion-icon name="help-outline" slot="start"></ion-icon>
-        <ion-label>Hilfe/Feedback</ion-label>
-        <ion-modal #feedbackModal trigger="feedback-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
-          <ng-template>
-            <ion-content color="light">
-              <ion-header>
-                <ion-toolbar>
-                  <ion-title>Hilfe/Feedback</ion-title>
-                </ion-toolbar>
-              </ion-header>
-              <ion-list [inset]="true">
-                <ion-item-group>
-                  <ion-item button detail="false" (click)="openTelegramSupport()">
-                    <ion-icon color="primary" name="send-outline" slot="start"></ion-icon>
-                    <ion-label color="primary">
-                      Per Telegram kontaktieren
-                    </ion-label>
-                  </ion-item>
-                </ion-item-group>
+    <ion-item detail="false" button id="feedback-button">
+      <ion-icon name="help-outline" slot="start"></ion-icon>
+      <ion-label>Hilfe/Feedback</ion-label>
+      <ion-modal #feedbackModal trigger="feedback-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+        <ng-template>
+          <ion-content color="light">
+            <ion-header>
+              <ion-toolbar>
+                <ion-title>Hilfe/Feedback</ion-title>
+              </ion-toolbar>
+            </ion-header>
+            <ion-list [inset]="true">
+              <ion-item-group>
+                <ion-item button detail="false" (click)="openTelegramSupport()">
+                  <ion-icon color="primary" name="send-outline" slot="start"></ion-icon>
+                  <ion-label color="primary">
+                    Per Telegram kontaktieren
+                  </ion-label>
+                </ion-item>
+              </ion-item-group>
 
-                <ion-text color="medium">
-                  <p [style.textAlign]="'center'">oder</p>
-                </ion-text>
+              <ion-text color="medium">
+                <p [style.textAlign]="'center'">oder</p>
+              </ion-text>
 
-                <ion-item-group>
-                  <ion-segment>
-                    <ion-segment-button value="help" content-id="help">
-                      <ion-label>Hilfe/Frage</ion-label>
-                    </ion-segment-button>
-                    <ion-segment-button value="feedback" content-id="feedback">
-                      <ion-label>Feedback</ion-label>
-                    </ion-segment-button>
-                  </ion-segment>
-                </ion-item-group>
-                <ion-segment-view>
-                  <ion-segment-content id="help">
-                    <ion-item-group>
-                      <ion-item>
-                        <ion-label position="stacked">Deine Frage</ion-label>
-                        <ion-textarea placeholder="Deine Frage eingeben..." [(ngModel)]="helpQuestion"
-                          rows="6"></ion-textarea>
-                      </ion-item>
+              <ion-item-group>
+                <ion-segment>
+                  <ion-segment-button value="help" content-id="help">
+                    <ion-label>Hilfe/Frage</ion-label>
+                  </ion-segment-button>
+                  <ion-segment-button value="feedback" content-id="feedback">
+                    <ion-label>Feedback</ion-label>
+                  </ion-segment-button>
+                </ion-segment>
+              </ion-item-group>
+              <ion-segment-view>
+                <ion-segment-content id="help">
+                  <ion-item-group>
+                    <ion-item>
+                      <ion-label position="stacked">Deine Frage</ion-label>
+                      <ion-textarea placeholder="Deine Frage eingeben..." [(ngModel)]="helpQuestion"
+                      rows="6"></ion-textarea>
+                    </ion-item>
 
-                      <ion-item>
-                        <ion-label position="stacked">Deine Handynummer (optional)</ion-label>
-                        <ion-input helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel"
-                          placeholder="Handynummer eingeben..." [(ngModel)]="feedbackPhone"></ion-input>
-                      </ion-item>
-                    </ion-item-group>
+                    <ion-item>
+                      <ion-label position="stacked">Deine Handynummer (optional)</ion-label>
+                      <ion-input helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel"
+                      placeholder="Handynummer eingeben..." [(ngModel)]="feedbackPhone"></ion-input>
+                    </ion-item>
+                  </ion-item-group>
 
-                    <ion-item-group>
-                      <ion-item detail="false" button (click)="sendQuestion(feedbackModal)">
-                        <ion-label color="primary">Absenden</ion-label>
-                      </ion-item>
-                    </ion-item-group>
-                  </ion-segment-content>
-                  <ion-segment-content id="feedback">
-                    <ion-item-group>
-                      <ion-item>
-                        <ion-label>Deine Bewertung</ion-label>
-                        @for (rating of [1,2,3,4,5]; track rating) {
+                  <ion-item-group>
+                    <ion-item detail="false" button (click)="sendQuestion(feedbackModal)">
+                      <ion-label color="primary">Absenden</ion-label>
+                    </ion-item>
+                  </ion-item-group>
+                </ion-segment-content>
+                <ion-segment-content id="feedback">
+                  <ion-item-group>
+                    <ion-item>
+                      <ion-label>Deine Bewertung</ion-label>
+                      @for (rating of [1,2,3,4,5]; track rating) {
                         <ion-icon name="star" [color]="rating <= feedbackRating ? 'warning' : 'medium'" slot="end"
-                          (click)="feedbackRating = rating"></ion-icon>
-                        }
-                      </ion-item>
-                      <ion-item>
-                        <ion-label position="stacked">Dein Feedback</ion-label>
-                        <ion-textarea placeholder="Dein Feedback eingeben..." [(ngModel)]="feedbackText"
-                          rows="6"></ion-textarea>
-                      </ion-item>
+                        (click)="feedbackRating = rating"></ion-icon>
+                      }
+                    </ion-item>
+                    <ion-item>
+                      <ion-label position="stacked">Dein Feedback</ion-label>
+                      <ion-textarea placeholder="Dein Feedback eingeben..." [(ngModel)]="feedbackText"
+                      rows="6"></ion-textarea>
+                    </ion-item>
 
-                      <ion-item>
-                        <ion-toggle label="Anonym" [(ngModel)]="anonymous">Anonym</ion-toggle>
-                      </ion-item>
+                    <ion-item>
+                      <ion-toggle label="Anonym" [(ngModel)]="anonymous">Anonym</ion-toggle>
+                    </ion-item>
 
-                      @if (!anonymous) {
+                    @if (!anonymous) {
                       <ion-item>
                         <ion-label position="stacked">Deine Handynummer (optional)</ion-label>
                         <ion-input helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel"
-                          placeholder="Handynummer eingeben..." [(ngModel)]="feedbackPhone"></ion-input>
+                        placeholder="Handynummer eingeben..." [(ngModel)]="feedbackPhone"></ion-input>
                       </ion-item>
-                      }
-                    </ion-item-group>
+                    }
+                  </ion-item-group>
 
-                    <ion-item-group>
-                      <ion-item detail="false" button (click)="sendFeedback(feedbackModal)">
-                        <ion-label color="primary">Absenden</ion-label>
-                      </ion-item>
-                    </ion-item-group>
-                  </ion-segment-content>
-                </ion-segment-view>
-              </ion-list>
-            </ion-content>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
+                  <ion-item-group>
+                    <ion-item detail="false" button (click)="sendFeedback(feedbackModal)">
+                      <ion-label color="primary">Absenden</ion-label>
+                    </ion-item>
+                  </ion-item-group>
+                </ion-segment-content>
+              </ion-segment-view>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
 
-      <ion-item (click)="changePassword()" button detail="false">
-        <ion-icon name="key-outline" slot="start"></ion-icon>
-        <ion-label>Passwort ändern</ion-label>
-      </ion-item>
+    <ion-item (click)="changePassword()" button detail="false">
+      <ion-icon name="key-outline" slot="start"></ion-icon>
+      <ion-label>Passwort ändern</ion-label>
+    </ion-item>
 
-      <ion-item button detail="false" id="whatsnew-button">
-        <ion-icon name="git-branch-outline" slot="start"></ion-icon>
-        <ion-label>
-          Version
-        </ion-label>
-        <ion-badge slot="end">{{ version }}</ion-badge>
-        <ion-modal trigger="whatsnew-button" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
-          <ng-template>
-            <ion-content color="light">
-              <ion-header>
-                <ion-toolbar color="light">
-                  <ion-title>Was ist neu?</ion-title>
-                </ion-toolbar>
-              </ion-header>
+    <ion-item button detail="false" id="whatsnew-button">
+      <ion-icon name="git-branch-outline" slot="start"></ion-icon>
+      <ion-label>
+        Version
+      </ion-label>
+      <ion-badge slot="end">{{ version }}</ion-badge>
+      <ion-modal trigger="whatsnew-button" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
+        <ng-template>
+          <ion-content color="light">
+            <ion-header>
+              <ion-toolbar color="light">
+                <ion-title>Was ist neu?</ion-title>
+              </ion-toolbar>
+            </ion-header>
 
-              <ion-list [inset]="true">
-                @for (v of versionHistory; track v.version) {
+            <ion-list [inset]="true">
+              @for (v of versionHistory; track v.version) {
                 <ion-list-header>
                   <ion-label>
                     @if (v.date) {
-                    Version {{ v.version }} ({{ v.date }})
+                      Version {{ v.version }} ({{ v.date }})
                     } @else {
-                    Version {{ v.version }}
+                      Version {{ v.version }}
                     }
                   </ion-label>
                 </ion-list-header>
                 <ion-item-group>
                   @for (change of v.changes; track change) {
-                  <ion-item>
-                    <ion-label>
-                      {{ change }}
-                    </ion-label>
-                  </ion-item>
+                    <ion-item>
+                      <ion-label>
+                        {{ change }}
+                      </ion-label>
+                    </ion-item>
                   }
                 </ion-item-group>
-                }
-              </ion-list>
-            </ion-content>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
+              }
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
 
-      <ion-item lines="none" color="danger" button (click)="logout()">
-        <ion-icon slot="start" name="log-out-outline"></ion-icon>
-        <ion-label>Ausloggen</ion-label>
-      </ion-item>
+    <ion-item lines="none" color="danger" button (click)="logout()">
+      <ion-icon slot="start" name="log-out-outline"></ion-icon>
+      <ion-label>Ausloggen</ion-label>
+    </ion-item>
 
-    </ion-item-group>
-  </ion-list>
+  </ion-item-group>
+</ion-list>
 
-  <ion-fab *ngIf="isIos" vertical="bottom" horizontal="end" slot="fixed">
+@if (isIos) {
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="isInstancesModalOpen = true">
       <ion-icon name="apps-outline"></ion-icon>
     </ion-fab-button>
   </ion-fab>
+}
 
-  <ion-modal (ionModalDidDismiss)="isInstancesModalOpen = false" #instancesModal [isOpen]="isInstancesModalOpen"
-    [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]=".5">
-    <ng-template>
-      <ion-content color="light">
-        <ion-header>
-          <ion-toolbar color="light">
-            <ion-buttons slot="start">
-              <ion-button (click)="openCreateInstanceModal(instancesModal)">
-                <ion-icon name="add-outline" slot="icon-only"></ion-icon>
-              </ion-button>
-            </ion-buttons>
-            <ion-title>Instanzen ({{ db.tenants()?.length }})</ion-title>
-            <ion-buttons slot="end">
-              <ion-button id="instance-settings-button">
-                <ion-icon name="cog-outline" slot="icon-only"></ion-icon>
-              </ion-button>
-              <ion-modal trigger="instance-settings-button" [breakpoints]="[0, .2]" [initialBreakpoint]=".2">
-                <ng-template>
-                  <ion-content color="light">
-                    <ion-list [inset]="true">
-                      <ion-item-group>
-                        <ion-item>
-                          <ion-toggle (ionChange)="onTenantSelectionChange()" helperText="Wenn diese Option aktv ist, wirst du vor dem Öffnen der App immer gefragt, welche Instanz du öffnen möchtest." [(ngModel)]="wantInstanceSelection">Instanzauswahl aktivieren</ion-toggle>
-                        </ion-item>
-                      </ion-item-group>
-                    </ion-list>
-                  </ion-content>
-                </ng-template>
-              </ion-modal>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-header>
-        <ion-list [inset]="true">
-          <ion-item-group>
-            <ion-item-sliding *ngFor="let tenant of db.tenants()" #sliding>
+<ion-modal (ionModalDidDismiss)="isInstancesModalOpen = false" #instancesModal [isOpen]="isInstancesModalOpen"
+  [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]=".5">
+  <ng-template>
+    <ion-content color="light">
+      <ion-header>
+        <ion-toolbar color="light">
+          <ion-buttons slot="start">
+            <ion-button (click)="openCreateInstanceModal(instancesModal)">
+              <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title>Instanzen ({{ db.tenants()?.length }})</ion-title>
+          <ion-buttons slot="end">
+            <ion-button id="instance-settings-button">
+              <ion-icon name="cog-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+            <ion-modal trigger="instance-settings-button" [breakpoints]="[0, .2]" [initialBreakpoint]=".2">
+              <ng-template>
+                <ion-content color="light">
+                  <ion-list [inset]="true">
+                    <ion-item-group>
+                      <ion-item>
+                        <ion-toggle (ionChange)="onTenantSelectionChange()" helperText="Wenn diese Option aktv ist, wirst du vor dem Öffnen der App immer gefragt, welche Instanz du öffnen möchtest." [(ngModel)]="wantInstanceSelection">Instanzauswahl aktivieren</ion-toggle>
+                      </ion-item>
+                    </ion-item-group>
+                  </ion-list>
+                </ion-content>
+              </ng-template>
+            </ion-modal>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-list [inset]="true">
+        <ion-item-group>
+          @for (tenant of db.tenants(); track tenant) {
+            <ion-item-sliding #sliding>
               <ion-item detail="false" button (click)="onTenantChange(tenant.id, instancesModal)">
                 <ion-label>
                   <h2>{{ tenant.shortName }}</h2>
                   <h3>{{ tenant.longName }}</h3>
                 </ion-label>
-                <ion-badge [style.marginRight.px]="5" *ngIf="db.tenant().id === tenant.id"
+                @if (db.tenant().id === tenant.id) {
+                  <ion-badge [style.marginRight.px]="5"
                   color="primary">Aktuell</ion-badge>
-                <ion-icon size="small" color="warning" *ngIf="tenant.favorite" slot="end" name="star"></ion-icon>
+                }
+                @if (tenant.favorite) {
+                  <ion-icon size="small" color="warning" slot="end" name="star"></ion-icon>
+                }
               </ion-item>
               <ion-item-options (ionSwipe)="setInstanceAsFavorite(tenant, sliding)" side="end">
                 <ion-item-option (click)="deleteInstance(tenant, sliding, instancesModal)" color="danger">
@@ -661,9 +716,10 @@
                 </ion-item-option>
               </ion-item-options>
             </ion-item-sliding>
-          </ion-item-group>
-        </ion-list>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
+          }
+        </ion-item-group>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>
 </ion-content>

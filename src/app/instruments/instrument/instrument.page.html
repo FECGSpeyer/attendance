@@ -1,6 +1,8 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title *ngIf="instrument">{{ instrument.name }}</ion-title>
+    @if (instrument) {
+      <ion-title>{{ instrument.name }}</ion-title>
+    }
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -11,78 +13,90 @@
 
 <ion-content>
   @if (instrument) {
-  <ion-grid>
-    <ion-row>
-      <ion-col>
-        <ion-item>
-          <ion-label position="stacked">Name</ion-label>
-          <ion-input [(ngModel)]="instrument.name"></ion-input>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-item>
-          <ion-label position="stacked">Kategorie</ion-label>
-          <ion-select [(ngModel)]="instrument.category">
-            <ion-select-option [value]="null">Keine</ion-select-option>
-            <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</ion-select-option>
-          </ion-select>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row *ngIf="!isChoir && !isGeneral && !instrument.maingroup">
-      <ion-col>
-        <ion-item>
-          <ion-select interface="popover" label="Stimmung" [(ngModel)]="instrument.tuning">
-            <ion-select-option>C</ion-select-option>
-            <ion-select-option>Es</ion-select-option>
-            <ion-select-option>B</ion-select-option>
-            <ion-select-option>F</ion-select-option>
-          </ion-select>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row *ngIf="!isChoir && !isGeneral && !instrument.maingroup">
-      <ion-col>
-        <ion-item>
-          <ion-label position="stacked">Tonumfang</ion-label>
-          <ion-input [(ngModel)]="instrument.range"></ion-input>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row *ngIf="!isChoir && !isGeneral && !instrument.maingroup">
-      <ion-col>
-        <ion-item>
-          <ion-select interface="popover" label="Stimmung" multiple="true" [(ngModel)]="instrument.clefs">
-            <ion-select-option value="g">Violinschlüssel (G)</ion-select-option>
-            <ion-select-option value="f">Bassschlüssel (F)</ion-select-option>
-            <ion-select-option value="c">Altschlüssel (C)</ion-select-option>
-          </ion-select>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row *ngIf="!isGeneral && !instrument.maingroup">
-      <ion-col>
-        <ion-item>
-          <ion-label position="stacked">Synonyme</ion-label>
-          <ion-input helperText="Definiere Synonyme um beim Hinzufügen von Dateien zu Werken die Instrumente automatisch zuordnen zu können. Synonyme durch Komma trennen." [(ngModel)]="instrument.synonyms"></ion-input>
-          <ion-button slot="end" fill="clear" (click)="generateSynonyms()">
-            <ion-icon slot="icon-only" name="sparkles-outline"></ion-icon>
-          </ion-button>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-item>
-          <ion-label position="stacked">Notizen</ion-label>
-          <ion-textarea autoGrow="true" [(ngModel)]="instrument.notes"></ion-textarea>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-  <ion-button expand="block" (click)="update()">Aktualisieren</ion-button>
-  <ion-button *ngIf="!instrument.maingroup" color="danger" expand="block" (click)="delete()">Entfernen</ion-button>
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-item>
+            <ion-label position="stacked">Name</ion-label>
+            <ion-input [(ngModel)]="instrument.name"></ion-input>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-item>
+            <ion-label position="stacked">Kategorie</ion-label>
+            <ion-select [(ngModel)]="instrument.category">
+              <ion-select-option [value]="null">Keine</ion-select-option>
+              @for (cat of categories; track cat) {
+                <ion-select-option [value]="cat.id">{{ cat.name }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      @if (!isChoir && !isGeneral && !instrument.maingroup) {
+        <ion-row>
+          <ion-col>
+            <ion-item>
+              <ion-select interface="popover" label="Stimmung" [(ngModel)]="instrument.tuning">
+                <ion-select-option>C</ion-select-option>
+                <ion-select-option>Es</ion-select-option>
+                <ion-select-option>B</ion-select-option>
+                <ion-select-option>F</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      }
+      @if (!isChoir && !isGeneral && !instrument.maingroup) {
+        <ion-row>
+          <ion-col>
+            <ion-item>
+              <ion-label position="stacked">Tonumfang</ion-label>
+              <ion-input [(ngModel)]="instrument.range"></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      }
+      @if (!isChoir && !isGeneral && !instrument.maingroup) {
+        <ion-row>
+          <ion-col>
+            <ion-item>
+              <ion-select interface="popover" label="Stimmung" multiple="true" [(ngModel)]="instrument.clefs">
+                <ion-select-option value="g">Violinschlüssel (G)</ion-select-option>
+                <ion-select-option value="f">Bassschlüssel (F)</ion-select-option>
+                <ion-select-option value="c">Altschlüssel (C)</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      }
+      @if (!isGeneral && !instrument.maingroup) {
+        <ion-row>
+          <ion-col>
+            <ion-item>
+              <ion-label position="stacked">Synonyme</ion-label>
+              <ion-input helperText="Definiere Synonyme um beim Hinzufügen von Dateien zu Werken die Instrumente automatisch zuordnen zu können. Synonyme durch Komma trennen." [(ngModel)]="instrument.synonyms"></ion-input>
+              <ion-button slot="end" fill="clear" (click)="generateSynonyms()">
+                <ion-icon slot="icon-only" name="sparkles-outline"></ion-icon>
+              </ion-button>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      }
+      <ion-row>
+        <ion-col>
+          <ion-item>
+            <ion-label position="stacked">Notizen</ion-label>
+            <ion-textarea autoGrow="true" [(ngModel)]="instrument.notes"></ion-textarea>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <ion-button expand="block" (click)="update()">Aktualisieren</ion-button>
+    @if (!instrument.maingroup) {
+      <ion-button color="danger" expand="block" (click)="delete()">Entfernen</ion-button>
+    }
   }
 </ion-content>

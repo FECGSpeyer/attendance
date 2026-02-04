@@ -18,62 +18,82 @@
   </ion-searchbar>
 
   @if (groupedHistory.length === 0 && !searchTerm) {
-  <div class="noDataContainer">
-    <div class="noPersons">
-      <ion-icon name="musical-notes-outline" size="large"></ion-icon>
-      <ion-label>Noch keine Werke gespielt</ion-label>
+    <div class="noDataContainer">
+      <div class="noPersons">
+        <ion-icon name="musical-notes-outline" size="large"></ion-icon>
+        <ion-label>Noch keine Werke gespielt</ion-label>
+      </div>
     </div>
-  </div>
   }
 
-  <ion-list *ngIf="searchTerm" class="marginBottom">
-    <ion-item-sliding #sliding *ngFor="let entry of historyFiltered; trackBy: trackByHistoryId">
-      <ion-item>
-        <ion-label>
-          <h2>{{ entry.name }}</h2>
-          <h3 *ngIf="entry.attendance?.date">{{ entry.attendance.date | date:'dd.MM.yyyy' }} | {{ entry.conductorName }}
-          </h3>
-          <h3 *ngIf="!entry.attendance?.date">{{ entry.date | date:'dd.MM.yyyy' }} | {{ entry.conductorName }}</h3>
-        </ion-label>
-      </ion-item>
-
-      <ion-item-options side="end">
-        <ion-item-option (click)="remove(entry.id, sliding)" color="danger">
-          <ion-icon slot="icon-only" name="trash"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
-  </ion-list>
-
-  <ion-accordion-group *ngIf="!searchTerm" value="critical">
-    <ion-accordion *ngFor="let group of groupedHistory; trackBy: trackByGroupDate" [value]="group.date">
-      <ion-item slot="header" color="light">
-        <ion-label>{{ group.date }}</ion-label>
-      </ion-item>
-      <div slot="content">
-        <ion-item-sliding #sliding *ngFor="let his of group.parts; trackBy: trackByHistoryId">
+  @if (searchTerm) {
+    <ion-list class="marginBottom">
+      @for (entry of historyFiltered; track trackByHistoryId($index, entry)) {
+        <ion-item-sliding #sliding>
           <ion-item>
             <ion-label>
-              <h2>{{ his.number }} {{ his.name }}</h2>
-              <h3 *ngIf="his.attendance?.date">{{ his.attendance.date | date:'dd.MM.yyyy' }} | {{ his.conductorName }}
-              </h3>
-              <h3 *ngIf="!his.attendance?.date">{{ his.date | date:'dd.MM.yyyy' }} | {{ his.conductorName }}</h3>
+              <h2>{{ entry.name }}</h2>
+              @if (entry.attendance?.date) {
+                <h3>{{ entry.attendance.date | date:'dd.MM.yyyy' }} | {{ entry.conductorName }}
+                </h3>
+              }
+              @if (!entry.attendance?.date) {
+                <h3>{{ entry.date | date:'dd.MM.yyyy' }} | {{ entry.conductorName }}</h3>
+              }
             </ion-label>
-            @if (his.count !== 0) {
-            <ion-badge *ngIf="his.count === 1">{{ his.count }} Probe</ion-badge>
-            <ion-badge *ngIf="his.count !== 1">{{ his.count }} Proben</ion-badge>
-            }
           </ion-item>
-
           <ion-item-options side="end">
-            <ion-item-option (click)="remove(his.id, sliding)" color="danger">
+            <ion-item-option (click)="remove(entry.id, sliding)" color="danger">
               <ion-icon slot="icon-only" name="trash"></ion-icon>
             </ion-item-option>
           </ion-item-options>
         </ion-item-sliding>
-      </div>
-    </ion-accordion>
-  </ion-accordion-group>
+      }
+    </ion-list>
+  }
+
+  @if (!searchTerm) {
+    <ion-accordion-group value="critical">
+      @for (group of groupedHistory; track trackByGroupDate($index, group)) {
+        <ion-accordion [value]="group.date">
+          <ion-item slot="header" color="light">
+            <ion-label>{{ group.date }}</ion-label>
+          </ion-item>
+          <div slot="content">
+            @for (his of group.parts; track trackByHistoryId($index, his)) {
+              <ion-item-sliding #sliding>
+                <ion-item>
+                  <ion-label>
+                    <h2>{{ his.number }} {{ his.name }}</h2>
+                    @if (his.attendance?.date) {
+                      <h3>{{ his.attendance.date | date:'dd.MM.yyyy' }} | {{ his.conductorName }}
+                      </h3>
+                    }
+                    @if (!his.attendance?.date) {
+                      <h3>{{ his.date | date:'dd.MM.yyyy' }} | {{ his.conductorName }}</h3>
+                    }
+                  </ion-label>
+                  @if (his.count !== 0) {
+                    @if (his.count === 1) {
+                      <ion-badge>{{ his.count }} Probe</ion-badge>
+                    }
+                    @if (his.count !== 1) {
+                      <ion-badge>{{ his.count }} Proben</ion-badge>
+                    }
+                  }
+                </ion-item>
+                <ion-item-options side="end">
+                  <ion-item-option (click)="remove(his.id, sliding)" color="danger">
+                    <ion-icon slot="icon-only" name="trash"></ion-icon>
+                  </ion-item-option>
+                </ion-item-options>
+              </ion-item-sliding>
+            }
+          </div>
+        </ion-accordion>
+      }
+    </ion-accordion-group>
+  }
 
   <ion-modal #addHisModal trigger="add-his-button" [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7">
     <ng-template>
@@ -85,22 +105,28 @@
         </ion-header>
         <ion-item>
           <ion-select interface="modal" label="Werk(e)" multiple="true" [(ngModel)]="selectedSongs" #select>
-            <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.prefix }}{{ song.number }} {{ song.name }}
-            </ion-select-option>
+            @for (song of songs; track song) {
+              <ion-select-option [value]="song.id">{{ song.prefix }}{{ song.number }} {{ song.name }}
+              </ion-select-option>
+            }
           </ion-select>
         </ion-item>
         <ion-item>
           <ion-select label="Dirigent" (ionChange)="onConChange()" [(ngModel)]="historyEntry.person_id" #select
             multiple="false">
-            <ion-select-option [value]="con.id" *ngFor="let con of activeConductors">{{ con.firstName }} {{ con.lastName
-              }}
-            </ion-select-option>
+            @for (con of activeConductors; track con) {
+              <ion-select-option [value]="con.id">{{ con.firstName }} {{ con.lastName
+                }}
+              </ion-select-option>
+            }
             <ion-select-option [value]="otherConductor">Anderer Dirigent</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-item *ngIf="historyEntry.person_id === otherConductor && historyEntry.otherConductor">
-          <ion-input [(ngModel)]="historyEntry.otherConductor"></ion-input>
-        </ion-item>
+        @if (historyEntry.person_id === otherConductor && historyEntry.otherConductor) {
+          <ion-item>
+            <ion-input [(ngModel)]="historyEntry.otherConductor"></ion-input>
+          </ion-item>
+        }
         <ion-item>
           <ion-label position="stacked">Datum</ion-label>
           <ion-input readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
@@ -108,7 +134,7 @@
             <ng-template>
               <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1"
                 [(ngModel)]="historyEntry.date" (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)"
-                presentation="date" #dateTimePickerDate></ion-datetime>
+              presentation="date" #dateTimePickerDate></ion-datetime>
             </ng-template>
           </ion-modal>
         </ion-item>

@@ -27,61 +27,65 @@
               </ion-item>
             }
             @for (pa of personAttendances; track pa.id) {
-              <ion-item (click)="openActionSheet(att, false, pa)" button *ngIf="pa.attendance_id === att.id">
-                <ion-label>
-                  <h2>{{ pa.person.firstName }}</h2>
-                </ion-label>
-                <ion-badge slot="end"
-                  [color]="pa.status === 1 ? 'success' : pa.status === 4 ? 'danger' : pa.status === 3 ? 'tertiary' : pa.status === 5 ? 'rosa' : pa.status === 0 ? 'medium' : 'warning'">
-                  {{ getStatusText(pa.status) }}
-                </ion-badge>
-              </ion-item>
+              @if (pa.attendance_id === att.id) {
+                <ion-item (click)="openActionSheet(att, false, pa)" button>
+                  <ion-label>
+                    <h2>{{ pa.person.firstName }}</h2>
+                  </ion-label>
+                  <ion-badge slot="end"
+                    [color]="pa.status === 1 ? 'success' : pa.status === 4 ? 'danger' : pa.status === 3 ? 'tertiary' : pa.status === 5 ? 'rosa' : pa.status === 0 ? 'medium' : 'warning'">
+                    {{ getStatusText(pa.status) }}
+                  </ion-badge>
+                </ion-item>
+              }
             }
           </ion-list>
         </div>
       </ion-accordion>
     }
   </ion-accordion-group>
-      <ion-modal #excuseModal initialBreakpoint="0.8" [breakpoints]="[0, 0.8]">
-      <ng-template>
-        <ion-header>
-          <ion-toolbar>
-            <ion-buttons slot="start">
-              <ion-button (click)="dismissExcuseModal()">Abbrechen</ion-button>
-            </ion-buttons>
-            <ion-title>
-              {{
-              isLateComingEvent ? 'Verspätung' : 'Abmeldung'
-              }}
-            </ion-title>
-            <ion-buttons slot="end">
-              <ion-button [disabled]="!(reason && reason.length > 4)" (click)="signout()">Bestätigen</ion-button>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content class="ion-padding">
-          <ion-list>
-            <div>
-              <ion-list>
-                <ion-item class="margin-auto">
-                  <ion-select [(ngModel)]="reasonSelection" (ionChange)="onReasonSelect($event)" class="margin-auto"
-                    aria-label="reason-ion-select" interface="action-sheet" placeholder="Grund auswählen">
-                    <ion-select-option value="Krankheitsbedingt">Krankheitsbedingt</ion-select-option>
-                    <ion-select-option value="Urlaubsbedingt">Urlaubsbedingt</ion-select-option>
-                    <ion-select-option value="Arbeitsbedingt">Arbeitsbedingt</ion-select-option>
-                    <ion-select-option value="Familienbedingt">Familienbedingt</ion-select-option>
-                    <ion-select-option value="Sonstiger Grund">Sonstiger Grund (Text)</ion-select-option>
-                  </ion-select>
-                </ion-item>
-              </ion-list>
-            </div>
-            <ion-item *ngIf="selAttIds.length && (reasonSelection === 'Sonstiger Grund')">
+  <ion-modal #excuseModal initialBreakpoint="0.8" [breakpoints]="[0, 0.8]">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="dismissExcuseModal()">Abbrechen</ion-button>
+          </ion-buttons>
+          <ion-title>
+            {{
+            isLateComingEvent ? 'Verspätung' : 'Abmeldung'
+            }}
+          </ion-title>
+          <ion-buttons slot="end">
+            <ion-button [disabled]="!(reason && reason.length > 4)" (click)="signout()">Bestätigen</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-list>
+          <div>
+            <ion-list>
+              <ion-item class="margin-auto">
+                <ion-select [(ngModel)]="reasonSelection" (ionChange)="onReasonSelect($event)" class="margin-auto"
+                  aria-label="reason-ion-select" interface="action-sheet" placeholder="Grund auswählen">
+                  <ion-select-option value="Krankheitsbedingt">Krankheitsbedingt</ion-select-option>
+                  <ion-select-option value="Urlaubsbedingt">Urlaubsbedingt</ion-select-option>
+                  <ion-select-option value="Arbeitsbedingt">Arbeitsbedingt</ion-select-option>
+                  <ion-select-option value="Familienbedingt">Familienbedingt</ion-select-option>
+                  <ion-select-option value="Sonstiger Grund">Sonstiger Grund (Text)</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-list>
+          </div>
+          @if (selAttIds.length && (reasonSelection === 'Sonstiger Grund')) {
+            <ion-item>
               <ion-label position="stacked" (ionFocus)="{}">Grund</ion-label>
               <ion-textarea placeholder="Mindestens 5 Zeichen eingeben..." [(ngModel)]="reason"
-                (ionFocus)="increaseModalBreakpoint()" (ionBlur)="decreaseModalBreakpoint()"></ion-textarea>
+              (ionFocus)="increaseModalBreakpoint()" (ionBlur)="decreaseModalBreakpoint()"></ion-textarea>
             </ion-item>
-          </ion-list>
-        </ion-content>
-      </ng-template>
-    </ion-modal>
+          }
+        </ion-list>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

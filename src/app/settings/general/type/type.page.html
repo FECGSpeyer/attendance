@@ -1,85 +1,100 @@
 <ion-header translucent="true">
   <ion-toolbar color="light">
-    <ion-buttons *ngIf="!isNew" slot="start">
-      <ion-back-button text="" defaultHref="tabs/settings/general/types"></ion-back-button>
-    </ion-buttons>
+    @if (!isNew) {
+      <ion-buttons slot="start">
+        <ion-back-button text="" defaultHref="tabs/settings/general/types"></ion-back-button>
+      </ion-buttons>
+    }
     <ion-buttons slot="end">
-      <ion-button color="danger" *ngIf="!isNew" (click)="deleteType()">
-        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-      </ion-button>
-      <ion-button *ngIf="isNew" (click)="dismiss()">
-        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
-      </ion-button>
+      @if (!isNew) {
+        <ion-button color="danger" (click)="deleteType()">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      }
+      @if (isNew) {
+        <ion-button (click)="dismiss()">
+          <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+        </ion-button>
+      }
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content color="light" [fullscreen]="true">
   @if (type) {
-  <ion-list [inset]="true">
-    <ion-item-group>
-      <ion-item>
-        <ion-label position="stacked">Name</ion-label>
-        <ion-input [(ngModel)]="type.name"></ion-input>
-      </ion-item>
-    </ion-item-group>
-  </ion-list>
+    <ion-list [inset]="true">
+      <ion-item-group>
+        <ion-item>
+          <ion-label position="stacked">Name</ion-label>
+          <ion-input [(ngModel)]="type.name"></ion-input>
+        </ion-item>
+      </ion-item-group>
+    </ion-list>
 
-  <ion-list [inset]="true">
-    <ion-list-header><ion-label>Optionen</ion-label></ion-list-header>
-    <ion-item-group>
-      <ion-item>
-        <ion-toggle
-          helperText="Wenn du diese Option deaktivierst, wird der Anwesenheitstyp beim Anlegen einer Anwesenheit nicht mehr als Option angezeigt."
+    <ion-list [inset]="true">
+      <ion-list-header><ion-label>Optionen</ion-label></ion-list-header>
+      <ion-item-group>
+        <ion-item>
+          <ion-toggle
+            helperText="Wenn du diese Option deaktivierst, wird der Anwesenheitstyp beim Anlegen einer Anwesenheit nicht mehr als Option angezeigt."
           [(ngModel)]="type.visible">Aktiv</ion-toggle>
-      </ion-item>
+        </ion-item>
 
-      <ion-item>
-        <ion-label position="stacked">Verfügbare Anwesenheitsstatus</ion-label>
-        <ion-select (ionChange)="onAvailableStatusesChanged()" [(ngModel)]="type.available_statuses" multiple="true">
-          <ion-select-option [disabled]="status === 1" *ngFor="let status of attendanceStatuses" [value]="status">
-            {{ getAttendanceStatusDescription(status) }}
-          </ion-select-option>
-        </ion-select>
-      </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Verfügbare Anwesenheitsstatus</ion-label>
+          <ion-select (ionChange)="onAvailableStatusesChanged()" [(ngModel)]="type.available_statuses" multiple="true">
+            @for (status of attendanceStatuses; track status) {
+              <ion-select-option [disabled]="status === 1" [value]="status">
+                {{ getAttendanceStatusDescription(status) }}
+              </ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
 
-      <ion-item>
-        <ion-label position="stacked">Standard Anwesenheitsstatus</ion-label>
-        <ion-select [(ngModel)]="type.default_status">
-          @for (status of attendanceStatuses; track status) {
-          <ion-select-option *ngIf="type.available_statuses.includes(status)" [value]="status">
-            {{ getAttendanceStatusDescription(status) }}
-          </ion-select-option>
-          }
-        </ion-select>
-      </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Standard Anwesenheitsstatus</ion-label>
+          <ion-select [(ngModel)]="type.default_status">
+            @for (status of attendanceStatuses; track status) {
+              @if (type.available_statuses.includes(status)) {
+                <ion-select-option [value]="status">
+                  {{ getAttendanceStatusDescription(status) }}
+                </ion-select-option>
+              }
+            }
+          </ion-select>
+        </ion-item>
 
-      <ion-item *ngIf="!isGeneral">
-        <ion-toggle
-          helperText="Wenn du diese Option aktivierst, dann kannst du beim Anlegen einer Anwesenheit von diesem Typ, Werke hinzufügen, die für die kommenden Proben relevant sind und automatisch im Probenplan berücksichtigt werden."
-          [(ngModel)]="type.manage_songs">Werke verwalten</ion-toggle>
-      </ion-item>
+        @if (!isGeneral) {
+          <ion-item>
+            <ion-toggle
+              helperText="Wenn du diese Option aktivierst, dann kannst du beim Anlegen einer Anwesenheit von diesem Typ, Werke hinzufügen, die für die kommenden Proben relevant sind und automatisch im Probenplan berücksichtigt werden."
+            [(ngModel)]="type.manage_songs">Werke verwalten</ion-toggle>
+          </ion-item>
+        }
 
-      <ion-item>
-        <ion-toggle label="Ganztägig"
-          helperText="Wenn du diese Option aktivierst, wird bei einer Anwesenheit von diesem Typ keine Uhrzeit festgelegt aber eine Dauer angegeben."
+        <ion-item>
+          <ion-toggle label="Ganztägig"
+            helperText="Wenn du diese Option aktivierst, wird bei einer Anwesenheit von diesem Typ keine Uhrzeit festgelegt aber eine Dauer angegeben."
           [(ngModel)]="type.all_day">Ganztägig</ion-toggle>
-      </ion-item>
+        </ion-item>
 
-      <ion-item *ngIf="type.all_day">
-        <ion-label position="stacked">Standarddauer (in Tagen)</ion-label>
-        <ion-input type="number" [(ngModel)]="type.duration_days"></ion-input>
-      </ion-item>
+        @if (type.all_day) {
+          <ion-item>
+            <ion-label position="stacked">Standarddauer (in Tagen)</ion-label>
+            <ion-input type="number" [(ngModel)]="type.duration_days"></ion-input>
+          </ion-item>
+        }
 
-      <ion-item *ngIf="!type.all_day">
-        <ion-label>
-          <h2>Beginn</h2>
-          <h3>Die Zeiten können nachträglich individuell in jeder Anwesenheit angepasst werden</h3>
-        </ion-label>
-        <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
-        <ion-modal [keepContentsMounted]="true">
-          <ng-template>
-            <ion-datetime [(ngModel)]="type.start_time" presentation="time" locale="de-DE"
+        @if (!type.all_day) {
+          <ion-item>
+            <ion-label>
+              <h2>Beginn</h2>
+              <h3>Die Zeiten können nachträglich individuell in jeder Anwesenheit angepasst werden</h3>
+            </ion-label>
+            <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
+            <ion-modal [keepContentsMounted]="true">
+              <ng-template>
+                <ion-datetime [(ngModel)]="type.start_time" presentation="time" locale="de-DE"
               minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestart" [formatOptions]="{
                       time: {
                         hour: '2-digit',
@@ -87,15 +102,17 @@
                         hour12: false
                       }
                     }"></ion-datetime>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
-      <ion-item *ngIf="!type.all_day">
-        <ion-label>Ende</ion-label>
-        <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
-        <ion-modal [keepContentsMounted]="true">
-          <ng-template>
-            <ion-datetime [(ngModel)]="type.end_time" presentation="time" locale="de-DE"
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+      }
+      @if (!type.all_day) {
+        <ion-item>
+          <ion-label>Ende</ion-label>
+          <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime [(ngModel)]="type.end_time" presentation="time" locale="de-DE"
               minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimeend" [formatOptions]="{
                       time: {
                         hour: '2-digit',
@@ -107,103 +124,109 @@
           </ng-template>
         </ion-modal>
       </ion-item>
+    }
 
-      <ion-item>
-        <ion-toggle label="Name verbergen"
-          helperText="Wenn du diese Option aktivierst, wird der Name dieses Anwesenheitstyps in der Liste verborgen. Nur die Zusatzinfo (falls vorhanden) wird angezeigt."
-          [(ngModel)]="type.hide_name">Name verbergen</ion-toggle>
-      </ion-item>
+    <ion-item>
+      <ion-toggle label="Name verbergen"
+        helperText="Wenn du diese Option aktivierst, wird der Name dieses Anwesenheitstyps in der Liste verborgen. Nur die Zusatzinfo (falls vorhanden) wird angezeigt."
+      [(ngModel)]="type.hide_name">Name verbergen</ion-toggle>
+    </ion-item>
 
-      <ion-item>
-        <ion-toggle label="Hervorheben"
-          helperText="Wenn du diese Option aktivierst, wird dieser Anwesenheitstyp in der Liste als Fett dargestellt."
-          [(ngModel)]="type.highlight">Hervorheben</ion-toggle>
-      </ion-item>
+    <ion-item>
+      <ion-toggle label="Hervorheben"
+        helperText="Wenn du diese Option aktivierst, wird dieser Anwesenheitstyp in der Liste als Fett dargestellt."
+      [(ngModel)]="type.highlight">Hervorheben</ion-toggle>
+    </ion-item>
 
-      <ion-item>
-        <ion-toggle label="Für Ø berücksichtigen"
-          helperText="Wenn diese Option aktiviert ist, wird dieser Typ beim Anwesenheitsdurchschnitt berücksichtigt."
-          [(ngModel)]="type.include_in_average">Für Ø berücksichtigen</ion-toggle>
-      </ion-item>
+    <ion-item>
+      <ion-toggle label="Für Ø berücksichtigen"
+        helperText="Wenn diese Option aktiviert ist, wird dieser Typ beim Anwesenheitsdurchschnitt berücksichtigt."
+      [(ngModel)]="type.include_in_average">Für Ø berücksichtigen</ion-toggle>
+    </ion-item>
 
-      <!-- <ion-item>
-        <ion-toggle label="Terminerinnerung"
-          helperText="Wenn diese Option aktiviert ist und die Benachrichtigungen aktiviert sind, erhalten Personen 24 Stunden vor dem Termin eine Erinnerung."
-          [(ngModel)]="type.notification">Terminerinnerung</ion-toggle>
-      </ion-item> -->
+    <!-- <ion-item>
+    <ion-toggle label="Terminerinnerung"
+      helperText="Wenn diese Option aktiviert ist und die Benachrichtigungen aktiviert sind, erhalten Personen 24 Stunden vor dem Termin eine Erinnerung."
+    [(ngModel)]="type.notification">Terminerinnerung</ion-toggle>
+  </ion-item> -->
 
-      <ion-item id="color-btn" button detail="false">
-        <ion-label>
-          <h2>Farbe</h2>
-          <h3>Die Farbe ist nur für den Kalender relevant (beim Anlegen einer Anwesenheit).</h3>
-        </ion-label>
-        <ion-icon slot="end" name="ellipse" [color]="type.color"></ion-icon>
-      </ion-item>
-      <ion-popover #colorPopover trigger="color-btn" triggerAction="click">
-        <ng-template>
-          <ion-grid>
-            <ion-row>
-              <ion-col [style.paddingTop]="'.5rem'" [style.borderRadius]="'1rem'"
-                [style.backgroundColor]="type.color === color ? 'var(--ion-color-medium)' : ''"
-                [style.textAlign]="'center'" (click)="type.color = color; colorPopover.dismiss()" size="4"
-                *ngFor="let color of colors">
-                <ion-icon [style.fontSize]="'1.5rem'" name="ellipse" [color]="color"></ion-icon>
-              </ion-col>
-            </ion-row>
-          </ion-grid>
-        </ng-template>
-      </ion-popover>
-    </ion-item-group>
-  </ion-list>
+  <ion-item id="color-btn" button detail="false">
+    <ion-label>
+      <h2>Farbe</h2>
+      <h3>Die Farbe ist nur für den Kalender relevant (beim Anlegen einer Anwesenheit).</h3>
+    </ion-label>
+    <ion-icon slot="end" name="ellipse" [color]="type.color"></ion-icon>
+  </ion-item>
+  <ion-popover #colorPopover trigger="color-btn" triggerAction="click">
+    <ng-template>
+      <ion-grid>
+        <ion-row>
+          @for (color of colors; track color) {
+            <ion-col [style.paddingTop]="'.5rem'" [style.borderRadius]="'1rem'"
+              [style.backgroundColor]="type.color === color ? 'var(--ion-color-medium)' : ''"
+              [style.textAlign]="'center'" (click)="type.color = color; colorPopover.dismiss()" size="4"
+              >
+              <ion-icon [style.fontSize]="'1.5rem'" name="ellipse" [color]="color"></ion-icon>
+            </ion-col>
+          }
+        </ion-row>
+      </ion-grid>
+    </ng-template>
+  </ion-popover>
+</ion-item-group>
+</ion-list>
 
-  <ion-list [inset]="true">
-    <ion-list-header><ion-label>Filter</ion-label></ion-list-header>
-    <ion-item-group>
-      <ion-item>
-        <ion-select label="Relevante Gruppen"
-          helperText="Nur die relevanten Gruppen werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt. Wenn keine Gruppe ausgewählt ist, werden alle Gruppen berücksichtigt."
-          [(ngModel)]="type.relevant_groups" multiple="true">
-          <ion-select-option *ngFor="let group of db.groups()" [value]="group.id">
+<ion-list [inset]="true">
+  <ion-list-header><ion-label>Filter</ion-label></ion-list-header>
+  <ion-item-group>
+    <ion-item>
+      <ion-select label="Relevante Gruppen"
+        helperText="Nur die relevanten Gruppen werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt. Wenn keine Gruppe ausgewählt ist, werden alle Gruppen berücksichtigt."
+        [(ngModel)]="type.relevant_groups" multiple="true">
+        @for (group of db.groups(); track group) {
+          <ion-select-option [value]="group.id">
             {{ group.name }}
           </ion-select-option>
-        </ion-select>
-      </ion-item>
+        }
+      </ion-select>
+    </ion-item>
 
-      @if (areSelectFieldsAvailable()) {
+    @if (areSelectFieldsAvailable()) {
       <ion-item>
         <ion-select label="Zusatzfeld-Filter" (ionChange)="onAdditionalFieldFilterChanged()"
           helperText="Nur Personen mit dem ausgewählten Zusatzfeld-Wert werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt."
           [(ngModel)]="additionalFieldFilter" multiple="false">
           <ion-select-option [value]="null">Kein Filter</ion-select-option>
           @for (field of db.tenant().additional_fields; track field) {
-          @if (field.type === "select") {
-          <ion-select-option [value]="field.id">
-            {{ field.name }}
-          </ion-select-option>
-          }
+            @if (field.type === "select") {
+              <ion-select-option [value]="field.id">
+                {{ field.name }}
+              </ion-select-option>
+            }
           }
         </ion-select>
       </ion-item>
       @if (additionalFieldFilter && type.additional_fields_filter?.option) {
-      <ion-item>
-        <ion-select [(ngModel)]="type.additional_fields_filter.option" label="Option">
-          @for (field of db.tenant().additional_fields; track field) {
-          @if (field.type === "select" && field.id === additionalFieldFilter) {
-          @for (option of field.options; track option) {
-          <ion-select-option [value]="option">
-            {{ option }}
-          </ion-select-option>
-          }
-          }
-          }
-        </ion-select>
-      </ion-item>
+        <ion-item>
+          <ion-select [(ngModel)]="type.additional_fields_filter.option" label="Option">
+            @for (field of db.tenant().additional_fields; track field) {
+              @if (field.type === "select" && field.id === additionalFieldFilter) {
+                @for (option of field.options; track option) {
+                  <ion-select-option [value]="option">
+                    {{ option }}
+                  </ion-select-option>
+                }
+              }
+            }
+          </ion-select>
+        </ion-item>
       }
-      }
-    </ion-item-group>
-  </ion-list>
+    }
+  </ion-item-group>
+</ion-list>
 
-  <ion-list *ngIf="type.default_plan?.fields" [inset]="true">
+@if (type.default_plan?.fields) {
+  <ion-list [inset]="true">
     <ion-list-header>
       <ion-label>Ablaufplan</ion-label>
       <ion-button size="small" id="add-field-trigger" fill="clear">
@@ -234,20 +257,20 @@
                         hour12: false
                       }
                     }"></ion-datetime>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
-
-      <ion-list>
-        <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
-          <ion-item-sliding #slider *ngFor="let field of type.default_plan.fields; let i = index">
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+    <ion-list>
+      <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
+        @for (field of type.default_plan.fields; track field; let i = $index) {
+          <ion-item-sliding #slider>
             <ion-item>
               <ion-label (click)="changeField(field)">
                 <h2>{{ field.name }}</h2>
                 <h3>{{ calculateTime(field, i) }}</h3>
               </ion-label>
               <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
-                placeholder="min" type="number" slot="end"></ion-input>
+              placeholder="min" type="number" slot="end"></ion-input>
               <ion-reorder slot="end"></ion-reorder>
             </ion-item>
             <ion-item-options (ionSwipe)="removeField(i, slider)">
@@ -256,10 +279,11 @@
               </ion-item-option>
             </ion-item-options>
           </ion-item-sliding>
-        </ion-reorder-group>
-      </ion-list>
-
-      <ion-item class="marginBottom" *ngIf="end">
+        }
+      </ion-reorder-group>
+    </ion-list>
+    @if (end) {
+      <ion-item class="marginBottom">
         <ion-label>Ende</ion-label>
         <ion-datetime-button datetime="datetimeendplan"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
@@ -272,14 +296,17 @@
                         hour12: false
                       }
                     }">
-            </ion-datetime>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
-    </ion-item-group>
-  </ion-list>
+          </ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+  }
+</ion-item-group>
+</ion-list>
+}
 
-  <ion-list *ngIf="type.checklist" [inset]="true">
+@if (type.checklist) {
+  <ion-list [inset]="true">
     <ion-list-header>
       <ion-label>Checkliste</ion-label>
       <ion-button size="small" id="add-field-trigger" fill="clear">
@@ -310,20 +337,20 @@
                         hour12: false
                       }
                     }"></ion-datetime>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
-
-      <ion-list>
-        <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
-          <ion-item-sliding #slider *ngFor="let field of type.default_plan.fields; let i = index">
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+    <ion-list>
+      <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
+        @for (field of type.default_plan.fields; track field; let i = $index) {
+          <ion-item-sliding #slider>
             <ion-item>
               <ion-label (click)="changeField(field)">
                 <h2>{{ field.name }}</h2>
                 <h3>{{ calculateTime(field, i) }}</h3>
               </ion-label>
               <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
-                placeholder="min" type="number" slot="end"></ion-input>
+              placeholder="min" type="number" slot="end"></ion-input>
               <ion-reorder slot="end"></ion-reorder>
             </ion-item>
             <ion-item-options (ionSwipe)="removeField(i, slider)">
@@ -332,10 +359,11 @@
               </ion-item-option>
             </ion-item-options>
           </ion-item-sliding>
-        </ion-reorder-group>
-      </ion-list>
-
-      <ion-item class="marginBottom" *ngIf="end">
+        }
+      </ion-reorder-group>
+    </ion-list>
+    @if (end) {
+      <ion-item class="marginBottom">
         <ion-label>Ende</ion-label>
         <ion-datetime-button datetime="datetimeendplan"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
@@ -348,20 +376,26 @@
                         hour12: false
                       }
                     }">
-            </ion-datetime>
-          </ng-template>
-        </ion-modal>
-      </ion-item>
-    </ion-item-group>
-  </ion-list>
+          </ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+  }
+</ion-item-group>
+</ion-list>
+}
 
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button *ngIf="!isNew" (click)="save()">
+<ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  @if (!isNew) {
+    <ion-fab-button (click)="save()">
       <ion-icon name="save-outline"></ion-icon>
     </ion-fab-button>
-    <ion-fab-button *ngIf="isNew" (click)="createType()">
+  }
+  @if (isNew) {
+    <ion-fab-button (click)="createType()">
       <ion-icon name="add-outline"></ion-icon>
     </ion-fab-button>
-  </ion-fab>
   }
+</ion-fab>
+}
 </ion-content>

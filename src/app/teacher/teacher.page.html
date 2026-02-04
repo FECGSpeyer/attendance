@@ -16,7 +16,9 @@
   </ion-item>
   <ion-item>
     <ion-select interface="modal" label="Instrumente" [(ngModel)]="editedTeacher.instruments" multiple="true">
-      <ion-select-option [value]="ins.id" *ngFor="let ins of db.groups()">{{ ins.name }}</ion-select-option>
+      @for (ins of db.groups(); track ins) {
+        <ion-select-option [value]="ins.id">{{ ins.name }}</ion-select-option>
+      }
     </ion-select>
   </ion-item>
   <ion-item>
@@ -30,19 +32,23 @@
     <ion-label position="stacked">Notizen</ion-label>
     <ion-textarea [(ngModel)]="editedTeacher.notes"></ion-textarea>
   </ion-item>
-  <ion-accordion-group value="players" *ngIf="playersFromTeacher?.length">
-    <ion-accordion value="players">
-      <ion-item class="accordion-header" slot="header">
-        <ion-label>Spieler</ion-label>
-      </ion-item>
-      <div slot="content">
-        <ion-list>
-          <ion-item *ngFor="let player of playersFromTeacher">
-            <ion-label>{{ player.firstName }} {{ player.lastName }}</ion-label>
-          </ion-item>
-        </ion-list>
-      </div>
-    </ion-accordion>
-  </ion-accordion-group>
+  @if (playersFromTeacher?.length) {
+    <ion-accordion-group value="players">
+      <ion-accordion value="players">
+        <ion-item class="accordion-header" slot="header">
+          <ion-label>Spieler</ion-label>
+        </ion-item>
+        <div slot="content">
+          <ion-list>
+            @for (player of playersFromTeacher; track player) {
+              <ion-item>
+                <ion-label>{{ player.firstName }} {{ player.lastName }}</ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+  }
   <ion-button expand="block" (click)="editTeacher()" >Lehrer updaten</ion-button>
 </ion-content>

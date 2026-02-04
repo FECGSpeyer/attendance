@@ -28,22 +28,34 @@
               <ion-select-option value="all">Alle Anzeigen</ion-select-option>
               <ion-select-option value="active">Aktive Personen</ion-select-option>
               <ion-select-option value="criticals">Problemfälle</ion-select-option>
-              <ion-select-option *ngIf="!isGeneral" value="leaders">Stimmführer</ion-select-option>
+              @if (!isGeneral) {
+                <ion-select-option value="leaders">Stimmführer</ion-select-option>
+              }
               <ion-select-option value="withoutAccount">Ohne Account</ion-select-option>
-              <ion-select-option *ngIf="isVoS" value="examinee">Prüflinge</ion-select-option>
-              <ion-select-option *ngIf="isVoS" value="new">Neue Spieler</ion-select-option>
-              <ion-select-option *ngIf="isVoS" value="withoutTeacher">Ohne Lehrer</ion-select-option>
-              <ion-select-option *ngIf="isVoS" value="withoutTest">Testergebnis fehlt</ion-select-option>
-              <ion-select-option *ngIf="linkedTenants.length" value="otherInstance">Mitglied anderer
+              @if (isVoS) {
+                <ion-select-option value="examinee">Prüflinge</ion-select-option>
+              }
+              @if (isVoS) {
+                <ion-select-option value="new">Neue Spieler</ion-select-option>
+              }
+              @if (isVoS) {
+                <ion-select-option value="withoutTeacher">Ohne Lehrer</ion-select-option>
+              }
+              @if (isVoS) {
+                <ion-select-option value="withoutTest">Testergebnis fehlt</ion-select-option>
+              }
+              @if (linkedTenants.length) {
+                <ion-select-option value="otherInstance">Mitglied anderer
                 Instanz</ion-select-option>
+              }
               @if (db.tenant().additional_fields?.length) {
-              @for (field of db.tenant().additional_fields; track field.id) {
-              @if (field.type === "boolean" || field.type === "select") {
-              <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>
-              } @else if (field.type === "bfecg_church") {
-              <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>
-              }
-              }
+                @for (field of db.tenant().additional_fields; track field.id) {
+                  @if (field.type === "boolean" || field.type === "select") {
+                    <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>
+                  } @else if (field.type === "bfecg_church") {
+                    <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>
+                  }
+                }
               }
             </ion-select>
           </ion-item>
@@ -61,7 +73,9 @@
               <ion-select-option value="joinedAsc">Beitrittsdatum ↑</ion-select-option>
               <ion-select-option value="joinedDesc">Beitrittsdatum ↓</ion-select-option>
               <ion-select-option value="nextBirthday">Nächster Geburtstag</ion-select-option>
-              <ion-select-option *ngIf="isVoS" value="test">Testergebnis</ion-select-option>
+              @if (isVoS) {
+                <ion-select-option value="test">Testergebnis</ion-select-option>
+              }
             </ion-select>
           </ion-item>
 
@@ -72,23 +86,35 @@
               <ion-select-option value="instrument">Gruppe</ion-select-option>
               <ion-select-option value="attendance">Anwesenheit</ion-select-option>
               <ion-select-option value="birthday">Geburtsdatum</ion-select-option>
-              <ion-select-option *ngIf="isChoir" value="instruments">Instrumente</ion-select-option>
-              <ion-select-option *ngIf="isVoS" value="test">Testergebnis</ion-select-option>
+              @if (isChoir) {
+                <ion-select-option value="instruments">Instrumente</ion-select-option>
+              }
+              @if (isVoS) {
+                <ion-select-option value="test">Testergebnis</ion-select-option>
+              }
               <ion-select-option value="exercises">Sonstige Dienste</ion-select-option>
-              <ion-select-option *ngIf="!isGeneral" value="leader">Stimmführer</ion-select-option>
+              @if (!isGeneral) {
+                <ion-select-option value="leader">Stimmführer</ion-select-option>
+              }
               <ion-select-option value="critical">Problemfälle</ion-select-option>
-              <ion-select-option *ngIf="isVoS" value="new">Neu</ion-select-option>
+              @if (isVoS) {
+                <ion-select-option value="new">Neu</ion-select-option>
+              }
               <ion-select-option value="paused">Pausiert</ion-select-option>
               <ion-select-option value="notes">Hat Notizen</ion-select-option>
               <ion-select-option value="img">Passbild</ion-select-option>
-              <ion-select-option value="teachers" *ngIf="db.tenant().maintainTeachers">Lehrer</ion-select-option>
-              <ion-select-option *ngIf="isVoS" value="examinee">Prüfling</ion-select-option>
+              @if (db.tenant().maintainTeachers) {
+                <ion-select-option value="teachers">Lehrer</ion-select-option>
+              }
+              @if (isVoS) {
+                <ion-select-option value="examinee">Prüfling</ion-select-option>
+              }
               @if (db.tenant().additional_fields?.length) {
-              @for (field of db.tenant().additional_fields; track field.id) {
-              @if (field.type === "boolean") {
-              <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>
-              }
-              }
+                @for (field of db.tenant().additional_fields; track field.id) {
+                  @if (field.type === "boolean") {
+                    <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>
+                  }
+                }
               }
             </ion-select>
           </ion-item>
@@ -98,112 +124,145 @@
   </div>
 
   @if (players.length) {
-  <ion-list style="padding-top: 0;" class="marginBottom">
-    <ion-list-header>
-      <ion-label>Personen ({{ playersFiltered?.length }})</ion-label>
-    </ion-list-header>
-    <ng-container *ngFor="let player of playersFiltered; trackBy:userById">
-      <ion-item-divider color="primary" *ngIf="player.firstOfInstrument && sortOpt === 'instrument'">
-        <ion-label>{{ player.groupName }} ({{ player.instrumentLength }})</ion-label>
-      </ion-item-divider>
-      <ion-item-sliding #slider>
-        <ion-item button detail="false" (click)="openModal(player)">
-          <ion-avatar *ngIf="showImg" slot="start">
-            <img [src]="player.img" />
-          </ion-avatar>
-          <ion-label>
-            <h2>{{ player.firstName }} {{ player.lastName }}</h2>
-            <h3 *ngIf="player.text">{{ player.text }}</h3>
-            @if (showInstruments) {
-            <h3 *ngIf="!player.text">{{ player.groupName }}</h3>
+    <ion-list style="padding-top: 0;" class="marginBottom">
+      <ion-list-header>
+        <ion-label>Personen ({{ playersFiltered?.length }})</ion-label>
+      </ion-list-header>
+      @for (player of playersFiltered; track userById($index, player)) {
+        @if (player.firstOfInstrument && sortOpt === 'instrument') {
+          <ion-item-divider color="primary">
+            <ion-label>{{ player.groupName }} ({{ player.instrumentLength }})</ion-label>
+          </ion-item-divider>
+        }
+        <ion-item-sliding #slider>
+          <ion-item button detail="false" (click)="openModal(player)">
+            @if (showImg) {
+              <ion-avatar slot="start">
+                <img [src]="player.img" />
+              </ion-avatar>
             }
-            @if (player.instrument !== mainGroup) {
-            @if (showTeachers && player.teacher) {
-            <h3>Lehrer: {{ getTeacherName(player.teacher) }}</h3>
-            } @else if (showTeachers && !player.teacher) {
-            <h3>Kein Lehrer</h3>
+            <ion-label>
+              <h2>{{ player.firstName }} {{ player.lastName }}</h2>
+              @if (player.text) {
+                <h3>{{ player.text }}</h3>
+              }
+              @if (showInstruments) {
+                @if (!player.text) {
+                  <h3>{{ player.groupName }}</h3>
+                }
+              }
+              @if (player.instrument !== mainGroup) {
+                @if (showTeachers && player.teacher) {
+                  <h3>Lehrer: {{ getTeacherName(player.teacher) }}</h3>
+                } @else if (showTeachers && !player.teacher) {
+                  <h3>Kein Lehrer</h3>
+                }
+              }
+              @if (this.filterOpt === 'otherInstance') {
+                <h3>{{ tenantName }}</h3>
+              }
+            </ion-label>
+            @if (((showPaused && !player.paused) || !showPaused) && showLeader && player.isLeader) {
+              <ion-badge color="secondary"
+                slot="end">
+              Stimmführer</ion-badge>
             }
+            @if (((showPaused && !player.paused) || !showPaused) && showNew && player.isNew && !player.isLeader) {
+              <ion-badge color="danger"
+              slot="end">Neu</ion-badge>
             }
-            @if (this.filterOpt === 'otherInstance') {
-            <h3>{{ tenantName }}</h3>
+            @if (((showPaused && !player.paused) || !showPaused) && showCritical && player.isCritical) {
+              <ion-badge color="danger"
+                slot="end">
+              Problemfall</ion-badge>
             }
-          </ion-label>
-          <ion-badge color="secondary"
-            *ngIf="((showPaused && !player.paused) || !showPaused) && showLeader && player.isLeader" slot="end">
-            Stimmführer</ion-badge>
-          <ion-badge color="danger"
-            *ngIf="((showPaused && !player.paused) || !showPaused) && showNew && player.isNew && !player.isLeader"
-            slot="end">Neu</ion-badge>
-          <ion-badge color="danger"
-            *ngIf="((showPaused && !player.paused) || !showPaused) && showCritical && player.isCritical" slot="end">
-            Problemfall</ion-badge>
-          <ion-badge color="warning" *ngIf="showPaused && player.paused" slot="end">Pausiert</ion-badge>
-          <ion-badge color="warning"
-            *ngIf="((showPaused && !player.paused) || !showPaused) && showNotes && player.notes" slot="end">
-            <ion-icon name="pencil"></ion-icon>
-          </ion-badge>
-          <ion-badge color="dark" *ngIf="showExaminee && player.examinee" slot="end">Prüfling</ion-badge>
-          @if (db.tenant().additional_fields?.length) {
-          @for (field of db.tenant().additional_fields; track field.id) {
-          @if (viewOpts.includes(field.id)) {
-          <ion-badge *ngIf="player.additional_fields[field.id]" color="dark" slot="end">{{ field.name }}</ion-badge>
+            @if (showPaused && player.paused) {
+              <ion-badge color="warning" slot="end">Pausiert</ion-badge>
+            }
+            @if (((showPaused && !player.paused) || !showPaused) && showNotes && player.notes) {
+              <ion-badge color="warning"
+                slot="end">
+                <ion-icon name="pencil"></ion-icon>
+              </ion-badge>
+            }
+            @if (showExaminee && player.examinee) {
+              <ion-badge color="dark" slot="end">Prüfling</ion-badge>
+            }
+            @if (db.tenant().additional_fields?.length) {
+              @for (field of db.tenant().additional_fields; track field.id) {
+                @if (viewOpts.includes(field.id)) {
+                  @if (player.additional_fields[field.id]) {
+                    <ion-badge color="dark" slot="end">{{ field.name }}</ion-badge>
+                  }
+                }
+              }
+            }
+            @if (showAttendance) {
+              <ion-badge [color]="player.percentage >= 75 ? 'success' : player.percentage >= 50 ? 'warning' : 'danger'"
+              slot="end">{{ player.percentage }}%</ion-badge>
+            }
+          </ion-item>
+          @if (isAdmin) {
+            <ion-item-options (ionSwipe)="player.paused ? unpausePlayer(player, slider) : pausePlayer(player, slider)"
+              >
+              <ion-item-option (click)="remove(player, slider)" color="danger">
+                <ion-icon name="trash"></ion-icon>
+              </ion-item-option>
+              @if (!player.paused) {
+                <ion-item-option expandable (click)="pausePlayer(player, slider)" color="warning">
+                  <ion-icon name="pause"></ion-icon>
+                </ion-item-option>
+              }
+              @if (player.paused) {
+                <ion-item-option expandable (click)="unpausePlayer(player, slider)" color="success">
+                  <ion-icon name="play"></ion-icon>
+                </ion-item-option>
+              }
+            </ion-item-options>
           }
-          }
-          }
-          <ion-badge [color]="player.percentage >= 75 ? 'success' : player.percentage >= 50 ? 'warning' : 'danger'"
-            *ngIf="showAttendance" slot="end">{{ player.percentage }}%</ion-badge>
-        </ion-item>
-        <ion-item-options (ionSwipe)="player.paused ? unpausePlayer(player, slider) : pausePlayer(player, slider)"
-          *ngIf="isAdmin">
-          <ion-item-option (click)="remove(player, slider)" color="danger">
-            <ion-icon name="trash"></ion-icon>
-          </ion-item-option>
-          <ion-item-option expandable *ngIf="!player.paused" (click)="pausePlayer(player, slider)" color="warning">
-            <ion-icon name="pause"></ion-icon>
-          </ion-item-option>
-          <ion-item-option expandable *ngIf="player.paused" (click)="unpausePlayer(player, slider)" color="success">
-            <ion-icon name="play"></ion-icon>
-          </ion-item-option>
-        </ion-item-options>
-      </ion-item-sliding>
-    </ng-container>
-  </ion-list>
+        </ion-item-sliding>
+      }
+    </ion-list>
   } @else if (loaded && !players?.length && !playersFiltered?.length) {
-  <div class="noDataContainer">
-    <div class="noPersons">
-      <ion-icon name="people-outline" size="large"></ion-icon>
-      <ion-label>Bisher wurden noch keine Personen angelegt</ion-label>
-      <ion-button size="small" (click)="openModal()">Person hinzufügen</ion-button>
+    <div class="noDataContainer">
+      <div class="noPersons">
+        <ion-icon name="people-outline" size="large"></ion-icon>
+        <ion-label>Bisher wurden noch keine Personen angelegt</ion-label>
+        <ion-button size="small" (click)="openModal()">Person hinzufügen</ion-button>
+      </div>
     </div>
-  </div>
   } @else {
-  <ion-list>
-    <ion-list-header>
-      <ion-skeleton-text [animated]="true" style="width: 80px"></ion-skeleton-text>
-    </ion-list-header>
-    <ion-item *ngFor="let n of [1,2,3,4,5,6,7,8,9,10]">
-      <ion-thumbnail slot="start">
-        <ion-skeleton-text [animated]="true"></ion-skeleton-text>
-      </ion-thumbnail>
-      <ion-label>
-        <h3>
-          <ion-skeleton-text [animated]="true" style="width: 80%;"></ion-skeleton-text>
-        </h3>
-        <p>
-          <ion-skeleton-text [animated]="true" style="width: 60%;"></ion-skeleton-text>
-        </p>
-        <p>
-          <ion-skeleton-text [animated]="true" style="width: 30%;"></ion-skeleton-text>
-        </p>
-      </ion-label>
-    </ion-item>
-  </ion-list>
+    <ion-list>
+      <ion-list-header>
+        <ion-skeleton-text [animated]="true" style="width: 80px"></ion-skeleton-text>
+      </ion-list-header>
+      @for (n of [1,2,3,4,5,6,7,8,9,10]; track n) {
+        <ion-item>
+          <ion-thumbnail slot="start">
+            <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+          </ion-thumbnail>
+          <ion-label>
+            <h3>
+              <ion-skeleton-text [animated]="true" style="width: 80%;"></ion-skeleton-text>
+            </h3>
+            <p>
+              <ion-skeleton-text [animated]="true" style="width: 60%;"></ion-skeleton-text>
+            </p>
+            <p>
+              <ion-skeleton-text [animated]="true" style="width: 30%;"></ion-skeleton-text>
+            </p>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
   }
-  <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="openModal()">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+  @if (isAdmin) {
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab-button (click)="openModal()">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+  }
   <ion-modal backdropDismiss="false" [isOpen]="isArchiveModalOpen">
     <ng-template>
       <ion-header>
@@ -257,7 +316,7 @@
           <ion-modal class="dateModal" trigger="pause-date-modal-list" #pauseDateModal>
             <ng-template>
               <ion-datetime show-default-buttons="true" done-text="Fertig" cancel-text="Abbrechen" show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [min]="minPauseDate" [(ngModel)]="pauseUntil"
-                (ionChange)="onPauseDateChange(pauseUntil, pauseDateModal)" presentation="date"></ion-datetime>
+              (ionChange)="onPauseDateChange(pauseUntil, pauseDateModal)" presentation="date"></ion-datetime>
             </ng-template>
           </ion-modal>
         </ion-item>

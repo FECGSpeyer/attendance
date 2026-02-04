@@ -57,319 +57,350 @@
   </ion-header>
 
   @if (!loaded) {
-  <ion-list>
-    <ion-list-header>
-      <ion-skeleton-text [animated]="true" style="width: 80px"></ion-skeleton-text>
-    </ion-list-header>
-    <ion-item *ngFor="let n of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]">
-      <ion-label>
-        <h3>
-          <ion-skeleton-text [animated]="true" style="width: 60%;"></ion-skeleton-text>
-        </h3>
-      </ion-label>
-    </ion-item>
-  </ion-list>
-  } @else if (loaded && allAttendances.length) {
-  <ion-accordion-group [multiple]="true" [value]="['current', 'future']">
-    <ion-accordion *ngIf="currentAttendance && (isConductor || isHelper)" value="current">
-      <ion-item class="accordion-header" slot="header" color="primary">
-        <ion-label>Aktuelle</ion-label>
-      </ion-item>
-      <div slot="content">
-        <ion-item-sliding #slider>
-          <ng-container>
-            <ion-item button detail="false" (click)="openAttendance(currentAttendance)">
-              <ion-label
-                [style.fontWeight]="highlightedTypes.includes(currentAttendance.type_id) ? 'bold' : 'normal'">{{
-                getAttendanceTitle(currentAttendance) }}</ion-label>
-              @if (currentAttendance.percentage) {
-              <ion-badge
-                [color]="currentAttendance.percentage >= 75 ? 'success' : currentAttendance.percentage >= 50 ? 'warning' : 'danger'"
-                slot="end">{{ currentAttendance.percentage }}%</ion-badge>
-              } @else {
-              <ion-badge color="danger" slot="end">0%</ion-badge>
-              }
-            </ion-item>
-
-            <ion-item-options side="end" (ionSwipe)="remove(currentAttendance.id, slider)">
-              <ion-item-option expandable color="danger" (click)="remove(currentAttendance.id, slider)">
-                <ion-icon name="trash-outline"></ion-icon>
-              </ion-item-option>
-            </ion-item-options>
-          </ng-container>
-        </ion-item-sliding>
-      </div>
-    </ion-accordion>
-
-    <ion-accordion value="future" *ngIf="attendances.length && (isConductor || isHelper)">
-      <ion-item class="accordion-header" slot="header" color="primary">
-        <ion-label>Anstehende</ion-label>
-      </ion-item>
-      <div slot="content">
-        <ion-list>
-          @for (att of attendances; track att.id) {
-          <ion-item-sliding #slider>
-            <ion-item button detail="false" (click)="openAttendance(att)">
-              <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
-                getAttendanceTitle(att) }}</ion-label>
-              @if (att.percentage) {
-              <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
-                slot="end">{{ att.percentage }}%</ion-badge>
-              } @else {
-              <ion-badge color="danger" slot="end">0%</ion-badge>
-              }
-            </ion-item>
-
-            <ion-item-options *ngIf="isConductor" side="end" (ionSwipe)="remove(att.id, slider)">
-              <ion-item-option expandable color="danger" (click)="remove(att.id, slider)">
-                <ion-icon name="trash-outline"></ion-icon>
-              </ion-item-option>
-            </ion-item-options>
-          </ion-item-sliding>
-          }
-        </ion-list>
-      </div>
-    </ion-accordion>
-    <ion-accordion value="old" *ngIf="oldAttendances.length">
-      <ion-item class="accordion-header" *ngIf="isConductor" slot="header" color="primary">
-        <ion-label>Vergangene</ion-label>
-      </ion-item>
-      <div slot="content">
-        <ion-list class="marginBottom">
-          <ion-item-divider>
-            <ion-label>Durchschnitt</ion-label>
-            <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'"
-              slot="end">{{ perc }}%</ion-badge>
-          </ion-item-divider>
-          <ion-item-sliding #slider *ngFor="let att of oldAttendances">
-            <ion-item button detail="false" (click)="openAttendance(att)">
-              <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
-                getAttendanceTitle(att) }}</ion-label>
-              @if (att.percentage) {
-              <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
-                slot="end">{{ att.percentage }}%</ion-badge>
-              } @else {
-              <ion-badge color="danger" slot="end">0%</ion-badge>
-              }
-            </ion-item>
-
-            <ion-item-options side="end" (ionSwipe)="remove(att.id, slider)">
-              <ion-item-option expandable color="danger" (click)="remove(att.id, slider)">
-                <ion-icon name="trash-outline"></ion-icon>
-              </ion-item-option>
-            </ion-item-options>
-          </ion-item-sliding>
-        </ion-list>
-      </div>
-    </ion-accordion>
-  </ion-accordion-group>
-
-  <ion-list *ngIf="!isConductor && !isHelper" class="marginBottom">
-    <ion-item-divider>
-      <ion-label>Durchschnitt</ion-label>
-      <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'"
-        slot="end">{{ perc }}%</ion-badge>
-    </ion-item-divider>
-    <ion-item *ngFor="let att of viewerAttendances" detail="false">
-      <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
-        getAttendanceTitle(att) }}<p>{{ getCountText(att) }}</p></ion-label>
-      @if (att.percentage) {
-      <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'" slot="end">{{
-        att.percentage }}%</ion-badge>
-      } @else {
-      <ion-badge color="danger" slot="end">0%</ion-badge>
+    <ion-list>
+      <ion-list-header>
+        <ion-skeleton-text [animated]="true" style="width: 80px"></ion-skeleton-text>
+      </ion-list-header>
+      @for (n of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]; track n) {
+        <ion-item>
+          <ion-label>
+            <h3>
+              <ion-skeleton-text [animated]="true" style="width: 60%;"></ion-skeleton-text>
+            </h3>
+          </ion-label>
+        </ion-item>
       }
-    </ion-item>
-  </ion-list>
-  } @else {
-  <div class="noDataContainer">
-    <div class="noPersons">
-      <ion-icon name="checkbox-outline" size="large"></ion-icon>
-      <ion-label>Bisher wurden noch keine Termine angelegt</ion-label>
-      <ion-button size="small" (click)="isAddModalOpen = true">Termin hinzufügen</ion-button>
-    </div>
-  </div>
-  }
+    </ion-list>
+  } @else if (loaded && allAttendances.length) {
+    <ion-accordion-group [multiple]="true" [value]="['current', 'future']">
+      @if (currentAttendance && (isConductor || isHelper)) {
+        <ion-accordion value="current">
+          <ion-item class="accordion-header" slot="header" color="primary">
+            <ion-label>Aktuelle</ion-label>
+          </ion-item>
+          <div slot="content">
+            <ion-item-sliding #slider>
+              <ng-container>
+                <ion-item button detail="false" (click)="openAttendance(currentAttendance)">
+                  <ion-label
+                    [style.fontWeight]="highlightedTypes.includes(currentAttendance.type_id) ? 'bold' : 'normal'">{{
+                  getAttendanceTitle(currentAttendance) }}</ion-label>
+                  @if (currentAttendance.percentage) {
+                    <ion-badge
+                      [color]="currentAttendance.percentage >= 75 ? 'success' : currentAttendance.percentage >= 50 ? 'warning' : 'danger'"
+                    slot="end">{{ currentAttendance.percentage }}%</ion-badge>
+                  } @else {
+                    <ion-badge color="danger" slot="end">0%</ion-badge>
+                  }
+                </ion-item>
+                <ion-item-options side="end" (ionSwipe)="remove(currentAttendance.id, slider)">
+                  <ion-item-option expandable color="danger" (click)="remove(currentAttendance.id, slider)">
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </ion-item-option>
+                </ion-item-options>
+              </ng-container>
+            </ion-item-sliding>
+          </div>
+        </ion-accordion>
+      }
 
-  <ion-modal #addAttModal (ionModalDidDismiss)="isAddModalOpen = false" [isOpen]="isAddModalOpen"
-    [breakpoints]="[0, 0.8, 1]" [initialBreakpoint]="0.8">
-    <ng-template>
-      <ion-content color="light">
-        <ion-header>
-          <ion-toolbar>
-            <ion-title>Anwesenheit hinzufügen</ion-title>
-          </ion-toolbar>
-        </ion-header>
-        <ion-list inset="true">
-          <ion-item-group>
-            <ion-item>
-              <ion-label position="stacked">Datum (Mehrfachauswahl möglich)</ion-label>
-              <ion-input (click)="onDateClick()" readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
-              <ion-button id="info-button" fill="clear" slot="end">
-                <ion-icon name="information"></ion-icon>
-              </ion-button>
-              <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="info-button">
-                <ng-template>
-                  <ion-content color="light">
-                    <ion-list [inset]="true">
-                      <ion-list-header>
-                        <ion-label>Veranstaltungstypen</ion-label>
-                      </ion-list-header>
-                      <ion-item-group>
-                        @for (type of db.attendanceTypes(); track type.id) {
-                        <ion-item lines="none">
-                          <ion-icon slot="start" name="ellipse" [color]="type.color"></ion-icon>
-                          <ion-label>{{ type.name }}</ion-label>
-                        </ion-item>
-                        }
-                        @if (holidays.publicHolidays.length || holidays.schoolHolidays.length) {
-                        <ion-item lines="none">
-                          <ion-icon slot="start" name="ellipse" color="holiday"></ion-icon>
-                          <ion-label>Feiertage des ausgewählten Bundeslandes</ion-label>
-                        </ion-item>
-                        <ion-item lines="none">
-                          <ion-icon slot="start" name="ellipse" color="medium"></ion-icon>
-                          <ion-label>Ferien des ausgewählten Bundeslandes</ion-label>
-                        </ion-item>
-                        }
-                      </ion-item-group>
-                    </ion-list>
-                    <ion-list-header>
-                      <ion-label>Ferien</ion-label>
-                    </ion-list-header>
-                    @for (holiday of holidays.schoolHolidays; track holiday.id) {
-                    <ion-item *ngIf="!holiday.gone">
-                      <ion-label>
-                        <h2>{{ holiday.startDate | date:'dd.MM.yyyy' }} - {{ holiday.endDate | date:'dd.MM.yyyy' }}: {{
-                          holiday.name[0].text }}</h2>
-                      </ion-label>
-                    </ion-item>
+      @if (attendances.length && (isConductor || isHelper)) {
+        <ion-accordion value="future">
+          <ion-item class="accordion-header" slot="header" color="primary">
+            <ion-label>Anstehende</ion-label>
+          </ion-item>
+          <div slot="content">
+            <ion-list>
+              @for (att of attendances; track att.id) {
+                <ion-item-sliding #slider>
+                  <ion-item button detail="false" (click)="openAttendance(att)">
+                    <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
+                    getAttendanceTitle(att) }}</ion-label>
+                    @if (att.percentage) {
+                      <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
+                      slot="end">{{ att.percentage }}%</ion-badge>
+                    } @else {
+                      <ion-badge color="danger" slot="end">0%</ion-badge>
                     }
-                    <ion-list>
-                      <ion-list-header>
-                        <ion-label>Feiertage</ion-label>
-                      </ion-list-header>
-                      @for (holiday of holidays.publicHolidays; track holiday.id) {
-                      <ion-item *ngIf="!holiday.gone">
-                        <ion-label>
-                          <h2>{{ holiday.startDate | date:'dd.MM.yyyy' }}: {{ holiday.name[0].text }}</h2>
-                        </ion-label>
-                      </ion-item>
-                      }
-                    </ion-list>
-                  </ion-content>
-                </ng-template>
-              </ion-modal>
-              <ion-modal #dateModal class="dateModal" trigger="att-date-modal">
-                <ng-template>
-                  <ion-datetime [highlightedDates]="highlightedDates" locale="de-DE" [firstDayOfWeek]="1"
-                    multiple="true" [(ngModel)]="dates" (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)"
-                    presentation="date" #dateTimePickerDate>
-                  </ion-datetime>
-                </ng-template>
-              </ion-modal>
+                  </ion-item>
+                  @if (isConductor) {
+                    <ion-item-options side="end" (ionSwipe)="remove(att.id, slider)">
+                      <ion-item-option expandable color="danger" (click)="remove(att.id, slider)">
+                        <ion-icon name="trash-outline"></ion-icon>
+                      </ion-item-option>
+                    </ion-item-options>
+                  }
+                </ion-item-sliding>
+              }
+            </ion-list>
+          </div>
+        </ion-accordion>
+      }
+      @if (oldAttendances.length) {
+        <ion-accordion value="old">
+          @if (isConductor) {
+            <ion-item class="accordion-header" slot="header" color="primary">
+              <ion-label>Vergangene</ion-label>
             </ion-item>
-            <ion-item>
-              <ion-select label="Typ" (ionChange)="onTypeChange()" [(ngModel)]="type_id">
-                @for (type of db.attendanceTypes(); track type.id) {
-                <ion-select-option *ngIf="type.visible" [value]="type.id">{{ type.name }}</ion-select-option>
-                }
-              </ion-select>
-            </ion-item>
-            <ion-item *ngIf="isAllDay()">
-              <ion-label position="stacked">Dauer (in Tagen)</ion-label>
-              <ion-input type="number" min="1" [(ngModel)]="allDayDuration"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-label position="stacked">Info-Text (optional)</ion-label>
-              <ion-textarea helperText="Dieser Text wird anstelle des Typs angezeigt."
-                [(ngModel)]="typeInfo"></ion-textarea>
-            </ion-item>
-          </ion-item-group>
-          @if (showSongsSelection()) {
-          <ion-list-header>
-            <ion-label>Werke</ion-label>
-            <ion-button size="small" id="add-his-button">
-              <ion-icon name="add"></ion-icon>
-            </ion-button>
-            <ion-modal #addHisModal trigger="add-his-button" [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7">
-              <ng-template>
-                <ion-content color="light">
-                  <ion-header>
-                    <ion-toolbar>
-                      <ion-title>Werk(e) hinzufügen</ion-title>
-                    </ion-toolbar>
-                  </ion-header>
-                  <ion-list inset="true">
-                    <ion-item-group>
-                      <ion-item>
-                        <ion-select interface="modal" label="Werk(e)" multiple="true" [(ngModel)]="selectedSongs"
-                          #select>
-                          <ion-select-option [value]="song.id" *ngFor="let song of songs">{{ song.prefix }}{{ song.number }} {{ song.name }}
-                          </ion-select-option>
-                        </ion-select>
-                      </ion-item>
-                      <ion-item>
-                        <ion-select label="Dirigent" (ionChange)="onConChange()" [(ngModel)]="historyEntry.person_id"
-                          #select multiple="false">
-                          <ion-select-option [value]="con.id" *ngFor="let con of activeConductors">{{ con.firstName }}
-                            {{
-                            con.lastName }}
-                          </ion-select-option>
-                          <ion-select-option [value]="otherConductor">Anderer Dirigent</ion-select-option>
-                        </ion-select>
-                      </ion-item>
-                      <ion-item *ngIf="historyEntry.person_id === otherConductor && historyEntry.otherConductor">
-                        <ion-input [(ngModel)]="historyEntry.otherConductor"></ion-input>
-                      </ion-item>
-                    </ion-item-group>
-                    <ion-item-group>
-                      <ion-item (click)="addSong(addHisModal)" button detail="false">
-                        <ion-label color="primary">Werk(e) hinzufügen</ion-label>
-                      </ion-item>
-                    </ion-item-group>
-                  </ion-list>
-                </ion-content>
-              </ng-template>
-            </ion-modal>
-          </ion-list-header>
-          <ion-item-group [style.marginTop]="'0px'">
-            <ion-item *ngFor="let entry of historyEntries; let i = index">
-              <ion-label>
-                <h2>{{ getSongInfo(entry) }}</h2>
-                <h3>{{ getConductorInfo(entry) }}</h3>
-              </ion-label>
-              <ion-button fill="clear" slot="end" (click)="historyEntries.splice(i, 1)">
-                <ion-icon slot="icon-only" name="close"></ion-icon>
-              </ion-button>
-            </ion-item>
-            @if (!historyEntries.length) {
-            <ion-item>
-              <ion-label>Keine Werke ausgewählt</ion-label>
-            </ion-item>
-            }
-          </ion-item-group>
           }
+          <div slot="content">
+            <ion-list class="marginBottom">
+              <ion-item-divider>
+                <ion-label>Durchschnitt</ion-label>
+                <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'"
+                slot="end">{{ perc }}%</ion-badge>
+              </ion-item-divider>
+              @for (att of oldAttendances; track att) {
+                <ion-item-sliding #slider>
+                  <ion-item button detail="false" (click)="openAttendance(att)">
+                    <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
+                    getAttendanceTitle(att) }}</ion-label>
+                    @if (att.percentage) {
+                      <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
+                      slot="end">{{ att.percentage }}%</ion-badge>
+                    } @else {
+                      <ion-badge color="danger" slot="end">0%</ion-badge>
+                    }
+                  </ion-item>
+                  <ion-item-options side="end" (ionSwipe)="remove(att.id, slider)">
+                    <ion-item-option expandable color="danger" (click)="remove(att.id, slider)">
+                      <ion-icon name="trash-outline"></ion-icon>
+                    </ion-item-option>
+                  </ion-item-options>
+                </ion-item-sliding>
+              }
+            </ion-list>
+          </div>
+        </ion-accordion>
+      }
+    </ion-accordion-group>
 
-          <ion-item-group>
-            <ion-item color="primary" [disabled]="dates.length === 0" button detail="false"
-              (click)="addAttendance(addAttModal)">
-              @if (dates.length === 1) {
-              <ion-label>Termin hinzufügen</ion-label>
-              } @else if (dates.length > 1) {
-              <ion-label>Termine hinzufügen</ion-label>
+    @if (!isConductor && !isHelper) {
+      <ion-list class="marginBottom">
+        <ion-item-divider>
+          <ion-label>Durchschnitt</ion-label>
+          <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'"
+          slot="end">{{ perc }}%</ion-badge>
+        </ion-item-divider>
+        @for (att of viewerAttendances; track att) {
+          <ion-item detail="false">
+            <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
+              getAttendanceTitle(att) }}<p>{{ getCountText(att) }}</p></ion-label>
+              @if (att.percentage) {
+                <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'" slot="end">{{
+                att.percentage }}%</ion-badge>
               } @else {
-              <ion-label>Termin hinzufügen</ion-label>
+                <ion-badge color="danger" slot="end">0%</ion-badge>
               }
             </ion-item>
-          </ion-item-group>
+          }
         </ion-list>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
-  <ion-fab [class]="isHelper || isConductor ? '' : 'invisible'" vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="isAddModalOpen = true">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
-</ion-content>
+      }
+    } @else {
+      <div class="noDataContainer">
+        <div class="noPersons">
+          <ion-icon name="checkbox-outline" size="large"></ion-icon>
+          <ion-label>Bisher wurden noch keine Termine angelegt</ion-label>
+          <ion-button size="small" (click)="isAddModalOpen = true">Termin hinzufügen</ion-button>
+        </div>
+      </div>
+    }
+
+    <ion-modal #addAttModal (ionModalDidDismiss)="isAddModalOpen = false" [isOpen]="isAddModalOpen"
+      [breakpoints]="[0, 0.8, 1]" [initialBreakpoint]="0.8">
+      <ng-template>
+        <ion-content color="light">
+          <ion-header>
+            <ion-toolbar>
+              <ion-title>Anwesenheit hinzufügen</ion-title>
+            </ion-toolbar>
+          </ion-header>
+          <ion-list inset="true">
+            <ion-item-group>
+              <ion-item>
+                <ion-label position="stacked">Datum (Mehrfachauswahl möglich)</ion-label>
+                <ion-input (click)="onDateClick()" readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
+                <ion-button id="info-button" fill="clear" slot="end">
+                  <ion-icon name="information"></ion-icon>
+                </ion-button>
+                <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="info-button">
+                  <ng-template>
+                    <ion-content color="light">
+                      <ion-list [inset]="true">
+                        <ion-list-header>
+                          <ion-label>Veranstaltungstypen</ion-label>
+                        </ion-list-header>
+                        <ion-item-group>
+                          @for (type of db.attendanceTypes(); track type.id) {
+                            <ion-item lines="none">
+                              <ion-icon slot="start" name="ellipse" [color]="type.color"></ion-icon>
+                              <ion-label>{{ type.name }}</ion-label>
+                            </ion-item>
+                          }
+                          @if (holidays.publicHolidays.length || holidays.schoolHolidays.length) {
+                            <ion-item lines="none">
+                              <ion-icon slot="start" name="ellipse" color="holiday"></ion-icon>
+                              <ion-label>Feiertage des ausgewählten Bundeslandes</ion-label>
+                            </ion-item>
+                            <ion-item lines="none">
+                              <ion-icon slot="start" name="ellipse" color="medium"></ion-icon>
+                              <ion-label>Ferien des ausgewählten Bundeslandes</ion-label>
+                            </ion-item>
+                          }
+                        </ion-item-group>
+                      </ion-list>
+                      <ion-list-header>
+                        <ion-label>Ferien</ion-label>
+                      </ion-list-header>
+                      @for (holiday of holidays.schoolHolidays; track holiday.id) {
+                        @if (!holiday.gone) {
+                          <ion-item>
+                            <ion-label>
+                              <h2>{{ holiday.startDate | date:'dd.MM.yyyy' }} - {{ holiday.endDate | date:'dd.MM.yyyy' }}: {{
+                              holiday.name[0].text }}</h2>
+                            </ion-label>
+                          </ion-item>
+                        }
+                      }
+                      <ion-list>
+                        <ion-list-header>
+                          <ion-label>Feiertage</ion-label>
+                        </ion-list-header>
+                        @for (holiday of holidays.publicHolidays; track holiday.id) {
+                          @if (!holiday.gone) {
+                            <ion-item>
+                              <ion-label>
+                                <h2>{{ holiday.startDate | date:'dd.MM.yyyy' }}: {{ holiday.name[0].text }}</h2>
+                              </ion-label>
+                            </ion-item>
+                          }
+                        }
+                      </ion-list>
+                    </ion-content>
+                  </ng-template>
+                </ion-modal>
+                <ion-modal #dateModal class="dateModal" trigger="att-date-modal">
+                  <ng-template>
+                    <ion-datetime [highlightedDates]="highlightedDates" locale="de-DE" [firstDayOfWeek]="1"
+                      multiple="true" [(ngModel)]="dates" (ionChange)="onDateChanged(dateTimePickerDate.value, dateModal)"
+                      presentation="date" #dateTimePickerDate>
+                    </ion-datetime>
+                  </ng-template>
+                </ion-modal>
+              </ion-item>
+              <ion-item>
+                <ion-select label="Typ" (ionChange)="onTypeChange()" [(ngModel)]="type_id">
+                  @for (type of db.attendanceTypes(); track type.id) {
+                    @if (type.visible) {
+                      <ion-select-option [value]="type.id">{{ type.name }}</ion-select-option>
+                    }
+                  }
+                </ion-select>
+              </ion-item>
+              @if (isAllDay()) {
+                <ion-item>
+                  <ion-label position="stacked">Dauer (in Tagen)</ion-label>
+                  <ion-input type="number" min="1" [(ngModel)]="allDayDuration"></ion-input>
+                </ion-item>
+              }
+              <ion-item>
+                <ion-label position="stacked">Info-Text (optional)</ion-label>
+                <ion-textarea helperText="Dieser Text wird anstelle des Typs angezeigt."
+                [(ngModel)]="typeInfo"></ion-textarea>
+              </ion-item>
+            </ion-item-group>
+            @if (showSongsSelection()) {
+              <ion-list-header>
+                <ion-label>Werke</ion-label>
+                <ion-button size="small" id="add-his-button">
+                  <ion-icon name="add"></ion-icon>
+                </ion-button>
+                <ion-modal #addHisModal trigger="add-his-button" [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7">
+                  <ng-template>
+                    <ion-content color="light">
+                      <ion-header>
+                        <ion-toolbar>
+                          <ion-title>Werk(e) hinzufügen</ion-title>
+                        </ion-toolbar>
+                      </ion-header>
+                      <ion-list inset="true">
+                        <ion-item-group>
+                          <ion-item>
+                            <ion-select interface="modal" label="Werk(e)" multiple="true" [(ngModel)]="selectedSongs"
+                              #select>
+                              @for (song of songs; track song) {
+                                <ion-select-option [value]="song.id">{{ song.prefix }}{{ song.number }} {{ song.name }}
+                                </ion-select-option>
+                              }
+                            </ion-select>
+                          </ion-item>
+                          <ion-item>
+                            <ion-select label="Dirigent" (ionChange)="onConChange()" [(ngModel)]="historyEntry.person_id"
+                              #select multiple="false">
+                              @for (con of activeConductors; track con) {
+                                <ion-select-option [value]="con.id">{{ con.firstName }}
+                                  {{
+                                  con.lastName }}
+                                </ion-select-option>
+                              }
+                              <ion-select-option [value]="otherConductor">Anderer Dirigent</ion-select-option>
+                            </ion-select>
+                          </ion-item>
+                          @if (historyEntry.person_id === otherConductor && historyEntry.otherConductor) {
+                            <ion-item>
+                              <ion-input [(ngModel)]="historyEntry.otherConductor"></ion-input>
+                            </ion-item>
+                          }
+                        </ion-item-group>
+                        <ion-item-group>
+                          <ion-item (click)="addSong(addHisModal)" button detail="false">
+                            <ion-label color="primary">Werk(e) hinzufügen</ion-label>
+                          </ion-item>
+                        </ion-item-group>
+                      </ion-list>
+                    </ion-content>
+                  </ng-template>
+                </ion-modal>
+              </ion-list-header>
+              <ion-item-group [style.marginTop]="'0px'">
+                @for (entry of historyEntries; track entry; let i = $index) {
+                  <ion-item>
+                    <ion-label>
+                      <h2>{{ getSongInfo(entry) }}</h2>
+                      <h3>{{ getConductorInfo(entry) }}</h3>
+                    </ion-label>
+                    <ion-button fill="clear" slot="end" (click)="historyEntries.splice(i, 1)">
+                      <ion-icon slot="icon-only" name="close"></ion-icon>
+                    </ion-button>
+                  </ion-item>
+                }
+                @if (!historyEntries.length) {
+                  <ion-item>
+                    <ion-label>Keine Werke ausgewählt</ion-label>
+                  </ion-item>
+                }
+              </ion-item-group>
+            }
+
+            <ion-item-group>
+              <ion-item color="primary" [disabled]="dates.length === 0" button detail="false"
+                (click)="addAttendance(addAttModal)">
+                @if (dates.length === 1) {
+                  <ion-label>Termin hinzufügen</ion-label>
+                } @else if (dates.length > 1) {
+                  <ion-label>Termine hinzufügen</ion-label>
+                } @else {
+                  <ion-label>Termin hinzufügen</ion-label>
+                }
+              </ion-item>
+            </ion-item-group>
+          </ion-list>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+    <ion-fab [class]="isHelper || isConductor ? '' : 'invisible'" vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab-button (click)="isAddModalOpen = true">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+  </ion-content>
