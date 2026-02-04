@@ -1,8 +1,7 @@
 import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, LoadingController, isPlatform } from '@ionic/angular';
-import * as JSZip from 'jszip';
-import { PDFDocument } from 'pdf-lib';
+// JSZip and pdf-lib are lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
 import { Role } from 'src/app/utilities/constants';
 import { Group, Organisation, Player, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
@@ -389,6 +388,8 @@ export class SongPage implements OnInit {
       blobs.push({ fileName: file.fileName, blob });
     }
 
+    // Lazy load JSZip
+    const JSZip = (await import('jszip')).default;
     const jszip = new JSZip();
     for (const file of blobs) {
       jszip.file(file.fileName, file.blob);
@@ -699,6 +700,8 @@ export class SongPage implements OnInit {
     await loading.present();
 
     try {
+      // Lazy load pdf-lib
+      const { PDFDocument } = await import('pdf-lib');
       const mergedPdf = await PDFDocument.create();
       let totalPages = 0;
 

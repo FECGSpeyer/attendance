@@ -2,7 +2,7 @@
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, isPlatform } from '@ionic/angular';
 import * as dayjs from 'dayjs';
-import { PDFDocument } from 'pdf-lib';
+// pdf-lib is lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
 import { Attendance, PersonAttendance, Player, Song, Tenant, History, SongFile, AttendanceType } from 'src/app/utilities/interfaces';
@@ -596,6 +596,9 @@ export class SignoutPage implements OnInit {
 
     try {
       Utils.showToast('PDFs werden zusammengeführt...', 'primary');
+
+      // Lazy load pdf-lib
+      const { PDFDocument } = await import('pdf-lib');
 
       // Create a new PDF document
       const mergedPdf = await PDFDocument.create();
