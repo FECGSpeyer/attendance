@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="light">
-    <ion-title>Statistiken & Dashboard</ion-title>
+    <ion-title>Statistiken</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -10,7 +10,8 @@
 </ion-header>
 
 <ion-content color="light">
-  <!-- Date Range Filter -->
+
+  <!-- ==================== ZEITRAUM ==================== -->
   <ion-list [inset]="true">
     <ion-list-header>
       📅 Zeitraum
@@ -24,7 +25,7 @@
         (ionChange)="onDateFilterChange()">
       </ion-input>
     </ion-item>
-    <ion-item>
+    <ion-item lines="none">
       <ion-input
         type="date"
         label="Bis"
@@ -33,19 +34,64 @@
         (ionChange)="onDateFilterChange()">
       </ion-input>
     </ion-item>
-    <ion-item lines="none">
-      <ion-note>{{ attendances?.length }} Termine im Zeitraum</ion-note>
-    </ion-item>
   </ion-list>
 
-  <!-- Charts Section -->
+  <!-- ==================== ANWESENHEITS-ÜBERSICHT ==================== -->
+  <ion-list [inset]="true">
+    <ion-list-header>
+      📊 Anwesenheits-Übersicht
+    </ion-list-header>
+
+    <ion-item>
+      <ion-label>Termine im Zeitraum</ion-label>
+      <ion-badge slot="end">{{ attendances?.length }}</ion-badge>
+    </ion-item>
+
+    @for(type of this.db.attendanceTypes(); track type.id) {
+      @if (getAttTypeLength(type.id) > 0) {
+        <ion-item>
+          <ion-label class="ion-text-wrap">{{ type.name }}</ion-label>
+          <ion-badge slot="end">{{ getAttTypeLength(type.id) }}</ion-badge>
+        </ion-item>
+      }
+    }
+
+    <ion-item>
+      <ion-label>Ø Anwesenheit</ion-label>
+      <ion-badge slot="end" [color]="attPerc >= 70 ? 'success' : attPerc >= 50 ? 'warning' : 'danger'">
+        {{ attPerc }}%
+      </ion-badge>
+    </ion-item>
+
+    @if (bestAttendance) {
+      <ion-item>
+        <ion-label>
+          <p>Beste Anwesenheit</p>
+          <h2>{{ bestAttendance.date | date:'dd.MM.yyyy' }}</h2>
+        </ion-label>
+        <ion-badge slot="end" color="success">{{ bestAttendance.percentage }}%</ion-badge>
+      </ion-item>
+    }
+
+    @if (worstAttendance) {
+      <ion-item lines="none">
+        <ion-label>
+          <p>Schlechteste Anwesenheit</p>
+          <h2>{{ worstAttendance.date | date:'dd.MM.yyyy' }}</h2>
+        </ion-label>
+        <ion-badge slot="end" color="danger">{{ worstAttendance.percentage }}%</ion-badge>
+      </ion-item>
+    }
+  </ion-list>
+
+  <!-- ==================== ANWESENHEITS-CHARTS ==================== -->
   @if (chartsReady) {
     <ion-list [inset]="true">
       <ion-list-header>
-        📊 Dashboard
+        📈 Anwesenheits-Trend
       </ion-list-header>
 
-      <!-- Attendance Trend -->
+      <!-- Attendance Trend Line Chart -->
       <ion-item lines="none">
         <div class="chart-container chart-line">
           <canvas baseChart
@@ -58,6 +104,10 @@
     </ion-list>
 
     <ion-list [inset]="true">
+      <ion-list-header>
+        📉 Statusverteilung
+      </ion-list-header>
+
       <!-- Status Pie Chart -->
       <ion-item lines="none">
         <div class="chart-container chart-pie">
@@ -71,6 +121,10 @@
     </ion-list>
 
     <ion-list [inset]="true">
+      <ion-list-header>
+        🏆 Top 20 Anwesenheit
+      </ion-list-header>
+
       <!-- Top 20 Chart -->
       <ion-item lines="none">
         <div class="chart-container" [style.height.px]="top20ChartHeight">
@@ -84,19 +138,10 @@
     </ion-list>
 
     <ion-list [inset]="true">
-      <!-- Diva Index Chart -->
-      <ion-item lines="none">
-        <div class="chart-container" [style.height.px]="divaChartHeight">
-          <canvas baseChart
-            [data]="divaIndexData"
-            [options]="divaIndexOptions"
-            type="bar">
-          </canvas>
-        </div>
-      </ion-item>
-    </ion-list>
+      <ion-list-header>
+        🎻 Anwesenheit pro Instrument
+      </ion-list-header>
 
-    <ion-list [inset]="true">
       <!-- Instrument Bar Chart -->
       <ion-item lines="none">
         <div class="chart-container" [style.height.px]="instrumentChartHeight">
@@ -110,6 +155,57 @@
     </ion-list>
 
     <ion-list [inset]="true">
+      <ion-list-header>
+        💅 Diva-Index
+      </ion-list-header>
+
+      <!-- Diva Index Chart -->
+      <ion-item lines="none">
+        <div class="chart-container" [style.height.px]="divaChartHeight">
+          <canvas baseChart
+            [data]="divaIndexData"
+            [options]="divaIndexOptions"
+            type="bar">
+          </canvas>
+        </div>
+      </ion-item>
+    </ion-list>
+  }
+
+  <!-- ==================== PERSONEN ==================== -->
+  <ion-list [inset]="true">
+    <ion-list-header>
+      👥 Mitglieder
+    </ion-list-header>
+
+    <ion-item>
+      <ion-label>Aktive Mitglieder</ion-label>
+      <ion-badge slot="end" color="success">{{ activePlayers?.length }}</ion-badge>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Pausierend</ion-label>
+      <ion-badge slot="end" color="warning">{{ pausedPlayers?.length }}</ion-badge>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Ausgetreten</ion-label>
+      <ion-badge slot="end" color="medium">{{ leftPlayers?.length }}</ion-badge>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-label><strong>Gesamt</strong></ion-label>
+      <ion-badge slot="end">{{ players?.length }}</ion-badge>
+    </ion-item>
+  </ion-list>
+
+  <!-- ==================== DEMOGRAFIE ==================== -->
+  @if (chartsReady) {
+    <ion-list [inset]="true">
+      <ion-list-header>
+        🎂 Altersverteilung
+      </ion-list-header>
+
       <!-- Age Distribution Chart -->
       <ion-item lines="none">
         <div class="chart-container">
@@ -123,6 +219,10 @@
     </ion-list>
 
     <ion-list [inset]="true">
+      <ion-list-header>
+        📊 Durchschnittsalter pro Instrument
+      </ion-list-header>
+
       <!-- Average Age per Instrument Chart -->
       <ion-item lines="none">
         <div class="chart-container" [style.height.px]="avgAgeChartHeight">
@@ -136,122 +236,66 @@
     </ion-list>
   }
 
-  <ion-list [inset]="true">
-    <ion-list-header>
-      Anwesenheiten (Ab {{ curAttDate | date: 'dd.MM.yyyy' }})
-    </ion-list-header>
-
-    <ion-item-group>
-      <ion-item>
-        <ion-label>Anwesenheiten Gesamt</ion-label>
-        <ion-badge>{{ attendances?.length }}</ion-badge>
-      </ion-item>
-
-      @for(type of this.db.attendanceTypes(); track type.id) {
-        <ion-item>
-          <ion-label>{{ type.name }}</ion-label>
-          <ion-badge>{{ getAttTypeLength(type.id) }}</ion-badge>
-        </ion-item>
-      }
-
-      <ion-item>
-        <ion-label>Ø Teilnehmer pro Termin</ion-label>
-        <ion-badge>{{ attPerc }}%</ion-badge>
-      </ion-item>
-
-      <ion-item>
-        <ion-label>Beste Anwesenheit</ion-label>
-        <ion-badge>{{ bestAttendance?.date | date:'dd.MM.yyyy' }} ({{ bestAttendance?.percentage }}%)</ion-badge>
-      </ion-item>
-      <ion-item lines="none">
-        <ion-label>Schlechteste Anwesenheit</ion-label>
-        <ion-badge>{{ worstAttendance?.date | date:'dd.MM.yyyy' }} ({{ worstAttendance?.percentage }}%)</ion-badge>
-      </ion-item>
-    </ion-item-group>
-
-    <ion-list-header>
-      Personen
-    </ion-list-header>
-
-    <ion-item-group>
-      <ion-item>
-        <ion-label>Personen Gesamt</ion-label>
-        <ion-badge>{{ players?.length }}</ion-badge>
-      </ion-item>
-
-      <ion-item>
-        <ion-label>Aktive Personen</ion-label>
-        <ion-badge>{{ activePlayers?.length }}</ion-badge>
-      </ion-item>
-
-      <ion-item>
-        <ion-label>Pausierende Personen</ion-label>
-        <ion-badge>{{ pausedPlayers?.length }}</ion-badge>
-      </ion-item>
-
-      <ion-item lines="none">
-        <ion-label>Ausgetretene Personen</ion-label>
-        <ion-badge>{{ leftPlayers?.length }}</ion-badge>
-      </ion-item>
-    </ion-item-group>
-
-    @if (db.organisation()) {
+  <!-- ==================== ORGANISATION ==================== -->
+  @if (db.organisation()) {
+    <ion-list [inset]="true">
       <ion-list-header>
-        {{ db.organisation().name }} Statistiken
+        🏢 {{ db.organisation().name }}
       </ion-list-header>
 
-      <ion-item-group>
-        <ion-item>
-          <ion-select (ionDismiss)="filterInstances()" label="Instanzen auswählen" [(ngModel)]="selectedInstances"
-            interface="modal" multiple="true">
-            @for(tenant of tenants; track tenant.id) {
-              <ion-select-option [value]="tenant.id">{{ tenant.longName }}</ion-select-option>
-            }
-          </ion-select>
-        </ion-item>
-      </ion-item-group>
-
-      <ion-item-group>
-        <ion-item button detail="false" (click)="openInstancesAlert()">
-          <ion-label color="primary">Instanzen</ion-label>
-          @if (selectedInstances.length === 0) {
-            <ion-badge>Alle ({{ tenants.length }})</ion-badge>
-          } @else {
-            <ion-badge>{{ selectedInstances.length }}</ion-badge>
+      <ion-item>
+        <ion-select
+          (ionDismiss)="filterInstances()"
+          label="Instanzen filtern"
+          [(ngModel)]="selectedInstances"
+          interface="modal"
+          multiple="true">
+          @for(tenant of tenants; track tenant.id) {
+            <ion-select-option [value]="tenant.id">{{ tenant.longName }}</ion-select-option>
           }
-        </ion-item>
-        <ion-item button detail="false" id="persons-button">
-          <ion-label color="primary">Personen Gesamt</ion-label>
-          <ion-badge>{{ uniquePersons.length }}</ion-badge>
-          <ion-modal trigger="persons-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
-            <ng-template>
-              <ion-content color="light">
-                <ion-header>
-                  <ion-toolbar>
-                    <ion-title>Personen Gesamt</ion-title>
-                  </ion-toolbar>
-                </ion-header>
+        </ion-select>
+      </ion-item>
 
-                <ion-list [inset]="true">
-                  <ion-item-group>
-                    @for (u of uniquePersons; track trackByPersonId($index, u)) {
-                      <ion-item>
-                        <ion-label>
-                          <h2>{{ u.firstName }} {{ u.lastName }}</h2>
-                          @for (tenant of u.tenants; track tenant.id) {
-                            <p>{{ tenant.longName }}</p>
-                          }
-                        </ion-label>
-                        <ion-badge>{{ u.tenants.length }}</ion-badge>
-                      </ion-item>
-                    }
-                  </ion-item-group>
-                </ion-list>
-              </ion-content>
-            </ng-template>
-          </ion-modal>
-        </ion-item>
-      </ion-item-group>
-    }
-  </ion-list>
+      <ion-item button detail="false" (click)="openInstancesAlert()">
+        <ion-label>Instanzen</ion-label>
+        @if (selectedInstances.length === 0) {
+          <ion-badge slot="end">Alle ({{ tenants.length }})</ion-badge>
+        } @else {
+          <ion-badge slot="end">{{ selectedInstances.length }}</ion-badge>
+        }
+      </ion-item>
+
+      <ion-item button detail="false" lines="none" id="persons-button">
+        <ion-label>Personen über alle Instanzen</ion-label>
+        <ion-badge slot="end">{{ uniquePersons.length }}</ion-badge>
+
+        <ion-modal trigger="persons-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+          <ng-template>
+            <ion-content color="light">
+              <ion-header>
+                <ion-toolbar>
+                  <ion-title>Personen ({{ uniquePersons.length }})</ion-title>
+                </ion-toolbar>
+              </ion-header>
+
+              <ion-list [inset]="true">
+                @for (u of uniquePersons; track trackByPersonId($index, u)) {
+                  <ion-item>
+                    <ion-label>
+                      <h2>{{ u.firstName }} {{ u.lastName }}</h2>
+                      @for (tenant of u.tenants; track tenant.id) {
+                        <p>{{ tenant.longName }}</p>
+                      }
+                    </ion-label>
+                    <ion-badge slot="end">{{ u.tenants.length }}</ion-badge>
+                  </ion-item>
+                }
+              </ion-list>
+            </ion-content>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+    </ion-list>
+  }
+
 </ion-content>
