@@ -163,7 +163,7 @@ export class PlanningPage implements OnInit {
 
     const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
     const name: string = this.attendance ? dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format("DD_MM_YYYY") : dayjs().format("DD_MM_YYYY");
-    const blob: Blob = Utils.createPlanExport({
+    const blob = await Utils.createPlanExport({
       time: this.time,
       end: this.end,
       fields: this.selectedFields,
@@ -327,12 +327,12 @@ export class PlanningPage implements OnInit {
     this.updateAttendance();
   }
 
-  export() {
+  async export() {
     if (!this.validate()) {
       return;
     }
 
-    Utils.createPlanExport({
+    await Utils.createPlanExport({
       time: this.time,
       end: this.end,
       fields: this.selectedFields,

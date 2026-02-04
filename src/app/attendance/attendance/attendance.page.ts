@@ -297,7 +297,7 @@ export class AttendancePage implements OnInit {
   }
 
   async exportPlan() {
-    Utils.createPlanExport({
+    await Utils.createPlanExport({
       ...this.attendance.plan,
       attendance: this.attendance.id,
       attendances: await this.db.getAttendance(),
@@ -305,7 +305,7 @@ export class AttendancePage implements OnInit {
   }
 
   async send() {
-    const blob = Utils.createPlanExport({
+    const blob = await Utils.createPlanExport({
       ...this.attendance.plan,
       attendance: this.attendance.id,
       attendances: await this.db.getAttendance(),
@@ -493,8 +493,8 @@ export class AttendancePage implements OnInit {
     await alert.present();
   }
 
-  exportToExcel() {
-    Utils.exportAttendanceToExcel(
+  async exportToExcel() {
+    await Utils.exportAttendanceToExcel(
       this.attendance,
       this.players,
       this.db.attendanceTypes().find(type => type.id === this.attendance.type_id),

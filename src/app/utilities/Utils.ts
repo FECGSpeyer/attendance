@@ -2,10 +2,7 @@ import { ToastController, LoadingController } from "@ionic/angular";
 import * as dayjs from "dayjs";
 import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, FieldType, PlayerHistoryType, Role } from "./constants";
 import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftDefinition, ShiftPlan, Church } from "./interfaces";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-import { autoTable as AutoTable } from 'jspdf-autotable';
-import { utils, WorkBook, WorkSheet, writeFile } from "xlsx";
+// jsPDF and xlsx are lazy-loaded for better initial bundle size
 
 export class Utils {
   public static getId(): number {
@@ -289,7 +286,11 @@ export class Utils {
     return await new LoadingController().create({ duration, message });
   }
 
-  public static createPlanExport(props: any, isPractice: boolean = true) {
+  public static async createPlanExport(props: any, isPractice: boolean = true) {
+    // Lazy load jsPDF to reduce initial bundle size
+    const { default: jsPDF } = await import('jspdf');
+    await import('jspdf-autotable');
+
     const startingTime: dayjs.Dayjs = dayjs(props.time).isValid() ? dayjs(props.time) : dayjs().hour(Number(props.time.substring(0, 2))).minute(Number(props.time.substring(3, 5)));
     const date: string = props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).format("DD.MM.YYYY") : startingTime.format("DD.MM.YYYY");
     const hasConductors = Boolean(props.fields.find((field: FieldSelection) => field.conductor));
@@ -406,7 +407,7 @@ export class Utils {
     const doc = new jsPDF();
     doc.setFontSize(20);
     doc.text(`${isPractice ? "Probenplan" : "Gottesdienst"} ${date}`, 14, 25);
-    ((doc as any).autoTable as AutoTable)({
+    (doc as any).autoTable({
       head: hasConductors ? [[
         { content: "", styles: { fontSize: 14 } },
         { content: "Uhrzeit", styles: { fontSize: 14 } },
@@ -435,12 +436,15 @@ export class Utils {
     }
   }
 
-  public static exportAttendanceToExcel(
+  public static async exportAttendanceToExcel(
     attendance: Attendance,
     players: PersonAttendance[],
     type: AttendanceType,
     churches?: Church[],
-  ): void {
+  ): Promise<void> {
+    // Lazy load xlsx to reduce initial bundle size
+    const { utils, writeFile } = await import('xlsx');
+
     let row = 1;
     let data;
 
@@ -468,8 +472,8 @@ export class Utils {
       }
     }
 
-    const ws: WorkSheet = utils.aoa_to_sheet(data);
-    const wb: WorkBook = utils.book_new();
+    const ws = utils.aoa_to_sheet(data);
+    const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, 'Anwesenheit');
 
     writeFile(wb, `${attendance.typeInfo ?? type.name}_${dayjs(attendance.date).format('DD_MM_YYYY')}_Anwesenheit.xlsx`);
