@@ -40,6 +40,8 @@ export class SongsPage implements OnInit {
   public groupsWithFiles: Group[] = [];
   public selectedGroupFiles: { song: Song, file: SongFile }[] = [];
   public selectedGroupName: string = '';
+  public isCurrentSongsModalOpen: boolean = false;
+  public isGroupDirectoryModalOpen: boolean = false;
   public tenantData?: Tenant;
   public selectedCategory: string = "";
   private sub: RealtimeChannel;

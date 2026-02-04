@@ -12,9 +12,6 @@
       <ion-button (click)="copyShareLink()" *ngIf="tenant || db.tenant()?.song_sharing_id">
         <ion-icon slot="icon-only" name="link-outline"></ion-icon>
       </ion-button>
-      <ion-button *ngIf="!readOnly && organisation && availableTenants.length > 0" (click)="isCopyModalOpen = true">
-        <ion-icon slot="icon-only" name="copy-outline"></ion-icon>
-      </ion-button>
       <ion-button *ngIf="!readOnly" (click)="confirmDeleteSong()">
         <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
       </ion-button>
@@ -251,6 +248,13 @@
         <ion-textarea (ionBlur)="update()" [(ngModel)]="song.link" autoGrow="true" #link></ion-textarea>
       </ion-item>
       }
+    </ion-item-group>
+
+    <ion-item-group *ngIf="!readOnly && organisation && availableTenants.length > 0">
+      <ion-item (click)="isCopyModalOpen = true">
+        <ion-icon slot="start" name="copy-outline"></ion-icon>
+        <ion-label>Werk in andere Instanz kopieren</ion-label>
+      </ion-item>
     </ion-item-group>
   </ion-list>
 </ion-content>

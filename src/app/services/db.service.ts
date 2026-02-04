@@ -2287,6 +2287,10 @@ export class DbService {
     return this.shifts().find(s => s.name === shift.name);
   }
 
+  async addShiftToTenant(shift: ShiftPlan, tenantId: number): Promise<void> {
+    return await this.shiftSvc.addShift(shift, tenantId);
+  }
+
   async updateShift(shift: ShiftPlan): Promise<ShiftPlan> {
     await this.shiftSvc.updateShift(shift);
     await this.loadShifts();
