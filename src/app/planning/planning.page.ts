@@ -401,7 +401,7 @@ export class PlanningPage implements OnInit {
     await actionSheet.present();
   }
 
-  createPlan(conductors: number[], timeString: string | number, modal: IonModal, perTelegram?: boolean): void {
+  async createPlan(conductors: number[], timeString: string | number, modal: IonModal, perTelegram?: boolean): Promise<void> {
     const shuffledConductors: string[] = this.shuffle(conductors.map((id: number): string => {
       const con: Person = this.conductors.find((c: Person): boolean => id === c.id);
       return `${con.firstName} ${con.lastName.substr(0, 1)}.`;
@@ -421,6 +421,7 @@ export class PlanningPage implements OnInit {
       ]); // TODO attendance type
     }
 
+    // Lazy load jsPDF
     const { jsPDF } = await import('jspdf');
     await import('jspdf-autotable');
     const doc = new jsPDF();
