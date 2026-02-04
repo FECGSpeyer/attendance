@@ -335,26 +335,44 @@ export class StatsPage implements OnInit {
     const groupAges: { [groupId: number]: { ages: number[]; name: string } } = {};
 
     this.groups.forEach(g => {
-      groupAges[g.id] = { ages: [], name: g.name };
-    });
-
-    this.activePlayers.forEach(player => {
-      if (player.birthday && groupAges[player.instrument]) {
-        const age = dayjs().diff(dayjs(player.birthday), 'year');
-        groupAges[player.instrument].ages.push(age);
+      if (g.id) {
+        groupAges[g.id] = { ages: [], name: g.name };
       }
     });
+
+    // Debug: log players without matching groups
+    const playersWithoutGroup: string[] = [];
+    
+    this.activePlayers.forEach(player => {
+      if (player.birthday) {
+        const age = dayjs().diff(dayjs(player.birthday), 'year');
+        if (player.instrument && groupAges[player.instrument]) {
+          groupAges[player.instrument].ages.push(age);
+        } else if (player.instrument) {
+          // Player has instrument ID but no matching group
+          playersWithoutGroup.push(`${player.firstName} ${player.lastName} (instrument: ${player.instrument}, groupName: ${player.groupName})`);
+        }
+      }
+    });
+
+    if (playersWithoutGroup.length > 0) {
+      console.warn('Players with instrument ID but no matching group:', playersWithoutGroup);
+      console.log('Available groups:', this.groups.map(g => ({ id: g.id, name: g.name })));
+    }
 
     const avgAgeData = Object.values(groupAges)
       .filter(g => g.ages.length > 0)
       .map(g => ({
         name: g.name,
-        avgAge: Math.round(g.ages.reduce((a, b) => a + b, 0) / g.ages.length)
+        avgAge: Math.round(g.ages.reduce((a, b) => a + b, 0) / g.ages.length),
+        count: g.ages.length
       }))
       .sort((a, b) => b.avgAge - a.avgAge);
 
+    console.log('Average age per register:', avgAgeData);
+
     this.avgAgePerRegisterData = {
-      labels: avgAgeData.map(g => g.name),
+      labels: avgAgeData.map(g => `${g.name} (${g.count})`),
       datasets: [{
         data: avgAgeData.map(g => g.avgAge),
         label: 'Ø Alter',
