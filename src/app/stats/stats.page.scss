@@ -29,3 +29,13 @@
 ion-list-header {
   font-weight: 600;
 }
+
+ion-item-group {
+    background: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+    ion-item-group {
+        background: #000;
+    }
+}

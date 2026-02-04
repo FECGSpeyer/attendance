@@ -77,7 +77,7 @@ export class StatsPage implements OnInit {
     this.curAttDate = new Date(await this.db.getCurrentAttDate());
     this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
     this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
-    this.allAttendances = (await this.db.getAttendance(false, true))
+    this.allAttendances = (await this.db.getAttendance(true, true))
       .filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().add(1, 'day')))
       .map((att: Attendance) => ({
         ...att,
