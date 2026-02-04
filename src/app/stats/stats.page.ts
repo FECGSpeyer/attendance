@@ -36,6 +36,11 @@ export class StatsPage implements OnInit {
   public selectedInstances: number[] = [];
   public groups: Group[] = [];
 
+  // Date range filter
+  public allAttendances: Attendance[] = [];
+  public filterStartDate: string;
+  public filterEndDate: string;
+
   // Chart data
   public attendanceTrendData: ChartData<'line'>;
   public attendanceTrendOptions: ChartConfiguration<'line'>['options'];
@@ -72,35 +77,62 @@ export class StatsPage implements OnInit {
     this.curAttDate = new Date(await this.db.getCurrentAttDate());
     this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
     this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
-    this.attendances = (await this.db.getAttendance(false, true)).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().add(1, "day"))).map((att: Attendance) => {
-      return {
+    this.allAttendances = (await this.db.getAttendance(false, true))
+      .filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().add(1, 'day')))
+      .map((att: Attendance) => ({
         ...att,
         percentage: Utils.getPercentage(att.persons),
-      };
-    });
+      }));
+
+    // Set default date range (season start to today)
+    this.filterStartDate = dayjs(this.curAttDate).format('YYYY-MM-DD');
+    this.filterEndDate = dayjs().format('YYYY-MM-DD');
+
     this.players = await this.db.getPlayers(true);
     this.leftPlayers = this.players.filter((player: Player) => player.left);
     this.activePlayers = this.players.filter((player: Player) => !player.left && !player.paused);
     this.pausedPlayers = this.players.filter((player: Player) => player.paused && !player.left);
 
-    const sort: Attendance[] = this.attendances.sort((a: Attendance, b: Attendance) => a.percentage - b.percentage);
+    // Load groups and apply date filter (which initializes charts)
+    this.groups = this.db.groups();
+    this.applyDateFilter();
+
+    await this.getOrganizationStats();
+  }
+
+  applyDateFilter() {
+    // Filter attendances by date range
+    this.attendances = this.allAttendances.filter((att: Attendance) => {
+      const attDate = dayjs(att.date);
+      return attDate.isAfter(dayjs(this.filterStartDate).subtract(1, 'day')) &&
+        attDate.isBefore(dayjs(this.filterEndDate).add(1, 'day'));
+    });
+
+    // Recalculate stats
+    const sort = [...this.attendances].sort((a, b) => a.percentage - b.percentage);
     this.worstAttendance = sort[0];
     this.bestAttendance = sort[sort.length - 1];
 
     const attendancesToCalcPerc = this.attendances.filter((att: Attendance) => {
       const type = this.db.attendanceTypes().find((t) => t.id === att.type_id);
-      return type.include_in_average;
+      return type?.include_in_average;
     });
-    this.attPerc = Math.round(((attendancesToCalcPerc.map((att: Attendance) => att.percentage).reduce((a: number, b: number) => a + b, 0)) / (attendancesToCalcPerc.length * 100)) * 100);
+    if (attendancesToCalcPerc.length > 0) {
+      const sum = attendancesToCalcPerc.reduce((a, b) => a + b.percentage, 0);
+      this.attPerc = Math.round((sum / (attendancesToCalcPerc.length * 100)) * 100);
+    } else {
+      this.attPerc = 0;
+    }
 
-    // Load groups and initialize charts
-    this.groups = this.db.groups();
-    await this.initializeCharts();
-
-    await this.getOrganizationStats();
+    // Reinitialize charts with filtered data
+    this.initializeCharts();
   }
 
-  private async initializeCharts() {
+  onDateFilterChange() {
+    this.applyDateFilter();
+  }
+
+  private initializeCharts() {
     this.initAttendanceTrendChart();
     this.initStatusPieChart();
     this.initInstrumentBarChart();
@@ -158,10 +190,23 @@ export class StatsPage implements OnInit {
       });
     });
 
+    const total = statusCounts.present + statusCounts.excused + statusCounts.late + statusCounts.absent;
+    const percentages = total > 0 ? [
+      Math.round((statusCounts.present / total) * 100),
+      Math.round((statusCounts.excused / total) * 100),
+      Math.round((statusCounts.late / total) * 100),
+      Math.round((statusCounts.absent / total) * 100)
+    ] : [0, 0, 0, 0];
+
     this.statusPieData = {
-      labels: ['Anwesend', 'Entschuldigt', 'Verspätet', 'Abwesend'],
+      labels: [
+        `Anwesend (${percentages[0]}%)`,
+        `Entschuldigt (${percentages[1]}%)`,
+        `Verspätet (${percentages[2]}%)`,
+        `Abwesend (${percentages[3]}%)`
+      ],
       datasets: [{
-        data: [statusCounts.present, statusCounts.excused, statusCounts.late, statusCounts.absent],
+        data: percentages,
         backgroundColor: ['#2dd36f', '#3dc2ff', '#ffc409', '#eb445a']
       }]
     };
@@ -170,7 +215,12 @@ export class StatsPage implements OnInit {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        title: { display: true, text: 'Statusverteilung aller Termine' }
+        title: { display: true, text: 'Statusverteilung (in %)' },
+        tooltip: {
+          callbacks: {
+            label: (context) => `${context.label}`
+          }
+        }
       }
     };
   }

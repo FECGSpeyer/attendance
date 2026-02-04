@@ -10,6 +10,34 @@
 </ion-header>
 
 <ion-content color="light">
+  <!-- Date Range Filter -->
+  <ion-list [inset]="true">
+    <ion-list-header>
+      📅 Zeitraum
+    </ion-list-header>
+    <ion-item>
+      <ion-input
+        type="date"
+        label="Von"
+        labelPlacement="stacked"
+        [(ngModel)]="filterStartDate"
+        (ionChange)="onDateFilterChange()">
+      </ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input
+        type="date"
+        label="Bis"
+        labelPlacement="stacked"
+        [(ngModel)]="filterEndDate"
+        (ionChange)="onDateFilterChange()">
+      </ion-input>
+    </ion-item>
+    <ion-item lines="none">
+      <ion-note>{{ attendances?.length }} Termine im Zeitraum</ion-note>
+    </ion-item>
+  </ion-list>
+
   <!-- Charts Section -->
   @if (chartsReady) {
     <ion-list [inset]="true">
