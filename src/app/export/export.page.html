@@ -21,13 +21,13 @@
   <ion-list>
     <ion-item>
       <ion-select label="Felder" [(ngModel)]="selectedFields" multiple="true">
-        <ion-select-option *ngFor="let field of fields">{{ field }}</ion-select-option>
+        <ion-select-option *ngFor="let field of fields; trackBy: trackByField">{{ field }}</ion-select-option>
       </ion-select>
     </ion-item>
 
     <ion-list>
       <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
-        <ion-item-sliding #slider *ngFor="let field of selectedFields; let i = index">
+        <ion-item-sliding #slider *ngFor="let field of selectedFields; let i = index; trackBy: trackByField">
           <ion-item>
             <ion-label>{{ field }}</ion-label>
             <ion-reorder slot="end"></ion-reorder>

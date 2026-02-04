@@ -32,6 +32,9 @@ export class ExportPage implements OnInit {
     private alertController: AlertController,
   ) { }
 
+  // TrackBy function for performance
+  trackByField = (index: number, field: string): string => field;
+
   async ngOnInit() {
     this.players = Utils.getModifiedPlayersForList(
       await this.db.getPlayers(),
