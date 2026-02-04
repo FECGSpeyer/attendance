@@ -47,6 +47,11 @@ export class PlanningPage implements OnInit {
     private actionSheetController: ActionSheetController,
   ) { }
 
+  trackByAttendanceId = (_: number, att: Attendance): number => att.id;
+  trackBySongId = (_: number, song: Song): number => song.id;
+  trackByFieldId = (_: number, field: FieldSelection): string => field.id;
+  trackByConductorId = (_: number, conductor: Person): number => conductor.id;
+
   async ngOnInit() {
     this.songs = await this.db.getSongs();
     this.groupCategories = await this.db.getGroupCategories();
