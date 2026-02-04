@@ -114,16 +114,16 @@ export class PlanningPage implements OnInit {
     slider?.close();
     const clone: FieldSelection = JSON.parse(JSON.stringify(field));
     let inputs = [{
-        label: "Programmpunkt",
-        name: "field",
-        value: clone.name,
-        placeholder: "Programmpunkt eingeben..."
-      }, {
-        label: "Ausführender",
-        name: "conductor",
-        value: clone.conductor,
-        placeholder: "Ausführenden eingeben..."
-      }];
+      label: "Programmpunkt",
+      name: "field",
+      value: clone.name,
+      placeholder: "Programmpunkt eingeben..."
+    }, {
+      label: "Ausführender",
+      name: "conductor",
+      value: clone.conductor,
+      placeholder: "Ausführenden eingeben..."
+    }];
 
     if (field.id.includes("noteFld")) {
       inputs = [{
