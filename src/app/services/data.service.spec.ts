@@ -1,12 +1,14 @@
 import { TestBed } from '@angular/core/testing';
-
+import { describe, it, expect, beforeEach } from 'vitest';
 import { DataService } from './data.service';
 
 describe('DataService', () => {
   let service: DataService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [DataService],
+    });
     service = TestBed.inject(DataService);
   });
 
