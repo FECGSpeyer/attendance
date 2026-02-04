@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { AlertController, Platform } from '@ionic/angular';
 import { createClient, SupabaseClient, SupabaseClientOptions, User } from '@supabase/supabase-js';
 import axios from 'axios';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
 import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance } from '../utilities/interfaces';
@@ -879,9 +879,6 @@ export class DbService {
           break;
         case "invalid_credentials":
           Utils.showToast("Ungültige Anmeldedaten", "danger");
-          break;
-        case "email_not_confirmed":
-          Utils.showToast("Bitte bestätige zuerst deine E-Mail-Adresse.", "danger");
           break;
         default:
           Utils.showToast(error.code === "email_not_confirmed" ? "Bitte bestätige zuerst deine E-Mail-Adresse." : "Fehler beim Anmelden", "danger");

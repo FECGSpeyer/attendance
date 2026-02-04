@@ -1,6 +1,6 @@
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, IonModal } from '@ionic/angular';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus } from 'src/app/utilities/constants';
 import { CrossTenantPersonAttendance, AttendanceType } from 'src/app/utilities/interfaces';

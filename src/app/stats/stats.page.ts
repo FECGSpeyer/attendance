@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
 import { Attendance, Person, Player, Tenant } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';

@@ -1,5 +1,5 @@
 import { ToastController, LoadingController } from "@ionic/angular";
-import * as dayjs from "dayjs";
+import dayjs from 'dayjs';
 import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, FieldType, PlayerHistoryType, Role } from "./constants";
 import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftDefinition, ShiftPlan, Church } from "./interfaces";
 // jsPDF and xlsx are lazy-loaded for better initial bundle size

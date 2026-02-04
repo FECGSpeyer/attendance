@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { AttendanceStatus } from '../../utilities/constants';
 import { Attendance, AttendanceType, Person, PersonAttendance } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';

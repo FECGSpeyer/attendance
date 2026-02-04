@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { IonModal, IonPopover, NavController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
 import { Player, Tenant } from 'src/app/utilities/interfaces';

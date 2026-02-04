@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, AlertController } from '@ionic/angular';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { DEFAULT_IMAGE, FieldType, Role } from 'src/app/utilities/constants';
 import { Church, Group, Tenant } from 'src/app/utilities/interfaces';

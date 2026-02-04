@@ -3,8 +3,8 @@ import { ActionSheetButton, ActionSheetController, AlertController, IonContent, 
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
 import { Group, Organisation, Parent, Person, PersonAttendance, Player, PlayerHistoryEntry, ShiftPlan, Teacher, Tenant } from 'src/app/utilities/interfaces';
-import * as dayjs from 'dayjs';
-import * as utc from 'dayjs/plugin/utc';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
 import { AttendanceStatus, DefaultAttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role, FieldType } from 'src/app/utilities/constants';
 dayjs.extend(utc);

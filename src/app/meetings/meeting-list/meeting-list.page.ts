@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, IonModal } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Meeting } from 'src/app/utilities/interfaces';
 

@@ -5,7 +5,7 @@ import { AlertController, IonItemSliding, ModalController } from '@ionic/angular
 import { Storage } from '@ionic/storage-angular';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { format } from 'date-fns';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode } from 'src/app/utilities/constants';

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, IonItemSliding, ItemReorderEventDetail, ModalController } from '@ionic/angular';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 // jsPDF and xlsx are lazy-loaded for better initial bundle size
 import { DbService } from '../services/db.service';
 import { Attendance, Player } from '../utilities/interfaces';

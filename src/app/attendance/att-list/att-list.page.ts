@@ -2,7 +2,7 @@ import { Component, OnInit, effect } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { format, isSameDay, parseISO } from 'date-fns';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Attendance, PersonAttendance, Player, Song, History, Person } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';

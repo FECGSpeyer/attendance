@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { History, Song } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { supabase } from '../base/supabase';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 
 @Injectable({
   providedIn: 'root'

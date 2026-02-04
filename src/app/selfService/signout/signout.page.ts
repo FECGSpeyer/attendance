@@ -1,7 +1,7 @@
 /* eslint-disable arrow-body-style */
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, isPlatform } from '@ionic/angular';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 // pdf-lib is lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
@@ -622,7 +622,7 @@ export class SignoutPage implements OnInit {
 
       // Save and print the merged PDF
       const mergedPdfBytes = await mergedPdf.save();
-      const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([mergedPdfBytes as BlobPart], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
 
       const printWindow = window.open(url, '_blank');

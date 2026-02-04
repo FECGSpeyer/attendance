@@ -1,5 +1,5 @@
 import { Injectable, WritableSignal, inject, signal } from '@angular/core';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../../utilities/constants';
 import { Attendance, AttendanceType, Group, Person, PersonAttendance, Player, PlayerHistoryEntry, ShiftPlan, Tenant, TenantUser } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
