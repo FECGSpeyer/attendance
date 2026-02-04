@@ -20,7 +20,6 @@
 </ion-header>
 
 <ion-content color="light" [fullscreen]="true">
-  @if (song) {
   <ion-header collapse="condense">
     <ion-toolbar color="light">
       @if (readOnly) {
@@ -30,6 +29,8 @@
       }
     </ion-toolbar>
   </ion-header>
+  
+  @if (song) {
   <ion-list [inset]="true">
     @if (!readOnly) {
     <ion-item-group>
