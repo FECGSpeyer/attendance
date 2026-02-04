@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
-import { ActionSheetController, AlertButton, AlertController, IonItemSliding, IonModal, IonRouterOutlet, isPlatform, ModalController } from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonRouterOutlet, isPlatform, ModalController } from '@ionic/angular';
 import { ExportPage } from 'src/app/export/export.page';
 import { HistoryPage } from 'src/app/history/history.page';
 import { PersonPage } from 'src/app/people/person/person.page';
@@ -634,7 +634,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   async changeImg() {
-    const additionalButtons: AlertButton[] = [];
+    const additionalButtons: ActionSheetButton[] = [];
 
     if (this.userData.img !== DEFAULT_IMAGE) {
       additionalButtons.push({
