@@ -6,10 +6,10 @@ import { Utils } from '../utilities/Utils';
 import { environment } from 'src/environments/environment';
 
 @Component({
-    selector: 'app-login',
-    templateUrl: './login.page.html',
-    styleUrls: ['./login.page.scss'],
-    standalone: false
+  selector: 'app-login',
+  templateUrl: './login.page.html',
+  styleUrls: ['./login.page.scss'],
+  standalone: false
 })
 export class LoginPage implements OnInit {
   @ViewChild('emailInput', { static: true }) emailInput: IonInput;
