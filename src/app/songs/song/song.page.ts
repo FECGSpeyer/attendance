@@ -233,7 +233,7 @@ export class SongPage implements OnInit {
   }
 
   async downloadFile(file: SongFile) {
-    const blob = await this.db.downloadSongFile(file.storageName, this.song.id);
+    const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), this.song.id);
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -385,7 +385,7 @@ export class SongPage implements OnInit {
     await loading.present();
     const blobs: { fileName: string, blob: Blob }[] = [];
     for (const file of this.song.files || []) {
-      const blob = await this.db.downloadSongFile(file.storageName, this.song.id);
+      const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), this.song.id);
       blobs.push({ fileName: file.fileName, blob });
     }
 
@@ -705,7 +705,7 @@ export class SongPage implements OnInit {
         loading.message = `Lade ${this.getInstrumentName(file.instrumentId)}... (${copies} Kopien)`;
 
         // Download the PDF
-        const pdfBlob = await this.db.downloadSongFile(file.storageName, this.song.id);
+        const pdfBlob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), this.song.id);
         const pdfBytes = await pdfBlob.arrayBuffer();
 
         // Load the source PDF

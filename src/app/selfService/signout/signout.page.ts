@@ -366,7 +366,7 @@ export class SignoutPage implements OnInit {
           handler: async () => {
             const file = song.files.find(f => f.instrumentId === this.player.instrument);
             if (file) {
-              const blob = await this.db.downloadSongFile(file.storageName, song.id);
+              const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), song.id);
               const url = window.URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
@@ -397,7 +397,7 @@ export class SignoutPage implements OnInit {
                 text: file.fileName,
                 role: '',
                 handler: async () => {
-                  const blob = await this.db.downloadSongFile(file.storageName, song.id);
+                  const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), song.id);
                   const url = window.URL.createObjectURL(blob);
                   const a = document.createElement('a');
                   a.href = url;
