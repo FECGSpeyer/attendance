@@ -41,16 +41,22 @@ export class StatsPage implements OnInit {
   public attendanceTrendOptions: ChartConfiguration<'line'>['options'];
   public statusPieData: ChartData<'pie'>;
   public statusPieOptions: ChartConfiguration<'pie'>['options'];
-  public registerBarData: ChartData<'bar'>;
-  public registerBarOptions: ChartConfiguration<'bar'>['options'];
+  public instrumentBarData: ChartData<'bar'>;
+  public instrumentBarOptions: ChartConfiguration<'bar'>['options'];
   public top20Data: ChartData<'bar'>;
   public top20Options: ChartConfiguration<'bar'>['options'];
   public ageDistributionData: ChartData<'bar'>;
   public ageDistributionOptions: ChartConfiguration<'bar'>['options'];
-  public avgAgePerRegisterData: ChartData<'bar'>;
-  public avgAgePerRegisterOptions: ChartConfiguration<'bar'>['options'];
+  public avgAgePerInstrumentData: ChartData<'bar'>;
+  public avgAgePerInstrumentOptions: ChartConfiguration<'bar'>['options'];
   public divaIndexData: ChartData<'bar'>;
   public divaIndexOptions: ChartConfiguration<'bar'>['options'];
+
+  // Dynamic chart heights based on number of entries
+  public instrumentChartHeight: number = 400;
+  public avgAgeChartHeight: number = 400;
+  public top20ChartHeight: number = 500;
+  public divaChartHeight: number = 350;
 
   public chartsReady = false;
 
@@ -97,10 +103,10 @@ export class StatsPage implements OnInit {
   private async initializeCharts() {
     this.initAttendanceTrendChart();
     this.initStatusPieChart();
-    this.initRegisterBarChart();
+    this.initInstrumentBarChart();
     this.initTop20Chart();
     this.initAgeDistributionChart();
-    this.initAvgAgePerRegisterChart();
+    this.initAvgAgePerInstrumentChart();
     this.initDivaIndexChart();
     this.chartsReady = true;
   }
@@ -169,8 +175,8 @@ export class StatsPage implements OnInit {
     };
   }
 
-  private initRegisterBarChart() {
-    // Calculate attendance rate per group/register
+  private initInstrumentBarChart() {
+    // Calculate attendance rate per instrument
     const groupStats: { [groupId: number]: { present: number; total: number; name: string } } = {};
 
     this.groups.forEach(g => {
@@ -194,7 +200,10 @@ export class StatsPage implements OnInit {
       .map(g => ({ name: g.name, percentage: Math.round((g.present / g.total) * 100) }))
       .sort((a, b) => b.percentage - a.percentage);
 
-    this.registerBarData = {
+    // Dynamic height: 30px per entry, minimum 300px
+    this.instrumentChartHeight = Math.max(300, groupData.length * 30);
+
+    this.instrumentBarData = {
       labels: groupData.map(g => g.name),
       datasets: [{
         data: groupData.map(g => g.percentage),
@@ -203,12 +212,12 @@ export class StatsPage implements OnInit {
       }]
     };
 
-    this.registerBarOptions = {
+    this.instrumentBarOptions = {
       responsive: true,
       maintainAspectRatio: false,
       indexAxis: 'y',
       plugins: {
-        title: { display: true, text: 'Anwesenheitsquote nach Register' },
+        title: { display: true, text: 'Anwesenheitsquote nach Instrument' },
         legend: { display: false }
       },
       scales: {
@@ -243,6 +252,9 @@ export class StatsPage implements OnInit {
     const top20 = playerStats
       .sort((a, b) => b.percentage - a.percentage)
       .slice(0, 20);
+
+    // Dynamic height: 28px per entry
+    this.top20ChartHeight = Math.max(300, top20.length * 28);
 
     this.top20Data = {
       labels: top20.map(p => p.name),
@@ -330,8 +342,8 @@ export class StatsPage implements OnInit {
     };
   }
 
-  private initAvgAgePerRegisterChart() {
-    // Average age per register/group
+  private initAvgAgePerInstrumentChart() {
+    // Average age per instrument
     const groupAges: { [groupId: number]: { ages: number[]; name: string } } = {};
 
     this.groups.forEach(g => {
@@ -369,9 +381,12 @@ export class StatsPage implements OnInit {
       }))
       .sort((a, b) => b.avgAge - a.avgAge);
 
-    console.log('Average age per register:', avgAgeData);
+    console.log('Average age per instrument:', avgAgeData);
 
-    this.avgAgePerRegisterData = {
+    // Dynamic height: 28px per entry, minimum 300px
+    this.avgAgeChartHeight = Math.max(300, avgAgeData.length * 28);
+
+    this.avgAgePerInstrumentData = {
       labels: avgAgeData.map(g => `${g.name} (${g.count})`),
       datasets: [{
         data: avgAgeData.map(g => g.avgAge),
@@ -380,12 +395,12 @@ export class StatsPage implements OnInit {
       }]
     };
 
-    this.avgAgePerRegisterOptions = {
+    this.avgAgePerInstrumentOptions = {
       responsive: true,
       maintainAspectRatio: false,
       indexAxis: 'y',
       plugins: {
-        title: { display: true, text: 'Durchschnittsalter pro Register' },
+        title: { display: true, text: 'Durchschnittsalter pro Instrument' },
         legend: { display: false }
       },
       scales: {
@@ -416,6 +431,9 @@ export class StatsPage implements OnInit {
     const topDivas = playerAbsences
       .sort((a, b) => b.absences - a.absences)
       .slice(0, 15);
+
+    // Dynamic height: 28px per entry
+    this.divaChartHeight = Math.max(250, topDivas.length * 28);
 
     this.divaIndexData = {
       labels: topDivas.map(p => p.name),

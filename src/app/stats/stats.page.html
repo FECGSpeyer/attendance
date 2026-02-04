@@ -45,7 +45,7 @@
     <ion-list [inset]="true">
       <!-- Top 20 Chart -->
       <ion-item lines="none">
-        <div class="chart-container chart-horizontal">
+        <div class="chart-container" [style.height.px]="top20ChartHeight">
           <canvas baseChart
             [data]="top20Data"
             [options]="top20Options"
@@ -58,7 +58,7 @@
     <ion-list [inset]="true">
       <!-- Diva Index Chart -->
       <ion-item lines="none">
-        <div class="chart-container chart-horizontal-small">
+        <div class="chart-container" [style.height.px]="divaChartHeight">
           <canvas baseChart
             [data]="divaIndexData"
             [options]="divaIndexOptions"
@@ -69,12 +69,12 @@
     </ion-list>
 
     <ion-list [inset]="true">
-      <!-- Register Bar Chart -->
+      <!-- Instrument Bar Chart -->
       <ion-item lines="none">
-        <div class="chart-container chart-horizontal-small">
+        <div class="chart-container" [style.height.px]="instrumentChartHeight">
           <canvas baseChart
-            [data]="registerBarData"
-            [options]="registerBarOptions"
+            [data]="instrumentBarData"
+            [options]="instrumentBarOptions"
             type="bar">
           </canvas>
         </div>
@@ -95,12 +95,12 @@
     </ion-list>
 
     <ion-list [inset]="true">
-      <!-- Average Age per Register Chart -->
+      <!-- Average Age per Instrument Chart -->
       <ion-item lines="none">
-        <div class="chart-container chart-horizontal-medium">
+        <div class="chart-container" [style.height.px]="avgAgeChartHeight">
           <canvas baseChart
-            [data]="avgAgePerRegisterData"
-            [options]="avgAgePerRegisterOptions"
+            [data]="avgAgePerInstrumentData"
+            [options]="avgAgePerInstrumentOptions"
             type="bar">
           </canvas>
         </div>
