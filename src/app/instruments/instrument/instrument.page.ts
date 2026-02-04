@@ -18,6 +18,9 @@ export class InstrumentPage implements OnInit {
   public isGeneral: boolean = false;
   public categories: GroupCategory[] = [];
 
+  // TrackBy function for performance
+  trackByCategoryId = (_: number, cat: GroupCategory): number => cat.id!;
+
   constructor(
     private db: DbService,
     private ai: AiService,

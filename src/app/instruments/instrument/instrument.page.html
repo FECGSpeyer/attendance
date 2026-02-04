@@ -25,7 +25,7 @@
           <ion-label position="stacked">Kategorie</ion-label>
           <ion-select [(ngModel)]="instrument.category">
             <ion-select-option [value]="null">Keine</ion-select-option>
-            <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</ion-select-option>
+            <ion-select-option *ngFor="let cat of categories; trackBy: trackByCategoryId" [value]="cat.id">{{ cat.name }}</ion-select-option>
           </ion-select>
         </ion-item>
       </ion-col>

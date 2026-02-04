@@ -10,7 +10,7 @@
 <ion-content *ngIf="meeting && isEditMode" class="ion-padding">
   <ion-item>
     <ion-select label="Anwesende" placeholder="Personen auswählen..." [(ngModel)]="meeting.attendees" #select multiple="true">
-      <ion-select-option multiple="true" [value]="con.id" *ngFor="let con of conductors">{{ con.firstName }} {{ con.lastName }}</ion-select-option>
+      <ion-select-option multiple="true" [value]="con.id" *ngFor="let con of conductors; trackBy: trackByConductorId">{{ con.firstName }} {{ con.lastName }}</ion-select-option>
     </ion-select>
   </ion-item>
   <quill-editor placeholder="Notiz eingeben..." [(ngModel)]="meeting.notes"></quill-editor>

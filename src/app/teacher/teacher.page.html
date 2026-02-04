@@ -16,7 +16,7 @@
   </ion-item>
   <ion-item>
     <ion-select interface="modal" label="Instrumente" [(ngModel)]="editedTeacher.instruments" multiple="true">
-      <ion-select-option [value]="ins.id" *ngFor="let ins of db.groups()">{{ ins.name }}</ion-select-option>
+      <ion-select-option [value]="ins.id" *ngFor="let ins of db.groups(); trackBy: trackByGroupId">{{ ins.name }}</ion-select-option>
     </ion-select>
   </ion-item>
   <ion-item>
@@ -37,7 +37,7 @@
       </ion-item>
       <div slot="content">
         <ion-list>
-          <ion-item *ngFor="let player of playersFromTeacher">
+          <ion-item *ngFor="let player of playersFromTeacher; trackBy: trackByPlayerId">
             <ion-label>{{ player.firstName }} {{ player.lastName }}</ion-label>
           </ion-item>
         </ion-list>

@@ -16,6 +16,10 @@ export class TeacherPage implements OnInit {
   editedTeacher: Teacher;
   playersFromTeacher: Player[] = [];
 
+  // TrackBy functions for performance
+  trackByGroupId = (_: number, group: Group): number => group.id!;
+  trackByPlayerId = (_: number, player: Player): number => player.id!;
+
   constructor(
     private modalController: ModalController,
     public db: DbService,

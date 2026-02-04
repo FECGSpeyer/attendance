@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonModal } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
-import { History, Song, Tenant } from 'src/app/utilities/interfaces';
+import { Group, History, Song, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -12,6 +12,11 @@ import { Utils } from 'src/app/utilities/Utils';
 })
 export class SongViewerPage implements OnInit {
   public songs: Song[] = [];
+
+  // TrackBy functions for performance
+  trackByInstrumentId = (_: number, item: Group): number => item.id!;
+  trackByHistoryId = (_: number, his: History): number => his.id ?? his.song!.id!;
+  trackBySongId = (_: number, song: Song): number => song.id!;
   private tenantId: number;
   public tenantLongName: string;
   public tenantShortName: string;
