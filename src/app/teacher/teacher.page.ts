@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { DbService } from '../services/db.service';
-import { Group, Player, Teacher } from '../utilities/interfaces';
+import { Player, Teacher } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
 @Component({
@@ -15,10 +15,6 @@ export class TeacherPage implements OnInit {
 
   editedTeacher: Teacher;
   playersFromTeacher: Player[] = [];
-
-  // TrackBy functions for performance
-  trackByGroupId = (_: number, group: Group): number => group.id!;
-  trackByPlayerId = (_: number, player: Player): number => player.id!;
 
   constructor(
     private modalController: ModalController,

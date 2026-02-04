@@ -4,7 +4,7 @@ import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
 import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
-import { Group, Player, Tenant } from 'src/app/utilities/interfaces';
+import { Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -136,7 +136,6 @@ export class HandoverPage implements OnInit {
     this.filter();
   }
 
-  trackByTenantId = (_: number, item: Tenant): number => item.id;
-  trackByGroupId = (_: number, item: Group): number => item.id;
+  // TrackBy function for filtered persons list
   trackByPersonId = (_: number, item: Player): number => item.id;
 }

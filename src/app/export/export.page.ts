@@ -32,9 +32,6 @@ export class ExportPage implements OnInit {
     private alertController: AlertController,
   ) { }
 
-  // TrackBy function for performance
-  trackByField = (index: number, field: string): string => field;
-
   async ngOnInit() {
     this.players = Utils.getModifiedPlayersForList(
       await this.db.getPlayers(),
@@ -86,7 +83,7 @@ export class ExportPage implements OnInit {
   }
 
   export() {
-    const shortName: string =this.db.tenant().shortName;
+    const shortName: string = this.db.tenant().shortName;
     if (this.content === "player") {
       this.type === "pdf" ? this.exportPlayerPDF(shortName) : this.exportPlayerExcel(shortName);
     } else {

@@ -36,7 +36,7 @@
       <ion-item>
         <ion-label position="stacked">Verfügbare Anwesenheitsstatus</ion-label>
         <ion-select (ionChange)="onAvailableStatusesChanged()" [(ngModel)]="type.available_statuses" multiple="true">
-          <ion-select-option [disabled]="status === 1" *ngFor="let status of attendanceStatuses; trackBy: trackByStatus" [value]="status">
+          <ion-select-option [disabled]="status === 1" *ngFor="let status of attendanceStatuses" [value]="status">
             {{ getAttendanceStatusDescription(status) }}
           </ion-select-option>
         </ion-select>

@@ -15,9 +15,6 @@ export class MeetingPage implements OnInit {
   public attendeesNames: string = "";
   public isGeneral: boolean = false;
 
-  // TrackBy function for performance
-  trackByConductorId = (_: number, con: Person): number => con.id!;
-
   constructor(
     private db: DbService
   ) { }

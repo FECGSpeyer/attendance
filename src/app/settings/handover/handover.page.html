@@ -41,7 +41,7 @@
       </ion-item>
       <ion-item>
         <ion-select label="Ziel-Instanz" [(ngModel)]="tenant">
-          <ion-select-option [value]="tnt.id" *ngFor="let tnt of tenants; trackBy: trackByTenantId">{{ tnt.longName }}</ion-select-option>
+          <ion-select-option [value]="tnt.id" *ngFor="let tnt of tenants">{{ tnt.longName }}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item id="filter-btn-handover" button detail="false">
@@ -82,7 +82,7 @@
       <ion-item *ngIf="filters.includes('group')">
         <ion-label position="stacked">Gruppe</ion-label>
         <ion-select (ionChange)="filter()" [(ngModel)]="groupId">
-          <ion-select-option *ngFor="let group of db.groups(); trackBy: trackByGroupId" [value]="group.id">{{ group.name }}</ion-select-option>
+          <ion-select-option *ngFor="let group of db.groups()" [value]="group.id">{{ group.name }}</ion-select-option>
         </ion-select>
         <ion-button fill="clear" slot="end" (click)="removeFilter('group')">
           <ion-icon slot="icon-only" name="trash-outline"></ion-icon>

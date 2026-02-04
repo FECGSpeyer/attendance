@@ -74,7 +74,7 @@
               <ion-item>
                 <ion-select interface="modal" label="Gruppe" [disabled]="readOnly" (ionChange)="onInstrumentChange()"
                   #select [(ngModel)]="player.instrument">
-                  <ion-select-option [value]="i.id" *ngFor="let i of db.groups(); trackBy: trackByGroupId">
+                  <ion-select-option [value]="i.id" *ngFor="let i of db.groups()">
                     {{ i.name }}
                   </ion-select-option>
                 </ion-select>
@@ -151,7 +151,7 @@
                 <ion-select interface="modal" [disabled]="readOnly" (ionChange)="onChange()"
                   [(ngModel)]="player.parent_id">
                   <ion-select-option [value]="null">Nicht festgelegt</ion-select-option>
-                  <ion-select-option [value]="parent.id" *ngFor="let parent of parents; trackBy: trackByParentId">
+                  <ion-select-option [value]="parent.id" *ngFor="let parent of parents">
                     {{ parent.firstName }} {{ parent.lastName }}
                   </ion-select-option>
                 </ion-select>
@@ -171,7 +171,7 @@
               <ion-item>
                 <ion-select interface="modal" label="Lehrer" [disabled]="readOnly" (ionChange)="onChange()"
                   [(ngModel)]="player.teacher">
-                  <ion-select-option [value]="teacher.id" *ngFor="let teacher of teachers; trackBy: trackByTeacherId">
+                  <ion-select-option [value]="teacher.id" *ngFor="let teacher of teachers">
                     {{ teacher.name }}
                   </ion-select-option>
                 </ion-select>
@@ -225,7 +225,7 @@
                 <ion-select label="Schichtplan" [disabled]="readOnly" (ionChange)="onShiftChange()"
                   [(ngModel)]="player.shift_id">
                   <ion-select-option [value]="null">Keine Schicht zugewiesen</ion-select-option>
-                  <ion-select-option [value]="sh.id" *ngFor="let sh of db.shifts(); trackBy: trackByShiftId">
+                  <ion-select-option [value]="sh.id" *ngFor="let sh of db.shifts()">
                     {{ sh.name }}
                   </ion-select-option>
                 </ion-select>
@@ -238,7 +238,7 @@
               <ion-item>
                 <ion-select label="Schicht" [disabled]="readOnly" (ionChange)="onChange()"
                   [(ngModel)]="player.shift_name">
-                  <ion-select-option [value]="sh.name" *ngFor="let sh of shift.shifts; trackBy: trackByShiftId">
+                  <ion-select-option [value]="sh.name" *ngFor="let sh of shift.shifts">
                     {{ sh.name }}
                   </ion-select-option>
                 </ion-select>
@@ -362,7 +362,7 @@
       </ion-item>
       <div slot="content">
         <ion-list>
-          <ion-item *ngFor="let field of db.tenant().additional_fields; trackBy: trackByFieldId">
+          <ion-item *ngFor="let field of db.tenant().additional_fields">
             @if (field.type === fieldTypes.TEXT) {
             <ion-input [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name" labelPlacement="stacked"
               [(ngModel)]="player.additional_fields[field.id]"></ion-input>
@@ -388,14 +388,14 @@
             } @else if (field.type === fieldTypes.SELECT) {
             <ion-select [(ngModel)]="player.additional_fields[field.id]" [disabled]="readOnly" (ionChange)="onChange()"
               [label]="field.name">
-              <ion-select-option *ngFor="let option of field.options; trackBy: trackByOption" [value]="option">{{ option }}</ion-select-option>
+              <ion-select-option *ngFor="let option of field.options" [value]="option">{{ option }}</ion-select-option>
             </ion-select>
             } @else if (field.type === fieldTypes.TEXTAREA) {
             <ion-textarea [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()" [label]="field.name"
               labelPlacement="stacked" [(ngModel)]="player.additional_fields[field.id]"></ion-textarea>
             } @else if (field.type === fieldTypes.BFECG_CHURCH) {
             <ion-select (ionChange)="onChange()" interface="modal" [label]="field.name" [(ngModel)]="player.additional_fields[field.id]">
-              <ion-select-option *ngFor="let church of db.churches(); trackBy: trackByChurchId" [value]="church.id">{{ church.name
+              <ion-select-option *ngFor="let church of db.churches()" [value]="church.id">{{ church.name
                 }}</ion-select-option>
             </ion-select>
             }
@@ -410,7 +410,7 @@
       </ion-item>
       <div slot="content">
         <ion-list>
-          <ion-item lines="none" *ngFor="let tenant of otherTenants; trackBy: trackByTenantId">
+          <ion-item lines="none" *ngFor="let tenant of otherTenants">
             <ion-label>
               <h2>{{ tenant.longName }}</h2>
               <p>{{ getRoleText(tenant.role) }}</p>

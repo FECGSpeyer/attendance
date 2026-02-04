@@ -41,7 +41,7 @@
           <ion-item lines="none">
             <ion-icon slot="start" name="musical-notes" size="small"></ion-icon>
             <ion-select slot="end" (ionChange)="onFilterChanged()" multiple="true" [(ngModel)]="instrumentsToFilter">
-              <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments; trackBy: trackByInstrumentId">{{
+              <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{
                 instrument.name }}</ion-select-option>
             </ion-select>
           </ion-item>
@@ -86,7 +86,7 @@
                 <ion-label>{{ data.date }}</ion-label>
               </ion-list-header>
               <ion-item-group>
-                <ion-item *ngFor="let his of data.history; trackBy: trackByHistoryId" (click)="openSong(his.song.id, currentSongsModal)" button>
+                <ion-item *ngFor="let his of data.history" (click)="openSong(his.song.id, currentSongsModal)" button>
                   <ion-label>
                     {{ his.song.number }} {{ his.song.name }}
                   </ion-label>

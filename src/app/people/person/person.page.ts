@@ -99,15 +99,8 @@ export class PersonPage implements OnInit, AfterViewInit {
     private actionSheetController: ActionSheetController,
   ) { }
 
-  trackByGroupId = (_: number, group: Group): number => group.id;
-  trackByParentId = (_: number, parent: Parent): number => parent.id;
-  trackByTeacherId = (_: number, teacher: Teacher): number => teacher.id;
-  trackByTenantId = (_: number, tenant: Tenant): number => tenant.id;
+// TrackBy function for history list
   trackByHistoryId = (_: number, att: any): string => att.id ?? `${att.date}-${att.type}`;
-  trackByFieldId = (_: number, field: any): string => field.id;
-  trackByShiftId = (_: number, shift: any): number | string => shift.id ?? shift.name;
-  trackByChurchId = (_: number, church: any): number => church.id;
-  trackByOption = (idx: number, option: string): string => option;
 
   async ngOnInit() {
     this.isVoS = this.db.tenant().shortName === 'VoS';

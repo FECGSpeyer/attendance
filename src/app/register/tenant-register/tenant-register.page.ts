@@ -38,10 +38,6 @@ export class TenantRegisterPage implements OnInit {
     private actionSheetController: ActionSheetController,
   ) { }
 
-  trackByGroupId = (_: number, group: Group): number => group.id;
-  trackByChurchId = (_: number, church: Church): number => church.id;
-  trackByOption = (idx: number, option: string): string => option;
-
   async ngOnInit() {
     const pathParts = window.location.pathname.split('/');
     const registerId = pathParts[pathParts.length - 1];
