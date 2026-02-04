@@ -19,7 +19,8 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="light" *ngIf="song" [fullscreen]="true">
+<ion-content color="light" [fullscreen]="true">
+  @if (song) {
   <ion-header collapse="condense">
     <ion-toolbar color="light">
       @if (readOnly) {
@@ -257,6 +258,7 @@
       </ion-item>
     </ion-item-group>
   </ion-list>
+  }
 </ion-content>
 
 <!-- Copy to other instance modal -->
