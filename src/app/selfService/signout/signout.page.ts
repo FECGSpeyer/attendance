@@ -35,10 +35,6 @@ export class SignoutPage implements OnInit {
   public upcomingSongs: { date: string; history: History[] }[] = [];
   public isApplicant: boolean = false;
 
-  // PWA installation hint
-  public showPwaHint: boolean = false;
-  public isIos: boolean = false;
-
   constructor(
     public db: DbService,
     private actionSheetController: ActionSheetController,
@@ -53,41 +49,6 @@ export class SignoutPage implements OnInit {
 
   async ngOnInit() {
     await this.initialize();
-    this.checkPwaInstallation();
-  }
-
-  /**
-   * Check if we should show the PWA installation hint
-   */
-  private checkPwaInstallation(): void {
-    // Check if already dismissed
-    const dismissed = localStorage.getItem('pwa-hint-dismissed');
-    if (dismissed) {
-      return;
-    }
-
-    // Check if running as installed PWA (standalone mode)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-      || (window.navigator as any).standalone === true;
-
-    if (isStandalone) {
-      return;
-    }
-
-    // Check if on mobile device
-    const isMobile = isPlatform('ios') || isPlatform('android');
-    if (!isMobile) {
-      return;
-    }
-
-    // Detect iOS for specific instructions
-    this.isIos = isPlatform('ios');
-    this.showPwaHint = true;
-  }
-
-  dismissPwaHint(): void {
-    this.showPwaHint = false;
-    localStorage.setItem('pwa-hint-dismissed', 'true');
   }
 
   async initialize() {
@@ -426,6 +387,19 @@ export class SignoutPage implements OnInit {
           }
         },
       });
+
+      buttons.push({
+        text: 'Noten drucken',
+        handler: () => {
+          const file = song.files.find(f => f.instrumentId === this.player.instrument);
+          if (file) {
+            const printWindow = window.open(file.url, "_blank");
+            if (printWindow) {
+              printWindow.onload = () => printWindow.print();
+            }
+          }
+        },
+      });
     } else if (files.length > 1) {
       if (!isPlatform('ios')) {
         buttons.push({
@@ -484,6 +458,37 @@ export class SignoutPage implements OnInit {
 
           const fileActionSheet = await this.actionSheetController.create({
             header: `Noten für ${song.number}. ${song.name} auswählen`,
+            buttons: fileOptions,
+          });
+
+          await fileActionSheet.present();
+        },
+      });
+
+      buttons.push({
+        text: 'Noten drucken',
+        handler: async () => {
+          const fileOptions = files.map((file: SongFile) => {
+            return {
+              text: file.fileName,
+              role: '',
+              handler: () => {
+                const printWindow = window.open(file.url, "_blank");
+                if (printWindow) {
+                  printWindow.onload = () => printWindow.print();
+                }
+              },
+            };
+          });
+
+          fileOptions.push({
+            text: 'Abbrechen',
+            role: 'destructive',
+            handler: () => Promise.resolve(),
+          });
+
+          const fileActionSheet = await this.actionSheetController.create({
+            header: `Noten für ${song.number}. ${song.name} drucken`,
             buttons: fileOptions,
           });
 

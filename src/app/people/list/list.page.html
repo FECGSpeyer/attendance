@@ -94,36 +94,6 @@
     </ion-popover>
   </div>
 
-  <!-- PWA Installation Hint -->
-  @if (showPwaHint) {
-  <ion-card color="tertiary">
-    <ion-card-header>
-      <ion-card-title style="display: flex; justify-content: space-between; align-items: center;">
-        <span>📱 App installieren</span>
-        <ion-button fill="clear" size="small" (click)="dismissPwaHint()">
-          <ion-icon name="close" color="light"></ion-icon>
-        </ion-button>
-      </ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      @if (isIos) {
-      <p>Für ein besseres Erlebnis kannst du diese App auf deinem Startbildschirm installieren:</p>
-      <ol style="margin: 8px 0; padding-left: 20px;">
-        <li>Tippe auf das <strong>Teilen-Symbol</strong> <ion-icon name="share-outline"></ion-icon> unten</li>
-        <li>Scrolle und wähle <strong>"Zum Home-Bildschirm"</strong></li>
-        <li>Tippe auf <strong>"Hinzufügen"</strong></li>
-      </ol>
-      } @else {
-      <p>Für ein besseres Erlebnis kannst du diese App auf deinem Startbildschirm installieren:</p>
-      <ol style="margin: 8px 0; padding-left: 20px;">
-        <li>Tippe auf das <strong>Menü-Symbol</strong> <ion-icon name="ellipsis-vertical"></ion-icon> oben rechts</li>
-        <li>Wähle <strong>"App installieren"</strong> oder <strong>"Zum Startbildschirm hinzufügen"</strong></li>
-      </ol>
-      }
-    </ion-card-content>
-  </ion-card>
-  }
-
   @if (players.length) {
   <ion-list style="padding-top: 0;" class="marginBottom">
     <ion-list-header>

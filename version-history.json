@@ -4,7 +4,9 @@
             "version": "3.6.1",
             "date": "4.2.2026",
             "changes": [
-                "Druck-Funktion für Gruppen-PDFs hinzugefügt: Du kannst jetzt die Gruppen-PDFs eines Werkes direkt aus der App drucken. Die Anzahl der Kopien richtet sich nach der Anzahl der aktiven Spieler/Sänger in der jeweiligen Gruppe."
+                "Druck-Funktion für einzelne Werke: Du kannst jetzt die Dateien eines Werkes direkt aus der App drucken.",
+                "Druck-Funktion für Gruppen-PDFs hinzugefügt: Du kannst jetzt die Gruppen-PDFs eines Werkes direkt aus der App drucken. Die Anzahl der Kopien richtet sich nach der Anzahl der aktiven Spieler/Sänger in der jeweiligen Gruppe.",
+                "Als App speichern: Nutzer bekommen jetzt einen Hinweis, um die Web-App auf ihrem Gerät zu installieren."
             ]
         },
         {

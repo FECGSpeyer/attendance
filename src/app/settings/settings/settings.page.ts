@@ -53,6 +53,7 @@ export class SettingsPage implements OnInit {
   private sub: RealtimeChannel | null = null;
   public versionHistory = require('../../../../version-history.json').versions;
   public wantInstanceSelection: boolean = false;
+  public showPwaHint: boolean = false;
 
   constructor(
     public db: DbService,
@@ -69,6 +70,7 @@ export class SettingsPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.isIos = isPlatform('ios');
+    this.checkPwaInstallation();
     await this.initialize();
   }
 
@@ -137,6 +139,21 @@ export class SettingsPage implements OnInit {
     this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
     this.pendingPersons = await this.db.getPendingPersons();
     this.viewers = await this.db.getViewers();
+  }
+
+  checkPwaInstallation(): void {
+    const isMobile = isPlatform('ios') || isPlatform('android');
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    const dismissed = localStorage.getItem('pwaHintDismissed');
+
+    if (isMobile && !isStandalone && !dismissed) {
+      this.showPwaHint = true;
+    }
+  }
+
+  dismissPwaHint(): void {
+    this.showPwaHint = false;
+    localStorage.setItem('pwaHintDismissed', 'true');
   }
 
   async logout() {

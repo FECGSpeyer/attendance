@@ -414,6 +414,16 @@ export class SongPage implements OnInit {
         handler: () => {
           window.open(file.url, '_blank');
         }
+      },
+      {
+        text: 'Datei drucken',
+        icon: 'print-outline',
+        handler: () => {
+          const printWindow = window.open(file.url, '_blank');
+          if (printWindow) {
+            printWindow.onload = () => printWindow.print();
+          }
+        }
       }
     ];
 
