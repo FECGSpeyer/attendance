@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { GroupCategory, History, Group, Person, Song, Tenant, SongCategory } from '../utilities/interfaces';
+import { GroupCategory, History, Group, Person, Song, Tenant, SongCategory, SongFile } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
 import { AlertController, IonModal, ItemReorderEventDetail } from '@ionic/angular';
 import { Utils } from '../utilities/Utils';
@@ -37,6 +37,9 @@ export class SongsPage implements OnInit {
   public difficulty: number | null = null;
   public instrumentsToFilter: number[] = [];
   public currentSongs: { date: string, history: History[] }[] = [];
+  public groupsWithFiles: Group[] = [];
+  public selectedGroupFiles: { song: Song, file: SongFile }[] = [];
+  public selectedGroupName: string = '';
   public tenantData?: Tenant;
   public selectedCategory: string = "";
   private sub: RealtimeChannel;
@@ -70,6 +73,7 @@ export class SongsPage implements OnInit {
     this.currentSongs = await this.db.getCurrentSongs(this.tenantData?.id ?? this.db.tenant().id);
 
     await this.getSongs();
+    this.buildGroupsWithFiles();
 
     this.subscribeToUpdates();
   }
@@ -117,6 +121,42 @@ export class SongsPage implements OnInit {
     this.songsFiltered = this.songs;
 
     await this.onFilterChanged();
+    this.buildGroupsWithFiles();
+  }
+
+  buildGroupsWithFiles(): void {
+    const groupIdsWithFiles = new Set<number>();
+    for (const song of this.songs) {
+      for (const file of song.files || []) {
+        if (file.instrumentId && file.instrumentId > 2) {
+          groupIdsWithFiles.add(file.instrumentId);
+        }
+      }
+    }
+    this.groupsWithFiles = this.instruments
+      .filter(g => groupIdsWithFiles.has(g.id!))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  selectGroup(group: Group): void {
+    this.selectedGroupName = group.name;
+    this.selectedGroupFiles = [];
+    for (const song of this.songs) {
+      for (const file of song.files || []) {
+        if (file.instrumentId === group.id) {
+          this.selectedGroupFiles.push({ song, file });
+        }
+      }
+    }
+  }
+
+  openFile(url: string): void {
+    window.open(url, '_blank');
+  }
+
+  resetGroupSelection(): void {
+    this.selectedGroupName = '';
+    this.selectedGroupFiles = [];
   }
 
   async doRefresh(event: any) {
