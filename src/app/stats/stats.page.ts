@@ -460,7 +460,7 @@ export class StatsPage implements OnInit {
   }
 
   private initDivaIndexChart() {
-    // Diva Index: unexcused absences per player
+    // Unentschuldigte Abwesenheiten: unexcused absences per player
     const playerAbsences: { name: string; absences: number }[] = [];
 
     this.activePlayers.forEach(player => {
@@ -499,7 +499,7 @@ export class StatsPage implements OnInit {
       maintainAspectRatio: false,
       indexAxis: 'y',
       plugins: {
-        title: { display: true, text: 'Kurzfristige Absagen' },
+        title: { display: true, text: 'Unentschuldigte Abwesenheiten' },
         legend: { display: false }
       }
     };
