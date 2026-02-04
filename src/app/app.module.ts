@@ -26,7 +26,7 @@ import { iosTransitionAnimation, popoverEnterAnimation, popoverLeaveAnimation } 
             navAnimation: isPlatform('ios') ? iosTransitionAnimation: undefined,
             popoverEnter: isPlatform('ios') ? popoverEnterAnimation: undefined,
             popoverLeave: isPlatform('ios') ? popoverLeaveAnimation: undefined,
-            swipeBackEnabled: false,
+            swipeBackEnabled: true,
         }),
         AppRoutingModule,
         PersonPageModule,

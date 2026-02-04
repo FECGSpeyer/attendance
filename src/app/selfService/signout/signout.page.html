@@ -57,7 +57,8 @@
   </ion-card>
 </ion-content>
 } @else {
-<ion-content fullscreen="true" *ngIf="player">
+<ion-content fullscreen="true">
+  @if (player) {
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">{{ db.tenant()?.longName }}</ion-title>
@@ -262,5 +263,6 @@
       </div>
     </ion-accordion>
   </ion-accordion-group>
+  }
 </ion-content>
 }
