@@ -476,7 +476,7 @@ export class SongsPage implements OnInit {
     for (let i = 0; i < data.length; i++) {
       const category = data[i];
       category.index = i;
-      await this.db.updateSongCategory({index: category.index, ...category}, category.id);
+      await this.db.updateSongCategory({ index: category.index, ...category }, category.id);
     }
   }
 
