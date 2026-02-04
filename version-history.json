@@ -4,7 +4,8 @@
           "version": "3.7.0",
           "date": "18.6.2026",
           "changes": [
-            "Problemfälle sind da! Du kannst jetzt Problemfall-Regeln definieren, um automatisch Problemfälle zu erkennen. Gehe dazu in die allgemeinen Einstellungen und wähle 'Problemfall Regeln' aus. Sobald eine Person als Problemfall markiert wird, erhältst du eine Benachrichtigung per Telegram (optional)."
+            "Problemfälle sind da! Du kannst jetzt Problemfall-Regeln definieren, um automatisch Problemfälle zu erkennen. Gehe dazu in die allgemeinen Einstellungen und wähle 'Problemfall Regeln' aus. Sobald eine Person als Problemfall markiert wird, erhältst du eine Benachrichtigung per Telegram (optional).",
+            "Du kannst dir jetzt den Ablaufplan als Bild per Telegram senden lassen, um ihn direkt in Messenger-Apps anzusehen."
           ]
         },
         {
