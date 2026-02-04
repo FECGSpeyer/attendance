@@ -35,6 +35,10 @@ export class SignoutPage implements OnInit {
   public upcomingSongs: { date: string; history: History[] }[] = [];
   public isApplicant: boolean = false;
 
+  // PWA installation hint
+  public showPwaHint: boolean = false;
+  public isIos: boolean = false;
+
   constructor(
     public db: DbService,
     private actionSheetController: ActionSheetController,
@@ -49,6 +53,41 @@ export class SignoutPage implements OnInit {
 
   async ngOnInit() {
     await this.initialize();
+    this.checkPwaInstallation();
+  }
+
+  /**
+   * Check if we should show the PWA installation hint
+   */
+  private checkPwaInstallation(): void {
+    // Check if already dismissed
+    const dismissed = localStorage.getItem('pwa-hint-dismissed');
+    if (dismissed) {
+      return;
+    }
+
+    // Check if running as installed PWA (standalone mode)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || (window.navigator as any).standalone === true;
+
+    if (isStandalone) {
+      return;
+    }
+
+    // Check if on mobile device
+    const isMobile = isPlatform('ios') || isPlatform('android');
+    if (!isMobile) {
+      return;
+    }
+
+    // Detect iOS for specific instructions
+    this.isIos = isPlatform('ios');
+    this.showPwaHint = true;
+  }
+
+  dismissPwaHint(): void {
+    this.showPwaHint = false;
+    localStorage.setItem('pwa-hint-dismissed', 'true');
   }
 
   async initialize() {

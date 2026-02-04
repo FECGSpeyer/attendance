@@ -1,5 +1,5 @@
 import { Component, OnInit, effect } from '@angular/core';
-import { ActionSheetController, AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonItemSliding, IonModal, IonRouterOutlet, isPlatform, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Attendance, Group, Person, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
@@ -57,6 +57,8 @@ export class ListPage implements OnInit {
   public tenantName: string = "";
   public loaded: boolean = false;
   public prevFilterValue: string = "";
+  public showPwaHint: boolean = false;
+  public isIos: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -107,6 +109,8 @@ export class ListPage implements OnInit {
       await this.db.checkAndUnpausePlayers();
     }
 
+    this.checkPwaInstallation();
+
     await this.getPlayers();
 
     this.subscribe();
@@ -132,6 +136,22 @@ export class ListPage implements OnInit {
 
     await alert.present();
     await this.storage.set(`seenReleaseNotes_v3_5_0`, true);
+  }
+
+  checkPwaInstallation(): void {
+    const isMobile = isPlatform('ios') || isPlatform('android');
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    const dismissed = localStorage.getItem('pwaHintDismissed');
+
+    if (isMobile && !isStandalone && !dismissed) {
+      this.showPwaHint = true;
+      this.isIos = isPlatform('ios');
+    }
+  }
+
+  dismissPwaHint(): void {
+    this.showPwaHint = false;
+    localStorage.setItem('pwaHintDismissed', 'true');
   }
 
   subscribe() {

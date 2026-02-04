@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, LoadingController } from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, LoadingController, isPlatform } from '@ionic/angular';
 import * as JSZip from 'jszip';
 import { PDFDocument } from 'pdf-lib';
 import { DbService } from 'src/app/services/db.service';
@@ -414,15 +414,18 @@ export class SongPage implements OnInit {
         handler: () => {
           window.open(file.url, '_blank');
         }
-      },
-      {
+      }
+    ];
+
+    if (!isPlatform('ios')) {
+      buttons.push({
         text: 'Datei herunterladen',
         icon: 'download-outline',
         handler: () => {
           this.downloadFile(file);
         }
-      },
-    ];
+      });
+    }
 
     if (!this.readOnly) {
       buttons.push(
