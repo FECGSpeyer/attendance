@@ -1,10 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, IonItemSliding, ItemReorderEventDetail, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
-import { jsPDF } from "jspdf";
-import 'jspdf-autotable';
-import { autoTable as AutoTable, CellHookData } from 'jspdf-autotable';
-import { utils, WorkBook, WorkSheet, writeFile } from 'xlsx';
+// jsPDF and xlsx are lazy-loaded for better initial bundle size
 import { DbService } from '../services/db.service';
 import { Attendance, Player } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
@@ -91,7 +88,8 @@ export class ExportPage implements OnInit {
     }
   }
 
-  exportPlayerExcel(shortName: string) {
+  async exportPlayerExcel(shortName: string) {
+    const { utils, writeFile } = await import('xlsx');
     let row = 1;
 
     const date: string = dayjs().format('DD.MM.YYYY');
@@ -102,14 +100,16 @@ export class ExportPage implements OnInit {
       row++;
     }
 
-    const ws: WorkSheet = utils.aoa_to_sheet(data);
-    const wb: WorkBook = utils.book_new();
+    const ws = utils.aoa_to_sheet(data);
+    const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, 'Anwesenheit');
 
     writeFile(wb, `${shortName}_Spielerliste_Stand_${date}.xlsx`);
   }
 
-  exportPlayerPDF(shortName: string) {
+  async exportPlayerPDF(shortName: string) {
+    const { jsPDF } = await import('jspdf');
+    await import('jspdf-autotable');
     let row = 1;
 
     const date: string = dayjs().format('DD.MM.YYYY');
@@ -122,7 +122,7 @@ export class ExportPage implements OnInit {
 
     const doc = new jsPDF();
     doc.text(`${shortName} Spielerliste Stand: ${date}`, 14, 25);
-    ((doc as any).autoTable as AutoTable)({
+    (doc as any).autoTable({
       head: [['', ...this.selectedFields]],
       body: data,
       margin: { top: 40 },
@@ -170,32 +170,35 @@ export class ExportPage implements OnInit {
 
     if (this.type === "excel") {
       data.unshift(header)
-      this.exportAttExcel(data, shortName);
+      await this.exportAttExcel(data, shortName);
     } else {
-      this.exportAttPDF(data, header, shortName);
+      await this.exportAttPDF(data, header, shortName);
     }
   }
 
-  exportAttExcel(data, shortName: string) {
+  async exportAttExcel(data: any[], shortName: string) {
+    const { utils, writeFile } = await import('xlsx');
     const date: string = dayjs().format('DD.MM.YYYY');
 
     /* generate worksheet */
-    const ws: WorkSheet = utils.aoa_to_sheet(data);
+    const ws = utils.aoa_to_sheet(data);
 
     /* generate workbook and add the worksheet */
-    const wb: WorkBook = utils.book_new();
+    const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, 'Anwesenheit');
 
     /* save to file */
     writeFile(wb, `${shortName}_Anwesenheit_Stand_${date}.xlsx`);
   }
 
-  exportAttPDF(data, header, shortName: string) {
+  async exportAttPDF(data: any[], header: string[], shortName: string) {
+    const { jsPDF } = await import('jspdf');
+    await import('jspdf-autotable');
     const date: string = dayjs().format('DD.MM.YYYY');
     const doc = new jsPDF();
 
     doc.text(`${shortName} Anwesenheit Stand: ${date}`, 14, 25);
-    ((doc as any).autoTable as AutoTable)({
+    (doc as any).autoTable({
       head: [header],
       body: data,
       margin: { top: 40 },
@@ -208,29 +211,29 @@ export class ExportPage implements OnInit {
       bodyStyles: {
         fontSize: 8,
       },
-      didParseCell: (data: CellHookData) => {
-        if (data.cell.raw === "A") {
-          data.cell.styles.fillColor = [178, 34, 34];
-          data.cell.styles.textColor = [255, 255, 255];
-          data.cell.styles.halign = "center";
-        } else if (data.cell.raw === "X") {
-          data.cell.styles.fillColor = [50, 205, 50];
-          data.cell.styles.textColor = [255, 255, 255];
-          data.cell.styles.halign = "center";
-        } else if (data.cell.raw === "E") {
-          data.cell.styles.fillColor = [255, 196, 9];
-          data.cell.styles.textColor = [255, 255, 255];
-          data.cell.styles.halign = "center";
-        } else if (data.cell.raw === "L") {
-          data.cell.styles.fillColor = [0, 191, 255];
-          data.cell.styles.textColor = [255, 255, 255];
-          data.cell.styles.halign = "center";
-        } else if (data.cell.raw === "N") {
-          data.cell.styles.fillColor = [220, 220, 220];
-          data.cell.styles.textColor = [255, 255, 255];
-          data.cell.styles.halign = "center";
-        } else if (data.cell.raw?.toString().includes("%")) {
-          data.cell.styles.halign = "center";
+      didParseCell: (cellData: any) => {
+        if (cellData.cell.raw === "A") {
+          cellData.cell.styles.fillColor = [178, 34, 34];
+          cellData.cell.styles.textColor = [255, 255, 255];
+          cellData.cell.styles.halign = "center";
+        } else if (cellData.cell.raw === "X") {
+          cellData.cell.styles.fillColor = [50, 205, 50];
+          cellData.cell.styles.textColor = [255, 255, 255];
+          cellData.cell.styles.halign = "center";
+        } else if (cellData.cell.raw === "E") {
+          cellData.cell.styles.fillColor = [255, 196, 9];
+          cellData.cell.styles.textColor = [255, 255, 255];
+          cellData.cell.styles.halign = "center";
+        } else if (cellData.cell.raw === "L") {
+          cellData.cell.styles.fillColor = [0, 191, 255];
+          cellData.cell.styles.textColor = [255, 255, 255];
+          cellData.cell.styles.halign = "center";
+        } else if (cellData.cell.raw === "N") {
+          cellData.cell.styles.fillColor = [220, 220, 220];
+          cellData.cell.styles.textColor = [255, 255, 255];
+          cellData.cell.styles.halign = "center";
+        } else if (cellData.cell.raw?.toString().includes("%")) {
+          cellData.cell.styles.halign = "center";
         }
       },
     });

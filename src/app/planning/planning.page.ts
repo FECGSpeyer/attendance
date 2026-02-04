@@ -3,9 +3,7 @@ import { ActionSheetButton, ActionSheetController, AlertController, IonItemSlidi
 import * as dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
 import { Attendance, FieldSelection, GroupCategory, History, Group, Person, Song, AttendanceType } from '../utilities/interfaces';
-import { jsPDF } from "jspdf";
-import 'jspdf-autotable';
-import { autoTable as AutoTable } from 'jspdf-autotable';
+// jsPDF is lazy-loaded for better initial bundle size
 import { Utils } from '../utilities/Utils';
 import { DefaultAttendanceType } from 'src/app/utilities/constants';
 
@@ -423,9 +421,11 @@ export class PlanningPage implements OnInit {
       ]); // TODO attendance type
     }
 
+    const { jsPDF } = await import('jspdf');
+    await import('jspdf-autotable');
     const doc = new jsPDF();
     doc.text(`${this.db.tenant().shortName} Registerprobenplan: ${date}`, 14, 25);
-    ((doc as any).autoTable as AutoTable)({
+    (doc as any).autoTable({
       head: this.db.tenant().type === DefaultAttendanceType.CHOIR ? [["Minuten", "Sopran", "Alt", "Tenor", "Bass"]] : this.db.tenant().shortName === "BoS" ? [['Minuten', 'Blechbläser', 'Holzbläser']] : [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']], // TODO attendance type
       body: data,
       margin: { top: 40 },
