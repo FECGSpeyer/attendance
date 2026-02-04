@@ -478,7 +478,7 @@ export class Utils {
         const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
         const page = await pdf.getPage(1);
 
-        const scale = 2; // Higher scale = better quality
+        const scale = 6; // Higher scale = better quality
         const viewport = page.getViewport({ scale });
 
         const canvas = document.createElement('canvas');
