@@ -92,7 +92,7 @@
 
       <ion-list>
         <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
-          <ion-item-sliding #slider *ngFor="let field of selectedFields; let i = index">
+          <ion-item-sliding #slider *ngFor="let field of selectedFields; let i = index; trackBy: trackByFieldId">
             <ion-item>
               <ion-label (click)="changeField(field)">
                 <h2>{{ field.name }}</h2>

@@ -100,7 +100,7 @@
       </ion-button>
     </ion-list-header>
     <ion-item-group>
-      <ion-item *ngFor="let person of filteredPersons">
+      <ion-item *ngFor="let person of filteredPersons; trackBy: trackByPersonId">
         <ion-checkbox (ionChange)="togglePersonSelection(person)" [checked]="selectedPersons.includes(person.id)">
           <ion-label>
             <h2>{{ person.firstName }} {{ person.lastName }}</h2>

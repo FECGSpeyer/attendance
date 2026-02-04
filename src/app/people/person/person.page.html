@@ -435,7 +435,7 @@
             <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" slot="end">{{ perc
               }}%</ion-badge>
           </ion-item>
-          <ion-item-sliding #slider *ngFor="let att of history">
+          <ion-item-sliding #slider *ngFor="let att of history; trackBy: trackByHistoryId">
             <ion-item (click)="onHisItemClicked(att)">
               <ion-label>
                 <h2 *ngIf="att.type === 2 || att.type === 3">Mit Person gesprochen ({{ att.date | date:'dd.MM.yyyy

@@ -14,7 +14,7 @@
     </ion-toolbar>
   </ion-header>
   <ion-list class="marginBottom">
-    <ion-item (click)="openModal(teacher)" *ngFor="let teacher of teachers">
+    <ion-item (click)="openModal(teacher)" *ngFor="let teacher of teachers; trackBy: trackByTeacherId">
       <ion-label>
         <h2>{{ teacher.name }}</h2>
         <h3>{{ teacher.insNames }}</h3>

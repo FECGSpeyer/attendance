@@ -54,10 +54,8 @@ export class SongsPage implements OnInit {
     private alertController: AlertController,
   ) { }
 
-  // TrackBy functions for performance
+  // TrackBy function for main songs list
   trackBySongId = (_index: number, song: Song): number => song.id;
-  trackByInstrumentId = (_index: number, instrument: Group): number => instrument.id;
-  trackByHistoryId = (_index: number, his: History): number => his.id!;
 
   async ngOnInit() {
     const pathParts = window.location.pathname.split('/');

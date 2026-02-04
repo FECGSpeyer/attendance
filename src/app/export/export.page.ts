@@ -83,7 +83,7 @@ export class ExportPage implements OnInit {
   }
 
   export() {
-    const shortName: string =this.db.tenant().shortName;
+    const shortName: string = this.db.tenant().shortName;
     if (this.content === "player") {
       this.type === "pdf" ? this.exportPlayerPDF(shortName) : this.exportPlayerExcel(shortName);
     } else {

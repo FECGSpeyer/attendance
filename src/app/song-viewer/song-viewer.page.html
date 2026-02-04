@@ -103,7 +103,7 @@
       <ion-label>Alle Werke</ion-label>
     </ion-list-header>
     <ion-item-group>
-      <ion-item *ngFor="let song of songs" [routerLink]="[song.id]" button>
+      <ion-item *ngFor="let song of songs; trackBy: trackBySongId" [routerLink]="[song.id]" button>
         <ion-label>
           <h2>{{ song.number }} {{ song.name }}</h2>
           <p *ngIf="song.withChoir || song.withSolo">

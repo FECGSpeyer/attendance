@@ -12,6 +12,9 @@ import { Utils } from 'src/app/utilities/Utils';
 })
 export class SongViewerPage implements OnInit {
   public songs: Song[] = [];
+
+  // TrackBy function for songs list
+  trackBySongId = (_: number, song: Song): number => song.id!;
   private tenantId: number;
   public tenantLongName: string;
   public tenantShortName: string;

@@ -47,6 +47,9 @@ export class PlanningPage implements OnInit {
     private actionSheetController: ActionSheetController,
   ) { }
 
+  // TrackBy function for reorderable fields list
+  trackByFieldId = (_: number, field: FieldSelection): string => field.id;
+
   async ngOnInit() {
     this.songs = await this.db.getSongs();
     this.groupCategories = await this.db.getGroupCategories();

@@ -138,4 +138,6 @@ export class HandoverDetailPage implements OnInit {
       return;
     }
   }
+
+  trackByPersonId = (_: number, item: Player): number => item.id;
 }

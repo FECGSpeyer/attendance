@@ -36,6 +36,8 @@ export class StatsPage implements OnInit {
     private alertController: AlertController
   ) { }
 
+  trackByPersonId = (_: number, person: Person): number | string => person.id ?? `${person.firstName}-${person.lastName}`;
+
   async ngOnInit() {
     this.curAttDate = new Date(await this.db.getCurrentAttDate());
     this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;

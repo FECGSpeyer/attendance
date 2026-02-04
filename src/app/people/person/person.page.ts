@@ -99,6 +99,9 @@ export class PersonPage implements OnInit, AfterViewInit {
     private actionSheetController: ActionSheetController,
   ) { }
 
+// TrackBy function for history list
+  trackByHistoryId = (_: number, att: any): string => att.id ?? `${att.date}-${att.type}`;
+
   async ngOnInit() {
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.maintainTeachers = this.db.tenant().maintainTeachers;

@@ -25,6 +25,8 @@ export class InstrumentListPage implements OnInit {
     private alertController: AlertController
   ) { }
 
+  trackByCategoryId = (_: number, cat: GroupCategory): number => cat.id;
+
   async ngOnInit() {
     this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;

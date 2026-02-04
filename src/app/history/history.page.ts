@@ -39,10 +39,9 @@ export class HistoryPage implements OnInit {
     private alertController: AlertController,
   ) { }
 
+  // TrackBy for history lists (ion-item-sliding elements)
   trackByHistoryId = (_index: number, entry: History): number => entry.id!;
   trackByGroupDate = (_index: number, group: GroupedHistory): string => group.date;
-  trackBySongId = (_index: number, song: Song): number => song.id;
-  trackByConId = (_index: number, con: Person): number => con.id;
 
   async handleRefresh(event: any): Promise<void> {
     await this.getHistory();
