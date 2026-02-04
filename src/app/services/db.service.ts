@@ -1814,8 +1814,8 @@ export class DbService {
     return this.signInOutSvc.updateAttendanceNote(attId, notes, this.user?.id);
   }
 
-  async sendPlanPerTelegram(blob: Blob, name: string): Promise<void> {
-    return this.telegramSvc.sendPlanPerTelegram(blob, name, this.tenantUser().telegram_chat_id);
+  async sendPlanPerTelegram(blob: Blob, name: string, asImage: boolean = false): Promise<void> {
+    return this.telegramSvc.sendPlanPerTelegram(blob, name, this.tenantUser().telegram_chat_id, asImage);
   }
 
   async sendSongPerTelegram(url: string): Promise<void> {

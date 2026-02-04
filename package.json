@@ -51,6 +51,7 @@
     "ngx-quill": "^30.0.1",
     "open-holiday-js": "^1.0.3",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^5.4.624",
     "quill": "^2.0.2",
     "rxjs": "^7.5.0",
     "tslib": "^2.2.0",

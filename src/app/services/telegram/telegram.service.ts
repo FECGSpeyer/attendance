@@ -7,14 +7,15 @@ import { Utils } from '../../utilities/Utils';
 })
 export class TelegramService {
 
-  async sendPlanPerTelegram(blob: Blob, name: string, chatId: string): Promise<void> {
+  async sendPlanPerTelegram(blob: Blob, name: string, chatId: string, asImage: boolean = false): Promise<void> {
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999);
     await loading.present();
-    const fileName: string = name + "_" + Math.floor(Math.random() * 100);
+    const extension = asImage ? '.png' : '.pdf';
+    const fileName: string = name + "_" + Math.floor(Math.random() * 100) + extension;
 
     const { error } = await supabase.storage
       .from("attendances")
-      .upload(fileName, blob, { upsert: true });
+      .upload(fileName, blob, { upsert: true, contentType: asImage ? 'image/png' : 'application/pdf' });
 
     if (error) {
       loading.dismiss();
@@ -26,7 +27,8 @@ export class TelegramService {
       .from("attendances")
       .getPublicUrl(fileName);
 
-    const { error: sendError } = await supabase.functions.invoke("send-document", {
+    const functionName = asImage ? "send-photo" : "send-document";
+    const { error: sendError } = await supabase.functions.invoke(functionName, {
       body: {
         url: urlData.publicUrl,
         chat_id: chatId,

@@ -430,10 +430,75 @@ export class Utils {
     });
 
     if (props.asBlob) {
+      if (props.asImage) {
+        // Convert PDF to image using jsPDF's built-in canvas output
+        const pdfDataUri = doc.output('datauristring');
+        return await Utils.pdfDataUriToImageBlob(pdfDataUri);
+      }
       return doc.output("blob");
     } else {
       doc.save(`${isPractice ? "Probenplan" : "Gottesdienst"}_${date}.pdf`);
     }
+  }
+
+  /**
+   * Convert a PDF data URI to a PNG image blob using an iframe and canvas
+   */
+  public static async pdfDataUriToImageBlob(pdfDataUri: string): Promise<Blob> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Dynamically load pdf.js from CDN
+        const pdfjsVersion = '3.11.174';
+        const pdfjsUrl = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.min.js`;
+        const workerUrl = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.js`;
+
+        // Load pdf.js script if not already loaded
+        if (!(window as any).pdfjsLib) {
+          await new Promise<void>((res, rej) => {
+            const script = document.createElement('script');
+            script.src = pdfjsUrl;
+            script.onload = () => res();
+            script.onerror = () => rej(new Error('Failed to load pdf.js'));
+            document.head.appendChild(script);
+          });
+        }
+
+        const pdfjsLib = (window as any).pdfjsLib;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+
+        // Convert data URI to array buffer
+        const base64 = pdfDataUri.split(',')[1];
+        const binary = atob(base64);
+        const len = binary.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+
+        const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+        const page = await pdf.getPage(1);
+
+        const scale = 2; // Higher scale = better quality
+        const viewport = page.getViewport({ scale });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        const context = canvas.getContext('2d')!;
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Failed to convert canvas to blob'));
+          }
+        }, 'image/png');
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   public static async exportAttendanceToExcel(
