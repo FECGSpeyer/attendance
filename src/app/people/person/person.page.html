@@ -51,27 +51,22 @@
   }
 
   @if (!readOnly && player?.isCritical) {
-    <ion-accordion-group value="critical">
-      <ion-accordion value="critical">
-        <ion-item slot="header" color="light">
-          <ion-label>Problemfall</ion-label>
+  <ion-accordion-group value="critical">
+    <ion-accordion value="critical">
+      <ion-item slot="header" color="light">
+        <ion-label>Problemfall</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-item>
+          <ion-toggle label="Mit Person gesprochen" (ionChange)="onChange()" [(ngModel)]="solved">Mit Person gesprochen</ion-toggle>
         </ion-item>
-        <div slot="content">
-          <ion-item>
-            <ion-label>Grund: {{ player.criticalReasonText }}</ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-toggle label="Mit Person gesprochen" (ionChange)="onChange()" [(ngModel)]="solved"></ion-toggle>
-          </ion-item>
-          @if (solved) {
-            <ion-item>
-              <ion-label position="stacked">Anmerkungen</ion-label>
-              <ion-textarea autoGrow="true" (ionChange)="onChange()" [(ngModel)]="notes"></ion-textarea>
-            </ion-item>
-          }
-        </div>
-      </ion-accordion>
-    </ion-accordion-group>
+        <ion-item *ngIf="solved">
+          <ion-label position="stacked">Anmerkungen</ion-label>
+          <ion-textarea autoGrow="true" (ionChange)="onChange()" [(ngModel)]="notes"></ion-textarea>
+        </ion-item>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
   }
 
   @if (player) {

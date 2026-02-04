@@ -3,8 +3,8 @@ import { AlertController, IonModal } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { FieldType, Role } from 'src/app/utilities/constants';
-import { ExtraField, Organisation } from 'src/app/utilities/interfaces';
+import { AttendanceStatus, FieldType, Role } from 'src/app/utilities/constants';
+import { AttendanceType, CriticalRule, CriticalRuleOperator, CriticalRuleThresholdType, ExtraField, Organisation } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -68,6 +68,14 @@ export class GeneralPage implements OnInit {
   ];
   public selectedRegisterFields: string[] = ['firstName', 'lastName', 'birthDate', 'group'];
 
+  // Critical rules
+  public criticalRules: CriticalRule[] = [];
+  public attendanceTypes: AttendanceType[] = [];
+  public newCriticalRule: CriticalRule = this.getEmptyCriticalRule();
+  public AttendanceStatus = AttendanceStatus;
+  public CriticalRuleThresholdType = CriticalRuleThresholdType;
+  public CriticalRuleOperator = CriticalRuleOperator;
+
   constructor(
     public db: DbService,
     private alertController: AlertController,
@@ -102,6 +110,24 @@ export class GeneralPage implements OnInit {
     }
     this.selectedRegisterFields = this.db.tenant().registration_fields?.length ? this.db.tenant().registration_fields : this.registerFields.filter(f => f.disabled).map(f => f.key);
     this.extraFields = [...this.db.tenant().additional_fields ?? []];
+    this.criticalRules = [...this.db.tenant().critical_rules ?? []];
+    this.loadAttendanceTypes();
+  }
+
+  loadAttendanceTypes() {
+    this.attendanceTypes = [...this.db.attendanceTypes()];
+  }
+
+  getEmptyCriticalRule(): CriticalRule {
+    return {
+      id: '',
+      attendance_type_ids: [],
+      statuses: [],
+      threshold_type: CriticalRuleThresholdType.COUNT,
+      threshold_value: 3,
+      period_days: 30,
+      operator: CriticalRuleOperator.OR,
+    };
   }
 
   async saveGeneralSettings() {
@@ -131,6 +157,7 @@ export class GeneralPage implements OnInit {
         register_id: register_id || null,
         auto_approve_registrations: this.registerAllowed ? this.autoApproveRegistrations : false,
         registration_fields: this.registerAllowed ? this.selectedRegisterFields : [],
+        critical_rules: this.criticalRules,
       });
       Utils.showToast("Einstellungen gespeichert", "success");
 
@@ -380,5 +407,87 @@ export class GeneralPage implements OnInit {
 
   onExtraOptionChanged(event: any, index: number) {
     this.newExtraField.options[index] = event.detail.value;
+  }
+
+  // Critical rule methods
+  getStatusName(status: AttendanceStatus): string {
+    switch (status) {
+      case AttendanceStatus.Present:
+        return 'Anwesend';
+      case AttendanceStatus.Absent:
+        return 'Abwesend';
+      case AttendanceStatus.Excused:
+        return 'Entschuldigt';
+      case AttendanceStatus.Late:
+        return 'Verspätet';
+      case AttendanceStatus.LateExcused:
+        return 'Verspätet (entsch.)';
+      case AttendanceStatus.Neutral:
+        return 'Neutral';
+      default:
+        return 'Unbekannt';
+    }
+  }
+
+  getAvailableStatuses(): AttendanceStatus[] {
+    return [
+      AttendanceStatus.Present,
+      AttendanceStatus.Absent,
+      AttendanceStatus.Excused,
+      AttendanceStatus.Late,
+      AttendanceStatus.LateExcused,
+    ];
+  }
+
+  addCriticalRule(modal: IonModal) {
+    if (this.newCriticalRule.statuses.length === 0) {
+      Utils.showToast('Bitte wähle mindestens einen Status aus.', 'danger');
+      return;
+    }
+
+    if (this.newCriticalRule.threshold_value <= 0) {
+      Utils.showToast('Der Schwellenwert muss größer als 0 sein.', 'danger');
+      return;
+    }
+
+    if (this.newCriticalRule.period_days <= 0) {
+      Utils.showToast('Der Zeitraum muss größer als 0 sein.', 'danger');
+      return;
+    }
+
+    this.newCriticalRule.id = crypto.randomUUID();
+    this.criticalRules.push({ ...this.newCriticalRule });
+    this.newCriticalRule = this.getEmptyCriticalRule();
+    modal.dismiss();
+  }
+
+  async removeCriticalRule(index: number) {
+    const alert = await this.alertController.create({
+      header: 'Regel löschen?',
+      message: 'Möchtest du diese Regel wirklich löschen?',
+      buttons: [{
+        text: 'Abbrechen'
+      }, {
+        text: 'Löschen',
+        handler: () => {
+          this.criticalRules.splice(index, 1);
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  getCriticalRuleDescription(rule: CriticalRule): string {
+    const statusNames = rule.statuses.map(s => this.getStatusName(s)).join(', ');
+    const typeNames = rule.attendance_type_ids.length > 0
+      ? this.attendanceTypes.filter(t => rule.attendance_type_ids.includes(t.id)).map(t => t.name).join(', ')
+      : 'Alle Typen';
+
+    if (rule.threshold_type === CriticalRuleThresholdType.COUNT) {
+      return `${rule.threshold_value}x ${statusNames} in ${rule.period_days} Tagen (${typeNames})`;
+    } else {
+      return `${rule.threshold_value}% ${statusNames} in ${rule.period_days} Tagen (${typeNames})`;
+    }
   }
 }

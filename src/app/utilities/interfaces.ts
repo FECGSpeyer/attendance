@@ -4,6 +4,26 @@ export interface AuthObject {
     login: boolean;
 }
 
+export enum CriticalRuleOperator {
+    AND = 'AND',
+    OR = 'OR',
+}
+
+export enum CriticalRuleThresholdType {
+    COUNT = 'count',
+    PERCENTAGE = 'percentage',
+}
+
+export interface CriticalRule {
+    id: string;
+    attendance_type_ids: string[];  // Which attendance types to check
+    statuses: AttendanceStatus[];   // Which statuses count (e.g., Absent, Late)
+    threshold_type: CriticalRuleThresholdType;
+    threshold_value: number;        // e.g., 3 for count, or 20 for percentage
+    period_days: number;            // e.g., 30 = check last 30 days
+    operator: CriticalRuleOperator; // How to combine with other rules
+}
+
 export interface Tenant {
     id?: number;
     created_at?: string;
@@ -28,6 +48,7 @@ export interface Tenant {
     auto_approve_registrations?: boolean;
     registration_fields?: string[];
     favorite?: boolean;
+    critical_rules?: CriticalRule[];
 }
 
 export interface ExtraField {
@@ -61,6 +82,7 @@ export interface NotificationConfig {
     enabled_tenants?: number[];
     updates: boolean;
     registrations: boolean;
+    criticals: boolean;
 }
 
 export interface Viewer {

@@ -139,3 +139,7 @@ create table
     constraint viewers_appId_fkey foreign key ("appId") references auth.users (id) on delete cascade
   ) tablespace pg_default;
 
+
+-- Migration: Add critical_rules to tenants table
+-- Run this in Supabase SQL editor:
+-- ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS critical_rules jsonb NULL;

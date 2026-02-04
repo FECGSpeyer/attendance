@@ -166,6 +166,99 @@
     </ion-item-group>
 
     <ion-list-header>
+      <ion-label>Problemfall-Regeln</ion-label>
+      <ion-button id="addCriticalRuleBtn" fill="clear" size="small">
+        <ion-icon name="add-outline"></ion-icon>
+      </ion-button>
+      <ion-modal trigger="addCriticalRuleBtn" #addCriticalRuleModal initialBreakpoint="1" [breakpoints]="[0, 1]">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar>
+              <ion-title>Neue Regel hinzufügen</ion-title>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content color="light">
+            <ion-list [inset]="true">
+              <ion-item-group>
+                <ion-item>
+                  <ion-select label="Anwesenheits-Typen" multiple="true" [(ngModel)]="newCriticalRule.attendance_type_ids"
+                    placeholder="Alle Typen">
+                    @for (type of attendanceTypes; track type.id) {
+                      <ion-select-option [value]="type.id">{{ type.name }}</ion-select-option>
+                    }
+                  </ion-select>
+                </ion-item>
+                <ion-item>
+                  <ion-select label="Status" multiple="true" [(ngModel)]="newCriticalRule.statuses">
+                    @for (status of getAvailableStatuses(); track status) {
+                      <ion-select-option [value]="status">{{ getStatusName(status) }}</ion-select-option>
+                    }
+                  </ion-select>
+                </ion-item>
+              </ion-item-group>
+              <ion-item-group>
+                <ion-item>
+                  <ion-select label="Schwellenwert-Typ" [(ngModel)]="newCriticalRule.threshold_type">
+                    <ion-select-option [value]="CriticalRuleThresholdType.COUNT">Anzahl</ion-select-option>
+                    <ion-select-option [value]="CriticalRuleThresholdType.PERCENTAGE">Prozent</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ion-item>
+                  <ion-input type="number" labelPlacement="stacked"
+                    [label]="newCriticalRule.threshold_type === CriticalRuleThresholdType.COUNT ? 'Anzahl' : 'Prozent'"
+                    [(ngModel)]="newCriticalRule.threshold_value"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-input type="number" labelPlacement="stacked" label="Zeitraum (Tage)"
+                    helperText="Anzahl der Tage, die zurück geprüft werden"
+                    [(ngModel)]="newCriticalRule.period_days"></ion-input>
+                </ion-item>
+              </ion-item-group>
+              <ion-item-group>
+                <ion-item>
+                  <ion-select label="Verknüpfung" [(ngModel)]="newCriticalRule.operator"
+                    helperText="Wie diese Regel mit anderen Regeln kombiniert wird">
+                    <ion-select-option [value]="CriticalRuleOperator.OR">ODER (eine Regel muss zutreffen)</ion-select-option>
+                    <ion-select-option [value]="CriticalRuleOperator.AND">UND (alle Regeln müssen zutreffen)</ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </ion-item-group>
+              <ion-item-group>
+                <ion-item (click)="addCriticalRule(addCriticalRuleModal)" button detail="false">
+                  <ion-label color="primary">Regel hinzufügen</ion-label>
+                </ion-item>
+              </ion-item-group>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-list-header>
+    <ion-item-group>
+      @if (criticalRules.length === 0) {
+        <ion-item>
+          <ion-label class="ion-text-wrap">
+            <p>Es wurden noch keine Problemfall-Regeln definiert. Regeln bestimmen, wann eine Person als Problemfall markiert wird.</p>
+          </ion-label>
+        </ion-item>
+      }
+      @for (rule of criticalRules; track rule.id; let i = $index) {
+        <ion-item>
+          <ion-label class="ion-text-wrap">
+            <h2>{{ getCriticalRuleDescription(rule) }}</h2>
+            <p>
+              <ion-badge [color]="rule.operator === CriticalRuleOperator.AND ? 'primary' : 'secondary'">
+                {{ rule.operator }}
+              </ion-badge>
+            </p>
+          </ion-label>
+          <ion-button fill="clear" color="danger" size="small" (click)="removeCriticalRule(i)">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      }
+    </ion-item-group>
+
+    <ion-list-header>
       <ion-label>Zusätzliche Felder für Personen</ion-label>
       <ion-button id="addExtraFieldBtn" fill="clear" size="small">
         <ion-icon name="add-outline"></ion-icon>

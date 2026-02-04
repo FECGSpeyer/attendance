@@ -241,8 +241,8 @@ export class Utils {
         return "Pausiert";
       case PlayerHistoryType.UNEXCUSED:
         return "Unentschuldigt";
-      case PlayerHistoryType.MISSING_OFTEN:
-        return "Fehlt oft";
+      case PlayerHistoryType.CRITICAL_PERSON:
+        return "";
       case PlayerHistoryType.INSTRUMENT_CHANGE:
         return "Wechsel";
       case PlayerHistoryType.ARCHIVED:

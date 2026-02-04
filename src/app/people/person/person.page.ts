@@ -394,7 +394,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       history.push({
         date: new Date().toISOString(),
         text: this.notes,
-        type: this.player.criticalReason,
+        type: PlayerHistoryType.CRITICAL_PERSON,
       });
     }
 

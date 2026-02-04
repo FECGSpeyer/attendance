@@ -26,6 +26,7 @@ export class NotificationService {
         signouts: true,
         updates: true,
         registrations: true,
+        criticals: true,
       };
 
       await supabase

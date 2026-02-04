@@ -495,6 +495,7 @@ export type Database = {
         Row: {
           birthdays: boolean
           created_at: string
+          criticals: boolean | null
           enabled: boolean
           enabled_tenants: number[] | null
           id: string
@@ -507,6 +508,7 @@ export type Database = {
         Insert: {
           birthdays?: boolean
           created_at?: string
+          criticals?: boolean | null
           enabled?: boolean
           enabled_tenants?: number[] | null
           id: string
@@ -519,6 +521,7 @@ export type Database = {
         Update: {
           birthdays?: boolean
           created_at?: string
+          criticals?: boolean | null
           enabled?: boolean
           enabled_tenants?: number[] | null
           id?: string
@@ -1088,6 +1091,7 @@ export type Database = {
           auto_approve_registrations: boolean | null
           betaProgram: boolean
           created_at: string
+          critical_rules: Json | null
           id: number
           longName: string | null
           maintainTeachers: boolean | null
@@ -1109,6 +1113,7 @@ export type Database = {
           auto_approve_registrations?: boolean | null
           betaProgram?: boolean
           created_at?: string
+          critical_rules?: Json | null
           id?: number
           longName?: string | null
           maintainTeachers?: boolean | null
@@ -1130,6 +1135,7 @@ export type Database = {
           auto_approve_registrations?: boolean | null
           betaProgram?: boolean
           created_at?: string
+          critical_rules?: Json | null
           id?: number
           longName?: string | null
           maintainTeachers?: boolean | null
