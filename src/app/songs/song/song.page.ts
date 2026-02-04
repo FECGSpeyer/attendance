@@ -9,9 +9,10 @@ import { Utils } from 'src/app/utilities/Utils';
 
 
 @Component({
-  selector: 'app-song',
-  templateUrl: './song.page.html',
-  styleUrls: ['./song.page.scss'],
+    selector: 'app-song',
+    templateUrl: './song.page.html',
+    styleUrls: ['./song.page.scss'],
+    standalone: false
 })
 export class SongPage implements OnInit {
   public song: Song;

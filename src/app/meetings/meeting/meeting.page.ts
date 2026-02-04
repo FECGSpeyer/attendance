@@ -3,9 +3,10 @@ import { DbService } from 'src/app/services/db.service';
 import { Meeting, Person } from 'src/app/utilities/interfaces';
 
 @Component({
-  selector: 'app-meeting',
-  templateUrl: './meeting.page.html',
-  styleUrls: ['./meeting.page.scss'],
+    selector: 'app-meeting',
+    templateUrl: './meeting.page.html',
+    styleUrls: ['./meeting.page.scss'],
+    standalone: false
 })
 export class MeetingPage implements OnInit {
   public meeting: Meeting;

@@ -7,9 +7,10 @@ import { Attendance, Person, PersonAttendance } from 'src/app/utilities/interfac
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-  selector: 'app-parents',
-  templateUrl: './parents.page.html',
-  styleUrls: ['./parents.page.scss'],
+    selector: 'app-parents',
+    templateUrl: './parents.page.html',
+    styleUrls: ['./parents.page.scss'],
+    standalone: false
 })
 export class ParentsPage implements OnInit {
   public kids: Person[] = [];

@@ -6,9 +6,10 @@ import { History, Song, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-  selector: 'app-song-viewer',
-  templateUrl: './song-viewer.page.html',
-  styleUrls: ['./song-viewer.page.scss'],
+    selector: 'app-song-viewer',
+    templateUrl: './song-viewer.page.html',
+    styleUrls: ['./song-viewer.page.scss'],
+    standalone: false
 })
 export class SongViewerPage implements OnInit {
   public songs: Song[] = [];

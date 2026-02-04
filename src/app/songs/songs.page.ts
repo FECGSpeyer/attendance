@@ -9,9 +9,10 @@ import { Router } from '@angular/router';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 @Component({
-  selector: 'app-songs',
-  templateUrl: './songs.page.html',
-  styleUrls: ['./songs.page.scss'],
+    selector: 'app-songs',
+    templateUrl: './songs.page.html',
+    styleUrls: ['./songs.page.scss'],
+    standalone: false
 })
 export class SongsPage implements OnInit {
   public songs: Song[] = [];

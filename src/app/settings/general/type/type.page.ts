@@ -9,9 +9,10 @@ import { AttendanceType, FieldSelection, Plan } from 'src/app/utilities/interfac
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-  selector: 'app-type',
-  templateUrl: './type.page.html',
-  styleUrls: ['./type.page.scss'],
+    selector: 'app-type',
+    templateUrl: './type.page.html',
+    styleUrls: ['./type.page.scss'],
+    standalone: false
 })
 export class TypePage implements OnInit {
   @Input() isNew: boolean;

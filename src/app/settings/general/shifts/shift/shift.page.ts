@@ -7,9 +7,10 @@ import { ShiftInstance, ShiftPlan, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-  selector: 'app-shift',
-  templateUrl: './shift.page.html',
-  styleUrls: ['./shift.page.scss'],
+    selector: 'app-shift',
+    templateUrl: './shift.page.html',
+    styleUrls: ['./shift.page.scss'],
+    standalone: false
 })
 export class ShiftPage implements OnInit {
   public shift: ShiftPlan;

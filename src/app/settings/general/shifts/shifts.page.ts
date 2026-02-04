@@ -6,9 +6,10 @@ import { ShiftPlan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-  selector: 'app-shifts',
-  templateUrl: './shifts.page.html',
-  styleUrls: ['./shifts.page.scss'],
+    selector: 'app-shifts',
+    templateUrl: './shifts.page.html',
+    styleUrls: ['./shifts.page.scss'],
+    standalone: false
 })
 export class ShiftsPage implements OnInit {
   newShiftName: string = '';

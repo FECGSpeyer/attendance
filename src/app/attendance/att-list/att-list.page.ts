@@ -13,9 +13,10 @@ import { AttendancePage } from '../attendance/attendance.page';
 require('dayjs/locale/de');
 
 @Component({
-  selector: 'app-att-list',
-  templateUrl: './att-list.page.html',
-  styleUrls: ['./att-list.page.scss'],
+    selector: 'app-att-list',
+    templateUrl: './att-list.page.html',
+    styleUrls: ['./att-list.page.scss'],
+    standalone: false
 })
 export class AttListPage implements OnInit {
   public dates: string[] = [new Date().toISOString()];

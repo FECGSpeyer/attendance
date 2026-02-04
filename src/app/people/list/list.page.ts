@@ -12,9 +12,10 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-list',
-  templateUrl: './list.page.html',
-  styleUrls: ['./list.page.scss'],
+    selector: 'app-list',
+    templateUrl: './list.page.html',
+    styleUrls: ['./list.page.scss'],
+    standalone: false
 })
 export class ListPage implements OnInit, OnDestroy {
   public players: Player[] = [];

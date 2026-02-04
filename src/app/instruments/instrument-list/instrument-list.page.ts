@@ -7,9 +7,10 @@ import { Utils } from 'src/app/utilities/Utils';
 import { InstrumentPage } from '../instrument/instrument.page';
 
 @Component({
-  selector: 'app-instrument-list',
-  templateUrl: './instrument-list.page.html',
-  styleUrls: ['./instrument-list.page.scss'],
+    selector: 'app-instrument-list',
+    templateUrl: './instrument-list.page.html',
+    styleUrls: ['./instrument-list.page.scss'],
+    standalone: false
 })
 export class InstrumentListPage implements OnInit {
   public instruments: Group[] = [];

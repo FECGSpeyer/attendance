@@ -8,9 +8,10 @@ import { ExtraField, Organisation } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-  selector: 'app-general',
-  templateUrl: './general.page.html',
-  styleUrls: ['./general.page.scss'],
+    selector: 'app-general',
+    templateUrl: './general.page.html',
+    styleUrls: ['./general.page.scss'],
+    standalone: false
 })
 export class GeneralPage implements OnInit {
   public holidayStates = [

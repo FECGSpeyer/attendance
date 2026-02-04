@@ -10,9 +10,10 @@ import { AttendanceStatus, DefaultAttendanceType, DEFAULT_IMAGE, PlayerHistoryTy
 dayjs.extend(utc);
 
 @Component({
-  selector: 'app-person',
-  templateUrl: './person.page.html',
-  styleUrls: ['./person.page.scss'],
+    selector: 'app-person',
+    templateUrl: './person.page.html',
+    styleUrls: ['./person.page.scss'],
+    standalone: false
 })
 export class PersonPage implements OnInit, AfterViewInit {
   @Input() existingPlayer: Player;

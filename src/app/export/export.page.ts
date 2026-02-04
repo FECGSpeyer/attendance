@@ -10,9 +10,10 @@ const DEFAULT_PLAYER_FIELDS = ["Vorname", "Nachname", "Geburtsdatum", "Gruppe"];
 const DEFAULT_ATT_FIELDS = ["Vorname", "Nachname", "Gruppe"];
 
 @Component({
-  selector: 'app-export',
-  templateUrl: './export.page.html',
-  styleUrls: ['./export.page.scss'],
+    selector: 'app-export',
+    templateUrl: './export.page.html',
+    styleUrls: ['./export.page.scss'],
+    standalone: false
 })
 
 export class ExportPage implements OnInit {

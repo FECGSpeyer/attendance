@@ -13,9 +13,10 @@ import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Gr
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-  selector: 'app-attendance',
-  templateUrl: './attendance.page.html',
-  styleUrls: ['./attendance.page.scss'],
+    selector: 'app-attendance',
+    templateUrl: './attendance.page.html',
+    styleUrls: ['./attendance.page.scss'],
+    standalone: false
 })
 export class AttendancePage implements OnInit {
   @Input() attendanceId: number;

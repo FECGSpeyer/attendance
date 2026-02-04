@@ -9,9 +9,10 @@ import { Attendance, PersonAttendance, Player, Song, Tenant, History, SongFile, 
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-  selector: 'app-signout',
-  templateUrl: './signout.page.html',
-  styleUrls: ['./signout.page.scss'],
+    selector: 'app-signout',
+    templateUrl: './signout.page.html',
+    styleUrls: ['./signout.page.scss'],
+    standalone: false
 })
 export class SignoutPage implements OnInit {
   @ViewChild('signoutAccordionGroup') signoutAccordionGroup: IonAccordionGroup;

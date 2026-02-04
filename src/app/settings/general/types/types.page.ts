@@ -6,9 +6,10 @@ import { AttendanceType } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-  selector: 'app-types',
-  templateUrl: './types.page.html',
-  styleUrls: ['./types.page.scss'],
+    selector: 'app-types',
+    templateUrl: './types.page.html',
+    styleUrls: ['./types.page.scss'],
+    standalone: false
 })
 export class TypesPage implements OnInit {
   public reorder: boolean = false;

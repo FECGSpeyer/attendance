@@ -5,9 +5,10 @@ import { Player, Teacher } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
 @Component({
-  selector: 'app-teacher',
-  templateUrl: './teacher.page.html',
-  styleUrls: ['./teacher.page.scss'],
+    selector: 'app-teacher',
+    templateUrl: './teacher.page.html',
+    styleUrls: ['./teacher.page.scss'],
+    standalone: false
 })
 export class TeacherPage implements OnInit {
   @Input() teacher: Teacher;

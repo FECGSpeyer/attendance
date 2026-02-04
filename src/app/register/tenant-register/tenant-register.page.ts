@@ -8,9 +8,10 @@ import { Church, Group, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-  selector: 'app-tenant-register',
-  templateUrl: './tenant-register.page.html',
-  styleUrls: ['./tenant-register.page.scss'],
+    selector: 'app-tenant-register',
+    templateUrl: './tenant-register.page.html',
+    styleUrls: ['./tenant-register.page.scss'],
+    standalone: false
 })
 export class TenantRegisterPage implements OnInit {
   @ViewChild('chooser') chooser: ElementRef;

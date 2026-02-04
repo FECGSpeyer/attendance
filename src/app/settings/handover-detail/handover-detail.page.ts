@@ -7,9 +7,10 @@ import { Group, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-  selector: 'app-handover-detail',
-  templateUrl: './handover-detail.page.html',
-  styleUrls: ['./handover-detail.page.scss'],
+    selector: 'app-handover-detail',
+    templateUrl: './handover-detail.page.html',
+    styleUrls: ['./handover-detail.page.scss'],
+    standalone: false
 })
 export class HandoverDetailPage implements OnInit {
   public handoverData: { persons: Player[], stayInInstance: boolean, tenant: Tenant };

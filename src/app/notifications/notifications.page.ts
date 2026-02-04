@@ -6,9 +6,10 @@ import { Role } from 'src/app/utilities/constants';
 import { NotificationConfig } from 'src/app/utilities/interfaces';
 
 @Component({
-  selector: 'app-notifications',
-  templateUrl: './notifications.page.html',
-  styleUrls: ['./notifications.page.scss'],
+    selector: 'app-notifications',
+    templateUrl: './notifications.page.html',
+    styleUrls: ['./notifications.page.scss'],
+    standalone: false
 })
 export class NotificationsPage implements OnInit, OnDestroy {
   public notificationConfig: NotificationConfig;

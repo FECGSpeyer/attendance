@@ -8,9 +8,10 @@ import { Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-  selector: 'app-handover',
-  templateUrl: './handover.page.html',
-  styleUrls: ['./handover.page.scss'],
+    selector: 'app-handover',
+    templateUrl: './handover.page.html',
+    styleUrls: ['./handover.page.scss'],
+    standalone: false
 })
 export class HandoverPage implements OnInit {
   public allPersons: Player[] = [];

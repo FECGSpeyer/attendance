@@ -7,9 +7,10 @@ import { Group, Player, Teacher } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
 @Component({
-  selector: 'app-teachers',
-  templateUrl: './teachers.page.html',
-  styleUrls: ['./teachers.page.scss'],
+    selector: 'app-teachers',
+    templateUrl: './teachers.page.html',
+    styleUrls: ['./teachers.page.scss'],
+    standalone: false
 })
 export class TeachersPage implements OnInit {
   teachers: Teacher[] = [];

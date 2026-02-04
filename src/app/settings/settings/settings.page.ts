@@ -15,9 +15,10 @@ import { RegisterPage } from 'src/app/register/register.page';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 @Component({
-  selector: 'app-settings',
-  templateUrl: './settings.page.html',
-  styleUrls: ['./settings.page.scss'],
+    selector: 'app-settings',
+    templateUrl: './settings.page.html',
+    styleUrls: ['./settings.page.scss'],
+    standalone: false
 })
 export class SettingsPage implements OnInit, OnDestroy {
   @ViewChild('imgChooser') chooser: ElementRef;

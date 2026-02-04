@@ -8,9 +8,10 @@ import { Utils } from '../utilities/Utils';
 import { DefaultAttendanceType } from 'src/app/utilities/constants';
 
 @Component({
-  selector: 'app-planning',
-  templateUrl: './planning.page.html',
-  styleUrls: ['./planning.page.scss'],
+    selector: 'app-planning',
+    templateUrl: './planning.page.html',
+    styleUrls: ['./planning.page.scss'],
+    standalone: false
 })
 export class PlanningPage implements OnInit {
   @Input() attendanceId?: number;

@@ -7,9 +7,10 @@ import { GroupCategory, Group, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-  selector: 'app-instrument',
-  templateUrl: './instrument.page.html',
-  styleUrls: ['./instrument.page.scss'],
+    selector: 'app-instrument',
+    templateUrl: './instrument.page.html',
+    styleUrls: ['./instrument.page.scss'],
+    standalone: false
 })
 export class InstrumentPage implements OnInit {
   @Input() existingInstrument: Group;

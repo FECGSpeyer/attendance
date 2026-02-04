@@ -16,9 +16,10 @@ interface TenantGroup {
 }
 
 @Component({
-  selector: 'app-overview',
-  templateUrl: './overview.page.html',
-  styleUrls: ['./overview.page.scss'],
+    selector: 'app-overview',
+    templateUrl: './overview.page.html',
+    styleUrls: ['./overview.page.scss'],
+    standalone: false
 })
 export class OverviewPage implements OnInit {
   @ViewChild('excuseModal') excuseModal: IonModal;
