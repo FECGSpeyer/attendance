@@ -93,7 +93,7 @@ export class GeneralPage implements OnInit {
     this.autoApproveRegistrations = this.db.tenant().auto_approve_registrations || false;
 
     if (this.db.tenant().additional_fields?.length) {
-      this.registerFields = this.registerFields.concat( this.db.tenant().additional_fields.map(field => ({
+      this.registerFields = this.registerFields.concat(this.db.tenant().additional_fields.map(field => ({
         key: field.id,
         label: field.name,
         disabled: false,

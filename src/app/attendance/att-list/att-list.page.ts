@@ -111,7 +111,7 @@ export class AttListPage implements OnInit {
   }
 
   async init(): Promise<void> {
-        this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
+    this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
     this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isHelper = this.db.tenantUser().role === Role.HELPER;

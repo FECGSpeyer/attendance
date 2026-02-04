@@ -183,35 +183,35 @@ export class AttendancePage implements OnInit {
   }
 
   async onAttChange(individual: PersonAttendance) {
-      const attType = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
-      let status;
+    const attType = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
+    let status;
 
-      if (attType.available_statuses.length === 5) {
-        status = ATTENDANCE_STATUS_MAPPING["DEFAULT"][individual.status];
-      } else if ([AttendanceStatus.Excused, AttendanceStatus.Late].every(status => attType.available_statuses.includes(status))) {
-        status = ATTENDANCE_STATUS_MAPPING["NO_NEUTRAL"][individual.status];
-      } else if ([AttendanceStatus.Late, AttendanceStatus.Neutral].every(status => attType.available_statuses.includes(status))) {
-        status = ATTENDANCE_STATUS_MAPPING["NO_EXCUSED"][individual.status];
-      } else if ([AttendanceStatus.Excused, AttendanceStatus.Neutral].every(status => attType.available_statuses.includes(status))) {
-        status = ATTENDANCE_STATUS_MAPPING["NO_LATE"][individual.status];
-      } else if ([AttendanceStatus.Late].every(status => attType.available_statuses.includes(status))) {
-        status = ATTENDANCE_STATUS_MAPPING["NO_NEUTRAL_NO_EXCUSED"][individual.status];
-      } else if ([AttendanceStatus.Neutral].every(status => attType.available_statuses.includes(status))) {
-        status = ATTENDANCE_STATUS_MAPPING["NO_LATE_NO_EXCUSED"][individual.status];
-      } else if ([AttendanceStatus.Excused].every(status => attType.available_statuses.includes(status))) {
-        status = ATTENDANCE_STATUS_MAPPING["NO_LATE_NO_NEUTRAL"][individual.status];
-      } else if (attType.available_statuses.length === 2 && attType.available_statuses.includes(AttendanceStatus.Present) && attType.available_statuses.includes(AttendanceStatus.Absent)) {
-        status = ATTENDANCE_STATUS_MAPPING["ONLY_PRESENT_ABSENT"][individual.status];
-      } else if (attType.available_statuses.length === 2 && attType.available_statuses.includes(AttendanceStatus.Present) && attType.available_statuses.includes(AttendanceStatus.Excused)) {
-        status = ATTENDANCE_STATUS_MAPPING["ONLY_PRESENT_EXCUSED"][individual.status];
-      } else {
-        Utils.showToast("Fehler beim Ändern des Anwesenheitsstatus, bitte versuche es später erneut", "danger");
-        return;
-      }
+    if (attType.available_statuses.length === 5) {
+      status = ATTENDANCE_STATUS_MAPPING["DEFAULT"][individual.status];
+    } else if ([AttendanceStatus.Excused, AttendanceStatus.Late].every(status => attType.available_statuses.includes(status))) {
+      status = ATTENDANCE_STATUS_MAPPING["NO_NEUTRAL"][individual.status];
+    } else if ([AttendanceStatus.Late, AttendanceStatus.Neutral].every(status => attType.available_statuses.includes(status))) {
+      status = ATTENDANCE_STATUS_MAPPING["NO_EXCUSED"][individual.status];
+    } else if ([AttendanceStatus.Excused, AttendanceStatus.Neutral].every(status => attType.available_statuses.includes(status))) {
+      status = ATTENDANCE_STATUS_MAPPING["NO_LATE"][individual.status];
+    } else if ([AttendanceStatus.Late].every(status => attType.available_statuses.includes(status))) {
+      status = ATTENDANCE_STATUS_MAPPING["NO_NEUTRAL_NO_EXCUSED"][individual.status];
+    } else if ([AttendanceStatus.Neutral].every(status => attType.available_statuses.includes(status))) {
+      status = ATTENDANCE_STATUS_MAPPING["NO_LATE_NO_EXCUSED"][individual.status];
+    } else if ([AttendanceStatus.Excused].every(status => attType.available_statuses.includes(status))) {
+      status = ATTENDANCE_STATUS_MAPPING["NO_LATE_NO_NEUTRAL"][individual.status];
+    } else if (attType.available_statuses.length === 2 && attType.available_statuses.includes(AttendanceStatus.Present) && attType.available_statuses.includes(AttendanceStatus.Absent)) {
+      status = ATTENDANCE_STATUS_MAPPING["ONLY_PRESENT_ABSENT"][individual.status];
+    } else if (attType.available_statuses.length === 2 && attType.available_statuses.includes(AttendanceStatus.Present) && attType.available_statuses.includes(AttendanceStatus.Excused)) {
+      status = ATTENDANCE_STATUS_MAPPING["ONLY_PRESENT_EXCUSED"][individual.status];
+    } else {
+      Utils.showToast("Fehler beim Ändern des Anwesenheitsstatus, bitte versuche es später erneut", "danger");
+      return;
+    }
 
-      individual.status = status;
+    individual.status = status;
 
-      this.db.updatePersonAttendance(individual.id, { status: individual.status });
+    this.db.updatePersonAttendance(individual.id, { status: individual.status });
   }
 
   onAttStaticChange(individual: PersonAttendance, event: any) {
