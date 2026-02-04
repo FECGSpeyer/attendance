@@ -342,7 +342,7 @@ export class StatsPage implements OnInit {
 
     // Debug: log players without matching groups
     const playersWithoutGroup: string[] = [];
-    
+
     this.activePlayers.forEach(player => {
       if (player.birthday) {
         const age = dayjs().diff(dayjs(player.birthday), 'year');
