@@ -747,7 +747,7 @@ export class SongPage implements OnInit {
 
       // Save and download/print
       const mergedPdfBytes = await mergedPdf.save();
-      const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([mergedPdfBytes as BlobPart], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
 
       // Open in new tab for printing
