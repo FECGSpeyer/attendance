@@ -14,7 +14,8 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content *ngIf="type" color="light" [fullscreen]="true">
+<ion-content color="light" [fullscreen]="true">
+  @if (type) {
   <ion-list [inset]="true">
     <ion-item-group>
       <ion-item>
@@ -362,4 +363,5 @@
       <ion-icon name="add-outline"></ion-icon>
     </ion-fab-button>
   </ion-fab>
+  }
 </ion-content>
