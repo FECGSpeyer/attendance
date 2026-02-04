@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { AlertController, IonItemSliding, IonModal, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
@@ -42,6 +43,11 @@ export class HistoryPage implements OnInit {
   trackByGroupDate = (_index: number, group: GroupedHistory): string => group.date;
   trackBySongId = (_index: number, song: Song): number => song.id;
   trackByConId = (_index: number, con: Person): number => con.id;
+
+  async handleRefresh(event: any): Promise<void> {
+    await this.getHistory();
+    event.target.complete();
+  }
 
   async ngOnInit(): Promise<void> {
     this.songs = await this.db.getSongs();
@@ -206,6 +212,7 @@ export class HistoryPage implements OnInit {
   }
 
   async remove(id: number, sliding: IonItemSliding) {
+    await Haptics.impact({ style: ImpactStyle.Medium });
     const alert = await this.alertController.create({
       header: 'Möchtest du den Eintrag wirklich entfernen?',
       buttons: [

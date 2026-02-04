@@ -1,4 +1,5 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
 import { Storage } from '@ionic/storage-angular';
@@ -183,6 +184,7 @@ export class AttendancePage implements OnInit {
   }
 
   async onAttChange(individual: PersonAttendance) {
+    await Haptics.impact({ style: ImpactStyle.Light });
     const attType = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
     let status;
 

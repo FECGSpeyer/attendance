@@ -8,8 +8,18 @@
 </ion-header>
 
 <ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (meetings.length === 0) {
+  <div class="noDataContainer">
+    <ion-icon name="calendar-outline" size="large"></ion-icon>
+    <p>Keine Besprechungen vorhanden</p>
+  </div>
+  } @else {
   <ion-list>
-    <ion-item-sliding #slider *ngFor="let meeting of meetings">
+    <ion-item-sliding #slider *ngFor="let meeting of meetings; trackBy: trackByMeetingId">
       <ion-item [routerLink]="meeting.id.toString()">
         <ion-label>{{ meeting.date | date:'dd.MM.yyyy' }}</ion-label>
       </ion-item>
@@ -20,6 +30,7 @@
       </ion-item-options>
     </ion-item-sliding>
   </ion-list>
+  }
 
   <ion-modal #addAttModal trigger="addBtn" [breakpoints]="[0, 0.3]" [initialBreakpoint]="0.3">
     <ng-template>

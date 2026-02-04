@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit, effect } from '@angular/core';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ActionSheetController, AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import * as dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
@@ -171,6 +172,11 @@ export class ListPage implements OnInit, OnDestroy {
 
   userById(_: number, person: Person): string {
     return String(person.id);
+  }
+
+  async handleRefresh(event: any): Promise<void> {
+    await this.getPlayers();
+    event.target.complete();
   }
 
   async openModal(player?: Player | Person): Promise<void> {
@@ -583,6 +589,7 @@ export class ListPage implements OnInit, OnDestroy {
   }
 
   async removePlayer(player: Person): Promise<void> {
+    await Haptics.impact({ style: ImpactStyle.Medium });
     const alert = await this.alertController.create({
       header: 'Person wirklich entfernen?',
       message: 'Diese Aktion kann nicht rückgängig gemacht werden!',
@@ -610,6 +617,7 @@ export class ListPage implements OnInit, OnDestroy {
   }
 
   async pausePlayer(player: Player, slider: IonItemSliding) {
+    await Haptics.impact({ style: ImpactStyle.Light });
     this.playerToPause = player;
     this.sliderToPause = slider;
     this.pauseReason = "";

@@ -138,6 +138,11 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.subscribe();
   }
 
+  async handleRefresh(event: any): Promise<void> {
+    await this.initialize();
+    event.target.complete();
+  }
+
   subscribe() {
     this.sub?.unsubscribe();
 

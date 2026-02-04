@@ -10,8 +10,22 @@
 </ion-header>
 
 <ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" placeholder="Werk suchen...">
   </ion-searchbar>
+
+  @if (groupedHistory.length === 0 && !searchTerm) {
+  <div class="noDataContainer">
+    <div class="noPersons">
+      <ion-icon name="musical-notes-outline" size="large"></ion-icon>
+      <ion-label>Noch keine Werke gespielt</ion-label>
+    </div>
+  </div>
+  }
+
   <ion-list *ngIf="searchTerm" class="marginBottom">
     <ion-item-sliding #sliding *ngFor="let entry of historyFiltered; trackBy: trackByHistoryId">
       <ion-item>

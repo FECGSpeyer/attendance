@@ -24,6 +24,13 @@ export class MeetingListPage implements OnInit {
     this.meetings = await this.db.getMeetings();
   }
 
+  async handleRefresh(event: any) {
+    this.meetings = await this.db.getMeetings();
+    event.target.complete();
+  }
+
+  trackByMeetingId = (_index: number, meeting: Meeting): number => meeting.id;
+
   async addMeeting(modal: any): Promise<void> {
     await this.db.addMeeting({
       date: this.date,

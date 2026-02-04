@@ -1,4 +1,5 @@
 import { Component, OnInit, effect } from '@angular/core';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { format, isSameDay, parseISO } from 'date-fns';
 import * as dayjs from 'dayjs';
@@ -162,6 +163,11 @@ export class AttListPage implements OnInit {
     await this.persSub.unsubscribe();
   }
 
+  async handleRefresh(event: any): Promise<void> {
+    await this.getAttendance();
+    event.target.complete();
+  }
+
   async getAttendance(): Promise<void> {
     const attendances: Attendance[] = (await this.db.getAttendance(false, true)).map((att: Attendance): Attendance => {
       return {
@@ -193,6 +199,7 @@ export class AttListPage implements OnInit {
   }
 
   async remove(id: number, slider: IonItemSliding): Promise<void> {
+    await Haptics.impact({ style: ImpactStyle.Medium });
     const alert: HTMLIonAlertElement = await this.alertController.create({
       header: "Möchtest du die Anwesenheit wirklich entfernen?",
       buttons: [{
