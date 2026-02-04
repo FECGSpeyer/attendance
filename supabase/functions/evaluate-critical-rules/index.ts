@@ -107,14 +107,17 @@ Deno.serve(async (req) => {
       const maxPeriodDays = Math.max(...tenant.critical_rules.map(r => r.period_days));
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - maxPeriodDays);
+      const now = new Date();
 
       // 4. Fetch all person_attendances for this tenant in the period
       // Join with attendance table to get date, type_id and tenantId
+      // Only include past attendances (date < now)
       const { data: attendances, error: attError } = await supabase
         .from('person_attendances')
         .select('id, person_id, status, attendance:attendance_id(id, date, type_id, tenantId)')
         .eq('attendance.tenantId', tenant.id)
-        .gte('attendance.date', startDate.toISOString());
+        .gte('attendance.date', startDate.toISOString())
+        .lt('attendance.date', now.toISOString());
 
       if (attError) throw attError;
 
@@ -331,7 +334,7 @@ async function sendCriticalNotifications(
       .map(p => `• ${p.firstName || ''} ${p.lastName || ''}`.trim())
       .join('\n');
 
-    const message = `⚠️ *Neue Problemfälle in ${tenantName}*\n\n` +
+    const message = `⚠️ *Neue Problemfälle (${tenantName})*\n\n` +
       `${newCriticalPlayers.length} Person(en) wurden als Problemfall markiert:\n\n` +
       `${playerNames}`;
 
