@@ -389,7 +389,8 @@ export class SongPage implements OnInit {
     }
 
     // Lazy load JSZip
-    const JSZip = (await import('jszip')).default;
+    const JSZipModule = await import('jszip');
+    const JSZip = JSZipModule.default ?? JSZipModule;
     const jszip = new JSZip();
     for (const file of blobs) {
       jszip.file(file.fileName, file.blob);
