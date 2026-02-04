@@ -1,7 +1,8 @@
 import { Component, effect } from '@angular/core';
 import { DbService } from '../services/db.service';
 import { Role } from '../utilities/constants';
-import { registeredEffect, registerTabBarEffect } from '@rdlabo/ionic-theme-ios26';
+// Disabled due to swipe-back double navigation bug
+// import { registeredEffect, registerTabBarEffect } from '@rdlabo/ionic-theme-ios26';
 import { Utils } from 'src/app/utilities/Utils';
 import { Router } from '@angular/router';
 
@@ -17,7 +18,7 @@ export class TabsPage {
   public isParent: boolean = false;
   public isPlayer: boolean = false;
   public hasMultipleTenants: boolean = false;
-  readonly registeredGestures: registeredEffect[] = [];
+  // readonly registeredGestures: registeredEffect[] = [];
 
   constructor(
     private db: DbService,
@@ -46,15 +47,16 @@ export class TabsPage {
     });
   }
 
-  ionViewDidEnter() {
-    const registerGesture = registerTabBarEffect(document.querySelector<HTMLElement>('ion-tab-bar')!);
-    if (registerGesture) {
-      this.registeredGestures.push(registerGesture);
-    }
-  }
+  // Disabled due to swipe-back double navigation bug
+  // ionViewDidEnter() {
+  //   const registerGesture = registerTabBarEffect(document.querySelector<HTMLElement>('ion-tab-bar')!);
+  //   if (registerGesture) {
+  //     this.registeredGestures.push(registerGesture);
+  //   }
+  // }
 
-  ionViewDidLeave() {
-    this.registeredGestures.forEach((gesture) => gesture.destroy());
-  }
+  // ionViewDidLeave() {
+  //   this.registeredGestures.forEach((gesture) => gesture.destroy());
+  // }
 
 }
