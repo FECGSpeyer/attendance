@@ -103,7 +103,7 @@ export class LoginPage implements OnInit {
   }
 
   async register() {
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: "Registrieren",
       inputs: [
         {

@@ -109,6 +109,7 @@ export class DbService {
   constructor(
     private plt: Platform,
     private router: Router,
+    private alertController: AlertController,
   ) {
     this.tenant = signal(undefined);
     this.tenants = signal([]);
@@ -445,7 +446,7 @@ export class DbService {
 
   async getWantedTenant(tenantId?: number): Promise<number> {
     return new Promise<number>(async (resolve) => {
-      const alert = await new AlertController().create({
+      const alert = await this.alertController.create({
         header: 'Instanz auswählen',
         message: 'Bitte wähle die Instanz aus, die du öffnen möchtest:',
         backdropDismiss: false,

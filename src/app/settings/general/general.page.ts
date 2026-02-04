@@ -69,6 +69,7 @@ export class GeneralPage implements OnInit {
 
   constructor(
     public db: DbService,
+    private alertController: AlertController,
   ) {
 
   }
@@ -132,7 +133,7 @@ export class GeneralPage implements OnInit {
       });
       Utils.showToast("Einstellungen gespeichert", "success");
 
-      const alert = await new AlertController().create({
+      const alert = await this.alertController.create({
         header: 'Einstellungen gespeichert',
         message: 'Die Einstellungen wurden erfolgreich gespeichert. Bitte lade die Seite neu, um die Änderungen zu sehen.',
         buttons: [{
@@ -155,7 +156,7 @@ export class GeneralPage implements OnInit {
     const organisations = await this.db.getOrganisationsFromUser();
 
     if (organisations.length) {
-      const alert = await new AlertController().create({
+      const alert = await this.alertController.create({
         header: 'Organisation auswählen',
         inputs: organisations.map((org: Organisation, index: number) => ({
           type: 'radio',
@@ -201,7 +202,7 @@ export class GeneralPage implements OnInit {
   }
 
   async openCreateOrganisationAlert() {
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Organisation erstellen',
       inputs: [{
         type: "text",
@@ -240,7 +241,7 @@ export class GeneralPage implements OnInit {
       return;
     }
 
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Organisation von Instanz trennen?',
       message: `Möchtest du die Organisation '${this.db.organisation().name}' wirklich von der Instanz trennen? Dies kann nicht rückgängig gemacht werden!`,
       buttons: [{
@@ -337,7 +338,7 @@ export class GeneralPage implements OnInit {
   }
 
   async removeExtraField(index: number) {
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Zusatzfeld löschen?',
       message: `Möchtest du das Zusatzfeld '${this.extraFields[index].name}' wirklich löschen? Dies kann nicht rückgängig gemacht werden!`,
       buttons: [{

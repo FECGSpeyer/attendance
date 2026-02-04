@@ -504,7 +504,7 @@ export class SongPage implements OnInit {
   }
 
   async confirmDeleteSong() {
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Werk löschen',
       message: 'Soll das Werk wirklich gelöscht werden?',
       buttons: [

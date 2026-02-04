@@ -196,7 +196,7 @@ export class AttListPage implements OnInit {
     const alert: HTMLIonAlertElement = await this.alertController.create({
       header: "Möchtest du die Anwesenheit wirklich entfernen?",
       buttons: [{
-        text: "Abrrechen",
+        text: "Abbrechen",
       }, {
         text: "Fortfahren",
         handler: async (): Promise<void> => {

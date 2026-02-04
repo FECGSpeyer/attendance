@@ -19,7 +19,8 @@ export class HandoverDetailPage implements OnInit {
   constructor(
     private dataService: DataService,
     private navCtrl: NavController,
-    private db: DbService
+    private db: DbService,
+    private alertController: AlertController,
   ) { }
 
   async ngOnInit() {
@@ -55,7 +56,7 @@ export class HandoverDetailPage implements OnInit {
   }
 
   async changeGroup(person: Player) {
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Gruppe auswählen',
       inputs: this.newTenantGroups.map(g => ({
         name: 'group',
@@ -85,7 +86,7 @@ export class HandoverDetailPage implements OnInit {
   }
 
   async confirmProceed() {
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Personenübergabe',
       message: `Möchtest du die ${this.handoverData.persons.length} ausgewählten Personen wirklich in die Instanz "${this.handoverData.tenant.longName}" übertragen? ${this.handoverData.stayInInstance ? 'Die Personen bleiben in dieser Instanz erhalten.' : 'Die Personen werden in dieser Instanz archiviert.'}`,
       buttons: [
@@ -121,7 +122,7 @@ export class HandoverDetailPage implements OnInit {
       await loading.dismiss();
 
       if (result.length) {
-        const alert = await new AlertController().create({
+        const alert = await this.alertController.create({
           header: 'Fehler bei der Personenübergabe',
           message: `Die folgenden Personen konnten nicht übertragen werden, da sie bereits in der Zielinstanz vorhanden sind:\n${result.map(r => `${r.firstName} ${r.lastName}`).join('\n')}`,
           buttons: ['Ok']

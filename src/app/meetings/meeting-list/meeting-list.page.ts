@@ -52,7 +52,7 @@ export class MeetingListPage implements OnInit {
       header: 'Besprechung wirklich entfernen?',
       buttons: [
         {
-          text: 'Abrrechen',
+          text: 'Abbrechen',
         }, {
           text: 'Ja',
           handler: async () => {

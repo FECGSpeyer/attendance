@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
-import { AlertButton, AlertController, IonItemSliding, IonModal, IonRouterOutlet, isPlatform, ModalController } from '@ionic/angular';
+import { ActionSheetController, AlertButton, AlertController, IonItemSliding, IonModal, IonRouterOutlet, isPlatform, ModalController } from '@ionic/angular';
 import { ExportPage } from 'src/app/export/export.page';
 import { HistoryPage } from 'src/app/history/history.page';
 import { PersonPage } from 'src/app/people/person/person.page';
@@ -60,7 +60,8 @@ export class SettingsPage implements OnInit, OnDestroy {
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
     private router: Router,
-    private actionSheetController: AlertController,
+    private alertController: AlertController,
+    private actionSheetController: ActionSheetController,
   ) {
     effect(async () => {
       this.db.tenant();
@@ -226,7 +227,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   async showAlertForAccountsCreation() {
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Accounts anlegen',
       message: `Folgende Accounts werden angelegt: ${this.playersWithoutAccount.map((p: Player) => `${p.firstName} ${p.lastName}`).join(', ')}`,
       buttons: [{
@@ -264,7 +265,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   async removeViewer(viewer: Viewer): Promise<void> {
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Beobachter entfernen?',
       message: `Möchtest du ${viewer.firstName} wirklich entfernen?`,
       buttons: [{
@@ -282,7 +283,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   async removeParent(parent: Parent): Promise<void> {
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Elternteil entfernen?',
       message: `Möchtest du ${parent.firstName} wirklich entfernen?`,
       buttons: [{
@@ -327,7 +328,7 @@ export class SettingsPage implements OnInit, OnDestroy {
 
 
   async openViewerAlert() {
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Beobachter hinzufügen',
       inputs: [{
         type: "email",
@@ -369,7 +370,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   async openParentsAlert() {
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Elternteil hinzufügen',
       inputs: [{
         type: "email",
@@ -420,7 +421,7 @@ export class SettingsPage implements OnInit, OnDestroy {
 
     const message = `Möchtest du die Instanz '${tenant.longName}' wirklich löschen? Dies kann nicht rückgängig gemacht werden! Wenn du die Instanz wirklich löschen willst, dann gebe den Namen der Instanz ein:`;
 
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Instanz löschen?',
       message,
       inputs: [{
@@ -471,7 +472,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   async openAdminsAlert() {
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Admin hinzufügen',
       inputs: [{
         type: "email",
@@ -507,7 +508,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   async openChurchInput() {
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Gemeinde hinzufügen',
       inputs: [{
         type: "text",
@@ -548,7 +549,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       return;
     }
 
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Admin entfernen?',
       message: `Möchtest du ${admin.email} wirklich entfernen?`,
       buttons: [{
@@ -572,7 +573,7 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   async openCalendarSubscription() {
     const link = `https://n8n.srv1053762.hstgr.cloud/webhook/attendix?tenantId=${this.db.tenant().id}`;
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Kalender abonnieren',
       message: `Kopiere den folgenden Link in deine Kalender-App, um die Termine zu abonnieren:\n\n${link}`,
       buttons: [{
@@ -760,7 +761,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   async changePassword() {
-    const alert = await new AlertController().create({
+    const alert = await this.alertController.create({
       header: 'Passwort ändern',
       inputs: [{
         type: "password",
