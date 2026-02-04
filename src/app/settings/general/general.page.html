@@ -136,7 +136,7 @@
       <ion-item>
         <ion-label position="stacked">Bundesland für Ferien/Feiertage</ion-label>
         <ion-select [(ngModel)]="region">
-          <ion-select-option *ngFor="let state of holidayStates" [value]="state.code">{{ state.name
+          <ion-select-option *ngFor="let state of holidayStates; trackBy: trackByStateCode" [value]="state.code">{{ state.name
             }}</ion-select-option>
         </ion-select>
       </ion-item>

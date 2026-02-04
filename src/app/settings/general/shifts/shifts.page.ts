@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonModal } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
+import { ShiftPlan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -41,4 +42,6 @@ export class ShiftsPage implements OnInit {
     this.newShiftDescription = '';
     this.router.navigate(['/tabs/settings/general/shifts/', shift.id]);
   }
+
+  trackByShiftId = (_: number, item: ShiftPlan): string => item.id;
 }

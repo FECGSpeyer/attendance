@@ -36,7 +36,7 @@
       <ion-item>
         <ion-label position="stacked">Verfügbare Anwesenheitsstatus</ion-label>
         <ion-select (ionChange)="onAvailableStatusesChanged()" [(ngModel)]="type.available_statuses" multiple="true">
-          <ion-select-option [disabled]="status === 1" *ngFor="let status of attendanceStatuses" [value]="status">
+          <ion-select-option [disabled]="status === 1" *ngFor="let status of attendanceStatuses; trackBy: trackByStatus" [value]="status">
             {{ getAttendanceStatusDescription(status) }}
           </ion-select-option>
         </ion-select>
@@ -145,7 +145,7 @@
               <ion-col [style.paddingTop]="'.5rem'" [style.borderRadius]="'1rem'"
                 [style.backgroundColor]="type.color === color ? 'var(--ion-color-medium)' : ''"
                 [style.textAlign]="'center'" (click)="type.color = color; colorPopover.dismiss()" size="4"
-                *ngFor="let color of colors">
+                *ngFor="let color of colors; trackBy: trackByColor">
                 <ion-icon [style.fontSize]="'1.5rem'" name="ellipse" [color]="color"></ion-icon>
               </ion-col>
             </ion-row>
@@ -162,7 +162,7 @@
         <ion-select label="Relevante Gruppen"
           helperText="Nur die relevanten Gruppen werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt. Wenn keine Gruppe ausgewählt ist, werden alle Gruppen berücksichtigt."
           [(ngModel)]="type.relevant_groups" multiple="true">
-          <ion-select-option *ngFor="let group of db.groups()" [value]="group.id">
+          <ion-select-option *ngFor="let group of db.groups(); trackBy: trackByGroupId" [value]="group.id">
             {{ group.name }}
           </ion-select-option>
         </ion-select>

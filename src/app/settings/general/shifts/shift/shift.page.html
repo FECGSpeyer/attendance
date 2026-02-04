@@ -174,7 +174,7 @@
           <ion-list-header>
             <ion-label>Berechnete Schichten</ion-label>
           </ion-list-header>
-          <ion-item *ngFor="let cs of calculatedShifts">
+          <ion-item *ngFor="let cs of calculatedShifts; trackBy: trackByShiftIndex">
             <ion-label>
               <h2>{{ cs.date }}</h2>
               <h3 *ngIf="!cs.free">{{ cs.start_time }} - {{ cs.end_time }}, {{ cs.duration }} Stunden

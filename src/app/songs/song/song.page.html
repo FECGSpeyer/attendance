@@ -67,7 +67,7 @@
       <ion-item *ngIf="isOrchestra && !readOnly">
         <ion-select (ionDismiss)="update()" interface="modal" label="Besetzung" multiple="true"
           [(ngModel)]="song.instrument_ids">
-          <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments">{{ instrument.name
+          <ion-select-option [value]="instrument.id" *ngFor="let instrument of instruments; trackBy: trackByInstrumentId">{{ instrument.name
             }}</ion-select-option>
         </ion-select>
       </ion-item>
@@ -75,7 +75,7 @@
       <ion-item *ngIf="!readOnly">
         <ion-select (ionChange)="update()" interface="popover" label="Kategorie" [(ngModel)]="song.category">
           <ion-select-option [value]="null">Keine Kategorie</ion-select-option>
-          <ion-select-option [value]="category.id" *ngFor="let category of db.songCategories()">{{ category.name
+          <ion-select-option [value]="category.id" *ngFor="let category of db.songCategories(); trackBy: trackByCategoryId">{{ category.name
             }}</ion-select-option>
         </ion-select>
       </ion-item>
@@ -101,7 +101,7 @@
       <br>
       @if (isOrchestra && song.instrument_ids?.length) {
       <ion-chip [color]="song.instrument_ids?.includes(instrument.id) ? 'success' : 'danger'"
-        *ngFor="let instrument of instruments" style="margin-left: 5px;">
+        *ngFor="let instrument of instruments; trackBy: trackByInstrumentId" style="margin-left: 5px;">
         <ion-label>{{ instrument.name }}</ion-label>
       </ion-chip>
       }
@@ -195,7 +195,7 @@
                         (Freitext möglich)' }}</ion-select-option>
                       <ion-select-option [value]="1">Aufnahme</ion-select-option>
                       <ion-select-option [value]="2">Liedtext</ion-select-option>
-                      <ion-select-option *ngFor="let instrument of instruments" [value]="instrument.id">{{
+                      <ion-select-option *ngFor="let instrument of instruments; trackBy: trackByInstrumentId" [value]="instrument.id">{{
                         instrument.name }}</ion-select-option>
                     </ion-select>
                   </ion-item>
@@ -278,7 +278,7 @@
         <ion-item-group>
           <ion-item>
             <ion-select (ionChange)="onTargetTenantChange()" label="Ziel-Instanz" [(ngModel)]="targetTenantId">
-              <ion-select-option [value]="tnt.id" *ngFor="let tnt of availableTenants">{{ tnt.longName
+              <ion-select-option [value]="tnt.id" *ngFor="let tnt of availableTenants; trackBy: trackByTenantId">{{ tnt.longName
                 }}</ion-select-option>
             </ion-select>
           </ion-item>

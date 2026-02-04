@@ -135,4 +135,8 @@ export class HandoverPage implements OnInit {
     }
     this.filter();
   }
+
+  trackByTenantId = (_: number, item: Tenant): number => item.id;
+  trackByGroupId = (_: number, item: Group): number => item.id;
+  trackByPersonId = (_: number, item: Player): number => item.id;
 }

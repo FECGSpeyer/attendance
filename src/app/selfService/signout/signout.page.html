@@ -117,7 +117,7 @@
               </ion-list-header>
               <ion-item-group>
                 <ion-item [color]="his.song.instrument_ids.includes(player.instrument) ? '' : 'danger'" button
-                  (click)="openSongOptions(his.song)" *ngFor="let his of group.history">
+                  (click)="openSongOptions(his.song)" *ngFor="let his of group.history; trackBy: trackByHistoryId">
                   <ion-label *ngIf="his.song">
                     <h2>{{ his.song.number }}. {{ his.song.name }}</h2>
                     <h3>Dirigent: {{ his.conductorName }}</h3>
@@ -245,7 +245,7 @@
             <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" slot="end">Ø {{ perc
               }}%</ion-badge>
           </ion-item-divider>
-          <ng-container *ngFor="let att of personAttendances">
+          <ng-container *ngFor="let att of personAttendances; trackBy: trackByAttendanceId">
             <ion-item *ngIf="attHasPassed(att)">
               <ion-label>
                 <h2>{{ getReadableDate(att.date, att.typeId) }}</h2>

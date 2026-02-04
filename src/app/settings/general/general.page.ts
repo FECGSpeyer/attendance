@@ -103,6 +103,8 @@ export class GeneralPage implements OnInit {
     this.extraFields = [...this.db.tenant().additional_fields ?? []];
   }
 
+  trackByStateCode = (_: number, item: { name: string; code: string }): string => item.code;
+
   async saveGeneralSettings() {
     let song_sharing_id = this.songSharingEnabled ? this.db.tenant().song_sharing_id : null;
     if (this.songSharingEnabled && !this.db.tenant().song_sharing_id) {

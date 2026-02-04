@@ -325,6 +325,9 @@ export class SignoutPage implements OnInit {
     event.target.complete();
   }
 
+  trackByHistoryId = (_: number, item: History): number => item.id;
+  trackByAttendanceId = (_: number, item: PersonAttendance): string => item.id;
+
   getSongNames(songIds: number[]): string {
     return songIds.map((id: number) => {
       return `${this.songs.find((s: Song) => s.id === id).number} ${this.songs.find((s: Song) => s.id === id).name}`;

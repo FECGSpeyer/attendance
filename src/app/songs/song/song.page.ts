@@ -137,6 +137,10 @@ export class SongPage implements OnInit {
     return `${index}-${fileInfo.note || ''}-${fileInfo.instrumentId}`;
   }
 
+  trackByInstrumentId = (_: number, item: Group): number => item.id;
+  trackByCategoryId = (_: number, item: { id?: string }): string => item.id;
+  trackByTenantId = (_: number, item: Tenant): number => item.id;
+
   async changeFileInstrument(index: number, instrumentId: number | null, note?: string) {
     if (!instrumentId) {
       const alert = await this.alertController.create({

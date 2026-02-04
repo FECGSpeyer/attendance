@@ -5,7 +5,7 @@ import * as dayjs from 'dayjs';
 import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus } from 'src/app/utilities/constants';
-import { AttendanceType, FieldSelection, Plan } from 'src/app/utilities/interfaces';
+import { AttendanceType, FieldSelection, Group, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -124,6 +124,10 @@ export class TypePage implements OnInit {
 
     return true;
   }
+
+  trackByStatus = (index: number, _: number): number => index;
+  trackByColor = (_: number, color: string): string => color;
+  trackByGroupId = (_: number, item: Group): number => item.id;
 
   async deleteType() {
     const alert = await this.alertController.create({

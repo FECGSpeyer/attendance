@@ -213,4 +213,6 @@ export class ShiftPage implements OnInit {
 
     this.isCalculateModalOpen = true;
   }
+
+  trackByShiftIndex = (index: number, _: any): number => index;
 }
