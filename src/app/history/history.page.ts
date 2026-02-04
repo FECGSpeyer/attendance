@@ -38,6 +38,11 @@ export class HistoryPage implements OnInit {
     private alertController: AlertController,
   ) { }
 
+  trackByHistoryId = (_index: number, entry: History): number => entry.id!;
+  trackByGroupDate = (_index: number, group: GroupedHistory): string => group.date;
+  trackBySongId = (_index: number, song: Song): number => song.id;
+  trackByConId = (_index: number, con: Person): number => con.id;
+
   async ngOnInit(): Promise<void> {
     this.songs = await this.db.getSongs();
     this.selectedSongs = [this.songs[0].id];

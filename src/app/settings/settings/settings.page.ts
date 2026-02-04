@@ -83,11 +83,36 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.isSuperAdmin = this.db.tenantUser().role === Role.ADMIN;
     this.isApplicant = this.db.tenantUser().role === Role.APPLICANT;
     this.maintainTeachers = this.db.tenant().maintainTeachers;
+    this.parentsEnabled = this.db.tenant().parents || false;
 
-    this.pendingPersons = await this.db.getPendingPersons();
-    const allConductors: Person[] = await this.db.getConductors(true);
+    // Parallel fetch all independent data for faster loading
+    const [
+      pendingPersons,
+      allConductors,
+      leftPlayersRaw,
+      viewers,
+      parents,
+      admins,
+      churches,
+      playersWithoutAccount,
+      tenantsFromUser,
+      oldUserData
+    ] = await Promise.all([
+      this.db.getPendingPersons(),
+      this.db.getConductors(true),
+      this.db.getLeftPlayers(),
+      this.db.getViewers(),
+      this.parentsEnabled ? this.db.getParents() : Promise.resolve([]),
+      this.db.getAdmins(),
+      this.db.isBeta() ? this.db.getChurches() : Promise.resolve([]),
+      this.db.getPlayersWithoutAccount(),
+      this.db.getUserRolesForTenants(this.db.tenantUser().userId),
+      this.db.getPlayerProfile()
+    ]);
+
+    this.pendingPersons = pendingPersons;
     this.leftPlayers = Utils.getModifiedPlayersForList(
-      await this.db.getLeftPlayers(),
+      leftPlayersRaw,
       this.db.groups(),
       [],
       this.db.attendanceTypes(),
@@ -96,21 +121,13 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.db.churches()
     );
     this.leftConductors = allConductors.filter((con: Person) => Boolean(con.left));
-    this.viewers = await this.db.getViewers();
-    this.parentsEnabled = this.db.tenant().parents || false;
-    if (this.parentsEnabled) {
-      this.parents = await this.db.getParents();
-    }
-    this.admins = await this.db.getAdmins();
-
-    if (this.db.isBeta()) {
-      this.churches = await this.db.getChurches();
-    }
-
-    this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
-    this.tenantsFromUser = await this.db.getUserRolesForTenants(this.db.tenantUser().userId);
-
-    this.oldUserData = await this.db.getPlayerProfile();
+    this.viewers = viewers;
+    this.parents = parents;
+    this.admins = admins;
+    this.churches = churches;
+    this.playersWithoutAccount = playersWithoutAccount;
+    this.tenantsFromUser = tenantsFromUser;
+    this.oldUserData = oldUserData;
 
     if (this.oldUserData) {
       this.userData = { ...this.oldUserData };
