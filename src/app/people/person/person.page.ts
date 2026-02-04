@@ -10,10 +10,10 @@ import { AttendanceStatus, DefaultAttendanceType, DEFAULT_IMAGE, PlayerHistoryTy
 dayjs.extend(utc);
 
 @Component({
-    selector: 'app-person',
-    templateUrl: './person.page.html',
-    styleUrls: ['./person.page.scss'],
-    standalone: false
+  selector: 'app-person',
+  templateUrl: './person.page.html',
+  styleUrls: ['./person.page.scss'],
+  standalone: false
 })
 export class PersonPage implements OnInit, AfterViewInit {
   @Input() existingPlayer: Player;
@@ -100,7 +100,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     private actionSheetController: ActionSheetController,
   ) { }
 
-// TrackBy function for history list
+  // TrackBy function for history list
   trackByHistoryId = (_: number, att: any): string => att.id ?? `${att.date}-${att.type}`;
 
   async ngOnInit() {
