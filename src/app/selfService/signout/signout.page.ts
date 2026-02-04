@@ -2,6 +2,7 @@
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, isPlatform } from '@ionic/angular';
 import * as dayjs from 'dayjs';
+import { PDFDocument } from 'pdf-lib';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
 import { Attendance, PersonAttendance, Player, Song, Tenant, History, SongFile, AttendanceType } from 'src/app/utilities/interfaces';
@@ -568,6 +569,74 @@ export class SignoutPage implements OnInit {
     });
 
     await actionSheet.present();
+  }
+
+  async printAllCurrentFiles(): Promise<void> {
+    const filesToPrint: { song: Song, file: SongFile }[] = [];
+
+    // Collect all files for the player's instrument from upcoming songs
+    for (const group of this.upcomingSongs) {
+      for (const his of group.history) {
+        if (his.song?.files) {
+          const file = his.song.files.find(f => f.instrumentId === this.player.instrument);
+          if (file) {
+            filesToPrint.push({ song: his.song, file });
+          }
+        }
+      }
+    }
+
+    if (filesToPrint.length === 0) {
+      Utils.showToast('Keine Noten für dein Instrument gefunden.', 'warning');
+      return;
+    }
+
+    try {
+      Utils.showToast('PDFs werden zusammengeführt...', 'primary');
+
+      // Create a new PDF document
+      const mergedPdf = await PDFDocument.create();
+
+      // Download and merge each PDF
+      for (const entry of filesToPrint) {
+        try {
+          const pdfBlob = await this.db.downloadSongFile(
+            entry.file.storageName ?? entry.file.url.split('/').pop(),
+            entry.song.id
+          );
+          const pdfBytes = await pdfBlob.arrayBuffer();
+          const pdf = await PDFDocument.load(pdfBytes);
+          const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+          pages.forEach(page => mergedPdf.addPage(page));
+        } catch (err) {
+          console.error(`Fehler beim Laden von ${entry.file.fileName}:`, err);
+        }
+      }
+
+      // Save and print the merged PDF
+      const mergedPdfBytes = await mergedPdf.save();
+      const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+
+      const printWindow = window.open(url, '_blank');
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.print();
+          // Clean up after printing
+          setTimeout(() => URL.revokeObjectURL(url), 60000);
+        };
+      } else {
+        // Fallback: download the file
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'aktuelle_noten.pdf';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      }
+    } catch (err) {
+      console.error('Fehler beim Zusammenführen der PDFs:', err);
+      Utils.showToast('Fehler beim Zusammenführen der PDFs.', 'danger');
+    }
   }
 
   showDeadlineInfo(attendance: PersonAttendance): boolean {
