@@ -212,7 +212,7 @@ export class HistoryPage implements OnInit {
   }
 
   async remove(id: number, sliding: IonItemSliding) {
-    await Haptics.impact({ style: ImpactStyle.Medium });
+    try { await Haptics.impact({ style: ImpactStyle.Medium }); } catch { /* Haptics not available in PWA */ }
     const alert = await this.alertController.create({
       header: 'Möchtest du den Eintrag wirklich entfernen?',
       buttons: [

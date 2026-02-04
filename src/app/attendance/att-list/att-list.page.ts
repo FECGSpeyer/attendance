@@ -199,7 +199,7 @@ export class AttListPage implements OnInit {
   }
 
   async remove(id: number, slider: IonItemSliding): Promise<void> {
-    await Haptics.impact({ style: ImpactStyle.Medium });
+    try { await Haptics.impact({ style: ImpactStyle.Medium }); } catch { /* Haptics not available in PWA */ }
     const alert: HTMLIonAlertElement = await this.alertController.create({
       header: "Möchtest du die Anwesenheit wirklich entfernen?",
       buttons: [{

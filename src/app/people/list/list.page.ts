@@ -589,7 +589,7 @@ export class ListPage implements OnInit, OnDestroy {
   }
 
   async removePlayer(player: Person): Promise<void> {
-    await Haptics.impact({ style: ImpactStyle.Medium });
+    try { await Haptics.impact({ style: ImpactStyle.Medium }); } catch { /* Haptics not available in PWA */ }
     const alert = await this.alertController.create({
       header: 'Person wirklich entfernen?',
       message: 'Diese Aktion kann nicht rückgängig gemacht werden!',
@@ -617,7 +617,7 @@ export class ListPage implements OnInit, OnDestroy {
   }
 
   async pausePlayer(player: Player, slider: IonItemSliding) {
-    await Haptics.impact({ style: ImpactStyle.Light });
+    try { await Haptics.impact({ style: ImpactStyle.Light }); } catch { /* Haptics not available in PWA */ }
     this.playerToPause = player;
     this.sliderToPause = slider;
     this.pauseReason = "";

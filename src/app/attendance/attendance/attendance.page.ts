@@ -184,7 +184,7 @@ export class AttendancePage implements OnInit {
   }
 
   async onAttChange(individual: PersonAttendance) {
-    await Haptics.impact({ style: ImpactStyle.Light });
+    try { await Haptics.impact({ style: ImpactStyle.Light }); } catch { /* Haptics not available in PWA */ }
     const attType = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
     let status;
 

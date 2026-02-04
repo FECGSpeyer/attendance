@@ -4,6 +4,18 @@
 
 Attendix is a multi-tenant attendance tracking app for organizations (orchestras, choirs, groups). Built with **Ionic 8 + Angular 18** for cross-platform deployment (web, iOS, Android) using **Capacitor 4**. Backend is **Supabase** (PostgreSQL + Auth + Realtime).
 
+### Primary Usage Context
+
+The app is **primarily used on laptops (web) and as a PWA on smartphones**. Native iOS/Android builds exist but are secondary. When implementing features:
+
+- **Always wrap Capacitor-native APIs** (Haptics, Camera, etc.) in `try-catch` blocks since they throw errors in PWA/web context
+- **Test features in browser first** - most users access the app this way
+- **Don't rely on native-only features** without providing web fallbacks
+- Example pattern for native APIs:
+  ```typescript
+  try { await Haptics.impact({ style: ImpactStyle.Light }); } catch { /* Not available in PWA */ }
+  ```
+
 ## Architecture
 
 ### Service Layer Pattern
