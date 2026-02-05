@@ -12,10 +12,10 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { Router } from '@angular/router';
 
 @Component({
-    selector: 'app-list',
-    templateUrl: './list.page.html',
-    styleUrls: ['./list.page.scss'],
-    standalone: false
+  selector: 'app-list',
+  templateUrl: './list.page.html',
+  styleUrls: ['./list.page.scss'],
+  standalone: false
 })
 export class ListPage implements OnInit, OnDestroy {
   public players: Player[] = [];
@@ -59,6 +59,8 @@ export class ListPage implements OnInit, OnDestroy {
   public tenantName: string = "";
   public loaded: boolean = false;
   public prevFilterValue: string = "";
+  private initialized: boolean = false;
+  private currentTenantId: number | undefined;
 
   constructor(
     private modalController: ModalController,
@@ -70,28 +72,33 @@ export class ListPage implements OnInit, OnDestroy {
     private router: Router
   ) {
     effect(async () => {
-      this.loaded = false;
-      this.players = [];
-      this.playersFiltered = [];
-      this.db.tenant();
-      this.mainGroup = this.db.getMainGroup()?.id;
-      if (this.db.tenant().maintainTeachers) {
-        this.teachers = await this.db.getTeachers();
+      const tenantId = this.db.tenant()?.id;
+      // Skip if not initialized yet (ngOnInit will handle first load)
+      // or if tenant hasn't actually changed
+      if (!this.initialized || tenantId === this.currentTenantId) {
+        return;
       }
-      this.isVoS = this.db.tenant().shortName === 'VoS';
 
-      this.viewOpts = JSON.parse(await this.storage.get(`viewOpts${this.db.tenant().id}`) || JSON.stringify(['instrument', 'leader', 'attendance', 'critical', 'paused']));
-      this.filterOpt = (await this.storage.get(`filterOpt${this.db.tenant().id}`)) || "all";
-
-      await this.getPlayers();
-
-      this.linkedTenants = await this.db.getLinkedTenants();
-
-      this.subscribe();
+      // Tenant has changed - reload data
+      this.currentTenantId = tenantId;
+      await this.initializeData();
     });
   }
 
   async ngOnInit() {
+    this.currentTenantId = this.db.tenant()?.id;
+    await this.initializeData();
+    this.initialized = true;
+  }
+
+  /**
+   * Shared initialization logic for ngOnInit and tenant change effect
+   */
+  private async initializeData(): Promise<void> {
+    this.loaded = false;
+    this.players = [];
+    this.playersFiltered = [];
+
     if (this.db.tenant().maintainTeachers) {
       this.teachers = await this.db.getTeachers();
     }
@@ -110,7 +117,7 @@ export class ListPage implements OnInit, OnDestroy {
     }
 
     await this.getPlayers();
-
+    this.linkedTenants = await this.db.getLinkedTenants();
     this.subscribe();
   }
 

@@ -18,74 +18,91 @@ export class Utils {
     additionalFields?: ExtraField[],
     churches?: Church[],
   ): Player[] {
-    const instrumentsMap: { [props: number]: boolean } = {};
+    // Pre-compute lookup maps for O(1) access instead of O(n) finds
+    const instrumentCountMap = new Map<number, number>();
+    const instrumentNameMap = new Map<number, string>();
+    const attendanceMap = new Map<number, Attendance>();
+    const typeMap = new Map<string, AttendanceType>();
+    const instrumentFirstSeen = new Set<number>();
 
-    return players.sort((a: Player, b: Player) => {
-      if (a.instrument === b.instrument) {
-        return a.lastName.localeCompare(b.lastName);
+    // Build instrument name lookup map
+    for (const ins of instruments) {
+      instrumentNameMap.set(ins.id, ins.name);
+    }
+
+    // Build attendance lookup map
+    if (attendances?.length) {
+      for (const att of attendances) {
+        attendanceMap.set(att.id, att);
+      }
+    }
+
+    // Build type lookup map
+    if (types?.length) {
+      for (const t of types) {
+        typeMap.set(t.id, t);
+      }
+    }
+
+    // Pre-count players per instrument (O(n) instead of O(n²))
+    for (const player of players) {
+      instrumentCountMap.set(
+        player.instrument,
+        (instrumentCountMap.get(player.instrument) || 0) + 1
+      );
+    }
+
+    // Pre-compute "one month ago" date once
+    const oneMonthAgo = dayjs().subtract(1, "month");
+    const tomorrow = dayjs().add(1, "day");
+
+    // Sort once with proper comparator
+    const sortedPlayers = [...players].sort((a: Player, b: Player) => {
+      // Main group first
+      if (a.instrument === mainGroup && b.instrument !== mainGroup) return -1;
+      if (b.instrument === mainGroup && a.instrument !== mainGroup) return 1;
+
+      // Then by group name
+      const aGroupName = instrumentNameMap.get(a.instrument) || '';
+      const bGroupName = instrumentNameMap.get(b.instrument) || '';
+      const groupCompare = aGroupName.localeCompare(bGroupName);
+      if (groupCompare !== 0) return groupCompare;
+
+      // Then by lastName within same group
+      return a.lastName.localeCompare(b.lastName);
+    });
+
+    return sortedPlayers.map((player: Player): Player => {
+      const isFirstOfInstrument = !instrumentFirstSeen.has(player.instrument);
+      if (isFirstOfInstrument) {
+        instrumentFirstSeen.add(player.instrument);
       }
 
-      // Sort by instrument but maingroup first
-      if (a.groupName === b.groupName) {
-        return 0;
-      } else if (a.instrument === mainGroup) {
-        return -1;
-      } else if (b.instrument === mainGroup) {
-        return 1;
-      }
-    }).map((player: Player): Player => {
-      let firstOfInstrument: boolean = false;
-      let instrumentLength: number = 0;
-      let isNew: boolean = false;
+      const isNew = oneMonthAgo.isBefore(dayjs(player.joined));
 
-      if (!instrumentsMap[player.instrument]) {
-        instrumentsMap[player.instrument] = true;
-        firstOfInstrument = true;
-        instrumentLength = players.filter((p: Player) => p.instrument === player.instrument).length;
-      }
-
-      if (dayjs().subtract(1, "month").isBefore(dayjs(player.joined))) {
-        isNew = true;
-      }
-
-      if (additionalFields) {
+      // Handle additional fields
+      if (additionalFields && player.additional_fields) {
         for (const field of additionalFields) {
-          if (player.additional_fields?.[field.id] === undefined || player.additional_fields?.[field.id] === null) {
+          if (player.additional_fields[field.id] === undefined || player.additional_fields[field.id] === null) {
             player.additional_fields[field.id] = Utils.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options, churches);
           }
         }
       }
 
-      let percentage: number = 0;
-      let lateCount: number = 0;
+      let percentage = 0;
 
-      if (player.person_attendances && attendances?.length) {
+      if (player.person_attendances?.length && attendanceMap.size > 0) {
+        // Use pre-built maps for O(1) lookups instead of O(n) finds
         const personAttendancesTillNow = player.person_attendances.filter((personAttendance: PersonAttendance) => {
-          const attendance = attendances.find((attendance: Attendance) => personAttendance.attendance_id === attendance.id);
-          const type = types.find((t: AttendanceType) => t.id === attendance?.type_id);
+          const attendance = attendanceMap.get(personAttendance.attendance_id);
+          if (!attendance) return false;
 
-          if (!type?.include_in_average) {
-            return false;
-          }
+          const type = typeMap.get(attendance.type_id);
+          if (!type?.include_in_average) return false;
 
-          return attendance && dayjs(attendance.date).isBefore(dayjs().add(1, "day"));
+          return dayjs(attendance.date).isBefore(tomorrow);
         });
-        percentage = Utils.getPercentage(personAttendancesTillNow);
-        if (isNaN(percentage)) {
-          percentage = 0;
-        }
-
-        // Count unexcused late arrivals (only after lastSolve if set)
-        const attendancesAfterSolve = player.lastSolve
-          ? personAttendancesTillNow.filter((pa: PersonAttendance) => {
-            const attendance = attendances.find((a: Attendance) => pa.attendance_id === a.id);
-            return attendance && dayjs(attendance.date).isAfter(dayjs(player.lastSolve));
-          })
-          : personAttendancesTillNow;
-
-        lateCount = attendancesAfterSolve.filter(
-          (pa: PersonAttendance) => pa.status === AttendanceStatus.Late
-        ).length;
+        percentage = Utils.getPercentage(personAttendancesTillNow) || 0;
       }
 
       let img = player.img || DEFAULT_IMAGE;
@@ -97,23 +114,13 @@ export class Utils {
 
       return {
         ...player,
-        firstOfInstrument,
-        instrumentLength,
+        firstOfInstrument: isFirstOfInstrument,
+        instrumentLength: instrumentCountMap.get(player.instrument) || 0,
         isNew,
         percentage,
-        lateCount,
-        groupName: instruments.find((ins: Group) => ins.id === player.instrument).name,
+        groupName: instrumentNameMap.get(player.instrument) || '',
         img,
-      }
-    }).sort((a: Player, b: Player) => {
-      // Sort by instrument but maingroup first
-      if (a.groupName === b.groupName) {
-        return 0;
-      } else if (a.instrument === mainGroup) {
-        return -1;
-      } else if (b.instrument === mainGroup) {
-        return 1;
-      }
+      };
     });
   }
 
