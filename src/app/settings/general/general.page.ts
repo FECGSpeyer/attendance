@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { AlertController, IonModal } from '@ionic/angular';
+import { Component, HostListener, OnInit } from '@angular/core';
+import { AlertController, IonModal, NavController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
@@ -76,9 +76,21 @@ export class GeneralPage implements OnInit {
   public CriticalRuleThresholdType = CriticalRuleThresholdType;
   public CriticalRuleOperator = CriticalRuleOperator;
 
+  // Change tracking
+  private originalState: string = '';
+
+  // Browser/PWA: Warn before closing tab with unsaved changes
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent) {
+    if (this.hasUnsavedChanges()) {
+      $event.returnValue = true;
+    }
+  }
+
   constructor(
     public db: DbService,
     private alertController: AlertController,
+    private navController: NavController,
   ) {
 
   }
@@ -112,6 +124,89 @@ export class GeneralPage implements OnInit {
     this.extraFields = [...this.db.tenant().additional_fields ?? []];
     this.criticalRules = [...this.db.tenant().critical_rules ?? []];
     this.loadAttendanceTypes();
+
+    // Store original state for change detection
+    this.originalState = this.getCurrentStateJson();
+  }
+
+  /**
+   * Get current state as JSON string for comparison
+   */
+  private getCurrentStateJson(): string {
+    return JSON.stringify({
+      shortName: this.shortName,
+      longName: this.longName,
+      maintainTeachers: this.maintainTeachers,
+      region: this.region,
+      showHolidays: this.showHolidays,
+      practiceStart: this.practiceStart,
+      practiceEnd: this.practiceEnd,
+      parentsEnabled: this.parentsEnabled,
+      attDate: this.attDate,
+      songSharingEnabled: this.songSharingEnabled,
+      registerAllowed: this.registerAllowed,
+      autoApproveRegistrations: this.autoApproveRegistrations,
+      selectedRegisterFields: this.selectedRegisterFields,
+      extraFields: this.extraFields,
+      criticalRules: this.criticalRules,
+    });
+  }
+
+  /**
+   * Check if there are unsaved changes
+   */
+  hasUnsavedChanges(): boolean {
+    return this.getCurrentStateJson() !== this.originalState;
+  }
+
+  /**
+   * Mark current state as saved
+   */
+  private markAsSaved(): void {
+    this.originalState = this.getCurrentStateJson();
+  }
+
+  /**
+   * Navigate back with unsaved changes check
+   */
+  async navigateBack(): Promise<void> {
+    if (this.hasUnsavedChanges()) {
+      const shouldLeave = await this.confirmUnsavedChanges();
+      if (!shouldLeave) return;
+    }
+    this.navController.back();
+  }
+
+  /**
+   * Show confirmation dialog for unsaved changes
+   */
+  private async confirmUnsavedChanges(): Promise<boolean> {
+    return new Promise(async (resolve) => {
+      const alert = await this.alertController.create({
+        header: 'Ungespeicherte Änderungen',
+        message: 'Du hast ungespeicherte Änderungen. Möchtest du sie speichern bevor du die Seite verlässt?',
+        buttons: [
+          {
+            text: 'Abbrechen',
+            role: 'cancel',
+            handler: () => resolve(false)
+          },
+          {
+            text: 'Verwerfen',
+            role: 'destructive',
+            handler: () => resolve(true)
+          },
+          {
+            text: 'Speichern',
+            handler: async () => {
+              await this.saveGeneralSettings();
+              resolve(true);
+            }
+          }
+        ]
+      });
+      await alert.present();
+    });
   }
 
   loadAttendanceTypes() {
@@ -159,6 +254,7 @@ export class GeneralPage implements OnInit {
         registration_fields: this.registerAllowed ? this.selectedRegisterFields : [],
         critical_rules: this.criticalRules,
       });
+      this.markAsSaved();
       Utils.showToast("Einstellungen gespeichert", "success");
 
       const alert = await this.alertController.create({
