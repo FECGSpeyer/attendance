@@ -1,3 +1,57 @@
+// Category list styling
+.category-list {
+    ion-list-header {
+        ion-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+    }
+}
+
+.header-icon {
+    font-size: 1.2rem;
+    color: var(--ion-color-primary);
+}
+
+// Alert card for pending actions
+.alert-card {
+    cursor: pointer;
+
+    .alert-content {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        ion-icon {
+            flex-shrink: 0;
+        }
+
+        p {
+            margin: 4px 0 0;
+            opacity: 0.9;
+        }
+    }
+}
+
+// Modal header icon
+.headerIcon {
+    width: 4rem;
+    height: 4rem;
+    margin: auto;
+}
+
+.marginTop {
+    margin-top: 0;
+}
+
+// Item groups background
+ion-item-group {
+    background: var(--ion-item-background, #fff);
+}
+
 ion-card-subtitle {
     margin-left: 1.5rem;
 }
@@ -11,26 +65,13 @@ ion-card {
     margin-top: 0;
 }
 
-.md .general-settings {
-    margin-top: 1rem;
-}
-
-.general-settings {
-    margin-top: .5rem;
-}
-
-.headerIcon {
-    width: 4rem;
-    height: 4rem;
-    margin: auto;
-}
-
-ion-item-group {
-    background: #fff;
-}
-
+// Dark mode
 @media (prefers-color-scheme: dark) {
     ion-item-group {
-        background: #000;
+        background: var(--ion-item-background, #1c1c1d);
+    }
+
+    .header-icon {
+        color: var(--ion-color-primary-tint);
     }
 }
