@@ -176,9 +176,6 @@
                 slot="end">
               Problemfall</ion-badge>
             }
-            @if (((showPaused && !player.paused) || !showPaused) && player.lateCount >= (db.tenant().late_threshold ?? 3)) {
-              <ion-badge color="warning" slot="end">🕐 {{player.lateCount}}×</ion-badge>
-            }
             @if (showPaused && player.paused) {
               <ion-badge color="warning" slot="end">Pausiert</ion-badge>
             }

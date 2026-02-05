@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ModalController, AlertController, NavController } from '@ionic/angular';
+import { ModalController, AlertController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { TypePage } from './type.page';
 import { DbService } from 'src/app/services/db.service';
 import { DataService } from 'src/app/services/data.service';
 import { createDbServiceMock } from '../../../../testing/mocks/db-service.mock';
-import { createModalControllerMock, createAlertControllerMock, createNavControllerMock } from '../../../../testing/mocks/ionic.mock';
+import { createModalControllerMock, createAlertControllerMock } from '../../../../testing/mocks/ionic.mock';
 
 describe('TypePage', () => {
   let component: TypePage;
@@ -36,7 +36,6 @@ describe('TypePage', () => {
         { provide: DataService, useValue: mockDataService },
         { provide: ModalController, useValue: createModalControllerMock() },
         { provide: AlertController, useValue: createAlertControllerMock() },
-        { provide: NavController, useValue: createNavControllerMock() },
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
       ],

@@ -57,7 +57,6 @@ export class Utils {
       }
 
       let percentage: number = 0;
-      let lateCount: number = 0;
 
       if (player.person_attendances && attendances?.length) {
         const personAttendancesTillNow = player.person_attendances.filter((personAttendance: PersonAttendance) => {
@@ -74,18 +73,6 @@ export class Utils {
         if (isNaN(percentage)) {
           percentage = 0;
         }
-
-        // Count unexcused late arrivals (only after lastSolve if set)
-        const attendancesAfterSolve = player.lastSolve
-          ? personAttendancesTillNow.filter((pa: PersonAttendance) => {
-            const attendance = attendances.find((a: Attendance) => pa.attendance_id === a.id);
-            return attendance && dayjs(attendance.date).isAfter(dayjs(player.lastSolve));
-          })
-          : personAttendancesTillNow;
-
-        lateCount = attendancesAfterSolve.filter(
-          (pa: PersonAttendance) => pa.status === AttendanceStatus.Late
-        ).length;
       }
 
       let img = player.img || DEFAULT_IMAGE;
@@ -101,7 +88,6 @@ export class Utils {
         instrumentLength,
         isNew,
         percentage,
-        lateCount,
         groupName: instruments.find((ins: Group) => ins.id === player.instrument).name,
         img,
       }

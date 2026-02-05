@@ -66,7 +66,6 @@ export class PersonPage implements OnInit, AfterViewInit {
   public isChoir: boolean = false;
   public isGeneral: boolean = false;
   public lateCount: number = 0;
-  public lateExcusedCount: number = 0;
   public showTeachers: boolean = false;
   public isMainGroup: boolean = false;
   public role: Role = Role.PLAYER;
@@ -255,14 +254,8 @@ export class PersonPage implements OnInit, AfterViewInit {
     }).length;
     this.perc = attendances.length ? Math.round(attendedCount / allCount * 100) : 0;
 
-    // Count late attendances (unexcused vs excused)
-    // Only count attendances after lastSolve (if set) - this resets the counter
-    const attendancesAfterSolve = this.player.lastSolve
-      ? attendances.filter((a) => dayjs((a as any).date).isAfter(dayjs(this.player.lastSolve)))
-      : attendances;
-
-    this.lateCount = attendancesAfterSolve.filter((a) => a.status === AttendanceStatus.Late).length;
-    this.lateExcusedCount = attendancesAfterSolve.filter((a) => a.status === AttendanceStatus.LateExcused).length;
+    // Count late attendances
+    this.lateCount = attendances.filter((a) => a.status === AttendanceStatus.Late).length;
 
     // Map attendance history
     const attendanceHistory = attendances.map((att: PersonAttendance) => ({
@@ -595,43 +588,6 @@ export class PersonPage implements OnInit, AfterViewInit {
       ]
     });
 
-    await alert.present();
-  }
-
-  /**
-   * Reset the late count immediately by setting lastSolve to now
-   */
-  async resetLateCount() {
-    const alert = await this.alertController.create({
-      header: 'Verspätungszähler zurücksetzen?',
-      message: 'Der Zähler wird sofort zurückgesetzt. Diese Aktion kann nicht rückgängig gemacht werden.',
-      buttons: [
-        {
-          text: 'Abbrechen',
-          role: 'cancel',
-        },
-        {
-          text: 'Zurücksetzen',
-          handler: async () => {
-            try {
-              const now = new Date().toISOString();
-              await this.db.getSupabase()
-                .from('player')
-                .update({ lastSolve: now })
-                .eq('id', this.player.id);
-
-              this.player.lastSolve = now;
-              this.existingPlayer.lastSolve = now;
-              this.lateCount = 0;
-              this.lateExcusedCount = 0;
-              Utils.showToast('Verspätungszähler wurde zurückgesetzt', 'success');
-            } catch {
-              Utils.showToast('Fehler beim Zurücksetzen', 'danger');
-            }
-          },
-        },
-      ],
-    });
     await alert.present();
   }
 

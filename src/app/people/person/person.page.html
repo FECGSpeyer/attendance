@@ -69,31 +69,6 @@
   </ion-accordion-group>
   }
 
-  @if (!readOnly && !player?.isCritical && lateCount >= (db.tenant().late_threshold ?? 3)) {
-  <ion-card color="warning" class="late-warning-card">
-    <ion-card-header>
-      <ion-card-title>
-        <ion-icon name="time-outline"></ion-icon>
-        Häufige Verspätungen
-      </ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p class="late-stats">
-        <strong>{{lateCount}}×</strong> unentschuldigt zu spät
-        @if (lateExcusedCount > 0) {
-          <span class="late-excused"> · {{lateExcusedCount}}× entschuldigt</span>
-        }
-      </p>
-      <p class="late-hint">In der aktuellen Saison</p>
-
-      <ion-button expand="block" fill="solid" color="dark" (click)="resetLateCount()">
-        <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-        Gespräch geführt - Zurücksetzen
-      </ion-button>
-    </ion-card-content>
-  </ion-card>
-  }
-
   @if (player) {
     <ion-accordion-group [value]="existingPlayer && !readOnly ? '' : 'more'">
       <ion-accordion value="more">
@@ -522,8 +497,14 @@
         <div slot="content">
           <ion-list>
             <ion-item>
-              <ion-label>Anwesenheit</ion-label>
-              <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" slot="end">{{ perc }}%</ion-badge>
+              @if (lateCount === 0) {
+                <ion-label>Durchschnitt</ion-label>
+              }
+              @if (lateCount !== 0) {
+                <ion-label>Durchschnitt ({{lateCount}}x zu spät)</ion-label>
+              }
+              <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" slot="end">{{ perc
+              }}%</ion-badge>
             </ion-item>
             @for (att of history; track trackByHistoryId($index, att)) {
               <ion-item-sliding #slider>

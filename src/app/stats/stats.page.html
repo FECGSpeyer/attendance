@@ -167,36 +167,6 @@
     </ion-item>
     </ion-item-group>
   </ion-list>
-
-  <ion-list [inset]="true">
-    <ion-list-header>
-      🕐 Verspätungen
-    </ion-list-header>
-    <ion-item-group>
-      <!-- Late Arrivals Chart -->
-      <ion-item lines="none">
-        <div class="chart-container" [style.height.px]="lateArrivalsChartHeight">
-          <canvas baseChart [data]="lateArrivalsData" [options]="lateArrivalsOptions" type="bar">
-          </canvas>
-        </div>
-      </ion-item>
-    </ion-item-group>
-  </ion-list>
-
-  <ion-list [inset]="true">
-    <ion-list-header>
-      📈 Verspätungs-Trend
-    </ion-list-header>
-    <ion-item-group>
-      <!-- Late Trend Chart -->
-      <ion-item lines="none">
-        <div class="chart-container chart-line">
-          <canvas baseChart [data]="lateTrendData" [options]="lateTrendOptions" type="line">
-          </canvas>
-        </div>
-      </ion-item>
-    </ion-item-group>
-  </ion-list>
   }
 
   <!-- ==================== PERSONEN ==================== -->
