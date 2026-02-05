@@ -3,6 +3,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
 import { format, isSameDay, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
+import 'dayjs/locale/de';
 import { DbService } from 'src/app/services/db.service';
 import { Attendance, PersonAttendance, Player, Song, History, Person } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -10,7 +11,6 @@ import 'jspdf-autotable';
 import { DefaultAttendanceType, Role } from 'src/app/utilities/constants';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { AttendancePage } from '../attendance/attendance.page';
-require('dayjs/locale/de');
 
 @Component({
     selector: 'app-att-list',
