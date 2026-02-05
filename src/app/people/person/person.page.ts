@@ -66,6 +66,8 @@ export class PersonPage implements OnInit, AfterViewInit {
   public isChoir: boolean = false;
   public isGeneral: boolean = false;
   public lateCount: number = 0;
+  public lateCountExcused: number = 0;
+  public lateThreshold: number = 999;  // Derived from critical_rules
   public showTeachers: boolean = false;
   public isMainGroup: boolean = false;
   public role: Role = Role.PLAYER;
@@ -112,6 +114,12 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.isParent = this.db.tenantUser().role === Role.PARENT;
     this.hasChanges = false;
     this.parentsEnabled = this.db.tenant().parents;
+
+    // Derive late threshold from critical_rules (find first rule with Late status)
+    const lateRule = this.db.tenant().critical_rules?.find(
+      rule => rule.statuses?.includes(AttendanceStatus.Late)
+    );
+    this.lateThreshold = lateRule?.threshold_value ?? 999;
 
     this.showTeachers = this.db.tenant().maintainTeachers;
     if (this.db.tenant().maintainTeachers) {
@@ -254,8 +262,14 @@ export class PersonPage implements OnInit, AfterViewInit {
     }).length;
     this.perc = attendances.length ? Math.round(attendedCount / allCount * 100) : 0;
 
-    // Count late attendances
-    this.lateCount = attendances.filter((a) => a.status === AttendanceStatus.Late).length;
+    // Count late attendances (only after lastSolve if set)
+    const lastSolveDate = this.player.lastSolve ? dayjs(this.player.lastSolve) : null;
+    const attendancesAfterSolve = lastSolveDate
+      ? attendances.filter((a: PersonAttendance) => dayjs((a as any).date).isAfter(lastSolveDate))
+      : attendances;
+
+    this.lateCount = attendancesAfterSolve.filter((a) => a.status === AttendanceStatus.Late).length;
+    this.lateCountExcused = attendancesAfterSolve.filter((a) => a.status === AttendanceStatus.LateExcused).length;
 
     // Map attendance history
     const attendanceHistory = attendances.map((att: PersonAttendance) => ({
@@ -283,6 +297,31 @@ export class PersonPage implements OnInit, AfterViewInit {
     // Combine and sort history
     this.history = [...attendanceHistory, ...playerHistory]
       .sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }
+
+  /**
+   * Reset late count by setting lastSolve to current date.
+   * This marks that a conversation was held about frequent tardiness.
+   * Note: This also resets the critical player status (same field is used).
+   */
+  async resetLateCount(): Promise<void> {
+    const loading = await this.loadingController.create({ message: 'Wird zurückgesetzt...' });
+    await loading.present();
+
+    try {
+      const now = dayjs().toISOString();
+      this.player.lastSolve = now;
+      this.existingPlayer.lastSolve = now;
+      await this.db.updatePlayer(this.player);
+      this.lateCount = 0;
+      this.lateCountExcused = 0;
+      await loading.dismiss();
+      Utils.showToast('Verspätungszähler zurückgesetzt', 'success');
+    } catch (error) {
+      console.error('Error resetting late count:', error);
+      await loading.dismiss();
+      Utils.showToast('Fehler beim Zurücksetzen', 'danger');
+    }
   }
 
   onInstrumentChange(byUser = true) {

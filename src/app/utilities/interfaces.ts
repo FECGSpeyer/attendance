@@ -1,459 +1,468 @@
 import { AttendanceStatus, FieldType, PlayerHistoryType, Role } from "./constants";
 
 export interface AuthObject {
-    login: boolean;
+  login: boolean;
 }
 
 export enum CriticalRuleOperator {
-    AND = 'AND',
-    OR = 'OR',
+  AND = 'AND',
+  OR = 'OR',
 }
 
 export enum CriticalRuleThresholdType {
-    COUNT = 'count',
-    PERCENTAGE = 'percentage',
+  COUNT = 'count',
+  PERCENTAGE = 'percentage',
+}
+
+export enum CriticalRulePeriodType {
+  DAYS = 'days',           // Last X days (original behavior)
+  SEASON = 'season',       // Since season start
+  ALL_TIME = 'all',        // Entire history
 }
 
 export interface CriticalRule {
-    id: string;
-    attendance_type_ids: string[];  // Which attendance types to check
-    statuses: AttendanceStatus[];   // Which statuses count (e.g., Absent, Late)
-    threshold_type: CriticalRuleThresholdType;
-    threshold_value: number;        // e.g., 3 for count, or 20 for percentage
-    period_days: number;            // e.g., 30 = check last 30 days
-    operator: CriticalRuleOperator; // How to combine with other rules
+  id: string;
+  name?: string;                   // Optional: Display name for the rule
+  attendance_type_ids: string[];   // Which attendance types to check
+  statuses: AttendanceStatus[];    // Which statuses count (e.g., Absent, Late)
+  threshold_type: CriticalRuleThresholdType;
+  threshold_value: number;         // e.g., 3 for count, or 20 for percentage
+  period_type?: CriticalRulePeriodType;  // Type of period to check (optional for legacy rules)
+  period_days?: number;            // Used when period_type === 'days' or for legacy rules
+  operator: CriticalRuleOperator;  // How to combine with other rules
 }
 
 export interface Tenant {
-    id?: number;
-    created_at?: string;
-    shortName: string;
-    longName: string;
-    maintainTeachers: boolean;
-    showHolidays: boolean;
-    type: string;
-    withExcuses: boolean;
-    practiceStart?: string;
-    practiceEnd?: string;
-    seasonStart?: string;
-    parents?: boolean;
-    betaProgram: boolean;
-    region?: string;
-    role?: Role;
-    song_sharing_id?: string;
-    additional_fields?: ExtraField[];
-    perc?: string;
-    percColor?: string;
-    register_id?: string;
-    auto_approve_registrations?: boolean;
-    registration_fields?: string[];
-    favorite?: boolean;
-    critical_rules?: CriticalRule[];
+  id?: number;
+  created_at?: string;
+  shortName: string;
+  longName: string;
+  maintainTeachers: boolean;
+  showHolidays: boolean;
+  type: string;
+  withExcuses: boolean;
+  practiceStart?: string;
+  practiceEnd?: string;
+  seasonStart?: string;
+  parents?: boolean;
+  betaProgram: boolean;
+  region?: string;
+  role?: Role;
+  song_sharing_id?: string;
+  additional_fields?: ExtraField[];
+  perc?: string;
+  percColor?: string;
+  register_id?: string;
+  auto_approve_registrations?: boolean;
+  registration_fields?: string[];
+  favorite?: boolean;
+  critical_rules?: CriticalRule[];
 }
 
 export interface ExtraField {
-    id: string;
-    name: string;
-    type: FieldType;
-    defaultValue: any;
-    options?: string[];
+  id: string;
+  name: string;
+  type: FieldType;
+  defaultValue: any;
+  options?: string[];
 }
 
 export interface TenantUser {
-    id?: number;
-    created_at?: string;
-    tenantId: number;
-    userId: string;
-    role: number;
-    email: string;
-    telegram_chat_id?: string;
-        favorite: boolean;
-    parent_id?: number;
+  id?: number;
+  created_at?: string;
+  tenantId: number;
+  userId: string;
+  role: number;
+  email: string;
+  telegram_chat_id?: string;
+  favorite: boolean;
+  parent_id?: number;
 }
 
 export interface NotificationConfig {
-    id: string;
-    created_at: string;
-    enabled: boolean;
-    telegram_chat_id: string;
-    birthdays: boolean;
-    signins: boolean;
-    signouts: boolean;
-    enabled_tenants?: number[];
-    updates: boolean;
-    registrations: boolean;
-    criticals: boolean;
-    reminders: boolean;
+  id: string;
+  created_at: string;
+  enabled: boolean;
+  telegram_chat_id: string;
+  birthdays: boolean;
+  signins: boolean;
+  signouts: boolean;
+  enabled_tenants?: number[];
+  updates: boolean;
+  registrations: boolean;
+  criticals: boolean;
+  reminders: boolean;
 }
 
 export interface Viewer {
-    id?: number;
-    created_at?: string;
-    appId: string;
-    email: string;
-    firstName: string;
-    lastName: string;
+  id?: number;
+  created_at?: string;
+  appId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
 }
 
 export interface Parent {
-    id?: number;
-    created_at?: string;
-    appId: string;
-    email: string;
-    firstName: string;
-    lastName: string;
+  id?: number;
+  created_at?: string;
+  appId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
 }
 
 
 export interface Person {
-    id?: number;
-    created_at?: string;
-    lastName: string;
-    firstName: string;
-    birthday: string;
-    joined: string;
-    isPresent?: boolean;
-    isLateExcused?: boolean;
-    left?: string;
-    email?: string;
-    appId?: string;
-    notes: string;
-    img?: string;
-    attStatus?: AttendanceStatus;
-    isConductor?: boolean;
-    telegramId?: string;
-    paused?: boolean;
-    paused_until?: string;
-    tenantId?: number;
-    additional_fields?: { [key: string]: any };
-    phone?: string;
-    shift_id?: string;
-    shift_name?: string;
-    shift_start?: string;
-    pending: boolean;
-    self_register: boolean;
-    tenants?: Tenant[];
+  id?: number;
+  created_at?: string;
+  lastName: string;
+  firstName: string;
+  birthday: string;
+  joined: string;
+  isPresent?: boolean;
+  isLateExcused?: boolean;
+  left?: string;
+  email?: string;
+  appId?: string;
+  notes: string;
+  img?: string;
+  attStatus?: AttendanceStatus;
+  isConductor?: boolean;
+  telegramId?: string;
+  paused?: boolean;
+  paused_until?: string;
+  tenantId?: number;
+  additional_fields?: { [key: string]: any };
+  phone?: string;
+  shift_id?: string;
+  shift_name?: string;
+  shift_start?: string;
+  pending: boolean;
+  self_register: boolean;
+  tenants?: Tenant[];
 }
 
 export interface PlayerHistoryEntry {
-    date: string;
-    text: string;
-    type: PlayerHistoryType;
+  date: string;
+  text: string;
+  type: PlayerHistoryType;
 }
 
 export interface Player extends Person {
-    instrument: number;
-    groupName?: string;
-    hasTeacher: boolean;
-    playsSince: string;
-    isLeader: boolean;
-    firstOfInstrument?: boolean;
-    isNew?: boolean;
-    instrumentLength?: number;
-    teacher?: number;
-    teacherName?: string;
-    isCritical: boolean;
-    lastSolve?: string;
-    correctBirthday: boolean;
-    history: PlayerHistoryEntry[];
-    criticalReason?: PlayerHistoryType;
-    criticalReasonText?: string;
-    otherOrchestras?: string[];
-    otherExercise?: string;
-    text?: string;
-    attNote?: string;
-    testResult?: string;
-    examinee?: boolean;
-    range?: string;
-    instruments?: string;
-    tenantId: number;
-    person_attendances?: PersonAttendance[];
-    percentage?: number;
-    legacyId?: number;
-    legacyConductorId?: number;
-    parent_id?: number;
-    newInstrument?: Group;
+  instrument: number;
+  groupName?: string;
+  hasTeacher: boolean;
+  playsSince: string;
+  isLeader: boolean;
+  firstOfInstrument?: boolean;
+  isNew?: boolean;
+  instrumentLength?: number;
+  teacher?: number;
+  teacherName?: string;
+  isCritical: boolean;
+  lastSolve?: string;
+  correctBirthday: boolean;
+  history: PlayerHistoryEntry[];
+  criticalReason?: PlayerHistoryType;
+  criticalReasonText?: string;
+  otherOrchestras?: string[];
+  otherExercise?: string;
+  text?: string;
+  attNote?: string;
+  testResult?: string;
+  examinee?: boolean;
+  range?: string;
+  instruments?: string;
+  tenantId: number;
+  person_attendances?: PersonAttendance[];
+  percentage?: number;
+  lateCount?: number;  // Computed: unexcused late arrivals since lastSolve
+  legacyId?: number;
+  legacyConductorId?: number;
+  parent_id?: number;
+  newInstrument?: Group;
 }
 
 export interface Group {
-    id?: number;
-    created_at?: string;
-    name: string;
-    tuning?: string;
-    notes?: string;
-    range?: string;
-    count?: number;
-    clefs?: string[];
-    clefText?: string;
-    tenantId: number;
-    maingroup: boolean;
-    legacyId?: number;
-    category?: number;
-    firstOfCategory?: boolean;
-    categoryName?: string;
-    categoryLength?: number;
-    categoryData?: GroupCategory;
-    synonyms?: string;
+  id?: number;
+  created_at?: string;
+  name: string;
+  tuning?: string;
+  notes?: string;
+  range?: string;
+  count?: number;
+  clefs?: string[];
+  clefText?: string;
+  tenantId: number;
+  maingroup: boolean;
+  legacyId?: number;
+  category?: number;
+  firstOfCategory?: boolean;
+  categoryName?: string;
+  categoryLength?: number;
+  categoryData?: GroupCategory;
+  synonyms?: string;
 }
 
 export interface Attendance {
-    id?: number;
-    created_at?: string;
-    created_by?: string;
-    date: string;
-    type?: string;
-    type_id: string;
-    save_in_history: boolean;
-    percentage?: number;
-    excused?: string[];
-    criticalPlayers?: number[];
-    typeInfo: string;
-    notes: string;
-    playerNotes?: { [prop: number]: string };
-    img?: string;
-    plan?: any;
-    lateExcused?: string[];
-    songs?: number[];
-    tenantId?: number;
-    persons?: PersonAttendance[];
-    players?: { [prop: string]: AttendanceStatus | boolean };
-    start_time?: string;
-    end_time?: string;
-    deadline?: string;
-    duration_days?: number;
+  id?: number;
+  created_at?: string;
+  created_by?: string;
+  date: string;
+  type?: string;
+  type_id: string;
+  save_in_history: boolean;
+  percentage?: number;
+  excused?: string[];
+  criticalPlayers?: number[];
+  typeInfo: string;
+  notes: string;
+  playerNotes?: { [prop: number]: string };
+  img?: string;
+  plan?: any;
+  lateExcused?: string[];
+  songs?: number[];
+  tenantId?: number;
+  persons?: PersonAttendance[];
+  players?: { [prop: string]: AttendanceStatus | boolean };
+  start_time?: string;
+  end_time?: string;
+  deadline?: string;
+  duration_days?: number;
 }
 
 export interface Plan {
-    end: string;
-    time: string;
-    fields: FieldSelection[];
+  end: string;
+  time: string;
+  fields: FieldSelection[];
 }
 
 export interface PersonAttendance {
-    id?: string;
-    attendance_id: number;
-    person_id: number;
-    status: AttendanceStatus;
-    notes: string;
-    firstName?: string;
-    lastName?: string;
-    img?: string;
-    instrument?: number;
-    groupName?: string;
-    joined?: string;
-    person?: Partial<Player>;
-    attendance?: Partial<Attendance>;
-    attended?: boolean;
-    firstOfInstrument?: boolean;
-    instrumentLength?: number;
-    showDivider?: boolean;
-    date?: string;
-    text?: string;
-    title?: string;
-    songs?: number[];
-    history?: History[];
-    attId?: number;
-    highlight?: boolean;
-    typeId?: string;
-    changed_by?: string;
-    changed_at?: string;
+  id?: string;
+  attendance_id: number;
+  person_id: number;
+  status: AttendanceStatus;
+  notes: string;
+  firstName?: string;
+  lastName?: string;
+  img?: string;
+  instrument?: number;
+  groupName?: string;
+  joined?: string;
+  person?: Partial<Player>;
+  attendance?: Partial<Attendance>;
+  attended?: boolean;
+  firstOfInstrument?: boolean;
+  instrumentLength?: number;
+  showDivider?: boolean;
+  date?: string;
+  text?: string;
+  title?: string;
+  songs?: number[];
+  history?: History[];
+  attId?: number;
+  highlight?: boolean;
+  typeId?: string;
+  changed_by?: string;
+  changed_at?: string;
 }
 
 export interface Song {
-    id?: number;
-    created_at?: string;
-    tenantId?: number;
-    name: string;
-    number: number;
-    prefix?: string;
-    withChoir: boolean;
-    withSolo: boolean;
-    lastSung?: string;
-    link?: string;
-    conductor?: string;
-    legacyId?: number;
-    instrument_ids?: number[];
-    files?: SongFile[];
-    difficulty?: number;
-    category?: string;
+  id?: number;
+  created_at?: string;
+  tenantId?: number;
+  name: string;
+  number: number;
+  prefix?: string;
+  withChoir: boolean;
+  withSolo: boolean;
+  lastSung?: string;
+  link?: string;
+  conductor?: string;
+  legacyId?: number;
+  instrument_ids?: number[];
+  files?: SongFile[];
+  difficulty?: number;
+  category?: string;
 }
 
 export interface SongFile {
-    storageName?: string;
-    created_at: string;
-    fileName: string;
-    fileType: string;
-    url: string;
-    instrumentId?: number;
-    note?: string;
+  storageName?: string;
+  created_at: string;
+  fileName: string;
+  fileType: string;
+  url: string;
+  instrumentId?: number;
+  note?: string;
 }
 
 export interface History {
-    id?: number;
-    created_at?: string;
+  id?: number;
+  created_at?: string;
+  date: string;
+  songId: number;
+  number?: number;
+  name?: string;
+  conductorName?: string;
+  otherConductor?: string;
+  count?: number;
+  tenantId?: number;
+  person_id?: number;
+  attendance_id?: number;
+  visible?: boolean;
+  attendance?: {
     date: string;
-    songId: number;
-    number?: number;
-    name?: string;
-    conductorName?: string;
-    otherConductor?: string;
-    count?: number;
-    tenantId?: number;
-    person_id?: number;
-    attendance_id?: number;
-    visible?: boolean;
-    attendance?: {
-        date: string;
-    }
-    song?: Song;
+  }
+  song?: Song;
 }
 
 export interface Teacher {
-    id?: number;
-    created_at?: string;
-    name: string;
-    instruments: number[];
-    notes: string;
-    insNames?: string;
-    number: string;
-    private: boolean;
-    playerCount?: number;
-    tenantId?: number;
-    legacyId?: number;
+  id?: number;
+  created_at?: string;
+  name: string;
+  instruments: number[];
+  notes: string;
+  insNames?: string;
+  number: string;
+  private: boolean;
+  playerCount?: number;
+  tenantId?: number;
+  legacyId?: number;
 }
 
 export interface Meeting {
-    id?: number;
-    created_at?: string;
-    date: string;
-    attendees: number[];
-    notes: string;
+  id?: number;
+  created_at?: string;
+  date: string;
+  attendees: number[];
+  notes: string;
 }
 
 export interface FieldSelection {
-    id: string;
-    name: string;
-    time: string;
-    conductor?: string;
-    currentTime?: string;
-    songId?: number;
+  id: string;
+  name: string;
+  time: string;
+  conductor?: string;
+  currentTime?: string;
+  songId?: number;
 }
 
 export interface GroupCategory {
-    id?: number;
-    created_at?: string;
-    name: string;
-    tenant_id?: number;
+  id?: number;
+  created_at?: string;
+  name: string;
+  tenant_id?: number;
 }
 
 export interface Admin {
-    created_at?: string;
-    userId: string;
-    email: string;
+  created_at?: string;
+  userId: string;
+  email: string;
 }
 
 export interface Organisation {
-    id?: number;
-    created_at?: string;
-    name: string;
+  id?: number;
+  created_at?: string;
+  name: string;
 }
 
 export interface AttendanceType {
-    id?: string;
-    created_at?: string;
-    name: string;
-    default_status: AttendanceStatus;
-    available_statuses: AttendanceStatus[];
-    default_plan?: Plan;
-    tenant_id: number;
-    relevant_groups: number[];
-    start_time?: string;
-    end_time?: string;
-    manage_songs: boolean;
-    index?: number;
-    visible: boolean;
-    color: string;
-    highlight: boolean;
-    hide_name: boolean;
-    include_in_average: boolean;
-    all_day?: boolean;
-    duration_days?: number;
-    notification?: boolean;
-    reminders: number[];
-    additional_fields_filter?: {
-        key: string;
-        option: string;
-    };
-    checklist?: ChecklistItem[];
+  id?: string;
+  created_at?: string;
+  name: string;
+  default_status: AttendanceStatus;
+  available_statuses: AttendanceStatus[];
+  default_plan?: Plan;
+  tenant_id: number;
+  relevant_groups: number[];
+  start_time?: string;
+  end_time?: string;
+  manage_songs: boolean;
+  index?: number;
+  visible: boolean;
+  color: string;
+  highlight: boolean;
+  hide_name: boolean;
+  include_in_average: boolean;
+  all_day?: boolean;
+  duration_days?: number;
+  notification?: boolean;
+  reminders: number[];
+  additional_fields_filter?: {
+    key: string;
+    option: string;
+  };
+  checklist?: ChecklistItem[];
 }
 
 export interface ChecklistItem {
-    text: string;
+  text: string;
 
 }
 
 export interface ShiftPlan {
-    id?: string;
-    created_at?: string;
-    name: string;
-    description: string;
-    tenant_id?: number;
-    definition: ShiftDefinition[];
-    shifts?: ShiftInstance[];
+  id?: string;
+  created_at?: string;
+  name: string;
+  description: string;
+  tenant_id?: number;
+  definition: ShiftDefinition[];
+  shifts?: ShiftInstance[];
 }
 
 export interface ShiftDefinition {
-    id?: number;
-    start_time: string;
-    duration: number;
-    free: boolean;
-    index: number;
-    repeat_count: number;
+  id?: number;
+  start_time: string;
+  duration: number;
+  free: boolean;
+  index: number;
+  repeat_count: number;
 }
 
 export interface ShiftInstance {
-    date: string;
-    name: string;
+  date: string;
+  name: string;
 }
 
 export interface Church {
-    id?: string;
-    created_at?: string;
-    created_from: string;
-    name: string;
+  id?: string;
+  created_at?: string;
+  created_from: string;
+  name: string;
 }
 
 export interface Feedback {
-    id?: number;
-    created_at?: string;
-    message: string;
-    rating: number;
-    anonymous: boolean;
-    tenant_id?: number;
-    user_id?: string;
-    phone?: string;
+  id?: number;
+  created_at?: string;
+  message: string;
+  rating: number;
+  anonymous: boolean;
+  tenant_id?: number;
+  user_id?: string;
+  phone?: string;
 }
 
 export interface Question {
-    id?: number;
-    created_at?: string;
-    message: string;
-    anonymous: boolean;
-    tenant_id?: number;
-    user_id?: string;
+  id?: number;
+  created_at?: string;
+  message: string;
+  anonymous: boolean;
+  tenant_id?: number;
+  user_id?: string;
 }
 
 export interface SongCategory {
-    created_at?: string;
-    id?: string;
-    name: string;
-    tenant_id: number;
-    index: number;
+  created_at?: string;
+  id?: string;
+  name: string;
+  tenant_id: number;
+  index: number;
 }
 
 export interface CrossTenantPersonAttendance extends PersonAttendance {
-    tenantId: number;
-    tenantName: string;
-    tenantColor: string;
-    attendanceType?: AttendanceType;
+  tenantId: number;
+  tenantName: string;
+  tenantColor: string;
+  attendanceType?: AttendanceType;
 }

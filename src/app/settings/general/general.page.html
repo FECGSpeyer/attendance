@@ -183,6 +183,10 @@
             <ion-list [inset]="true">
               <ion-item-group>
                 <ion-item>
+                  <ion-input labelPlacement="stacked" label="Name (optional)" placeholder="z.B. Verspätungs-Warnung"
+                    [(ngModel)]="newCriticalRule.name"></ion-input>
+                </ion-item>
+                <ion-item>
                   <ion-select label="Anwesenheits-Typen" multiple="true" [(ngModel)]="newCriticalRule.attendance_type_ids"
                     placeholder="Alle Typen">
                     @for (type of attendanceTypes; track type.id) {
@@ -210,11 +214,23 @@
                     [label]="newCriticalRule.threshold_type === CriticalRuleThresholdType.COUNT ? 'Anzahl' : 'Prozent'"
                     [(ngModel)]="newCriticalRule.threshold_value"></ion-input>
                 </ion-item>
+              </ion-item-group>
+              <ion-item-group>
                 <ion-item>
-                  <ion-input type="number" labelPlacement="stacked" label="Zeitraum (Tage)"
-                    helperText="Anzahl der Tage, die zurück geprüft werden"
-                    [(ngModel)]="newCriticalRule.period_days"></ion-input>
+                  <ion-select label="Zeitraum-Typ" [(ngModel)]="newCriticalRule.period_type"
+                    helperText="Bestimmt den Zeitraum für die Zählung">
+                    <ion-select-option [value]="CriticalRulePeriodType.DAYS">Letzte X Tage</ion-select-option>
+                    <ion-select-option [value]="CriticalRulePeriodType.SEASON">Seit Saisonbeginn</ion-select-option>
+                    <ion-select-option [value]="CriticalRulePeriodType.ALL_TIME">Gesamte Historie</ion-select-option>
+                  </ion-select>
                 </ion-item>
+                @if (newCriticalRule.period_type === CriticalRulePeriodType.DAYS) {
+                  <ion-item>
+                    <ion-input type="number" labelPlacement="stacked" label="Anzahl Tage"
+                      helperText="Anzahl der Tage, die zurück geprüft werden"
+                      [(ngModel)]="newCriticalRule.period_days"></ion-input>
+                  </ion-item>
+                }
               </ion-item-group>
               <ion-item-group>
                 <ion-item>
