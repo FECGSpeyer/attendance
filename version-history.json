@@ -2,483 +2,485 @@
       "versions": [
         {
           "version": "3.7.0",
-          "date": "18.6.2026",
+          "date": "5.2.2026",
           "changes": [
-            "Problemfälle sind da! Du kannst jetzt Problemfall-Regeln definieren, um automatisch Problemfälle zu erkennen. Gehe dazu in die allgemeinen Einstellungen und wähle 'Problemfall Regeln' aus. Sobald eine Person als Problemfall markiert wird, erhältst du eine Benachrichtigung per Telegram (optional).",
-            "Du kannst dir jetzt den Ablaufplan als Bild per Telegram senden lassen, um ihn direkt in Messenger-Apps anzusehen."
+            "🚨 Problemfälle erkennen: Definiere Regeln zur automatischen Erkennung von Problemfällen unter Einstellungen → Problemfall-Regeln. Optional: Benachrichtigungen per Telegram.",
+            "📤 Ablaufplan als Bild versenden: Teile den Ablaufplan direkt als Bild über Telegram – perfekt für Messenger-Gruppen.",
+            "⏰ Terminerinnerungen: Konfiguriere bis zu 3 Erinnerungen pro Termintyp (z.B. 1h, 24h, 48h vorher). Automatischer Versand per Telegram.",
+            "⚠️ Schutz vor Datenverlust: Warnung beim Verlassen von Seiten mit ungespeicherten Änderungen (Termintypen & allgemeine Einstellungen)."
           ]
         },
         {
           "version": "3.6.2",
           "date": "4.2.2026",
           "changes": [
-            "📊 Umfangreiches Statistik-Dashboard hinzugefügt: Visualisiere deine Anwesenheitsdaten mit interaktiven Charts und detaillierten Übersichten."
+            "📊 Statistik-Dashboard: Visualisiere Anwesenheitsdaten mit interaktiven Charts und detaillierten Auswertungen."
           ]
         },
         {
           "version": "3.6.1",
           "date": "4.2.2026",
           "changes": [
-            "Druck-Funktion für einzelne Werke: Du kannst jetzt die Dateien eines Werkes direkt aus der App drucken.",
-            "Druck-Funktion für Gruppen-PDFs hinzugefügt: Du kannst jetzt die Gruppen-PDFs eines Werkes direkt aus der App drucken. Die Anzahl der Kopien richtet sich nach der Anzahl der aktiven Spieler/Sänger in der jeweiligen Gruppe.",
-            "Als App speichern: Nutzer bekommen jetzt einen Hinweis, um die Web-App auf ihrem Gerät zu installieren.",
-            "Gruppenverzeichnis: Neue Übersicht aller Gruppen mit Dateien, um den Zugriff zu erleichtern."
+            "🖨️ Druckfunktion für Werke: Dateien eines Werkes direkt aus der App drucken.",
+            "🖨️ Gruppen-PDFs drucken: Drucke Gruppen-PDFs mit automatischer Kopienanzahl basierend auf aktiven Mitgliedern.",
+            "📱 Als App installieren: Hinweis zur Installation der Web-App auf deinem Gerät.",
+            "📁 Gruppenverzeichnis: Neue Übersicht aller Gruppen mit zugehörigen Dateien."
           ]
         },
         {
           "version": "3.6.0",
           "date": "3.2.2026",
           "changes": [
-            "Neue Gesamtübersicht für Spieler/Sänger: Wenn du Mitglied in mehreren Gruppen bist, siehst du jetzt alle Termine aus allen Instanzen in einer einzigen Übersicht.",
-            "Termine können nach 'Chronologisch' oder 'Nach Instanz' sortiert angezeigt werden.",
-            "Farbige Kennzeichnung der Termine nach Instanz für bessere Übersichtlichkeit.",
-            "Vollständige An-/Abmeldefunktion direkt aus der Gesamtübersicht.",
-            "Pausieren mit Enddatum: Beim Pausieren einer Person kannst du jetzt ein Enddatum angeben, an dem die Person automatisch reaktiviert wird."
+            "🌐 Gesamtübersicht für Mitglieder: Alle Termine aus allen Instanzen auf einen Blick – ideal bei Mehrfachmitgliedschaften.",
+            "🔀 Flexible Sortierung: Termine chronologisch oder nach Instanz gruppiert anzeigen.",
+            "🎨 Farbkodierung: Termine werden nach Instanz farblich gekennzeichnet.",
+            "✅ Schnelle An-/Abmeldung: Direkt aus der Gesamtübersicht möglich.",
+            "⏸️ Pausieren mit Enddatum: Automatische Reaktivierung am festgelegten Datum."
           ]
         },
         {
           "version": "3.5.9",
           "date": "3.2.2026",
           "changes": [
-            "Neue Datei-Kategorie 'Liedtext' hinzugefügt: PDF-Dateien werden automatisch als Liedtext erkannt und können von Spielern/Sängern in der Übersicht der aktuellen Werke angesehen werden.",
-            "Kategoriefilter für Werke: Werke können jetzt nach Kategorien gefiltert werden. Ein Segment Control zeigt alle verfügbaren Kategorien an, wenn mindestens eine Kategorie vorhanden ist.",
-            "Kategorie-Auswahl bei Werken: Du kannst jetzt jedem Werk eine Kategorie zuweisen und diese im Read-Only-Modus anschauen.",
-            "Verbesserungen bei der Datei-Upload: Warnung wird angezeigt, wenn Liedtext-Dateien hochgeladen werden, die keine PDF sind, da diese dann nicht in der Übersicht sichtbar sind.",
-            "Fehlerbehebung: Datei-Kategorie wird jetzt sofort aktualisiert, nachdem sie geändert wurde.",
-            "Werke können jetzt kopiert werden: Dupliziere ein Werk inklusive aller zugehörigen Dateien in eine andere Instanz deiner Organisation."
+            "📝 Liedtexte: Neue Datei-Kategorie – PDFs werden automatisch erkannt und in der Werkübersicht angezeigt.",
+            "🏷️ Kategoriefilter: Werke nach Kategorien filtern mit praktischem Segment-Control.",
+            "📂 Kategorie-Zuweisung: Jedem Werk eine Kategorie zuweisen und im Lesemodus anzeigen.",
+            "⚠️ Upload-Hinweis: Warnung bei Liedtext-Dateien, die keine PDFs sind.",
+            "🔄 Sofortige Aktualisierung: Datei-Kategorien werden direkt nach Änderung aktualisiert.",
+            "📋 Werke kopieren: Dupliziere Werke inkl. Dateien in andere Instanzen."
           ]
         },
         {
           "version": "3.5.8",
           "date": "27.1.2026",
           "changes": [
-            "Neue Anwesenheits Layout-Auswahlmöglichkeit: Wähle zwischen dem bekannten Kürzel-Layout und dem neuen Text-Layout für eine bessere Übersicht.",
-            "Neues Kürzel für 'Verspätet entschuldigt' hinzugefügt: LE",
-            "Legende in der Veranstaltungsübersicht und im Selbstbedienungsbereich hinzugefügt"
+            "🎨 Layout-Auswahl: Wähle zwischen Kürzel- und Text-Layout für die Anwesenheitsanzeige.",
+            "🆕 Neues Kürzel: 'LE' für 'Verspätet entschuldigt'.",
+            "📖 Legende: In der Veranstaltungsübersicht und im Selbstbedienungsbereich."
           ]
         },
         {
           "version": "3.5.7",
           "date": "25.1.2026",
           "changes": [
-            "Notizfelder für Ablaufpläne hinzugefügt."
+            "📝 Notizfelder für Ablaufpläne hinzugefügt."
           ]
         },
         {
           "version": "3.5.6",
           "date": "16.1.2026",
           "changes": [
-            "Du kannst jetzt bei der Anwesenheit mit einem Swipe nach Links bei einer Person sehen, wer den Status zuletzt geändert hat."
+            "👆 Swipe-Info: Per Wischgeste nach links siehst du, wer den Anwesenheitsstatus zuletzt geändert hat."
           ]
         },
         {
           "version": "3.5.5",
           "date": "14.1.2026",
           "changes": [
-            "Fehlerbehebungen"
+            "🐛 Fehlerbehebungen"
           ]
         },
         {
           "version": "3.5.4",
           "date": "11.1.2026",
           "changes": [
-            "Fehlerbehebungen"
+            "🐛 Fehlerbehebungen"
           ]
         },
         {
           "version": "3.5.3",
           "date": "31.12.2025",
           "changes": [
-            "Schwierigkeitsgrad für Werke: Weise deinen Werken jetzt einen Schwierigkeitsgrad zu, um die Auswahl und Planung zu erleichtern."
+            "⭐ Schwierigkeitsgrad: Weise Werken einen Schwierigkeitsgrad zu für bessere Planung."
           ]
         },
         {
           "version": "3.5.2",
           "date": "30.12.2025",
           "changes": [
-            "Passwort ändern Funktion: Ändere dein Passwort einfach in den Einstellungen.",
-            "KI-Synonym-Generator für Gruppen: Erstelle jetzt einfach Synonyme für eine Gruppe mithilfe künstlicher Intelligenz."
+            "🔐 Passwort ändern: Einfach in den Einstellungen möglich.",
+            "🤖 KI-Synonym-Generator: Erstelle Gruppen-Synonyme mit künstlicher Intelligenz."
           ]
         },
         {
           "version": "3.5.1",
           "date": "17.12.2025",
           "changes": [
-            "Statistiken für Organisationen: Sieh dir Statistiken über alle Instanzen deiner Organisation an, um einen besseren Überblick zu erhalten.",
-            "Instanz-Schnellauswahl: Wähle beim Start der App schnell und einfach die gewünschte Instanz aus, um Zeit zu sparen. Diese Funktion kann in den Instanz-Einstellungen aktiviert werden."
+            "📈 Organisationsstatistiken: Übersicht über alle Instanzen deiner Organisation.",
+            "⚡ Instanz-Schnellauswahl: Schneller Wechsel beim App-Start (aktivierbar in den Instanz-Einstellungen)."
           ]
         },
         {
           "version": "3.5.0",
           "changes": [
-            "Schichtpläne sind da! Automatisiere die Planung und Verwaltung deiner Schichten für mehr Effizienz.",
-            "Anmeldefristen: Setze Anmeldefristen für Termine fest, um eine bessere Organisation zu gewährleisten.",
-            "Anwesenheits-Export (Excel): Exportiere einzelne Anwesenheiten für eine bessere Auswertung und Archivierung."
+            "📅 Schichtpläne: Automatisiere die Planung und Verwaltung deiner Schichten.",
+            "⏱️ Anmeldefristen: Setze Deadlines für Terminanmeldungen.",
+            "📥 Excel-Export: Exportiere Anwesenheiten zur Auswertung und Archivierung."
           ]
         },
         {
           "version": "3.4.0",
           "changes": [
-            "Anwesenheits-Typen sind da! Definiere verschiedene Arten von Anwesenheiten für mehr Flexibilität. Gehe dazu einfach in den allgemeinen Einstellungen auf Anwesenheits-Typen. Die Standard typen sind immer noch vorhanden und können weiterhin genutzt werden."
+            "🏷️ Anwesenheits-Typen: Definiere verschiedene Terminarten für mehr Flexibilität (Einstellungen → Anwesenheits-Typen)."
           ]
         },
         {
           "version": "3.3.1",
           "changes": [
-            "Fehlerbehebung: Benutzer ohne zugewiesener Instanz können wieder einer zugewiesen werden."
+            "🐛 Behoben: Benutzer ohne Instanz können wieder zugewiesen werden."
           ]
         },
         {
           "version": "3.3.0",
           "changes": [
-            "Die Werkdatenbank ist da! Füge jetzt einfach deine Dateien zu den Werken hinzu und ordne sie automatisch den Instrumenten zu.",
-            "Neu: Verbesserte Benutzeroberfläche für die Werkverwaltung",
-            "Werke können jetzt als externe Links geteilt werden, auch für Benutzer ohne Account."
+            "📚 Werkdatenbank: Verwalte Dateien zu deinen Werken mit automatischer Instrumenten-Zuordnung.",
+            "✨ Verbesserte Werkverwaltung: Neue, übersichtlichere Benutzeroberfläche.",
+            "🔗 Externe Links: Teile Werke auch mit Personen ohne Account."
           ]
         },
         {
           "version": "3.2.0",
           "changes": [
-            "Organisationen sind da! Füge jetzt deine Instanzen einer Organisation hinzu, um die Verwaltung zu erleichtern. (Personendaten können übernommen werden und zu anderen Instanzen kopiert/verschoben werden)",
-            "Sobald ein bestehender Account zu einer Instanz hinzugefügt wird, wird der Benutzer per E-Mail benachrichtigt.",
-            "Neues Apple Design für die Benutzeroberfläche"
+            "🏢 Organisationen: Verknüpfe Instanzen zu einer Organisation – Personendaten können kopiert/verschoben werden.",
+            "✉️ E-Mail-Benachrichtigung: Bestehende Nutzer werden informiert, wenn sie zu einer Instanz hinzugefügt werden.",
+            "🍎 Neues Apple Design für die Benutzeroberfläche."
           ]
         },
         {
           "version": "3.1.0",
           "changes": [
-            "Es können nun mehrere Anwesenheiten gleichzeitig angelegt werden",
-            "Der Kalender beim erstellen von Anwesenheiten wurde verbessert (farbliche Anpassungen)",
-            "Feiertage/Schulferien können nun berücksichtigt werden",
-            "Lehrerpflege für Orchester",
-            "Neue Anordnung bei den Personen-Informationen",
-            "Instanzeinstellungen optimiert"
+            "📅 Mehrfach-Erstellung: Lege mehrere Anwesenheiten gleichzeitig an.",
+            "🎨 Verbesserter Kalender: Optimierte Farbdarstellung bei der Terminanlage.",
+            "🎄 Feiertage & Ferien: Können bei der Planung berücksichtigt werden.",
+            "👨‍🏫 Lehrerverwaltung für Orchester.",
+            "🔧 Optimierte Personen-Ansicht und Instanzeinstellungen."
           ]
         },
         {
           "version": "3.0.0",
           "changes": [
-            "Anwesenheiten werden ab jetzt pro Person gespeichert",
-            "Die Anwesenheit pro Person kann einfach in der Personenliste angezeigt werden",
-            "Dirigenten sind nicht mehr separiert"
+            "💾 Personenbezogene Speicherung: Anwesenheiten werden pro Person erfasst.",
+            "👤 Anwesenheitsübersicht: Direkt in der Personenliste einsehbar.",
+            "🎵 Dirigenten integriert: Keine separate Verwaltung mehr nötig."
           ]
         },
         {
           "version": "2.1.1",
           "changes": [
-            "Neue Sortierfunktion: Nach anstehenden Geburtstagen sortieren"
+            "🎂 Sortierung: Nach anstehenden Geburtstagen sortieren."
           ]
         },
         {
           "version": "2.1.0",
           "changes": [
-            "Beta Funktion: Neue Speichermethode für Anwesenheiten",
-            "Neutral-Status: Lege den Status beim Anlegen der Anwesenheit fest"
+            "🧪 Beta: Neue Speichermethode für Anwesenheiten.",
+            "⚪ Neutral-Status: Wähle den Ausgangsstatus beim Anlegen."
           ]
         },
         {
           "version": "2.0.3",
           "changes": [
-            "Fehlerbehebungen"
+            "🐛 Fehlerbehebungen"
           ]
         },
         {
           "version": "2.0.2",
           "changes": [
-            "Fehlerbehebungen für das parallele Arbeiten"
+            "🐛 Behoben: Probleme beim parallelen Arbeiten."
           ]
         },
         {
           "version": "2.0.1",
           "changes": [
-            "Demo Login möglich"
+            "🎮 Demo-Login verfügbar."
           ]
         },
         {
           "version": "2.0.0",
           "changes": [
-            "Attendix",
-            "Verwalte alle Anwesenheiten in einer App!"
+            "🎉 Attendix ist da!",
+            "📋 Verwalte alle Anwesenheiten in einer App!"
           ]
         },
         {
           "version": "1.8.3",
           "changes": [
-            "Werke können direkt Vorträgen zugeordnet werden"
+            "🎼 Werke können direkt Vorträgen zugeordnet werden."
           ]
         },
         {
           "version": "1.8.2",
           "changes": [
-            "Neue Spieler werden zu Anwesenheiten ab Eintrittsdatum hinzugefügt"
+            "👋 Neue Mitglieder werden ab Eintrittsdatum zu Anwesenheiten hinzugefügt."
           ]
         },
         {
           "version": "1.8.1",
           "changes": [
-            "Benutzer mit bestehendem Konto konnten nicht archiviert werden"
+            "🐛 Behoben: Benutzer mit bestehendem Konto konnten nicht archiviert werden."
           ]
         },
         {
           "version": "1.8.0",
           "changes": [
-            "Die Anwesenheitsliste wird jetzt in Echtzeit aktualisiert",
-            "Echtzeit Anwesenheit: Fehler bei gleichzeitiger Nutzung behoben"
+            "⚡ Echtzeit-Aktualisierung der Anwesenheitsliste.",
+            "🐛 Behoben: Fehler bei gleichzeitiger Nutzung."
           ]
         },
         {
           "version": "1.7.9",
           "changes": [
-            "Fehlerbehebungen"
+            "🐛 Fehlerbehebungen"
           ]
         },
         {
           "version": "1.7.8",
           "changes": [
-            "Probenplan minütlich planbar",
-            "Fehlerbehebungen"
+            "⏱️ Probenplan: Minütlich planbar.",
+            "🐛 Fehlerbehebungen"
           ]
         },
         {
           "version": "1.7.7",
           "changes": [
-            "Pausieren von Dirigenten möglich"
+            "⏸️ Dirigenten können jetzt pausiert werden."
           ]
         },
         {
           "version": "1.7.6",
           "changes": [
-            "Export Bug gefixt"
+            "🐛 Export-Fehler behoben."
           ]
         },
         {
           "version": "1.7.5",
           "changes": [
-            "Echtzeit-Anwesenheit ab jetzt standard"
+            "⚡ Echtzeit-Anwesenheit jetzt Standard."
           ]
         },
         {
           "version": "1.7.4",
           "changes": [
-            "Fehlerbehebungen beim Beobachter"
+            "🐛 Behoben: Fehler bei der Beobachter-Funktion."
           ]
         },
         {
           "version": "1.7.3",
           "changes": [
-            "Anzahl zu spät gekommen bei Spielern sichtbar",
-            "Kleinere Verbesserungen"
+            "⏰ Verspätungen: Anzahl wird bei Mitgliedern angezeigt.",
+            "✨ Kleinere Verbesserungen."
           ]
         },
         {
           "version": "1.7.2",
           "changes": [
-            "Werkhistorie: Mehrere Werke auf einmal"
+            "🎼 Werkhistorie: Mehrere Werke gleichzeitig auswählbar."
           ]
         },
         {
           "version": "1.7.1",
           "changes": [
-            "Spieler/Sänger können eine Helfer Rolle bekommen um die Anwesenheit zu pflegen"
+            "🤝 Helfer-Rolle: Mitglieder können die Anwesenheit pflegen."
           ]
         },
         {
           "version": "1.7.0",
           "changes": [
-            "Anwesenheit wird in Echtzeit aktualisiert"
+            "⚡ Echtzeit-Aktualisierung der Anwesenheit."
           ]
         },
         {
           "version": "1.6.18",
           "changes": [
-            "Beobachter können eingesehen und entfernt werden"
+            "👁️ Beobachter: Können eingesehen und entfernt werden."
           ]
         },
         {
           "version": "1.6.17",
           "changes": [
-            "Performance und Fehlerbehebungen"
+            "🚀 Performance-Verbesserungen und Fehlerbehebungen."
           ]
         },
         {
           "version": "1.6.16",
           "changes": [
-            "Fehlerbehebungen (Probenplan Export & Versand)"
+            "🐛 Behoben: Probenplan Export & Versand."
           ]
         },
         {
           "version": "1.6.15",
           "changes": [
-            "Fehlerbehebungen (Anwesenheit einzelner Personen wurde nicht angezeigt)"
+            "🐛 Behoben: Anwesenheit einzelner Personen wurde nicht angezeigt."
           ]
         },
         {
           "version": "1.6.14",
           "changes": [
-            "Benachrichtigung, wenn update da ist."
+            "🔔 Update-Benachrichtigung hinzugefügt."
           ]
         },
         {
           "version": "1.6.13",
           "changes": [
-            "UI für Abwesenheit angepasst.",
-            "Bug fix beim Schließen von einer Anwesenheit."
+            "🎨 Verbesserte Darstellung für Abwesenheiten.",
+            "🐛 Behoben: Fehler beim Schließen einer Anwesenheit."
           ]
         },
         {
           "version": "1.6.12",
           "changes": [
-            "UI für Abmeldungen bei den Spielern verändert."
+            "🎨 Verbesserte Darstellung für Abmeldungen bei Mitgliedern."
           ]
         },
         {
           "version": "1.6.11",
           "changes": [
-            "Neutraler Status hinzugefügt und Spieler können sich für Vorträge anmelden."
+            "⚪ Neutraler Status hinzugefügt.",
+            "✅ Mitglieder können sich für Vorträge anmelden."
           ]
         },
         {
           "version": "1.6.10",
           "changes": [
-            "Fehler behoben"
+            "🐛 Fehlerbehebungen"
           ]
         },
         {
           "version": "1.6.9",
           "changes": [
-            "Dropdown für Gründe beim Abmelden hinzugefügt"
+            "📋 Dropdown für Abmeldegründe hinzugefügt."
           ]
         },
         {
           "version": "1.6.8",
           "changes": [
-            "Telegram Bot meldet jetzt auch Zuspätkommer."
+            "📱 Telegram: Benachrichtigung auch bei Verspätungen."
           ]
         },
         {
           "version": "1.6.7",
           "changes": [
-            "Fehlerbehebungen"
+            "🐛 Fehlerbehebungen"
           ]
         },
         {
           "version": "1.6.6",
           "changes": [
-            "Personen können sich jetzt zum Zuspätkommen abmelden.",
-            "Fehlerbehebungen und Rechtschreibkorrektur"
+            "⏰ Verspätung ankündigen: Mitglieder können sich zum Zuspätkommen abmelden.",
+            "🐛 Fehlerbehebungen und Rechtschreibkorrekturen."
           ]
         },
         {
           "version": "1.6.5",
           "changes": [
-            "Alter der Person in der Listenansicht",
-            "Gesamte Notiz in der Historie per Klick einsehbar",
-            "Fehlerbehebungen"
+            "🎂 Alter wird in der Personenliste angezeigt.",
+            "📝 Notizen: Volltext per Klick in der Historie einsehbar.",
+            "🐛 Fehlerbehebungen"
           ]
         },
         {
           "version": "1.6.4",
           "changes": [
-            "Fehlerbehebungen"
+            "🐛 Fehlerbehebungen"
           ]
         },
         {
           "version": "1.6.3",
           "changes": [
-            "Saisonbeginn definierbar",
-            "Probenzeiten definierbar",
-            "Probenanzahl je Werk in Historie"
+            "📅 Saisonbeginn: Jetzt definierbar.",
+            "⏰ Probenzeiten: Individuell einstellbar.",
+            "📊 Probenanzahl je Werk in der Historie."
           ]
         },
         {
           "version": "1.6.2",
           "changes": [
-            "Offline Warnung bei der Anwesenheit",
-            "Performance Verbesserungen",
-            "Fehlerbehebungungen"
+            "📴 Offline-Warnung bei der Anwesenheitspflege.",
+            "🚀 Performance-Verbesserungen.",
+            "🐛 Fehlerbehebungen"
           ]
         },
         {
           "version": "1.6.1",
           "changes": [
-            "Fehlerbehebungungen"
+            "🐛 Fehlerbehebungen"
           ]
         },
         {
           "version": "1.6.0",
           "changes": [
-            "Chor & Orchester App zusammengeführt"
+            "🎵 Chor & Orchester: Apps wurden zusammengeführt."
           ]
         },
         {
           "version": "1.5.3",
           "changes": [
-            "Dirigenten werden immer als Entschuldigt angezeigt"
+            "🎵 Dirigenten werden automatisch als entschuldigt markiert."
           ]
         },
         {
           "version": "1.5.2",
           "changes": [
-            "Probenplanung: Ältere Anwesenheiten sind nun auch auswählbar"
+            "📅 Probenplanung: Auch ältere Termine sind jetzt auswählbar."
           ]
         },
         {
           "version": "1.5.1",
           "changes": [
-            "VoS: Spieler können als Prüflinge markiert werden"
+            "🎓 VoS: Mitglieder können als Prüflinge markiert werden."
           ]
         },
         {
           "version": "1.5.0",
           "changes": [
-            "Beobachterrolle hinzugefügt"
+            "👁️ Beobachter-Rolle hinzugefügt."
           ]
         },
         {
           "version": "1.4.5",
           "changes": [
-            "Anderer Dirigent bei Historie eingebbar",
-            "Mehrfachauswahl der Werke bei Probenplanung möglich",
-            "Uhrzeit bei Probenplan-Punkten ersichtlich",
-            "Anwesenheitsnotizen im Probenplan ersichtlich"
+            "🎵 Dirigent bei der Historie änderbar.",
+            "✅ Mehrfachauswahl von Werken bei der Probenplanung.",
+            "⏰ Uhrzeiten bei Probenplan-Einträgen sichtbar.",
+            "📝 Anwesenheitsnotizen im Probenplan anzeigbar."
           ]
         },
         {
           "version": "1.4.4",
           "changes": [
-            "Probenplan export vergrößert",
-            "Wort als erster Eintrag im Probenplan",
-            "Probenplan: Bei Freitexteingabe in Klammern Dirigent mit eingebbar z.B. Wort (Max Mustermann)"
+            "📄 Probenplan-Export vergrößert.",
+            "📝 'Wort' als erster Eintrag im Probenplan.",
+            "🎵 Freitext mit Dirigent: z.B. 'Wort (Max Mustermann)'."
           ]
         },
         {
           "version": "1.4.3",
           "changes": [
-            "Senden der Pläne per Telgram möglich"
+            "📱 Probenpläne per Telegram versenden."
           ]
         },
         {
           "version": "1.4.2",
           "changes": [
-            "Leseansicht und Export für Probenpläne in der Anwesenheit",
-            "Probenplan zu Anwesenheit zuteilbar",
-            "Pull to refresh für Anwesenheit und Spieler eingebaut",
-            "Fehlerbehebung: Aktuelle Anwesenheit löschbar"
+            "👁️ Leseansicht und Export für Probenpläne.",
+            "🔗 Probenplan einer Anwesenheit zuweisbar.",
+            "🔄 Pull-to-Refresh für Anwesenheit und Mitglieder.",
+            "🐛 Behoben: Aktuelle Anwesenheit ist jetzt löschbar."
           ]
         },
         {
           "version": "1.4.1",
           "changes": [
-            "Datumsauswahl schließt automatisch",
-            "Email Template angepasst",
-            "Fehlerbehebung: Instrumente nicht editierbar"
+            "📅 Datumsauswahl schließt automatisch.",
+            "✉️ E-Mail-Vorlage angepasst.",
+            "🐛 Behoben: Instrumente nicht editierbar."
           ]
         },
         {
           "version": "1.4.0",
           "changes": [
-            "Probenplanung hinzugefügt",
-            "Werk aus Historie löschbar"
+            "📋 Probenplanung hinzugefügt.",
+            "🗑️ Werke aus der Historie löschbar."
           ]
         }
       ]
