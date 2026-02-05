@@ -87,6 +87,11 @@
       <ion-item button [routerLink]="['/tabs/settings/general/shifts']">
         <ion-label>Schichtpläne</ion-label>
       </ion-item>
+      <ion-item>
+        <ion-input type="number" label="Zu-spät-Schwelle" labelPlacement="stacked"
+          helperText="Ab wie vielen unentschuldigten Verspätungen soll eine Warnung angezeigt werden?"
+          placeholder="3" [(ngModel)]="lateThreshold" [min]="1" [max]="99"></ion-input>
+      </ion-item>
     </ion-item-group>
 
     <ion-list-header><ion-label>Registrierung</ion-label></ion-list-header>

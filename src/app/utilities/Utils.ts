@@ -20,6 +20,14 @@ export class Utils {
   ): Player[] {
     const instrumentsMap: { [props: number]: boolean } = {};
 
+    // Performance optimization: Create HashMaps for O(1) lookups instead of O(n) find()
+    const attendanceMap = new Map<number, Attendance>(
+      attendances.map((a) => [a.id, a])
+    );
+    const typeMap = new Map<string, AttendanceType>(
+      types.map((t) => [t.id, t])
+    );
+
     return players.sort((a: Player, b: Player) => {
       if (a.instrument === b.instrument) {
         return a.lastName.localeCompare(b.lastName);
@@ -57,22 +65,35 @@ export class Utils {
       }
 
       let percentage: number = 0;
+      let lateCount: number = 0;
+      const now = dayjs().add(1, "day");
+      const lastLateResetDate = player.lastLateReset ? dayjs(player.lastLateReset) : null;
 
       if (player.person_attendances && attendances?.length) {
         const personAttendancesTillNow = player.person_attendances.filter((personAttendance: PersonAttendance) => {
-          const attendance = attendances.find((attendance: Attendance) => personAttendance.attendance_id === attendance.id);
-          const type = types.find((t: AttendanceType) => t.id === attendance?.type_id);
+          const attendance = attendanceMap.get(personAttendance.attendance_id);
+          if (!attendance) return false;
 
+          const type = typeMap.get(attendance.type_id);
           if (!type?.include_in_average) {
             return false;
           }
 
-          return attendance && dayjs(attendance.date).isBefore(dayjs().add(1, "day"));
+          return dayjs(attendance.date).isBefore(now);
         });
         percentage = Utils.getPercentage(personAttendancesTillNow);
         if (isNaN(percentage)) {
           percentage = 0;
         }
+
+        // Count unexcused late arrivals (only after lastLateReset if set)
+        lateCount = personAttendancesTillNow.filter((pa: PersonAttendance) => {
+          if (pa.status !== AttendanceStatus.Late) return false;
+          if (!lastLateResetDate) return true;
+
+          const attendance = attendanceMap.get(pa.attendance_id);
+          return attendance && dayjs(attendance.date).isAfter(lastLateResetDate);
+        }).length;
       }
 
       let img = player.img || DEFAULT_IMAGE;
@@ -88,6 +109,7 @@ export class Utils {
         instrumentLength,
         isNew,
         percentage,
+        lateCount,
         groupName: instruments.find((ins: Group) => ins.id === player.instrument).name,
         img,
       }

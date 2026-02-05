@@ -143,3 +143,11 @@ create table
 -- Migration: Add critical_rules to tenants table
 -- Run this in Supabase SQL editor:
 -- ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS critical_rules jsonb NULL;
+
+-- Migration: Add late_threshold to tenants table (for late arrival tracking feature)
+-- Run this in Supabase SQL editor:
+-- ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS late_threshold smallint NULL;
+
+-- Migration: Add lastLateReset to player table (for resetting late count per player)
+-- Run this in Supabase SQL editor:
+-- ALTER TABLE public.player ADD COLUMN IF NOT EXISTS "lastLateReset" timestamp with time zone NULL;

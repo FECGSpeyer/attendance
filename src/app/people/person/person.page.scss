@@ -16,3 +16,25 @@ ion-modal ion-datetime {
 #accountHelpButton {
   margin-left: 1rem;
 }
+
+// Late warning card
+.late-warning-card {
+  margin: 16px;
+
+  ion-card-title {
+    font-size: 1.1rem;
+  }
+
+  p {
+    margin: 8px 0;
+  }
+
+  .excused-info {
+    opacity: 0.8;
+    font-size: 0.9rem;
+  }
+
+  ion-button {
+    margin-top: 12px;
+  }
+}

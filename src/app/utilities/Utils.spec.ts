@@ -109,4 +109,154 @@ describe('Utils', () => {
             expect(result).toBe('Altschlüssel');
         });
     });
+
+    describe('getModifiedPlayersForList - lateCount', () => {
+        const createMockPlayer = (id: number, instrument: number, personAttendances: any[] = [], lastLateReset?: string): any => ({
+            id,
+            firstName: 'Test',
+            lastName: `Player${id}`,
+            instrument,
+            joined: '2020-01-01',
+            img: null,
+            person_attendances: personAttendances,
+            lastLateReset,
+            additional_fields: {},
+        });
+
+        const createMockAttendance = (id: number, date: string, typeId = 1): any => ({
+            id,
+            date,
+            type_id: typeId,
+        });
+
+        const createMockPersonAttendance = (attendanceId: number, status: AttendanceStatus): any => ({
+            attendance_id: attendanceId,
+            status,
+        });
+
+        const mockInstruments: any[] = [
+            { id: 1, name: 'Violin', maingroup: false, tenantId: 1 },
+        ];
+
+        const mockTypes: any[] = [
+            { id: 1, include_in_average: true },
+        ];
+
+        it('should count unexcused late arrivals', () => {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            const attendances = [
+                createMockAttendance(1, yesterday.toISOString()),
+                createMockAttendance(2, yesterday.toISOString()),
+                createMockAttendance(3, yesterday.toISOString()),
+            ];
+
+            const player = createMockPlayer(1, 1, [
+                createMockPersonAttendance(1, AttendanceStatus.Late),
+                createMockPersonAttendance(2, AttendanceStatus.Late),
+                createMockPersonAttendance(3, AttendanceStatus.Present),
+            ]);
+
+            const result = Utils.getModifiedPlayersForList(
+                [player],
+                mockInstruments,
+                attendances,
+                mockTypes
+            );
+
+            expect(result[0].lateCount).toBe(2);
+        });
+
+        it('should not count excused late arrivals in lateCount', () => {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            const attendances = [
+                createMockAttendance(1, yesterday.toISOString()),
+                createMockAttendance(2, yesterday.toISOString()),
+            ];
+
+            const player = createMockPlayer(1, 1, [
+                createMockPersonAttendance(1, AttendanceStatus.Late),
+                createMockPersonAttendance(2, AttendanceStatus.LateExcused),
+            ]);
+
+            const result = Utils.getModifiedPlayersForList(
+                [player],
+                mockInstruments,
+                attendances,
+                mockTypes
+            );
+
+            expect(result[0].lateCount).toBe(1);
+        });
+
+        it('should only count late arrivals after lastLateReset', () => {
+            const twoDaysAgo = new Date();
+            twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            const attendances = [
+                createMockAttendance(1, twoDaysAgo.toISOString()),
+                createMockAttendance(2, yesterday.toISOString()),
+            ];
+
+            // lastLateReset is between the two attendances
+            const lastLateReset = new Date();
+            lastLateReset.setDate(lastLateReset.getDate() - 1);
+            lastLateReset.setHours(lastLateReset.getHours() - 12);
+
+            const player = createMockPlayer(1, 1, [
+                createMockPersonAttendance(1, AttendanceStatus.Late), // Before lastLateReset
+                createMockPersonAttendance(2, AttendanceStatus.Late), // After lastLateReset
+            ], lastLateReset.toISOString());
+
+            const result = Utils.getModifiedPlayersForList(
+                [player],
+                mockInstruments,
+                attendances,
+                mockTypes
+            );
+
+            // Only the late arrival after lastLateReset should be counted
+            expect(result[0].lateCount).toBe(1);
+        });
+
+        it('should return 0 lateCount when no late arrivals', () => {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            const attendances = [
+                createMockAttendance(1, yesterday.toISOString()),
+            ];
+
+            const player = createMockPlayer(1, 1, [
+                createMockPersonAttendance(1, AttendanceStatus.Present),
+            ]);
+
+            const result = Utils.getModifiedPlayersForList(
+                [player],
+                mockInstruments,
+                attendances,
+                mockTypes
+            );
+
+            expect(result[0].lateCount).toBe(0);
+        });
+
+        it('should handle players with no attendances', () => {
+            const player = createMockPlayer(1, 1, []);
+
+            const result = Utils.getModifiedPlayersForList(
+                [player],
+                mockInstruments,
+                [],
+                mockTypes
+            );
+
+            expect(result[0].lateCount).toBe(0);
+        });
+    });
 });

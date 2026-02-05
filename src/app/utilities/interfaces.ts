@@ -49,6 +49,7 @@ export interface Tenant {
     registration_fields?: string[];
     favorite?: boolean;
     critical_rules?: CriticalRule[];
+    late_threshold?: number;
 }
 
 export interface ExtraField {
@@ -169,6 +170,8 @@ export interface Player extends Person {
     tenantId: number;
     person_attendances?: PersonAttendance[];
     percentage?: number;
+    lateCount?: number;
+    lastLateReset?: string;
     legacyId?: number;
     legacyConductorId?: number;
     parent_id?: number;

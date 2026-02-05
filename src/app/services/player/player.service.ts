@@ -226,6 +226,7 @@ export class PlayerService {
     delete dataToUpdate.attStatus;
     delete dataToUpdate.person_attendances;
     delete dataToUpdate.percentage;
+    delete dataToUpdate.lateCount;
 
     const { data, error } = await supabase
       .from('player')

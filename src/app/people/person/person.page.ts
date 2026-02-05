@@ -66,6 +66,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public isChoir: boolean = false;
   public isGeneral: boolean = false;
   public lateCount: number = 0;
+  public lateCountExcused: number = 0;
   public showTeachers: boolean = false;
   public isMainGroup: boolean = false;
   public role: Role = Role.PLAYER;
@@ -254,8 +255,14 @@ export class PersonPage implements OnInit, AfterViewInit {
     }).length;
     this.perc = attendances.length ? Math.round(attendedCount / allCount * 100) : 0;
 
-    // Count late attendances
-    this.lateCount = attendances.filter((a) => a.status === AttendanceStatus.Late).length;
+    // Count late attendances (only after lastLateReset if set)
+    const lastLateResetDate = this.player.lastLateReset ? dayjs(this.player.lastLateReset) : null;
+    const attendancesAfterReset = lastLateResetDate
+      ? attendances.filter((a: PersonAttendance) => dayjs((a as any).date).isAfter(lastLateResetDate))
+      : attendances;
+
+    this.lateCount = attendancesAfterReset.filter((a) => a.status === AttendanceStatus.Late).length;
+    this.lateCountExcused = attendancesAfterReset.filter((a) => a.status === AttendanceStatus.LateExcused).length;
 
     // Map attendance history
     const attendanceHistory = attendances.map((att: PersonAttendance) => ({
@@ -283,6 +290,30 @@ export class PersonPage implements OnInit, AfterViewInit {
     // Combine and sort history
     this.history = [...attendanceHistory, ...playerHistory]
       .sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }
+
+  /**
+   * Reset late count by setting lastLateReset to current date.
+   * This marks that a conversation was held about frequent tardiness.
+   */
+  async resetLateCount(): Promise<void> {
+    const loading = await this.loadingController.create({ message: 'Wird zurückgesetzt...' });
+    await loading.present();
+
+    try {
+      const now = dayjs().toISOString();
+      this.player.lastLateReset = now;
+      this.existingPlayer.lastLateReset = now;
+      await this.db.updatePlayer(this.player);
+      this.lateCount = 0;
+      this.lateCountExcused = 0;
+      await loading.dismiss();
+      Utils.showToast('Verspätungszähler zurückgesetzt', 'success');
+    } catch (error) {
+      console.error('Error resetting late count:', error);
+      await loading.dismiss();
+      Utils.showToast('Fehler beim Zurücksetzen', 'danger');
+    }
   }
 
   onInstrumentChange(byUser = true) {
