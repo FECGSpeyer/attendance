@@ -1,12 +1,131 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import dayjs from 'dayjs';
 import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, FieldType, PlayerHistoryType, Role } from "./constants";
-import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftDefinition, ShiftPlan, Church } from "./interfaces";
+import { Attendance, CriticalRule, CriticalRulePeriodType, CriticalRuleThresholdType, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftDefinition, ShiftPlan, Church } from "./interfaces";
 // jsPDF and xlsx are lazy-loaded for better initial bundle size
 
 export class Utils {
   public static getId(): number {
     return Math.floor(Math.random() * (999999999999 - 1000000000 + 1)) + 1000000000;
+  }
+
+  /**
+   * Evaluates if a player triggers any of the critical rules based on their attendance history.
+   * Returns true if any rule (with OR operator) or all rules (with AND operator) are triggered.
+   */
+  public static evaluateCriticalRules(
+    personAttendances: PersonAttendance[],
+    attendanceMap: Map<number, Attendance>,
+    typeMap: Map<string, AttendanceType>,
+    criticalRules: CriticalRule[],
+    seasonStart?: string,
+    lastSolve?: string,
+  ): boolean {
+    if (!criticalRules?.length || !personAttendances?.length) {
+      return false;
+    }
+
+    const tomorrow = dayjs().add(1, 'day');
+    const seasonStartDate = seasonStart ? dayjs(seasonStart) : null;
+    const lastSolveDate = lastSolve ? dayjs(lastSolve) : null;
+
+    for (const rule of criticalRules) {
+      // Determine the period start date based on period_type
+      let periodStart: dayjs.Dayjs | null = null;
+      
+      switch (rule.period_type) {
+        case CriticalRulePeriodType.DAYS:
+          periodStart = dayjs().subtract(rule.period_days || 30, 'day');
+          break;
+        case CriticalRulePeriodType.SEASON:
+          periodStart = seasonStartDate;
+          break;
+        case CriticalRulePeriodType.ALL_TIME:
+          periodStart = null; // No start date filter
+          break;
+        default:
+          // Legacy rules without period_type - use period_days
+          periodStart = rule.period_days ? dayjs().subtract(rule.period_days, 'day') : null;
+      }
+
+      // Use lastSolve as the effective period start if it's after the rule's period start
+      if (lastSolveDate) {
+        if (!periodStart || lastSolveDate.isAfter(periodStart)) {
+          periodStart = lastSolveDate;
+        }
+      }
+
+      // Filter attendances within the period and matching criteria
+      const relevantAttendances = personAttendances.filter((pa: PersonAttendance) => {
+        const attendance = attendanceMap.get(pa.attendance_id);
+        if (!attendance) return false;
+
+        const attendanceDate = dayjs(attendance.date);
+        
+        // Must be before tomorrow (not future)
+        if (!attendanceDate.isBefore(tomorrow)) return false;
+
+        // Must be after period start (if set)
+        if (periodStart && !attendanceDate.isAfter(periodStart)) return false;
+
+        // Check attendance type filter
+        if (rule.attendance_type_ids?.length > 0) {
+          if (!rule.attendance_type_ids.includes(attendance.type_id)) return false;
+        }
+
+        // Check status filter
+        if (rule.statuses?.length > 0) {
+          if (!rule.statuses.includes(pa.status)) return false;
+        }
+
+        return true;
+      });
+
+      // Evaluate the threshold
+      let ruleTriggered = false;
+      
+      if (rule.threshold_type === CriticalRuleThresholdType.COUNT) {
+        ruleTriggered = relevantAttendances.length >= rule.threshold_value;
+      } else if (rule.threshold_type === CriticalRuleThresholdType.PERCENTAGE) {
+        // For percentage, we need total attendances in the period
+        const totalInPeriod = personAttendances.filter((pa: PersonAttendance) => {
+          const attendance = attendanceMap.get(pa.attendance_id);
+          if (!attendance) return false;
+          
+          const attendanceDate = dayjs(attendance.date);
+          if (!attendanceDate.isBefore(tomorrow)) return false;
+          if (periodStart && !attendanceDate.isAfter(periodStart)) return false;
+          
+          // Check attendance type filter
+          if (rule.attendance_type_ids?.length > 0) {
+            if (!rule.attendance_type_ids.includes(attendance.type_id)) return false;
+          }
+          
+          return true;
+        }).length;
+        
+        if (totalInPeriod > 0) {
+          const percentage = (relevantAttendances.length / totalInPeriod) * 100;
+          ruleTriggered = percentage >= rule.threshold_value;
+        }
+      }
+
+      // For OR operator: if any rule triggers, return true immediately
+      if (rule.operator === 'OR' && ruleTriggered) {
+        return true;
+      }
+      
+      // For AND operator: if any rule doesn't trigger, return false
+      // Note: This is simplified - true AND logic would need all rules to be AND
+      if (rule.operator === 'AND' && !ruleTriggered) {
+        return false;
+      }
+    }
+
+    // If we get here with all AND rules, they all passed
+    // If we get here with OR rules, none triggered
+    const hasOrRules = criticalRules.some(r => r.operator === 'OR');
+    return !hasOrRules; // Return true only if all were AND and passed
   }
 
   public static getModifiedPlayersForList(
@@ -17,6 +136,8 @@ export class Utils {
     mainGroup?: number,
     additionalFields?: ExtraField[],
     churches?: Church[],
+    criticalRules?: CriticalRule[],
+    seasonStart?: string,
   ): Player[] {
     // Pre-compute lookup maps for O(1) access instead of O(n) finds
     const instrumentCountMap = new Map<number, number>();
@@ -125,6 +246,18 @@ export class Utils {
         img = `${img}?quality=20`;
       }
 
+      // Evaluate critical rules to determine if player is a "Problemfall"
+      const isCritical = criticalRules?.length 
+        ? Utils.evaluateCriticalRules(
+            player.person_attendances || [],
+            attendanceMap,
+            typeMap,
+            criticalRules,
+            seasonStart,
+            player.lastSolve,
+          )
+        : player.isCritical; // Fallback to DB value if no rules defined
+
       return {
         ...player,
         firstOfInstrument: isFirstOfInstrument,
@@ -132,6 +265,7 @@ export class Utils {
         isNew,
         percentage,
         lateCount,
+        isCritical,
         groupName: instrumentNameMap.get(player.instrument) || '',
         img,
       };

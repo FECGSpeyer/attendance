@@ -24,19 +24,28 @@ enum CriticalRuleOperator {
   OR = 'OR',
 }
 
+enum CriticalRulePeriodType {
+  DAYS = 'days',
+  SEASON = 'season',
+  ALL_TIME = 'all',
+}
+
 interface CriticalRule {
   id: string;
+  name?: string;
   attendance_type_ids: string[];
   statuses: AttendanceStatus[];
   threshold_type: CriticalRuleThresholdType;
   threshold_value: number;
-  period_days: number;
+  period_type?: CriticalRulePeriodType;
+  period_days?: number;
   operator: CriticalRuleOperator;
 }
 
 interface Tenant {
   id: number;
   critical_rules: CriticalRule[] | null;
+  seasonStart: string | null;
 }
 
 interface Player {
@@ -84,7 +93,7 @@ Deno.serve(async (req) => {
     // 1. Fetch all tenants with critical_rules
     const { data: tenants, error: tenantsError } = await supabase
       .from('tenants')
-      .select('id, critical_rules')
+      .select('id, critical_rules, seasonStart')
       .not('critical_rules', 'is', null);
 
     if (tenantsError) throw tenantsError;
@@ -103,10 +112,26 @@ Deno.serve(async (req) => {
 
       if (playersError) throw playersError;
 
-      // 3. Calculate the date range we need (max period from all rules)
-      const maxPeriodDays = Math.max(...tenant.critical_rules.map(r => r.period_days));
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - maxPeriodDays);
+      // 3. Calculate the date range we need
+      // For SEASON or ALL_TIME rules, we need to fetch from seasonStart or all time
+      const hasSeasonRule = tenant.critical_rules.some(r => r.period_type === CriticalRulePeriodType.SEASON);
+      const hasAllTimeRule = tenant.critical_rules.some(r => r.period_type === CriticalRulePeriodType.ALL_TIME);
+      const maxPeriodDays = Math.max(...tenant.critical_rules.map(r => r.period_days || 365));
+      
+      let startDate: Date;
+      if (hasAllTimeRule) {
+        // Fetch all attendances (use a very old date)
+        startDate = new Date('2000-01-01');
+      } else if (hasSeasonRule && tenant.seasonStart) {
+        // Use season start or max period, whichever is earlier
+        const seasonDate = new Date(tenant.seasonStart);
+        const periodDate = new Date();
+        periodDate.setDate(periodDate.getDate() - maxPeriodDays);
+        startDate = seasonDate < periodDate ? seasonDate : periodDate;
+      } else {
+        startDate = new Date();
+        startDate.setDate(startDate.getDate() - maxPeriodDays);
+      }
       const now = new Date();
 
       // 4. Fetch all person_attendances for this tenant in the period
@@ -141,7 +166,8 @@ Deno.serve(async (req) => {
         const isCritical = evaluateRules(
           tenant.critical_rules,
           playerAttendances,
-          player.lastSolve
+          player.lastSolve,
+          tenant.seasonStart
         );
 
         // Only update if status changed
@@ -195,14 +221,10 @@ Deno.serve(async (req) => {
 function evaluateRules(
   rules: CriticalRule[],
   attendances: PersonAttendance[],
-  lastSolve: string | null
+  lastSolve: string | null,
+  seasonStart: string | null
 ): boolean {
   if (rules.length === 0) return false;
-
-  // Filter out attendances before lastSolve (problem was already addressed)
-  const relevantAttendances = lastSolve
-    ? attendances.filter(a => new Date(a.attendance.date) > new Date(lastSolve))
-    : attendances;
 
   // Separate AND and OR rules
   const andRules = rules.filter(r => r.operator === CriticalRuleOperator.AND);
@@ -210,12 +232,12 @@ function evaluateRules(
 
   // Evaluate OR rules: any one matching = critical
   const orResult = orRules.length > 0
-    ? orRules.some(rule => evaluateSingleRule(rule, relevantAttendances))
+    ? orRules.some(rule => evaluateSingleRule(rule, attendances, lastSolve, seasonStart))
     : false;
 
   // Evaluate AND rules: all must match = critical
   const andResult = andRules.length > 0
-    ? andRules.every(rule => evaluateSingleRule(rule, relevantAttendances))
+    ? andRules.every(rule => evaluateSingleRule(rule, attendances, lastSolve, seasonStart))
     : false;
 
   // If there are both AND and OR rules, OR takes precedence
@@ -232,16 +254,51 @@ function evaluateRules(
  */
 function evaluateSingleRule(
   rule: CriticalRule,
-  attendances: PersonAttendance[]
+  attendances: PersonAttendance[],
+  lastSolve: string | null,
+  seasonStart: string | null
 ): boolean {
   const now = new Date();
-  const periodStart = new Date();
-  periodStart.setDate(now.getDate() - rule.period_days);
+  
+  // Determine period start based on period_type
+  let periodStart: Date | null = null;
+  
+  switch (rule.period_type) {
+    case CriticalRulePeriodType.DAYS:
+      periodStart = new Date();
+      periodStart.setDate(now.getDate() - (rule.period_days || 30));
+      break;
+    case CriticalRulePeriodType.SEASON:
+      periodStart = seasonStart ? new Date(seasonStart) : null;
+      break;
+    case CriticalRulePeriodType.ALL_TIME:
+      periodStart = null; // No start date filter
+      break;
+    default:
+      // Legacy rules without period_type - use period_days
+      if (rule.period_days) {
+        periodStart = new Date();
+        periodStart.setDate(now.getDate() - rule.period_days);
+      }
+  }
+
+  // Use lastSolve as the effective period start if it's after the rule's period start
+  const lastSolveDate = lastSolve ? new Date(lastSolve) : null;
+  if (lastSolveDate) {
+    if (!periodStart || lastSolveDate > periodStart) {
+      periodStart = lastSolveDate;
+    }
+  }
 
   // Filter attendances by period and attendance type
   const relevantAttendances = attendances.filter(att => {
     const attDate = new Date(att.attendance.date);
-    if (attDate < periodStart || attDate > now) return false;
+    
+    // Must be before now
+    if (attDate > now) return false;
+    
+    // Must be after period start (if set)
+    if (periodStart && attDate <= periodStart) return false;
 
     // If specific attendance types are defined, filter by them
     if (rule.attendance_type_ids.length > 0) {
