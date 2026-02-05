@@ -148,6 +148,7 @@ export class DbService {
   }
 
   async uploadSongFile(songId: number, file: File, instrumentId: number | null, note?: string): Promise<SongFile> {
+    this.checkDemoRestriction();
     const tenantId = this.tenant().id;
     // Generate a unique fileId (timestamp + random)
     const fileId = this.encodeFilename(file.name);
@@ -340,6 +341,7 @@ export class DbService {
   }
 
   async deleteSongFile(songId: number, file: SongFile): Promise<SongFile> {
+    this.checkDemoRestriction();
     const song = await this.getSong(songId);
     const files = song.files ? song.files.filter(f => f.url !== file.url) : [];
     const filesJson = files.map(f => ({
@@ -504,6 +506,7 @@ export class DbService {
   }
 
   async updateTenantData(tenant: Partial<Tenant>): Promise<Tenant> {
+    this.checkDemoRestriction();
     const data = await this.tenantSvc.updateTenantData(tenant, this.tenant().id);
     this.tenant.set(data);
     return data;
@@ -528,6 +531,7 @@ export class DbService {
   }
 
   async deleteViewer(viewer: Viewer): Promise<void> {
+    this.checkDemoRestriction();
     try {
       await this.removeEmailFromAuth(viewer.appId, viewer.email);
     } catch (error) {
@@ -551,6 +555,7 @@ export class DbService {
   }
 
   async deleteParent(parent: Parent): Promise<void> {
+    this.checkDemoRestriction();
     try {
       await this.removeEmailFromAuth(parent.appId, parent.email);
     } catch (error) {
@@ -574,6 +579,7 @@ export class DbService {
   }
 
   async createViewer(viewer: Partial<Viewer>) {
+    this.checkDemoRestriction();
     const appId: string = await this.registerUser(viewer.email as string, viewer.firstName as string, Role.VIEWER);
 
     const { error } = await supabase
@@ -590,6 +596,7 @@ export class DbService {
   }
 
   async createParent(parent: Partial<Parent>) {
+    this.checkDemoRestriction();
     const appId: string = await this.registerUser(parent.email as string, parent.firstName as string, Role.PARENT);
 
     const { error, data } = await supabase
@@ -620,6 +627,7 @@ export class DbService {
     tenantName?: string,
     self_register?: boolean,
   ): Promise<string> {
+    this.checkDemoRestriction();
     const { userId, alreadyThere } = await this.getAppIdByEmail(email, tenantId || this.tenant().id, role) || {};
 
     if (userId) {
@@ -815,6 +823,7 @@ export class DbService {
   }
 
   async createAccount(user: Player) {
+    this.checkDemoRestriction();
     try {
       const mainGroupId = this.getMainGroup()?.id;
       const role = (mainGroupId === user.instrument ? Role.RESPONSIBLE : Role.PLAYER);
@@ -843,6 +852,7 @@ export class DbService {
   }
 
   async changePassword(password: string) {
+    this.checkDemoRestriction();
     return this.authSvc.changePassword(password);
   }
 
@@ -946,6 +956,7 @@ export class DbService {
   }
 
   async updateProfile(updates: Partial<Player>, churchId?: string): Promise<void> {
+    this.checkDemoRestriction();
     const { error } = await supabase
       .from('player')
       .update(updates as any)
@@ -1140,6 +1151,7 @@ export class DbService {
     password?: string,
     tenantName?: string,
   ): Promise<{ userId: number; created: boolean }> {
+    this.checkDemoRestriction();
     let created = false;
     if (!this.tenant()?.maintainTeachers) {
       delete player.teacher;
@@ -1306,6 +1318,7 @@ export class DbService {
     role?: Role,
     updateShifts?: boolean
   ): Promise<Player[]> {
+    this.checkDemoRestriction();
     const dataToUpdate: Player = { ...player };
     delete dataToUpdate.id;
     delete dataToUpdate.created_at;
@@ -1446,10 +1459,12 @@ export class DbService {
   }
 
   async updatePlayerHistory(id: number, history: PlayerHistoryEntry[]) {
+    this.checkDemoRestriction();
     return this.playerSvc.updatePlayerHistory(id, history);
   }
 
   async removePlayer(player: Person): Promise<void> {
+    this.checkDemoRestriction();
     await this.playerSvc.removePlayer(player);
     if (player.appId) {
       await this.removeEmailFromAuth(player.appId, player.email);
@@ -1511,6 +1526,7 @@ export class DbService {
   }
 
   async archivePlayer(player: Player, left: string, notes: string): Promise<void> {
+    this.checkDemoRestriction();
     if (player.appId && player.email) {
       await this.removeEmailFromAuth(player.appId, player.email);
       delete player.appId;
@@ -1539,6 +1555,7 @@ export class DbService {
   }
 
   async addGroup(name: string, maingroup: boolean = false, tenantId?: number): Promise<Group[]> {
+    this.checkDemoRestriction();
     const data = await this.groupSvc.addGroup(name, tenantId || this.tenant().id, maingroup);
     if (this.tenant() && this.tenant().id) {
       this.groups.set(await this.getGroups());
@@ -1547,18 +1564,21 @@ export class DbService {
   }
 
   async updateGroup(att: Partial<Group>, id: number): Promise<Group[]> {
+    this.checkDemoRestriction();
     const data = await this.groupSvc.updateGroup(att, id);
     this.groups.set(await this.getGroups());
     return data;
   }
 
   async removeGroup(id: number): Promise<Group[]> {
+    this.checkDemoRestriction();
     const data = await this.groupSvc.removeGroup(id);
     this.groups.set(await this.getGroups());
     return data;
   }
 
   async addAttendance(attendance: Attendance): Promise<number> {
+    this.checkDemoRestriction();
     return this.attendanceSvc.addAttendance(attendance, this.tenant().id);
   }
 
@@ -1653,10 +1673,12 @@ export class DbService {
   }
 
   async updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance> {
+    this.checkDemoRestriction();
     return this.attendanceSvc.updateAttendance(att, id);
   }
 
   async removeAttendance(id: number): Promise<void> {
+    this.checkDemoRestriction();
     return this.attendanceSvc.removeAttendance(id);
   }
 
@@ -1713,14 +1735,17 @@ export class DbService {
   }
 
   async updateHistoryEntry(id: number, history: Partial<History>): Promise<History[]> {
+    this.checkDemoRestriction();
     return this.historySvc.updateHistoryEntry(id, history);
   }
 
   async addHistoryEntry(history: History[]): Promise<History[]> {
+    this.checkDemoRestriction();
     return this.historySvc.addHistoryEntry(history, this.tenant().id);
   }
 
   async removeHistoryEntry(id: number): Promise<History[]> {
+    this.checkDemoRestriction();
     return this.historySvc.removeHistoryEntry(id);
   }
 
@@ -1733,10 +1758,12 @@ export class DbService {
   }
 
   async addTeacher(teacher: Teacher): Promise<Teacher[]> {
+    this.checkDemoRestriction();
     return this.teacherSvc.addTeacher(teacher, this.tenant().id);
   }
 
   async updateTeacher(teacher: Partial<Teacher>, id: number): Promise<Teacher[]> {
+    this.checkDemoRestriction();
     return this.teacherSvc.updateTeacher(teacher, id);
   }
 
@@ -1749,14 +1776,17 @@ export class DbService {
   }
 
   async addSong(song: Song): Promise<Song> {
+    this.checkDemoRestriction();
     return this.songSvc.addSong(song, this.tenant().id);
   }
 
   async removeSong(song: Song): Promise<void> {
+    this.checkDemoRestriction();
     return this.songSvc.removeSong(song, this.tenant().id);
   }
 
   async editSong(id: number, song: Song): Promise<Song[]> {
+    this.checkDemoRestriction();
     return this.songSvc.editSong(id, song);
   }
 
@@ -1767,17 +1797,20 @@ export class DbService {
   }
 
   async addSongCategory(category: Partial<SongCategory>) {
+    this.checkDemoRestriction();
     await this.songCategorySvc.addSongCategory(category, this.tenant().id);
     await this.getSongCategories();
   }
 
   async updateSongCategory(category: Partial<SongCategory>, id: string): Promise<SongCategory[]> {
+    this.checkDemoRestriction();
     const data = await this.songCategorySvc.updateSongCategory(category, id);
     await this.getSongCategories();
     return data;
   }
 
   async removeSongCategory(id: string): Promise<void> {
+    this.checkDemoRestriction();
     await this.songCategorySvc.removeSongCategory(id);
     await this.getSongCategories();
   }
@@ -1791,14 +1824,17 @@ export class DbService {
   }
 
   async addMeeting(meeting: Meeting): Promise<Meeting[]> {
+    this.checkDemoRestriction();
     return this.meetingSvc.addMeeting(meeting, this.tenant().id);
   }
 
   async editMeeting(id: number, meeting: Meeting): Promise<Meeting[]> {
+    this.checkDemoRestriction();
     return this.meetingSvc.editMeeting(id, meeting);
   }
 
   async removeMeeting(id: number): Promise<void> {
+    this.checkDemoRestriction();
     return this.meetingSvc.removeMeeting(id);
   }
 
@@ -1827,14 +1863,17 @@ export class DbService {
   }
 
   async removeImage(id: number, imgPath: string, newUser: boolean = false, appId: string = "") {
+    this.checkDemoRestriction();
     return this.imageSvc.removeImage(id, imgPath, newUser, appId, this.user?.id);
   }
 
   async updateImage(id: number, image: File | Blob, appId: string) {
+    this.checkDemoRestriction();
     return this.imageSvc.updateImage(id, image, appId, this.user?.id);
   }
 
   async updateAttImage(id: number, image: File) {
+    this.checkDemoRestriction();
     return this.imageSvc.updateAttendanceImage(id, image);
   }
 
@@ -1924,6 +1963,7 @@ export class DbService {
   }
 
   async deleteInstance(tenantId: number): Promise<void> {
+    this.checkDemoRestriction();
     const { error } = await supabase
       .from("tenants")
       .delete()
@@ -1962,6 +2002,7 @@ export class DbService {
   }
 
   async createInstance(tenant: Tenant, mainGroupName: string): Promise<void> {
+    this.checkDemoRestriction();
     const { data, error } = await supabase
       .from("tenants")
       .insert(tenant as any)
@@ -2081,19 +2122,33 @@ export class DbService {
     return this.user?.email === environment.demoMail;
   }
 
+  /**
+   * Checks if demo mode is active and throws an error with toast if so.
+   * Call this at the beginning of any method that should be restricted in demo mode.
+   */
+  private checkDemoRestriction(): void {
+    if (this.isDemo()) {
+      Utils.showToast('Diese Funktion ist im Demo-Modus nicht verfügbar.', 'warning');
+      throw new Error('Demo mode restriction');
+    }
+  }
+
   async getGroupCategories(tenantId?: number) {
     return this.groupCategorySvc.getGroupCategories(tenantId ?? this.tenant().id);
   }
 
   async addGroupCategory(name: string) {
+    this.checkDemoRestriction();
     return this.groupCategorySvc.addGroupCategory(name, this.tenant().id);
   }
 
   async updateGroupCategory(id: number, name: string) {
+    this.checkDemoRestriction();
     return this.groupCategorySvc.updateGroupCategory(id, name);
   }
 
   async deleteGroupCategory(id: number) {
+    this.checkDemoRestriction();
     return this.groupCategorySvc.deleteGroupCategory(id);
   }
 
@@ -2106,10 +2161,12 @@ export class DbService {
   }
 
   async createAdmin(admin: string) {
+    this.checkDemoRestriction();
     return await this.registerUser(admin as string, "" as string, Role.ADMIN);
   }
 
   async activatePlayer(player: Player): Promise<void> {
+    this.checkDemoRestriction();
     if (player.email) {
       await this.createAccount(player);
     }
@@ -2129,17 +2186,20 @@ export class DbService {
   }
 
   async createOrganisation(name: string): Promise<Organisation> {
+    this.checkDemoRestriction();
     const data = await this.orgSvc.createOrganisation(name);
     await this.linkTenantToOrganisation(this.tenant().id, data);
     return data;
   }
 
   async linkTenantToOrganisation(tenantId: number, organisation: Organisation): Promise<void> {
+    this.checkDemoRestriction();
     await this.orgSvc.linkTenantToOrganisation(tenantId, organisation);
     this.organisation.set(organisation);
   }
 
   async unlinkTenantFromOrganisation(orgId: number): Promise<void> {
+    this.checkDemoRestriction();
     await this.orgSvc.unlinkTenantFromOrganisation(this.tenant().id, orgId);
   }
 
@@ -2164,6 +2224,7 @@ export class DbService {
   }
 
   async handoverPersons(persons: Player[], targetTenant: Tenant, groupMapping: { [key: number]: number } = {}, stayInInstance: boolean, mainGroup: number | null): Promise<Player[]> {
+    this.checkDemoRestriction();
     const failedPersons: Player[] = [];
 
     for (const person of persons) {
@@ -2246,18 +2307,21 @@ export class DbService {
   }
 
   async updateAttendanceType(id: string, attType: Partial<AttendanceType>): Promise<AttendanceType> {
+    this.checkDemoRestriction();
     const data = await this.attTypeSvc.updateAttendanceType(id, attType);
     this.attendanceTypes.set(await this.getAttendanceTypes());
     return data;
   }
 
   async addAttendanceType(attType: AttendanceType): Promise<AttendanceType> {
+    this.checkDemoRestriction();
     const data = await this.attTypeSvc.addAttendanceType(attType);
     this.attendanceTypes.set(await this.getAttendanceTypes());
     return data;
   }
 
   async deleteAttendanceType(id: string): Promise<void> {
+    this.checkDemoRestriction();
     await this.attTypeSvc.deleteAttendanceType(id);
     this.attendanceTypes.set(await this.getAttendanceTypes());
   }
@@ -2280,22 +2344,26 @@ export class DbService {
   }
 
   async addShift(shift: ShiftPlan): Promise<ShiftPlan> {
+    this.checkDemoRestriction();
     const result = await this.shiftSvc.addShift(shift, this.tenant().id);
     await this.loadShifts();
     return this.shifts().find(s => s.name === shift.name);
   }
 
   async addShiftToTenant(shift: ShiftPlan, tenantId: number): Promise<void> {
+    this.checkDemoRestriction();
     return await this.shiftSvc.addShift(shift, tenantId);
   }
 
   async updateShift(shift: ShiftPlan): Promise<ShiftPlan> {
+    this.checkDemoRestriction();
     await this.shiftSvc.updateShift(shift);
     await this.loadShifts();
     return;
   }
 
   async deleteShift(id: string): Promise<void> {
+    this.checkDemoRestriction();
     await this.shiftSvc.deleteShift(id);
     await this.loadShifts();
   }
@@ -2305,6 +2373,7 @@ export class DbService {
   }
 
   async createChurch(name: string): Promise<string> {
+    this.checkDemoRestriction();
     const id = await this.churchSvc.createChurch(name, this.user?.id);
     this.churches.set(await this.getChurches());
     return id;
