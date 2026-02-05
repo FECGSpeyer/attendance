@@ -56,12 +56,17 @@ export class StatsPage implements OnInit {
   public avgAgePerInstrumentOptions: ChartConfiguration<'bar'>['options'];
   public divaIndexData: ChartData<'bar'>;
   public divaIndexOptions: ChartConfiguration<'bar'>['options'];
+  public lateArrivalsData: ChartData<'bar'>;
+  public lateArrivalsOptions: ChartConfiguration<'bar'>['options'];
+  public lateTrendData: ChartData<'line'>;
+  public lateTrendOptions: ChartConfiguration<'line'>['options'];
 
   // Dynamic chart heights based on number of entries
   public instrumentChartHeight: number = 400;
   public avgAgeChartHeight: number = 400;
   public top20ChartHeight: number = 500;
   public divaChartHeight: number = 350;
+  public lateArrivalsChartHeight: number = 350;
 
   public chartsReady = false;
 
@@ -140,6 +145,8 @@ export class StatsPage implements OnInit {
     this.initAgeDistributionChart();
     this.initAvgAgePerInstrumentChart();
     this.initDivaIndexChart();
+    this.initLateArrivalsChart();
+    this.initLateTrendChart();
     this.chartsReady = true;
   }
 
@@ -501,6 +508,134 @@ export class StatsPage implements OnInit {
       plugins: {
         title: { display: true, text: 'Unentschuldigte Abwesenheiten' },
         legend: { display: false }
+      }
+    };
+  }
+
+  private initLateArrivalsChart() {
+    // Unentschuldigte Verspätungen: unexcused late arrivals per player
+    const playerLates: { name: string; unexcused: number; excused: number }[] = [];
+
+    this.activePlayers.forEach(player => {
+      const unexcusedLates = this.attendances.flatMap(att =>
+        att.persons?.filter(pa =>
+          pa.person_id === player.id && pa.status === AttendanceStatus.Late
+        ) || []
+      ).length;
+
+      const excusedLates = this.attendances.flatMap(att =>
+        att.persons?.filter(pa =>
+          pa.person_id === player.id && pa.status === AttendanceStatus.LateExcused
+        ) || []
+      ).length;
+
+      if (unexcusedLates > 0 || excusedLates > 0) {
+        playerLates.push({
+          name: `${player.firstName} ${player.lastName.charAt(0)}.`,
+          unexcused: unexcusedLates,
+          excused: excusedLates
+        });
+      }
+    });
+
+    const topLates = [...playerLates]
+      .sort((a, b) => b.unexcused - a.unexcused)
+      .slice(0, 15);
+
+    // Dynamic height: 28px per entry
+    this.lateArrivalsChartHeight = Math.max(250, topLates.length * 28);
+
+    this.lateArrivalsData = {
+      labels: topLates.map(p => p.name),
+      datasets: [
+        {
+          data: topLates.map(p => p.unexcused),
+          label: 'Unentschuldigt',
+          backgroundColor: '#ffc409'
+        },
+        {
+          data: topLates.map(p => p.excused),
+          label: 'Entschuldigt',
+          backgroundColor: '#92949c'
+        }
+      ]
+    };
+
+    this.lateArrivalsOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        title: { display: true, text: 'Verspätungen (unentschuldigt vs. entschuldigt)' },
+        legend: { display: true, position: 'bottom' }
+      },
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true }
+      }
+    };
+  }
+
+  private initLateTrendChart() {
+    // Trend der Verspätungen über Zeit (gruppiert nach Monat)
+    const monthlyLates: { [month: string]: { unexcused: number; excused: number; total: number } } = {};
+
+    // Sort attendances by date
+    const sortedAttendances = [...this.attendances]
+      .sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf());
+
+    sortedAttendances.forEach(att => {
+      const monthKey = dayjs(att.date).format('MMM YY');
+
+      if (!monthlyLates[monthKey]) {
+        monthlyLates[monthKey] = { unexcused: 0, excused: 0, total: 0 };
+      }
+
+      att.persons?.forEach(pa => {
+        monthlyLates[monthKey].total++;
+        if (pa.status === AttendanceStatus.Late) {
+          monthlyLates[monthKey].unexcused++;
+        } else if (pa.status === AttendanceStatus.LateExcused) {
+          monthlyLates[monthKey].excused++;
+        }
+      });
+    });
+
+    const months = Object.keys(monthlyLates);
+    const unexcusedCounts = months.map(m => monthlyLates[m].unexcused);
+    const excusedCounts = months.map(m => monthlyLates[m].excused);
+
+    this.lateTrendData = {
+      labels: months,
+      datasets: [
+        {
+          data: unexcusedCounts,
+          label: 'Unentschuldigt zu spät',
+          borderColor: '#ffc409',
+          backgroundColor: 'rgba(255, 196, 9, 0.2)',
+          fill: true,
+          tension: 0.3
+        },
+        {
+          data: excusedCounts,
+          label: 'Entschuldigt zu spät',
+          borderColor: '#92949c',
+          backgroundColor: 'rgba(146, 148, 156, 0.2)',
+          fill: true,
+          tension: 0.3
+        }
+      ]
+    };
+
+    this.lateTrendOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: 'Verspätungs-Trend über Zeit' },
+        legend: { display: true, position: 'bottom' }
+      },
+      scales: {
+        y: { beginAtZero: true, title: { display: true, text: 'Anzahl' } }
       }
     };
   }

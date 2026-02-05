@@ -8,10 +8,10 @@ import { AttendanceType, CriticalRule, CriticalRuleOperator, CriticalRuleThresho
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-    selector: 'app-general',
-    templateUrl: './general.page.html',
-    styleUrls: ['./general.page.scss'],
-    standalone: false
+  selector: 'app-general',
+  templateUrl: './general.page.html',
+  styleUrls: ['./general.page.scss'],
+  standalone: false
 })
 export class GeneralPage implements OnInit {
   public holidayStates = [
@@ -76,6 +76,9 @@ export class GeneralPage implements OnInit {
   public CriticalRuleThresholdType = CriticalRuleThresholdType;
   public CriticalRuleOperator = CriticalRuleOperator;
 
+  // Late arrivals tracking
+  public lateThreshold: number = 3;
+
   // Change tracking
   private originalState: string = '';
 
@@ -123,6 +126,7 @@ export class GeneralPage implements OnInit {
     this.selectedRegisterFields = this.db.tenant().registration_fields?.length ? this.db.tenant().registration_fields : this.registerFields.filter(f => f.disabled).map(f => f.key);
     this.extraFields = [...this.db.tenant().additional_fields ?? []];
     this.criticalRules = [...this.db.tenant().critical_rules ?? []];
+    this.lateThreshold = this.db.tenant().late_threshold ?? 3;
     this.loadAttendanceTypes();
 
     // Store original state for change detection
@@ -149,6 +153,7 @@ export class GeneralPage implements OnInit {
       selectedRegisterFields: this.selectedRegisterFields,
       extraFields: this.extraFields,
       criticalRules: this.criticalRules,
+      lateThreshold: this.lateThreshold,
     });
   }
 
@@ -253,6 +258,7 @@ export class GeneralPage implements OnInit {
         auto_approve_registrations: this.registerAllowed ? this.autoApproveRegistrations : false,
         registration_fields: this.registerAllowed ? this.selectedRegisterFields : [],
         critical_rules: this.criticalRules,
+        late_threshold: this.lateThreshold,
       });
       this.markAsSaved();
       Utils.showToast("Einstellungen gespeichert", "success");

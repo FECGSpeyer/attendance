@@ -16,3 +16,53 @@ ion-modal ion-datetime {
 #accountHelpButton {
   margin-left: 1rem;
 }
+
+// Late warning card styles
+.late-warning-card {
+  margin: 16px;
+  border-radius: 12px;
+
+  ion-card-header {
+    padding-bottom: 8px;
+  }
+
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+
+    ion-icon {
+      font-size: 1.3rem;
+    }
+  }
+
+  ion-card-content {
+    padding-top: 0;
+  }
+
+  .late-stats {
+    font-size: 1rem;
+    margin: 0 0 4px 0;
+
+    strong {
+      font-size: 1.1rem;
+    }
+
+    .late-excused {
+      opacity: 0.8;
+    }
+  }
+
+  .late-hint {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin: 0 0 16px 0;
+  }
+
+  ion-button {
+    margin-top: 8px;
+    --border-radius: 8px;
+  }
+}
