@@ -22,9 +22,9 @@ export class RegisterPage implements OnInit {
   };
   public mainGroupName: string = '';
   public canDismiss: boolean = true;
-  public namePlaceholder: string = 'z.B. Gruppe 1';
-  public shortNamePlaceholder: string = 'z.B. G1';
-  public mainGroupPlaceholder: string = 'z.B. Verantwortliche, Dirigenten, etc.';
+  public namePlaceholder: string = 'z.B. Sportverein Musterstadt';
+  public shortNamePlaceholder: string = 'z.B. SVM';
+  public mainGroupPlaceholder: string = 'z.B. Vorstand';
 
   constructor(
     private db: DbService,
@@ -56,19 +56,28 @@ export class RegisterPage implements OnInit {
     }
   }
 
-  async onTypeChange() {
+  onTypeChange() {
     if (this.tenant.type === 'general') {
-      this.namePlaceholder = 'z.B. Gruppe 1';
-      this.shortNamePlaceholder = 'z.B. G1';
-      this.mainGroupPlaceholder = 'z.B. Verantwortliche, Leiter, etc.';
+      this.namePlaceholder = 'z.B. Sportverein Musterstadt';
+      this.shortNamePlaceholder = 'z.B. SVM';
+      this.mainGroupPlaceholder = 'z.B. Vorstand';
     } else if (this.tenant.type === 'choir') {
-      this.namePlaceholder = 'z.B. Jugendchor';
-      this.shortNamePlaceholder = 'z.B. JC';
-      this.mainGroupPlaceholder = 'z.B. Jugendchorleitung, Dirigenten, etc.';
+      this.namePlaceholder = 'z.B. Gospelchor Harmonie';
+      this.shortNamePlaceholder = 'z.B. GCH';
+      this.mainGroupPlaceholder = 'z.B. Chorleitung';
     } else if (this.tenant.type === 'orchestra') {
-      this.namePlaceholder = 'z.B. Sinfonieorchester';
-      this.shortNamePlaceholder = 'z.B. SO';
-      this.mainGroupPlaceholder = 'z.B. Orchesterleitung, Dirigenten, etc.';
+      this.namePlaceholder = 'z.B. Stadtorchester Musterstadt';
+      this.shortNamePlaceholder = 'z.B. SOM';
+      this.mainGroupPlaceholder = 'z.B. Dirigenten';
+    }
+  }
+
+  getTypeLabel(): string {
+    switch (this.tenant.type) {
+      case 'general': return 'Allgemeine Gruppe';
+      case 'choir': return 'Chor';
+      case 'orchestra': return 'Orchester';
+      default: return this.tenant.type;
     }
   }
 
