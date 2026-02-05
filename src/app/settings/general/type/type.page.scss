@@ -9,36 +9,25 @@ ion-item-group {
 }
 
 // Reminder Modal Styles
-.info-card {
-    margin: 16px;
+.info-list {
+    ion-item {
+        --padding-start: 16px;
+        --inner-padding-end: 16px;
 
-    ion-card-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 1.1rem;
+        ion-label p {
+            margin: 0;
+            white-space: normal;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            color: var(--ion-color-medium);
+
+            strong {
+                color: var(--ion-text-color);
+            }
+        }
 
         ion-icon {
-            font-size: 1.3rem;
-            color: var(--ion-color-primary);
-        }
-    }
-
-    ion-card-content {
-        p {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            margin-bottom: 12px;
-
-            &:last-child {
-                margin-bottom: 0;
-            }
-
-            ion-icon {
-                flex-shrink: 0;
-                margin-top: 2px;
-            }
+            font-size: 1.2rem;
         }
     }
 }
@@ -56,6 +45,10 @@ ion-item-group {
             opacity: 0.5;
         }
     }
+}
+
+.custom-reminder-item {
+    --padding-bottom: 8px;
 }
 
 ion-list-header {

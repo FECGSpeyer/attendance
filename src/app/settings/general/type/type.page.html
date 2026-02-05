@@ -181,28 +181,31 @@
         </ion-header>
         <ion-content color="light">
           <!-- Info Card -->
-          <ion-card class="info-card">
-            <ion-card-header>
-              <ion-card-title>
-                <ion-icon name="information-circle-outline"></ion-icon>
-                So funktionieren Erinnerungen
-              </ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <p>
-                <ion-icon name="time-outline" color="primary"></ion-icon>
-                Erinnerungen werden <strong>stündlich zur vollen Stunde</strong> versendet.
-              </p>
-              <p>
-                <ion-icon name="calculator-outline" color="primary"></ion-icon>
-                Bei Terminen mit Minuten (z.B. 19:30) wird die <strong>laufende Stunde</strong> (19 Uhr) als Referenz genommen.
-              </p>
-              <p>
-                <ion-icon name="notifications-outline" color="primary"></ion-icon>
-                Maximal <strong>3 Erinnerungen</strong> pro Termintyp möglich.
-              </p>
-            </ion-card-content>
-          </ion-card>
+          <ion-list [inset]="true" class="info-list">
+            <ion-list-header>
+              <ion-label>So funktionieren Erinnerungen</ion-label>
+            </ion-list-header>
+            <ion-item-group>
+              <ion-item lines="none">
+                <ion-icon slot="start" name="time-outline" color="primary"></ion-icon>
+                <ion-label class="ion-text-wrap">
+                  <p>Erinnerungen werden <strong>stündlich zur vollen Stunde</strong> versendet.</p>
+                </ion-label>
+              </ion-item>
+              <ion-item lines="none">
+                <ion-icon slot="start" name="calculator-outline" color="primary"></ion-icon>
+                <ion-label class="ion-text-wrap">
+                  <p>Bei Terminen mit Minuten (z.B. 19:30) wird die <strong>laufende Stunde</strong> (19 Uhr) als Referenz genommen.</p>
+                </ion-label>
+              </ion-item>
+              <ion-item lines="none">
+                <ion-icon slot="start" name="notifications-outline" color="primary"></ion-icon>
+                <ion-label class="ion-text-wrap">
+                  <p>Maximal <strong>3 Erinnerungen</strong> pro Termintyp möglich.</p>
+                </ion-label>
+              </ion-item>
+            </ion-item-group>
+          </ion-list>
 
           <!-- Active Reminders -->
           <ion-list [inset]="true">
@@ -265,8 +268,7 @@
                 <ion-label>Benutzerdefiniert</ion-label>
               </ion-list-header>
               <ion-item-group>
-                <ion-item>
-                  <ion-icon slot="start" name="create-outline" color="primary"></ion-icon>
+                <ion-item lines="none" class="custom-reminder-item">
                   <ion-input
                     type="number"
                     label="Stunden vor Termin"
@@ -274,19 +276,20 @@
                     min="0"
                     max="168"
                     [(ngModel)]="customReminderHours"
-                    placeholder="z.B. 12 für 12 Stunden vorher">
+                    placeholder="z.B. 12 für 12 Stunden vorher"
+                    helperText="Gültige Werte: 0-168 Stunden (max. 1 Woche vorher)">
                   </ion-input>
+                </ion-item>
+                <ion-item lines="none">
                   <ion-button
-                    slot="end"
+                    expand="block"
                     fill="solid"
                     color="primary"
                     [disabled]="!customReminderHours && customReminderHours !== 0"
                     (click)="addReminder(customReminderHours); customReminderHours = null">
-                    <ion-icon slot="icon-only" name="add"></ion-icon>
+                    <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                    Erinnerung hinzufügen
                   </ion-button>
-                </ion-item>
-                <ion-item lines="none">
-                  <ion-note>Gültige Werte: 0-168 Stunden (max. 1 Woche vorher)</ion-note>
                 </ion-item>
               </ion-item-group>
             </ion-list>
