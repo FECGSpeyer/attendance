@@ -2,7 +2,9 @@
   <ion-toolbar color="light">
     @if (!isNew) {
       <ion-buttons slot="start">
-        <ion-back-button text="" defaultHref="tabs/settings/general/types"></ion-back-button>
+        <ion-button (click)="navigateBack()">
+          <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+        </ion-button>
       </ion-buttons>
     }
     <ion-buttons slot="end">

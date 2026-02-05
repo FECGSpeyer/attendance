@@ -1,6 +1,6 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, IonItemSliding, IonModal, IonPopover, IonRouterOutlet, ItemReorderEventDetail, ModalController } from '@ionic/angular';
+import { AlertController, IonItemSliding, IonModal, IonPopover, IonRouterOutlet, ItemReorderEventDetail, ModalController, NavController } from '@ionic/angular';
 import dayjs from 'dayjs';
 import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
@@ -36,6 +36,16 @@ export class TypePage implements OnInit {
   public customReminderHours: number | null = null;
   @ViewChild('remindersModal') remindersModal: IonModal;
 
+  private originalType: string = '';  // JSON string of original type for comparison
+
+  // Browser/PWA: Warn before closing tab with unsaved changes
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent) {
+    if (this.hasUnsavedChanges()) {
+      $event.returnValue = true;
+    }
+  }
+
   constructor(
     public modalController: ModalController,
     public db: DbService,
@@ -43,6 +53,7 @@ export class TypePage implements OnInit {
     public route: ActivatedRoute,
     private router: Router,
     private alertController: AlertController,
+    private navController: NavController,
   ) { }
 
   async ngOnInit() {
@@ -88,6 +99,68 @@ export class TypePage implements OnInit {
     }
 
     this.additionalFieldFilter = this.db.tenant().additional_fields.find(field => field.id === this.type.additional_fields_filter?.key) ? this.type.additional_fields_filter?.key ?? null : null;
+
+    // Store original state for change detection
+    this.originalType = JSON.stringify(this.type);
+  }
+
+  /**
+   * Check if there are unsaved changes
+   */
+  hasUnsavedChanges(): boolean {
+    if (!this.type || this.isNew) return false;
+    return JSON.stringify(this.type) !== this.originalType;
+  }
+
+  /**
+   * Mark current state as saved (update original)
+   */
+  private markAsSaved(): void {
+    this.originalType = JSON.stringify(this.type);
+  }
+
+  /**
+   * Navigate back with unsaved changes check
+   */
+  async navigateBack(): Promise<void> {
+    if (this.hasUnsavedChanges()) {
+      const shouldLeave = await this.confirmUnsavedChanges();
+      if (!shouldLeave) return;
+    }
+    this.navController.back();
+  }
+
+  /**
+   * Show confirmation dialog for unsaved changes
+   * Returns true if user wants to leave/discard, false to stay
+   */
+  private async confirmUnsavedChanges(): Promise<boolean> {
+    return new Promise(async (resolve) => {
+      const alert = await this.alertController.create({
+        header: 'Ungespeicherte Änderungen',
+        message: 'Du hast ungespeicherte Änderungen. Möchtest du sie speichern bevor du die Seite verlässt?',
+        buttons: [
+          {
+            text: 'Abbrechen',
+            role: 'cancel',
+            handler: () => resolve(false)
+          },
+          {
+            text: 'Verwerfen',
+            role: 'destructive',
+            handler: () => resolve(true)
+          },
+          {
+            text: 'Speichern',
+            handler: async () => {
+              await this.save();
+              resolve(true);
+            }
+          }
+        ]
+      });
+      await alert.present();
+    });
   }
 
   async save() {
@@ -97,6 +170,7 @@ export class TypePage implements OnInit {
 
     try {
       await this.db.updateAttendanceType(this.type.id, this.type);
+      this.markAsSaved();
       Utils.showToast("Anwesenheitstyp erfolgreich aktualisiert", "success");
     } catch (error) {
       Utils.showToast("Fehler beim Aktualisieren des Anwesenheitstyps", "danger");
@@ -154,7 +228,29 @@ export class TypePage implements OnInit {
   }
 
   async dismiss() {
-    await this.modalController.dismiss();
+    // For new types in modal, check if any meaningful data was entered
+    if (this.isNew && this.type.name?.trim()) {
+      const alert = await this.alertController.create({
+        header: 'Änderungen verwerfen?',
+        message: 'Du hast bereits Daten eingegeben. Möchtest du diese wirklich verwerfen?',
+        buttons: [
+          {
+            text: 'Abbrechen',
+            role: 'cancel'
+          },
+          {
+            text: 'Verwerfen',
+            role: 'destructive',
+            handler: async () => {
+              await this.modalController.dismiss();
+            }
+          }
+        ]
+      });
+      await alert.present();
+    } else {
+      await this.modalController.dismiss();
+    }
   }
 
   getAttendanceStatusDescription(status: AttendanceStatus): string {
