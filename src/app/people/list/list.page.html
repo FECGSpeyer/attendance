@@ -123,7 +123,7 @@
     </ion-popover>
   </div>
 
-  @if (players.length) {
+  @if (players.length && playersFiltered?.length) {
     <ion-list style="padding-top: 0;" class="marginBottom">
       <ion-list-header>
         <ion-label>Personen ({{ playersFiltered?.length }})</ion-label>
@@ -222,23 +222,24 @@
           }
         </ion-item-sliding>
       }
-    </ion-list>  } @else if (loaded && players?.length && !playersFiltered?.length && (filterOpt !== 'all' || searchTerm)) {
+    </ion-list>
+  } @else if (loaded && players?.length && !playersFiltered?.length && (filterOpt !== 'all' || searchTerm)) {
     <div class="noDataContainer">
       <div class="noPersons">
         <ion-icon name="filter-outline" size="large"></ion-icon>
         <ion-label>Keine Personen gefunden</ion-label>
         <p class="ion-text-center" style="color: var(--ion-color-medium); margin: 8px 16px;">Die aktiven Filter ergeben keine Treffer.</p>
         <ion-button size="small" fill="outline" (click)="clearFilters()">
-          <ion-icon slot="start" name="close-outline"></ion-icon>
           Filter zurücksetzen
         </ion-button>
       </div>
-    </div>  } @else if (loaded && !players?.length && !playersFiltered?.length) {
+    </div>
+  } @else if (loaded && !players?.length && !playersFiltered?.length) {
     <div class="noDataContainer">
       <div class="noPersons">
         <ion-icon name="people-outline" size="large"></ion-icon>
         <ion-label>Bisher wurden noch keine Personen angelegt</ion-label>
-        <ion-button size="small" (click)="openModal()">Person hinzufügen</ion-button>
+        <ion-button size="small" fill="outline" (click)="openModal()">Person hinzufügen</ion-button>
       </div>
     </div>
   } @else {
