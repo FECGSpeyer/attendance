@@ -150,88 +150,157 @@
     [(ngModel)]="type.notification">Terminerinnerung</ion-toggle>
   </ion-item>
 
-  <!-- Reminder Configuration Section -->
+  <!-- Reminder Configuration Button -->
   @if (type.notification) {
-    <ion-item-group>
-      <ion-item-divider>
-        <ion-label>Erinnerungen konfigurieren</ion-label>
-      </ion-item-divider>
-      
-      <ion-card>
-        <ion-card-header>
-          <ion-card-subtitle>
-            Maximal 3 Erinnerungen möglich (ganze Stunden)
-          </ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-text color="medium">
-            <p><strong>Hinweis zur Logik:</strong></p>
-            <p>Erinnerungen werden stündlich zur vollen Stunde versendet. Beginnt ein Termin z.B. um 19:30 Uhr, wird die 19. Stunde als Referenz genommen.</p>
-          </ion-text>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Active Reminders -->
+    <ion-item button detail="true" id="reminders-modal-trigger">
+      <ion-label>
+        <h2>Erinnerungen konfigurieren</h2>
+        @if (type.reminders && type.reminders.length > 0) {
+          <p>{{ type.reminders.length }} Erinnerung(en) aktiv</p>
+        } @else {
+          <p>Keine Erinnerungen konfiguriert</p>
+        }
+      </ion-label>
       @if (type.reminders && type.reminders.length > 0) {
-        <ion-item-group>
-          <ion-list-header>
-            <ion-label>Aktive Erinnerungen</ion-label>
-          </ion-list-header>
-          @for (reminder of type.reminders; track $index) {
-            <ion-item>
-              <ion-label>{{ getFormattedReminder(reminder) }}</ion-label>
-              <ion-button 
-                slot="end" 
-                color="danger" 
-                fill="clear"
-                (click)="removeReminder($index)">
-                <ion-icon name="close-circle"></ion-icon>
+        <ion-badge slot="end" color="primary">{{ type.reminders.length }}/3</ion-badge>
+      }
+    </ion-item>
+
+    <!-- Reminders Configuration Modal -->
+    <ion-modal trigger="reminders-modal-trigger" [breakpoints]="[0, 0.9]" [initialBreakpoint]="0.9">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Erinnerungen</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="closeRemindersModal()">
+                <ion-icon slot="icon-only" name="checkmark"></ion-icon>
               </ion-button>
-            </ion-item>
-          }
-        </ion-item-group>
-      }
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content color="light">
+          <!-- Info Card -->
+          <ion-card class="info-card">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="information-circle-outline"></ion-icon>
+                So funktionieren Erinnerungen
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p>
+                <ion-icon name="time-outline" color="primary"></ion-icon>
+                Erinnerungen werden <strong>stündlich zur vollen Stunde</strong> versendet.
+              </p>
+              <p>
+                <ion-icon name="calculator-outline" color="primary"></ion-icon>
+                Bei Terminen mit Minuten (z.B. 19:30) wird die <strong>laufende Stunde</strong> (19 Uhr) als Referenz genommen.
+              </p>
+              <p>
+                <ion-icon name="notifications-outline" color="primary"></ion-icon>
+                Maximal <strong>3 Erinnerungen</strong> pro Termintyp möglich.
+              </p>
+            </ion-card-content>
+          </ion-card>
 
-      <!-- Add Reminder Options -->
-      @if (canAddReminder()) {
-        <ion-item-group>
-          <ion-list-header>
-            <ion-label>Erinnerung hinzufügen</ion-label>
-          </ion-list-header>
-          
-          <!-- Predefined Options -->
-          <ion-item-divider color="light">
-            <ion-label>Vordefinierte Optionen</ion-label>
-          </ion-item-divider>
-          @for (predefined of predefinedReminders; track predefined) {
-            <ion-item button (click)="addReminder(predefined)">
-              <ion-label>{{ getFormattedReminder(predefined) }}</ion-label>
-              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-            </ion-item>
-          }
+          <!-- Active Reminders -->
+          <ion-list [inset]="true">
+            <ion-list-header>
+              <ion-label>Aktive Erinnerungen</ion-label>
+              <ion-badge color="medium">{{ type.reminders?.length || 0 }}/3</ion-badge>
+            </ion-list-header>
+            <ion-item-group>
+              @if (type.reminders && type.reminders.length > 0) {
+                @for (reminder of type.reminders; track $index) {
+                  <ion-item-sliding #reminderSlider>
+                    <ion-item>
+                      <ion-icon slot="start" name="alarm-outline" color="primary"></ion-icon>
+                      <ion-label>
+                        <h2>{{ getFormattedReminder(reminder) }}</h2>
+                        <p>{{ reminder }} Stunde(n) vor Terminbeginn</p>
+                      </ion-label>
+                    </ion-item>
+                    <ion-item-options side="end">
+                      <ion-item-option color="danger" (click)="removeReminder($index); reminderSlider.close()">
+                        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                      </ion-item-option>
+                    </ion-item-options>
+                  </ion-item-sliding>
+                }
+              } @else {
+                <ion-item lines="none">
+                  <ion-label class="ion-text-center" color="medium">
+                    <ion-icon name="notifications-off-outline" style="font-size: 2rem;"></ion-icon>
+                    <p>Noch keine Erinnerungen konfiguriert</p>
+                  </ion-label>
+                </ion-item>
+              }
+            </ion-item-group>
+          </ion-list>
 
-          <!-- Custom Input -->
-          <ion-item-divider color="light">
-            <ion-label>Benutzerdefiniert</ion-label>
-          </ion-item-divider>
-          <ion-item>
-            <ion-label position="stacked">Stunden vor Termin (0-168)</ion-label>
-            <ion-input 
-              type="number" 
-              min="0" 
-              max="168"
-              [(ngModel)]="customReminderHours"
-              placeholder="z.B. 12"></ion-input>
-            <ion-button 
-              slot="end"
-              fill="clear"
-              (click)="addReminder(customReminderHours); customReminderHours = null">
-              <ion-icon name="add-circle-outline"></ion-icon>
-            </ion-button>
-          </ion-item>
-        </ion-item-group>
-      }
-    </ion-item-group>
+          <!-- Add Reminder Section -->
+          @if (canAddReminder()) {
+            <ion-list [inset]="true">
+              <ion-list-header>
+                <ion-label>Schnellauswahl</ion-label>
+              </ion-list-header>
+              <ion-item-group>
+                <div class="reminder-chips">
+                  @for (predefined of predefinedReminders; track predefined) {
+                    <ion-chip
+                      [color]="type.reminders?.includes(predefined) ? 'medium' : 'primary'"
+                      [disabled]="type.reminders?.includes(predefined)"
+                      (click)="addReminder(predefined)">
+                      <ion-icon name="add-circle-outline"></ion-icon>
+                      <ion-label>{{ getFormattedReminder(predefined) }}</ion-label>
+                    </ion-chip>
+                  }
+                </div>
+              </ion-item-group>
+            </ion-list>
+
+            <ion-list [inset]="true">
+              <ion-list-header>
+                <ion-label>Benutzerdefiniert</ion-label>
+              </ion-list-header>
+              <ion-item-group>
+                <ion-item>
+                  <ion-icon slot="start" name="create-outline" color="primary"></ion-icon>
+                  <ion-input
+                    type="number"
+                    label="Stunden vor Termin"
+                    labelPlacement="stacked"
+                    min="0"
+                    max="168"
+                    [(ngModel)]="customReminderHours"
+                    placeholder="z.B. 12 für 12 Stunden vorher">
+                  </ion-input>
+                  <ion-button
+                    slot="end"
+                    fill="solid"
+                    color="primary"
+                    [disabled]="!customReminderHours && customReminderHours !== 0"
+                    (click)="addReminder(customReminderHours); customReminderHours = null">
+                    <ion-icon slot="icon-only" name="add"></ion-icon>
+                  </ion-button>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-note>Gültige Werte: 0-168 Stunden (max. 1 Woche vorher)</ion-note>
+                </ion-item>
+              </ion-item-group>
+            </ion-list>
+          } @else {
+            <ion-card color="warning">
+              <ion-card-content>
+                <ion-icon name="warning-outline"></ion-icon>
+                Maximum von 3 Erinnerungen erreicht. Entferne eine bestehende Erinnerung, um eine neue hinzuzufügen.
+              </ion-card-content>
+            </ion-card>
+          }
+        </ion-content>
+      </ng-template>
+    </ion-modal>
   }
 
   <ion-item id="color-btn" button detail="false">

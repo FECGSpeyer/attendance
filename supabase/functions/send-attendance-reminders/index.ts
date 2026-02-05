@@ -57,7 +57,7 @@ function getStartHour(startTimeStr: string): number {
     const [hourStr, minuteStr] = startTimeStr.split(':');
     const hour = parseInt(hourStr, 10);
     const minute = parseInt(minuteStr, 10);
-    
+
     // If any minutes are set, use ceiling; otherwise use the hour as-is
     // But as per requirement: "take the running hour"
     // 19:30 -> running hour is 19, 19:00 -> running hour is 19
@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
     // 2. For each attendance type, find relevant attendances
     for (const attType of attendanceTypes) {
       const reminders: number[] = attType.reminders || [];
-      
+
       if (reminders.length === 0) continue;
 
       // Fetch attendances of this type that are future events
@@ -137,11 +137,11 @@ Deno.serve(async (req) => {
       // 3. For each attendance, check if it matches a reminder time
       for (const attendance of attendances) {
         const startHour = getStartHour(attendance.start_time);
-        
+
         // Calculate time until attendance start (in hours)
         // Parse the start_time to get the full date/time
         let attendanceStartDate = new Date(attendance.start_time);
-        
+
         // If start_time is only time format (HH:mm), combine with date
         if (!attendance.start_time.includes('T') && !attendance.start_time.includes(' ')) {
           const attendanceDate = new Date(attendance.date);
@@ -150,7 +150,7 @@ Deno.serve(async (req) => {
         }
 
         const hoursUntilStart = Math.ceil((attendanceStartDate.getTime() - now.getTime()) / (1000 * 60 * 60));
-        
+
         // Check if this attendance matches any configured reminder
         if (reminders.includes(hoursUntilStart)) {
           console.log(`Match found: Attendance ${attendance.id} (type: ${attType.name}) in ${hoursUntilStart} hours`);
@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
 
           for (const notifConfig of notificationConfigs) {
             const enabledTenants = notifConfig.enabled_tenants || [];
-            
+
             // Check if this user has reminders enabled for this tenant
             if (enabledTenants.length > 0 && !enabledTenants.includes(attType.tenant_id)) {
               continue;

@@ -1,6 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, IonItemSliding, IonPopover, IonRouterOutlet, ItemReorderEventDetail, ModalController } from '@ionic/angular';
+import { AlertController, IonItemSliding, IonModal, IonPopover, IonRouterOutlet, ItemReorderEventDetail, ModalController } from '@ionic/angular';
 import dayjs from 'dayjs';
 import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
@@ -34,6 +34,7 @@ export class TypePage implements OnInit {
   public colors: string[] = ['primary', 'secondary', 'tertiary', 'success', 'warning', 'danger', 'rosa', 'mint', 'orange'];
   public additionalFieldFilter: string = null;
   public customReminderHours: number | null = null;
+  @ViewChild('remindersModal') remindersModal: IonModal;
 
   constructor(
     public modalController: ModalController,
@@ -306,6 +307,16 @@ export class TypePage implements OnInit {
   readonly predefinedReminders = [1, 24, 48, 72];
 
   /**
+   * Close the reminders modal
+   */
+  async closeRemindersModal() {
+    const modal = await this.modalController.getTop();
+    if (modal) {
+      await modal.dismiss();
+    }
+  }
+
+  /**
    * Check if max reminders (3) have been reached
    */
   canAddReminder(): boolean {
@@ -317,7 +328,7 @@ export class TypePage implements OnInit {
    */
   addReminder(hours: string | number) {
     const parsed = parseInt(String(hours), 10);
-    
+
     if (isNaN(parsed) || parsed < 0) {
       Utils.showToast("Bitte geben Sie eine positive Ganzzahl ein", "danger");
       return;
