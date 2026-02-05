@@ -27,6 +27,7 @@ export class NotificationService {
         updates: true,
         registrations: true,
         criticals: true,
+        reminders: true,
       };
 
       await supabase
@@ -131,5 +132,38 @@ export class NotificationService {
     } else {
       Utils.showToast("Fehler beim Senden der Nachricht, versuche es später erneut!", "danger");
     }
+  }
+
+  /**
+   * Send a reminder notification via Telegram for an attendance
+   * @param chatId Telegram chat ID
+   * @param attendanceTypeName Name of the attendance type
+   * @param attendanceDate Formatted date string (e.g., "05.02.2026")
+   * @param attendanceTime Formatted time string (e.g., "19:30")
+   * @param reminderHoursAhead Hours before the attendance
+   */
+  async sendReminderNotification(
+    chatId: string,
+    attendanceTypeName: string,
+    attendanceDate: string,
+    attendanceTime: string,
+    reminderHoursAhead: number
+  ): Promise<void> {
+    const reminderText = reminderHoursAhead === 0 
+      ? 'jetzt'
+      : reminderHoursAhead === 1
+      ? 'in 1 Stunde'
+      : reminderHoursAhead < 24
+      ? `in ${reminderHoursAhead} Stunden`
+      : `in ${Math.floor(reminderHoursAhead / 24)} Tag(en)`;
+
+    const message = `⏰ *Terminerinnerung*\n\n${reminderText}:\n\n📋 ${attendanceTypeName}\n📅 ${attendanceDate}\n🕐 ${attendanceTime}`;
+
+    const telegramToken = (await supabase.functions.invoke("get-env", {
+      body: { key: "TELEGRAM_BOT_TOKEN" },
+    })).data?.value || Deno.env.get('TELEGRAM_BOT_TOKEN');
+
+    // This will be called from Edge Function, so we'll use a direct approach
+    // The actual sending happens in the edge function
   }
 }

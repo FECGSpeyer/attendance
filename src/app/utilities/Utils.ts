@@ -749,6 +749,7 @@ export class Utils {
         manage_songs: false,
         relevant_groups: [],
         tenant_id: tenantId,
+        reminders: [],
       }
     ];
 
@@ -765,6 +766,7 @@ export class Utils {
         manage_songs: true,
         relevant_groups: [],
         tenant_id: tenantId,
+        reminders: [],
       });
     }
 
@@ -780,6 +782,7 @@ export class Utils {
       manage_songs: false,
       relevant_groups: [],
       tenant_id: tenantId,
+      reminders: [],
     });
 
     return attendanceTypes;

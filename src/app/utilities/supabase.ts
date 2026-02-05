@@ -124,6 +124,7 @@ export type Database = {
           name: string | null
           notification: boolean | null
           relevant_groups: number[] | null
+          reminders: number[] | null
           start_time: string | null
           tenant_id: number | null
           visible: boolean
@@ -147,6 +148,7 @@ export type Database = {
           name?: string | null
           notification?: boolean | null
           relevant_groups?: number[] | null
+          reminders?: number[] | null
           start_time?: string | null
           tenant_id?: number | null
           visible?: boolean
@@ -170,6 +172,7 @@ export type Database = {
           name?: string | null
           notification?: boolean | null
           relevant_groups?: number[] | null
+          reminders?: number[] | null
           start_time?: string | null
           tenant_id?: number | null
           visible?: boolean
@@ -500,6 +503,7 @@ export type Database = {
           enabled_tenants: number[] | null
           id: string
           registrations: boolean | null
+          reminders: boolean | null
           signins: boolean
           signouts: boolean
           telegram_chat_id: string | null
@@ -513,6 +517,7 @@ export type Database = {
           enabled_tenants?: number[] | null
           id: string
           registrations?: boolean | null
+          reminders?: boolean | null
           signins?: boolean
           signouts?: boolean
           telegram_chat_id?: string | null
@@ -526,6 +531,7 @@ export type Database = {
           enabled_tenants?: number[] | null
           id?: string
           registrations?: boolean | null
+          reminders?: boolean | null
           signins?: boolean
           signouts?: boolean
           telegram_chat_id?: string | null

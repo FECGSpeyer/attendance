@@ -83,6 +83,7 @@ export interface NotificationConfig {
     updates: boolean;
     registrations: boolean;
     criticals: boolean;
+    reminders: boolean;
 }
 
 export interface Viewer {
@@ -378,6 +379,7 @@ export interface AttendanceType {
     all_day?: boolean;
     duration_days?: number;
     notification?: boolean;
+    reminders: number[];
     additional_fields_filter?: {
         key: string;
         option: string;

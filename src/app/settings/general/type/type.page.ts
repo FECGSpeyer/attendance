@@ -33,6 +33,7 @@ export class TypePage implements OnInit {
   public end: string;
   public colors: string[] = ['primary', 'secondary', 'tertiary', 'success', 'warning', 'danger', 'rosa', 'mint', 'orange'];
   public additionalFieldFilter: string = null;
+  public customReminderHours: number | null = null;
 
   constructor(
     public modalController: ModalController,
@@ -68,6 +69,7 @@ export class TypePage implements OnInit {
         hide_name: false,
         include_in_average: true,
         additional_fields_filter: null,
+        reminders: [],
       };
       this.type.default_plan = { ...this.defaultPlan };
     } else {
@@ -295,6 +297,73 @@ export class TypePage implements OnInit {
       };
     } else {
       this.type.additional_fields_filter = null;
+    }
+  }
+
+  /**
+   * Predefined reminder options in hours
+   */
+  readonly predefinedReminders = [1, 24, 48, 72];
+
+  /**
+   * Check if max reminders (3) have been reached
+   */
+  canAddReminder(): boolean {
+    return (this.type.reminders?.length || 0) < 3;
+  }
+
+  /**
+   * Add a new reminder with validation
+   */
+  addReminder(hours: string | number) {
+    const parsed = parseInt(String(hours), 10);
+    
+    if (isNaN(parsed) || parsed < 0) {
+      Utils.showToast("Bitte geben Sie eine positive Ganzzahl ein", "danger");
+      return;
+    }
+
+    if (!this.type.reminders) {
+      this.type.reminders = [];
+    }
+
+    if (this.type.reminders.includes(parsed)) {
+      Utils.showToast("Diese Erinnerung existiert bereits", "warning");
+      return;
+    }
+
+    if (this.type.reminders.length >= 3) {
+      Utils.showToast("Maximal 3 Erinnerungen pro Typ möglich", "danger");
+      return;
+    }
+
+    this.type.reminders.push(parsed);
+    this.type.reminders.sort((a, b) => a - b);
+  }
+
+  /**
+   * Remove a reminder by index
+   */
+  removeReminder(index: number) {
+    if (this.type.reminders) {
+      this.type.reminders.splice(index, 1);
+    }
+  }
+
+  /**
+   * Get formatted reminder display text
+   */
+  getFormattedReminder(hours: number): string {
+    if (hours === 0) {
+      return 'Zur gleichen Zeit';
+    } else if (hours === 1) {
+      return '1 Stunde vorher';
+    } else if (hours < 24) {
+      return `${hours} Stunden vorher`;
+    } else if (hours === 24) {
+      return '1 Tag vorher';
+    } else {
+      return `${Math.floor(hours / 24)} Tage vorher`;
     }
   }
 }
