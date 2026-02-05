@@ -222,8 +222,18 @@
           }
         </ion-item-sliding>
       }
-    </ion-list>
-  } @else if (loaded && !players?.length && !playersFiltered?.length) {
+    </ion-list>  } @else if (loaded && players?.length && !playersFiltered?.length && (filterOpt !== 'all' || searchTerm)) {
+    <div class="noDataContainer">
+      <div class="noPersons">
+        <ion-icon name="filter-outline" size="large"></ion-icon>
+        <ion-label>Keine Personen gefunden</ion-label>
+        <p class="ion-text-center" style="color: var(--ion-color-medium); margin: 8px 16px;">Die aktiven Filter ergeben keine Treffer.</p>
+        <ion-button size="small" fill="outline" (click)="clearFilters()">
+          <ion-icon slot="start" name="close-outline"></ion-icon>
+          Filter zurücksetzen
+        </ion-button>
+      </div>
+    </div>  } @else if (loaded && !players?.length && !playersFiltered?.length) {
     <div class="noDataContainer">
       <div class="noPersons">
         <ion-icon name="people-outline" size="large"></ion-icon>

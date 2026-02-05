@@ -272,6 +272,14 @@ export class ListPage implements OnInit, OnDestroy {
     this.prevFilterValue = this.filterOpt;
   }
 
+  async clearFilters() {
+    this.searchTerm = '';
+    this.filterOpt = 'all';
+    await this.storage.set(`filterOpt${this.db.tenant().id}`, 'all');
+    await this.storage.set(`filterOptAdd${this.db.tenant().id}`, '');
+    this.initializeItems();
+  }
+
   onFilterDismissed() {
     if (
       this.prevFilterValue === this.filterOpt &&
