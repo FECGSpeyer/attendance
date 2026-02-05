@@ -26,7 +26,7 @@ interface Attendance {
   date: string;
   start_time: string;
   type_id: string;
-  tenant_id: number;
+  tenantId: number;
 }
 
 interface PersonAttendance {
@@ -116,12 +116,15 @@ Deno.serve(async (req) => {
 
       if (reminders.length === 0) continue;
 
-      // Fetch attendances of this type that are future events
+      // Fetch attendances of this type that are today or in the future
+      // Note: start_time is "HH:mm" format, date is the actual date
+      const todayStr = now.toISOString().split('T')[0]; // "YYYY-MM-DD"
+
       const { data: attendances, error: attError } = await supabase
         .from('attendance')
-        .select('id, date, start_time, type_id, tenant_id')
+        .select('id, date, start_time, type_id, tenantId')
         .eq('type_id', attType.id)
-        .gt('start_time', now.toISOString())
+        .gte('date', todayStr)
         .limit(100);
 
       if (attError) {
@@ -136,39 +139,44 @@ Deno.serve(async (req) => {
 
       // 3. For each attendance, check if it matches a reminder time
       for (const attendance of attendances) {
-        const startHour = getStartHour(attendance.start_time);
+        // Combine date and start_time (HH:mm) to get full datetime
+        const [hour, minute] = (attendance.start_time || '00:00').split(':').map(Number);
+        const attendanceDate = new Date(attendance.date);
+        const attendanceStartDate = new Date(
+          attendanceDate.getFullYear(),
+          attendanceDate.getMonth(),
+          attendanceDate.getDate(),
+          hour,
+          minute
+        );
 
-        // Calculate time until attendance start (in hours)
-        // Parse the start_time to get the full date/time
-        let attendanceStartDate = new Date(attendance.start_time);
-
-        // If start_time is only time format (HH:mm), combine with date
-        if (!attendance.start_time.includes('T') && !attendance.start_time.includes(' ')) {
-          const attendanceDate = new Date(attendance.date);
-          const [hour, minute] = attendance.start_time.split(':').map(Number);
-          attendanceStartDate = new Date(attendanceDate.getFullYear(), attendanceDate.getMonth(), attendanceDate.getDate(), hour, minute);
+        // Skip if the attendance is in the past
+        if (attendanceStartDate.getTime() <= now.getTime()) {
+          continue;
         }
 
         const hoursUntilStart = Math.ceil((attendanceStartDate.getTime() - now.getTime()) / (1000 * 60 * 60));
+
+        console.log(hoursUntilStart, attType.reminders);
 
         // Check if this attendance matches any configured reminder
         if (reminders.includes(hoursUntilStart)) {
           console.log(`Match found: Attendance ${attendance.id} (type: ${attType.name}) in ${hoursUntilStart} hours`);
 
-          // 4. Fetch all person_attendance records for this attendance with confirmed status
+          // 4. Fetch all person_attendances records for this attendance with confirmed status
           const { data: personAttendances, error: paError } = await supabase
-            .from('person_attendance')
+            .from('person_attendances')
             .select(`
               id,
               person_id,
               status,
-              person:people(firstName, lastName)
+              person:player(firstName, lastName)
             `)
             .eq('attendance_id', attendance.id)
             .not('status', 'is', null);
 
           if (paError) {
-            console.error(`Error fetching person_attendance for ${attendance.id}:`, paError);
+            console.error(`Error fetching person_attendances for ${attendance.id}:`, paError);
             continue;
           }
 
@@ -195,7 +203,7 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // 6. Send reminders to all eligible users who are in person_attendance
+          // 6. Send reminders to all eligible users who are in person_attendances
           const attendeePersonIds = new Set(
             personAttendances.map((pa: any) => pa.person_id)
           );

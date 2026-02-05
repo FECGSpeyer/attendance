@@ -145,31 +145,36 @@
         helperText="Wenn diese Option aktiviert ist, wird dieser Typ beim Anwesenheitsdurchschnitt berücksichtigt."
       [(ngModel)]="type.include_in_average">Für Ø berücksichtigen</ion-toggle>
     </ion-item>
+      </ion-item-group>
+    </ion-list>
 
-  <ion-item>
-    <ion-toggle label="Terminerinnerung"
-      helperText="Wenn diese Option aktiviert ist, Erinnerungen angelegt wurden und die Benachrichtigungen aktiviert sind, erhalten Personen eine Terminerinnerung."
-    [(ngModel)]="type.notification">Terminerinnerung</ion-toggle>
-  </ion-item>
+    <ion-list [inset]="true">
+      <ion-list-header><ion-label>Terminerinnerungen</ion-label></ion-list-header>
+      <ion-item-group>
+        <ion-item>
+          <ion-toggle label="Terminerinnerung"
+            helperText="Wenn diese Option aktiviert ist, Erinnerungen angelegt wurden und die Benachrichtigungen aktiviert sind, erhalten Personen eine Terminerinnerung."
+          [(ngModel)]="type.notification">Terminerinnerung</ion-toggle>
+        </ion-item>
 
-  <!-- Reminder Configuration Button -->
-  @if (type.notification) {
-    <ion-item button detail="true" id="reminders-modal-trigger">
-      <ion-label>
-        <h2>Erinnerungen konfigurieren</h2>
-        @if (type.reminders && type.reminders.length > 0) {
-          <p>{{ type.reminders.length }} Erinnerung(en) aktiv</p>
-        } @else {
-          <p>Keine Erinnerungen konfiguriert</p>
-        }
-      </ion-label>
-      @if (type.reminders && type.reminders.length > 0) {
-        <ion-badge slot="end" color="primary">{{ type.reminders.length }}/3</ion-badge>
-      }
-    </ion-item>
+        <!-- Reminder Configuration Button -->
+        @if (type.notification) {
+          <ion-item button detail="true" id="reminders-modal-trigger">
+            <ion-label>
+              <h2>Erinnerungen konfigurieren</h2>
+              @if (type.reminders && type.reminders.length > 0) {
+                <p>{{ type.reminders.length }} Erinnerung(en) aktiv</p>
+              } @else {
+                <p>Keine Erinnerungen konfiguriert</p>
+              }
+            </ion-label>
+            @if (type.reminders && type.reminders.length > 0) {
+              <ion-badge slot="end" color="primary">{{ type.reminders.length }}/3</ion-badge>
+            }
+          </ion-item>
 
     <!-- Reminders Configuration Modal -->
-    <ion-modal trigger="reminders-modal-trigger" [breakpoints]="[0, 0.9]" [initialBreakpoint]="0.9">
+    <ion-modal trigger="reminders-modal-trigger" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
       <ng-template>
         <ion-header>
           <ion-toolbar>
@@ -228,7 +233,7 @@
                     </ion-item>
                     <ion-item-options side="end">
                       <ion-item-option color="danger" (click)="removeReminder($index); reminderSlider.close()">
-                        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                        <ion-icon size="small" slot="icon-only" name="trash-outline"></ion-icon>
                       </ion-item-option>
                     </ion-item-options>
                   </ion-item-sliding>
@@ -307,12 +312,17 @@
       </ng-template>
     </ion-modal>
   }
+      </ion-item-group>
+    </ion-list>
 
-  <ion-item id="color-btn" button detail="false">
-    <ion-label>
-      <h2>Farbe</h2>
-      <h3>Die Farbe ist nur für den Kalender relevant (beim Anlegen einer Anwesenheit).</h3>
-    </ion-label>
+    <ion-list [inset]="true">
+      <ion-list-header><ion-label>Darstellung</ion-label></ion-list-header>
+      <ion-item-group>
+        <ion-item id="color-btn" button detail="false">
+          <ion-label>
+            <h2>Farbe</h2>
+            <h3>Die Farbe ist nur für den Kalender relevant (beim Anlegen einer Anwesenheit).</h3>
+          </ion-label>
     <ion-icon slot="end" name="ellipse" [color]="type.color"></ion-icon>
   </ion-item>
   <ion-popover #colorPopover trigger="color-btn" triggerAction="click">
