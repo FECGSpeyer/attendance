@@ -276,6 +276,14 @@ export class GeneralPage implements OnInit {
         registration_fields: this.registerAllowed ? this.selectedRegisterFields : [],
         critical_rules: this.criticalRules,
       });
+
+      // Evaluate critical rules for all players after saving
+      try {
+        await this.db.getSupabase().functions.invoke('evaluate-critical-rules');
+      } catch (e) {
+        console.warn('Could not trigger critical rules evaluation:', e);
+      }
+
       this.markAsSaved();
       Utils.showToast("Einstellungen gespeichert", "success");
 
