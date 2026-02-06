@@ -4,14 +4,14 @@ import { format, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, FieldType, Role } from 'src/app/utilities/constants';
-import { AttendanceType, CriticalRule, CriticalRuleOperator, CriticalRuleThresholdType, ExtraField, Organisation } from 'src/app/utilities/interfaces';
+import { AttendanceType, CriticalRule, CriticalRuleOperator, CriticalRulePeriodType, CriticalRuleThresholdType, ExtraField, Organisation } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
-    selector: 'app-general',
-    templateUrl: './general.page.html',
-    styleUrls: ['./general.page.scss'],
-    standalone: false
+  selector: 'app-general',
+  templateUrl: './general.page.html',
+  styleUrls: ['./general.page.scss'],
+  standalone: false
 })
 export class GeneralPage implements OnInit {
   public holidayStates = [
@@ -75,6 +75,7 @@ export class GeneralPage implements OnInit {
   public AttendanceStatus = AttendanceStatus;
   public CriticalRuleThresholdType = CriticalRuleThresholdType;
   public CriticalRuleOperator = CriticalRuleOperator;
+  public CriticalRulePeriodType = CriticalRulePeriodType;
 
   // Change tracking
   private originalState: string = '';
@@ -122,7 +123,13 @@ export class GeneralPage implements OnInit {
     }
     this.selectedRegisterFields = this.db.tenant().registration_fields?.length ? this.db.tenant().registration_fields : this.registerFields.filter(f => f.disabled).map(f => f.key);
     this.extraFields = [...this.db.tenant().additional_fields ?? []];
-    this.criticalRules = [...this.db.tenant().critical_rules ?? []];
+
+    // Migrate legacy rules: add period_type if missing
+    this.criticalRules = (this.db.tenant().critical_rules ?? []).map(rule => ({
+      ...rule,
+      period_type: rule.period_type ?? CriticalRulePeriodType.DAYS,
+    }));
+
     this.loadAttendanceTypes();
 
     // Store original state for change detection
@@ -216,13 +223,28 @@ export class GeneralPage implements OnInit {
   getEmptyCriticalRule(): CriticalRule {
     return {
       id: '',
+      name: '',
       attendance_type_ids: [],
       statuses: [],
       threshold_type: CriticalRuleThresholdType.COUNT,
       threshold_value: 3,
+      period_type: CriticalRulePeriodType.DAYS,
       period_days: 30,
       operator: CriticalRuleOperator.OR,
     };
+  }
+
+  getPeriodTypeName(periodType: CriticalRulePeriodType): string {
+    switch (periodType) {
+      case CriticalRulePeriodType.DAYS:
+        return 'Letzte X Tage';
+      case CriticalRulePeriodType.SEASON:
+        return 'Seit Saisonbeginn';
+      case CriticalRulePeriodType.ALL_TIME:
+        return 'Gesamte Historie';
+      default:
+        return 'Unbekannt';
+    }
   }
 
   async saveGeneralSettings() {
@@ -254,6 +276,14 @@ export class GeneralPage implements OnInit {
         registration_fields: this.registerAllowed ? this.selectedRegisterFields : [],
         critical_rules: this.criticalRules,
       });
+
+      // Evaluate critical rules for all players after saving
+      try {
+        await this.db.getSupabase().functions.invoke('evaluate-critical-rules');
+      } catch (e) {
+        console.warn('Could not trigger critical rules evaluation:', e);
+      }
+
       this.markAsSaved();
       Utils.showToast("Einstellungen gespeichert", "success");
 
@@ -546,12 +576,18 @@ export class GeneralPage implements OnInit {
       return;
     }
 
-    if (this.newCriticalRule.period_days <= 0) {
+    if (this.newCriticalRule.period_type === CriticalRulePeriodType.DAYS && (!this.newCriticalRule.period_days || this.newCriticalRule.period_days <= 0)) {
       Utils.showToast('Der Zeitraum muss größer als 0 sein.', 'danger');
       return;
     }
 
     this.newCriticalRule.id = crypto.randomUUID();
+
+    // Clean up period_days if not needed
+    if (this.newCriticalRule.period_type !== CriticalRulePeriodType.DAYS) {
+      delete this.newCriticalRule.period_days;
+    }
+
     this.criticalRules.push({ ...this.newCriticalRule });
     this.newCriticalRule = this.getEmptyCriticalRule();
     modal.dismiss();
@@ -580,10 +616,24 @@ export class GeneralPage implements OnInit {
       ? this.attendanceTypes.filter(t => rule.attendance_type_ids.includes(t.id)).map(t => t.name).join(', ')
       : 'Alle Typen';
 
-    if (rule.threshold_type === CriticalRuleThresholdType.COUNT) {
-      return `${rule.threshold_value}x ${statusNames} in ${rule.period_days} Tagen (${typeNames})`;
-    } else {
-      return `${rule.threshold_value}% ${statusNames} in ${rule.period_days} Tagen (${typeNames})`;
+    let periodText: string;
+    switch (rule.period_type) {
+      case CriticalRulePeriodType.DAYS:
+        periodText = `in ${rule.period_days} Tagen`;
+        break;
+      case CriticalRulePeriodType.SEASON:
+        periodText = 'seit Saisonbeginn';
+        break;
+      case CriticalRulePeriodType.ALL_TIME:
+        periodText = 'insgesamt';
+        break;
+      default:
+        // Fallback for legacy rules without period_type
+        periodText = rule.period_days ? `in ${rule.period_days} Tagen` : 'insgesamt';
     }
+
+    const thresholdSymbol = rule.threshold_type === CriticalRuleThresholdType.COUNT ? 'x' : '%';
+    const namePrefix = rule.name ? `${rule.name}: ` : '';
+    return `${namePrefix}${rule.threshold_value}${thresholdSymbol} ${statusNames} ${periodText} (${typeNames})`;
   }
 }

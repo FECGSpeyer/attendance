@@ -1333,6 +1333,7 @@ export class DbService {
     delete dataToUpdate.attStatus;
     delete dataToUpdate.person_attendances;
     delete dataToUpdate.percentage;
+    delete dataToUpdate.lateCount;  // Computed field, not stored in DB
 
     if (createAccount && player.email && role) {
       const appId: string = await this.registerUser(player.email, player.firstName, role);

@@ -168,7 +168,7 @@ export class ListPage implements OnInit, OnDestroy {
       this.db.attendanceTypes(),
       this.mainGroup,
       this.db.tenant().additional_fields,
-      this.db.churches()
+      this.db.churches(),
     );
     this.searchTerm = "";
     this.onViewChanged();

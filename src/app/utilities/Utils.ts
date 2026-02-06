@@ -1,7 +1,7 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import dayjs from 'dayjs';
 import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, FieldType, PlayerHistoryType, Role } from "./constants";
-import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftDefinition, ShiftPlan, Church } from "./interfaces";
+import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftPlan, Church } from "./interfaces";
 // jsPDF and xlsx are lazy-loaded for better initial bundle size
 
 export class Utils {
@@ -90,6 +90,10 @@ export class Utils {
       }
 
       let percentage = 0;
+      let lateCount = 0;
+
+      // Date for lastSolve comparison (if player has been "solved", only count after that date)
+      const lastSolveDate = player.lastSolve ? dayjs(player.lastSolve) : null;
 
       if (player.person_attendances?.length && attendanceMap.size > 0) {
         // Use pre-built maps for O(1) lookups instead of O(n) finds
@@ -103,6 +107,15 @@ export class Utils {
           return dayjs(attendance.date).isBefore(tomorrow);
         });
         percentage = Utils.getPercentage(personAttendancesTillNow) || 0;
+
+        // Count unexcused late arrivals (only after lastSolve if set)
+        lateCount = personAttendancesTillNow.filter((pa: PersonAttendance) => {
+          if (pa.status !== AttendanceStatus.Late) return false;
+          if (!lastSolveDate) return true;
+
+          const attendance = attendanceMap.get(pa.attendance_id);
+          return attendance && dayjs(attendance.date).isAfter(lastSolveDate);
+        }).length;
       }
 
       let img = player.img || DEFAULT_IMAGE;
@@ -118,6 +131,7 @@ export class Utils {
         instrumentLength: instrumentCountMap.get(player.instrument) || 0,
         isNew,
         percentage,
+        lateCount,
         groupName: instrumentNameMap.get(player.instrument) || '',
         img,
       };

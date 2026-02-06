@@ -69,6 +69,24 @@
   </ion-accordion-group>
   }
 
+  @if (!readOnly && isAdmin && lateCount >= lateThreshold) {
+    <ion-card color="warning" class="late-warning-card">
+      <ion-card-header>
+        <ion-card-title>🕐 Häufige Verspätungen</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Diese Person ist <strong>{{ lateCount }}×</strong> unentschuldigt zu spät gekommen.</p>
+        @if (lateCountExcused > 0) {
+          <p class="excused-info">Zusätzlich {{ lateCountExcused }}× entschuldigt zu spät.</p>
+        }
+        <ion-button fill="solid" size="small" color="dark" (click)="resetLateCount()">
+          <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+          Zurücksetzen (Gespräch geführt)
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  }
+
   @if (player) {
     <ion-accordion-group [value]="existingPlayer && !readOnly ? '' : 'more'">
       <ion-accordion value="more">
