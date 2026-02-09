@@ -55,6 +55,15 @@ interface NotificationConfig {
   enabled_tenants: number[] | null;
 }
 
+interface TenantUser {
+  userId: string;
+  tenantId: number;
+  role: number;
+}
+
+// Roles that should receive reminders
+const REMINDER_ROLES = [1, 5]; // ADMIN = 1, RESPONSIBLE = 5
+
 /**
  * Calculate the start hour treating partial hours as the current running hour.
  * Example: 19:30 -> hour 19, 19:00 -> hour 19
@@ -273,13 +282,33 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // 6. Get all users with notifications enabled and reminders preference
+          // 6. Get all users with role 1 (ADMIN) or 5 (RESPONSIBLE) in this tenant
+          const { data: tenantUsers, error: tuError } = await supabase
+            .from('tenant_users')
+            .select('userId, tenantId, role')
+            .eq('tenantId', attType.tenant_id)
+            .in('role', REMINDER_ROLES);
+
+          if (tuError) {
+            console.error('Error fetching tenant users:', tuError);
+            continue;
+          }
+
+          if (!tenantUsers || tenantUsers.length === 0) {
+            console.log(`No users with ADMIN/RESPONSIBLE role in tenant ${attType.tenant_id}`);
+            continue;
+          }
+
+          const eligibleUserIds = tenantUsers.map((tu: TenantUser) => tu.userId);
+
+          // 7. Get notification configs for eligible users
           const { data: notificationConfigs, error: notifError } = await supabase
             .from('notifications')
             .select('id, enabled, telegram_chat_id, reminders, enabled_tenants')
             .eq('enabled', true)
             .eq('reminders', true)
-            .not('telegram_chat_id', 'is', null);
+            .not('telegram_chat_id', 'is', null)
+            .in('id', eligibleUserIds);
 
           if (notifError) {
             console.error('Error fetching notification configs:', notifError);
@@ -287,11 +316,11 @@ Deno.serve(async (req) => {
           }
 
           if (!notificationConfigs || notificationConfigs.length === 0) {
-            console.log('No users with reminders enabled');
+            console.log('No eligible users with reminders enabled');
             continue;
           }
 
-          // 7. Send reminders to all eligible users
+          // 8. Send reminders to all eligible users
           for (const notifConfig of notificationConfigs) {
             const enabledTenants = notifConfig.enabled_tenants || [];
 

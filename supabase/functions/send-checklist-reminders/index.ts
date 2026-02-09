@@ -42,6 +42,15 @@ interface NotificationConfig {
   enabled_tenants: number[] | null;
 }
 
+interface TenantUser {
+  userId: string;
+  tenantId: number;
+  role: number;
+}
+
+// Roles that should receive checklist reminders
+const REMINDER_ROLES = [1, 5]; // ADMIN = 1, RESPONSIBLE = 5
+
 /**
  * Get the current local time in a specific timezone.
  * @param timezone - The IANA timezone string (e.g., "Europe/Berlin")
@@ -208,8 +217,27 @@ Deno.serve(async (req) => {
 
     console.log(`Found ${attendances.length} attendances with checklists`);
 
-    // 4. Get all users with checklist notifications enabled
-    const { data: notificationConfigs, error: notifError } = await supabase
+    // 4. Get all tenant_users with role ADMIN (1) or RESPONSIBLE (5) grouped by tenant
+    const { data: allTenantUsers, error: tuError } = await supabase
+      .from('tenant_users')
+      .select('userId, tenantId, role')
+      .in('role', REMINDER_ROLES);
+
+    if (tuError) {
+      console.error('Error fetching tenant users:', tuError);
+      throw tuError;
+    }
+
+    // Create a map of tenantId -> eligible userIds
+    const tenantEligibleUsers = new Map<number, string[]>();
+    for (const tu of (allTenantUsers || [])) {
+      const users = tenantEligibleUsers.get(tu.tenantId) || [];
+      users.push(tu.userId);
+      tenantEligibleUsers.set(tu.tenantId, users);
+    }
+
+    // 5. Get all users with checklist notifications enabled
+    const { data: allNotificationConfigs, error: notifError } = await supabase
       .from('notifications')
       .select('id, enabled, telegram_chat_id, checklist, enabled_tenants')
       .eq('enabled', true)
@@ -221,18 +249,18 @@ Deno.serve(async (req) => {
       throw notifError;
     }
 
-    if (!notificationConfigs || notificationConfigs.length === 0) {
+    if (!allNotificationConfigs || allNotificationConfigs.length === 0) {
       console.log('No users with checklist notifications enabled');
       return new Response(JSON.stringify({ success: true, processed: 0 }), {
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    console.log(`Found ${notificationConfigs.length} users with checklist notifications enabled`);
+    console.log(`Found ${allNotificationConfigs.length} users with checklist notifications enabled`);
 
     let totalReminders = 0;
 
-    // 5. Process each attendance
+    // 6. Process each attendance
     for (const attendance of attendances) {
       const checklist = attendance.checklist as ChecklistItem[] | null;
       if (!checklist || checklist.length === 0) continue;
@@ -254,6 +282,12 @@ Deno.serve(async (req) => {
         if (hoursUntilDue === 0 || hoursUntilDue === 1) {
           const currentLocalStr = `${currentLocalTime.year}-${String(currentLocalTime.month).padStart(2, '0')}-${String(currentLocalTime.day).padStart(2, '0')} ${String(currentLocalTime.hour).padStart(2, '0')}:${String(currentLocalTime.minute).padStart(2, '0')}`;
           console.log(`Checklist item due: "${item.text}" for attendance ${attendance.id}, hours until due: ${hoursUntilDue}, current local: ${currentLocalStr}`);
+
+          // Get eligible users for this tenant (role 1 or 5)
+          const eligibleUserIds = tenantEligibleUsers.get(attendance.tenantId) || [];
+          const notificationConfigs = allNotificationConfigs.filter(
+            (nc: NotificationConfig) => eligibleUserIds.includes(nc.id)
+          );
 
           // Send to all eligible users
           for (const notifConfig of notificationConfigs) {
@@ -338,7 +372,7 @@ function formatChecklistReminderMessage(
 ): string {
   const urgencyText = hoursUntilDue === 0
     ? '⚠️ *Jetzt fällig!*'
-    : '⏰ *In 1 Stunde fällig*';
+    : '⏰ *Demnächst fällig*';
 
   // Format attendance date
   const attDateObj = new Date(attendanceDate);
