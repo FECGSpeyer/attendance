@@ -1,6 +1,6 @@
 // supabase/functions/send-checklist-reminders/index.ts
 // Deploy: supabase functions deploy send-checklist-reminders
-// Cron-Trigger in Supabase Dashboard: 0 * * * * (every hour at :00)
+// Cron-Trigger in Supabase Dashboard: */5 * * * * (every 5 minutes)
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -81,13 +81,13 @@ function getCurrentTimeInTimezone(timezone: string): { year: number; month: numb
 }
 
 /**
- * Calculate hours until a target ISO datetime, in the tenant's local timezone.
+ * Calculate minutes until a target ISO datetime, in the tenant's local timezone.
  * @param currentLocal - Current time components in local timezone
  * @param dueDateIso - Target due date as ISO string
  * @param timezone - The IANA timezone string
- * @returns Hours until target (ceiling), or negative if target is in the past
+ * @returns Minutes until target, or negative if target is in the past
  */
-function calculateHoursUntilDueDate(
+function calculateMinutesUntilDueDate(
   currentLocal: { year: number; month: number; day: number; hour: number; minute: number },
   dueDateIso: string,
   timezone: string
@@ -120,14 +120,7 @@ function calculateHoursUntilDueDate(
   const targetDate = new Date(dueLocal.year, dueLocal.month - 1, dueLocal.day, dueLocal.hour, dueLocal.minute);
 
   const diffMs = targetDate.getTime() - currentDate.getTime();
-  const diffMinutes = diffMs / (1000 * 60);
-
-  if (diffMinutes <= 0) {
-    return Math.floor(diffMinutes / 60); // Return negative hours for past events
-  }
-
-  // Use floor to get the current running hour (6h 30m = 6 hours)
-  return Math.floor(diffMinutes / 60);
+  return Math.floor(diffMs / (1000 * 60));
 }
 
 /**
@@ -274,14 +267,19 @@ Deno.serve(async (req) => {
         // Skip completed items or items without due date
         if (item.completed || !item.dueDate) continue;
 
-        // Calculate hours until due
-        const hoursUntilDue = calculateHoursUntilDueDate(currentLocalTime, item.dueDate, timezone);
+        // Calculate minutes until due
+        const minutesUntilDue = calculateMinutesUntilDueDate(currentLocalTime, item.dueDate, timezone);
 
-        // Send reminder when item is due within the next hour (hoursUntilDue === 1)
-        // or when it just became due (hoursUntilDue === 0)
-        if (hoursUntilDue === 0 || hoursUntilDue === 1) {
+        // Send reminder when item is due within 0-5 minutes (just due)
+        // or within 60-65 minutes (1 hour before)
+        // This ensures we only send once per reminder window with 5-minute cron intervals
+        const isJustDue = minutesUntilDue >= 0 && minutesUntilDue < 5;
+        const isOneHourBefore = minutesUntilDue >= 60 && minutesUntilDue < 65;
+
+        if (isJustDue || isOneHourBefore) {
+          const hoursUntilDue = isJustDue ? 0 : 1;
           const currentLocalStr = `${currentLocalTime.year}-${String(currentLocalTime.month).padStart(2, '0')}-${String(currentLocalTime.day).padStart(2, '0')} ${String(currentLocalTime.hour).padStart(2, '0')}:${String(currentLocalTime.minute).padStart(2, '0')}`;
-          console.log(`Checklist item due: "${item.text}" for attendance ${attendance.id}, hours until due: ${hoursUntilDue}, current local: ${currentLocalStr}`);
+          console.log(`Checklist item due: "${item.text}" for attendance ${attendance.id}, minutes until due: ${minutesUntilDue}, current local: ${currentLocalStr}`);
 
           // Get eligible users for this tenant (role 1 or 5)
           const eligibleUserIds = tenantEligibleUsers.get(attendance.tenantId) || [];

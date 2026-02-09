@@ -1,6 +1,6 @@
 // supabase/functions/send-attendance-reminders/index.ts
 // Deploy: supabase functions deploy send-attendance-reminders
-// Cron-Trigger in Supabase Dashboard: 0 * * * * (every hour at :00)
+// Cron-Trigger in Supabase Dashboard: */5 * * * * (every 5 minutes)
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -65,26 +65,6 @@ interface TenantUser {
 const REMINDER_ROLES = [1, 5]; // ADMIN = 1, RESPONSIBLE = 5
 
 /**
- * Calculate the start hour treating partial hours as the current running hour.
- * Example: 19:30 -> hour 19, 19:00 -> hour 19
- */
-function getStartHour(startTimeStr: string): number {
-  try {
-    const [hourStr, minuteStr] = startTimeStr.split(':');
-    const hour = parseInt(hourStr, 10);
-    const minute = parseInt(minuteStr, 10);
-
-    // If any minutes are set, use ceiling; otherwise use the hour as-is
-    // But as per requirement: "take the running hour"
-    // 19:30 -> running hour is 19, 19:00 -> running hour is 19
-    return hour;
-  } catch (e) {
-    console.error('Error parsing start_time:', startTimeStr, e);
-    return 0;
-  }
-}
-
-/**
  * Get the current local time in a specific timezone.
  * @param timezone - The IANA timezone string (e.g., "Europe/Berlin")
  * @returns An object with year, month, day, hour, minute in the local timezone
@@ -114,14 +94,14 @@ function getCurrentTimeInTimezone(timezone: string): { year: number; month: numb
 }
 
 /**
- * Calculate hours until a target time, both in the same timezone.
+ * Calculate minutes until a target time, both in the same timezone.
  * All calculations are done in the tenant's local timezone.
  * @param currentLocal - Current time components in local timezone
  * @param targetDateStr - Target date in "YYYY-MM-DD" format
  * @param targetTimeStr - Target time in "HH:mm" format
- * @returns Hours until target (ceiling), or negative if target is in the past
+ * @returns Minutes until target, or negative if target is in the past
  */
-function calculateHoursUntil(
+function calculateMinutesUntil(
   currentLocal: { year: number; month: number; day: number; hour: number; minute: number },
   targetDateStr: string,
   targetTimeStr: string
@@ -135,14 +115,26 @@ function calculateHoursUntil(
   const targetDate = new Date(targetYear, targetMonth - 1, targetDay, targetHour, targetMinute);
 
   const diffMs = targetDate.getTime() - currentDate.getTime();
-  const diffMinutes = diffMs / (1000 * 60);
+  return Math.floor(diffMs / (1000 * 60));
+}
 
-  if (diffMinutes <= 0) {
-    return Math.floor(diffMinutes / 60); // Return negative hours for past events
+/**
+ * Check if the current time matches a reminder hour within a 5-minute window.
+ * This prevents duplicate notifications when the cron job runs every 5 minutes.
+ * @param minutesUntilStart - Minutes until the event starts
+ * @param reminderHours - Array of reminder hours (e.g., [1, 3, 24])
+ * @returns The matched reminder hour, or null if no match
+ */
+function getMatchingReminder(minutesUntilStart: number, reminderHours: number[]): number | null {
+  for (const hours of reminderHours) {
+    const targetMinutes = hours * 60;
+    // Match if we're within a 5-minute window (0-4 minutes after the exact hour mark)
+    // This ensures we only send once per reminder hour
+    if (minutesUntilStart >= targetMinutes && minutesUntilStart < targetMinutes + 5) {
+      return hours;
+    }
   }
-
-  // Use floor to get the current running hour (6h 30m = 6 hours)
-  return Math.floor(diffMinutes / 60);
+  return null;
 }
 
 Deno.serve(async (req) => {
@@ -244,21 +236,21 @@ Deno.serve(async (req) => {
         const dateStr = attendance.date.split('T')[0]; // Ensure we have just the date part
         const timeStr = attendance.start_time || '00:00';
 
-        // Calculate hours until start in the tenant's local timezone
-        // This way, a reminder set for "7 hours before" means 7 hours in local time
-        const hoursUntilStart = calculateHoursUntil(currentLocalTime, dateStr, timeStr);
+        // Calculate minutes until start in the tenant's local timezone
+        const minutesUntilStart = calculateMinutesUntil(currentLocalTime, dateStr, timeStr);
 
         // Skip if the attendance is in the past
-        if (hoursUntilStart <= 0) {
+        if (minutesUntilStart <= 0) {
           continue;
         }
 
         const currentLocalStr = `${currentLocalTime.year}-${String(currentLocalTime.month).padStart(2, '0')}-${String(currentLocalTime.day).padStart(2, '0')} ${String(currentLocalTime.hour).padStart(2, '0')}:${String(currentLocalTime.minute).padStart(2, '0')}`;
-        console.log(`Attendance ${attendance.id}: ${dateStr} ${timeStr} (${attendanceTimezone}), current local: ${currentLocalStr}, hours until: ${hoursUntilStart}, reminders: ${attType.reminders}`);
 
-        // Check if this attendance matches any configured reminder
-        if (reminders.includes(hoursUntilStart)) {
-          console.log(`Match found: Attendance ${attendance.id} (type: ${attType.name}) in ${hoursUntilStart} hours`);
+        // Check if this attendance matches any configured reminder (within 5-minute window)
+        const matchedReminder = getMatchingReminder(minutesUntilStart, reminders);
+
+        if (matchedReminder !== null) {
+          console.log(`Attendance ${attendance.id}: ${dateStr} ${timeStr} (${attendanceTimezone}), current local: ${currentLocalStr}, minutes until: ${minutesUntilStart}, matched reminder: ${matchedReminder}h`);
 
           // 5. Fetch all person_attendances records for this attendance with confirmed status
           const { data: personAttendances, error: paError } = await supabase
@@ -334,7 +326,7 @@ Deno.serve(async (req) => {
               attType.name,
               attendance.date,
               attendance.start_time,
-              hoursUntilStart
+              matchedReminder
             );
 
             try {
