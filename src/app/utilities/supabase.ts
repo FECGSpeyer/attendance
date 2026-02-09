@@ -503,6 +503,7 @@ export type Database = {
       notifications: {
         Row: {
           birthdays: boolean
+          checklist: boolean | null
           created_at: string
           criticals: boolean | null
           enabled: boolean
@@ -517,6 +518,7 @@ export type Database = {
         }
         Insert: {
           birthdays?: boolean
+          checklist?: boolean | null
           created_at?: string
           criticals?: boolean | null
           enabled?: boolean
@@ -531,6 +533,7 @@ export type Database = {
         }
         Update: {
           birthdays?: boolean
+          checklist?: boolean | null
           created_at?: string
           criticals?: boolean | null
           enabled?: boolean

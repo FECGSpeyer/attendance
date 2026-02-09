@@ -93,6 +93,7 @@ export interface NotificationConfig {
   registrations: boolean;
   criticals: boolean;
   reminders: boolean;
+  checklist: boolean;
 }
 
 export interface Viewer {
