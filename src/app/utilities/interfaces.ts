@@ -57,6 +57,7 @@ export interface Tenant {
   registration_fields?: string[];
   favorite?: boolean;
   critical_rules?: CriticalRule[];
+  timezone: string;
 }
 
 export interface ExtraField {

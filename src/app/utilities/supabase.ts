@@ -1117,6 +1117,7 @@ export type Database = {
           shortName: string | null
           showHolidays: boolean | null
           song_sharing_id: string | null
+          timezone: string | null
           type: string | null
           withExcuses: boolean | null
         }
@@ -1139,6 +1140,7 @@ export type Database = {
           shortName?: string | null
           showHolidays?: boolean | null
           song_sharing_id?: string | null
+          timezone?: string | null
           type?: string | null
           withExcuses?: boolean | null
         }
@@ -1161,6 +1163,7 @@ export type Database = {
           shortName?: string | null
           showHolidays?: boolean | null
           song_sharing_id?: string | null
+          timezone?: string | null
           type?: string | null
           withExcuses?: boolean | null
         }

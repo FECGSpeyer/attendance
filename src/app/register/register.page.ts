@@ -19,6 +19,7 @@ export class RegisterPage implements OnInit {
     type: 'general',
     betaProgram: true,
     showHolidays: false,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   };
   public mainGroupName: string = '';
   public canDismiss: boolean = true;

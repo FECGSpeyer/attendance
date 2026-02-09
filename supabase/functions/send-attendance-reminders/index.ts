@@ -4,6 +4,8 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+const DEFAULT_TIMEZONE = 'Europe/Berlin';
+
 enum AttendanceStatus {
   Neutral = 0,
   Present = 1,
@@ -11,6 +13,11 @@ enum AttendanceStatus {
   Late = 3,
   Absent = 4,
   LateExcused = 5,
+}
+
+interface Tenant {
+  id: number;
+  timezone: string | null;
 }
 
 interface AttendanceType {
@@ -68,6 +75,68 @@ function getStartHour(startTimeStr: string): number {
   }
 }
 
+/**
+ * Convert a date and time string in a specific timezone to a UTC Date object.
+ * @param dateStr - The date string in "YYYY-MM-DD" format
+ * @param timeStr - The time string in "HH:mm" format
+ * @param timezone - The IANA timezone string (e.g., "Europe/Berlin")
+ * @returns A Date object representing the UTC time
+ */
+function convertToUtc(dateStr: string, timeStr: string, timezone: string): Date {
+  try {
+    // Parse the local time components
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const [hour, minute] = (timeStr || '00:00').split(':').map(Number);
+
+    // Create a date string in ISO format with the timezone
+    const localDateTimeStr = `${dateStr}T${timeStr || '00:00'}:00`;
+
+    // Use Intl.DateTimeFormat to get the UTC offset for the given timezone
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+
+    // Create a temporary date to find the offset
+    // We need to calculate what UTC time corresponds to the local time in the given timezone
+    // Start with an approximation and adjust
+    const approximateDate = new Date(`${dateStr}T${timeStr || '00:00'}:00Z`);
+
+    // Get the formatted parts for the approximate date in the target timezone
+    const parts = formatter.formatToParts(approximateDate);
+    const getPart = (type: string) => parseInt(parts.find(p => p.type === type)?.value || '0', 10);
+
+    const tzYear = getPart('year');
+    const tzMonth = getPart('month');
+    const tzDay = getPart('day');
+    const tzHour = getPart('hour');
+    const tzMinute = getPart('minute');
+
+    // Calculate the difference between what we want and what we got
+    // This gives us an approximation of the offset
+    const wantedMinutes = year * 525600 + month * 43800 + day * 1440 + hour * 60 + minute;
+    const gotMinutes = tzYear * 525600 + tzMonth * 43800 + tzDay * 1440 + tzHour * 60 + tzMinute;
+    const offsetMinutes = gotMinutes - wantedMinutes;
+
+    // Adjust the UTC time by the calculated offset
+    // Note: This is simplified; for edge cases around DST changes, a library would be more accurate
+    const resultDate = new Date(approximateDate.getTime() + offsetMinutes * 60 * 1000);
+
+    return resultDate;
+  } catch (e) {
+    console.error('Error converting to UTC:', e);
+    // Fallback: assume Europe/Berlin (UTC+1 or UTC+2 for DST)
+    const fallbackDate = new Date(`${dateStr}T${timeStr || '00:00'}:00+01:00`);
+    return fallbackDate;
+  }
+}
+
 Deno.serve(async (req) => {
   try {
     // Verify this is a cron job or authorized request
@@ -82,13 +151,28 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get current UTC hour
+    // Get current UTC time
     const now = new Date();
-    const currentUtcHour = now.getUTCHours();
 
-    console.log(`[${now.toISOString()}] Checking for reminders at UTC hour ${currentUtcHour}`);
+    console.log(`[${now.toISOString()}] Checking for reminders`);
 
-    // 1. Fetch all attendance types with notification enabled and reminders configured
+    // 1. Fetch all tenants with their timezones
+    const { data: tenants, error: tenantsError } = await supabase
+      .from('tenants')
+      .select('id, timezone');
+
+    if (tenantsError) {
+      console.error('Error fetching tenants:', tenantsError);
+      throw tenantsError;
+    }
+
+    // Create a map of tenant_id -> timezone
+    const tenantTimezones = new Map<number, string>();
+    for (const tenant of (tenants || [])) {
+      tenantTimezones.set(tenant.id, tenant.timezone || DEFAULT_TIMEZONE);
+    }
+
+    // 2. Fetch all attendance types with notification enabled and reminders configured
     const { data: attendanceTypes, error: typesError } = await supabase
       .from('attendance_types')
       .select('id, name, notification, reminders, tenant_id')
@@ -110,11 +194,14 @@ Deno.serve(async (req) => {
     const typeIds = attendanceTypes.map((t: any) => t.id);
     let totalReminders = 0;
 
-    // 2. For each attendance type, find relevant attendances
+    // 3. For each attendance type, find relevant attendances
     for (const attType of attendanceTypes) {
       const reminders: number[] = attType.reminders || [];
 
       if (reminders.length === 0) continue;
+
+      // Get the timezone for this tenant
+      const timezone = tenantTimezones.get(attType.tenant_id) || DEFAULT_TIMEZONE;
 
       // Fetch attendances of this type that are today or in the future
       // Note: start_time is "HH:mm" format, date is the actual date
@@ -137,33 +224,34 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // 3. For each attendance, check if it matches a reminder time
+      // 4. For each attendance, check if it matches a reminder time
       for (const attendance of attendances) {
-        // Combine date and start_time (HH:mm) to get full datetime
-        const [hour, minute] = (attendance.start_time || '00:00').split(':').map(Number);
-        const attendanceDate = new Date(attendance.date);
-        const attendanceStartDate = new Date(
-          attendanceDate.getFullYear(),
-          attendanceDate.getMonth(),
-          attendanceDate.getDate(),
-          hour,
-          minute
-        );
+        // Get the tenant's timezone for this specific attendance
+        const attendanceTimezone = tenantTimezones.get(attendance.tenantId) || timezone;
+
+        // Convert the attendance date/time from local timezone to UTC
+        const dateStr = attendance.date.split('T')[0]; // Ensure we have just the date part
+        const timeStr = attendance.start_time || '00:00';
+
+        // Calculate the UTC time of the attendance start
+        const attendanceStartUtc = convertToUtc(dateStr, timeStr, attendanceTimezone);
 
         // Skip if the attendance is in the past
-        if (attendanceStartDate.getTime() <= now.getTime()) {
+        if (attendanceStartUtc.getTime() <= now.getTime()) {
           continue;
         }
 
-        const hoursUntilStart = Math.ceil((attendanceStartDate.getTime() - now.getTime()) / (1000 * 60 * 60));
+        // Calculate hours until start (using ceiling to round up partial hours)
+        const msUntilStart = attendanceStartUtc.getTime() - now.getTime();
+        const hoursUntilStart = Math.ceil(msUntilStart / (1000 * 60 * 60));
 
-        console.log(hoursUntilStart, attType.reminders);
+        console.log(`Attendance ${attendance.id}: ${dateStr} ${timeStr} (${attendanceTimezone}) -> UTC: ${attendanceStartUtc.toISOString()}, hours until: ${hoursUntilStart}, reminders: ${attType.reminders}`);
 
         // Check if this attendance matches any configured reminder
         if (reminders.includes(hoursUntilStart)) {
           console.log(`Match found: Attendance ${attendance.id} (type: ${attType.name}) in ${hoursUntilStart} hours`);
 
-          // 4. Fetch all person_attendances records for this attendance with confirmed status
+          // 5. Fetch all person_attendances records for this attendance with confirmed status
           const { data: personAttendances, error: paError } = await supabase
             .from('person_attendances')
             .select(`
@@ -185,7 +273,7 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // 5. Get all users with notifications enabled and reminders preference
+          // 6. Get all users with notifications enabled and reminders preference
           const { data: notificationConfigs, error: notifError } = await supabase
             .from('notifications')
             .select('id, enabled, telegram_chat_id, reminders, enabled_tenants')
@@ -203,11 +291,7 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // 6. Send reminders to all eligible users who are in person_attendances
-          const attendeePersonIds = new Set(
-            personAttendances.map((pa: any) => pa.person_id)
-          );
-
+          // 7. Send reminders to all eligible users
           for (const notifConfig of notificationConfigs) {
             const enabledTenants = notifConfig.enabled_tenants || [];
 

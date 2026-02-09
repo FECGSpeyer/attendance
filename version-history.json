@@ -14,7 +14,7 @@
           "date": "5.2.2026",
           "changes": [
             "🚨 Problemfälle erkennen: Definiere Regeln zur automatischen Erkennung von Problemfällen unter Einstellungen → Problemfall-Regeln. Optional: Benachrichtigungen per Telegram.",
-            "📤 Ablaufplan als Bild versenden: Teile den Ablaufplan direkt als Bild über Telegram – perfekt für Messenger-Gruppen.",
+            "📤 Ablaufplan als Bild versenden: Teile den Ablaufplan direkt als Bild über Telegram - perfekt für Messenger-Gruppen.",
             "⏰ Terminerinnerungen: Konfiguriere bis zu 3 Erinnerungen pro Termintyp (z.B. 1h, 24h, 48h vorher). Automatischer Versand per Telegram.",
             "⚠️ Schutz vor Datenverlust: Warnung beim Verlassen von Seiten mit ungespeicherten Änderungen (Termintypen & allgemeine Einstellungen)."
           ]
