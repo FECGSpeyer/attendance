@@ -76,65 +76,64 @@ function getStartHour(startTimeStr: string): number {
 }
 
 /**
- * Convert a date and time string in a specific timezone to a UTC Date object.
- * @param dateStr - The date string in "YYYY-MM-DD" format
- * @param timeStr - The time string in "HH:mm" format
+ * Get the current local time in a specific timezone.
  * @param timezone - The IANA timezone string (e.g., "Europe/Berlin")
- * @returns A Date object representing the UTC time
+ * @returns An object with year, month, day, hour, minute in the local timezone
  */
-function convertToUtc(dateStr: string, timeStr: string, timezone: string): Date {
-  try {
-    // Parse the local time components
-    const [year, month, day] = dateStr.split('-').map(Number);
-    const [hour, minute] = (timeStr || '00:00').split(':').map(Number);
+function getCurrentTimeInTimezone(timezone: string): { year: number; month: number; day: number; hour: number; minute: number } {
+  const now = new Date();
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
 
-    // Create a date string in ISO format with the timezone
-    const localDateTimeStr = `${dateStr}T${timeStr || '00:00'}:00`;
+  const parts = formatter.formatToParts(now);
+  const getPart = (type: string) => parseInt(parts.find(p => p.type === type)?.value || '0', 10);
 
-    // Use Intl.DateTimeFormat to get the UTC offset for the given timezone
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      timeZone: timezone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    });
+  return {
+    year: getPart('year'),
+    month: getPart('month'),
+    day: getPart('day'),
+    hour: getPart('hour'),
+    minute: getPart('minute'),
+  };
+}
 
-    // Create a temporary date to find the offset
-    // We need to calculate what UTC time corresponds to the local time in the given timezone
-    // Start with an approximation and adjust
-    const approximateDate = new Date(`${dateStr}T${timeStr || '00:00'}:00Z`);
+/**
+ * Calculate hours until a target time, both in the same timezone.
+ * All calculations are done in the tenant's local timezone.
+ * @param currentLocal - Current time components in local timezone
+ * @param targetDateStr - Target date in "YYYY-MM-DD" format
+ * @param targetTimeStr - Target time in "HH:mm" format
+ * @returns Hours until target (ceiling), or negative if target is in the past
+ */
+function calculateHoursUntil(
+  currentLocal: { year: number; month: number; day: number; hour: number; minute: number },
+  targetDateStr: string,
+  targetTimeStr: string
+): number {
+  // Parse target date/time
+  const [targetYear, targetMonth, targetDay] = targetDateStr.split('-').map(Number);
+  const [targetHour, targetMinute] = (targetTimeStr || '00:00').split(':').map(Number);
 
-    // Get the formatted parts for the approximate date in the target timezone
-    const parts = formatter.formatToParts(approximateDate);
-    const getPart = (type: string) => parseInt(parts.find(p => p.type === type)?.value || '0', 10);
+  // Create Date objects for comparison (month is 0-indexed in JS Date)
+  const currentDate = new Date(currentLocal.year, currentLocal.month - 1, currentLocal.day, currentLocal.hour, currentLocal.minute);
+  const targetDate = new Date(targetYear, targetMonth - 1, targetDay, targetHour, targetMinute);
 
-    const tzYear = getPart('year');
-    const tzMonth = getPart('month');
-    const tzDay = getPart('day');
-    const tzHour = getPart('hour');
-    const tzMinute = getPart('minute');
+  const diffMs = targetDate.getTime() - currentDate.getTime();
+  const diffMinutes = diffMs / (1000 * 60);
 
-    // Calculate the difference between what we want and what we got
-    // This gives us an approximation of the offset
-    const wantedMinutes = year * 525600 + month * 43800 + day * 1440 + hour * 60 + minute;
-    const gotMinutes = tzYear * 525600 + tzMonth * 43800 + tzDay * 1440 + tzHour * 60 + tzMinute;
-    const offsetMinutes = gotMinutes - wantedMinutes;
-
-    // Adjust the UTC time by the calculated offset
-    // Note: This is simplified; for edge cases around DST changes, a library would be more accurate
-    const resultDate = new Date(approximateDate.getTime() + offsetMinutes * 60 * 1000);
-
-    return resultDate;
-  } catch (e) {
-    console.error('Error converting to UTC:', e);
-    // Fallback: assume Europe/Berlin (UTC+1 or UTC+2 for DST)
-    const fallbackDate = new Date(`${dateStr}T${timeStr || '00:00'}:00+01:00`);
-    return fallbackDate;
+  if (diffMinutes <= 0) {
+    return Math.floor(diffMinutes / 60); // Return negative hours for past events
   }
+
+  // Round up to the nearest hour
+  return Math.ceil(diffMinutes / 60);
 }
 
 Deno.serve(async (req) => {
@@ -229,23 +228,24 @@ Deno.serve(async (req) => {
         // Get the tenant's timezone for this specific attendance
         const attendanceTimezone = tenantTimezones.get(attendance.tenantId) || timezone;
 
-        // Convert the attendance date/time from local timezone to UTC
+        // Get current time in the tenant's local timezone
+        const currentLocalTime = getCurrentTimeInTimezone(attendanceTimezone);
+
+        // Get attendance date/time (stored in local timezone)
         const dateStr = attendance.date.split('T')[0]; // Ensure we have just the date part
         const timeStr = attendance.start_time || '00:00';
 
-        // Calculate the UTC time of the attendance start
-        const attendanceStartUtc = convertToUtc(dateStr, timeStr, attendanceTimezone);
+        // Calculate hours until start in the tenant's local timezone
+        // This way, a reminder set for "7 hours before" means 7 hours in local time
+        const hoursUntilStart = calculateHoursUntil(currentLocalTime, dateStr, timeStr);
 
         // Skip if the attendance is in the past
-        if (attendanceStartUtc.getTime() <= now.getTime()) {
+        if (hoursUntilStart <= 0) {
           continue;
         }
 
-        // Calculate hours until start (using ceiling to round up partial hours)
-        const msUntilStart = attendanceStartUtc.getTime() - now.getTime();
-        const hoursUntilStart = Math.ceil(msUntilStart / (1000 * 60 * 60));
-
-        console.log(`Attendance ${attendance.id}: ${dateStr} ${timeStr} (${attendanceTimezone}) -> UTC: ${attendanceStartUtc.toISOString()}, hours until: ${hoursUntilStart}, reminders: ${attType.reminders}`);
+        const currentLocalStr = `${currentLocalTime.year}-${String(currentLocalTime.month).padStart(2, '0')}-${String(currentLocalTime.day).padStart(2, '0')} ${String(currentLocalTime.hour).padStart(2, '0')}:${String(currentLocalTime.minute).padStart(2, '0')}`;
+        console.log(`Attendance ${attendance.id}: ${dateStr} ${timeStr} (${attendanceTimezone}), current local: ${currentLocalStr}, hours until: ${hoursUntilStart}, reminders: ${attType.reminders}`);
 
         // Check if this attendance matches any configured reminder
         if (reminders.includes(hoursUntilStart)) {
