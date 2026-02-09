@@ -76,7 +76,7 @@
   </ion-header>
 
   @if (db.songCategories().length > 0) {
-    <ion-segment mode="md" [(ngModel)]="selectedCategory" (ionChange)="onCategoryChanged()">
+    <ion-segment [scrollable]="true" mode="md" [(ngModel)]="selectedCategory" (ionChange)="onCategoryChanged()">
       <ion-segment-button value="">
         <ion-label>Alle</ion-label>
       </ion-segment-button>
