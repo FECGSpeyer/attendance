@@ -645,7 +645,7 @@
     }
   }
 
-  <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" backdropDismiss="true" [isOpen]="isPauseModalOpen" (ionModalDidDismiss)="dismissPauseModal()">
+  <ion-modal [breakpoints]="[0, 0.75, 1]" [initialBreakpoint]="0.75" backdropDismiss="true" [isOpen]="isPauseModalOpen" (ionModalDidDismiss)="dismissPauseModal()">
     <ng-template>
       <ion-header>
         <ion-toolbar>
@@ -658,20 +658,47 @@
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">
-        <ion-item>
-          <ion-label position="stacked">Grund</ion-label>
-          <ion-textarea [(ngModel)]="pauseReason" placeholder="Gib einen Grund für die Pause an..."></ion-textarea>
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Pausiert bis (optional)</ion-label>
-          <ion-input helperText="Wenn ein Datum angegeben ist, wird die Person nach diesem Datum automatisch wieder aktiviert." readonly [(ngModel)]="pauseUntilDisplay" id="pause-date-modal-person" placeholder="Datum wählen..."></ion-input>
-          <ion-modal class="dateModal" trigger="pause-date-modal-person" #pauseDateModal>
-            <ng-template>
-              <ion-datetime show-default-buttons="true" done-text="Fertig" cancel-text="Abbrechen" show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [min]="minPauseDate" [(ngModel)]="pauseUntil"
-              (ionChange)="onPauseDateChange(pauseUntil, pauseDateModal)" presentation="date"></ion-datetime>
-            </ng-template>
-          </ion-modal>
-        </ion-item>
+        <ion-list>
+          <ion-item>
+            <ion-label position="stacked">Grund *</ion-label>
+            <ion-textarea [(ngModel)]="pauseReason" placeholder="Gib einen Grund für die Pause an..." [autoGrow]="true"></ion-textarea>
+          </ion-item>
+        </ion-list>
+
+        <ion-accordion-group>
+          <ion-accordion value="date">
+            <ion-item slot="header" color="light">
+              <ion-label>
+                <h3>Pausiert bis (optional)</h3>
+                @if (pauseUntil) {
+                  <p>{{ pauseUntil | date:'dd.MM.yyyy' }}</p>
+                } @else {
+                  <p>Kein Enddatum gewählt</p>
+                }
+              </ion-label>
+              @if (pauseUntil) {
+                <ion-button fill="clear" slot="end" (click)="pauseUntil = ''; $event.stopPropagation()">
+                  <ion-icon slot="icon-only" name="close-circle-outline" color="medium"></ion-icon>
+                </ion-button>
+              }
+            </ion-item>
+            <div slot="content">
+              <ion-datetime
+                locale="de-DE"
+                [firstDayOfWeek]="1"
+                [min]="minPauseDate"
+                [(ngModel)]="pauseUntil"
+                presentation="date"
+                size="cover">
+              </ion-datetime>
+            </div>
+          </ion-accordion>
+        </ion-accordion-group>
+
+        <ion-note class="ion-padding" color="medium" style="display: block;">
+          Wenn ein Datum angegeben ist, wird die Person nach diesem Datum automatisch wieder aktiviert.
+        </ion-note>
+
         <ion-button expand="block" class="ion-margin-top" (click)="confirmPause()" [disabled]="!pauseReason">
           <ion-icon slot="start" name="pause-outline"></ion-icon>
           Pausieren

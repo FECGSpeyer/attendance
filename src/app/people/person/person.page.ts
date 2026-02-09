@@ -81,7 +81,6 @@ export class PersonPage implements OnInit, AfterViewInit {
   public isPauseModalOpen: boolean = false;
   public pauseReason: string = "";
   public pauseUntil: string = "";
-  public pauseUntilDisplay: string = "";
   public minPauseDate: string = dayjs().format("YYYY-MM-DD");
   public isTransferModalOpen = false;
   public copy = false;
@@ -790,7 +789,6 @@ export class PersonPage implements OnInit, AfterViewInit {
         handler: async () => {
           this.pauseReason = "";
           this.pauseUntil = "";
-          this.pauseUntilDisplay = "";
           this.isPauseModalOpen = true;
         }
       });
@@ -941,14 +939,6 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.isPauseModalOpen = false;
     this.pauseReason = "";
     this.pauseUntil = "";
-    this.pauseUntilDisplay = "";
-  }
-
-  onPauseDateChange(value: string, modal: IonModal): void {
-    if (value) {
-      this.pauseUntilDisplay = dayjs(value).format('DD.MM.YYYY');
-      modal.dismiss();
-    }
   }
 
   async activate(): Promise<void> {

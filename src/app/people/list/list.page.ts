@@ -44,7 +44,6 @@ export class ListPage implements OnInit, OnDestroy {
   public isPauseModalOpen: boolean = false;
   public pauseReason: string = "";
   public pauseUntil: string = "";
-  public pauseUntilDisplay: string = "";
   public minPauseDate: string = dayjs().format("YYYY-MM-DD");
   public playerToPause: Player | null = null;
   public sliderToPause: IonItemSliding | null = null;
@@ -638,7 +637,6 @@ export class ListPage implements OnInit, OnDestroy {
     this.sliderToPause = slider;
     this.pauseReason = "";
     this.pauseUntil = "";
-    this.pauseUntilDisplay = "";
     this.isPauseModalOpen = true;
   }
 
@@ -680,14 +678,6 @@ export class ListPage implements OnInit, OnDestroy {
     this.sliderToPause = null;
     this.pauseReason = "";
     this.pauseUntil = "";
-    this.pauseUntilDisplay = "";
-  }
-
-  onPauseDateChange(value: string, modal: IonModal) {
-    if (value) {
-      this.pauseUntilDisplay = dayjs(value).format('DD.MM.YYYY');
-      modal.dismiss();
-    }
   }
 
   async unpausePlayer(player: Player, slider: IonItemSliding) {
