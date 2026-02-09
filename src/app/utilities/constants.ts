@@ -134,3 +134,10 @@ export enum AttendanceViewMode {
     CLICK = "click",
     SELECT = "select",
 }
+
+export const CHECKLIST_DEADLINE_OPTIONS = [
+    { label: '1 Stunde vorher', hours: 1 },
+    { label: '1 Tag vorher', hours: 24 },
+    { label: '2 Tage vorher', hours: 48 },
+    { label: '1 Woche vorher', hours: 168 },
+];

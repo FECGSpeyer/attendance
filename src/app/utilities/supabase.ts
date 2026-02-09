@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       attendance: {
         Row: {
+          checklist: Json | null
           conductors: Json | null
           created_at: string | null
           created_by: string | null
@@ -40,6 +41,7 @@ export type Database = {
           typeInfo: string | null
         }
         Insert: {
+          checklist?: Json | null
           conductors?: Json | null
           created_at?: string | null
           created_by?: string | null
@@ -64,6 +66,7 @@ export type Database = {
           typeInfo?: string | null
         }
         Update: {
+          checklist?: Json | null
           conductors?: Json | null
           created_at?: string | null
           created_by?: string | null
@@ -109,6 +112,7 @@ export type Database = {
           additional_fields_filter: Json | null
           all_day: boolean | null
           available_statuses: number[]
+          checklist: Json | null
           color: string | null
           created_at: string
           default_plan: Json | null
@@ -133,6 +137,7 @@ export type Database = {
           additional_fields_filter?: Json | null
           all_day?: boolean | null
           available_statuses?: number[]
+          checklist?: Json | null
           color?: string | null
           created_at?: string
           default_plan?: Json | null
@@ -157,6 +162,7 @@ export type Database = {
           additional_fields_filter?: Json | null
           all_day?: boolean | null
           available_statuses?: number[]
+          checklist?: Json | null
           color?: string | null
           created_at?: string
           default_plan?: Json | null

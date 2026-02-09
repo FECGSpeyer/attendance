@@ -4,8 +4,8 @@ import { AlertController, IonItemSliding, IonModal, IonPopover, IonRouterOutlet,
 import dayjs from 'dayjs';
 import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
-import { AttendanceStatus } from 'src/app/utilities/constants';
-import { AttendanceType, FieldSelection, Plan } from 'src/app/utilities/interfaces';
+import { AttendanceStatus, CHECKLIST_DEADLINE_OPTIONS } from 'src/app/utilities/constants';
+import { AttendanceType, ChecklistItem, FieldSelection, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -35,6 +35,12 @@ export class TypePage implements OnInit {
   public additionalFieldFilter: string = null;
   public customReminderHours: number | null = null;
   @ViewChild('remindersModal') remindersModal: IonModal;
+
+  // Checklist configuration
+  public checklistDeadlineOptions = CHECKLIST_DEADLINE_OPTIONS;
+  public newChecklistText: string = '';
+  public newChecklistDeadline: number | null = null;
+  public customChecklistDeadline: number | null = null;
 
   private originalType: string = '';  // JSON string of original type for comparison
 
@@ -471,6 +477,113 @@ export class TypePage implements OnInit {
       return '1 Tag vorher';
     } else {
       return `${Math.floor(hours / 24)} Tage vorher`;
+    }
+  }
+
+  // ========== CHECKLIST METHODS ==========
+
+  /**
+   * Check if a deadline value is one of the preset options
+   */
+  isPresetDeadline(hours: number | null): boolean {
+    if (hours === null || hours === -1) return true;
+    return CHECKLIST_DEADLINE_OPTIONS.some(opt => opt.hours === hours);
+  }
+
+  /**
+   * Add a new checklist item
+   */
+  addChecklistItem(): void {
+    if (!this.newChecklistText?.trim()) {
+      Utils.showToast('Bitte einen Text für das To-Do eingeben', 'warning');
+      return;
+    }
+
+    if (!this.type.checklist) {
+      this.type.checklist = [];
+    }
+
+    // Determine the actual deadline hours
+    let deadlineHours: number | null = this.newChecklistDeadline;
+    if (this.newChecklistDeadline === -1 && this.customChecklistDeadline) {
+      deadlineHours = this.customChecklistDeadline;
+    } else if (this.newChecklistDeadline === -1) {
+      deadlineHours = null;
+    }
+
+    const newItem: ChecklistItem = {
+      id: crypto.randomUUID(),
+      text: this.newChecklistText.trim(),
+      deadlineHours,
+    };
+
+    this.type.checklist.push(newItem);
+    this.newChecklistText = '';
+    this.newChecklistDeadline = null;
+    this.customChecklistDeadline = null;
+  }
+
+  /**
+   * Remove a checklist item by index
+   */
+  removeChecklistItem(index: number, slider?: IonItemSliding): void {
+    slider?.close();
+    if (this.type.checklist) {
+      this.type.checklist.splice(index, 1);
+    }
+  }
+
+  /**
+   * Edit a checklist item
+   */
+  async editChecklistItem(item: ChecklistItem, slider?: IonItemSliding): Promise<void> {
+    slider?.close();
+
+    const alert = await this.alertController.create({
+      header: 'To-Do bearbeiten',
+      inputs: [
+        {
+          type: 'text',
+          name: 'text',
+          value: item.text,
+          placeholder: 'To-Do Text...',
+        },
+      ],
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel',
+        },
+        {
+          text: 'Speichern',
+          handler: (data) => {
+            if (data.text?.trim()) {
+              item.text = data.text.trim();
+            }
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Get formatted deadline display text for checklist
+   */
+  getChecklistDeadlineText(hours: number | null): string {
+    if (hours === null) {
+      return 'Keine Deadline';
+    }
+    return this.getFormattedReminder(hours);
+  }
+
+  /**
+   * Handle checklist item reordering
+   */
+  handleChecklistReorder(ev: CustomEvent<ItemReorderEventDetail>): void {
+    if (this.type.checklist) {
+      ev.detail.complete(this.type.checklist);
     }
   }
 }

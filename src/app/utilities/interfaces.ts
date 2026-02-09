@@ -149,6 +149,14 @@ export interface PlayerHistoryEntry {
   type: PlayerHistoryType;
 }
 
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  deadlineHours: number | null;
+  completed?: boolean;
+  dueDate?: string;
+}
+
 export interface Player extends Person {
   instrument: number;
   groupName?: string;
@@ -230,6 +238,7 @@ export interface Attendance {
   end_time?: string;
   deadline?: string;
   duration_days?: number;
+  checklist?: ChecklistItem[];
 }
 
 export interface Plan {
@@ -394,11 +403,6 @@ export interface AttendanceType {
     option: string;
   };
   checklist?: ChecklistItem[];
-}
-
-export interface ChecklistItem {
-  text: string;
-
 }
 
 export interface ShiftPlan {

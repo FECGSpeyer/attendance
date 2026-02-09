@@ -8,8 +8,8 @@ import { format } from 'date-fns';
 import dayjs from 'dayjs';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
-import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode } from 'src/app/utilities/constants';
-import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType } from 'src/app/utilities/interfaces';
+import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode, CHECKLIST_DEADLINE_OPTIONS } from 'src/app/utilities/constants';
+import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -527,5 +527,186 @@ export class AttendancePage implements OnInit {
     this.attendanceViewMode = this.attendanceViewMode === AttendanceViewMode.CLICK ? AttendanceViewMode.SELECT : AttendanceViewMode.CLICK;
 
     await this.storage.set('attendanceViewMode', this.attendanceViewMode);
+  }
+
+  // ========== CHECKLIST METHODS ==========
+
+  /**
+   * Toggle a checklist item's completed status
+   */
+  async toggleChecklistItem(index: number): Promise<void> {
+    if (!this.attendance.checklist) return;
+
+    this.attendance.checklist[index].completed = !this.attendance.checklist[index].completed;
+    await this.db.updateAttendance({ checklist: this.attendance.checklist }, this.attendance.id);
+  }
+
+  /**
+   * Add an ad-hoc checklist item
+   */
+  async addChecklistItem(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'To-Do hinzufügen',
+      inputs: [
+        {
+          type: 'text',
+          name: 'text',
+          placeholder: 'To-Do Text...',
+        },
+        {
+          type: 'number',
+          name: 'deadlineHours',
+          placeholder: 'Deadline in Stunden (optional)',
+          min: 0,
+        },
+      ],
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel',
+        },
+        {
+          text: 'Hinzufügen',
+          handler: async (data) => {
+            if (!data.text?.trim()) {
+              Utils.showToast('Bitte einen Text eingeben', 'warning');
+              return false;
+            }
+
+            if (!this.attendance.checklist) {
+              this.attendance.checklist = [];
+            }
+
+            const deadlineHours = data.deadlineHours ? parseInt(data.deadlineHours, 10) : null;
+            let dueDate: string | null = null;
+
+            if (deadlineHours !== null && !isNaN(deadlineHours)) {
+              const eventDateTime = this.attendance.start_time
+                ? dayjs(this.attendance.date).hour(Number(this.attendance.start_time.substring(0, 2))).minute(Number(this.attendance.start_time.substring(3, 5)))
+                : dayjs(this.attendance.date).hour(19).minute(0);
+              dueDate = eventDateTime.subtract(deadlineHours, 'hour').toISOString();
+            }
+
+            const newItem: ChecklistItem = {
+              id: crypto.randomUUID(),
+              text: data.text.trim(),
+              deadlineHours,
+              completed: false,
+              dueDate,
+            };
+
+            this.attendance.checklist.push(newItem);
+            await this.db.updateAttendance({ checklist: this.attendance.checklist }, this.attendance.id);
+            return true;
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Remove a checklist item
+   */
+  async removeChecklistItem(index: number, slider?: IonItemSliding): Promise<void> {
+    slider?.close();
+
+    const alert = await this.alertController.create({
+      header: 'To-Do löschen',
+      message: 'Möchtest du dieses To-Do wirklich löschen?',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel',
+        },
+        {
+          text: 'Löschen',
+          role: 'destructive',
+          handler: async () => {
+            if (this.attendance.checklist) {
+              this.attendance.checklist.splice(index, 1);
+              await this.db.updateAttendance({ checklist: this.attendance.checklist }, this.attendance.id);
+            }
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Get deadline status for styling
+   */
+  getDeadlineStatus(item: ChecklistItem): 'overdue' | 'warning' | 'normal' {
+    if (!item.dueDate || item.completed) return 'normal';
+
+    const now = dayjs();
+    const dueDate = dayjs(item.dueDate);
+
+    if (dueDate.isBefore(now)) {
+      return 'overdue';
+    }
+
+    // Warning if due within 24 hours
+    if (dueDate.diff(now, 'hour') <= 24) {
+      return 'warning';
+    }
+
+    return 'normal';
+  }
+
+  /**
+   * Format deadline as relative time (e.g., "in 2 Tagen")
+   */
+  formatDeadlineRelative(item: ChecklistItem): string {
+    if (!item.dueDate) return '';
+
+    const now = dayjs();
+    const dueDate = dayjs(item.dueDate);
+    const diffHours = dueDate.diff(now, 'hour');
+    const diffDays = dueDate.diff(now, 'day');
+
+    if (diffHours < 0) {
+      const overdueDays = Math.abs(diffDays);
+      const overdueHours = Math.abs(diffHours);
+      if (overdueDays >= 1) {
+        return `${overdueDays} Tag(e) überfällig`;
+      }
+      return `${overdueHours} Stunde(n) überfällig`;
+    }
+
+    if (diffHours < 1) {
+      return 'Jetzt fällig';
+    }
+
+    if (diffHours < 24) {
+      return `in ${diffHours} Stunde(n)`;
+    }
+
+    return `in ${diffDays} Tag(en)`;
+  }
+
+  /**
+   * Format deadline as absolute date/time
+   */
+  formatDeadlineAbsolute(item: ChecklistItem): string {
+    if (!item.dueDate) return '';
+    return format(new Date(item.dueDate), 'dd.MM.yyyy HH:mm') + ' Uhr';
+  }
+
+  /**
+   * Get checklist progress (completed/total)
+   */
+  getChecklistProgress(): { completed: number; total: number } {
+    if (!this.attendance?.checklist) {
+      return { completed: 0, total: 0 };
+    }
+
+    const total = this.attendance.checklist.length;
+    const completed = this.attendance.checklist.filter(item => item.completed).length;
+
+    return { completed, total };
   }
 }

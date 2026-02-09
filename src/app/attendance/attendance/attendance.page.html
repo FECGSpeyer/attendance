@@ -5,9 +5,25 @@
       players.length }}</ion-title>
     }
     <ion-buttons slot="end">
-      <ion-button (click)="switchMode()">
-        <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+      <ion-button id="attendance-options-trigger">
+        <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
       </ion-button>
+      <ion-popover trigger="attendance-options-trigger" triggerAction="click" dismissOnSelect="true">
+        <ng-template>
+          <ion-list lines="none">
+            <ion-item button detail="false" (click)="switchMode()">
+              <ion-icon slot="start" [name]="attendanceViewMode === AttendanceViewMode.CLICK ? 'list-outline' : 'hand-left-outline'"></ion-icon>
+              <ion-label>{{ attendanceViewMode === AttendanceViewMode.CLICK ? 'Auswahl-Modus' : 'Klick-Modus' }}</ion-label>
+            </ion-item>
+            @if (!isHelper && (!attendance?.checklist || attendance?.checklist?.length === 0)) {
+              <ion-item button detail="false" (click)="addChecklistItem()">
+                <ion-icon slot="start" name="checkbox-outline"></ion-icon>
+                <ion-label>Checkliste starten</ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        </ng-template>
+      </ion-popover>
       <ion-button (click)="close()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
@@ -196,6 +212,58 @@
                 </ion-item>
               </ion-list>
             }
+          </div>
+        </ion-accordion>
+      </ion-accordion-group>
+    </ion-item-group>
+  }
+
+  <!-- Checklist Section - Hidden from Helpers -->
+  @if (!isHelper && attendance.checklist && attendance.checklist.length > 0) {
+    <ion-item-group>
+      <ion-accordion-group>
+        <ion-accordion value="checklist">
+          <ion-item slot="header">
+            <ion-label>Checkliste</ion-label>
+            <ion-badge slot="end" [color]="getChecklistProgress().completed === getChecklistProgress().total ? 'success' : 'primary'">
+              {{ getChecklistProgress().completed }}/{{ getChecklistProgress().total }}
+            </ion-badge>
+          </ion-item>
+          <div slot="content">
+            @for (item of attendance.checklist; track item.id; let i = $index) {
+              <ion-item-sliding #checklistSlider>
+                <ion-item [class.checklist-completed]="item.completed"
+                          [class.checklist-overdue]="!item.completed && getDeadlineStatus(item) === 'overdue'"
+                          [class.checklist-warning]="!item.completed && getDeadlineStatus(item) === 'warning'">
+                  <ion-checkbox
+                    slot="start"
+                    [checked]="item.completed"
+                    (ionChange)="toggleChecklistItem(i)">
+                  </ion-checkbox>
+                  <ion-label>
+                    <h2 [class.text-strikethrough]="item.completed">{{ item.text }}</h2>
+                    @if (item.dueDate) {
+                      <p [class.text-danger]="!item.completed && getDeadlineStatus(item) === 'overdue'"
+                         [class.text-warning]="!item.completed && getDeadlineStatus(item) === 'warning'">
+                        {{ formatDeadlineRelative(item) }} · {{ formatDeadlineAbsolute(item) }}
+                      </p>
+                    }
+                  </ion-label>
+                </ion-item>
+                <ion-item-options side="end">
+                  <ion-item-option color="danger" (click)="removeChecklistItem(i, checklistSlider)">
+                    <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                  </ion-item-option>
+                </ion-item-options>
+              </ion-item-sliding>
+            }
+            <!-- Add ad-hoc item button -->
+            <ion-item button detail="false" (click)="addChecklistItem()">
+              <ion-label color="primary">
+                <ion-icon name="add-circle-outline"></ion-icon>
+                To-Do hinzufügen
+              </ion-label>
+            </ion-item>
           </div>
         </ion-accordion>
       </ion-accordion-group>

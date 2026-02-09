@@ -5,7 +5,7 @@ import { format, isSameDay, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
 import { DbService } from 'src/app/services/db.service';
-import { Attendance, PersonAttendance, Player, Song, History, Person } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, Player, Song, History, Person, ChecklistItem } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import 'jspdf-autotable';
 import { DefaultAttendanceType, Role } from 'src/app/utilities/constants';
@@ -270,6 +270,25 @@ export class AttListPage implements OnInit {
     for (const date of this.dates) {
       // Normalize date to noon (12:00) to avoid timezone issues between 22:00-02:00
       const normalizedDate = dayjs(date).hour(12).minute(0).second(0).millisecond(0).toISOString();
+
+      // Prepare checklist with calculated due dates
+      let checklist: ChecklistItem[] | undefined;
+      if (type.checklist && type.checklist.length > 0) {
+        const eventDateTime = type.start_time
+          ? dayjs(normalizedDate).hour(Number(type.start_time.substring(0, 2))).minute(Number(type.start_time.substring(3, 5)))
+          : dayjs(normalizedDate).hour(19).minute(0);
+
+        checklist = type.checklist.map((item: ChecklistItem) => ({
+          id: crypto.randomUUID(),
+          text: item.text,
+          deadlineHours: item.deadlineHours,
+          completed: false,
+          dueDate: item.deadlineHours !== null
+            ? eventDateTime.subtract(item.deadlineHours, 'hour').toISOString()
+            : null,
+        }));
+      }
+
       const attendance_id: number = await this.db.addAttendance({
         date: normalizedDate,
         type_id: this.type_id,
@@ -279,6 +298,7 @@ export class AttListPage implements OnInit {
         start_time: type.start_time,
         end_time: type.end_time,
         duration_days: this.allDayDuration,
+        checklist,
       });
 
       for (const player of allPersons) {

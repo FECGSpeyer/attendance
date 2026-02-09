@@ -11,3 +11,36 @@ ion-item-group {
         background: #000;
     }
 }
+
+// Checklist styles
+.checklist-completed {
+    opacity: 0.6;
+
+    ion-label h2 {
+        color: var(--ion-color-medium);
+    }
+}
+
+.checklist-overdue {
+    --background: rgba(var(--ion-color-danger-rgb), 0.1);
+    border-left: 3px solid var(--ion-color-danger);
+}
+
+.checklist-warning {
+    --background: rgba(var(--ion-color-warning-rgb), 0.1);
+    border-left: 3px solid var(--ion-color-warning);
+}
+
+.text-strikethrough {
+    text-decoration: line-through;
+}
+
+.text-danger {
+    color: var(--ion-color-danger) !important;
+    font-weight: 500;
+}
+
+.text-warning {
+    color: var(--ion-color-warning-shade) !important;
+    font-weight: 500;
+}

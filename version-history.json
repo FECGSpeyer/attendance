@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "3.7.1",
+          "date": "9.2.2026",
+          "changes": [
+            "✅ Checklisten für Termintypen: Lege To-Dos mit Deadlines für jeden Termintyp an. Die Checkliste wird automatisch in neue Termine übernommen.",
+            "📋 To-Do Verwaltung: Hake einzelne Punkte ab, füge ad-hoc Aufgaben hinzu und behalte den Überblick über anstehende Deadlines.",
+            "⏰ Deadline-Anzeige: Fälligkeiten werden relativ (z.B. 'in 2 Tagen') und absolut angezeigt. Überfällige Aufgaben werden rot markiert."
+          ]
+        },
+        {
           "version": "3.7.0",
           "date": "5.2.2026",
           "changes": [

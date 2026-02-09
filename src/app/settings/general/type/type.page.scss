@@ -47,6 +47,19 @@ ion-item-group {
     }
 }
 
+.deadline-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 0;
+    width: 100%;
+
+    ion-chip {
+        margin: 0;
+        cursor: pointer;
+    }
+}
+
 .custom-reminder-item {
     --padding-bottom: 8px;
 }

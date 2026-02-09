@@ -477,81 +477,106 @@
   <ion-list [inset]="true">
     <ion-list-header>
       <ion-label>Checkliste</ion-label>
-      <ion-button size="small" id="add-field-trigger" fill="clear">
-        <ion-icon name="add"></ion-icon>
-      </ion-button>
-      <ion-popover #addFieldPopover trigger="add-field-trigger" triggerAction="click">
-        <ng-template>
-          <ion-item (click)="addExtraField(addFieldPopover)">
-            <ion-label>Feld hinzufügen</ion-label>
-          </ion-item>
-          <ion-item (click)="addSongPlaceholder(addFieldPopover)" lines="none">
-            <ion-label>Werk Platzhalter</ion-label>
-          </ion-item>
-        </ng-template>
-      </ion-popover>
+      <ion-badge color="medium">{{ type.checklist?.length || 0 }}</ion-badge>
     </ion-list-header>
     <ion-item-group>
+      @if (type.checklist && type.checklist.length > 0) {
+        <ion-reorder-group disabled="false" (ionItemReorder)="handleChecklistReorder($any($event))">
+          @for (item of type.checklist; track item.id; let i = $index) {
+            <ion-item-sliding #checklistSlider>
+              <ion-item>
+                <ion-label (click)="editChecklistItem(item, checklistSlider)">
+                  <h2>{{ item.text }}</h2>
+                  <p>{{ getChecklistDeadlineText(item.deadlineHours) }}</p>
+                </ion-label>
+                <ion-reorder slot="end"></ion-reorder>
+              </ion-item>
+              <ion-item-options side="end">
+                <ion-item-option color="danger" (click)="removeChecklistItem(i, checklistSlider)">
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+          }
+        </ion-reorder-group>
+      } @else {
+        <ion-item lines="none">
+          <ion-label class="ion-text-center" color="medium">
+            <ion-icon name="checkbox-outline" style="font-size: 2rem;"></ion-icon>
+            <p>Noch keine To-Dos angelegt</p>
+          </ion-label>
+        </ion-item>
+      }
+
+      <!-- Add new checklist item -->
+      <ion-item lines="none">
+        <ion-input
+          [(ngModel)]="newChecklistText"
+          label="Neues To-Do"
+          labelPlacement="stacked"
+          placeholder="To-Do Text eingeben...">
+        </ion-input>
+      </ion-item>
+
+      <!-- Deadline selection - compact mobile-friendly design -->
       <ion-item>
-        <ion-label>Start</ion-label>
-        <ion-datetime-button datetime="datetimestartplan"></ion-datetime-button>
-        <ion-modal [keepContentsMounted]="true">
-          <ng-template>
-            <ion-datetime locale="de-DE" disabled="true" (ionChange)="calculateEnd()" [(ngModel)]="type.start_time"
-              presentation="time" id="datetimestartplan" [formatOptions]="{
-                      time: {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                      }
-                    }"></ion-datetime>
-        </ng-template>
-      </ion-modal>
-    </ion-item>
-    <ion-list>
-      <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
-        @for (field of type.default_plan.fields; track field; let i = $index) {
-          <ion-item-sliding #slider>
-            <ion-item>
-              <ion-label (click)="changeField(field)">
-                <h2>{{ field.name }}</h2>
-                <h3>{{ calculateTime(field, i) }}</h3>
-              </ion-label>
-              <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
-              placeholder="min" type="number" slot="end"></ion-input>
-              <ion-reorder slot="end"></ion-reorder>
-            </ion-item>
-            <ion-item-options (ionSwipe)="removeField(i, slider)">
-              <ion-item-option expandable color="danger" (click)="removeField(i, slider)">
-                <ion-icon name="trash"></ion-icon>
-              </ion-item-option>
-            </ion-item-options>
-          </ion-item-sliding>
-        }
-      </ion-reorder-group>
-    </ion-list>
-    @if (end) {
-      <ion-item class="marginBottom">
-        <ion-label>Ende</ion-label>
-        <ion-datetime-button datetime="datetimeendplan"></ion-datetime-button>
-        <ion-modal [keepContentsMounted]="true">
-          <ng-template>
-            <ion-datetime locale="de-DE" disabled="true" [(ngModel)]="end" presentation="time" id="datetimeendplan"
-              [formatOptions]="{
-                      time: {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                      }
-                    }">
-          </ion-datetime>
-        </ng-template>
-      </ion-modal>
-    </ion-item>
-  }
-</ion-item-group>
-</ion-list>
+        <ion-select
+          [(ngModel)]="newChecklistDeadline"
+          label="Deadline"
+          labelPlacement="stacked"
+          interface="action-sheet"
+          placeholder="Keine Deadline">
+          <ion-select-option [value]="null">Keine Deadline</ion-select-option>
+          @for (option of checklistDeadlineOptions; track option.hours) {
+            <ion-select-option [value]="option.hours">{{ option.label }}</ion-select-option>
+          }
+          <ion-select-option [value]="-1">Benutzerdefiniert...</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      @if (newChecklistDeadline === -1 || (newChecklistDeadline !== null && !isPresetDeadline(newChecklistDeadline))) {
+        <ion-item>
+          <ion-input
+            type="number"
+            [(ngModel)]="customChecklistDeadline"
+            label="Stunden vor Termin"
+            labelPlacement="stacked"
+            min="1"
+            placeholder="z.B. 12">
+          </ion-input>
+        </ion-item>
+      }
+
+      <ion-item lines="none">
+        <ion-button
+          expand="block"
+          fill="solid"
+          color="primary"
+          [disabled]="!newChecklistText?.trim()"
+          (click)="addChecklistItem()">
+          <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+          To-Do hinzufügen
+        </ion-button>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
 }
+
+<!-- Toggle to enable/disable checklist -->
+<ion-list [inset]="true">
+  <ion-item-group>
+    <ion-item>
+      <ion-toggle
+        [(ngModel)]="type.checklist"
+        [ngModelOptions]="{standalone: true}"
+        (ionChange)="type.checklist = $event.detail.checked ? [] : null"
+        [checked]="type.checklist !== null && type.checklist !== undefined"
+        helperText="Aktiviere die Checkliste, um To-Dos für diesen Anwesenheitstyp zu definieren. Diese werden automatisch bei neuen Terminen übernommen.">
+        Checkliste aktivieren
+      </ion-toggle>
+    </ion-item>
+  </ion-item-group>
+</ion-list>
 
 <ion-fab vertical="bottom" horizontal="end" slot="fixed">
   @if (!isNew) {
