@@ -132,8 +132,8 @@ function calculateHoursUntil(
     return Math.floor(diffMinutes / 60); // Return negative hours for past events
   }
 
-  // Round up to the nearest hour
-  return Math.ceil(diffMinutes / 60);
+  // Use floor to get the current running hour (6h 30m = 6 hours)
+  return Math.floor(diffMinutes / 60);
 }
 
 Deno.serve(async (req) => {

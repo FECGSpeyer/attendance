@@ -28,6 +28,7 @@ export class NotificationService {
         registrations: true,
         criticals: true,
         reminders: true,
+        checklist: true,
       };
 
       await supabase
