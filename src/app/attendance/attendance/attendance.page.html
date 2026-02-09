@@ -21,6 +21,12 @@
                 <ion-label>Checkliste starten</ion-label>
               </ion-item>
             }
+            @if (!isHelper && canRestoreChecklist()) {
+              <ion-item button detail="false" (click)="restoreChecklist()">
+                <ion-icon slot="start" name="refresh-outline"></ion-icon>
+                <ion-label>Checkliste zurücksetzen</ion-label>
+              </ion-item>
+            }
           </ion-list>
         </ng-template>
       </ion-popover>

@@ -602,8 +602,45 @@ export class AttendancePage implements OnInit {
         },
       ],
     });
-
     await alert.present();
+  }
+
+  /**
+   * Check if the default checklist from the type can be restored
+   */
+  canRestoreChecklist(): boolean {
+    return this.type?.checklist?.length > 0 && (!this.attendance?.checklist || this.attendance.checklist.length === 0);
+  }
+
+  /**
+   * Restore the default checklist from the attendance type
+   */
+  async restoreChecklist(): Promise<void> {
+    if (!this.type?.checklist?.length) {
+      Utils.showToast('Keine Standard-Checkliste vorhanden', 'warning');
+      return;
+    }
+
+    // Copy checklist from type and calculate due dates
+    const checklist = this.type.checklist.map((item: ChecklistItem) => {
+      let dueDate: string | null = null;
+      if (item.deadlineHours !== null && item.deadlineHours !== undefined) {
+        const eventDateTime = this.attendance.start_time
+          ? dayjs(this.attendance.date).hour(Number(this.attendance.start_time.substring(0, 2))).minute(Number(this.attendance.start_time.substring(3, 5)))
+          : dayjs(this.attendance.date).hour(19).minute(0);
+        dueDate = eventDateTime.subtract(item.deadlineHours, 'hour').toISOString();
+      }
+      return {
+        ...item,
+        id: crypto.randomUUID(), // New unique ID
+        completed: false,
+        dueDate,
+      };
+    });
+
+    this.attendance.checklist = checklist;
+    await this.db.updateAttendance({ checklist }, this.attendance.id);
+    Utils.showToast('Checkliste wiederhergestellt', 'success');
   }
 
   /**
