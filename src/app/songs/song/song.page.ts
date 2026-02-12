@@ -9,10 +9,10 @@ import { Utils } from 'src/app/utilities/Utils';
 
 
 @Component({
-    selector: 'app-song',
-    templateUrl: './song.page.html',
-    styleUrls: ['./song.page.scss'],
-    standalone: false
+  selector: 'app-song',
+  templateUrl: './song.page.html',
+  styleUrls: ['./song.page.scss'],
+  standalone: false
 })
 export class SongPage implements OnInit {
   public song: Song;
@@ -153,8 +153,14 @@ export class SongPage implements OnInit {
           {
             text: 'Speichern',
             handler: async (data) => {
-              this.selectedFileInfos[index].note = data.note ?? "";
-              this.selectedFileInfos[index].instrumentId = null;
+              // Replace the entire object to trigger change detection in ion-select
+              this.selectedFileInfos[index] = {
+                ...this.selectedFileInfos[index],
+                note: data.note ?? "",
+                instrumentId: null
+              };
+              this.selectedFileInfos = [...this.selectedFileInfos];
+              this.cdr.detectChanges();
             }
           }
         ]

@@ -19,28 +19,28 @@ import { TypePageModule } from 'src/app/settings/general/type/type.module';
 import { popoverEnterAnimation, popoverLeaveAnimation } from '@rdlabo/ionic-theme-ios26';
 
 @NgModule({
-    declarations: [AppComponent],
-    imports: [
-        BrowserModule,
-        IonicModule.forRoot({
-            // iosTransitionAnimation disabled - causes double-back on swipe gesture
-            popoverEnter: isPlatform('ios') ? popoverEnterAnimation : undefined,
-            popoverLeave: isPlatform('ios') ? popoverLeaveAnimation : undefined,
-            swipeBackEnabled: false,
-        }),
-        AppRoutingModule,
-        PersonPageModule,
-        IonicStorageModule.forRoot(),
-        HistoryPageModule,
-        TeacherPageModule,
-        StatsPageModule,
-        ExportPageModule,
-        PlanningPageModule,
-        InstrumentPageModule,
-        AttendancePageModule,
-        TypePageModule,
-    ],
-    providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
-    bootstrap: [AppComponent]
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,
+    IonicModule.forRoot({
+      // iosTransitionAnimation disabled - causes double-back on swipe gesture
+      popoverEnter: isPlatform('ios') ? popoverEnterAnimation : undefined,
+      popoverLeave: isPlatform('ios') ? popoverLeaveAnimation : undefined,
+      swipeBackEnabled: false,
+    }),
+    AppRoutingModule,
+    PersonPageModule,
+    IonicStorageModule.forRoot(),
+    HistoryPageModule,
+    TeacherPageModule,
+    StatsPageModule,
+    ExportPageModule,
+    PlanningPageModule,
+    InstrumentPageModule,
+    AttendancePageModule,
+    TypePageModule,
+  ],
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
+  bootstrap: [AppComponent]
 })
 export class AppModule { }
