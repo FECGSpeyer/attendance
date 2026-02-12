@@ -40,6 +40,7 @@
     "@capacitor/ios": "^8.0.2",
     "@capacitor/keyboard": "^8.0.0",
     "@capacitor/network": "^8.0.0",
+    "@capacitor/push-notifications": "^8.0.0",
     "@capacitor/status-bar": "^8.0.0",
     "@ionic/angular": "^8.7.17",
     "@ionic/core": "^8.7.17",

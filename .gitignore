@@ -42,3 +42,6 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+android/app/google-services.json
+ios/App/App/GoogleService-Info.plist
