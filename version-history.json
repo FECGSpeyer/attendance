@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "3.7.3",
+          "date": "12.2.2026",
+          "changes": [
+            "🔄 Automatische Update-Erkennung: Die App prüft jetzt automatisch auf neue Versionen und zeigt einen Update-Dialog an."
+          ]
+        },
+        {
           "version": "3.7.2",
           "date": "12.2.2026",
           "changes": [

@@ -3,6 +3,8 @@ import { AlertController, IonRouterOutlet, Platform } from '@ionic/angular';
 import { App } from '@capacitor/app';
 import { Title } from '@angular/platform-browser';
 import { Storage } from '@ionic/storage-angular';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+import { filter } from 'rxjs/operators';
 import { Utils } from './utilities/Utils';
 import { DbService } from './services/db.service';
 import { inject } from "@vercel/analytics";
@@ -22,11 +24,13 @@ export class AppComponent {
     private storage: Storage,
     private alertController: AlertController,
     private db: DbService,
+    private swUpdate: SwUpdate,
   ) {
     this.initializeApp();
     this.titleService.setTitle("Attendix");
     // document.body.classList.add(environment.isChoir ? "choir" : environment.symphonyImage ? "sinfo" : "blas"); TODO
     this.listenToAuthChanges();
+    this.checkForUpdates();
   }
 
   async ngOnInit() {
@@ -79,5 +83,35 @@ export class AppComponent {
         this.presentPasswordRecoveryAlert();
       }
     });
+  }
+
+  checkForUpdates() {
+    if (this.swUpdate.isEnabled) {
+      // Listen for version ready events
+      this.swUpdate.versionUpdates
+        .pipe(filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
+        .subscribe(async () => {
+          const alert = await this.alertController.create({
+            header: 'Update verfügbar',
+            message: 'Eine neue Version ist verfügbar. Jetzt aktualisieren?',
+            buttons: [
+              { text: 'Später', role: 'cancel' },
+              {
+                text: 'Aktualisieren',
+                handler: () => document.location.reload()
+              }
+            ]
+          });
+          await alert.present();
+        });
+
+      // Check for updates every 30 seconds
+      setInterval(() => {
+        this.swUpdate.checkForUpdate();
+      }, 30000);
+
+      // Also check immediately on app start
+      this.swUpdate.checkForUpdate();
+    }
   }
 }
