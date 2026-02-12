@@ -4,6 +4,7 @@ import { ActionSheetButton, ActionSheetController, AlertController, IonItemSlidi
 // JSZip and pdf-lib are lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
 import { Role } from 'src/app/utilities/constants';
+import { matchInstrument, detectSpecialFileType } from 'src/app/utilities/instrument-matcher';
 import { Group, Organisation, Player, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
@@ -93,39 +94,22 @@ export class SongPage implements OnInit {
         Utils.showToast(`Die Datei ${file.name} überschreitet die maximale Größe von 20MB.`, 'danger', 5000);
         continue;
       }
-      // Try to map instrument by filename
+
       let mappedId: number | null = null;
       let note: string | undefined = undefined;
+
+      // Try to match instrument using advanced matching (translations, abbreviations, Roman numerals)
       if (this.instruments?.length) {
-        const match = this.instruments.find(g => {
-          if (file.name.normalize().toLowerCase().includes(g.name.normalize().toLowerCase())) {
-            return true;
-          }
-
-          if (g.synonyms) {
-            const synonyms = g.synonyms.split(',').map(s => s.trim().normalize().toLowerCase());
-            if (synonyms.some(syn => file.name.normalize().toLowerCase().includes(syn))) {
-              return true;
-            }
-          }
-
-          return false;
-        });
-        if (match) mappedId = match.id;
+        const match = matchInstrument(file.name, this.instruments);
+        if (match) mappedId = match.id!;
       }
 
+      // If no instrument match, check for special file types
       if (!mappedId) {
-        const fileName = file.name.normalize().toLowerCase();
-        if (file.type.startsWith('audio/')) {
-          mappedId = 1;
-        } else if (file.name.includes(".sib")) {
-          note = "Sibelius";
-        } else if (fileName.includes("partitur") || fileName.includes("score") || fileName.includes("full")) {
-          note = "Partitur";
-        } else if (fileName.includes("liedtext") || fileName.includes("text")) {
-          mappedId = 2;
-        } else if (fileName.includes("chior") || fileName.includes("chor")) {
-          note = "Chor";
+        const specialType = detectSpecialFileType(file.name, file.type);
+        if (specialType) {
+          mappedId = specialType.instrumentId;
+          note = specialType.note;
         }
       }
 
