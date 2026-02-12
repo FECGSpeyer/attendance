@@ -133,48 +133,117 @@ export class ShiftPage implements OnInit {
       buttons: [{
         text: 'Abbrechen',
       }, {
-        text: 'Kopieren',
+        text: 'Weiter',
         handler: async (tenantId: string) => {
           if (!tenantId) {
             Utils.showToast('Bitte wähle eine Instanz aus.', 'warning');
             return false;
           }
 
-          try {
-            const loading = await Utils.getLoadingElement(9999, 'Schichtplan wird kopiert...');
-            await loading.present();
+          // Get players assigned to this shift
+          const playersWithShift = await this.db.getPlayersWithShift(this.db.tenant().id, this.shift.id);
+          const hasAssignedPlayers = playersWithShift.length > 0;
 
-            // Create a clean copy without IDs and dependencies
-            const copiedShift: ShiftPlan = {
-              name: `${this.shift.name} (Kopie)`,
-              description: this.shift.description || '',
-              tenant_id: Number(tenantId),
-              definition: this.shift.definition.map(def => ({
-                start_time: def.start_time,
-                duration: def.duration,
-                free: def.free,
-                index: def.index,
-                repeat_count: def.repeat_count,
-              })),
-              shifts: (this.shift.shifts || []).map(s => ({
-                name: s.name,
-                date: s.date,
-              })),
-            };
-
-            await this.db.addShiftToTenant(copiedShift, Number(tenantId));
-
-            await loading.dismiss();
-            const targetTenant = this.linkedTenants.find(t => t.id === Number(tenantId));
-            Utils.showToast(`Schichtplan nach "${targetTenant?.longName}" kopiert.`, 'success');
-          } catch (error) {
-            console.error('Error copying shift:', error);
-            Utils.showToast('Fehler beim Kopieren des Schichtplans.', 'danger');
+          if (hasAssignedPlayers) {
+            // Show second alert for assignment options
+            await this.showCopyAssignmentsAlert(Number(tenantId), playersWithShift);
+          } else {
+            // No players assigned, copy directly
+            await this.executeCopy(Number(tenantId), false, []);
           }
         }
       }]
     });
     await alert.present();
+  }
+
+  private async showCopyAssignmentsAlert(
+    tenantId: number,
+    playersWithShift: { id: number; appId: string; shift_name: string; shift_start: string }[]
+  ) {
+    const targetTenant = this.linkedTenants.find(t => t.id === tenantId);
+
+    const alert = await this.alertController.create({
+      header: 'Zuweisungen kopieren?',
+      message: `Der Schichtplan ist ${playersWithShift.length} ${playersWithShift.length === 1 ? 'Person' : 'Personen'} zugewiesen. Sollen diese Zuweisungen auch in "${targetTenant?.longName}" übernommen werden?`,
+      buttons: [{
+        text: 'Abbrechen',
+      }, {
+        text: 'Nur Schichtplan',
+        handler: async () => {
+          await this.executeCopy(tenantId, false, playersWithShift);
+        }
+      }, {
+        text: 'Mit Zuweisungen',
+        handler: async () => {
+          await this.executeCopy(tenantId, true, playersWithShift);
+        }
+      }]
+    });
+    await alert.present();
+  }
+
+  private async executeCopy(
+    tenantId: number,
+    copyAssignments: boolean,
+    playersWithShift: { id: number; appId: string; shift_name: string; shift_start: string }[]
+  ) {
+    try {
+      const loading = await Utils.getLoadingElement(9999, 'Schichtplan wird kopiert...');
+      await loading.present();
+
+      // Create a clean copy without IDs and dependencies
+      const copiedShift: ShiftPlan = {
+        name: `${this.shift.name} (Kopie)`,
+        description: this.shift.description || '',
+        tenant_id: tenantId,
+        definition: this.shift.definition.map(def => ({
+          start_time: def.start_time,
+          duration: def.duration,
+          free: def.free,
+          index: def.index,
+          repeat_count: def.repeat_count,
+        })),
+        shifts: (this.shift.shifts || []).map(s => ({
+          name: s.name,
+          date: s.date,
+        })),
+      };
+
+      const newShiftId = await this.db.addShiftToTenant(copiedShift, tenantId);
+
+      let assignedCount = 0;
+      // Assign shift to matching players in target tenant if requested
+      if (copyAssignments && playersWithShift.length > 0) {
+        const appIds = playersWithShift.map(p => p.appId).filter(id => id);
+        assignedCount = await this.db.assignShiftToPlayersInTenant(
+          tenantId,
+          newShiftId,
+          appIds,
+          playersWithShift
+        );
+      }
+
+      await loading.dismiss();
+      const targetTenant = this.linkedTenants.find(t => t.id === tenantId);
+
+      if (copyAssignments && assignedCount > 0) {
+        Utils.showToast(
+          `Schichtplan nach "${targetTenant?.longName}" kopiert und ${assignedCount} ${assignedCount === 1 ? 'Person' : 'Personen'} zugewiesen.`,
+          'success'
+        );
+      } else if (copyAssignments && assignedCount === 0 && playersWithShift.length > 0) {
+        Utils.showToast(
+          `Schichtplan nach "${targetTenant?.longName}" kopiert. Keine passenden Personen in Ziel-Instanz gefunden.`,
+          'warning'
+        );
+      } else {
+        Utils.showToast(`Schichtplan nach "${targetTenant?.longName}" kopiert.`, 'success');
+      }
+    } catch (error) {
+      console.error('Error copying shift:', error);
+      Utils.showToast('Fehler beim Kopieren des Schichtplans.', 'danger');
+    }
   }
 
   async calculateShifts(shiftInstance?: ShiftInstance) {

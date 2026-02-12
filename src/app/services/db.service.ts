@@ -2351,9 +2351,23 @@ export class DbService {
     return this.shifts().find(s => s.name === shift.name);
   }
 
-  async addShiftToTenant(shift: ShiftPlan, tenantId: number): Promise<void> {
+  async addShiftToTenant(shift: ShiftPlan, tenantId: number): Promise<string> {
     this.checkDemoRestriction();
     return await this.shiftSvc.addShift(shift, tenantId);
+  }
+
+  async getPlayersWithShift(tenantId: number, shiftId: string): Promise<{ id: number; appId: string; shift_name: string; shift_start: string }[]> {
+    return await this.shiftSvc.getPlayersWithShift(tenantId, shiftId);
+  }
+
+  async assignShiftToPlayersInTenant(
+    targetTenantId: number,
+    newShiftId: string,
+    appIds: string[],
+    shiftData: { appId: string; shift_name: string; shift_start: string }[]
+  ): Promise<number> {
+    this.checkDemoRestriction();
+    return await this.shiftSvc.assignShiftToPlayersInTenant(targetTenantId, newShiftId, appIds, shiftData);
   }
 
   async updateShift(shift: ShiftPlan): Promise<ShiftPlan> {

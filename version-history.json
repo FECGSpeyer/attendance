@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "3.7.4",
+          "date": "12.2.2026",
+          "changes": [
+            "📋 Schichtplan kopieren mit Zuweisungen: Beim Kopieren eines Schichtplans in eine andere Instanz können nun auch die Personen-Zuweisungen übernommen werden."
+          ]
+        },
+        {
           "version": "3.7.3",
           "date": "12.2.2026",
           "changes": [
