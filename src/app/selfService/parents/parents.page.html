@@ -1,36 +1,199 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>An-/Abmeldung</ion-title>
+    <ion-title>{{ db.tenant()?.longName }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button id="legend-button-parents">
+        <ion-icon slot="icon-only" name="information-outline"></ion-icon>
+      </ion-button>
+      <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="legend-button-parents">
+        <ng-template>
+          <ion-content color="light">
+            <ion-list [inset]="true">
+              <ion-list-header>
+                <ion-label>Legende</ion-label>
+              </ion-list-header>
+              <ion-item-group>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="success">✓</ion-badge>
+                  <ion-label>Anwesend</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="warning">E</ion-badge>
+                  <ion-label>Entschuldigt</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="danger">A</ion-badge>
+                  <ion-label>Abwesend</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="tertiary">L</ion-badge>
+                  <ion-label>Verspätet anwesend</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="rosa">LE</ion-badge>
+                  <ion-label>Verspätet entschuldigt</ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-badge slot="start" color="medium">N</ion-badge>
+                  <ion-label>Neutral</ion-label>
+                </ion-item>
+              </ion-item-group>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">An-/Abmeldung</ion-title>
+      <ion-title size="large">{{ db.tenant()?.longName }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <ion-accordion-group>
-    @for (att of attendances; track att.id) {
-      <ion-accordion>
-        <ion-item color="primary" slot="header">
-          <ion-label>{{ getReadableDate(att.date, att.type_id) }}</ion-label>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Welcome Card with Statistics -->
+  @if (kids.length > 0) {
+    <ion-card>
+      <ion-card-content>
+        <h1 class="title">Shalom!</h1>
+        <p>Du verwaltest {{ kids.length }} {{ kids.length === 1 ? 'Kind' : 'Kinder' }}:</p>
+        @for (kid of kids; track kid.id) {
+          <ion-chip>
+            <ion-label>{{ kid.firstName }}</ion-label>
+            @if (kidStats[kid.id]) {
+              <ion-badge [color]="kidStats[kid.id].perc >= 75 ? 'success' : kidStats[kid.id].perc >= 50 ? 'warning' : 'danger'">
+                {{ kidStats[kid.id].perc }}%
+              </ion-badge>
+            }
+          </ion-chip>
+        }
+        @if (upcomingSongs.length > 0) {
+          <br>
+          <ion-button fill="clear" size="small" (click)="songsModalOpen = true">
+            Aktuelle Werke anzeigen
+          </ion-button>
+        }
+      </ion-card-content>
+    </ion-card>
+  }
+
+  <!-- Songs Modal -->
+  <ion-modal class="songsModal" [isOpen]="songsModalOpen" (ionModalDidDismiss)="songsModalOpen = false"
+    [initialBreakpoint]="upcomingSongs.length > 1 ? 0.8 : 0.6"
+    [breakpoints]="upcomingSongs.length > 1 ? [0, 0.8, 1] : [0, 0.6, 1]">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="songsModalOpen = false">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title>Aktuelle Werke</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content color="light">
+        @for (group of upcomingSongs; track group.date) {
+          <ion-list [inset]="true">
+            <ion-list-header>
+              <ion-label>
+                <h2>{{ group.date }}</h2>
+              </ion-label>
+            </ion-list-header>
+            <ion-item-group>
+              @for (his of group.history; track his.id) {
+                <ion-item button (click)="openSongLink(his.song?.link)">
+                  @if (his.song) {
+                    <ion-label>
+                      <h2>{{ his.song.number }}. {{ his.song.name }}</h2>
+                      <h3>Dirigent: {{ his.conductorName }}</h3>
+                    </ion-label>
+                  }
+                  @if (his.song?.link) {
+                    <ion-icon slot="end" name="download-outline"></ion-icon>
+                  }
+                </ion-item>
+              }
+            </ion-item-group>
+          </ion-list>
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-accordion-group [multiple]="true" [value]="['current', 'upcoming']">
+    <!-- Excuse Modal -->
+    <ion-modal #excuseModal initialBreakpoint="0.8" [breakpoints]="[0, 0.8]">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <ion-button (click)="dismissExcuseModal()">Abbrechen</ion-button>
+            </ion-buttons>
+            <ion-title>
+              {{ isLateComingEvent ? 'Verspätung' : 'Abmeldung' }}
+            </ion-title>
+            <ion-buttons slot="end">
+              <ion-button [disabled]="isReasonSelectionInvalid(reason)" (click)="signout()">Bestätigen</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="ion-padding">
+          <ion-list>
+            <ion-item class="margin-auto">
+              <ion-select [(ngModel)]="reasonSelection" (ionChange)="onReasonSelect($event)" class="margin-auto"
+                aria-label="reason-ion-select" interface="action-sheet" placeholder="Grund auswählen">
+                <ion-select-option value="Krankheitsbedingt">Krankheitsbedingt</ion-select-option>
+                <ion-select-option value="Urlaubsbedingt">Urlaubsbedingt</ion-select-option>
+                <ion-select-option value="Arbeitsbedingt">Arbeitsbedingt</ion-select-option>
+                <ion-select-option value="Familienbedingt">Familienbedingt</ion-select-option>
+                <ion-select-option value="Sonstiger Grund">Sonstiger Grund (Text)</ion-select-option>
+              </ion-select>
+            </ion-item>
+            @if (selAttIds.length && (reasonSelection === 'Sonstiger Grund')) {
+              <ion-item>
+                <ion-label position="stacked">Grund</ion-label>
+                <ion-textarea placeholder="Mindestens 5 Zeichen eingeben..." [(ngModel)]="reason"
+                  (ionFocus)="increaseModalBreakpoint()" (ionBlur)="decreaseModalBreakpoint()"></ion-textarea>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+
+    <!-- Current Attendance -->
+    @if (currentAttendance) {
+      <ion-accordion value="current">
+        <ion-item slot="header" color="primary">
+          <ion-label>Aktuell</ion-label>
         </ion-item>
         <div slot="content">
           <ion-list>
+            <ion-item-divider>
+              <ion-label>{{ getReadableDate(currentAttendance.date, currentAttendance.type_id) }}</ion-label>
+            </ion-item-divider>
             @if (kids.length !== 1) {
-              <ion-item button (click)="openActionSheet(att, true)">
+              <ion-item button (click)="openActionSheet(currentAttendance, true)">
                 <ion-label>
                   <h2>Alle Kinder An- bzw. Abmelden</h2>
                 </ion-label>
               </ion-item>
             }
             @for (pa of personAttendances; track pa.id) {
-              @if (pa.attendance_id === att.id) {
-                <ion-item (click)="openActionSheet(att, false, pa)" button>
+              @if (pa.attendance_id === currentAttendance.id) {
+                <ion-item (click)="openActionSheet(currentAttendance, false, pa)" button>
                   <ion-label>
                     <h2>{{ pa.person.firstName }}</h2>
+                    @if (pa.notes) {
+                      <ion-note [style.fontSize]="'.8rem'" color="medium">Notiz: {{ pa.notes }}</ion-note>
+                    }
                   </ion-label>
                   <ion-badge slot="end"
                     [color]="pa.status === 1 ? 'success' : pa.status === 4 ? 'danger' : pa.status === 3 ? 'tertiary' : pa.status === 5 ? 'rosa' : pa.status === 0 ? 'medium' : 'warning'">
@@ -43,49 +206,77 @@
         </div>
       </ion-accordion>
     }
+
+    <!-- Upcoming Attendances -->
+    @if (upcomingAttendances.length > 0) {
+      <ion-accordion value="upcoming">
+        <ion-item slot="header" color="primary">
+          <ion-label>Anstehende</ion-label>
+        </ion-item>
+        <div slot="content">
+          <ion-list>
+            @for (att of upcomingAttendances; track att.id) {
+              <ion-item-divider>
+                <ion-label>{{ getReadableDate(att.date, att.type_id) }}</ion-label>
+              </ion-item-divider>
+              @if (kids.length !== 1) {
+                <ion-item button (click)="openActionSheet(att, true)">
+                  <ion-label>
+                    <h2>Alle Kinder An- bzw. Abmelden</h2>
+                  </ion-label>
+                </ion-item>
+              }
+              @for (pa of personAttendances; track pa.id) {
+                @if (pa.attendance_id === att.id) {
+                  <ion-item (click)="openActionSheet(att, false, pa)" button>
+                    <ion-label>
+                      <h2>{{ pa.person.firstName }}</h2>
+                      @if (pa.notes) {
+                        <ion-note [style.fontSize]="'.8rem'" color="medium">Notiz: {{ pa.notes }}</ion-note>
+                      }
+                    </ion-label>
+                    <ion-badge slot="end"
+                      [color]="pa.status === 1 ? 'success' : pa.status === 4 ? 'danger' : pa.status === 3 ? 'tertiary' : pa.status === 5 ? 'rosa' : pa.status === 0 ? 'medium' : 'warning'">
+                      {{ getStatusText(pa.status) }}
+                    </ion-badge>
+                  </ion-item>
+                }
+              }
+            }
+          </ion-list>
+        </div>
+      </ion-accordion>
+    }
+
+    <!-- Past Attendances -->
+    @if (pastAttendances.length > 0) {
+      <ion-accordion value="past">
+        <ion-item slot="header" color="primary">
+          <ion-label>Vergangene</ion-label>
+        </ion-item>
+        <div slot="content">
+          <ion-list>
+            @for (att of pastAttendances; track att.id) {
+              <ion-item-divider>
+                <ion-label>{{ getReadableDate(att.date, att.type_id) }}</ion-label>
+              </ion-item-divider>
+              @for (pa of personAttendances; track pa.id) {
+                @if (pa.attendance_id === att.id) {
+                  <ion-item>
+                    <ion-label>
+                      <h2>{{ pa.person.firstName }}</h2>
+                    </ion-label>
+                    <ion-badge slot="end"
+                      [color]="pa.status === 1 ? 'success' : pa.status === 4 ? 'danger' : pa.status === 3 ? 'tertiary' : pa.status === 5 ? 'rosa' : pa.status === 0 ? 'medium' : 'warning'">
+                      {{ getStatusText(pa.status) }}
+                    </ion-badge>
+                  </ion-item>
+                }
+              }
+            }
+          </ion-list>
+        </div>
+      </ion-accordion>
+    }
   </ion-accordion-group>
-  <ion-modal #excuseModal initialBreakpoint="0.8" [breakpoints]="[0, 0.8]">
-    <ng-template>
-      <ion-header>
-        <ion-toolbar>
-          <ion-buttons slot="start">
-            <ion-button (click)="dismissExcuseModal()">Abbrechen</ion-button>
-          </ion-buttons>
-          <ion-title>
-            {{
-            isLateComingEvent ? 'Verspätung' : 'Abmeldung'
-            }}
-          </ion-title>
-          <ion-buttons slot="end">
-            <ion-button [disabled]="!(reason && reason.length > 4)" (click)="signout()">Bestätigen</ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content class="ion-padding">
-        <ion-list>
-          <div>
-            <ion-list>
-              <ion-item class="margin-auto">
-                <ion-select [(ngModel)]="reasonSelection" (ionChange)="onReasonSelect($event)" class="margin-auto"
-                  aria-label="reason-ion-select" interface="action-sheet" placeholder="Grund auswählen">
-                  <ion-select-option value="Krankheitsbedingt">Krankheitsbedingt</ion-select-option>
-                  <ion-select-option value="Urlaubsbedingt">Urlaubsbedingt</ion-select-option>
-                  <ion-select-option value="Arbeitsbedingt">Arbeitsbedingt</ion-select-option>
-                  <ion-select-option value="Familienbedingt">Familienbedingt</ion-select-option>
-                  <ion-select-option value="Sonstiger Grund">Sonstiger Grund (Text)</ion-select-option>
-                </ion-select>
-              </ion-item>
-            </ion-list>
-          </div>
-          @if (selAttIds.length && (reasonSelection === 'Sonstiger Grund')) {
-            <ion-item>
-              <ion-label position="stacked" (ionFocus)="{}">Grund</ion-label>
-              <ion-textarea placeholder="Mindestens 5 Zeichen eingeben..." [(ngModel)]="reason"
-              (ionFocus)="increaseModalBreakpoint()" (ionBlur)="decreaseModalBreakpoint()"></ion-textarea>
-            </ion-item>
-          }
-        </ion-list>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
 </ion-content>

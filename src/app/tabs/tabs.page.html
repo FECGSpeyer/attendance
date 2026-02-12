@@ -22,15 +22,10 @@
       </ion-tab-button>
     }
 
-    @if (isConductor || isParent) {
+    @if (isConductor) {
       <ion-tab-button tab="player">
         <ion-icon name="people-outline"></ion-icon>
-        @if (isParent) {
-          <ion-label>Meine Kinder</ion-label>
-        }
-        @if (!isParent) {
-          <ion-label>Personen</ion-label>
-        }
+        <ion-label>Personen</ion-label>
       </ion-tab-button>
     }
 

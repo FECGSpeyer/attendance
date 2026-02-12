@@ -1,6 +1,17 @@
     {
       "versions": [
         {
+          "version": "3.7.2",
+          "date": "12.2.2026",
+          "changes": [
+            "👨‍👩‍👧 Eltern-Ansicht optimiert: Neue Willkommenskarte mit Anwesenheitsstatistiken pro Kind.",
+            "🎵 Aktuelle Werke: Eltern können jetzt auch die aktuellen Werke einsehen.",
+            "📅 Bessere Terminübersicht: Termine sind jetzt in Aktuell, Anstehende und Vergangene gruppiert.",
+            "🔄 Pull-to-Refresh: Daten durch Herunterziehen aktualisieren.",
+            "ℹ️ Legende: Info-Button erklärt die Anwesenheits-Symbole."
+          ]
+        },
+        {
           "version": "3.7.1",
           "date": "9.2.2026",
           "changes": [

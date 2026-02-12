@@ -1,10 +1,15 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, effect, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, IonModal } from '@ionic/angular';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus } from 'src/app/utilities/constants';
-import { Attendance, Person, PersonAttendance } from 'src/app/utilities/interfaces';
+import { Attendance, History, Person, PersonAttendance } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+
+interface KidStats {
+  perc: number;
+  lateCount: number;
+}
 
 @Component({
     selector: 'app-parents',
@@ -21,21 +26,141 @@ export class ParentsPage implements OnInit {
   public selAttIds: string[] = [];
   public selPersAttIds: string[] = [];
   public reasonSelection: string;
+
+  // New properties for optimized UI
+  public currentAttendance: Attendance;
+  public upcomingAttendances: Attendance[] = [];
+  public pastAttendances: Attendance[] = [];
+  public kidStats: { [key: number]: KidStats } = {};
+  public upcomingSongs: { date: string; history: History[] }[] = [];
+  public songsModalOpen: boolean = false;
+
   @ViewChild('excuseModal') excuseModal: IonModal;
 
   constructor(
     public db: DbService,
     private actionSheetController: ActionSheetController,
-  ) { }
+  ) {
+    effect(async () => {
+      if (this.db.tenant()) {
+        await this.initialize();
+      }
+    });
+  }
 
   async ngOnInit() {
+    await this.initialize();
+  }
+
+  async initialize() {
     this.kids = await this.db.getPlayers();
-    this.attendances = (await this.db.getUpcomingAttendances()).reverse();
-    this.personAttendances = await this.db.getParentAttendances(this.kids, this.attendances);
+
+    // Get all person attendances for all kids (includes past and future)
+    const allPersonAttendances: PersonAttendance[] = [];
+    for (const kid of this.kids) {
+      const kidAttendances = await this.db.getPersonAttendances(kid.id, true);
+      // Add person info to each attendance
+      kidAttendances.forEach(pa => {
+        (pa as any).person = { firstName: kid.firstName };
+        (pa as any).person_id = kid.id;
+        (pa as any).attendance_id = pa.attId;
+      });
+      allPersonAttendances.push(...kidAttendances);
+    }
+
+    this.personAttendances = allPersonAttendances.sort((a, b) =>
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    // Build unique attendances from personAttendances for organizing
+    const uniqueAttendanceIds = new Set<number>();
+    this.attendances = [];
+    for (const pa of this.personAttendances) {
+      if (!uniqueAttendanceIds.has(pa.attId)) {
+        uniqueAttendanceIds.add(pa.attId);
+        this.attendances.push({
+          id: pa.attId,
+          date: pa.date,
+          type_id: pa.typeId,
+          title: pa.title,
+        } as unknown as Attendance);
+      }
+    }
+
+    // Organize attendances
+    this.organizeAttendances();
+
+    // Calculate statistics per kid
+    this.calculateKidStats();
+
+    // Get current songs
+    this.upcomingSongs = await this.db.getCurrentSongs();
+  }
+
+  organizeAttendances() {
+    const today = dayjs().startOf('day');
+
+    const current: Attendance[] = [];
+    const upcoming: Attendance[] = [];
+    const past: Attendance[] = [];
+
+    for (const att of this.attendances) {
+      const attDate = dayjs(att.date);
+      if (attDate.isSame(today, 'day')) {
+        current.push(att);
+      } else if (attDate.isAfter(today)) {
+        upcoming.push(att);
+      } else {
+        past.push(att);
+      }
+    }
+
+    // Sort upcoming ascending (closest first)
+    upcoming.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // Sort past descending (most recent first)
+    past.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    this.currentAttendance = current[0];
+    this.upcomingAttendances = upcoming;
+    this.pastAttendances = past.slice(0, 10); // Limit past attendances
+  }
+
+  calculateKidStats() {
+    this.kidStats = {};
+
+    for (const kid of this.kids) {
+      const kidAttendances = this.personAttendances.filter(
+        pa => pa.person_id === kid.id && dayjs(pa.date).isBefore(dayjs().startOf('day'))
+      );
+
+      if (kidAttendances.length === 0) {
+        this.kidStats[kid.id] = { perc: 0, lateCount: 0 };
+        continue;
+      }
+
+      const attended = kidAttendances.filter(pa =>
+        pa.status === AttendanceStatus.Present ||
+        pa.status === AttendanceStatus.Late ||
+        pa.status === AttendanceStatus.LateExcused
+      );
+
+      const lateCount = kidAttendances.filter(pa => pa.status === AttendanceStatus.Late).length;
+
+      this.kidStats[kid.id] = {
+        perc: Math.round((attended.length / kidAttendances.length) * 100),
+        lateCount
+      };
+    }
   }
 
   getReadableDate(date: string, type_id: string): string {
-    return Utils.getReadableDate(date, this.db.attendanceTypes().find(type => type.id === type_id));
+    const attType = this.db.attendanceTypes().find(type => type.id === type_id);
+    if (!attType) {
+      // Fallback if attendance type not found
+      return dayjs(date).locale('de').format('ddd, DD.MM.YYYY');
+    }
+    return Utils.getReadableDate(date, attType);
   }
 
   getStatusText(status: AttendanceStatus): string {
@@ -43,10 +168,11 @@ export class ParentsPage implements OnInit {
       case AttendanceStatus.Present:
         return '✓';
       case AttendanceStatus.Absent:
-        return 'X';
+        return 'A';
       case AttendanceStatus.Late:
-      case AttendanceStatus.LateExcused:
         return 'L';
+      case AttendanceStatus.LateExcused:
+        return 'LE';
       case AttendanceStatus.Neutral:
         return 'N';
       default:
@@ -55,8 +181,11 @@ export class ParentsPage implements OnInit {
   }
 
   async openActionSheet(attendance: any, allKids: boolean = false, personAttendance?: any) {
-    this.selAttIds = allKids ? this.personAttendances.filter((pa) => pa.attendance_id === attendance.id).map((pa) => pa.id) : personAttendance ? [personAttendance.id] : [];
+    this.selAttIds = allKids
+      ? this.personAttendances.filter((pa) => pa.attendance_id === attendance.id).map((pa) => pa.id)
+      : personAttendance ? [personAttendance.id] : [];
     this.reasonSelection = 'Krankheitsbedingt';
+
     let buttons = [
       {
         text: 'Anmelden',
@@ -110,14 +239,14 @@ export class ParentsPage implements OnInit {
       }
     }
 
-    const actionSheet = await new ActionSheetController().create({
+    const actionSheet = await this.actionSheetController.create({
       buttons,
     });
 
     await actionSheet.present();
   }
 
-    async signout() {
+  async signout() {
     await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent, true);
 
     this.excuseModal.dismiss();
@@ -127,7 +256,7 @@ export class ParentsPage implements OnInit {
 
     this.reasonSelection = '';
 
-    this.personAttendances = await this.db.getParentAttendances(this.kids, this.attendances);
+    await this.refreshPersonAttendances();
   }
 
   onReasonSelect(event) {
@@ -150,7 +279,27 @@ export class ParentsPage implements OnInit {
 
     Utils.showToast("Danke für die Anmeldung 🙂", "success", 4000);
 
-    this.personAttendances = await this.db.getParentAttendances(this.kids, this.attendances);
+    await this.refreshPersonAttendances();
+  }
+
+  async refreshPersonAttendances() {
+    const allPersonAttendances: PersonAttendance[] = [];
+    for (const kid of this.kids) {
+      const kidAttendances = await this.db.getPersonAttendances(kid.id, true);
+      kidAttendances.forEach(pa => {
+        (pa as any).person = { firstName: kid.firstName };
+        (pa as any).person_id = kid.id;
+        (pa as any).attendance_id = pa.attId;
+      });
+      allPersonAttendances.push(...kidAttendances);
+    }
+
+    this.personAttendances = allPersonAttendances.sort((a, b) =>
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    this.organizeAttendances();
+    this.calculateKidStats();
   }
 
   dismissExcuseModal() {
@@ -163,5 +312,23 @@ export class ParentsPage implements OnInit {
 
   decreaseModalBreakpoint() {
     this.excuseModal.setCurrentBreakpoint(0.4);
+  }
+
+  isReasonSelectionInvalid(reason: string): boolean {
+    if (!(reason && reason.length > 4) || /\S/.test(reason) === false) {
+      return true;
+    }
+    return false;
+  }
+
+  async handleRefresh(event) {
+    await this.initialize();
+    event.target.complete();
+  }
+
+  openSongLink(link: string) {
+    if (link) {
+      window.open(link, "_blank");
+    }
   }
 }

@@ -36,6 +36,7 @@ export class TabsPage {
     effect(() => {
       this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.VIEWER || this.db.tenantUser().role === Role.RESPONSIBLE;
       this.isHelper = this.db.tenantUser().role === Role.HELPER;
+      this.isParent = this.db.tenantUser().role === Role.PARENT;
       this.isPlayer = this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.NONE;
       this.hasMultipleTenants = (this.db.tenants()?.length || 0) > 1;
 

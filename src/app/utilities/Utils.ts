@@ -584,8 +584,9 @@ export class Utils {
       case Role.ADMIN:
       case Role.RESPONSIBLE:
       case Role.VIEWER:
-      case Role.PARENT:
         return "/tabs/player";
+      case Role.PARENT:
+        return "/tabs/parents";
       case Role.HELPER:
       case Role.NONE:
       case Role.PLAYER:
@@ -605,7 +606,7 @@ export class Utils {
       case "/tabs/signout":
         return [Role.HELPER, Role.PLAYER, Role.APPLICANT].includes(role);
       case "/tabs/player":
-        return [Role.ADMIN, Role.RESPONSIBLE, Role.VIEWER, Role.PARENT].includes(role);
+        return [Role.ADMIN, Role.RESPONSIBLE, Role.VIEWER].includes(role);
       case "/tabs/settings/notifications":
         return [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER, Role.PLAYER].includes(role);
       case "/tabs/attendance":
