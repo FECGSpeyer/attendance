@@ -2365,9 +2365,25 @@ export class DbService {
     newShiftId: string,
     appIds: string[],
     shiftData: { appId: string; shift_name: string; shift_start: string }[]
-  ): Promise<number> {
+  ): Promise<{ assignedCount: number; assignedPlayerIds: number[]; playerAppIdMap: { id: number; appId: string }[] }> {
     this.checkDemoRestriction();
     return await this.shiftSvc.assignShiftToPlayersInTenant(targetTenantId, newShiftId, appIds, shiftData);
+  }
+
+  async updateShiftAttendancesInTenant(
+    targetTenantId: number,
+    shift: ShiftPlan,
+    assignedPlayerIds: number[],
+    shiftData: { appId: string; shift_name: string; shift_start: string }[],
+    playerAppIdMap: { id: number; appId: string }[]
+  ): Promise<void> {
+    return await this.shiftSvc.updateShiftAttendancesInTenant(
+      targetTenantId,
+      shift,
+      assignedPlayerIds,
+      shiftData,
+      playerAppIdMap
+    );
   }
 
   async updateShift(shift: ShiftPlan): Promise<ShiftPlan> {

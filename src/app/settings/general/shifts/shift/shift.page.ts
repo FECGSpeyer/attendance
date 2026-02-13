@@ -216,12 +216,24 @@ export class ShiftPage implements OnInit {
       // Assign shift to matching players in target tenant if requested
       if (copyAssignments && playersWithShift.length > 0) {
         const appIds = playersWithShift.map(p => p.appId).filter(id => id);
-        assignedCount = await this.db.assignShiftToPlayersInTenant(
+        const result = await this.db.assignShiftToPlayersInTenant(
           tenantId,
           newShiftId,
           appIds,
           playersWithShift
         );
+        assignedCount = result.assignedCount;
+
+        // Update attendance statuses for assigned players based on the shift
+        if (result.assignedPlayerIds.length > 0) {
+          await this.db.updateShiftAttendancesInTenant(
+            tenantId,
+            copiedShift,
+            result.assignedPlayerIds,
+            playersWithShift,
+            result.playerAppIdMap
+          );
+        }
       }
 
       await loading.dismiss();

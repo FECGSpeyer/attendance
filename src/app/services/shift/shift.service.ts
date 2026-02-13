@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
-import { ShiftPlan, ShiftDefinition } from '../../utilities/interfaces';
+import { ShiftPlan, ShiftDefinition, AttendanceType, PersonAttendance } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
+import { AttendanceStatus } from '../../utilities/constants';
+import dayjs from 'dayjs';
 
 @Injectable({
   providedIn: 'root'
@@ -111,9 +113,9 @@ export class ShiftService {
     newShiftId: string,
     appIds: string[],
     shiftData: { appId: string; shift_name: string; shift_start: string }[]
-  ): Promise<number> {
+  ): Promise<{ assignedCount: number; assignedPlayerIds: number[]; playerAppIdMap: { id: number; appId: string }[] }> {
     if (appIds.length === 0) {
-      return 0;
+      return { assignedCount: 0, assignedPlayerIds: [], playerAppIdMap: [] };
     }
 
     // Get players in target tenant that have matching appIds
@@ -130,11 +132,14 @@ export class ShiftService {
     }
 
     if (!targetPlayers || targetPlayers.length === 0) {
-      return 0;
+      return { assignedCount: 0, assignedPlayerIds: [], playerAppIdMap: [] };
     }
 
     // Update each player with the new shift
     let assignedCount = 0;
+    const assignedPlayerIds: number[] = [];
+    const playerAppIdMap: { id: number; appId: string }[] = [];
+
     for (const player of targetPlayers) {
       const originalData = shiftData.find(sd => sd.appId === player.appId);
       const { error: updateError } = await supabase
@@ -148,9 +153,97 @@ export class ShiftService {
 
       if (!updateError) {
         assignedCount++;
+        assignedPlayerIds.push(player.id);
+        playerAppIdMap.push({ id: player.id, appId: player.appId });
       }
     }
 
-    return assignedCount;
+    return { assignedCount, assignedPlayerIds, playerAppIdMap };
+  }
+
+  async updateShiftAttendancesInTenant(
+    targetTenantId: number,
+    shift: ShiftPlan,
+    assignedPlayerIds: number[],
+    shiftData: { appId: string; shift_name: string; shift_start: string }[],
+    playerAppIdMap: { id: number; appId: string }[]
+  ): Promise<void> {
+    if (assignedPlayerIds.length === 0) {
+      return;
+    }
+
+    // Get attendance types for target tenant
+    const { data: attendanceTypes, error: typesError } = await supabase
+      .from('attendance_types')
+      .select('*')
+      .eq('tenant_id', targetTenantId);
+
+    if (typesError || !attendanceTypes) {
+      console.error('Error loading attendance types:', typesError);
+      return;
+    }
+
+    const types = attendanceTypes as unknown as AttendanceType[];
+
+    // Get upcoming attendances for target tenant
+    const { data: upcomingAttendances, error: attError } = await supabase
+      .from('attendance')
+      .select('id, date, type_id, start_time, end_time')
+      .eq('tenantId', targetTenantId)
+      .gt('date', dayjs().startOf('day').toISOString());
+
+    if (attError || !upcomingAttendances || upcomingAttendances.length === 0) {
+      return;
+    }
+
+    const attendanceIds = upcomingAttendances.map(a => a.id);
+
+    // Get person attendances for assigned players
+    const { data: personAttendances, error: paError } = await supabase
+      .from('person_attendances')
+      .select('id, person_id, attendance_id, status, notes')
+      .in('person_id', assignedPlayerIds)
+      .in('attendance_id', attendanceIds);
+
+    if (paError || !personAttendances) {
+      console.error('Error loading person attendances:', paError);
+      return;
+    }
+
+    // Update each person attendance based on shift
+    for (const pa of personAttendances) {
+      const attendance = upcomingAttendances.find(a => a.id === pa.attendance_id);
+      if (!attendance) continue;
+
+      const attType = types.find(t => t.id === attendance.type_id);
+      if (!attType || attType.all_day) continue;
+
+      // Get shift data for this player
+      const playerMapping = playerAppIdMap.find(p => p.id === pa.person_id);
+      if (!playerMapping) continue;
+
+      const playerShiftData = shiftData.find(sd => sd.appId === playerMapping.appId);
+      if (!playerShiftData) continue;
+
+      const result = Utils.getStatusByShift(
+        shift,
+        attendance.date,
+        attendance.start_time ?? attType.start_time,
+        attendance.end_time ?? attType.end_time,
+        attType.default_status,
+        playerShiftData.shift_start,
+        playerShiftData.shift_name
+      );
+
+      if (result.status === AttendanceStatus.Excused && pa.status === attType.default_status) {
+        await supabase
+          .from('person_attendances')
+          .update({
+            status: result.status,
+            notes: result.note,
+          })
+          .eq('id', pa.id);
+      }
+    }
   }
 }

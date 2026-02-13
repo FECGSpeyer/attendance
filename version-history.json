@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "3.7.5",
+          "date": "13.2.2026",
+          "changes": [
+            "📅 Schichtplan kopieren mit Anwesenheits-Update: Beim Kopieren eines Schichtplans mit Zuweisungen werden nun auch die anstehenden Termine der zugewiesenen Personen automatisch aktualisiert."
+          ]
+        },
+        {
           "version": "3.7.4",
           "date": "12.2.2026",
           "changes": [
