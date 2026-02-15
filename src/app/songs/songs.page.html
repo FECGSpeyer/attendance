@@ -103,6 +103,10 @@
               <ion-select-option value="numberDesc">Nummer ↓</ion-select-option>
               <ion-select-option value="nameAsc">Name ↑</ion-select-option>
               <ion-select-option value="nameDesc">Name ↓</ion-select-option>
+              @if (!tenantData) {
+                <ion-select-option value="lastSungAsc">{{ tenantType === 'orchestra' ? 'Zuletzt gespielt' : 'Zuletzt gesungen' }} ↑</ion-select-option>
+                <ion-select-option value="lastSungDesc">{{ tenantType === 'orchestra' ? 'Zuletzt gespielt' : 'Zuletzt gesungen' }} ↓</ion-select-option>
+              }
             </ion-select>
           </ion-item>
 

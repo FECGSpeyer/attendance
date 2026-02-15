@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "3.7.6",
+          "date": "15.2.2026",
+          "changes": [
+            "🎵 Werke sortieren: Neue Sortieroptionen nach 'Zuletzt gespielt/gesungen' - sortiere Werke danach, wann sie zuletzt aufgeführt wurden."
+          ]
+        },
+        {
           "version": "3.7.5",
           "date": "13.2.2026",
           "changes": [

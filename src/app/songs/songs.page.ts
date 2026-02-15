@@ -314,6 +314,22 @@ export class SongsPage implements OnInit {
       this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : -1);
     } else if (this.sortOpt === "nameDesc") {
       this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => (a.name.toLowerCase() < b.name.toLowerCase()) ? 1 : -1);
+    } else if (this.sortOpt === "lastSungAsc") {
+      // Oldest first (songs never sung at the end)
+      this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => {
+        if (!a.lastSung && !b.lastSung) return 0;
+        if (!a.lastSung) return 1;
+        if (!b.lastSung) return -1;
+        return new Date(a.lastSung).getTime() - new Date(b.lastSung).getTime();
+      });
+    } else if (this.sortOpt === "lastSungDesc") {
+      // Most recent first (songs never sung at the end)
+      this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => {
+        if (!a.lastSung && !b.lastSung) return 0;
+        if (!a.lastSung) return 1;
+        if (!b.lastSung) return -1;
+        return new Date(b.lastSung).getTime() - new Date(a.lastSung).getTime();
+      });
     }
   }
 
