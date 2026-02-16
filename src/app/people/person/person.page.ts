@@ -53,6 +53,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public joinedString: string = format(new Date(), 'dd.MM.yyyy');
   public max: string = new Date().toISOString();
   public personAttendance: PersonAttendance[] = [];
+  public upcomingAttendances: PersonAttendance[] = [];
   public history: any[] = [];
   public teachers: Teacher[] = [];
   public allTeachers: Teacher[] = [];
@@ -246,8 +247,13 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   async getHistoryInfo(): Promise<void> {
     // Get all attendances up to today
-    const attendances = (await this.db.getPersonAttendances(this.player.id, this.hasLeft))
-      .filter((att: PersonAttendance) => dayjs((att as any).date).isBefore(dayjs()));
+    const allAttendances = await this.db.getPersonAttendances(this.player.id, this.hasLeft);
+    const attendances = allAttendances.filter((att: PersonAttendance) => dayjs((att as any).date).isBefore(dayjs()));
+
+    // Get upcoming attendances (after today)
+    this.upcomingAttendances = allAttendances
+      .filter((att: PersonAttendance) => dayjs((att as any).date).isAfter(dayjs()))
+      .sort((a, b) => new Date((a as any).date).getTime() - new Date((b as any).date).getTime());
 
     // Calculate attendance percentage
     const attendedCount = attendances.filter((att: PersonAttendance) => {

@@ -603,6 +603,41 @@
     </ion-accordion-group>
   }
 
+  @if (upcomingAttendances.length) {
+    <ion-accordion-group>
+      <ion-accordion value="upcoming">
+        <ion-item slot="header" color="light">
+          <ion-label>Anstehende Termine ({{ upcomingAttendances.length }})</ion-label>
+        </ion-item>
+        <div slot="content">
+          <ion-list>
+            @for (att of upcomingAttendances; track att.id) {
+              <ion-item>
+                <ion-label>
+                  @if (att.title) {
+                    <h2>{{ att.date | date:'dd.MM.yyyy' }} | {{ att.title }}</h2>
+                  }
+                  @if (!att.title) {
+                    <h2>{{ att.date | date:'dd.MM.yyyy' }}</h2>
+                  }
+                  @if (att.notes) {
+                    <h3>{{ att.notes }}</h3>
+                  }
+                </ion-label>
+                <ion-badge slot="end" [color]="att.text === 'X' ? 'success' :
+                                                att.text === 'A' ? 'danger' :
+                                                att.text === 'N' ? 'medium' :
+                                                att.text === 'L' ? 'tertiary' : 'warning'">
+                  {{ getAttText(att.text) }}
+                </ion-badge>
+              </ion-item>
+            }
+          </ion-list>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+  }
+
   @if (approveMode) {
     @if (player) {
       <ion-fab vertical="bottom" horizontal="end" slot="fixed">

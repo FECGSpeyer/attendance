@@ -4,7 +4,8 @@
           "version": "3.7.8",
           "date": "16.2.2026",
           "changes": [
-            "📊 Status-Übersicht: Neue Option im Anwesenheits-Popover zeigt eine Übersicht aller verwendeten Status mit Anzahlen."
+            "📊 Status-Übersicht: Neue Option im Anwesenheits-Popover zeigt eine Übersicht aller verwendeten Status mit Anzahlen.",
+            "📅 Anstehende Termine: In der Personen-Ansicht werden nun alle anstehenden Termine mit Status angezeigt."
           ]
         },
         {
