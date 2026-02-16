@@ -7,6 +7,7 @@ import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supab
 import { format } from 'date-fns';
 import dayjs from 'dayjs';
 import { PlanningPage } from 'src/app/planning/planning.page';
+import { StatusInfoComponent } from './status-info/status-info.component';
 import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode, CHECKLIST_DEADLINE_OPTIONS } from 'src/app/utilities/constants';
 import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem } from 'src/app/utilities/interfaces';
@@ -745,5 +746,18 @@ export class AttendancePage implements OnInit {
     const completed = this.attendance.checklist.filter(item => item.completed).length;
 
     return { completed, total };
+  }
+
+  async showStatusInfo(): Promise<void> {
+    const modal = await this.modalController.create({
+      component: StatusInfoComponent,
+      componentProps: {
+        players: this.players,
+      },
+      breakpoints: [0, 0.5, 0.75],
+      initialBreakpoint: 0.5,
+    });
+
+    await modal.present();
   }
 }

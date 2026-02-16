@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "3.7.8",
+          "date": "16.2.2026",
+          "changes": [
+            "📊 Status-Übersicht: Neue Option im Anwesenheits-Popover zeigt eine Übersicht aller verwendeten Status mit Anzahlen."
+          ]
+        },
+        {
           "version": "3.7.7",
           "date": "16.2.2026",
           "changes": [

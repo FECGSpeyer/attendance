@@ -27,6 +27,10 @@
                 <ion-label>Checkliste zurücksetzen</ion-label>
               </ion-item>
             }
+            <ion-item button detail="false" (click)="showStatusInfo()">
+              <ion-icon slot="start" name="stats-chart-outline"></ion-icon>
+              <ion-label>Status-Übersicht</ion-label>
+            </ion-item>
           </ion-list>
         </ng-template>
       </ion-popover>
