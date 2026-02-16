@@ -840,26 +840,30 @@ export class Utils {
       };
     }
 
-    const attendanceStartTime = dayjs(`${dayjs(attDate).format("YYYY-MM-DD")}T${attendanceStart}`);
-    const attendanceEndTime = dayjs(`${dayjs(attDate).format("YYYY-MM-DD")}T${attendanceEnd}`);
+    // Normalize attendance date to avoid timezone issues
+    const attDateNormalized = dayjs(attDate).startOf('day');
+    const attDateStr = attDateNormalized.format("YYYY-MM-DD");
+    const attendanceStartTime = dayjs(`${attDateStr}T${attendanceStart}`);
+    const attendanceEndTime = dayjs(`${attDateStr}T${attendanceEnd}`);
 
     let currentDate;
     if (shiftName) {
       const matchingShift = shift.shifts.find(def => def.name === shiftName);
       if (matchingShift) {
-        currentDate = dayjs(matchingShift.date);
+        // Use startOf('day') to strip time/timezone information
+        currentDate = dayjs(matchingShift.date).startOf('day');
       } else {
         throw new Error("Shift name not found in shift plan");
       }
     } else {
-      currentDate = dayjs(shiftStart);
+      currentDate = dayjs(shiftStart).startOf('day');
     }
-    const endDate = dayjs(attDate).add(2, 'day');
+    const endDate = attDateNormalized.add(2, 'day');
 
     while (currentDate.isBefore(endDate)) {
       for (const def of shift.definition) {
         for (let i = 0; i < def.repeat_count; i++) {
-          if (currentDate.isAfter(dayjs(attDate).subtract(2, 'day')) || currentDate.isSame(dayjs(attDate), 'day') || currentDate.isAfter(dayjs(attDate), 'day')) {
+          if (currentDate.isAfter(attDateNormalized.subtract(2, 'day')) || currentDate.isSame(attDateNormalized, 'day') || currentDate.isAfter(attDateNormalized, 'day')) {
             const shiftStartTime = dayjs(`${currentDate.format('YYYY-MM-DD')}T${def.start_time}`);
             const shiftEndTime = shiftStartTime.add(def.duration, 'hour');
 
