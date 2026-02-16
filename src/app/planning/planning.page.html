@@ -34,6 +34,13 @@
           <ion-textarea autoGrow="true" disabled="true">{{ notes }}</ion-textarea>
         </ion-item>
       }
+      @if (attendance) {
+        <ion-item lines="none">
+          <ion-toggle [(ngModel)]="sharePlan" (ionChange)="toggleSharePlan()">
+            <ion-label>Plan mit Mitgliedern teilen</ion-label>
+          </ion-toggle>
+        </ion-item>
+      }
       <ion-row>
         <ion-col>
           <ion-button (click)="prevAtt()" size="small" fill="clear" expand="full">

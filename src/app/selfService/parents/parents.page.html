@@ -177,7 +177,17 @@
         <div slot="content">
           <ion-list>
             <ion-item-divider>
-              <ion-label>{{ getReadableDate(currentAttendance.date, currentAttendance.type_id) }}</ion-label>
+              <ion-label>
+                {{ getReadableDate(currentAttendance.date, currentAttendance.type_id) }}
+                @if (hasPlan(currentAttendance)) {
+                  <ion-icon name="document-text-outline" color="primary" style="margin-left: 8px; vertical-align: middle;"></ion-icon>
+                }
+              </ion-label>
+              @if (hasPlan(currentAttendance)) {
+                <ion-button slot="end" fill="clear" size="small" (click)="openPlanViewer(currentAttendance); $event.stopPropagation();">
+                  <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+                </ion-button>
+              }
             </ion-item-divider>
             @if (kids.length !== 1) {
               <ion-item button (click)="openActionSheet(currentAttendance, true)">
@@ -217,7 +227,17 @@
           <ion-list>
             @for (att of upcomingAttendances; track att.id) {
               <ion-item-divider>
-                <ion-label>{{ getReadableDate(att.date, att.type_id) }}</ion-label>
+                <ion-label>
+                  {{ getReadableDate(att.date, att.type_id) }}
+                  @if (hasPlan(att)) {
+                    <ion-icon name="document-text-outline" color="primary" style="margin-left: 8px; vertical-align: middle;"></ion-icon>
+                  }
+                </ion-label>
+                @if (hasPlan(att)) {
+                  <ion-button slot="end" fill="clear" size="small" (click)="openPlanViewer(att); $event.stopPropagation();">
+                    <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+                  </ion-button>
+                }
               </ion-item-divider>
               @if (kids.length !== 1) {
                 <ion-item button (click)="openActionSheet(att, true)">

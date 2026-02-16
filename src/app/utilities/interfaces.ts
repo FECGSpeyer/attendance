@@ -230,7 +230,8 @@ export interface Attendance {
   notes: string;
   playerNotes?: { [prop: number]: string };
   img?: string;
-  plan?: any;
+  plan?: Plan;
+  share_plan?: boolean;
   lateExcused?: string[];
   songs?: number[];
   tenantId?: number;

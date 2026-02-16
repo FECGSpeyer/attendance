@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { SignoutPageRoutingModule } from './signout-routing.module';
 
 import { SignoutPage } from './signout.page';
+import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    SignoutPageRoutingModule
+    SignoutPageRoutingModule,
+    PlanViewerComponent
   ],
   declarations: [SignoutPage]
 })

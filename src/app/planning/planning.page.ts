@@ -33,6 +33,7 @@ export class PlanningPage implements OnInit {
   public conductors: Person[] = [];
   public selConductors: number[] = [];
   public groupCategories: GroupCategory[];
+  public sharePlan: boolean = false;
   public customModalOptions = {
     header: 'Werk hinzufügen',
     breakpoints: [0, 0.7, 1],
@@ -60,8 +61,9 @@ export class PlanningPage implements OnInit {
     const upcomingAttendances: Attendance[] = (await this.db.getUpcomingAttendances()).reverse();
     if (this.attendanceId) {
       this.attendance = this.attendanceId;
-      this.notes = this.attendances.find((att: Attendance) => att.id === this.attendanceId)?.notes || "";
       const att = this.attendances.find((att: Attendance) => att.id === this.attendanceId);
+      this.notes = att?.notes || "";
+      this.sharePlan = att?.share_plan || false;
       if (att?.plan) {
         this.end = att.plan.end;
         this.time = att.plan.time;
@@ -78,6 +80,7 @@ export class PlanningPage implements OnInit {
     } else if (upcomingAttendances.length) {
       this.attendance = upcomingAttendances[0].id;
       this.notes = upcomingAttendances[0].notes;
+      this.sharePlan = upcomingAttendances[0].share_plan || false;
       if (upcomingAttendances[0].plan) {
         this.end = upcomingAttendances[0].plan.end;
         this.time = upcomingAttendances[0].plan.time;
@@ -182,6 +185,7 @@ export class PlanningPage implements OnInit {
     if (!attendance) return;
 
     this.notes = attendance.notes;
+    this.sharePlan = attendance.share_plan || false;
     if (attendance.plan) {
       this.end = attendance.plan.end;
       this.time = attendance.plan.time;
@@ -196,6 +200,16 @@ export class PlanningPage implements OnInit {
     }
 
     this.calculateEnd();
+  }
+
+  async toggleSharePlan() {
+    if (!this.attendance) return;
+
+    await this.db.updateAttendance({ share_plan: this.sharePlan }, this.attendance);
+    const att = this.attendances.find((a: Attendance) => a.id === this.attendance);
+    if (att) {
+      att.share_plan = this.sharePlan;
+    }
   }
 
   dismiss() {

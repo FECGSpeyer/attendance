@@ -33,6 +33,7 @@ export type Database = {
           playerNotes: Json | null
           players: Json | null
           save_in_history: boolean | null
+          share_plan: boolean | null
           songs: number[]
           start_time: string | null
           tenantId: number
@@ -58,6 +59,7 @@ export type Database = {
           playerNotes?: Json | null
           players?: Json | null
           save_in_history?: boolean | null
+          share_plan?: boolean | null
           songs?: number[]
           start_time?: string | null
           tenantId: number
@@ -83,6 +85,7 @@ export type Database = {
           playerNotes?: Json | null
           players?: Json | null
           save_in_history?: boolean | null
+          share_plan?: boolean | null
           songs?: number[]
           start_time?: string | null
           tenantId?: number

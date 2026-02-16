@@ -1,10 +1,11 @@
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, IonModal } from '@ionic/angular';
+import { ActionSheetController, IonModal, ModalController } from '@ionic/angular';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus } from 'src/app/utilities/constants';
-import { Attendance, History, Person, PersonAttendance } from 'src/app/utilities/interfaces';
+import { Attendance, AttendanceType, History, Person, PersonAttendance, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 
 interface KidStats {
   perc: number;
@@ -40,6 +41,7 @@ export class ParentsPage implements OnInit {
   constructor(
     public db: DbService,
     private actionSheetController: ActionSheetController,
+    private modalController: ModalController
   ) {
     effect(async () => {
       if (this.db.tenant()) {
@@ -83,6 +85,9 @@ export class ParentsPage implements OnInit {
           date: pa.date,
           type_id: pa.typeId,
           title: pa.title,
+          type: pa.attendance?.type,
+          plan: pa.attendance?.plan,
+          share_plan: pa.attendance?.share_plan,
         } as unknown as Attendance);
       }
     }
@@ -239,6 +244,16 @@ export class ParentsPage implements OnInit {
       }
     }
 
+    // Add plan viewing option if share_plan is true
+    if (attendance.share_plan && attendance.plan) {
+      const cancelBtn = buttons.find(btn => btn.role === 'destructive');
+      const cancelIndex = buttons.indexOf(cancelBtn);
+      buttons.splice(cancelIndex, 0, {
+        text: 'Ablaufplan anzeigen',
+        handler: () => this.openPlanViewer(attendance),
+      });
+    }
+
     const actionSheet = await this.actionSheetController.create({
       buttons,
     });
@@ -330,5 +345,27 @@ export class ParentsPage implements OnInit {
     if (link) {
       window.open(link, "_blank");
     }
+  }
+
+  hasPlan(attendance: Attendance): boolean {
+    return attendance?.share_plan && attendance?.plan?.fields?.length > 0;
+  }
+
+  async openPlanViewer(attendance: Attendance) {
+    const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === attendance.type_id);
+    const isPractice = attType?.name?.toLowerCase().includes('probe') ||
+                       attType?.name?.toLowerCase().includes('übung') ||
+                       attendance.type === 'uebung';
+
+    const modal = await this.modalController.create({
+      component: PlanViewerComponent,
+      componentProps: {
+        attendance,
+        plan: attendance.plan as Plan,
+        isPractice
+      }
+    });
+
+    await modal.present();
   }
 }

@@ -1,0 +1,63 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>{{ isPractice ? 'Probenplan' : 'Gottesdienst' }} {{ getDateFormatted() }}</ion-title>
+        <ion-buttons slot="start">
+            <ion-button (click)="dismiss()">
+                <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+        <ion-buttons slot="end">
+            <ion-button (click)="showExportOptions()">
+                <ion-icon slot="icon-only" name="share-outline"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+    @if (plan?.fields?.length) {
+    <ion-list [inset]="true">
+        <ion-list-header>
+            <ion-label>Ablauf</ion-label>
+        </ion-list-header>
+
+        <ion-item-group>
+            <ion-item>
+                <ion-label>Start</ion-label>
+                <ion-note slot="end">{{ getStartTime() }} Uhr</ion-note>
+            </ion-item>
+
+            @for (field of plan.fields; track field.id; let i = $index) {
+            <ion-item>
+                <ion-label>
+                    <h2>{{ field.name }}</h2>
+                    @if (isInstrumentMissing(field)) {
+                    <p class="ion-text-wrap" style="color: var(--ion-color-danger);">Keine Noten für dein Instrument</p>
+                    }
+                    @if (!field.id.includes('noteFld')) {
+                    <p>{{ calculateTime(field, i) }}</p>
+                    }
+                </ion-label>
+                @if (!field.id.includes('noteFld')) {
+                <ion-note slot="end">{{ field.time }} min</ion-note>
+                }
+            </ion-item>
+            }
+
+            @if (plan.end) {
+            <ion-item lines="none">
+                <ion-label>Ende</ion-label>
+                <ion-note slot="end">{{ getEndTime() }} Uhr</ion-note>
+            </ion-item>
+            }
+
+        </ion-item-group>
+    </ion-list>
+    } @else {
+    <ion-card>
+        <ion-card-content>
+            <p>Kein Ablaufplan verfügbar.</p>
+        </ion-card-content>
+    </ion-card>
+    }
+</ion-content>

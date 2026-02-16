@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { ParentsPageRoutingModule } from './parents-routing.module';
 
 import { ParentsPage } from './parents.page';
+import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    ParentsPageRoutingModule
+    ParentsPageRoutingModule,
+    PlanViewerComponent
   ],
   declarations: [ParentsPage]
 })

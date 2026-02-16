@@ -210,6 +210,9 @@
                       @if (currentAttendance.notes) {
                         <ion-note [style.fontSize]="'.8rem'" color="medium">Notiz: {{ currentAttendance.notes }}</ion-note>
                       }
+                      @if (hasPlan(currentAttendance)) {
+                        <ion-note [style.fontSize]="'.8rem'" color="primary"><ion-icon name="document-text-outline" style="vertical-align: middle;"></ion-icon> Ablaufplan verfügbar</ion-note>
+                      }
                     </ion-label>
                     <ion-badge slot="end"
                       [color]="currentAttendance.text === 'X' ? 'success' : currentAttendance.text === 'A' ? 'danger' : currentAttendance.text === 'L' ? (currentAttendance.status === 3 ? 'tertiary' : 'rosa') : currentAttendance.text === 'N' ? 'medium' : 'warning'">
@@ -236,6 +239,9 @@
                       }
                       @if (att.notes) {
                         <ion-note [style.fontSize]="'.8rem'" color="medium">Notiz: {{ att.notes }}</ion-note>
+                      }
+                      @if (hasPlan(att)) {
+                        <ion-note [style.fontSize]="'.8rem'" color="primary"><ion-icon name="document-text-outline" style="vertical-align: middle;"></ion-icon> Ablaufplan verfügbar</ion-note>
                       }
                     </ion-label>
                     <ion-badge slot="end"

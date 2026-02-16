@@ -1686,11 +1686,11 @@ export class DbService {
   async getPersonAttendances(id: number, all: boolean = false): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline)')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan)')
       .eq('person_id', id)
-      .gt("attendance.date", all ? dayjs("2020-01-01").toISOString() : this.getCurrentAttDate());
+      .gt("attendance.date", all ? dayjs("2020-01-01").toISOString() : this.getCurrentAttDate()) as any;
 
-    return data.filter((a) => Boolean(a.attendance)).map((att): PersonAttendance => {
+    return data.filter((a: any) => Boolean(a.attendance)).map((att: any): PersonAttendance => {
       let attText = Utils.getAttText(att);
       const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.attendance.type_id);
       let title = '';

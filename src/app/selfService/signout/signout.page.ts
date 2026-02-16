@@ -1,12 +1,13 @@
 /* eslint-disable arrow-body-style */
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, isPlatform } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, isPlatform, ModalController } from '@ionic/angular';
 import dayjs from 'dayjs';
 // pdf-lib is lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
-import { Attendance, PersonAttendance, Player, Song, Tenant, History, SongFile, AttendanceType } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, Player, Song, Tenant, History, SongFile, AttendanceType, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 
 @Component({
   selector: 'app-signout',
@@ -40,7 +41,8 @@ export class SignoutPage implements OnInit {
   constructor(
     public db: DbService,
     private actionSheetController: ActionSheetController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private modalController: ModalController
   ) {
     effect(async () => {
       if (this.db.tenant()) {
@@ -266,6 +268,16 @@ export class SignoutPage implements OnInit {
       buttons = buttons.filter((btn) => btn.text !== 'Abmelden' && btn.text !== 'Verspätung eintragen');
     }
 
+    // Add plan viewing option if share_plan is true
+    if (attendance.attendance?.share_plan && attendance.attendance?.plan) {
+      const cancelBtn = buttons.find(btn => btn.role === 'destructive');
+      const cancelIndex = buttons.indexOf(cancelBtn);
+      buttons.splice(cancelIndex, 0, {
+        text: 'Ablaufplan anzeigen',
+        handler: () => this.openPlanViewer(attendance),
+      });
+    }
+
     if (buttons.length <= 1) {
       Utils.showToast("Für diesen Termin sind keine Aktionen verfügbar.", "warning", 4000);
       return;
@@ -328,6 +340,30 @@ export class SignoutPage implements OnInit {
 
   trackByHistoryId = (_: number, item: History): number => item.id;
   trackByAttendanceId = (_: number, item: PersonAttendance): string => item.id;
+
+  async openPlanViewer(attendance: PersonAttendance) {
+    const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === attendance.typeId);
+    const isPractice = attType?.name?.toLowerCase().includes('probe') ||
+                       attType?.name?.toLowerCase().includes('übung') ||
+                       attendance.attendance?.type === 'uebung';
+
+    const modal = await this.modalController.create({
+      component: PlanViewerComponent,
+      componentProps: {
+        attendance: attendance.attendance,
+        plan: attendance.attendance?.plan as Plan,
+        isPractice,
+        playerInstrument: this.player?.instrument,
+        songs: this.songs
+      }
+    });
+
+    await modal.present();
+  }
+
+  hasPlan(attendance: PersonAttendance): boolean {
+    return attendance.attendance?.share_plan && attendance.attendance?.plan?.fields?.length > 0;
+  }
 
   getSongNames(songIds: number[]): string {
     return songIds.map((id: number) => {
