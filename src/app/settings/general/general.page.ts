@@ -1,5 +1,6 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, inject, OnInit } from '@angular/core';
 import { AlertController, IonModal, NavController } from '@ionic/angular';
+import { PlayerService } from 'src/app/services/player/player.service';
 import { format, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
@@ -56,6 +57,9 @@ export class GeneralPage implements OnInit {
   };
   public fieldTypes = FieldType;
   public extraFields: ExtraField[] = [];
+  public editingExtraField: ExtraField | null = null;
+  public editingExtraFieldIndex: number = -1;
+  public isEditExtraFieldModalOpen: boolean = false;
   public registerAllowed: boolean = false;
   public autoApproveRegistrations: boolean = false;
   public registerFields: { key: string, label: string, disabled: boolean }[] = [
@@ -87,6 +91,8 @@ export class GeneralPage implements OnInit {
       $event.returnValue = true;
     }
   }
+
+  private playerSvc = inject(PlayerService);
 
   constructor(
     public db: DbService,
@@ -248,6 +254,26 @@ export class GeneralPage implements OnInit {
   }
 
   async saveGeneralSettings() {
+    // Validate extra fields
+    for (const field of this.extraFields) {
+      if (!field.name || field.name.trim().length === 0) {
+        Utils.showToast("Alle Zusatzfelder müssen einen Namen haben.", "danger");
+        return;
+      }
+
+      if (field.type === FieldType.SELECT) {
+        if (!field.options || field.options.length === 0) {
+          Utils.showToast(`Das Auswahlfeld "${field.name}" muss mindestens eine Option haben.`, "danger");
+          return;
+        }
+
+        if (field.options.some((opt) => !opt || opt.trim().length === 0)) {
+          Utils.showToast(`Die Optionen im Feld "${field.name}" dürfen nicht leer sein.`, "danger");
+          return;
+        }
+      }
+    }
+
     let song_sharing_id = this.songSharingEnabled ? this.db.tenant().song_sharing_id : null;
     if (this.songSharingEnabled && !this.db.tenant().song_sharing_id) {
       song_sharing_id = crypto.randomUUID();
@@ -533,6 +559,120 @@ export class GeneralPage implements OnInit {
 
   onExtraOptionChanged(event: any, index: number) {
     this.newExtraField.options[index] = event.detail.value;
+  }
+
+  openEditExtraField(index: number) {
+    this.editingExtraFieldIndex = index;
+    this.editingExtraField = {
+      ...this.extraFields[index],
+      options: [...(this.extraFields[index].options || [])],
+    };
+    this.isEditExtraFieldModalOpen = true;
+  }
+
+  onEditExtraOptionChanged(event: any, index: number) {
+    if (this.editingExtraField) {
+      this.editingExtraField.options[index] = event.detail.value;
+    }
+  }
+
+  async removeEditExtraOption(index: number) {
+    if (!this.editingExtraField) return;
+
+    const optionToRemove = this.editingExtraField.options[index];
+    const isExistingOption = this.extraFields[this.editingExtraFieldIndex]?.options?.includes(optionToRemove);
+
+    if (isExistingOption && optionToRemove) {
+      const alert = await this.alertController.create({
+        header: 'Option löschen?',
+        message: `Wenn du die Option "${optionToRemove}" löschst, werden alle Personen mit diesem Wert auf den Standardwert zurückgesetzt.`,
+        buttons: [{
+          text: "Abbrechen"
+        }, {
+          text: "Löschen",
+          handler: async () => {
+            // Get new default value (first option after removal, or empty)
+            const newDefault = this.editingExtraField.options[0] === optionToRemove
+              ? (this.editingExtraField.options[1] || '')
+              : this.editingExtraField.options[0];
+
+            try {
+              const updatedCount = await this.playerSvc.updateExtraFieldValue(
+                this.db.tenant().id,
+                this.editingExtraField.id,
+                optionToRemove,
+                newDefault
+              );
+
+              this.editingExtraField.options.splice(index, 1);
+
+              if (updatedCount > 0) {
+                Utils.showToast(`${updatedCount} Personen aktualisiert`, "success");
+              }
+            } catch (error) {
+              // Error toast already shown in service
+            }
+          }
+        }]
+      });
+
+      await alert.present();
+    } else {
+      // New option that was just added, can be removed without warning
+      this.editingExtraField.options.splice(index, 1);
+    }
+  }
+
+  closeEditExtraFieldModal() {
+    if (!this.editingExtraField || this.editingExtraFieldIndex === -1) {
+      this.isEditExtraFieldModalOpen = false;
+      return;
+    }
+
+    // Update default value for SELECT type
+    if (this.editingExtraField.type === FieldType.SELECT && this.editingExtraField.options?.length > 0) {
+      this.editingExtraField.defaultValue = this.editingExtraField.options[0];
+    }
+
+    // Apply changes to extraFields array
+    this.extraFields[this.editingExtraFieldIndex] = { ...this.editingExtraField };
+    this.isEditExtraFieldModalOpen = false;
+    this.editingExtraField = null;
+    this.editingExtraFieldIndex = -1;
+  }
+
+  async resetExtraFieldValues() {
+    if (!this.editingExtraField) return;
+
+    const alert = await this.alertController.create({
+      header: 'Werte zurücksetzen?',
+      message: `Möchtest du alle Werte des Feldes '${this.editingExtraField.name}' bei allen Personen auf den Standardwert zurücksetzen? Dies kann nicht rückgängig gemacht werden!`,
+      buttons: [{
+        text: "Abbrechen"
+      }, {
+        text: "Zurücksetzen",
+        handler: async () => {
+          await this.executeResetExtraFieldValues();
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
+  private async executeResetExtraFieldValues() {
+    if (!this.editingExtraField) return;
+
+    try {
+      const updatedCount = await this.playerSvc.resetExtraFieldValues(
+        this.db.tenant().id,
+        this.editingExtraField.id,
+        this.editingExtraField.defaultValue
+      );
+      Utils.showToast(`${updatedCount} Personen aktualisiert`, "success");
+    } catch (error) {
+      // Error toast already shown in service
+    }
   }
 
   // Critical rule methods

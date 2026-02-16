@@ -1,6 +1,14 @@
     {
       "versions": [
         {
+          "version": "3.7.7",
+          "date": "16.2.2026",
+          "changes": [
+            "✏️ Zusatzfelder bearbeiten: Zusatzfelder für Personen können nun nachträglich bearbeitet werden - Name ändern, Standardwert anpassen und alle Werte auf den Standard zurücksetzen.",
+            "⚠️ Option löschen: Beim Löschen einer Auswahl-Option werden betroffene Personen automatisch auf den Standardwert zurückgesetzt."
+          ]
+        },
+        {
           "version": "3.7.6",
           "date": "15.2.2026",
           "changes": [

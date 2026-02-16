@@ -364,4 +364,70 @@ export class PlayerService {
       history: player.history as any,
     }));
   }
+
+  async resetExtraFieldValues(tenantId: number, fieldId: string, defaultValue: any): Promise<number> {
+    const { data: players, error } = await supabase
+      .from('player')
+      .select('id, additional_fields')
+      .eq('tenantId', tenantId);
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Personen", "danger");
+      throw error;
+    }
+
+    let updatedCount = 0;
+
+    for (const player of players) {
+      const extraFieldsData = (player.additional_fields || {}) as Record<string, any>;
+
+      if (fieldId in extraFieldsData) {
+        extraFieldsData[fieldId] = defaultValue;
+
+        const { error: updateError } = await supabase
+          .from('player')
+          .update({ additional_fields: extraFieldsData })
+          .eq('id', player.id);
+
+        if (!updateError) {
+          updatedCount++;
+        }
+      }
+    }
+
+    return updatedCount;
+  }
+
+  async updateExtraFieldValue(tenantId: number, fieldId: string, oldValue: any, newValue: any): Promise<number> {
+    const { data: players, error } = await supabase
+      .from('player')
+      .select('id, additional_fields')
+      .eq('tenantId', tenantId);
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Personen", "danger");
+      throw error;
+    }
+
+    let updatedCount = 0;
+
+    for (const player of players) {
+      const extraFieldsData = (player.additional_fields || {}) as Record<string, any>;
+
+      if (extraFieldsData[fieldId] === oldValue) {
+        extraFieldsData[fieldId] = newValue;
+
+        const { error: updateError } = await supabase
+          .from('player')
+          .update({ additional_fields: extraFieldsData })
+          .eq('id', player.id);
+
+        if (!updateError) {
+          updatedCount++;
+        }
+      }
+    }
+
+    return updatedCount;
+  }
 }
