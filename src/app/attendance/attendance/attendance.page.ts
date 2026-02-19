@@ -80,7 +80,7 @@ export class AttendancePage implements OnInit {
     this.withExcuses = this.db.tenant().withExcuses;
     this.attendance = await this.db.getAttendanceById(this.attendanceId);
     this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendanceId);
-    this.isHelper = await this.db.tenantUser().role === Role.HELPER;
+    this.isHelper = this.db.tenantUser().role === Role.HELPER || this.db.tenantUser().role === Role.VOICE_LEADER_HELPER;
 
     this.attendanceViewMode = await this.storage.get('attendanceViewMode') || AttendanceViewMode.CLICK;
 

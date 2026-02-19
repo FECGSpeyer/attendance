@@ -1,13 +1,13 @@
 <ion-header>
   <ion-toolbar [color]="player?.isCritical ? 'danger' : ''">
     @if (!existingPlayer) {
-      <ion-title>Person hinzufügen</ion-title>
+    <ion-title>Person hinzufügen</ion-title>
     }
     @if (!approveMode && !readOnly && existingPlayer) {
-      <ion-title>Person bearbeiten</ion-title>
+    <ion-title>Person bearbeiten</ion-title>
     }
     @if (approveMode) {
-      <ion-title>Person genehmigen</ion-title>
+    <ion-title>Person genehmigen</ion-title>
     }
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
@@ -19,35 +19,35 @@
 
 <ion-content class="modalBackground" #content>
   @if (player) {
-    <ion-grid>
-      <ion-row>
-        <ion-col>
-          <ion-item lines="none">
-            <ion-label position="stacked">Vorname</ion-label>
-            <ion-input [disabled]="readOnly" (ionBlur)="onChangeName()" (ionChange)="onChange()"
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-item lines="none">
+          <ion-label position="stacked">Vorname</ion-label>
+          <ion-input [disabled]="readOnly" (ionBlur)="onChangeName()" (ionChange)="onChange()"
             [(ngModel)]="player.firstName"></ion-input>
-          </ion-item>
-        </ion-col>
-        <ion-col>
-          <ion-item lines="none">
-            <ion-label position="stacked">Nachname</ion-label>
-            <ion-input [disabled]="readOnly" (ionBlur)="onChangeName()" (ionChange)="onChange()"
+        </ion-item>
+      </ion-col>
+      <ion-col>
+        <ion-item lines="none">
+          <ion-label position="stacked">Nachname</ion-label>
+          <ion-input [disabled]="readOnly" (ionBlur)="onChangeName()" (ionChange)="onChange()"
             [(ngModel)]="player.lastName"></ion-input>
-          </ion-item>
-        </ion-col>
-      </ion-row>
-      @if (existingPlayer && isAdmin) {
-        <ion-row>
-          <ion-col>
-            <ion-item>
-              <ion-label position="stacked">Notizen</ion-label>
-              <ion-textarea [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()"
-              [(ngModel)]="player.notes"></ion-textarea>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-      }
-    </ion-grid>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    @if (existingPlayer && isAdmin) {
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Notizen</ion-label>
+          <ion-textarea [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()"
+            [(ngModel)]="player.notes"></ion-textarea>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    }
+  </ion-grid>
   }
 
   @if (!readOnly && player?.isCritical) {
@@ -58,7 +58,8 @@
       </ion-item>
       <div slot="content">
         <ion-item>
-          <ion-toggle label="Mit Person gesprochen" (ionChange)="onChange()" [(ngModel)]="solved">Mit Person gesprochen</ion-toggle>
+          <ion-toggle label="Mit Person gesprochen" (ionChange)="onChange()" [(ngModel)]="solved">Mit Person
+            gesprochen</ion-toggle>
         </ion-item>
         <ion-item *ngIf="solved">
           <ion-label position="stacked">Anmerkungen</ion-label>
@@ -70,617 +71,621 @@
   }
 
   @if (!readOnly && isAdmin && lateCount >= lateThreshold) {
-    <ion-card color="warning" class="late-warning-card">
-      <ion-card-header>
-        <ion-card-title>🕐 Häufige Verspätungen</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>Diese Person ist <strong>{{ lateCount }}×</strong> unentschuldigt zu spät gekommen.</p>
-        @if (lateCountExcused > 0) {
-          <p class="excused-info">Zusätzlich {{ lateCountExcused }}× entschuldigt zu spät.</p>
-        }
-        <ion-button fill="solid" size="small" color="dark" (click)="resetLateCount()">
-          <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-          Zurücksetzen (Gespräch geführt)
-        </ion-button>
-      </ion-card-content>
-    </ion-card>
+  <ion-card color="warning" class="late-warning-card">
+    <ion-card-header>
+      <ion-card-title>🕐 Häufige Verspätungen</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Diese Person ist <strong>{{ lateCount }}×</strong> unentschuldigt zu spät gekommen.</p>
+      @if (lateCountExcused > 0) {
+      <p class="excused-info">Zusätzlich {{ lateCountExcused }}× entschuldigt zu spät.</p>
+      }
+      <ion-button fill="solid" size="small" color="dark" (click)="resetLateCount()">
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        Zurücksetzen (Gespräch geführt)
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
   }
 
   @if (player) {
-    <ion-accordion-group [value]="existingPlayer && !readOnly ? '' : 'more'">
-      <ion-accordion value="more">
-        <ion-item slot="header" color="light">
-          <ion-label>Allgemein</ion-label>
-        </ion-item>
-        <div slot="content">
-          <ion-grid>
-            <ion-row>
-              <ion-col>
-                <ion-item>
-                  <ion-select interface="modal" label="Gruppe" [disabled]="readOnly" (ionChange)="onInstrumentChange()"
-                    #select [(ngModel)]="player.instrument">
-                    @for (i of db.groups(); track i) {
-                      <ion-select-option [value]="i.id">
-                        {{ i.name }}
-                      </ion-select-option>
-                    }
-                  </ion-select>
-                </ion-item>
-              </ion-col>
-            </ion-row>
-            @if (isChoir) {
-              <ion-row>
-                <ion-col>
-                  <ion-item>
-                    <ion-label position="stacked">Stimmumfang</ion-label>
-                    <ion-input [disabled]="readOnly || !isAdmin" [(ngModel)]="player.range"></ion-input>
-                  </ion-item>
-                </ion-col>
-              </ion-row>
-            }
-            <ion-row>
-              <ion-col>
-                <ion-item>
-                  <ion-label position="stacked">Telefon-/Handynummer</ion-label>
-                  <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.phone"></ion-input>
-                </ion-item>
-              </ion-col>
-            </ion-row>
-            <ion-row>
-              <ion-col>
-                <ion-item [color]="!existingPlayer || player.correctBirthday || readOnly ? '' : 'warning'">
-                  <ion-label position="stacked">Geburtsdatum</ion-label>
-                  <ion-input [disabled]="readOnly" readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
-                  <ion-modal class="dateModal" #birthdayModal trigger="date-modal">
-                    <ng-template>
-                      <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
-                        [(ngModel)]="player.birthday"
-                        (ionChange)="onBirthdayChange(dateTimePickerBirthday.value, birthdayModal)" presentation="date"
-                      #dateTimePickerBirthday></ion-datetime>
-                    </ng-template>
-                  </ion-modal>
-                </ion-item>
-              </ion-col>
-            </ion-row>
-            @if (!isGeneral && !isChoir && !isMainGroup) {
-              <ion-row>
-                <ion-col>
-                  <ion-item>
-                    <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
-                    <ion-input [disabled]="readOnly" readonly [(ngModel)]="playsSinceString" id="plays-modal"></ion-input>
-                    <ion-modal class="dateModal" #playsSinceModal trigger="plays-modal">
-                      <ng-template>
-                        <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
-                          [(ngModel)]="player.playsSince"
-                          (ionChange)="onPlaysSinceChange(dateTimePickerPlays.value, playsSinceModal)" presentation="date"
-                        #dateTimePickerPlays></ion-datetime>
-                      </ng-template>
-                    </ion-modal>
-                  </ion-item>
-                </ion-col>
-              </ion-row>
-            }
-            <ion-row>
-              <ion-col>
-                <ion-item>
-                  <ion-label position="stacked">Beigetreten am</ion-label>
-                  <ion-input [disabled]="readOnly" readonly [(ngModel)]="joinedString" id="joined-modal"></ion-input>
-                  <ion-modal class="dateModal" #joinedModal trigger="joined-modal">
-                    <ng-template>
-                      <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
-                        [(ngModel)]="player.joined" (ionChange)="onJoinedChange(dateTimePickerJoined.value, joinedModal)"
-                      presentation="date" #dateTimePickerJoined></ion-datetime>
-                    </ng-template>
-                  </ion-modal>
-                </ion-item>
-              </ion-col>
-            </ion-row>
-            @if (parentsEnabled && !isMainGroup && !isParent) {
-              <ion-row>
-                <ion-col>
-                  <ion-item>
-                    <ion-label position="stacked">Eltern</ion-label>
-                    <ion-select interface="modal" [disabled]="readOnly" (ionChange)="onChange()"
-                      [(ngModel)]="player.parent_id">
-                      <ion-select-option [value]="null">Nicht festgelegt</ion-select-option>
-                      @for (parent of parents; track parent) {
-                        <ion-select-option [value]="parent.id">
-                          {{ parent.firstName }} {{ parent.lastName }}
-                        </ion-select-option>
-                      }
-                    </ion-select>
-                  </ion-item>
-                </ion-col>
-              </ion-row>
-            }
-            @if (showTeachers && !isMainGroup) {
-              <ion-row>
-                <ion-col>
-                  <ion-item>
-                    <ion-toggle label="Spielt beim Lehrer" [disabled]="readOnly" (ionChange)="onChange()"
-                    [(ngModel)]="player.hasTeacher">Spielt beim Lehrer</ion-toggle>
-                  </ion-item>
-                </ion-col>
-              </ion-row>
-            }
-            @if (player.hasTeacher && showTeachers && !isMainGroup) {
-              <ion-row>
-                <ion-col>
-                  <ion-item>
-                    <ion-select interface="modal" label="Lehrer" [disabled]="readOnly" (ionChange)="onChange()"
-                      [(ngModel)]="player.teacher">
-                      @for (teacher of teachers; track teacher) {
-                        <ion-select-option [value]="teacher.id">
-                          {{ teacher.name }}
-                        </ion-select-option>
-                      }
-                    </ion-select>
-                  </ion-item>
-                </ion-col>
-              </ion-row>
-            }
-            @if (!isGeneral && !isMainGroup) {
-              <ion-row>
-                <ion-col>
-                  <ion-item>
-                    <ion-toggle label="Stimmführer" [disabled]="readOnly" (ionChange)="onChange()"
-                    [(ngModel)]="player.isLeader">Stimmführer</ion-toggle>
-                  </ion-item>
-                </ion-col>
-              </ion-row>
-            }
-            @if (!isMainGroup && isChoir) {
+  <ion-accordion-group [value]="existingPlayer && !readOnly ? '' : 'more'">
+    <ion-accordion value="more">
+      <ion-item slot="header" color="light">
+        <ion-label>Allgemein</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-grid>
+          <ion-row>
+            <ion-col>
               <ion-item>
-                <ion-label position="stacked">Instrumente</ion-label>
-                <ion-input [disabled]="readOnly || !isAdmin" (ionChange)="onChange()"
-                [(ngModel)]="player.instruments"></ion-input>
+                <ion-select interface="modal" label="Gruppe" [disabled]="readOnly" (ionChange)="onInstrumentChange()"
+                  #select [(ngModel)]="player.instrument">
+                  @for (i of db.groups(); track i) {
+                  <ion-select-option [value]="i.id">
+                    {{ i.name }}
+                  </ion-select-option>
+                  }
+                </ion-select>
               </ion-item>
-            }
-            @if (!isMainGroup && isVoS && (!readOnly || (player.otherOrchestras ?? []).length)) {
-              <ion-row>
-                <ion-col>
-                  <ion-item>
-                    <ion-select label="Andere Orchester" [disabled]="readOnly" multiple="true" (ionChange)="onChange()"
-                      [(ngModel)]="player.otherOrchestras">
-                      <ion-select-option>SoS</ion-select-option>
-                      <ion-select-option>GoS</ion-select-option>
-                      <ion-select-option>BoS</ion-select-option>
-                    </ion-select>
-                  </ion-item>
-                </ion-col>
-              </ion-row>
-            }
-            @if (isVoS && !isMainGroup && (!readOnly || player.examinee)) {
-              <ion-row>
-                <ion-col>
-                  <ion-item>
-                    <ion-toggle label="Prüfling" [disabled]="readOnly" (ionChange)="onChange()"
-                    [(ngModel)]="player.examinee">Prüfling</ion-toggle>
-                  </ion-item>
-                </ion-col>
-              </ion-row>
-            }
-            @if (isVoS && !isMainGroup) {
-              <ion-row>
-                <ion-col>
-                  <ion-item>
-                    <ion-label position="stacked">Testergebnis</ion-label>
-                    <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.testResult"></ion-input>
-                  </ion-item>
-                </ion-col>
-              </ion-row>
-            }
-            @if (db.shifts()?.length) {
-              <ion-row>
-                <ion-col>
-                  <ion-item>
-                    <ion-select label="Schichtplan" [disabled]="readOnly" (ionChange)="onShiftChange()"
-                      [(ngModel)]="player.shift_id">
-                      <ion-select-option [value]="null">Keine Schicht zugewiesen</ion-select-option>
-                      @for (sh of db.shifts(); track sh) {
-                        <ion-select-option [value]="sh.id">
-                          {{ sh.name }}
-                        </ion-select-option>
-                      }
-                    </ion-select>
-                  </ion-item>
-                </ion-col>
-              </ion-row>
-            }
-            @if (player.shift_id) {
-              <ion-row>
-                <ion-col>
-                  @if (shift && shift.shifts.length > 0) {
-                    <ion-item>
-                      <ion-select label="Schicht" [disabled]="readOnly" (ionChange)="onChange()"
-                        [(ngModel)]="player.shift_name">
-                        @for (sh of shift.shifts; track sh) {
-                          <ion-select-option [value]="sh.name">
-                            {{ sh.name }}
-                          </ion-select-option>
-                        }
-                      </ion-select>
-                    </ion-item>
-                  } @else {
-                    <ion-item>
-                      <ion-label>Anfangsdatum</ion-label>
-                      <ion-datetime-button [disabled]="readOnly" datetime="shift_start_date"></ion-datetime-button>
-                      <ion-modal [keepContentsMounted]="true">
-                        <ng-template>
-                          <ion-datetime (ionChange)="onChange()" [(ngModel)]="player.shift_start" presentation="date"
-                          id="shift_start_date" locale="de-DE"></ion-datetime>
-                        </ng-template>
-                      </ion-modal>
-                    </ion-item>
+            </ion-col>
+          </ion-row>
+          @if (isChoir) {
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Stimmumfang</ion-label>
+                <ion-input [disabled]="readOnly || !isAdmin" [(ngModel)]="player.range"></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          }
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Telefon-/Handynummer</ion-label>
+                <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.phone"></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-item [color]="!existingPlayer || player.correctBirthday || readOnly ? '' : 'warning'">
+                <ion-label position="stacked">Geburtsdatum</ion-label>
+                <ion-input [disabled]="readOnly" readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
+                <ion-modal class="dateModal" #birthdayModal trigger="date-modal">
+                  <ng-template>
+                    <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+                      [(ngModel)]="player.birthday"
+                      (ionChange)="onBirthdayChange(dateTimePickerBirthday.value, birthdayModal)" presentation="date"
+                      #dateTimePickerBirthday></ion-datetime>
+                  </ng-template>
+                </ion-modal>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          @if (!isGeneral && !isChoir && !isMainGroup) {
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
+                <ion-input [disabled]="readOnly" readonly [(ngModel)]="playsSinceString" id="plays-modal"></ion-input>
+                <ion-modal class="dateModal" #playsSinceModal trigger="plays-modal">
+                  <ng-template>
+                    <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+                      [(ngModel)]="player.playsSince"
+                      (ionChange)="onPlaysSinceChange(dateTimePickerPlays.value, playsSinceModal)" presentation="date"
+                      #dateTimePickerPlays></ion-datetime>
+                  </ng-template>
+                </ion-modal>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          }
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Beigetreten am</ion-label>
+                <ion-input [disabled]="readOnly" readonly [(ngModel)]="joinedString" id="joined-modal"></ion-input>
+                <ion-modal class="dateModal" #joinedModal trigger="joined-modal">
+                  <ng-template>
+                    <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+                      [(ngModel)]="player.joined" (ionChange)="onJoinedChange(dateTimePickerJoined.value, joinedModal)"
+                      presentation="date" #dateTimePickerJoined></ion-datetime>
+                  </ng-template>
+                </ion-modal>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          @if (parentsEnabled && !isMainGroup && !isParent) {
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Eltern</ion-label>
+                <ion-select interface="modal" [disabled]="readOnly" (ionChange)="onChange()"
+                  [(ngModel)]="player.parent_id">
+                  <ion-select-option [value]="null">Nicht festgelegt</ion-select-option>
+                  @for (parent of parents; track parent) {
+                  <ion-select-option [value]="parent.id">
+                    {{ parent.firstName }} {{ parent.lastName }}
+                  </ion-select-option>
                   }
-                </ion-col>
-              </ion-row>
-            }
-            @if (!readOnly || player.otherExercise) {
-              <ion-row>
-                <ion-col>
-                  <ion-item>
-                    <ion-label position="stacked">Sonstige Dienste</ion-label>
-                    <ion-input [disabled]="readOnly" (ionChange)="onChange()"
-                    [(ngModel)]="player.otherExercise"></ion-input>
-                  </ion-item>
-                </ion-col>
-              </ion-row>
-            }
-            @if (existingPlayer && !readOnly) {
-              <ion-row>
-                <ion-col>
-                  <input style="display: none;" name="file" #chooser (change)="onImageSelect($event)" accept="image/*"
-                    class="inputFile" type="file" />
-                  <ion-item button lines="none" (click)="changeImg()">
-                    <ion-label>Passbild</ion-label>
-                    <ion-avatar slot="end">
-                      <img [src]="player.img" />
-                    </ion-avatar>
-                    <ion-modal #imageViewer (ionModalDidDismiss)="isImageViewerOpen = false" [isOpen]="isImageViewerOpen"
-                      [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
-                      <ng-template>
-                        <ion-content>
-                          <ion-img [src]="player.img.replace('?quality=20', '')"></ion-img>
-                        </ion-content>
-                      </ng-template>
-                    </ion-modal>
-                  </ion-item>
-                </ion-col>
-              </ion-row>
-            }
-          </ion-grid>
-        </div>
-      </ion-accordion>
-      @if (!isParent && !readOnly && !approveMode) {
-        <ion-accordion>
-          <ion-item slot="header" color="light">
-            <ion-label>Account</ion-label>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          }
+          @if (showTeachers && !isMainGroup) {
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-toggle label="Spielt beim Lehrer" [disabled]="readOnly" (ionChange)="onChange()"
+                  [(ngModel)]="player.hasTeacher">Spielt beim Lehrer</ion-toggle>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          }
+          @if (player.hasTeacher && showTeachers && !isMainGroup) {
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-select interface="modal" label="Lehrer" [disabled]="readOnly" (ionChange)="onChange()"
+                  [(ngModel)]="player.teacher">
+                  @for (teacher of teachers; track teacher) {
+                  <ion-select-option [value]="teacher.id">
+                    {{ teacher.name }}
+                  </ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          }
+          @if (!isGeneral && !isMainGroup) {
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-toggle label="Stimmführer" [disabled]="readOnly" (ionChange)="onChange()"
+                  [(ngModel)]="player.isLeader">Stimmführer</ion-toggle>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          }
+          @if (!isMainGroup && isChoir) {
+          <ion-item>
+            <ion-label position="stacked">Instrumente</ion-label>
+            <ion-input [disabled]="readOnly || !isAdmin" (ionChange)="onChange()"
+              [(ngModel)]="player.instruments"></ion-input>
           </ion-item>
-          <div slot="content">
-            <ion-row>
-              <ion-col>
-                <ion-item>
-                  <ion-label position="stacked">E-Mail</ion-label>
-                  <ion-input [disabled]="player.appId || readOnly" (ionChange)="onChange()"
-                  [(ngModel)]="player.email"></ion-input>
-                  @if (!player.appId && !readOnly) {
-                    <ion-button slot="end" (click)="searchPerson()">
-                      <ion-icon name="search"></ion-icon>
-                    </ion-button>
+          }
+          @if (!isMainGroup && isVoS && (!readOnly || (player.otherOrchestras ?? []).length)) {
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-select label="Andere Orchester" [disabled]="readOnly" multiple="true" (ionChange)="onChange()"
+                  [(ngModel)]="player.otherOrchestras">
+                  <ion-select-option>SoS</ion-select-option>
+                  <ion-select-option>GoS</ion-select-option>
+                  <ion-select-option>BoS</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          }
+          @if (isVoS && !isMainGroup && (!readOnly || player.examinee)) {
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-toggle label="Prüfling" [disabled]="readOnly" (ionChange)="onChange()"
+                  [(ngModel)]="player.examinee">Prüfling</ion-toggle>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          }
+          @if (isVoS && !isMainGroup) {
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Testergebnis</ion-label>
+                <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.testResult"></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          }
+          @if (db.shifts()?.length) {
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-select label="Schichtplan" [disabled]="readOnly" (ionChange)="onShiftChange()"
+                  [(ngModel)]="player.shift_id">
+                  <ion-select-option [value]="null">Keine Schicht zugewiesen</ion-select-option>
+                  @for (sh of db.shifts(); track sh) {
+                  <ion-select-option [value]="sh.id">
+                    {{ sh.name }}
+                  </ion-select-option>
                   }
-                  @if (player.appId && !readOnly) {
-                    <ion-button color="danger" slot="end" (click)="removeUserFromTenant()">
-                      <ion-icon name="trash"></ion-icon>
-                    </ion-button>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          }
+          @if (player.shift_id) {
+          <ion-row>
+            <ion-col>
+              @if (shift && shift.shifts.length > 0) {
+              <ion-item>
+                <ion-select label="Schicht" [disabled]="readOnly" (ionChange)="onChange()"
+                  [(ngModel)]="player.shift_name">
+                  @for (sh of shift.shifts; track sh) {
+                  <ion-select-option [value]="sh.name">
+                    {{ sh.name }}
+                  </ion-select-option>
                   }
-                </ion-item>
-              </ion-col>
-            </ion-row>
-            @if (player.email && player.appId) {
-              <ion-row>
-                <ion-col>
-                  <ion-item>
-                    <ion-select (ionChange)="onRoleChange()" label="Rolle" type="number" [disabled]="readOnly || isMainGroup"
-                      [(ngModel)]="role">
-                      <ion-select-option [value]="PLAYER">Mitglied</ion-select-option>
-                      <ion-select-option [value]="RESPONSIBLE">Verantwortlicher</ion-select-option>
-                      <ion-select-option [value]="HELPER">Helfer</ion-select-option>
-                    </ion-select>
-                  </ion-item>
-                </ion-col>
-              </ion-row>
-            }
-            <ion-button id="accountHelpButton" fill="clear" size="small">
-              <ion-icon slot="start" name="help-circle-outline"></ion-icon>
-              Hilfe
-            </ion-button>
-            <ion-modal #accountHelpModal trigger="accountHelpButton" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
+                </ion-select>
+              </ion-item>
+              } @else {
+              <ion-item>
+                <ion-label>Anfangsdatum</ion-label>
+                <ion-datetime-button [disabled]="readOnly" datetime="shift_start_date"></ion-datetime-button>
+                <ion-modal [keepContentsMounted]="true">
+                  <ng-template>
+                    <ion-datetime (ionChange)="onChange()" [(ngModel)]="player.shift_start" presentation="date"
+                      id="shift_start_date" locale="de-DE"></ion-datetime>
+                  </ng-template>
+                </ion-modal>
+              </ion-item>
+              }
+            </ion-col>
+          </ion-row>
+          }
+          @if (!readOnly || player.otherExercise) {
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Sonstige Dienste</ion-label>
+                <ion-input [disabled]="readOnly" (ionChange)="onChange()"
+                  [(ngModel)]="player.otherExercise"></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          }
+          @if (existingPlayer && !readOnly) {
+          <ion-row>
+            <ion-col>
+              <input style="display: none;" name="file" #chooser (change)="onImageSelect($event)" accept="image/*"
+                class="inputFile" type="file" />
+              <ion-item button lines="none" (click)="changeImg()">
+                <ion-label>Passbild</ion-label>
+                <ion-avatar slot="end">
+                  <img [src]="player.img" />
+                </ion-avatar>
+                <ion-modal #imageViewer (ionModalDidDismiss)="isImageViewerOpen = false" [isOpen]="isImageViewerOpen"
+                  [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
+                  <ng-template>
+                    <ion-content>
+                      <ion-img [src]="player.img.replace('?quality=20', '')"></ion-img>
+                    </ion-content>
+                  </ng-template>
+                </ion-modal>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          }
+        </ion-grid>
+      </div>
+    </ion-accordion>
+    @if (!isParent && !readOnly && !approveMode) {
+    <ion-accordion>
+      <ion-item slot="header" color="light">
+        <ion-label>Account</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-row>
+          <ion-col>
+            <ion-item>
+              <ion-label position="stacked">E-Mail</ion-label>
+              <ion-input [disabled]="player.appId || readOnly" (ionChange)="onChange()"
+                [(ngModel)]="player.email"></ion-input>
+              @if (!player.appId && !readOnly) {
+              <ion-button slot="end" (click)="searchPerson()">
+                <ion-icon name="search"></ion-icon>
+              </ion-button>
+              }
+              @if (player.appId && !readOnly) {
+              <ion-button color="danger" slot="end" (click)="removeUserFromTenant()">
+                <ion-icon name="trash"></ion-icon>
+              </ion-button>
+              }
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        @if (player.email && player.appId) {
+        <ion-row>
+          <ion-col>
+            <ion-item>
+              <ion-select (ionChange)="onRoleChange()" label="Rolle" type="number" [disabled]="readOnly || isMainGroup"
+                [(ngModel)]="role">
+                <ion-select-option [value]="PLAYER">Mitglied</ion-select-option>
+                <ion-select-option [value]="RESPONSIBLE">Verantwortlicher</ion-select-option>
+                <ion-select-option [value]="HELPER">Helfer</ion-select-option>
+                @if (player.isLeader) {
+                <ion-select-option [value]="VOICE_LEADER_HELPER">Stimmführer & Helfer</ion-select-option>
+                <ion-select-option [value]="VOICE_LEADER">Stimmführer</ion-select-option>
+                }
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        }
+        <ion-button id="accountHelpButton" fill="clear" size="small">
+          <ion-icon slot="start" name="help-circle-outline"></ion-icon>
+          Hilfe
+        </ion-button>
+        <ion-modal #accountHelpModal trigger="accountHelpButton" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
+          <ng-template>
+            <ion-header>
+              <ion-toolbar>
+                <ion-title>Hilfe</ion-title>
+                <ion-buttons slot="end">
+                  <ion-button (click)="accountHelpModal.dismiss()">
+                    <ion-icon slot="icon-only" name="close"></ion-icon>
+                  </ion-button>
+                </ion-buttons>
+              </ion-toolbar>
+            </ion-header>
+            <ion-content>
+              @if (!player.appId) {
+              <ion-item lines="none">
+                <ion-label>Sobald die E-Mail Adresse eingeben wurde, kann ein Account erstellt werden. Der Benutzer wird
+                  per
+                  E-Mail über die Erstellung benachrichtigt. Das Passwort wird automatisch generiert und an die E-Mail
+                  Adresse
+                  gesendet.</ion-label>
+              </ion-item>
+              }
+              <ion-item lines="none">
+                <ion-label>Falls schon ein Benutzer für die E-Mail Adresse existiert, wird dieser automatisch der
+                  Instanz zugewiesen.</ion-label>
+              </ion-item>
+            </ion-content>
+          </ng-template>
+        </ion-modal>
+      </div>
+    </ion-accordion>
+    }
+    @if (db.tenant().additional_fields?.length) {
+    <ion-accordion>
+      <ion-item slot="header" color="light">
+        <ion-label>Zusatzfelder</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-list>
+          @for (field of db.tenant().additional_fields; track field) {
+          <ion-item>
+            @if (field.type === fieldTypes.TEXT) {
+            <ion-input [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name" labelPlacement="stacked"
+              [(ngModel)]="player.additional_fields[field.id]"></ion-input>
+            } @else if (field.type === fieldTypes.NUMBER) {
+            <ion-input type="number" [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name"
+              labelPlacement="stacked" [(ngModel)]="player.additional_fields[field.id]"></ion-input>
+            } @else if (field.type === fieldTypes.BOOLEAN) {
+            <ion-label>{{ field.name }}</ion-label>
+            <ion-toggle slot="end" (ionChange)="onChange()"
+              [(ngModel)]="player.additional_fields[field.id]"></ion-toggle>
+            } @else if (field.type === fieldTypes.DATE) {
+            <ion-label position="stacked">{{ field.name }}</ion-label>
+            <ion-input [disabled]="readOnly" [value]="getExtraFieldDateString(player.additional_fields[field.id])"
+              [id]="'extra-field-date-' + field.id"></ion-input>
+            <ion-modal class="dateModal" #extraFieldDateModal [trigger]="'extra-field-date-' + field.id">
               <ng-template>
-                <ion-header>
-                  <ion-toolbar>
-                    <ion-title>Hilfe</ion-title>
-                    <ion-buttons slot="end">
-                      <ion-button (click)="accountHelpModal.dismiss()">
-                        <ion-icon slot="icon-only" name="close"></ion-icon>
-                      </ion-button>
-                    </ion-buttons>
-                  </ion-toolbar>
-                </ion-header>
-                <ion-content>
-                  @if (!player.appId) {
-                    <ion-item lines="none">
-                      <ion-label>Sobald die E-Mail Adresse eingeben wurde, kann ein Account erstellt werden. Der Benutzer wird
-                        per
-                        E-Mail über die Erstellung benachrichtigt. Das Passwort wird automatisch generiert und an die E-Mail
-                        Adresse
-                      gesendet.</ion-label>
-                    </ion-item>
-                  }
-                  <ion-item lines="none">
-                    <ion-label>Falls schon ein Benutzer für die E-Mail Adresse existiert, wird dieser automatisch der
-                    Instanz zugewiesen.</ion-label>
-                  </ion-item>
-                </ion-content>
+                <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+                  [(ngModel)]="player.additional_fields[field.id]"
+                  (ionChange)="onExtraFieldDateChange(field.id, extraFieldDatePicker.value, extraFieldDateModal)"
+                  presentation="date" #extraFieldDatePicker></ion-datetime>
               </ng-template>
             </ion-modal>
-          </div>
-        </ion-accordion>
-      }
-      @if (db.tenant().additional_fields?.length) {
-        <ion-accordion>
-          <ion-item slot="header" color="light">
-            <ion-label>Zusatzfelder</ion-label>
-          </ion-item>
-          <div slot="content">
-            <ion-list>
-              @for (field of db.tenant().additional_fields; track field) {
-                <ion-item>
-                  @if (field.type === fieldTypes.TEXT) {
-                    <ion-input [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name" labelPlacement="stacked"
-                    [(ngModel)]="player.additional_fields[field.id]"></ion-input>
-                  } @else if (field.type === fieldTypes.NUMBER) {
-                    <ion-input type="number" [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name"
-                    labelPlacement="stacked" [(ngModel)]="player.additional_fields[field.id]"></ion-input>
-                  } @else if (field.type === fieldTypes.BOOLEAN) {
-                    <ion-label>{{ field.name }}</ion-label>
-                    <ion-toggle slot="end" (ionChange)="onChange()"
-                    [(ngModel)]="player.additional_fields[field.id]"></ion-toggle>
-                  } @else if (field.type === fieldTypes.DATE) {
-                    <ion-label position="stacked">{{ field.name }}</ion-label>
-                    <ion-input [disabled]="readOnly" [value]="getExtraFieldDateString(player.additional_fields[field.id])"
-                    [id]="'extra-field-date-' + field.id"></ion-input>
-                    <ion-modal class="dateModal" #extraFieldDateModal [trigger]="'extra-field-date-' + field.id">
-                      <ng-template>
-                        <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
-                          [(ngModel)]="player.additional_fields[field.id]"
-                          (ionChange)="onExtraFieldDateChange(field.id, extraFieldDatePicker.value, extraFieldDateModal)"
-                        presentation="date" #extraFieldDatePicker></ion-datetime>
-                      </ng-template>
-                    </ion-modal>
-                  } @else if (field.type === fieldTypes.SELECT) {
-                    <ion-select [(ngModel)]="player.additional_fields[field.id]" [disabled]="readOnly" (ionChange)="onChange()"
-                      [label]="field.name">
-                      @for (option of field.options; track option) {
-                        <ion-select-option [value]="option">{{ option }}</ion-select-option>
-                      }
-                    </ion-select>
-                  } @else if (field.type === fieldTypes.TEXTAREA) {
-                    <ion-textarea [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()" [label]="field.name"
-                    labelPlacement="stacked" [(ngModel)]="player.additional_fields[field.id]"></ion-textarea>
-                  } @else if (field.type === fieldTypes.BFECG_CHURCH) {
-                    <ion-select (ionChange)="onChange()" interface="modal" [label]="field.name" [(ngModel)]="player.additional_fields[field.id]">
-                      @for (church of db.churches(); track church) {
-                        <ion-select-option [value]="church.id">{{ church.name
-                        }}</ion-select-option>
-                      }
-                    </ion-select>
-                  }
-                </ion-item>
+            } @else if (field.type === fieldTypes.SELECT) {
+            <ion-select [(ngModel)]="player.additional_fields[field.id]" [disabled]="readOnly" (ionChange)="onChange()"
+              [label]="field.name">
+              @for (option of field.options; track option) {
+              <ion-select-option [value]="option">{{ option }}</ion-select-option>
               }
-            </ion-list>
-          </div>
-        </ion-accordion>
-      }
-      @if (otherTenants.length) {
-        <ion-accordion value="otherTenants">
-          <ion-item slot="header" color="light">
-            <ion-label>Andere Instanzen</ion-label>
-          </ion-item>
-          <div slot="content">
-            <ion-list>
-              @for (tenant of otherTenants; track tenant) {
-                <ion-item lines="none">
-                  <ion-label>
-                    <h2>{{ tenant.longName }}</h2>
-                    <p>{{ getRoleText(tenant.role) }}</p>
-                  </ion-label>
-                  <ion-badge [color]="tenant.percColor" slot="end">{{ tenant.perc ?? "n/a" }}</ion-badge>
-                </ion-item>
+            </ion-select>
+            } @else if (field.type === fieldTypes.TEXTAREA) {
+            <ion-textarea [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()" [label]="field.name"
+              labelPlacement="stacked" [(ngModel)]="player.additional_fields[field.id]"></ion-textarea>
+            } @else if (field.type === fieldTypes.BFECG_CHURCH) {
+            <ion-select (ionChange)="onChange()" interface="modal" [label]="field.name"
+              [(ngModel)]="player.additional_fields[field.id]">
+              @for (church of db.churches(); track church) {
+              <ion-select-option [value]="church.id">{{ church.name
+                }}</ion-select-option>
               }
-            </ion-list>
-          </div>
-        </ion-accordion>
-      }
-    </ion-accordion-group>
+            </ion-select>
+            }
+          </ion-item>
+          }
+        </ion-list>
+      </div>
+    </ion-accordion>
+    }
+    @if (otherTenants.length) {
+    <ion-accordion value="otherTenants">
+      <ion-item slot="header" color="light">
+        <ion-label>Andere Instanzen</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-list>
+          @for (tenant of otherTenants; track tenant) {
+          <ion-item lines="none">
+            <ion-label>
+              <h2>{{ tenant.longName }}</h2>
+              <p>{{ getRoleText(tenant.role) }}</p>
+            </ion-label>
+            <ion-badge [color]="tenant.percColor" slot="end">{{ tenant.perc ?? "n/a" }}</ion-badge>
+          </ion-item>
+          }
+        </ion-list>
+      </div>
+    </ion-accordion>
+    }
+  </ion-accordion-group>
   }
 
   @if (personAttendance.length || history.length) {
-    <ion-accordion-group [value]="existingPlayer ? 'first' : ''">
-      <ion-accordion value="first">
-        <ion-item slot="header" color="light">
-          <ion-label>Historie</ion-label>
-        </ion-item>
-        <div slot="content">
-          <ion-list>
-            <ion-item>
-              @if (lateCount === 0) {
-                <ion-label>Durchschnitt</ion-label>
-              }
-              @if (lateCount !== 0) {
-                <ion-label>Durchschnitt ({{lateCount}}x zu spät)</ion-label>
-              }
-              <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" slot="end">{{ perc
+  <ion-accordion-group [value]="existingPlayer ? 'first' : ''">
+    <ion-accordion value="first">
+      <ion-item slot="header" color="light">
+        <ion-label>Historie</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-list>
+          <ion-item>
+            @if (lateCount === 0) {
+            <ion-label>Durchschnitt</ion-label>
+            }
+            @if (lateCount !== 0) {
+            <ion-label>Durchschnitt ({{lateCount}}x zu spät)</ion-label>
+            }
+            <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" slot="end">{{ perc
               }}%</ion-badge>
-            </ion-item>
-            @for (att of history; track trackByHistoryId($index, att)) {
-              <ion-item-sliding #slider>
-                <ion-item (click)="onHisItemClicked(att)">
-                  <ion-label>
-                    @if (att.type === 2 || att.type === 3) {
-                      <h2>Mit Person gesprochen ({{ att.date | date:'dd.MM.yyyy
-                      HH:mm' }})</h2>
-                    }
-                    @if (att.type === 5) {
-                      <h2>Notiz geändert am {{ att.date | date:'dd.MM.yyyy HH:mm' }}</h2>
-                    }
-                    @if (att.type === 4 && att.title) {
-                      <h2>{{ att.date | date:'dd.MM.yyyy' }} | {{ att.title }}</h2>
-                    }
-                    @if (att.type === 4 && !att.title) {
-                      <h2>{{ att.date | date:'dd.MM.yyyy' }}</h2>
-                    }
-                    @if (att.type === 1) {
-                      <h2>Pausiert am {{ att.date | date:'dd.MM.yyyy HH:mm' }}</h2>
-                    }
-                    @if (att.type === 6) {
-                      <h2>Wieder aktiv seid {{ att.date | date:'dd.MM.yyyy HH:mm' }}</h2>
-                    }
-                    @if (att.type === 7 && att.date) {
-                      <h2>{{ att.date | date:'dd.MM.yyyy' }}</h2>
-                    }
-                    @if (att.type === 8 && att.date) {
-                      <h2>Archiviert am {{ att.date | date:'dd.MM.yyyy' }}</h2>
-                    }
-                    @if (att.type === 9 && att.date) {
-                      <h2>Reaktiviert am {{ att.date | date:'dd.MM.yyyy' }}</h2>
-                    }
-                    @if (att.type === 10 || att.type === 11) {
-                      <h2>Übertragen am {{ att.date | date:'dd.MM.yyyy' }}</h2>
-                    }
-                    @if (att.type === 12 || att.type === 13) {
-                      <h2>Kopiert am {{ att.date | date:'dd.MM.yyyy' }}</h2>
-                    }
-                    @if (att.type !== 10 && att.type !== 11 && att.type !== 12 && att.type !== 13 && att.type !== 8 && att.type !== 9 && att.type !== 4 && att.type !== 6 && att.type !== 5) {
-                      <h3
-                        >
-                        {{ getTypeText(att.type) }}: {{ att.text
-                      ? att.text : 'Keine Anmerkung' }}</h3>
-                    }
-                    @if (att.type === 5 || att.type === 8) {
-                      <h3>{{ att.text }}</h3>
-                    }
-                    @if (att.type === 4 && att.notes) {
-                      <h3>{{ att.notes }}</h3>
-                    }
-                    @if (att.type === 10 || att.type === 11 || att.type === 12 || att.type === 13) {
-                      <h3>
-                        {{ att.text }}
-                      </h3>
-                    }
-                  </ion-label>
-                  @if (att.type === 4) {
-<ion-badge slot="end" [color]="att.text === 'X' ? 'success' :
+          </ion-item>
+          @for (att of history; track trackByHistoryId($index, att)) {
+          <ion-item-sliding #slider>
+            <ion-item (click)="onHisItemClicked(att)">
+              <ion-label>
+                @if (att.type === 2 || att.type === 3) {
+                <h2>Mit Person gesprochen ({{ att.date | date:'dd.MM.yyyy
+                  HH:mm' }})</h2>
+                }
+                @if (att.type === 5) {
+                <h2>Notiz geändert am {{ att.date | date:'dd.MM.yyyy HH:mm' }}</h2>
+                }
+                @if (att.type === 4 && att.title) {
+                <h2>{{ att.date | date:'dd.MM.yyyy' }} | {{ att.title }}</h2>
+                }
+                @if (att.type === 4 && !att.title) {
+                <h2>{{ att.date | date:'dd.MM.yyyy' }}</h2>
+                }
+                @if (att.type === 1) {
+                <h2>Pausiert am {{ att.date | date:'dd.MM.yyyy HH:mm' }}</h2>
+                }
+                @if (att.type === 6) {
+                <h2>Wieder aktiv seid {{ att.date | date:'dd.MM.yyyy HH:mm' }}</h2>
+                }
+                @if (att.type === 7 && att.date) {
+                <h2>{{ att.date | date:'dd.MM.yyyy' }}</h2>
+                }
+                @if (att.type === 8 && att.date) {
+                <h2>Archiviert am {{ att.date | date:'dd.MM.yyyy' }}</h2>
+                }
+                @if (att.type === 9 && att.date) {
+                <h2>Reaktiviert am {{ att.date | date:'dd.MM.yyyy' }}</h2>
+                }
+                @if (att.type === 10 || att.type === 11) {
+                <h2>Übertragen am {{ att.date | date:'dd.MM.yyyy' }}</h2>
+                }
+                @if (att.type === 12 || att.type === 13) {
+                <h2>Kopiert am {{ att.date | date:'dd.MM.yyyy' }}</h2>
+                }
+                @if (att.type !== 10 && att.type !== 11 && att.type !== 12 && att.type !== 13 && att.type !== 8 &&
+                att.type !== 9 && att.type !== 4 && att.type !== 6 && att.type !== 5) {
+                <h3>
+                  {{ getTypeText(att.type) }}: {{ att.text
+                  ? att.text : 'Keine Anmerkung' }}</h3>
+                }
+                @if (att.type === 5 || att.type === 8) {
+                <h3>{{ att.text }}</h3>
+                }
+                @if (att.type === 4 && att.notes) {
+                <h3>{{ att.notes }}</h3>
+                }
+                @if (att.type === 10 || att.type === 11 || att.type === 12 || att.type === 13) {
+                <h3>
+                  {{ att.text }}
+                </h3>
+                }
+              </ion-label>
+              @if (att.type === 4) {
+              <ion-badge slot="end" [color]="att.text === 'X' ? 'success' :
                                                                     att.text === 'A' ? 'danger' :
                                                                     att.text === 'N' ? 'medium' :
                                                                     att.text === 'L' ? 'tertiary' : 'warning'">
-                    {{ getAttText(att.text) }}</ion-badge>
-                  }
-                </ion-item>
-                @if (att.type !== 4 && !readOnly) {
-                  <ion-item-options>
-                    <ion-item-option color="danger" (click)="removeHis(att, slider)">
-                      <ion-icon name="trash"></ion-icon>
-                    </ion-item-option>
-                  </ion-item-options>
-                }
-              </ion-item-sliding>
+                {{ getAttText(att.text) }}</ion-badge>
+              }
+            </ion-item>
+            @if (att.type !== 4 && !readOnly) {
+            <ion-item-options>
+              <ion-item-option color="danger" (click)="removeHis(att, slider)">
+                <ion-icon name="trash"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
             }
-          </ion-list>
-        </div>
-      </ion-accordion>
-    </ion-accordion-group>
+          </ion-item-sliding>
+          }
+        </ion-list>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
   }
 
   @if (upcomingAttendances.length) {
-    <ion-accordion-group>
-      <ion-accordion value="upcoming">
-        <ion-item slot="header" color="light">
-          <ion-label>Anstehende Termine ({{ upcomingAttendances.length }})</ion-label>
-        </ion-item>
-        <div slot="content">
-          <ion-list>
-            @for (att of upcomingAttendances; track att.id) {
-              <ion-item>
-                <ion-label>
-                  @if (att.title) {
-                    <h2>{{ att.date | date:'dd.MM.yyyy' }} | {{ att.title }}</h2>
-                  }
-                  @if (!att.title) {
-                    <h2>{{ att.date | date:'dd.MM.yyyy' }}</h2>
-                  }
-                  @if (att.notes) {
-                    <h3>{{ att.notes }}</h3>
-                  }
-                </ion-label>
-                <ion-badge slot="end" [color]="att.text === 'X' ? 'success' :
+  <ion-accordion-group>
+    <ion-accordion value="upcoming">
+      <ion-item slot="header" color="light">
+        <ion-label>Anstehende Termine ({{ upcomingAttendances.length }})</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-list>
+          @for (att of upcomingAttendances; track att.id) {
+          <ion-item>
+            <ion-label>
+              @if (att.title) {
+              <h2>{{ att.date | date:'dd.MM.yyyy' }} | {{ att.title }}</h2>
+              }
+              @if (!att.title) {
+              <h2>{{ att.date | date:'dd.MM.yyyy' }}</h2>
+              }
+              @if (att.notes) {
+              <h3>{{ att.notes }}</h3>
+              }
+            </ion-label>
+            <ion-badge slot="end" [color]="att.text === 'X' ? 'success' :
                                                 att.text === 'A' ? 'danger' :
                                                 att.text === 'N' ? 'medium' :
                                                 att.text === 'L' ? 'tertiary' : 'warning'">
-                  {{ getAttText(att.text) }}
-                </ion-badge>
-              </ion-item>
-            }
-          </ion-list>
-        </div>
-      </ion-accordion>
-    </ion-accordion-group>
+              {{ getAttText(att.text) }}
+            </ion-badge>
+          </ion-item>
+          }
+        </ion-list>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
   }
 
   @if (approveMode) {
-    @if (player) {
-      <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-        <ion-fab-button (click)="showApproveActionSheet()">
-          <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
-        </ion-fab-button>
-      </ion-fab>
-    }
+  @if (player) {
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="showApproveActionSheet()">
+      <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+  }
   } @else {
-    @if (player) {
-      <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-        @if (!readOnly && existingPlayer && hasChanges) {
-          <ion-fab-button (click)="updatePlayer()">
-            <ion-icon name="save-outline"></ion-icon>
-          </ion-fab-button>
-        }
-        @if (!existingPlayer) {
-          <ion-fab-button (click)="addPerson()">
-            <ion-icon name="person-add-outline"></ion-icon>
-          </ion-fab-button>
-        }
-        @if (!readOnly && existingPlayer && !hasChanges && !player.appId && player.email) {
-          <ion-fab-button
-            (click)="register()">
-            <ion-icon name="key-outline"></ion-icon>
-          </ion-fab-button>
-        }
-        @if (!readOnly && existingPlayer && !hasChanges && (player.appId || !player.email)) {
-          <ion-fab-button
-            (click)="openMoreMenu()">
-            <ion-icon name="ellipsis-horizontal"></ion-icon>
-          </ion-fab-button>
-        }
-        @if (hasLeft) {
-          <ion-fab-button (click)="activate()">
-            <ion-icon name="arrow-undo-outline"></ion-icon>
-          </ion-fab-button>
-        }
-      </ion-fab>
+  @if (player) {
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    @if (!readOnly && existingPlayer && hasChanges) {
+    <ion-fab-button (click)="updatePlayer()">
+      <ion-icon name="save-outline"></ion-icon>
+    </ion-fab-button>
     }
+    @if (!existingPlayer) {
+    <ion-fab-button (click)="addPerson()">
+      <ion-icon name="person-add-outline"></ion-icon>
+    </ion-fab-button>
+    }
+    @if (!readOnly && existingPlayer && !hasChanges && !player.appId && player.email) {
+    <ion-fab-button (click)="register()">
+      <ion-icon name="key-outline"></ion-icon>
+    </ion-fab-button>
+    }
+    @if (!readOnly && existingPlayer && !hasChanges && (player.appId || !player.email)) {
+    <ion-fab-button (click)="openMoreMenu()">
+      <ion-icon name="ellipsis-horizontal"></ion-icon>
+    </ion-fab-button>
+    }
+    @if (hasLeft) {
+    <ion-fab-button (click)="activate()">
+      <ion-icon name="arrow-undo-outline"></ion-icon>
+    </ion-fab-button>
+    }
+  </ion-fab>
+  }
   }
 
-  <ion-modal [breakpoints]="[0, 0.75, 1]" [initialBreakpoint]="0.75" backdropDismiss="true" [isOpen]="isPauseModalOpen" (ionModalDidDismiss)="dismissPauseModal()">
+  <ion-modal [breakpoints]="[0, 0.75, 1]" [initialBreakpoint]="0.75" backdropDismiss="true" [isOpen]="isPauseModalOpen"
+    (ionModalDidDismiss)="dismissPauseModal()">
     <ng-template>
       <ion-header>
         <ion-toolbar>
@@ -696,7 +701,8 @@
         <ion-list>
           <ion-item>
             <ion-label position="stacked">Grund *</ion-label>
-            <ion-textarea [(ngModel)]="pauseReason" placeholder="Gib einen Grund für die Pause an..." [autoGrow]="true"></ion-textarea>
+            <ion-textarea [(ngModel)]="pauseReason" placeholder="Gib einen Grund für die Pause an..."
+              [autoGrow]="true"></ion-textarea>
           </ion-item>
         </ion-list>
 
@@ -706,25 +712,20 @@
               <ion-label>
                 <h3>Pausiert bis (optional)</h3>
                 @if (pauseUntil) {
-                  <p>{{ pauseUntil | date:'dd.MM.yyyy' }}</p>
+                <p>{{ pauseUntil | date:'dd.MM.yyyy' }}</p>
                 } @else {
-                  <p>Kein Enddatum gewählt</p>
+                <p>Kein Enddatum gewählt</p>
                 }
               </ion-label>
               @if (pauseUntil) {
-                <ion-button fill="clear" slot="end" (click)="pauseUntil = ''; $event.stopPropagation()">
-                  <ion-icon slot="icon-only" name="close-circle-outline" color="medium"></ion-icon>
-                </ion-button>
+              <ion-button fill="clear" slot="end" (click)="pauseUntil = ''; $event.stopPropagation()">
+                <ion-icon slot="icon-only" name="close-circle-outline" color="medium"></ion-icon>
+              </ion-button>
               }
             </ion-item>
             <div slot="content">
-              <ion-datetime
-                locale="de-DE"
-                [firstDayOfWeek]="1"
-                [min]="minPauseDate"
-                [(ngModel)]="pauseUntil"
-                presentation="date"
-                size="cover">
+              <ion-datetime locale="de-DE" [firstDayOfWeek]="1" [min]="minPauseDate" [(ngModel)]="pauseUntil"
+                presentation="date" size="cover">
               </ion-datetime>
             </div>
           </ion-accordion>
@@ -778,7 +779,7 @@
       <ion-header>
         <ion-toolbar>
           <ion-title>{{ copy ? 'Kopieren' : 'Übertragen' }} von {{ player?.firstName }} {{ player?.lastName
-          }}</ion-title>
+            }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="isTransferModalOpen = false">
               <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -792,23 +793,23 @@
             <ion-item>
               <ion-select (ionChange)="onTenantChange()" label="Ziel-Instanz" [(ngModel)]="tenantId">
                 @for (tnt of tenants; track tnt) {
-                  <ion-select-option [value]="tnt.id">{{ tnt.longName }}</ion-select-option>
+                <ion-select-option [value]="tnt.id">{{ tnt.longName }}</ion-select-option>
                 }
               </ion-select>
             </ion-item>
             @if (tenantId && tenantGroups.length) {
-              <ion-item>
-                <ion-select label="Ziel-Gruppe" [(ngModel)]="targetGroupId">
-                  @for (grp of tenantGroups; track grp) {
-                    <ion-select-option [value]="grp.id">{{ grp.name }}</ion-select-option>
-                  }
-                </ion-select>
-              </ion-item>
+            <ion-item>
+              <ion-select label="Ziel-Gruppe" [(ngModel)]="targetGroupId">
+                @for (grp of tenantGroups; track grp) {
+                <ion-select-option [value]="grp.id">{{ grp.name }}</ion-select-option>
+                }
+              </ion-select>
+            </ion-item>
             }
           </ion-item-group>
         </ion-list>
         <ion-button [disabled]="!tenantId || !targetGroupId" (click)="transferPerson()" expand="block">{{
-        copy ? 'Kopieren' : 'Übertragen' }}</ion-button>
+          copy ? 'Kopieren' : 'Übertragen' }}</ion-button>
       </ion-content>
     </ng-template>
   </ion-modal>

@@ -1,0 +1,93 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="/tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Meine Stimme</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (isLoading) {
+  <div class="loading-spinner">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+  } @else {
+
+  <!-- Group Header -->
+  <div class="group-header">
+    <ion-icon name="people-outline"></ion-icon>
+    <div>
+      <strong>{{ groupName }}</strong>
+      <p style="margin: 0; font-size: 0.85rem; color: var(--ion-color-medium);">
+        {{ groupMembers.length }} {{ groupMembers.length === 1 ? 'Mitglied' : 'Mitglieder' }}
+      </p>
+    </div>
+  </div>
+
+  @if (groupMembers.length === 0) {
+  <div class="no-data-message">
+    <ion-icon name="people-outline" style="font-size: 48px; opacity: 0.5;"></ion-icon>
+    <p>Keine Mitglieder in deiner Stimme gefunden.</p>
+  </div>
+  } @else {
+
+  <ion-list [inset]="true">
+    @for (member of groupMembers; track member.id; let last = $last) {
+    <ion-item class="person-item" [lines]="last ? 'none' : 'inset'">
+      <ion-avatar class="person-avatar" slot="start">
+        <img [src]="member.img" alt="Profilbild" />
+      </ion-avatar>
+      <ion-label>
+        <h2>
+          <strong>{{ member.firstName }} {{ member.lastName }}</strong>
+          @if (member.isLeader) {
+          <ion-badge color="primary" style="margin-left: 8px; font-size: 0.65rem;">Stimmführer</ion-badge>
+          }
+          @if (getEinteilung(member)) {
+          <ion-badge color="medium" style="margin-left: 8px; font-size: 0.65rem;">{{ getEinteilung(member) }}</ion-badge>
+          }
+        </h2>
+
+        <div class="contact-info">
+          @if (member.email) {
+          <a class="contact-link" href="mailto:{{ member.email }}">
+            <ion-icon name="mail-outline"></ion-icon>
+            {{ member.email }}
+          </a>
+          }
+          @if (member.phone) {
+          <a class="contact-link" href="tel:{{ member.phone }}">
+            <ion-icon name="call-outline"></ion-icon>
+            {{ member.phone }}
+          </a>
+          }
+          @if (!member.email && !member.phone) {
+          <span style="color: var(--ion-color-medium); font-size: 0.85rem;">Keine Kontaktdaten hinterlegt</span>
+          }
+        </div>
+
+        @if (member.upcomingAbsences.length > 0) {
+        <div class="absences-container">
+          <div class="absences-label">Anstehende Abwesenheiten:</div>
+          <div class="absences-list">
+            @for (absence of member.upcomingAbsences; track absence.id) {
+            <ion-badge class="absence-badge" [color]="getAbsenceColor(absence.status)">
+              {{ getAbsenceText(absence) }}
+            </ion-badge>
+            }
+          </div>
+        </div>
+        }
+      </ion-label>
+    </ion-item>
+    }
+  </ion-list>
+
+  }
+  }
+</ion-content>

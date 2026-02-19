@@ -82,6 +82,10 @@ const routes: Routes = [
         loadChildren: () => import('./../settings/general/type/type.module').then(m => m.TypePageModule)
       },
       {
+        path: 'settings/voice-leader',
+        loadChildren: () => import('./../settings/voice-leader/voice-leader.module').then(m => m.VoiceLeaderPageModule)
+      },
+      {
         path: 'parents',
         loadChildren: () => import('./../selfService/parents/parents.module').then(m => m.ParentsPageModule)
       },

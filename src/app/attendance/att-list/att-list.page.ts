@@ -116,7 +116,7 @@ export class AttListPage implements OnInit {
     this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
     this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
-    this.isHelper = this.db.tenantUser().role === Role.HELPER;
+    this.isHelper = this.db.tenantUser().role === Role.HELPER || this.db.tenantUser().role === Role.VOICE_LEADER_HELPER;
     await this.getAttendance();
 
     if (this.db.tenant().showHolidays && this.db.tenant().region) {

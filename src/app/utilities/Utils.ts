@@ -255,6 +255,10 @@ export class Utils {
         return "Verantwortlicher";
       case Role.PARENT:
         return "Elternteil";
+      case Role.VOICE_LEADER:
+        return "Stimmführer";
+      case Role.VOICE_LEADER_HELPER:
+        return "Stimmführer & Helfer";
       case Role.NONE:
         return "Mitglied";
       default:
@@ -588,6 +592,8 @@ export class Utils {
       case Role.PARENT:
         return "/tabs/parents";
       case Role.HELPER:
+      case Role.VOICE_LEADER:
+      case Role.VOICE_LEADER_HELPER:
       case Role.NONE:
       case Role.PLAYER:
       case Role.APPLICANT:
@@ -604,11 +610,13 @@ export class Utils {
       case "/tabs/settings/register":
         return true;
       case "/tabs/signout":
-        return [Role.HELPER, Role.PLAYER, Role.APPLICANT].includes(role);
+        return [Role.HELPER, Role.PLAYER, Role.APPLICANT, Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER].includes(role);
       case "/tabs/player":
         return [Role.ADMIN, Role.RESPONSIBLE, Role.VIEWER].includes(role);
       case "/tabs/settings/notifications":
-        return [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER, Role.PLAYER].includes(role);
+        return [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER, Role.PLAYER, Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER].includes(role);
+      case "/tabs/settings/voice-leader":
+        return [Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER].includes(role);
       case "/tabs/attendance":
       case "/tabs/settings/teachers":
         return [Role.ADMIN, Role.RESPONSIBLE, Role.VIEWER].includes(role);

@@ -107,6 +107,28 @@ export class PlayerService {
     })) as any;
   }
 
+  async getPlayersByGroup(tenantId: number, groupId: number): Promise<Player[]> {
+    const { data, error } = await supabase
+      .from('player')
+      .select('*')
+      .eq('tenantId', tenantId)
+      .eq('instrument', groupId)
+      .is("left", null)
+      .is('pending', false)
+      .order("isLeader", { ascending: false })
+      .order("lastName");
+
+    if (error) {
+      Utils.showToast("Fehler beim Laden der Gruppenmitglieder", "danger");
+      throw error;
+    }
+
+    return (data as any).map((player) => ({
+      ...player,
+      history: player.history as any,
+    })) as any;
+  }
+
   async getPendingPersons(tenantId: number): Promise<Player[]> {
     const { data, error } = await supabase
       .from('player')

@@ -47,6 +47,8 @@ export class PersonPage implements OnInit, AfterViewInit {
   public readonly PLAYER: Role = Role.PLAYER;
   public readonly HELPER: Role = Role.HELPER;
   public readonly RESPONSIBLE: Role = Role.RESPONSIBLE;
+  public readonly VOICE_LEADER_HELPER: Role = Role.VOICE_LEADER_HELPER;
+  public readonly VOICE_LEADER: Role = Role.VOICE_LEADER;
   public player: Player;
   public birthdayString: string = format(new Date(), 'dd.MM.yyyy');
   public playsSinceString: string = format(new Date(), 'dd.MM.yyyy');
@@ -414,7 +416,40 @@ export class PersonPage implements OnInit, AfterViewInit {
             text: 'Ja',
             handler: async () => {
               loading.present();
-              await this.continueUpdatingPlayer(true, loading);
+              await this.continueUpdatingPlayer(true, loading, false);
+            },
+          },
+        ],
+      });
+      await alert.present();
+      return;
+    }
+
+    // Check if isLeader is being activated (not for general tenant, and player must have account)
+    if (!this.isGeneral && this.player.appId && !this.existingPlayer.isLeader && this.player.isLeader) {
+      const alert = await this.alertController.create({
+        header: 'Stimmführer aktivieren',
+        message: `Mit der Stimmführer-Rolle kann ${this.player.firstName} ${this.player.lastName} die Kontaktdaten und anstehenden Termine aller Personen in der Stimme einsehen. Soll die Rolle vergeben werden?`,
+        buttons: [
+          {
+            text: 'Abbrechen',
+            handler: () => {
+              this.player.isLeader = false;
+            },
+            role: 'cancel',
+          },
+          {
+            text: 'Nur Stimmführer-Status',
+            handler: async () => {
+              loading.present();
+              await this.continueUpdatingPlayer(false, loading, false);
+            },
+          },
+          {
+            text: 'Mit Rolle speichern',
+            handler: async () => {
+              loading.present();
+              await this.continueUpdatingPlayer(false, loading, true);
             },
           },
         ],
@@ -424,13 +459,31 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     loading.present();
-    await this.continueUpdatingPlayer(false, loading);
+    await this.continueUpdatingPlayer(false, loading, false);
   }
 
-  async continueUpdatingPlayer(createAccount = false, loading: HTMLIonLoadingElement): Promise<void> {
+  async continueUpdatingPlayer(createAccount = false, loading: HTMLIonLoadingElement, assignVoiceLeaderRole = false): Promise<void> {
     const mainGroupId = this.db.getMainGroup()?.id;
     if (this.player.appId && (this.existingPlayer.instrument !== this.player.instrument && this.player.instrument === mainGroupId || this.existingPlayer.instrument === mainGroupId)) {
       await this.db.updateTenantUser({ role: this.player.instrument === mainGroupId ? Role.RESPONSIBLE : Role.PLAYER }, this.player.appId);
+    }
+
+    // Handle Voice Leader role assignment
+    if (this.player.appId && !this.isGeneral) {
+      if (assignVoiceLeaderRole) {
+        // Assign Voice Leader role
+        const currentRole = await this.db.getRoleFromTenantUser(this.player.appId);
+        const newRole = currentRole === Role.HELPER ? Role.VOICE_LEADER_HELPER : Role.VOICE_LEADER;
+        await this.db.updateTenantUser({ role: newRole }, this.player.appId);
+      } else if (this.existingPlayer.isLeader && !this.player.isLeader) {
+        // Remove Voice Leader role when isLeader is turned off
+        const currentRole = await this.db.getRoleFromTenantUser(this.player.appId);
+        if (currentRole === Role.VOICE_LEADER) {
+          await this.db.updateTenantUser({ role: Role.PLAYER }, this.player.appId);
+        } else if (currentRole === Role.VOICE_LEADER_HELPER) {
+          await this.db.updateTenantUser({ role: Role.HELPER }, this.player.appId);
+        }
+      }
     }
 
     const history = this.player.history;

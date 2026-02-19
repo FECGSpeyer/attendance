@@ -25,6 +25,8 @@ export enum Role {
     RESPONSIBLE = 5,
     PARENT = 6,
     APPLICANT = 7,
+    VOICE_LEADER = 8,
+    VOICE_LEADER_HELPER = 9,
     NONE = 99,
 };
 

@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "3.7.9",
+          "date": "19.2.2026",
+          "changes": [
+            "🎼 Stimmführer-Rollen: Neue Rollen 'Stimmführer' und 'Stimmführer & Helfer' ermöglichen Einblick in Kontaktdaten und Abwesenheiten der eigenen Stimme.",
+            "👥 Meine Stimme: Neue Seite unter 'Mehr' zeigt Stimmführern alle Mitglieder ihrer Gruppe mit Kontaktdaten und anstehenden Abwesenheiten.",
+            "🔄 Automatische Rollenvergabe: Beim Aktivieren des Stimmführer-Status kann optional die entsprechende Rolle vergeben werden."
+          ]
+        },
+        {
           "version": "3.7.8",
           "date": "16.2.2026",
           "changes": [

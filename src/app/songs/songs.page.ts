@@ -120,7 +120,7 @@ export class SongsPage implements OnInit {
       return {
         ...song,
         lastSung,
-        conductor: conductor ? `${conductor.firstName} ${conductor.lastName}` : undefined,
+        conductor: conductor ? `${conductor.firstName} ${conductor.lastName}` : (hisEntry?.otherConductor ?? undefined),
         instrument_ids: song.instrument_ids?.length ? song.instrument_ids : this.selectedInstruments,
       }
     });

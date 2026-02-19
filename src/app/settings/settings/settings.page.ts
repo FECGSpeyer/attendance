@@ -34,6 +34,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   public isHelper: boolean = false;
   public isPlayer: boolean = false;
   public isGeneral: boolean = false;
+  public isVoiceLeader: boolean = false;
   public tenantsFromUser: { tenantId: number, role: Role }[] = [];
   public isIos: boolean = false;
   public isInstancesModalOpen: boolean = false;
@@ -79,10 +80,11 @@ export class SettingsPage implements OnInit, OnDestroy {
   async initialize(): Promise<void> {
     this.isGeneral = this.db.tenant().type === 'general';
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
-    this.isHelper = this.db.tenantUser().role === Role.HELPER;
+    this.isHelper = this.db.tenantUser().role === Role.HELPER || this.db.tenantUser().role === Role.VOICE_LEADER_HELPER;
     this.isPlayer = this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.NONE;
     this.isSuperAdmin = this.db.tenantUser().role === Role.ADMIN;
     this.isApplicant = this.db.tenantUser().role === Role.APPLICANT;
+    this.isVoiceLeader = [Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER].includes(this.db.tenantUser().role);
     this.maintainTeachers = this.db.tenant().maintainTeachers;
     this.parentsEnabled = this.db.tenant().parents || false;
 

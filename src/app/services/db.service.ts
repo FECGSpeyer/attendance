@@ -1095,6 +1095,10 @@ export class DbService {
     }) as any;
   }
 
+  async getPlayersByGroup(groupId: number): Promise<Player[]> {
+    return this.playerSvc.getPlayersByGroup(this.tenant().id, groupId);
+  }
+
   async getPendingPersons(): Promise<Player[]> {
     return this.playerSvc.getPendingPersons(this.tenant().id);
   }

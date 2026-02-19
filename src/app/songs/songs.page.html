@@ -274,7 +274,7 @@
             @if (!tenantData && song.lastSung && viewOpts.includes('lastSung')) {
               <h3>Zuletzt {{ tenantType ===
                 'orchestra' ? 'gespielt' : 'gesungen' }} am {{ song.lastSung |
-                date:'dd.MM.yyyy' }} | {{ song.conductor }}
+                date:'dd.MM.yyyy' }} | {{ song.conductor  }}
               </h3>
             }
           </ion-label>

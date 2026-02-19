@@ -160,6 +160,24 @@
   </ion-modal>
   }
 
+  <!-- ==================== STIMMFÜHRER ==================== -->
+  @if (isVoiceLeader && !isGeneral) {
+  <ion-list [inset]="true" class="category-list">
+    <ion-list-header>
+      <ion-label>
+        <ion-icon name="musical-notes-outline" class="header-icon"></ion-icon>
+        Stimmführer
+      </ion-label>
+    </ion-list-header>
+    <ion-item-group>
+      <ion-item routerLink="voice-leader" button lines="none">
+        <ion-icon name="people-outline" slot="start"></ion-icon>
+        <ion-label>Meine Stimme</ion-label>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+  }
+
   <!-- ==================== INSTANZ-VERWALTUNG ==================== -->
   @if (isAdmin) {
   <ion-list [inset]="true" class="category-list">
