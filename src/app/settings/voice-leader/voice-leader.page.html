@@ -46,7 +46,7 @@
         <h2>
           <strong>{{ member.firstName }} {{ member.lastName }}</strong>
           @if (member.isLeader) {
-          <ion-badge color="primary" style="margin-left: 8px; font-size: 0.65rem;">Stimmführer</ion-badge>
+          <ion-badge color="primary" style="margin-left: 8px; font-size: 0.65rem;">Sf</ion-badge>
           }
           @if (getEinteilung(member)) {
           <ion-badge color="medium" style="margin-left: 8px; font-size: 0.65rem;">{{ getEinteilung(member) }}</ion-badge>
