@@ -68,7 +68,17 @@ export class SignoutPage implements OnInit {
       this.isApplicant = true;
     }
 
-    this.upcomingSongs = await this.db.getCurrentSongs();
+    const songs = await this.db.getCurrentSongs();
+    this.upcomingSongs = [];
+    for (const song of songs) {
+      const history = song.history.filter((h: History) => this.personAttendances.some((att: PersonAttendance) => att.attendance.id === (h.attendance_id as unknown as Attendance).id));
+      if (history.length) {
+        this.upcomingSongs.push({
+          date: song.date,
+          history
+        });
+      }
+    }
   }
 
   async signout() {
@@ -316,6 +326,10 @@ export class SignoutPage implements OnInit {
     this.excuseModal.setCurrentBreakpoint(0.4);
   }
 
+  hasPastAttendances(attendances: PersonAttendance[]): boolean {
+    return attendances.some((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
+  }
+
   attHasPassed(att: PersonAttendance) {
     return dayjs(att.date).isBefore(dayjs(), "day");
   }
@@ -344,8 +358,8 @@ export class SignoutPage implements OnInit {
   async openPlanViewer(attendance: PersonAttendance) {
     const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === attendance.typeId);
     const isPractice = attType?.name?.toLowerCase().includes('probe') ||
-                       attType?.name?.toLowerCase().includes('übung') ||
-                       attendance.attendance?.type === 'uebung';
+      attType?.name?.toLowerCase().includes('übung') ||
+      attendance.attendance?.type === 'uebung';
 
     const modal = await this.modalController.create({
       component: PlanViewerComponent,

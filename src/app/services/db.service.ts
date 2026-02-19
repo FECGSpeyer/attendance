@@ -1890,6 +1890,7 @@ export class DbService {
         otherConductor,
         song:songId (*),
         attendance_id (
+          id,
           date
         )
       `)
