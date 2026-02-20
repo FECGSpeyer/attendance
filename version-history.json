@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "3.8.1",
+          "date": "20.2.2026",
+          "changes": [
+            "🎼 Stimmführer-Badge: In der Mitglieder-Übersicht werden Stimmführer nun mit einem 'Sf'-Badge gekennzeichnet."
+          ]
+        },
+        {
           "version": "3.8.0",
           "date": "20.2.2026",
           "changes": [

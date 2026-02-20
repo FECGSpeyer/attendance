@@ -58,7 +58,12 @@
             </ion-item-divider>
           }
           <ion-item>
-            <ion-label>{{ player.firstName }} {{ player.lastName }}</ion-label>
+            <ion-label>
+              {{ player.firstName }} {{ player.lastName }}
+              @if (player.isLeader) {
+                <ion-badge color="primary" style="margin-left: 8px; font-size: 0.65rem;">Sf</ion-badge>
+              }
+            </ion-label>
           </ion-item>
         }
       </ion-list>
