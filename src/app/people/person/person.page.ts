@@ -518,6 +518,16 @@ export class PersonPage implements OnInit, AfterViewInit {
         lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
       }, false, createAccount, this.role, this.existingPlayer.shift_id !== this.player.shift_id);
 
+      // Sync upcoming attendances if additional_fields changed and filter is used
+      try {
+        await this.db.syncPlayerWithUpcomingAttendancesByAdditionalFields(
+          this.player,
+          this.existingPlayer.additional_fields
+        );
+      } catch (e) {
+        console.warn('Could not sync player with upcoming attendances:', e);
+      }
+
       loading.dismiss();
       this.hasChanges = false;
       await this.dismiss();

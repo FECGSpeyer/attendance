@@ -1315,6 +1315,106 @@ export class DbService {
     }
   }
 
+  /**
+   * Sync player with upcoming attendances based on additional_fields_filter changes.
+   * When a player's additional_field value changes and an attendance type has a filter
+   * on that field, this method adds or removes the player from upcoming attendances.
+   *
+   * @param player The player with updated additional_fields
+   * @param oldAdditionalFields The previous additional_fields values
+   */
+  async syncPlayerWithUpcomingAttendancesByAdditionalFields(
+    player: Player,
+    oldAdditionalFields: Record<string, any> | undefined
+  ): Promise<void> {
+    // Get all attendance types that have additional_fields_filter
+    const typesWithFilter = this.attendanceTypes().filter(
+      (type: AttendanceType) => type.additional_fields_filter?.key && type.additional_fields_filter?.option
+    );
+
+    if (typesWithFilter.length === 0) {
+      return;
+    }
+
+    // Check which fields changed
+    const changedFields = new Set<string>();
+    const newFields = player.additional_fields || {};
+    const oldFields = oldAdditionalFields || {};
+
+    for (const type of typesWithFilter) {
+      const filterKey = type.additional_fields_filter.key;
+      const fieldDef = this.tenant().additional_fields?.find(f => f.id === filterKey);
+      if (!fieldDef) continue;
+
+      const oldValue = oldFields[filterKey] ?? fieldDef.defaultValue;
+      const newValue = newFields[filterKey] ?? fieldDef.defaultValue;
+
+      if (oldValue !== newValue) {
+        changedFields.add(filterKey);
+      }
+    }
+
+    if (changedFields.size === 0) {
+      return;
+    }
+
+    // Get all upcoming attendances
+    const upcomingAttendances = await this.getUpcomingAttendances();
+
+    if (!upcomingAttendances?.length) {
+      return;
+    }
+
+    // Get existing person_attendances for this player
+    const existingPersonAttendances = await this.getPersonAttendances(player.id, false);
+    const existingAttendanceIds = new Set(existingPersonAttendances.map(pa => pa.attendance_id));
+
+    const attToAdd: PersonAttendance[] = [];
+    const attToRemove: number[] = []; // attendance IDs to remove player from
+
+    for (const att of upcomingAttendances) {
+      const attType = typesWithFilter.find(t => t.id === att.type_id);
+      if (!attType) continue;
+
+      const filterKey = attType.additional_fields_filter.key;
+      if (!changedFields.has(filterKey)) continue;
+
+      // Check if player should be in this attendance based on other criteria first
+      if (player.paused) continue;
+      if (attType.relevant_groups.length > 0 && !attType.relevant_groups.includes(player.instrument)) continue;
+
+      const fieldDef = this.tenant().additional_fields?.find(f => f.id === filterKey);
+      if (!fieldDef) continue;
+
+      const playerValue = (player.additional_fields?.[filterKey] ?? fieldDef.defaultValue);
+      const shouldBeInAttendance = playerValue === attType.additional_fields_filter.option;
+      const isInAttendance = existingAttendanceIds.has(att.id);
+
+      if (shouldBeInAttendance && !isInAttendance) {
+        // Add player to attendance
+        attToAdd.push({
+          attendance_id: att.id,
+          person_id: player.id,
+          notes: "",
+          status: attType.default_status,
+        });
+      } else if (!shouldBeInAttendance && isInAttendance) {
+        // Remove player from attendance
+        attToRemove.push(att.id);
+      }
+    }
+
+    // Execute additions
+    if (attToAdd.length > 0) {
+      await this.addPersonAttendances(attToAdd);
+    }
+
+    // Execute removals
+    if (attToRemove.length > 0) {
+      await this.deletePersonAttendances(attToRemove, player.id);
+    }
+  }
+
   async updatePlayer(
     player: Player,
     pausedAction?: boolean,

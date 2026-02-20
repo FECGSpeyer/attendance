@@ -7,7 +7,8 @@
             "👥 Mitglieder-Tab: Neuer Tab für Spieler, Helfer und Stimmführer zeigt eine Übersicht aller Personen (nach Gruppe sortiert). Aktivierbar in den allgemeinen Einstellungen.",
             "🔍 Quickfilter: Falls das Zusatzfeld 'Einteilung' vorhanden ist, erscheint ein Schnellfilter für die Mitglieder-Übersicht.",
             "🧹 Zusatzfeld-Validierung: Beim Ändern von Zusatzfeldern werden automatisch ungültige Werte bei Personen korrigiert (z.B. gelöschte Optionen → Standardwert).",
-            "🗑️ Person aus Anwesenheit entfernen: Personen können nun aus einzelnen Anwesenheiten gelöscht werden (mit Warnhinweis, nicht rückgängig machbar)."
+            "🗑️ Person aus Anwesenheit entfernen: Personen können nun aus einzelnen Anwesenheiten gelöscht werden (mit Warnhinweis, nicht rückgängig machbar).",
+            "🔄 Automatische Termin-Synchronisation: Bei Änderung eines Zusatzfelds einer Person werden anstehende Termine automatisch aktualisiert (Person wird hinzugefügt/entfernt basierend auf Zusatzfeld-Filter)."
           ]
         },
         {
