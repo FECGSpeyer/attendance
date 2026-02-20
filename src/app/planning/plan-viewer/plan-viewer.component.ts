@@ -130,13 +130,16 @@ export class PlanViewerComponent implements OnInit {
       return;
     }
 
+    const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
+    const planningTitle = Utils.getPlanningTitle(type, this.attendance.typeInfo);
+
     await Utils.createPlanExport({
       time: this.plan.time,
       end: this.plan.end,
       fields: this.plan.fields,
       attendance: this.attendance?.id,
       attendances: this.attendance ? [this.attendance] : []
-    }, this.isPractice);
+    }, planningTitle);
   }
 
   async sendTelegram(asImage: boolean) {
@@ -145,6 +148,8 @@ export class PlanViewerComponent implements OnInit {
       return;
     }
 
+    const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
+    const planningTitle = Utils.getPlanningTitle(type, this.attendance.typeInfo);
     const name = this.attendance?.date
       ? dayjs(this.attendance.date).format('DD_MM_YYYY')
       : dayjs().format('DD_MM_YYYY');
@@ -157,11 +162,11 @@ export class PlanViewerComponent implements OnInit {
       asImage,
       attendance: this.attendance?.id,
       attendances: this.attendance ? [this.attendance] : []
-    }, this.isPractice);
+    }, planningTitle);
 
     this.db.sendPlanPerTelegram(
       blob,
-      `${this.isPractice ? 'Probenplan' : 'Gottesdienst'}_${name}`,
+      `${planningTitle.replace("(", "").replace(")", "")}_${name}`,
       asImage
     );
 

@@ -151,6 +151,11 @@
       </ion-item>
       <ion-item>
         <ion-toggle
+          helperText="Aktivieren, um Mitgliedern (Spieler, Helfer, Stimmführer) eine Übersicht aller Personen anzuzeigen."
+        [(ngModel)]="showMembersList">Mitgliederliste für alle</ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-toggle
           helperText="Aktivieren, um beim Anlegen der Anwesenheiten die Ferien und Feiertage hervorzuheben. (nur verfügbar für Deutschland)"
         [(ngModel)]="showHolidays">Ferien/Feiertage anzeigen</ion-toggle>
       </ion-item>

@@ -283,6 +283,21 @@ export class PlayerService {
     return data;
   }
 
+  /**
+   * Update only the additional_fields of a player
+   * Used for sanitizing field values after extra fields configuration changes
+   */
+  async updatePlayerAdditionalFields(id: number, additional_fields: Record<string, any>): Promise<void> {
+    const { error } = await supabase
+      .from('player')
+      .update({ additional_fields })
+      .match({ id });
+
+    if (error) {
+      throw new Error("Fehler beim updaten der Zusatzfelder");
+    }
+  }
+
   async removePlayer(player: Person): Promise<void> {
     await supabase
       .from('player')

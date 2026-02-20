@@ -15,6 +15,13 @@
       </ion-tab-button>
     }
 
+    @if (showMembersTab) {
+      <ion-tab-button tab="members">
+        <ion-icon name="people-outline"></ion-icon>
+        <ion-label>Mitglieder</ion-label>
+      </ion-tab-button>
+    }
+
     @if ((isPlayer || isHelper) && hasMultipleTenants) {
       <ion-tab-button tab="overview">
         <ion-icon name="calendar-outline"></ion-icon>

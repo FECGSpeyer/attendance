@@ -130,6 +130,7 @@ export type Database = {
           manage_songs: boolean | null
           name: string | null
           notification: boolean | null
+          planning_title: string | null
           relevant_groups: number[] | null
           reminders: number[] | null
           start_time: string | null
@@ -155,6 +156,7 @@ export type Database = {
           manage_songs?: boolean | null
           name?: string | null
           notification?: boolean | null
+          planning_title?: string | null
           relevant_groups?: number[] | null
           reminders?: number[] | null
           start_time?: string | null
@@ -180,6 +182,7 @@ export type Database = {
           manage_songs?: boolean | null
           name?: string | null
           notification?: boolean | null
+          planning_title?: string | null
           relevant_groups?: number[] | null
           reminders?: number[] | null
           start_time?: string | null

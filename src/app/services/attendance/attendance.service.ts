@@ -240,4 +240,18 @@ export class AttendanceService {
   async signIn(personAttendanceId: string, status: AttendanceStatus, userId?: string): Promise<void> {
     await this.updatePersonAttendance(personAttendanceId, { notes: "", status }, userId);
   }
+
+  /**
+   * Delete a single person attendance by its ID
+   */
+  async deletePersonAttendanceById(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('person_attendances')
+      .delete()
+      .match({ id });
+
+    if (error) {
+      throw new Error("Fehler beim Löschen der Person-Anwesenheit");
+    }
+  }
 }

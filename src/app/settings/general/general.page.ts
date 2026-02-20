@@ -43,6 +43,7 @@ export class GeneralPage implements OnInit {
   public attDateString: string = format(new Date(), 'dd.MM.yyyy');
   public attDate: string = new Date().toISOString();
   public parentsEnabled: boolean = false;
+  public showMembersList: boolean = false;
   public isOrchestra: boolean = false;
   public isSuperAdmin: boolean = false;
   public isGeneral: boolean = false;
@@ -57,6 +58,7 @@ export class GeneralPage implements OnInit {
   };
   public fieldTypes = FieldType;
   public extraFields: ExtraField[] = [];
+  private originalExtraFields: ExtraField[] = [];
   public editingExtraField: ExtraField | null = null;
   public editingExtraFieldIndex: number = -1;
   public isEditExtraFieldModalOpen: boolean = false;
@@ -111,6 +113,7 @@ export class GeneralPage implements OnInit {
     this.practiceStart = this.db.tenant().practiceStart || '18:00';
     this.practiceEnd = this.db.tenant().practiceEnd || '20:00';
     this.parentsEnabled = this.db.tenant().parents || false;
+    this.showMembersList = this.db.tenant().showMembersList || false;
     this.attDate = this.db.getCurrentAttDate();
     this.attDateString = format(new Date(this.attDate), 'dd.MM.yyyy');
     this.isOrchestra = this.db.tenant().type === 'orchestra';
@@ -128,7 +131,8 @@ export class GeneralPage implements OnInit {
       })));
     }
     this.selectedRegisterFields = this.db.tenant().registration_fields?.length ? this.db.tenant().registration_fields : this.registerFields.filter(f => f.disabled).map(f => f.key);
-    this.extraFields = [...this.db.tenant().additional_fields ?? []];
+    this.extraFields = [...this.db.tenant().additional_fields ?? []].map(f => ({ ...f, options: f.options ? [...f.options] : [] }));
+    this.originalExtraFields = [...this.db.tenant().additional_fields ?? []].map(f => ({ ...f, options: f.options ? [...f.options] : [] }));
 
     // Migrate legacy rules: add period_type if missing
     this.criticalRules = (this.db.tenant().critical_rules ?? []).map(rule => ({
@@ -155,6 +159,7 @@ export class GeneralPage implements OnInit {
       practiceStart: this.practiceStart,
       practiceEnd: this.practiceEnd,
       parentsEnabled: this.parentsEnabled,
+      showMembersList: this.showMembersList,
       attDate: this.attDate,
       songSharingEnabled: this.songSharingEnabled,
       registerAllowed: this.registerAllowed,
@@ -292,6 +297,7 @@ export class GeneralPage implements OnInit {
         shortName: this.shortName,
         longName: this.longName,
         parents: this.parentsEnabled,
+        showMembersList: this.showMembersList,
         region: this.region,
         maintainTeachers: this.maintainTeachers,
         showHolidays: this.showHolidays,
@@ -302,6 +308,11 @@ export class GeneralPage implements OnInit {
         registration_fields: this.registerAllowed ? this.selectedRegisterFields : [],
         critical_rules: this.criticalRules,
       });
+
+      // Sanitize player additional_fields for invalid values after field changes
+      if (this.haveExtraFieldsChanged()) {
+        await this.sanitizePlayerAdditionalFields();
+      }
 
       // Evaluate critical rules for all players after saving
       try {
@@ -775,5 +786,139 @@ export class GeneralPage implements OnInit {
     const thresholdSymbol = rule.threshold_type === CriticalRuleThresholdType.COUNT ? 'x' : '%';
     const namePrefix = rule.name ? `${rule.name}: ` : '';
     return `${namePrefix}${rule.threshold_value}${thresholdSymbol} ${statusNames} ${periodText} (${typeNames})`;
+  }
+
+  /**
+   * Sanitize additional_fields for all players after extra fields configuration changes.
+   * - Removes values for fields that no longer exist
+   * - Resets SELECT field values to default if the current value is not in the options anymore
+   */
+  private async sanitizePlayerAdditionalFields(): Promise<void> {
+    try {
+      const players = await this.db.getPlayers();
+      const validFieldIds = new Set(this.extraFields.map(f => f.id));
+      const playersToUpdate: { id: number; additional_fields: Record<string, any> }[] = [];
+
+      for (const player of players) {
+        if (!player.additional_fields) {
+          continue;
+        }
+
+        let needsUpdate = false;
+        const sanitizedFields: Record<string, any> = {};
+
+        // Check each field in the player's additional_fields
+        for (const [fieldId, value] of Object.entries(player.additional_fields)) {
+          // Check if field still exists
+          if (!validFieldIds.has(fieldId)) {
+            // Field was deleted - don't include it (effectively removing it)
+            needsUpdate = true;
+            continue;
+          }
+
+          const fieldDef = this.extraFields.find(f => f.id === fieldId);
+          if (!fieldDef) {
+            needsUpdate = true;
+            continue;
+          }
+
+          // For SELECT fields, check if value is still valid
+          if (fieldDef.type === FieldType.SELECT) {
+            if (fieldDef.options && !fieldDef.options.includes(value)) {
+              // Value is not in options anymore - reset to default
+              sanitizedFields[fieldId] = Utils.getFieldTypeDefaultValue(
+                fieldDef.type,
+                fieldDef.defaultValue,
+                fieldDef.options
+              );
+              needsUpdate = true;
+            } else {
+              sanitizedFields[fieldId] = value;
+            }
+          } else {
+            // Keep the value for other field types
+            sanitizedFields[fieldId] = value;
+          }
+        }
+
+        if (needsUpdate) {
+          playersToUpdate.push({
+            id: player.id,
+            additional_fields: sanitizedFields
+          });
+        }
+      }
+
+      // Batch update all affected players
+      if (playersToUpdate.length > 0) {
+        for (const playerUpdate of playersToUpdate) {
+          await this.playerSvc.updatePlayerAdditionalFields(
+            playerUpdate.id,
+            playerUpdate.additional_fields
+          );
+        }
+        console.log(`Sanitized additional_fields for ${playersToUpdate.length} players`);
+      }
+
+      // Update originalExtraFields after successful sanitization
+      this.originalExtraFields = [...this.extraFields].map(f => ({ ...f, options: f.options ? [...f.options] : [] }));
+    } catch (error) {
+      console.warn('Could not sanitize player additional fields:', error);
+    }
+  }
+
+  /**
+   * Check if extra fields configuration has changed compared to original state.
+   * Returns true if fields were added, removed, or SELECT options changed.
+   */
+  private haveExtraFieldsChanged(): boolean {
+    // Different number of fields
+    if (this.extraFields.length !== this.originalExtraFields.length) {
+      return true;
+    }
+
+    // Check for deleted or new fields
+    const originalIds = new Set(this.originalExtraFields.map(f => f.id));
+    const currentIds = new Set(this.extraFields.map(f => f.id));
+
+    for (const id of originalIds) {
+      if (!currentIds.has(id)) {
+        return true; // Field was deleted
+      }
+    }
+    for (const id of currentIds) {
+      if (!originalIds.has(id)) {
+        return true; // Field was added
+      }
+    }
+
+    // Check SELECT field options changes
+    for (const currentField of this.extraFields) {
+      if (currentField.type !== FieldType.SELECT) {
+        continue;
+      }
+
+      const originalField = this.originalExtraFields.find(f => f.id === currentField.id);
+      if (!originalField) {
+        continue;
+      }
+
+      // Check if options changed
+      const originalOptions = originalField.options || [];
+      const currentOptions = currentField.options || [];
+
+      if (originalOptions.length !== currentOptions.length) {
+        return true;
+      }
+
+      // Check if any option was removed (added options don't affect existing values)
+      for (const option of originalOptions) {
+        if (!currentOptions.includes(option)) {
+          return true; // An option was removed
+        }
+      }
+    }
+
+    return false;
   }
 }

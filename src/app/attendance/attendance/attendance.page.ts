@@ -80,7 +80,7 @@ export class AttendancePage implements OnInit {
     this.withExcuses = this.db.tenant().withExcuses;
     this.attendance = await this.db.getAttendanceById(this.attendanceId);
     this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendanceId);
-    this.isHelper = this.db.tenantUser().role === Role.HELPER || this.db.tenantUser().role === Role.VOICE_LEADER_HELPER;
+    this.isHelper = await this.db.tenantUser().role === Role.HELPER;
 
     this.attendanceViewMode = await this.storage.get('attendanceViewMode') || AttendanceViewMode.CLICK;
 
@@ -299,23 +299,26 @@ export class AttendancePage implements OnInit {
   }
 
   async exportPlan() {
+    const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
     await Utils.createPlanExport({
       ...this.attendance.plan,
       attendance: this.attendance.id,
       attendances: await this.db.getAttendance(),
-    }, this.attendance.type === "uebung");
+    }, Utils.getPlanningTitle(type, this.attendance.typeInfo));
   }
 
   async send(asImage: boolean = false) {
+    const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
+    const planningTitle = Utils.getPlanningTitle(type, this.attendance.typeInfo);
     const blob = await Utils.createPlanExport({
       ...this.attendance.plan,
       attendance: this.attendance.id,
       attendances: await this.db.getAttendance(),
       asBlob: true,
       asImage,
-    }, this.attendance.type === "uebung");
+    }, planningTitle);
 
-    this.db.sendPlanPerTelegram(blob, `${this.attendance?.type === "uebung" ? "Probenplan" : "Gottesdienst"}_${dayjs(this.attendance.date).format("DD_MM_YYYY")}`, asImage);
+    this.db.sendPlanPerTelegram(blob, `${planningTitle.replace("(", "").replace(")", "")}_${dayjs(this.attendance.date).format("DD_MM_YYYY")}`, asImage);
   }
 
   async editPlan() {
@@ -464,6 +467,38 @@ export class AttendancePage implements OnInit {
     slider.close();
     player.status = AttendanceStatus.LateExcused;
     this.db.updatePersonAttendance(player.id, { status: player.status });
+  }
+
+  async removeFromAttendance(player: PersonAttendance, slider: IonItemSliding) {
+    slider.close();
+
+    const alert = await this.alertController.create({
+      header: 'Person entfernen',
+      message: `Möchtest du ${player.firstName} ${player.lastName} wirklich aus dieser Anwesenheit entfernen? Diese Aktion kann nicht rückgängig gemacht werden.`,
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel'
+        },
+        {
+          text: 'Entfernen',
+          role: 'destructive',
+          handler: async () => {
+            try {
+              await this.db.deletePersonAttendanceById(player.id);
+              this.players = this.players.filter(p => p.id !== player.id);
+              // Recalculate group headers
+              this.players = Utils.getModifiedPlayers(this.players, this.mainGroup);
+              Utils.showToast('Person aus Anwesenheit entfernt', 'success');
+            } catch (error) {
+              Utils.showToast('Fehler beim Entfernen der Person', 'danger');
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   async getModifierInfo(player: PersonAttendance, slider: IonItemSliding) {

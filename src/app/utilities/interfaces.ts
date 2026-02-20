@@ -58,6 +58,7 @@ export interface Tenant {
   favorite?: boolean;
   critical_rules?: CriticalRule[];
   timezone: string;
+  showMembersList?: boolean;
 }
 
 export interface ExtraField {
@@ -406,6 +407,7 @@ export interface AttendanceType {
     option: string;
   };
   checklist?: ChecklistItem[];
+  planning_title: string;
 }
 
 export interface ShiftPlan {

@@ -167,6 +167,8 @@ export class PlanningPage implements OnInit {
 
     const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
     const name: string = this.attendance ? dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format("DD_MM_YYYY") : dayjs().format("DD_MM_YYYY");
+    const type = this.db.attendanceTypes().find(type => type.id === attendance.type_id);
+    const planningTitle = Utils.getPlanningTitle(type, attendance.typeInfo);
     const blob = await Utils.createPlanExport({
       time: this.time,
       end: this.end,
@@ -175,8 +177,8 @@ export class PlanningPage implements OnInit {
       asImage,
       attendance: this.attendance,
       attendances: this.attendances
-    }, attendance?.type === "uebung");
-    this.db.sendPlanPerTelegram(blob, `${attendance?.type === "uebung" ? "Probenplan" : "Gottesdienst"}_${name}`, asImage);
+    }, planningTitle);
+    this.db.sendPlanPerTelegram(blob, `${planningTitle.replace("(", "").replace(")", "")}_${name}`, asImage);
   }
 
   onAttChange() {
@@ -348,6 +350,10 @@ export class PlanningPage implements OnInit {
       return;
     }
 
+    const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
+    const type = this.db.attendanceTypes().find(type => type.id === attendance.type_id);
+    const planningTitle = Utils.getPlanningTitle(type, attendance.typeInfo);
+
     await Utils.createPlanExport({
       time: this.time,
       end: this.end,
@@ -355,7 +361,7 @@ export class PlanningPage implements OnInit {
       history: this.history,
       attendance: this.attendance,
       attendances: this.attendances,
-    }, Boolean(this.attendances.find((a: Attendance) => a.id === this.attendance)?.type === "uebung"));
+    }, planningTitle);
   }
 
   validate(showToast: boolean = true): boolean {

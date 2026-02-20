@@ -325,7 +325,7 @@ export class Utils {
     return await new LoadingController().create({ duration, message });
   }
 
-  public static async createPlanExport(props: any, isPractice: boolean = true) {
+  public static async createPlanExport(props: any, typeText: string) {
     // Lazy load jsPDF to reduce initial bundle size
     const { default: jsPDF } = await import('jspdf');
     await import('jspdf-autotable');
@@ -445,7 +445,7 @@ export class Utils {
 
     const doc = new jsPDF();
     doc.setFontSize(20);
-    doc.text(`${isPractice ? "Probenplan" : "Gottesdienst"} ${date}`, 14, 25);
+    doc.text(`${typeText} ${date}`, 14, 25);
     (doc as any).autoTable({
       head: hasConductors ? [[
         { content: "", styles: { fontSize: 14 } },
@@ -476,7 +476,7 @@ export class Utils {
       }
       return doc.output("blob");
     } else {
-      doc.save(`${isPractice ? "Probenplan" : "Gottesdienst"}_${date}.pdf`);
+      doc.save(`${typeText}_${date}.pdf`);
     }
   }
 
@@ -609,6 +609,8 @@ export class Utils {
       case "/tabs/settings/songs":
       case "/tabs/settings/register":
         return true;
+      case "/tabs/members":
+        return [Role.HELPER, Role.PLAYER, Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER, Role.NONE].includes(role);
       case "/tabs/signout":
         return [Role.HELPER, Role.PLAYER, Role.APPLICANT, Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER].includes(role);
       case "/tabs/player":
@@ -783,6 +785,7 @@ export class Utils {
     const attendanceTypes: AttendanceType[] = [
       {
         name: type === DefaultAttendanceType.GENERAL ? "Treffen" : "Probe",
+        planning_title: type === DefaultAttendanceType.GENERAL ? "Treffen" : "Probenplan",
         color: "primary",
         include_in_average: true,
         available_statuses: [AttendanceStatus.Present, AttendanceStatus.Excused, AttendanceStatus.Late, AttendanceStatus.Absent],
@@ -800,6 +803,7 @@ export class Utils {
     if (type !== DefaultAttendanceType.GENERAL) {
       attendanceTypes.push({
         name: "Vortrag",
+        planning_title: "Vortrag",
         color: "secondary",
         include_in_average: true,
         available_statuses: [AttendanceStatus.Present, AttendanceStatus.Excused, AttendanceStatus.Late, AttendanceStatus.Absent, AttendanceStatus.Neutral],
@@ -816,6 +820,7 @@ export class Utils {
 
     attendanceTypes.push({
       name: "Sonstiges",
+      planning_title: "Sonstiges",
       color: "tertiary",
       include_in_average: true,
       available_statuses: [AttendanceStatus.Present, AttendanceStatus.Excused, AttendanceStatus.Late, AttendanceStatus.Absent, AttendanceStatus.Neutral],
@@ -910,5 +915,13 @@ export class Utils {
 
     dayjs.locale("de");
     return dayjs(date).format("ddd, DD.MM.YYYY");
+  }
+
+  public static getPlanningTitle(type: AttendanceType, typeInfo?: string): string {
+    if (type.planning_title && typeInfo) {
+      return `${type.planning_title} (${typeInfo})`;
+    }
+
+    return type.planning_title || typeInfo || type.name || 'Probenplan';
   }
 }

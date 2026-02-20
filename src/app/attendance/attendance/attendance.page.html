@@ -402,6 +402,9 @@
         }
         <ion-item-options (ionSwipe)="addNote(player, slider)">
           @if (!isHelper) {
+            <ion-item-option color="danger" (click)="removeFromAttendance(player, slider)">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-item-option>
             <ion-item-option expandable color="primary" (click)="getModifierInfo(player, slider)">
               <ion-icon name="information-outline"></ion-icon>
             </ion-item-option>

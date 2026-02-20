@@ -1731,6 +1731,10 @@ export class DbService {
     return this.attendanceSvc.updatePersonAttendance(id, att, this.user?.id);
   }
 
+  async deletePersonAttendanceById(id: string): Promise<void> {
+    return this.attendanceSvc.deletePersonAttendanceById(id);
+  }
+
   async getHistory(tenantId?: number): Promise<History[]> {
     return this.historySvc.getHistory(tenantId ?? this.tenant().id);
   }

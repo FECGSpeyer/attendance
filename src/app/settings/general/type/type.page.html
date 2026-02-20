@@ -145,6 +145,11 @@
         helperText="Wenn diese Option aktiviert ist, wird dieser Typ beim Anwesenheitsdurchschnitt berücksichtigt."
       [(ngModel)]="type.include_in_average">Für Ø berücksichtigen</ion-toggle>
     </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Ablaufplan Überschrift</ion-label>
+      <ion-input helperText="Dieser Titel wird beim Exportieren eines Ablaufplans angezeigt. Falls eine Typ-Info vorhanden ist, wird diese in Klammern dahinter angezeigt. (z.B. Probenplan (Kantateprobe))" [(ngModel)]="type.planning_title"></ion-input>
+    </ion-item>
       </ion-item-group>
     </ion-list>
 

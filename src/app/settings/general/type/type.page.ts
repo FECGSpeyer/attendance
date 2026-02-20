@@ -67,6 +67,7 @@ export class TypePage implements OnInit {
     if (this.isNew) {
       this.type = {
         name: '',
+        planning_title: '',
         default_status: AttendanceStatus.Present,
         available_statuses: [
           AttendanceStatus.Neutral,
