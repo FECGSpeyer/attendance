@@ -22,7 +22,7 @@
   </ion-searchbar>
 
   @if (einteilungField && einteilungOptions.length) {
-    <ion-segment mode="md" [(ngModel)]="einteilungFilter" (ionChange)="onEinteilungFilterChange()">
+    <ion-segment [scrollable]="true" mode="md" [(ngModel)]="einteilungFilter" (ionChange)="onEinteilungFilterChange()">
       <ion-segment-button value="all">
         <ion-label>Alle</ion-label>
       </ion-segment-button>
