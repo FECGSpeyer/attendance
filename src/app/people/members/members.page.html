@@ -22,7 +22,7 @@
   </ion-searchbar>
 
   @if (einteilungField && einteilungOptions.length) {
-    <ion-segment [(ngModel)]="einteilungFilter" (ionChange)="onEinteilungFilterChange()">
+    <ion-segment mode="md" [(ngModel)]="einteilungFilter" (ionChange)="onEinteilungFilterChange()">
       <ion-segment-button value="all">
         <ion-label>Alle</ion-label>
       </ion-segment-button>
@@ -60,10 +60,10 @@
           <ion-item>
             <ion-label>
               {{ player.firstName }} {{ player.lastName }}
-              @if (player.isLeader) {
-                <ion-badge color="primary" style="margin-left: 8px; font-size: 0.65rem;">Sf</ion-badge>
-              }
             </ion-label>
+            @if (player.isLeader) {
+                <ion-badge slot="end" color="primary">Stimmführer</ion-badge>
+            }
           </ion-item>
         }
       </ion-list>
