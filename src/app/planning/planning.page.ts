@@ -345,7 +345,7 @@ export class PlanningPage implements OnInit {
     this.updateAttendance();
   }
 
-  async export() {
+  async export(sideBySide: boolean = false) {
     if (!this.validate()) {
       return;
     }
@@ -361,6 +361,7 @@ export class PlanningPage implements OnInit {
       history: this.history,
       attendance: this.attendance,
       attendances: this.attendances,
+      sideBySide,
     }, planningTitle);
   }
 
@@ -394,6 +395,10 @@ export class PlanningPage implements OnInit {
       buttons.push({
         text: 'PDF exportieren',
         handler: () => this.export()
+      });
+      buttons.push({
+        text: 'PDF exportieren (2x A5)',
+        handler: () => this.export(true)
       });
 
       if (this.hasChatId) {

@@ -97,6 +97,10 @@ export class PlanViewerComponent implements OnInit {
       {
         text: 'PDF exportieren',
         handler: () => this.exportPdf()
+      },
+      {
+        text: 'PDF exportieren (2x A5)',
+        handler: () => this.exportPdf(true)
       }
     ];
 
@@ -124,7 +128,7 @@ export class PlanViewerComponent implements OnInit {
     await actionSheet.present();
   }
 
-  async exportPdf() {
+  async exportPdf(sideBySide: boolean = false) {
     if (!this.plan?.fields?.length) {
       Utils.showToast('Kein Plan verfügbar', 'warning');
       return;
@@ -138,7 +142,8 @@ export class PlanViewerComponent implements OnInit {
       end: this.plan.end,
       fields: this.plan.fields,
       attendance: this.attendance?.id,
-      attendances: this.attendance ? [this.attendance] : []
+      attendances: this.attendance ? [this.attendance] : [],
+      sideBySide,
     }, planningTitle);
   }
 

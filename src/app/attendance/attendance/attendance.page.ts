@@ -298,12 +298,13 @@ export class AttendancePage implements OnInit {
     return `${time.add(minutesToAdd, "minute").format("HH:mm")} ${field.conductor ? `| ${field.conductor}` : ""}`;
   }
 
-  async exportPlan() {
+  async exportPlan(sideBySide: boolean = false) {
     const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
     await Utils.createPlanExport({
       ...this.attendance.plan,
       attendance: this.attendance.id,
       attendances: await this.db.getAttendance(),
+      sideBySide,
     }, Utils.getPlanningTitle(type, this.attendance.typeInfo));
   }
 

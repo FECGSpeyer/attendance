@@ -331,10 +331,10 @@ export class Utils {
     await import('jspdf-autotable');
 
     const startingTime: dayjs.Dayjs = dayjs(props.time).isValid() ? dayjs(props.time) : dayjs().hour(Number(props.time.substring(0, 2))).minute(Number(props.time.substring(3, 5)));
-    const date: string = props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).format("DD.MM.YYYY") : startingTime.format("DD.MM.YYYY");
+    const date: string = props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).locale("de").format("dddd, DD.MM.YYYY") : startingTime.locale("de").format("dddd, DD.MM.YYYY");
     const hasConductors = Boolean(props.fields.find((field: FieldSelection) => field.conductor));
 
-    const data = [];
+    const data: any[] = [];
 
     let row = 1;
     let currentTime = startingTime;
@@ -408,33 +408,26 @@ export class Utils {
       fieldName = fieldName.replace(/э/g, 'e');
       fieldName = fieldName.replace(/ю/g, 'yu');
       fieldName = fieldName.replace(/я/g, 'ya');
-      fieldName = fieldName.replace(/Ä/g, 'Ae');
-      fieldName = fieldName.replace(/Ö/g, 'Oe');
-      fieldName = fieldName.replace(/Ü/g, 'Ue');
-      fieldName = fieldName.replace(/ä/g, 'ae');
-      fieldName = fieldName.replace(/ö/g, 'oe');
-      fieldName = fieldName.replace(/ü/g, 'ue');
-      fieldName = fieldName.replace(/ß/g, 'ss');
 
       if (field.id.includes("noteFld")) {
         data.push([
-          { content: fieldName, styles: { fontSize: 14 }, colSpan: hasConductors ? 5 : 4 }
+          { content: fieldName, colSpan: hasConductors ? 5 : 4 }
         ]);
       } else {
         if (hasConductors) {
           data.push([
-            { content: row.toString(), styles: { fontSize: 14 } },
-            { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
-            { content: fieldName, styles: { fontSize: 14 } },
-            { content: field.conductor || "", styles: { fontSize: 14 } },
-            { content: `${field.time} min`, styles: { fontSize: 14 } },
+            row.toString(),
+            `${currentTime.format("HH:mm")} Uhr`,
+            fieldName,
+            field.conductor || "",
+            `${field.time} min`,
           ]);
         } else {
           data.push([
-            { content: row.toString(), styles: { fontSize: 14 } },
-            { content: `${currentTime.format("HH:mm")} Uhr`, styles: { fontSize: 14 } },
-            { content: fieldName, styles: { fontSize: 14 } },
-            { content: `${field.time} min`, styles: { fontSize: 14 } },
+            row.toString(),
+            `${currentTime.format("HH:mm")} Uhr`,
+            fieldName,
+            `${field.time} min`,
           ]);
         }
 
@@ -443,29 +436,135 @@ export class Utils {
       }
     }
 
+    const head = hasConductors ? [[
+      { content: "#", styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: "Uhrzeit", styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: "Programmpunkt", styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: "Ausführung", styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: "Dauer", styles: { fontSize: props.sideBySide ? 8 : 11 } },
+    ]] : [[
+      { content: "#", styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: "Uhrzeit", styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: "Programmpunkt", styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: "Dauer", styles: { fontSize: props.sideBySide ? 8 : 11 } },
+    ]];
+
+    const tableStyles = {
+      fontSize: props.sideBySide ? 8 : 11,
+      cellPadding: props.sideBySide ? 2 : 3.5,
+      textColor: [30, 30, 30] as [number, number, number],
+      lineColor: [180, 180, 180] as [number, number, number],
+      lineWidth: 0,
+    };
+
+    const columnStyles = props.sideBySide ? {
+      0: { cellWidth: 8, halign: 'center' as const },
+      1: { cellWidth: 20 },
+    } : {
+      0: { cellWidth: 12, halign: 'center' as const },
+      1: { cellWidth: 28 },
+    };
+
+    // Side-by-side A5 landscape mode
+    if (props.sideBySide) {
+      const doc = new jsPDF({ orientation: 'landscape', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const halfWidth = pageWidth / 2;
+      const gap = 5;
+
+      // Draw vertical divider line in the middle
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.3);
+      doc.line(halfWidth, 10, halfWidth, pageHeight - 10);
+
+      // Helper function to render one side
+      const renderSide = (startX: number, maxWidth: number) => {
+        doc.setFontSize(14);
+        doc.text(`${typeText} ${date}`, startX + 5, 15);
+
+        (doc as any).autoTable({
+          head,
+          body: data,
+          startY: 22,
+          margin: { left: startX + 5, right: pageWidth - startX - maxWidth + 5 },
+          tableWidth: maxWidth - 10,
+          theme: 'plain',
+          styles: tableStyles,
+          headStyles: {
+            fillColor: false,
+            textColor: [50, 50, 50],
+            fontStyle: 'bold',
+            lineWidth: { bottom: 0.3 },
+            lineColor: [100, 100, 100],
+          },
+          bodyStyles: {
+            fillColor: false,
+          },
+          alternateRowStyles: {
+            fillColor: [245, 245, 245],
+          },
+          columnStyles,
+          didParseCell: (hookData: any) => {
+            if (hookData.row.raw && hookData.row.raw.length === 1 && hookData.row.raw[0].colSpan) {
+              hookData.cell.styles.fontStyle = 'italic';
+              hookData.cell.styles.fillColor = [235, 235, 235];
+              hookData.cell.styles.textColor = [80, 80, 80];
+            }
+          },
+        });
+      };
+
+      // Left side (A5)
+      renderSide(0, halfWidth - gap / 2);
+
+      // Right side (A5)
+      renderSide(halfWidth + gap / 2, halfWidth - gap / 2);
+
+      if (props.asBlob) {
+        if (props.asImage) {
+          const pdfDataUri = doc.output('datauristring');
+          return await Utils.pdfDataUriToImageBlob(pdfDataUri);
+        }
+        return doc.output("blob");
+      } else {
+        doc.save(`${typeText}_${date}_2x.pdf`);
+      }
+      return;
+    }
+
+    // Standard A4 portrait mode
     const doc = new jsPDF();
     doc.setFontSize(20);
     doc.text(`${typeText} ${date}`, 14, 25);
     (doc as any).autoTable({
-      head: hasConductors ? [[
-        { content: "", styles: { fontSize: 14 } },
-        { content: "Uhrzeit", styles: { fontSize: 14 } },
-        { content: "Programmpunkt", styles: { fontSize: 14 } },
-        { content: "Ausführung", styles: { fontSize: 14 } },
-        { content: "Dauer", styles: { fontSize: 14 } },
-      ]] : [[
-        { content: "", styles: { fontSize: 14 } },
-        { content: "Uhrzeit", styles: { fontSize: 14 } },
-        { content: "Programmpunkt", styles: { fontSize: 14 } },
-        { content: "Dauer", styles: { fontSize: 14 } },
-      ]],
+      head,
       body: data,
       margin: { top: 40 },
-      theme: 'grid',
+      theme: 'plain',
+      styles: tableStyles,
       headStyles: {
-        halign: 'center',
-        fillColor: [0, 82, 56]
-      }
+        fillColor: false,
+        textColor: [50, 50, 50],
+        fontStyle: 'bold',
+        lineWidth: { bottom: 0.5 },
+        lineColor: [100, 100, 100],
+      },
+      bodyStyles: {
+        fillColor: false,
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+      columnStyles,
+      didParseCell: (hookData: any) => {
+        // Style note rows (spanning all columns) differently
+        if (hookData.row.raw && hookData.row.raw.length === 1 && hookData.row.raw[0].colSpan) {
+          hookData.cell.styles.fontStyle = 'italic';
+          hookData.cell.styles.fillColor = [235, 235, 235];
+          hookData.cell.styles.textColor = [80, 80, 80];
+        }
+      },
     });
 
     if (props.asBlob) {
