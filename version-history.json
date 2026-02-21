@@ -5,7 +5,8 @@
           "date": "21.2.2026",
           "changes": [
             "📄 PDF-Design: Ablaufplan-PDFs haben nun ein moderneres, minimalistisches Design ohne Rahmenlinien - optimiert für Schwarz-Weiß-Druck.",
-            "📑 Doppel-Export: Neuer Export '2x A5' erstellt den Ablaufplan zwei mal nebeneinander im Querformat - ideal zum Ausschneiden."
+            "📑 Doppel-Export: Neuer Export '2x A5' erstellt den Ablaufplan zwei mal nebeneinander im Querformat - ideal zum Ausschneiden. Auch per Telegram sendbar.",
+            "🏷️ Instanz-Prefix: Neue Einstellung bei Anwesenheitstypen ermöglicht es, den Instanz-Namen (z.B. Kantateprobe) automatisch vor jeden Werk-Eintrag im Ablaufplan zu setzen."
           ]
         },
         {

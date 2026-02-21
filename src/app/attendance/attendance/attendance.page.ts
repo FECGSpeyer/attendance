@@ -308,7 +308,7 @@ export class AttendancePage implements OnInit {
     }, Utils.getPlanningTitle(type, this.attendance.typeInfo));
   }
 
-  async send(asImage: boolean = false) {
+  async send(asImage: boolean = false, sideBySide: boolean = false) {
     const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
     const planningTitle = Utils.getPlanningTitle(type, this.attendance.typeInfo);
     const blob = await Utils.createPlanExport({
@@ -317,9 +317,10 @@ export class AttendancePage implements OnInit {
       attendances: await this.db.getAttendance(),
       asBlob: true,
       asImage,
+      sideBySide,
     }, planningTitle);
 
-    this.db.sendPlanPerTelegram(blob, `${planningTitle.replace("(", "").replace(")", "")}_${dayjs(this.attendance.date).format("DD_MM_YYYY")}`, asImage);
+    this.db.sendPlanPerTelegram(blob, `${planningTitle.replace("(", "").replace(")", "")}_${dayjs(this.attendance.date).format("DD_MM_YYYY")}${sideBySide ? '_2x' : ''}`, asImage);
   }
 
   async editPlan() {

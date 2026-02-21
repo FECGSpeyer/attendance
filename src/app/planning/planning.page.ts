@@ -160,7 +160,7 @@ export class PlanningPage implements OnInit {
     await alert.present();
   }
 
-  async send(asImage: boolean = false) {
+  async send(asImage: boolean = false, sideBySide: boolean = false) {
     if (!this.validate()) {
       return;
     }
@@ -175,10 +175,11 @@ export class PlanningPage implements OnInit {
       fields: this.selectedFields,
       asBlob: true,
       asImage,
+      sideBySide,
       attendance: this.attendance,
       attendances: this.attendances
     }, planningTitle);
-    this.db.sendPlanPerTelegram(blob, `${planningTitle.replace("(", "").replace(")", "")}_${name}`, asImage);
+    this.db.sendPlanPerTelegram(blob, `${planningTitle.replace("(", "").replace(")", "")}_${name}${sideBySide ? '_2x' : ''}`, asImage);
   }
 
   onAttChange() {
@@ -314,13 +315,17 @@ export class PlanningPage implements OnInit {
   }
 
   onSongsChange(ids: string[]) {
+    const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
+    const type = this.db.attendanceTypes().find((t: AttendanceType) => t.id === attendance?.type_id);
+
     for (let id of ids) {
       const song: Song = this.songs.find((song: Song) => song.id === parseInt(id));
       const conductor: string | undefined = this.history?.find((his: History) => his.songId === song.id)?.conductorName;
+      const prefix = type?.planning_prefix_instance_name ? `${this.db.tenant().longName}: ` : `${song.number}. `;
 
       this.selectedFields.push({
         id,
-        name: `${song.number}. ${song.name}`,
+        name: `${prefix}${song.name}`,
         time: "20",
         conductor: conductor || "",
         songId: song.id,
@@ -405,6 +410,10 @@ export class PlanningPage implements OnInit {
         buttons.push({
           text: 'Per Telegram senden (PDF)',
           handler: () => this.send(false)
+        });
+        buttons.push({
+          text: 'Per Telegram senden (PDF 2x A5)',
+          handler: () => this.send(false, true)
         });
         buttons.push({
           text: 'Per Telegram senden (Bild)',
@@ -563,6 +572,7 @@ export class PlanningPage implements OnInit {
 
   addDefaultFieldsFromAttendanceType(typeId: string) {
     const attType = this.db.attendanceTypes().find((at: AttendanceType) => at.id === typeId);
+    const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
 
     if (attType?.default_plan?.fields?.length) {
       const songsAdded: Set<string> = new Set<string>();
@@ -577,11 +587,12 @@ export class PlanningPage implements OnInit {
             songsAdded.add(String(historyItem.songId));
             const song: Song = this.songs.find((song: Song) => song.id === historyItem.songId);
             const conductor: string | undefined = this.history?.find((his: History) => his.songId === song.id)?.conductorName;
+            const prefix = attType?.planning_prefix_instance_name ? `${this.db.tenant().longName}: ` : `${song.number}. `;
 
             this.selectedFields.push({
               ...field,
               id: String(song.id),
-              name: `${song.number}. ${song.name}`,
+              name: `${prefix}${song.name}`,
               conductor: conductor || "",
               songId: song.id,
             });

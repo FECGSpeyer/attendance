@@ -417,6 +417,9 @@
         <ion-input helperText="Dieser Titel wird beim Exportieren eines Ablaufplans angezeigt. Falls eine Typ-Info vorhanden ist, wird diese in Klammern dahinter angezeigt. (z.B. Probenplan (Kantateprobe))" [(ngModel)]="type.planning_title"></ion-input>
       </ion-item>
       <ion-item>
+        <ion-toggle helperText="Falls aktiviert, wird der Instanz-Name vor jedem Werk im Ablaufplan angezeigt." [(ngModel)]="type.planning_prefix_instance_name">Instanz-Name vor Werken</ion-toggle>
+      </ion-item>
+      <ion-item>
         <ion-label>Start</ion-label>
         <ion-datetime-button datetime="datetimestartplan"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">

@@ -110,6 +110,10 @@ export class PlanViewerComponent implements OnInit {
         handler: () => this.sendTelegram(false)
       });
       buttons.push({
+        text: 'Per Telegram senden (PDF 2x A5)',
+        handler: () => this.sendTelegram(false, true)
+      });
+      buttons.push({
         text: 'Per Telegram senden (Bild)',
         handler: () => this.sendTelegram(true)
       });
@@ -147,7 +151,7 @@ export class PlanViewerComponent implements OnInit {
     }, planningTitle);
   }
 
-  async sendTelegram(asImage: boolean) {
+  async sendTelegram(asImage: boolean, sideBySide: boolean = false) {
     if (!this.plan?.fields?.length) {
       Utils.showToast('Kein Plan verfügbar', 'warning');
       return;
@@ -165,13 +169,14 @@ export class PlanViewerComponent implements OnInit {
       fields: this.plan.fields,
       asBlob: true,
       asImage,
+      sideBySide,
       attendance: this.attendance?.id,
       attendances: this.attendance ? [this.attendance] : []
     }, planningTitle);
 
     this.db.sendPlanPerTelegram(
       blob,
-      `${planningTitle.replace("(", "").replace(")", "")}_${name}`,
+      `${planningTitle.replace("(", "").replace(")", "")}_${name}${sideBySide ? '_2x' : ''}`,
       asImage
     );
 
