@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { AttListPageRoutingModule } from './att-list-routing.module';
 
 import { AttListPage } from './att-list.page';
+import { AttendancePageModule } from '../attendance/attendance.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    AttListPageRoutingModule
+    AttListPageRoutingModule,
+    AttendancePageModule
   ],
   declarations: [AttListPage]
 })

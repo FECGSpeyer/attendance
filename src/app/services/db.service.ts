@@ -426,23 +426,30 @@ export class DbService {
     }
 
     const user = this.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenant().id);
-    const config = await this.getNotifcationConfig(user?.userId);
+
+    // Parallelize independent data fetching for faster startup
+    const needsChurches = this.tenant().additional_fields?.find(field => field.id === 'bfecg_church');
+    const [config, groups, attendanceTypes, organisation, , , churches] = await Promise.all([
+      this.getNotifcationConfig(user?.userId),
+      this.getGroups(),
+      this.getAttendanceTypes(),
+      this.getOrganisationFromTenant(),
+      this.getSongCategories(),  // Sets this.songCategories internally
+      this.loadShifts(),  // Sets this.shifts internally
+      needsChurches ? this.getChurches() : Promise.resolve(undefined as Church[] | undefined),
+    ]);
+
     this.tenantUser.set({
       ...user,
       telegram_chat_id: config?.telegram_chat_id,
     });
-    this.groups.set(await this.getGroups());
-    this.attendanceTypes.set(await this.getAttendanceTypes());
-    this.organisation.set(await this.getOrganisationFromTenant());
-
-    if (this.tenant().additional_fields?.find(field => field.id === 'bfecg_church')) {
-      if (!this.churches() || this.churches().length === 0) {
-        this.churches.set(await this.getChurches());
-      }
+    this.groups.set(groups);
+    this.attendanceTypes.set(attendanceTypes);
+    this.organisation.set(organisation);
+    if (churches) {
+      this.churches.set(churches);
     }
 
-    await this.getSongCategories();
-    await this.loadShifts();
     await loader?.dismiss();
   }
 

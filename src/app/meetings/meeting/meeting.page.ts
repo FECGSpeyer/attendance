@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { DbService } from 'src/app/services/db.service';
 import { Meeting, Person } from 'src/app/utilities/interfaces';
 
@@ -6,7 +6,8 @@ import { Meeting, Person } from 'src/app/utilities/interfaces';
     selector: 'app-meeting',
     templateUrl: './meeting.page.html',
     styleUrls: ['./meeting.page.scss'],
-    standalone: false
+    standalone: false,
+    encapsulation: ViewEncapsulation.None
 })
 export class MeetingPage implements OnInit {
   public meeting: Meeting;

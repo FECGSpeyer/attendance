@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { TypesPageRoutingModule } from './types-routing.module';
 
 import { TypesPage } from './types.page';
+import { TypePageModule } from '../type/type.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    TypesPageRoutingModule
+    TypesPageRoutingModule,
+    TypePageModule
   ],
   declarations: [TypesPage]
 })

@@ -1,3 +1,7 @@
+/* Quill CSS - loaded only when meeting page is accessed */
+@import 'quill/dist/quill.core.css';
+@import 'quill/dist/quill.snow.css';
+
 ion-item {
     margin-bottom: 1rem;
 }
