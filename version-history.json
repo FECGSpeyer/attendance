@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "3.8.3",
+          "date": "23.2.2026",
+          "changes": [
+            "🔍 Zusatzfeld-Filter: In der Personen-Liste kann nun auch nach Text-, Auswahl- und Gemeinde-Zusatzfeldern gefiltert werden.",
+            "🏷️ Zusatzfeld-Anzeige: Badges zeigen nun je nach Feldtyp den passenden Wert an (Auswahlwert, Textinhalt, Gemeindename).",
+            "🐛 Select-Popover: Lange Auswahllisten scrollen nun korrekt."
+          ]
+        },
+        {
           "version": "3.8.2",
           "date": "21.2.2026",
           "changes": [

@@ -720,6 +720,11 @@ export class ListPage implements OnInit, OnDestroy {
     return teacher ? teacher.name : 'Unbekannt';
   }
 
+  getChurchName(churchId?: string): string {
+    const church = this.db.churches().find(c => c.id === churchId);
+    return church ? church.name : 'Unbekannt';
+  }
+
   // async updateImages() {
   //   for (const player of this.players) {
   //     if (player.img.startsWith("data:image")) {
