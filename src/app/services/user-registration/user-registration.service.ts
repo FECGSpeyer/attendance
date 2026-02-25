@@ -3,7 +3,6 @@ import { supabase } from '../base/supabase';
 import { TenantUser } from '../../utilities/interfaces';
 import { Role, SupabaseTable } from '../../utilities/constants';
 import { Utils } from '../../utilities/Utils';
-import axios from 'axios';
 
 @Injectable({
   providedIn: 'root'
@@ -36,15 +35,20 @@ export class UserRegistrationService {
       await this.addUserToTenant(userId, role, email, tenantId);
 
       if (!self_register) {
-        const res = await axios.post(`https://staccato-server.vercel.app/api/informAttendixUser`, {
-          email,
-          name,
-          password,
-          role: Utils.getRoleText(role),
-          tenant: tenantName,
+        const res = await fetch(`https://staccato-server.vercel.app/api/informAttendixUser`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            name,
+            password,
+            role: Utils.getRoleText(role),
+            tenant: tenantName,
+          }),
         });
+        const data = await res.json();
 
-        if (!res.data.mailSent) {
+        if (!data.mailSent) {
           throw new Error('Fehler beim Informieren des Benutzers');
         }
       }
@@ -62,44 +66,56 @@ export class UserRegistrationService {
     }
 
     try {
-      const res = await axios.post(`https://staccato-server.vercel.app/api/registerAttendixUser`, {
-        email,
-        name,
+      const res = await fetch(`https://staccato-server.vercel.app/api/registerAttendixUser`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name }),
       });
+      const data = await res.json();
 
-      if (!res.data?.user?.id) {
+      if (!data?.user?.id) {
         throw new Error('Fehler beim Erstellen des Accounts');
       }
 
-      await this.addUserToTenant(res.data.user.id, role, email, tenantId);
+      await this.addUserToTenant(data.user.id, role, email, tenantId);
 
-      return res.data.user.id;
-    } catch (e) {
-      throw new Error(e.response?.data?.error?.message || "Fehler beim Erstellen des Accounts");
+      return data.user.id;
+    } catch (e: any) {
+      throw new Error(e.message || "Fehler beim Erstellen des Accounts");
     }
   }
 
   async informUserAboutApproval(email: string, name: string, role: Role, tenantName: string): Promise<void> {
-    const res = await axios.post(`https://staccato-server.vercel.app/api/approveAttendixUser`, {
-      email,
-      name,
-      role: Utils.getRoleText(role),
-      tenant: tenantName,
+    const res = await fetch(`https://staccato-server.vercel.app/api/approveAttendixUser`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        name,
+        role: Utils.getRoleText(role),
+        tenant: tenantName,
+      }),
     });
+    const data = await res.json();
 
-    if (!res.data.mailSent) {
+    if (!data.mailSent) {
       throw new Error('Fehler beim Informieren des Benutzers');
     }
   }
 
   async informUserAboutReject(email: string, name: string, tenantName: string): Promise<void> {
-    const res = await axios.post(`https://staccato-server.vercel.app/api/rejectAttendixUser`, {
-      email,
-      name,
-      tenant: tenantName,
+    const res = await fetch(`https://staccato-server.vercel.app/api/rejectAttendixUser`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        name,
+        tenant: tenantName,
+      }),
     });
+    const data = await res.json();
 
-    if (!res.data.mailSent) {
+    if (!data.mailSent) {
       throw new Error('Fehler beim Informieren des Benutzers');
     }
   }

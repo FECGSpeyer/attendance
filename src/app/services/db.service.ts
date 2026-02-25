@@ -1,8 +1,7 @@
 import { Injectable, WritableSignal, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, Platform } from '@ionic/angular';
-import { createClient, SupabaseClient, SupabaseClientOptions, User } from '@supabase/supabase-js';
-import axios from 'axios';
+import { SupabaseClient, User } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
@@ -10,7 +9,7 @@ import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
-import { Holiday } from 'open-holiday-js';
+import { supabase, attendanceSelect } from './base/supabase';
 
 // Import new modular services
 import { AuthService } from './auth/auth.service';
@@ -42,21 +41,6 @@ import { TeacherService } from './teacher/teacher.service';
 import { TelegramService } from './telegram/telegram.service';
 import { SignInOutService } from './sign-in-out/sign-in-out.service';
 import { SongCategoryService } from './song-category/song-category.service';
-
-const options: SupabaseClientOptions<any> = {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-  }
-}
-const supabase = createClient<Database>(environment.apiUrl, environment.apiKey, options);
-
-const attendanceSelect: string = `*, persons:person_attendances(
-          *, person:person_id(
-            firstName, lastName, img, instrument(id, name), joined, appId, additional_fields
-          )
-        )`;
 
 @Injectable({
   providedIn: 'root'
@@ -651,15 +635,20 @@ export class DbService {
       }
       await this.addUserToTenant(userId, role, email, tenantId);
       if (!self_register) {
-        const res = await axios.post(`https://staccato-server.vercel.app/api/informAttendixUser`, {
-          email,
-          name,
-          password,
-          role: Utils.getRoleText(role),
-          tenant: tenantName ?? this.tenant().longName,
+        const res = await fetch(`https://staccato-server.vercel.app/api/informAttendixUser`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            name,
+            password,
+            role: Utils.getRoleText(role),
+            tenant: tenantName ?? this.tenant().longName,
+          }),
         });
+        const data = await res.json();
 
-        if (!res.data.mailSent) {
+        if (!data.mailSent) {
           throw new Error('Fehler beim Informieren des Benutzers');
         }
       }
@@ -680,20 +669,22 @@ export class DbService {
     }
 
     try {
-      const res = await axios.post(`https://staccato-server.vercel.app/api/registerAttendixUser`, {
-        email,
-        name,
+      const res = await fetch(`https://staccato-server.vercel.app/api/registerAttendixUser`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name }),
       });
+      const data = await res.json();
 
-      if (!res.data?.user?.id) {
+      if (!data?.user?.id) {
         throw new Error('Fehler beim Erstellen des Accounts');
       }
 
-      await this.addUserToTenant(res.data.user.id, role, email);
+      await this.addUserToTenant(data.user.id, role, email);
 
-      return res.data.user.id;
-    } catch (e) {
-      throw new Error(e.response.data?.error?.message || "Fehler beim Erstellen des Accounts");
+      return data.user.id;
+    } catch (e: any) {
+      throw new Error(e.message || "Fehler beim Erstellen des Accounts");
     }
   }
 

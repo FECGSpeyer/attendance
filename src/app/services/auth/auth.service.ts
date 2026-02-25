@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { User } from '@supabase/supabase-js';
-import axios from 'axios';
 import { Role } from '../../utilities/constants';
 import { Player, TenantUser } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
@@ -170,15 +169,20 @@ export class AuthService {
       }
       await addUserToTenant(userId, role, email, tenantId);
       if (!self_register) {
-        const res = await axios.post(`https://staccato-server.vercel.app/api/informAttendixUser`, {
-          email,
-          name,
-          password,
-          role: Utils.getRoleText(role),
-          tenant: tenantName,
+        const res = await fetch(`https://staccato-server.vercel.app/api/informAttendixUser`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            name,
+            password,
+            role: Utils.getRoleText(role),
+            tenant: tenantName,
+          }),
         });
+        const data = await res.json();
 
-        if (!res.data.mailSent) {
+        if (!data.mailSent) {
           throw new Error('Fehler beim Informieren des Benutzers');
         }
       }
@@ -195,55 +199,72 @@ export class AuthService {
     }
 
     try {
-      const res = await axios.post(`https://staccato-server.vercel.app/api/registerAttendixUser`, {
-        email,
-        name,
+      const res = await fetch(`https://staccato-server.vercel.app/api/registerAttendixUser`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name }),
       });
+      const data = await res.json();
 
-      if (!res.data?.user?.id) {
+      if (!data?.user?.id) {
         throw new Error('Fehler beim Erstellen des Accounts');
       }
 
-      await addUserToTenant(res.data.user.id, role, email);
-      return res.data.user.id;
-    } catch (e) {
-      throw new Error(e.response?.data?.error?.message || "Fehler beim Erstellen des Accounts");
+      await addUserToTenant(data.user.id, role, email);
+      return data.user.id;
+    } catch (e: any) {
+      throw new Error(e.message || "Fehler beim Erstellen des Accounts");
     }
   }
 
   async informUserAboutApproval(email: string, name: string, role: Role, tenantName: string): Promise<void> {
-    const res = await axios.post(`https://staccato-server.vercel.app/api/approveAttendixUser`, {
-      email,
-      name,
-      role: Utils.getRoleText(role),
-      tenant: tenantName,
+    const res = await fetch(`https://staccato-server.vercel.app/api/approveAttendixUser`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        name,
+        role: Utils.getRoleText(role),
+        tenant: tenantName,
+      }),
     });
+    const data = await res.json();
 
-    if (!res.data.mailSent) {
+    if (!data.mailSent) {
       throw new Error('Fehler beim Informieren des Benutzers');
     }
   }
 
   async informUserAboutReject(email: string, name: string, tenantName: string): Promise<void> {
-    const res = await axios.post(`https://staccato-server.vercel.app/api/rejectAttendixUser`, {
-      email,
-      name,
-      tenant: tenantName,
+    const res = await fetch(`https://staccato-server.vercel.app/api/rejectAttendixUser`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        name,
+        tenant: tenantName,
+      }),
     });
+    const data = await res.json();
 
-    if (!res.data.mailSent) {
+    if (!data.mailSent) {
       throw new Error('Fehler beim Informieren des Benutzers');
     }
   }
 
   async removeEmailFromAuth(appId: string, email: string, deleteAdmin: boolean = false): Promise<void> {
-    const res = await axios.post(`https://staccato-server.vercel.app/api/deleteAttendixUser`, {
-      userId: appId,
-      email,
-      deleteAdmin,
+    const res = await fetch(`https://staccato-server.vercel.app/api/deleteAttendixUser`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: appId,
+        email,
+        deleteAdmin,
+      }),
     });
+    const data = await res.json();
 
-    if (!res.data.deleted) {
+    if (!data.deleted) {
       Utils.showToast("Fehler beim Löschen des Benutzers", "danger");
     }
   }
