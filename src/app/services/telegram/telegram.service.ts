@@ -7,11 +7,24 @@ import { Utils } from '../../utilities/Utils';
 })
 export class TelegramService {
 
+  private encodeFilename(name: string, extension: string): string {
+    const sanitizedName = name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s-]/g, '-')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    const randomNumber = Math.floor(100 + Math.random() * 900);
+    return `${sanitizedName || 'file'}_${randomNumber}${extension}`;
+  }
+
   async sendPlanPerTelegram(blob: Blob, name: string, chatId: string, asImage: boolean = false): Promise<void> {
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(99999);
     await loading.present();
     const extension = asImage ? '.png' : '.pdf';
-    const fileName: string = name + "_" + Math.floor(Math.random() * 100) + extension;
+    const fileName: string = this.encodeFilename(name, extension);
 
     const { error } = await supabase.storage
       .from("attendances")

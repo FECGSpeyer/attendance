@@ -54,17 +54,9 @@ export class UserRegistrationService {
       }
 
       return userId;
-    } else {
-      const { data } = await supabase.rpc("get_user_id_by_email", {
-        email: email.toLowerCase(),
-      });
-
-      if (data?.length && data[0].id) {
-        await this.addUserToTenant(data[0].id, role, email, tenantId);
-        return data[0].id;
-      }
     }
 
+    // User not found in any tenant, create new account
     try {
       const res = await fetch(`https://staccato-server.vercel.app/api/registerAttendixUser`, {
         method: 'POST',
@@ -151,6 +143,8 @@ export class UserRegistrationService {
       .select('*')
       .ilike('email', `%${email}%`);
 
+    if (error) throw new Error('Fehler beim Laden des Benutzers');
+
     const foundTenantUser = data?.find((tenantUser: TenantUser) => tenantUser.tenantId === tenantId);
 
     if (foundTenantUser && foundTenantUser.role !== Role.ADMIN) {
@@ -158,54 +152,19 @@ export class UserRegistrationService {
         return { userId: foundTenantUser.userId, alreadyThere: true };
       }
 
-      // Check if user exists in player/parent/viewer tables
-      if ([Role.PLAYER, Role.RESPONSIBLE, Role.APPLICANT, Role.HELPER].includes(foundTenantUser.role)) {
-        const { data: playersData, error: playersError } = await supabase
-          .from('player')
-          .select('*')
-          .eq('tenantId', tenantId)
-          .eq('appId', foundTenantUser.userId);
+      // Validate user exists in appropriate table for their role
+      const validationResult = await this.validateUserExistsInRoleTable(
+        foundTenantUser.userId,
+        foundTenantUser.role,
+        tenantId
+      );
 
-        if (playersError) throw new Error('Fehler beim Laden des Benutzers');
-
-        if (playersData.length) {
-          throw new Error(`Der Benutzer ist bereits in diesem Mandanten: ${playersData[0].firstName} ${playersData[0].lastName} (${Utils.getRoleText(foundTenantUser.role)})`);
-        } else {
-          await supabase.from('tenantUsers').delete().match({ tenantId, userId: foundTenantUser.userId });
-          return undefined;
-        }
-      } else if (foundTenantUser.role === Role.PARENT) {
-        const { data: parentsData, error: parentsError } = await supabase
-          .from('parents')
-          .select('*')
-          .eq('tenantId', tenantId)
-          .eq('appId', foundTenantUser.userId);
-
-        if (parentsError) throw new Error('Fehler beim Laden des Benutzers');
-
-        if (parentsData.length) {
-          throw new Error(`Der Benutzer ist bereits in dieser Instanz: ${parentsData[0].firstName} ${parentsData[0].lastName} (Elternteil)`);
-        } else {
-          await supabase.from('tenantUsers').delete().match({ tenantId, userId: foundTenantUser.userId });
-          return undefined;
-        }
-      } else if (foundTenantUser.role === Role.VIEWER) {
-        const { data: viewersData, error: viewersError } = await supabase
-          .from('viewers')
-          .select('*')
-          .eq('tenantId', tenantId)
-          .eq('appId', foundTenantUser.userId);
-
-        if (viewersError) throw new Error('Fehler beim Laden des Benutzers');
-
-        if (viewersData.length) {
-          throw new Error(`Der Benutzer ist bereits in diesem Mandanten: ${viewersData[0].firstName} ${viewersData[0].lastName} (Beobachter)`);
-        } else {
-          await supabase.from('tenantUsers').delete().match({ tenantId, userId: foundTenantUser.userId });
-          return undefined;
-        }
+      if (validationResult.exists) {
+        throw new Error(validationResult.errorMessage);
       } else {
-        throw new Error('Der Benutzer ist bereits in diesem Mandanten');
+        // User doesn't exist in role table, clean up orphaned tenantUser record
+        await supabase.from('tenantUsers').delete().match({ tenantId, userId: foundTenantUser.userId });
+        return undefined;
       }
     }
 
@@ -213,9 +172,68 @@ export class UserRegistrationService {
       return { userId: foundTenantUser.userId, alreadyThere: true };
     }
 
-    if (error) throw new Error('Fehler beim Laden des Benutzers');
-
     return data?.length ? { userId: data[0].userId, alreadyThere: false } : undefined;
+  }
+
+  private async validateUserExistsInRoleTable(
+    userId: string,
+    role: Role,
+    tenantId: number
+  ): Promise<{ exists: boolean; errorMessage?: string }> {
+    // Check if user exists in player/parent/viewer tables based on role
+    if ([Role.PLAYER, Role.RESPONSIBLE, Role.APPLICANT, Role.HELPER].includes(role)) {
+      const { data: playersData, error: playersError } = await supabase
+        .from('player')
+        .select('firstName, lastName')
+        .eq('tenantId', tenantId)
+        .eq('appId', userId)
+        .maybeSingle();
+
+      if (playersError) throw new Error('Fehler beim Laden des Benutzers');
+
+      if (playersData) {
+        return {
+          exists: true,
+          errorMessage: `Der Benutzer ist bereits in diesem Mandanten: ${playersData.firstName} ${playersData.lastName} (${Utils.getRoleText(role)})`
+        };
+      }
+    } else if (role === Role.PARENT) {
+      const { data: parentData, error: parentError } = await supabase
+        .from('parents')
+        .select('firstName, lastName')
+        .eq('tenantId', tenantId)
+        .eq('appId', userId)
+        .maybeSingle();
+
+      if (parentError) throw new Error('Fehler beim Laden des Benutzers');
+
+      if (parentData) {
+        return {
+          exists: true,
+          errorMessage: `Der Benutzer ist bereits in dieser Instanz: ${parentData.firstName} ${parentData.lastName} (Elternteil)`
+        };
+      }
+    } else if (role === Role.VIEWER) {
+      const { data: viewerData, error: viewerError } = await supabase
+        .from('viewers')
+        .select('firstName, lastName')
+        .eq('tenantId', tenantId)
+        .eq('appId', userId)
+        .maybeSingle();
+
+      if (viewerError) throw new Error('Fehler beim Laden des Benutzers');
+
+      if (viewerData) {
+        return {
+          exists: true,
+          errorMessage: `Der Benutzer ist bereits in diesem Mandanten: ${viewerData.firstName} ${viewerData.lastName} (Beobachter)`
+        };
+      }
+    } else {
+      throw new Error('Der Benutzer ist bereits in diesem Mandanten');
+    }
+
+    return { exists: false };
   }
 
   async createPlayerAccount(

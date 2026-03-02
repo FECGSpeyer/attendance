@@ -357,10 +357,11 @@ export class DbService {
     if (this.tenantUser()) {
       return;
     }
-    const { data } = await supabase.auth.getUser();
+    // Use AuthService checkToken which has session caching
+    const user = await this.authSvc.checkToken();
 
-    if (data?.user?.email) {
-      this.user = data.user;
+    if (user?.email) {
+      this.user = user;
       await this.setTenant(undefined, showSelector);
     }
   }

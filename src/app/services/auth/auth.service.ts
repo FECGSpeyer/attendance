@@ -11,15 +11,27 @@ import { supabase } from '../base/supabase';
 })
 export class AuthService {
   public user: User;
+  private sessionCache: { user: User | null; timestamp: number } | null = null;
+  private readonly SESSION_CACHE_TTL = 5000; // 5 seconds cache
 
   constructor(private router: Router) {}
 
   async checkToken(): Promise<User | null> {
+    // Return cached session if still valid
+    if (this.sessionCache && Date.now() - this.sessionCache.timestamp < this.SESSION_CACHE_TTL) {
+      this.user = this.sessionCache.user;
+      return this.user;
+    }
+
+    // Fetch fresh session from Supabase
     const { data } = await supabase.auth.getSession();
     if (data?.session?.user?.email) {
       this.user = data.session.user;
+      this.sessionCache = { user: this.user, timestamp: Date.now() };
       return this.user;
     }
+
+    this.sessionCache = { user: null, timestamp: Date.now() };
     return null;
   }
 
@@ -66,6 +78,7 @@ export class AuthService {
 
     if (data.user) {
       this.user = data.user;
+      this.sessionCache = { user: data.user, timestamp: Date.now() };
       return { success: true, user: data.user };
     }
 
@@ -107,9 +120,15 @@ export class AuthService {
     };
   }
 
+  // Method to invalidate cache (useful for forced refreshes)
+  invalidateSessionCache(): void {
+    this.sessionCache = null;
+  }
+
   async logout(): Promise<void> {
     await supabase.auth.signOut();
     this.user = undefined;
+    this.sessionCache = null; // Clear cache on logout
     this.router.navigateByUrl('/login');
   }
 
