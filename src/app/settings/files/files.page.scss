@@ -1,5 +1,5 @@
 .path-card {
-  margin: 12px;
+  margin: 12px 12px 8px;
 }
 
 .permission-hint-card {
@@ -24,16 +24,34 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 4px;
-  margin-bottom: 8px;
+  margin-bottom: 2px;
+}
+
+.path-actions-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.navigate-up-button {
+  font-size: 0.85rem;
+  --padding-start: 6px;
+  --padding-end: 6px;
+}
+
+.search-block {
+  margin: 0 12px 10px;
+  padding: 8px 10px 6px;
+  border-radius: 12px;
+  background: var(--ion-color-light);
 }
 
 .files-search {
-  margin-top: 8px;
+  margin-top: 0;
   margin-bottom: 4px;
 }
 
 .search-help-row {
-  margin: 0 12px 2px;
+  margin: 0 2px 2px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -48,6 +66,11 @@
     --padding-end: 4px;
     height: 24px;
   }
+}
+
+.clear-search-button {
+  margin-inline-start: 0;
+  margin-top: 2px;
 }
 
 .loading-spinner {
