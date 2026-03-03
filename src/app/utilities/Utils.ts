@@ -728,6 +728,8 @@ export class Utils {
       case "/tabs/settings/handover":
       case "/tabs/settings/handover/detail":
         return [Role.ADMIN, Role.RESPONSIBLE].includes(role);
+      case "/tabs/settings/files":
+        return [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER].includes(role);
       case "/tabs/parents":
         return [Role.PARENT].includes(role);
       default:
