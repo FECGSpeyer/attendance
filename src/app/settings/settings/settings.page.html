@@ -160,6 +160,35 @@
   </ion-modal>
   }
 
+  @if (userData?.img && userData.img !== 'https://ionicframework.com/docs/img/demos/avatar.svg') {
+  <ion-modal [isOpen]="isImageViewerOpen" (ionModalDidDismiss)="closePassImageViewer()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Passbild</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closePassImageViewer()">
+              <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content color="dark" class="pass-preview-content">
+        <div class="pass-preview-container"
+          (dblclick)="onPassImageDblClick()"
+          (touchstart)="onPassImageTouchStart($event)"
+          (touchmove)="onPassImageTouchMove($event)"
+          (touchend)="onPassImageTouchEnd($event)">
+          <img [src]="userData.img.replace('?quality=20', '')"
+            alt="Passbild"
+            class="pass-preview-image"
+            [style.transform]="'scale(' + passImageZoomScale + ')'" />
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+  }
+
   <!-- ==================== STIMMFÜHRER ==================== -->
   @if (isVoiceLeader && !isGeneral) {
   <ion-list [inset]="true" class="category-list">
@@ -390,6 +419,12 @@
       <ion-item detail="false" button (click)="openHistoryModal()">
         <ion-icon name="time-outline" slot="start"></ion-icon>
         <ion-label>Werkhistorie</ion-label>
+      </ion-item>
+      }
+      @if (db.isBeta() && (isAdmin || isHelper)) {
+      <ion-item routerLink="files" button>
+        <ion-icon name="folder-outline" slot="start"></ion-icon>
+        <ion-label>Dateiablage</ion-label>
       </ion-item>
       }
       @if (isAdmin) {

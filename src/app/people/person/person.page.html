@@ -339,11 +339,20 @@
                 <ion-avatar slot="end">
                   <img [src]="player.img" />
                 </ion-avatar>
-                <ion-modal #imageViewer (ionModalDidDismiss)="isImageViewerOpen = false" [isOpen]="isImageViewerOpen"
+                <ion-modal #imageViewer (ionModalDidDismiss)="closePassImageViewer()" [isOpen]="isImageViewerOpen"
                   [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
                   <ng-template>
-                    <ion-content>
-                      <ion-img [src]="player.img.replace('?quality=20', '')"></ion-img>
+                    <ion-content color="dark" class="pass-preview-content">
+                      <div class="pass-preview-container"
+                        (dblclick)="onPassImageDblClick()"
+                        (touchstart)="onPassImageTouchStart($event)"
+                        (touchmove)="onPassImageTouchMove($event)"
+                        (touchend)="onPassImageTouchEnd($event)">
+                        <img [src]="player.img.replace('?quality=20', '')"
+                          alt="Passbild"
+                          class="pass-preview-image"
+                          [style.transform]="'scale(' + passImageZoomScale + ')'" />
+                      </div>
                     </ion-content>
                   </ng-template>
                 </ion-modal>

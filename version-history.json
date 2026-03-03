@@ -1,6 +1,16 @@
     {
       "versions": [
         {
+          "version": "3.8.4",
+          "date": "3.3.2026",
+          "changes": [
+            "📁 Dateiablage (Beta): Neue Dateiablage unter Einstellungen mit Ordnerstruktur, Upload, Download, Umbenennen und Verschieben.",
+            "🖼️ Bildvorschau: Bilder werden als Thumbnail angezeigt und können in einer Vollbild-Vorschau mit Pinch-/Doppeltap-Zoom geöffnet werden.",
+            "📤 Mehrfach-Upload & Telegram: Mehrere Dateien gleichzeitig hochladen, Duplikate optional überschreiben und Dateien direkt per Telegram senden.",
+            "🔐 Rollenrechte: Helfer können Dateien ansehen/hochladen/bearbeiten, Löschen bleibt auf Admins/Verantwortliche beschränkt (inkl. Hinweis in der UI)."
+          ]
+        },
+        {
           "version": "3.8.3",
           "date": "23.2.2026",
           "changes": [

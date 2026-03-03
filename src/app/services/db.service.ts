@@ -123,9 +123,10 @@ export class DbService {
       .normalize('NFD') // Normalize unicode (convert accents to ASCII equivalents where possible)
       .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (e.g. é -> e)
       .replace(/[^\w\s-]/g, '-') // Replace non-word chars with hyphens (e.g. # -> -)
-      .replace(/\s+/g, '-') // Replace spaces with hyphens (e.g. "hello world" -> "hello-world")
+      .replace(/\s+/g, ' ') // Normalize repeated whitespace to single spaces
       .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen (e.g. "hello--world" -> "hello-world")
       .replace(/^-+|-+$/g, '') // Trim hyphens from start and end (e.g. "-hello-world-" -> "hello-world")
+      .trim()
     // number between 100 and 999
     const randomNumber = Math.floor(100 + Math.random() * 900);
     return `${sanitizedName}_${randomNumber}.${ext}`;
@@ -473,7 +474,7 @@ export class DbService {
   }
 
   isBeta() {
-    return this.tenantUser()?.email?.endsWith("@attendix.de") || this.user?.email?.toLocaleLowerCase().endsWith("erwinfast98@gmail.com");
+    return this.tenantUser()?.email?.endsWith("@attendix.de") || this.user?.email?.toLocaleLowerCase().endsWith("erwinfast98@gmail.com") || this.tenant()?.id === 12;
   }
 
   async getTenants(): Promise<Tenant[]> {

@@ -31,6 +31,7 @@ export { TeacherService } from './teacher/teacher.service';
 export { TelegramService } from './telegram/telegram.service';
 export { SignInOutService } from './sign-in-out/sign-in-out.service';
 export { SongCategoryService } from './song-category/song-category.service';
+export { FilesService } from './files/files.service';
 
 // Main facade service (backwards compatibility)
 export { DbService } from './db.service';

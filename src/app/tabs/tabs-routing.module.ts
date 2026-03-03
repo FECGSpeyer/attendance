@@ -50,6 +50,10 @@ const routes: Routes = [
         loadChildren: () => import('./../songs/song/song.module').then(m => m.SongPageModule)
       },
       {
+        path: 'settings/files',
+        loadChildren: () => import('./../settings/files/files.module').then(m => m.FilesPageModule),
+      },
+      {
         path: 'settings/meetings',
         loadChildren: () => import('./../meetings/meeting-list/meeting-list.module').then(m => m.MeetingListPageModule),
       },

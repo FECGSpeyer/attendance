@@ -1,0 +1,198 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="/tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Dateien</ion-title>
+    <ion-buttons slot="end">
+      <ion-button id="files-sort-trigger" fill="clear">
+        <ion-icon slot="icon-only" name="funnel-outline"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" (click)="createFolder()">
+        <ion-icon slot="icon-only" name="folder-open-outline"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" (click)="triggerUpload()">
+        <ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-popover #sortPopover trigger="files-sort-trigger" triggerAction="click">
+  <ng-template>
+    <ion-list>
+      <ion-item lines="none">
+        <ion-label>
+          <h3>Sortierung</h3>
+          <p>{{ sortLabel }}</p>
+        </ion-label>
+      </ion-item>
+      <ion-item button (click)="setSort('name', sortPopover)">
+        <ion-icon name="text-outline" slot="start"></ion-icon>
+        Name
+      </ion-item>
+      <ion-item button (click)="setSort('updatedAt', sortPopover)">
+        <ion-icon name="calendar-outline" slot="start"></ion-icon>
+        Änderungsdatum
+      </ion-item>
+      <ion-item button (click)="setSort('size', sortPopover)">
+        <ion-icon name="resize-outline" slot="start"></ion-icon>
+        Dateigröße
+      </ion-item>
+      <ion-item button (click)="toggleSortDirection(sortPopover)">
+        <ion-icon [name]="sortDirection === 'asc' ? 'arrow-up-outline' : 'arrow-down-outline'" slot="start"></ion-icon>
+        {{ sortDirection === 'asc' ? 'Aufsteigend' : 'Absteigend' }}
+      </ion-item>
+    </ion-list>
+  </ng-template>
+</ion-popover>
+
+<ion-content color="light">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <input #fileInput type="file" multiple hidden (change)="onFileSelected($event)" />
+
+  <ion-card class="path-card">
+    <ion-card-content>
+      <div class="breadcrumb-row">
+        <ion-button size="small" fill="clear" (click)="openRoot()">Root</ion-button>
+        @if (pathSegments.length) {
+          @for (segment of pathSegments; track segment; let i = $index) {
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+            <ion-button size="small" fill="clear" (click)="openSegment(i)">{{ segment }}</ion-button>
+          }
+        }
+      </div>
+
+      <ion-button size="small" fill="outline" (click)="navigateUp()" [disabled]="!currentPath">
+        <ion-icon slot="start" name="arrow-up-outline"></ion-icon>
+        Eine Ebene hoch
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  @if (!canDeleteEntries) {
+    <ion-card class="permission-hint-card" color="light">
+      <ion-card-content>
+        <ion-icon name="information-circle-outline" color="medium"></ion-icon>
+        <span>Dateien können angesehen, hochgeladen und bearbeitet werden. Löschen ist nur für Admins/Verantwortliche erlaubt.</span>
+      </ion-card-content>
+    </ion-card>
+  }
+
+  @if (isLoading) {
+    <div class="loading-spinner">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  } @else {
+    @if (!entries.length) {
+      <ion-card>
+        <ion-card-content class="ion-text-center ion-padding">
+          <ion-icon name="folder-open-outline" class="empty-icon"></ion-icon>
+          <p>Dieser Ordner ist leer.</p>
+        </ion-card-content>
+      </ion-card>
+    } @else {
+      <ion-list [inset]="true">
+        @for (entry of entries; track entry.path; let last = $last; let i = $index) {
+          <ion-item [lines]="last ? 'none' : 'inset'" button (click)="openFolder(entry)">
+            @if (isImageEntry(entry) && getImagePreviewUrl(entry)) {
+              <ion-thumbnail slot="start" class="file-thumb">
+                <img [src]="getImagePreviewUrl(entry)" [alt]="entry.name" />
+              </ion-thumbnail>
+            } @else {
+              <ion-icon slot="start" [name]="entry.isFolder ? 'folder-outline' : 'document-outline'"></ion-icon>
+            }
+            <ion-label>
+              <h2>{{ entry.name }}</h2>
+              @if (!entry.isFolder && entry.size !== undefined) {
+                <p>
+                  {{ formatFileSize(entry.size) }}
+                  @if (entry.updatedAt) {
+                    · Geändert: {{ formatUpdatedAt(entry.updatedAt) }}
+                  }
+                </p>
+              }
+            </ion-label>
+            <ion-button
+              slot="end"
+              fill="clear"
+              color="medium"
+              [id]="'file-actions-trigger-' + i"
+              (click)="$event.stopPropagation()">
+              <ion-icon slot="icon-only" name="ellipsis-horizontal"></ion-icon>
+            </ion-button>
+
+            <ion-popover #actionPopover [trigger]="'file-actions-trigger-' + i" triggerAction="click">
+              <ng-template>
+                <ion-list>
+                  <ion-item button (click)="handleEntryAction('open', entry, actionPopover)">
+                    <ion-icon name="open-outline" slot="start"></ion-icon>
+                    {{ entry.isFolder ? 'Ordner öffnen' : 'Datei öffnen/downloaden' }}
+                  </ion-item>
+                  @if (!entry.isFolder) {
+                    <ion-item button (click)="handleEntryAction('download', entry, actionPopover)">
+                      <ion-icon name="download-outline" slot="start"></ion-icon>
+                      Datei herunterladen
+                    </ion-item>
+                    @if (db.tenantUser()?.telegram_chat_id) {
+                      <ion-item button (click)="handleEntryAction('telegram', entry, actionPopover)">
+                        <ion-icon name="paper-plane-outline" slot="start"></ion-icon>
+                        Per Telegram senden
+                      </ion-item>
+                    }
+                  }
+                  <ion-item button (click)="handleEntryAction('rename', entry, actionPopover)">
+                    <ion-icon name="create-outline" slot="start"></ion-icon>
+                    Umbenennen
+                  </ion-item>
+                  <ion-item button (click)="handleEntryAction('move', entry, actionPopover)">
+                    <ion-icon name="swap-horizontal-outline" slot="start"></ion-icon>
+                    Verschieben
+                  </ion-item>
+                  @if (canDeleteEntries) {
+                    <ion-item button (click)="handleEntryAction('delete', entry, actionPopover)">
+                      <ion-icon name="trash-outline" slot="start"></ion-icon>
+                      Löschen
+                    </ion-item>
+                  }
+                </ion-list>
+              </ng-template>
+            </ion-popover>
+          </ion-item>
+        }
+      </ion-list>
+    }
+  }
+
+  <ion-modal [isOpen]="isImagePreviewOpen" (ionModalDidDismiss)="closeImagePreview()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{ selectedImageName || 'Bildvorschau' }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeImagePreview()">
+              <ion-icon name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content color="dark" class="image-preview-content">
+        @if (selectedImageUrl) {
+          <div class="preview-image-container"
+            (dblclick)="onPreviewDblClick()"
+            (touchstart)="onPreviewTouchStart($event)"
+            (touchmove)="onPreviewTouchMove($event)"
+            (touchend)="onPreviewTouchEnd($event)">
+            <img [src]="selectedImageUrl"
+              [alt]="selectedImageName"
+              class="preview-image"
+              [style.transform]="'scale(' + imageZoomScale + ')'" />
+          </div>
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

@@ -95,6 +95,10 @@ export class PersonPage implements OnInit, AfterViewInit {
   public fieldTypes = FieldType;
   public shift: ShiftPlan = null;
   public isImageViewerOpen: boolean = false;
+  public passImageZoomScale: number = 1;
+  private passPinchStartDistance: number = 0;
+  private passPinchStartScale: number = 1;
+  private lastPassImageTapAt: number = 0;
 
   constructor(
     public db: DbService,
@@ -729,7 +733,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       additionalButtons.push({
         text: 'Passbild ansehen',
         handler: () => {
-          this.isImageViewerOpen = true;
+          this.openPassImageViewer();
         }
       });
     }
@@ -746,6 +750,81 @@ export class PersonPage implements OnInit, AfterViewInit {
     });
 
     await actionSheet.present();
+  }
+
+  private getTouchDistance(event: TouchEvent): number {
+    if (event.touches.length < 2) {
+      return 0;
+    }
+
+    const dx = event.touches[0].clientX - event.touches[1].clientX;
+    const dy = event.touches[0].clientY - event.touches[1].clientY;
+    return Math.hypot(dx, dy);
+  }
+
+  private clampScale(value: number): number {
+    return Math.min(4, Math.max(1, value));
+  }
+
+  resetPassImageZoom(): void {
+    this.passImageZoomScale = 1;
+    this.passPinchStartDistance = 0;
+    this.passPinchStartScale = 1;
+    this.lastPassImageTapAt = 0;
+  }
+
+  openPassImageViewer(): void {
+    this.resetPassImageZoom();
+    this.isImageViewerOpen = true;
+  }
+
+  closePassImageViewer(): void {
+    this.isImageViewerOpen = false;
+    this.resetPassImageZoom();
+  }
+
+  onPassImageDblClick(): void {
+    this.passImageZoomScale = this.passImageZoomScale > 1 ? 1 : 2;
+  }
+
+  onPassImageTouchStart(event: TouchEvent): void {
+    if (event.touches.length === 2) {
+      this.passPinchStartDistance = this.getTouchDistance(event);
+      this.passPinchStartScale = this.passImageZoomScale;
+      return;
+    }
+
+    if (event.touches.length === 1) {
+      const now = Date.now();
+      if (now - this.lastPassImageTapAt < 300) {
+        this.passImageZoomScale = this.passImageZoomScale > 1 ? 1 : 2;
+        this.lastPassImageTapAt = 0;
+      } else {
+        this.lastPassImageTapAt = now;
+      }
+    }
+  }
+
+  onPassImageTouchMove(event: TouchEvent): void {
+    if (event.touches.length !== 2 || !this.passPinchStartDistance) {
+      return;
+    }
+
+    event.preventDefault();
+    const currentDistance = this.getTouchDistance(event);
+    if (!currentDistance) {
+      return;
+    }
+
+    const nextScale = this.passPinchStartScale * (currentDistance / this.passPinchStartDistance);
+    this.passImageZoomScale = this.clampScale(nextScale);
+  }
+
+  onPassImageTouchEnd(event: TouchEvent): void {
+    if (event.touches.length < 2) {
+      this.passPinchStartDistance = 0;
+      this.passPinchStartScale = this.passImageZoomScale;
+    }
   }
 
   async onImageSelect(evt: any) {
