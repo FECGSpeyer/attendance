@@ -82,15 +82,15 @@
   </ion-card>
 
   <div class="search-block">
-    <ion-searchbar
-      class="files-search"
-      [(ngModel)]="searchTerm"
-      placeholder="Dateien & Ordner suchen...">
-    </ion-searchbar>
-    <div class="search-help-row">
-      <ion-note color="medium">Suchsyntax</ion-note>
-      <ion-button id="files-search-help-trigger" size="small" fill="clear" color="medium">
-        <ion-icon slot="icon-only" name="help-circle-outline"></ion-icon>
+    <div class="search-row">
+      <ion-searchbar
+        class="files-search"
+        [(ngModel)]="searchTerm"
+        placeholder="Dateien & Ordner suchen...">
+      </ion-searchbar>
+
+      <ion-button id="files-search-help-trigger" class="search-help-button" size="small" fill="clear" color="medium">
+        <ion-icon slot="end" name="help-circle-outline"></ion-icon>
       </ion-button>
     </div>
 
