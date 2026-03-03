@@ -32,10 +32,22 @@
   margin-bottom: 4px;
 }
 
-.search-hint {
-  margin: 0 12px 4px;
-  font-size: 0.8rem;
-  color: var(--ion-color-medium);
+.search-help-row {
+  margin: 0 12px 2px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  ion-note {
+    font-size: 0.75rem;
+  }
+
+  ion-button {
+    margin-inline-start: 2px;
+    --padding-start: 4px;
+    --padding-end: 4px;
+    height: 24px;
+  }
 }
 
 .loading-spinner {

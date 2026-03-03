@@ -78,7 +78,33 @@
         [showClearButton]="'focus'"
         [debounce]="150">
       </ion-searchbar>
-      <p class="search-hint">Tipps: <strong>typ:pdf</strong>, <strong>typ:ordner</strong>, <strong>datum:2026</strong>, <strong>datum:03.2026</strong></p>
+      <div class="search-help-row">
+        <ion-note color="medium">Suchsyntax</ion-note>
+        <ion-button id="files-search-help-trigger" size="small" fill="clear" color="medium">
+          <ion-icon slot="icon-only" name="help-circle-outline"></ion-icon>
+        </ion-button>
+      </div>
+
+      <ion-popover trigger="files-search-help-trigger" triggerAction="click">
+        <ng-template>
+          <ion-list>
+            <ion-item lines="none">
+              <ion-label>
+                <h3>Suche</h3>
+                <p>Freitext sucht im Namen.</p>
+              </ion-label>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-label>
+                <p><strong>typ:pdf</strong> · Dateityp filtern</p>
+                <p><strong>typ:ordner</strong> · Nur Ordner</p>
+                <p><strong>datum:2026</strong> · Jahr filtern</p>
+                <p><strong>datum:03.2026</strong> · Monat filtern</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ng-template>
+      </ion-popover>
 
       @if (hasSearchTerm) {
         <ion-button size="small" fill="clear" (click)="clearSearch()">
