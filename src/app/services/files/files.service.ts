@@ -14,6 +14,16 @@ export interface StorageEntry {
 })
 export class FilesService {
   private readonly bucket = 'files';
+  private readonly cyrillicMap: Record<string, string> = {
+    А: 'A', а: 'a', Б: 'B', б: 'b', В: 'V', в: 'v', Г: 'G', г: 'g', Д: 'D', д: 'd',
+    Е: 'E', е: 'e', Ё: 'Yo', ё: 'yo', Ж: 'Zh', ж: 'zh', З: 'Z', з: 'z', И: 'I', и: 'i',
+    Й: 'Y', й: 'y', К: 'K', к: 'k', Л: 'L', л: 'l', М: 'M', м: 'm', Н: 'N', н: 'n',
+    О: 'O', о: 'o', П: 'P', п: 'p', Р: 'R', р: 'r', С: 'S', с: 's', Т: 'T', т: 't',
+    У: 'U', у: 'u', Ф: 'F', ф: 'f', Х: 'Kh', х: 'kh', Ц: 'Ts', ц: 'ts', Ч: 'Ch', ч: 'ch',
+    Ш: 'Sh', ш: 'sh', Щ: 'Sch', щ: 'sch', Ъ: '', ъ: '', Ы: 'Y', ы: 'y', Ь: '', ь: '',
+    Э: 'E', э: 'e', Ю: 'Yu', ю: 'yu', Я: 'Ya', я: 'ya',
+    І: 'I', і: 'i', Ї: 'Yi', ї: 'yi', Є: 'Ye', є: 'ye', Ґ: 'G', ґ: 'g',
+  };
 
   private normalizeRelativePath(path: string): string {
     return (path || '')
@@ -23,26 +33,75 @@ export class FilesService {
       .trim();
   }
 
-  private sanitizeSegment(name: string): string {
-    return (name || '')
-      .normalize('NFD')
+  private transliterateCyrillic(value: string): string {
+    return Array.from(value || '')
+      .map((char) => this.cyrillicMap[char] ?? char)
+      .join('');
+  }
+
+  private replaceGermanChars(value: string): string {
+    return value
+      .replace(/Ä/g, 'Ae')
+      .replace(/Ö/g, 'Oe')
+      .replace(/Ü/g, 'Ue')
+      .replace(/ä/g, 'ae')
+      .replace(/ö/g, 'oe')
+      .replace(/ü/g, 'ue')
+      .replace(/ß/g, 'ss');
+  }
+
+  private avoidWindowsReservedName(value: string): string {
+    if (!value) {
+      return value;
+    }
+
+    if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(value)) {
+      return `${value}-file`;
+    }
+
+    return value;
+  }
+
+  private sanitizeExtension(ext: string): string {
+    return this.replaceGermanChars(this.transliterateCyrillic(ext || ''))
+      .normalize('NFKD')
       .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^\w\s.-]/g, '-')
+      .replace(/[^a-zA-Z0-9]+/g, '')
+      .toLowerCase();
+  }
+
+  private sanitizeSegment(name: string): string {
+    const sanitized = this.replaceGermanChars(this.transliterateCyrillic(name || ''))
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[\u0000-\u001F\u007F]/g, '')
+      .replace(/[\\/:*?"<>|]+/g, '-')
+      .replace(/&/g, ' und ')
+      .replace(/@/g, ' at ')
+      .replace(/[’‘`´]/g, "'")
+      .replace(/[_\s]+/g, ' ')
       .replace(/\s+/g, ' ')
+      .replace(/\s*-\s*/g, '-')
+      .replace(/\.{2,}/g, '.')
+      .replace(/[^a-zA-Z0-9 ._'()-]/g, '-')
       .replace(/-+/g, '-')
-      .replace(/^-+|-+$/g, '')
+      .replace(/ {2,}/g, ' ')
+      .replace(/^[.\s-]+|[.\s-]+$/g, '')
       .trim();
+
+    return this.avoidWindowsReservedName(sanitized);
   }
 
   private sanitizeFileName(name: string): string {
-    const parts = (name || '').split('.');
+    const normalizedName = (name || '').replace(/[\\/]+/g, ' ').trim();
+    const lastDotIndex = normalizedName.lastIndexOf('.');
+    const hasExtension = lastDotIndex > 0;
 
-    if (parts.length <= 1) {
-      return this.sanitizeSegment(name);
-    }
+    const rawBase = hasExtension ? normalizedName.slice(0, lastDotIndex) : normalizedName;
+    const rawExt = hasExtension ? normalizedName.slice(lastDotIndex + 1) : '';
 
-    const ext = this.sanitizeSegment(parts.pop() || '');
-    const base = this.sanitizeSegment(parts.join('.'));
+    const ext = this.sanitizeExtension(rawExt);
+    const base = this.sanitizeSegment(rawBase);
 
     if (!base) {
       return ext ? `file.${ext}` : 'file';
