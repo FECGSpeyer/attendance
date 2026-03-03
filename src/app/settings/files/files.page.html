@@ -70,6 +70,21 @@
         <ion-icon slot="start" name="arrow-up-outline"></ion-icon>
         Eine Ebene hoch
       </ion-button>
+
+      <ion-searchbar
+        class="files-search"
+        [(ngModel)]="searchTerm"
+        placeholder="Dateien und Ordner suchen"
+        [showClearButton]="'focus'"
+        [debounce]="150">
+      </ion-searchbar>
+      <p class="search-hint">Tipps: <strong>typ:pdf</strong>, <strong>typ:ordner</strong>, <strong>datum:2026</strong>, <strong>datum:03.2026</strong></p>
+
+      @if (hasSearchTerm) {
+        <ion-button size="small" fill="clear" (click)="clearSearch()">
+          Suche zurücksetzen
+        </ion-button>
+      }
     </ion-card-content>
   </ion-card>
 
@@ -94,9 +109,16 @@
           <p>Dieser Ordner ist leer.</p>
         </ion-card-content>
       </ion-card>
+    } @else if (!filteredEntries.length) {
+      <ion-card>
+        <ion-card-content class="ion-text-center ion-padding">
+          <ion-icon name="search-outline" class="empty-icon"></ion-icon>
+          <p>Keine Treffer für „{{ searchTerm }}“.</p>
+        </ion-card-content>
+      </ion-card>
     } @else {
       <ion-list [inset]="true">
-        @for (entry of entries; track entry.path; let last = $last; let i = $index) {
+        @for (entry of filteredEntries; track entry.path; let last = $last; let i = $index) {
           <ion-item [lines]="last ? 'none' : 'inset'" button (click)="openFolder(entry)">
             @if (isImageEntry(entry) && getImagePreviewUrl(entry)) {
               <ion-thumbnail slot="start" class="file-thumb">

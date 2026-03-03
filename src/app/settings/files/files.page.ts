@@ -15,6 +15,7 @@ export class FilesPage implements OnInit {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   public entries: StorageEntry[] = [];
+  public searchTerm: string = '';
   public currentPath: string = '';
   public isLoading: boolean = false;
   public imagePreviewUrls: Record<string, string> = {};
@@ -75,6 +76,24 @@ export class FilesPage implements OnInit {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  get hasSearchTerm(): boolean {
+    return !!this.searchTerm.trim();
+  }
+
+  get filteredEntries(): StorageEntry[] {
+    if (!this.hasSearchTerm) {
+      return this.entries;
+    }
+
+    const filters = this.parseSearchFilters(this.searchTerm);
+
+    return this.entries.filter((entry) => this.matchesSearch(entry, filters));
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
   }
 
   async openFolder(entry: StorageEntry): Promise<void> {
@@ -151,6 +170,149 @@ export class FilesPage implements OnInit {
       hour: '2-digit',
       minute: '2-digit',
     }).format(date);
+  }
+
+  private normalizeSearchValue(value: string): string {
+    return (value || '')
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ß/g, 'ss')
+      .replace(/ä/g, 'ae')
+      .replace(/ö/g, 'oe')
+      .replace(/ü/g, 'ue')
+      .replace(/Ä/g, 'ae')
+      .replace(/Ö/g, 'oe')
+      .replace(/Ü/g, 'ue')
+      .toLowerCase()
+      .trim();
+  }
+
+  private compactSearchValue(value: string): string {
+    return this.normalizeSearchValue(value).replace(/[^a-z0-9]/g, '');
+  }
+
+  private parseSearchFilters(rawSearch: string): { text: string; type: string; date: string } {
+    const parts = (rawSearch || '').split(/\s+/).filter(Boolean);
+    const textParts: string[] = [];
+    let type = '';
+    let date = '';
+
+    for (const part of parts) {
+      const normalizedPart = this.normalizeSearchValue(part);
+
+      if (normalizedPart.startsWith('typ:') || normalizedPart.startsWith('type:')) {
+        type = normalizedPart.split(':').slice(1).join(':').trim();
+        continue;
+      }
+
+      if (normalizedPart.startsWith('datum:') || normalizedPart.startsWith('date:')) {
+        date = normalizedPart.split(':').slice(1).join(':').trim();
+        continue;
+      }
+
+      textParts.push(part);
+    }
+
+    return {
+      text: this.normalizeSearchValue(textParts.join(' ')),
+      type,
+      date,
+    };
+  }
+
+  private getEntryExtension(entry: StorageEntry): string {
+    if (entry.isFolder) {
+      return '';
+    }
+
+    const lastDotIndex = (entry.name || '').lastIndexOf('.');
+    if (lastDotIndex <= 0) {
+      return '';
+    }
+
+    return (entry.name || '').slice(lastDotIndex + 1);
+  }
+
+  private matchesTypeFilter(entry: StorageEntry, typeFilter: string): boolean {
+    if (!typeFilter) {
+      return true;
+    }
+
+    const normalizedType = this.normalizeSearchValue(typeFilter);
+    if (['ordner', 'folder', 'dir', 'verzeichnis'].includes(normalizedType)) {
+      return entry.isFolder;
+    }
+
+    if (['datei', 'file'].includes(normalizedType)) {
+      return !entry.isFolder;
+    }
+
+    const extension = this.normalizeSearchValue(this.getEntryExtension(entry));
+    if (!extension) {
+      return false;
+    }
+
+    return extension === normalizedType || extension.includes(normalizedType);
+  }
+
+  private matchesDateFilter(entry: StorageEntry, dateFilter: string): boolean {
+    if (!dateFilter) {
+      return true;
+    }
+
+    if (!entry.updatedAt) {
+      return false;
+    }
+
+    const date = new Date(entry.updatedAt);
+    if (Number.isNaN(date.getTime())) {
+      return false;
+    }
+
+    const year = String(date.getFullYear());
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hour = String(date.getHours()).padStart(2, '0');
+    const minute = String(date.getMinutes()).padStart(2, '0');
+
+    const dateCandidates = [
+      this.formatUpdatedAt(entry.updatedAt),
+      `${day}.${month}.${year}`,
+      `${day}.${month}.${year} ${hour}:${minute}`,
+      `${year}-${month}-${day}`,
+      `${year}-${month}`,
+      `${month}.${year}`,
+      entry.updatedAt,
+    ];
+
+    const normalizedFilter = this.normalizeSearchValue(dateFilter);
+    const compactFilter = this.compactSearchValue(dateFilter);
+
+    return dateCandidates.some((candidate) => {
+      const normalizedCandidate = this.normalizeSearchValue(candidate);
+      if (normalizedCandidate.includes(normalizedFilter)) {
+        return true;
+      }
+
+      return this.compactSearchValue(candidate).includes(compactFilter);
+    });
+  }
+
+  private matchesSearch(entry: StorageEntry, filters: { text: string; type: string; date: string }): boolean {
+    const extension = this.getEntryExtension(entry);
+    const kindLabel = entry.isFolder ? 'ordner folder verzeichnis dir' : 'datei file';
+    const dateLabel = entry.updatedAt ? this.formatUpdatedAt(entry.updatedAt) : '';
+
+    const searchableText = this.normalizeSearchValue([
+      entry.name,
+      extension,
+      kindLabel,
+      dateLabel,
+      entry.updatedAt || '',
+    ].filter(Boolean).join(' '));
+
+    const matchesText = !filters.text || searchableText.includes(filters.text);
+    return matchesText && this.matchesTypeFilter(entry, filters.type) && this.matchesDateFilter(entry, filters.date);
   }
 
   private getUploadProgressMessage(processed: number, total: number, fileName?: string): string {

@@ -27,6 +27,17 @@
   margin-bottom: 8px;
 }
 
+.files-search {
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.search-hint {
+  margin: 0 12px 4px;
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+}
+
 .loading-spinner {
   height: 40vh;
   display: flex;
