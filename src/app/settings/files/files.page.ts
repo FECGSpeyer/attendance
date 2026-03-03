@@ -120,17 +120,6 @@ export class FilesPage implements OnInit {
     await this.loadEntries();
   }
 
-  async navigateUp(): Promise<void> {
-    if (!this.currentPath) {
-      return;
-    }
-
-    const segments = this.pathSegments;
-    segments.pop();
-    this.currentPath = segments.join('/');
-    await this.loadEntries();
-  }
-
   triggerUpload(): void {
     this.fileInput?.nativeElement.click();
   }

@@ -19,12 +19,29 @@
   }
 }
 
-.breadcrumb-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-bottom: 2px;
+.breadcrumbs-container {
+  margin: 8px 0 6px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--ion-color-light);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  ion-breadcrumbs {
+    width: 100%;
+    min-width: max-content;
+    padding: 0;
+    align-items: center;
+    gap: 2px;
+
+    ion-breadcrumb {
+      --color: var(--ion-color-medium);
+      --color-active: var(--ion-color-primary);
+      --separator-color: var(--ion-color-medium);
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+  }
 }
 
 .path-actions-row {
@@ -39,8 +56,6 @@
 }
 
 .search-block {
-  margin: 0 12px 10px;
-  padding: 8px 10px 6px;
   border-radius: 12px;
   background: var(--ion-color-light);
 }
@@ -62,6 +77,7 @@
   flex-shrink: 0;
   margin: 0;
   height: 36px;
+  margin-right: 1rem;
   --padding-start: 8px;
   --padding-end: 8px;
 }
