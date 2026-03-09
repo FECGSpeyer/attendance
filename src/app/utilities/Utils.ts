@@ -1,5 +1,6 @@
 import { ToastController, LoadingController } from "@ionic/angular";
 import dayjs from 'dayjs';
+import 'dayjs/locale/de';
 import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, FieldType, PlayerHistoryType, Role } from "./constants";
 import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftPlan, Church } from "./interfaces";
 // jsPDF and xlsx are lazy-loaded for better initial bundle size
@@ -1006,16 +1007,13 @@ export class Utils {
     if (type.all_day) {
       const endDate = dayjs(date).add((type.duration_days || 1) - 1, 'day');
       if (type.duration_days && type.duration_days > 1) {
-        dayjs.locale("de");
-        return `${dayjs(date).format("ddd, DD.MM.YYYY")} - ${endDate.format("ddd, DD.MM.YYYY")}`;
+        return `${dayjs(date).locale("de").format("ddd, DD.MM.YYYY")} - ${endDate.locale("de").format("ddd, DD.MM.YYYY")}`;
       } else {
-        dayjs.locale("de");
-        return dayjs(date).format("ddd, DD.MM.YYYY");
+        return dayjs(date).locale("de").format("ddd, DD.MM.YYYY");
       }
     }
 
-    dayjs.locale("de");
-    return dayjs(date).format("ddd, DD.MM.YYYY");
+    return dayjs(date).locale("de").format("ddd, DD.MM.YYYY");
   }
 
   public static getPlanningTitle(type: AttendanceType, typeInfo?: string): string {
