@@ -1,12 +1,13 @@
 .audio-player-bar {
   position: fixed;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 77px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
   left: 17px;
   right: 17px;
   z-index: 999;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
   padding: 8px 14px 6px;
   border-radius: 29px;
   background: rgba(var(--ion-background-color-rgb, 255, 255, 255), 0.75);
@@ -23,11 +24,27 @@
   right: 8px;
 }
 
+.play-btn {
+  font-size: 36px;
+  color: var(--ion-color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.right-section {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .top-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 28px;
+  min-height: 22px;
 }
 
 .bottom-row {
@@ -36,17 +53,12 @@
   gap: 18px;
 }
 
-.control-icon {
-  font-size: 28px;
-  color: var(--ion-color-primary);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
 .close-icon {
-  font-size: 20px;
+  font-size: 18px;
   color: var(--ion-color-medium);
   margin-left: auto;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .track-name {
