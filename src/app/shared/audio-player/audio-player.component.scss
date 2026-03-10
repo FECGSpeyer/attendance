@@ -1,6 +1,6 @@
 .audio-player-bar {
   position: fixed;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 50px);
   left: 17px;
   right: 17px;
   z-index: 999;
