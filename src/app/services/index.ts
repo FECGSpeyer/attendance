@@ -28,6 +28,7 @@ export { UserRegistrationService } from './user-registration/user-registration.s
 export { ViewerParentService } from './viewer-parent/viewer-parent.service';
 export { ConductorService } from './conductor/conductor.service';
 export { TeacherService } from './teacher/teacher.service';
+export { AudioPlayerService } from './audio-player/audio-player.service';
 export { TelegramService } from './telegram/telegram.service';
 export { SignInOutService } from './sign-in-out/sign-in-out.service';
 export { SongCategoryService } from './song-category/song-category.service';

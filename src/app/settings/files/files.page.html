@@ -162,8 +162,8 @@
         <ng-template>
           <ion-list>
             <ion-item button (click)="handleEntryAction('open', entry, actionPopover)">
-              <ion-icon name="open-outline" slot="start"></ion-icon>
-              {{ entry.isFolder ? 'Ordner öffnen' : 'Datei öffnen/downloaden' }}
+              <ion-icon [name]="isAudioEntry(entry) ? 'play-circle-outline' : 'open-outline'" slot="start"></ion-icon>
+              {{ entry.isFolder ? 'Ordner öffnen' : isAudioEntry(entry) ? 'Aufnahme abspielen' : 'Datei öffnen/downloaden' }}
             </ion-item>
             @if (!entry.isFolder) {
             <ion-item button (click)="handleEntryAction('download', entry, actionPopover)">

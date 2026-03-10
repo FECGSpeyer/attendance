@@ -6,13 +6,15 @@ import { FormsModule } from '@angular/forms';
 import { TabsPageRoutingModule } from './tabs-routing.module';
 
 import { TabsPage } from './tabs.page';
+import { AudioPlayerComponent } from '../shared/audio-player/audio-player.component';
 
 @NgModule({
   imports: [
     IonicModule,
     CommonModule,
     FormsModule,
-    TabsPageRoutingModule
+    TabsPageRoutingModule,
+    AudioPlayerComponent,
   ],
   declarations: [TabsPage]
 })

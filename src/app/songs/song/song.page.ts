@@ -1,8 +1,9 @@
-import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, LoadingController, isPlatform } from '@ionic/angular';
 // JSZip and pdf-lib are lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
+import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
 import { Role } from 'src/app/utilities/constants';
 import { matchInstrument, detectSpecialFileType } from 'src/app/utilities/instrument-matcher';
 import { Group, Organisation, Player, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
@@ -16,6 +17,7 @@ import { Utils } from 'src/app/utilities/Utils';
   standalone: false
 })
 export class SongPage implements OnInit {
+  private audioPlayer = inject(AudioPlayerService);
   public song: Song;
   public isOrchestra: boolean = false;
   public instruments: Group[] = [];
@@ -400,15 +402,23 @@ export class SongPage implements OnInit {
   }
 
   async openFileActionSheet(file: SongFile) {
+    const isAudio = AudioPlayerService.isAudioFile(file);
     const buttons: ActionSheetButton[] = [
       {
-        text: 'Datei öffnen',
-        icon: 'open-outline',
+        text: isAudio ? 'Aufnahme abspielen' : 'Datei öffnen',
+        icon: isAudio ? 'play-circle-outline' : 'open-outline',
         handler: () => {
-          window.open(file.url, '_blank');
+          if (isAudio) {
+            this.audioPlayer.play(file, this.song.name);
+          } else {
+            window.open(file.url, '_blank');
+          }
         }
       },
-      {
+    ];
+
+    if (!isAudio) {
+      buttons.push({
         text: 'Datei drucken',
         icon: 'print-outline',
         handler: () => {
@@ -417,8 +427,8 @@ export class SongPage implements OnInit {
             printWindow.onload = () => printWindow.print();
           }
         }
-      }
-    ];
+      });
+    }
 
     if (!isPlatform('ios')) {
       buttons.push({

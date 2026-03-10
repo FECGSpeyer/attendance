@@ -1,6 +1,7 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonPopover, NavController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
+import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
 import { FilesService, StorageEntry } from '../../services/files/files.service';
 import { Role } from 'src/app/utilities/constants';
 import { Utils } from 'src/app/utilities/Utils';
@@ -12,6 +13,7 @@ import { Utils } from 'src/app/utilities/Utils';
   standalone: false
 })
 export class FilesPage implements OnInit {
+  private audioPlayer = inject(AudioPlayerService);
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   public entries: StorageEntry[] = [];
@@ -100,6 +102,10 @@ export class FilesPage implements OnInit {
     if (!entry.isFolder) {
       if (this.isImageEntry(entry)) {
         await this.openImagePreview(entry);
+        return;
+      }
+      if (this.isAudioEntry(entry)) {
+        await this.playAudioEntry(entry);
         return;
       }
       await this.downloadEntry(entry);
@@ -378,6 +384,23 @@ export class FilesPage implements OnInit {
 
     const lowerName = (entry.name || '').toLowerCase();
     return /\.(png|jpe?g|gif|webp|bmp|svg|heic|heif|avif)$/.test(lowerName);
+  }
+
+  isAudioEntry(entry: StorageEntry): boolean {
+    if (entry.isFolder) {
+      return false;
+    }
+
+    return AudioPlayerService.isAudioFile({ fileName: entry.name });
+  }
+
+  async playAudioEntry(entry: StorageEntry): Promise<void> {
+    try {
+      const url = await this.filesSvc.getSignedFileUrl(this.db.tenant().id, entry.path, 3600);
+      this.audioPlayer.playFromUrl(url, entry.name, entry.name);
+    } catch (error: any) {
+      Utils.showToast(`Fehler beim Abspielen: ${error.message || error}`, 'danger');
+    }
   }
 
   getImagePreviewUrl(entry: StorageEntry): string {

@@ -1,9 +1,10 @@
 /* eslint-disable arrow-body-style */
-import { Component, effect, OnInit, ViewChild } from '@angular/core';
+import { Component, effect, inject, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, isPlatform, ModalController } from '@ionic/angular';
 import dayjs from 'dayjs';
 // pdf-lib is lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
+import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
 import { AttendanceStatus, Role } from 'src/app/utilities/constants';
 import { Attendance, PersonAttendance, Player, Song, Tenant, History, SongFile, AttendanceType, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -16,6 +17,7 @@ import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.co
   standalone: false
 })
 export class SignoutPage implements OnInit {
+  private audioPlayer = inject(AudioPlayerService);
   @ViewChild('signoutAccordionGroup') signoutAccordionGroup: IonAccordionGroup;
   @ViewChild('excuseModal') excuseModal: IonModal;
   public player: Player;
@@ -566,7 +568,7 @@ export class SignoutPage implements OnInit {
         handler: () => {
           const file = song.files.find(f => f.instrumentId === 1);
           if (file) {
-            window.open(file.url, "_blank");
+            this.audioPlayer.play(file, `${song.number} ${song.name}`);
           }
         },
       });

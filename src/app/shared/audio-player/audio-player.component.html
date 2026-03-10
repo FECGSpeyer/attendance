@@ -1,0 +1,37 @@
+@if (audioPlayer.currentFile()) {
+  <div class="audio-player-bar">
+    <div class="top-row">
+      <ion-icon
+        class="control-icon"
+        [name]="audioPlayer.isPlaying() ? 'pause-circle' : 'play-circle'"
+        (click)="audioPlayer.togglePlayPause()"
+      ></ion-icon>
+
+      <span class="track-name">{{ audioPlayer.currentSongName() || audioPlayer.currentFile()?.fileName }}</span>
+
+      <ion-icon
+        class="control-icon close-icon"
+        name="close-circle"
+        (click)="audioPlayer.stop()"
+      ></ion-icon>
+    </div>
+
+    <div class="bottom-row">
+      <span class="time-label">{{ audioPlayer.formatTime(audioPlayer.currentTime()) }}</span>
+
+      <ion-range
+        class="seek-slider"
+        [min]="0"
+        [max]="100"
+        [value]="audioPlayer.progress()"
+        [pin]="false"
+        [snaps]="false"
+        [ticks]="false"
+        (ionKnobMoveStart)="onKnobMoveStart()"
+        (ionKnobMoveEnd)="onKnobMoveEnd($event)"
+      ></ion-range>
+
+      <span class="time-label">{{ audioPlayer.formatTime(audioPlayer.duration()) }}</span>
+    </div>
+  </div>
+}

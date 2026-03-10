@@ -1,6 +1,16 @@
     {
       "versions": [
         {
+          "version": "3.8.5",
+          "date": "10.3.2026",
+          "changes": [
+            "🎵 In-App Audio-Player: Aufnahmen werden nun direkt in der App abgespielt statt in einem neuen Browser-Tab. Ein schwebender Player mit Play/Pause, Seek-Slider und Zeitanzeige erscheint oberhalb der Tab-Bar.",
+            "🔊 Aufnahme abspielen: Audio-Dateien zeigen jetzt 'Aufnahme abspielen' statt 'Datei öffnen' im Aktionsmenü.",
+            "🎧 Persistenter Player: Audio spielt auch bei Navigation zwischen Seiten weiter.",
+            "📁 Dateiablage: Audio-Dateien in der Dateiablage können ebenfalls direkt in der App abgespielt werden."
+          ]
+        },
+        {
           "version": "3.8.4",
           "date": "3.3.2026",
           "changes": [
