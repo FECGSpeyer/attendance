@@ -80,6 +80,35 @@ export class HistoryService {
     }
   }
 
+  async getHistoryBySongId(songId: number, tenantId: number): Promise<History[]> {
+    const { data } = await supabase
+      .from('history')
+      .select('*, attendance:attendance_id(date, type_id, typeInfo, att_type:type_id(name, hide_name)), person:person_id(firstName, lastName)')
+      .eq('tenantId', tenantId)
+      .eq('songId', songId)
+      .eq('visible', true)
+      .order('date', { ascending: false });
+
+    return (data || []).map((entry: any) => {
+      const att = entry.attendance;
+      const attType = att?.att_type;
+      let typeTitle = '';
+      if (att?.typeInfo) {
+        typeTitle = att.typeInfo;
+      } else if (attType?.name) {
+        typeTitle = attType.name;
+      }
+
+      return {
+        ...entry,
+        conductorName: entry.person
+          ? `${entry.person.firstName} ${entry.person.lastName}`
+          : entry.otherConductor || undefined,
+        typeTitle,
+      };
+    }) as any;
+  }
+
   async getUpcomingHistory(tenantId: number): Promise<History[]> {
     const { data } = await supabase
       .from('history')

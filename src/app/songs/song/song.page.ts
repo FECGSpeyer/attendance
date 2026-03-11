@@ -6,7 +6,7 @@ import { DbService } from 'src/app/services/db.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
 import { Role } from 'src/app/utilities/constants';
 import { matchInstrument, detectSpecialFileType } from 'src/app/utilities/instrument-matcher';
-import { Group, Organisation, Player, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
+import { Group, History, Organisation, Player, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 
@@ -41,6 +41,13 @@ export class SongPage implements OnInit {
   // Print feature
   private players: Player[] = [];
 
+  // Song history
+  public songHistory: History[] = [];
+
+  getHistoryEntryTitle(entry: any): string {
+    return entry.typeTitle || '';
+  }
+
   constructor(
     public db: DbService,
     private alertController: AlertController,
@@ -65,6 +72,16 @@ export class SongPage implements OnInit {
     if (this.isOrchestra) {
       const groups = this.tenant ? await this.db.getGroups(this.tenant.id) : this.db.groups();
       this.instruments = groups.filter((instrument: Group) => !instrument.maingroup);
+    }
+
+    // Load song history (when played at events)
+    try {
+      const tenantId = this.tenant?.id ?? this.db.tenant()?.id;
+      if (tenantId && !this.readOnly) {
+        this.songHistory = await this.db.getHistoryBySongId(songId, tenantId);
+      }
+    } catch (e) {
+      // Non-critical, ignore errors
     }
 
     // Load organisation and tenants for copy feature (only for admin/responsible)

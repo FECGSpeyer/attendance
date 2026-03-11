@@ -1862,6 +1862,10 @@ export class DbService {
     return this.historySvc.addSongsToHistory(historyEntries);
   }
 
+  async getHistoryBySongId(songId: number, tenantId?: number): Promise<History[]> {
+    return this.historySvc.getHistoryBySongId(songId, tenantId ?? this.tenant().id);
+  }
+
   async getTeachers(): Promise<Teacher[]> {
     return this.teacherSvc.getTeachers(this.tenant().id);
   }
