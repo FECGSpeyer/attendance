@@ -55,6 +55,8 @@ export class GeneralPage implements OnInit {
     type: FieldType.TEXT,
     defaultValue: '',
     options: [],
+    visibleToPlayers: false,
+    editableByPlayers: false,
   };
   public fieldTypes = FieldType;
   public extraFields: ExtraField[] = [];
@@ -512,6 +514,10 @@ export class GeneralPage implements OnInit {
       this.newExtraField.defaultValue = this.newExtraField.options[0];
     }
 
+    if (this.newExtraField.type === FieldType.BOOLEAN) {
+      this.newExtraField.defaultValue = true;
+    }
+
     if (this.newExtraField.id.length === 0) {
       Utils.showToast("Die ID des Zusatzfeldes darf nicht leer sein.", "danger");
       return;
@@ -524,6 +530,8 @@ export class GeneralPage implements OnInit {
       type: FieldType.TEXT,
       defaultValue: '',
       options: [],
+      visibleToPlayers: false,
+      editableByPlayers: false,
     };
     modal.dismiss();
   }

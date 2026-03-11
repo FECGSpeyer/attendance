@@ -1,6 +1,16 @@
     {
       "versions": [
         {
+          "version": "3.8.6",
+          "date": "11.3.2026",
+          "changes": [
+            "👁️ Zusatzfelder für Mitglieder sichtbar: Admins können pro Zusatzfeld festlegen, ob Mitglieder es in ihren Stammdaten (unter 'Mehr') sehen können.",
+            "✏️ Bearbeitbare Zusatzfelder: Optional können sichtbare Zusatzfelder auch von Mitgliedern selbst bearbeitet werden (z.B. Text, Zahl, Auswahl, Ja/Nein).",
+            "🔧 Neue Toggles 'Für Mitglieder sichtbar' und 'Von Mitgliedern bearbeitbar' beim Erstellen und Bearbeiten von Zusatzfeldern.",
+            "📋 Sichtbare Zusatzfelder werden in der Stammdaten-Karte und im Bearbeiten-Dialog angezeigt - je nach Einstellung nur lesend oder auch editierbar."
+          ]
+        },
+        {
           "version": "3.8.5",
           "date": "10.3.2026",
           "changes": [

@@ -67,6 +67,8 @@ export interface ExtraField {
   type: FieldType;
   defaultValue: any;
   options?: string[];
+  visibleToPlayers?: boolean;
+  editableByPlayers?: boolean;
 }
 
 export interface TenantUser {

@@ -311,6 +311,18 @@
                 <ion-item>
                   <ion-input labelPlacement="stacked" label="Name" [(ngModel)]="newExtraField.name"></ion-input>
                 </ion-item>
+                <ion-item>
+                  <ion-toggle
+                    helperText="Aktivieren, damit Mitglieder dieses Feld in ihren Stammdaten sehen können."
+                    [(ngModel)]="newExtraField.visibleToPlayers">Für Mitglieder sichtbar</ion-toggle>
+                </ion-item>
+                @if (newExtraField.visibleToPlayers) {
+                  <ion-item>
+                    <ion-toggle
+                      helperText="Aktivieren, damit Mitglieder den Wert selbst ändern können."
+                      [(ngModel)]="newExtraField.editableByPlayers">Von Mitgliedern bearbeitbar</ion-toggle>
+                  </ion-item>
+                }
               </ion-item-group>
               @if (newExtraField.type === fieldTypes.SELECT) {
                 <ion-list-header>
@@ -385,6 +397,18 @@
                   <ion-item>
                     <ion-input labelPlacement="stacked" label="Name" [(ngModel)]="editingExtraField.name"></ion-input>
                   </ion-item>
+                  <ion-item>
+                    <ion-toggle
+                      helperText="Aktivieren, damit Mitglieder dieses Feld in ihren Stammdaten sehen können."
+                      [(ngModel)]="editingExtraField.visibleToPlayers">Für Mitglieder sichtbar</ion-toggle>
+                  </ion-item>
+                  @if (editingExtraField.visibleToPlayers) {
+                    <ion-item>
+                      <ion-toggle
+                        helperText="Aktivieren, damit Mitglieder den Wert selbst ändern können."
+                        [(ngModel)]="editingExtraField.editableByPlayers">Von Mitgliedern bearbeitbar</ion-toggle>
+                    </ion-item>
+                  }
                 </ion-item-group>
                 @if (editingExtraField.type === fieldTypes.SELECT) {
                   <ion-list-header>
@@ -447,6 +471,9 @@
             <h2>{{ field.name }}</h2>
             @if (field.id !== 'bfecg_church') {
               <h3>Typ: {{ getFieldTypeName(field.type) }}</h3>
+            }
+            @if (field.visibleToPlayers) {
+              <h3><ion-icon name="eye-outline" style="vertical-align: middle; margin-right: 2px;"></ion-icon> Für Mitglieder sichtbar{{ field.editableByPlayers ? ' (bearbeitbar)' : '' }}</h3>
             }
           </ion-label>
           <ion-button fill="clear" color="primary" size="small" (click)="openEditExtraField(i)">

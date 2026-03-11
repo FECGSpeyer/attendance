@@ -56,6 +56,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   public versionHistory = require('../../../../version-history.json').versions;
   public wantInstanceSelection: boolean = false;
   public showPwaHint: boolean = false;
+  public fieldTypes = FieldType;
   public passImageZoomScale: number = 1;
   private passPinchStartDistance: number = 0;
   private passPinchStartScale: number = 1;
@@ -138,6 +139,15 @@ export class SettingsPage implements OnInit, OnDestroy {
 
     if (this.oldUserData) {
       this.userData = { ...this.oldUserData };
+      if (!this.userData.additional_fields) {
+        this.userData.additional_fields = {};
+      }
+      // Pre-fill editable extra fields with default values if not yet set
+      for (const field of this.getVisibleExtraFields()) {
+        if (field.editableByPlayers && this.userData.additional_fields[field.id] === undefined && field.defaultValue !== undefined) {
+          this.userData.additional_fields[field.id] = field.defaultValue;
+        }
+      }
     }
 
     this.wantInstanceSelection = this.db.user.user_metadata?.wantInstanceSelection || false;
@@ -600,6 +610,24 @@ export class SettingsPage implements OnInit, OnDestroy {
     return this.db.churches()?.length && this.db.tenant()?.additional_fields?.find((f => f.type === FieldType.BFECG_CHURCH)) !== undefined;
   }
 
+  getVisibleExtraFields() {
+    return this.db.tenant()?.additional_fields?.filter(f => f.visibleToPlayers) || [];
+  }
+
+  getExtraFieldDisplayValue(field: any): string {
+    let value = this.userData?.additional_fields?.[field.id];
+    if (field.type === FieldType.BOOLEAN) return value ? 'Ja' : 'Nein';
+    if (value === undefined || value === null || value === '') {
+      value = field.defaultValue;
+    }
+    if (value === undefined || value === null || value === '') return '—';
+    if (field.type === FieldType.BFECG_CHURCH) {
+      const church = this.db.churches()?.find(c => c.id === value);
+      return church?.name || String(value);
+    }
+    return String(value);
+  }
+
   async openCalendarSubscription() {
     const link = `https://n8n.srv1053762.hstgr.cloud/webhook/attendix?tenantId=${this.db.tenant().id}`;
     const alert = await this.alertController.create({
@@ -753,6 +781,15 @@ export class SettingsPage implements OnInit, OnDestroy {
       churchId = this.userData.additional_fields?.bfecg_church;
     }
 
+    const editableFields = this.getVisibleExtraFields().filter(f => f.editableByPlayers);
+    let additionalFields = this.oldUserData.additional_fields || {};
+    if (editableFields.length && this.userData.additional_fields) {
+      additionalFields = { ...additionalFields };
+      for (const field of editableFields) {
+        additionalFields[field.id] = this.userData.additional_fields[field.id];
+      }
+    }
+
     await this.db.updateProfile({
       firstName: this.userData.firstName,
       lastName: this.userData.lastName,
@@ -760,6 +797,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       birthday: this.userData.birthday,
       img: this.userData.img,
       correctBirthday: true,
+      additional_fields: additionalFields,
     }, churchId);
 
     Utils.showToast("Die Profildaten wurden erfolgreich aktualisiert.", "success");
