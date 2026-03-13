@@ -8,10 +8,10 @@ import { Utils } from '../utilities/Utils';
 import { DefaultAttendanceType } from 'src/app/utilities/constants';
 
 @Component({
-    selector: 'app-planning',
-    templateUrl: './planning.page.html',
-    styleUrls: ['./planning.page.scss'],
-    standalone: false
+  selector: 'app-planning',
+  templateUrl: './planning.page.html',
+  styleUrls: ['./planning.page.scss'],
+  standalone: false
 })
 export class PlanningPage implements OnInit {
   @Input() attendanceId?: number;
@@ -32,6 +32,8 @@ export class PlanningPage implements OnInit {
   public isPlanModalOpen: boolean = false;
   public conductors: Person[] = [];
   public selConductors: number[] = [];
+  public planGroups: string[] = [];
+  public planConductors: string[] = [];
   public groupCategories: GroupCategory[];
   public sharePlan: boolean = false;
   public customModalOptions = {
@@ -422,12 +424,18 @@ export class PlanningPage implements OnInit {
       }
     }
 
-    buttons.push({
-      text: 'Registerprobenplan erstellen',
-      handler: () => {
-        this.isPlanModalOpen = true;
-      }
-    });
+    if (this.db.tenant().type === DefaultAttendanceType.CHOIR || this.db.tenant().type === DefaultAttendanceType.ORCHESTRA) {
+      buttons.push({
+        text: 'Registerprobenplan erstellen',
+        handler: () => {
+          this.planGroups = this.loadPlanGroups();
+          this.planConductors = this.conductors
+            .filter(c => !c.left)
+            .map(c => `${c.firstName} ${c.lastName.substr(0, 1)}.`);
+          this.isPlanModalOpen = true;
+        }
+      });
+    }
 
     buttons.push({
       text: 'Abbrechen',
@@ -441,24 +449,79 @@ export class PlanningPage implements OnInit {
     await actionSheet.present();
   }
 
-  async createPlan(conductors: number[], timeString: string | number, modal: IonModal, perTelegram?: boolean, asImage?: boolean): Promise<void> {
-    const shuffledConductors: string[] = this.shuffle(conductors.map((id: number): string => {
-      const con: Person = this.conductors.find((c: Person): boolean => id === c.id);
-      return `${con.firstName} ${con.lastName.substr(0, 1)}.`;
-    }));
+  getDefaultPlanGroups(): string[] {
+    if (this.groupCategories?.length) {
+      return this.groupCategories.map(cat => cat.name);
+    }
+    return this.db.tenant().type === DefaultAttendanceType.CHOIR
+      ? ['Sopran', 'Alt', 'Tenor', 'Bass']
+      : ['Streicher', 'Holzbläser', 'Sonstige'];
+  }
+
+  loadPlanGroups(): string[] {
+    const key = `registerplan-groups-${this.db.tenant().id}`;
+    const stored = localStorage.getItem(key);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length >= 2) {
+        return parsed;
+      }
+    }
+    return this.getDefaultPlanGroups();
+  }
+
+  savePlanGroups(groups: string[]): void {
+    const key = `registerplan-groups-${this.db.tenant().id}`;
+    localStorage.setItem(key, JSON.stringify(groups));
+  }
+
+  addPlanGroup() {
+    this.planGroups.push('');
+  }
+
+  addPlanConductor() {
+    this.planConductors.push('');
+  }
+
+  removePlanConductor(index: number) {
+    if (this.planConductors.length > 1) {
+      this.planConductors.splice(index, 1);
+    }
+  }
+
+  isPlanExportDisabled(time: string | number | undefined): boolean {
+    return !this.planConductors.length || this.planConductors.some(c => !c.trim()) || !time || this.planGroups.length < 2 || this.planGroups.some(g => !g.trim());
+  }
+
+  removePlanGroup(index: number) {
+    if (this.planGroups.length > 2) {
+      this.planGroups.splice(index, 1);
+    }
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  async createPlan(timeString: string | number, modal: IonModal, perTelegram?: boolean, asImage?: boolean): Promise<void> {
+    this.savePlanGroups(this.planGroups);
+
+    const shuffledConductors: string[] = this.shuffle([...this.planConductors]);
     const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
     const date: string = attendance ? dayjs(attendance.date).format('DD.MM.YYYY') : dayjs().format('DD.MM.YYYY');
     const data = [];
-    const timePerUnit: number = Number(timeString) / shuffledConductors.length;
+    const groupCount = this.planGroups.length;
+    const numRows = Math.max(shuffledConductors.length, groupCount);
+    const timePerUnit: number = Number(timeString) / numRows;
 
-    for (let index = 0; index < conductors.length; index++) {
+    for (let index = 0; index < numRows; index++) {
       const slotTime = Math.round(timePerUnit * index);
-      data.push([
-        String(slotTime),
-        shuffledConductors[(index) % (shuffledConductors.length)],
-        shuffledConductors[(index + 1) % (shuffledConductors.length)],
-        shuffledConductors[(index + 2) % (shuffledConductors.length)]
-      ]); // TODO attendance type
+      const row: string[] = [String(slotTime)];
+      for (let g = 0; g < groupCount; g++) {
+        const candidate = (index + g) % numRows;
+        row.push(candidate < shuffledConductors.length ? shuffledConductors[candidate] : '');
+      }
+      data.push(row);
     }
 
     // Lazy load jsPDF
@@ -467,7 +530,7 @@ export class PlanningPage implements OnInit {
     const doc = new jsPDF();
     doc.text(`${this.db.tenant().shortName} Registerprobenplan: ${date}`, 14, 25);
     (doc as any).autoTable({
-      head: this.db.tenant().type === DefaultAttendanceType.CHOIR ? [["Minuten", "Sopran", "Alt", "Tenor", "Bass"]] : this.db.tenant().shortName === "BoS" ? [['Minuten', 'Blechbläser', 'Holzbläser']] : [['Minuten', 'Streicher', 'Holzbläser', 'Sonstige']], // TODO attendance type
+      head: [['Minuten', ...this.planGroups]],
       body: data,
       margin: { top: 40 },
       theme: 'grid',

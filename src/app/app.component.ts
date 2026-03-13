@@ -27,7 +27,6 @@ export class AppComponent {
   ) {
     this.initializeApp();
     this.titleService.setTitle("Attendix");
-    // document.body.classList.add(environment.isChoir ? "choir" : environment.symphonyImage ? "sinfo" : "blas"); TODO
     this.listenToAuthChanges();
     this.checkForUpdates();
   }

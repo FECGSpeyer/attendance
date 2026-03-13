@@ -158,37 +158,90 @@
 </ion-item-group>
 </ion-list>
 
-<ion-modal [isOpen]="isPlanModalOpen" #planModal trigger="trigger-button" [breakpoints]="[0, 0.5]"
-  [initialBreakpoint]="0.5">
+<ion-modal [isOpen]="isPlanModalOpen" #planModal trigger="trigger-button" [breakpoints]="[0, 1]"
+  [initialBreakpoint]="1">
   <ng-template>
-    <ion-content>
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Plan erstellen</ion-title>
-        </ion-toolbar>
-      </ion-header>
-      <ion-item>
-        <ion-select label="Dirigenten" [(ngModel)]="selConductors" #select multiple="true">
-          @for (con of conductors; track con) {
-            <ion-select-option [value]="con.id">{{ con.firstName }} {{ con.lastName
-            }}</ion-select-option>
-          }
-        </ion-select>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Zeit in Minuten</ion-label>
-        <ion-input value="60" #input type="number"></ion-input>
-      </ion-item>
-      <ion-button [disabled]="!select.value?.length || !input.value"
-      (click)="createPlan(select.value, input.value, planModal)" expand="block">Exportieren</ion-button>
-      @if (db.tenantUser().telegram_chat_id) {
-        <ion-button [disabled]="!select.value?.length || !input.value"
-          (click)="createPlan(select.value, input.value, planModal, true, false)" expand="block">Per Telegram (PDF)
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Registerprobenplan</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="planModal.dismiss(); isPlanModalOpen = false">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content color="light">
+      <ion-list [inset]="true">
+        <ion-list-header>
+          <ion-label>Gruppen</ion-label>
+          <ion-button fill="clear" (click)="addPlanGroup()" size="small">
+            <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+          </ion-button>
+        </ion-list-header>
+        <ion-item-group>
+        @for (group of planGroups; track trackByIndex($index); let last = $last) {
+          <ion-item [lines]="last ? 'none' : ''">
+            <ion-icon name="people-outline" slot="start" color="medium"></ion-icon>
+            <ion-input [(ngModel)]="planGroups[$index]" placeholder="Gruppenname"></ion-input>
+            @if (planGroups.length > 2) {
+              <ion-button slot="end" fill="clear" color="danger" (click)="removePlanGroup($index)">
+                <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
+              </ion-button>
+            }
+          </ion-item>
+        }
+      </ion-item-group>
+      </ion-list>
+
+      <ion-list [inset]="true">
+        <ion-list-header>
+          <ion-label>Dirigenten</ion-label>
+          <ion-button fill="clear" (click)="addPlanConductor()" size="small">
+            <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+          </ion-button>
+        </ion-list-header>
+        <ion-item-group>
+        @for (con of planConductors; track trackByIndex($index); let last = $last) {
+          <ion-item [lines]="last ? 'none' : ''">
+            <ion-icon name="person-outline" slot="start" color="medium"></ion-icon>
+            <ion-input [(ngModel)]="planConductors[$index]" placeholder="Name"></ion-input>
+            @if (planConductors.length > 1) {
+              <ion-button slot="end" fill="clear" color="danger" (click)="removePlanConductor($index)">
+                <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
+              </ion-button>
+            }
+          </ion-item>
+        }
+      </ion-item-group>
+      </ion-list>
+
+      <ion-list [inset]="true">
+        <ion-item lines="none">
+          <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
+          <ion-input label="Zeit in Minuten" value="60" #input type="number"></ion-input>
+        </ion-item>
+      </ion-list>
+
+      <div class="plan-actions">
+        <ion-button [disabled]="isPlanExportDisabled(input.value)"
+          (click)="createPlan(input.value, planModal)" expand="block">
+          <ion-icon slot="start" name="document-outline"></ion-icon>
+          Exportieren
         </ion-button>
-        <ion-button [disabled]="!select.value?.length || !input.value"
-          (click)="createPlan(select.value, input.value, planModal, true, true)" expand="block">Per Telegram (Bild)
-        </ion-button>
-      }
+        @if (db.tenantUser().telegram_chat_id) {
+          <ion-button [disabled]="isPlanExportDisabled(input.value)"
+            (click)="createPlan(input.value, planModal, true, false)" expand="block" fill="outline">
+            <ion-icon slot="start" name="send-outline"></ion-icon>
+            Per Telegram (PDF)
+          </ion-button>
+          <ion-button [disabled]="isPlanExportDisabled(input.value)"
+            (click)="createPlan(input.value, planModal, true, true)" expand="block" fill="outline">
+            <ion-icon slot="start" name="image-outline"></ion-icon>
+            Per Telegram (Bild)
+          </ion-button>
+        }
+      </div>
     </ion-content>
   </ng-template>
 </ion-modal>

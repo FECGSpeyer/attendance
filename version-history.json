@@ -1,6 +1,17 @@
     {
       "versions": [
         {
+          "version": "3.8.7",
+          "date": "13.3.2026",
+          "changes": [
+            "🎼 Konfigurierbarer Registerprobenplan: Gruppen (z.B. Sopran, Alt, Tenor, Bass) können im Modal frei hinzugefügt, umbenannt und entfernt werden.",
+            "🎤 Dirigenten editierbar: Dirigentennamen können im Registerprobenplan-Modal angepasst, hinzugefügt und entfernt werden.",
+            "💾 Gruppen werden im LocalStorage gespeichert und beim nächsten Öffnen automatisch wiederhergestellt.",
+            "📊 Dynamische Spalten: Die PDF-Tabelle passt sich automatisch an die Anzahl der konfigurierten Gruppen an.",
+            "🔄 Verbesserte Rotation: Jeder Dirigent wird jeder Gruppe mindestens einmal zugewiesen, Zeitslots werden entsprechend aufgeteilt."
+          ]
+        },
+        {
           "version": "3.8.6",
           "date": "11.3.2026",
           "changes": [
