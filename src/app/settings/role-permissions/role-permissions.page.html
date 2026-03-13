@@ -16,52 +16,60 @@
     </ion-toolbar>
   </ion-header>
 
-  @for (section of roleSections; track section.role) {
-    @if (section.permission && hasAnyToggle(section.role)) {
-      <ion-list [inset]="true">
-        <ion-list-header>
-          <ion-label>{{ section.label }}</ion-label>
-        </ion-list-header>
-        <ion-item-group>
-          @if (showAttendanceToggle(section.role)) {
-            <ion-item>
-              <ion-toggle
-                helperText="Wenn deaktiviert, können Personen mit dieser Rolle nur Anwesenheiten der ihnen zugeordneten Gruppe pflegen."
-                [(ngModel)]="section.permission.attendance_all_groups">
-                Alle Gruppen pflegen
-              </ion-toggle>
+  @if (roleSections.length) {
+    <ion-accordion-group [multiple]="true">
+      @for (section of roleSections; track section.role) {
+        @if (section.permission && hasAnyToggle(section.role)) {
+          <ion-accordion [value]="section.role">
+            <ion-item slot="header" color="light">
+              <ion-label>{{ section.label }}</ion-label>
             </ion-item>
-          }
-          @if (showAttendanceCreateToggle(section.role)) {
-            <ion-item>
-              <ion-toggle
-                helperText="Wenn deaktiviert, können Personen mit dieser Rolle keine neuen Anwesenheiten anlegen."
-                [(ngModel)]="section.permission.attendance_create">
-                Anwesenheiten erstellen
-              </ion-toggle>
-            </ion-item>
-          }
-          @if (showNotesToggle(section.role)) {
-            <ion-item>
-              <ion-toggle
-                helperText="Wenn aktiviert, können Personen mit dieser Rolle die Notizen der Spieler in der Anwesenheitsansicht sehen."
-                [(ngModel)]="section.permission.player_notes_view">
-                Spielernotizen sehen
-              </ion-toggle>
-            </ion-item>
-          }
-          @if (showChecklistToggle(section.role)) {
-            <ion-item>
-              <ion-toggle
-                helperText="Wenn aktiviert, können Personen mit dieser Rolle die Checkliste in der Anwesenheitsansicht sehen."
-                [(ngModel)]="section.permission.checklist_view">
-                Checkliste sehen
-              </ion-toggle>
-            </ion-item>
-          }
-        </ion-item-group>
-      </ion-list>
-    }
+            <div slot="content">
+              <ion-list [inset]="true">
+                <ion-item-group>
+                  @if (showAttendanceToggle(section.role)) {
+                    <ion-item>
+                      <ion-toggle
+                        helperText="Wenn deaktiviert, können Personen mit dieser Rolle nur Anwesenheiten der ihnen zugeordneten Gruppe pflegen."
+                        [(ngModel)]="section.permission.attendance_all_groups">
+                        Alle Gruppen pflegen
+                      </ion-toggle>
+                    </ion-item>
+                  }
+                  @if (showAttendanceCreateToggle(section.role)) {
+                    <ion-item>
+                      <ion-toggle
+                        helperText="Wenn deaktiviert, können Personen mit dieser Rolle keine neuen Anwesenheiten anlegen."
+                        [(ngModel)]="section.permission.attendance_create">
+                        Anwesenheiten erstellen
+                      </ion-toggle>
+                    </ion-item>
+                  }
+                  @if (showNotesToggle(section.role)) {
+                    <ion-item>
+                      <ion-toggle
+                        helperText="Wenn aktiviert, können Personen mit dieser Rolle die Notizen der Spieler in der Anwesenheitsansicht sehen."
+                        [(ngModel)]="section.permission.player_notes_view">
+                        Spielernotizen sehen
+                      </ion-toggle>
+                    </ion-item>
+                  }
+                  @if (showChecklistToggle(section.role)) {
+                    <ion-item>
+                      <ion-toggle
+                        helperText="Wenn aktiviert, können Personen mit dieser Rolle die Checkliste in der Anwesenheitsansicht sehen."
+                        [(ngModel)]="section.permission.checklist_view">
+                        Checkliste sehen
+                      </ion-toggle>
+                    </ion-item>
+                  }
+                </ion-item-group>
+              </ion-list>
+            </div>
+          </ion-accordion>
+        }
+      }
+    </ion-accordion-group>
   }
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
