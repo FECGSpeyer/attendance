@@ -18,6 +18,7 @@ export class Utils {
     mainGroup?: number,
     additionalFields?: ExtraField[],
     churches?: Church[],
+    shiftExcusedAsPresent: boolean = false,
   ): Player[] {
     // Pre-compute lookup maps for O(1) access instead of O(n) finds
     const instrumentCountMap = new Map<number, number>();
@@ -107,7 +108,7 @@ export class Utils {
 
           return dayjs(attendance.date).isBefore(tomorrow);
         });
-        percentage = Utils.getPercentage(personAttendancesTillNow) || 0;
+        percentage = Utils.getPercentage(personAttendancesTillNow, shiftExcusedAsPresent) || 0;
 
         // Count unexcused late arrivals (only after lastSolve if set)
         lateCount = personAttendancesTillNow.filter((pa: PersonAttendance) => {
@@ -214,7 +215,7 @@ export class Utils {
     return attendance;
   }
 
-  public static getPercentage(personAttendances: PersonAttendance[]): number {
+  public static getPercentage(personAttendances: PersonAttendance[], shiftExcusedAsPresent: boolean = false): number {
     if (!personAttendances.length) {
       return 0;
     }
@@ -222,6 +223,8 @@ export class Utils {
     let presentCount: number = 0;
     for (const p of personAttendances) {
       if (p.status === AttendanceStatus.Present || p.status === AttendanceStatus.Late || p.status === AttendanceStatus.LateExcused) {
+        presentCount++;
+      } else if (shiftExcusedAsPresent && p.status === AttendanceStatus.Excused && p.notes?.includes('Schichtbedingt')) {
         presentCount++;
       }
     }

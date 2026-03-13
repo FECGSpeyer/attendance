@@ -180,7 +180,7 @@ export class AttListPage implements OnInit {
     const attendances: Attendance[] = (await this.db.getAttendance(false, true)).map((att: Attendance): Attendance => {
       return {
         ...att,
-        percentage: Utils.getPercentage(att.persons),
+        percentage: Utils.getPercentage(att.persons, this.db.tenant()?.shift_excused_as_present),
       }
     });
 

@@ -1,6 +1,14 @@
     {
       "versions": [
         {
+          "version": "3.9.1",
+          "date": "13.3.2026",
+          "changes": [
+            "⚙️ Schichtbedingt = Anwesend: Neue Einstellung unter Anwesenheiten, um schichtbedingt entschuldigte Abwesenheiten als anwesend für die prozentuale Berechnung zu werten.",
+            "📊 Prozentberechnung: Personen mit der Notiz 'Schichtbedingt' werden bei aktivierter Einstellung als anwesend gezählt – in Personenliste, Statistiken, Elternansicht und Anwesenheitsliste."
+          ]
+        },
+        {
           "version": "3.9.0",
           "date": "13.3.2026",
           "changes": [

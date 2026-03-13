@@ -76,6 +76,9 @@ export class GeneralPage implements OnInit {
   ];
   public selectedRegisterFields: string[] = ['firstName', 'lastName', 'birthDate', 'group'];
 
+  // Shift worker config
+  public shiftExcusedAsPresent: boolean = false;
+
   // Critical rules
   public criticalRules: CriticalRule[] = [];
   public attendanceTypes: AttendanceType[] = [];
@@ -124,6 +127,7 @@ export class GeneralPage implements OnInit {
     this.songSharingEnabled = !!this.db.tenant().song_sharing_id;
     this.registerAllowed = !!this.db.tenant().register_id;
     this.autoApproveRegistrations = this.db.tenant().auto_approve_registrations || false;
+    this.shiftExcusedAsPresent = this.db.tenant().shift_excused_as_present || false;
 
     if (this.db.tenant().additional_fields?.length) {
       this.registerFields = this.registerFields.concat(this.db.tenant().additional_fields.map(field => ({
@@ -169,6 +173,7 @@ export class GeneralPage implements OnInit {
       selectedRegisterFields: this.selectedRegisterFields,
       extraFields: this.extraFields,
       criticalRules: this.criticalRules,
+      shiftExcusedAsPresent: this.shiftExcusedAsPresent,
     });
   }
 
@@ -309,6 +314,7 @@ export class GeneralPage implements OnInit {
         auto_approve_registrations: this.registerAllowed ? this.autoApproveRegistrations : false,
         registration_fields: this.registerAllowed ? this.selectedRegisterFields : [],
         critical_rules: this.criticalRules,
+        shift_excused_as_present: this.shiftExcusedAsPresent,
       });
 
       // Sanitize player additional_fields for invalid values after field changes

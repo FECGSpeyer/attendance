@@ -81,7 +81,7 @@ export class StatsPage implements OnInit {
       .filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().add(1, 'day')))
       .map((att: Attendance) => ({
         ...att,
-        percentage: Utils.getPercentage(att.persons),
+        percentage: Utils.getPercentage(att.persons, this.db.tenant()?.shift_excused_as_present),
       }));
 
     // Set default date range (season start to today)

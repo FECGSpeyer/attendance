@@ -168,6 +168,7 @@ export class ListPage implements OnInit, OnDestroy {
       this.mainGroup,
       this.db.tenant().additional_fields,
       this.db.churches(),
+      this.db.tenant()?.shift_excused_as_present,
     );
     this.searchTerm = "";
     this.onViewChanged();
@@ -318,7 +319,7 @@ export class ListPage implements OnInit, OnDestroy {
           const usersPerTenant = await this.db.getUsersFromTenant(this.linkedTenants.find((t) => t.longName === option)?.id || 0);
           this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
             return usersPerTenant.find((u) => u.userId === player.appId);
-          }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches());
+          }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
           this.tenantName = option;
           await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
           await this.storage.set(`filterOptAdd${this.db.tenant().id}`, this.tenantName);
@@ -355,7 +356,7 @@ export class ListPage implements OnInit, OnDestroy {
               const usersPerTenant = await this.db.getUsersFromTenant(value);
               this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
                 return usersPerTenant.find((u) => u.userId === player.appId);
-              }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches());
+              }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
               this.tenantName = this.linkedTenants.find((t) => t.id === value)?.longName || "";
               await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
               await this.storage.set(`filterOptAdd${this.db.tenant().id}`, this.tenantName);
@@ -373,7 +374,7 @@ export class ListPage implements OnInit, OnDestroy {
         if (option) {
           this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
             return player.additional_fields?.[this.filterOpt] === option;
-          }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches());
+          }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
           await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
           await this.storage.set(`filterOptAdd${this.db.tenant().id}`, option);
         }
@@ -415,7 +416,7 @@ export class ListPage implements OnInit, OnDestroy {
                 }
 
                 return player.additional_fields?.[this.filterOpt] === value;
-              }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches());
+              }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
 
               await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
               await this.storage.set(`filterOptAdd${this.db.tenant().id}`, value);
@@ -458,7 +459,7 @@ export class ListPage implements OnInit, OnDestroy {
       }
 
       return true;
-    }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches());
+    }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
 
     await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
     await this.storage.set(`filterOptAdd${this.db.tenant().id}`, "");
@@ -533,7 +534,8 @@ export class ListPage implements OnInit, OnDestroy {
         this.db.attendanceTypes(),
         this.mainGroup,
         this.db.tenant().additional_fields,
-        this.db.churches()
+        this.db.churches(),
+        this.db.tenant()?.shift_excused_as_present,
       );
     }
   }

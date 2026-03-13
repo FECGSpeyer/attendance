@@ -91,6 +91,33 @@ describe('Utils', () => {
       const result = Utils.getPercentage(attendances as PersonAttendance[]);
       expect(result).toBe(67);
     });
+
+    it('should count shift-excused as present when shiftExcusedAsPresent is true', () => {
+      const attendances: Partial<PersonAttendance>[] = [
+        { status: AttendanceStatus.Present, notes: '' },
+        { status: AttendanceStatus.Excused, notes: 'Schichtbedingt' },
+      ];
+      const result = Utils.getPercentage(attendances as PersonAttendance[], true);
+      expect(result).toBe(100);
+    });
+
+    it('should not count shift-excused as present when shiftExcusedAsPresent is false', () => {
+      const attendances: Partial<PersonAttendance>[] = [
+        { status: AttendanceStatus.Present, notes: '' },
+        { status: AttendanceStatus.Excused, notes: 'Schichtbedingt' },
+      ];
+      const result = Utils.getPercentage(attendances as PersonAttendance[], false);
+      expect(result).toBe(50);
+    });
+
+    it('should not count non-shift excused as present even when shiftExcusedAsPresent is true', () => {
+      const attendances: Partial<PersonAttendance>[] = [
+        { status: AttendanceStatus.Present, notes: '' },
+        { status: AttendanceStatus.Excused, notes: 'Krankheitsbedingt' },
+      ];
+      const result = Utils.getPercentage(attendances as PersonAttendance[], true);
+      expect(result).toBe(50);
+    });
   });
 
   describe('getClefText', () => {

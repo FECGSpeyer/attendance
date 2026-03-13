@@ -59,6 +59,7 @@ export interface Tenant {
   critical_rules?: CriticalRule[];
   timezone: string;
   showMembersList?: boolean;
+  shift_excused_as_present?: boolean;
 }
 
 export interface ExtraField {

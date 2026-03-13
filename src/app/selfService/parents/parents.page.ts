@@ -144,10 +144,12 @@ export class ParentsPage implements OnInit {
         continue;
       }
 
+      const shiftExcused = this.db.tenant()?.shift_excused_as_present;
       const attended = kidAttendances.filter(pa =>
         pa.status === AttendanceStatus.Present ||
         pa.status === AttendanceStatus.Late ||
-        pa.status === AttendanceStatus.LateExcused
+        pa.status === AttendanceStatus.LateExcused ||
+        (shiftExcused && pa.status === AttendanceStatus.Excused && pa.notes?.includes('Schichtbedingt'))
       );
 
       const lateCount = kidAttendances.filter(pa => pa.status === AttendanceStatus.Late).length;
