@@ -215,6 +215,10 @@ export class Utils {
     return attendance;
   }
 
+  public static isWorkExcused(notes: string): boolean {
+    return notes?.includes('Schichtbedingt') || notes?.includes('Arbeitsbedingt');
+  }
+
   public static getPercentage(personAttendances: PersonAttendance[], shiftExcusedAsPresent: boolean = false): number {
     if (!personAttendances.length) {
       return 0;
@@ -224,7 +228,7 @@ export class Utils {
     for (const p of personAttendances) {
       if (p.status === AttendanceStatus.Present || p.status === AttendanceStatus.Late || p.status === AttendanceStatus.LateExcused) {
         presentCount++;
-      } else if (shiftExcusedAsPresent && p.status === AttendanceStatus.Excused && p.notes?.includes('Schichtbedingt')) {
+      } else if (shiftExcusedAsPresent && p.status === AttendanceStatus.Excused && Utils.isWorkExcused(p.notes)) {
         presentCount++;
       }
     }

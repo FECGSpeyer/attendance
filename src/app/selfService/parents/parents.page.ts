@@ -149,7 +149,7 @@ export class ParentsPage implements OnInit {
         pa.status === AttendanceStatus.Present ||
         pa.status === AttendanceStatus.Late ||
         pa.status === AttendanceStatus.LateExcused ||
-        (shiftExcused && pa.status === AttendanceStatus.Excused && pa.notes?.includes('Schichtbedingt'))
+        (shiftExcused && pa.status === AttendanceStatus.Excused && Utils.isWorkExcused(pa.notes))
       );
 
       const lateCount = kidAttendances.filter(pa => pa.status === AttendanceStatus.Late).length;

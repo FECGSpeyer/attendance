@@ -101,6 +101,15 @@ describe('Utils', () => {
       expect(result).toBe(100);
     });
 
+    it('should count work-excused as present when shiftExcusedAsPresent is true', () => {
+      const attendances: Partial<PersonAttendance>[] = [
+        { status: AttendanceStatus.Present, notes: '' },
+        { status: AttendanceStatus.Excused, notes: 'Arbeitsbedingt' },
+      ];
+      const result = Utils.getPercentage(attendances as PersonAttendance[], true);
+      expect(result).toBe(100);
+    });
+
     it('should not count shift-excused as present when shiftExcusedAsPresent is false', () => {
       const attendances: Partial<PersonAttendance>[] = [
         { status: AttendanceStatus.Present, notes: '' },

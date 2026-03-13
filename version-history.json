@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "3.9.2",
+          "date": "13.3.2026",
+          "changes": [
+            "🔧 Rollen & Berechtigungen: Darstellung als Accordions pro Rolle statt einzelner Listen. Rollen ohne konfigurierbare Berechtigungen werden ausgeblendet.",
+            "📊 Schicht-/Arbeitsbedingt = Anwesend: Neben 'Schichtbedingt' wird nun auch 'Arbeitsbedingt' bei der prozentualen Berechnung als anwesend gewertet.",
+            "📤 Export: Anwesenheit in % wird nun korrekt berechnet statt immer 0 anzuzeigen."
+          ]
+        },
+        {
           "version": "3.9.1",
           "date": "13.3.2026",
           "changes": [

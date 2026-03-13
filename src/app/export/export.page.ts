@@ -35,16 +35,16 @@ export class ExportPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.attendance = (await this.db.getAttendance(false, true)).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
     this.players = Utils.getModifiedPlayersForList(
       await this.db.getPlayers(),
       this.db.groups(),
-      [],
+      await this.db.getAttendance(),
       this.db.attendanceTypes(),
       this.db.getMainGroup()?.id,
       this.db.tenant().additional_fields,
       this.db.churches()
     );
-    this.attendance = (await this.db.getAttendance(false, true)).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
     this.additionalFields = this.db.tenant().additional_fields || [];
     this.updateFields();
   }
