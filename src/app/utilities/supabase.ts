@@ -1113,6 +1113,9 @@ export type Database = {
           tenant_id: number
           role: number
           attendance_all_groups: boolean
+          attendance_create: boolean
+          player_notes_view: boolean
+          checklist_view: boolean
         }
         Insert: {
           id?: number
@@ -1120,6 +1123,9 @@ export type Database = {
           tenant_id: number
           role: number
           attendance_all_groups?: boolean
+          attendance_create?: boolean
+          player_notes_view?: boolean
+          checklist_view?: boolean
         }
         Update: {
           id?: number
@@ -1127,6 +1133,9 @@ export type Database = {
           tenant_id?: number
           role?: number
           attendance_all_groups?: boolean
+          attendance_create?: boolean
+          player_notes_view?: boolean
+          checklist_view?: boolean
         }
         Relationships: [
           {

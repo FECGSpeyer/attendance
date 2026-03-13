@@ -228,8 +228,8 @@
     </ion-item-group>
   }
 
-  <!-- Checklist Section - Hidden from Helpers -->
-  @if (!isHelper && attendance.checklist && attendance.checklist.length > 0) {
+  <!-- Checklist Section -->
+  @if ((!isHelper || canViewChecklist) && attendance.checklist && attendance.checklist.length > 0) {
     <ion-item-group>
       <ion-accordion-group>
         <ion-accordion value="checklist">
@@ -352,10 +352,10 @@
           <ion-item>
             <ion-label>
               <h2>{{ player.firstName }} {{ player.lastName }}</h2>
-              @if (!isHelper && player.notes) {
+              @if ((!isHelper || canViewNotes) && player.notes) {
                 <h3>{{ player.notes }}</h3>
               }
-              @if (isHelper && player.notes) {
+              @if (isHelper && !canViewNotes && player.notes) {
                 <h3>Notiz hinzugefügt</h3>
               }
             </ion-label>
@@ -384,10 +384,10 @@
           <ion-item button detail="false" (click)="onAttChange(player)">
             <ion-label>
               <h2>{{ player.firstName }} {{ player.lastName }}</h2>
-              @if (!isHelper && player.notes) {
+              @if ((!isHelper || canViewNotes) && player.notes) {
                 <h3>{{ player.notes }}</h3>
               }
-              @if (isHelper && player.notes) {
+              @if (isHelper && !canViewNotes && player.notes) {
                 <h3>Notiz hinzugefügt</h3>
               }
             </ion-label>

@@ -6,7 +6,10 @@
           "changes": [
             "🔐 Rollen & Berechtigungen: Neue Einstellungsseite unter Instanz-Verwaltung, um Rollenrechte pro Instanz zu konfigurieren.",
             "👥 Helfer-Gruppeneinschränkung: Helfer und Stimmführer-Helfer können optional auf die Anwesenheitspflege ihrer eigenen Gruppe beschränkt werden.",
-            "🗄️ Neue Datenbanktabelle 'tenant_role_permissions' für erweiterbare, rollenbasierte Berechtigungen pro Instanz."
+            "� Anwesenheiten erstellen: Admins können Helfern das Recht zum Anlegen neuer Anwesenheiten entziehen.",
+            "👁️ Spielernotizen: Helfer können optional die Notizen der Spieler in der Anwesenheitsansicht sehen.",
+            "✅ Checkliste: Helfer können optional die Checkliste in der Anwesenheitsansicht einsehen.",
+            "�🗄️ Neue Datenbanktabelle 'tenant_role_permissions' für erweiterbare, rollenbasierte Berechtigungen pro Instanz."
           ]
         },
         {

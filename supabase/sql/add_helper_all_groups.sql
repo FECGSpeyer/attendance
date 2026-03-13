@@ -8,6 +8,9 @@ CREATE TABLE IF NOT EXISTS tenant_role_permissions (
   tenant_id INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   role INTEGER NOT NULL,
   attendance_all_groups BOOLEAN NOT NULL DEFAULT true,
+  attendance_create BOOLEAN NOT NULL DEFAULT true,
+  player_notes_view BOOLEAN NOT NULL DEFAULT false,
+  checklist_view BOOLEAN NOT NULL DEFAULT false,
   UNIQUE (tenant_id, role)
 );
 

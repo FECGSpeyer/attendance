@@ -89,6 +89,9 @@ export interface TenantRolePermission {
   tenant_id: number;
   role: number;
   attendance_all_groups: boolean;
+  attendance_create: boolean;
+  player_notes_view: boolean;
+  checklist_view: boolean;
 }
 
 export interface NotificationConfig {

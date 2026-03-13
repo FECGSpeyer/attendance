@@ -57,6 +57,9 @@ export class RolePermissionsPage implements OnInit {
     return JSON.stringify(this.roleSections.map(s => ({
       role: s.role,
       attendance_all_groups: s.permission?.attendance_all_groups,
+      attendance_create: s.permission?.attendance_create,
+      player_notes_view: s.permission?.player_notes_view,
+      checklist_view: s.permission?.checklist_view,
     })));
   }
 
@@ -111,6 +114,9 @@ export class RolePermissionsPage implements OnInit {
         if (section.permission?.id) {
           await this.db.updateRolePermission(section.permission.id, {
             attendance_all_groups: section.permission.attendance_all_groups,
+            attendance_create: section.permission.attendance_create,
+            player_notes_view: section.permission.player_notes_view,
+            checklist_view: section.permission.checklist_view,
           });
         }
       }
@@ -123,5 +129,21 @@ export class RolePermissionsPage implements OnInit {
 
   showAttendanceToggle(role: Role): boolean {
     return [Role.HELPER, Role.VOICE_LEADER_HELPER].includes(role);
+  }
+
+  showAttendanceCreateToggle(role: Role): boolean {
+    return [Role.HELPER, Role.VOICE_LEADER_HELPER].includes(role);
+  }
+
+  showNotesToggle(role: Role): boolean {
+    return [Role.HELPER, Role.VOICE_LEADER_HELPER].includes(role);
+  }
+
+  showChecklistToggle(role: Role): boolean {
+    return [Role.HELPER, Role.VOICE_LEADER_HELPER].includes(role);
+  }
+
+  hasAnyToggle(role: Role): boolean {
+    return this.showAttendanceToggle(role) || this.showAttendanceCreateToggle(role) || this.showNotesToggle(role) || this.showChecklistToggle(role);
   }
 }

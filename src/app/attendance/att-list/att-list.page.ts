@@ -29,6 +29,7 @@ export class AttListPage implements OnInit {
   public currentAttendance: Attendance;
   public isConductor: boolean = false;
   public isHelper: boolean = false;
+  public canCreate: boolean = false;
   public isChoir: boolean = false;
   public isGeneral: boolean = false;
   public notes: string;
@@ -116,6 +117,13 @@ export class AttListPage implements OnInit {
     this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
     this.isConductor = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isHelper = this.db.tenantUser().role === Role.HELPER || this.db.tenantUser().role === Role.VOICE_LEADER_HELPER;
+
+    if (this.isConductor) {
+      this.canCreate = true;
+    } else if (this.isHelper) {
+      const perm = this.db.getPermissionForRole(this.db.tenantUser().role);
+      this.canCreate = perm?.attendance_create !== false;
+    }
     await this.getAttendance();
 
     if (this.db.tenant().showHolidays && this.db.tenant().region) {

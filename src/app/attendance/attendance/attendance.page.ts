@@ -31,6 +31,8 @@ export class AttendancePage implements OnInit {
   private sub: RealtimeChannel;
   private personAttSub: RealtimeChannel;
   public isHelper: boolean = false;
+  public canViewNotes: boolean = true;
+  public canViewChecklist: boolean = true;
   public songs: Song[] = [];
   public selectedSongs: number[] = [];
   public mainGroup: number | undefined;
@@ -86,6 +88,8 @@ export class AttendancePage implements OnInit {
     const isHelperRole = this.db.tenantUser().role === Role.HELPER || this.db.tenantUser().role === Role.VOICE_LEADER_HELPER;
     if (isHelperRole) {
       const perm = this.db.getPermissionForRole(this.db.tenantUser().role);
+      this.canViewNotes = perm?.player_notes_view || false;
+      this.canViewChecklist = perm?.checklist_view || false;
       if (perm && !perm.attendance_all_groups) {
         const profile = await this.db.getPlayerProfile();
         this.helperGroupId = profile?.instrument ?? null;
