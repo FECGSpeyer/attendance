@@ -83,6 +83,14 @@ export interface TenantUser {
   parent_id?: number;
 }
 
+export interface TenantRolePermission {
+  id?: number;
+  created_at?: string;
+  tenant_id: number;
+  role: number;
+  attendance_all_groups: boolean;
+}
+
 export interface NotificationConfig {
   id: string;
   created_at: string;

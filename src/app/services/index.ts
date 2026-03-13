@@ -33,6 +33,7 @@ export { TelegramService } from './telegram/telegram.service';
 export { SignInOutService } from './sign-in-out/sign-in-out.service';
 export { SongCategoryService } from './song-category/song-category.service';
 export { FilesService } from './files/files.service';
+export { RolePermissionService } from './role-permission/role-permission.service';
 
 // Main facade service (backwards compatibility)
 export { DbService } from './db.service';

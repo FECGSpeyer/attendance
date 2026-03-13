@@ -53,6 +53,7 @@ export class AttendancePage implements OnInit {
   public type: AttendanceType;
   public attendanceViewMode: AttendanceViewMode = AttendanceViewMode.CLICK;
   public AttendanceViewMode = AttendanceViewMode;
+  private helperGroupId: number | null = null;
 
   constructor(
     private modalController: ModalController,
@@ -81,6 +82,15 @@ export class AttendancePage implements OnInit {
     this.attendance = await this.db.getAttendanceById(this.attendanceId);
     this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendanceId);
     this.isHelper = await this.db.tenantUser().role === Role.HELPER;
+
+    const isHelperRole = this.db.tenantUser().role === Role.HELPER || this.db.tenantUser().role === Role.VOICE_LEADER_HELPER;
+    if (isHelperRole) {
+      const perm = this.db.getPermissionForRole(this.db.tenantUser().role);
+      if (perm && !perm.attendance_all_groups) {
+        const profile = await this.db.getPlayerProfile();
+        this.helperGroupId = profile?.instrument ?? null;
+      }
+    }
 
     this.attendanceViewMode = await this.storage.get('attendanceViewMode') || AttendanceViewMode.CLICK;
 
@@ -124,7 +134,12 @@ export class AttendancePage implements OnInit {
       return;
     }
 
-    this.players = Utils.getModifiedPlayers(this.attendance.persons, this.mainGroup);
+    let persons = this.attendance.persons;
+    if (this.helperGroupId != null) {
+      persons = persons.filter((p: PersonAttendance) => p.instrument === this.helperGroupId);
+    }
+
+    this.players = Utils.getModifiedPlayers(persons, this.mainGroup);
   }
 
   async listenOnNetworkChanges(): Promise<void> {

@@ -1,0 +1,43 @@
+<ion-header translucent="true">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-button (click)="navigateBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Rollen & Berechtigungen</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar color="light">
+      <ion-title size="large">Rollen & Berechtigungen</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  @for (section of roleSections; track section.role) {
+    @if (section.permission && showAttendanceToggle(section.role)) {
+      <ion-list [inset]="true">
+        <ion-list-header>
+          <ion-label>{{ section.label }}</ion-label>
+        </ion-list-header>
+        <ion-item-group>
+          <ion-item>
+            <ion-toggle
+              helperText="Wenn deaktiviert, können Personen mit dieser Rolle nur Anwesenheiten der ihnen zugeordneten Gruppe pflegen."
+              [(ngModel)]="section.permission.attendance_all_groups">
+              Alle Gruppen pflegen
+            </ion-toggle>
+          </ion-item>
+        </ion-item-group>
+      </ion-list>
+    }
+  }
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="save()">
+      <ion-icon name="save-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

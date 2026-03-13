@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "3.9.0",
+          "date": "13.3.2026",
+          "changes": [
+            "🔐 Rollen & Berechtigungen: Neue Einstellungsseite unter Instanz-Verwaltung, um Rollenrechte pro Instanz zu konfigurieren.",
+            "👥 Helfer-Gruppeneinschränkung: Helfer und Stimmführer-Helfer können optional auf die Anwesenheitspflege ihrer eigenen Gruppe beschränkt werden.",
+            "🗄️ Neue Datenbanktabelle 'tenant_role_permissions' für erweiterbare, rollenbasierte Berechtigungen pro Instanz."
+          ]
+        },
+        {
           "version": "3.8.7",
           "date": "13.3.2026",
           "changes": [

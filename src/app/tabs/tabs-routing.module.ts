@@ -94,6 +94,10 @@ const routes: Routes = [
         loadChildren: () => import('./../settings/voice-leader/voice-leader.module').then(m => m.VoiceLeaderPageModule)
       },
       {
+        path: 'settings/role-permissions',
+        loadChildren: () => import('./../settings/role-permissions/role-permissions.module').then(m => m.RolePermissionsPageModule)
+      },
+      {
         path: 'parents',
         loadChildren: () => import('./../selfService/parents/parents.module').then(m => m.ParentsPageModule)
       },

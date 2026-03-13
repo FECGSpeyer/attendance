@@ -5,7 +5,7 @@ import { SupabaseClient, User } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance } from '../utilities/interfaces';
+import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
@@ -41,6 +41,7 @@ import { TeacherService } from './teacher/teacher.service';
 import { TelegramService } from './telegram/telegram.service';
 import { SignInOutService } from './sign-in-out/sign-in-out.service';
 import { SongCategoryService } from './song-category/song-category.service';
+import { RolePermissionService } from './role-permission/role-permission.service';
 
 @Injectable({
   providedIn: 'root'
@@ -58,6 +59,7 @@ export class DbService {
   public shifts: WritableSignal<ShiftPlan[]>;
   public churches: WritableSignal<Church[] | undefined>;
   public songCategories: WritableSignal<SongCategory[]>;
+  public rolePermissions: WritableSignal<TenantRolePermission[]>;
 
   // Injected modular services - use these for new code
   public readonly authSvc = inject(AuthService);
@@ -89,6 +91,7 @@ export class DbService {
   public readonly telegramSvc = inject(TelegramService);
   public readonly signInOutSvc = inject(SignInOutService);
   public readonly songCategorySvc = inject(SongCategoryService);
+  public readonly rolePermissionSvc = inject(RolePermissionService);
 
   constructor(
     private plt: Platform,
@@ -105,6 +108,7 @@ export class DbService {
     this.shifts = signal([]);
     this.churches = signal([]);
     this.songCategories = signal([]);
+    this.rolePermissions = signal([]);
     this.plt.ready().then(() => {
       this.checkToken(true);
     });
@@ -415,7 +419,7 @@ export class DbService {
 
     // Parallelize independent data fetching for faster startup
     const needsChurches = this.tenant().additional_fields?.find(field => field.id === 'bfecg_church');
-    const [config, groups, attendanceTypes, organisation, , , churches] = await Promise.all([
+    const [config, groups, attendanceTypes, organisation, , , churches, rolePermissions] = await Promise.all([
       this.getNotifcationConfig(user?.userId),
       this.getGroups(),
       this.getAttendanceTypes(),
@@ -423,6 +427,7 @@ export class DbService {
       this.getSongCategories(),  // Sets this.songCategories internally
       this.loadShifts(),  // Sets this.shifts internally
       needsChurches ? this.getChurches() : Promise.resolve(undefined as Church[] | undefined),
+      this.rolePermissionSvc.getPermissions(this.tenant().id),
     ]);
 
     this.tenantUser.set({
@@ -435,6 +440,7 @@ export class DbService {
     if (churches) {
       this.churches.set(churches);
     }
+    this.rolePermissions.set(rolePermissions);
 
     await loader?.dismiss();
   }
@@ -2737,5 +2743,18 @@ export class DbService {
   clearCrossTenantCache(): void {
     this.crossTenantAttendances.set([]);
     this.crossTenantAttendanceTypes.clear();
+  }
+
+  // ==================== ROLE PERMISSIONS ====================
+
+  getPermissionForRole(role: number): TenantRolePermission | undefined {
+    return this.rolePermissions().find((p: TenantRolePermission) => p.role === role);
+  }
+
+  async updateRolePermission(id: number, data: Partial<TenantRolePermission>): Promise<void> {
+    const updated = await this.rolePermissionSvc.updatePermission(id, data);
+    this.rolePermissions.set(
+      this.rolePermissions().map((p: TenantRolePermission) => p.id === id ? updated : p)
+    );
   }
 }

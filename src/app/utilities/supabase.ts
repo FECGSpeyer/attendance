@@ -1106,6 +1106,38 @@ export type Database = {
         }
         Relationships: []
       }
+      tenant_role_permissions: {
+        Row: {
+          id: number
+          created_at: string
+          tenant_id: number
+          role: number
+          attendance_all_groups: boolean
+        }
+        Insert: {
+          id?: number
+          created_at?: string
+          tenant_id: number
+          role: number
+          attendance_all_groups?: boolean
+        }
+        Update: {
+          id?: number
+          created_at?: string
+          tenant_id?: number
+          role?: number
+          attendance_all_groups?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_role_permissions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           additional_fields: Json[] | null

@@ -3,11 +3,14 @@ import { AlertController, IonItemSliding, ItemReorderEventDetail, ModalControlle
 import dayjs from 'dayjs';
 // jsPDF and xlsx are lazy-loaded for better initial bundle size
 import { DbService } from '../services/db.service';
-import { Attendance, Player } from '../utilities/interfaces';
+import { Attendance, ExtraField, Player } from '../utilities/interfaces';
+import { FieldType } from '../utilities/constants';
 import { Utils } from '../utilities/Utils';
 
-const DEFAULT_PLAYER_FIELDS = ["Vorname", "Nachname", "Geburtsdatum", "Gruppe"];
-const DEFAULT_ATT_FIELDS = ["Vorname", "Nachname", "Gruppe"];
+const PLAYER_STANDARD_FIELDS = ['Vorname', 'Nachname', 'Geburtsdatum', 'Gruppe', 'E-Mail', 'Telefon', 'Eingetreten', 'Notizen', 'Anwesenheit %'];
+const ATT_STANDARD_FIELDS = ['Vorname', 'Nachname', 'Gruppe', 'E-Mail', 'Telefon'];
+const DEFAULT_PLAYER_FIELDS = ['Vorname', 'Nachname', 'Geburtsdatum', 'Gruppe'];
+const DEFAULT_ATT_FIELDS = ['Vorname', 'Nachname', 'Gruppe'];
 
 @Component({
     selector: 'app-export',
@@ -22,7 +25,8 @@ export class ExportPage implements OnInit {
   public content: string = "player";
   public attendance: Attendance[] = [];
   public selectedFields: string[] = DEFAULT_PLAYER_FIELDS;
-  public fields: string[] = ["Vorname", "Nachname", "Geburtsdatum", "Gruppe"];
+  public fields: string[] = [];
+  public additionalFields: ExtraField[] = [];
 
   constructor(
     private modalController: ModalController,
@@ -41,6 +45,14 @@ export class ExportPage implements OnInit {
       this.db.churches()
     );
     this.attendance = (await this.db.getAttendance(false, true)).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
+    this.additionalFields = this.db.tenant().additional_fields || [];
+    this.updateFields();
+  }
+
+  updateFields() {
+    const standardFields = this.content === 'player' ? PLAYER_STANDARD_FIELDS : ATT_STANDARD_FIELDS;
+    const extraFieldNames = this.additionalFields.map(f => f.name);
+    this.fields = [...standardFields, ...extraFieldNames];
   }
 
   dismiss() {
@@ -48,7 +60,8 @@ export class ExportPage implements OnInit {
   }
 
   onSegmentChange() {
-    this.selectedFields = this.content === "player" ? DEFAULT_PLAYER_FIELDS : DEFAULT_ATT_FIELDS;
+    this.updateFields();
+    this.selectedFields = this.content === "player" ? [...DEFAULT_PLAYER_FIELDS] : [...DEFAULT_ATT_FIELDS];
   }
 
   handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
@@ -245,29 +258,64 @@ export class ExportPage implements OnInit {
     const values: string[] = [];
 
     for (const field of this.selectedFields) {
+      const extraField = this.additionalFields.find(f => f.name === field);
+      if (extraField) {
+        values.push(this.formatAdditionalFieldValue(player, extraField));
+        continue;
+      }
+
       switch (field) {
-        case "Vorname":
+        case 'Vorname':
           values.push(player.firstName);
           break;
-        case "Nachname":
+        case 'Nachname':
           values.push(player.lastName);
           break;
-        case "Geburtsdatum":
-          values.push(dayjs(player.birthday).format('DD.MM.YYYY'));
+        case 'Geburtsdatum':
+          values.push(player.birthday ? dayjs(player.birthday).format('DD.MM.YYYY') : '');
           break;
-        case "Gruppe":
-          values.push(player.groupName);
+        case 'Gruppe':
+          values.push(player.groupName || '');
           break;
-        case "Testergebnis":
-          values.push(player.testResult || "Kein Ergebnis");
+        case 'E-Mail':
+          values.push(player.email || '');
+          break;
+        case 'Telefon':
+          values.push(player.phone || '');
+          break;
+        case 'Eingetreten':
+          values.push(player.joined ? dayjs(player.joined).format('DD.MM.YYYY') : '');
+          break;
+        case 'Notizen':
+          values.push(player.notes || '');
+          break;
+        case 'Anwesenheit %':
+          values.push(player.percentage != null ? `${player.percentage}%` : '');
           break;
         default:
-          values.push("");
+          values.push('');
           break;
       }
     }
 
     return values;
+  }
+
+  private formatAdditionalFieldValue(player: Player, field: ExtraField): string {
+    const value = player.additional_fields?.[field.id];
+    if (value === undefined || value === null) return '';
+
+    switch (field.type) {
+      case FieldType.BOOLEAN:
+        return value ? 'Ja' : 'Nein';
+      case FieldType.DATE:
+        return value ? dayjs(value).format('DD.MM.YYYY') : '';
+      case FieldType.BFECG_CHURCH:
+        const church = this.db.churches()?.find(c => c.id === value);
+        return church?.name || String(value);
+      default:
+        return String(value);
+    }
   }
 
 }
