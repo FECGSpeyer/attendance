@@ -1,9 +1,10 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { AlertController, IonInput } from '@ionic/angular';
+import { AlertController, IonInput, ModalController } from '@ionic/angular';
 import { DbService } from '../services/db.service';
 import { Utils } from '../utilities/Utils';
 import { environment } from 'src/environments/environment';
+import { LegalModalComponent } from './legal-modal/legal-modal.component';
 
 @Component({
   selector: 'app-login',
@@ -22,7 +23,8 @@ export class LoginPage implements OnInit {
 
   constructor(
     private db: DbService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private modalController: ModalController
   ) { }
 
   async ngOnInit() {
@@ -75,6 +77,11 @@ export class LoginPage implements OnInit {
     if (!res) {
       Utils.showToast("Fehler bei der Anmeldung, versuche es erneut", "danger");
     }
+  }
+
+  async openLegal() {
+    const modal = await this.modalController.create({ component: LegalModalComponent });
+    await modal.present();
   }
 
   async forgotPassword() {
