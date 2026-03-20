@@ -480,7 +480,7 @@ export class DbService {
   }
 
   isBeta() {
-    return this.tenantUser()?.email?.endsWith("@attendix.de") || this.user?.email?.toLocaleLowerCase().endsWith("erwinfast98@gmail.com") || this.tenant()?.id === 12;
+    return this.tenantUser()?.email?.endsWith("developer@attendix.de") || this.user?.email?.toLocaleLowerCase().endsWith("erwinfast98@gmail.com") || this.tenant()?.id === 12;
   }
 
   async getTenants(): Promise<Tenant[]> {
