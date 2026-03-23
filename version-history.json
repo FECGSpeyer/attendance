@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "3.9.3",
+          "date": "23.3.2026",
+          "changes": [
+            "📋 Ablaufplan zurücksetzen: Wenn kein Standard-Plan vorhanden ist, werden beim Zurücksetzen alle Einträge entfernt."
+          ]
+        },
+        {
           "version": "3.9.2",
           "date": "13.3.2026",
           "changes": [

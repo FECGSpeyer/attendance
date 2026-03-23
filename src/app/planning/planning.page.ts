@@ -665,6 +665,8 @@ export class PlanningPage implements OnInit {
 
         this.selectedFields.push({ ...field });
       }
+    } else {
+      this.selectedFields = [];
     }
 
     this.calculateEnd();
