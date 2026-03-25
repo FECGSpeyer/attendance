@@ -211,6 +211,7 @@ export class ShiftPage implements OnInit {
       };
 
       const newShiftId = await this.db.addShiftToTenant(copiedShift, tenantId);
+      copiedShift.id = newShiftId;
 
       let assignedCount = 0;
       // Assign shift to matching players in target tenant if requested

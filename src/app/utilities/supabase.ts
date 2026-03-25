@@ -323,18 +323,21 @@ export type Database = {
           id: number
           name: string | null
           tenant_id: number | null
+          sort_order: number | null
         }
         Insert: {
           created_at?: string
           id?: number
           name?: string | null
           tenant_id?: number | null
+          sort_order?: number | null
         }
         Update: {
           created_at?: string
           id?: number
           name?: string | null
           tenant_id?: number | null
+          sort_order?: number | null
         }
         Relationships: [
           {

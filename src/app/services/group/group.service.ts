@@ -16,6 +16,7 @@ export class GroupService {
       .select('*, categoryData:category(*)')
       .eq('tenantId', tenantId)
       .order("category")
+      .order("sort_order", { ascending: true, nullsFirst: false })
       .order("name", { ascending: true });
 
     return data as any;

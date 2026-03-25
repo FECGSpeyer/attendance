@@ -6,6 +6,9 @@
     <ion-title>Gruppen ({{ instruments?.length }})</ion-title>
     @if (isAdmin) {
       <ion-buttons slot="end">
+        <ion-button (click)="toggleReorderMode()">
+          <ion-icon [name]="isReordering ? 'checkmark' : 'swap-vertical'"></ion-icon>
+        </ion-button>
         <ion-button id="cat-button">Kategorien</ion-button>
         <ion-modal trigger="cat-button" [breakpoints]="[0, 0.6, 1]" [initialBreakpoint]="0.6">
           <ng-template>
@@ -14,24 +17,47 @@
                 <ion-toolbar>
                   <ion-title>Kategorien</ion-title>
                   <ion-buttons slot="end">
+                    <ion-button (click)="toggleCategoryReorderMode()">
+                      <ion-icon [name]="isCategoryReordering ? 'checkmark' : 'swap-vertical'"></ion-icon>
+                    </ion-button>
                     <ion-button (click)="addCategory()">
                       <ion-icon name="add"></ion-icon>
                     </ion-button>
                   </ion-buttons>
                 </ion-toolbar>
               </ion-header>
+              @if (isCategoryReordering) {
+                <ion-item color="primary" lines="none">
+                  <ion-icon slot="start" name="information-circle"></ion-icon>
+                  <ion-label>
+                    <p>Ziehe die Kategorien, um die Reihenfolge anzupassen. Klicke auf das Häkchen, um zu speichern.</p>
+                  </ion-label>
+                </ion-item>
+              }
               <ion-list>
-                @for (cat of categories; track trackByCategoryId($index, cat)) {
-                  <ion-item>
-                    <ion-label>{{ cat.name }}</ion-label>
-                    <ion-button fill="clear" color="warning" (click)="editCategory(cat.id)">
-                      <ion-icon name="pencil"></ion-icon>
-                    </ion-button>
-                    <ion-button fill="clear" color="danger" (click)="deleteCategory(cat.id)">
-                      <ion-icon name="trash"></ion-icon>
-                    </ion-button>
-                  </ion-item>
-                }
+                <ion-reorder-group [disabled]="!isCategoryReordering" (ionItemReorder)="handleCategoryReorder($event)">
+                  @for (cat of categories; track trackByCategoryId($index, cat)) {
+                    <ion-item>
+                      @if (isCategoryReordering) {
+                        <ion-reorder slot="start">
+                          <ion-icon name="reorder-two"></ion-icon>
+                        </ion-reorder>
+                      }
+                      @if (cat.sort_order !== null && cat.sort_order !== undefined) {
+                        <ion-badge slot="start" color="medium">{{ cat.sort_order }}</ion-badge>
+                      }
+                      <ion-label>{{ cat.name }}</ion-label>
+                      @if (!isCategoryReordering) {
+                        <ion-button fill="clear" color="warning" (click)="editCategory(cat.id)">
+                          <ion-icon name="pencil"></ion-icon>
+                        </ion-button>
+                        <ion-button fill="clear" color="danger" (click)="deleteCategory(cat.id)">
+                          <ion-icon name="trash"></ion-icon>
+                        </ion-button>
+                      }
+                    </ion-item>
+                  }
+                </ion-reorder-group>
               </ion-list>
             </ion-content>
           </ng-template>
@@ -47,31 +73,52 @@
       <ion-title size="large">Gruppen ({{ instruments?.length }})</ion-title>
     </ion-toolbar>
   </ion-header>
+
+  @if (isReordering) {
+    <ion-item color="primary" lines="none">
+      <ion-icon slot="start" name="information-circle"></ion-icon>
+      <ion-label>
+        <p>Ziehe die Gruppen, um die Partitur-Reihenfolge anzupassen. Klicke auf das Häkchen, um zu speichern.</p>
+      </ion-label>
+    </ion-item>
+  }
+
   <ion-list class="marginBottom">
-    @for (instrument of instruments; track instrument.id) {
-      @if (instrument.firstOfCategory) {
-        <ion-item-divider color="primary" sticky="true">
-          <ion-label>{{ instrument.categoryName }} ({{ instrument.categoryLength }})</ion-label>
-        </ion-item-divider>
-      }
-      <ion-item (click)="openModal(instrument)">
-        <ion-label>
-          @if (instrument.maingroup) {
-            <h2>{{ instrument.name }} (Hauptgruppe)</h2>
-          } @else {
-            @if (!isChoir && !isGeneral) {
-              <h2>{{ instrument.name }} ({{ instrument.tuning }})</h2>
+    @for (category of groupedInstruments; track category.id) {
+      <ion-item-divider color="primary" sticky="true">
+        <ion-label>{{ category.name }} ({{ category.instruments.length }})</ion-label>
+      </ion-item-divider>
+
+      <ion-reorder-group [disabled]="!isReordering" (ionItemReorder)="handleReorder($event, category.id)">
+        @for (instrument of category.instruments; track instrument.id) {
+          <ion-item (click)="isReordering ? null : openModal(instrument)">
+            @if (isReordering) {
+              <ion-reorder slot="start">
+                <ion-icon name="reorder-two"></ion-icon>
+              </ion-reorder>
             }
-            @if (isChoir || isGeneral) {
-              <h2>{{ instrument.name }}</h2>
+            @if (instrument.sort_order !== null && instrument.sort_order !== undefined) {
+              <ion-badge slot="start" color="medium">{{ instrument.sort_order }}</ion-badge>
             }
-            @if (!isChoir && !isGeneral) {
-              <h3>{{ instrument.clefText }}</h3>
-            }
-          }
-        </ion-label>
-        <ion-badge [color]="instrument.count ? '' : 'danger'">{{ instrument.count }} Personen</ion-badge>
-      </ion-item>
+            <ion-label>
+              @if (instrument.maingroup) {
+                <h2>{{ instrument.name }} (Hauptgruppe)</h2>
+              } @else {
+                @if (!isChoir && !isGeneral) {
+                  <h2>{{ instrument.name }} ({{ instrument.tuning }})</h2>
+                }
+                @if (isChoir || isGeneral) {
+                  <h2>{{ instrument.name }}</h2>
+                }
+                @if (!isChoir && !isGeneral) {
+                  <h3>{{ instrument.clefText }}</h3>
+                }
+              }
+            </ion-label>
+            <ion-badge [color]="instrument.count ? '' : 'danger'">{{ instrument.count }} Personen</ion-badge>
+          </ion-item>
+        }
+      </ion-reorder-group>
     }
   </ion-list>
 

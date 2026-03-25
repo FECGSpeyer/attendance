@@ -2267,6 +2267,11 @@ export class DbService {
     return this.groupCategorySvc.updateGroupCategory(id, name);
   }
 
+  async updateGroupCategorySortOrder(id: number, sortOrder: number) {
+    this.checkDemoRestriction();
+    return this.groupCategorySvc.updateGroupCategorySortOrder(id, sortOrder);
+  }
+
   async deleteGroupCategory(id: number) {
     this.checkDemoRestriction();
     return this.groupCategorySvc.deleteGroupCategory(id);

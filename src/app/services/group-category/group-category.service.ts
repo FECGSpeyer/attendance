@@ -13,6 +13,7 @@ export class GroupCategoryService {
       .from('group_categories')
       .select('*')
       .eq('tenant_id', tenantId)
+      .order('sort_order', { ascending: true, nullsFirst: false })
       .order('name', { ascending: true });
 
     if (error) {
@@ -51,6 +52,22 @@ export class GroupCategoryService {
 
     if (error) {
       Utils.showToast("Fehler beim Aktualisieren der Kategorie", "danger");
+      throw error;
+    }
+
+    return data;
+  }
+
+  async updateGroupCategorySortOrder(id: number, sortOrder: number): Promise<GroupCategory> {
+    const { data, error } = await supabase
+      .from('group_categories')
+      .update({ sort_order: sortOrder })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast("Fehler beim Aktualisieren der Kategoriereihenfolge", "danger");
       throw error;
     }
 

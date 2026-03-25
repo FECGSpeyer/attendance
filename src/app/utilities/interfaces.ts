@@ -228,6 +228,7 @@ export interface Group {
   categoryLength?: number;
   categoryData?: GroupCategory;
   synonyms?: string;
+  sort_order?: number;
 }
 
 export interface Attendance {
@@ -380,6 +381,7 @@ export interface GroupCategory {
   created_at?: string;
   name: string;
   tenant_id?: number;
+  sort_order?: number;
 }
 
 export interface Admin {

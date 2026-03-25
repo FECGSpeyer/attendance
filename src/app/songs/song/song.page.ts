@@ -441,7 +441,27 @@ export class SongPage implements OnInit {
         handler: () => {
           const printWindow = window.open(file.url, '_blank');
           if (printWindow) {
-            printWindow.onload = () => printWindow.print();
+            // Use both onload and setTimeout as fallback
+            let printed = false;
+            printWindow.onload = () => {
+              if (!printed) {
+                printed = true;
+                printWindow.print();
+              }
+            };
+            // Fallback timeout for when onload doesn't fire (common with PDFs)
+            setTimeout(() => {
+              if (!printed && printWindow) {
+                printed = true;
+                try {
+                  printWindow.print();
+                } catch (e) {
+                  console.error('Print failed:', e);
+                }
+              }
+            }, 1000);
+          } else {
+            Utils.showToast('Popup wurde blockiert. Bitte erlaube Popups für diese Seite.', 'warning');
           }
         }
       });
@@ -772,9 +792,25 @@ export class SongPage implements OnInit {
       const printWindow = window.open(url, '_blank');
 
       if (printWindow) {
+        // Use both onload and setTimeout as fallback
+        let printed = false;
         printWindow.onload = () => {
-          printWindow.print();
+          if (!printed) {
+            printed = true;
+            printWindow.print();
+          }
         };
+        // Fallback timeout for when onload doesn't fire (common with PDFs)
+        setTimeout(() => {
+          if (!printed && printWindow) {
+            printed = true;
+            try {
+              printWindow.print();
+            } catch (e) {
+              console.error('Print failed:', e);
+            }
+          }
+        }, 1500);
       } else {
         // Fallback: download the file
         const a = document.createElement('a');

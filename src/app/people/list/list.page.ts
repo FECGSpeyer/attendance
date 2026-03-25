@@ -269,6 +269,40 @@ export class ListPage implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.sortOpt === "score") {
+      // Sort by score order (sort_order field in instruments)
+      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => {
+        const aInstrument = this.instruments.find(i => i.id === a.instrument);
+        const bInstrument = this.instruments.find(i => i.id === b.instrument);
+
+        // Main group first
+        if (a.instrument === this.mainGroup && b.instrument !== this.mainGroup) return -1;
+        if (b.instrument === this.mainGroup && a.instrument !== this.mainGroup) return 1;
+
+        const aSortOrder = aInstrument?.sort_order;
+        const bSortOrder = bInstrument?.sort_order;
+
+        // If both have sort_order, use it
+        if (aSortOrder !== undefined && aSortOrder !== null &&
+            bSortOrder !== undefined && bSortOrder !== null) {
+          const sortOrderCompare = aSortOrder - bSortOrder;
+          if (sortOrderCompare !== 0) return sortOrderCompare;
+        }
+
+        // If only one has sort_order, prioritize it
+        if (aSortOrder !== undefined && aSortOrder !== null) return -1;
+        if (bSortOrder !== undefined && bSortOrder !== null) return 1;
+
+        // Fall back to group name if no sort_order
+        const groupCompare = a.groupName.localeCompare(b.groupName);
+        if (groupCompare !== 0) return groupCompare;
+
+        // Then by lastName within same group
+        return a.lastName.localeCompare(b.lastName);
+      });
+      return;
+    }
+
     if (this.sortOpt === "instrument") {
       this.initializeItems();
       this.onFilterChanged(true);

@@ -64,6 +64,20 @@ export class Utils {
       if (a.instrument === mainGroup && b.instrument !== mainGroup) return -1;
       if (b.instrument === mainGroup && a.instrument !== mainGroup) return 1;
 
+      // Get instrument data for sorting
+      const aInstrument = instruments.find(i => i.id === a.instrument);
+      const bInstrument = instruments.find(i => i.id === b.instrument);
+
+      // If both have sort_order, sort by that first
+      const aSortOrder = aInstrument?.sort_order;
+      const bSortOrder = bInstrument?.sort_order;
+
+      if (aSortOrder !== undefined && aSortOrder !== null &&
+          bSortOrder !== undefined && bSortOrder !== null) {
+        const sortOrderCompare = aSortOrder - bSortOrder;
+        if (sortOrderCompare !== 0) return sortOrderCompare;
+      }
+
       // Then by group name
       const aGroupName = instrumentNameMap.get(a.instrument) || '';
       const bGroupName = instrumentNameMap.get(b.instrument) || '';
