@@ -1,6 +1,19 @@
     {
       "versions": [
         {
+          "version": "3.10.0",
+          "date": "26.3.2026",
+          "changes": [
+            "🎼 Sortierbare Gruppen: Gruppen können per Drag & Drop für die Partitur-Reihenfolge sortiert werden - instanzweit eindeutiger Index.",
+            "📂 Sortierbare Kategorien: Kategorien haben ebenfalls einen eigenen Reorder-Modus mit Drag & Drop.",
+            "🔢 Index-Badges: Sichtbare Nummerierung bei Gruppen und Kategorien im Reorder-Modus.",
+            "👥 Personenliste: Group-Header werden auch bei Sortierung nach Gruppe angezeigt (basierend auf sort_order).",
+            "🔧 Audio-Player Fix: Audio-Player wird nicht mehr doppelt angezeigt.",
+            "📋 Schichtplan Fix: Kopierte Schichtpläne werden jetzt korrekt angezeigt.",
+            "🖨️ Print Fix: Print-Dialog öffnet sich nun zuverlässiger auf allen Geräten."
+          ]
+        },
+        {
           "version": "3.9.3",
           "date": "23.3.2026",
           "changes": [
