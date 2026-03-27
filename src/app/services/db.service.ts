@@ -1189,6 +1189,22 @@ export class DbService {
       player.appId = appId;
     }
 
+    // Check if img is a data URL and convert it to a File for upload
+    let imageToUpload: File | null = null;
+    if (player.img && player.img.startsWith('data:image/')) {
+      try {
+        // Convert data URL to Blob, then to File
+        const response = await fetch(player.img);
+        const blob = await response.blob();
+        imageToUpload = new File([blob], `${Utils.getId()}.jpg`, { type: blob.type });
+        // Temporarily set img to empty string, will be updated after insert
+        player.img = '';
+      } catch (error) {
+        console.error('Error converting data URL to File:', error);
+        player.img = ''; // Fallback: clear the data URL
+      }
+    }
+
     const { data, error } = await supabase
       .from('player')
       .insert({
@@ -1202,6 +1218,16 @@ export class DbService {
 
     if (error) {
       throw new Error(error.message);
+    }
+
+    // Upload image after player is created
+    if (imageToUpload) {
+      try {
+        const imageUrl = await this.imageSvc.updateImage(data.id, imageToUpload, player.appId, this.user?.id);
+        data.img = imageUrl; // Update the returned data with the new image URL
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      }
     }
 
     if (!player.pending) {

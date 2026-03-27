@@ -141,7 +141,7 @@ export class UserRegistrationService {
     const { data, error } = await supabase
       .from('tenantUsers')
       .select('*')
-      .ilike('email', `%${email}%`);
+      .eq('email', email.toLowerCase().trim());
 
     if (error) throw new Error('Fehler beim Laden des Benutzers');
 
