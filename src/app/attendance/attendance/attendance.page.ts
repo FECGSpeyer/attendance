@@ -881,17 +881,57 @@ export class AttendancePage implements OnInit {
           return {
             ...person,
             groupName: group?.name || 'Keine Gruppe',
+            instrument: instrumentId, // Keep instrument for sorting
           };
         });
       };
 
-      this.filteredAvailablePersons = addGroupNames(matchingPersons);
-      this.availablePersons = addGroupNames(otherPersons);
+      // Sort by group (using sort_order from instruments) and then by name
+      const sortByGroup = (persons: (Person & { groupName?: string })[]) => {
+        return persons.sort((a, b) => {
+          const aInstrument = this.instruments.find(i => i.id === (a as any).instrument);
+          const bInstrument = this.instruments.find(i => i.id === (b as any).instrument);
+          const aSortOrder = aInstrument?.sort_order ?? 999999;
+          const bSortOrder = bInstrument?.sort_order ?? 999999;
+
+          if (aSortOrder !== bSortOrder) {
+            return aSortOrder - bSortOrder;
+          }
+
+          // Same group: sort by lastName, then firstName
+          const lastNameCompare = a.lastName.localeCompare(b.lastName);
+          if (lastNameCompare !== 0) return lastNameCompare;
+          return a.firstName.localeCompare(b.firstName);
+        });
+      };
+
+      this.filteredAvailablePersons = sortByGroup(addGroupNames(matchingPersons));
+      this.availablePersons = sortByGroup(addGroupNames(otherPersons));
     } catch (error) {
       console.error('Error loading persons:', error);
       Utils.showToast('Fehler beim Laden der Personen', 'danger');
     } finally {
       this.isLoadingPersons = false;
+    }
+  }
+
+  /**
+   * Check if a person is selected
+   */
+  isPersonSelected(personId: number): boolean {
+    return this.selectedPersonsToAdd.includes(personId);
+  }
+
+  /**
+   * Toggle person selection
+   */
+  togglePersonSelection(personId: number, event: any): void {
+    if (event.detail.checked) {
+      if (!this.selectedPersonsToAdd.includes(personId)) {
+        this.selectedPersonsToAdd.push(personId);
+      }
+    } else {
+      this.selectedPersonsToAdd = this.selectedPersonsToAdd.filter(id => id !== personId);
     }
   }
 

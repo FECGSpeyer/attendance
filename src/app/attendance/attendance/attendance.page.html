@@ -487,7 +487,9 @@
               </ion-list-header>
               @for (person of filteredAvailablePersons; track person.id) {
                 <ion-item>
-                  <ion-checkbox [(ngModel)]="selectedPersonsToAdd" [value]="person.id">
+                  <ion-checkbox
+                    [checked]="isPersonSelected(person.id)"
+                    (ionChange)="togglePersonSelection(person.id, $event)">
                     <ion-label>
                       <h2>{{ person.firstName }} {{ person.lastName }}</h2>
                       <p>{{ person.groupName }}</p>
@@ -509,7 +511,9 @@
               </ion-list-header>
               @for (person of availablePersons; track person.id) {
                 <ion-item>
-                  <ion-checkbox [(ngModel)]="selectedPersonsToAdd" [value]="person.id">
+                  <ion-checkbox
+                    [checked]="isPersonSelected(person.id)"
+                    (ionChange)="togglePersonSelection(person.id, $event)">
                     <ion-label>
                       <h2>{{ person.firstName }} {{ person.lastName }}</h2>
                       <p>{{ person.groupName }}</p>
