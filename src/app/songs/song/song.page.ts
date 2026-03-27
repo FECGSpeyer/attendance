@@ -443,23 +443,33 @@ export class SongPage implements OnInit {
           if (printWindow) {
             // Use both onload and setTimeout as fallback
             let printed = false;
+
             printWindow.onload = () => {
               if (!printed) {
                 printed = true;
-                printWindow.print();
+                // Small delay to ensure PDF is fully rendered
+                setTimeout(() => {
+                  try {
+                    printWindow.print();
+                  } catch (e) {
+                    console.error('Print failed in onload:', e);
+                  }
+                }, 500);
               }
             };
+
             // Fallback timeout for when onload doesn't fire (common with PDFs)
+            // Increased timeout for larger PDFs
             setTimeout(() => {
               if (!printed && printWindow) {
                 printed = true;
                 try {
                   printWindow.print();
                 } catch (e) {
-                  console.error('Print failed:', e);
+                  console.error('Print failed in timeout:', e);
                 }
               }
-            }, 1000);
+            }, 2000);
           } else {
             Utils.showToast('Popup wurde blockiert. Bitte erlaube Popups für diese Seite.', 'warning');
           }
@@ -794,23 +804,33 @@ export class SongPage implements OnInit {
       if (printWindow) {
         // Use both onload and setTimeout as fallback
         let printed = false;
+
         printWindow.onload = () => {
           if (!printed) {
             printed = true;
-            printWindow.print();
+            // Small delay to ensure PDF is fully rendered
+            setTimeout(() => {
+              try {
+                printWindow.print();
+              } catch (e) {
+                console.error('Print failed in onload:', e);
+              }
+            }, 500);
           }
         };
+
         // Fallback timeout for when onload doesn't fire (common with PDFs)
+        // Increased timeout for larger PDFs
         setTimeout(() => {
           if (!printed && printWindow) {
             printed = true;
             try {
               printWindow.print();
             } catch (e) {
-              console.error('Print failed:', e);
+              console.error('Print failed in timeout:', e);
             }
           }
-        }, 1500);
+        }, 2000);
       } else {
         // Fallback: download the file
         const a = document.createElement('a');
