@@ -143,7 +143,7 @@ export class AttendancePage implements OnInit {
       persons = persons.filter((p: PersonAttendance) => p.instrument === this.helperGroupId);
     }
 
-    this.players = Utils.getModifiedPlayers(persons, this.mainGroup);
+    this.players = Utils.getModifiedPlayers(persons, this.mainGroup, this.instruments);
   }
 
   async listenOnNetworkChanges(): Promise<void> {
@@ -509,7 +509,7 @@ export class AttendancePage implements OnInit {
               await this.db.deletePersonAttendanceById(player.id);
               this.players = this.players.filter(p => p.id !== player.id);
               // Recalculate group headers
-              this.players = Utils.getModifiedPlayers(this.players, this.mainGroup);
+              this.players = Utils.getModifiedPlayers(this.players, this.mainGroup, this.instruments);
               Utils.showToast('Person aus Anwesenheit entfernt', 'success');
             } catch (error) {
               Utils.showToast('Fehler beim Entfernen der Person', 'danger');

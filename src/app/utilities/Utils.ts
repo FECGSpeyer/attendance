@@ -154,10 +154,10 @@ export class Utils {
     });
   }
 
-  public static getModifiedPlayers(persons: PersonAttendance[], mainGroup?: number): PersonAttendance[] {
+  public static getModifiedPlayers(persons: PersonAttendance[], mainGroup?: number, instruments?: Group[]): PersonAttendance[] {
     const instrumentsMap: { [props: number]: boolean } = {};
 
-    return Utils.sortPlayers(persons, mainGroup).map((player: PersonAttendance): PersonAttendance => {
+    return Utils.sortPlayers(persons, mainGroup, instruments).map((player: PersonAttendance): PersonAttendance => {
       let firstOfInstrument: boolean = false;
       let instrumentLength: number = 0;
       let isNew: boolean = false;
@@ -183,7 +183,7 @@ export class Utils {
     });
   }
 
-  private static sortPlayers(players: PersonAttendance[], mainGroupId: number): PersonAttendance[] {
+  private static sortPlayers(players: PersonAttendance[], mainGroupId: number, instruments?: Group[]): PersonAttendance[] {
     // Separate main group and other players
     const mainGroup = players.filter(p => p.instrument === mainGroupId);
     const otherGroups = players.filter(p => p.instrument !== mainGroupId);
@@ -192,21 +192,35 @@ export class Utils {
     const sortedMainGroup = mainGroup.sort((a, b) => (a.person?.lastName ?? a.lastName).localeCompare(b.person?.lastName ?? b.lastName));
 
     // Group others by groupId
-    const grouped = new Map<number, { groupName: string; players: PersonAttendance[] }>();
+    const grouped = new Map<number, { groupName: string; players: PersonAttendance[]; sortOrder?: number }>();
 
     for (const player of otherGroups) {
       if (!grouped.has(player.instrument)) {
+        const instrument = instruments?.find(i => i.id === player.instrument);
         grouped.set(player.instrument, {
           groupName: player.groupName,
+          sortOrder: instrument?.sort_order,
           players: []
         });
       }
       grouped.get(player.instrument).players.push(player);
     }
 
-    // Sort the groups by instrument name, then sort each group's players by lastName
+    // Sort the groups by sort_order (if available), then by instrument name
+    // Then sort each group's players by lastName
     const sortedOtherGroups = [...grouped.entries()]
-      .sort(([, a], [, b]) => a.groupName.localeCompare(b.groupName))
+      .sort(([, a], [, b]) => {
+        // If both have sort_order, use it
+        if (a.sortOrder !== undefined && a.sortOrder !== null &&
+            b.sortOrder !== undefined && b.sortOrder !== null) {
+          return a.sortOrder - b.sortOrder;
+        }
+        // If only one has sort_order, prioritize it
+        if (a.sortOrder !== undefined && a.sortOrder !== null) return -1;
+        if (b.sortOrder !== undefined && b.sortOrder !== null) return 1;
+        // Otherwise sort by group name
+        return a.groupName.localeCompare(b.groupName);
+      })
       .map(([, group]) =>
         group.players.sort((a, b) => (a.person?.lastName ?? a.lastName).localeCompare(b.person?.lastName ?? b.lastName))
       )
