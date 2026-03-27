@@ -57,8 +57,8 @@ export class AttendancePage implements OnInit {
   public AttendanceViewMode = AttendanceViewMode;
   private helperGroupId: number | null = null;
   public isAddPersonModalOpen: boolean = false;
-  public availablePersons: Person[] = [];
-  public filteredAvailablePersons: Person[] = [];
+  public availablePersons: (Person & { groupName?: string })[] = [];
+  public filteredAvailablePersons: (Person & { groupName?: string })[] = [];
   public selectedPersonsToAdd: number[] = [];
   public isLoadingPersons: boolean = false;
 
@@ -871,14 +871,14 @@ export class AttendancePage implements OnInit {
       const otherPersons = personsNotInAttendance.filter(p => !matchingPersonIds.has(p.id));
 
       // Add group names to persons for display
-      const addGroupNames = (persons: Person[]) => {
+      const addGroupNames = (persons: Person[]): (Person & { groupName?: string })[] => {
         return persons.map((person: Person) => {
           const instrumentId = (person as any).instrument;
           const group = this.instruments.find(g => g.id === instrumentId);
           return {
             ...person,
             groupName: group?.name || 'Keine Gruppe',
-          } as any;
+          };
         });
       };
 
