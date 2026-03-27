@@ -313,11 +313,23 @@ export class InstrumentListPage implements OnInit {
         }
       }
 
-      await loading.dismiss();
-      Utils.showToast('Reihenfolge gespeichert', 'success');
-
       // Reload groups to reflect new category order
       await this.getGroups();
+
+      // Update global sort_order for all instruments based on new category order
+      this.updateGlobalSortOrder();
+
+      // Save the updated instrument sort_order
+      for (const instrument of this.instruments) {
+        if (instrument.sort_order !== undefined && instrument.sort_order !== null) {
+          await this.db.updateGroup({
+            sort_order: instrument.sort_order
+          }, instrument.id);
+        }
+      }
+
+      await loading.dismiss();
+      Utils.showToast('Reihenfolge gespeichert', 'success');
     } catch (error) {
       await loading.dismiss();
       Utils.showToast('Fehler beim Speichern der Reihenfolge', 'danger');
