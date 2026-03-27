@@ -442,7 +442,7 @@ export class SignoutPage implements OnInit {
         buttons.push({
           text: 'Noten downloaden',
           handler: async () => {
-            const file = song.files.find(f => f.instrumentId === this.player.instrument);
+            const file = files[0];
             if (file) {
               const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), song.id);
               const url = window.URL.createObjectURL(blob);
@@ -459,7 +459,7 @@ export class SignoutPage implements OnInit {
       buttons.push({
         text: 'Noten anzeigen',
         handler: () => {
-          const file = song.files.find(f => f.instrumentId === this.player.instrument);
+          const file = files[0];
           if (file) {
             window.open(file.url, "_blank");
           }
@@ -469,7 +469,7 @@ export class SignoutPage implements OnInit {
       buttons.push({
         text: 'Noten drucken',
         handler: () => {
-          const file = song.files.find(f => f.instrumentId === this.player.instrument);
+          const file = files[0];
           if (file) {
             const printWindow = window.open(file.url, "_blank");
             if (printWindow) {
