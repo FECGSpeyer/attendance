@@ -512,11 +512,14 @@ export class AttendancePage implements OnInit {
           handler: async () => {
             try {
               await this.db.deletePersonAttendanceById(player.id);
-              this.players = this.players.filter(p => p.id !== player.id);
-              // Recalculate group headers
-              this.players = Utils.getModifiedPlayers(this.players, this.mainGroup, this.instruments);
+
+              // Reload attendance data to properly rebuild the list with headers
+              this.attendance = await this.db.getAttendanceById(this.attendanceId);
+              this.initializeAttObjects();
+
               Utils.showToast('Person aus Anwesenheit entfernt', 'success');
             } catch (error) {
+              console.error('Error removing person:', error);
               Utils.showToast('Fehler beim Entfernen der Person', 'danger');
             }
           }
