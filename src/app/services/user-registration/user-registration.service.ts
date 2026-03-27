@@ -18,7 +18,10 @@ export class UserRegistrationService {
     password?: string,
     self_register?: boolean,
   ): Promise<string> {
-    const { userId, alreadyThere } = await this.getAppIdByEmail(email, tenantId, role) || {};
+    // Normalize email
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const { userId, alreadyThere } = await this.getAppIdByEmail(normalizedEmail, tenantId, role) || {};
 
     if (userId) {
       if (alreadyThere) {
@@ -32,14 +35,14 @@ export class UserRegistrationService {
         return userId;
       }
 
-      await this.addUserToTenant(userId, role, email, tenantId);
+      await this.addUserToTenant(userId, role, normalizedEmail, tenantId);
 
       if (!self_register) {
         const res = await fetch(`https://staccato-server.vercel.app/api/informAttendixUser`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            email,
+            email: normalizedEmail,
             name,
             password,
             role: Utils.getRoleText(role),
@@ -61,7 +64,7 @@ export class UserRegistrationService {
       const res = await fetch(`https://staccato-server.vercel.app/api/registerAttendixUser`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name }),
+        body: JSON.stringify({ email: normalizedEmail, name }),
       });
       const data = await res.json();
 
@@ -69,7 +72,7 @@ export class UserRegistrationService {
         throw new Error('Fehler beim Erstellen des Accounts');
       }
 
-      await this.addUserToTenant(data.user.id, role, email, tenantId);
+      await this.addUserToTenant(data.user.id, role, normalizedEmail, tenantId);
 
       return data.user.id;
     } catch (e: any) {

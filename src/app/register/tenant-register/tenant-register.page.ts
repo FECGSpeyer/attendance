@@ -147,14 +147,17 @@ export class TenantRegisterPage implements OnInit {
         additional_fields['bfecg_church'] = churchId;
       }
 
+      // Normalize email
+      const normalizedEmail = (this.db.user?.email ?? this.email).toLowerCase().trim();
+
       const { userId, created } = await this.db.addPlayer({
         firstName: this.firstName,
         lastName: this.lastName,
-        email: this.db.user?.email ?? this.email,
+        email: normalizedEmail,
         pending: !Boolean(this.tenantData?.auto_approve_registrations),
         birthday: this.birthDate,
         phone: this.phone,
-        img: this.profilePicture,
+        img: this.profilePicture, // Will be handled by addPlayer if it's a data URL
         additional_fields,
         instrument: this.selectedGroupId,
         hasTeacher: false,
@@ -171,7 +174,8 @@ export class TenantRegisterPage implements OnInit {
 
       isNew = created && !this.db.user;
 
-      if (this.tenantData?.registration_fields?.includes('picture')) {
+      // Only upload if addPlayer didn't already handle it (i.e., if we have a File object and img wasn't a data URL)
+      if (this.tenantData?.registration_fields?.includes('picture') && this.profileImgFile && !this.profilePicture.startsWith('data:image/')) {
         const url: string = await this.db.updateImage(userId, this.profileImgFile, this.db.user?.id);
         this.profilePicture = url;
       }
