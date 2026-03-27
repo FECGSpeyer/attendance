@@ -56,6 +56,11 @@ export class AttendancePage implements OnInit {
   public attendanceViewMode: AttendanceViewMode = AttendanceViewMode.CLICK;
   public AttendanceViewMode = AttendanceViewMode;
   private helperGroupId: number | null = null;
+  public isAddPersonModalOpen: boolean = false;
+  public availablePersons: Person[] = [];
+  public filteredAvailablePersons: Person[] = [];
+  public selectedPersonsToAdd: number[] = [];
+  public isLoadingPersons: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -815,5 +820,144 @@ export class AttendancePage implements OnInit {
     });
 
     await modal.present();
+  }
+
+  /**
+   * Open modal to add persons manually to attendance
+   */
+  async openAddPersonModal(): Promise<void> {
+    this.isAddPersonModalOpen = true;
+    this.isLoadingPersons = true;
+    this.selectedPersonsToAdd = [];
+    this.filteredAvailablePersons = [];
+    this.availablePersons = [];
+
+    try {
+      // Load all active players from the instance
+      const allPersons: Person[] = await this.db.getPlayers(true);
+
+      // Get current person IDs in this attendance
+      const currentPersonIds = new Set(this.players.map(p => p.person_id));
+
+      // Filter out persons already in attendance and paused/left persons
+      let personsNotInAttendance = allPersons.filter((person: Person) =>
+        !currentPersonIds.has(person.id) && !person.paused && !person.left
+      );
+
+      // Get attendance type for filtering
+      const attType = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
+
+      // Filter persons that match the attendance type criteria
+      const matchingPersons = personsNotInAttendance.filter((person: Person) => {
+        // Check relevant groups
+        if (attType && attType.relevant_groups.length > 0) {
+          if (!attType.relevant_groups.includes((person as any).instrument)) {
+            return false;
+          }
+        }
+
+        // Check additional fields filter
+        if (attType?.additional_fields_filter?.key && attType?.additional_fields_filter?.option && this.db.tenant().additional_fields?.find(field => field.id === attType.additional_fields_filter.key)) {
+          const defaultValue = this.db.tenant().additional_fields.find(field => field.id === attType.additional_fields_filter.key)?.defaultValue;
+          const additionalField = person.additional_fields?.[attType.additional_fields_filter.key] ?? defaultValue;
+          return additionalField === attType.additional_fields_filter.option;
+        }
+
+        return true;
+      });
+
+      // Get persons that don't match the criteria
+      const matchingPersonIds = new Set(matchingPersons.map(p => p.id));
+      const otherPersons = personsNotInAttendance.filter(p => !matchingPersonIds.has(p.id));
+
+      // Add group names to persons for display
+      const addGroupNames = (persons: Person[]) => {
+        return persons.map((person: Person) => {
+          const instrumentId = (person as any).instrument;
+          const group = this.instruments.find(g => g.id === instrumentId);
+          return {
+            ...person,
+            groupName: group?.name || 'Keine Gruppe',
+          } as any;
+        });
+      };
+
+      this.filteredAvailablePersons = addGroupNames(matchingPersons);
+      this.availablePersons = addGroupNames(otherPersons);
+    } catch (error) {
+      console.error('Error loading persons:', error);
+      Utils.showToast('Fehler beim Laden der Personen', 'danger');
+    } finally {
+      this.isLoadingPersons = false;
+    }
+  }
+
+  /**
+   * Add selected persons to attendance
+   */
+  async addPersonsToAttendance(modal: any): Promise<void> {
+    if (!this.selectedPersonsToAdd.length) {
+      Utils.showToast("Bitte wähle mindestens eine Person aus", "warning");
+      return;
+    }
+
+    const loading = await Utils.getLoadingElement(999999, 'Personen werden hinzugefügt...');
+    await loading.present();
+
+    try {
+      const attType = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
+      const defaultStatus = attType.default_status;
+      const personsToAdd: PersonAttendance[] = [];
+
+      for (const personId of this.selectedPersonsToAdd) {
+        const person = this.availablePersons.find(p => p.id === personId);
+        if (!person) continue;
+
+        let playerStatus = defaultStatus;
+        let notes = '';
+
+        // Check shift if applicable
+        if (person.shift_id && !attType.all_day) {
+          const shift = this.db.shifts().find(s => s.id === person.shift_id);
+
+          const result = Utils.getStatusByShift(
+            shift,
+            this.attendance.date,
+            attType.start_time || '19:00',
+            attType.end_time || '21:00',
+            defaultStatus,
+            person.shift_start,
+            person.shift_name,
+          );
+
+          playerStatus = result.status;
+          notes = result.note;
+        }
+
+        personsToAdd.push({
+          attendance_id: this.attendanceId,
+          person_id: personId,
+          status: playerStatus,
+          notes,
+        });
+      }
+
+      await this.db.addPersonAttendances(personsToAdd);
+
+      // Refresh attendance data
+      this.attendance = await this.db.getAttendanceById(this.attendanceId);
+      this.initializeAttObjects();
+
+      await loading.dismiss();
+      modal.dismiss();
+      this.isAddPersonModalOpen = false;
+      this.selectedPersonsToAdd = [];
+
+      Utils.showToast(`${personsToAdd.length} Person(en) hinzugefügt`, 'success');
+    } catch (error) {
+      await loading.dismiss();
+      console.error('Error adding persons:', error);
+      Utils.showToast('Fehler beim Hinzufügen der Personen', 'danger');
+    }
   }
 }

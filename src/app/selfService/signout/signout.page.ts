@@ -409,7 +409,7 @@ export class SignoutPage implements OnInit {
   }
 
   async openSongOptions(song: Song) {
-    if (!song.instrument_ids.includes(this.player.instrument)) {
+    if (!this.hasSongNotesForPlayer(song)) {
       Utils.showToast("Für dein Instrument sind leider keine Noten verfügbar.", "danger", 4000);
     }
 
@@ -422,7 +422,20 @@ export class SignoutPage implements OnInit {
       });
     }
 
-    const files = song.files.filter((file: SongFile) => file.instrumentId === this.player.instrument)
+    // Get files for player's instrument or Chor notes
+    let files = song.files.filter((file: SongFile) => file.instrumentId === this.player.instrument);
+
+    // For choir type, also include files with note="Chor"
+    if (this.db.tenant().type === 'choir') {
+      const choirFiles = song.files.filter((file: SongFile) =>
+        file.note?.toLowerCase() === 'chor'
+      );
+      files = [...files, ...choirFiles];
+      // Remove duplicates if a file is both for the instrument and has "Chor" note
+      files = files.filter((file, index, self) =>
+        index === self.findIndex(f => f.fileName === file.fileName)
+      );
+    }
 
     if (files.length === 1) {
       if (!isPlatform('ios')) {
@@ -682,7 +695,14 @@ export class SignoutPage implements OnInit {
     for (const group of this.upcomingSongs) {
       for (const his of group.history) {
         if (his.song?.files) {
-          const file = his.song.files.find(f => f.instrumentId === this.player.instrument);
+          // Get files for player's instrument
+          let file = his.song.files.find(f => f.instrumentId === this.player.instrument);
+
+          // For choir type, also check for files with note="Chor" if no instrument file found
+          if (!file && this.db.tenant().type === 'choir') {
+            file = his.song.files.find(f => f.note?.toLowerCase() === 'chor');
+          }
+
           if (file) {
             filesToPrint.push({ song: his.song, file });
           }
@@ -779,5 +799,27 @@ export class SignoutPage implements OnInit {
     } else {
       return `Anmeldefrist: ${localDeadline.format('DD.MM.YYYY HH:mm')} Uhr`;
     }
+  }
+
+  /**
+   * Check if a song has notes available for the player's instrument.
+   * For choir attendance types, also check if there are files with note="Chor".
+   */
+  hasSongNotesForPlayer(song: Song): boolean {
+    if (!song) return false;
+
+    // Check if song has the player's instrument in instrument_ids
+    const hasInstrumentId = song.instrument_ids?.includes(this.player.instrument);
+
+    // For choir type, also check for files with note="Chor"
+    const tenantType = this.db.tenant().type;
+    if (tenantType === 'choir') {
+      const hasChoirNote = song.files?.some(file =>
+        file.note?.toLowerCase() === 'chor'
+      );
+      return hasInstrumentId || hasChoirNote;
+    }
+
+    return hasInstrumentId;
   }
 }

@@ -438,40 +438,72 @@ export class SongPage implements OnInit {
       buttons.push({
         text: 'Datei drucken',
         icon: 'print-outline',
-        handler: () => {
-          const printWindow = window.open(file.url, '_blank');
-          if (printWindow) {
-            // Use both onload and setTimeout as fallback
-            let printed = false;
+        handler: async () => {
+          // iOS/PWA doesn't support window.print() reliably, use Share API instead
+          if (isPlatform('ios') || isPlatform('mobileweb')) {
+            try {
+              // Fetch the PDF as blob
+              const response = await fetch(file.url);
+              const blob = await response.blob();
+              const filesArray = [new File([blob], file.fileName || 'document.pdf', { type: 'application/pdf' })];
 
-            printWindow.onload = () => {
-              if (!printed) {
-                printed = true;
-                // Small delay to ensure PDF is fully rendered
-                setTimeout(() => {
+              // Check if Web Share API is available
+              if (navigator.share && navigator.canShare && navigator.canShare({ files: filesArray })) {
+                await navigator.share({
+                  files: filesArray,
+                  title: this.song.name || 'Dokument',
+                  text: 'Drucke diese Datei'
+                });
+              } else {
+                // Fallback: download the file
+                const a = document.createElement('a');
+                a.href = file.url;
+                a.download = file.fileName || 'document.pdf';
+                a.click();
+                Utils.showToast('Datei heruntergeladen - bitte aus Dateien-App drucken', 'success');
+              }
+            } catch (error) {
+              console.error('Share/download failed:', error);
+              // Final fallback: open in new tab
+              window.open(file.url, '_blank');
+              Utils.showToast('Datei geöffnet - bitte manuell drucken', 'success');
+            }
+          } else {
+            // Desktop: use traditional print dialog
+            const printWindow = window.open(file.url, '_blank');
+            if (printWindow) {
+              // Use both onload and setTimeout as fallback
+              let printed = false;
+
+              printWindow.onload = () => {
+                if (!printed) {
+                  printed = true;
+                  // Small delay to ensure PDF is fully rendered
+                  setTimeout(() => {
+                    try {
+                      printWindow.print();
+                    } catch (e) {
+                      console.error('Print failed in onload:', e);
+                    }
+                  }, 500);
+                }
+              };
+
+              // Fallback timeout for when onload doesn't fire (common with PDFs)
+              // Increased timeout for larger PDFs
+              setTimeout(() => {
+                if (!printed && printWindow) {
+                  printed = true;
                   try {
                     printWindow.print();
                   } catch (e) {
-                    console.error('Print failed in onload:', e);
+                    console.error('Print failed in timeout:', e);
                   }
-                }, 500);
-              }
-            };
-
-            // Fallback timeout for when onload doesn't fire (common with PDFs)
-            // Increased timeout for larger PDFs
-            setTimeout(() => {
-              if (!printed && printWindow) {
-                printed = true;
-                try {
-                  printWindow.print();
-                } catch (e) {
-                  console.error('Print failed in timeout:', e);
                 }
-              }
-            }, 2000);
-          } else {
-            Utils.showToast('Popup wurde blockiert. Bitte erlaube Popups für diese Seite.', 'warning');
+              }, 2000);
+            } else {
+              Utils.showToast('Popup wurde blockiert. Bitte erlaube Popups für diese Seite.', 'warning');
+            }
           }
         }
       });
@@ -798,46 +830,78 @@ export class SongPage implements OnInit {
       const blob = new Blob([mergedPdfBytes as BlobPart], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
 
-      // Open in new tab for printing
-      const printWindow = window.open(url, '_blank');
+      // iOS/PWA: use Share API or download
+      if (isPlatform('ios') || isPlatform('mobileweb')) {
+        try {
+          const fileName = `${this.song.name || 'song'}_print.pdf`;
+          const filesArray = [new File([blob], fileName, { type: 'application/pdf' })];
 
-      if (printWindow) {
-        // Use both onload and setTimeout as fallback
-        let printed = false;
+          // Check if Web Share API is available
+          if (navigator.share && navigator.canShare && navigator.canShare({ files: filesArray })) {
+            await navigator.share({
+              files: filesArray,
+              title: this.song.name || 'Dokument',
+              text: 'Drucke diese Datei'
+            });
+          } else {
+            // Fallback: download the file
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            Utils.showToast('PDF heruntergeladen - bitte aus Dateien-App drucken', 'success');
+          }
+        } catch (error) {
+          console.error('Share/download failed:', error);
+          // Final fallback: download
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${this.song.name || 'song'}_print.pdf`;
+          a.click();
+          Utils.showToast('PDF heruntergeladen - bitte aus Dateien-App drucken', 'success');
+        }
+      } else {
+        // Desktop: Open in new tab for printing
+        const printWindow = window.open(url, '_blank');
 
-        printWindow.onload = () => {
-          if (!printed) {
-            printed = true;
-            // Small delay to ensure PDF is fully rendered
-            setTimeout(() => {
+        if (printWindow) {
+          // Use both onload and setTimeout as fallback
+          let printed = false;
+
+          printWindow.onload = () => {
+            if (!printed) {
+              printed = true;
+              // Small delay to ensure PDF is fully rendered
+              setTimeout(() => {
+                try {
+                  printWindow.print();
+                } catch (e) {
+                  console.error('Print failed in onload:', e);
+                }
+              }, 500);
+            }
+          };
+
+          // Fallback timeout for when onload doesn't fire (common with PDFs)
+          // Increased timeout for larger PDFs
+          setTimeout(() => {
+            if (!printed && printWindow) {
+              printed = true;
               try {
                 printWindow.print();
               } catch (e) {
-                console.error('Print failed in onload:', e);
+                console.error('Print failed in timeout:', e);
               }
-            }, 500);
-          }
-        };
-
-        // Fallback timeout for when onload doesn't fire (common with PDFs)
-        // Increased timeout for larger PDFs
-        setTimeout(() => {
-          if (!printed && printWindow) {
-            printed = true;
-            try {
-              printWindow.print();
-            } catch (e) {
-              console.error('Print failed in timeout:', e);
             }
-          }
-        }, 2000);
-      } else {
-        // Fallback: download the file
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${this.song.name || 'song'}_print.pdf`;
-        a.click();
-        Utils.showToast('PDF heruntergeladen - bitte manuell drucken', 'success');
+          }, 2000);
+        } else {
+          // Fallback: download the file
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${this.song.name || 'song'}_print.pdf`;
+          a.click();
+          Utils.showToast('PDF heruntergeladen - bitte manuell drucken', 'success');
+        }
       }
 
       await loading.dismiss();

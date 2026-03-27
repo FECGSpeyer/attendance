@@ -2035,7 +2035,9 @@ export class DbService {
         song:songId (*),
         attendance_id (
           id,
-          date
+          date,
+          type_id,
+          typeInfo
         )
       `)
       .eq("tenantId", tenantId ?? this.tenant().id)
@@ -2045,25 +2047,57 @@ export class DbService {
       throw new Error(error.message);
     }
 
+    // Load attendance types for this tenant
+    const attendanceTypes = tenantId ? await this.getAttendanceTypes(tenantId) : this.attendanceTypes();
+
     const groupedData: { [key: string]: History[] } = {};
 
     data.forEach((his: any) => {
-      const date = his.attendance_id ? dayjs(his.attendance_id.date).format("DD.MM.YYYY") : dayjs(his.date).format("DD.MM.YYYY");
-      if (!groupedData[date]) {
-        groupedData[date] = [];
+      const dateStr = his.attendance_id ? dayjs(his.attendance_id.date).format("DD.MM.YYYY") : dayjs(his.date).format("DD.MM.YYYY");
+
+      // Build a unique key with date and attendance type info
+      let groupKey = dateStr;
+      if (his.attendance_id) {
+        const attType = attendanceTypes.find(type => type.id === his.attendance_id.type_id);
+        const typeInfo = his.attendance_id.typeInfo || (attType && !attType.hide_name ? attType.name : '');
+        if (typeInfo) {
+          groupKey = `${dateStr} | ${typeInfo}`;
+        }
       }
-      groupedData[date].push({
+
+      if (!groupedData[groupKey]) {
+        groupedData[groupKey] = [];
+      }
+      groupedData[groupKey].push({
         ...his,
         conductorName: his.person_id ? `${his.person_id.firstName} ${his.person_id.lastName}` : his.otherConductor || "",
       });
     });
 
-    // sort by date descending
-    const sortedDates = Object.keys(groupedData).sort((a, b) => dayjs(b, "DD.MM.YYYY").diff(dayjs(a, "DD.MM.YYYY"))).reverse();
+    // Sort by date descending, then by attendance_id descending for same date
+    const sortedKeys = Object.keys(groupedData).sort((a, b) => {
+      const dateA = a.split(' | ')[0];
+      const dateB = b.split(' | ')[0];
+      const dateDiff = dayjs(dateB, "DD.MM.YYYY").diff(dayjs(dateA, "DD.MM.YYYY"));
+      if (dateDiff !== 0) return dateDiff;
 
-    return sortedDates.map(date => ({
+      // Same date: sort by attendance_id descending (newest first)
+      const aIds = groupedData[a].map(h => (h.attendance_id as any)?.id ?? 0);
+      const bIds = groupedData[b].map(h => (h.attendance_id as any)?.id ?? 0);
+      const maxAId = Math.max(...aIds);
+      const maxBId = Math.max(...bIds);
+      return maxBId - maxAId;
+    }).reverse();
+
+    return sortedKeys.map(date => ({
       date,
-      history: groupedData[date],
+      // Sort history entries by attendance_id (descending) to match attendance list order
+      // Events at the same date are ordered by their attendance_id
+      history: groupedData[date].sort((a, b) => {
+        const aId = (a.attendance_id as any)?.id ?? 0;
+        const bId = (b.attendance_id as any)?.id ?? 0;
+        return bId - aId;
+      }),
     }));
   }
 

@@ -15,6 +15,12 @@
               <ion-icon slot="start" [name]="attendanceViewMode === AttendanceViewMode.CLICK ? 'list-outline' : 'hand-left-outline'"></ion-icon>
               <ion-label>{{ attendanceViewMode === AttendanceViewMode.CLICK ? 'Auswahl-Modus' : 'Klick-Modus' }}</ion-label>
             </ion-item>
+            @if (!isHelper) {
+              <ion-item button detail="false" (click)="openAddPersonModal()">
+                <ion-icon slot="start" name="person-add-outline"></ion-icon>
+                <ion-label>Person hinzufügen</ion-label>
+              </ion-item>
+            }
             @if (!isHelper && (!attendance?.checklist || attendance?.checklist?.length === 0)) {
               <ion-item button detail="false" (click)="addChecklistItem()">
                 <ion-icon slot="start" name="checkbox-outline"></ion-icon>
@@ -438,4 +444,98 @@
   </ion-item-group>
 </ion-list>
 }
+
+<!-- Modal for adding persons to attendance -->
+<ion-modal #addPersonModal [isOpen]="isAddPersonModalOpen" (ionModalDidDismiss)="isAddPersonModalOpen = false"
+  [initialBreakpoint]="0.8" [breakpoints]="[0, 0.8, 1]">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Person hinzufügen</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="addPersonModal.dismiss(); isAddPersonModalOpen = false">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content color="light">
+      @if (isLoadingPersons) {
+        <div class="ion-padding ion-text-center">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Lade Personen...</p>
+        </div>
+      }
+      @if (!isLoadingPersons) {
+        <ion-list [inset]="true">
+          @if (filteredAvailablePersons.length === 0 && availablePersons.length === 0) {
+            <ion-item lines="none">
+              <ion-label class="ion-text-center ion-text-wrap">
+                <p>Alle Personen sind bereits in dieser Anwesenheit enthalten.</p>
+              </ion-label>
+            </ion-item>
+          }
+
+          <!-- Filtered/Matching persons section -->
+          @if (filteredAvailablePersons.length > 0) {
+            <ion-item-group>
+              <ion-list-header>
+                <ion-label>
+                  <h2>Passende Personen</h2>
+                  <p>{{ filteredAvailablePersons.length }} Person(en) für diesen Anwesenheitstyp</p>
+                </ion-label>
+              </ion-list-header>
+              @for (person of filteredAvailablePersons; track person.id) {
+                <ion-item>
+                  <ion-checkbox [(ngModel)]="selectedPersonsToAdd" [value]="person.id">
+                    <ion-label>
+                      <h2>{{ person.firstName }} {{ person.lastName }}</h2>
+                      <p>{{ person.groupName }}</p>
+                    </ion-label>
+                  </ion-checkbox>
+                </ion-item>
+              }
+            </ion-item-group>
+          }
+
+          <!-- Other persons section -->
+          @if (availablePersons.length > 0) {
+            <ion-item-group>
+              <ion-list-header>
+                <ion-label>
+                  <h2>Andere Personen</h2>
+                  <p>{{ availablePersons.length }} weitere Person(en)</p>
+                </ion-label>
+              </ion-list-header>
+              @for (person of availablePersons; track person.id) {
+                <ion-item>
+                  <ion-checkbox [(ngModel)]="selectedPersonsToAdd" [value]="person.id">
+                    <ion-label>
+                      <h2>{{ person.firstName }} {{ person.lastName }}</h2>
+                      <p>{{ person.groupName }}</p>
+                    </ion-label>
+                  </ion-checkbox>
+                </ion-item>
+              }
+            </ion-item-group>
+          }
+
+          @if (filteredAvailablePersons.length > 0 || availablePersons.length > 0) {
+            <ion-item-group>
+              <ion-item button detail="false" (click)="addPersonsToAttendance(addPersonModal)">
+                <ion-label color="primary">
+                  @if (selectedPersonsToAdd.length > 0) {
+                    {{ selectedPersonsToAdd.length }} Person(en) hinzufügen
+                  } @else {
+                    Personen hinzufügen
+                  }
+                </ion-label>
+              </ion-item>
+            </ion-item-group>
+          }
+        </ion-list>
+      }
+    </ion-content>
+  </ng-template>
+</ion-modal>
 </ion-content>

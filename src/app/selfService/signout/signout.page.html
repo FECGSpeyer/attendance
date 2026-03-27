@@ -121,7 +121,7 @@
               </ion-list-header>
               <ion-item-group>
                 @for (his of group.history; track trackByHistoryId($index, his)) {
-                <ion-item [color]="his.song.instrument_ids.includes(player.instrument) ? '' : 'danger'" button
+                <ion-item [color]="hasSongNotesForPlayer(his.song) ? '' : 'danger'" button
                   (click)="openSongOptions(his.song)">
                   @if (his.song) {
                   <ion-label>
