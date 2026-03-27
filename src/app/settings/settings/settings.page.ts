@@ -83,6 +83,11 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   async initialize(): Promise<void> {
+    // Check if tenant and tenantUser are available
+    if (!this.db.tenant() || !this.db.tenantUser()) {
+      return;
+    }
+
     this.isGeneral = this.db.tenant().type === 'general';
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isHelper = this.db.tenantUser().role === Role.HELPER || this.db.tenantUser().role === Role.VOICE_LEADER_HELPER;
