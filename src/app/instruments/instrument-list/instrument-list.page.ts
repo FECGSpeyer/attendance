@@ -377,9 +377,16 @@ export class InstrumentListPage implements OnInit {
 
   private updateGlobalSortOrder(): void {
     let sortOrder = 1;
-    for (const instrument of this.instruments) {
-      instrument.sort_order = sortOrder++;
+
+    // Update sort_order based on category order, then within each category
+    for (const categoryGroup of this.groupedInstruments) {
+      for (const instrument of categoryGroup.instruments) {
+        instrument.sort_order = sortOrder++;
+      }
     }
+
+    // Update the main instruments array to reflect the new order
+    this.instruments = this.groupedInstruments.flatMap(group => group.instruments);
   }
 
   private async saveOrder(): Promise<void> {
