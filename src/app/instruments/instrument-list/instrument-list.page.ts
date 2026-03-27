@@ -299,6 +299,12 @@ export class InstrumentListPage implements OnInit {
     for (const category of this.categories) {
       category.sort_order = sortOrder++;
     }
+
+    // Re-group instruments based on new category order
+    this.groupInstrumentsByCategory();
+
+    // Update global sort_order for all instruments based on new category order
+    this.updateGlobalSortOrder();
   }
 
   private async saveCategoryOrder(): Promise<void> {
