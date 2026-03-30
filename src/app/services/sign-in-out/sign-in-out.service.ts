@@ -47,6 +47,7 @@ export class SignInOutService {
 
   async updateAttendanceNote(attId: string, notes: string, userId?: string): Promise<void> {
     await this.updatePersonAttendance(attId, { notes }, userId);
+    this.telegramSvc.notifyPerTelegram(attId, 'noteUpdate', notes);
   }
 
   async updatePersonAttendance(

@@ -492,6 +492,75 @@
     </ion-item-group>
   </ion-list>
 
+  @if (db.isBeta()) {
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-label>
+          <ion-icon name="home-outline" class="header-icon"></ion-icon>
+          Gemeinden ({{ churches.length }})
+        </ion-label>
+      </ion-list-header>
+
+      @if (duplicateGroups.length > 0) {
+        <ion-item-group>
+          <ion-item color="warning" lines="none">
+            <ion-icon name="warning-outline" slot="start"></ion-icon>
+            <ion-label class="ion-text-wrap">
+              <h3>{{ duplicateGroups.length }} Duplikat-Gruppe(n) gefunden</h3>
+              <p>Gemeinden mit gleichem Namen können zusammengeführt werden.</p>
+            </ion-label>
+          </ion-item>
+          @for (group of duplicateGroups; track group.target.id) {
+            <ion-item>
+              <ion-label class="ion-text-wrap">
+                <h3>{{ group.target.name }}</h3>
+                <p>{{ group.duplicates.length + 1 }}x vorhanden</p>
+              </ion-label>
+              @for (dup of group.duplicates; track dup.id) {
+                <ion-button size="small" fill="outline" color="warning" (click)="mergeChurch(group.target, dup)">
+                  <ion-icon slot="start" name="git-merge-outline"></ion-icon>
+                  Zusammenführen
+                </ion-button>
+              }
+            </ion-item>
+          }
+          <ion-item button detail="false" (click)="mergeAllDuplicates()">
+            <ion-icon name="git-merge-outline" slot="start" color="warning"></ion-icon>
+            <ion-label color="warning">Alle Duplikate zusammenführen</ion-label>
+          </ion-item>
+        </ion-item-group>
+      }
+
+      <ion-accordion-group>
+        <ion-accordion value="churches">
+          <ion-item slot="header" color="light">
+            <ion-label>Alle Gemeinden anzeigen</ion-label>
+          </ion-item>
+          <ion-list slot="content">
+            @for (c of churches; track c) {
+              <ion-item>
+                <ion-icon name="home-outline" slot="start" color="medium"></ion-icon>
+                <ion-label>{{ c.name }}</ion-label>
+                <ion-button size="small" fill="clear" color="medium" (click)="renameChurch(c); $event.stopPropagation()">
+                  <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+                </ion-button>
+                <ion-button size="small" fill="clear" color="medium" (click)="mergeChurchManual(c); $event.stopPropagation()">
+                  <ion-icon slot="icon-only" name="git-merge-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-accordion>
+      </ion-accordion-group>
+      <ion-item-group>
+        <ion-item button detail="false" (click)="openChurchInput()">
+          <ion-icon name="add-outline" slot="start" color="primary"></ion-icon>
+          <ion-label color="primary">Gemeinde hinzufügen</ion-label>
+        </ion-item>
+      </ion-item-group>
+    </ion-list>
+  }
+
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="saveGeneralSettings()">
       <ion-icon name="save-outline"></ion-icon>

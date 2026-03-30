@@ -2594,6 +2594,19 @@ export class DbService {
     return id;
   }
 
+  async renameChurch(id: string, name: string): Promise<void> {
+    this.checkDemoRestriction();
+    await this.churchSvc.updateChurch(id, name);
+    this.churches.set(await this.getChurches());
+  }
+
+  async mergeChurches(targetId: string, duplicateId: string): Promise<number> {
+    this.checkDemoRestriction();
+    const count = await this.churchSvc.mergeChurches(targetId, duplicateId);
+    this.churches.set(await this.getChurches());
+    return count;
+  }
+
   async sendQuestion(message: string, phone: string): Promise<void> {
     return this.feedbackSvc.sendQuestion(message, phone, this.tenant().id, this.user?.id);
   }
