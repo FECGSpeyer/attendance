@@ -688,11 +688,18 @@ export class GeneralPage implements OnInit {
   private async executeResetExtraFieldValues() {
     if (!this.editingExtraField) return;
 
+    const resolvedDefault = Utils.getFieldTypeDefaultValue(
+      this.editingExtraField.type,
+      this.editingExtraField.type === FieldType.SELECT ? undefined : this.editingExtraField.defaultValue,
+      this.editingExtraField.options,
+      this.db.churches()
+    );
+
     try {
       const updatedCount = await this.playerSvc.resetExtraFieldValues(
         this.db.tenant().id,
         this.editingExtraField.id,
-        this.editingExtraField.defaultValue
+        resolvedDefault
       );
       Utils.showToast(`${updatedCount} Personen aktualisiert`, "success");
     } catch (error) {
