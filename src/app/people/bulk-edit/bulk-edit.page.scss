@@ -1,0 +1,30 @@
+.bulk-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.bulk-input-control {
+    flex: 1;
+    min-width: 0;
+}
+
+.bulk-apply-btn {
+    flex-shrink: 0;
+}
+
+.field-control {
+    min-width: 140px;
+    max-width: 200px;
+}
+
+.player-label {
+    flex-shrink: 0;
+    min-width: 120px;
+}
+
+ion-item.changed {
+    --background: rgba(var(--ion-color-primary-rgb), 0.06);
+    border-left: 3px solid var(--ion-color-primary);
+}

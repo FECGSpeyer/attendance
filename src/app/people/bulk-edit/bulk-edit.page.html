@@ -1,0 +1,195 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Bulk-Bearbeitung</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <!-- Step 1: Field selection -->
+  <ion-list [inset]="true">
+    <ion-item>
+      <ion-select label="Feld auswählen" labelPlacement="stacked" [(ngModel)]="selectedFieldKey"
+        (ionChange)="onFieldSelected()" interface="popover" placeholder="Feld wählen...">
+        <ion-select-option disabled>Standard-Felder</ion-select-option>
+        @for (field of fieldOptions; track field.key) {
+          @if (field.type === 'standard') {
+            <ion-select-option [value]="field.key">{{ field.label }}</ion-select-option>
+          }
+        }
+        @if (db.tenant()?.additional_fields?.length) {
+          <ion-select-option disabled>Zusatzfelder</ion-select-option>
+          @for (field of fieldOptions; track field.key) {
+            @if (field.type === 'extra') {
+              <ion-select-option [value]="field.key">{{ field.label }}</ion-select-option>
+            }
+          }
+        }
+      </ion-select>
+    </ion-item>
+  </ion-list>
+
+  @if (selectedField) {
+    <!-- "Set for all" section -->
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-label>Für alle setzen</ion-label>
+      </ion-list-header>
+      <ion-item>
+        <ion-label class="bulk-input-row">
+          <div class="bulk-input-control">
+            <!-- Standard fields -->
+            @if (selectedField.key === 'instrument') {
+              <ion-select [(ngModel)]="bulkValue" interface="popover" placeholder="Gruppe wählen...">
+                @for (group of db.groups(); track group.id) {
+                  <ion-select-option [value]="group.id">{{ group.name }}</ion-select-option>
+                }
+              </ion-select>
+            } @else if (selectedField.key === 'isLeader') {
+              <ion-toggle [(ngModel)]="bulkValue">Stimmführer</ion-toggle>
+            } @else if (selectedField.key === 'notes') {
+              <ion-input [(ngModel)]="bulkValue" placeholder="Notiz..."></ion-input>
+            } @else if (selectedField.key === 'phone') {
+              <ion-input type="tel" [(ngModel)]="bulkValue" placeholder="Telefon..."></ion-input>
+            }
+            <!-- Extra fields by type -->
+            @else if (selectedField.fieldType === FieldType.TEXT) {
+              <ion-input [(ngModel)]="bulkValue" [placeholder]="selectedField.label"></ion-input>
+            } @else if (selectedField.fieldType === FieldType.NUMBER) {
+              <ion-input type="number" [(ngModel)]="bulkValue" [placeholder]="selectedField.label"></ion-input>
+            } @else if (selectedField.fieldType === FieldType.BOOLEAN) {
+              <ion-toggle [(ngModel)]="bulkValue">{{ selectedField.label }}</ion-toggle>
+            } @else if (selectedField.fieldType === FieldType.SELECT) {
+              <ion-select [(ngModel)]="bulkValue" interface="popover" [placeholder]="selectedField.label">
+                @for (option of selectedField.extraField.options; track option) {
+                  <ion-select-option [value]="option">{{ option }}</ion-select-option>
+                }
+              </ion-select>
+            } @else if (selectedField.fieldType === FieldType.TEXTAREA) {
+              <ion-textarea [(ngModel)]="bulkValue" [placeholder]="selectedField.label" [autoGrow]="true"></ion-textarea>
+            } @else if (selectedField.fieldType === FieldType.BFECG_CHURCH) {
+              <ion-select [(ngModel)]="bulkValue" interface="popover" [placeholder]="selectedField.label">
+                @for (church of db.churches(); track church) {
+                  <ion-select-option [value]="church.id">{{ church.name }}</ion-select-option>
+                }
+              </ion-select>
+            } @else if (selectedField.fieldType === FieldType.DATE) {
+              <ion-input type="date" [(ngModel)]="bulkValue"></ion-input>
+            }
+          </div>
+          <ion-button size="small" fill="outline" (click)="applyToAll()" class="bulk-apply-btn">
+            <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>
+            Für alle setzen
+          </ion-button>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <!-- Step 2: Player list with editable field -->
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-label>Personen ({{ players.length }})</ion-label>
+      </ion-list-header>
+      @for (player of players; track player.id) {
+        <ion-item [class.changed]="originalValues.get(player.id) !== editedValues.get(player.id)">
+          <ion-label class="player-label">
+            <h3>{{ player.firstName }} {{ player.lastName }}</h3>
+            <p>{{ player.groupName }}</p>
+          </ion-label>
+          <div class="field-control" slot="end">
+            <!-- Standard fields -->
+            @if (selectedField.key === 'instrument') {
+              <ion-select [ngModel]="getEditedValue(player.id)"
+                (ionChange)="setEditedValue(player.id, $event.detail.value)"
+                interface="popover" placeholder="Gruppe...">
+                @for (group of db.groups(); track group.id) {
+                  <ion-select-option [value]="group.id">{{ group.name }}</ion-select-option>
+                }
+              </ion-select>
+            } @else if (selectedField.key === 'isLeader') {
+              <ion-toggle [ngModel]="getEditedValue(player.id)"
+                (ionChange)="setEditedValue(player.id, $event.detail.checked)">
+              </ion-toggle>
+            } @else if (selectedField.key === 'notes') {
+              <ion-input [ngModel]="getEditedValue(player.id)"
+                (ionChange)="setEditedValue(player.id, $event.detail.value)"
+                placeholder="Notiz...">
+              </ion-input>
+            } @else if (selectedField.key === 'phone') {
+              <ion-input type="tel" [ngModel]="getEditedValue(player.id)"
+                (ionChange)="setEditedValue(player.id, $event.detail.value)"
+                placeholder="Telefon...">
+              </ion-input>
+            }
+            <!-- Extra fields by type -->
+            @else if (selectedField.fieldType === FieldType.TEXT) {
+              <ion-input [ngModel]="getEditedValue(player.id)"
+                (ionChange)="setEditedValue(player.id, $event.detail.value)"
+                [placeholder]="selectedField.label">
+              </ion-input>
+            } @else if (selectedField.fieldType === FieldType.NUMBER) {
+              <ion-input type="number" [ngModel]="getEditedValue(player.id)"
+                (ionChange)="setEditedValue(player.id, $event.detail.value)"
+                [placeholder]="selectedField.label">
+              </ion-input>
+            } @else if (selectedField.fieldType === FieldType.BOOLEAN) {
+              <ion-toggle [ngModel]="getEditedValue(player.id)"
+                (ionChange)="setEditedValue(player.id, $event.detail.checked)">
+              </ion-toggle>
+            } @else if (selectedField.fieldType === FieldType.SELECT) {
+              <ion-select [ngModel]="getEditedValue(player.id)"
+                (ionChange)="setEditedValue(player.id, $event.detail.value)"
+                interface="popover" [placeholder]="selectedField.label">
+                @for (option of selectedField.extraField.options; track option) {
+                  <ion-select-option [value]="option">{{ option }}</ion-select-option>
+                }
+              </ion-select>
+            } @else if (selectedField.fieldType === FieldType.TEXTAREA) {
+              <ion-input [ngModel]="getEditedValue(player.id)"
+                (ionChange)="setEditedValue(player.id, $event.detail.value)"
+                [placeholder]="selectedField.label">
+              </ion-input>
+            } @else if (selectedField.fieldType === FieldType.BFECG_CHURCH) {
+              <ion-select [ngModel]="getEditedValue(player.id)"
+                (ionChange)="setEditedValue(player.id, $event.detail.value)"
+                interface="popover" [placeholder]="selectedField.label">
+                @for (church of db.churches(); track church) {
+                  <ion-select-option [value]="church.id">{{ church.name }}</ion-select-option>
+                }
+              </ion-select>
+            } @else if (selectedField.fieldType === FieldType.DATE) {
+              <ion-input type="date" [ngModel]="getEditedValue(player.id)"
+                (ionChange)="setEditedValue(player.id, $event.detail.value)">
+              </ion-input>
+            }
+          </div>
+        </ion-item>
+      }
+    </ion-list>
+
+    <!-- Step 3: Save button -->
+    <div class="ion-padding">
+      <ion-button expand="block" (click)="save()" [disabled]="changedCount === 0 || isSaving">
+        @if (isSaving) {
+          <ion-spinner name="crescent" slot="start"></ion-spinner>
+          Speichern...
+        } @else if (changedCount > 0) {
+          {{ changedCount }} Änderung(en) speichern
+        } @else {
+          Keine Änderungen
+        }
+      </ion-button>
+    </div>
+  }
+
+  @if (!selectedField) {
+    <div class="ion-padding ion-text-center" style="margin-top: 48px; color: var(--ion-color-medium)">
+      <ion-icon name="create-outline" style="font-size: 48px;"></ion-icon>
+      <p>Wähle ein Feld aus, um die Werte für alle Personen zu bearbeiten.</p>
+    </div>
+  }
+</ion-content>

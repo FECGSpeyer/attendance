@@ -8,6 +8,7 @@ import { ListPageRoutingModule } from './list-routing.module';
 
 import { ListPage } from './list.page';
 import { PersonPageModule } from '../person/person.module';
+import { BulkEditPageModule } from '../bulk-edit/bulk-edit.module';
 
 @NgModule({
   imports: [
@@ -15,7 +16,8 @@ import { PersonPageModule } from '../person/person.module';
     FormsModule,
     IonicModule,
     ListPageRoutingModule,
-    PersonPageModule
+    PersonPageModule,
+    BulkEditPageModule
   ],
   declarations: [ListPage]
 })

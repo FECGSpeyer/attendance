@@ -118,6 +118,12 @@
               }
             </ion-select>
           </ion-item>
+          @if (isAdmin) {
+            <ion-item button detail="false" lines="none" (click)="openBulkEditModal()">
+              <ion-icon slot="start" name="pencil" size="small"></ion-icon>
+              <ion-label>Bulk-Bearbeitung</ion-label>
+            </ion-item>
+          }
         </ion-list>
       </ng-template>
     </ion-popover>

@@ -298,6 +298,20 @@ export class PlayerService {
     }
   }
 
+  /**
+   * Update a single field of a player by ID
+   */
+  async updatePlayerField(id: number, field: string, value: any): Promise<void> {
+    const { error } = await supabase
+      .from('player')
+      .update({ [field]: value })
+      .match({ id });
+
+    if (error) {
+      throw new Error("Fehler beim updaten des Feldes");
+    }
+  }
+
   async removePlayer(player: Person): Promise<void> {
     await supabase
       .from('player')
@@ -418,17 +432,19 @@ export class PlayerService {
     for (const player of players) {
       const extraFieldsData = (player.additional_fields || {}) as Record<string, any>;
 
-      if (fieldId in extraFieldsData) {
-        extraFieldsData[fieldId] = defaultValue;
+      if (extraFieldsData[fieldId] === defaultValue) {
+        continue;
+      }
 
-        const { error: updateError } = await supabase
-          .from('player')
-          .update({ additional_fields: extraFieldsData })
-          .eq('id', player.id);
+      extraFieldsData[fieldId] = defaultValue;
 
-        if (!updateError) {
-          updatedCount++;
-        }
+      const { error: updateError } = await supabase
+        .from('player')
+        .update({ additional_fields: extraFieldsData })
+        .eq('id', player.id);
+
+      if (!updateError) {
+        updatedCount++;
       }
     }
 
