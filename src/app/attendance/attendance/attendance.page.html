@@ -467,77 +467,80 @@
         </div>
       }
       @if (!isLoadingPersons) {
-        <ion-list [inset]="true">
-          @if (filteredAvailablePersons.length === 0 && availablePersons.length === 0) {
+        @if (filteredAvailablePersons.length === 0 && availablePersons.length === 0) {
+          <ion-list [inset]="true">
             <ion-item lines="none">
               <ion-label class="ion-text-center ion-text-wrap">
                 <p>Alle Personen sind bereits in dieser Anwesenheit enthalten.</p>
               </ion-label>
             </ion-item>
-          }
+          </ion-list>
+        }
 
-          <!-- Filtered/Matching persons section -->
-          @if (filteredAvailablePersons.length > 0) {
-            <ion-item-group>
-              <ion-list-header>
-                <ion-label>
-                  <h2>Passende Personen</h2>
-                  <p>{{ filteredAvailablePersons.length }} Person(en) für diesen Anwesenheitstyp</p>
-                </ion-label>
-              </ion-list-header>
-              @for (person of filteredAvailablePersons; track person.id) {
-                <ion-item>
-                  <ion-checkbox
-                    [checked]="isPersonSelected(person.id)"
-                    (ionChange)="togglePersonSelection(person.id, $event)">
-                    <ion-label>
-                      <h2>{{ person.firstName }} {{ person.lastName }}</h2>
-                      <p>{{ person.groupName }}</p>
-                    </ion-label>
-                  </ion-checkbox>
+        @if (filteredAvailablePersons.length > 0 || availablePersons.length > 0) {
+          <ion-accordion-group class="add-person-accordion" [multiple]="true" [value]="['matching']">
+            @if (filteredAvailablePersons.length > 0) {
+              <ion-accordion value="matching">
+                <ion-item slot="header" color="light">
+                  <ion-label>
+                    Passende Personen
+                    <ion-badge color="primary" style="margin-left: 8px">{{ filteredAvailablePersons.length }}</ion-badge>
+                  </ion-label>
                 </ion-item>
-              }
-            </ion-item-group>
-          }
-
-          <!-- Other persons section -->
-          @if (availablePersons.length > 0) {
-            <ion-item-group>
-              <ion-list-header>
-                <ion-label>
-                  <h2>Andere Personen</h2>
-                  <p>{{ availablePersons.length }} weitere Person(en)</p>
-                </ion-label>
-              </ion-list-header>
-              @for (person of availablePersons; track person.id) {
-                <ion-item>
-                  <ion-checkbox
-                    [checked]="isPersonSelected(person.id)"
-                    (ionChange)="togglePersonSelection(person.id, $event)">
-                    <ion-label>
-                      <h2>{{ person.firstName }} {{ person.lastName }}</h2>
-                      <p>{{ person.groupName }}</p>
-                    </ion-label>
-                  </ion-checkbox>
-                </ion-item>
-              }
-            </ion-item-group>
-          }
-
-          @if (filteredAvailablePersons.length > 0 || availablePersons.length > 0) {
-            <ion-item-group>
-              <ion-item button detail="false" (click)="addPersonsToAttendance(addPersonModal)">
-                <ion-label color="primary">
-                  @if (selectedPersonsToAdd.length > 0) {
-                    {{ selectedPersonsToAdd.length }} Person(en) hinzufügen
-                  } @else {
-                    Personen hinzufügen
+                <ion-list slot="content">
+                  @for (person of filteredAvailablePersons; track person.id) {
+                    <ion-item>
+                      <ion-checkbox
+                        [checked]="isPersonSelected(person.id)"
+                        (ionChange)="togglePersonSelection(person.id, $event)">
+                        <ion-label>
+                          <h2>{{ person.firstName }} {{ person.lastName }}</h2>
+                          <p>{{ person.groupName }}</p>
+                        </ion-label>
+                      </ion-checkbox>
+                    </ion-item>
                   }
-                </ion-label>
-              </ion-item>
-            </ion-item-group>
-          }
-        </ion-list>
+                </ion-list>
+              </ion-accordion>
+            }
+
+            @if (availablePersons.length > 0) {
+              <ion-accordion value="others">
+                <ion-item slot="header" color="light">
+                  <ion-label>
+                    Andere Personen
+                    <ion-badge color="medium" style="margin-left: 8px">{{ availablePersons.length }}</ion-badge>
+                  </ion-label>
+                </ion-item>
+                <ion-list slot="content">
+                  @for (person of availablePersons; track person.id) {
+                    <ion-item>
+                      <ion-checkbox
+                        [checked]="isPersonSelected(person.id)"
+                        (ionChange)="togglePersonSelection(person.id, $event)">
+                        <ion-label>
+                          <h2>{{ person.firstName }} {{ person.lastName }}</h2>
+                          <p>{{ person.groupName }}</p>
+                        </ion-label>
+                      </ion-checkbox>
+                    </ion-item>
+                  }
+                </ion-list>
+              </ion-accordion>
+            }
+          </ion-accordion-group>
+
+          <div class="ion-padding">
+            <ion-button expand="block" (click)="addPersonsToAttendance(addPersonModal)"
+              [disabled]="selectedPersonsToAdd.length === 0">
+              @if (selectedPersonsToAdd.length > 0) {
+                {{ selectedPersonsToAdd.length }} Person(en) hinzufügen
+              } @else {
+                Personen auswählen
+              }
+            </ion-button>
+          </div>
+        }
       }
     </ion-content>
   </ng-template>

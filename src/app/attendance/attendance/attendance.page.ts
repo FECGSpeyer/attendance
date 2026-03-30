@@ -953,7 +953,8 @@ export class AttendancePage implements OnInit {
       const personsToAdd: PersonAttendance[] = [];
 
       for (const personId of this.selectedPersonsToAdd) {
-        const person = this.availablePersons.find(p => p.id === personId);
+        const person = this.filteredAvailablePersons.find(p => p.id === personId)
+          || this.availablePersons.find(p => p.id === personId);
         if (!person) continue;
 
         let playerStatus = defaultStatus;

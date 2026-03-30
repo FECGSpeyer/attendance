@@ -44,3 +44,18 @@ ion-item-group {
     color: var(--ion-color-warning-shade) !important;
     font-weight: 500;
 }
+
+// Add person modal accordion
+.add-person-accordion {
+    margin: 16px;
+
+    ion-accordion {
+        margin-bottom: 8px;
+        border-radius: 8px;
+        overflow: hidden;
+
+        ion-list {
+            padding: 0;
+        }
+    }
+}
