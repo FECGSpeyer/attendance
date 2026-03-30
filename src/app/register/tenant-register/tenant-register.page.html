@@ -127,8 +127,8 @@
             </ion-item>
             @if (field.type === 'bfecg_church' && field.value === '') {
               <ion-item>
-                <ion-label position="stacked">Bitte gib den Namen deiner Gemeinde ein</ion-label>
-                <ion-input [(ngModel)]="customChurchName" type="text"></ion-input>
+                <ion-label position="stacked">Gemeinde nicht gelistet? Bitte Namen eingeben</ion-label>
+                <ion-input [(ngModel)]="customChurchName" type="text" placeholder="Name deiner Gemeinde"></ion-input>
               </ion-item>
             }
           }
