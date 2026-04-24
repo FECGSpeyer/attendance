@@ -146,7 +146,7 @@
           <ion-modal [keepContentsMounted]="true">
             <ng-template>
               <ion-datetime [(ngModel)]="s.date" presentation="date" [id]="'datetimestartshift' + i"
-              locale="de-DE"></ion-datetime>
+              locale="de-DE" [firstDayOfWeek]="1"></ion-datetime>
             </ng-template>
           </ion-modal>
         </ion-item>

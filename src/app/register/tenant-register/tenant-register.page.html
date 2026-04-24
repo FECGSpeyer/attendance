@@ -77,7 +77,7 @@
               <ion-datetime-button datetime="birthdateReg"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
-                  <ion-datetime [(ngModel)]="birthDate" presentation="date" id="birthdateReg" locale="de-DE"></ion-datetime>
+                  <ion-datetime [(ngModel)]="birthDate" presentation="date" id="birthdateReg" locale="de-DE" [firstDayOfWeek]="1"></ion-datetime>
                 </ng-template>
               </ion-modal>
             </ion-item>
