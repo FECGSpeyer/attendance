@@ -1,6 +1,18 @@
     {
       "versions": [
         {
+          "version": "3.13.0",
+          "date": "24.4.2026",
+          "changes": [
+            "🔄 Code-Formatierung: Standardisierung des Code-Stils (Quotes, Semicolons, Line-Endings) für bessere Wartbarkeit.",
+            "🔐 Auth-Flow-Verbesserung: Optimierte Initialisierung und Sign-Out-Handling, verhindert Race-Conditions.",
+            "🔧 Duplikate bei Reaktivierung: Pausierte Personen erscheinen nach der Reaktivierung nicht mehr doppelt in Anwesenheiten.",
+            "🛡️ Datenbank-Constraint: UNIQUE constraint auf (attendance_id, person_id) verhindert zukünftige Duplikate auf DB-Ebene.",
+            "📅 Zeitzonen-Fix: Geburtsdatum, joined und playsSince werden auf UTC Mitternacht normalisiert - keine falschen Daten mehr durch Zeitzonenverschiebungen.",
+            "✅ Alle Datumsfelder korrigiert: Betrifft Person anlegen/bearbeiten, Registrierung, Person übertragen/kopieren und Zusatzfelder."
+          ]
+        },
+        {
           "version": "3.12.0",
           "date": "30.3.2026",
           "changes": [
