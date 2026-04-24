@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "3.13.1",
+          "date": "24.4.2026",
+          "changes": [
+            "📅 Kalender-Konsistenz: Alle Datums-Kalender beginnen jetzt einheitlich am Montag (vorher teilweise Sonntag).",
+            "🔧 Schichtplan-Fix: Kalender für Schichtplan-Startdatum und Schicht-Konfiguration beginnen am Montag.",
+            "📝 Registrierung: Geburtsdatum-Kalender bei der Registrierung beginnt am Montag."
+          ]
+        },
+        {
           "version": "3.13.0",
           "date": "24.4.2026",
           "changes": [
