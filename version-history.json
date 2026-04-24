@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "3.13.2",
+          "date": "24.4.2026",
+          "changes": [
+            "🔧 Schichtplan-Zuweisungen: Beim Kopieren eines Schichtplans in eine andere Instanz werden Zuweisungen jetzt korrekt übernommen, wenn 'Mit Zuweisungen' ausgewählt wird."
+          ]
+        },
+        {
           "version": "3.13.1",
           "date": "24.4.2026",
           "changes": [
