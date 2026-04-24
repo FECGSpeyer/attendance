@@ -1253,8 +1253,19 @@ export class DbService {
     }
 
     if (attData?.length) {
+      // Get existing person_attendances to avoid duplicates
+      const existingPersonAttendances = tenantId
+        ? await this.getPersonAttendancesForTenant(player.id, tenantId)
+        : await this.getPersonAttendances(player.id, false);
+      const existingAttendanceIds = new Set(existingPersonAttendances.map(pa => pa.attendance_id));
+
       const attToAdd: PersonAttendance[] = attData
         .filter((att: Attendance) => {
+          // Skip if person already has an entry for this attendance
+          if (existingAttendanceIds.has(att.id)) {
+            return false;
+          }
+
           const attType = attendanceTypes.find((type: AttendanceType) => type.id === att.type_id);
           return attType.relevant_groups.length === 0 || attType.relevant_groups.includes(player.instrument);
         })
@@ -1290,8 +1301,17 @@ export class DbService {
     const attData: Attendance[] = await this.getUpcomingAttendances();
 
     if (attData?.length) {
+      // Get existing person_attendances to avoid duplicates
+      const existingPersonAttendances = await this.getPersonAttendances(person.id, false);
+      const existingAttendanceIds = new Set(existingPersonAttendances.map(pa => pa.attendance_id));
+
       const attToAdd: PersonAttendance[] = attData
         .filter((att: Attendance) => {
+          // Skip if person already has an entry for this attendance
+          if (existingAttendanceIds.has(att.id)) {
+            return false;
+          }
+
           const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
           return attType.relevant_groups.length === 0 || attType.relevant_groups.includes(group);
         })
@@ -1339,7 +1359,10 @@ export class DbService {
             status,
           };
         });
-      await this.addPersonAttendances(attToAdd);
+
+      if (attToAdd.length > 0) {
+        await this.addPersonAttendances(attToAdd);
+      }
     }
   }
 

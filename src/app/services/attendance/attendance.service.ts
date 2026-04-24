@@ -41,6 +41,12 @@ export class AttendanceService {
       .insert(personAttendances as any);
 
     if (error) {
+      // If it's a duplicate key error (constraint violation), ignore it silently
+      // This can happen if the person is already in the attendance
+      if (error.code === '23505') {
+        console.warn('Duplicate person-attendance entry detected and ignored:', error.message);
+        return;
+      }
       throw new Error('Fehler beim Hinzufügen der Person-Anwesenheiten');
     }
   }
