@@ -2,13 +2,13 @@
 -- This ensures that each person can only appear once per attendance
 
 -- First, remove any existing duplicates before adding the constraint
--- Keep the oldest entry for each duplicate combination
+-- Keep the first entry (lowest id) for each duplicate combination
 WITH ranked_duplicates AS (
   SELECT
     id,
     ROW_NUMBER() OVER (
       PARTITION BY attendance_id, person_id
-      ORDER BY created_at ASC
+      ORDER BY id ASC
     ) as rn
   FROM person_attendances
 )
