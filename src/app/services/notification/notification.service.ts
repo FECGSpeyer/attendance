@@ -20,7 +20,7 @@ export class NotificationService {
         id: userId,
         created_at: new Date().toISOString(),
         enabled: false,
-        telegram_chat_id: "",
+        telegram_chat_id: '',
         birthdays: true,
         signins: true,
         signouts: true,
@@ -43,12 +43,12 @@ export class NotificationService {
 
   async updateNotificationConfig(config: NotificationConfig): Promise<void> {
     const { error } = await supabase
-      .from("notifications")
+      .from('notifications')
       .update(config)
-      .eq("id", config.id);
+      .eq('id', config.id);
 
     if (error) {
-      Utils.showToast("Fehler beim Updaten der Konfiguration, bitte versuche es später erneut.", "danger");
+      Utils.showToast('Fehler beim Updaten der Konfiguration, bitte versuche es später erneut.', 'danger');
       throw new Error(error.message);
     }
 
@@ -57,12 +57,12 @@ export class NotificationService {
 
   async notifyPerTelegram(
     attId: string,
-    type: string = "signin",
+    type: string = 'signin',
     reason?: string,
     isParents: boolean = false,
-    notes: string = ""
+    notes: string = ''
   ): Promise<void> {
-    await supabase.functions.invoke("quick-processor", {
+    await supabase.functions.invoke('quick-processor', {
       body: {
         attId,
         type,
@@ -70,7 +70,7 @@ export class NotificationService {
         isParents,
         notes
       },
-      method: "POST",
+      method: 'POST',
     });
   }
 
@@ -78,10 +78,10 @@ export class NotificationService {
     const loading = await Utils.getLoadingElement(99999);
     await loading.present();
     const extension = asImage ? '.png' : '.pdf';
-    const fileName: string = name + "_" + Math.floor(Math.random() * 100) + extension;
+    const fileName: string = name + '_' + Math.floor(Math.random() * 100) + extension;
 
     const { error } = await supabase.storage
-      .from("attendances")
+      .from('attendances')
       .upload(fileName, blob, { upsert: true, contentType: asImage ? 'image/png' : 'application/pdf' });
 
     if (error) {
@@ -91,47 +91,47 @@ export class NotificationService {
 
     const { data: urlData } = await supabase
       .storage
-      .from("attendances")
+      .from('attendances')
       .getPublicUrl(fileName);
 
-    const functionName = asImage ? "send-photo" : "send-document";
+    const functionName = asImage ? 'send-photo' : 'send-document';
     const { error: sendError } = await supabase.functions.invoke(functionName, {
       body: {
         url: urlData.publicUrl,
         chat_id: chatId,
       },
-      method: "POST",
+      method: 'POST',
     });
 
     loading.dismiss();
 
     if (!sendError) {
-      Utils.showToast("Nachricht wurde erfolgreich gesendet!");
+      Utils.showToast('Nachricht wurde erfolgreich gesendet!');
     } else {
-      Utils.showToast("Fehler beim Senden der Nachricht, versuche es später erneut!", "danger");
+      Utils.showToast('Fehler beim Senden der Nachricht, versuche es später erneut!', 'danger');
     }
 
     window.setTimeout(async () => {
       await supabase.storage
-        .from("attendances")
+        .from('attendances')
         .remove([fileName]);
     }, 10000);
   }
 
   async sendSongPerTelegram(url: string, chatId: string): Promise<void> {
-    const { error: sendError } = await supabase.functions.invoke("send-document", {
+    const { error: sendError } = await supabase.functions.invoke('send-document', {
       body: {
-        url: url,
-        sendAsUrl: !url.includes(".pdf"),
+        url,
+        sendAsUrl: !url.includes('.pdf'),
         chat_id: chatId,
       },
-      method: "POST",
+      method: 'POST',
     });
 
     if (!sendError) {
-      Utils.showToast("Nachricht wurde erfolgreich gesendet!");
+      Utils.showToast('Nachricht wurde erfolgreich gesendet!');
     } else {
-      Utils.showToast("Fehler beim Senden der Nachricht, versuche es später erneut!", "danger");
+      Utils.showToast('Fehler beim Senden der Nachricht, versuche es später erneut!', 'danger');
     }
   }
 }

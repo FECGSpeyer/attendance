@@ -26,7 +26,7 @@ export class AppComponent {
     private swUpdate: SwUpdate,
   ) {
     this.initializeApp();
-    this.titleService.setTitle("Attendix");
+    this.titleService.setTitle('Attendix');
     this.listenToAuthChanges();
     this.checkForUpdates();
   }
@@ -45,23 +45,23 @@ export class AppComponent {
 
   async presentPasswordRecoveryAlert() {
     const alert = await this.alertController.create({
-      header: "Neues Passwort eingeben",
+      header: 'Neues Passwort eingeben',
       inputs: [
         {
           name: 'password',
           type: 'password',
-          placeholder: "Min. 6 Zeichen eingeben..."
+          placeholder: 'Min. 6 Zeichen eingeben...'
         }
       ],
       buttons: [
         {
-          text: "Abbrechen",
+          text: 'Abbrechen',
           role: 'cancel'
         }, {
-          text: "Passwort ändern",
+          text: 'Passwort ändern',
           handler: (values: any) => {
             if (values.password.length < 6) {
-              Utils.showToast("Bitte gib ein Passwort mit mindestens 6 Zeichen ein", "danger");
+              Utils.showToast('Bitte gib ein Passwort mit mindestens 6 Zeichen ein', 'danger');
               this.presentPasswordRecoveryAlert();
             } else {
               this.db.updatePassword(values.password);
@@ -78,6 +78,9 @@ export class AppComponent {
     this.db.getSupabase().auth.onAuthStateChange(async (event) => {
       if (event === 'PASSWORD_RECOVERY') {
         this.presentPasswordRecoveryAlert();
+      }
+      if (event === 'SIGNED_OUT') {
+        this.db.clearState();
       }
     });
   }

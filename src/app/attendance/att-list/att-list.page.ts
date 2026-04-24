@@ -20,38 +20,38 @@ import { AttendancePage } from '../attendance/attendance.page';
 export class AttListPage implements OnInit {
   public dates: string[] = [new Date().toISOString()];
   public dateString: string = format(new Date(), 'dd.MM.yyyy');
-  public type: string = 'uebung';
-  public type_id: string = '';
+  public type = 'uebung';
+  public type_id = '';
   public attendances: Attendance[] = [];
   public oldAttendances: Attendance[] = [];
   public viewerAttendances: Attendance[] = [];
   public allAttendances: Attendance[] = [];
   public currentAttendance: Attendance;
-  public isConductor: boolean = false;
-  public isHelper: boolean = false;
-  public canCreate: boolean = false;
-  public isChoir: boolean = false;
-  public isGeneral: boolean = false;
+  public isConductor = false;
+  public isHelper = false;
+  public canCreate = false;
+  public isChoir = false;
+  public isGeneral = false;
   public notes: string;
   public typeInfo: string;
-  public perc: number = 0;
+  public perc = 0;
   private sub: RealtimeChannel;
   private persSub: RealtimeChannel;
   public songs: Song[] = [];
   public selectedSongs: number[] = [];
-  public loaded: boolean = false;
-  public allDayDuration: number = 1;
+  public loaded = false;
+  public allDayDuration = 1;
   public historyEntry: History = {
     songId: 1,
     person_id: 0,
     date: new Date().toISOString(),
   };
-  public holidays: { schoolHolidays: any[], publicHolidays: any[] } = { schoolHolidays: [], publicHolidays: [] };
+  public holidays: { schoolHolidays: any[]; publicHolidays: any[] } = { schoolHolidays: [], publicHolidays: [] };
   public activeConductors: Person[] = [];
-  public otherConductor: number = 9999999999;
+  public otherConductor = 9999999999;
   public historyEntries: History[] = [];
   public highlightedTypes: string[] = [];
-  public isAddModalOpen: boolean = false;
+  public isAddModalOpen = false;
 
   highlightedDates = (isoString: string) => {
     const date = new Date(isoString);
@@ -177,17 +177,15 @@ export class AttListPage implements OnInit {
   }
 
   async getAttendance(): Promise<void> {
-    const attendances: Attendance[] = (await this.db.getAttendance(false, true)).map((att: Attendance): Attendance => {
-      return {
+    const attendances: Attendance[] = (await this.db.getAttendance(false, true)).map((att: Attendance): Attendance => ({
         ...att,
         percentage: Utils.getPercentage(att.persons, this.db.tenant()?.shift_excused_as_present),
-      }
-    });
+      }));
 
     this.allAttendances = attendances;
-    this.attendances = attendances.filter((att: Attendance) => dayjs(att.date).isAfter(dayjs().startOf("day"))).reverse();
-    this.oldAttendances = attendances.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
-    this.viewerAttendances = attendances.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
+    this.attendances = attendances.filter((att: Attendance) => dayjs(att.date).isAfter(dayjs().startOf('day'))).reverse();
+    this.oldAttendances = attendances.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
+    this.viewerAttendances = attendances.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
     if (this.attendances.length) {
       this.currentAttendance = { ...this.attendances[0] };
       this.viewerAttendances.unshift(this.attendances[0]);
@@ -209,11 +207,11 @@ export class AttListPage implements OnInit {
   async remove(id: number, slider: IonItemSliding): Promise<void> {
     try { await Haptics.impact({ style: ImpactStyle.Medium }); } catch { /* Haptics not available in PWA */ }
     const alert: HTMLIonAlertElement = await this.alertController.create({
-      header: "Möchtest du die Anwesenheit wirklich entfernen?",
+      header: 'Möchtest du die Anwesenheit wirklich entfernen?',
       buttons: [{
-        text: "Abbrechen",
+        text: 'Abbrechen',
       }, {
-        text: "Fortfahren",
+        text: 'Fortfahren',
         handler: async (): Promise<void> => {
           slider.close();
           await this.db.removeAttendance(id);
@@ -235,7 +233,7 @@ export class AttListPage implements OnInit {
 
   async addAttendance(modal: IonModal): Promise<void> {
     if (!this.dates?.length) {
-      Utils.showToast("Bitte wähle mindestens ein Datum aus", "warning");
+      Utils.showToast('Bitte wähle mindestens ein Datum aus', 'warning');
       return;
     }
 
@@ -269,7 +267,7 @@ export class AttListPage implements OnInit {
     const type = this.db.attendanceTypes().find(type => type.id === this.type_id);
 
     if (!type) {
-      Utils.showToast("Ungültiger Anwesenheitstyp ausgewählt", "danger");
+      Utils.showToast('Ungültiger Anwesenheitstyp ausgewählt', 'danger');
       await loading.dismiss();
       return;
     }
@@ -339,20 +337,18 @@ export class AttListPage implements OnInit {
       await this.db.addPersonAttendances(persons);
       persons = [];
       if (this.historyEntries.length) {
-        await this.db.addSongsToHistory(this.historyEntries.map((entry: History) => {
-          return {
+        await this.db.addSongsToHistory(this.historyEntries.map((entry: History) => ({
             ...entry,
             attendance_id,
             visible: true,
-            date: date,
+            date,
             tenantId: this.db.tenant().id,
-          }
-        }));
+          })));
       }
     }
 
     await loading.dismiss();
-    Utils.showToast(this.dates.length === 1 ? "Anwesenheit hinzugefügt" : "Anwesenheiten hinzugefügt", "success");
+    Utils.showToast(this.dates.length === 1 ? 'Anwesenheit hinzugefügt' : 'Anwesenheiten hinzugefügt', 'success');
     await modal.dismiss();
 
     this.notes = '';
@@ -382,7 +378,7 @@ export class AttListPage implements OnInit {
     if (this.dates.length === 1 && isSameDay(new Date(this.dates[0]), new Date())) {
       this.dates = [];
       this.dateString = 'Kein Datum ausgewählt';
-      Utils.showToast("Das aktuelle Datum wurde deselektiert", "light", 3000);
+      Utils.showToast('Das aktuelle Datum wurde deselektiert', 'light', 3000);
     }
   }
 
@@ -449,7 +445,7 @@ export class AttListPage implements OnInit {
   getSongInfo(entry: History): string {
     const song: Song = this.songs.find((s: Song) => s.id === entry.songId);
     if (!song) {
-      return "Unbekanntes Lied";
+      return 'Unbekanntes Lied';
     }
     return `${song.number} ${song.name}`;
   }
@@ -461,7 +457,7 @@ export class AttListPage implements OnInit {
 
     const conductor: Person | undefined = this.activeConductors.find((con: Person) => con.id === entry.person_id);
     if (!conductor) {
-      return "Unbekannter Dirigent";
+      return 'Unbekannter Dirigent';
     }
     return `${conductor.firstName} ${conductor.lastName}`;
   }
@@ -472,13 +468,13 @@ export class AttListPage implements OnInit {
         header: 'Dirigent eingeben',
         inputs: [
           {
-            type: "text",
-            name: "conductor",
-            placeholder: "Dirigent",
+            type: 'text',
+            name: 'conductor',
+            placeholder: 'Dirigent',
           }
         ],
-        buttons: ["Abbrechen", {
-          text: "Speichern",
+        buttons: ['Abbrechen', {
+          text: 'Speichern',
           handler: (data: any) => {
             this.historyEntry.otherConductor = data.conductor;
           }
@@ -496,6 +492,6 @@ export class AttListPage implements OnInit {
   }
 
   getCountText(att: Attendance) {
-    return Math.round((att.percentage / 100) * att.persons.length) + " von " + att.persons.length + " anwesend";
+    return Math.round((att.percentage / 100) * att.persons.length) + ' von ' + att.persons.length + ' anwesend';
   }
 }

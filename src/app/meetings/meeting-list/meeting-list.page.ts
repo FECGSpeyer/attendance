@@ -35,7 +35,7 @@ export class MeetingListPage implements OnInit {
   async addMeeting(modal: any): Promise<void> {
     await this.db.addMeeting({
       date: this.date,
-      notes: "",
+      notes: '',
       attendees: [],
     });
 

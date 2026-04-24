@@ -12,11 +12,11 @@ export class AiService {
   ) { }
 
   async getGroupSynonyms(group: string) {
-    const { data } = await this.db.getSupabase().functions.invoke("synonyms-gpt", {
+    const { data } = await this.db.getSupabase().functions.invoke('synonyms-gpt', {
       body: {
         group,
       },
-      method: "POST",
+      method: 'POST',
     });
 
     return data;

@@ -29,7 +29,7 @@ export class AttendanceService {
       .single();
 
     if (error) {
-      throw new Error("Fehler beim Hinzufügen der Anwesenheit");
+      throw new Error('Fehler beim Hinzufügen der Anwesenheit');
     }
 
     return data.id;
@@ -41,7 +41,7 @@ export class AttendanceService {
       .insert(personAttendances as any);
 
     if (error) {
-      throw new Error("Fehler beim Hinzufügen der Person-Anwesenheiten");
+      throw new Error('Fehler beim Hinzufügen der Person-Anwesenheiten');
     }
   }
 
@@ -53,7 +53,7 @@ export class AttendanceService {
       .eq('person_id', personId);
 
     if (error) {
-      throw new Error("Fehler beim Löschen der Person-Anwesenheiten");
+      throw new Error('Fehler beim Löschen der Person-Anwesenheiten');
     }
   }
 
@@ -74,8 +74,8 @@ export class AttendanceService {
           )
         )`)
         .eq('tenantId', tenantId)
-        .gt("date", all ? dayjs("2020-01-01").toISOString() : currentAttDate)
-        .order("date", { ascending: false });
+        .gt('date', all ? dayjs('2020-01-01').toISOString() : currentAttDate)
+        .order('date', { ascending: false });
 
       res = data.map((att) => ({
         ...att,
@@ -94,15 +94,15 @@ export class AttendanceService {
         .from('attendance')
         .select('*')
         .eq('tenantId', tenantId)
-        .gt("date", all ? dayjs("2020-01-01").toISOString() : currentAttDate)
-        .order("date", { ascending: false });
+        .gt('date', all ? dayjs('2020-01-01').toISOString() : currentAttDate)
+        .order('date', { ascending: false });
 
       res = data;
     }
 
     return res.map((att: any): Attendance => {
       if (att.plan) {
-        att.plan.time = dayjs(att.plan.time).isValid() ? dayjs(att.plan.time).format("HH:mm") : att.plan.time;
+        att.plan.time = dayjs(att.plan.time).isValid() ? dayjs(att.plan.time).format('HH:mm') : att.plan.time;
       }
       return att;
     });
@@ -113,8 +113,8 @@ export class AttendanceService {
       .from('attendance')
       .select('*')
       .eq('tenantId', tenantId)
-      .gt("date", dayjs().startOf("day").toISOString())
-      .order("date", { ascending: false });
+      .gt('date', dayjs().startOf('day').toISOString())
+      .order('date', { ascending: false });
 
     return data as any;
   }
@@ -124,8 +124,8 @@ export class AttendanceService {
       .from('attendance')
       .select('*')
       .eq('tenantId', tenantId)
-      .gt("date", dayjs(date).startOf("day").toISOString())
-      .order("date", { ascending: false });
+      .gt('date', dayjs(date).startOf('day').toISOString())
+      .order('date', { ascending: false });
 
     return data as any;
   }
@@ -135,7 +135,7 @@ export class AttendanceService {
       .from('attendance')
       .select(attendanceSelect)
       .match({ id })
-      .order("date", { ascending: false })
+      .order('date', { ascending: false })
       .single();
 
     return Utils.getModifiedAttendanceData(data as any);
@@ -150,7 +150,7 @@ export class AttendanceService {
       .single();
 
     if (error) {
-      throw new Error("Fehler beim updaten der Anwesenheit");
+      throw new Error('Fehler beim updaten der Anwesenheit');
     }
 
     return data as any;
@@ -173,10 +173,10 @@ export class AttendanceService {
       .from('person_attendances')
       .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan)')
       .eq('person_id', personId)
-      .gt("attendance.date", all ? dayjs("2020-01-01").toISOString() : currentAttDate) as any;
+      .gt('attendance.date', all ? dayjs('2020-01-01').toISOString() : currentAttDate) as any;
 
     return data.filter((a: any) => Boolean(a.attendance)).map((att: any): PersonAttendance => {
-      let attText = Utils.getAttText(att);
+      const attText = Utils.getAttText(att);
       const attType = attendanceTypes.find((type: AttendanceType) => type.id === att.attendance.type_id);
       let title = '';
 
@@ -196,7 +196,7 @@ export class AttendanceService {
         attId: att.attendance.id,
         typeId: att.attendance.type_id,
         attendance: att.attendance,
-        highlight: attType ? attType.highlight : att.attendance.type === "vortrag",
+        highlight: attType ? attType.highlight : att.attendance.type === 'vortrag',
       } as any;
     });
   }
@@ -209,7 +209,7 @@ export class AttendanceService {
       .in('attendance_id', attendanceIds);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Anwesenheiten", "danger");
+      Utils.showToast('Fehler beim Laden der Anwesenheiten', 'danger');
       throw error;
     }
 
@@ -227,7 +227,7 @@ export class AttendanceService {
       .match({ id });
 
     if (error) {
-      throw new Error("Fehler beim updaten der Anwesenheit");
+      throw new Error('Fehler beim updaten der Anwesenheit');
     }
   }
 
@@ -238,7 +238,7 @@ export class AttendanceService {
 
   // Sign in helper for self-service
   async signIn(personAttendanceId: string, status: AttendanceStatus, userId?: string): Promise<void> {
-    await this.updatePersonAttendance(personAttendanceId, { notes: "", status }, userId);
+    await this.updatePersonAttendance(personAttendanceId, { notes: '', status }, userId);
   }
 
   /**
@@ -251,7 +251,7 @@ export class AttendanceService {
       .match({ id });
 
     if (error) {
-      throw new Error("Fehler beim Löschen der Person-Anwesenheit");
+      throw new Error('Fehler beim Löschen der Person-Anwesenheit');
     }
   }
 }

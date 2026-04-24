@@ -15,7 +15,7 @@ export class RolePermissionService {
       .eq('tenant_id', tenantId);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Rollenberechtigungen", "danger");
+      Utils.showToast('Fehler beim Laden der Rollenberechtigungen', 'danger');
       throw error;
     }
 
@@ -31,7 +31,7 @@ export class RolePermissionService {
       .single();
 
     if (error) {
-      Utils.showToast("Fehler beim Aktualisieren der Rollenberechtigung", "danger");
+      Utils.showToast('Fehler beim Aktualisieren der Rollenberechtigung', 'danger');
       throw error;
     }
 

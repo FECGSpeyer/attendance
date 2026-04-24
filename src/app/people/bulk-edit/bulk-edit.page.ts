@@ -23,7 +23,7 @@ export class BulkEditPage implements OnInit {
   @Input() players: Player[] = [];
 
   fieldOptions: FieldOption[] = [];
-  selectedFieldKey: string = '';
+  selectedFieldKey = '';
   selectedField: FieldOption | null = null;
 
   /** Per-player edited values: playerId → new value */
@@ -83,7 +83,7 @@ export class BulkEditPage implements OnInit {
   }
 
   getPlayerFieldValue(player: Player): any {
-    if (!this.selectedField) return null;
+    if (!this.selectedField) {return null;}
 
     if (this.selectedField.type === 'standard') {
       return (player as any)[this.selectedField.key] ?? null;
@@ -103,7 +103,7 @@ export class BulkEditPage implements OnInit {
   }
 
   private getDefaultBulkValue(): any {
-    if (!this.selectedField) return null;
+    if (!this.selectedField) {return null;}
 
     if (this.selectedField.type === 'standard') {
       switch (this.selectedField.key) {
@@ -135,7 +135,7 @@ export class BulkEditPage implements OnInit {
     for (const player of this.players) {
       const original = this.originalValues.get(player.id);
       const edited = this.editedValues.get(player.id);
-      if (original !== edited) count++;
+      if (original !== edited) {count++;}
     }
     return count;
   }
@@ -145,7 +145,7 @@ export class BulkEditPage implements OnInit {
   }
 
   async save() {
-    if (this.changedCount === 0 || !this.selectedField) return;
+    if (this.changedCount === 0 || !this.selectedField) {return;}
 
     this.isSaving = true;
     try {
@@ -160,7 +160,7 @@ export class BulkEditPage implements OnInit {
       for (const player of this.players) {
         const original = this.originalValues.get(player.id);
         const edited = this.editedValues.get(player.id);
-        if (original === edited) continue;
+        if (original === edited) {continue;}
 
         if (this.selectedField.type === 'standard') {
           updates.push(

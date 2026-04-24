@@ -12,7 +12,7 @@ export class SongCategoryService {
       .from('song_categories')
       .select('*')
       .eq('tenant_id', tenantId)
-      .order("index", {
+      .order('index', {
         ascending: true,
       });
 
@@ -30,7 +30,7 @@ export class SongCategoryService {
       .single();
 
     if (error) {
-      throw new Error("Fehler beim hinzufügen der Werkkategorie");
+      throw new Error('Fehler beim hinzufügen der Werkkategorie');
     }
 
     return data;

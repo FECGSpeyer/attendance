@@ -16,7 +16,7 @@ export class ViewerParentService {
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Beobachter", "danger");
+      Utils.showToast('Fehler beim Laden der Beobachter', 'danger');
       throw error;
     }
 
@@ -33,7 +33,7 @@ export class ViewerParentService {
       });
 
     if (error) {
-      throw new Error("Fehler beim hinzufügen des Beobachters.");
+      throw new Error('Fehler beim hinzufügen des Beobachters.');
     }
   }
 
@@ -44,19 +44,19 @@ export class ViewerParentService {
       .match({ id: viewer.id });
 
     if (error) {
-      Utils.showToast("Fehler beim Löschen des Beobachters", "danger");
+      Utils.showToast('Fehler beim Löschen des Beobachters', 'danger');
       throw error;
     }
   }
 
   async getParents(tenantId: number): Promise<Parent[]> {
     const { data, error } = await supabase
-      .from("parents")
+      .from('parents')
       .select('*')
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Elternteile", "danger");
+      Utils.showToast('Fehler beim Laden der Elternteile', 'danger');
       throw error;
     }
 
@@ -65,7 +65,7 @@ export class ViewerParentService {
 
   async createParent(parent: Partial<Parent>, tenantId: number, appId: string): Promise<Parent> {
     const { error, data } = await supabase
-      .from("parents")
+      .from('parents')
       .insert({
         ...parent,
         tenantId,
@@ -75,7 +75,7 @@ export class ViewerParentService {
       .single();
 
     if (error) {
-      throw new Error("Fehler beim hinzufügen des Elternteils.");
+      throw new Error('Fehler beim hinzufügen des Elternteils.');
     }
 
     return data;
@@ -83,12 +83,12 @@ export class ViewerParentService {
 
   async deleteParent(parent: Parent): Promise<void> {
     const { error } = await supabase
-      .from("parents")
+      .from('parents')
       .delete()
       .match({ id: parent.id });
 
     if (error) {
-      Utils.showToast("Fehler beim Löschen des Elternteils", "danger");
+      Utils.showToast('Fehler beim Löschen des Elternteils', 'danger');
       throw error;
     }
   }

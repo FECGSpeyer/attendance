@@ -15,8 +15,8 @@ import { Utils } from 'src/app/utilities/Utils';
 export class ShiftPage implements OnInit {
   public shift: ShiftPlan;
   public calculatedShifts: any[] = [];
-  public isCalculateModalOpen: boolean = false;
-  public isUsed: boolean = false;
+  public isCalculateModalOpen = false;
+  public isUsed = false;
   public linkedTenants: Tenant[] = [];
 
   constructor(
@@ -278,7 +278,7 @@ export class ShiftPage implements OnInit {
             end_time: ''
           };
 
-          let end_time = dayjs(`${nextDate.format('YYYY-MM-DD')}T${def.start_time}`).add(def.duration, 'hour');
+          const end_time = dayjs(`${nextDate.format('YYYY-MM-DD')}T${def.start_time}`).add(def.duration, 'hour');
 
           if (!dayjs(end_time).isSame(nextDate, 'day')) {
             shift.end_time = `${end_time.format('HH:mm')} (+1)`;

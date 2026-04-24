@@ -29,38 +29,38 @@ export class SettingsPage implements OnInit, OnDestroy {
   public viewers: Viewer[] = [];
   public parents: Parent[] = [];
   public admins: Admin[] = [];
-  public isAdmin: boolean = false;
-  public isSuperAdmin: boolean = false;
-  public isHelper: boolean = false;
-  public isPlayer: boolean = false;
-  public isGeneral: boolean = false;
-  public isVoiceLeader: boolean = false;
-  public tenantsFromUser: { tenantId: number, role: Role }[] = [];
-  public isIos: boolean = false;
-  public isInstancesModalOpen: boolean = false;
-  public parentsEnabled: boolean = false;
-  public maintainTeachers: boolean = false;
+  public isAdmin = false;
+  public isSuperAdmin = false;
+  public isHelper = false;
+  public isPlayer = false;
+  public isGeneral = false;
+  public isVoiceLeader = false;
+  public tenantsFromUser: { tenantId: number; role: Role }[] = [];
+  public isIos = false;
+  public isInstancesModalOpen = false;
+  public parentsEnabled = false;
+  public maintainTeachers = false;
   public pendingPersons: Player[] = [];
-  public isApplicant: boolean = false;
+  public isApplicant = false;
   public churches: Church[] = [];
   public userData: Person | null = null;
   public oldUserData: Person | null = null;
-  public isImageViewerOpen: boolean = false;
+  public isImageViewerOpen = false;
   public max: string = new Date().toISOString();
-  public helpQuestion: string = '';
-  public feedbackText: string = '';
-  public anonymous: boolean = false;
-  public feedbackRating: number = 0;
-  public feedbackPhone: string = '';
+  public helpQuestion = '';
+  public feedbackText = '';
+  public anonymous = false;
+  public feedbackRating = 0;
+  public feedbackPhone = '';
   private sub: RealtimeChannel | null = null;
   public versionHistory = require('../../../../version-history.json').versions;
-  public wantInstanceSelection: boolean = false;
-  public showPwaHint: boolean = false;
+  public wantInstanceSelection = false;
+  public showPwaHint = false;
   public fieldTypes = FieldType;
-  public passImageZoomScale: number = 1;
-  private passPinchStartDistance: number = 0;
-  private passPinchStartScale: number = 1;
-  private lastPassImageTapAt: number = 0;
+  public passImageZoomScale = 1;
+  private passPinchStartDistance = 0;
+  private passPinchStartScale = 1;
+  private lastPassImageTapAt = 0;
 
   constructor(
     public db: DbService,
@@ -236,7 +236,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     const modal: HTMLIonModalElement = await this.modalController.create({
       component: PlanningPage,
       presentingElement: this.routerOutlet.nativeEl,
-      cssClass: "planningModal",
+      cssClass: 'planningModal',
     });
 
     await modal.present();
@@ -275,9 +275,9 @@ export class SettingsPage implements OnInit, OnDestroy {
       header: 'Accounts anlegen',
       message: `Folgende Accounts werden angelegt: ${this.playersWithoutAccount.map((p: Player) => `${p.firstName} ${p.lastName}`).join(', ')}`,
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Fortfahren",
+        text: 'Fortfahren',
         handler: async () => {
           await this.createAccounts();
         }
@@ -293,17 +293,17 @@ export class SettingsPage implements OnInit, OnDestroy {
     loading.present();
 
     try {
-      for (let player of this.playersWithoutAccount) {
+      for (const player of this.playersWithoutAccount) {
         await this.db.createAccount(player);
       }
     } catch (error) {
       this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
-      Utils.showToast(`Fehler beim Erstellen der Accounts: ${error.message}`, "danger");
+      Utils.showToast(`Fehler beim Erstellen der Accounts: ${error.message}`, 'danger');
       loading.dismiss();
       return;
     }
 
-    Utils.showToast("Die Accounts wurden erfolgreich angelegt", "success");
+    Utils.showToast('Die Accounts wurden erfolgreich angelegt', 'success');
 
     loading.dismiss();
   }
@@ -313,9 +313,9 @@ export class SettingsPage implements OnInit, OnDestroy {
       header: 'Beobachter entfernen?',
       message: `Möchtest du ${viewer.firstName} wirklich entfernen?`,
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Ja",
+        text: 'Ja',
         handler: async () => {
           await this.db.deleteViewer(viewer);
           this.viewers = await this.db.getViewers();
@@ -331,9 +331,9 @@ export class SettingsPage implements OnInit, OnDestroy {
       header: 'Elternteil entfernen?',
       message: `Möchtest du ${parent.firstName} wirklich entfernen?`,
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Ja",
+        text: 'Ja',
         handler: async () => {
           await this.db.deleteParent(parent);
           this.parents = await this.db.getParents();
@@ -375,35 +375,35 @@ export class SettingsPage implements OnInit, OnDestroy {
     const alert = await this.alertController.create({
       header: 'Beobachter hinzufügen',
       inputs: [{
-        type: "email",
-        name: "email",
-        placeholder: "E-Mail-Adresse",
+        type: 'email',
+        name: 'email',
+        placeholder: 'E-Mail-Adresse',
       }, {
-        name: "firstName",
-        placeholder: "Vorname",
+        name: 'firstName',
+        placeholder: 'Vorname',
       }, {
-        name: "lastName",
-        placeholder: "Nachname",
+        name: 'lastName',
+        placeholder: 'Nachname',
       }],
       buttons: [{
-        text: "Abbrechen",
+        text: 'Abbrechen',
       }, {
-        text: "Einladen",
-        handler: async (data: { email: string, firstName: string, lastName: string }) => {
+        text: 'Einladen',
+        handler: async (data: { email: string; firstName: string; lastName: string }) => {
           if (Utils.validateEmail(data.email) && data.firstName.length && data.lastName.length) {
             const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
             loading.present();
             try {
               await this.db.createViewer(data);
               this.viewers = await this.db.getViewers();
-              Utils.showToast("Der Benutzer wurde erfolgreich angelegt.", "success");
+              Utils.showToast('Der Benutzer wurde erfolgreich angelegt.', 'success');
               await loading.dismiss();
             } catch (error) {
-              Utils.showToast(error.message, "danger");
+              Utils.showToast(error.message, 'danger');
               await loading.dismiss();
             }
           } else {
-            alert.message = "Bitte gib gültige Werte ein.";
+            alert.message = 'Bitte gib gültige Werte ein.';
             return false;
           }
         }
@@ -417,35 +417,35 @@ export class SettingsPage implements OnInit, OnDestroy {
     const alert = await this.alertController.create({
       header: 'Elternteil hinzufügen',
       inputs: [{
-        type: "email",
-        name: "email",
-        placeholder: "E-Mail-Adresse",
+        type: 'email',
+        name: 'email',
+        placeholder: 'E-Mail-Adresse',
       }, {
-        name: "firstName",
-        placeholder: "Vorname",
+        name: 'firstName',
+        placeholder: 'Vorname',
       }, {
-        name: "lastName",
-        placeholder: "Nachname",
+        name: 'lastName',
+        placeholder: 'Nachname',
       }],
       buttons: [{
-        text: "Abbrechen",
+        text: 'Abbrechen',
       }, {
-        text: "Einladen",
-        handler: async (data: { email: string, firstName: string, lastName: string }) => {
+        text: 'Einladen',
+        handler: async (data: { email: string; firstName: string; lastName: string }) => {
           if (Utils.validateEmail(data.email) && data.firstName.length && data.lastName.length) {
             const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
             loading.present();
             try {
               await this.db.createParent(data);
               this.parents = await this.db.getParents();
-              Utils.showToast("Der Benutzer wurde erfolgreich angelegt.", "success");
+              Utils.showToast('Der Benutzer wurde erfolgreich angelegt.', 'success');
               await loading.dismiss();
             } catch (error) {
-              Utils.showToast(error.message, "danger");
+              Utils.showToast(error.message, 'danger');
               await loading.dismiss();
             }
           } else {
-            alert.message = "Bitte gib gültige Werte ein.";
+            alert.message = 'Bitte gib gültige Werte ein.';
             return false;
           }
         }
@@ -459,7 +459,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     slider.close();
 
     if (!this.canDeleteTenant(tenant)) {
-      Utils.showToast("Du kannst diese Instanz nicht löschen.", "danger");
+      Utils.showToast('Du kannst diese Instanz nicht löschen.', 'danger');
       return;
     }
 
@@ -469,14 +469,14 @@ export class SettingsPage implements OnInit, OnDestroy {
       header: 'Instanz löschen?',
       message,
       inputs: [{
-        type: "text",
-        placeholder: "Name der Instanz eingeben...",
-        name: "name"
+        type: 'text',
+        placeholder: 'Name der Instanz eingeben...',
+        name: 'name'
       }],
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Löschen",
+        text: 'Löschen',
         handler: async (evt) => {
           if (evt.name === tenant.longName) {
             const loading = await Utils.getLoadingElement(9999, 'Instanz wird entfernt...');
@@ -485,7 +485,7 @@ export class SettingsPage implements OnInit, OnDestroy {
             await this.db.deleteInstance(tenant.id);
             await loading.dismiss();
           } else {
-            alert.message = "Der eingegebene Name ist nicht korrekt.";
+            alert.message = 'Der eingegebene Name ist nicht korrekt.';
             return false;
           }
         }
@@ -519,14 +519,14 @@ export class SettingsPage implements OnInit, OnDestroy {
     const alert = await this.alertController.create({
       header: 'Admin hinzufügen',
       inputs: [{
-        type: "email",
-        name: "email",
-        placeholder: "E-Mail-Adresse",
+        type: 'email',
+        name: 'email',
+        placeholder: 'E-Mail-Adresse',
       }],
       buttons: [{
-        text: "Abbrechen",
+        text: 'Abbrechen',
       }, {
-        text: "Hinzufügen",
+        text: 'Hinzufügen',
         handler: async (data: { email: string }) => {
           if (Utils.validateEmail(data.email)) {
             const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
@@ -534,14 +534,14 @@ export class SettingsPage implements OnInit, OnDestroy {
             try {
               await this.db.createAdmin(data.email);
               this.admins = await this.db.getAdmins();
-              Utils.showToast("Der Admin wurde erfolgreich hinzugefügt.", "success");
+              Utils.showToast('Der Admin wurde erfolgreich hinzugefügt.', 'success');
               await loading.dismiss();
             } catch (error) {
-              Utils.showToast(error.message, "danger");
+              Utils.showToast(error.message, 'danger');
               await loading.dismiss();
             }
           } else {
-            alert.message = "Bitte gib gültige Werte ein.";
+            alert.message = 'Bitte gib gültige Werte ein.';
             return false;
           }
         }
@@ -555,29 +555,29 @@ export class SettingsPage implements OnInit, OnDestroy {
     const alert = await this.alertController.create({
       header: 'Gemeinde hinzufügen',
       inputs: [{
-        type: "text",
-        name: "name",
-        placeholder: "Name der Gemeinde",
+        type: 'text',
+        name: 'name',
+        placeholder: 'Name der Gemeinde',
       }],
       buttons: [{
-        text: "Abbrechen",
+        text: 'Abbrechen',
       }, {
-        text: "Hinzufügen",
+        text: 'Hinzufügen',
         handler: async (data: { name: string }) => {
           if (data.name.length) {
             const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
             loading.present();
             try {
               await this.db.createChurch(data.name);
-              Utils.showToast("Die Gemeinde wurde erfolgreich hinzugefügt.", "success");
+              Utils.showToast('Die Gemeinde wurde erfolgreich hinzugefügt.', 'success');
               this.churches = await this.db.getChurches();
               await loading.dismiss();
             } catch (error) {
-              Utils.showToast(error.message, "danger");
+              Utils.showToast(error.message, 'danger');
               await loading.dismiss();
             }
           } else {
-            alert.message = "Bitte gib gültige Werte ein.";
+            alert.message = 'Bitte gib gültige Werte ein.';
             return false;
           }
         }
@@ -589,7 +589,7 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   async removeAdmin(admin: Admin): Promise<void> {
     if (admin.userId === this.db.tenantUser().userId) {
-      Utils.showToast("Du kannst dich nicht selbst entfernen.", "danger");
+      Utils.showToast('Du kannst dich nicht selbst entfernen.', 'danger');
       return;
     }
 
@@ -597,13 +597,13 @@ export class SettingsPage implements OnInit, OnDestroy {
       header: 'Admin entfernen?',
       message: `Möchtest du ${admin.email} wirklich entfernen?`,
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Ja",
+        text: 'Ja',
         handler: async () => {
           await this.db.removeEmailFromAuth(admin.userId, admin.email, true);
           this.admins = await this.db.getAdmins();
-          Utils.showToast("Der Admin wurde erfolgreich entfernt.", "success");
+          Utils.showToast('Der Admin wurde erfolgreich entfernt.', 'success');
         }
       }]
     });
@@ -621,11 +621,11 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   getExtraFieldDisplayValue(field: any): string {
     let value = this.userData?.additional_fields?.[field.id];
-    if (field.type === FieldType.BOOLEAN) return value ? 'Ja' : 'Nein';
+    if (field.type === FieldType.BOOLEAN) {return value ? 'Ja' : 'Nein';}
     if (value === undefined || value === null || value === '') {
       value = field.defaultValue;
     }
-    if (value === undefined || value === null || value === '') return '—';
+    if (value === undefined || value === null || value === '') {return '—';}
     if (field.type === FieldType.BFECG_CHURCH) {
       const church = this.db.churches()?.find(c => c.id === value);
       return church?.name || String(value);
@@ -639,20 +639,20 @@ export class SettingsPage implements OnInit, OnDestroy {
       header: 'Kalender abonnieren',
       message: `Kopiere den folgenden Link in deine Kalender-App, um die Termine zu abonnieren:\n\n${link}`,
       buttons: [{
-        text: "Link kopieren",
+        text: 'Link kopieren',
         handler: () => {
           navigator?.clipboard.writeText(link);
-          Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
+          Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
           return false;
         }
       }, {
-        text: "Anleitung öffen",
+        text: 'Anleitung öffen',
         handler: () => {
-          window.open(this.isIos ? "https://support.apple.com/de-de/102301" : "https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid", "_blank");
+          window.open(this.isIos ? 'https://support.apple.com/de-de/102301' : 'https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid', '_blank');
         }
       }, {
-        text: "Schließen",
-        role: "destructive"
+        text: 'Schließen',
+        role: 'destructive'
       }]
     });
 
@@ -805,7 +805,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       additional_fields: additionalFields,
     }, churchId);
 
-    Utils.showToast("Die Profildaten wurden erfolgreich aktualisiert.", "success");
+    Utils.showToast('Die Profildaten wurden erfolgreich aktualisiert.', 'success');
   }
 
   async onImageSelect(evt: any) {
@@ -816,7 +816,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     if (imgFile) {
       if (imgFile.size > 2 * 1024 * 1024) {
         loading.dismiss();
-        Utils.showToast("Das Bild darf maximal 2MB groß sein.", "danger");
+        Utils.showToast('Das Bild darf maximal 2MB groß sein.', 'danger');
         return;
       }
 
@@ -829,20 +829,20 @@ export class SettingsPage implements OnInit, OnDestroy {
           const url: string = await this.db.updateImage(this.userData.id, imgFile, this.userData.appId);
           this.userData.img = url;
           loading.dismiss();
-          Utils.showToast("Das Passbild wurde erfolgreich geändert.", "success");
+          Utils.showToast('Das Passbild wurde erfolgreich geändert.', 'success');
         } catch (error) {
-          Utils.showToast(error, "danger");
+          Utils.showToast(error, 'danger');
           loading.dismiss();
         }
       } else {
         loading.dismiss();
-        Utils.showToast("Fehler beim ändern des Passbildes, versuche es später erneut", "danger");
+        Utils.showToast('Fehler beim ändern des Passbildes, versuche es später erneut', 'danger');
       }
     }
   }
 
   openTelegramSupport() {
-    window.open("https://t.me/Eckstaedt", "_blank");
+    window.open('https://t.me/Eckstaedt', '_blank');
   }
 
   async sendQuestion(modal: IonModal) {
@@ -859,10 +859,10 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.anonymous = false;
       this.feedbackPhone = '';
 
-      Utils.showToast("Deine Anfrage wurde erfolgreich gesendet. Wir melden uns so schnell wie möglich bei dir.", "success");
+      Utils.showToast('Deine Anfrage wurde erfolgreich gesendet. Wir melden uns so schnell wie möglich bei dir.', 'success');
       loading.dismiss();
     } catch (error) {
-      Utils.showToast("Fehler beim Senden der Anfrage: " + error.message, "danger");
+      Utils.showToast('Fehler beim Senden der Anfrage: ' + error.message, 'danger');
       loading.dismiss();
     }
   }
@@ -872,7 +872,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     loading.present();
 
     if (this.feedbackRating === 0) {
-      Utils.showToast("Bitte gib eine Bewertung ab.", "danger");
+      Utils.showToast('Bitte gib eine Bewertung ab.', 'danger');
       loading.dismiss();
       return;
     }
@@ -890,10 +890,10 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.anonymous = false;
       this.feedbackPhone = '';
 
-      Utils.showToast("Dein Feedback wurde erfolgreich gesendet. Vielen Dank!", "success");
+      Utils.showToast('Dein Feedback wurde erfolgreich gesendet. Vielen Dank!', 'success');
       loading.dismiss();
     } catch (error) {
-      Utils.showToast("Fehler beim Senden des Feedbacks: " + error.message, "danger");
+      Utils.showToast('Fehler beim Senden des Feedbacks: ' + error.message, 'danger');
       loading.dismiss();
     }
   }
@@ -911,31 +911,31 @@ export class SettingsPage implements OnInit, OnDestroy {
     const alert = await this.alertController.create({
       header: 'Passwort ändern',
       inputs: [{
-        type: "password",
-        placeholder: "Neues Passwort eingeben...",
-        name: "password"
+        type: 'password',
+        placeholder: 'Neues Passwort eingeben...',
+        name: 'password'
       }, {
-        type: "password",
-        placeholder: "Passwort wiederholen...",
-        name: "passwordConfirm"
+        type: 'password',
+        placeholder: 'Passwort wiederholen...',
+        name: 'passwordConfirm'
       }],
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Ändern",
+        text: 'Ändern',
         handler: async (evt) => {
           if (evt.password !== evt.passwordConfirm) {
-            Utils.showToast("Die Passwörter stimmen nicht überein.", "danger");
+            Utils.showToast('Die Passwörter stimmen nicht überein.', 'danger');
             return false;
           } else if (evt.password.length < 6) {
-            Utils.showToast("Das Passwort muss mindestens 6 Zeichen lang sein.", "danger");
+            Utils.showToast('Das Passwort muss mindestens 6 Zeichen lang sein.', 'danger');
             return false;
           } else {
             try {
               await this.db.changePassword(evt.password);
-              Utils.showToast("Das Passwort wurde erfolgreich geändert");
+              Utils.showToast('Das Passwort wurde erfolgreich geändert');
             } catch (error) {
-              Utils.showToast("Fehler beim Ändern deines Passworts. Bitte versuche es später erneut.", "danger");
+              Utils.showToast('Fehler beim Ändern deines Passworts. Bitte versuche es später erneut.', 'danger');
             }
           }
         }

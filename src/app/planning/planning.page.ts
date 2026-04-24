@@ -15,27 +15,27 @@ import { DefaultAttendanceType } from 'src/app/utilities/constants';
 })
 export class PlanningPage implements OnInit {
   @Input() attendanceId?: number;
-  public type: string = "pdf";
+  public type = 'pdf';
   public songs: Song[] = [];
   public history: History[] = [];
   public selectedFields: FieldSelection[] = [{
-    id: "",
-    name: "Wort ",
-    time: "10",
+    id: '',
+    name: 'Wort ',
+    time: '10',
   }];
   public attendances: Attendance[] = [];
   public attendance: number;
-  public time: string = dayjs().utc().hour(17).minute(50).format("YYYY-MM-DDTHH:mm");
+  public time: string = dayjs().utc().hour(17).minute(50).format('YYYY-MM-DDTHH:mm');
   public end: string;
-  public notes: string = "";
-  public hasChatId: boolean = false;
-  public isPlanModalOpen: boolean = false;
+  public notes = '';
+  public hasChatId = false;
+  public isPlanModalOpen = false;
   public conductors: Person[] = [];
   public selConductors: number[] = [];
   public planGroups: string[] = [];
   public planConductors: string[] = [];
   public groupCategories: GroupCategory[];
-  public sharePlan: boolean = false;
+  public sharePlan = false;
   public customModalOptions = {
     header: 'Werk hinzufügen',
     breakpoints: [0, 0.7, 1],
@@ -64,20 +64,18 @@ export class PlanningPage implements OnInit {
     if (this.attendanceId) {
       this.attendance = this.attendanceId;
       const att = this.attendances.find((att: Attendance) => att.id === this.attendanceId);
-      this.notes = att?.notes || "";
+      this.notes = att?.notes || '';
       this.sharePlan = att?.share_plan || false;
       if (att?.plan) {
         this.end = att.plan.end;
         this.time = att.plan.time;
-        this.selectedFields = att.plan.fields.map((field: FieldSelection) => {
-          return {
+        this.selectedFields = att.plan.fields.map((field: FieldSelection) => ({
             ...field,
-            conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || "")
-          }
-        });
+            conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || '')
+          }));
       } else {
-        const isPractice = this.attendances.find((att: Attendance) => att.id === this.attendance)?.type === "uebung";
-        this.time = isPractice ? (this.db.tenant().practiceStart || "17:50") : "10:00";
+        const isPractice = this.attendances.find((att: Attendance) => att.id === this.attendance)?.type === 'uebung';
+        this.time = isPractice ? (this.db.tenant().practiceStart || '17:50') : '10:00';
       }
     } else if (upcomingAttendances.length) {
       this.attendance = upcomingAttendances[0].id;
@@ -86,15 +84,13 @@ export class PlanningPage implements OnInit {
       if (upcomingAttendances[0].plan) {
         this.end = upcomingAttendances[0].plan.end;
         this.time = upcomingAttendances[0].plan.time;
-        this.selectedFields = upcomingAttendances[0].plan.fields.map((field: FieldSelection) => {
-          return {
+        this.selectedFields = upcomingAttendances[0].plan.fields.map((field: FieldSelection) => ({
             ...field,
-            conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || "")
-          }
-        });
+            conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || '')
+          }));
       } else {
-        const isPractice = this.attendances.find((att: Attendance) => att.id === this.attendance)?.type === "uebung";
-        this.time = isPractice ? (this.db.tenant().practiceStart || "17:50") : "10:00";
+        const isPractice = this.attendances.find((att: Attendance) => att.id === this.attendance)?.type === 'uebung';
+        this.time = isPractice ? (this.db.tenant().practiceStart || '17:50') : '10:00';
       }
     }
 
@@ -104,8 +100,8 @@ export class PlanningPage implements OnInit {
   }
 
   calculateTime(field: FieldSelection, index: number) {
-    let minutesToAdd: number = 0;
-    let currentIndex: number = 0;
+    let minutesToAdd = 0;
+    let currentIndex = 0;
 
     while (currentIndex !== index) {
       minutesToAdd += Number(this.selectedFields[currentIndex].time);
@@ -113,30 +109,30 @@ export class PlanningPage implements OnInit {
     }
 
     const time: dayjs.Dayjs = dayjs(this.time).isValid() ? dayjs(this.time) : dayjs().hour(Number(this.time.substring(0, 2))).minute(Number(this.time.substring(3, 5)));
-    return `${time.add(minutesToAdd, "minute").format("HH:mm")} ${field.conductor ? `| ${field.conductor}` : ""}`;
+    return `${time.add(minutesToAdd, 'minute').format('HH:mm')} ${field.conductor ? `| ${field.conductor}` : ''}`;
   }
 
   async changeField(field: FieldSelection, slider?: IonItemSliding) {
     slider?.close();
     const clone: FieldSelection = JSON.parse(JSON.stringify(field));
     let inputs = [{
-      label: "Programmpunkt",
-      name: "field",
+      label: 'Programmpunkt',
+      name: 'field',
       value: clone.name,
-      placeholder: "Programmpunkt eingeben..."
+      placeholder: 'Programmpunkt eingeben...'
     }, {
-      label: "Ausführender",
-      name: "conductor",
+      label: 'Ausführender',
+      name: 'conductor',
       value: clone.conductor,
-      placeholder: "Ausführenden eingeben..."
+      placeholder: 'Ausführenden eingeben...'
     }];
 
-    if (field.id.includes("noteFld")) {
+    if (field.id.includes('noteFld')) {
       inputs = [{
-        label: "Notiz",
-        name: "field",
+        label: 'Notiz',
+        name: 'field',
         value: clone.name,
-        placeholder: "Notiz eingeben..."
+        placeholder: 'Notiz eingeben...'
       }];
     }
 
@@ -144,16 +140,16 @@ export class PlanningPage implements OnInit {
       header: 'Feld bearbeiten',
       inputs,
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Updaten",
+        text: 'Updaten',
         handler: (evt: any) => {
           if (!evt.field) {
-            alert.message = "Bitte einen Programmpunkt eingeben.";
+            alert.message = 'Bitte einen Programmpunkt eingeben.';
             return false;
           }
           field.name = evt.field;
-          field.conductor = evt.conductor ?? "";
+          field.conductor = evt.conductor ?? '';
           this.calculateEnd();
         }
       }]
@@ -168,7 +164,7 @@ export class PlanningPage implements OnInit {
     }
 
     const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
-    const name: string = this.attendance ? dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format("DD_MM_YYYY") : dayjs().format("DD_MM_YYYY");
+    const name: string = this.attendance ? dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format('DD_MM_YYYY') : dayjs().format('DD_MM_YYYY');
     const type = this.db.attendanceTypes().find(type => type.id === attendance.type_id);
     const planningTitle = Utils.getPlanningTitle(type, attendance.typeInfo);
     const blob = await Utils.createPlanExport({
@@ -181,25 +177,23 @@ export class PlanningPage implements OnInit {
       attendance: this.attendance,
       attendances: this.attendances
     }, planningTitle);
-    this.db.sendPlanPerTelegram(blob, `${planningTitle.replace("(", "").replace(")", "")}_${name}${sideBySide ? '_2x' : ''}`, asImage);
+    this.db.sendPlanPerTelegram(blob, `${planningTitle.replace('(', '').replace(')', '')}_${name}${sideBySide ? '_2x' : ''}`, asImage);
   }
 
   onAttChange() {
     const attendance: Attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
 
-    if (!attendance) return;
+    if (!attendance) {return;}
 
     this.notes = attendance.notes;
     this.sharePlan = attendance.share_plan || false;
     if (attendance.plan) {
       this.end = attendance.plan.end;
       this.time = attendance.plan.time;
-      this.selectedFields = attendance.plan.fields.map((field: FieldSelection) => {
-        return {
+      this.selectedFields = attendance.plan.fields.map((field: FieldSelection) => ({
           ...field,
-          conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || "")
-        }
-      });
+          conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || '')
+        }));
     } else if (this.history.length) {
       this.addDefaultFieldsFromAttendanceType(attendance.type_id);
     }
@@ -208,7 +202,7 @@ export class PlanningPage implements OnInit {
   }
 
   async toggleSharePlan() {
-    if (!this.attendance) return;
+    if (!this.attendance) {return;}
 
     await this.db.updateAttendance({ share_plan: this.sharePlan }, this.attendance);
     const att = this.attendances.find((a: Attendance) => a.id === this.attendance);
@@ -238,24 +232,24 @@ export class PlanningPage implements OnInit {
     const alert = await this.alertController.create({
       header: 'Feld hinzufügen',
       inputs: [{
-        type: "textarea",
-        name: "field",
-        placeholder: "Freitext eingeben..."
+        type: 'textarea',
+        name: 'field',
+        placeholder: 'Freitext eingeben...'
       }, {
-        type: "text",
-        name: "conductor",
-        placeholder: "Ausführenden eingeben..."
+        type: 'text',
+        name: 'conductor',
+        placeholder: 'Ausführenden eingeben...'
       }],
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Hinzufügen",
+        text: 'Hinzufügen',
         handler: (evt: any) => {
           this.selectedFields.push({
             id: evt.field,
             name: evt.field,
-            conductor: evt.conductor ?? "",
-            time: "20",
+            conductor: evt.conductor ?? '',
+            time: '20',
           });
 
           this.calculateEnd();
@@ -272,20 +266,20 @@ export class PlanningPage implements OnInit {
     const alert = await this.alertController.create({
       header: 'Notizfeld hinzufügen',
       inputs: [{
-        type: "textarea",
-        name: "field",
-        placeholder: "Notiz eingeben..."
+        type: 'textarea',
+        name: 'field',
+        placeholder: 'Notiz eingeben...'
       }],
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Hinzufügen",
+        text: 'Hinzufügen',
         handler: (evt: any) => {
           this.selectedFields.push({
             id: `noteFld ${evt.field}`,
             name: evt.field,
-            conductor: "",
-            time: "0",
+            conductor: '',
+            time: '0',
           });
 
           this.calculateEnd();
@@ -300,7 +294,7 @@ export class PlanningPage implements OnInit {
     popover?.dismiss();
     const songsToAdd: string[] = [];
 
-    for (let historyItem of this.history) {
+    for (const historyItem of this.history) {
       if (!this.selectedFields.find((field: FieldSelection) => Number(field.id) === historyItem.songId)) {
         songsToAdd.push(String(historyItem.songId));
       }
@@ -312,7 +306,7 @@ export class PlanningPage implements OnInit {
   onAddSong(id: string, popover: IonPopover) {
     popover?.dismiss();
     const attendance: Attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
-    if (!id) return;
+    if (!id) {return;}
     this.onSongsChange([id]);
   }
 
@@ -320,7 +314,7 @@ export class PlanningPage implements OnInit {
     const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
     const type = this.db.attendanceTypes().find((t: AttendanceType) => t.id === attendance?.type_id);
 
-    for (let id of ids) {
+    for (const id of ids) {
       const song: Song = this.songs.find((song: Song) => song.id === parseInt(id));
       const conductor: string | undefined = this.history?.find((his: History) => his.songId === song.id)?.conductorName;
       const prefix = type?.planning_prefix_instance_name ? `${this.db.tenant().longName}: ` : `${song.number}. `;
@@ -328,8 +322,8 @@ export class PlanningPage implements OnInit {
       this.selectedFields.push({
         id,
         name: `${prefix}${song.name}`,
-        time: "20",
-        conductor: conductor || "",
+        time: '20',
+        conductor: conductor || '',
         songId: song.id,
       });
     }
@@ -343,11 +337,11 @@ export class PlanningPage implements OnInit {
       currentTime = dayjs().hour(Number(this.time.substring(0, 2))).minute(Number(this.time.substring(3, 5)));
     }
 
-    for (let field of this.selectedFields) {
-      currentTime = currentTime.add(parseInt(field.time), "minutes");
+    for (const field of this.selectedFields) {
+      currentTime = currentTime.add(parseInt(field.time), 'minutes');
     }
 
-    this.end = currentTime.format("YYYY-MM-DDTHH:mm");
+    this.end = currentTime.format('YYYY-MM-DDTHH:mm');
 
     this.updateAttendance();
   }
@@ -375,14 +369,14 @@ export class PlanningPage implements OnInit {
   validate(showToast: boolean = true): boolean {
     if (!this.time || !this.selectedFields.length) {
       if (showToast) {
-        Utils.showToast("Bitte wähle mindestens ein Feld aus.", "warning");
+        Utils.showToast('Bitte wähle mindestens ein Feld aus.', 'warning');
       }
       return false;
     }
 
     if (!this.selectedFields.every(field => field.time)) {
       if (showToast) {
-        Utils.showToast("Bitte fülle alle erforderlichen Felder aus.", "warning");
+        Utils.showToast('Bitte fülle alle erforderlichen Felder aus.', 'warning');
       }
       return false;
     }
@@ -566,7 +560,7 @@ export class PlanningPage implements OnInit {
     const song = this.songs.find((s: Song) => s.id === songId);
 
     if (!song || !song.instrument_ids || !song.instrument_ids.length) {
-      return "";
+      return '';
     }
 
     const text = Utils.getInstrumentText(song.instrument_ids, this.db.groups().filter((group: Group) => !group.maingroup), this.groupCategories);
@@ -579,7 +573,7 @@ export class PlanningPage implements OnInit {
       this.attendance = this.attendances[currentIndex - 1].id;
       this.onAttChange();
     } else {
-      Utils.showToast("Dies ist die aktuell erste Veranstaltung", "warning");
+      Utils.showToast('Dies ist die aktuell erste Veranstaltung', 'warning');
     }
   }
 
@@ -589,7 +583,7 @@ export class PlanningPage implements OnInit {
       this.attendance = this.attendances[currentIndex + 1].id;
       this.onAttChange();
     } else {
-      Utils.showToast("Dies ist die aktuell letzte Veranstaltung", "warning");
+      Utils.showToast('Dies ist die aktuell letzte Veranstaltung', 'warning');
     }
   }
 
@@ -643,8 +637,8 @@ export class PlanningPage implements OnInit {
 
       this.time = attType.start_time;
 
-      for (let field of attType.default_plan.fields) {
-        if (field.id.startsWith("song-placeholder-")) {
+      for (const field of attType.default_plan.fields) {
+        if (field.id.startsWith('song-placeholder-')) {
           const historyItem = this.history.find((his: History) => !songsAdded.has(String(his.songId)));
           if (historyItem) {
             songsAdded.add(String(historyItem.songId));
@@ -656,7 +650,7 @@ export class PlanningPage implements OnInit {
               ...field,
               id: String(song.id),
               name: `${prefix}${song.name}`,
-              conductor: conductor || "",
+              conductor: conductor || '',
               songId: song.id,
             });
           }

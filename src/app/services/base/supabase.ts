@@ -12,7 +12,7 @@ const options: SupabaseClientOptions<any> = {
 
 export const supabase = createClient<Database>(environment.apiUrl, environment.apiKey, options);
 
-export const attendanceSelect: string = `*, persons:person_attendances(
+export const attendanceSelect = `*, persons:person_attendances(
   *, person:person_id(
     firstName, lastName, img, instrument(id, name), joined, appId, additional_fields
   )

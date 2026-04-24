@@ -13,7 +13,7 @@ import { Utils } from 'src/app/utilities/Utils';
     standalone: false
 })
 export class HandoverDetailPage implements OnInit {
-  public handoverData: { persons: Player[], stayInInstance: boolean, tenant: Tenant };
+  public handoverData: { persons: Player[]; stayInInstance: boolean; tenant: Tenant };
   public newTenantGroups: Group[] = [];
   public groupMapping: { [playerId: number]: number } = {};
 

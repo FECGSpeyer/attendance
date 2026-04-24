@@ -16,41 +16,41 @@ import { Utils } from 'src/app/utilities/Utils';
 })
 export class GeneralPage implements OnInit {
   public holidayStates = [
-    { name: "Baden-Württemberg", code: "BW" },
-    { name: "Bayern", code: "BY" },
-    { name: "Berlin", code: "BE" },
-    { name: "Brandenburg", code: "BB" },
-    { name: "Bremen", code: "HB" },
-    { name: "Hamburg", code: "HH" },
-    { name: "Hessen", code: "HE" },
-    { name: "Mecklenburg-Vorpommern", code: "MV" },
-    { name: "Niedersachsen", code: "NI" },
-    { name: "Nordrhein-Westfalen", code: "NW" },
-    { name: "Rheinland-Pfalz", code: "RP" },
-    { name: "Saarland", code: "SL" },
-    { name: "Sachsen", code: "SN" },
-    { name: "Sachsen-Anhalt", code: "ST" },
-    { name: "Schleswig-Holstein", code: "SH" },
-    { name: "Thüringen", code: "TH" },
+    { name: 'Baden-Württemberg', code: 'BW' },
+    { name: 'Bayern', code: 'BY' },
+    { name: 'Berlin', code: 'BE' },
+    { name: 'Brandenburg', code: 'BB' },
+    { name: 'Bremen', code: 'HB' },
+    { name: 'Hamburg', code: 'HH' },
+    { name: 'Hessen', code: 'HE' },
+    { name: 'Mecklenburg-Vorpommern', code: 'MV' },
+    { name: 'Niedersachsen', code: 'NI' },
+    { name: 'Nordrhein-Westfalen', code: 'NW' },
+    { name: 'Rheinland-Pfalz', code: 'RP' },
+    { name: 'Saarland', code: 'SL' },
+    { name: 'Sachsen', code: 'SN' },
+    { name: 'Sachsen-Anhalt', code: 'ST' },
+    { name: 'Schleswig-Holstein', code: 'SH' },
+    { name: 'Thüringen', code: 'TH' },
   ];
   public practiceStart: string;
   public practiceEnd: string;
-  public shortName: string = '';
-  public longName: string = '';
-  public maintainTeachers: boolean = false;
-  public showHolidays: boolean = false;
-  public region: string = 'RP';
+  public shortName = '';
+  public longName = '';
+  public maintainTeachers = false;
+  public showHolidays = false;
+  public region = 'RP';
   public attDateString: string = format(new Date(), 'dd.MM.yyyy');
   public attDate: string = new Date().toISOString();
-  public parentsEnabled: boolean = false;
-  public showMembersList: boolean = false;
-  public isOrchestra: boolean = false;
-  public isSuperAdmin: boolean = false;
-  public isGeneral: boolean = false;
+  public parentsEnabled = false;
+  public showMembersList = false;
+  public isOrchestra = false;
+  public isSuperAdmin = false;
+  public isGeneral = false;
   public max: string = new Date().toISOString();
   public churches: Church[] = [];
   public duplicateGroups: { target: Church; duplicates: Church[] }[] = [];
-  public songSharingEnabled: boolean = false;
+  public songSharingEnabled = false;
   public newExtraField: ExtraField = {
     id: '',
     name: '',
@@ -64,11 +64,11 @@ export class GeneralPage implements OnInit {
   public extraFields: ExtraField[] = [];
   private originalExtraFields: ExtraField[] = [];
   public editingExtraField: ExtraField | null = null;
-  public editingExtraFieldIndex: number = -1;
-  public isEditExtraFieldModalOpen: boolean = false;
-  public registerAllowed: boolean = false;
-  public autoApproveRegistrations: boolean = false;
-  public registerFields: { key: string, label: string, disabled: boolean }[] = [
+  public editingExtraFieldIndex = -1;
+  public isEditExtraFieldModalOpen = false;
+  public registerAllowed = false;
+  public autoApproveRegistrations = false;
+  public registerFields: { key: string; label: string; disabled: boolean }[] = [
     { key: 'picture', label: 'Passbild', disabled: false },
     { key: 'firstName', label: 'Vorname', disabled: true },
     { key: 'lastName', label: 'Nachname', disabled: true },
@@ -79,7 +79,7 @@ export class GeneralPage implements OnInit {
   public selectedRegisterFields: string[] = ['firstName', 'lastName', 'birthDate', 'group'];
 
   // Shift worker config
-  public shiftExcusedAsPresent: boolean = false;
+  public shiftExcusedAsPresent = false;
 
   // Critical rules
   public criticalRules: CriticalRule[] = [];
@@ -91,7 +91,7 @@ export class GeneralPage implements OnInit {
   public CriticalRulePeriodType = CriticalRulePeriodType;
 
   // Change tracking
-  private originalState: string = '';
+  private originalState = '';
 
   // Browser/PWA: Warn before closing tab with unsaved changes
   @HostListener('window:beforeunload', ['$event'])
@@ -204,7 +204,7 @@ export class GeneralPage implements OnInit {
   async navigateBack(): Promise<void> {
     if (this.hasUnsavedChanges()) {
       const shouldLeave = await this.confirmUnsavedChanges();
-      if (!shouldLeave) return;
+      if (!shouldLeave) {return;}
     }
     this.navController.back();
   }
@@ -276,18 +276,18 @@ export class GeneralPage implements OnInit {
     // Validate extra fields
     for (const field of this.extraFields) {
       if (!field.name || field.name.trim().length === 0) {
-        Utils.showToast("Alle Zusatzfelder müssen einen Namen haben.", "danger");
+        Utils.showToast('Alle Zusatzfelder müssen einen Namen haben.', 'danger');
         return;
       }
 
       if (field.type === FieldType.SELECT) {
         if (!field.options || field.options.length === 0) {
-          Utils.showToast(`Das Auswahlfeld "${field.name}" muss mindestens eine Option haben.`, "danger");
+          Utils.showToast(`Das Auswahlfeld "${field.name}" muss mindestens eine Option haben.`, 'danger');
           return;
         }
 
         if (field.options.some((opt) => !opt || opt.trim().length === 0)) {
-          Utils.showToast(`Die Optionen im Feld "${field.name}" dürfen nicht leer sein.`, "danger");
+          Utils.showToast(`Die Optionen im Feld "${field.name}" dürfen nicht leer sein.`, 'danger');
           return;
         }
       }
@@ -337,15 +337,15 @@ export class GeneralPage implements OnInit {
       }
 
       this.markAsSaved();
-      Utils.showToast("Einstellungen gespeichert", "success");
+      Utils.showToast('Einstellungen gespeichert', 'success');
 
       const alert = await this.alertController.create({
         header: 'Einstellungen gespeichert',
         message: 'Die Einstellungen wurden erfolgreich gespeichert. Bitte lade die Seite neu, um die Änderungen zu sehen.',
         buttons: [{
-          text: "Abbrechen"
+          text: 'Abbrechen'
         }, {
-          text: "Neu laden",
+          text: 'Neu laden',
           handler: () => {
             window?.location?.reload();
           }
@@ -354,7 +354,7 @@ export class GeneralPage implements OnInit {
 
       await alert.present();
     } catch (error) {
-      Utils.showToast("Fehler beim Aktualisieren der Einstellungen", "danger");
+      Utils.showToast('Fehler beim Aktualisieren der Einstellungen', 'danger');
     }
   }
 
@@ -371,28 +371,28 @@ export class GeneralPage implements OnInit {
           value: org,
         })),
         buttons: [{
-          text: "Abbrechen",
+          text: 'Abbrechen',
         }, {
-          text: "Auswählen",
+          text: 'Auswählen',
           handler: async (data: Organisation) => {
             if (data) {
               const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
               loading.present();
               try {
                 await this.db.linkTenantToOrganisation(this.db.tenant().id, data);
-                Utils.showToast("Die Organisation wurde erfolgreich ausgewählt.", "success");
+                Utils.showToast('Die Organisation wurde erfolgreich ausgewählt.', 'success');
                 await loading.dismiss();
               } catch (error) {
-                Utils.showToast(error.message, "danger");
+                Utils.showToast(error.message, 'danger');
                 await loading.dismiss();
               }
             } else {
-              alert.message = "Bitte wähle eine Organisation aus.";
+              alert.message = 'Bitte wähle eine Organisation aus.';
               return false;
             }
           }
         }, {
-          text: "Neue Organisation erstellen",
+          text: 'Neue Organisation erstellen',
           handler: async () => {
             alert.dismiss();
             this.openCreateOrganisationAlert();
@@ -411,28 +411,28 @@ export class GeneralPage implements OnInit {
     const alert = await this.alertController.create({
       header: 'Organisation erstellen',
       inputs: [{
-        type: "text",
-        name: "name",
-        placeholder: "Name eingeben...",
+        type: 'text',
+        name: 'name',
+        placeholder: 'Name eingeben...',
       }],
       buttons: [{
-        text: "Abbrechen",
+        text: 'Abbrechen',
       }, {
-        text: "Hinzufügen",
+        text: 'Hinzufügen',
         handler: async (data: { name: string }) => {
           if (data.name.length) {
             const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
             loading.present();
             try {
               await this.db.createOrganisation(data.name);
-              Utils.showToast("Die Organisation wurde erfolgreich erstellt.", "success");
+              Utils.showToast('Die Organisation wurde erfolgreich erstellt.', 'success');
               await loading.dismiss();
             } catch (error) {
-              Utils.showToast(error.message, "danger");
+              Utils.showToast(error.message, 'danger');
               await loading.dismiss();
             }
           } else {
-            alert.message = "Bitte gib gültige Werte ein.";
+            alert.message = 'Bitte gib gültige Werte ein.';
             return false;
           }
         }
@@ -451,13 +451,13 @@ export class GeneralPage implements OnInit {
       header: 'Organisation von Instanz trennen?',
       message: `Möchtest du die Organisation '${this.db.organisation().name}' wirklich von der Instanz trennen? Dies kann nicht rückgängig gemacht werden!`,
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Trennen",
+        text: 'Trennen',
         handler: async () => {
           await this.db.unlinkTenantFromOrganisation(this.db.organisation().id);
           this.db.organisation.set(null);
-          Utils.showToast("Die Organisation wurde erfolgreich von der Instanz getrennt.", "success");
+          Utils.showToast('Die Organisation wurde erfolgreich von der Instanz getrennt.', 'success');
         }
       }]
     });
@@ -483,7 +483,7 @@ export class GeneralPage implements OnInit {
 
   copySongSharingLink() {
     navigator?.clipboard.writeText(this.getSongSharingLink());
-    Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
+    Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
   }
 
   getRegisterLink(): string {
@@ -492,12 +492,12 @@ export class GeneralPage implements OnInit {
 
   copyRegisterLink() {
     navigator?.clipboard.writeText(this.getRegisterLink());
-    Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
+    Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
   }
 
   addExtraField(modal: IonModal) {
     if (this.newExtraField.name.trim().length === 0) {
-      Utils.showToast("Bitte gib einen gültigen Namen für das Zusatzfeld ein.", "danger");
+      Utils.showToast('Bitte gib einen gültigen Namen für das Zusatzfeld ein.', 'danger');
       return;
     }
 
@@ -509,18 +509,18 @@ export class GeneralPage implements OnInit {
     }
 
     if (this.extraFields.find((f) => f.id === this.newExtraField.id)) {
-      Utils.showToast("Ein Zusatzfeld mit dieser ID existiert bereits. Bitte wähle einen anderen Namen.", "danger");
+      Utils.showToast('Ein Zusatzfeld mit dieser ID existiert bereits. Bitte wähle einen anderen Namen.', 'danger');
       return;
     }
 
     if (this.newExtraField.type === FieldType.SELECT) {
       if (!this.newExtraField.options || this.newExtraField.options.length === 0) {
-        Utils.showToast("Bitte füge mindestens eine Option für das Auswahlfeld hinzu.", "danger");
+        Utils.showToast('Bitte füge mindestens eine Option für das Auswahlfeld hinzu.', 'danger');
         return;
       }
 
       if (this.newExtraField.options.some((opt) => opt.trim().length === 0)) {
-        Utils.showToast("Optionen dürfen nicht leer sein.", "danger");
+        Utils.showToast('Optionen dürfen nicht leer sein.', 'danger');
         return;
       }
 
@@ -532,7 +532,7 @@ export class GeneralPage implements OnInit {
     }
 
     if (this.newExtraField.id.length === 0) {
-      Utils.showToast("Die ID des Zusatzfeldes darf nicht leer sein.", "danger");
+      Utils.showToast('Die ID des Zusatzfeldes darf nicht leer sein.', 'danger');
       return;
     }
 
@@ -554,9 +554,9 @@ export class GeneralPage implements OnInit {
       header: 'Zusatzfeld löschen?',
       message: `Möchtest du das Zusatzfeld '${this.extraFields[index].name}' wirklich löschen? Dies kann nicht rückgängig gemacht werden!`,
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Löschen",
+        text: 'Löschen',
         handler: () => {
           this.extraFields.splice(index, 1);
         }
@@ -569,19 +569,19 @@ export class GeneralPage implements OnInit {
   getFieldTypeName(type: FieldType): string {
     switch (type) {
       case FieldType.TEXT:
-        return "Text";
+        return 'Text';
       case FieldType.TEXTAREA:
-        return "Textbereich";
+        return 'Textbereich';
       case FieldType.NUMBER:
-        return "Zahl";
+        return 'Zahl';
       case FieldType.SELECT:
-        return "Auswahl";
+        return 'Auswahl';
       case FieldType.DATE:
-        return "Datum";
+        return 'Datum';
       case FieldType.BOOLEAN:
-        return "Ja/Nein";
+        return 'Ja/Nein';
       default:
-        return "Unbekannt";
+        return 'Unbekannt';
     }
   }
 
@@ -609,7 +609,7 @@ export class GeneralPage implements OnInit {
   }
 
   async removeEditExtraOption(index: number) {
-    if (!this.editingExtraField) return;
+    if (!this.editingExtraField) {return;}
 
     const optionToRemove = this.editingExtraField.options[index];
     const isExistingOption = this.extraFields[this.editingExtraFieldIndex]?.options?.includes(optionToRemove);
@@ -619,9 +619,9 @@ export class GeneralPage implements OnInit {
         header: 'Option löschen?',
         message: `Wenn du die Option "${optionToRemove}" löschst, werden alle Personen mit diesem Wert auf den Standardwert zurückgesetzt.`,
         buttons: [{
-          text: "Abbrechen"
+          text: 'Abbrechen'
         }, {
-          text: "Löschen",
+          text: 'Löschen',
           handler: async () => {
             // Get new default value (first option after removal, or empty)
             const newDefault = this.editingExtraField.options[0] === optionToRemove
@@ -639,7 +639,7 @@ export class GeneralPage implements OnInit {
               this.editingExtraField.options.splice(index, 1);
 
               if (updatedCount > 0) {
-                Utils.showToast(`${updatedCount} Personen aktualisiert`, "success");
+                Utils.showToast(`${updatedCount} Personen aktualisiert`, 'success');
               }
             } catch (error) {
               // Error toast already shown in service
@@ -674,15 +674,15 @@ export class GeneralPage implements OnInit {
   }
 
   async resetExtraFieldValues() {
-    if (!this.editingExtraField) return;
+    if (!this.editingExtraField) {return;}
 
     const alert = await this.alertController.create({
       header: 'Werte zurücksetzen?',
       message: `Möchtest du alle Werte des Feldes '${this.editingExtraField.name}' bei allen Personen auf den Standardwert zurücksetzen? Dies kann nicht rückgängig gemacht werden!`,
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Zurücksetzen",
+        text: 'Zurücksetzen',
         handler: async () => {
           await this.executeResetExtraFieldValues();
         }
@@ -693,7 +693,7 @@ export class GeneralPage implements OnInit {
   }
 
   private async executeResetExtraFieldValues() {
-    if (!this.editingExtraField) return;
+    if (!this.editingExtraField) {return;}
 
     const resolvedDefault = Utils.getFieldTypeDefaultValue(
       this.editingExtraField.type,
@@ -708,7 +708,7 @@ export class GeneralPage implements OnInit {
         this.editingExtraField.id,
         resolvedDefault
       );
-      Utils.showToast(`${updatedCount} Personen aktualisiert`, "success");
+      Utils.showToast(`${updatedCount} Personen aktualisiert`, 'success');
     } catch (error) {
       // Error toast already shown in service
     }
@@ -992,7 +992,7 @@ export class GeneralPage implements OnInit {
 
     for (const church of this.churches) {
       const key = normalize(church.name);
-      if (!groups.has(key)) groups.set(key, []);
+      if (!groups.has(key)) {groups.set(key, []);}
       groups.get(key).push(church);
     }
 
@@ -1084,7 +1084,7 @@ export class GeneralPage implements OnInit {
         text: 'Speichern',
         handler: async (data) => {
           const name = data.name?.trim();
-          if (!name) return;
+          if (!name) {return;}
           try {
             await this.db.renameChurch(church.id, name);
             this.churches = await this.db.getChurches();
@@ -1114,7 +1114,7 @@ export class GeneralPage implements OnInit {
       }, {
         text: 'Zusammenführen',
         handler: async (targetId: string) => {
-          if (!targetId) return;
+          if (!targetId) {return;}
           const target = this.churches.find(c => c.id === targetId);
           const confirmAlert = await this.alertController.create({
             header: 'Bestätigen',

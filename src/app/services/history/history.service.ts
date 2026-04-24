@@ -17,7 +17,7 @@ export class HistoryService {
       .select('*, attendance:attendance_id(date)')
       .eq('tenantId', tenantId)
       .eq('visible', true)
-      .order("date", { ascending: false });
+      .order('date', { ascending: false });
 
     return data as any;
   }
@@ -28,7 +28,7 @@ export class HistoryService {
       .select('*')
       .eq('tenantId', tenantId)
       .eq('attendance_id', attendanceId)
-      .order("songId", { ascending: true });
+      .order('songId', { ascending: true });
 
     return data;
   }
@@ -40,8 +40,8 @@ export class HistoryService {
       .match({ id });
 
     if (error) {
-      Utils.showToast("Fehler beim Updaten des Eintrags", "danger");
-      throw new Error("Fehler beim Updaten des Eintrags");
+      Utils.showToast('Fehler beim Updaten des Eintrags', 'danger');
+      throw new Error('Fehler beim Updaten des Eintrags');
     }
 
     return data;
@@ -63,7 +63,7 @@ export class HistoryService {
       .match({ id });
 
     if (error) {
-      throw new Error("Fehler beim Löschen des Eintrags");
+      throw new Error('Fehler beim Löschen des Eintrags');
     }
 
     return data;
@@ -76,7 +76,7 @@ export class HistoryService {
       .select();
 
     if (error) {
-      throw new Error("Fehler beim Hinzufügen der Lieder zur Historie");
+      throw new Error('Fehler beim Hinzufügen der Lieder zur Historie');
     }
   }
 
@@ -115,7 +115,7 @@ export class HistoryService {
       .select('*, song:songId(*), attendance:attendance_id(date, type_id)')
       .eq('tenantId', tenantId)
       .gte('date', dayjs().startOf('day').toISOString())
-      .order("date", { ascending: true });
+      .order('date', { ascending: true });
 
     return (data || []).filter((h: any) => h.song) as unknown as History[];
   }
@@ -127,7 +127,7 @@ export class HistoryService {
       .eq('tenantId', tenantId)
       .gte('date', dayjs().startOf('day').toISOString())
       .lte('date', dayjs().add(14, 'day').toISOString())
-      .order("date", { ascending: true });
+      .order('date', { ascending: true });
 
     return (data || [])
       .filter((h: any) => h.song)

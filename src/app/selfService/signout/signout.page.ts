@@ -32,13 +32,13 @@ export class SignoutPage implements OnInit {
   public isLateComingEvent: boolean;
   public reasonSelection;
   public signoutTitle: string;
-  public lateCount: number = 0;
+  public lateCount = 0;
   public songs: Song[] = [];
   public tenantId: number;
   public tenants: Tenant[] = [];
-  public songsModalOpen: boolean = false;
+  public songsModalOpen = false;
   public upcomingSongs: { date: string; history: History[] }[] = [];
-  public isApplicant: boolean = false;
+  public isApplicant = false;
 
   constructor(
     public db: DbService,
@@ -95,9 +95,9 @@ export class SignoutPage implements OnInit {
     await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent);
 
     this.excuseModal.dismiss();
-    this.reason = "";
+    this.reason = '';
 
-    Utils.showToast(this.isLateComingEvent ? "Vielen Dank für die Info und Gottes Segen dir!" : "Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.", "success", 4000);
+    Utils.showToast(this.isLateComingEvent ? 'Vielen Dank für die Info und Gottes Segen dir!' : 'Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.', 'success', 4000);
 
     this.reasonSelection = '';
 
@@ -134,14 +134,14 @@ export class SignoutPage implements OnInit {
     await alert.present();
   }
 
-  async signin(attendance: PersonAttendance, notes: string = "") {
+  async signin(attendance: PersonAttendance, notes: string = '') {
     await this.db.signin(
       attendance.id,
-      attendance.status === AttendanceStatus.LateExcused ? 'lateSignIn' : attendance.status === AttendanceStatus.Neutral ? "neutralSignin" : 'signin',
+      attendance.status === AttendanceStatus.LateExcused ? 'lateSignIn' : attendance.status === AttendanceStatus.Neutral ? 'neutralSignin' : 'signin',
       notes
     );
 
-    Utils.showToast("Schön, dass du dabei bist 🙂", "success", 4000);
+    Utils.showToast('Schön, dass du dabei bist 🙂', 'success', 4000);
 
     await this.getAttendances();
   }
@@ -154,7 +154,7 @@ export class SignoutPage implements OnInit {
 
     this.personAttendances = allPersonAttendances;
 
-    const vergangene: PersonAttendance[] = this.personAttendances.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
+    const vergangene: PersonAttendance[] = this.personAttendances.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
     if (vergangene.length) {
       this.lateCount = vergangene.filter((a) => a.status === AttendanceStatus.Late).length;
       const vergangeneToCalcPerc = vergangene.filter((att: PersonAttendance) => {
@@ -169,7 +169,7 @@ export class SignoutPage implements OnInit {
       this.perc = 0;
     }
 
-    this.actualAttendances = allPersonAttendances.filter((att: PersonAttendance) => dayjs(att.date).isAfter(dayjs().startOf("day"))).reverse();
+    this.actualAttendances = allPersonAttendances.filter((att: PersonAttendance) => dayjs(att.date).isAfter(dayjs().startOf('day'))).reverse();
     if (this.actualAttendances.length) {
       this.currentAttendance = this.actualAttendances[0];
       this.actualAttendances.splice(0, 1);
@@ -239,7 +239,7 @@ export class SignoutPage implements OnInit {
                 handler: async (data) => {
                   note = data.note;
                   await this.db.updateAttendanceNote(attendance.id, note);
-                  Utils.showToast("Notiz erfolgreich aktualisiert.", "success", 4000);
+                  Utils.showToast('Notiz erfolgreich aktualisiert.', 'success', 4000);
                   await this.getAttendances();
                 },
               },
@@ -272,7 +272,7 @@ export class SignoutPage implements OnInit {
       }
     }
 
-    if (attendance.text === "X" || !canSignin) {
+    if (attendance.text === 'X' || !canSignin) {
       buttons = buttons.filter((btn) => btn.text !== 'Anmelden' && btn.text !== 'Anmelden mit Notiz');
     } else if (attType && !attType.available_statuses.includes(AttendanceStatus.Excused)) {
       buttons = buttons.filter((btn) => btn.text !== 'Abmelden');
@@ -280,11 +280,11 @@ export class SignoutPage implements OnInit {
       buttons = buttons.filter((btn) => btn.text !== 'Verspätung eintragen');
     }
 
-    if (attendance.text !== "X") {
+    if (attendance.text !== 'X') {
       buttons = buttons.filter((btn) => btn.text !== 'Notiz anpassen');
     }
 
-    if (attendance.text === "E" || attendance.text === "A") {
+    if (attendance.text === 'E' || attendance.text === 'A') {
       buttons = buttons.filter((btn) => btn.text !== 'Abmelden' && btn.text !== 'Verspätung eintragen');
     }
 
@@ -299,7 +299,7 @@ export class SignoutPage implements OnInit {
     }
 
     if (buttons.length <= 1) {
-      Utils.showToast("Für diesen Termin sind keine Aktionen verfügbar.", "warning", 4000);
+      Utils.showToast('Für diesen Termin sind keine Aktionen verfügbar.', 'warning', 4000);
       return;
     }
 
@@ -313,7 +313,7 @@ export class SignoutPage implements OnInit {
 
   onReasonSelect(event) {
     const currentReasonSelection = event.detail.value;
-    if (!currentReasonSelection) return;
+    if (!currentReasonSelection) {return;}
 
     if (currentReasonSelection !== 'Sonstiger Grund') {
       this.excuseModal.setCurrentBreakpoint(0.3);
@@ -337,19 +337,19 @@ export class SignoutPage implements OnInit {
   }
 
   hasPastAttendances(attendances: PersonAttendance[]): boolean {
-    return attendances.some((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
+    return attendances.some((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
   }
 
   attHasPassed(att: PersonAttendance) {
-    return dayjs(att.date).isBefore(dayjs(), "day");
+    return dayjs(att.date).isBefore(dayjs(), 'day');
   }
 
   attIsInFuture(att: PersonAttendance) {
-    return dayjs(att.date).isAfter(dayjs(), "day");
+    return dayjs(att.date).isAfter(dayjs(), 'day');
   }
 
   isAttToday(att: PersonAttendance) {
-    return dayjs(att.date).isSame(dayjs(), "day");
+    return dayjs(att.date).isSame(dayjs(), 'day');
   }
 
   getReadableDate(date: string, type_id: string): string {
@@ -392,7 +392,7 @@ export class SignoutPage implements OnInit {
   getSongNames(songIds: number[]): string {
     return songIds.map((id: number) => {
       return `${this.songs.find((s: Song) => s.id === id).number} ${this.songs.find((s: Song) => s.id === id).name}`;
-    }).join(", ");
+    }).join(', ');
   }
 
   isReasonSelectionInvalid(reason: string): boolean {
@@ -404,13 +404,13 @@ export class SignoutPage implements OnInit {
 
   openSongLink(link: string) {
     if (link) {
-      window.open(link, "_blank");
+      window.open(link, '_blank');
     }
   }
 
   async openSongOptions(song: Song) {
     if (!this.hasSongNotesForPlayer(song)) {
-      Utils.showToast("Für dein Instrument sind leider keine Noten verfügbar.", "danger", 4000);
+      Utils.showToast('Für dein Instrument sind leider keine Noten verfügbar.', 'danger', 4000);
     }
 
     const buttons = [];
@@ -461,7 +461,7 @@ export class SignoutPage implements OnInit {
         handler: () => {
           const file = files[0];
           if (file) {
-            window.open(file.url, "_blank");
+            window.open(file.url, '_blank');
           }
         },
       });
@@ -471,7 +471,7 @@ export class SignoutPage implements OnInit {
         handler: () => {
           const file = files[0];
           if (file) {
-            const printWindow = window.open(file.url, "_blank");
+            const printWindow = window.open(file.url, '_blank');
             if (printWindow) {
               // Use both onload and setTimeout as fallback
               let printed = false;
@@ -543,7 +543,7 @@ export class SignoutPage implements OnInit {
               text: file.fileName,
               role: '',
               handler: () => {
-                window.open(file.url, "_blank");
+                window.open(file.url, '_blank');
               },
             };
           });
@@ -571,7 +571,7 @@ export class SignoutPage implements OnInit {
               text: file.fileName,
               role: '',
               handler: () => {
-                const printWindow = window.open(file.url, "_blank");
+                const printWindow = window.open(file.url, '_blank');
                 if (printWindow) {
                   // Use both onload and setTimeout as fallback
                   let printed = false;
@@ -633,7 +633,7 @@ export class SignoutPage implements OnInit {
         text: 'Liedtext ansehen',
         handler: () => {
           const file = liedtextFiles[0];
-          window.open(file.url, "_blank");
+          window.open(file.url, '_blank');
         },
       });
     } else if (liedtextFiles.length > 1) {
@@ -645,7 +645,7 @@ export class SignoutPage implements OnInit {
               text: file.fileName,
               role: '',
               handler: () => {
-                window.open(file.url, "_blank");
+                window.open(file.url, '_blank');
               },
             };
           });
@@ -676,7 +676,7 @@ export class SignoutPage implements OnInit {
     });
 
     if (buttons.length === 1) {
-      Utils.showToast("Für dieses Werk sind keine Aktionen verfügbar.", "warning", 4000);
+      Utils.showToast('Für dieses Werk sind keine Aktionen verfügbar.', 'warning', 4000);
       return;
     }
 
@@ -689,7 +689,7 @@ export class SignoutPage implements OnInit {
   }
 
   async printAllCurrentFiles(): Promise<void> {
-    const filesToPrint: { song: Song, file: SongFile }[] = [];
+    const filesToPrint: { song: Song; file: SongFile }[] = [];
 
     // Collect all files for the player's instrument from upcoming songs
     for (const group of this.upcomingSongs) {
@@ -806,7 +806,7 @@ export class SignoutPage implements OnInit {
    * For choir attendance types, also check if there are files with note="Chor".
    */
   hasSongNotesForPlayer(song: Song): boolean {
-    if (!song) return false;
+    if (!song) {return false;}
 
     // Check if song has the player's instrument in instrument_ids
     const hasInstrumentId = song.instrument_ids?.includes(this.player.instrument);

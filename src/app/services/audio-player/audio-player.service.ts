@@ -46,7 +46,7 @@ export class AudioPlayerService {
     });
 
     this.audio.addEventListener('timeupdate', () => {
-      if (!this.audio || this._isSeeking) return;
+      if (!this.audio || this._isSeeking) {return;}
       this.currentTime.set(this.audio.currentTime);
       const dur = this.audio.duration;
       this.progress.set(dur > 0 ? (this.audio.currentTime / dur) * 100 : 0);
@@ -80,7 +80,7 @@ export class AudioPlayerService {
   }
 
   togglePlayPause(): void {
-    if (!this.audio) return;
+    if (!this.audio) {return;}
     if (this.audio.paused) {
       this.audio.play().then(() => this.isPlaying.set(true));
     } else {
@@ -106,7 +106,7 @@ export class AudioPlayerService {
 
   /** Seek to a position. `value` is 0–100. */
   seek(value: number): void {
-    if (!this.audio || !this.audio.duration) return;
+    if (!this.audio || !this.audio.duration) {return;}
     this.audio.currentTime = (value / 100) * this.audio.duration;
     this.currentTime.set(this.audio.currentTime);
     this.progress.set(value);
@@ -125,7 +125,7 @@ export class AudioPlayerService {
 
   /** Format seconds to m:ss */
   formatTime(seconds: number): string {
-    if (!seconds || !isFinite(seconds)) return '0:00';
+    if (!seconds || !isFinite(seconds)) {return '0:00';}
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
     return `${m}:${s.toString().padStart(2, '0')}`;

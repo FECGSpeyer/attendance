@@ -78,7 +78,7 @@ export class FilesService {
       .replace(/[\\/:*?"<>|]+/g, '-')
       .replace(/&/g, ' und ')
       .replace(/@/g, ' at ')
-      .replace(/[’‘`´]/g, "'")
+      .replace(/[’‘`´]/g, '\'')
       .replace(/[_\s]+/g, ' ')
       .replace(/\s+/g, ' ')
       .replace(/\s*-\s*/g, '-')
@@ -271,7 +271,7 @@ export class FilesService {
     }
   }
 
-  async downloadFile(tenantId: number, relativePath: string): Promise<{ blob: Blob, fileName: string }> {
+  async downloadFile(tenantId: number, relativePath: string): Promise<{ blob: Blob; fileName: string }> {
     const key = this.tenantPrefix(tenantId, relativePath);
     const { data, error } = await supabase.storage
       .from(this.bucket)

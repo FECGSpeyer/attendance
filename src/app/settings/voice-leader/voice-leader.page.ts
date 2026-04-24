@@ -18,8 +18,8 @@ interface GroupMember extends Player {
 })
 export class VoiceLeaderPage implements OnInit {
   public groupMembers: GroupMember[] = [];
-  public groupName: string = '';
-  public isLoading: boolean = true;
+  public groupName = '';
+  public isLoading = true;
   public readonly DEFAULT_IMAGE = DEFAULT_IMAGE;
   public einteilungField: ExtraField | undefined;
 
@@ -79,7 +79,7 @@ export class VoiceLeaderPage implements OnInit {
       // Sort by lastName, firstName
       this.groupMembers.sort((a, b) => {
         const lastNameCompare = (a.lastName || '').localeCompare(b.lastName || '');
-        if (lastNameCompare !== 0) return lastNameCompare;
+        if (lastNameCompare !== 0) {return lastNameCompare;}
         return (a.firstName || '').localeCompare(b.firstName || '');
       });
 
@@ -95,7 +95,7 @@ export class VoiceLeaderPage implements OnInit {
     if (!this.einteilungField || !member.additional_fields) {
       return null;
     }
-    return member.additional_fields['einteilung'] || null;
+    return member.additional_fields.einteilung || null;
   }
 
   getAbsenceText(att: PersonAttendance): string {

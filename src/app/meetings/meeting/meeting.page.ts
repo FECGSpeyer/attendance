@@ -14,8 +14,8 @@ export class MeetingPage implements OnInit {
   public conductors: Person[];
   public allConductors: Person[];
   public isEditMode: boolean;
-  public attendeesNames: string = "";
-  public isGeneral: boolean = false;
+  public attendeesNames = '';
+  public isGeneral = false;
 
   constructor(
     private db: DbService
@@ -25,12 +25,12 @@ export class MeetingPage implements OnInit {
     this.isGeneral = this.db.tenant().type === 'general';
     this.allConductors = this.isGeneral ? await this.db.getPlayers() : await this.db.getConductors(true);
     this.conductors = this.allConductors.filter((c: Person) => !c.left);
-    this.meeting = await this.db.getMeeting(Number(window.location.pathname.split("/")[4]));
+    this.meeting = await this.db.getMeeting(Number(window.location.pathname.split('/')[4]));
     this.isEditMode = !this.meeting.notes;
     this.attendeesNames = this.meeting.attendees.map((id: number) => {
       const conductor: Person = this.allConductors.find((con: Person) => con.id === id);
       return `${conductor.firstName} ${conductor.lastName}`;
-    }).join(", ");
+    }).join(', ');
   }
 
   async save() {
@@ -39,7 +39,7 @@ export class MeetingPage implements OnInit {
     this.attendeesNames = this.meeting.attendees.map((id: number) => {
       const conductor: Person = this.allConductors.find((con: Person) => con.id === id);
       return `${conductor.firstName} ${conductor.lastName}`;
-    }).join(", ");
+    }).join(', ');
   }
 
 }

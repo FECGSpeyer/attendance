@@ -16,7 +16,7 @@ export class OrganisationService {
       .single();
 
     if (error) {
-      Utils.showToast("Fehler beim Erstellen der Organisation", "danger");
+      Utils.showToast('Fehler beim Erstellen der Organisation', 'danger');
       throw error;
     }
 
@@ -32,7 +32,7 @@ export class OrganisationService {
       });
 
     if (error) {
-      Utils.showToast("Fehler beim Verknüpfen der Organisation", "danger");
+      Utils.showToast('Fehler beim Verknüpfen der Organisation', 'danger');
       throw error;
     }
   }
@@ -45,7 +45,7 @@ export class OrganisationService {
       .eq('tenant_group', orgId);
 
     if (error) {
-      Utils.showToast("Fehler beim Entfernen der Organisation", "danger");
+      Utils.showToast('Fehler beim Entfernen der Organisation', 'danger');
       throw error;
     }
 
@@ -56,7 +56,7 @@ export class OrganisationService {
       .eq('tenant_group', orgId);
 
     if (fetchError) {
-      Utils.showToast("Fehler beim Entfernen der Organisation", "danger");
+      Utils.showToast('Fehler beim Entfernen der Organisation', 'danger');
       throw fetchError;
     }
 
@@ -79,7 +79,7 @@ export class OrganisationService {
       if (error.code === 'PGRST116') {
         return null;
       }
-      Utils.showToast("Fehler beim Laden der Organisation", "danger");
+      Utils.showToast('Fehler beim Laden der Organisation', 'danger');
       throw error;
     }
 
@@ -93,7 +93,7 @@ export class OrganisationService {
       .eq('tenant_group', orgId);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Organisationen", "danger");
+      Utils.showToast('Fehler beim Laden der Organisationen', 'danger');
       throw error;
     }
 
@@ -106,12 +106,12 @@ export class OrganisationService {
       .select('*')
       .in('tenantId', tenants.map(t => t.id))
       .is('pending', false)
-      .is("left", null)
+      .is('left', null)
       .order('lastName', { ascending: true })
       .order('firstName', { ascending: true });
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Personen", "danger");
+      Utils.showToast('Fehler beim Laden der Personen', 'danger');
       throw error;
     }
 
@@ -126,7 +126,7 @@ export class OrganisationService {
       .or('role.eq.1, role.eq.5');
 
     if (fetchError) {
-      Utils.showToast("Fehler beim Laden der Mandanten", "danger");
+      Utils.showToast('Fehler beim Laden der Mandanten', 'danger');
       throw fetchError;
     }
 
@@ -136,15 +136,13 @@ export class OrganisationService {
       .in('tenant_id', tenants.map((t: any) => t.tenantId.id));
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Organisationen", "danger");
+      Utils.showToast('Fehler beim Laden der Organisationen', 'danger');
       throw error;
     }
 
     // make sure there are no duplicates
     const uniqueOrgs = Array.from(new Set(data.map(d => d.tenant_group_data.id)))
-      .map(id => {
-        return data.find(d => d.tenant_group_data.id === id).tenant_group_data;
-      });
+      .map(id => data.find(d => d.tenant_group_data.id === id).tenant_group_data);
 
     return uniqueOrgs;
   }
@@ -161,7 +159,7 @@ export class OrganisationService {
       .eq('tenant_group', organisation.id);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Mandanten", "danger");
+      Utils.showToast('Fehler beim Laden der Mandanten', 'danger');
       throw error;
     }
 
@@ -174,7 +172,7 @@ export class OrganisationService {
       .select('*, tenant:tenant_id(*)');
 
     if (tenantGroupTenantsError) {
-      Utils.showToast("Fehler beim Laden der Gruppenteilnehmer", "danger");
+      Utils.showToast('Fehler beim Laden der Gruppenteilnehmer', 'danger');
       throw tenantGroupTenantsError;
     }
 

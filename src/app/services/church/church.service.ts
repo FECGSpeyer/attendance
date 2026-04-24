@@ -15,7 +15,7 @@ export class ChurchService {
       .order('name', { ascending: true });
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Kirchen", "danger");
+      Utils.showToast('Fehler beim Laden der Kirchen', 'danger');
       throw error;
     }
 
@@ -29,7 +29,7 @@ export class ChurchService {
       .match({ id });
 
     if (error) {
-      Utils.showToast("Fehler beim Aktualisieren der Gemeinde", "danger");
+      Utils.showToast('Fehler beim Aktualisieren der Gemeinde', 'danger');
       throw error;
     }
   }
@@ -45,7 +45,7 @@ export class ChurchService {
       .single();
 
     if (error) {
-      Utils.showToast("Fehler beim Erstellen der Kirche", "danger");
+      Utils.showToast('Fehler beim Erstellen der Kirche', 'danger');
       throw error;
     }
 
@@ -62,7 +62,7 @@ export class ChurchService {
       .select('id, additional_fields')
       .not('additional_fields', 'is', null);
 
-    if (fetchError) throw new Error('Fehler beim Laden der Spieler');
+    if (fetchError) {throw new Error('Fehler beim Laden der Spieler');}
 
     let updatedCount = 0;
 
@@ -75,7 +75,7 @@ export class ChurchService {
           .update({ additional_fields: fields })
           .match({ id: player.id });
 
-        if (!updateError) updatedCount++;
+        if (!updateError) {updatedCount++;}
       }
     }
 
@@ -85,7 +85,7 @@ export class ChurchService {
       .delete()
       .match({ id: duplicateId });
 
-    if (deleteError) throw new Error('Fehler beim Löschen der Gemeinde');
+    if (deleteError) {throw new Error('Fehler beim Löschen der Gemeinde');}
 
     return updatedCount;
   }

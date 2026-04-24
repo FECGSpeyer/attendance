@@ -12,7 +12,7 @@ export class TeacherService {
       .from('teachers')
       .select('*')
       .eq('tenantId', tenantId)
-      .order("name", {
+      .order('name', {
         ascending: true,
       });
 

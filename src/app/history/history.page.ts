@@ -7,7 +7,7 @@ import { DbService } from '../services/db.service';
 import { Attendance, FieldSelection, History, Person, Song } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 
-interface GroupedHistory { date: string, parts: History[] };
+interface GroupedHistory { date: string; parts: History[] };
 
 @Component({
     selector: 'app-history',
@@ -29,9 +29,9 @@ export class HistoryPage implements OnInit {
     person_id: 0,
     date: new Date().toISOString(),
   };
-  searchTerm: string = "";
+  searchTerm = '';
   songs: Song[] = [];
-  otherConductor: number = 9999999999;
+  otherConductor = 9999999999;
   selectedSongs: number[] = [];
 
   constructor(
@@ -69,35 +69,31 @@ export class HistoryPage implements OnInit {
         number: this.songs.find((song: Song) => song.id === entry.songId)?.number,
         name: this.songs.find((song: Song) => song.id === entry.songId)?.name || entry.name,
         count: attendances.filter((att: Attendance) => this.isSongInPlan(att, entry.songId, entry.attendance?.date ?? entry.date)).length
-      }
+      };
     });
 
     const grouped: GroupedHistory = this.history.reduce((r: History, a: History) => {
-      r[dayjs(a.attendance?.date ?? a.date).format("DD.MM.YYYY")] = r[dayjs(a.attendance?.date ?? a.date).format("DD.MM.YYYY")] || [];
-      r[dayjs(a.attendance?.date ?? a.date).format("DD.MM.YYYY")].push(a);
+      r[dayjs(a.attendance?.date ?? a.date).format('DD.MM.YYYY')] = r[dayjs(a.attendance?.date ?? a.date).format('DD.MM.YYYY')] || [];
+      r[dayjs(a.attendance?.date ?? a.date).format('DD.MM.YYYY')].push(a);
       return r;
     }, Object.create(null));
 
-    const sorted: string[] = Object.keys(grouped).sort((a: string, b: string): number => {
-      return dayjs(a).toDate().getTime() - dayjs(b).toDate().getTime();
-    });
+    const sorted: string[] = Object.keys(grouped).sort((a: string, b: string): number => dayjs(a).toDate().getTime() - dayjs(b).toDate().getTime());
 
-    this.groupedHistory = sorted.map((date: string) => {
-      return {
+    this.groupedHistory = sorted.map((date: string) => ({
         date,
         parts: grouped[date]
-      }
-    });
+      }));
 
     this.initializeItems();
   }
 
   isSongInPlan(att: Attendance, songId: number, date: string): boolean {
-    if (att.type !== "uebung" || !att.plan) {
+    if (att.type !== 'uebung' || !att.plan) {
       return false;
     }
 
-    if (dayjs(att.date).isBefore(date) && dayjs(att.date).isAfter(dayjs(date).subtract(4, "months"))) {
+    if (dayjs(att.date).isBefore(date) && dayjs(att.date).isAfter(dayjs(date).subtract(4, 'months'))) {
       return Boolean(att.plan?.fields.find((field: FieldSelection) => field.id === String(songId)));
     }
 
@@ -160,13 +156,13 @@ export class HistoryPage implements OnInit {
         header: 'Dirigent eingeben',
         inputs: [
           {
-            type: "text",
-            name: "conductor",
-            placeholder: "Dirigent",
+            type: 'text',
+            name: 'conductor',
+            placeholder: 'Dirigent',
           }
         ],
-        buttons: ["Abbrechen", {
-          text: "Speichern",
+        buttons: ['Abbrechen', {
+          text: 'Speichern',
           handler: (data: any) => {
             this.historyEntry.otherConductor = data.conductor;
           }
@@ -207,7 +203,7 @@ export class HistoryPage implements OnInit {
       };
       this.dateString = format(new Date(this.historyEntry.date), 'dd.MM.yyyy');
     } else {
-      Utils.showToast("Bitte wähle mindestens ein Werk an", "danger");
+      Utils.showToast('Bitte wähle mindestens ein Werk an', 'danger');
     }
   }
 
@@ -228,7 +224,7 @@ export class HistoryPage implements OnInit {
               await this.db.removeHistoryEntry(id);
               await this.getHistory();
             } catch (error) {
-              Utils.showToast(error, "danger");
+              Utils.showToast(error, 'danger');
             }
           }
         }

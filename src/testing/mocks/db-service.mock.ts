@@ -121,6 +121,7 @@ export const createDbServiceMock = (options: DbServiceMockOptions = {}) => {
         // Legacy methods (for backward compatibility)
         login: vi.fn().mockResolvedValue(true),
         logout: vi.fn().mockResolvedValue(undefined),
+        clearState: vi.fn(),
         resetPassword: vi.fn().mockResolvedValue(undefined),
         updatePassword: vi.fn().mockResolvedValue(undefined),
         createInstance: vi.fn().mockResolvedValue(undefined),

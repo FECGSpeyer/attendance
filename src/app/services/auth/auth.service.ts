@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { User } from '@supabase/supabase-js';
+import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 import { Role } from '../../utilities/constants';
 import { Player, TenantUser } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
@@ -11,28 +11,49 @@ import { supabase } from '../base/supabase';
 })
 export class AuthService {
   public user: User;
-  private sessionCache: { user: User | null; timestamp: number } | null = null;
-  private readonly SESSION_CACHE_TTL = 5000; // 5 seconds cache
 
-  constructor(private router: Router) {}
+  /** Resolves once the initial session has been restored from storage. */
+  public readonly sessionReady: Promise<void>;
+  private resolveSessionReady: () => void;
+  private initialSessionHandled = false;
+
+  constructor(private router: Router) {
+    this.sessionReady = new Promise<void>((resolve) => {
+      this.resolveSessionReady = resolve;
+    });
+    this.listenToAuthChanges();
+  }
+
+  private listenToAuthChanges(): void {
+    supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
+      switch (event) {
+        case 'INITIAL_SESSION':
+          this.handleSession(session);
+          this.initialSessionHandled = true;
+          this.resolveSessionReady();
+          break;
+        case 'SIGNED_IN':
+        case 'TOKEN_REFRESHED':
+          this.handleSession(session);
+          break;
+        case 'SIGNED_OUT':
+          this.user = undefined;
+          break;
+      }
+    });
+  }
+
+  private handleSession(session: Session | null): void {
+    if (session?.user?.email) {
+      this.user = session.user;
+    } else {
+      this.user = undefined;
+    }
+  }
 
   async checkToken(): Promise<User | null> {
-    // Return cached session if still valid
-    if (this.sessionCache && Date.now() - this.sessionCache.timestamp < this.SESSION_CACHE_TTL) {
-      this.user = this.sessionCache.user;
-      return this.user;
-    }
-
-    // Fetch fresh session from Supabase
-    const { data } = await supabase.auth.getSession();
-    if (data?.session?.user?.email) {
-      this.user = data.session.user;
-      this.sessionCache = { user: this.user, timestamp: Date.now() };
-      return this.user;
-    }
-
-    this.sessionCache = { user: null, timestamp: Date.now() };
-    return null;
+    await this.sessionReady;
+    return this.user ?? null;
   }
 
   async login(email: string, password: string, returnEarly: boolean = false): Promise<{ success: boolean; user?: User }> {
@@ -42,35 +63,35 @@ export class AuthService {
 
     if (error) {
       switch (error.code) {
-        case "invalid_login_credentials":
-          Utils.showToast("Ungültige Anmeldedaten", "danger");
+        case 'invalid_login_credentials':
+          Utils.showToast('Ungültige Anmeldedaten', 'danger');
           break;
-        case "user_disabled":
-          Utils.showToast("Dein Konto wurde deaktiviert. Bitte wende dich an den Administrator deiner Instanz.", "danger");
+        case 'user_disabled':
+          Utils.showToast('Dein Konto wurde deaktiviert. Bitte wende dich an den Administrator deiner Instanz.', 'danger');
           break;
-        case "too_many_requests":
-          Utils.showToast("Zu viele Anmeldeversuche. Bitte versuche es später erneut.", "danger");
+        case 'too_many_requests':
+          Utils.showToast('Zu viele Anmeldeversuche. Bitte versuche es später erneut.', 'danger');
           break;
-        case "invalid_email":
-          Utils.showToast("Ungültige E-Mail Adresse", "danger");
+        case 'invalid_email':
+          Utils.showToast('Ungültige E-Mail Adresse', 'danger');
           break;
-        case "invalid_password":
-          Utils.showToast("Ungültiges Passwort", "danger");
+        case 'invalid_password':
+          Utils.showToast('Ungültiges Passwort', 'danger');
           break;
-        case "user_not_found":
-          Utils.showToast("Benutzer nicht gefunden", "danger");
+        case 'user_not_found':
+          Utils.showToast('Benutzer nicht gefunden', 'danger');
           break;
-        case "email_not_confirmed":
-          Utils.showToast("Bitte bestätige zuerst deine E-Mail-Adresse.", "danger");
+        case 'email_not_confirmed':
+          Utils.showToast('Bitte bestätige zuerst deine E-Mail-Adresse.', 'danger');
           break;
-        case "password_strength_insufficient":
-          Utils.showToast("Das Passwort erfüllt nicht die Sicherheitsanforderungen.", "danger");
+        case 'password_strength_insufficient':
+          Utils.showToast('Das Passwort erfüllt nicht die Sicherheitsanforderungen.', 'danger');
           break;
-        case "invalid_credentials":
-          Utils.showToast("Ungültige Anmeldedaten", "danger");
+        case 'invalid_credentials':
+          Utils.showToast('Ungültige Anmeldedaten', 'danger');
           break;
         default:
-          Utils.showToast(error.code === "email_not_confirmed" ? "Bitte bestätige zuerst deine E-Mail-Adresse." : "Fehler beim Anmelden", "danger");
+          Utils.showToast(error.code === 'email_not_confirmed' ? 'Bitte bestätige zuerst deine E-Mail-Adresse.' : 'Fehler beim Anmelden', 'danger');
           break;
       }
       throw error;
@@ -78,11 +99,10 @@ export class AuthService {
 
     if (data.user) {
       this.user = data.user;
-      this.sessionCache = { user: data.user, timestamp: Date.now() };
       return { success: true, user: data.user };
     }
 
-    Utils.showToast("Bitte gib die richtigen Daten an!", "danger");
+    Utils.showToast('Bitte gib die richtigen Daten an!', 'danger');
     return { success: false };
   }
 
@@ -95,7 +115,7 @@ export class AuthService {
     });
 
     if (error) {
-      Utils.showToast("Fehler beim Registrieren", "danger");
+      Utils.showToast('Fehler beim Registrieren', 'danger');
       return null;
     }
 
@@ -120,15 +140,9 @@ export class AuthService {
     };
   }
 
-  // Method to invalidate cache (useful for forced refreshes)
-  invalidateSessionCache(): void {
-    this.sessionCache = null;
-  }
-
   async logout(): Promise<void> {
     await supabase.auth.signOut();
     this.user = undefined;
-    this.sessionCache = null; // Clear cache on logout
     this.router.navigateByUrl('/login');
   }
 
@@ -142,11 +156,11 @@ export class AuthService {
     });
 
     if (error) {
-      Utils.showToast("Fehler beim Zurücksetzen des Passworts", "danger");
+      Utils.showToast('Fehler beim Zurücksetzen des Passworts', 'danger');
       throw error;
     }
 
-    Utils.showToast("E-Mail zum Zurücksetzen des Passworts wurde gesendet", "success");
+    Utils.showToast('E-Mail zum Zurücksetzen des Passworts wurde gesendet', 'success');
   }
 
   async updatePassword(password: string): Promise<void> {
@@ -156,7 +170,7 @@ export class AuthService {
       Utils.showToast('Passwort wurde erfolgreich aktualisiert', 'success');
     }
     if (error) {
-      Utils.showToast('Fehler beim zurücksetzen, versuche es noch einmal', "danger");
+      Utils.showToast('Fehler beim zurücksetzen, versuche es noch einmal', 'danger');
     }
   }
 
@@ -207,7 +221,7 @@ export class AuthService {
       }
       return userId;
     } else {
-      const { data } = await supabase.rpc("get_user_id_by_email", {
+      const { data } = await supabase.rpc('get_user_id_by_email', {
         email: email.toLowerCase(),
       });
 
@@ -232,7 +246,7 @@ export class AuthService {
       await addUserToTenant(data.user.id, role, email);
       return data.user.id;
     } catch (e: any) {
-      throw new Error(e.message || "Fehler beim Erstellen des Accounts");
+      throw new Error(e.message || 'Fehler beim Erstellen des Accounts');
     }
   }
 
@@ -284,7 +298,7 @@ export class AuthService {
     const data = await res.json();
 
     if (!data.deleted) {
-      Utils.showToast("Fehler beim Löschen des Benutzers", "danger");
+      Utils.showToast('Fehler beim Löschen des Benutzers', 'danger');
     }
   }
 }

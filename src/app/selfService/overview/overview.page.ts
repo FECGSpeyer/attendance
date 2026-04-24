@@ -33,13 +33,13 @@ export class OverviewPage implements OnInit {
 
   public groupingMode: GroupingMode = 'chronological';
   public selAttIds: string[] = [];
-  public reason: string = '';
-  public reasonSelection: string = 'Krankheitsbedingt';
-  public isLateComingEvent: boolean = false;
+  public reason = '';
+  public reasonSelection = 'Krankheitsbedingt';
+  public isLateComingEvent = false;
   public selectedAttendance: CrossTenantPersonAttendance | null = null;
 
-  public perc: number = 0;
-  public lateCount: number = 0;
+  public perc = 0;
+  public lateCount = 0;
 
   constructor(
     public db: DbService,
@@ -89,9 +89,7 @@ export class OverviewPage implements OnInit {
   }
 
   calculateStats() {
-    const pastToCalc = this.pastAttendances.filter(att => {
-      return att.attendanceType?.include_in_average ?? true;
-    });
+    const pastToCalc = this.pastAttendances.filter(att => att.attendanceType?.include_in_average ?? true);
 
     if (pastToCalc.length > 0) {
       const attended = pastToCalc.filter(att => att.attended);
@@ -326,7 +324,7 @@ export class OverviewPage implements OnInit {
 
   onReasonSelect(event: any) {
     const currentReasonSelection = event.detail.value;
-    if (!currentReasonSelection) return;
+    if (!currentReasonSelection) {return;}
 
     if (currentReasonSelection !== 'Sonstiger Grund') {
       this.excuseModal.setCurrentBreakpoint(0.3);
@@ -373,14 +371,14 @@ export class OverviewPage implements OnInit {
   }
 
   showDeadlineInfo(att: CrossTenantPersonAttendance): boolean {
-    if (!att.attendance?.deadline) return false;
+    if (!att.attendance?.deadline) {return false;}
     const deadline = dayjs(att.attendance.deadline);
     const now = dayjs();
     return now.isBefore(deadline) && deadline.diff(now, 'day') <= 3;
   }
 
   getDeadlineText(att: CrossTenantPersonAttendance): string {
-    if (!att.attendance?.deadline) return '';
+    if (!att.attendance?.deadline) {return '';}
     const deadline = dayjs(att.attendance.deadline);
     return `Anmeldefrist: ${deadline.format('DD.MM.YYYY HH:mm')}`;
   }

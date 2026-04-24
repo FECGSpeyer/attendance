@@ -19,7 +19,7 @@ export class TenantService {
       .order('longName', { ascending: true });
 
     if (error) {
-      throw new Error("Fehler beim Laden der Tenants");
+      throw new Error('Fehler beim Laden der Tenants');
     }
 
     return data as unknown as Tenant[];
@@ -33,7 +33,7 @@ export class TenantService {
       .single();
 
     if (error) {
-      throw new Error("Fehler beim Laden des Tenants");
+      throw new Error('Fehler beim Laden des Tenants');
     }
 
     return data as unknown as Tenant;
@@ -49,8 +49,8 @@ export class TenantService {
       .single();
 
     if (error) {
-      Utils.showToast("Fehler beim Aktualisieren der Einstellungen", "danger");
-      throw new Error("Fehler beim Aktualisieren der Mandantendaten");
+      Utils.showToast('Fehler beim Aktualisieren der Einstellungen', 'danger');
+      throw new Error('Fehler beim Aktualisieren der Mandantendaten');
     }
 
     return data as unknown as Tenant;
@@ -63,7 +63,7 @@ export class TenantService {
       .eq('userId', userId);
 
     if (error) {
-      throw new Error("Fehler beim Laden der Mandanten");
+      throw new Error('Fehler beim Laden der Mandanten');
     }
 
     return data;
@@ -77,7 +77,7 @@ export class TenantService {
       .single();
 
     if (error) {
-      throw new Error("Fehler beim Laden des Mandanten");
+      throw new Error('Fehler beim Laden des Mandanten');
     }
 
     return data;
@@ -158,7 +158,7 @@ export class TenantService {
       .single();
 
     if (error) {
-      throw new Error("Fehler beim Laden der Rolle");
+      throw new Error('Fehler beim Laden der Rolle');
     }
 
     return data.role as Role;
@@ -172,7 +172,7 @@ export class TenantService {
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Beobachter", "danger");
+      Utils.showToast('Fehler beim Laden der Beobachter', 'danger');
       throw error;
     }
 
@@ -185,7 +185,7 @@ export class TenantService {
       .insert({ ...viewer, tenantId, appId });
 
     if (error) {
-      throw new Error("Fehler beim hinzufügen des Beobachters.");
+      throw new Error('Fehler beim hinzufügen des Beobachters.');
     }
   }
 
@@ -196,7 +196,7 @@ export class TenantService {
       .match({ id: viewer.id });
 
     if (error) {
-      Utils.showToast("Fehler beim Löschen des Beobachters", "danger");
+      Utils.showToast('Fehler beim Löschen des Beobachters', 'danger');
       throw error;
     }
   }
@@ -204,12 +204,12 @@ export class TenantService {
   // Parents
   async getParents(tenantId: number): Promise<Parent[]> {
     const { data, error } = await supabase
-      .from("parents")
+      .from('parents')
       .select('*')
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Elternteile", "danger");
+      Utils.showToast('Fehler beim Laden der Elternteile', 'danger');
       throw error;
     }
 
@@ -218,13 +218,13 @@ export class TenantService {
 
   async createParent(parent: Partial<Parent>, tenantId: number, appId: string): Promise<Parent> {
     const { error, data } = await supabase
-      .from("parents")
+      .from('parents')
       .insert({ ...parent, tenantId, appId })
       .select()
       .single();
 
     if (error) {
-      throw new Error("Fehler beim hinzufügen des Elternteils.");
+      throw new Error('Fehler beim hinzufügen des Elternteils.');
     }
 
     return data;
@@ -232,12 +232,12 @@ export class TenantService {
 
   async deleteParent(parent: Parent): Promise<void> {
     const { error } = await supabase
-      .from("parents")
+      .from('parents')
       .delete()
       .match({ id: parent.id });
 
     if (error) {
-      Utils.showToast("Fehler beim Löschen des Elternteils", "danger");
+      Utils.showToast('Fehler beim Löschen des Elternteils', 'danger');
       throw error;
     }
   }
@@ -265,7 +265,7 @@ export class TenantService {
       .single();
 
     if (error) {
-      throw new Error("Fehler beim Erstellen der Organisation");
+      throw new Error('Fehler beim Erstellen der Organisation');
     }
 
     return data as Organisation;
@@ -279,7 +279,7 @@ export class TenantService {
       .single();
 
     if (!org) {
-      throw new Error("Organisation nicht gefunden");
+      throw new Error('Organisation nicht gefunden');
     }
 
     const tenantIds = [...(org.tenantIds || []), tenantId];
@@ -298,7 +298,7 @@ export class TenantService {
       .single();
 
     if (!org) {
-      throw new Error("Organisation nicht gefunden");
+      throw new Error('Organisation nicht gefunden');
     }
 
     const tenantIds = (org.tenantIds || []).filter((id: number) => id !== tenantId);
@@ -334,7 +334,7 @@ export class TenantService {
       .single();
 
     if (error) {
-      throw new Error("Fehler beim Erstellen des Mandanten");
+      throw new Error('Fehler beim Erstellen des Mandanten');
     }
 
     return data as unknown as Tenant;
@@ -347,7 +347,7 @@ export class TenantService {
       .eq('id', tenantId);
 
     if (error) {
-      throw new Error("Fehler beim Löschen des Mandanten");
+      throw new Error('Fehler beim Löschen des Mandanten');
     }
   }
 

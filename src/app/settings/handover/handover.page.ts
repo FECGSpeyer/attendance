@@ -99,19 +99,13 @@ export class HandoverPage implements OnInit {
     this.onMainGroupChanged();
 
     if (this.filters.includes('older')) {
-      this.filteredPersons = this.filteredPersons.filter((p: Player) => {
-        return dayjs(this.date).isAfter(dayjs(p.birthday));
-      });
+      this.filteredPersons = this.filteredPersons.filter((p: Player) => dayjs(this.date).isAfter(dayjs(p.birthday)));
     }
     if (this.filters.includes('younger')) {
-      this.filteredPersons = this.filteredPersons.filter((p: Player) => {
-        return dayjs(this.date).isBefore(dayjs(p.birthday));
-      });
+      this.filteredPersons = this.filteredPersons.filter((p: Player) => dayjs(this.date).isBefore(dayjs(p.birthday)));
     }
     if (this.filters.includes('group') && this.groupId) {
-      this.filteredPersons = this.filteredPersons.filter((p: Player) => {
-        return p.instrument === this.groupId;
-      });
+      this.filteredPersons = this.filteredPersons.filter((p: Player) => p.instrument === this.groupId);
     }
   }
 

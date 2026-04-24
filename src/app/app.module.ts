@@ -1,4 +1,4 @@
-import { NgModule, isDevMode } from '@angular/core';
+import { APP_INITIALIZER, NgModule, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { IonicStorageModule } from '@ionic/storage-angular';
@@ -9,6 +9,11 @@ import { IonicModule, IonicRouteStrategy, isPlatform } from '@ionic/angular';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { popoverEnterAnimation, popoverLeaveAnimation } from '@rdlabo/ionic-theme-ios26';
+import { AuthService } from './services/auth/auth.service';
+
+function initAuth(authSvc: AuthService) {
+  return () => authSvc.sessionReady;
+}
 
 @NgModule({
   declarations: [AppComponent],
@@ -27,7 +32,10 @@ import { popoverEnterAnimation, popoverLeaveAnimation } from '@rdlabo/ionic-them
       registrationStrategy: 'registerWhenStable:30000'
     }),
   ],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
+  providers: [
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    { provide: APP_INITIALIZER, useFactory: initAuth, deps: [AuthService], multi: true },
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

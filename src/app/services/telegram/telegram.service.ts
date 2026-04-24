@@ -28,7 +28,7 @@ export class TelegramService {
     const fileName: string = this.encodeFilename(name, extension);
 
     const { error } = await supabase.storage
-      .from("attendances")
+      .from('attendances')
       .upload(fileName, blob, { upsert: true, contentType: asImage ? 'image/png' : 'application/pdf' });
 
     if (error) {
@@ -38,58 +38,58 @@ export class TelegramService {
 
     const { data: urlData } = await supabase
       .storage
-      .from("attendances")
+      .from('attendances')
       .getPublicUrl(fileName);
 
-    const functionName = asImage ? "send-photo" : "send-document";
+    const functionName = asImage ? 'send-photo' : 'send-document';
     const { error: sendError } = await supabase.functions.invoke(functionName, {
       body: {
         url: urlData.publicUrl,
         chat_id: chatId,
       },
-      method: "POST",
+      method: 'POST',
     });
 
     loading.dismiss();
 
     if (!sendError) {
-      Utils.showToast("Nachricht wurde erfolgreich gesendet!");
+      Utils.showToast('Nachricht wurde erfolgreich gesendet!');
     } else {
-      Utils.showToast("Fehler beim Senden der Nachricht, versuche es später erneut!", "danger");
+      Utils.showToast('Fehler beim Senden der Nachricht, versuche es später erneut!', 'danger');
     }
 
     window.setTimeout(async () => {
       await supabase.storage
-        .from("attendances")
+        .from('attendances')
         .remove([fileName]);
     }, 10000);
   }
 
   async sendSongPerTelegram(url: string, chatId: string): Promise<void> {
-    const { error: sendError } = await supabase.functions.invoke("send-document", {
+    const { error: sendError } = await supabase.functions.invoke('send-document', {
       body: {
-        url: url,
-        sendAsUrl: !url.includes(".pdf"),
+        url,
+        sendAsUrl: !url.includes('.pdf'),
         chat_id: chatId,
       },
-      method: "POST",
+      method: 'POST',
     });
 
     if (!sendError) {
-      Utils.showToast("Nachricht wurde erfolgreich gesendet!");
+      Utils.showToast('Nachricht wurde erfolgreich gesendet!');
     } else {
-      Utils.showToast("Fehler beim Senden der Nachricht, versuche es später erneut!", "danger");
+      Utils.showToast('Fehler beim Senden der Nachricht, versuche es später erneut!', 'danger');
     }
   }
 
   async notifyPerTelegram(
     attId: string,
-    type: string = "signin",
+    type: string = 'signin',
     reason?: string,
     isParents: boolean = false,
-    notes: string = ""
+    notes: string = ''
   ): Promise<void> {
-    await supabase.functions.invoke("quick-processor", {
+    await supabase.functions.invoke('quick-processor', {
       body: {
         attId,
         type,
@@ -97,7 +97,7 @@ export class TelegramService {
         isParents,
         notes
       },
-      method: "POST",
+      method: 'POST',
     });
   }
 }

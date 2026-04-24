@@ -1,8 +1,8 @@
-import { ToastController, LoadingController } from "@ionic/angular";
+import { ToastController, LoadingController } from '@ionic/angular';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
-import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, FieldType, PlayerHistoryType, Role } from "./constants";
-import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftPlan, Church } from "./interfaces";
+import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, FieldType, PlayerHistoryType, Role } from './constants';
+import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftPlan, Church } from './interfaces';
 // jsPDF and xlsx are lazy-loaded for better initial bundle size
 
 export class Utils {
@@ -55,14 +55,14 @@ export class Utils {
     }
 
     // Pre-compute "one month ago" date once
-    const oneMonthAgo = dayjs().subtract(1, "month");
-    const tomorrow = dayjs().add(1, "day");
+    const oneMonthAgo = dayjs().subtract(1, 'month');
+    const tomorrow = dayjs().add(1, 'day');
 
     // Sort once with proper comparator
     const sortedPlayers = [...players].sort((a: Player, b: Player) => {
       // Main group first
-      if (a.instrument === mainGroup && b.instrument !== mainGroup) return -1;
-      if (b.instrument === mainGroup && a.instrument !== mainGroup) return 1;
+      if (a.instrument === mainGroup && b.instrument !== mainGroup) {return -1;}
+      if (b.instrument === mainGroup && a.instrument !== mainGroup) {return 1;}
 
       // Get instrument data for sorting
       const aInstrument = instruments.find(i => i.id === a.instrument);
@@ -75,14 +75,14 @@ export class Utils {
       if (aSortOrder !== undefined && aSortOrder !== null &&
           bSortOrder !== undefined && bSortOrder !== null) {
         const sortOrderCompare = aSortOrder - bSortOrder;
-        if (sortOrderCompare !== 0) return sortOrderCompare;
+        if (sortOrderCompare !== 0) {return sortOrderCompare;}
       }
 
       // Then by group name
       const aGroupName = instrumentNameMap.get(a.instrument) || '';
       const bGroupName = instrumentNameMap.get(b.instrument) || '';
       const groupCompare = aGroupName.localeCompare(bGroupName);
-      if (groupCompare !== 0) return groupCompare;
+      if (groupCompare !== 0) {return groupCompare;}
 
       // Then by lastName within same group
       return a.lastName.localeCompare(b.lastName);
@@ -115,10 +115,10 @@ export class Utils {
         // Use pre-built maps for O(1) lookups instead of O(n) finds
         const personAttendancesTillNow = player.person_attendances.filter((personAttendance: PersonAttendance) => {
           const attendance = attendanceMap.get(personAttendance.attendance_id);
-          if (!attendance) return false;
+          if (!attendance) {return false;}
 
           const type = typeMap.get(attendance.type_id);
-          if (!type?.include_in_average) return false;
+          if (!type?.include_in_average) {return false;}
 
           return dayjs(attendance.date).isBefore(tomorrow);
         });
@@ -126,8 +126,8 @@ export class Utils {
 
         // Count unexcused late arrivals (only after lastSolve if set)
         lateCount = personAttendancesTillNow.filter((pa: PersonAttendance) => {
-          if (pa.status !== AttendanceStatus.Late) return false;
-          if (!lastSolveDate) return true;
+          if (pa.status !== AttendanceStatus.Late) {return false;}
+          if (!lastSolveDate) {return true;}
 
           const attendance = attendanceMap.get(pa.attendance_id);
           return attendance && dayjs(attendance.date).isAfter(lastSolveDate);
@@ -136,8 +136,8 @@ export class Utils {
 
       let img = player.img || DEFAULT_IMAGE;
 
-      if (img.includes("/storage/v1/object/public/profiles/") && !img.includes("?quality=20")) {
-        img = img.replace("object/public/profiles/", "render/image/public/profiles/");
+      if (img.includes('/storage/v1/object/public/profiles/') && !img.includes('?quality=20')) {
+        img = img.replace('object/public/profiles/', 'render/image/public/profiles/');
         img = `${img}?quality=20`;
       }
 
@@ -158,9 +158,9 @@ export class Utils {
     const instrumentsMap: { [props: number]: boolean } = {};
 
     return Utils.sortPlayers(persons, mainGroup, instruments).map((player: PersonAttendance): PersonAttendance => {
-      let firstOfInstrument: boolean = false;
-      let instrumentLength: number = 0;
-      let isNew: boolean = false;
+      let firstOfInstrument = false;
+      let instrumentLength = 0;
+      let isNew = false;
 
       if (!instrumentsMap[player.instrument]) {
         instrumentsMap[player.instrument] = true;
@@ -168,7 +168,7 @@ export class Utils {
         instrumentLength = persons.filter((p: PersonAttendance) => p.instrument === player.instrument).length;
       }
 
-      if (dayjs().subtract(1, "month").isBefore(dayjs(player.person.joined))) {
+      if (dayjs().subtract(1, 'month').isBefore(dayjs(player.person.joined))) {
         isNew = true;
       }
 
@@ -179,7 +179,7 @@ export class Utils {
         instrumentLength,
         isNew,
         img: player.img || DEFAULT_IMAGE,
-      } as any
+      } as any;
     });
   }
 
@@ -216,8 +216,8 @@ export class Utils {
           return a.sortOrder - b.sortOrder;
         }
         // If only one has sort_order, prioritize it
-        if (a.sortOrder !== undefined && a.sortOrder !== null) return -1;
-        if (b.sortOrder !== undefined && b.sortOrder !== null) return 1;
+        if (a.sortOrder !== undefined && a.sortOrder !== null) {return -1;}
+        if (b.sortOrder !== undefined && b.sortOrder !== null) {return 1;}
         // Otherwise sort by group name
         return a.groupName.localeCompare(b.groupName);
       })
@@ -231,14 +231,12 @@ export class Utils {
   }
 
   public static getModifiedAttendanceData(attendance: Attendance): Attendance {
-    attendance.persons = attendance.persons.map((person: PersonAttendance): PersonAttendance => {
-      return {
+    attendance.persons = attendance.persons.map((person: PersonAttendance): PersonAttendance => ({
         ...person,
         img: person.img || DEFAULT_IMAGE,
         instrument: (person.person.instrument as any).id,
         groupName: (person.person.instrument as any).name,
-      }
-    });
+      }));
 
     return attendance;
   }
@@ -252,7 +250,7 @@ export class Utils {
       return 0;
     }
     const overallCount: number = personAttendances.length;
-    let presentCount: number = 0;
+    let presentCount = 0;
     for (const p of personAttendances) {
       if (p.status === AttendanceStatus.Present || p.status === AttendanceStatus.Late || p.status === AttendanceStatus.LateExcused) {
         presentCount++;
@@ -267,38 +265,38 @@ export class Utils {
   public static getClefText(key: string) {
     switch (key) {
       case 'c':
-        return "Altschlüssel";
+        return 'Altschlüssel';
       case 'g':
-        return "Violinschlüssel";
+        return 'Violinschlüssel';
       case 'f':
-        return "Bassschlüssel"
+        return 'Bassschlüssel';
       default:
-        throw new Error("unknown clef key")
+        throw new Error('unknown clef key');
     }
   }
 
   public static getRoleText(role: Role): string {
     switch (role) {
       case Role.ADMIN:
-        return "Admin";
+        return 'Admin';
       case Role.PLAYER:
-        return "Mitglied";
+        return 'Mitglied';
       case Role.VIEWER:
-        return "Beobachter";
+        return 'Beobachter';
       case Role.HELPER:
-        return "Helfer";
+        return 'Helfer';
       case Role.RESPONSIBLE:
-        return "Verantwortlicher";
+        return 'Verantwortlicher';
       case Role.PARENT:
-        return "Elternteil";
+        return 'Elternteil';
       case Role.VOICE_LEADER:
-        return "Stimmführer";
+        return 'Stimmführer';
       case Role.VOICE_LEADER_HELPER:
-        return "Stimmführer & Helfer";
+        return 'Stimmführer & Helfer';
       case Role.NONE:
-        return "Mitglied";
+        return 'Mitglied';
       default:
-        return "Unbekannt";
+        return 'Unbekannt';
     }
   }
 
@@ -313,32 +311,32 @@ export class Utils {
   public static getPlayerHistoryTypeText(key: PlayerHistoryType) {
     switch (key) {
       case PlayerHistoryType.PAUSED:
-        return "Pausiert";
+        return 'Pausiert';
       case PlayerHistoryType.UNEXCUSED:
-        return "Unentschuldigt";
+        return 'Unentschuldigt';
       case PlayerHistoryType.CRITICAL_PERSON:
-        return "";
+        return '';
       case PlayerHistoryType.INSTRUMENT_CHANGE:
-        return "Wechsel";
+        return 'Wechsel';
       case PlayerHistoryType.ARCHIVED:
-        return "Archiviert";
+        return 'Archiviert';
       case PlayerHistoryType.RETURNED:
-        return "Reaktiviert";
+        return 'Reaktiviert';
       case PlayerHistoryType.TRANSFERRED_FROM:
       case PlayerHistoryType.TRANSFERRED_TO:
       case PlayerHistoryType.COPIED_FROM:
       case PlayerHistoryType.COPIED_TO:
-        return "";
+        return '';
       default:
-        return "Sonstiges";
+        return 'Sonstiges';
     }
   }
 
-  public static async showToast(message: string, color: string = "success", duration: number = 3000): Promise<void> {
+  public static async showToast(message: string, color: string = 'success', duration: number = 3000): Promise<void> {
     const toast: HTMLIonToastElement = await new ToastController().create({
       message,
       color,
-      position: "bottom",
+      position: 'bottom',
       duration,
     });
 
@@ -367,7 +365,7 @@ export class Utils {
     await import('jspdf-autotable');
 
     const startingTime: dayjs.Dayjs = dayjs(props.time).isValid() ? dayjs(props.time) : dayjs().hour(Number(props.time.substring(0, 2))).minute(Number(props.time.substring(3, 5)));
-    const date: string = props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).locale("de").format("dddd, DD.MM.YYYY") : startingTime.locale("de").format("dddd, DD.MM.YYYY");
+    const date: string = props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).locale('de').format('dddd, DD.MM.YYYY') : startingTime.locale('de').format('dddd, DD.MM.YYYY');
     const hasConductors = Boolean(props.fields.find((field: FieldSelection) => field.conductor));
 
     const data: any[] = [];
@@ -445,7 +443,7 @@ export class Utils {
       fieldName = fieldName.replace(/ю/g, 'yu');
       fieldName = fieldName.replace(/я/g, 'ya');
 
-      if (field.id.includes("noteFld")) {
+      if (field.id.includes('noteFld')) {
         data.push([
           { content: fieldName, colSpan: hasConductors ? 5 : 4 }
         ]);
@@ -453,36 +451,36 @@ export class Utils {
         if (hasConductors) {
           data.push([
             row.toString(),
-            `${currentTime.format("HH:mm")} Uhr`,
+            `${currentTime.format('HH:mm')} Uhr`,
             fieldName,
-            field.conductor || "",
+            field.conductor || '',
             `${field.time} min`,
           ]);
         } else {
           data.push([
             row.toString(),
-            `${currentTime.format("HH:mm")} Uhr`,
+            `${currentTime.format('HH:mm')} Uhr`,
             fieldName,
             `${field.time} min`,
           ]);
         }
 
-        currentTime = currentTime.add(parseInt(field.time), "minutes");
+        currentTime = currentTime.add(parseInt(field.time), 'minutes');
         row++;
       }
     }
 
     const head = hasConductors ? [[
-      { content: "#", styles: { fontSize: props.sideBySide ? 8 : 11 } },
-      { content: "Uhrzeit", styles: { fontSize: props.sideBySide ? 8 : 11 } },
-      { content: "Programmpunkt", styles: { fontSize: props.sideBySide ? 8 : 11 } },
-      { content: "Ausführung", styles: { fontSize: props.sideBySide ? 8 : 11 } },
-      { content: "Dauer", styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: '#', styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: 'Uhrzeit', styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: 'Programmpunkt', styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: 'Ausführung', styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: 'Dauer', styles: { fontSize: props.sideBySide ? 8 : 11 } },
     ]] : [[
-      { content: "#", styles: { fontSize: props.sideBySide ? 8 : 11 } },
-      { content: "Uhrzeit", styles: { fontSize: props.sideBySide ? 8 : 11 } },
-      { content: "Programmpunkt", styles: { fontSize: props.sideBySide ? 8 : 11 } },
-      { content: "Dauer", styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: '#', styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: 'Uhrzeit', styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: 'Programmpunkt', styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: 'Dauer', styles: { fontSize: props.sideBySide ? 8 : 11 } },
     ]];
 
     const tableStyles = {
@@ -562,7 +560,7 @@ export class Utils {
           const pdfDataUri = doc.output('datauristring');
           return await Utils.pdfDataUriToImageBlob(pdfDataUri);
         }
-        return doc.output("blob");
+        return doc.output('blob');
       } else {
         doc.save(`${typeText}_${date}_2x.pdf`);
       }
@@ -609,7 +607,7 @@ export class Utils {
         const pdfDataUri = doc.output('datauristring');
         return await Utils.pdfDataUriToImageBlob(pdfDataUri);
       }
-      return doc.output("blob");
+      return doc.output('blob');
     } else {
       doc.save(`${typeText}_${date}.pdf`);
     }
@@ -723,58 +721,58 @@ export class Utils {
       case Role.ADMIN:
       case Role.RESPONSIBLE:
       case Role.VIEWER:
-        return "/tabs/player";
+        return '/tabs/player';
       case Role.PARENT:
-        return "/tabs/parents";
+        return '/tabs/parents';
       case Role.HELPER:
       case Role.VOICE_LEADER:
       case Role.VOICE_LEADER_HELPER:
       case Role.NONE:
       case Role.PLAYER:
       case Role.APPLICANT:
-        return "/tabs/signout";
+        return '/tabs/signout';
       default:
-        return "/register";
+        return '/register';
     }
   }
 
   public static isUrlAccessAllowed(url: string, role: Role) {
     switch (url) {
-      case "/tabs/settings":
-      case "/tabs/settings/songs":
-      case "/tabs/settings/register":
+      case '/tabs/settings':
+      case '/tabs/settings/songs':
+      case '/tabs/settings/register':
         return true;
-      case "/tabs/members":
+      case '/tabs/members':
         return [Role.HELPER, Role.PLAYER, Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER, Role.NONE].includes(role);
-      case "/tabs/signout":
+      case '/tabs/signout':
         return [Role.HELPER, Role.PLAYER, Role.APPLICANT, Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER].includes(role);
-      case "/tabs/player":
+      case '/tabs/player':
         return [Role.ADMIN, Role.RESPONSIBLE, Role.VIEWER].includes(role);
-      case "/tabs/settings/notifications":
+      case '/tabs/settings/notifications':
         return [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER, Role.PLAYER, Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER].includes(role);
-      case "/tabs/settings/voice-leader":
+      case '/tabs/settings/voice-leader':
         return [Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER].includes(role);
-      case "/tabs/attendance":
-      case "/tabs/settings/teachers":
+      case '/tabs/attendance':
+      case '/tabs/settings/teachers':
         return [Role.ADMIN, Role.RESPONSIBLE, Role.VIEWER].includes(role);
-      case "/tabs/settings/general":
-      case "/tabs/settings/general/types":
-      case "/tabs/settings/instruments":
-      case "/tabs/settings/meetings":
-      case "/tabs/settings/handover":
-      case "/tabs/settings/handover/detail":
-      case "/tabs/settings/role-permissions":
+      case '/tabs/settings/general':
+      case '/tabs/settings/general/types':
+      case '/tabs/settings/instruments':
+      case '/tabs/settings/meetings':
+      case '/tabs/settings/handover':
+      case '/tabs/settings/handover/detail':
+      case '/tabs/settings/role-permissions':
         return [Role.ADMIN, Role.RESPONSIBLE].includes(role);
-      case "/tabs/settings/files":
+      case '/tabs/settings/files':
         return [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER].includes(role);
-      case "/tabs/parents":
+      case '/tabs/parents':
         return [Role.PARENT].includes(role);
       default:
-        if (url.includes("/tabs/settings/songs/")) {
+        if (url.includes('/tabs/settings/songs/')) {
           return true;
-        } else if (url.includes("/tabs/settings/meetings/")) {
+        } else if (url.includes('/tabs/settings/meetings/')) {
           return [Role.ADMIN, Role.RESPONSIBLE].includes(role);
-        } else if (url.includes("/tabs/settings/general/types/")) {
+        } else if (url.includes('/tabs/settings/general/types/')) {
           return [Role.ADMIN, Role.RESPONSIBLE].includes(role);
         }
 
@@ -791,7 +789,7 @@ export class Utils {
   }
 
   public static getAttText(att: PersonAttendance): string {
-    let attText: string = "";
+    let attText = '';
 
     switch (att.status) {
       case AttendanceStatus.Neutral:
@@ -818,19 +816,19 @@ export class Utils {
   public static getAttendanceStatusDescription(status: AttendanceStatus): string {
     switch (status) {
       case AttendanceStatus.Neutral:
-        return "Neutral";
+        return 'Neutral';
       case AttendanceStatus.Present:
-        return "Anwesend";
+        return 'Anwesend';
       case AttendanceStatus.Excused:
-        return "Entschuldigt";
+        return 'Entschuldigt';
       case AttendanceStatus.Late:
-        return "Verspätet anwesend";
+        return 'Verspätet anwesend';
       case AttendanceStatus.LateExcused:
-        return "Verspätet entschuldigt";
+        return 'Verspätet entschuldigt';
       case AttendanceStatus.Absent:
-        return "Abwesend";
+        return 'Abwesend';
       default:
-        return "Unbekannt";
+        return 'Unbekannt';
     }
   }
 
@@ -839,9 +837,9 @@ export class Utils {
     // last instrument should be connected with 'und'
 
     if (filteredInstruments.length === 0) {
-      return "";
+      return '';
     } else if (filteredInstruments.length === 1) {
-      return "Ohne " + filteredInstruments[0].name;
+      return 'Ohne ' + filteredInstruments[0].name;
     }
 
     // check if all instruments of one category are missing
@@ -868,7 +866,7 @@ export class Utils {
       const totalInstrumentsInCategory = instruments.filter((instrument: Group) => instrument.category === catIdNum).length;
       if (categoryMap[catIdNum].length === totalInstrumentsInCategory) {
         // all instruments of this category are missing
-        const categoryName = catIdNum === -1 ? "Sonstige" : groupCategories.find(cat => cat.id === catIdNum)?.name || "Unbekannt";
+        const categoryName = catIdNum === -1 ? 'Sonstige' : groupCategories.find(cat => cat.id === catIdNum)?.name || 'Unbekannt';
         categoriesMissingAllInstruments.push(categoryName);
         // remove this category from categoryMap
         delete categoryMap[catIdNum];
@@ -885,10 +883,10 @@ export class Utils {
     const allParts: string[] = categoriesMissingAllInstruments.concat(individualInstruments.map(inst => inst.name));
 
     if (allParts.length === 1) {
-      return "Ohne " + allParts[0];
+      return 'Ohne ' + allParts[0];
     }
 
-    return "Ohne " + allParts.slice(0, -1).join(", ") + " und " + allParts.slice(-1);
+    return 'Ohne ' + allParts.slice(0, -1).join(', ') + ' und ' + allParts.slice(-1);
   }
 
   public static getFieldTypeDefaultValue(fieldType: FieldType, defaultValue?: any, options?: string[], churches?: Church[]): any {
@@ -901,13 +899,13 @@ export class Utils {
     }
 
     if (fieldType === FieldType.SELECT) {
-      return options && options.length ? options[0] : "";
+      return options && options.length ? options[0] : '';
     }
 
     switch (fieldType) {
       case FieldType.TEXT:
       case FieldType.TEXTAREA:
-        return "";
+        return '';
       case FieldType.NUMBER:
         return 0;
       case FieldType.DATE:
@@ -915,16 +913,16 @@ export class Utils {
       case FieldType.BOOLEAN:
         return true;
       default:
-        return "";
+        return '';
     }
   }
 
   public static getDefaultAttendanceTypes(tenantId: number, type: string): AttendanceType[] {
     const attendanceTypes: AttendanceType[] = [
       {
-        name: type === DefaultAttendanceType.GENERAL ? "Treffen" : "Probe",
-        planning_title: type === DefaultAttendanceType.GENERAL ? "Treffen" : "Probenplan",
-        color: "primary",
+        name: type === DefaultAttendanceType.GENERAL ? 'Treffen' : 'Probe',
+        planning_title: type === DefaultAttendanceType.GENERAL ? 'Treffen' : 'Probenplan',
+        color: 'primary',
         include_in_average: true,
         available_statuses: [AttendanceStatus.Present, AttendanceStatus.Excused, AttendanceStatus.Late, AttendanceStatus.Absent],
         default_status: AttendanceStatus.Present,
@@ -940,9 +938,9 @@ export class Utils {
 
     if (type !== DefaultAttendanceType.GENERAL) {
       attendanceTypes.push({
-        name: "Vortrag",
-        planning_title: "Vortrag",
-        color: "secondary",
+        name: 'Vortrag',
+        planning_title: 'Vortrag',
+        color: 'secondary',
         include_in_average: true,
         available_statuses: [AttendanceStatus.Present, AttendanceStatus.Excused, AttendanceStatus.Late, AttendanceStatus.Absent, AttendanceStatus.Neutral],
         default_status: AttendanceStatus.Neutral,
@@ -957,9 +955,9 @@ export class Utils {
     }
 
     attendanceTypes.push({
-      name: "Sonstiges",
-      planning_title: "Sonstiges",
-      color: "tertiary",
+      name: 'Sonstiges',
+      planning_title: 'Sonstiges',
+      color: 'tertiary',
       include_in_average: true,
       available_statuses: [AttendanceStatus.Present, AttendanceStatus.Excused, AttendanceStatus.Late, AttendanceStatus.Absent, AttendanceStatus.Neutral],
       default_status: AttendanceStatus.Neutral,
@@ -987,13 +985,13 @@ export class Utils {
     if (!shift || !shift.definition || shift.definition.length === 0) {
       return {
         status: defaultStatus,
-        note: ""
+        note: ''
       };
     }
 
     // Normalize attendance date to avoid timezone issues
     const attDateNormalized = dayjs(attDate).startOf('day');
-    const attDateStr = attDateNormalized.format("YYYY-MM-DD");
+    const attDateStr = attDateNormalized.format('YYYY-MM-DD');
     const attendanceStartTime = dayjs(`${attDateStr}T${attendanceStart}`);
     const attendanceEndTime = dayjs(`${attDateStr}T${attendanceEnd}`);
 
@@ -1004,7 +1002,7 @@ export class Utils {
         // Use startOf('day') to strip time/timezone information
         currentDate = dayjs(matchingShift.date).startOf('day');
       } else {
-        throw new Error("Shift name not found in shift plan");
+        throw new Error('Shift name not found in shift plan');
       }
     } else {
       currentDate = dayjs(shiftStart).startOf('day');
@@ -1022,7 +1020,7 @@ export class Utils {
             if (!def.free && attendanceStartTime.isBefore(shiftEndTime) && attendanceEndTime.isAfter(shiftStartTime)) {
               return {
                 status: AttendanceStatus.Excused,
-                note: "Schichtbedingt"
+                note: 'Schichtbedingt'
               };
             }
           }
@@ -1035,7 +1033,7 @@ export class Utils {
 
     return {
       status: defaultStatus,
-      note: ""
+      note: ''
     };
   }
 
@@ -1043,13 +1041,13 @@ export class Utils {
     if (type.all_day) {
       const endDate = dayjs(date).add((type.duration_days || 1) - 1, 'day');
       if (type.duration_days && type.duration_days > 1) {
-        return `${dayjs(date).locale("de").format("ddd, DD.MM.YYYY")} - ${endDate.locale("de").format("ddd, DD.MM.YYYY")}`;
+        return `${dayjs(date).locale('de').format('ddd, DD.MM.YYYY')} - ${endDate.locale('de').format('ddd, DD.MM.YYYY')}`;
       } else {
-        return dayjs(date).locale("de").format("ddd, DD.MM.YYYY");
+        return dayjs(date).locale('de').format('ddd, DD.MM.YYYY');
       }
     }
 
-    return dayjs(date).locale("de").format("ddd, DD.MM.YYYY");
+    return dayjs(date).locale('de').format('ddd, DD.MM.YYYY');
   }
 
   public static getPlanningTitle(type: AttendanceType, typeInfo?: string): string {

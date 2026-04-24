@@ -17,20 +17,20 @@ export class FilesPage implements OnInit {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   public entries: StorageEntry[] = [];
-  public searchTerm: string = '';
-  public currentPath: string = '';
-  public isLoading: boolean = false;
+  public searchTerm = '';
+  public currentPath = '';
+  public isLoading = false;
   public imagePreviewUrls: Record<string, string> = {};
-  public isImagePreviewOpen: boolean = false;
-  public selectedImageUrl: string = '';
-  public selectedImageName: string = '';
-  public imageZoomScale: number = 1;
+  public isImagePreviewOpen = false;
+  public selectedImageUrl = '';
+  public selectedImageName = '';
+  public imageZoomScale = 1;
   public sortBy: 'name' | 'updatedAt' | 'size' = 'name';
   public sortDirection: 'asc' | 'desc' = 'asc';
-  public canDeleteEntries: boolean = false;
-  private pinchStartDistance: number = 0;
-  private pinchStartScale: number = 1;
-  private lastImageTapAt: number = 0;
+  public canDeleteEntries = false;
+  private pinchStartDistance = 0;
+  private pinchStartScale = 1;
+  private lastImageTapAt = 0;
 
   constructor(
     public db: DbService,

@@ -19,7 +19,7 @@ interface RoleSection {
 })
 export class RolePermissionsPage implements OnInit {
   public roleSections: RoleSection[] = [];
-  private originalState: string = '';
+  private originalState = '';
 
   @HostListener('window:beforeunload', ['$event'])
   unloadNotification($event: BeforeUnloadEvent) {
@@ -74,7 +74,7 @@ export class RolePermissionsPage implements OnInit {
   async navigateBack(): Promise<void> {
     if (this.hasUnsavedChanges()) {
       const shouldLeave = await this.confirmUnsavedChanges();
-      if (!shouldLeave) return;
+      if (!shouldLeave) {return;}
     }
     this.navController.back();
   }
@@ -121,9 +121,9 @@ export class RolePermissionsPage implements OnInit {
         }
       }
       this.markAsSaved();
-      Utils.showToast("Rollenberechtigungen gespeichert", "success");
+      Utils.showToast('Rollenberechtigungen gespeichert', 'success');
     } catch {
-      Utils.showToast("Fehler beim Speichern der Rollenberechtigungen", "danger");
+      Utils.showToast('Fehler beim Speichern der Rollenberechtigungen', 'danger');
     }
   }
 

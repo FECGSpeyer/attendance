@@ -15,8 +15,8 @@ import { Utils } from 'src/app/utilities/Utils';
 export class InstrumentPage implements OnInit {
   @Input() existingInstrument: Group;
   public instrument: Group;
-  public isChoir: boolean = false;
-  public isGeneral: boolean = false;
+  public isChoir = false;
+  public isGeneral = false;
   public categories: GroupCategory[] = [];
 
   constructor(
@@ -35,28 +35,28 @@ export class InstrumentPage implements OnInit {
 
   async generateSynonyms() {
     if (!this.instrument.name || this.instrument.name.trim().length === 0) {
-      Utils.showToast("Bitte gib zuerst einen Namen an!", "danger");
+      Utils.showToast('Bitte gib zuerst einen Namen an!', 'danger');
       return;
     }
 
-    const loading = await Utils.getLoadingElement(10000, "Synonyme werden generiert...");
+    const loading = await Utils.getLoadingElement(10000, 'Synonyme werden generiert...');
     await loading.present();
 
     try {
       const synonyms = await this.ai.getGroupSynonyms(this.instrument.name);
       this.instrument.synonyms = synonyms;
       await loading.dismiss();
-      Utils.showToast("Synonyme erfolgreich generiert!");
+      Utils.showToast('Synonyme erfolgreich generiert!');
     } catch (error) {
-      console.error("Fehler beim Generieren der Synonyme:", error);
+      console.error('Fehler beim Generieren der Synonyme:', error);
       await loading.dismiss();
-      Utils.showToast("Fehler beim Generieren der Synonyme", "danger");
+      Utils.showToast('Fehler beim Generieren der Synonyme', 'danger');
     }
   }
 
   async update() {
     if (!this.instrument.name) {
-      Utils.showToast("Bitte gib einen Namen an!", "danger");
+      Utils.showToast('Bitte gib einen Namen an!', 'danger');
       return;
     }
 
@@ -80,7 +80,7 @@ export class InstrumentPage implements OnInit {
   async delete() {
     const allPlayers: Player[] = await this.db.getPlayers(true);
     if (Boolean(allPlayers.find((p: Player) => p.instrument === this.instrument.id))) {
-      Utils.showToast("Du kannst das Instrument nicht löschen, da es Spieler gibt (gab), die darauf spielen", "danger");
+      Utils.showToast('Du kannst das Instrument nicht löschen, da es Spieler gibt (gab), die darauf spielen', 'danger');
       return;
     }
 

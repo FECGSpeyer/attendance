@@ -17,13 +17,13 @@ import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supab
 export class SongsPage implements OnInit {
   public songs: Song[] = [];
   public songsFiltered: Song[] = [];
-  searchTerm: string = "";
-  public isAdmin: boolean = false;
-  public withChoir: boolean = false;
-  public withSolo: boolean = false;
-  public inclChoir: boolean = false;
-  public inclSolo: boolean = false;
-  public isOrchestra: boolean = false;
+  searchTerm = '';
+  public isAdmin = false;
+  public withChoir = false;
+  public withSolo = false;
+  public inclChoir = false;
+  public inclSolo = false;
+  public isOrchestra = false;
   public instruments: Group[] = [];
   public selectedInstruments: number[] = [];
   public customModalOptions = {
@@ -33,18 +33,18 @@ export class SongsPage implements OnInit {
   };
   public groupCategories: GroupCategory[] = [];
   public filterOpts = {};
-  public sortOpt = "numberAsc";
-  public viewOpts: string[] = ["withChoir", "withSolo", "missingInstruments", "link", "lastSung"];
+  public sortOpt = 'numberAsc';
+  public viewOpts: string[] = ['withChoir', 'withSolo', 'missingInstruments', 'link', 'lastSung'];
   public difficulty: number | null = null;
   public instrumentsToFilter: number[] = [];
-  public currentSongs: { date: string, history: History[] }[] = [];
+  public currentSongs: { date: string; history: History[] }[] = [];
   public groupsWithFiles: Group[] = [];
-  public selectedGroupFiles: { song: Song, file: SongFile }[] = [];
-  public selectedGroupName: string = '';
-  public isCurrentSongsModalOpen: boolean = false;
-  public isGroupDirectoryModalOpen: boolean = false;
+  public selectedGroupFiles: { song: Song; file: SongFile }[] = [];
+  public selectedGroupName = '';
+  public isCurrentSongsModalOpen = false;
+  public isGroupDirectoryModalOpen = false;
   public tenantData?: Tenant;
-  public selectedCategory: string = "";
+  public selectedCategory = '';
   private sub: RealtimeChannel;
   public tenantType: string;
 
@@ -61,21 +61,21 @@ export class SongsPage implements OnInit {
   async ngOnInit() {
     const pathParts = window.location.pathname.split('/');
     const songSharingId = pathParts[pathParts.length - 1];
-    if (songSharingId !== "songs") {
+    if (songSharingId !== 'songs') {
       this.tenantData = await this.db.getTenantBySongSharingId(songSharingId);
       if (!this.tenantData) {
-        Utils.showToast("Ungültiger Freigabe-Link.");
+        Utils.showToast('Ungültiger Freigabe-Link.');
         return;
       }
     }
 
     this.tenantType = (this.tenantData ?? this.db.tenant()).type;
-    this.sortOpt = await this.storage.get(`sortOptSongs${this.tenantData?.id ?? this.db.tenant().id}`) || "numberAsc";
+    this.sortOpt = await this.storage.get(`sortOptSongs${this.tenantData?.id ?? this.db.tenant().id}`) || 'numberAsc';
     this.viewOpts = JSON.parse(await this.storage.get(`viewOptsSongs${this.tenantData?.id ?? this.db.tenant().id}`) || JSON.stringify(['withChoir', 'withSolo', 'missingInstruments', 'link', 'lastSung']));
-    this.inclChoir = await this.storage.get(`inclChoirSongs${this.tenantData?.id ?? this.db.tenant().id}`) === "true";
-    this.inclSolo = await this.storage.get(`inclSoloSongs${this.tenantData?.id ?? this.db.tenant().id}`) === "true";
-    this.instrumentsToFilter = JSON.parse(await this.storage.get(`instrumentsToFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`) || "[]");
-    this.selectedCategory = await this.storage.get(`selectedCategorySongs${this.tenantData?.id ?? this.db.tenant().id}`) || "";
+    this.inclChoir = await this.storage.get(`inclChoirSongs${this.tenantData?.id ?? this.db.tenant().id}`) === 'true';
+    this.inclSolo = await this.storage.get(`inclSoloSongs${this.tenantData?.id ?? this.db.tenant().id}`) === 'true';
+    this.instrumentsToFilter = JSON.parse(await this.storage.get(`instrumentsToFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`) || '[]');
+    this.selectedCategory = await this.storage.get(`selectedCategorySongs${this.tenantData?.id ?? this.db.tenant().id}`) || '';
     this.currentSongs = await this.db.getCurrentSongs(this.tenantData?.id ?? this.db.tenant().id);
 
     await this.getSongs();
@@ -103,7 +103,7 @@ export class SongsPage implements OnInit {
   }
 
   async getSongs(): Promise<void> {
-    this.isOrchestra = (this.tenantData ?? this.db.tenant()).type === "orchestra";
+    this.isOrchestra = (this.tenantData ?? this.db.tenant()).type === 'orchestra';
     this.isAdmin = this.db.tenantUser()?.role === Role.ADMIN || this.db.tenantUser()?.role === Role.RESPONSIBLE;
     const history: History[] = await this.db.getHistory(this.tenantData?.id);
     const groups = this.tenantData ? await this.db.getGroups(this.tenantData.id) : this.db.groups();
@@ -122,7 +122,7 @@ export class SongsPage implements OnInit {
         lastSung,
         conductor: conductor ? `${conductor.firstName} ${conductor.lastName}` : (hisEntry?.otherConductor ?? undefined),
         instrument_ids: song.instrument_ids?.length ? song.instrument_ids : this.selectedInstruments,
-      }
+      };
     });
     this.songsFiltered = this.songs;
 
@@ -174,11 +174,11 @@ export class SongsPage implements OnInit {
   }
 
   async addSong(modal: IonModal, number: any, name: any, link: any, prefix: any) {
-    if (this.songs.find((song: Song) => `${song.prefix ?? ""}${song.number}` === `${prefix ?? ""}${number}`)) {
-      Utils.showToast("Die Liednummer ist bereits vergeben", "danger");
+    if (this.songs.find((song: Song) => `${song.prefix ?? ''}${song.number}` === `${prefix ?? ''}${number}`)) {
+      Utils.showToast('Die Liednummer ist bereits vergeben', 'danger');
       return;
     } else if (link && !this.isValidHttpUrl(link)) {
-      Utils.showToast("Der angegebene Link ist nicht valide", "danger");
+      Utils.showToast('Der angegebene Link ist nicht valide', 'danger');
       return;
     }
     const song = await this.db.addSong({
@@ -188,7 +188,7 @@ export class SongsPage implements OnInit {
       withChoir: this.withChoir,
       withSolo: this.withSolo,
       instrument_ids: this.selectedInstruments,
-      prefix: prefix || "",
+      prefix: prefix || '',
     });
 
     this.withChoir = false;
@@ -197,13 +197,13 @@ export class SongsPage implements OnInit {
     await modal.dismiss();
 
     if (song?.id) {
-      this.router.navigate([`tabs`, `settings`, "songs", `${song.id}`]);
+      this.router.navigate([`tabs`, `settings`, 'songs', `${song.id}`]);
     }
   }
 
   async editSong(id: number, modal: IonModal, number: any, name: any, link: any, instrument_ids: any) {
     if (link && !this.isValidHttpUrl(link)) {
-      Utils.showToast("Der angegebene Link ist nicht valide", "danger");
+      Utils.showToast('Der angegebene Link ist nicht valide', 'danger');
       return;
     }
 
@@ -228,7 +228,7 @@ export class SongsPage implements OnInit {
       return false;
     }
 
-    return url.protocol === "http:" || url.protocol === "https:";
+    return url.protocol === 'http:' || url.protocol === 'https:';
   }
 
   search(event: any) {
@@ -266,12 +266,12 @@ export class SongsPage implements OnInit {
   }
 
   async onFilterChanged() {
-    await this.storage.set(`inclChoirSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.inclChoir ? "true" : "false");
-    await this.storage.set(`inclSoloSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.inclSolo ? "true" : "false");
+    await this.storage.set(`inclChoirSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.inclChoir ? 'true' : 'false');
+    await this.storage.set(`inclSoloSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.inclSolo ? 'true' : 'false');
     await this.storage.set(`instrumentsToFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`, JSON.stringify(this.instrumentsToFilter));
     await this.storage.set(`difficultyFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.difficulty);
 
-    this.searchTerm = "";
+    this.searchTerm = '';
     this.initializeItems();
 
     this.filter();
@@ -306,28 +306,28 @@ export class SongsPage implements OnInit {
   async onSortChanged() {
     await this.storage.set(`sortOptSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.sortOpt);
 
-    if (this.sortOpt === "numberAsc") {
+    if (this.sortOpt === 'numberAsc') {
       this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => (a.number > b.number) ? 1 : -1);
-    } else if (this.sortOpt === "numberDesc") {
+    } else if (this.sortOpt === 'numberDesc') {
       this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => (a.number < b.number) ? 1 : -1);
-    } else if (this.sortOpt === "nameAsc") {
+    } else if (this.sortOpt === 'nameAsc') {
       this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : -1);
-    } else if (this.sortOpt === "nameDesc") {
+    } else if (this.sortOpt === 'nameDesc') {
       this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => (a.name.toLowerCase() < b.name.toLowerCase()) ? 1 : -1);
-    } else if (this.sortOpt === "lastSungAsc") {
+    } else if (this.sortOpt === 'lastSungAsc') {
       // Oldest first (songs never sung at the end)
       this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => {
-        if (!a.lastSung && !b.lastSung) return 0;
-        if (!a.lastSung) return 1;
-        if (!b.lastSung) return -1;
+        if (!a.lastSung && !b.lastSung) {return 0;}
+        if (!a.lastSung) {return 1;}
+        if (!b.lastSung) {return -1;}
         return new Date(a.lastSung).getTime() - new Date(b.lastSung).getTime();
       });
-    } else if (this.sortOpt === "lastSungDesc") {
+    } else if (this.sortOpt === 'lastSungDesc') {
       // Most recent first (songs never sung at the end)
       this.songsFiltered = this.songsFiltered.sort((a: Song, b: Song) => {
-        if (!a.lastSung && !b.lastSung) return 0;
-        if (!a.lastSung) return 1;
-        if (!b.lastSung) return -1;
+        if (!a.lastSung && !b.lastSung) {return 0;}
+        if (!a.lastSung) {return 1;}
+        if (!b.lastSung) {return -1;}
         return new Date(b.lastSung).getTime() - new Date(a.lastSung).getTime();
       });
     }
@@ -354,7 +354,7 @@ export class SongsPage implements OnInit {
 
   async onCategoryChanged() {
     await this.storage.set(`selectedCategorySongs${this.tenantData?.id ?? this.db.tenant().id}`, this.selectedCategory);
-    this.searchTerm = "";
+    this.searchTerm = '';
     this.initializeItems();
     this.filter();
   }
@@ -377,7 +377,7 @@ export class SongsPage implements OnInit {
 
   copyShareLink() {
     navigator?.clipboard.writeText(this.getSongSharingLink());
-    Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
+    Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
   }
 
   openSong(songId: number, modal: IonModal) {
@@ -412,11 +412,11 @@ export class SongsPage implements OnInit {
                 name: data.name.trim(),
                 index: this.db.songCategories().length,
               }).then(() => {
-                Utils.showToast("Kategorie hinzugefügt", "success");
+                Utils.showToast('Kategorie hinzugefügt', 'success');
                 this.getSongs();
               });
             } else {
-              Utils.showToast("Der Name der Kategorie darf nicht leer sein", "danger");
+              Utils.showToast('Der Name der Kategorie darf nicht leer sein', 'danger');
             }
           }
         }
@@ -449,11 +449,11 @@ export class SongsPage implements OnInit {
               this.db.updateSongCategory({
                 name: data.name.trim(),
               }, category.id).then(() => {
-                Utils.showToast("Kategorie gespeichert", "success");
+                Utils.showToast('Kategorie gespeichert', 'success');
                 this.getSongs();
               });
             } else {
-              Utils.showToast("Der Name der Kategorie darf nicht leer sein", "danger");
+              Utils.showToast('Der Name der Kategorie darf nicht leer sein', 'danger');
             }
           }
         }
@@ -476,7 +476,7 @@ export class SongsPage implements OnInit {
           text: 'Löschen',
           handler: async () => {
             this.db.removeSongCategory(categoryId).then(async () => {
-              Utils.showToast("Kategorie gelöscht", "success");
+              Utils.showToast('Kategorie gelöscht', 'success');
               await this.getSongs();
             });
           }

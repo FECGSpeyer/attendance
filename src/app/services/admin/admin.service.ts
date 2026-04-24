@@ -17,11 +17,11 @@ export class AdminService {
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Admins", "danger");
+      Utils.showToast('Fehler beim Laden der Admins', 'danger');
       throw error;
     }
 
-    return data.filter((e: Admin) => Boolean(e) && e.email !== "developer@attendix.de");
+    return data.filter((e: Admin) => Boolean(e) && e.email !== 'developer@attendix.de');
   }
 
   async removeUserFromTenant(appId: string, tenantId: number, deleteAdmin: boolean = false): Promise<void> {
@@ -96,7 +96,7 @@ export class AdminService {
       .single();
 
     if (error) {
-      throw new Error("Fehler beim Laden des Mandanten");
+      throw new Error('Fehler beim Laden des Mandanten');
     }
 
     return data;
@@ -104,13 +104,13 @@ export class AdminService {
 
   async setFavoriteTenant(tenantId: number, userId: string, favorite: boolean): Promise<void> {
     const { error } = await supabase
-      .from("tenantUsers")
+      .from('tenantUsers')
       .update({ favorite })
-      .eq("userId", userId)
-      .eq("tenantId", tenantId);
+      .eq('userId', userId)
+      .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast("Fehler beim Setzen des Favoriten, bitte versuche es später erneut.", "danger");
+      Utils.showToast('Fehler beim Setzen des Favoriten, bitte versuche es später erneut.', 'danger');
       throw new Error(error.message);
     }
   }

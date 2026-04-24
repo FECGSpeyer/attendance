@@ -19,20 +19,20 @@ import { Utils } from 'src/app/utilities/Utils';
 export class SongPage implements OnInit {
   private audioPlayer = inject(AudioPlayerService);
   public song: Song;
-  public isOrchestra: boolean = false;
+  public isOrchestra = false;
   public instruments: Group[] = [];
   public selectedFileInfos: {
-    file: File,
-    instrumentId: number | null,
-    note?: string
+    file: File;
+    instrumentId: number | null;
+    note?: string;
   }[] = [];
-  public isFilesModalOpen: boolean = false;
-  public readOnly: boolean = true;
+  public isFilesModalOpen = false;
+  public readOnly = true;
   public tenant?: Tenant;
   public sharing_id?: string;
 
   // Copy to other instance
-  public isCopyModalOpen: boolean = false;
+  public isCopyModalOpen = false;
   public targetTenantId: number;
   public availableTenants: Tenant[] = [];
   public organisation: Organisation | null;
@@ -58,13 +58,13 @@ export class SongPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    const songId = Number(window.location.pathname.split("/")[4] ?? window.location.pathname.split("/")[2]);
-    if (!window.location.pathname.split("/")[4]) {
-      this.sharing_id = window.location.pathname.split("/")[1];
+    const songId = Number(window.location.pathname.split('/')[4] ?? window.location.pathname.split('/')[2]);
+    if (!window.location.pathname.split('/')[4]) {
+      this.sharing_id = window.location.pathname.split('/')[1];
       this.tenant = await this.db.getTenantBySongSharingId(this.sharing_id);
-      this.isOrchestra = this.tenant?.type === "orchestra";
+      this.isOrchestra = this.tenant?.type === 'orchestra';
     } else {
-      this.isOrchestra = this.db.tenant()?.type === "orchestra";
+      this.isOrchestra = this.db.tenant()?.type === 'orchestra';
       this.readOnly = this.db.tenantUser()?.role !== Role.RESPONSIBLE && this.db.tenantUser()?.role !== Role.ADMIN;
     }
 
@@ -106,7 +106,7 @@ export class SongPage implements OnInit {
 
   onFilesSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (!input.files) return;
+    if (!input.files) {return;}
     for (let i = 0; i < input.files.length; i++) {
       const file = input.files[i];
       if (file.size > 20 * 1024 * 1024) {
@@ -115,12 +115,12 @@ export class SongPage implements OnInit {
       }
 
       let mappedId: number | null = null;
-      let note: string | undefined = undefined;
+      let note: string | undefined;
 
       // Try to match instrument using advanced matching (translations, abbreviations, Roman numerals)
       if (this.instruments?.length) {
         const match = matchInstrument(file.name, this.instruments);
-        if (match) mappedId = match.id!;
+        if (match) {mappedId = match.id!;}
       }
 
       // If no instrument match, check for special file types
@@ -159,7 +159,7 @@ export class SongPage implements OnInit {
               // Replace the entire object to trigger change detection in ion-select
               this.selectedFileInfos[index] = {
                 ...this.selectedFileInfos[index],
-                note: data.note ?? "",
+                note: data.note ?? '',
                 instrumentId: null
               };
               this.selectedFileInfos = [...this.selectedFileInfos];
@@ -225,9 +225,9 @@ export class SongPage implements OnInit {
   }
 
   getInstrumentName(id: number | null, note?: string): string {
-    if (!id) return note ?? 'Sonstige';
-    if (id === 1) return 'Aufnahme';
-    if (id === 2) return 'Liedtext';
+    if (!id) {return note ?? 'Sonstige';}
+    if (id === 1) {return 'Aufnahme';}
+    if (id === 2) {return 'Liedtext';}
 
     const inst = this.instruments.find(i => i.id === id);
     return inst ? inst.name : 'Unbekannt';
@@ -336,7 +336,7 @@ export class SongPage implements OnInit {
         {
           text: 'Speichern',
           handler: async (data) => {
-            await this.saveFileChange(file, null, data.note ?? "");
+            await this.saveFileChange(file, null, data.note ?? '');
           }
         }
       ]
@@ -392,7 +392,7 @@ export class SongPage implements OnInit {
     filesPopover?.dismiss();
     const loading = await Utils.getLoadingElement(999999, 'Dateien werden heruntergeladen...');
     await loading.present();
-    const blobs: { fileName: string, blob: Blob }[] = [];
+    const blobs: { fileName: string; blob: Blob }[] = [];
     for (const file of this.song.files || []) {
       const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), this.song.id);
       blobs.push({ fileName: file.fileName, blob });
@@ -406,7 +406,7 @@ export class SongPage implements OnInit {
       jszip.file(file.fileName, file.blob);
     }
 
-    const result = await jszip.generateAsync({ type: "blob" });
+    const result = await jszip.generateAsync({ type: 'blob' });
 
     const url = window.URL.createObjectURL(result);
     const a = document.createElement('a');
@@ -578,7 +578,7 @@ export class SongPage implements OnInit {
 
   copyShareLink() {
     navigator?.clipboard.writeText(this.getSongSharingLink());
-    Utils.showToast("Der Link wurde in die Zwischenablage kopiert", "success");
+    Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
   }
 
   async update() {
@@ -610,7 +610,7 @@ export class SongPage implements OnInit {
   }
 
   getCategoryName(categoryId: string | undefined): string {
-    if (!categoryId) return 'Keine Kategorie';
+    if (!categoryId) {return 'Keine Kategorie';}
     const category = this.db.songCategories().find(cat => cat.id === categoryId);
     return category ? category.name : 'Unbekannte Kategorie';
   }
@@ -620,13 +620,13 @@ export class SongPage implements OnInit {
    */
   private mapInstrumentId(sourceInstrumentId: number | undefined): number | null {
     // Reserved IDs remain unchanged
-    if (!sourceInstrumentId) return null;
+    if (!sourceInstrumentId) {return null;}
     if (sourceInstrumentId === 1 || sourceInstrumentId === 2) {
       return sourceInstrumentId;
     }
 
     const sourceGroup = this.instruments.find(g => g.id === sourceInstrumentId);
-    if (!sourceGroup) return null;
+    if (!sourceGroup) {return null;}
 
     // Try exact name match first (case-insensitive)
     let targetGroup = this.targetGroups.find(g =>
@@ -797,7 +797,7 @@ export class SongPage implements OnInit {
           copies = Math.ceil(playerCount / ratio);
         }
 
-        if (copies === 0) continue;
+        if (copies === 0) {continue;}
 
         loading.message = `Lade ${this.getInstrumentName(file.instrumentId)}... (${copies} Kopien)`;
 

@@ -62,14 +62,14 @@ export class CrossTenantService {
       .from('person_attendances')
       .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline)')
       .eq('person_id', personId)
-      .gt("attendance.date", startDate);
+      .gt('attendance.date', startDate);
 
-    if (!data) return [];
+    if (!data) {return [];}
 
     const attendanceTypes = this.crossTenantAttendanceTypes.get(tenantId) || [];
 
     return data.filter((a) => Boolean(a.attendance)).map((att): PersonAttendance => {
-      let attText = Utils.getAttText(att);
+      const attText = Utils.getAttText(att);
       const attType = attendanceTypes.find((type: AttendanceType) => type.id === att.attendance.type_id);
       let title = '';
 
@@ -89,7 +89,7 @@ export class CrossTenantService {
         attId: att.attendance.id,
         typeId: att.attendance.type_id,
         attendance: att.attendance,
-        highlight: attType ? attType.highlight : att.attendance.type === "vortrag",
+        highlight: attType ? attType.highlight : att.attendance.type === 'vortrag',
       } as any;
     });
   }
@@ -192,7 +192,7 @@ export class CrossTenantService {
       .eq('userId', userId);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Mandanten", "danger");
+      Utils.showToast('Fehler beim Laden der Mandanten', 'danger');
       throw error;
     }
 
@@ -206,7 +206,7 @@ export class CrossTenantService {
       .eq('userId', userId);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Mandanten", "danger");
+      Utils.showToast('Fehler beim Laden der Mandanten', 'danger');
       throw error;
     }
 
@@ -226,7 +226,7 @@ export class CrossTenantService {
       .neq('role', Role.VIEWER);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Benutzer", "danger");
+      Utils.showToast('Fehler beim Laden der Benutzer', 'danger');
       throw error;
     }
 
@@ -269,12 +269,10 @@ export class CrossTenantService {
     const { data, error } = await query;
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Personen", "danger");
+      Utils.showToast('Fehler beim Laden der Personen', 'danger');
       throw error;
     }
 
-    return data.filter((p: any) => {
-      return linkedTenants.find((lt) => lt.id === p.tenantId.id);
-    }) as unknown as Player[];
+    return data.filter((p: any) => linkedTenants.find((lt) => lt.id === p.tenantId.id)) as unknown as Player[];
   }
 }

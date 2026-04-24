@@ -19,7 +19,7 @@ export class SongViewerPage implements OnInit {
   private tenantId: number;
   public tenantLongName: string;
   public tenantShortName: string;
-  public currentSongs: { date: string, history: History[] }[] = [];
+  public currentSongs: { date: string; history: History[] }[] = [];
   public songSharingId: string;
   public tenantType: string;
 
@@ -33,7 +33,7 @@ export class SongViewerPage implements OnInit {
     this.songSharingId = pathParts[pathParts.length - 1];
     const tenantData: Tenant | null = await this.db.getTenantBySongSharingId(this.songSharingId);
     if (!tenantData) {
-      Utils.showToast("Ungültiger Freigabe-Link.");
+      Utils.showToast('Ungültiger Freigabe-Link.');
       return;
     }
     this.tenantId = tenantData.id;

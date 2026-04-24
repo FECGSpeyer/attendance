@@ -5,15 +5,15 @@ import { Player, Tenant } from 'src/app/utilities/interfaces';
   providedIn: 'root'
 })
 export class DataService {
-  private handoverData: { persons: Player[], stayInInstance: boolean, tenant: Tenant };
+  private handoverData: { persons: Player[]; stayInInstance: boolean; tenant: Tenant };
 
   constructor() { }
 
-  setHandoverData(data: { persons: Player[], stayInInstance: boolean, tenant: Tenant }) {
+  setHandoverData(data: { persons: Player[]; stayInInstance: boolean; tenant: Tenant }) {
     this.handoverData = data;
   }
 
-  getHandoverData(): { persons: Player[], stayInInstance: boolean, tenant: Tenant } {
+  getHandoverData(): { persons: Player[]; stayInInstance: boolean; tenant: Tenant } {
     return this.handoverData;
   }
 

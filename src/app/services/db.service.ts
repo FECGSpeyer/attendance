@@ -93,6 +93,8 @@ export class DbService {
   public readonly songCategorySvc = inject(SongCategoryService);
   public readonly rolePermissionSvc = inject(RolePermissionService);
 
+  private initPromise: Promise<void> | null = null;
+
   constructor(
     private plt: Platform,
     private router: Router,
@@ -109,9 +111,6 @@ export class DbService {
     this.churches = signal([]);
     this.songCategories = signal([]);
     this.rolePermissions = signal([]);
-    this.plt.ready().then(() => {
-      this.checkToken(true);
-    });
   }
 
   getSupabase(): SupabaseClient {
@@ -119,9 +118,9 @@ export class DbService {
   }
 
   encodeFilename(filename: string) {
-    const nameParts = filename.split('.')
-    const ext = nameParts.pop() || ''
-    const name = nameParts.join('.')
+    const nameParts = filename.split('.');
+    const ext = nameParts.pop() || '';
+    const name = nameParts.join('.');
 
     const sanitizedName = name
       .normalize('NFD') // Normalize unicode (convert accents to ASCII equivalents where possible)
@@ -130,7 +129,7 @@ export class DbService {
       .replace(/\s+/g, ' ') // Normalize repeated whitespace to single spaces
       .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen (e.g. "hello--world" -> "hello-world")
       .replace(/^-+|-+$/g, '') // Trim hyphens from start and end (e.g. "-hello-world-" -> "hello-world")
-      .trim()
+      .trim();
     // number between 100 and 999
     const randomNumber = Math.floor(100 + Math.random() * 900);
     return `${sanitizedName}_${randomNumber}.${ext}`;
@@ -147,7 +146,7 @@ export class DbService {
     const { error } = await supabase.storage
       .from('songs')
       .upload(filePath, file, { upsert: true });
-    if (error) throw new Error(error.message);
+    if (error) {throw new Error(error.message);}
     // Get public URL
     const { data } = await supabase.storage
       .from('songs')
@@ -192,7 +191,7 @@ export class DbService {
       .from('songs')
       .download(filePath);
 
-    if (error) throw new Error(error.message);
+    if (error) {throw new Error(error.message);}
 
     return data;
   }
@@ -202,7 +201,7 @@ export class DbService {
       .from('songs')
       .download(filePath);
 
-    if (error) throw new Error(error.message);
+    if (error) {throw new Error(error.message);}
 
     return data;
   }
@@ -222,7 +221,7 @@ export class DbService {
     const { error } = await supabase.storage
       .from('songs')
       .upload(filePath, blob, { upsert: true });
-    if (error) throw new Error(error.message);
+    if (error) {throw new Error(error.message);}
 
     const { data } = await supabase.storage
       .from('songs')
@@ -266,7 +265,7 @@ export class DbService {
       .select()
       .single();
 
-    if (insertError) throw new Error(insertError.message);
+    if (insertError) {throw new Error(insertError.message);}
 
     const createdSong = data as unknown as Song;
 
@@ -277,11 +276,11 @@ export class DbService {
 
       for (let i = 0; i < song.files.length; i++) {
         const file = song.files[i];
-        if (onProgress) onProgress(i + 1, totalFiles);
+        if (onProgress) {onProgress(i + 1, totalFiles);}
 
         // Download from source tenant
         const blob = await this.downloadSongFileFromTenant(
-          file.url.split("https://ultyjzgwejpehfjuyenr.supabase.co/storage/v1/object/public/songs/")[1]
+          file.url.split('https://ultyjzgwejpehfjuyenr.supabase.co/storage/v1/object/public/songs/')[1]
         );
 
         // Map instrument ID
@@ -346,7 +345,7 @@ export class DbService {
       .from('songs')
       .remove([filePath]);
 
-    if (error) throw new Error(error.message);
+    if (error) {throw new Error(error.message);}
 
     await supabase
       .from('songs')
@@ -362,7 +361,15 @@ export class DbService {
     if (this.tenantUser()) {
       return;
     }
-    // Use AuthService checkToken which has session caching
+
+    // Ensure only one init runs at a time; subsequent callers wait for the same promise
+    if (!this.initPromise) {
+      this.initPromise = this.doCheckToken(showSelector);
+    }
+    await this.initPromise;
+  }
+
+  private async doCheckToken(showSelector: boolean) {
     const user = await this.authSvc.checkToken();
 
     if (user?.email) {
@@ -480,7 +487,7 @@ export class DbService {
   }
 
   isBeta() {
-    return this.tenantUser()?.email?.endsWith("developer@attendix.de") || this.user?.email?.toLocaleLowerCase().endsWith("erwinfast98@gmail.com") || this.tenant()?.id === 12;
+    return this.tenantUser()?.email?.endsWith('developer@attendix.de') || this.user?.email?.toLocaleLowerCase().endsWith('erwinfast98@gmail.com') || this.tenant()?.id === 12;
   }
 
   async getTenants(): Promise<Tenant[]> {
@@ -491,16 +498,14 @@ export class DbService {
       .order('longName', { ascending: true });
 
     if (error) {
-      throw new Error("Fehler beim Laden der Tenants");
+      throw new Error('Fehler beim Laden der Tenants');
     }
 
-    return data.map(t => {
-      return {
+    return data.map(t => ({
         ...t,
         favorite: this.tenantUsers().find(tu => tu.tenantId === t.id)?.favorite || false,
-      }
-    }).sort((a, b) => {
-      if (a.favorite && !b.favorite) return -1;
+      })).sort((a, b) => {
+      if (a.favorite && !b.favorite) {return -1;}
     }) as unknown as Tenant[];
   }
 
@@ -521,12 +526,17 @@ export class DbService {
 
   async logout() {
     await supabase.auth.signOut();
+    this.clearState();
+    this.router.navigateByUrl('/login');
+  }
+
+  /** Clears all tenant/user state. Called on SIGNED_OUT event or explicit logout. */
+  clearState() {
     this.tenant.set(undefined);
     this.tenants.set([]);
     this.tenantUser.set(undefined);
     this.tenantUsers.set([]);
-
-    this.router.navigateByUrl("/login");
+    this.initPromise = null;
   }
 
   async deleteViewer(viewer: Viewer): Promise<void> {
@@ -534,7 +544,7 @@ export class DbService {
     try {
       await this.removeEmailFromAuth(viewer.appId, viewer.email);
     } catch (error) {
-      Utils.showToast("Fehler beim Entfernen der E-Mail aus der Authentifizierung", "danger");
+      Utils.showToast('Fehler beim Entfernen der E-Mail aus der Authentifizierung', 'danger');
       throw error;
     }
 
@@ -544,7 +554,7 @@ export class DbService {
       .match({ id: viewer.id });
 
     if (error) {
-      Utils.showToast("Fehler beim Löschen des Beobachters", "danger");
+      Utils.showToast('Fehler beim Löschen des Beobachters', 'danger');
       throw error;
     }
   }
@@ -558,17 +568,17 @@ export class DbService {
     try {
       await this.removeEmailFromAuth(parent.appId, parent.email);
     } catch (error) {
-      Utils.showToast("Fehler beim Entfernen der E-Mail aus der Authentifizierung", "danger");
+      Utils.showToast('Fehler beim Entfernen der E-Mail aus der Authentifizierung', 'danger');
       throw error;
     }
 
     const { error } = await supabase
-      .from("parents")
+      .from('parents')
       .delete()
       .match({ id: parent.id });
 
     if (error) {
-      Utils.showToast("Fehler beim Löschen des Elternteils", "danger");
+      Utils.showToast('Fehler beim Löschen des Elternteils', 'danger');
       throw error;
     }
   }
@@ -590,7 +600,7 @@ export class DbService {
       });
 
     if (error) {
-      throw new Error("Fehler beim hinzufügen des Beobachters.");
+      throw new Error('Fehler beim hinzufügen des Beobachters.');
     }
   }
 
@@ -599,7 +609,7 @@ export class DbService {
     const appId: string = await this.registerUser(parent.email as string, parent.firstName as string, Role.PARENT);
 
     const { error, data } = await supabase
-      .from("parents")
+      .from('parents')
       .insert({
         ...parent,
         tenantId: this.tenant().id,
@@ -609,7 +619,7 @@ export class DbService {
       .single();
 
     if (error) {
-      throw new Error("Fehler beim hinzufügen des Elternteils.");
+      throw new Error('Fehler beim hinzufügen des Elternteils.');
     }
 
     await this.updateTenantUser({
@@ -664,7 +674,7 @@ export class DbService {
       return userId;
     } else {
       const { data } = await supabase.rpc(
-        "get_user_id_by_email",
+        'get_user_id_by_email',
         {
           email: email.toLowerCase(),
         }
@@ -692,7 +702,7 @@ export class DbService {
 
       return data.user.id;
     } catch (e: any) {
-      throw new Error(e.message || "Fehler beim Erstellen des Accounts");
+      throw new Error(e.message || 'Fehler beim Erstellen des Accounts');
     }
   }
 
@@ -712,7 +722,7 @@ export class DbService {
     const { data, error } = await supabase
       .from('tenantUsers')
       .update(updates)
-      .match({ tenantId: this.tenant().id, userId: userId });
+      .match({ tenantId: this.tenant().id, userId });
 
     if (error) {
       throw new Error('Fehler beim Updaten des Benutzers');
@@ -722,8 +732,8 @@ export class DbService {
   }
 
   async getAppIdByEmail(email: string, tenantId: number, role?: Role): Promise<{
-    userId: string,
-    alreadyThere: boolean,
+    userId: string;
+    alreadyThere: boolean;
   } | undefined> {
     const { data, error } = await supabase
       .from('tenantUsers')
@@ -737,7 +747,7 @@ export class DbService {
         return {
           userId: foundTenantUser.userId,
           alreadyThere: true,
-        }
+        };
       }
 
       if (
@@ -837,7 +847,7 @@ export class DbService {
       try {
         appId = await this.registerUser(user.email as string, user.firstName, role);
       } catch (error) {
-        Utils.showToast(`${user.firstName} ${user.lastName} - Fehler beim Erstellen des Accounts: ${error.message}`, "danger");
+        Utils.showToast(`${user.firstName} ${user.lastName} - Fehler beim Erstellen des Accounts: ${error.message}`, 'danger');
         throw error;
       }
       const { data, error: updateError } = await supabase
@@ -869,35 +879,35 @@ export class DbService {
 
     if (error) {
       switch (error.code) {
-        case "invalid_login_credentials":
-          Utils.showToast("Ungültige Anmeldedaten", "danger");
+        case 'invalid_login_credentials':
+          Utils.showToast('Ungültige Anmeldedaten', 'danger');
           break;
-        case "user_disabled":
-          Utils.showToast("Dein Konto wurde deaktiviert. Bitte wende dich an den Administrator deiner Instanz.", "danger");
+        case 'user_disabled':
+          Utils.showToast('Dein Konto wurde deaktiviert. Bitte wende dich an den Administrator deiner Instanz.', 'danger');
           break;
-        case "too_many_requests":
-          Utils.showToast("Zu viele Anmeldeversuche. Bitte versuche es später erneut.", "danger");
+        case 'too_many_requests':
+          Utils.showToast('Zu viele Anmeldeversuche. Bitte versuche es später erneut.', 'danger');
           break;
-        case "invalid_email":
-          Utils.showToast("Ungültige E-Mail Adresse", "danger");
+        case 'invalid_email':
+          Utils.showToast('Ungültige E-Mail Adresse', 'danger');
           break;
-        case "invalid_password":
-          Utils.showToast("Ungültiges Passwort", "danger");
+        case 'invalid_password':
+          Utils.showToast('Ungültiges Passwort', 'danger');
           break;
-        case "user_not_found":
-          Utils.showToast("Benutzer nicht gefunden", "danger");
+        case 'user_not_found':
+          Utils.showToast('Benutzer nicht gefunden', 'danger');
           break;
-        case "email_not_confirmed":
-          Utils.showToast("Bitte bestätige zuerst deine E-Mail-Adresse.", "danger");
+        case 'email_not_confirmed':
+          Utils.showToast('Bitte bestätige zuerst deine E-Mail-Adresse.', 'danger');
           break;
-        case "password_strength_insufficient":
-          Utils.showToast("Das Passwort erfüllt nicht die Sicherheitsanforderungen.", "danger");
+        case 'password_strength_insufficient':
+          Utils.showToast('Das Passwort erfüllt nicht die Sicherheitsanforderungen.', 'danger');
           break;
-        case "invalid_credentials":
-          Utils.showToast("Ungültige Anmeldedaten", "danger");
+        case 'invalid_credentials':
+          Utils.showToast('Ungültige Anmeldedaten', 'danger');
           break;
         default:
-          Utils.showToast(error.code === "email_not_confirmed" ? "Bitte bestätige zuerst deine E-Mail-Adresse." : "Fehler beim Anmelden", "danger");
+          Utils.showToast(error.code === 'email_not_confirmed' ? 'Bitte bestätige zuerst deine E-Mail-Adresse.' : 'Fehler beim Anmelden', 'danger');
           break;
       }
       throw error;
@@ -914,16 +924,16 @@ export class DbService {
       if (this.tenantUser()) {
         this.router.navigateByUrl(Utils.getUrl(this.tenantUser().role));
       } else {
-        this.router.navigateByUrl("/register");
+        this.router.navigateByUrl('/register');
       }
     } else {
-      Utils.showToast("Bitte gib die richtigen Daten an!", "danger");
+      Utils.showToast('Bitte gib die richtigen Daten an!', 'danger');
     }
 
     return Boolean(data.user);
   }
 
-  async register(email: string, password: string): Promise<{ user: User, new: boolean } | null> {
+  async register(email: string, password: string): Promise<{ user: User; new: boolean } | null> {
     const { error, data } = await supabase.auth.signUp({
       email, password,
       options: {
@@ -932,7 +942,7 @@ export class DbService {
     });
 
     if (error) {
-      Utils.showToast("Fehler beim Registrieren", "danger");
+      Utils.showToast('Fehler beim Registrieren', 'danger');
       return null;
     }
 
@@ -969,7 +979,7 @@ export class DbService {
       .match({ appId: this.user.id });
 
     if (error) {
-      Utils.showToast("Fehler beim Aktualisieren des Profils", "danger");
+      Utils.showToast('Fehler beim Aktualisieren des Profils', 'danger');
       throw error;
     }
 
@@ -990,7 +1000,7 @@ export class DbService {
               .match({ id: player.id });
 
             if (updateError) {
-              Utils.showToast("Fehler beim Aktualisieren der Kirchenzuordnung", "danger");
+              Utils.showToast('Fehler beim Aktualisieren der Kirchenzuordnung', 'danger');
               throw updateError;
             }
           }
@@ -1002,7 +1012,7 @@ export class DbService {
   }
 
   getCurrentAttDate() {
-    return this.tenant().seasonStart || dayjs("2023-01-01").toISOString();
+    return this.tenant().seasonStart || dayjs('2023-01-01').toISOString();
   }
 
   setCurrentAttDate(date: string) {
@@ -1037,16 +1047,14 @@ export class DbService {
         .eq('tenantId', this.tenant().id);
 
       if (error) {
-        Utils.showToast("Fehler beim Laden der Personen", "danger");
+        Utils.showToast('Fehler beim Laden der Personen', 'danger');
         throw error;
       }
 
-      return data.map((player) => {
-        return {
+      return data.map((player) => ({
           ...player,
           history: player.history as any,
-        }
-      }) as any;
+        })) as any;
     }
 
     if (this.tenantUser().role === Role.PARENT) {
@@ -1056,49 +1064,45 @@ export class DbService {
         .eq('tenantId', this.tenant().id)
         .is('pending', false)
         .eq('parent_id', this.tenantUser().parent_id)
-        .is("left", null)
-        .order("instrument")
-        .order("isLeader", {
+        .is('left', null)
+        .order('instrument')
+        .order('isLeader', {
           ascending: false
         })
-        .order("lastName");
+        .order('lastName');
 
       if (error) {
-        Utils.showToast("Fehler beim Laden der Kinder");
+        Utils.showToast('Fehler beim Laden der Kinder');
         throw error;
       }
 
-      return (data as any).map((player) => {
-        return {
+      return (data as any).map((player) => ({
           ...player,
           history: player.history.filter((his: PlayerHistoryEntry) => [PlayerHistoryType.PAUSED, PlayerHistoryType.UNPAUSED, PlayerHistoryType.INSTRUMENT_CHANGE].includes(his.type)) as any,
-        }
-      }) as any;
+        })) as any;
     }
 
     const { data, error } = await supabase
       .from('player')
       .select('*, person_attendances(*)')
       .eq('tenantId', this.tenant().id)
-      .is("left", null)
+      .is('left', null)
       .is('pending', false)
-      .order("instrument")
-      .order("isLeader", {
+      .order('instrument')
+      .order('isLeader', {
         ascending: false
       })
-      .order("lastName");
+      .order('lastName');
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Personen", "danger");
+      Utils.showToast('Fehler beim Laden der Personen', 'danger');
       throw error;
     }
 
-    return (data as any).map((player) => {
-      return {
+    return (data as any).map((player) => ({
         ...player,
         history: player.history as any,
-      }
-    }) as any;
+      })) as any;
   }
 
   async getPlayersByGroup(groupId: number): Promise<Player[]> {
@@ -1117,11 +1121,11 @@ export class DbService {
     loading.dismiss();
 
     if (error) {
-      Utils.showToast("Fehler beim Zurücksetzen des Passworts. Versuche es später erneut", "danger");
+      Utils.showToast('Fehler beim Zurücksetzen des Passworts. Versuche es später erneut', 'danger');
       return;
     }
 
-    Utils.showToast("Eine E-Mail mit weiteren Anweisungen wurde dir zugesandt", 'success', 4000);
+    Utils.showToast('Eine E-Mail mit weiteren Anweisungen wurde dir zugesandt', 'success', 4000);
   }
 
   async updatePassword(password: string) {
@@ -1134,7 +1138,7 @@ export class DbService {
     loading.dismiss();
 
     if (data) { Utils.showToast('Passwort wurde erfolgreich aktualisiert', 'success'); }
-    if (error) { Utils.showToast('Fehler beim zurücksetzen, versuche es noch einmal', "danger"); }
+    if (error) { Utils.showToast('Fehler beim zurücksetzen, versuche es noch einmal', 'danger'); }
   }
 
   async getLeftPlayers(): Promise<Player[]> {
@@ -1148,7 +1152,7 @@ export class DbService {
   async getConductors(all: boolean = false, tenantId?: number, mainGroupId?: number): Promise<Person[]> {
     const mainGroupIdLocal = mainGroupId ?? this.getMainGroup()?.id;
     if (!mainGroupIdLocal) {
-      throw new Error("Hauptgruppe nicht gefunden");
+      throw new Error('Hauptgruppe nicht gefunden');
     }
     return this.conductorSvc.getConductors(mainGroupIdLocal, tenantId ?? this.tenant().id, all);
   }
@@ -1270,9 +1274,9 @@ export class DbService {
           return {
             attendance_id: att.id,
             person_id: player.id,
-            notes: "",
+            notes: '',
             status: type.default_status,
-          }
+          };
         });
 
       if (attToAdd.length === 0) {
@@ -1305,11 +1309,11 @@ export class DbService {
           const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
 
           if (!attType) {
-            throw new Error("Fehler beim Laden des Anwesenheitstyps");
+            throw new Error('Fehler beim Laden des Anwesenheitstyps');
           }
 
           let status = attType.default_status;
-          let notes = "";
+          let notes = '';
 
           if (shiftId && !attType.all_day) {
             const shift = this.shifts().find((s: ShiftPlan) => s.id === shiftId);
@@ -1333,7 +1337,7 @@ export class DbService {
             person_id: person.id,
             notes,
             status,
-          }
+          };
         });
       await this.addPersonAttendances(attToAdd);
     }
@@ -1376,7 +1380,7 @@ export class DbService {
     for (const type of typesWithFilter) {
       const filterKey = type.additional_fields_filter.key;
       const fieldDef = this.tenant().additional_fields?.find(f => f.id === filterKey);
-      if (!fieldDef) continue;
+      if (!fieldDef) {continue;}
 
       const oldValue = oldFields[filterKey] ?? fieldDef.defaultValue;
       const newValue = newFields[filterKey] ?? fieldDef.defaultValue;
@@ -1406,17 +1410,17 @@ export class DbService {
 
     for (const att of upcomingAttendances) {
       const attType = typesWithFilter.find(t => t.id === att.type_id);
-      if (!attType) continue;
+      if (!attType) {continue;}
 
       const filterKey = attType.additional_fields_filter.key;
-      if (!changedFields.has(filterKey)) continue;
+      if (!changedFields.has(filterKey)) {continue;}
 
       // Check if player should be in this attendance based on other criteria first
-      if (player.paused) continue;
-      if (attType.relevant_groups.length > 0 && !attType.relevant_groups.includes(player.instrument)) continue;
+      if (player.paused) {continue;}
+      if (attType.relevant_groups.length > 0 && !attType.relevant_groups.includes(player.instrument)) {continue;}
 
       const fieldDef = this.tenant().additional_fields?.find(f => f.id === filterKey);
-      if (!fieldDef) continue;
+      if (!fieldDef) {continue;}
 
       const playerValue = (player.additional_fields?.[filterKey] ?? fieldDef.defaultValue);
       const shouldBeInAttendance = playerValue === attType.additional_fields_filter.option;
@@ -1427,7 +1431,7 @@ export class DbService {
         attToAdd.push({
           attendance_id: att.id,
           person_id: player.id,
-          notes: "",
+          notes: '',
           status: attType.default_status,
         });
       } else if (!shouldBeInAttendance && isInAttendance) {
@@ -1486,7 +1490,7 @@ export class DbService {
       .select();
 
     if (error) {
-      throw new Error("Fehler beim updaten des Spielers");
+      throw new Error('Fehler beim updaten des Spielers');
     }
 
     if (pausedAction) {
@@ -1501,12 +1505,10 @@ export class DbService {
       await this.updateShiftAssignmentsForPerson(player);
     }
 
-    return data.map((player) => {
-      return {
+    return data.map((player) => ({
         ...player,
         history: player.history as any,
-      }
-    }) as unknown as Player[];
+      })) as unknown as Player[];
   }
 
   async checkAndUnpausePlayers(): Promise<void> {
@@ -1521,7 +1523,7 @@ export class DbService {
       .lte('paused_until', today);
 
     if (error) {
-      console.error("Fehler beim Prüfen pausierter Personen", error);
+      console.error('Fehler beim Prüfen pausierter Personen', error);
       return;
     }
 
@@ -1529,7 +1531,7 @@ export class DbService {
       const history: PlayerHistoryEntry[] = (player.history as unknown as PlayerHistoryEntry[]) || [];
       history.push({
         date: new Date().toISOString(),
-        text: "Automatisch reaktiviert (Pausendatum erreicht)",
+        text: 'Automatisch reaktiviert (Pausendatum erreicht)',
         type: PlayerHistoryType.UNPAUSED,
       });
 
@@ -1580,7 +1582,7 @@ export class DbService {
           continue;
         }
 
-        if (att.notes?.includes("Schichtbedingt")) {
+        if (att.notes?.includes('Schichtbedingt')) {
           const type = this.attendanceTypes().find((type: AttendanceType) => type.id === att.attendance.type_id);
           if (!type) {
             continue;
@@ -1588,7 +1590,7 @@ export class DbService {
 
           await this.updatePersonAttendance(att.id, {
             status: type.default_status,
-            notes: "",
+            notes: '',
           });
         }
       }
@@ -1671,7 +1673,7 @@ export class DbService {
 
     player.history.push({
       date: new Date().toISOString(),
-      text: notes || "Kein Grund angegeben",
+      text: notes || 'Kein Grund angegeben',
       type: PlayerHistoryType.ARCHIVED,
     });
 
@@ -1688,7 +1690,7 @@ export class DbService {
   }
 
   getMainGroup(): Group | undefined {
-    return this.groups().find((inst: Group) => { return inst.maingroup; });
+    return this.groups().find((inst: Group) => inst.maingroup);
   }
 
   async addGroup(name: string, maingroup: boolean = false, tenantId?: number): Promise<Group[]> {
@@ -1738,15 +1740,14 @@ export class DbService {
           )
         )`)
         .eq('tenantId', this.tenant().id)
-        .gt("date", all ? dayjs("2020-01-01").toISOString() : this.getCurrentAttDate())
-        .order("date", {
+        .gt('date', all ? dayjs('2020-01-01').toISOString() : this.getCurrentAttDate())
+        .order('date', {
           ascending: false,
         });
 
       res = data.map((att) => ({
         ...att,
-        persons: att.persons.map((pa) => {
-          return {
+        persons: att.persons.map((pa) => ({
             ...pa,
             firstName: (pa as any).person.firstName,
             lastName: (pa as any).person.lastName,
@@ -1754,17 +1755,16 @@ export class DbService {
             instrument: (pa as any).person.instrument.id,
             groupName: (pa as any).person.instrument.name,
             joined: (pa as any).person.joined,
-          };
-        })
+          }))
       }) as any
       );
     } else {
-      let { data } = await supabase
+      const { data } = await supabase
         .from('attendance')
         .select('*')
         .eq('tenantId', this.tenant().id)
-        .gt("date", all ? dayjs("2020-01-01").toISOString() : this.getCurrentAttDate())
-        .order("date", {
+        .gt('date', all ? dayjs('2020-01-01').toISOString() : this.getCurrentAttDate())
+        .order('date', {
           ascending: false,
         });
 
@@ -1773,7 +1773,7 @@ export class DbService {
 
     return res.map((att: any): Attendance => {
       if (att.plan) {
-        att.plan.time = dayjs(att.plan.time).isValid() ? dayjs(att.plan.time).format("HH:mm") : att.plan.time;
+        att.plan.time = dayjs(att.plan.time).isValid() ? dayjs(att.plan.time).format('HH:mm') : att.plan.time;
       }
       return att;
     });
@@ -1784,8 +1784,8 @@ export class DbService {
       .from('attendance')
       .select('*')
       .eq('tenantId', this.tenant().id)
-      .gt("date", dayjs().startOf("day").toISOString())
-      .order("date", {
+      .gt('date', dayjs().startOf('day').toISOString())
+      .order('date', {
         ascending: false,
       });
 
@@ -1797,8 +1797,8 @@ export class DbService {
       .from('attendance')
       .select('*')
       .eq('tenantId', tenantId || this.tenant().id)
-      .gt("date", dayjs(date).startOf("day").toISOString())
-      .order("date", {
+      .gt('date', dayjs(date).startOf('day').toISOString())
+      .order('date', {
         ascending: false,
       });
 
@@ -1824,10 +1824,10 @@ export class DbService {
       .from('person_attendances')
       .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan)')
       .eq('person_id', id)
-      .gt("attendance.date", all ? dayjs("2020-01-01").toISOString() : this.getCurrentAttDate()) as any;
+      .gt('attendance.date', all ? dayjs('2020-01-01').toISOString() : this.getCurrentAttDate()) as any;
 
     return data.filter((a: any) => Boolean(a.attendance)).map((att: any): PersonAttendance => {
-      let attText = Utils.getAttText(att);
+      const attText = Utils.getAttText(att);
       const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.attendance.type_id);
       let title = '';
 
@@ -1847,7 +1847,7 @@ export class DbService {
         attId: att.attendance.id,
         typeId: att.attendance.type_id,
         attendance: att.attendance,
-        highlight: attType ? attType.highlight : att.attendance.type === "vortrag",
+        highlight: attType ? attType.highlight : att.attendance.type === 'vortrag',
       } as any;
     });
   }
@@ -1987,7 +1987,7 @@ export class DbService {
     return this.signInOutSvc.signout(attIds, reason, isLateExcused, isParents);
   }
 
-  async signin(attId: string, status: string, notes: string = ""): Promise<void> {
+  async signin(attId: string, status: string, notes: string = ''): Promise<void> {
     return this.signInOutSvc.signin(attId, status, notes, this.user?.id);
   }
 
@@ -2003,11 +2003,11 @@ export class DbService {
     return this.telegramSvc.sendSongPerTelegram(url, this.tenantUser().telegram_chat_id);
   }
 
-  async notifyPerTelegram(attId: string, type: string = "signin", reason?: string, isParents: boolean = false, notes: string = ""): Promise<void> {
+  async notifyPerTelegram(attId: string, type: string = 'signin', reason?: string, isParents: boolean = false, notes: string = ''): Promise<void> {
     return this.telegramSvc.notifyPerTelegram(attId, type, reason, isParents, notes);
   }
 
-  async removeImage(id: number, imgPath: string, newUser: boolean = false, appId: string = "") {
+  async removeImage(id: number, imgPath: string, newUser: boolean = false, appId: string = '') {
     this.checkDemoRestriction();
     return this.imageSvc.removeImage(id, imgPath, newUser, appId, this.user?.id);
   }
@@ -2024,7 +2024,7 @@ export class DbService {
 
   async getCurrentSongs(tenantId?: number): Promise<{ date: string; history: History[] }[]> {
     const { data, error } = await supabase
-      .from("history")
+      .from('history')
       .select(`
         id,
         person_id (
@@ -2040,8 +2040,8 @@ export class DbService {
           typeInfo
         )
       `)
-      .eq("tenantId", tenantId ?? this.tenant().id)
-      .gt("date", dayjs().startOf("day").toISOString());
+      .eq('tenantId', tenantId ?? this.tenant().id)
+      .gt('date', dayjs().startOf('day').toISOString());
 
     if (error) {
       throw new Error(error.message);
@@ -2053,7 +2053,7 @@ export class DbService {
     const groupedData: { [key: string]: History[] } = {};
 
     data.forEach((his: any) => {
-      const dateStr = his.attendance_id ? dayjs(his.attendance_id.date).format("DD.MM.YYYY") : dayjs(his.date).format("DD.MM.YYYY");
+      const dateStr = his.attendance_id ? dayjs(his.attendance_id.date).format('DD.MM.YYYY') : dayjs(his.date).format('DD.MM.YYYY');
 
       // Build a unique key with date and attendance type info
       let groupKey = dateStr;
@@ -2070,7 +2070,7 @@ export class DbService {
       }
       groupedData[groupKey].push({
         ...his,
-        conductorName: his.person_id ? `${his.person_id.firstName} ${his.person_id.lastName}` : his.otherConductor || "",
+        conductorName: his.person_id ? `${his.person_id.firstName} ${his.person_id.lastName}` : his.otherConductor || '',
       });
     });
 
@@ -2078,8 +2078,8 @@ export class DbService {
     const sortedKeys = Object.keys(groupedData).sort((a, b) => {
       const dateA = a.split(' | ')[0];
       const dateB = b.split(' | ')[0];
-      const dateDiff = dayjs(dateB, "DD.MM.YYYY").diff(dayjs(dateA, "DD.MM.YYYY"));
-      if (dateDiff !== 0) return dateDiff;
+      const dateDiff = dayjs(dateB, 'DD.MM.YYYY').diff(dayjs(dateA, 'DD.MM.YYYY'));
+      if (dateDiff !== 0) {return dateDiff;}
 
       // Same date: sort by attendance_id descending (newest first)
       const aIds = groupedData[a].map(h => (h.attendance_id as any)?.id ?? 0);
@@ -2104,7 +2104,7 @@ export class DbService {
 
   async getUpcomingHistory(): Promise<History[]> {
     const { data, error } = await (supabase as any)
-      .from("history")
+      .from('history')
       .select(`
         id,
         person_id (
@@ -2117,20 +2117,18 @@ export class DbService {
           date
         )
       `)
-      .eq("tenantId", this.tenant().id);
+      .eq('tenantId', this.tenant().id);
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return data.map((his: any) => {
-      return {
+    return data.map((his: any) => ({
         ...his,
-        conductorName: his.person_id ? `${his.person_id.firstName} ${his.person_id.lastName}` : his.otherConductor || "",
-      };
-    }).filter((h: any) => {
+        conductorName: his.person_id ? `${his.person_id.firstName} ${his.person_id.lastName}` : his.otherConductor || '',
+      })).filter((h: any) => {
       const date = h.attendance_id ? dayjs(h.attendance_id.date) : dayjs(h.date);
-      return date.isAfter(dayjs().startOf("day"));
+      return date.isAfter(dayjs().startOf('day'));
     });
   }
 
@@ -2145,12 +2143,12 @@ export class DbService {
   async deleteInstance(tenantId: number): Promise<void> {
     this.checkDemoRestriction();
     const { error } = await supabase
-      .from("tenants")
+      .from('tenants')
       .delete()
       .match({ id: tenantId });
 
     if (error) {
-      Utils.showToast("Fehler beim Löschen der Instanz, bitte versuche es später erneut.", "danger");
+      Utils.showToast('Fehler beim Löschen der Instanz, bitte versuche es später erneut.', 'danger');
       throw new Error(error.message);
     }
 
@@ -2159,24 +2157,24 @@ export class DbService {
     if (this.tenantUser()) {
       this.router.navigateByUrl(Utils.getUrl(this.tenantUser().role));
     } else {
-      this.router.navigateByUrl("/register");
+      this.router.navigateByUrl('/register');
     }
 
-    Utils.showToast("Instanz wurde erfolgreich gelöscht!");
+    Utils.showToast('Instanz wurde erfolgreich gelöscht!');
   }
 
   async setFavoriteTenant(tenantId: number, favorite: boolean): Promise<void> {
     const { error } = await supabase
-      .from("tenantUsers")
+      .from('tenantUsers')
       .update({ favorite })
-      .eq("userId", this.user.id)
-      .eq("tenantId", tenantId);
+      .eq('userId', this.user.id)
+      .eq('tenantId', tenantId);
 
     this.tenantUsers.set((await this.getTenantsByUserId()));
     this.tenants.set(await this.getTenants());
 
     if (error) {
-      Utils.showToast("Fehler beim Setzen des Favoriten, bitte versuche es später erneut.", "danger");
+      Utils.showToast('Fehler beim Setzen des Favoriten, bitte versuche es später erneut.', 'danger');
       throw new Error(error.message);
     }
   }
@@ -2184,24 +2182,24 @@ export class DbService {
   async createInstance(tenant: Tenant, mainGroupName: string): Promise<void> {
     this.checkDemoRestriction();
     const { data, error } = await supabase
-      .from("tenants")
+      .from('tenants')
       .insert(tenant as any)
       .select()
       .single();
 
     if (error) {
-      Utils.showToast("Fehler beim Erstellen der Instanz, bitte versuche es später erneut.", "danger");
+      Utils.showToast('Fehler beim Erstellen der Instanz, bitte versuche es später erneut.', 'danger');
       throw new Error(error.message);
     }
 
     const usersToAdd = [{
-      userId: "665fe2b4-d53f-4f17-a66b-46c0949af99a",
+      userId: '665fe2b4-d53f-4f17-a66b-46c0949af99a',
       role: Role.ADMIN,
       tenantId: data.id,
-      email: "developer@attendix.de"
+      email: 'developer@attendix.de'
     }];
 
-    if (this.user.email !== "developer@attendix.de") {
+    if (this.user.email !== 'developer@attendix.de') {
       usersToAdd.push({
         userId: this.user.id,
         role: Role.ADMIN,
@@ -2211,11 +2209,11 @@ export class DbService {
     }
 
     const { error: userError } = await supabase
-      .from("tenantUsers")
+      .from('tenantUsers')
       .insert(usersToAdd);
 
     if (userError) {
-      Utils.showToast("Fehler beim Erstellen des Benutzers, bitte versuche es später erneut.", "danger");
+      Utils.showToast('Fehler beim Erstellen des Benutzers, bitte versuche es später erneut.', 'danger');
       throw new Error(userError.message);
     }
 
@@ -2223,7 +2221,7 @@ export class DbService {
 
     await this.addDefaultAttendanceTypes(data.id, tenant.type);
 
-    Utils.showToast("Instanz wurde erfolgreich erstellt!");
+    Utils.showToast('Instanz wurde erfolgreich erstellt!');
 
     await this.setTenant(data.id);
     this.router.navigateByUrl(Utils.getUrl(Role.ADMIN));
@@ -2237,7 +2235,7 @@ export class DbService {
       .insert(defaultTypes as any[]);
 
     if (error) {
-      Utils.showToast("Fehler beim Hinzufügen der Standard Anwesenheitstypen", "danger");
+      Utils.showToast('Fehler beim Hinzufügen der Standard Anwesenheitstypen', 'danger');
       throw error;
     }
   }
@@ -2253,7 +2251,7 @@ export class DbService {
       .select('*, tenant:tenant_id(*)');
 
     if (tenantGroupTenantsError) {
-      Utils.showToast("Fehler beim Laden der Gruppenteilnehmer", "danger");
+      Utils.showToast('Fehler beim Laden der Gruppenteilnehmer', 'danger');
       throw tenantGroupTenantsError;
     }
 
@@ -2263,7 +2261,7 @@ export class DbService {
     ).map((tgt) => tgt.tenant) as unknown as Tenant[];
   }
 
-  async getUserRolesForTenants(userId: string): Promise<{ tenantId: number, role: Role }[]> {
+  async getUserRolesForTenants(userId: string): Promise<{ tenantId: number; role: Role }[]> {
     return this.crossTenantSvc.getUserRolesForTenants(userId);
   }
 
@@ -2274,19 +2272,17 @@ export class DbService {
       .eq('userId', userId);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Mandanten", "danger");
+      Utils.showToast('Fehler beim Laden der Mandanten', 'danger');
       throw error;
     }
 
     const linkedTenants = await this.getLinkedTenants();
 
     return data
-      .map((tu) => {
-        return {
+      .map((tu) => ({
           ...(tu as any).tenantId,
           role: tu.role,
-        }
-      })
+        }))
       .filter((t: Tenant) => linkedTenants.find((lt) => lt.id === t.id) && t.role !== Role.VIEWER);
   }
 
@@ -2347,7 +2343,7 @@ export class DbService {
 
   async createAdmin(admin: string) {
     this.checkDemoRestriction();
-    return await this.registerUser(admin as string, "" as string, Role.ADMIN);
+    return await this.registerUser(admin as string, '' as string, Role.ADMIN);
   }
 
   async activatePlayer(player: Player): Promise<void> {
@@ -2358,7 +2354,7 @@ export class DbService {
 
     player.history.push({
       date: new Date().toISOString(),
-      text: "Person wieder aktiviert",
+      text: 'Person wieder aktiviert',
       type: PlayerHistoryType.RETURNED,
     });
 
@@ -2682,14 +2678,14 @@ export class DbService {
       .from('person_attendances')
       .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline)')
       .eq('person_id', personId)
-      .gt("attendance.date", this.getCurrentAttDate());
+      .gt('attendance.date', this.getCurrentAttDate());
 
-    if (!data) return [];
+    if (!data) {return [];}
 
     const attendanceTypes = this.crossTenantAttendanceTypes.get(tenantId) || [];
 
     return data.filter((a) => Boolean(a.attendance)).map((att): PersonAttendance => {
-      let attText = Utils.getAttText(att);
+      const attText = Utils.getAttText(att);
       const attType = attendanceTypes.find((type: AttendanceType) => type.id === att.attendance.type_id);
       let title = '';
 
@@ -2709,7 +2705,7 @@ export class DbService {
         attId: att.attendance.id,
         typeId: att.attendance.type_id,
         attendance: att.attendance,
-        highlight: attType ? attType.highlight : att.attendance.type === "vortrag",
+        highlight: attType ? attType.highlight : att.attendance.type === 'vortrag',
       } as any;
     });
   }

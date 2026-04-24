@@ -17,20 +17,20 @@ export class TenantRegisterPage implements OnInit {
   @ViewChild('chooser') chooser: ElementRef;
   public tenantData: Tenant | null = null;
   public groups: Group[] = [];
-  public firstName: string = '';
-  public lastName: string = '';
+  public firstName = '';
+  public lastName = '';
   public birthDate: string = dayjs().subtract(18, 'year').toISOString();
-  public email: string = '';
-  public password: string = '';
-  public phone: string = '';
-  public confirmPassword: string = '';
+  public email = '';
+  public password = '';
+  public phone = '';
+  public confirmPassword = '';
   public selectedGroupId: number | null = null;
   public profilePicture: string = DEFAULT_IMAGE;
-  public additionalFields: { id: string, name: string, value: any, type: FieldType, options?: string[] }[] = [];
+  public additionalFields: { id: string; name: string; value: any; type: FieldType; options?: string[] }[] = [];
   private profileImgFile: File | null = null;
-  public notes: string = '';
+  public notes = '';
   public churches: Church[] = [];
-  public customChurchName: string = '';
+  public customChurchName = '';
 
   constructor(
     public db: DbService,
@@ -44,7 +44,7 @@ export class TenantRegisterPage implements OnInit {
     const registerId = pathParts[pathParts.length - 1];
     this.tenantData = await this.db.getTenantByRegisterId(registerId);
     if (!this.tenantData) {
-      Utils.showToast("Ungültiger Freigabe-Link.");
+      Utils.showToast('Ungültiger Freigabe-Link.');
       return;
     }
 
@@ -63,7 +63,7 @@ export class TenantRegisterPage implements OnInit {
         this.additionalFields.push({
           id: field.id,
           name: field.name,
-          value: field?.id === 'bfecg_church' ? "" : field.defaultValue,
+          value: field?.id === 'bfecg_church' ? '' : field.defaultValue,
           type: field.type,
           options: field.options
         });
@@ -80,7 +80,7 @@ export class TenantRegisterPage implements OnInit {
     const tenantUsers = await this.db.getTenantsByUserId();
     const tenant = tenantUsers.find(t => t.tenantId === this.tenantData.id);
     if (tenant) {
-      Utils.showToast("Sie sind bereits in dieser Instanz registriert.", 'warning', 5000);
+      Utils.showToast('Sie sind bereits in dieser Instanz registriert.', 'warning', 5000);
       this.router.navigate(['/login']);
       await loading.dismiss();
       return;
@@ -142,9 +142,9 @@ export class TenantRegisterPage implements OnInit {
     let isNew;
 
     try {
-      if (additional_fields && additional_fields['bfecg_church'] === '') {
+      if (additional_fields && additional_fields.bfecg_church === '') {
         const churchId = await this.db.createChurch(this.customChurchName);
-        additional_fields['bfecg_church'] = churchId;
+        additional_fields.bfecg_church = churchId;
       }
 
       // Normalize email
@@ -168,7 +168,7 @@ export class TenantRegisterPage implements OnInit {
         history: [],
         tenantId: this.tenantData.id,
         joined: new Date().toISOString(),
-        notes: this.notes ?? "",
+        notes: this.notes ?? '',
         self_register: true
       }, true, Role.APPLICANT, this.tenantData.id, this.password, this.tenantData.longName);
 
@@ -183,11 +183,11 @@ export class TenantRegisterPage implements OnInit {
       await loading.dismiss();
 
       if (error?.message === 'Fehler beim Erstellen des Accounts: Deine E-Mail-Adresse existiert bereits. Bitte melde dich an.') {
-        Utils.showToast(error.message, "danger", 4000);
+        Utils.showToast(error.message, 'danger', 4000);
         return;
       }
 
-      Utils.showToast("Fehler bei der Registrierung, bitte überprüfe deine Eingaben und versuche es erneut.", "danger", 4000);
+      Utils.showToast('Fehler bei der Registrierung, bitte überprüfe deine Eingaben und versuche es erneut.', 'danger', 4000);
       return;
     }
 
@@ -196,8 +196,8 @@ export class TenantRegisterPage implements OnInit {
     const alert = await this.alertController.create({
       header: 'Registrierung erfolgreich',
       message: this.tenantData.auto_approve_registrations ?
-        !isNew ? "Deine Registrierung war erfolgreich! Du bist nun teil der Instanz." : `Dein Konto wurde erstellt. Um dich anmelden zu können, bestätige bitte deine E-Mail. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner. Im Anschluss kannst du dich anmelden.` :
-        !isNew ? "Deine Registrierung war erfolgreich! Bitte warte auf die Genehmigung durch einen Administrator." : `Dein Konto wurde erstellt und wartet auf die Genehmigung durch einen Administrator. Bitte bestätige deine E-Mail, um dich anmelden zu können. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner.`,
+        !isNew ? 'Deine Registrierung war erfolgreich! Du bist nun teil der Instanz.' : `Dein Konto wurde erstellt. Um dich anmelden zu können, bestätige bitte deine E-Mail. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner. Im Anschluss kannst du dich anmelden.` :
+        !isNew ? 'Deine Registrierung war erfolgreich! Bitte warte auf die Genehmigung durch einen Administrator.' : `Dein Konto wurde erstellt und wartet auf die Genehmigung durch einen Administrator. Bitte bestätige deine E-Mail, um dich anmelden zu können. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner.`,
       buttons: [{
         text: 'OK'
       }]
@@ -209,25 +209,25 @@ export class TenantRegisterPage implements OnInit {
   validate(): boolean {
     if (!this.db.user) {
       if (!Utils.validateEmail(this.email)) {
-        Utils.showToast("Bitte eine gültige E-Mail Adresse eingeben.", "danger");
+        Utils.showToast('Bitte eine gültige E-Mail Adresse eingeben.', 'danger');
         return false;
       } else if (this.password.length < 6) {
-        Utils.showToast("Das Passwort muss mindestens 6 Zeichen lang sein.", "danger");
+        Utils.showToast('Das Passwort muss mindestens 6 Zeichen lang sein.', 'danger');
         return false;
       } else if (this.password !== this.confirmPassword) {
-        Utils.showToast("Die Passwörter stimmen nicht überein.", "danger");
+        Utils.showToast('Die Passwörter stimmen nicht überein.', 'danger');
         return false;
       }
     }
 
     if (!this.firstName || !this.lastName) {
-      Utils.showToast("Bitte geben Sie Ihren Vor- und Nachnamen an.", "danger");
+      Utils.showToast('Bitte geben Sie Ihren Vor- und Nachnamen an.', 'danger');
       return false;
     }
 
     if (this.tenantData?.registration_fields?.includes('picture')) {
       if (this.profilePicture === DEFAULT_IMAGE) {
-        Utils.showToast("Bitte wählen Sie ein Passbild aus.", "danger");
+        Utils.showToast('Bitte wählen Sie ein Passbild aus.', 'danger');
         return false;
       }
     }
@@ -235,14 +235,14 @@ export class TenantRegisterPage implements OnInit {
     if (this.tenantData.registration_fields?.includes('birthDate')) {
       const birthDateObj = dayjs(this.birthDate);
       if (!birthDateObj.isValid()) {
-        Utils.showToast("Bitte geben Sie ein gültiges Geburtsdatum an.", "danger");
+        Utils.showToast('Bitte geben Sie ein gültiges Geburtsdatum an.', 'danger');
         return false;
       }
     }
 
     if (this.tenantData.registration_fields?.includes('phone')) {
       if (!Utils.validatePhoneNumber(this.phone)) {
-        Utils.showToast("Bitte geben Sie eine gültige Telefonnummer an.", "danger");
+        Utils.showToast('Bitte geben Sie eine gültige Telefonnummer an.', 'danger');
         return false;
       }
     }
@@ -250,35 +250,35 @@ export class TenantRegisterPage implements OnInit {
     for (const field of this.additionalFields) {
       if (field.type === FieldType.TEXT || field.type === FieldType.TEXTAREA) {
         if (typeof field.value !== 'string' || field.value.trim() === '') {
-          Utils.showToast(`Bitte füllen Sie das Feld "${field.name}" aus.`, "danger");
+          Utils.showToast(`Bitte füllen Sie das Feld "${field.name}" aus.`, 'danger');
           return false;
         }
       } else if (field.type === FieldType.NUMBER) {
         if (isNaN(Number(field.value))) {
-          Utils.showToast(`Bitte geben Sie eine gültige Zahl für das Feld "${field.name}" ein.`, "danger");
+          Utils.showToast(`Bitte geben Sie eine gültige Zahl für das Feld "${field.name}" ein.`, 'danger');
           return false;
         }
       } else if (field.type === FieldType.DATE) {
         if (isNaN(Date.parse(field.value))) {
-          Utils.showToast(`Bitte geben Sie ein gültiges Datum für das Feld "${field.name}" ein.`, "danger");
+          Utils.showToast(`Bitte geben Sie ein gültiges Datum für das Feld "${field.name}" ein.`, 'danger');
           return false;
         }
       } else if (field.type === FieldType.BOOLEAN) {
         if (typeof field.value !== 'boolean') {
-          Utils.showToast(`Bitte geben Sie einen gültigen Wert für das Feld "${field.name}" ein.`, "danger");
+          Utils.showToast(`Bitte geben Sie einen gültigen Wert für das Feld "${field.name}" ein.`, 'danger');
           return false;
         }
-        if (field.value === false && field.name.toLowerCase().includes("einverständnis")) {
-          Utils.showToast(`Sie müssen dem Feld "${field.name}" zustimmen, um fortzufahren.`, "danger");
+        if (field.value === false && field.name.toLowerCase().includes('einverständnis')) {
+          Utils.showToast(`Sie müssen dem Feld "${field.name}" zustimmen, um fortzufahren.`, 'danger');
           return false;
         }
       } else if (field.type === FieldType.BFECG_CHURCH) {
         if (typeof field.value !== 'string') {
-          Utils.showToast(`Bitte wählen Sie eine Gemeinde aus.`, "danger");
+          Utils.showToast(`Bitte wählen Sie eine Gemeinde aus.`, 'danger');
           return false;
         }
         if (field.value === '' && (!this.customChurchName || this.customChurchName.trim().length < 5)) {
-          Utils.showToast(`Bitte geben Sie den Namen Ihrer Gemeinde ein.`, "danger");
+          Utils.showToast(`Bitte geben Sie den Namen Ihrer Gemeinde ein.`, 'danger');
           return false;
         }
       }
@@ -314,7 +314,7 @@ export class TenantRegisterPage implements OnInit {
     if (imgFile) {
       if (imgFile.size > 15 * 1024 * 1024) {
         loading.dismiss();
-        Utils.showToast("Das ausgewählte Bild ist zu groß. Bitte wähle ein Bild unter 15 MB.", "danger");
+        Utils.showToast('Das ausgewählte Bild ist zu groß. Bitte wähle ein Bild unter 15 MB.', 'danger');
         return;
       }
 
@@ -330,7 +330,7 @@ export class TenantRegisterPage implements OnInit {
         };
       } else {
         loading.dismiss();
-        Utils.showToast("Fehler beim ändern des Passbildes, versuche es später erneut", "danger");
+        Utils.showToast('Fehler beim ändern des Passbildes, versuche es später erneut', 'danger');
       }
     }
   }

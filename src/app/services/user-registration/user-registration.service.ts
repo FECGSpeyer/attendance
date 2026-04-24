@@ -76,7 +76,7 @@ export class UserRegistrationService {
 
       return data.user.id;
     } catch (e: any) {
-      throw new Error(e.message || "Fehler beim Erstellen des Accounts");
+      throw new Error(e.message || 'Fehler beim Erstellen des Accounts');
     }
   }
 
@@ -121,7 +121,7 @@ export class UserRegistrationService {
       .insert({ userId, role, tenantId, email });
 
     if (error) {
-      Utils.showToast("Fehler beim Hinzufügen des Benutzers zum Mandanten", "danger");
+      Utils.showToast('Fehler beim Hinzufügen des Benutzers zum Mandanten', 'danger');
       throw new Error('Fehler beim Hinzufügen des Benutzers zum Mandanten');
     }
   }
@@ -146,7 +146,7 @@ export class UserRegistrationService {
       .select('*')
       .eq('email', email.toLowerCase().trim());
 
-    if (error) throw new Error('Fehler beim Laden des Benutzers');
+    if (error) {throw new Error('Fehler beim Laden des Benutzers');}
 
     const foundTenantUser = data?.find((tenantUser: TenantUser) => tenantUser.tenantId === tenantId);
 
@@ -192,7 +192,7 @@ export class UserRegistrationService {
         .eq('appId', userId)
         .maybeSingle();
 
-      if (playersError) throw new Error('Fehler beim Laden des Benutzers');
+      if (playersError) {throw new Error('Fehler beim Laden des Benutzers');}
 
       if (playersData) {
         return {
@@ -208,7 +208,7 @@ export class UserRegistrationService {
         .eq('appId', userId)
         .maybeSingle();
 
-      if (parentError) throw new Error('Fehler beim Laden des Benutzers');
+      if (parentError) {throw new Error('Fehler beim Laden des Benutzers');}
 
       if (parentData) {
         return {
@@ -224,7 +224,7 @@ export class UserRegistrationService {
         .eq('appId', userId)
         .maybeSingle();
 
-      if (viewerError) throw new Error('Fehler beim Laden des Benutzers');
+      if (viewerError) {throw new Error('Fehler beim Laden des Benutzers');}
 
       if (viewerData) {
         return {
@@ -255,7 +255,7 @@ export class UserRegistrationService {
     try {
       appId = await this.registerUser(email, firstName, role, tenantId, tenantName);
     } catch (error) {
-      Utils.showToast(`${firstName} ${lastName} - Fehler beim Erstellen des Accounts: ${error.message}`, "danger");
+      Utils.showToast(`${firstName} ${lastName} - Fehler beim Erstellen des Accounts: ${error.message}`, 'danger');
       throw error;
     }
 

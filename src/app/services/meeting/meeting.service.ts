@@ -12,7 +12,7 @@ export class MeetingService {
       .from('meetings')
       .select('*')
       .eq('tenantId', tenantId)
-      .order("date", {
+      .order('date', {
         ascending: true,
       });
 

@@ -12,8 +12,8 @@ import { Utils } from 'src/app/utilities/Utils';
     standalone: false
 })
 export class ShiftsPage implements OnInit {
-  newShiftName: string = '';
-  newShiftDescription: string = '';
+  newShiftName = '';
+  newShiftDescription = '';
 
   constructor(
     public db: DbService,

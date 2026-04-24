@@ -17,7 +17,7 @@ export class GroupCategoryService {
       .order('name', { ascending: true });
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Kategorien", "danger");
+      Utils.showToast('Fehler beim Laden der Kategorien', 'danger');
       throw error;
     }
 
@@ -35,7 +35,7 @@ export class GroupCategoryService {
       .single();
 
     if (error) {
-      Utils.showToast("Fehler beim Hinzufügen der Kategorie", "danger");
+      Utils.showToast('Fehler beim Hinzufügen der Kategorie', 'danger');
       throw error;
     }
 
@@ -51,7 +51,7 @@ export class GroupCategoryService {
       .single();
 
     if (error) {
-      Utils.showToast("Fehler beim Aktualisieren der Kategorie", "danger");
+      Utils.showToast('Fehler beim Aktualisieren der Kategorie', 'danger');
       throw error;
     }
 
@@ -67,7 +67,7 @@ export class GroupCategoryService {
       .single();
 
     if (error) {
-      Utils.showToast("Fehler beim Aktualisieren der Kategoriereihenfolge", "danger");
+      Utils.showToast('Fehler beim Aktualisieren der Kategoriereihenfolge', 'danger');
       throw error;
     }
 
@@ -81,7 +81,7 @@ export class GroupCategoryService {
       .match({ id });
 
     if (error) {
-      Utils.showToast("Fehler beim Löschen der Kategorie", "danger");
+      Utils.showToast('Fehler beim Löschen der Kategorie', 'danger');
       throw error;
     }
   }

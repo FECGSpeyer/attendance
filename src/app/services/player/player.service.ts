@@ -22,7 +22,7 @@ export class PlayerService {
 
     if (error) {
       if (showToast) {
-        Utils.showToast("Fehler beim Laden des Benutzers", "danger");
+        Utils.showToast('Fehler beim Laden des Benutzers', 'danger');
       }
       throw error;
     }
@@ -51,7 +51,7 @@ export class PlayerService {
         .eq('tenantId', tenantId);
 
       if (error) {
-        Utils.showToast("Fehler beim Laden der Personen", "danger");
+        Utils.showToast('Fehler beim Laden der Personen', 'danger');
         throw error;
       }
 
@@ -68,13 +68,13 @@ export class PlayerService {
         .eq('tenantId', tenantId)
         .is('pending', false)
         .eq('parent_id', parentId)
-        .is("left", null)
-        .order("instrument")
-        .order("isLeader", { ascending: false })
-        .order("lastName");
+        .is('left', null)
+        .order('instrument')
+        .order('isLeader', { ascending: false })
+        .order('lastName');
 
       if (error) {
-        Utils.showToast("Fehler beim Laden der Kinder");
+        Utils.showToast('Fehler beim Laden der Kinder');
         throw error;
       }
 
@@ -90,14 +90,14 @@ export class PlayerService {
       .from('player')
       .select('*, person_attendances(*)')
       .eq('tenantId', tenantId)
-      .is("left", null)
+      .is('left', null)
       .is('pending', false)
-      .order("instrument")
-      .order("isLeader", { ascending: false })
-      .order("lastName");
+      .order('instrument')
+      .order('isLeader', { ascending: false })
+      .order('lastName');
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Personen", "danger");
+      Utils.showToast('Fehler beim Laden der Personen', 'danger');
       throw error;
     }
 
@@ -113,13 +113,13 @@ export class PlayerService {
       .select('*')
       .eq('tenantId', tenantId)
       .eq('instrument', groupId)
-      .is("left", null)
+      .is('left', null)
       .is('pending', false)
-      .order("isLeader", { ascending: false })
-      .order("lastName");
+      .order('isLeader', { ascending: false })
+      .order('lastName');
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Gruppenmitglieder", "danger");
+      Utils.showToast('Fehler beim Laden der Gruppenmitglieder', 'danger');
       throw error;
     }
 
@@ -135,10 +135,10 @@ export class PlayerService {
       .select('*')
       .is('pending', true)
       .eq('tenantId', tenantId)
-      .order("created_at", { ascending: true });
+      .order('created_at', { ascending: true });
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Personen", "danger");
+      Utils.showToast('Fehler beim Laden der Personen', 'danger');
       throw error;
     }
 
@@ -155,7 +155,7 @@ export class PlayerService {
       .is('pending', false)
       .eq('tenantId', tenantId)
       .not('left', 'is', null)
-      .order("left", { ascending: false });
+      .order('left', { ascending: false });
 
     return data.map((player: any) => ({
       ...player,
@@ -169,9 +169,9 @@ export class PlayerService {
       .select('*')
       .is('pending', false)
       .eq('tenantId', tenantId)
-      .not("email", "is", null)
-      .is("appId", null)
-      .is("left", null);
+      .not('email', 'is', null)
+      .is('appId', null)
+      .is('left', null);
 
     return data.map((player: any) => ({
       ...player,
@@ -181,7 +181,7 @@ export class PlayerService {
 
   async getConductors(tenantId: number, mainGroupId: number, all: boolean = false): Promise<Person[]> {
     if (!mainGroupId) {
-      throw new Error("Hauptgruppe nicht gefunden");
+      throw new Error('Hauptgruppe nicht gefunden');
     }
 
     const { data, error } = await supabase
@@ -190,11 +190,11 @@ export class PlayerService {
       .eq('instrument', mainGroupId)
       .is('pending', false)
       .eq('tenantId', tenantId)
-      .order("lastName");
+      .order('lastName');
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Hauptgruppen-Personen", "danger");
-      throw new Error("Fehler beim Laden der Personen");
+      Utils.showToast('Fehler beim Laden der Hauptgruppen-Personen', 'danger');
+      throw new Error('Fehler beim Laden der Personen');
     }
 
     return (all ? data : data.filter((c: any) => !c.left) as unknown as Person[])
@@ -259,7 +259,7 @@ export class PlayerService {
       .select();
 
     if (error) {
-      throw new Error("Fehler beim updaten des Spielers");
+      throw new Error('Fehler beim updaten des Spielers');
     }
 
     return data.map((player) => ({
@@ -277,7 +277,7 @@ export class PlayerService {
       .single();
 
     if (error) {
-      throw new Error("Fehler beim updaten des Spielers");
+      throw new Error('Fehler beim updaten des Spielers');
     }
 
     return data;
@@ -294,7 +294,7 @@ export class PlayerService {
       .match({ id });
 
     if (error) {
-      throw new Error("Fehler beim updaten der Zusatzfelder");
+      throw new Error('Fehler beim updaten der Zusatzfelder');
     }
   }
 
@@ -308,7 +308,7 @@ export class PlayerService {
       .match({ id });
 
     if (error) {
-      throw new Error("Fehler beim updaten des Feldes");
+      throw new Error('Fehler beim updaten des Feldes');
     }
   }
 
@@ -322,7 +322,7 @@ export class PlayerService {
   async archivePlayer(player: Player, left: string, notes: string): Promise<void> {
     player.history.push({
       date: new Date().toISOString(),
-      text: notes || "Kein Grund angegeben",
+      text: notes || 'Kein Grund angegeben',
       type: PlayerHistoryType.ARCHIVED,
     });
 
@@ -335,7 +335,7 @@ export class PlayerService {
   async reactivatePlayer(player: Player): Promise<void> {
     player.history.push({
       date: new Date().toISOString(),
-      text: "Person wurde reaktiviert",
+      text: 'Person wurde reaktiviert',
       type: PlayerHistoryType.RETURNED,
     });
 
@@ -357,7 +357,7 @@ export class PlayerService {
       .lte('paused_until', today);
 
     if (error) {
-      console.error("Fehler beim Prüfen pausierter Personen", error);
+      console.error('Fehler beim Prüfen pausierter Personen', error);
       return [];
     }
 
@@ -367,7 +367,7 @@ export class PlayerService {
       const history: PlayerHistoryEntry[] = (player.history as unknown as PlayerHistoryEntry[]) || [];
       history.push({
         date: new Date().toISOString(),
-        text: "Automatisch reaktiviert (Pausendatum erreicht)",
+        text: 'Automatisch reaktiviert (Pausendatum erreicht)',
         type: PlayerHistoryType.UNPAUSED,
       });
 
@@ -391,7 +391,7 @@ export class PlayerService {
       .match({ appId });
 
     if (error) {
-      Utils.showToast("Fehler beim Aktualisieren des Profils", "danger");
+      Utils.showToast('Fehler beim Aktualisieren des Profils', 'danger');
       throw error;
     }
   }
@@ -423,7 +423,7 @@ export class PlayerService {
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Personen", "danger");
+      Utils.showToast('Fehler beim Laden der Personen', 'danger');
       throw error;
     }
 
@@ -458,7 +458,7 @@ export class PlayerService {
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Personen", "danger");
+      Utils.showToast('Fehler beim Laden der Personen', 'danger');
       throw error;
     }
 

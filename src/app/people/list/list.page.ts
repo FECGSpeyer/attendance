@@ -24,10 +24,10 @@ export class ListPage implements OnInit, OnDestroy {
   public playersFiltered: Player[] = [];
   public instruments: Group[] = [];
   public playerToArchive: Player;
-  public searchTerm: string = "";
-  public filterOpt: string = "all";
-  public sortOpt: string = "instrument";
-  public viewOpts: string[] = ["instrument"];
+  public searchTerm = '';
+  public filterOpt = 'all';
+  public sortOpt = 'instrument';
+  public viewOpts: string[] = ['instrument'];
   public isVoS: boolean;
   public showNotes = false;
   public showCritical = false;
@@ -39,27 +39,27 @@ export class ListPage implements OnInit, OnDestroy {
   public showAttendance = false;
   public showTeachers = false;
   public showInstruments = false;
-  public isArchiveModalOpen: boolean = false;
-  public archiveDate: string = dayjs().format("YYYY-MM-DD");
-  public archiveNote: string = "";
-  public isPauseModalOpen: boolean = false;
-  public pauseReason: string = "";
-  public pauseUntil: string = "";
-  public minPauseDate: string = dayjs().format("YYYY-MM-DD");
+  public isArchiveModalOpen = false;
+  public archiveDate: string = dayjs().format('YYYY-MM-DD');
+  public archiveNote = '';
+  public isPauseModalOpen = false;
+  public pauseReason = '';
+  public pauseUntil = '';
+  public minPauseDate: string = dayjs().format('YYYY-MM-DD');
   public playerToPause: Player | null = null;
   public sliderToPause: IonItemSliding | null = null;
-  public isAdmin: boolean = false;
-  public isChoir: boolean = false;
-  public isGeneral: boolean = false;
+  public isAdmin = false;
+  public isChoir = false;
+  public isGeneral = false;
   public sub: RealtimeChannel;
   public mainGroup: number | undefined;
   public attendances: Attendance[] = [];
   public teachers: Teacher[] = [];
   public linkedTenants: Tenant[] = [];
-  public tenantName: string = "";
-  public loaded: boolean = false;
-  public prevFilterValue: string = "";
-  private initialized: boolean = false;
+  public tenantName = '';
+  public loaded = false;
+  public prevFilterValue = '';
+  private initialized = false;
   private currentTenantId: number | undefined;
 
   constructor(
@@ -108,7 +108,7 @@ export class ListPage implements OnInit, OnDestroy {
     this.isChoir = this.db.tenant().type === DefaultAttendanceType.CHOIR;
     this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.isVoS = this.db.tenant().shortName === 'VoS';
-    this.filterOpt = (await this.storage.get(`filterOpt${this.db.tenant().id}`)) || "all";
+    this.filterOpt = (await this.storage.get(`filterOpt${this.db.tenant().id}`)) || 'all';
     this.mainGroup = this.db.getMainGroup()?.id;
 
     if (this.isAdmin) {
@@ -129,7 +129,7 @@ export class ListPage implements OnInit, OnDestroy {
 
     const alert = await this.alertController.create({
       header: 'Neu in Version 3.5.0',
-      message: "Schichtpläne sind da! Automatisiere die Planung und Verwaltung deiner Schichten für mehr Effizienz. Auch neu: Anmeldefristen. Setze Anmeldefristen für Termine fest, um eine bessere Organisation zu gewährleisten.",
+      message: 'Schichtpläne sind da! Automatisiere die Planung und Verwaltung deiner Schichten für mehr Effizienz. Auch neu: Anmeldefristen. Setze Anmeldefristen für Termine fest, um eine bessere Organisation zu gewährleisten.',
       buttons: [{
         text: 'Zu den Schichtplänen',
         handler: () => {
@@ -171,7 +171,7 @@ export class ListPage implements OnInit, OnDestroy {
       this.db.churches(),
       this.db.tenant()?.shift_excused_as_present,
     );
-    this.searchTerm = "";
+    this.searchTerm = '';
     this.onViewChanged();
     this.initializeItems();
     this.onSortChanged();
@@ -207,47 +207,47 @@ export class ListPage implements OnInit, OnDestroy {
   }
 
   onSortChanged() {
-    if (this.sortOpt === "vorname") {
+    if (this.sortOpt === 'vorname') {
       this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => a.firstName.localeCompare(b.firstName));
       return;
     }
 
-    if (this.sortOpt === "nachname") {
+    if (this.sortOpt === 'nachname') {
       this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => a.lastName.localeCompare(b.lastName));
       return;
     }
 
-    if (this.sortOpt === "birthdayAsc") {
+    if (this.sortOpt === 'birthdayAsc') {
       this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => new Date(a.birthday).getTime() - new Date(b.birthday).getTime());
       return;
     }
 
-    if (this.sortOpt === "birthdayDesc") {
+    if (this.sortOpt === 'birthdayDesc') {
       this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => new Date(b.birthday).getTime() - new Date(a.birthday).getTime());
       return;
     }
 
-    if (this.sortOpt === "joinedAsc") {
+    if (this.sortOpt === 'joinedAsc') {
       this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => new Date(a.joined).getTime() - new Date(b.joined).getTime());
       return;
     }
 
-    if (this.sortOpt === "joinedDesc") {
+    if (this.sortOpt === 'joinedDesc') {
       this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => new Date(b.joined).getTime() - new Date(a.joined).getTime());
       return;
     }
 
-    if (this.sortOpt === "attAsc") {
+    if (this.sortOpt === 'attAsc') {
       this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => ((a.percentage || 0) - (b.percentage || 0)));
       return;
     }
 
-    if (this.sortOpt === "attDesc") {
+    if (this.sortOpt === 'attDesc') {
       this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => ((b.percentage || 0) - (a.percentage || 0)));
       return;
     }
 
-    if (this.sortOpt === "nextBirthday") {
+    if (this.sortOpt === 'nextBirthday') {
       // Sort by next birthday but ignore the year
       this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => {
         const aBirthday = new Date(a.birthday);
@@ -265,12 +265,12 @@ export class ListPage implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.sortOpt === "test") {
-      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => (a.testResult ? Number(a.testResult.replace("%", "")) : 0) - (b.testResult ? Number(b.testResult.replace("%", "")) : 0)).reverse()
+    if (this.sortOpt === 'test') {
+      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => (a.testResult ? Number(a.testResult.replace('%', '')) : 0) - (b.testResult ? Number(b.testResult.replace('%', '')) : 0)).reverse();
       return;
     }
 
-    if (this.sortOpt === "instrument") {
+    if (this.sortOpt === 'instrument') {
       this.initializeItems();
       this.onFilterChanged(true);
     }
@@ -291,7 +291,7 @@ export class ListPage implements OnInit, OnDestroy {
   onFilterDismissed() {
     if (
       this.prevFilterValue === this.filterOpt &&
-      (this.filterOpt === 'otherInstance' || (this.db.tenant().additional_fields?.find(field => field.type === "select" && this.filterOpt === field.id)))) {
+      (this.filterOpt === 'otherInstance' || (this.db.tenant().additional_fields?.find(field => field.type === 'select' && this.filterOpt === field.id)))) {
       this.onFilterChanged();
     }
   }
@@ -302,7 +302,7 @@ export class ListPage implements OnInit, OnDestroy {
     if (this.filterOpt === 'all') {
       this.initializeItems();
       await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
-      await this.storage.set(`filterOptAdd${this.db.tenant().id}`, "");
+      await this.storage.set(`filterOptAdd${this.db.tenant().id}`, '');
       return;
     }
 
@@ -318,9 +318,7 @@ export class ListPage implements OnInit, OnDestroy {
       if (implicit) {
         if (option) {
           const usersPerTenant = await this.db.getUsersFromTenant(this.linkedTenants.find((t) => t.longName === option)?.id || 0);
-          this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
-            return usersPerTenant.find((u) => u.userId === player.appId);
-          }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
+          this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => usersPerTenant.find((u) => u.userId === player.appId)), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
           this.tenantName = option;
           await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
           await this.storage.set(`filterOptAdd${this.db.tenant().id}`, this.tenantName);
@@ -355,10 +353,8 @@ export class ListPage implements OnInit, OnDestroy {
               }
 
               const usersPerTenant = await this.db.getUsersFromTenant(value);
-              this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
-                return usersPerTenant.find((u) => u.userId === player.appId);
-              }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
-              this.tenantName = this.linkedTenants.find((t) => t.id === value)?.longName || "";
+              this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => usersPerTenant.find((u) => u.userId === player.appId)), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
+              this.tenantName = this.linkedTenants.find((t) => t.id === value)?.longName || '';
               await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
               await this.storage.set(`filterOptAdd${this.db.tenant().id}`, this.tenantName);
             }
@@ -367,22 +363,20 @@ export class ListPage implements OnInit, OnDestroy {
       });
       await alert.present();
       return;
-    } else if (this.db.tenant().additional_fields?.find(field => (field.type === "select" || field.type === "bfecg_church") && this.filterOpt === field.id)) {
-      const extraField = this.db.tenant().additional_fields?.find(field => (field.type === "select" || field.type === "bfecg_church") && this.filterOpt === field.id);
+    } else if (this.db.tenant().additional_fields?.find(field => (field.type === 'select' || field.type === 'bfecg_church') && this.filterOpt === field.id)) {
+      const extraField = this.db.tenant().additional_fields?.find(field => (field.type === 'select' || field.type === 'bfecg_church') && this.filterOpt === field.id);
       const option = await this.storage.get(`filterOptAdd${this.db.tenant().id}`);
 
       if (implicit) {
         if (option) {
-          this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
-            return player.additional_fields?.[this.filterOpt] === option;
-          }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
+          this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => player.additional_fields?.[this.filterOpt] === option), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
           await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
           await this.storage.set(`filterOptAdd${this.db.tenant().id}`, option);
         }
         return;
       }
 
-      const options = extraField.type === "bfecg_church" ? this.db.churches().map(c => c.name) : extraField.options;
+      const options = extraField.type === 'bfecg_church' ? this.db.churches().map(c => c.name) : extraField.options;
 
       const alert = await this.alertController.create({
         header: extraField.name,
@@ -411,7 +405,7 @@ export class ListPage implements OnInit, OnDestroy {
               }
 
               this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
-                if (extraField.type === "bfecg_church") {
+                if (extraField.type === 'bfecg_church') {
                   const church = this.db.churches().find(c => c.name === value);
                   return player.additional_fields?.[this.filterOpt] === church?.id;
                 }
@@ -432,25 +426,25 @@ export class ListPage implements OnInit, OnDestroy {
     this.playersFiltered = Utils.getModifiedPlayersForList(this.players.filter((player: Player) => {
       if (this.filterOpt === 'criticals') {
         return player.isCritical;
-      } else if (this.filterOpt === "new") {
+      } else if (this.filterOpt === 'new') {
         return player.isNew;
-      } else if (this.filterOpt === "examinee") {
+      } else if (this.filterOpt === 'examinee') {
         return player.examinee;
-      } else if (this.filterOpt === "active") {
+      } else if (this.filterOpt === 'active') {
         return !player.paused;
-      } else if (this.filterOpt === "withoutTeacher") {
+      } else if (this.filterOpt === 'withoutTeacher') {
         return !player.hasTeacher;
-      } else if (this.filterOpt === "withoutAccount") {
+      } else if (this.filterOpt === 'withoutAccount') {
         return !player.appId;
-      } else if (this.filterOpt === "withoutTest") {
+      } else if (this.filterOpt === 'withoutTest') {
         return !player.testResult;
-      } else if (this.filterOpt === "leaders") {
+      } else if (this.filterOpt === 'leaders') {
         return player.isLeader;
       }
 
       if (this.db.tenant().additional_fields) {
         for (const field of this.db.tenant().additional_fields) {
-          if (field.type === "boolean" && this.filterOpt === field.id) {
+          if (field.type === 'boolean' && this.filterOpt === field.id) {
             if (player.additional_fields?.[field.id] === undefined || player.additional_fields?.[field.id] === null) {
               player.additional_fields[field.id] = Utils.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options, this.db.churches());
             }
@@ -463,57 +457,53 @@ export class ListPage implements OnInit, OnDestroy {
     }), this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup, this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
 
     await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
-    await this.storage.set(`filterOptAdd${this.db.tenant().id}`, "");
+    await this.storage.set(`filterOptAdd${this.db.tenant().id}`, '');
   }
 
   onViewChanged() {
-    this.players = this.players.map((p: Player) => {
-      return {
+    this.players = this.players.map((p: Player) => ({
         ...p,
         text: this.getSubText(p),
-      }
-    });
-    this.playersFiltered = this.playersFiltered.map((p: Player) => {
-      return {
+      }));
+    this.playersFiltered = this.playersFiltered.map((p: Player) => ({
         ...p,
         text: this.getSubText(p),
-      }
-    });
-    this.showLeader = this.viewOpts.includes("leader");
-    this.showCritical = this.viewOpts.includes("critical");
-    this.showNew = this.viewOpts.includes("new");
-    this.showExaminee = this.viewOpts.includes("examinee");
-    this.showPaused = this.viewOpts.includes("paused");
-    this.showNotes = this.viewOpts.includes("notes");
-    this.showImg = this.viewOpts.includes("img");
-    this.showInstruments = this.viewOpts.includes("instrument");
-    this.showAttendance = this.viewOpts.includes("attendance");
-    this.showTeachers = this.viewOpts.includes("teachers") && this.db.tenant().maintainTeachers;
+      }));
+    this.showLeader = this.viewOpts.includes('leader');
+    this.showCritical = this.viewOpts.includes('critical');
+    this.showNew = this.viewOpts.includes('new');
+    this.showExaminee = this.viewOpts.includes('examinee');
+    this.showPaused = this.viewOpts.includes('paused');
+    this.showNotes = this.viewOpts.includes('notes');
+    this.showImg = this.viewOpts.includes('img');
+    this.showInstruments = this.viewOpts.includes('instrument');
+    this.showAttendance = this.viewOpts.includes('attendance');
+    this.showTeachers = this.viewOpts.includes('teachers') && this.db.tenant().maintainTeachers;
 
     this.storage.set(`viewOpts${this.db.tenant().id}`, JSON.stringify(this.viewOpts));
   }
 
   getSubText(player: Player): string {
     const props: string[] = [];
-    if (this.viewOpts.includes("instrument")) {
+    if (this.viewOpts.includes('instrument')) {
       props.push(player.groupName);
     }
-    if (this.viewOpts.includes("birthday")) {
-      props.push(`${dayjs(player.birthday).format("DD.MM.YYYY")} (${Utils.calculateAge(new Date(player.birthday))} J.)`);
+    if (this.viewOpts.includes('birthday')) {
+      props.push(`${dayjs(player.birthday).format('DD.MM.YYYY')} (${Utils.calculateAge(new Date(player.birthday))} J.)`);
     }
-    if (this.viewOpts.includes("test")) {
-      props.push(player.testResult || "Kein Ergebnis");
+    if (this.viewOpts.includes('test')) {
+      props.push(player.testResult || 'Kein Ergebnis');
     }
-    if (this.viewOpts.includes("instruments") && player.instruments) {
+    if (this.viewOpts.includes('instruments') && player.instruments) {
       props.push(player.instruments);
     }
-    if (this.viewOpts.includes("exercises")) {
+    if (this.viewOpts.includes('exercises')) {
       if (player.otherExercise) {
-        props.push(player.otherExercise)
+        props.push(player.otherExercise);
       }
     }
 
-    return props.join(" | ");
+    return props.join(' | ');
   }
 
   async search(event: any) {
@@ -564,28 +554,28 @@ export class ListPage implements OnInit, OnDestroy {
 
   async remove(player: Person, slider: IonItemSliding): Promise<void> {
     if (player.appId && player.appId === this.db.tenantUser().userId) {
-      Utils.showToast("Du kannst dich nicht selbst entfernen!", "danger");
+      Utils.showToast('Du kannst dich nicht selbst entfernen!', 'danger');
       slider.close();
       return;
     }
 
     const sheet: HTMLIonActionSheetElement = await this.actionSheetController.create({
       buttons: [{
-        text: "Archivieren",
+        text: 'Archivieren',
         handler: (): void => {
           this.playerToArchive = player as Player;
           this.isArchiveModalOpen = true;
           slider.close();
         },
       }, {
-        text: "Entfernen",
+        text: 'Entfernen',
         handler: (): void => {
           this.removePlayer(player);
           slider.close();
         },
       }, {
         role: 'cancel',
-        text: "Abbrechen",
+        text: 'Abbrechen',
         handler: () => {
           slider.close();
         }
@@ -601,7 +591,7 @@ export class ListPage implements OnInit, OnDestroy {
   }
 
   dismissArchiveModal(): void {
-    this.archiveNote = "";
+    this.archiveNote = '';
     this.playerToArchive = undefined;
     this.isArchiveModalOpen = false;
   }
@@ -638,14 +628,14 @@ export class ListPage implements OnInit, OnDestroy {
     try { await Haptics.impact({ style: ImpactStyle.Light }); } catch { /* Haptics not available in PWA */ }
     this.playerToPause = player;
     this.sliderToPause = slider;
-    this.pauseReason = "";
-    this.pauseUntil = "";
+    this.pauseReason = '';
+    this.pauseUntil = '';
     this.isPauseModalOpen = true;
   }
 
   async confirmPause() {
     if (!this.pauseReason) {
-      Utils.showToast("Bitte gib einen Grund an!", "warning");
+      Utils.showToast('Bitte gib einen Grund an!', 'warning');
       return;
     }
 
@@ -668,7 +658,7 @@ export class ListPage implements OnInit, OnDestroy {
         history,
       }, true);
     } catch (error) {
-      Utils.showToast(error, "danger");
+      Utils.showToast(error, 'danger');
     }
 
     this.dismissPauseModal();
@@ -679,25 +669,25 @@ export class ListPage implements OnInit, OnDestroy {
     this.sliderToPause?.close();
     this.playerToPause = null;
     this.sliderToPause = null;
-    this.pauseReason = "";
-    this.pauseUntil = "";
+    this.pauseReason = '';
+    this.pauseUntil = '';
   }
 
   async unpausePlayer(player: Player, slider: IonItemSliding) {
     const alert = await this.alertController.create({
       header: 'Person wieder aktivieren?',
       buttons: [{
-        text: "Abbrechen",
+        text: 'Abbrechen',
         handler: () => {
           slider.close();
         }
       }, {
-        text: "Aktivieren",
+        text: 'Aktivieren',
         handler: async () => {
           const history: PlayerHistoryEntry[] = player.history;
           history.push({
             date: new Date().toISOString(),
-            text: "Person wieder aktiv",
+            text: 'Person wieder aktiv',
             type: PlayerHistoryType.UNPAUSED,
           });
           try {
@@ -708,7 +698,7 @@ export class ListPage implements OnInit, OnDestroy {
               history,
             }, true);
           } catch (error) {
-            Utils.showToast(error, "danger");
+            Utils.showToast(error, 'danger');
           }
           slider.close();
         }

@@ -20,7 +20,7 @@ export class StatusInfoComponent implements OnInit {
   @Input() players: PersonAttendance[] = [];
 
   statusCounts: StatusCount[] = [];
-  totalPlayers: number = 0;
+  totalPlayers = 0;
 
   constructor(private modalController: ModalController) {}
 

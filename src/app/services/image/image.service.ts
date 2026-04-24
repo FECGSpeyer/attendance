@@ -7,31 +7,31 @@ import { User } from '@supabase/supabase-js';
 })
 export class ImageService {
 
-  async removeImage(id: number, imgPath: string, newUser: boolean = false, appId: string = "", currentUserId?: string): Promise<void> {
+  async removeImage(id: number, imgPath: string, newUser: boolean = false, appId: string = '', currentUserId?: string): Promise<void> {
     if (!newUser) {
       if (appId && currentUserId === appId) {
         await supabase
-          .from("player")
-          .update({ img: "" })
+          .from('player')
+          .update({ img: '' })
           .match({ appId });
       } else {
         await supabase
-          .from("player")
-          .update({ img: "" })
+          .from('player')
+          .update({ img: '' })
           .match({ id });
       }
     }
 
     await supabase.storage
-      .from("profiles")
+      .from('profiles')
       .remove([imgPath]);
   }
 
   async updateImage(id: number, image: File | Blob, appId: string, currentUserId?: string): Promise<string> {
-    const fileName: string = `${id}`;
+    const fileName = `${id}`;
 
     const { error } = await supabase.storage
-      .from("profiles")
+      .from('profiles')
       .upload(fileName, image, { upsert: true });
 
     if (error) {
@@ -40,17 +40,17 @@ export class ImageService {
 
     const { data } = await supabase
       .storage
-      .from("profiles")
+      .from('profiles')
       .getPublicUrl(fileName);
 
     if (appId && currentUserId === appId) {
       await supabase
-        .from("player")
+        .from('player')
         .update({ img: data.publicUrl })
         .match({ appId });
     } else {
       await supabase
-        .from("player")
+        .from('player')
         .update({ img: data.publicUrl })
         .match({ id });
     }
@@ -60,7 +60,7 @@ export class ImageService {
 
   async updateAttendanceImage(id: number, image: File): Promise<string> {
     const { error } = await supabase.storage
-      .from("attendances")
+      .from('attendances')
       .upload(id.toString(), image, { upsert: true });
 
     if (error) {
@@ -69,11 +69,11 @@ export class ImageService {
 
     const { data } = await supabase
       .storage
-      .from("attendances")
+      .from('attendances')
       .getPublicUrl(id.toString());
 
     await supabase
-      .from("attendance")
+      .from('attendance')
       .update({ img: data.publicUrl })
       .match({ id });
 

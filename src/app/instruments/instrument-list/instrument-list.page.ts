@@ -14,13 +14,13 @@ import { InstrumentPage } from '../instrument/instrument.page';
 })
 export class InstrumentListPage implements OnInit {
   public instruments: Group[] = [];
-  public groupedInstruments: { id: number | string, name: string, instruments: Group[], sortOrder?: number }[] = [];
-  public isAdmin: boolean = false;
-  public isChoir: boolean = false;
-  public isGeneral: boolean = false;
+  public groupedInstruments: { id: number | string; name: string; instruments: Group[]; sortOrder?: number }[] = [];
+  public isAdmin = false;
+  public isChoir = false;
+  public isGeneral = false;
   public categories: GroupCategory[];
-  public isReordering: boolean = false;
-  public isCategoryReordering: boolean = false;
+  public isReordering = false;
+  public isCategoryReordering = false;
 
   constructor(
     private modalController: ModalController,
@@ -69,8 +69,8 @@ export class InstrumentListPage implements OnInit {
         }
 
         // If only one has sort_order, prioritize it
-        if (aSortOrder !== undefined && aSortOrder !== null) return -1;
-        if (bSortOrder !== undefined && bSortOrder !== null) return 1;
+        if (aSortOrder !== undefined && aSortOrder !== null) {return -1;}
+        if (bSortOrder !== undefined && bSortOrder !== null) {return 1;}
 
         // if same category or no category and no sort_order, sort by name
         if (a.name < b.name) {
@@ -91,11 +91,11 @@ export class InstrumentListPage implements OnInit {
         return {
           ...ins,
           count: players.filter((player: Player): boolean => player.instrument === ins.id).length,
-          clefText: ins.clefs?.map((key: string) => Utils.getClefText(key)).join(", ") || "",
+          clefText: ins.clefs?.map((key: string) => Utils.getClefText(key)).join(', ') || '',
           firstOfCategory,
-          categoryName: this.categories.find(cat => cat.id === ins.category)?.name || "Keine Kategorie",
+          categoryName: this.categories.find(cat => cat.id === ins.category)?.name || 'Keine Kategorie',
           categoryLength: instrumentsRaw.filter(instrument => instrument.category === ins.category).length,
-        }
+        };
       });
 
     // Group instruments by category for better reordering
@@ -118,7 +118,7 @@ export class InstrumentListPage implements OnInit {
     this.groupedInstruments = [];
     for (const [categoryId, instruments] of grouped) {
       const category = categoryId ? this.categories.find(cat => cat.id === categoryId) : null;
-      const categoryName = category?.name || "Keine Kategorie";
+      const categoryName = category?.name || 'Keine Kategorie';
       const categorySortOrder = category?.sort_order;
 
       this.groupedInstruments.push({
@@ -141,8 +141,8 @@ export class InstrumentListPage implements OnInit {
       }
 
       // If only one has sort_order, prioritize it
-      if (aSortOrder !== undefined && aSortOrder !== null) return -1;
-      if (bSortOrder !== undefined && bSortOrder !== null) return 1;
+      if (aSortOrder !== undefined && aSortOrder !== null) {return -1;}
+      if (bSortOrder !== undefined && bSortOrder !== null) {return 1;}
 
       // Otherwise sort by name
       return a.name.localeCompare(b.name);
@@ -175,7 +175,7 @@ export class InstrumentListPage implements OnInit {
     if (value) {
       await this.db.addGroup(String(value));
     } else {
-      Utils.showToast("Bitte gib einem Namen an", "danger");
+      Utils.showToast('Bitte gib einem Namen an', 'danger');
       return;
     }
 
@@ -205,7 +205,7 @@ export class InstrumentListPage implements OnInit {
               await this.db.addGroupCategory(data.name);
               this.categories = await this.db.getGroupCategories();
             } else {
-              Utils.showToast("Bitte gib einem Namen an", "danger");
+              Utils.showToast('Bitte gib einem Namen an', 'danger');
               return false;
             }
           }
@@ -264,7 +264,7 @@ export class InstrumentListPage implements OnInit {
               await this.db.updateGroupCategory(id, data.name);
               this.categories = await this.db.getGroupCategories();
             } else {
-              Utils.showToast("Bitte gib einem Namen an", "danger");
+              Utils.showToast('Bitte gib einem Namen an', 'danger');
               return false;
             }
           }
@@ -281,7 +281,7 @@ export class InstrumentListPage implements OnInit {
       // Save the order when exiting reorder mode
       this.saveCategoryOrder();
     }
-  }
+  };
 
   handleCategoryReorder = (event: any): void => {
     const fromIndex = event.detail.from;
@@ -305,7 +305,7 @@ export class InstrumentListPage implements OnInit {
 
     // Update global sort_order for all instruments based on new category order
     this.updateGlobalSortOrder();
-  }
+  };
 
   private async saveCategoryOrder(): Promise<void> {
     const loading = await Utils.getLoadingElement(5000, 'Reihenfolge wird gespeichert...');

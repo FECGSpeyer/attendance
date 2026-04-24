@@ -26,9 +26,9 @@ export class StatsPage implements OnInit {
   public bestAttendance: Attendance;
   public worstAttendance: Attendance;
   public attPerc: number;
-  public isChoir: boolean = false;
+  public isChoir = false;
   public curAttDate: Date;
-  public isGeneral: boolean = false;
+  public isGeneral = false;
   public tenants: Tenant[] = [];
   public allPersonsFromOrganisation: Player[] = [];
   public uniquePersons: Person[] = [];
@@ -58,10 +58,10 @@ export class StatsPage implements OnInit {
   public divaIndexOptions: ChartConfiguration<'bar'>['options'];
 
   // Dynamic chart heights based on number of entries
-  public instrumentChartHeight: number = 400;
-  public avgAgeChartHeight: number = 400;
-  public top20ChartHeight: number = 500;
-  public divaChartHeight: number = 350;
+  public instrumentChartHeight = 400;
+  public avgAgeChartHeight = 400;
+  public top20ChartHeight = 500;
+  public divaChartHeight = 350;
 
   public chartsReady = false;
 
@@ -362,8 +362,8 @@ export class StatsPage implements OnInit {
     }
 
     // Filter out empty buckets at the start and end
-    let firstNonEmpty = ageBuckets.findIndex(b => b.count > 0);
-    let lastNonEmpty = ageBuckets.length - 1 - [...ageBuckets].reverse().findIndex(b => b.count > 0);
+    const firstNonEmpty = ageBuckets.findIndex(b => b.count > 0);
+    const lastNonEmpty = ageBuckets.length - 1 - [...ageBuckets].reverse().findIndex(b => b.count > 0);
 
     const filteredBuckets = ageBuckets.slice(firstNonEmpty, lastNonEmpty + 1);
 
@@ -508,7 +508,7 @@ export class StatsPage implements OnInit {
   async getOrganizationStats() {
     this.tenants = await this.db.getInstancesOfOrganisations(this.db.organisation().id);
     this.allPersonsFromOrganisation = await this.db.getAllPersonsFromOrganisation(this.tenants);
-    let uniquePersons = this.allPersonsFromOrganisation.reduce((acc: Player[], person: Player) => {
+    const uniquePersons = this.allPersonsFromOrganisation.reduce((acc: Player[], person: Player) => {
       if (person.appId && !acc.find(p => p.appId === person.appId)) {
         acc.push(person);
         return acc;
@@ -541,7 +541,7 @@ export class StatsPage implements OnInit {
           const tenant = this.tenants.find(t => t.id === tid);
           return tenant;
         }).filter(t => t !== undefined) as Tenant[]
-      }
+      };
     }).sort((a, b) => b.tenants.length - a.tenants.length);
     this.uniquePersons = this.allUniquePersons;
   }
@@ -550,14 +550,12 @@ export class StatsPage implements OnInit {
     if (this.selectedInstances.length === 0) {
       this.uniquePersons = this.allUniquePersons;
     } else {
-      this.uniquePersons = this.allUniquePersons.filter((person: Player) => {
-        return (person as any).tenants?.some(t => this.selectedInstances.includes(t.id));
-      }).map(p => {
+      this.uniquePersons = this.allUniquePersons.filter((person: Player) => (person as any).tenants?.some(t => this.selectedInstances.includes(t.id))).map(p => {
         const filteredTenants = (p as any).tenants.filter((t: Tenant) => this.selectedInstances.includes(t.id));
         return {
           ...p,
           tenants: filteredTenants
-        }
+        };
       }).sort((a, b) => b.tenants.length - a.tenants.length);
     }
   }

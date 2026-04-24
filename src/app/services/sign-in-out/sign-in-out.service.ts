@@ -25,7 +25,7 @@ export class SignInOutService {
 
     this.telegramSvc.notifyPerTelegram(
       attIds[0],
-      isLateExcused === true ? 'lateSignout' : "signout",
+      isLateExcused === true ? 'lateSignout' : 'signout',
       reason,
       isParents
     );
@@ -34,7 +34,7 @@ export class SignInOutService {
   async signin(
     attId: string,
     status: string,
-    notes: string = "",
+    notes: string = '',
     userId?: string
   ): Promise<void> {
     await this.updatePersonAttendance(attId, {
@@ -65,7 +65,7 @@ export class SignInOutService {
       .match({ id });
 
     if (error) {
-      throw new Error("Fehler beim updaten der Anwesenheit");
+      throw new Error('Fehler beim updaten der Anwesenheit');
     }
   }
 }

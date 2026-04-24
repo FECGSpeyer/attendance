@@ -16,11 +16,11 @@ import { DbService } from '../../services/db.service';
 export class PlanViewerComponent implements OnInit {
   @Input() attendance: Partial<Attendance>;
   @Input() plan: Plan;
-  @Input() isPractice: boolean = true;
+  @Input() isPractice = true;
   @Input() playerInstrument: number;
   @Input() songs: Song[] = [];
 
-  public hasChatId: boolean = false;
+  public hasChatId = false;
 
   constructor(
     private modalController: ModalController,
@@ -37,7 +37,7 @@ export class PlanViewerComponent implements OnInit {
   }
 
   calculateTime(field: FieldSelection, index: number): string {
-    if (!this.plan?.time) return '';
+    if (!this.plan?.time) {return '';}
 
     let minutesToAdd = 0;
     let currentIndex = 0;
@@ -55,7 +55,7 @@ export class PlanViewerComponent implements OnInit {
   }
 
   getEndTime(): string {
-    if (!this.plan?.end) return '';
+    if (!this.plan?.end) {return '';}
 
     const end = dayjs(this.plan.end).isValid()
       ? dayjs(this.plan.end)
@@ -65,7 +65,7 @@ export class PlanViewerComponent implements OnInit {
   }
 
   getStartTime(): string {
-    if (!this.plan?.time) return '';
+    if (!this.plan?.time) {return '';}
 
     const time = dayjs(this.plan.time).isValid()
       ? dayjs(this.plan.time)
@@ -75,7 +75,7 @@ export class PlanViewerComponent implements OnInit {
   }
 
   getDateFormatted(): string {
-    if (!this.attendance?.date) return '';
+    if (!this.attendance?.date) {return '';}
     return dayjs(this.attendance.date).format('DD.MM.YYYY');
   }
 
@@ -176,7 +176,7 @@ export class PlanViewerComponent implements OnInit {
 
     this.db.sendPlanPerTelegram(
       blob,
-      `${planningTitle.replace("(", "").replace(")", "")}_${name}${sideBySide ? '_2x' : ''}`,
+      `${planningTitle.replace('(', '').replace(')', '')}_${name}${sideBySide ? '_2x' : ''}`,
       asImage
     );
 

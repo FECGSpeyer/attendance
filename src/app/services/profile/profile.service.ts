@@ -36,7 +36,7 @@ export class ProfileService {
 
     if (error) {
       if (showToast) {
-        Utils.showToast("Es konnte kein Spieler gefunden werden.", "danger");
+        Utils.showToast('Es konnte kein Spieler gefunden werden.', 'danger');
       }
       throw error;
     }
@@ -54,7 +54,7 @@ export class ProfileService {
       .match({ appId: userId });
 
     if (error) {
-      Utils.showToast("Fehler beim Aktualisieren des Profils", "danger");
+      Utils.showToast('Fehler beim Aktualisieren des Profils', 'danger');
       throw error;
     }
 
@@ -75,7 +75,7 @@ export class ProfileService {
               .match({ id: player.id });
 
             if (updateError) {
-              Utils.showToast("Fehler beim Aktualisieren der Kirchenzuordnung", "danger");
+              Utils.showToast('Fehler beim Aktualisieren der Kirchenzuordnung', 'danger');
               throw updateError;
             }
           }
@@ -99,7 +99,7 @@ export class ProfileService {
       Utils.showToast('Passwort wurde erfolgreich aktualisiert', 'success');
     }
     if (error) {
-      Utils.showToast('Fehler beim zurücksetzen, versuche es noch einmal', "danger");
+      Utils.showToast('Fehler beim zurücksetzen, versuche es noch einmal', 'danger');
     }
   }
 }

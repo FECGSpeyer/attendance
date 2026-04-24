@@ -25,22 +25,22 @@ export class PersonPage implements OnInit, AfterViewInit {
   @ViewChild('chooser') chooser: ElementRef;
 
   public newPlayer: Player = {
-    firstName: "",
-    lastName: "",
+    firstName: '',
+    lastName: '',
     instrument: 1,
     playsSince: new Date().toISOString(),
     joined: new Date().toISOString(),
     birthday: new Date().toISOString(),
     hasTeacher: false,
     isLeader: false,
-    notes: "",
+    notes: '',
     teacher: null,
     isCritical: false,
     correctBirthday: false,
     history: [],
     paused: false,
     tenantId: 999999999,
-    phone: "",
+    phone: '',
     pending: false,
     self_register: false,
   };
@@ -59,32 +59,32 @@ export class PersonPage implements OnInit, AfterViewInit {
   public history: any[] = [];
   public teachers: Teacher[] = [];
   public allTeachers: Teacher[] = [];
-  public perc: number = 0;
+  public perc = 0;
   public maintainTeachers: boolean;
   public isVoS: boolean;
-  public solved: boolean = false;
-  public hasChanges: boolean = false;
-  public notes: string = "";
-  public isAdmin: boolean = false;
-  public isChoir: boolean = false;
-  public isGeneral: boolean = false;
-  public lateCount: number = 0;
-  public lateCountExcused: number = 0;
-  public lateThreshold: number = 999;  // Derived from critical_rules
-  public showTeachers: boolean = false;
-  public isMainGroup: boolean = false;
+  public solved = false;
+  public hasChanges = false;
+  public notes = '';
+  public isAdmin = false;
+  public isChoir = false;
+  public isGeneral = false;
+  public lateCount = 0;
+  public lateCountExcused = 0;
+  public lateThreshold = 999;  // Derived from critical_rules
+  public showTeachers = false;
+  public isMainGroup = false;
   public role: Role = Role.PLAYER;
-  public parentsEnabled: boolean = false;
+  public parentsEnabled = false;
   public parents: Parent[] = [];
-  public isParent: boolean = false;
+  public isParent = false;
   public otherTenants: Tenant[] = [];
-  public isArchiveModalOpen: boolean = false;
-  public archiveDate: string = dayjs().format("YYYY-MM-DD");
-  public archiveNote: string = "";
-  public isPauseModalOpen: boolean = false;
-  public pauseReason: string = "";
-  public pauseUntil: string = "";
-  public minPauseDate: string = dayjs().format("YYYY-MM-DD");
+  public isArchiveModalOpen = false;
+  public archiveDate: string = dayjs().format('YYYY-MM-DD');
+  public archiveNote = '';
+  public isPauseModalOpen = false;
+  public pauseReason = '';
+  public pauseUntil = '';
+  public minPauseDate: string = dayjs().format('YYYY-MM-DD');
   public isTransferModalOpen = false;
   public copy = false;
   public tenantId: number;
@@ -94,11 +94,11 @@ export class PersonPage implements OnInit, AfterViewInit {
   public targetGroupId: number;
   public fieldTypes = FieldType;
   public shift: ShiftPlan = null;
-  public isImageViewerOpen: boolean = false;
-  public passImageZoomScale: number = 1;
-  private passPinchStartDistance: number = 0;
-  private passPinchStartScale: number = 1;
-  private lastPassImageTapAt: number = 0;
+  public isImageViewerOpen = false;
+  public passImageZoomScale = 1;
+  private passPinchStartDistance = 0;
+  private passPinchStartScale = 1;
+  private lastPassImageTapAt = 0;
 
   constructor(
     public db: DbService,
@@ -149,10 +149,10 @@ export class PersonPage implements OnInit, AfterViewInit {
 
       this.player = { ...this.existingPlayer, additional_fields: { ...this.existingPlayer.additional_fields } };
       this.birthdayString = this.formatDate(this.existingPlayer.birthday);
-      this.playsSinceString = this.existingPlayer.playsSince ? this.formatDate(this.existingPlayer.playsSince) : "";
+      this.playsSinceString = this.existingPlayer.playsSince ? this.formatDate(this.existingPlayer.playsSince) : '';
       this.joinedString = this.formatDate(this.existingPlayer.joined);
-      this.player.teacherName = this.player.teacher ? this.teachers.find((teacher: Teacher) => teacher).name : "";
-      this.player.criticalReasonText = this.player.criticalReason ? Utils.getPlayerHistoryTypeText(this.player.criticalReason) : "";
+      this.player.teacherName = this.player.teacher ? this.teachers.find((teacher: Teacher) => teacher).name : '';
+      this.player.criticalReasonText = this.player.criticalReason ? Utils.getPlayerHistoryTypeText(this.player.criticalReason) : '';
 
       if (this.player.appId) {
         const role = await this.db.getRoleFromTenantUser(this.player.appId);
@@ -201,7 +201,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     for (const tenant of this.otherTenants) {
       const perc = await this.getAttendanceFromOtherTenant(tenant);
-      tenant.perc = perc === 1000 ? "Nicht verfügbar" : `${Math.round(perc)}%`;
+      tenant.perc = perc === 1000 ? 'Nicht verfügbar' : `${Math.round(perc)}%`;
       if (perc === 1000) {
         tenant.percColor = 'warning';
       } else {
@@ -234,15 +234,15 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     setTimeout(() => {
-      const tx = document.getElementsByTagName("textarea");
+      const tx = document.getElementsByTagName('textarea');
       for (let i = 0; i < tx.length; i++) {
-        tx[i].setAttribute("style", "height:" + (tx[i].scrollHeight) + "px !important;overflow-y:hidden;");
-        tx[i].addEventListener("input", OnInput, false);
+        tx[i].setAttribute('style', 'height:' + (tx[i].scrollHeight) + 'px !important;overflow-y:hidden;');
+        tx[i].addEventListener('input', OnInput, false);
       }
 
       function OnInput() {
         this.style.height = 0;
-        this.style.height = (this.scrollHeight) + "px";
+        this.style.height = (this.scrollHeight) + 'px';
       }
     }, 500);
   }
@@ -301,8 +301,8 @@ export class PersonPage implements OnInit, AfterViewInit {
       .filter((his: PlayerHistoryEntry) => dayjs(currentAttDate).isBefore(dayjs(his.date)))
       .map((his: PlayerHistoryEntry) => ({
         ...his,
-        title: "",
-        notes: "",
+        title: '',
+        notes: '',
       }));
 
     // Combine and sort history
@@ -386,19 +386,19 @@ export class PersonPage implements OnInit, AfterViewInit {
       try {
         await this.db.addPlayer(this.player, Boolean(this.player.email), this.role);
         this.modalController.dismiss();
-        Utils.showToast(`Die Person wurde erfolgreich hinzugefügt`, "success");
+        Utils.showToast(`Die Person wurde erfolgreich hinzugefügt`, 'success');
       } catch (error) {
-        Utils.showToast(`Fehler beim hinzufügen der Person: ${error.message ?? "Unbekannter Fehler"}`, "danger");
+        Utils.showToast(`Fehler beim hinzufügen der Person: ${error.message ?? 'Unbekannter Fehler'}`, 'danger');
       }
     } else {
-      Utils.showToast("Bitte gib den Vornamen und Nachnamen an.", "danger");
+      Utils.showToast('Bitte gib den Vornamen und Nachnamen an.', 'danger');
     }
     loading.dismiss();
   }
 
   async updatePlayer(): Promise<void> {
     if (this.player.email?.length && this.player.email !== this.existingPlayer.email && !Utils.validateEmail(this.player.email)) {
-      Utils.showToast("Bitte gib eine valide E-Mail Adresse ein...", "danger");
+      Utils.showToast('Bitte gib eine valide E-Mail Adresse ein...', 'danger');
       return;
     }
 
@@ -507,10 +507,10 @@ export class PersonPage implements OnInit, AfterViewInit {
       });
     }
 
-    if ((this.existingPlayer.notes || "") !== (this.player.notes || "")) {
+    if ((this.existingPlayer.notes || '') !== (this.player.notes || '')) {
       history.push({
         date: new Date().toISOString(),
-        text: this.existingPlayer.notes || "Keine Notiz",
+        text: this.existingPlayer.notes || 'Keine Notiz',
         type: PlayerHistoryType.NOTES,
       });
     }
@@ -536,16 +536,16 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.hasChanges = false;
       await this.dismiss();
 
-      Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
+      Utils.showToast('Die Spielerdaten wurden erfolgreich aktualisiert.', 'success');
     } catch (error) {
       loading.dismiss();
-      Utils.showToast(`Fehler beim aktualisieren des Spielers: ${error.message ?? "Unbekannter Fehler"}`, "danger");
+      Utils.showToast(`Fehler beim aktualisieren des Spielers: ${error.message ?? 'Unbekannter Fehler'}`, 'danger');
     }
   }
 
   async onRoleChange() {
     await this.db.updateTenantUser({ role: this.role }, this.player.appId);
-    Utils.showToast("Die Rolle wurde erfolgreich aktualisiert.", "success");
+    Utils.showToast('Die Rolle wurde erfolgreich aktualisiert.', 'success');
   }
 
   async removeUserFromTenant() {
@@ -568,9 +568,9 @@ export class PersonPage implements OnInit, AfterViewInit {
               });
               this.hasChanges = false;
               await this.dismiss();
-              Utils.showToast("Der Benutzer wurde erfolgreich entfernt", "success");
+              Utils.showToast('Der Benutzer wurde erfolgreich entfernt', 'success');
             } catch (error) {
-              Utils.showToast("Fehler beim Entfernen des Benutzers", "danger");
+              Utils.showToast('Fehler beim Entfernen des Benutzers', 'danger');
             }
           }
         }
@@ -615,7 +615,7 @@ export class PersonPage implements OnInit, AfterViewInit {
                   this.player.instrument = instrument.id;
                 }
 
-                Utils.showToast("Die Daten wurden erfolgreich übernommen", "success");
+                Utils.showToast('Die Daten wurden erfolgreich übernommen', 'success');
               }
             }
           ]
@@ -628,7 +628,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   onChange() {
     if (!this.approveMode && !this.readOnly && this.existingPlayer) {
-      const existingPerson: Player = { ...this.existingPlayer, email: this.player.email === null ? null : this.existingPlayer.email || "", teacherName: this.player.teacherName, notes: this.player.notes === null ? null : this.existingPlayer.notes || "", criticalReasonText: this.player.criticalReasonText };
+      const existingPerson: Player = { ...this.existingPlayer, email: this.player.email === null ? null : this.existingPlayer.email || '', teacherName: this.player.teacherName, notes: this.player.notes === null ? null : this.existingPlayer.notes || '', criticalReasonText: this.player.criticalReasonText };
 
       this.hasChanges =
         this.solved ||
@@ -688,9 +688,9 @@ export class PersonPage implements OnInit, AfterViewInit {
               this.existingPlayer = { ...res } as any;
               this.player.history = res.history as any;
               this.getHistoryInfo();
-              Utils.showToast("Eintrag wurde erfolgreich entfernt.", "success");
+              Utils.showToast('Eintrag wurde erfolgreich entfernt.', 'success');
             } catch {
-              Utils.showToast("Fehler beim Löschen des Eintrags.", "danger");
+              Utils.showToast('Fehler beim Löschen des Eintrags.', 'danger');
             }
 
             slider.close();
@@ -709,10 +709,10 @@ export class PersonPage implements OnInit, AfterViewInit {
     try {
       await this.db.createAccount(this.player);
       await this.modalController.dismiss();
-      Utils.showToast("Account wurde erfolgreich angelegt", "success");
+      Utils.showToast('Account wurde erfolgreich angelegt', 'success');
       await loading.dismiss();
     } catch (error) {
-      Utils.showToast(error.message, "danger");
+      Utils.showToast(error.message, 'danger');
       await loading.dismiss();
     }
   }
@@ -724,9 +724,9 @@ export class PersonPage implements OnInit, AfterViewInit {
       additionalButtons.push({
         text: 'Passbild entfernen',
         handler: () => {
-          this.db.removeImage(this.player.id, this.player.img.split("/")[this.player.img.split("/").length - 1].replace("?quality=20", ""), true);
+          this.db.removeImage(this.player.id, this.player.img.split('/')[this.player.img.split('/').length - 1].replace('?quality=20', ''), true);
           this.player.img = DEFAULT_IMAGE;
-          Utils.showToast("Das Passbild wurde erfolgreich entfernt", "success");
+          Utils.showToast('Das Passbild wurde erfolgreich entfernt', 'success');
         }
       });
 
@@ -835,7 +835,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     if (imgFile) {
       if (imgFile.size > 2 * 1024 * 1024) {
         loading.dismiss();
-        Utils.showToast("Das Bild darf maximal 2MB groß sein.", "danger");
+        Utils.showToast('Das Bild darf maximal 2MB groß sein.', 'danger');
         return;
       }
 
@@ -848,11 +848,11 @@ export class PersonPage implements OnInit, AfterViewInit {
           const url: string = await this.db.updateImage(this.player.id, imgFile, this.player.appId);
           this.player.img = url;
         } catch (error) {
-          Utils.showToast(error, "danger");
+          Utils.showToast(error, 'danger');
         }
       } else {
         loading.dismiss();
-        Utils.showToast("Fehler beim ändern des Passbildes, versuche es später erneut", "danger");
+        Utils.showToast('Fehler beim ändern des Passbildes, versuche es später erneut', 'danger');
       }
     }
   }
@@ -867,7 +867,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     if (his.type === PlayerHistoryType.NOTES) {
       const alert = await this.alertController.create({
         header: 'Notiz geändert',
-        subHeader: dayjs(his.date).format("DD.MM.YYYY"),
+        subHeader: dayjs(his.date).format('DD.MM.YYYY'),
         message: `Alte Notiz: ${his.text}`,
         buttons: ['Ok']
       });
@@ -880,14 +880,13 @@ export class PersonPage implements OnInit, AfterViewInit {
     const names = await this.db.getPossiblePersonsByName(this.player.firstName, this.player.lastName);
 
     if (names.length === 0) {
-      Utils.showToast("Es wurde keine passende Person in einer anderen Instanz gefunden", "danger");
+      Utils.showToast('Es wurde keine passende Person in einer anderen Instanz gefunden', 'danger');
       return;
     }
 
     const actionSheet = await this.actionSheetController.create({
-      header: "Eintrag auswählen",
-      buttons: names.map((name) => {
-        return {
+      header: 'Eintrag auswählen',
+      buttons: names.map((name) => ({
           text: `${(name as any).instrument.name} (${(name as any).tenantId.longName})`,
           handler: async () => {
             this.player.email = name.email;
@@ -895,10 +894,9 @@ export class PersonPage implements OnInit, AfterViewInit {
               ...this.player,
               email: name.email,
             });
-            Utils.showToast("Die E-Mail Adresse wurde erfolgreich aktualisiert", "success");
+            Utils.showToast('Die E-Mail Adresse wurde erfolgreich aktualisiert', 'success');
           }
-        };
-      })
+        }))
     });
 
     await actionSheet.present();
@@ -914,7 +912,7 @@ export class PersonPage implements OnInit, AfterViewInit {
           const history: PlayerHistoryEntry[] = this.player.history;
           history.push({
             date: new Date().toISOString(),
-            text: "Person wieder aktiv",
+            text: 'Person wieder aktiv',
             type: PlayerHistoryType.UNPAUSED,
           });
           try {
@@ -927,7 +925,7 @@ export class PersonPage implements OnInit, AfterViewInit {
             this.hasChanges = false;
             await this.dismiss();
           } catch (error) {
-            Utils.showToast(error, "danger");
+            Utils.showToast(error, 'danger');
           }
         }
       });
@@ -935,8 +933,8 @@ export class PersonPage implements OnInit, AfterViewInit {
       buttons.push({
         text: 'Pausieren',
         handler: async () => {
-          this.pauseReason = "";
-          this.pauseUntil = "";
+          this.pauseReason = '';
+          this.pauseUntil = '';
           this.isPauseModalOpen = true;
         }
       });
@@ -944,7 +942,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     if (this.organisation && this.tenants.length) {
       buttons.push({
-        text: "In andere Instanz übertragen",
+        text: 'In andere Instanz übertragen',
         handler: async (): Promise<void> => {
           this.copy = false;
           this.isTransferModalOpen = true;
@@ -952,7 +950,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       });
 
       buttons.push({
-        text: "In andere Instanz kopieren",
+        text: 'In andere Instanz kopieren',
         handler: async (): Promise<void> => {
           this.copy = true;
           this.isTransferModalOpen = true;
@@ -961,7 +959,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     buttons.push({
-      text: "Archivieren",
+      text: 'Archivieren',
       handler: (): void => {
         this.isArchiveModalOpen = true;
       },
@@ -970,7 +968,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     if (this.player.appId !== this.db.tenantUser().userId) {
       buttons.push({
-        text: "Entfernen",
+        text: 'Entfernen',
         handler: async (): Promise<void> => {
           const alert = await this.alertController.create({
             header: 'Person entfernen',
@@ -985,9 +983,9 @@ export class PersonPage implements OnInit, AfterViewInit {
                   this.modalController.dismiss();
                   try {
                     await this.db.removePlayer(this.player);
-                    Utils.showToast("Die Person wurde erfolgreich entfernt", "success");
+                    Utils.showToast('Die Person wurde erfolgreich entfernt', 'success');
                   } catch (error) {
-                    Utils.showToast(error, "danger");
+                    Utils.showToast(error, 'danger');
                   }
                 },
               }
@@ -1029,9 +1027,9 @@ export class PersonPage implements OnInit, AfterViewInit {
                 this.hasChanges = false;
                 await this.dismiss();
               }
-              Utils.showToast(this.copy ? "Die Person wurde erfolgreich kopiert" : "Die Person wurde erfolgreich übertragen", "success");
+              Utils.showToast(this.copy ? 'Die Person wurde erfolgreich kopiert' : 'Die Person wurde erfolgreich übertragen', 'success');
             } catch (error) {
-              Utils.showToast(error, "danger");
+              Utils.showToast(error, 'danger');
               return;
             }
           }
@@ -1049,23 +1047,23 @@ export class PersonPage implements OnInit, AfterViewInit {
     setTimeout(async () => {
       await this.dismiss();
     }, 500);
-    Utils.showToast("Die Person wurde erfolgreich archiviert", "success");
+    Utils.showToast('Die Person wurde erfolgreich archiviert', 'success');
   }
 
   async dismissArchiveModal(): Promise<void> {
-    this.archiveNote = "";
+    this.archiveNote = '';
     this.isArchiveModalOpen = false;
   }
 
   async confirmPause(): Promise<void> {
     if (!this.pauseReason) {
-      Utils.showToast("Bitte gib einen Grund an!", "danger");
+      Utils.showToast('Bitte gib einen Grund an!', 'danger');
       return;
     }
     const history: PlayerHistoryEntry[] = this.player.history;
     history.push({
       date: new Date().toISOString(),
-      text: this.pauseReason + (this.pauseUntil ? ` (bis ${dayjs(this.pauseUntil).format("DD.MM.YYYY")})` : ""),
+      text: this.pauseReason + (this.pauseUntil ? ` (bis ${dayjs(this.pauseUntil).format('DD.MM.YYYY')})` : ''),
       type: PlayerHistoryType.PAUSED,
     });
     try {
@@ -1079,14 +1077,14 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.isPauseModalOpen = false;
       await this.dismiss();
     } catch (error) {
-      Utils.showToast(error, "danger");
+      Utils.showToast(error, 'danger');
     }
   }
 
   dismissPauseModal(): void {
     this.isPauseModalOpen = false;
-    this.pauseReason = "";
-    this.pauseUntil = "";
+    this.pauseReason = '';
+    this.pauseUntil = '';
   }
 
   async activate(): Promise<void> {
@@ -1111,7 +1109,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     await this.db.activatePlayer(this.player);
     this.hasChanges = false;
     this.modalController.dismiss({ activated: true });
-    Utils.showToast("Die Person wurde erfolgreich wieder aktiviert", "success");
+    Utils.showToast('Die Person wurde erfolgreich wieder aktiviert', 'success');
   }
 
   getExtraFieldDateString(dateString: string): string {
@@ -1176,16 +1174,16 @@ export class PersonPage implements OnInit, AfterViewInit {
       header: 'Person ablehnen',
       subHeader: 'Gib einen Grund an.',
       inputs: [{
-        type: "textarea",
-        name: "reason"
+        type: 'textarea',
+        name: 'reason'
       }],
       buttons: [{
-        text: "Abbrechen",
+        text: 'Abbrechen',
       }, {
-        text: "Ablehnen",
+        text: 'Ablehnen',
         handler: async (evt: { reason: string }) => {
           if (!evt.reason) {
-            alert.message = "Bitte gib einen Grund an!";
+            alert.message = 'Bitte gib einen Grund an!';
             return false;
           }
 
@@ -1211,10 +1209,10 @@ export class PersonPage implements OnInit, AfterViewInit {
             this.hasChanges = false;
             await this.dismiss({ approved: true });
 
-            Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
+            Utils.showToast('Die Spielerdaten wurden erfolgreich aktualisiert.', 'success');
           } catch (error) {
             loading.dismiss();
-            Utils.showToast("Fehler beim aktualisieren des Spielers", "danger");
+            Utils.showToast('Fehler beim aktualisieren des Spielers', 'danger');
           }
 
           loading.dismiss();
@@ -1250,10 +1248,10 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.hasChanges = false;
       await this.dismiss({ approved: true });
 
-      Utils.showToast("Die Spielerdaten wurden erfolgreich aktualisiert.", "success");
+      Utils.showToast('Die Spielerdaten wurden erfolgreich aktualisiert.', 'success');
     } catch (error) {
       loading.dismiss();
-      Utils.showToast("Fehler beim aktualisieren des Spielers", "danger");
+      Utils.showToast('Fehler beim aktualisieren des Spielers', 'danger');
     }
 
     loading.dismiss();

@@ -34,7 +34,7 @@ export class ParentsPage implements OnInit {
   public pastAttendances: Attendance[] = [];
   public kidStats: { [key: number]: KidStats } = {};
   public upcomingSongs: { date: string; history: History[] }[] = [];
-  public songsModalOpen: boolean = false;
+  public songsModalOpen = false;
 
   @ViewChild('excuseModal') excuseModal: IonModal;
 
@@ -201,7 +201,7 @@ export class ParentsPage implements OnInit {
       {
         text: 'Abmelden',
         handler: () => {
-          if (dayjs(attendance.date).isSame(dayjs(), "day")) {
+          if (dayjs(attendance.date).isSame(dayjs(), 'day')) {
             this.reasonSelection = 'Sonstiger Grund';
             this.reason = '';
           } else {
@@ -215,7 +215,7 @@ export class ParentsPage implements OnInit {
       {
         text: 'Verspätung eintragen',
         handler: () => {
-          if (dayjs(attendance.date).isSame(dayjs(), "day")) {
+          if (dayjs(attendance.date).isSame(dayjs(), 'day')) {
             this.reasonSelection = 'Sonstiger Grund';
             this.reason = '';
           } else {
@@ -267,9 +267,9 @@ export class ParentsPage implements OnInit {
     await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent, true);
 
     this.excuseModal.dismiss();
-    this.reason = "";
+    this.reason = '';
 
-    Utils.showToast(this.isLateComingEvent ? "Vielen Dank für die Info und Gottes Segen!" : "Vielen Dank für die rechtzeitige Abmeldung und Gottes Segen!", "success", 4000);
+    Utils.showToast(this.isLateComingEvent ? 'Vielen Dank für die Info und Gottes Segen!' : 'Vielen Dank für die rechtzeitige Abmeldung und Gottes Segen!', 'success', 4000);
 
     this.reasonSelection = '';
 
@@ -278,7 +278,7 @@ export class ParentsPage implements OnInit {
 
   onReasonSelect(event) {
     const currentReasonSelection = event.detail.value;
-    if (!currentReasonSelection) return;
+    if (!currentReasonSelection) {return;}
 
     if (currentReasonSelection !== 'Sonstiger Grund') {
       this.excuseModal.setCurrentBreakpoint(0.3);
@@ -291,10 +291,10 @@ export class ParentsPage implements OnInit {
 
   async signin(attendance: PersonAttendance) {
     for (const attId of this.selAttIds) {
-      await this.db.signin(attId, attendance.status === AttendanceStatus.LateExcused ? 'lateSignIn' : attendance.status === AttendanceStatus.Neutral ? "neutralSignin" : 'signin');
+      await this.db.signin(attId, attendance.status === AttendanceStatus.LateExcused ? 'lateSignIn' : attendance.status === AttendanceStatus.Neutral ? 'neutralSignin' : 'signin');
     }
 
-    Utils.showToast("Danke für die Anmeldung 🙂", "success", 4000);
+    Utils.showToast('Danke für die Anmeldung 🙂', 'success', 4000);
 
     await this.refreshPersonAttendances();
   }
@@ -345,7 +345,7 @@ export class ParentsPage implements OnInit {
 
   openSongLink(link: string) {
     if (link) {
-      window.open(link, "_blank");
+      window.open(link, '_blank');
     }
   }
 

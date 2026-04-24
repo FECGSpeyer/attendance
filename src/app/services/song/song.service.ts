@@ -32,7 +32,7 @@ export class SongService {
       .from('songs')
       .select('*')
       .eq('tenantId', tenantId)
-      .order("number", { ascending: true });
+      .order('number', { ascending: true });
 
     return data as any;
   }
@@ -82,7 +82,7 @@ export class SongService {
       .match({ id: song.id });
 
     if (error) {
-      throw new Error("Fehler beim Löschen des Werks");
+      throw new Error('Fehler beim Löschen des Werks');
     }
   }
 
@@ -101,7 +101,7 @@ export class SongService {
     const { error } = await supabase.storage
       .from('songs')
       .upload(filePath, file, { upsert: true });
-    if (error) throw new Error(error.message);
+    if (error) {throw new Error(error.message);}
 
     const { data } = await supabase.storage
       .from('songs')
@@ -144,13 +144,13 @@ export class SongService {
   async downloadSongFile(fileName: string, songId: number, tenantId: number): Promise<Blob> {
     const filePath = `songs/${tenantId}/${songId}/${fileName}`;
     const { data, error } = await supabase.storage.from('songs').download(filePath);
-    if (error) throw new Error(error.message);
+    if (error) {throw new Error(error.message);}
     return data;
   }
 
   async downloadSongFileFromPath(filePath: string): Promise<Blob> {
     const { data, error } = await supabase.storage.from('songs').download(filePath);
-    if (error) throw new Error(error.message);
+    if (error) {throw new Error(error.message);}
     return data;
   }
 
@@ -199,7 +199,7 @@ export class SongService {
       .select()
       .single();
 
-    if (insertError) throw new Error(insertError.message);
+    if (insertError) {throw new Error(insertError.message);}
 
     const createdSong = data as unknown as Song;
 
@@ -209,10 +209,10 @@ export class SongService {
 
       for (let i = 0; i < song.files.length; i++) {
         const file = song.files[i];
-        if (onProgress) onProgress(i + 1, totalFiles);
+        if (onProgress) {onProgress(i + 1, totalFiles);}
 
         const blob = await this.downloadSongFileFromPath(
-          file.url.split("https://ultyjzgwejpehfjuyenr.supabase.co/storage/v1/object/public/songs/")[1]
+          file.url.split('https://ultyjzgwejpehfjuyenr.supabase.co/storage/v1/object/public/songs/')[1]
         );
 
         const mappedInstrumentId = file.instrumentId
@@ -270,7 +270,7 @@ export class SongService {
     const { error } = await supabase.storage
       .from('songs')
       .upload(filePath, blob, { upsert: true });
-    if (error) throw new Error(error.message);
+    if (error) {throw new Error(error.message);}
 
     const { data } = await supabase.storage.from('songs').getPublicUrl(filePath);
 
@@ -291,7 +291,7 @@ export class SongService {
       .from('song_categories')
       .select('*')
       .eq('tenant_id', tenantId)
-      .order("index", { ascending: true });
+      .order('index', { ascending: true });
 
     return data;
   }
@@ -303,7 +303,7 @@ export class SongService {
       .select();
 
     if (error) {
-      throw new Error("Fehler beim hinzufügen der Werkkategorie");
+      throw new Error('Fehler beim hinzufügen der Werkkategorie');
     }
   }
 

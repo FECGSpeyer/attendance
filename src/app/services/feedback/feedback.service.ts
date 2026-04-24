@@ -18,7 +18,7 @@ export class FeedbackService {
       });
 
     if (error) {
-      Utils.showToast("Fehler beim Senden der Frage", "danger");
+      Utils.showToast('Fehler beim Senden der Frage', 'danger');
       throw error;
     }
   }
@@ -43,7 +43,7 @@ export class FeedbackService {
       });
 
     if (error) {
-      Utils.showToast("Fehler beim Senden des Feedbacks", "danger");
+      Utils.showToast('Fehler beim Senden des Feedbacks', 'danger');
       throw error;
     }
   }

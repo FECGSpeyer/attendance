@@ -21,11 +21,11 @@ export class RegisterPage implements OnInit {
     showHolidays: false,
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   };
-  public mainGroupName: string = '';
-  public canDismiss: boolean = true;
-  public namePlaceholder: string = 'z.B. Sportverein Musterstadt';
-  public shortNamePlaceholder: string = 'z.B. SVM';
-  public mainGroupPlaceholder: string = 'z.B. Vorstand';
+  public mainGroupName = '';
+  public canDismiss = true;
+  public namePlaceholder = 'z.B. Sportverein Musterstadt';
+  public shortNamePlaceholder = 'z.B. SVM';
+  public mainGroupPlaceholder = 'z.B. Vorstand';
 
   constructor(
     private db: DbService,

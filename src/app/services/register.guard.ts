@@ -19,7 +19,7 @@ export class RegisterGuard  {
       this.router.navigateByUrl(url);
       return false;
     } else {
-      this.router.navigateByUrl("/login");
+      this.router.navigateByUrl('/login');
       return false;
     }
   }

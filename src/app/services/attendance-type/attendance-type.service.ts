@@ -16,16 +16,14 @@ export class AttendanceTypeService {
       .order('index', { ascending: true });
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Anwesenheitstypen", "danger");
+      Utils.showToast('Fehler beim Laden der Anwesenheitstypen', 'danger');
       throw error;
     }
 
-    return data.map((att: any): AttendanceType => {
-      return {
+    return data.map((att: any): AttendanceType => ({
         ...att,
         default_plan: att.default_plan as any,
-      };
-    });
+      }));
   }
 
   async getAttendanceType(id: string): Promise<AttendanceType> {
@@ -36,7 +34,7 @@ export class AttendanceTypeService {
       .single();
 
     if (error) {
-      Utils.showToast("Fehler beim Laden des Anwesenheitstyps", "danger");
+      Utils.showToast('Fehler beim Laden des Anwesenheitstyps', 'danger');
       throw error;
     }
 
@@ -52,7 +50,7 @@ export class AttendanceTypeService {
       .single();
 
     if (error) {
-      Utils.showToast("Fehler beim Aktualisieren des Anwesenheitstyps", "danger");
+      Utils.showToast('Fehler beim Aktualisieren des Anwesenheitstyps', 'danger');
       throw error;
     }
 
@@ -67,7 +65,7 @@ export class AttendanceTypeService {
       .single();
 
     if (error) {
-      Utils.showToast("Fehler beim Hinzufügen des Anwesenheitstyps", "danger");
+      Utils.showToast('Fehler beim Hinzufügen des Anwesenheitstyps', 'danger');
       throw error;
     }
 
@@ -81,7 +79,7 @@ export class AttendanceTypeService {
       .match({ id });
 
     if (error) {
-      Utils.showToast("Fehler beim Löschen des Anwesenheitstyps", "danger");
+      Utils.showToast('Fehler beim Löschen des Anwesenheitstyps', 'danger');
       throw error;
     }
   }
@@ -94,7 +92,7 @@ export class AttendanceTypeService {
       .insert(defaultTypes as any[]);
 
     if (error) {
-      Utils.showToast("Fehler beim Hinzufügen der Standard Anwesenheitstypen", "danger");
+      Utils.showToast('Fehler beim Hinzufügen der Standard Anwesenheitstypen', 'danger');
       throw error;
     }
   }

@@ -11,38 +11,38 @@ export class InstanceService {
 
   async deleteInstance(tenantId: number): Promise<void> {
     const { error } = await supabase
-      .from("tenants")
+      .from('tenants')
       .delete()
       .match({ id: tenantId });
 
     if (error) {
-      Utils.showToast("Fehler beim Löschen der Instanz, bitte versuche es später erneut.", "danger");
+      Utils.showToast('Fehler beim Löschen der Instanz, bitte versuche es später erneut.', 'danger');
       throw new Error(error.message);
     }
 
-    Utils.showToast("Instanz wurde erfolgreich gelöscht!");
+    Utils.showToast('Instanz wurde erfolgreich gelöscht!');
   }
 
   async createInstance(tenant: Tenant, userId: string, userEmail: string): Promise<Tenant> {
     const { data, error } = await supabase
-      .from("tenants")
+      .from('tenants')
       .insert(tenant as any)
       .select()
       .single();
 
     if (error) {
-      Utils.showToast("Fehler beim Erstellen der Instanz, bitte versuche es später erneut.", "danger");
+      Utils.showToast('Fehler beim Erstellen der Instanz, bitte versuche es später erneut.', 'danger');
       throw new Error(error.message);
     }
 
     const usersToAdd = [{
-      userId: "665fe2b4-d53f-4f17-a66b-46c0949af99a",
+      userId: '665fe2b4-d53f-4f17-a66b-46c0949af99a',
       role: Role.ADMIN,
       tenantId: data.id,
-      email: "developer@attendix.de"
+      email: 'developer@attendix.de'
     }];
 
-    if (userEmail !== "developer@attendix.de") {
+    if (userEmail !== 'developer@attendix.de') {
       usersToAdd.push({
         userId,
         role: Role.ADMIN,
@@ -52,15 +52,15 @@ export class InstanceService {
     }
 
     const { error: userError } = await supabase
-      .from("tenantUsers")
+      .from('tenantUsers')
       .insert(usersToAdd);
 
     if (userError) {
-      Utils.showToast("Fehler beim Erstellen des Benutzers, bitte versuche es später erneut.", "danger");
+      Utils.showToast('Fehler beim Erstellen des Benutzers, bitte versuche es später erneut.', 'danger');
       throw new Error(userError.message);
     }
 
-    Utils.showToast("Instanz wurde erfolgreich erstellt!");
+    Utils.showToast('Instanz wurde erfolgreich erstellt!');
 
     return data as unknown as Tenant;
   }
@@ -76,7 +76,7 @@ export class InstanceService {
       if (error.code === 'PGRST116') {
         return null;
       }
-      Utils.showToast("Fehler beim Laden des Tenants", "danger");
+      Utils.showToast('Fehler beim Laden des Tenants', 'danger');
       throw error;
     }
 
@@ -94,7 +94,7 @@ export class InstanceService {
       if (error.code === 'PGRST116') {
         return null;
       }
-      Utils.showToast("Fehler beim Laden des Tenants", "danger");
+      Utils.showToast('Fehler beim Laden des Tenants', 'danger');
       throw error;
     }
 

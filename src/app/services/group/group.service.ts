@@ -15,9 +15,9 @@ export class GroupService {
       .from('instruments')
       .select('*, categoryData:category(*)')
       .eq('tenantId', tenantId)
-      .order("category")
-      .order("sort_order", { ascending: true, nullsFirst: false })
-      .order("name", { ascending: true });
+      .order('category')
+      .order('sort_order', { ascending: true, nullsFirst: false })
+      .order('name', { ascending: true });
 
     return data as any;
   }
@@ -31,8 +31,8 @@ export class GroupService {
       .from('instruments')
       .insert({
         name,
-        tuning: "C",
-        clefs: ["g"],
+        tuning: 'C',
+        clefs: ['g'],
         tenantId,
         maingroup,
       })
@@ -50,11 +50,11 @@ export class GroupService {
 
     if (error) {
       if (error.code === '23505') {
-        Utils.showToast("Es kann nur eine Hauptgruppe existieren", "danger");
+        Utils.showToast('Es kann nur eine Hauptgruppe existieren', 'danger');
       } else {
-        Utils.showToast("Fehler beim updaten des Instruments", "danger");
+        Utils.showToast('Fehler beim updaten des Instruments', 'danger');
       }
-      throw new Error("Fehler beim updaten des Instruments");
+      throw new Error('Fehler beim updaten des Instruments');
     }
 
     return data;
@@ -76,7 +76,7 @@ export class GroupService {
       .from('group_categories')
       .select('*')
       .eq('tenant_id', tenantId)
-      .order("index", { ascending: true });
+      .order('index', { ascending: true });
 
     return data;
   }
@@ -88,7 +88,7 @@ export class GroupService {
       .select();
 
     if (error) {
-      throw new Error("Fehler beim hinzufügen der Gruppenkategorie");
+      throw new Error('Fehler beim hinzufügen der Gruppenkategorie');
     }
   }
 
@@ -114,7 +114,7 @@ export class GroupService {
       .from('teachers')
       .select('*')
       .eq('tenantId', tenantId)
-      .order("name", { ascending: true });
+      .order('name', { ascending: true });
 
     return data;
   }

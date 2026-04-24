@@ -1,4 +1,4 @@
-import { AttendanceStatus, FieldType, PlayerHistoryType, Role } from "./constants";
+import { AttendanceStatus, FieldType, PlayerHistoryType, Role } from './constants';
 
 export interface AuthObject {
   login: boolean;
@@ -341,7 +341,7 @@ export interface History {
   visible?: boolean;
   attendance?: {
     date: string;
-  }
+  };
   song?: Song;
 }
 

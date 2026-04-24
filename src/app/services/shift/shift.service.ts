@@ -18,18 +18,14 @@ export class ShiftService {
       .order('name', { ascending: true });
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Schichten", "danger");
+      Utils.showToast('Fehler beim Laden der Schichten', 'danger');
       throw error;
     }
 
-    return (data as any).map((shift: ShiftPlan) => {
-      return {
+    return (data as any).map((shift: ShiftPlan) => ({
         ...shift,
-        definition: (shift.definition || []).sort((a: ShiftDefinition, b: ShiftDefinition) => {
-          return a.index - b.index;
-        }),
-      }
-    });
+        definition: (shift.definition || []).sort((a: ShiftDefinition, b: ShiftDefinition) => a.index - b.index),
+      }));
   }
 
   async isShiftUsed(id: string): Promise<boolean> {
@@ -40,7 +36,7 @@ export class ShiftService {
       .limit(1);
 
     if (error) {
-      Utils.showToast("Fehler beim Überprüfen der Schichtverwendung", "danger");
+      Utils.showToast('Fehler beim Überprüfen der Schichtverwendung', 'danger');
       throw error;
     }
 
@@ -61,7 +57,7 @@ export class ShiftService {
       .single();
 
     if (error) {
-      Utils.showToast("Fehler beim Hinzufügen der Schicht", "danger");
+      Utils.showToast('Fehler beim Hinzufügen der Schicht', 'danger');
       throw error;
     }
 
@@ -75,7 +71,7 @@ export class ShiftService {
       .match({ id: shift.id });
 
     if (error) {
-      Utils.showToast("Fehler beim Aktualisieren der Schicht", "danger");
+      Utils.showToast('Fehler beim Aktualisieren der Schicht', 'danger');
       throw error;
     }
   }
@@ -87,7 +83,7 @@ export class ShiftService {
       .match({ id });
 
     if (error) {
-      Utils.showToast("Fehler beim Löschen der Schicht", "danger");
+      Utils.showToast('Fehler beim Löschen der Schicht', 'danger');
       throw error;
     }
   }
@@ -101,7 +97,7 @@ export class ShiftService {
       .not('appId', 'is', null);
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Personen mit Schicht", "danger");
+      Utils.showToast('Fehler beim Laden der Personen mit Schicht', 'danger');
       throw error;
     }
 
@@ -127,7 +123,7 @@ export class ShiftService {
       .is('left', null);
 
     if (fetchError) {
-      Utils.showToast("Fehler beim Suchen der Personen in Ziel-Instanz", "danger");
+      Utils.showToast('Fehler beim Suchen der Personen in Ziel-Instanz', 'danger');
       throw fetchError;
     }
 
@@ -213,17 +209,17 @@ export class ShiftService {
     // Update each person attendance based on shift
     for (const pa of personAttendances) {
       const attendance = upcomingAttendances.find(a => a.id === pa.attendance_id);
-      if (!attendance) continue;
+      if (!attendance) {continue;}
 
       const attType = types.find(t => t.id === attendance.type_id);
-      if (!attType || attType.all_day) continue;
+      if (!attType || attType.all_day) {continue;}
 
       // Get shift data for this player
       const playerMapping = playerAppIdMap.find(p => p.id === pa.person_id);
-      if (!playerMapping) continue;
+      if (!playerMapping) {continue;}
 
       const playerShiftData = shiftData.find(sd => sd.appId === playerMapping.appId);
-      if (!playerShiftData) continue;
+      if (!playerShiftData) {continue;}
 
       const result = Utils.getStatusByShift(
         shift,

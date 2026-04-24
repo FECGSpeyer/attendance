@@ -12,13 +12,13 @@ import { Utils } from 'src/app/utilities/Utils';
 export class MembersPage implements OnInit {
   public players: Player[] = [];
   public playersFiltered: Player[] = [];
-  public searchTerm: string = '';
+  public searchTerm = '';
   public einteilungField: ExtraField | undefined;
-  public einteilungFilter: string = 'all';
+  public einteilungFilter = 'all';
   public einteilungOptions: string[] = [];
-  public isLoading: boolean = true;
+  public isLoading = true;
 
-  private initialized: boolean = false;
+  private initialized = false;
   private currentTenantId: number | undefined;
 
   constructor(public db: DbService) {
@@ -99,7 +99,7 @@ export class MembersPage implements OnInit {
     // Apply einteilung filter
     if (this.einteilungFilter !== 'all' && this.einteilungField) {
       filtered = filtered.filter((player: Player) =>
-        player.additional_fields?.['einteilung'] === this.einteilungFilter
+        player.additional_fields?.einteilung === this.einteilungFilter
       );
     }
 

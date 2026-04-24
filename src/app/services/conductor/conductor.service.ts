@@ -11,7 +11,7 @@ export class ConductorService {
 
   async getConductors(mainGroupId: number, tenantId: number, all: boolean = false): Promise<Person[]> {
     if (!mainGroupId) {
-      throw new Error("Hauptgruppe nicht gefunden");
+      throw new Error('Hauptgruppe nicht gefunden');
     }
 
     const { data, error } = await supabase
@@ -20,11 +20,11 @@ export class ConductorService {
       .eq('instrument', mainGroupId)
       .is('pending', false)
       .eq('tenantId', tenantId)
-      .order("lastName");
+      .order('lastName');
 
     if (error) {
-      Utils.showToast("Fehler beim Laden der Hauptgruppen-Personen", "danger");
-      throw new Error("Fehler beim Laden der Personen");
+      Utils.showToast('Fehler beim Laden der Hauptgruppen-Personen', 'danger');
+      throw new Error('Fehler beim Laden der Personen');
     }
 
     return (all ? data : data.filter((c: any) => !c.left) as unknown as Person[])

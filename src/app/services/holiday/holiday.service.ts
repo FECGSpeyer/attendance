@@ -12,22 +12,18 @@ export class HolidayService {
     schoolHolidays: any[];
   }> {
     const holiday = new Holiday();
-    const start = dayjs().startOf("year").toDate();
-    const end = dayjs().add(1, "year").endOf("year").toDate();
+    const start = dayjs().startOf('year').toDate();
+    const end = dayjs().add(1, 'year').endOf('year').toDate();
 
-    const publicHolidays = (await holiday.getPublicHolidays("DE", start, end, `DE-${region}`)).map((h) => {
-      return {
+    const publicHolidays = (await holiday.getPublicHolidays('DE', start, end, `DE-${region}`)).map((h) => ({
         ...h,
         gone: dayjs(h.startDate).isBefore(dayjs(), 'day'),
-      };
-    });
+      }));
 
-    const schoolHolidays = (await holiday.getSchoolHolidays("DE", start, end, `DE-${region}`, "DE")).map((h) => {
-      return {
+    const schoolHolidays = (await holiday.getSchoolHolidays('DE', start, end, `DE-${region}`, 'DE')).map((h) => ({
         ...h,
         gone: dayjs(h.startDate).isBefore(dayjs(), 'day'),
-      };
-    });
+      }));
 
     return { publicHolidays, schoolHolidays };
   }

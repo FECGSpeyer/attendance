@@ -12,12 +12,12 @@ import { Router } from '@angular/router';
     standalone: false
 })
 export class TabsPage {
-  public isConductor: boolean = false;
-  public isHelper: boolean = false;
-  public isParent: boolean = false;
-  public isPlayer: boolean = false;
-  public showMembersTab: boolean = false;
-  public hasMultipleTenants: boolean = false;
+  public isConductor = false;
+  public isHelper = false;
+  public isParent = false;
+  public isPlayer = false;
+  public showMembersTab = false;
+  public hasMultipleTenants = false;
   readonly registeredGestures: registeredEffect[] = [];
 
   constructor(

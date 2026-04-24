@@ -12,7 +12,7 @@ import { Utils } from 'src/app/utilities/Utils';
     standalone: false
 })
 export class TypesPage implements OnInit {
-  public reorder: boolean = false;
+  public reorder = false;
 
   constructor(
     public db: DbService,

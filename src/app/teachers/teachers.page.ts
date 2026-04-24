@@ -15,7 +15,7 @@ import { Utils } from '../utilities/Utils';
 export class TeachersPage implements OnInit {
   teachers: Teacher[] = [];
   players: Player[] = [];
-  isAdmin: boolean = false;
+  isAdmin = false;
   selInstruments: number[] = [];
   instruments: Group[] = [];
 
@@ -35,24 +35,22 @@ export class TeachersPage implements OnInit {
   }
 
   async getTeachers() {
-    this.teachers = (await this.db.getTeachers()).map((t: Teacher) => {
-      return {
+    this.teachers = (await this.db.getTeachers()).map((t: Teacher) => ({
         ...t,
-        insNames: t.instruments.map((i: number) => this.db.groups().find((ins: Group) => ins.id === i).name).join(", "),
+        insNames: t.instruments.map((i: number) => this.db.groups().find((ins: Group) => ins.id === i).name).join(', '),
         playerCount: this.players.filter((p: Player) => p.teacher === t.id).length
-      };
-    });
+      }));
   }
 
   async addTeacher(name: string | number, instruments: number[], notes: string, number: string | number, pri: string, modal: IonModal) {
     if (String(name).length < 3 || instruments.length === 0) {
-      Utils.showToast("Bitte fülle alle Felder aus...", "danger");
+      Utils.showToast('Bitte fülle alle Felder aus...', 'danger');
 
       return;
     }
 
     await this.db.addTeacher({
-      name: String(name), instruments, notes, number: String(number), private: pri === "true",
+      name: String(name), instruments, notes, number: String(number), private: pri === 'true',
     });
 
     await modal.dismiss();

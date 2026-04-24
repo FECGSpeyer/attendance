@@ -20,9 +20,9 @@ const DEFAULT_ATT_FIELDS = ['Vorname', 'Nachname', 'Gruppe'];
 })
 
 export class ExportPage implements OnInit {
-  public type: string = "pdf";
+  public type = 'pdf';
   public players: Player[] = [];
-  public content: string = "player";
+  public content = 'player';
   public attendance: Attendance[] = [];
   public selectedFields: string[] = DEFAULT_PLAYER_FIELDS;
   public fields: string[] = [];
@@ -35,7 +35,7 @@ export class ExportPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.attendance = (await this.db.getAttendance(false, true)).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf("day")));
+    this.attendance = (await this.db.getAttendance(false, true)).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
     this.players = Utils.getModifiedPlayersForList(
       await this.db.getPlayers(),
       this.db.groups(),
@@ -61,7 +61,7 @@ export class ExportPage implements OnInit {
 
   onSegmentChange() {
     this.updateFields();
-    this.selectedFields = this.content === "player" ? [...DEFAULT_PLAYER_FIELDS] : [...DEFAULT_ATT_FIELDS];
+    this.selectedFields = this.content === 'player' ? [...DEFAULT_PLAYER_FIELDS] : [...DEFAULT_ATT_FIELDS];
   }
 
   handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
@@ -77,13 +77,13 @@ export class ExportPage implements OnInit {
     const alert = await this.alertController.create({
       header: 'Feld hinzufügen',
       inputs: [{
-        type: "text",
-        name: "field"
+        type: 'text',
+        name: 'field'
       }],
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Hinzufügen",
+        text: 'Hinzufügen',
         handler: (evt: any) => {
           this.selectedFields.push(evt.field);
         }
@@ -95,8 +95,8 @@ export class ExportPage implements OnInit {
 
   export() {
     const shortName: string = this.db.tenant().shortName;
-    if (this.content === "player") {
-      this.type === "pdf" ? this.exportPlayerPDF(shortName) : this.exportPlayerExcel(shortName);
+    if (this.content === 'player') {
+      this.type === 'pdf' ? this.exportPlayerPDF(shortName) : this.exportPlayerExcel(shortName);
     } else {
       this.exportType(shortName);
     }
@@ -152,8 +152,8 @@ export class ExportPage implements OnInit {
   async exportType(shortName: string) {
     let row = 1;
 
-    let attendance: Attendance[] = [...this.attendance].filter((att: Attendance) => Boolean(Object.keys(att.persons).length));
-    if (attendance.length > 8 && this.type === "pdf") {
+    const attendance: Attendance[] = [...this.attendance].filter((att: Attendance) => Boolean(Object.keys(att.persons).length));
+    if (attendance.length > 8 && this.type === 'pdf') {
       attendance.length = 8;
     }
     const attDates: string[] = [];
@@ -162,7 +162,7 @@ export class ExportPage implements OnInit {
 
     for (const att of attendance) {
       attDates.push(dayjs(att.date).format('DD.MM.YY'));
-      attPerc.push(String(att.percentage ? `${att.percentage}%` : ""));
+      attPerc.push(String(att.percentage ? `${att.percentage}%` : ''));
     }
 
     for (const player of this.players) {
@@ -172,7 +172,7 @@ export class ExportPage implements OnInit {
         if (att.persons.find((p) => p.person_id === player.id)) {
           attInfo.push(Utils.getAttText(att.persons.find((p) => p.person_id === player.id)));
         } else {
-          attInfo.push("");
+          attInfo.push('');
         }
       }
 
@@ -182,8 +182,8 @@ export class ExportPage implements OnInit {
 
     const header: string[] = ['', ...this.selectedFields, ...attDates.reverse()];
 
-    if (this.type === "excel") {
-      data.unshift(header)
+    if (this.type === 'excel') {
+      data.unshift(header);
       await this.exportAttExcel(data, shortName);
     } else {
       await this.exportAttPDF(data, header, shortName);
@@ -226,28 +226,28 @@ export class ExportPage implements OnInit {
         fontSize: 8,
       },
       didParseCell: (cellData: any) => {
-        if (cellData.cell.raw === "A") {
+        if (cellData.cell.raw === 'A') {
           cellData.cell.styles.fillColor = [178, 34, 34];
           cellData.cell.styles.textColor = [255, 255, 255];
-          cellData.cell.styles.halign = "center";
-        } else if (cellData.cell.raw === "X") {
+          cellData.cell.styles.halign = 'center';
+        } else if (cellData.cell.raw === 'X') {
           cellData.cell.styles.fillColor = [50, 205, 50];
           cellData.cell.styles.textColor = [255, 255, 255];
-          cellData.cell.styles.halign = "center";
-        } else if (cellData.cell.raw === "E") {
+          cellData.cell.styles.halign = 'center';
+        } else if (cellData.cell.raw === 'E') {
           cellData.cell.styles.fillColor = [255, 196, 9];
           cellData.cell.styles.textColor = [255, 255, 255];
-          cellData.cell.styles.halign = "center";
-        } else if (cellData.cell.raw === "L") {
+          cellData.cell.styles.halign = 'center';
+        } else if (cellData.cell.raw === 'L') {
           cellData.cell.styles.fillColor = [0, 191, 255];
           cellData.cell.styles.textColor = [255, 255, 255];
-          cellData.cell.styles.halign = "center";
-        } else if (cellData.cell.raw === "N") {
+          cellData.cell.styles.halign = 'center';
+        } else if (cellData.cell.raw === 'N') {
           cellData.cell.styles.fillColor = [220, 220, 220];
           cellData.cell.styles.textColor = [255, 255, 255];
-          cellData.cell.styles.halign = "center";
-        } else if (cellData.cell.raw?.toString().includes("%")) {
-          cellData.cell.styles.halign = "center";
+          cellData.cell.styles.halign = 'center';
+        } else if (cellData.cell.raw?.toString().includes('%')) {
+          cellData.cell.styles.halign = 'center';
         }
       },
     });
@@ -303,7 +303,7 @@ export class ExportPage implements OnInit {
 
   private formatAdditionalFieldValue(player: Player, field: ExtraField): string {
     const value = player.additional_fields?.[field.id];
-    if (value === undefined || value === null) return '';
+    if (value === undefined || value === null) {return '';}
 
     switch (field.type) {
       case FieldType.BOOLEAN:

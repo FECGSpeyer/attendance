@@ -17,7 +17,7 @@ import { Utils } from 'src/app/utilities/Utils';
 export class TypePage implements OnInit {
   @Input() isNew: boolean;
   public type: AttendanceType;
-  public isGeneral: boolean = false;
+  public isGeneral = false;
   public attendanceStatuses = [
     AttendanceStatus.Neutral,
     AttendanceStatus.Present,
@@ -38,11 +38,11 @@ export class TypePage implements OnInit {
 
   // Checklist configuration
   public checklistDeadlineOptions = CHECKLIST_DEADLINE_OPTIONS;
-  public newChecklistText: string = '';
+  public newChecklistText = '';
   public newChecklistDeadline: number | null = null;
   public customChecklistDeadline: number | null = null;
 
-  private originalType: string = '';  // JSON string of original type for comparison
+  private originalType = '';  // JSON string of original type for comparison
 
   // Browser/PWA: Warn before closing tab with unsaved changes
   @HostListener('window:beforeunload', ['$event'])
@@ -115,7 +115,7 @@ export class TypePage implements OnInit {
    * Check if there are unsaved changes
    */
   hasUnsavedChanges(): boolean {
-    if (!this.type || this.isNew) return false;
+    if (!this.type || this.isNew) {return false;}
     return JSON.stringify(this.type) !== this.originalType;
   }
 
@@ -132,7 +132,7 @@ export class TypePage implements OnInit {
   async navigateBack(): Promise<void> {
     if (this.hasUnsavedChanges()) {
       const shouldLeave = await this.confirmUnsavedChanges();
-      if (!shouldLeave) return;
+      if (!shouldLeave) {return;}
     }
     this.navController.back();
   }
@@ -178,9 +178,9 @@ export class TypePage implements OnInit {
     try {
       await this.db.updateAttendanceType(this.type.id, this.type);
       this.markAsSaved();
-      Utils.showToast("Anwesenheitstyp erfolgreich aktualisiert", "success");
+      Utils.showToast('Anwesenheitstyp erfolgreich aktualisiert', 'success');
     } catch (error) {
-      Utils.showToast("Fehler beim Aktualisieren des Anwesenheitstyps", "danger");
+      Utils.showToast('Fehler beim Aktualisieren des Anwesenheitstyps', 'danger');
     }
   }
 
@@ -191,19 +191,19 @@ export class TypePage implements OnInit {
 
     try {
       this.type = await this.db.addAttendanceType(this.type);
-      Utils.showToast("Anwesenheitstyp erfolgreich erstellt", "success");
+      Utils.showToast('Anwesenheitstyp erfolgreich erstellt', 'success');
       this.dismiss();
     } catch (error) {
-      Utils.showToast("Fehler beim Erstellen des Anwesenheitstyps", "danger");
+      Utils.showToast('Fehler beim Erstellen des Anwesenheitstyps', 'danger');
     }
   }
 
   validate(): boolean {
     if (!this.type.name || this.type.name.trim().length === 0) {
-      Utils.showToast("Bitte einen Namen für den Anwesenheitstyp eingeben.", "danger");
+      Utils.showToast('Bitte einen Namen für den Anwesenheitstyp eingeben.', 'danger');
       return false;
     } else if (this.type.available_statuses.length === 1) {
-      Utils.showToast("Bitte mindestens zwei verfügbare Anwesenheitsstatus auswählen.", "danger");
+      Utils.showToast('Bitte mindestens zwei verfügbare Anwesenheitsstatus auswählen.', 'danger');
       return false;
     }
 
@@ -215,17 +215,17 @@ export class TypePage implements OnInit {
       header: 'Anwesenheitstyp löschen',
       message: `Möchtest du den Anwesenheitstyp "${this.type.name}" wirklich löschen? Alle Anwesenheiten dieses Typs werden ebenfalls gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.`,
       buttons: [{
-        text: "Abbrechen",
+        text: 'Abbrechen',
       }, {
-        text: "Löschen",
-        role: "destructive",
+        text: 'Löschen',
+        role: 'destructive',
         handler: async () => {
           try {
             await this.db.deleteAttendanceType(this.type.id);
-            Utils.showToast("Anwesenheitstyp erfolgreich gelöscht", "success");
+            Utils.showToast('Anwesenheitstyp erfolgreich gelöscht', 'success');
             this.router.navigate(['/tabs/settings/general/types']);
           } catch (error) {
-            Utils.showToast("Fehler beim Löschen des Anwesenheitstyps", "danger");
+            Utils.showToast('Fehler beim Löschen des Anwesenheitstyps', 'danger');
           }
         }
       }]
@@ -265,8 +265,8 @@ export class TypePage implements OnInit {
   }
 
   calculateTime(field: FieldSelection, index: number) {
-    let minutesToAdd: number = 0;
-    let currentIndex: number = 0;
+    let minutesToAdd = 0;
+    let currentIndex = 0;
 
     while (currentIndex !== index) {
       minutesToAdd += Number(this.type.default_plan.fields[currentIndex].time);
@@ -274,7 +274,7 @@ export class TypePage implements OnInit {
     }
 
     const time: dayjs.Dayjs = dayjs(this.type.start_time).isValid() ? dayjs(this.type.start_time) : dayjs().hour(Number(this.type.start_time.substring(0, 2))).minute(Number(this.type.start_time.substring(3, 5)));
-    return `${time.add(minutesToAdd, "minute").format("HH:mm")} ${field.conductor ? `| ${field.conductor}` : ""}`;
+    return `${time.add(minutesToAdd, 'minute').format('HH:mm')} ${field.conductor ? `| ${field.conductor}` : ''}`;
   }
 
   async addExtraField(popover: IonPopover) {
@@ -283,19 +283,19 @@ export class TypePage implements OnInit {
     const alert = await this.alertController.create({
       header: 'Feld hinzufügen',
       inputs: [{
-        type: "textarea",
-        name: "field",
-        placeholder: "Freitext eingeben..."
+        type: 'textarea',
+        name: 'field',
+        placeholder: 'Freitext eingeben...'
       }],
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Hinzufügen",
+        text: 'Hinzufügen',
         handler: (evt: any) => {
           this.type.default_plan.fields.push({
             id: evt.field,
             name: evt.field,
-            time: "20",
+            time: '20',
           });
 
           this.calculateEnd();
@@ -309,12 +309,12 @@ export class TypePage implements OnInit {
   addSongPlaceholder(popover: IonPopover) {
     popover.dismiss();
 
-    const numberOfSongs = this.type.default_plan.fields.filter(f => f.id?.startsWith("song-placeholder-")).length;
+    const numberOfSongs = this.type.default_plan.fields.filter(f => f.id?.startsWith('song-placeholder-')).length;
 
     this.type.default_plan.fields.push({
       id: `song-placeholder-${numberOfSongs + 1}`,
       name: `Werk Platzhalter ${numberOfSongs + 1}`,
-      time: "20",
+      time: '20',
     });
 
     this.calculateEnd();
@@ -338,25 +338,25 @@ export class TypePage implements OnInit {
     const alert = await this.alertController.create({
       header: 'Feld bearbeiten',
       inputs: [{
-        label: "Programmpunkt",
-        type: "text",
-        name: "field",
+        label: 'Programmpunkt',
+        type: 'text',
+        name: 'field',
         value: clone.name,
-        placeholder: "Programmpunkt eingeben..."
+        placeholder: 'Programmpunkt eingeben...'
       }, {
-        label: "Ausführender",
-        type: "text",
-        name: "conductor",
+        label: 'Ausführender',
+        type: 'text',
+        name: 'conductor',
         value: clone.conductor,
-        placeholder: "Ausführenden eingeben..."
+        placeholder: 'Ausführenden eingeben...'
       }],
       buttons: [{
-        text: "Abbrechen"
+        text: 'Abbrechen'
       }, {
-        text: "Updaten",
+        text: 'Updaten',
         handler: (evt: any) => {
           if (!evt.field) {
-            alert.message = "Bitte einen Programmpunkt eingeben.";
+            alert.message = 'Bitte einen Programmpunkt eingeben.';
             return false;
           }
           field.name = evt.field;
@@ -375,11 +375,11 @@ export class TypePage implements OnInit {
       currentTime = dayjs().hour(Number(this.type.start_time.substring(0, 2))).minute(Number(this.type.start_time.substring(3, 5)));
     }
 
-    for (let field of this.type.default_plan.fields) {
-      currentTime = currentTime.add(parseInt(field.time), "minutes");
+    for (const field of this.type.default_plan.fields) {
+      currentTime = currentTime.add(parseInt(field.time), 'minutes');
     }
 
-    this.end = currentTime.format("YYYY-MM-DDTHH:mm");
+    this.end = currentTime.format('YYYY-MM-DDTHH:mm');
   }
 
   onAvailableStatusesChanged() {
@@ -390,7 +390,7 @@ export class TypePage implements OnInit {
 
   areSelectFieldsAvailable(): boolean {
     return Boolean(this.db.tenant().additional_fields?.length && this.db.tenant().additional_fields.find(field => field.type ===
-      "select"));
+      'select'));
   }
 
   onAdditionalFieldFilterChanged() {
@@ -433,7 +433,7 @@ export class TypePage implements OnInit {
     const parsed = parseInt(String(hours), 10);
 
     if (isNaN(parsed) || parsed < 0) {
-      Utils.showToast("Bitte geben Sie eine positive Ganzzahl ein", "danger");
+      Utils.showToast('Bitte geben Sie eine positive Ganzzahl ein', 'danger');
       return;
     }
 
@@ -442,12 +442,12 @@ export class TypePage implements OnInit {
     }
 
     if (this.type.reminders.includes(parsed)) {
-      Utils.showToast("Diese Erinnerung existiert bereits", "warning");
+      Utils.showToast('Diese Erinnerung existiert bereits', 'warning');
       return;
     }
 
     if (this.type.reminders.length >= 3) {
-      Utils.showToast("Maximal 3 Erinnerungen pro Typ möglich", "danger");
+      Utils.showToast('Maximal 3 Erinnerungen pro Typ möglich', 'danger');
       return;
     }
 
@@ -487,7 +487,7 @@ export class TypePage implements OnInit {
    * Check if a deadline value is one of the preset options
    */
   isPresetDeadline(hours: number | null): boolean {
-    if (hours === null || hours === -1) return true;
+    if (hours === null || hours === -1) {return true;}
     return CHECKLIST_DEADLINE_OPTIONS.some(opt => opt.hours === hours);
   }
 

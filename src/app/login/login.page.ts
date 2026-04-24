@@ -63,7 +63,7 @@ export class LoginPage implements OnInit {
     loading.dismiss();
 
     if (!res) {
-      Utils.showToast("Fehler bei der Anmeldung, versuche es erneut", "danger");
+      Utils.showToast('Fehler bei der Anmeldung, versuche es erneut', 'danger');
     }
   }
 
@@ -75,7 +75,7 @@ export class LoginPage implements OnInit {
     loading.dismiss();
 
     if (!res) {
-      Utils.showToast("Fehler bei der Anmeldung, versuche es erneut", "danger");
+      Utils.showToast('Fehler bei der Anmeldung, versuche es erneut', 'danger');
     }
   }
 
@@ -86,21 +86,21 @@ export class LoginPage implements OnInit {
 
   async forgotPassword() {
     const alert = await this.alertController.create({
-      header: "Passwort zurücksetzen",
+      header: 'Passwort zurücksetzen',
       inputs: [
         {
           name: 'email',
           value: this.registerCredentials.email,
           type: 'email',
-          placeholder: "E-Mail eingeben..."
+          placeholder: 'E-Mail eingeben...'
         }
       ],
       buttons: [
         {
-          text: "Abbrechen",
+          text: 'Abbrechen',
           role: 'cancel'
         }, {
-          text: "Zurücksetzen",
+          text: 'Zurücksetzen',
           handler: (values: any) => {
             this.db.resetPassword(values.email);
           }
@@ -113,41 +113,41 @@ export class LoginPage implements OnInit {
 
   async register() {
     const alert = await this.alertController.create({
-      header: "Registrieren",
+      header: 'Registrieren',
       inputs: [
         {
           name: 'email',
           type: 'email',
-          placeholder: "E-Mail eingeben...",
+          placeholder: 'E-Mail eingeben...',
           value: this.regCredentials.email
         },
         {
           name: 'password',
           type: 'password',
-          placeholder: "Passwort eingeben...",
+          placeholder: 'Passwort eingeben...',
           value: this.regCredentials.password
         },
         {
           name: 'passwordConfirm',
           type: 'password',
-          placeholder: "Passwort bestätigen...",
+          placeholder: 'Passwort bestätigen...',
           value: this.regCredentials.passwordConfirm
         }
       ],
       buttons: [
         {
-          text: "Abbrechen",
+          text: 'Abbrechen',
           role: 'cancel'
         }, {
-          text: "Registrieren",
+          text: 'Registrieren',
           handler: async (values: any) => {
             if (values.password !== values.passwordConfirm) {
-              Utils.showToast("Passwörter stimmen nicht überein", "danger");
+              Utils.showToast('Passwörter stimmen nicht überein', 'danger');
               return false;
             }
 
             if (!Utils.validateEmail(values.email)) {
-              Utils.showToast("Ungültige E-Mail-Adresse", "danger");
+              Utils.showToast('Ungültige E-Mail-Adresse', 'danger');
               return false;
             }
 
@@ -156,7 +156,7 @@ export class LoginPage implements OnInit {
             const res = await this.db.register(this.regCredentials.email, this.regCredentials.password);
 
             if (res) {
-              Utils.showToast("Registrierung erfolgreich, bitte bestätige deine E-Mail-Adresse.", "success");
+              Utils.showToast('Registrierung erfolgreich, bitte bestätige deine E-Mail-Adresse.', 'success');
             }
           }
         }

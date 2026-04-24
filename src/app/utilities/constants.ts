@@ -40,18 +40,18 @@ export enum AttendanceStatus {
 }
 
 export enum SupabaseTable {
-    CONDUCTORS = "conductors",
-    PLAYER = "player",
-    VIEWERS = "viewers",
+    CONDUCTORS = 'conductors',
+    PLAYER = 'player',
+    VIEWERS = 'viewers',
 }
 
 export enum DefaultAttendanceType {
-    ORCHESTRA = "orchestra",
-    CHOIR = "choir",
-    GENERAL = "general",
+    ORCHESTRA = 'orchestra',
+    CHOIR = 'choir',
+    GENERAL = 'general',
 }
 
-export const DEFAULT_IMAGE = "https://ionicframework.com/docs/img/demos/avatar.svg";
+export const DEFAULT_IMAGE = 'https://ionicframework.com/docs/img/demos/avatar.svg';
 
 export const ATTENDANCE_STATUS_MAPPING = {
     DEFAULT: {
@@ -123,18 +123,18 @@ export const ATTENDANCE_STATUS_MAPPING = {
 };
 
 export enum FieldType {
-    TEXT = "text",
-    TEXTAREA = "textarea",
-    NUMBER = "number",
-    DATE = "date",
-    BOOLEAN = "boolean",
-    SELECT = "select",
-    BFECG_CHURCH = "bfecg_church",
+    TEXT = 'text',
+    TEXTAREA = 'textarea',
+    NUMBER = 'number',
+    DATE = 'date',
+    BOOLEAN = 'boolean',
+    SELECT = 'select',
+    BFECG_CHURCH = 'bfecg_church',
 }
 
 export enum AttendanceViewMode {
-    CLICK = "click",
-    SELECT = "select",
+    CLICK = 'click',
+    SELECT = 'select',
 }
 
 export const CHECKLIST_DEADLINE_OPTIONS = [

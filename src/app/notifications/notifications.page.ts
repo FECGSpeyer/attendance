@@ -46,21 +46,21 @@ export class NotificationsPage implements OnInit, OnDestroy {
   }
 
   connectTelegram() {
-    window.open(`https://t.me/attendix_bot?start=${this.db.tenantUser().userId}`, "_blank");
+    window.open(`https://t.me/attendix_bot?start=${this.db.tenantUser().userId}`, '_blank');
   }
 
   async disconnectTelegram() {
     const alert = await this.alertController.create({
-      header: "Möchtest du die Verbidnung wirklich trennen?",
-      message: "Die Verbindung kann jederzeit wiederhergestellt werden",
+      header: 'Möchtest du die Verbidnung wirklich trennen?',
+      message: 'Die Verbindung kann jederzeit wiederhergestellt werden',
       buttons: [{
-        text: "Abbrechen",
+        text: 'Abbrechen',
       }, {
-        text: "Ja",
+        text: 'Ja',
         handler: async () => {
           await this.db.updateNotificationConfig({
             ...this.notificationConfig,
-            telegram_chat_id: "",
+            telegram_chat_id: '',
           });
         }
       }]

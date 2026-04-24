@@ -34,7 +34,7 @@ export class TeacherPage implements OnInit {
   async editTeacher() {
     await this.db.updateTeacher(this.editedTeacher, this.editedTeacher.id);
 
-    Utils.showToast("Lehrer erfolgreich geupdated!", "success");
+    Utils.showToast('Lehrer erfolgreich geupdated!', 'success');
 
     this.modalController.dismiss(true);
   }
