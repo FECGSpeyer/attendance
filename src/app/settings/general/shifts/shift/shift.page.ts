@@ -171,12 +171,16 @@ export class ShiftPage implements OnInit {
       }, {
         text: 'Nur Schichtplan',
         handler: async () => {
+          await alert.dismiss();
           await this.executeCopy(tenantId, false, playersWithShift);
+          return false;
         }
       }, {
         text: 'Mit Zuweisungen',
         handler: async () => {
+          await alert.dismiss();
           await this.executeCopy(tenantId, true, playersWithShift);
+          return false;
         }
       }]
     });
