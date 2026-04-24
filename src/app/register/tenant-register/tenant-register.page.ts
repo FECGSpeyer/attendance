@@ -161,13 +161,13 @@ export class TenantRegisterPage implements OnInit {
         additional_fields,
         instrument: this.selectedGroupId,
         hasTeacher: false,
-        playsSince: new Date().toISOString(),
+        playsSince: dayjs().startOf('day').utc(true).toISOString(),
         isCritical: false,
         isLeader: false,
         correctBirthday: true,
         history: [],
         tenantId: this.tenantData.id,
-        joined: new Date().toISOString(),
+        joined: dayjs().startOf('day').utc(true).toISOString(),
         notes: this.notes ?? '',
         self_register: true
       }, true, Role.APPLICANT, this.tenantData.id, this.password, this.tenantData.longName);

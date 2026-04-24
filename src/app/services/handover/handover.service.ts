@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Player, Tenant, PlayerHistoryEntry } from '../../utilities/interfaces';
 import { DEFAULT_IMAGE, PlayerHistoryType, Role } from '../../utilities/constants';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 export interface HandoverResult {
   newPerson: Player;
@@ -30,7 +34,7 @@ export class HandoverService {
       lastName: person.lastName,
       instrument: groupId,
       img: person.img || DEFAULT_IMAGE,
-      joined: new Date().toISOString(),
+      joined: dayjs().startOf('day').utc(true).toISOString(),
       email: person.email,
       appId: person.appId,
       hasTeacher: person.hasTeacher,

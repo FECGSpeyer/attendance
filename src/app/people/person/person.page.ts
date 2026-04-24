@@ -28,9 +28,9 @@ export class PersonPage implements OnInit, AfterViewInit {
     firstName: '',
     lastName: '',
     instrument: 1,
-    playsSince: new Date().toISOString(),
-    joined: new Date().toISOString(),
-    birthday: new Date().toISOString(),
+    playsSince: dayjs().startOf('day').utc(true).toISOString(),
+    joined: dayjs().startOf('day').utc(true).toISOString(),
+    birthday: dayjs().startOf('day').utc(true).toISOString(),
     hasTeacher: false,
     isLeader: false,
     notes: '',
@@ -640,31 +640,43 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.onChange();
     this.player.correctBirthday = true;
 
+    // Normalize to UTC midnight to avoid timezone shifts
+    const dateStr = String(value);
+    this.player.birthday = dayjs(dateStr).startOf('day').utc(true).toISOString();
+
     if (parseInt(this.birthdayString.substring(0, 2), 10) !== dayjs(this.player.birthday).date()) {
       modal.dismiss();
     }
 
-    this.birthdayString = this.formatDate(String(value));
+    this.birthdayString = this.formatDate(this.player.birthday);
   }
 
   onPlaysSinceChange(value: string | string[], modal: IonModal) {
     this.onChange();
 
+    // Normalize to UTC midnight to avoid timezone shifts
+    const dateStr = String(value);
+    this.player.playsSince = dayjs(dateStr).startOf('day').utc(true).toISOString();
+
     if (parseInt(this.playsSinceString.substring(0, 2), 10) !== dayjs(this.player.playsSince).date()) {
       modal.dismiss();
     }
 
-    this.playsSinceString = this.formatDate(String(value));
+    this.playsSinceString = this.formatDate(this.player.playsSince);
   }
 
   onJoinedChange(value: string | string[], modal: IonModal) {
     this.onChange();
 
+    // Normalize to UTC midnight to avoid timezone shifts
+    const dateStr = String(value);
+    this.player.joined = dayjs(dateStr).startOf('day').utc(true).toISOString();
+
     if (parseInt(this.joinedString.substring(0, 2), 10) !== dayjs(this.player.joined).date()) {
       modal.dismiss();
     }
 
-    this.joinedString = this.formatDate(String(value));
+    this.joinedString = this.formatDate(this.player.joined);
   }
 
   async removeHis(his: PlayerHistoryEntry, slider: IonItemSliding) {
@@ -1119,11 +1131,13 @@ export class PersonPage implements OnInit, AfterViewInit {
   onExtraFieldDateChange(fieldId: string, value: string | string[], modal: IonModal) {
     this.onChange();
 
-    if (parseInt((this.player.additional_fields[fieldId] as string).substring(0, 2), 10) !== dayjs(String(value)).date()) {
+    // Normalize to UTC midnight to avoid timezone shifts
+    const dateStr = String(value);
+    this.player.additional_fields[fieldId] = dayjs(dateStr).startOf('day').utc(true).toISOString();
+
+    if (parseInt((this.player.additional_fields[fieldId] as string).substring(0, 2), 10) !== dayjs(this.player.additional_fields[fieldId] as string).date()) {
       modal.dismiss();
     }
-
-    this.player.additional_fields[fieldId] = String(value);
   }
 
   onShiftChange() {

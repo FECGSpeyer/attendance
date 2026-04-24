@@ -2449,7 +2449,7 @@ export class DbService {
       lastName: person.lastName,
       instrument: groupId,
       img: person.img || DEFAULT_IMAGE,
-      joined: new Date().toISOString(),
+      joined: dayjs().startOf('day').utc(true).toISOString(),
       email: person.email,
       appId: person.appId,
       hasTeacher: person.hasTeacher,
