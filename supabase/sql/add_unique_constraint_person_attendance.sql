@@ -2,13 +2,17 @@
 -- This ensures that each person can only appear once per attendance
 
 -- First, remove any existing duplicates before adding the constraint
--- Keep the first entry (lowest id) for each duplicate combination
+-- Keep entries with changed_at (edited entries), delete NULL entries first
+-- If both have changed_at or both are NULL, keep the one with lower id
 WITH ranked_duplicates AS (
   SELECT
     id,
     ROW_NUMBER() OVER (
       PARTITION BY attendance_id, person_id
-      ORDER BY id ASC
+      ORDER BY
+        CASE WHEN changed_at IS NULL THEN 1 ELSE 0 END,  -- NULL last (will be deleted)
+        changed_at DESC NULLS LAST,                       -- Most recently changed first
+        id ASC                                            -- Tie-breaker: keep lowest id
     ) as rn
   FROM person_attendances
 )

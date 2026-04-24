@@ -13,7 +13,9 @@ Beim Reaktivieren von pausierten Personen konnten diese mehrfach in der selben A
 ### 2. Database-Level Fix
 - **Datei**: `supabase/sql/add_unique_constraint_person_attendance.sql`
   - Fügt einen UNIQUE constraint auf `(attendance_id, person_id)` in der `person_attendances` Tabelle hinzu
-  - Entfernt automatisch existierende Duplikate vor dem Hinzufügen des Constraints (behält jeweils den ersten Eintrag basierend auf ID)
+  - Entfernt automatisch existierende Duplikate vor dem Hinzufügen des Constraints
+  - Behält bearbeitete Einträge (mit `changed_at`), löscht bevorzugt unbearbeitete Einträge (NULL)
+  - Bei mehreren bearbeiteten Einträgen: Behält den zuletzt bearbeiteten
 
 ### 3. Error Handling
 - **Datei**: `src/app/services/attendance/attendance.service.ts`
