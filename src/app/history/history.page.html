@@ -186,12 +186,12 @@
         }
         <ion-item>
           <ion-label position="stacked">Datum</ion-label>
-          @if (!dateManualInput) {
-            <ion-input readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
-          }
-          @if (dateManualInput) {
-            <ion-input [(ngModel)]="dateString" (ionBlur)="onDateManualInput()" placeholder="TT.MM.JJJJ"></ion-input>
-          }
+          <ion-input
+            [readonly]="!dateManualInput"
+            [(ngModel)]="dateString"
+            (ionBlur)="dateManualInput ? onDateManualInput() : null"
+            [id]="!dateManualInput ? 'att-date-modal' : ''"
+            placeholder="TT.MM.JJJJ"></ion-input>
           <ion-button slot="end" fill="clear" (click)="dateManualInput = !dateManualInput">
             <ion-icon slot="icon-only" [name]="dateManualInput ? 'calendar-outline' : 'create-outline'"></ion-icon>
           </ion-button>
