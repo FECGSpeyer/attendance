@@ -250,6 +250,12 @@ export class AttendancePage implements OnInit {
     return players.filter((p: PersonAttendance) => p.status === AttendanceStatus.Late || p.status === AttendanceStatus.Present).length;
   }
 
+  getAttendedPlayersForGroup(groupName: string): number {
+    return this.players.filter((p: PersonAttendance) =>
+      p.groupName === groupName && (p.status === AttendanceStatus.Late || p.status === AttendanceStatus.Present)
+    ).length;
+  }
+
   async addNote(player: PersonAttendance, slider: IonItemSliding) {
     slider.close();
 

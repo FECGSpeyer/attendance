@@ -350,7 +350,7 @@
     @for (player of players; track player.id) {
       @if (player.firstOfInstrument) {
         <ion-item-divider color="primary" sticky="true">
-          <ion-label>{{ player.groupName }} ({{ player.instrumentLength }})</ion-label>
+          <ion-label>{{ player.groupName }} ({{ getAttendedPlayersForGroup(player.groupName) }}/{{ player.instrumentLength }})</ion-label>
         </ion-item-divider>
       }
       <ion-item-sliding #slider>
