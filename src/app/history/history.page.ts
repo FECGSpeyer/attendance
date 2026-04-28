@@ -229,35 +229,46 @@ export class HistoryPage implements OnInit {
   }
 
   async addHistoryEntry(modal: IonModal): Promise<void> {
-    if (this.selectedSongs.length) {
-      if (this.historyEntry.person_id === this.otherConductor) {
-        delete this.historyEntry.person_id;
-      }
-
-      const historyEntries: History[] = [];
-
-      for (const songId of this.selectedSongs) {
-        historyEntries.push({
-          ...this.historyEntry,
-          songId
-        });
-      }
-
-      await this.db.addHistoryEntry(historyEntries);
-
-      await modal.dismiss();
-
-      await this.getHistory();
-      this.selectedSongs = [];
-      this.historyEntry = {
-        songId: this.historyEntry.songId,
-        person_id: this.conductors[0].id,
-        date: this.historyEntry.date,
-      };
-      this.dateString = format(new Date(this.historyEntry.date), 'dd.MM.yyyy');
-    } else {
+    if (!this.selectedSongs.length) {
       Utils.showToast('Bitte wähle mindestens ein Werk an', 'danger');
+      return;
     }
+
+    // Validate date if in manual input mode
+    if (this.dateManualInput && this.dateString) {
+      const parsed = this.parseDateString(this.dateString);
+      if (!parsed) {
+        Utils.showToast('Ungültiges Datum. Bitte Format TT.MM.JJJJ verwenden.', 'danger');
+        return;
+      }
+      this.historyEntry.date = dayjs(parsed).startOf('day').utc(true).toISOString();
+    }
+
+    if (this.historyEntry.person_id === this.otherConductor) {
+      delete this.historyEntry.person_id;
+    }
+
+    const historyEntries: History[] = [];
+
+    for (const songId of this.selectedSongs) {
+      historyEntries.push({
+        ...this.historyEntry,
+        songId
+      });
+    }
+
+    await this.db.addHistoryEntry(historyEntries);
+
+    await modal.dismiss();
+
+    await this.getHistory();
+    this.selectedSongs = [];
+    this.historyEntry = {
+      songId: this.historyEntry.songId,
+      person_id: this.conductors[0].id,
+      date: this.historyEntry.date,
+    };
+    this.dateString = format(new Date(this.historyEntry.date), 'dd.MM.yyyy');
   }
 
   async remove(id: number, sliding: IonItemSliding) {

@@ -395,25 +395,40 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async addPerson(): Promise<void> {
+    // Validate required fields
+    if (!this.player.firstName || !this.player.lastName) {
+      Utils.showToast('Bitte gib den Vornamen und Nachnamen an.', 'danger');
+      return;
+    }
+
+    // Validate date fields
+    if (!this.validateDateFields()) {
+      return;
+    }
+
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
     loading.present();
-    if (this.player.firstName && this.player.lastName) {
-      try {
-        await this.db.addPlayer(this.player, Boolean(this.player.email), this.role);
-        this.modalController.dismiss();
-        Utils.showToast(`Die Person wurde erfolgreich hinzugefügt`, 'success');
-      } catch (error) {
-        Utils.showToast(`Fehler beim hinzufügen der Person: ${error.message ?? 'Unbekannter Fehler'}`, 'danger');
-      }
-    } else {
-      Utils.showToast('Bitte gib den Vornamen und Nachnamen an.', 'danger');
+
+    try {
+      await this.db.addPlayer(this.player, Boolean(this.player.email), this.role);
+      this.modalController.dismiss();
+      Utils.showToast(`Die Person wurde erfolgreich hinzugefügt`, 'success');
+    } catch (error) {
+      Utils.showToast(`Fehler beim hinzufügen der Person: ${error.message ?? 'Unbekannter Fehler'}`, 'danger');
     }
+
     loading.dismiss();
   }
 
   async updatePlayer(): Promise<void> {
+    // Validate email
     if (this.player.email?.length && this.player.email !== this.existingPlayer.email && !Utils.validateEmail(this.player.email)) {
       Utils.showToast('Bitte gib eine valide E-Mail Adresse ein...', 'danger');
+      return;
+    }
+
+    // Validate date fields
+    if (!this.validateDateFields()) {
       return;
     }
 
@@ -767,6 +782,55 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     return date;
+  }
+
+  private validateDateFields(): boolean {
+    // Validate birthday
+    if (this.birthdayManualInput && this.birthdayString) {
+      const parsed = this.parseDateString(this.birthdayString);
+      if (!parsed) {
+        Utils.showToast('Ungültiges Geburtsdatum. Bitte Format TT.MM.JJJJ verwenden.', 'danger');
+        return false;
+      }
+      // Update the ISO string if manual input is valid
+      this.player.birthday = dayjs(parsed).startOf('day').utc(true).toISOString();
+    }
+
+    // Validate playsSince
+    if (this.playsSinceManualInput && this.playsSinceString) {
+      const parsed = this.parseDateString(this.playsSinceString);
+      if (!parsed) {
+        Utils.showToast('Ungültiges Datum "Spielt seit". Bitte Format TT.MM.JJJJ verwenden.', 'danger');
+        return false;
+      }
+      this.player.playsSince = dayjs(parsed).startOf('day').utc(true).toISOString();
+    }
+
+    // Validate joined
+    if (this.joinedManualInput && this.joinedString) {
+      const parsed = this.parseDateString(this.joinedString);
+      if (!parsed) {
+        Utils.showToast('Ungültiges Datum "Beigetreten am". Bitte Format TT.MM.JJJJ verwenden.', 'danger');
+        return false;
+      }
+      this.player.joined = dayjs(parsed).startOf('day').utc(true).toISOString();
+    }
+
+    // Validate additional date fields
+    if (this.db.tenant().additional_fields?.length) {
+      for (const field of this.db.tenant().additional_fields) {
+        if (field.type === FieldType.DATE && this.extraFieldManualInput[field.id] && this.extraFieldDateStrings[field.id]) {
+          const parsed = this.parseDateString(this.extraFieldDateStrings[field.id]);
+          if (!parsed) {
+            Utils.showToast(`Ungültiges Datum im Feld "${field.name}". Bitte Format TT.MM.JJJJ verwenden.`, 'danger');
+            return false;
+          }
+          this.player.additional_fields[field.id] = dayjs(parsed).startOf('day').utc(true).toISOString();
+        }
+      }
+    }
+
+    return true;
   }
 
   async removeHis(his: PlayerHistoryEntry, slider: IonItemSliding) {

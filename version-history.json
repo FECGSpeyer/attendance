@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "3.13.7",
+          "date": "28.4.2026",
+          "changes": [
+            "✅ Datumsvalidierung: Beim Speichern/Updaten von Personen und Werkhistorie werden alle Datumsfelder validiert.",
+            "🔒 Verhindert ungültige Datumsangaben: Format TT.MM.JJJJ wird erzwungen, ungültige Daten (z.B. 31.02.2020) werden erkannt.",
+            "📝 Klare Fehlermeldungen: Bei ungültigem Datum wird genau angegeben, welches Feld betroffen ist."
+          ]
+        },
+        {
           "version": "3.13.6",
           "date": "28.4.2026",
           "changes": [
