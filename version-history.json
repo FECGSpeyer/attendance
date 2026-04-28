@@ -1,7 +1,7 @@
     {
       "versions": [
         {
-          "version": "3.13.8",
+          "version": "3.13.6",
           "date": "28.4.2026",
           "changes": [
             "📅 Native Datumseingabe: Alle Datumsfelder verwenden jetzt native HTML5 date inputs mit DD.MM.YYYY Anzeige.",
