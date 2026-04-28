@@ -53,9 +53,9 @@ export class PersonPage implements OnInit, AfterViewInit {
   public birthdayString: string = format(new Date(), 'dd.MM.yyyy');
   public playsSinceString: string = format(new Date(), 'dd.MM.yyyy');
   public joinedString: string = format(new Date(), 'dd.MM.yyyy');
-  public birthdayManualInput = false;
-  public playsSinceManualInput = false;
-  public joinedManualInput = false;
+  public birthdayManualInput = true;
+  public playsSinceManualInput = true;
+  public joinedManualInput = true;
   public extraFieldManualInput: { [key: string]: boolean } = {};
   public extraFieldDateStrings: { [key: string]: string } = {};
   public max: string = new Date().toISOString();
@@ -152,7 +152,7 @@ export class PersonPage implements OnInit, AfterViewInit {
           // Initialize date strings for manual input
           if (field.type === FieldType.DATE && this.existingPlayer.additional_fields[field.id]) {
             this.extraFieldDateStrings[field.id] = this.getExtraFieldDateString(this.existingPlayer.additional_fields[field.id] as string);
-            this.extraFieldManualInput[field.id] = false;
+            this.extraFieldManualInput[field.id] = true; // Default to manual input
           }
         }
       }
@@ -187,7 +187,7 @@ export class PersonPage implements OnInit, AfterViewInit {
           // Initialize date strings for manual input
           if (field.type === FieldType.DATE && this.player.additional_fields[field.id]) {
             this.extraFieldDateStrings[field.id] = this.getExtraFieldDateString(this.player.additional_fields[field.id] as string);
-            this.extraFieldManualInput[field.id] = false;
+            this.extraFieldManualInput[field.id] = true; // Default to manual input
           }
         }
       }

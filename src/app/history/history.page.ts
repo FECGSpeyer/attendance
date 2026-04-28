@@ -35,7 +35,7 @@ export class HistoryPage implements OnInit {
   selectedSongs: number[] = [];
   public songSearchTerm = '';
   public filteredSongs: Song[] = [];
-  public dateManualInput = false;
+  public dateManualInput = true;
 
   constructor(
     private modalController: ModalController,
