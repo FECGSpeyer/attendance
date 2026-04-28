@@ -190,7 +190,7 @@
             [readonly]="!dateManualInput"
             [(ngModel)]="dateString"
             (ionBlur)="dateManualInput ? onDateManualInput() : null"
-            [id]="!dateManualInput ? 'att-date-modal' : ''"
+            id="att-date-modal"
             placeholder="TT.MM.JJJJ"></ion-input>
           <ion-button slot="end" fill="clear" (click)="dateManualInput = !dateManualInput">
             <ion-icon slot="icon-only" [name]="dateManualInput ? 'calendar-outline' : 'create-outline'"></ion-icon>

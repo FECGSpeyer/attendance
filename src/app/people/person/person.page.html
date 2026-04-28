@@ -137,7 +137,7 @@
                   [readonly]="!birthdayManualInput"
                   [(ngModel)]="birthdayString"
                   (ionBlur)="birthdayManualInput ? onBirthdayManualInput() : null"
-                  [id]="!birthdayManualInput ? 'date-modal' : ''"
+                  id="date-modal"
                   placeholder="TT.MM.JJJJ"></ion-input>
                 @if (!readOnly) {
                   <ion-button slot="end" fill="clear" (click)="birthdayManualInput = !birthdayManualInput">
@@ -165,7 +165,7 @@
                   [readonly]="!playsSinceManualInput"
                   [(ngModel)]="playsSinceString"
                   (ionBlur)="playsSinceManualInput ? onPlaysSinceManualInput() : null"
-                  [id]="!playsSinceManualInput ? 'plays-modal' : ''"
+                  id="plays-modal"
                   placeholder="TT.MM.JJJJ"></ion-input>
                 @if (!readOnly) {
                   <ion-button slot="end" fill="clear" (click)="playsSinceManualInput = !playsSinceManualInput">
@@ -193,7 +193,7 @@
                   [readonly]="!joinedManualInput"
                   [(ngModel)]="joinedString"
                   (ionBlur)="joinedManualInput ? onJoinedManualInput() : null"
-                  [id]="!joinedManualInput ? 'joined-modal' : ''"
+                  id="joined-modal"
                   placeholder="TT.MM.JJJJ"></ion-input>
                 @if (!readOnly) {
                   <ion-button slot="end" fill="clear" (click)="joinedManualInput = !joinedManualInput">
@@ -502,7 +502,7 @@
               [value]="extraFieldManualInput[field.id] ? extraFieldDateStrings[field.id] : getExtraFieldDateString(player.additional_fields[field.id])"
               (ngModelChange)="extraFieldDateStrings[field.id] = $event"
               (ionBlur)="extraFieldManualInput[field.id] ? onExtraFieldManualInput(field.id) : null"
-              [id]="!extraFieldManualInput[field.id] ? 'extra-field-date-' + field.id : ''"
+              [id]="'extra-field-date-' + field.id"
               placeholder="TT.MM.JJJJ"></ion-input>
             @if (!readOnly) {
               <ion-button slot="end" fill="clear" (click)="toggleExtraFieldManualInput(field.id)">
