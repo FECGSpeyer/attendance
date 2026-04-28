@@ -132,13 +132,30 @@
             <ion-col>
               <ion-item [color]="!existingPlayer || player.correctBirthday || readOnly ? '' : 'warning'">
                 <ion-label position="stacked">Geburtsdatum</ion-label>
-                <input
-                  type="date"
+                <ion-input
+                  readonly
                   [disabled]="readOnly"
-                  [value]="player.birthday?.substring(0, 10)"
-                  [max]="max.substring(0, 10)"
-                  (change)="onNativeDateChange('birthday', $any($event.target).value)"
-                  class="date-input" />
+                  [value]="formatDateForDisplay(player.birthday)"
+                  placeholder="TT.MM.JJJJ"></ion-input>
+                <ion-button
+                  fill="clear"
+                  slot="end"
+                  [disabled]="readOnly"
+                  id="birthday-trigger">
+                  <ion-icon name="calendar-outline"></ion-icon>
+                </ion-button>
+                <ion-modal #birthdayModal trigger="birthday-trigger" class="dateModal">
+                  <ng-template>
+                    <ion-datetime
+                      presentation="date"
+                      [value]="player.birthday"
+                      [max]="max"
+                      [preferWheel]="true"
+                      locale="de-DE"
+                      [firstDayOfWeek]="1"
+                      (ionChange)="onBirthdayChange($event.detail.value, birthdayModal)"></ion-datetime>
+                  </ng-template>
+                </ion-modal>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -147,13 +164,30 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
-                <input
-                  type="date"
+                <ion-input
+                  readonly
                   [disabled]="readOnly"
-                  [value]="player.playsSince?.substring(0, 10)"
-                  [max]="max.substring(0, 10)"
-                  (change)="onNativeDateChange('playsSince', $any($event.target).value)"
-                  class="date-input" />
+                  [value]="formatDateForDisplay(player.playsSince)"
+                  placeholder="TT.MM.JJJJ"></ion-input>
+                <ion-button
+                  fill="clear"
+                  slot="end"
+                  [disabled]="readOnly"
+                  id="playsSince-trigger">
+                  <ion-icon name="calendar-outline"></ion-icon>
+                </ion-button>
+                <ion-modal #playsSinceModal trigger="playsSince-trigger" class="dateModal">
+                  <ng-template>
+                    <ion-datetime
+                      presentation="date"
+                      [value]="player.playsSince"
+                      [max]="max"
+                      [preferWheel]="true"
+                      locale="de-DE"
+                      [firstDayOfWeek]="1"
+                      (ionChange)="onPlaysSinceChange($event.detail.value, playsSinceModal)"></ion-datetime>
+                  </ng-template>
+                </ion-modal>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -162,13 +196,30 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Beigetreten am</ion-label>
-                <input
-                  type="date"
+                <ion-input
+                  readonly
                   [disabled]="readOnly"
-                  [value]="player.joined?.substring(0, 10)"
-                  [max]="max.substring(0, 10)"
-                  (change)="onNativeDateChange('joined', $any($event.target).value)"
-                  class="date-input" />
+                  [value]="formatDateForDisplay(player.joined)"
+                  placeholder="TT.MM.JJJJ"></ion-input>
+                <ion-button
+                  fill="clear"
+                  slot="end"
+                  [disabled]="readOnly"
+                  id="joined-trigger">
+                  <ion-icon name="calendar-outline"></ion-icon>
+                </ion-button>
+                <ion-modal #joinedModal trigger="joined-trigger" class="dateModal">
+                  <ng-template>
+                    <ion-datetime
+                      presentation="date"
+                      [value]="player.joined"
+                      [max]="max"
+                      [preferWheel]="true"
+                      locale="de-DE"
+                      [firstDayOfWeek]="1"
+                      (ionChange)="onJoinedChange($event.detail.value, joinedModal)"></ion-datetime>
+                  </ng-template>
+                </ion-modal>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -458,13 +509,30 @@
               [(ngModel)]="player.additional_fields[field.id]"></ion-toggle>
             } @else if (field.type === fieldTypes.DATE) {
             <ion-label position="stacked">{{ field.name }}</ion-label>
-            <input
-              type="date"
+            <ion-input
+              readonly
               [disabled]="readOnly"
-              [value]="$any(player.additional_fields[field.id])?.substring(0, 10)"
-              [max]="max.substring(0, 10)"
-              (change)="onNativeDateChange('extra-' + field.id, $any($event.target).value)"
-              class="date-input" />
+              [value]="formatDateForDisplay($any(player.additional_fields[field.id]))"
+              placeholder="TT.MM.JJJJ"></ion-input>
+            <ion-button
+              fill="clear"
+              slot="end"
+              [disabled]="readOnly"
+              [id]="'extraDate-trigger-' + field.id">
+              <ion-icon name="calendar-outline"></ion-icon>
+            </ion-button>
+            <ion-modal #extraDateModal [trigger]="'extraDate-trigger-' + field.id" class="dateModal">
+              <ng-template>
+                <ion-datetime
+                  presentation="date"
+                  [value]="player.additional_fields[field.id]"
+                  [max]="max"
+                  [preferWheel]="true"
+                  locale="de-DE"
+                  [firstDayOfWeek]="1"
+                  (ionChange)="onExtraFieldDateChange(field.id, $event.detail.value, extraDateModal)"></ion-datetime>
+              </ng-template>
+            </ion-modal>
             } @else if (field.type === fieldTypes.SELECT) {
             <ion-select [(ngModel)]="player.additional_fields[field.id]" [disabled]="readOnly" (ionChange)="onChange()"
               [label]="field.name">

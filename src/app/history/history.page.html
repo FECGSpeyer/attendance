@@ -186,11 +186,27 @@
         }
         <ion-item>
           <ion-label position="stacked">Datum</ion-label>
-          <input
-            type="date"
-            [value]="historyEntry.date?.substring(0, 10)"
-            (change)="onNativeDateChange($any($event.target).value)"
-            class="date-input" />
+          <ion-input
+            readonly
+            [value]="formatDate(historyEntry.date)"
+            placeholder="TT.MM.JJJJ"></ion-input>
+          <ion-button
+            fill="clear"
+            slot="end"
+            id="historyDate-trigger">
+            <ion-icon name="calendar-outline"></ion-icon>
+          </ion-button>
+          <ion-modal #dateModal trigger="historyDate-trigger" class="dateModal">
+            <ng-template>
+              <ion-datetime
+                presentation="date"
+                [value]="historyEntry.date"
+                [preferWheel]="true"
+                locale="de-DE"
+                [firstDayOfWeek]="1"
+                (ionChange)="onDateChanged($event.detail.value, dateModal)"></ion-datetime>
+            </ng-template>
+          </ion-modal>
         </ion-item>
         <ion-button (click)="addHistoryEntry(addHisModal)" expand="block">Hinzufügen</ion-button>
       </ion-content>

@@ -7,20 +7,3 @@ ion-modal.dateModal {
   ion-modal.dateModal ion-datetime {
     height: 382px;
   }
-
-  .date-input {
-    width: 100%;
-    padding: 10px 0;
-    border: none;
-    background: transparent;
-    font-size: 16px;
-    color: var(--ion-text-color);
-    font-family: inherit;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-
-    &::-webkit-calendar-picker-indicator {
-      cursor: pointer;
-    }
-  }

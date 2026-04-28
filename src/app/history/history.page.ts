@@ -126,14 +126,6 @@ export class HistoryPage implements OnInit {
     this.dateString = this.formatDate(String(value));
   }
 
-  onNativeDateChange(value: string) {
-    if (!value) return;
-
-    const date = new Date(value);
-    this.historyEntry.date = dayjs(date).startOf('day').utc(true).toISOString();
-    this.dateString = this.formatDate(this.historyEntry.date);
-  }
-
   filter(): History[] {
     if (this.searchTerm === '') {
       return this.history;

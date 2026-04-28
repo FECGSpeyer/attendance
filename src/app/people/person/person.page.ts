@@ -667,31 +667,6 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.birthdayString = this.formatDate(this.player.birthday);
   }
 
-  onNativeDateChange(field: string, value: string) {
-    if (!value) return;
-
-    const date = new Date(value);
-    const isoString = dayjs(date).startOf('day').utc(true).toISOString();
-    const formatted = this.formatDate(isoString);
-
-    if (field === 'birthday') {
-      this.player.birthday = isoString;
-      this.birthdayString = formatted;
-      this.player.correctBirthday = true;
-    } else if (field === 'playsSince') {
-      this.player.playsSince = isoString;
-      this.playsSinceString = formatted;
-    } else if (field === 'joined') {
-      this.player.joined = isoString;
-      this.joinedString = formatted;
-    } else if (field.startsWith('extra-')) {
-      const fieldId = field.substring(6);
-      this.player.additional_fields[fieldId] = isoString;
-    }
-
-    this.onChange();
-  }
-
   onPlaysSinceChange(value: string | string[], modal: IonModal) {
     this.onChange();
 
