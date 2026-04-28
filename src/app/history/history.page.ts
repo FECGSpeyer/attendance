@@ -6,7 +6,6 @@ import dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
 import { Attendance, FieldSelection, History, Person, Song } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
-import { ElementRef, ViewChild } from '@angular/core';
 
 interface GroupedHistory { date: string; parts: History[] };
 
@@ -18,8 +17,6 @@ interface GroupedHistory { date: string; parts: History[] };
 })
 
 export class HistoryPage implements OnInit {
-  @ViewChild('datePicker') datePicker: ElementRef<HTMLInputElement>;
-
   date: string = new Date().toISOString();
   public dateString: string = format(new Date(), 'dd.MM.yyyy');
   conductors: Person[] = [];
@@ -135,26 +132,6 @@ export class HistoryPage implements OnInit {
     const date = new Date(value);
     this.historyEntry.date = dayjs(date).startOf('day').utc(true).toISOString();
     this.dateString = this.formatDate(this.historyEntry.date);
-  }
-
-  onManualDateInput(event: any) {
-    const value = event.target.value?.trim();
-    if (!value) return;
-
-    // Parse DD.MM.YYYY format
-    const match = value.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-    if (!match) return;
-
-    const day = parseInt(match[1], 10);
-    const month = parseInt(match[2], 10);
-    const year = parseInt(match[3], 10);
-
-    // Validate date
-    if (month < 1 || month > 12 || day < 1 || day > 31) return;
-
-    // Convert to YYYY-MM-DD format and update
-    const dateString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    this.onNativeDateChange(dateString);
   }
 
   filter(): History[] {

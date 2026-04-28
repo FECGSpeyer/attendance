@@ -8,7 +8,7 @@ ion-modal ion-datetime {
   height: 382px;
 }
 
-.native-date-input {
+.date-input {
   width: 100%;
   padding: 10px 0;
   border: none;
@@ -16,9 +16,16 @@ ion-modal ion-datetime {
   font-size: 16px;
   color: var(--ion-text-color);
   font-family: inherit;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 
   &:disabled {
     opacity: 0.5;
+  }
+
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
   }
 }
 

@@ -5,7 +5,9 @@
       "Bash(git restore:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(git status *)"
+      "Bash(git status *)",
+      "Bash(git reset *)",
+      "Bash(npm run *)"
     ]
   }
 }

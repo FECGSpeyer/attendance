@@ -186,22 +186,11 @@
         }
         <ion-item>
           <ion-label position="stacked">Datum</ion-label>
-          <ion-input
-            [value]="formatDate(historyEntry.date)"
-            (ionInput)="onManualDateInput($event)"
-            placeholder="TT.MM.JJJJ"></ion-input>
-          <ion-button
-            fill="clear"
-            slot="end"
-            (click)="datePicker.showPicker()">
-            <ion-icon name="calendar-outline"></ion-icon>
-          </ion-button>
           <input
-            #datePicker
             type="date"
             [value]="historyEntry.date?.substring(0, 10)"
             (change)="onNativeDateChange($any($event.target).value)"
-            style="position: absolute; opacity: 0; pointer-events: none;" />
+            class="date-input" />
         </ion-item>
         <ion-button (click)="addHistoryEntry(addHisModal)" expand="block">Hinzufügen</ion-button>
       </ion-content>

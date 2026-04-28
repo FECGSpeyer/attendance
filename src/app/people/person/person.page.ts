@@ -366,33 +366,6 @@ export class PersonPage implements OnInit, AfterViewInit {
     return this.formatDate(isoString);
   }
 
-  onManualDateInput(field: string, event: any) {
-    const value = event.target.value?.trim();
-    if (!value) return;
-
-    // Parse DD.MM.YYYY format
-    const match = value.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-    if (!match) return;
-
-    const day = parseInt(match[1], 10);
-    const month = parseInt(match[2], 10);
-    const year = parseInt(match[3], 10);
-
-    // Validate date
-    if (month < 1 || month > 12 || day < 1 || day > 31) return;
-
-    // Convert to YYYY-MM-DD format and update
-    const dateString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    this.onNativeDateChange(field, dateString);
-  }
-
-  openExtraDatePicker(fieldId: string) {
-    const picker = document.getElementById(`datePicker-${fieldId}`) as HTMLInputElement;
-    if (picker) {
-      picker.showPicker();
-    }
-  }
-
   async dismiss(data?: any): Promise<void> {
     if (this.hasChanges) {
       const alert = await this.alertController.create({
