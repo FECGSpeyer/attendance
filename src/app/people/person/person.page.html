@@ -134,24 +134,23 @@
                 <ion-label position="stacked">Geburtsdatum</ion-label>
                 <ion-input
                   [disabled]="readOnly"
-                  [readonly]="!birthdayManualInput"
-                  [(ngModel)]="birthdayString"
-                  (ionBlur)="birthdayManualInput ? onBirthdayManualInput() : null"
-                  id="date-modal"
+                  [value]="formatDateForDisplay(player.birthday)"
+                  (ionInput)="onManualDateInput('birthday', $event)"
                   placeholder="TT.MM.JJJJ"></ion-input>
-                @if (!readOnly) {
-                  <ion-button slot="end" fill="clear" (click)="birthdayManualInput = !birthdayManualInput">
-                    <ion-icon slot="icon-only" [name]="birthdayManualInput ? 'calendar-outline' : 'create-outline'"></ion-icon>
-                  </ion-button>
-                }
-                <ion-modal class="dateModal" #birthdayModal trigger="date-modal">
-                  <ng-template>
-                    <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
-                      [(ngModel)]="player.birthday"
-                      (ionChange)="onBirthdayChange(dateTimePickerBirthday.value, birthdayModal)" presentation="date"
-                      #dateTimePickerBirthday></ion-datetime>
-                  </ng-template>
-                </ion-modal>
+                <ion-button
+                  fill="clear"
+                  slot="end"
+                  [disabled]="readOnly"
+                  (click)="birthdayPicker.showPicker()">
+                  <ion-icon name="calendar-outline"></ion-icon>
+                </ion-button>
+                <input
+                  #birthdayPicker
+                  type="date"
+                  [value]="player.birthday?.substring(0, 10)"
+                  [max]="max.substring(0, 10)"
+                  (change)="onNativeDateChange('birthday', $any($event.target).value)"
+                  style="position: absolute; opacity: 0; pointer-events: none;" />
               </ion-item>
             </ion-col>
           </ion-row>
@@ -162,24 +161,23 @@
                 <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
                 <ion-input
                   [disabled]="readOnly"
-                  [readonly]="!playsSinceManualInput"
-                  [(ngModel)]="playsSinceString"
-                  (ionBlur)="playsSinceManualInput ? onPlaysSinceManualInput() : null"
-                  id="plays-modal"
+                  [value]="formatDateForDisplay(player.playsSince)"
+                  (ionInput)="onManualDateInput('playsSince', $event)"
                   placeholder="TT.MM.JJJJ"></ion-input>
-                @if (!readOnly) {
-                  <ion-button slot="end" fill="clear" (click)="playsSinceManualInput = !playsSinceManualInput">
-                    <ion-icon slot="icon-only" [name]="playsSinceManualInput ? 'calendar-outline' : 'create-outline'"></ion-icon>
-                  </ion-button>
-                }
-                <ion-modal class="dateModal" #playsSinceModal trigger="plays-modal">
-                  <ng-template>
-                    <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
-                      [(ngModel)]="player.playsSince"
-                      (ionChange)="onPlaysSinceChange(dateTimePickerPlays.value, playsSinceModal)" presentation="date"
-                      #dateTimePickerPlays></ion-datetime>
-                  </ng-template>
-                </ion-modal>
+                <ion-button
+                  fill="clear"
+                  slot="end"
+                  [disabled]="readOnly"
+                  (click)="playsSincePicker.showPicker()">
+                  <ion-icon name="calendar-outline"></ion-icon>
+                </ion-button>
+                <input
+                  #playsSincePicker
+                  type="date"
+                  [value]="player.playsSince?.substring(0, 10)"
+                  [max]="max.substring(0, 10)"
+                  (change)="onNativeDateChange('playsSince', $any($event.target).value)"
+                  style="position: absolute; opacity: 0; pointer-events: none;" />
               </ion-item>
             </ion-col>
           </ion-row>
@@ -190,23 +188,23 @@
                 <ion-label position="stacked">Beigetreten am</ion-label>
                 <ion-input
                   [disabled]="readOnly"
-                  [readonly]="!joinedManualInput"
-                  [(ngModel)]="joinedString"
-                  (ionBlur)="joinedManualInput ? onJoinedManualInput() : null"
-                  id="joined-modal"
+                  [value]="formatDateForDisplay(player.joined)"
+                  (ionInput)="onManualDateInput('joined', $event)"
                   placeholder="TT.MM.JJJJ"></ion-input>
-                @if (!readOnly) {
-                  <ion-button slot="end" fill="clear" (click)="joinedManualInput = !joinedManualInput">
-                    <ion-icon slot="icon-only" [name]="joinedManualInput ? 'calendar-outline' : 'create-outline'"></ion-icon>
-                  </ion-button>
-                }
-                <ion-modal class="dateModal" #joinedModal trigger="joined-modal">
-                  <ng-template>
-                    <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
-                      [(ngModel)]="player.joined" (ionChange)="onJoinedChange(dateTimePickerJoined.value, joinedModal)"
-                      presentation="date" #dateTimePickerJoined></ion-datetime>
-                  </ng-template>
-                </ion-modal>
+                <ion-button
+                  fill="clear"
+                  slot="end"
+                  [disabled]="readOnly"
+                  (click)="joinedPicker.showPicker()">
+                  <ion-icon name="calendar-outline"></ion-icon>
+                </ion-button>
+                <input
+                  #joinedPicker
+                  type="date"
+                  [value]="player.joined?.substring(0, 10)"
+                  [max]="max.substring(0, 10)"
+                  (change)="onNativeDateChange('joined', $any($event.target).value)"
+                  style="position: absolute; opacity: 0; pointer-events: none;" />
               </ion-item>
             </ion-col>
           </ion-row>
@@ -498,25 +496,23 @@
             <ion-label position="stacked">{{ field.name }}</ion-label>
             <ion-input
               [disabled]="readOnly"
-              [readonly]="!extraFieldManualInput[field.id]"
-              [value]="extraFieldManualInput[field.id] ? extraFieldDateStrings[field.id] : getExtraFieldDateString(player.additional_fields[field.id])"
-              (ngModelChange)="extraFieldDateStrings[field.id] = $event"
-              (ionBlur)="extraFieldManualInput[field.id] ? onExtraFieldManualInput(field.id) : null"
-              [id]="'extra-field-date-' + field.id"
+              [value]="formatDateForDisplay($any(player.additional_fields[field.id]))"
+              (ionInput)="onManualDateInput('extra-' + field.id, $event)"
               placeholder="TT.MM.JJJJ"></ion-input>
-            @if (!readOnly) {
-              <ion-button slot="end" fill="clear" (click)="toggleExtraFieldManualInput(field.id)">
-                <ion-icon slot="icon-only" [name]="extraFieldManualInput[field.id] ? 'calendar-outline' : 'create-outline'"></ion-icon>
-              </ion-button>
-            }
-            <ion-modal class="dateModal" #extraFieldDateModal [trigger]="'extra-field-date-' + field.id">
-              <ng-template>
-                <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
-                  [(ngModel)]="player.additional_fields[field.id]"
-                  (ionChange)="onExtraFieldDateChange(field.id, extraFieldDatePicker.value, extraFieldDateModal)"
-                  presentation="date" #extraFieldDatePicker></ion-datetime>
-              </ng-template>
-            </ion-modal>
+            <ion-button
+              fill="clear"
+              slot="end"
+              [disabled]="readOnly"
+              (click)="openExtraDatePicker(field.id)">
+              <ion-icon name="calendar-outline"></ion-icon>
+            </ion-button>
+            <input
+              [id]="'datePicker-' + field.id"
+              type="date"
+              [value]="$any(player.additional_fields[field.id])?.substring(0, 10)"
+              [max]="max.substring(0, 10)"
+              (change)="onNativeDateChange('extra-' + field.id, $any($event.target).value)"
+              style="position: absolute; opacity: 0; pointer-events: none;" />
             } @else if (field.type === fieldTypes.SELECT) {
             <ion-select [(ngModel)]="player.additional_fields[field.id]" [disabled]="readOnly" (ionChange)="onChange()"
               [label]="field.name">

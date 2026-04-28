@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
 import { Attendance, FieldSelection, History, Person, Song } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
+import { ElementRef, ViewChild } from '@angular/core';
 
 interface GroupedHistory { date: string; parts: History[] };
 
@@ -17,6 +18,8 @@ interface GroupedHistory { date: string; parts: History[] };
 })
 
 export class HistoryPage implements OnInit {
+  @ViewChild('datePicker') datePicker: ElementRef<HTMLInputElement>;
+
   date: string = new Date().toISOString();
   public dateString: string = format(new Date(), 'dd.MM.yyyy');
   conductors: Person[] = [];
@@ -35,7 +38,6 @@ export class HistoryPage implements OnInit {
   selectedSongs: number[] = [];
   public songSearchTerm = '';
   public filteredSongs: Song[] = [];
-  public dateManualInput = true;
 
   constructor(
     private modalController: ModalController,
@@ -127,53 +129,32 @@ export class HistoryPage implements OnInit {
     this.dateString = this.formatDate(String(value));
   }
 
-  onDateManualInput(): void {
-    const parsed = this.parseDateString(this.dateString);
-    if (parsed) {
-      this.historyEntry.date = dayjs(parsed).startOf('day').utc(true).toISOString();
-      this.dateString = this.formatDate(this.historyEntry.date);
-    } else if (this.dateString.trim()) {
-      Utils.showToast('Ungültiges Datumsformat. Bitte TT.MM.JJJJ verwenden.', 'warning');
-      this.dateString = this.formatDate(this.historyEntry.date);
-    }
+  onNativeDateChange(value: string) {
+    if (!value) return;
+
+    const date = new Date(value);
+    this.historyEntry.date = dayjs(date).startOf('day').utc(true).toISOString();
+    this.dateString = this.formatDate(this.historyEntry.date);
   }
 
-  private parseDateString(dateStr: string): Date | null {
-    if (!dateStr || !dateStr.trim()) {
-      return null;
-    }
+  onManualDateInput(event: any) {
+    const value = event.target.value?.trim();
+    if (!value) return;
 
-    // Support multiple formats: TT.MM.JJJJ, T.M.JJJJ, TT.M.JJ, etc.
-    const parts = dateStr.trim().split('.');
-    if (parts.length !== 3) {
-      return null;
-    }
+    // Parse DD.MM.YYYY format
+    const match = value.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+    if (!match) return;
 
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10);
-    let year = parseInt(parts[2], 10);
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
 
-    // Handle 2-digit years
-    if (year < 100) {
-      year += year < 50 ? 2000 : 1900;
-    }
+    // Validate date
+    if (month < 1 || month > 12 || day < 1 || day > 31) return;
 
-    // Validate ranges
-    if (isNaN(day) || isNaN(month) || isNaN(year) ||
-        day < 1 || day > 31 ||
-        month < 1 || month > 12 ||
-        year < 1900 || year > new Date().getFullYear() + 100) {
-      return null;
-    }
-
-    const date = new Date(year, month - 1, day);
-
-    // Check if the date is valid (e.g., not 31.02.2020)
-    if (date.getDate() !== day || date.getMonth() !== month - 1 || date.getFullYear() !== year) {
-      return null;
-    }
-
-    return date;
+    // Convert to YYYY-MM-DD format and update
+    const dateString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    this.onNativeDateChange(dateString);
   }
 
   filter(): History[] {
@@ -232,16 +213,6 @@ export class HistoryPage implements OnInit {
     if (!this.selectedSongs.length) {
       Utils.showToast('Bitte wähle mindestens ein Werk an', 'danger');
       return;
-    }
-
-    // Validate date if in manual input mode
-    if (this.dateManualInput && this.dateString) {
-      const parsed = this.parseDateString(this.dateString);
-      if (!parsed) {
-        Utils.showToast('Ungültiges Datum. Bitte Format TT.MM.JJJJ verwenden.', 'danger');
-        return;
-      }
-      this.historyEntry.date = dayjs(parsed).startOf('day').utc(true).toISOString();
     }
 
     if (this.historyEntry.person_id === this.otherConductor) {

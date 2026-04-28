@@ -1,20 +1,13 @@
     {
       "versions": [
         {
-          "version": "3.13.7",
+          "version": "3.13.8",
           "date": "28.4.2026",
           "changes": [
-            "✅ Datumsvalidierung: Beim Speichern/Updaten von Personen und Werkhistorie werden alle Datumsfelder validiert.",
-            "🔒 Verhindert ungültige Datumsangaben: Format TT.MM.JJJJ wird erzwungen, ungültige Daten (z.B. 31.02.2020) werden erkannt.",
-            "📝 Klare Fehlermeldungen: Bei ungültigem Datum wird genau angegeben, welches Feld betroffen ist."
-          ]
-        },
-        {
-          "version": "3.13.6",
-          "date": "28.4.2026",
-          "changes": [
-            "⌨️ Manuelle Datumseingabe: Bei allen Datumsfeldern (Geburtsdatum, Beigetreten am, Spielt seit, Zusatzfelder, Werkhistorie) kann jetzt zwischen Kalenderauswahl und manueller Texteingabe (TT.MM.JJJJ) umgeschaltet werden.",
-            "🔄 Umschalten per Button: Icon-Button neben jedem Datumsfeld wechselt zwischen Kalender- und Texteingabe-Modus."
+            "📅 Native Datumseingabe: Alle Datumsfelder verwenden jetzt native HTML5 date inputs mit DD.MM.YYYY Anzeige.",
+            "📝 Manuelle Eingabe: Direkte Texteingabe im Format TT.MM.JJJJ möglich mit automatischer Validierung.",
+            "📆 Kalender-Button: Klick auf das Kalender-Icon öffnet den nativen Browser-Datepicker.",
+            "✨ Vereinfachte Bedienung: Keine redundanten Modi mehr - native Funktionalität für beste Nutzererfahrung."
           ]
         },
         {

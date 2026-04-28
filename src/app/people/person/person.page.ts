@@ -53,11 +53,6 @@ export class PersonPage implements OnInit, AfterViewInit {
   public birthdayString: string = format(new Date(), 'dd.MM.yyyy');
   public playsSinceString: string = format(new Date(), 'dd.MM.yyyy');
   public joinedString: string = format(new Date(), 'dd.MM.yyyy');
-  public birthdayManualInput = true;
-  public playsSinceManualInput = true;
-  public joinedManualInput = true;
-  public extraFieldManualInput: { [key: string]: boolean } = {};
-  public extraFieldDateStrings: { [key: string]: string } = {};
   public max: string = new Date().toISOString();
   public personAttendance: PersonAttendance[] = [];
   public upcomingAttendances: PersonAttendance[] = [];
@@ -149,11 +144,6 @@ export class PersonPage implements OnInit, AfterViewInit {
       if (this.db.tenant().additional_fields?.length) {
         for (const field of this.db.tenant().additional_fields) {
           this.existingPlayer.additional_fields[field.id] = this.existingPlayer.additional_fields[field.id] ?? this.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options);
-          // Initialize date strings for manual input
-          if (field.type === FieldType.DATE && this.existingPlayer.additional_fields[field.id]) {
-            this.extraFieldDateStrings[field.id] = this.getExtraFieldDateString(this.existingPlayer.additional_fields[field.id] as string);
-            this.extraFieldManualInput[field.id] = true; // Default to manual input
-          }
         }
       }
 
@@ -184,11 +174,6 @@ export class PersonPage implements OnInit, AfterViewInit {
 
         for (const field of this.db.tenant().additional_fields) {
           this.player.additional_fields[field.id] = this.player.additional_fields[field.id] ?? this.getFieldTypeDefaultValue(field.type, field.options);
-          // Initialize date strings for manual input
-          if (field.type === FieldType.DATE && this.player.additional_fields[field.id]) {
-            this.extraFieldDateStrings[field.id] = this.getExtraFieldDateString(this.player.additional_fields[field.id] as string);
-            this.extraFieldManualInput[field.id] = true; // Default to manual input
-          }
         }
       }
     }
@@ -370,6 +355,44 @@ export class PersonPage implements OnInit, AfterViewInit {
     return format(parseISO(value || new Date().toISOString()), 'dd.MM.yyyy');
   }
 
+  getDateInputValue(isoString: string): string {
+    // Convert ISO string to YYYY-MM-DD format for native date input
+    return isoString?.substring(0, 10) || '';
+  }
+
+  formatDateForDisplay(isoString: string): string {
+    // Convert ISO string to DD.MM.YYYY for display
+    if (!isoString) return '';
+    return this.formatDate(isoString);
+  }
+
+  onManualDateInput(field: string, event: any) {
+    const value = event.target.value?.trim();
+    if (!value) return;
+
+    // Parse DD.MM.YYYY format
+    const match = value.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+    if (!match) return;
+
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
+
+    // Validate date
+    if (month < 1 || month > 12 || day < 1 || day > 31) return;
+
+    // Convert to YYYY-MM-DD format and update
+    const dateString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    this.onNativeDateChange(field, dateString);
+  }
+
+  openExtraDatePicker(fieldId: string) {
+    const picker = document.getElementById(`datePicker-${fieldId}`) as HTMLInputElement;
+    if (picker) {
+      picker.showPicker();
+    }
+  }
+
   async dismiss(data?: any): Promise<void> {
     if (this.hasChanges) {
       const alert = await this.alertController.create({
@@ -401,11 +424,6 @@ export class PersonPage implements OnInit, AfterViewInit {
       return;
     }
 
-    // Validate date fields
-    if (!this.validateDateFields()) {
-      return;
-    }
-
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
     loading.present();
 
@@ -424,11 +442,6 @@ export class PersonPage implements OnInit, AfterViewInit {
     // Validate email
     if (this.player.email?.length && this.player.email !== this.existingPlayer.email && !Utils.validateEmail(this.player.email)) {
       Utils.showToast('Bitte gib eine valide E-Mail Adresse ein...', 'danger');
-      return;
-    }
-
-    // Validate date fields
-    if (!this.validateDateFields()) {
       return;
     }
 
@@ -681,6 +694,31 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.birthdayString = this.formatDate(this.player.birthday);
   }
 
+  onNativeDateChange(field: string, value: string) {
+    if (!value) return;
+
+    const date = new Date(value);
+    const isoString = dayjs(date).startOf('day').utc(true).toISOString();
+    const formatted = this.formatDate(isoString);
+
+    if (field === 'birthday') {
+      this.player.birthday = isoString;
+      this.birthdayString = formatted;
+      this.player.correctBirthday = true;
+    } else if (field === 'playsSince') {
+      this.player.playsSince = isoString;
+      this.playsSinceString = formatted;
+    } else if (field === 'joined') {
+      this.player.joined = isoString;
+      this.joinedString = formatted;
+    } else if (field.startsWith('extra-')) {
+      const fieldId = field.substring(6);
+      this.player.additional_fields[fieldId] = isoString;
+    }
+
+    this.onChange();
+  }
+
   onPlaysSinceChange(value: string | string[], modal: IonModal) {
     this.onChange();
 
@@ -707,130 +745,6 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     this.joinedString = this.formatDate(this.player.joined);
-  }
-
-  onBirthdayManualInput() {
-    const parsed = this.parseDateString(this.birthdayString);
-    if (parsed) {
-      this.player.birthday = dayjs(parsed).startOf('day').utc(true).toISOString();
-      this.birthdayString = this.formatDate(this.player.birthday);
-      this.player.correctBirthday = true;
-      this.onChange();
-    } else if (this.birthdayString.trim()) {
-      Utils.showToast('Ungültiges Datumsformat. Bitte TT.MM.JJJJ verwenden.', 'warning');
-      this.birthdayString = this.formatDate(this.player.birthday);
-    }
-  }
-
-  onPlaysSinceManualInput() {
-    const parsed = this.parseDateString(this.playsSinceString);
-    if (parsed) {
-      this.player.playsSince = dayjs(parsed).startOf('day').utc(true).toISOString();
-      this.playsSinceString = this.formatDate(this.player.playsSince);
-      this.onChange();
-    } else if (this.playsSinceString.trim()) {
-      Utils.showToast('Ungültiges Datumsformat. Bitte TT.MM.JJJJ verwenden.', 'warning');
-      this.playsSinceString = this.formatDate(this.player.playsSince);
-    }
-  }
-
-  onJoinedManualInput() {
-    const parsed = this.parseDateString(this.joinedString);
-    if (parsed) {
-      this.player.joined = dayjs(parsed).startOf('day').utc(true).toISOString();
-      this.joinedString = this.formatDate(this.player.joined);
-      this.onChange();
-    } else if (this.joinedString.trim()) {
-      Utils.showToast('Ungültiges Datumsformat. Bitte TT.MM.JJJJ verwenden.', 'warning');
-      this.joinedString = this.formatDate(this.player.joined);
-    }
-  }
-
-  private parseDateString(dateStr: string): Date | null {
-    if (!dateStr || !dateStr.trim()) {
-      return null;
-    }
-
-    // Support multiple formats: TT.MM.JJJJ, T.M.JJJJ, TT.M.JJ, etc.
-    const parts = dateStr.trim().split('.');
-    if (parts.length !== 3) {
-      return null;
-    }
-
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10);
-    let year = parseInt(parts[2], 10);
-
-    // Handle 2-digit years
-    if (year < 100) {
-      year += year < 50 ? 2000 : 1900;
-    }
-
-    // Validate ranges
-    if (isNaN(day) || isNaN(month) || isNaN(year) ||
-        day < 1 || day > 31 ||
-        month < 1 || month > 12 ||
-        year < 1900 || year > new Date().getFullYear() + 100) {
-      return null;
-    }
-
-    const date = new Date(year, month - 1, day);
-
-    // Check if the date is valid (e.g., not 31.02.2020)
-    if (date.getDate() !== day || date.getMonth() !== month - 1 || date.getFullYear() !== year) {
-      return null;
-    }
-
-    return date;
-  }
-
-  private validateDateFields(): boolean {
-    // Validate birthday
-    if (this.birthdayManualInput && this.birthdayString) {
-      const parsed = this.parseDateString(this.birthdayString);
-      if (!parsed) {
-        Utils.showToast('Ungültiges Geburtsdatum. Bitte Format TT.MM.JJJJ verwenden.', 'danger');
-        return false;
-      }
-      // Update the ISO string if manual input is valid
-      this.player.birthday = dayjs(parsed).startOf('day').utc(true).toISOString();
-    }
-
-    // Validate playsSince
-    if (this.playsSinceManualInput && this.playsSinceString) {
-      const parsed = this.parseDateString(this.playsSinceString);
-      if (!parsed) {
-        Utils.showToast('Ungültiges Datum "Spielt seit". Bitte Format TT.MM.JJJJ verwenden.', 'danger');
-        return false;
-      }
-      this.player.playsSince = dayjs(parsed).startOf('day').utc(true).toISOString();
-    }
-
-    // Validate joined
-    if (this.joinedManualInput && this.joinedString) {
-      const parsed = this.parseDateString(this.joinedString);
-      if (!parsed) {
-        Utils.showToast('Ungültiges Datum "Beigetreten am". Bitte Format TT.MM.JJJJ verwenden.', 'danger');
-        return false;
-      }
-      this.player.joined = dayjs(parsed).startOf('day').utc(true).toISOString();
-    }
-
-    // Validate additional date fields
-    if (this.db.tenant().additional_fields?.length) {
-      for (const field of this.db.tenant().additional_fields) {
-        if (field.type === FieldType.DATE && this.extraFieldManualInput[field.id] && this.extraFieldDateStrings[field.id]) {
-          const parsed = this.parseDateString(this.extraFieldDateStrings[field.id]);
-          if (!parsed) {
-            Utils.showToast(`Ungültiges Datum im Feld "${field.name}". Bitte Format TT.MM.JJJJ verwenden.`, 'danger');
-            return false;
-          }
-          this.player.additional_fields[field.id] = dayjs(parsed).startOf('day').utc(true).toISOString();
-        }
-      }
-    }
-
-    return true;
   }
 
   async removeHis(his: PlayerHistoryEntry, slider: IonItemSliding) {
@@ -1288,30 +1202,9 @@ export class PersonPage implements OnInit, AfterViewInit {
     // Normalize to UTC midnight to avoid timezone shifts
     const dateStr = String(value);
     this.player.additional_fields[fieldId] = dayjs(dateStr).startOf('day').utc(true).toISOString();
-    this.extraFieldDateStrings[fieldId] = this.getExtraFieldDateString(this.player.additional_fields[fieldId] as string);
 
     if (parseInt((this.player.additional_fields[fieldId] as string).substring(0, 2), 10) !== dayjs(this.player.additional_fields[fieldId] as string).date()) {
       modal.dismiss();
-    }
-  }
-
-  toggleExtraFieldManualInput(fieldId: string) {
-    this.extraFieldManualInput[fieldId] = !this.extraFieldManualInput[fieldId];
-    if (this.extraFieldManualInput[fieldId]) {
-      // Initialize the string when switching to manual mode
-      this.extraFieldDateStrings[fieldId] = this.getExtraFieldDateString(this.player.additional_fields[fieldId] as string);
-    }
-  }
-
-  onExtraFieldManualInput(fieldId: string) {
-    const parsed = this.parseDateString(this.extraFieldDateStrings[fieldId]);
-    if (parsed) {
-      this.player.additional_fields[fieldId] = dayjs(parsed).startOf('day').utc(true).toISOString();
-      this.extraFieldDateStrings[fieldId] = this.getExtraFieldDateString(this.player.additional_fields[fieldId] as string);
-      this.onChange();
-    } else if (this.extraFieldDateStrings[fieldId]?.trim()) {
-      Utils.showToast('Ungültiges Datumsformat. Bitte TT.MM.JJJJ verwenden.', 'warning');
-      this.extraFieldDateStrings[fieldId] = this.getExtraFieldDateString(this.player.additional_fields[fieldId] as string);
     }
   }
 
