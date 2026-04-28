@@ -488,7 +488,7 @@ export class AttListPage implements OnInit {
   }
 
   showSongsSelection(): boolean {
-    return Boolean(this.db.attendanceTypes().find(type => type.id === this.type_id && type.manage_songs));
+    return !this.isGeneral && Boolean(this.db.attendanceTypes().find(type => type.id === this.type_id && type.manage_songs));
   }
 
   getCountText(att: Attendance) {

@@ -402,12 +402,14 @@
       </ion-button>
       <ion-popover #addFieldPopover trigger="add-field-trigger" triggerAction="click">
         <ng-template>
-          <ion-item (click)="addExtraField(addFieldPopover)">
+          <ion-item (click)="addExtraField(addFieldPopover)" [lines]="isGeneral ? 'none' : 'full'">
             <ion-label>Feld hinzufügen</ion-label>
           </ion-item>
-          <ion-item (click)="addSongPlaceholder(addFieldPopover)" lines="none">
-            <ion-label>Werk Platzhalter</ion-label>
-          </ion-item>
+          @if (!isGeneral) {
+            <ion-item (click)="addSongPlaceholder(addFieldPopover)" lines="none">
+              <ion-label>Werk Platzhalter</ion-label>
+            </ion-item>
+          }
         </ng-template>
       </ion-popover>
     </ion-list-header>
@@ -416,9 +418,11 @@
         <ion-label position="stacked">Ablaufplan Überschrift</ion-label>
         <ion-input helperText="Dieser Titel wird beim Exportieren eines Ablaufplans angezeigt. Falls eine Typ-Info vorhanden ist, wird diese in Klammern dahinter angezeigt. (z.B. Probenplan (Kantateprobe))" [(ngModel)]="type.planning_title"></ion-input>
       </ion-item>
-      <ion-item>
-        <ion-toggle helperText="Falls aktiviert, wird der Instanz-Name vor jedem Werk im Ablaufplan angezeigt." [(ngModel)]="type.planning_prefix_instance_name">Instanz-Name vor Werken</ion-toggle>
-      </ion-item>
+      @if (!isGeneral) {
+        <ion-item>
+          <ion-toggle helperText="Falls aktiviert, wird der Instanz-Name vor jedem Werk im Ablaufplan angezeigt." [(ngModel)]="type.planning_prefix_instance_name">Instanz-Name vor Werken</ion-toggle>
+        </ion-item>
+      }
       <ion-item>
         <ion-label>Start</ion-label>
         <ion-datetime-button datetime="datetimestartplan"></ion-datetime-button>

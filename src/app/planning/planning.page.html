@@ -72,10 +72,12 @@
           <ion-item (click)="addNoteField(addPopover)">
             <ion-label>Notizfeld hinzufügen</ion-label>
           </ion-item>
-          <ion-item (click)="addCurrentSongs(addPopover)">
-            <ion-label>Aktuelle Werke hinzufügen</ion-label>
-          </ion-item>
-          @if (songs.length) {
+          @if (!isGeneral) {
+            <ion-item (click)="addCurrentSongs(addPopover)">
+              <ion-label>Aktuelle Werke hinzufügen</ion-label>
+            </ion-item>
+          }
+          @if (songs.length && !isGeneral) {
             <ion-item lines="none">
               <ion-select [interfaceOptions]="customModalOptions" interface="modal" label="Werk hinzufügen"
                 multiple="false" (ionDismiss)="onAddSong($event.target.value, addPopover)">
@@ -114,7 +116,7 @@
             <ion-item>
               <ion-label (click)="changeField(field)">
                 <h2>{{ field.name }}</h2>
-                @if (field.songId) {
+                @if (field.songId && !isGeneral) {
                   <h3 class="danger">{{ getMissingGroups(field.songId) }}</h3>
                 }
                 @if (!field.id.includes('noteFld')) {

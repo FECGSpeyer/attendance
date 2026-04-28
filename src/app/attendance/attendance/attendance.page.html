@@ -153,7 +153,7 @@
     </ion-accordion-group>
   </ion-item-group>
 
-  @if (manageSongs) {
+  @if (manageSongs && !isGeneral) {
     <ion-item-group>
       <ion-accordion-group>
         <ion-accordion value="songs">
@@ -303,7 +303,7 @@
                 <ion-item>
                   <ion-label>
                     <h2>{{ field.name }}</h2>
-                    @if (field.songId) {
+                    @if (field.songId && !isGeneral) {
                       <h3 class="danger">{{ getMissingGroups(field.songId) }}</h3>
                     }
                     <h3>{{ calculateTime(field, i) }}</h3>

@@ -36,6 +36,7 @@ export class PlanningPage implements OnInit {
   public planConductors: string[] = [];
   public groupCategories: GroupCategory[];
   public sharePlan = false;
+  public isGeneral = false;
   public customModalOptions = {
     header: 'Werk hinzufügen',
     breakpoints: [0, 0.7, 1],
@@ -53,6 +54,7 @@ export class PlanningPage implements OnInit {
   trackByFieldId = (_: number, field: FieldSelection): string => field.id;
 
   async ngOnInit() {
+    this.isGeneral = this.db.tenant().type === 'general';
     this.songs = await this.db.getSongs();
     this.groupCategories = await this.db.getGroupCategories();
     this.conductors = (await this.db.getConductors()).filter((con: Person) => !con.left);

@@ -1,6 +1,17 @@
     {
       "versions": [
         {
+          "version": "3.13.3",
+          "date": "28.4.2026",
+          "changes": [
+            "✨ Ablaufpläne für 'general' Instanzen: Ablaufpläne sind jetzt auch für Instanzen vom Typ 'general' verfügbar.",
+            "🎵 Werke-Features ausgeblendet: Alle werke-relevanten Optionen werden bei 'general' Instanzen konsequent ausgeblendet (Werke verwalten, Werk-Platzhalter, Aktuelle Werke hinzufügen, Instanz-Name vor Werken).",
+            "📋 Anwesenheiten aufgeräumt: Werke-Sektion wird beim Erstellen und Bearbeiten von Anwesenheiten in 'general' Instanzen nicht mehr angezeigt.",
+            "🎯 Ablaufplan-Erstellung: Werk-bezogene Optionen sind nur noch für Nicht-General-Instanzen verfügbar.",
+            "🗂️ Menü-Struktur: Ablaufpläne haben jetzt eine eigene 'Planung' Sektion im Mehr-Menü."
+          ]
+        },
+        {
           "version": "3.13.2",
           "date": "24.4.2026",
           "changes": [
