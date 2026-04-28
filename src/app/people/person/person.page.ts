@@ -53,6 +53,11 @@ export class PersonPage implements OnInit, AfterViewInit {
   public birthdayString: string = format(new Date(), 'dd.MM.yyyy');
   public playsSinceString: string = format(new Date(), 'dd.MM.yyyy');
   public joinedString: string = format(new Date(), 'dd.MM.yyyy');
+  public birthdayManualInput = false;
+  public playsSinceManualInput = false;
+  public joinedManualInput = false;
+  public extraFieldManualInput: { [key: string]: boolean } = {};
+  public extraFieldDateStrings: { [key: string]: string } = {};
   public max: string = new Date().toISOString();
   public personAttendance: PersonAttendance[] = [];
   public upcomingAttendances: PersonAttendance[] = [];
@@ -144,6 +149,11 @@ export class PersonPage implements OnInit, AfterViewInit {
       if (this.db.tenant().additional_fields?.length) {
         for (const field of this.db.tenant().additional_fields) {
           this.existingPlayer.additional_fields[field.id] = this.existingPlayer.additional_fields[field.id] ?? this.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options);
+          // Initialize date strings for manual input
+          if (field.type === FieldType.DATE && this.existingPlayer.additional_fields[field.id]) {
+            this.extraFieldDateStrings[field.id] = this.getExtraFieldDateString(this.existingPlayer.additional_fields[field.id] as string);
+            this.extraFieldManualInput[field.id] = false;
+          }
         }
       }
 
@@ -174,6 +184,11 @@ export class PersonPage implements OnInit, AfterViewInit {
 
         for (const field of this.db.tenant().additional_fields) {
           this.player.additional_fields[field.id] = this.player.additional_fields[field.id] ?? this.getFieldTypeDefaultValue(field.type, field.options);
+          // Initialize date strings for manual input
+          if (field.type === FieldType.DATE && this.player.additional_fields[field.id]) {
+            this.extraFieldDateStrings[field.id] = this.getExtraFieldDateString(this.player.additional_fields[field.id] as string);
+            this.extraFieldManualInput[field.id] = false;
+          }
         }
       }
     }
@@ -679,6 +694,81 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.joinedString = this.formatDate(this.player.joined);
   }
 
+  onBirthdayManualInput() {
+    const parsed = this.parseDateString(this.birthdayString);
+    if (parsed) {
+      this.player.birthday = dayjs(parsed).startOf('day').utc(true).toISOString();
+      this.birthdayString = this.formatDate(this.player.birthday);
+      this.player.correctBirthday = true;
+      this.onChange();
+    } else if (this.birthdayString.trim()) {
+      Utils.showToast('Ungültiges Datumsformat. Bitte TT.MM.JJJJ verwenden.', 'warning');
+      this.birthdayString = this.formatDate(this.player.birthday);
+    }
+  }
+
+  onPlaysSinceManualInput() {
+    const parsed = this.parseDateString(this.playsSinceString);
+    if (parsed) {
+      this.player.playsSince = dayjs(parsed).startOf('day').utc(true).toISOString();
+      this.playsSinceString = this.formatDate(this.player.playsSince);
+      this.onChange();
+    } else if (this.playsSinceString.trim()) {
+      Utils.showToast('Ungültiges Datumsformat. Bitte TT.MM.JJJJ verwenden.', 'warning');
+      this.playsSinceString = this.formatDate(this.player.playsSince);
+    }
+  }
+
+  onJoinedManualInput() {
+    const parsed = this.parseDateString(this.joinedString);
+    if (parsed) {
+      this.player.joined = dayjs(parsed).startOf('day').utc(true).toISOString();
+      this.joinedString = this.formatDate(this.player.joined);
+      this.onChange();
+    } else if (this.joinedString.trim()) {
+      Utils.showToast('Ungültiges Datumsformat. Bitte TT.MM.JJJJ verwenden.', 'warning');
+      this.joinedString = this.formatDate(this.player.joined);
+    }
+  }
+
+  private parseDateString(dateStr: string): Date | null {
+    if (!dateStr || !dateStr.trim()) {
+      return null;
+    }
+
+    // Support multiple formats: TT.MM.JJJJ, T.M.JJJJ, TT.M.JJ, etc.
+    const parts = dateStr.trim().split('.');
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    let year = parseInt(parts[2], 10);
+
+    // Handle 2-digit years
+    if (year < 100) {
+      year += year < 50 ? 2000 : 1900;
+    }
+
+    // Validate ranges
+    if (isNaN(day) || isNaN(month) || isNaN(year) ||
+        day < 1 || day > 31 ||
+        month < 1 || month > 12 ||
+        year < 1900 || year > new Date().getFullYear() + 100) {
+      return null;
+    }
+
+    const date = new Date(year, month - 1, day);
+
+    // Check if the date is valid (e.g., not 31.02.2020)
+    if (date.getDate() !== day || date.getMonth() !== month - 1 || date.getFullYear() !== year) {
+      return null;
+    }
+
+    return date;
+  }
+
   async removeHis(his: PlayerHistoryEntry, slider: IonItemSliding) {
     const alert = await this.alertController.create({
       header: 'Eintrag unwiderruflich entfernen?',
@@ -1134,9 +1224,30 @@ export class PersonPage implements OnInit, AfterViewInit {
     // Normalize to UTC midnight to avoid timezone shifts
     const dateStr = String(value);
     this.player.additional_fields[fieldId] = dayjs(dateStr).startOf('day').utc(true).toISOString();
+    this.extraFieldDateStrings[fieldId] = this.getExtraFieldDateString(this.player.additional_fields[fieldId] as string);
 
     if (parseInt((this.player.additional_fields[fieldId] as string).substring(0, 2), 10) !== dayjs(this.player.additional_fields[fieldId] as string).date()) {
       modal.dismiss();
+    }
+  }
+
+  toggleExtraFieldManualInput(fieldId: string) {
+    this.extraFieldManualInput[fieldId] = !this.extraFieldManualInput[fieldId];
+    if (this.extraFieldManualInput[fieldId]) {
+      // Initialize the string when switching to manual mode
+      this.extraFieldDateStrings[fieldId] = this.getExtraFieldDateString(this.player.additional_fields[fieldId] as string);
+    }
+  }
+
+  onExtraFieldManualInput(fieldId: string) {
+    const parsed = this.parseDateString(this.extraFieldDateStrings[fieldId]);
+    if (parsed) {
+      this.player.additional_fields[fieldId] = dayjs(parsed).startOf('day').utc(true).toISOString();
+      this.extraFieldDateStrings[fieldId] = this.getExtraFieldDateString(this.player.additional_fields[fieldId] as string);
+      this.onChange();
+    } else if (this.extraFieldDateStrings[fieldId]?.trim()) {
+      Utils.showToast('Ungültiges Datumsformat. Bitte TT.MM.JJJJ verwenden.', 'warning');
+      this.extraFieldDateStrings[fieldId] = this.getExtraFieldDateString(this.player.additional_fields[fieldId] as string);
     }
   }
 

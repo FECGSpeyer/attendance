@@ -35,6 +35,7 @@ export class HistoryPage implements OnInit {
   selectedSongs: number[] = [];
   public songSearchTerm = '';
   public filteredSongs: Song[] = [];
+  public dateManualInput = false;
 
   constructor(
     private modalController: ModalController,
@@ -124,6 +125,55 @@ export class HistoryPage implements OnInit {
     }
 
     this.dateString = this.formatDate(String(value));
+  }
+
+  onDateManualInput(): void {
+    const parsed = this.parseDateString(this.dateString);
+    if (parsed) {
+      this.historyEntry.date = dayjs(parsed).startOf('day').utc(true).toISOString();
+      this.dateString = this.formatDate(this.historyEntry.date);
+    } else if (this.dateString.trim()) {
+      Utils.showToast('Ungültiges Datumsformat. Bitte TT.MM.JJJJ verwenden.', 'warning');
+      this.dateString = this.formatDate(this.historyEntry.date);
+    }
+  }
+
+  private parseDateString(dateStr: string): Date | null {
+    if (!dateStr || !dateStr.trim()) {
+      return null;
+    }
+
+    // Support multiple formats: TT.MM.JJJJ, T.M.JJJJ, TT.M.JJ, etc.
+    const parts = dateStr.trim().split('.');
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    let year = parseInt(parts[2], 10);
+
+    // Handle 2-digit years
+    if (year < 100) {
+      year += year < 50 ? 2000 : 1900;
+    }
+
+    // Validate ranges
+    if (isNaN(day) || isNaN(month) || isNaN(year) ||
+        day < 1 || day > 31 ||
+        month < 1 || month > 12 ||
+        year < 1900 || year > new Date().getFullYear() + 100) {
+      return null;
+    }
+
+    const date = new Date(year, month - 1, day);
+
+    // Check if the date is valid (e.g., not 31.02.2020)
+    if (date.getDate() !== day || date.getMonth() !== month - 1 || date.getFullYear() !== year) {
+      return null;
+    }
+
+    return date;
   }
 
   filter(): History[] {

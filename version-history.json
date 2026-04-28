@@ -1,6 +1,14 @@
     {
       "versions": [
         {
+          "version": "3.13.6",
+          "date": "28.4.2026",
+          "changes": [
+            "⌨️ Manuelle Datumseingabe: Bei allen Datumsfeldern (Geburtsdatum, Beigetreten am, Spielt seit, Zusatzfelder, Werkhistorie) kann jetzt zwischen Kalenderauswahl und manueller Texteingabe (TT.MM.JJJJ) umgeschaltet werden.",
+            "🔄 Umschalten per Button: Icon-Button neben jedem Datumsfeld wechselt zwischen Kalender- und Texteingabe-Modus."
+          ]
+        },
+        {
           "version": "3.13.5",
           "date": "28.4.2026",
           "changes": [

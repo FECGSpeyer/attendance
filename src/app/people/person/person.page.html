@@ -132,7 +132,17 @@
             <ion-col>
               <ion-item [color]="!existingPlayer || player.correctBirthday || readOnly ? '' : 'warning'">
                 <ion-label position="stacked">Geburtsdatum</ion-label>
-                <ion-input [disabled]="readOnly" readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
+                @if (!birthdayManualInput) {
+                  <ion-input [disabled]="readOnly" readonly [(ngModel)]="birthdayString" id="date-modal"></ion-input>
+                }
+                @if (birthdayManualInput) {
+                  <ion-input [disabled]="readOnly" [(ngModel)]="birthdayString" (ionBlur)="onBirthdayManualInput()" placeholder="TT.MM.JJJJ"></ion-input>
+                }
+                @if (!readOnly) {
+                  <ion-button slot="end" fill="clear" (click)="birthdayManualInput = !birthdayManualInput">
+                    <ion-icon slot="icon-only" [name]="birthdayManualInput ? 'calendar-outline' : 'create-outline'"></ion-icon>
+                  </ion-button>
+                }
                 <ion-modal class="dateModal" #birthdayModal trigger="date-modal">
                   <ng-template>
                     <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
@@ -149,7 +159,17 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
-                <ion-input [disabled]="readOnly" readonly [(ngModel)]="playsSinceString" id="plays-modal"></ion-input>
+                @if (!playsSinceManualInput) {
+                  <ion-input [disabled]="readOnly" readonly [(ngModel)]="playsSinceString" id="plays-modal"></ion-input>
+                }
+                @if (playsSinceManualInput) {
+                  <ion-input [disabled]="readOnly" [(ngModel)]="playsSinceString" (ionBlur)="onPlaysSinceManualInput()" placeholder="TT.MM.JJJJ"></ion-input>
+                }
+                @if (!readOnly) {
+                  <ion-button slot="end" fill="clear" (click)="playsSinceManualInput = !playsSinceManualInput">
+                    <ion-icon slot="icon-only" [name]="playsSinceManualInput ? 'calendar-outline' : 'create-outline'"></ion-icon>
+                  </ion-button>
+                }
                 <ion-modal class="dateModal" #playsSinceModal trigger="plays-modal">
                   <ng-template>
                     <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
@@ -166,7 +186,17 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Beigetreten am</ion-label>
-                <ion-input [disabled]="readOnly" readonly [(ngModel)]="joinedString" id="joined-modal"></ion-input>
+                @if (!joinedManualInput) {
+                  <ion-input [disabled]="readOnly" readonly [(ngModel)]="joinedString" id="joined-modal"></ion-input>
+                }
+                @if (joinedManualInput) {
+                  <ion-input [disabled]="readOnly" [(ngModel)]="joinedString" (ionBlur)="onJoinedManualInput()" placeholder="TT.MM.JJJJ"></ion-input>
+                }
+                @if (!readOnly) {
+                  <ion-button slot="end" fill="clear" (click)="joinedManualInput = !joinedManualInput">
+                    <ion-icon slot="icon-only" [name]="joinedManualInput ? 'calendar-outline' : 'create-outline'"></ion-icon>
+                  </ion-button>
+                }
                 <ion-modal class="dateModal" #joinedModal trigger="joined-modal">
                   <ng-template>
                     <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
@@ -463,8 +493,18 @@
               [(ngModel)]="player.additional_fields[field.id]"></ion-toggle>
             } @else if (field.type === fieldTypes.DATE) {
             <ion-label position="stacked">{{ field.name }}</ion-label>
-            <ion-input [disabled]="readOnly" [value]="getExtraFieldDateString(player.additional_fields[field.id])"
-              [id]="'extra-field-date-' + field.id"></ion-input>
+            @if (!extraFieldManualInput[field.id]) {
+              <ion-input [disabled]="readOnly" readonly [value]="getExtraFieldDateString(player.additional_fields[field.id])"
+                [id]="'extra-field-date-' + field.id"></ion-input>
+            }
+            @if (extraFieldManualInput[field.id]) {
+              <ion-input [disabled]="readOnly" [(ngModel)]="extraFieldDateStrings[field.id]" (ionBlur)="onExtraFieldManualInput(field.id)" placeholder="TT.MM.JJJJ"></ion-input>
+            }
+            @if (!readOnly) {
+              <ion-button slot="end" fill="clear" (click)="toggleExtraFieldManualInput(field.id)">
+                <ion-icon slot="icon-only" [name]="extraFieldManualInput[field.id] ? 'calendar-outline' : 'create-outline'"></ion-icon>
+              </ion-button>
+            }
             <ion-modal class="dateModal" #extraFieldDateModal [trigger]="'extra-field-date-' + field.id">
               <ng-template>
                 <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
