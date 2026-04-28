@@ -186,17 +186,71 @@
                         </ion-header>
                         <ion-list [inset]="true">
                           <ion-item-group>
-                            <ion-item>
-                              <ion-select interface="modal" label="Werk(e)" multiple="true" [(ngModel)]="selectedSongs"
-                                #select>
-                                @for (song of songs; track song) {
-                                  <ion-select-option [value]="song.id">{{ song.number }} {{
-                                    song.name
-                                    }}
-                                  </ion-select-option>
+                            <ion-item button detail="true" id="song-select-trigger-att">
+                              <ion-label>
+                                <h2>Werk(e)</h2>
+                                @if (selectedSongs.length > 0) {
+                                  <p>{{ selectedSongs.length }} Werk(e) ausgewählt</p>
+                                } @else {
+                                  <p>Keine Werke ausgewählt</p>
                                 }
-                              </ion-select>
+                              </ion-label>
                             </ion-item>
+
+                            <ion-modal #songSelectModal trigger="song-select-trigger-att">
+                              <ng-template>
+                                <ion-header>
+                                  <ion-toolbar>
+                                    <ion-title>Werke auswählen</ion-title>
+                                    <ion-buttons slot="end">
+                                      <ion-button (click)="songSelectModal.dismiss()">
+                                        <ion-icon slot="icon-only" name="close"></ion-icon>
+                                      </ion-button>
+                                    </ion-buttons>
+                                  </ion-toolbar>
+                                  <ion-toolbar>
+                                    <ion-searchbar
+                                      [(ngModel)]="songSearchTerm"
+                                      (ionInput)="onSongSearch($event)"
+                                      (ionClear)="resetSongSearch()"
+                                      placeholder="Werk suchen..."
+                                      [debounce]="250">
+                                    </ion-searchbar>
+                                  </ion-toolbar>
+                                </ion-header>
+                                <ion-content color="light">
+                                  @if (filteredSongs.length === 0 && songSearchTerm) {
+                                    <ion-list [inset]="true">
+                                      <ion-item lines="none">
+                                        <ion-label class="ion-text-center" color="medium">
+                                          <p>Keine Werke gefunden</p>
+                                        </ion-label>
+                                      </ion-item>
+                                    </ion-list>
+                                  }
+                                  @if (filteredSongs.length > 0) {
+                                    <ion-list [inset]="true">
+                                      @for (song of filteredSongs; track song.id) {
+                                        <ion-item button detail="false" (click)="toggleSongSelection(song.id)">
+                                          <ion-checkbox
+                                            slot="start"
+                                            [checked]="selectedSongs.includes(song.id)"
+                                            (click)="$event.stopPropagation()">
+                                          </ion-checkbox>
+                                          <ion-label>
+                                            <h2>{{ song.prefix }}{{ song.number }} {{ song.name }}</h2>
+                                            @if (song.composer) {
+                                              <p>{{ song.composer }}</p>
+                                            }
+                                          </ion-label>
+                                        </ion-item>
+                                      }
+                                    </ion-list>
+                                  }
+                                </ion-content>
+                              </ng-template>
+                            </ion-modal>
+
                             <ion-item>
                               <ion-select label="Dirigent" (ionChange)="onConChange()"
                                 [(ngModel)]="historyEntry.person_id" #select multiple="false">

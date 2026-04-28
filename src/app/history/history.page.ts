@@ -33,6 +33,8 @@ export class HistoryPage implements OnInit {
   songs: Song[] = [];
   otherConductor = 9999999999;
   selectedSongs: number[] = [];
+  public songSearchTerm = '';
+  public filteredSongs: Song[] = [];
 
   constructor(
     private modalController: ModalController,
@@ -51,6 +53,7 @@ export class HistoryPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.songs = await this.db.getSongs();
+    this.filteredSongs = [...this.songs];
     this.selectedSongs = [this.songs[0].id];
     this.conductors = await this.db.getConductors(true);
     this.activeConductors = this.conductors.filter((con: Person) => !con.left);
@@ -234,4 +237,32 @@ export class HistoryPage implements OnInit {
     await alert.present();
   }
 
+  onSongSearch(event: any) {
+    const searchTerm = event.detail.value?.toLowerCase() || '';
+    this.songSearchTerm = searchTerm;
+
+    if (!searchTerm.trim()) {
+      this.filteredSongs = [...this.songs];
+      return;
+    }
+
+    this.filteredSongs = this.songs.filter(song => {
+      const songText = `${song.prefix || ''}${song.number} ${song.name}`.toLowerCase();
+      return songText.includes(searchTerm);
+    });
+  }
+
+  resetSongSearch() {
+    this.songSearchTerm = '';
+    this.filteredSongs = [...this.songs];
+  }
+
+  toggleSongSelection(songId: number) {
+    const index = this.selectedSongs.indexOf(songId);
+    if (index > -1) {
+      this.selectedSongs.splice(index, 1);
+    } else {
+      this.selectedSongs.push(songId);
+    }
+  }
 }

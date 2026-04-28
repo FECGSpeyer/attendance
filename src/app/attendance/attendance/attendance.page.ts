@@ -61,6 +61,8 @@ export class AttendancePage implements OnInit {
   public filteredAvailablePersons: (Person & { groupName?: string })[] = [];
   public selectedPersonsToAdd: number[] = [];
   public isLoadingPersons = false;
+  public songSearchTerm = '';
+  public filteredSongs: Song[] = [];
 
   constructor(
     private modalController: ModalController,
@@ -71,6 +73,7 @@ export class AttendancePage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.songs = await this.db.getSongs();
+    this.filteredSongs = [...this.songs];
     this.instruments = this.db.groups().filter((instrument: Group) => !instrument.maingroup);
     this.groupCategories = await this.db.getGroupCategories();
     this.mainGroup = this.db.getMainGroup().id;
@@ -1004,6 +1007,35 @@ export class AttendancePage implements OnInit {
       await loading.dismiss();
       console.error('Error adding persons:', error);
       Utils.showToast('Fehler beim Hinzufügen der Personen', 'danger');
+    }
+  }
+
+  onSongSearch(event: any) {
+    const searchTerm = event.detail.value?.toLowerCase() || '';
+    this.songSearchTerm = searchTerm;
+
+    if (!searchTerm.trim()) {
+      this.filteredSongs = [...this.songs];
+      return;
+    }
+
+    this.filteredSongs = this.songs.filter(song => {
+      const songText = `${song.prefix || ''}${song.number} ${song.name}`.toLowerCase();
+      return songText.includes(searchTerm);
+    });
+  }
+
+  resetSongSearch() {
+    this.songSearchTerm = '';
+    this.filteredSongs = [...this.songs];
+  }
+
+  toggleSongSelection(songId: number) {
+    const index = this.selectedSongs.indexOf(songId);
+    if (index > -1) {
+      this.selectedSongs.splice(index, 1);
+    } else {
+      this.selectedSongs.push(songId);
     }
   }
 }

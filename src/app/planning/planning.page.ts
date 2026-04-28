@@ -37,11 +37,9 @@ export class PlanningPage implements OnInit {
   public groupCategories: GroupCategory[];
   public sharePlan = false;
   public isGeneral = false;
-  public customModalOptions = {
-    header: 'Werk hinzufügen',
-    breakpoints: [0, 0.7, 1],
-    initialBreakpoint: 0.7,
-  };
+  public songSearchTerm = '';
+  public filteredSongs: Song[] = [];
+  public isSongSelectorOpen = false;
 
   constructor(
     private modalController: ModalController,
@@ -56,6 +54,7 @@ export class PlanningPage implements OnInit {
   async ngOnInit() {
     this.isGeneral = this.db.tenant().type === 'general';
     this.songs = await this.db.getSongs();
+    this.filteredSongs = [...this.songs];
     this.groupCategories = await this.db.getGroupCategories();
     this.conductors = (await this.db.getConductors()).filter((con: Person) => !con.left);
     this.selConductors = this.conductors.filter((con: Person) => Boolean(!con.left)).map((c: Person): number => c.id);
@@ -666,6 +665,40 @@ export class PlanningPage implements OnInit {
     }
 
     this.calculateEnd();
+  }
+
+  openSongSelector() {
+    this.isSongSelectorOpen = true;
+  }
+
+  closeSongSelector() {
+    this.isSongSelectorOpen = false;
+    this.resetSongSearch();
+  }
+
+  selectSong(songId: number) {
+    this.onAddSong(songId.toString(), null);
+    this.closeSongSelector();
+  }
+
+  onSongSearch(event: any) {
+    const searchTerm = event.detail.value?.toLowerCase() || '';
+    this.songSearchTerm = searchTerm;
+
+    if (!searchTerm.trim()) {
+      this.filteredSongs = [...this.songs];
+      return;
+    }
+
+    this.filteredSongs = this.songs.filter(song => {
+      const songText = `${song.prefix || ''}${song.number} ${song.name}`.toLowerCase();
+      return songText.includes(searchTerm);
+    });
+  }
+
+  resetSongSearch() {
+    this.songSearchTerm = '';
+    this.filteredSongs = [...this.songs];
   }
 
 }

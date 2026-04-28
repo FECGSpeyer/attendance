@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "3.13.5",
+          "date": "28.4.2026",
+          "changes": [
+            "🔍 Werkauswahl mit Suche: Alle Werkauswahl-Dialoge verfügen jetzt über eine Suchfunktion für schnelles Auffinden von Werken (Anwesenheit hinzufügen/bearbeiten, Ablaufpläne, Werkhistorie)."
+          ]
+        },
+        {
           "version": "3.13.4",
           "date": "28.4.2026",
           "changes": [
