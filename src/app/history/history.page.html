@@ -187,8 +187,8 @@
         <ion-item>
           <ion-label position="stacked">Datum</ion-label>
           <ion-input
-            readonly
             [value]="formatDate(historyEntry.date)"
+            (ionBlur)="onManualDateInput($event)"
             placeholder="TT.MM.JJJJ"></ion-input>
           <ion-button
             fill="clear"

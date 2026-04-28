@@ -123,7 +123,34 @@ export class HistoryPage implements OnInit {
       dateModal.dismiss();
     }
 
+    this.historyEntry.date = String(value);
     this.dateString = this.formatDate(String(value));
+  }
+
+  onManualDateInput(event: any): void {
+    const value = event.target.value?.trim();
+    if (!value) return;
+
+    const match = value.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+    if (!match) {
+      event.target.value = this.formatDate(this.historyEntry.date);
+      return;
+    }
+
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
+
+    if (month < 1 || month > 12 || day < 1 || day > 31) {
+      event.target.value = this.formatDate(this.historyEntry.date);
+      return;
+    }
+
+    const date = new Date(year, month - 1, day);
+    const isoString = dayjs(date).startOf('day').utc(true).toISOString();
+
+    this.historyEntry.date = isoString;
+    this.dateString = this.formatDate(isoString);
   }
 
   filter(): History[] {

@@ -366,6 +366,58 @@ export class PersonPage implements OnInit, AfterViewInit {
     return this.formatDate(isoString);
   }
 
+  onManualDateInput(field: string, event: any) {
+    const value = event.target.value?.trim();
+    if (!value) return;
+
+    // Parse DD.MM.YYYY format
+    const match = value.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+    if (!match) {
+      // Invalid format, revert to previous value
+      if (field === 'birthday') {
+        event.target.value = this.formatDateForDisplay(this.player.birthday);
+      } else if (field === 'playsSince') {
+        event.target.value = this.formatDateForDisplay(this.player.playsSince);
+      } else if (field === 'joined') {
+        event.target.value = this.formatDateForDisplay(this.player.joined);
+      } else if (field.startsWith('extra-')) {
+        const fieldId = field.substring(6);
+        event.target.value = this.formatDateForDisplay(this.player.additional_fields[fieldId] as string);
+      }
+      return;
+    }
+
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
+
+    // Validate date
+    if (month < 1 || month > 12 || day < 1 || day > 31) {
+      return;
+    }
+
+    // Convert to ISO string
+    const date = new Date(year, month - 1, day);
+    const isoString = dayjs(date).startOf('day').utc(true).toISOString();
+
+    if (field === 'birthday') {
+      this.player.birthday = isoString;
+      this.birthdayString = this.formatDate(isoString);
+      this.player.correctBirthday = true;
+    } else if (field === 'playsSince') {
+      this.player.playsSince = isoString;
+      this.playsSinceString = this.formatDate(isoString);
+    } else if (field === 'joined') {
+      this.player.joined = isoString;
+      this.joinedString = this.formatDate(isoString);
+    } else if (field.startsWith('extra-')) {
+      const fieldId = field.substring(6);
+      this.player.additional_fields[fieldId] = isoString;
+    }
+
+    this.onChange();
+  }
+
   async dismiss(data?: any): Promise<void> {
     if (this.hasChanges) {
       const alert = await this.alertController.create({
