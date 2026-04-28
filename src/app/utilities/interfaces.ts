@@ -308,6 +308,7 @@ export interface Song {
   lastSung?: string;
   link?: string;
   conductor?: string;
+  composer?: string;
   legacyId?: number;
   instrument_ids?: number[];
   files?: SongFile[];
