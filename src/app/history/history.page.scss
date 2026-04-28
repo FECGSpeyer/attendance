@@ -1,9 +1,12 @@
 ion-modal.dateModal {
-    --width: 290px;
-    --height: 382px;
+    --width: 100%;
+    --max-width: 400px;
+    --height: 450px;
     --border-radius: 8px;
   }
 
   ion-modal.dateModal ion-datetime {
-    height: 382px;
+    width: 100%;
+    height: 100%;
+    padding: 16px;
   }
