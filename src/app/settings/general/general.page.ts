@@ -315,6 +315,9 @@ export class GeneralPage implements OnInit {
       register_id = crypto.randomUUID();
     }
 
+    const loading = await Utils.getLoadingElement(999999, 'Einstellungen werden gespeichert...');
+    await loading.present();
+
     try {
       // Filter out empty reasons
       const filteredAbsenceReasons = this.absenceReasons.filter(r => r && r.trim().length > 0);
@@ -355,6 +358,7 @@ export class GeneralPage implements OnInit {
       }
 
       this.markAsSaved();
+      await loading.dismiss();
       Utils.showToast('Einstellungen gespeichert', 'success');
 
       const alert = await this.alertController.create({
@@ -372,6 +376,7 @@ export class GeneralPage implements OnInit {
 
       await alert.present();
     } catch (error) {
+      await loading.dismiss();
       Utils.showToast('Fehler beim Aktualisieren der Einstellungen', 'danger');
     }
   }
