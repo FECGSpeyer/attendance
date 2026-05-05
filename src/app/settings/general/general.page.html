@@ -96,57 +96,67 @@
 
     <ion-list-header><ion-label>Abwesenheits- & Verspätungsgründe</ion-label></ion-list-header>
     <ion-item-group>
-      <ion-item>
-        <ion-label>
-          <h2>Abwesenheitsgründe</h2>
-          <p>Lege die Gründe fest, die bei Abmeldungen zur Auswahl stehen</p>
-        </ion-label>
-      </ion-item>
-      @for (reason of absenceReasons; track $index; let i = $index) {
-        <ion-item>
-          <ion-input [(ngModel)]="absenceReasons[i]" placeholder="Grund eingeben..."></ion-input>
-          <ion-button fill="clear" slot="end" (click)="removeAbsenceReason(i)" color="danger">
-            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-          </ion-button>
-        </ion-item>
-      }
-      <ion-item button detail="false" (click)="addAbsenceReason()">
-        <ion-label color="primary">
-          <ion-icon name="add-circle-outline"></ion-icon>
-          Grund hinzufügen
-        </ion-label>
-      </ion-item>
-      @if (absenceReasons.length === 0) {
-        <ion-item button detail="false" (click)="resetAbsenceReasons()">
-          <ion-label color="medium">Standardwerte wiederherstellen</ion-label>
-        </ion-item>
-      }
+      <ion-accordion-group>
+        <ion-accordion value="absence">
+          <ion-item slot="header">
+            <ion-label>
+              <h2>Abwesenheitsgründe</h2>
+              <p>{{ absenceReasons.length }} Grund/Gründe konfiguriert</p>
+            </ion-label>
+          </ion-item>
+          <div slot="content">
+            @for (reason of absenceReasons; track $index; let i = $index) {
+              <ion-item>
+                <ion-input [(ngModel)]="absenceReasons[i]" placeholder="Grund eingeben..."></ion-input>
+                <ion-button fill="clear" slot="end" (click)="removeAbsenceReason(i)" color="danger">
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+            }
+            <ion-item button detail="false" (click)="addAbsenceReason()">
+              <ion-label color="primary">
+                <ion-icon name="add-circle-outline"></ion-icon>
+                Grund hinzufügen
+              </ion-label>
+            </ion-item>
+            @if (absenceReasons.length === 0) {
+              <ion-item button detail="false" (click)="resetAbsenceReasons()">
+                <ion-label color="medium">Standardwerte wiederherstellen</ion-label>
+              </ion-item>
+            }
+          </div>
+        </ion-accordion>
 
-      <ion-item>
-        <ion-label>
-          <h2>Verspätungsgründe</h2>
-          <p>Lege die Gründe fest, die bei Verspätungen zur Auswahl stehen</p>
-        </ion-label>
-      </ion-item>
-      @for (reason of lateReasons; track $index; let i = $index) {
-        <ion-item>
-          <ion-input [(ngModel)]="lateReasons[i]" placeholder="Grund eingeben..."></ion-input>
-          <ion-button fill="clear" slot="end" (click)="removeLateReason(i)" color="danger">
-            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-          </ion-button>
-        </ion-item>
-      }
-      <ion-item button detail="false" (click)="addLateReason()">
-        <ion-label color="primary">
-          <ion-icon name="add-circle-outline"></ion-icon>
-          Grund hinzufügen
-        </ion-label>
-      </ion-item>
-      @if (lateReasons.length === 0) {
-        <ion-item button detail="false" (click)="resetLateReasons()">
-          <ion-label color="medium">Standardwerte wiederherstellen</ion-label>
-        </ion-item>
-      }
+        <ion-accordion value="late">
+          <ion-item slot="header">
+            <ion-label>
+              <h2>Verspätungsgründe</h2>
+              <p>{{ lateReasons.length }} Grund/Gründe konfiguriert</p>
+            </ion-label>
+          </ion-item>
+          <div slot="content">
+            @for (reason of lateReasons; track $index; let i = $index) {
+              <ion-item>
+                <ion-input [(ngModel)]="lateReasons[i]" placeholder="Grund eingeben..."></ion-input>
+                <ion-button fill="clear" slot="end" (click)="removeLateReason(i)" color="danger">
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+            }
+            <ion-item button detail="false" (click)="addLateReason()">
+              <ion-label color="primary">
+                <ion-icon name="add-circle-outline"></ion-icon>
+                Grund hinzufügen
+              </ion-label>
+            </ion-item>
+            @if (lateReasons.length === 0) {
+              <ion-item button detail="false" (click)="resetLateReasons()">
+                <ion-label color="medium">Standardwerte wiederherstellen</ion-label>
+              </ion-item>
+            }
+          </div>
+        </ion-accordion>
+      </ion-accordion-group>
     </ion-item-group>
 
     <ion-list-header><ion-label>Registrierung</ion-label></ion-list-header>
