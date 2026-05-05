@@ -106,7 +106,7 @@
           </ion-item>
           <div slot="content">
             @for (reason of absenceReasons; track $index; let i = $index) {
-              <ion-item>
+              <ion-item lines="inset">
                 <ion-input [(ngModel)]="absenceReasons[i]" placeholder="Grund eingeben..."></ion-input>
                 <ion-button fill="clear" slot="end" (click)="removeAbsenceReason(i)" color="danger">
                   <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
@@ -136,7 +136,7 @@
           </ion-item>
           <div slot="content">
             @for (reason of lateReasons; track $index; let i = $index) {
-              <ion-item>
+              <ion-item lines="inset">
                 <ion-input [(ngModel)]="lateReasons[i]" placeholder="Grund eingeben..."></ion-input>
                 <ion-button fill="clear" slot="end" (click)="removeLateReason(i)" color="danger">
                   <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
