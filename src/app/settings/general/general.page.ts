@@ -4,7 +4,7 @@ import { PlayerService } from 'src/app/services/player/player.service';
 import { format, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { AttendanceStatus, FieldType, Role } from 'src/app/utilities/constants';
+import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, FieldType, Role } from 'src/app/utilities/constants';
 import { AttendanceType, Church, CriticalRule, CriticalRuleOperator, CriticalRulePeriodType, CriticalRuleThresholdType, ExtraField, Organisation } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
@@ -81,6 +81,10 @@ export class GeneralPage implements OnInit {
   // Shift worker config
   public shiftExcusedAsPresent = false;
 
+  // Absence and late reasons
+  public absenceReasons: string[] = [];
+  public lateReasons: string[] = [];
+
   // Critical rules
   public criticalRules: CriticalRule[] = [];
   public attendanceTypes: AttendanceType[] = [];
@@ -141,6 +145,14 @@ export class GeneralPage implements OnInit {
     this.selectedRegisterFields = this.db.tenant().registration_fields?.length ? this.db.tenant().registration_fields : this.registerFields.filter(f => f.disabled).map(f => f.key);
     this.extraFields = [...this.db.tenant().additional_fields ?? []].map(f => ({ ...f, options: f.options ? [...f.options] : [] }));
     this.originalExtraFields = [...this.db.tenant().additional_fields ?? []].map(f => ({ ...f, options: f.options ? [...f.options] : [] }));
+
+    // Load absence and late reasons (use defaults if not configured)
+    this.absenceReasons = this.db.tenant().absence_reasons?.length
+      ? [...this.db.tenant().absence_reasons]
+      : [...DEFAULT_ABSENCE_REASONS];
+    this.lateReasons = this.db.tenant().late_reasons?.length
+      ? [...this.db.tenant().late_reasons]
+      : [...DEFAULT_LATE_REASONS];
 
     // Migrate legacy rules: add period_type if missing
     this.criticalRules = (this.db.tenant().critical_rules ?? []).map(rule => ({
@@ -304,6 +316,10 @@ export class GeneralPage implements OnInit {
     }
 
     try {
+      // Filter out empty reasons
+      const filteredAbsenceReasons = this.absenceReasons.filter(r => r && r.trim().length > 0);
+      const filteredLateReasons = this.lateReasons.filter(r => r && r.trim().length > 0);
+
       await this.db.updateTenantData({
         practiceStart: this.practiceStart,
         practiceEnd: this.practiceEnd,
@@ -322,6 +338,8 @@ export class GeneralPage implements OnInit {
         registration_fields: this.registerAllowed ? this.selectedRegisterFields : [],
         critical_rules: this.criticalRules,
         shift_excused_as_present: this.shiftExcusedAsPresent,
+        absence_reasons: filteredAbsenceReasons.length > 0 ? filteredAbsenceReasons : null,
+        late_reasons: filteredLateReasons.length > 0 ? filteredLateReasons : null,
       });
 
       // Sanitize player additional_fields for invalid values after field changes
@@ -1145,5 +1163,29 @@ export class GeneralPage implements OnInit {
       }]
     });
     await alert.present();
+  }
+
+  addAbsenceReason() {
+    this.absenceReasons.push('');
+  }
+
+  removeAbsenceReason(index: number) {
+    this.absenceReasons.splice(index, 1);
+  }
+
+  resetAbsenceReasons() {
+    this.absenceReasons = [...DEFAULT_ABSENCE_REASONS];
+  }
+
+  addLateReason() {
+    this.lateReasons.push('');
+  }
+
+  removeLateReason(index: number) {
+    this.lateReasons.splice(index, 1);
+  }
+
+  resetLateReasons() {
+    this.lateReasons = [...DEFAULT_LATE_REASONS];
   }
 }

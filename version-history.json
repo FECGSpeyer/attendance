@@ -1,6 +1,23 @@
     {
       "versions": [
         {
+          "version": "3.15.0",
+          "date": "5.5.2026",
+          "changes": [
+            "⚙️ Konfigurierbare Gründe: Abwesenheits- und Verspätungsgründe können nun pro Instanz unter 'Einstellungen' individuell angepasst werden.",
+            "📝 Flexible An-/Abmeldung: Gründe hinzufügen, bearbeiten oder löschen - passend zu den Anforderungen deiner Organisation.",
+            "🔄 Automatischer Fallback: Wenn keine Gründe konfiguriert sind, werden automatisch die Standardwerte verwendet.",
+            "🔧 Checklisten-Reminder: Erweitertes Zeitfenster für Telegram-Benachrichtigungen und Duplikatskontrolle verhindert verpasste Reminder."
+          ]
+        },
+        {
+          "version": "3.14.0",
+          "date": "5.5.2026",
+          "changes": [
+            "🎵 Werk-Navigation: Auf der Anwesenheit kannst du jetzt direkt auf ein Werk tippen und zur Werk-Detailseite navigieren."
+          ]
+        },
+        {
           "version": "3.13.6",
           "date": "28.4.2026",
           "changes": [

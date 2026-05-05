@@ -12,6 +12,7 @@ import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode, CHECKLIST_DEADLINE_OPTIONS } from 'src/app/utilities/constants';
 import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-attendance',
@@ -68,7 +69,8 @@ export class AttendancePage implements OnInit {
     private modalController: ModalController,
     public db: DbService,
     private alertController: AlertController,
-    private storage: Storage
+    private storage: Storage,
+    private router: Router
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -1037,5 +1039,10 @@ export class AttendancePage implements OnInit {
     } else {
       this.selectedSongs.push(songId);
     }
+  }
+
+  async navigateToSong(songId: number): Promise<void> {
+    await this.close();
+    this.router.navigate([`/tabs/settings/songs/`, songId]);
   }
 }

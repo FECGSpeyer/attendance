@@ -164,12 +164,12 @@
             @if (manageSongs) {
               <ion-list>
                 @for (entry of historyEntries; track entry) {
-                  <ion-item>
-                    <ion-label>
+                  <ion-item button detail="false" (click)="navigateToSong(entry.songId)">
+                    <ion-label color="primary">
                       <h2>{{ getSongInfo(entry) }}</h2>
                       <h3>{{ getConductorInfo(entry) }}</h3>
                     </ion-label>
-                    <ion-button fill="clear" slot="end" (click)="removeHistoryEntry(entry.id)">
+                    <ion-button fill="clear" slot="end" (click)="removeHistoryEntry(entry.id); $event.stopPropagation()">
                       <ion-icon slot="icon-only" name="close"></ion-icon>
                     </ion-button>
                   </ion-item>

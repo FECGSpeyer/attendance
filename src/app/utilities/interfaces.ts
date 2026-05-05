@@ -60,6 +60,8 @@ export interface Tenant {
   timezone: string;
   showMembersList?: boolean;
   shift_excused_as_present?: boolean;
+  absence_reasons?: string[];
+  late_reasons?: string[];
 }
 
 export interface ExtraField {

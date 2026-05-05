@@ -143,3 +143,18 @@ export const CHECKLIST_DEADLINE_OPTIONS = [
     { label: '2 Tage vorher', hours: 48 },
     { label: '1 Woche vorher', hours: 168 },
 ];
+
+export const DEFAULT_ABSENCE_REASONS = [
+    'Krankheitsbedingt',
+    'Urlaubsbedingt',
+    'Arbeitsbedingt',
+    'Familienbedingt',
+];
+
+export const DEFAULT_LATE_REASONS = [
+    'Krankheitsbedingt',
+    'Urlaubsbedingt',
+    'Arbeitsbedingt',
+    'Familienbedingt',
+];
+

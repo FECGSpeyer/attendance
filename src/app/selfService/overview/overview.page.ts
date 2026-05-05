@@ -2,7 +2,7 @@ import { Component, effect, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, IonModal } from '@ionic/angular';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { AttendanceStatus } from 'src/app/utilities/constants';
+import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS } from 'src/app/utilities/constants';
 import { CrossTenantPersonAttendance, AttendanceType } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
@@ -40,6 +40,8 @@ export class OverviewPage implements OnInit {
 
   public perc = 0;
   public lateCount = 0;
+  public absenceReasons: string[] = [];
+  public lateReasons: string[] = [];
 
   constructor(
     public db: DbService,
@@ -54,6 +56,15 @@ export class OverviewPage implements OnInit {
   }
 
   async ngOnInit() {
+    // Load reasons from current tenant or use defaults
+    if (this.db.tenant()) {
+      this.absenceReasons = this.db.tenant().absence_reasons?.length
+        ? this.db.tenant().absence_reasons
+        : DEFAULT_ABSENCE_REASONS;
+      this.lateReasons = this.db.tenant().late_reasons?.length
+        ? this.db.tenant().late_reasons
+        : DEFAULT_LATE_REASONS;
+    }
     await this.loadAttendances();
   }
 

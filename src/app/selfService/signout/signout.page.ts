@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 // pdf-lib is lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
-import { AttendanceStatus, Role } from 'src/app/utilities/constants';
+import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, Role } from 'src/app/utilities/constants';
 import { Attendance, PersonAttendance, Player, Song, Tenant, History, SongFile, AttendanceType, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
@@ -39,6 +39,8 @@ export class SignoutPage implements OnInit {
   public songsModalOpen = false;
   public upcomingSongs: { date: string; history: History[] }[] = [];
   public isApplicant = false;
+  public absenceReasons: string[] = [];
+  public lateReasons: string[] = [];
 
   constructor(
     public db: DbService,
@@ -61,6 +63,15 @@ export class SignoutPage implements OnInit {
     this.name = this.db.tenant().longName;
     this.tenants = this.db.tenants();
     this.tenantId = this.db.tenant().id;
+
+    // Load reasons from tenant config or use defaults
+    this.absenceReasons = this.db.tenant().absence_reasons?.length
+      ? this.db.tenant().absence_reasons
+      : DEFAULT_ABSENCE_REASONS;
+    this.lateReasons = this.db.tenant().late_reasons?.length
+      ? this.db.tenant().late_reasons
+      : DEFAULT_LATE_REASONS;
+
     if (
       this.db.tenantUser() &&
       (this.db.tenantUser().role === Role.NONE

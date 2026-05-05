@@ -17,6 +17,7 @@ interface ChecklistItem {
   deadlineHours: number | null;
   completed?: boolean;
   dueDate?: string;
+  remindersSent?: string[]; // Track which reminders have been sent (e.g., ['1h', '0h'])
 }
 
 interface Attendance {
@@ -270,14 +271,24 @@ Deno.serve(async (req) => {
         // Calculate minutes until due
         const minutesUntilDue = calculateMinutesUntilDueDate(currentLocalTime, item.dueDate, timezone);
 
-        // Send reminder when item is due within 0-5 minutes (just due)
-        // or within 60-65 minutes (1 hour before)
-        // This ensures we only send once per reminder window with 5-minute cron intervals
-        const isJustDue = minutesUntilDue >= 0 && minutesUntilDue < 5;
-        const isOneHourBefore = minutesUntilDue >= 60 && minutesUntilDue < 65;
+        // Send reminder when item is due within 0-10 minutes (just due)
+        // or within 55-70 minutes (1 hour before)
+        // Extended windows ensure reminders aren't missed due to cron timing
+        const isJustDue = minutesUntilDue >= 0 && minutesUntilDue < 10;
+        const isOneHourBefore = minutesUntilDue >= 55 && minutesUntilDue < 70;
 
-        if (isJustDue || isOneHourBefore) {
-          const hoursUntilDue = isJustDue ? 0 : 1;
+        // Determine which reminder type we should send
+        let reminderType: '0h' | '1h' | null = null;
+        if (isJustDue) {
+          reminderType = '0h';
+        } else if (isOneHourBefore) {
+          reminderType = '1h';
+        }
+
+        // Check if we already sent this reminder type for this item
+        const remindersSent = item.remindersSent || [];
+        if (reminderType && !remindersSent.includes(reminderType)) {
+          const hoursUntilDue = reminderType === '0h' ? 0 : 1;
           const currentLocalStr = `${currentLocalTime.year}-${String(currentLocalTime.month).padStart(2, '0')}-${String(currentLocalTime.day).padStart(2, '0')} ${String(currentLocalTime.hour).padStart(2, '0')}:${String(currentLocalTime.minute).padStart(2, '0')}`;
           console.log(`Checklist item due: "${item.text}" for attendance ${attendance.id}, minutes until due: ${minutesUntilDue}, current local: ${currentLocalStr}`);
 
@@ -326,6 +337,23 @@ Deno.serve(async (req) => {
             } catch (e) {
               console.error(`Error sending Telegram message:`, e);
             }
+          }
+
+          // Mark this reminder as sent by updating the checklist in the database
+          item.remindersSent = [...remindersSent, reminderType];
+
+          // Update the attendance checklist in the database
+          try {
+            const { error: updateError } = await supabase
+              .from('attendance')
+              .update({ checklist: checklist })
+              .eq('id', attendance.id);
+
+            if (updateError) {
+              console.error(`Failed to update checklist for attendance ${attendance.id}:`, updateError);
+            }
+          } catch (e) {
+            console.error(`Error updating checklist:`, e);
           }
         }
       }

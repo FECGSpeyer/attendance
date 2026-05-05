@@ -2,7 +2,7 @@ import { Component, effect, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, IonModal, ModalController } from '@ionic/angular';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { AttendanceStatus } from 'src/app/utilities/constants';
+import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS } from 'src/app/utilities/constants';
 import { Attendance, AttendanceType, History, Person, PersonAttendance, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
@@ -35,6 +35,8 @@ export class ParentsPage implements OnInit {
   public kidStats: { [key: number]: KidStats } = {};
   public upcomingSongs: { date: string; history: History[] }[] = [];
   public songsModalOpen = false;
+  public absenceReasons: string[] = [];
+  public lateReasons: string[] = [];
 
   @ViewChild('excuseModal') excuseModal: IonModal;
 
@@ -55,6 +57,14 @@ export class ParentsPage implements OnInit {
   }
 
   async initialize() {
+    // Load reasons from tenant config or use defaults
+    this.absenceReasons = this.db.tenant().absence_reasons?.length
+      ? this.db.tenant().absence_reasons
+      : DEFAULT_ABSENCE_REASONS;
+    this.lateReasons = this.db.tenant().late_reasons?.length
+      ? this.db.tenant().late_reasons
+      : DEFAULT_LATE_REASONS;
+
     this.kids = await this.db.getPlayers();
 
     // Get all person attendances for all kids (includes past and future)
