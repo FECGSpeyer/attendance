@@ -28,7 +28,7 @@
         <ion-input type="text" readonly="true" [(ngModel)]="notificationConfig.id"></ion-input>
       </ion-item>
       }
-      <ion-item lines="none">
+      <ion-item>
         <ion-label>
           <h2>Telegramverknüpfung</h2>
           @if (notificationConfig.telegram_chat_id) {
@@ -42,6 +42,12 @@
         <ion-button color="danger" (click)="disconnectTelegram()">Trennen</ion-button>
         }
       </ion-item>
+      @if (isNative) {
+      <ion-item lines="none">
+        <ion-toggle [(ngModel)]="notificationConfig.push_enabled" (ionChange)="togglePush()"
+          label="Push-Benachrichtigungen">Push-Benachrichtigungen</ion-toggle>
+      </ion-item>
+      }
     </ion-card>
     @if (notificationConfig.enabled) {
     <ion-card-subtitle>Benachrichtigungen</ion-card-subtitle>

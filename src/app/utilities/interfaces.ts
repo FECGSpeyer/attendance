@@ -111,6 +111,7 @@ export interface NotificationConfig {
   criticals: boolean;
   reminders: boolean;
   checklist: boolean;
+  push_enabled?: boolean;
 }
 
 export interface Viewer {

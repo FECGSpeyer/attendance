@@ -3,6 +3,7 @@
 // Cron-Trigger in Supabase Dashboard: */5 * * * * (every 5 minutes)
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { sendPushToUser } from '../_shared/send-push.ts'
 
 const DEFAULT_TIMEZONE = 'Europe/Berlin';
 
@@ -51,6 +52,7 @@ interface NotificationConfig {
   id: string;
   enabled: boolean;
   telegram_chat_id: string | null;
+  push_enabled: boolean | null;
   reminders: boolean | null;
   enabled_tenants: number[] | null;
 }
@@ -296,10 +298,9 @@ Deno.serve(async (req) => {
           // 7. Get notification configs for eligible users
           const { data: notificationConfigs, error: notifError } = await supabase
             .from('notifications')
-            .select('id, enabled, telegram_chat_id, reminders, enabled_tenants')
+            .select('id, enabled, telegram_chat_id, push_enabled, reminders, enabled_tenants')
             .eq('enabled', true)
             .eq('reminders', true)
-            .not('telegram_chat_id', 'is', null)
             .in('id', eligibleUserIds);
 
           if (notifError) {
@@ -307,13 +308,18 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          if (!notificationConfigs || notificationConfigs.length === 0) {
+          // Filter to users who have at least one channel configured
+          const eligibleConfigs = (notificationConfigs || []).filter(
+            (nc: NotificationConfig) => nc.telegram_chat_id || nc.push_enabled
+          );
+
+          if (!eligibleConfigs || eligibleConfigs.length === 0) {
             console.log('No eligible users with reminders enabled');
             continue;
           }
 
           // 8. Send reminders to all eligible users
-          for (const notifConfig of notificationConfigs) {
+          for (const notifConfig of eligibleConfigs) {
             const enabledTenants = notifConfig.enabled_tenants || [];
 
             // Check if this user has reminders enabled for this tenant
@@ -329,25 +335,45 @@ Deno.serve(async (req) => {
               matchedReminder
             );
 
-            try {
-              const telegramRes = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  chat_id: notifConfig.telegram_chat_id,
-                  text: message,
-                  parse_mode: 'Markdown',
-                }),
-              });
+            // Send via Telegram
+            if (notifConfig.telegram_chat_id) {
+              try {
+                const telegramRes = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    chat_id: notifConfig.telegram_chat_id,
+                    text: message,
+                    parse_mode: 'Markdown',
+                  }),
+                });
 
-              if (!telegramRes.ok) {
-                console.error(`Failed to send Telegram message to ${notifConfig.telegram_chat_id}:`, await telegramRes.text());
-              } else {
-                totalReminders++;
-                console.log(`Reminder sent to ${notifConfig.telegram_chat_id} for ${attType.name}`);
+                if (!telegramRes.ok) {
+                  console.error(`Failed to send Telegram message to ${notifConfig.telegram_chat_id}:`, await telegramRes.text());
+                } else {
+                  totalReminders++;
+                  console.log(`Telegram reminder sent to ${notifConfig.telegram_chat_id} for ${attType.name}`);
+                }
+              } catch (e) {
+                console.error(`Error sending Telegram message:`, e);
               }
-            } catch (e) {
-              console.error(`Error sending Telegram message:`, e);
+            }
+
+            // Send via Push
+            if (notifConfig.push_enabled) {
+              try {
+                const pushSent = await sendPushToUser(supabase, notifConfig.id, {
+                  title: '⏰ Terminerinnerung',
+                  body: `${attType.name} startet ${matchedReminder === 1 ? 'in 1 Stunde' : matchedReminder < 24 ? `in ${matchedReminder} Stunden` : `in ${Math.floor(matchedReminder / 24)} Tag(en)`}`,
+                  data: { type: 'reminder', attendanceId: String(attendance.id) },
+                });
+                if (pushSent > 0) {
+                  totalReminders++;
+                  console.log(`Push reminder sent to ${notifConfig.id} for ${attType.name}`);
+                }
+              } catch (e) {
+                console.error(`Error sending push notification:`, e);
+              }
             }
           }
         }

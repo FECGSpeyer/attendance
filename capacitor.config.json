@@ -1,6 +1,10 @@
 {
 	"appId": "io.stephanus.attendix",
-	"appName": "Attendance",
+	"appName": "Attendix",
 	"webDir": "www",
-	"bundledWebRuntime": false
+	"plugins": {
+		"PushNotifications": {
+			"presentationOptions": ["badge", "sound", "alert"]
+		}
+	}
 }

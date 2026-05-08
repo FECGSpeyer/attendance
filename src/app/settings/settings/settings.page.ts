@@ -1,5 +1,6 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonRouterOutlet, isPlatform, ModalController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
 import { ExportPage } from 'src/app/export/export.page';
 import { HistoryPage } from 'src/app/history/history.page';
 import { PersonPage } from 'src/app/people/person/person.page';
@@ -187,6 +188,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   checkPwaInstallation(): void {
+    if (Capacitor.isNativePlatform()) return;
     const isMobile = isPlatform('ios') || isPlatform('android');
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
     const dismissed = localStorage.getItem('pwaHintDismissed');

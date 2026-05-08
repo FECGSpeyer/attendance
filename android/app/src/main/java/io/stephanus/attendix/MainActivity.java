@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package io.stephanus.attendix;
 
 import com.getcapacitor.BridgeActivity;
 

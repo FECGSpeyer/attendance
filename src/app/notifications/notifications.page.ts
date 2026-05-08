@@ -1,7 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { DbService } from 'src/app/services/db.service';
+import { PushService } from 'src/app/services/push/push.service';
 import { Role } from 'src/app/utilities/constants';
 import { NotificationConfig } from 'src/app/utilities/interfaces';
 
@@ -14,12 +16,16 @@ import { NotificationConfig } from 'src/app/utilities/interfaces';
 export class NotificationsPage implements OnInit, OnDestroy {
   public notificationConfig: NotificationConfig;
   public isAdmin: boolean;
+  public isNative: boolean;
   private sub: RealtimeChannel;
 
   constructor(
     public db: DbService,
     private alertController: AlertController,
-  ) { }
+    private pushService: PushService,
+  ) {
+    this.isNative = Capacitor.isNativePlatform();
+  }
 
   async ngOnInit() {
     this.notificationConfig = await this.db.getNotifcationConfig(this.db.tenantUser().userId);
@@ -77,6 +83,13 @@ export class NotificationsPage implements OnInit, OnDestroy {
       this.notificationConfig.enabled_tenants = [...tenants, tenantId];
     }
     this.updateNotificationConfig();
+  }
+
+  async togglePush() {
+    await this.pushService.togglePush(
+      this.notificationConfig.push_enabled,
+      this.notificationConfig.id
+    );
   }
 
 }

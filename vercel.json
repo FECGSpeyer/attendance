@@ -25,5 +25,5 @@
             "destination": "/index.html"
         }
     ],
-    "outputDirectory": "www/browser"
+    "outputDirectory": "www"
 }

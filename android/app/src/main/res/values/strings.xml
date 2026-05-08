@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Attendance</string>
-    <string name="title_activity_main">Attendance</string>
-    <string name="package_name">io.ionic.starter</string>
-    <string name="custom_url_scheme">io.ionic.starter</string>
+    <string name="app_name">Attendix</string>
+    <string name="title_activity_main">Attendix</string>
+    <string name="package_name">io.stephanus.attendix</string>
+    <string name="custom_url_scheme">io.stephanus.attendix</string>
 </resources>

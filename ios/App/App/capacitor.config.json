@@ -1,6 +1,23 @@
 {
-	"appId": "io.ionic.starter",
-	"appName": "Attendance",
-	"webDir": "www",
-	"bundledWebRuntime": false
+	"appId": "io.stephanus.attendix",
+	"appName": "Attendix",
+	"webDir": "www/browser",
+	"plugins": {
+		"PushNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"alert"
+			]
+		}
+	},
+	"packageClassList": [
+		"AppPlugin",
+		"CAPBrowserPlugin",
+		"HapticsPlugin",
+		"KeyboardPlugin",
+		"CAPNetworkPlugin",
+		"PushNotificationsPlugin",
+		"StatusBarPlugin"
+	]
 }

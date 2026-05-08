@@ -1,6 +1,14 @@
 {
-	"appId": "io.ionic.starter",
-	"appName": "Attendance",
+	"appId": "io.stephanus.attendix",
+	"appName": "Attendix",
 	"webDir": "www",
-	"bundledWebRuntime": false
+	"plugins": {
+		"PushNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"alert"
+			]
+		}
+	}
 }

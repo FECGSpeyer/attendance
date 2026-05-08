@@ -1,12 +1,14 @@
 import { Component, ViewChild } from '@angular/core';
 import { AlertController, IonRouterOutlet, Platform } from '@ionic/angular';
 import { App } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { Title } from '@angular/platform-browser';
 import { Storage } from '@ionic/storage-angular';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter } from 'rxjs/operators';
 import { Utils } from './utilities/Utils';
 import { DbService } from './services/db.service';
+import { PushService } from './services/push/push.service';
 
 @Component({
     selector: 'app-root',
@@ -24,6 +26,7 @@ export class AppComponent {
     private alertController: AlertController,
     private db: DbService,
     private swUpdate: SwUpdate,
+    private pushService: PushService,
   ) {
     this.initializeApp();
     this.titleService.setTitle('Attendix');
@@ -79,13 +82,18 @@ export class AppComponent {
       if (event === 'PASSWORD_RECOVERY') {
         this.presentPasswordRecoveryAlert();
       }
+      if (event === 'SIGNED_IN') {
+        this.pushService.promptAndEnable();
+      }
       if (event === 'SIGNED_OUT') {
+        this.pushService.removeToken();
         this.db.clearState();
       }
     });
   }
 
   checkForUpdates() {
+    if (Capacitor.isNativePlatform()) return;
     if (this.swUpdate.isEnabled) {
       // Listen for version ready events
       this.swUpdate.versionUpdates

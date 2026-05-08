@@ -3,6 +3,7 @@
 // Cron-Trigger in Supabase Dashboard: */5 * * * * (every 5 minutes)
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { sendPushToUser } from '../_shared/send-push.ts'
 
 const DEFAULT_TIMEZONE = 'Europe/Berlin';
 
@@ -39,6 +40,7 @@ interface NotificationConfig {
   id: string;
   enabled: boolean;
   telegram_chat_id: string | null;
+  push_enabled: boolean | null;
   checklist: boolean | null;
   enabled_tenants: number[] | null;
 }
@@ -233,24 +235,28 @@ Deno.serve(async (req) => {
     // 5. Get all users with checklist notifications enabled
     const { data: allNotificationConfigs, error: notifError } = await supabase
       .from('notifications')
-      .select('id, enabled, telegram_chat_id, checklist, enabled_tenants')
+      .select('id, enabled, telegram_chat_id, push_enabled, checklist, enabled_tenants')
       .eq('enabled', true)
-      .eq('checklist', true)
-      .not('telegram_chat_id', 'is', null);
+      .eq('checklist', true);
 
     if (notifError) {
       console.error('Error fetching notification configs:', notifError);
       throw notifError;
     }
 
-    if (!allNotificationConfigs || allNotificationConfigs.length === 0) {
+    // Filter to users who have at least one channel configured
+    const filteredConfigs = (allNotificationConfigs || []).filter(
+      (nc: NotificationConfig) => nc.telegram_chat_id || nc.push_enabled
+    );
+
+    if (!filteredConfigs || filteredConfigs.length === 0) {
       console.log('No users with checklist notifications enabled');
       return new Response(JSON.stringify({ success: true, processed: 0 }), {
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    console.log(`Found ${allNotificationConfigs.length} users with checklist notifications enabled`);
+    console.log(`Found ${filteredConfigs.length} users with checklist notifications enabled`);
 
     let totalReminders = 0;
 
@@ -294,7 +300,7 @@ Deno.serve(async (req) => {
 
           // Get eligible users for this tenant (role 1 or 5)
           const eligibleUserIds = tenantEligibleUsers.get(attendance.tenantId) || [];
-          const notificationConfigs = allNotificationConfigs.filter(
+          const notificationConfigs = filteredConfigs.filter(
             (nc: NotificationConfig) => eligibleUserIds.includes(nc.id)
           );
 
@@ -317,25 +323,46 @@ Deno.serve(async (req) => {
               hoursUntilDue
             );
 
-            try {
-              const telegramRes = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  chat_id: notifConfig.telegram_chat_id,
-                  text: message,
-                  parse_mode: 'Markdown',
-                }),
-              });
+            // Send via Telegram
+            if (notifConfig.telegram_chat_id) {
+              try {
+                const telegramRes = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    chat_id: notifConfig.telegram_chat_id,
+                    text: message,
+                    parse_mode: 'Markdown',
+                  }),
+                });
 
-              if (!telegramRes.ok) {
-                console.error(`Failed to send Telegram message to ${notifConfig.telegram_chat_id}:`, await telegramRes.text());
-              } else {
-                totalReminders++;
-                console.log(`Checklist reminder sent to ${notifConfig.telegram_chat_id} for "${item.text}"`);
+                if (!telegramRes.ok) {
+                  console.error(`Failed to send Telegram message to ${notifConfig.telegram_chat_id}:`, await telegramRes.text());
+                } else {
+                  totalReminders++;
+                  console.log(`Checklist reminder sent via Telegram to ${notifConfig.telegram_chat_id} for "${item.text}"`);
+                }
+              } catch (e) {
+                console.error(`Error sending Telegram message:`, e);
               }
-            } catch (e) {
-              console.error(`Error sending Telegram message:`, e);
+            }
+
+            // Send via Push
+            if (notifConfig.push_enabled) {
+              try {
+                const pushTitle = hoursUntilDue === 0 ? '⚠️ Jetzt fällig!' : '⏰ Demnächst fällig';
+                const pushSent = await sendPushToUser(supabase, notifConfig.id, {
+                  title: pushTitle,
+                  body: `${item.text} (${attType?.name || 'Termin'})`,
+                  data: { type: 'checklist', attendanceId: String(attendance.id) },
+                });
+                if (pushSent > 0) {
+                  totalReminders++;
+                  console.log(`Checklist reminder sent via Push to ${notifConfig.id} for "${item.text}"`);
+                }
+              } catch (e) {
+                console.error(`Error sending push notification:`, e);
+              }
             }
           }
 

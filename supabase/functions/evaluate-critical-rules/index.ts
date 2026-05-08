@@ -3,6 +3,7 @@
 // Cron-Trigger in Supabase Dashboard: 0 6 * * * (täglich um 6 Uhr)
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { sendPushToUser } from '../_shared/send-push.ts'
 
 // Enums matching the frontend
 enum AttendanceStatus {
@@ -62,6 +63,7 @@ interface NotificationConfig {
   id: string;
   enabled: boolean;
   telegram_chat_id: string | null;
+  push_enabled: boolean | null;
   criticals: boolean | null;
   enabled_tenants: number[] | null;
 }
@@ -366,10 +368,9 @@ async function sendCriticalNotifications(
     // Find users who have criticals notifications enabled
     const { data: notifications, error: notifError } = await supabase
       .from('notifications')
-      .select('id, telegram_chat_id, enabled_tenants')
+      .select('id, telegram_chat_id, push_enabled, enabled_tenants')
       .eq('enabled', true)
       .eq('criticals', true)
-      .not('telegram_chat_id', 'is', null)
       .in('id', authorizedUserIds);
 
     if (notifError) {
@@ -377,9 +378,10 @@ async function sendCriticalNotifications(
       return;
     }
 
-    // Filter users who have this tenant in their enabled_tenants
+    // Filter users who have at least one channel and this tenant enabled
     const eligibleNotifications = (notifications as NotificationConfig[])?.filter(n => {
-      // If enabled_tenants is null or empty, notify for all tenants
+      const hasChannel = n.telegram_chat_id || n.push_enabled;
+      if (!hasChannel) return false;
       if (!n.enabled_tenants || n.enabled_tenants.length === 0) return true;
       return n.enabled_tenants.includes(tenantId);
     }) || [];
@@ -399,32 +401,45 @@ async function sendCriticalNotifications(
     const telegramToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
     if (!telegramToken) {
       console.error('TELEGRAM_BOT_TOKEN not configured');
-      return;
     }
 
     for (const notif of eligibleNotifications) {
-      if (!notif.telegram_chat_id) continue;
+      // Send via Telegram
+      if (notif.telegram_chat_id && telegramToken) {
+        try {
+          const response = await fetch(
+            `https://api.telegram.org/bot${telegramToken}/sendMessage`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: notif.telegram_chat_id,
+                text: message,
+                parse_mode: 'Markdown',
+              }),
+            }
+          );
 
-      try {
-        const response = await fetch(
-          `https://api.telegram.org/bot${telegramToken}/sendMessage`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: notif.telegram_chat_id,
-              text: message,
-              parse_mode: 'Markdown',
-            }),
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Failed to send Telegram to ${notif.telegram_chat_id}:`, errorText);
           }
-        );
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`Failed to send Telegram to ${notif.telegram_chat_id}:`, errorText);
+        } catch (err) {
+          console.error(`Error sending Telegram to ${notif.telegram_chat_id}:`, err);
         }
-      } catch (err) {
-        console.error(`Error sending Telegram to ${notif.telegram_chat_id}:`, err);
+      }
+
+      // Send via Push
+      if (notif.push_enabled) {
+        try {
+          await sendPushToUser(supabase, notif.id, {
+            title: `⚠️ Neue Problemfälle (${tenantName})`,
+            body: `${newCriticalPlayers.length} Person(en) wurden als Problemfall markiert`,
+            data: { type: 'criticals', tenantId: String(tenantId) },
+          });
+        } catch (err) {
+          console.error(`Error sending push to ${notif.id}:`, err);
+        }
       }
     }
   } catch (error) {
