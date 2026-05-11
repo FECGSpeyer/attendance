@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { IonicStorageModule } from '@ionic/storage-angular';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { Capacitor } from '@capacitor/core';
 
 import { IonicModule, IonicRouteStrategy, isPlatform } from '@ionic/angular';
 
@@ -28,7 +29,7 @@ function initAuth(authSvc: AuthService) {
     AppRoutingModule,
     IonicStorageModule.forRoot(),
     ServiceWorkerModule.register('ngsw-worker.js', {
-      enabled: !isDevMode(),
+      enabled: !isDevMode() && !Capacitor.isNativePlatform(),
       registrationStrategy: 'registerWhenStable:30000'
     }),
   ],

@@ -691,14 +691,7 @@ export class FilesPage implements OnInit {
 
     try {
       const { blob, fileName } = await this.filesSvc.downloadFile(this.db.tenant().id, entry.path);
-      const url = window.URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = fileName;
-      document.body.appendChild(anchor);
-      anchor.click();
-      document.body.removeChild(anchor);
-      window.URL.revokeObjectURL(url);
+      await Utils.downloadFileNative(blob, fileName);
     } catch (error: any) {
       Utils.showToast(`Download fehlgeschlagen: ${error.message || error}`, 'danger');
     } finally {

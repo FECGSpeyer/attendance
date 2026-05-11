@@ -1,6 +1,20 @@
     {
       "versions": [
         {
+          "version": "4.0.0",
+          "date": "8.5.2026",
+          "changes": [
+            "📱 Native App: Attendix ist jetzt im Google Play Store & App Store verfügbar!",
+            "🔔 Push-Benachrichtigungen: Native Push-Notifications als Alternative zu Telegram.",
+            "🔗 Deep Links: Links in Benachrichtigungen öffnen direkt die richtige Seite in der App.",
+            "📣 Ad-hoc Erinnerungen: Versende manuelle Erinnerungen direkt aus der Anwesenheitsansicht.",
+            "🚀 Push bevorzugt: Push-Benachrichtigungen werden bevorzugt, Telegram nur als Fallback wenn kein Push zugestellt werden kann.",
+            "🏠 App-Hinweis: PWA-Nutzer werden nach dem Login einmalig auf die native App hingewiesen.",
+            "📝 Beschreibung & Anhang: Anwesenheiten können jetzt mit einer Rich-Text-Beschreibung und einem Dateianhang versehen werden.",
+            "📎 Anhang-Zugriff: Beschreibung und Anhang sind über das Aktionsmenü auf der Abmelde-, Eltern- und Übersichtsseite einsehbar."
+          ]
+        },
+        {
           "version": "3.15.0",
           "date": "5.5.2026",
           "changes": [

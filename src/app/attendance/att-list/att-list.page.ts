@@ -1,6 +1,7 @@
 import { Component, OnInit, effect } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
+import { ActivatedRoute } from '@angular/router';
 import { format, isSameDay, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
@@ -99,6 +100,7 @@ export class AttListPage implements OnInit {
     private modalController: ModalController,
     private alertController: AlertController,
     private routerOutlet: IonRouterOutlet,
+    private route: ActivatedRoute,
   ) {
     effect(async () => {
       this.db.tenant();
@@ -112,6 +114,17 @@ export class AttListPage implements OnInit {
 
   async ngOnInit() {
     await this.init();
+    this.route.queryParams.subscribe(async params => {
+      const tenantId = params['tenantId'];
+      if (tenantId && Number(tenantId) !== this.db.tenant()?.id) {
+        await this.db.setTenant(Number(tenantId));
+        await this.init();
+      }
+      const attendanceId = params['openAttendance'];
+      if (attendanceId) {
+        this.openAttendance({ id: Number(attendanceId) });
+      }
+    });
   }
 
   async init(): Promise<void> {

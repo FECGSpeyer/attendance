@@ -1,5 +1,6 @@
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, IonModal } from '@ionic/angular';
+import { Browser } from '@capacitor/browser';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS } from 'src/app/utilities/constants';
@@ -23,6 +24,8 @@ interface TenantGroup {
 })
 export class OverviewPage implements OnInit {
   @ViewChild('excuseModal') excuseModal: IonModal;
+  @ViewChild('descriptionModal') descriptionModal: IonModal;
+  public selectedDescription: string = '';
 
   public attendances: CrossTenantPersonAttendance[] = [];
   public upcomingAttendances: CrossTenantPersonAttendance[] = [];
@@ -237,6 +240,24 @@ export class OverviewPage implements OnInit {
       buttons = buttons.filter(btn => btn.text !== 'Abmelden' && btn.text !== 'Verspätung eintragen');
     }
 
+    if (attendance.attendance?.description) {
+      const cancelBtn = buttons.find(btn => btn.role === 'destructive');
+      const cancelIndex = buttons.indexOf(cancelBtn);
+      buttons.splice(cancelIndex, 0, {
+        text: 'Beschreibung anzeigen',
+        handler: () => this.openDescription(attendance),
+      });
+    }
+
+    if (attendance.attendance?.attachment_url) {
+      const cancelBtn = buttons.find(btn => btn.role === 'destructive');
+      const cancelIndex = buttons.indexOf(cancelBtn);
+      buttons.splice(cancelIndex, 0, {
+        text: 'Anhang öffnen',
+        handler: () => this.openAttachment(attendance.attendance),
+      });
+    }
+
     if (buttons.length <= 1) {
       Utils.showToast('Für diesen Termin sind keine Aktionen verfügbar.', 'warning', 4000);
       return;
@@ -407,5 +428,16 @@ export class OverviewPage implements OnInit {
 
   getBadgeText(att: CrossTenantPersonAttendance): string {
     return att.text === 'X' ? '✓' : att.text || '';
+  }
+
+  openAttachment(attendance: any) {
+    if (attendance?.attachment_url) {
+      Browser.open({ url: attendance.attachment_url });
+    }
+  }
+
+  openDescription(attendance: CrossTenantPersonAttendance) {
+    this.selectedDescription = attendance.attendance?.description || '';
+    this.descriptionModal.present();
   }
 }

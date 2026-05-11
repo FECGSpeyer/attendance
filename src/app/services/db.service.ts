@@ -400,14 +400,8 @@ export class DbService {
       if (tenantId !== Number(storedTenantId)) {
         loader = await Utils.getLoadingElement();
         await loader.present();
-        this.tenant.set(this.tenants().find((t: Tenant) => t.id === tenantId));
-      } else {
-        if (loading) {
-          const load = await Utils.getLoadingElement(1500);
-          await load.present();
-        }
-        return;
       }
+      this.tenant.set(this.tenants().find((t: Tenant) => t.id === tenantId));
     } else {
       this.tenant.set(this.tenants()[0]);
     }
@@ -1845,7 +1839,7 @@ export class DbService {
   async getPersonAttendances(id: number, all: boolean = false): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan)')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan, description, attachment_url, attachment_name)')
       .eq('person_id', id)
       .gt('attendance.date', all ? dayjs('2020-01-01').toISOString() : this.getCurrentAttDate()) as any;
 
@@ -2699,9 +2693,9 @@ export class DbService {
   async getPersonAttendancesForTenant(personId: number, tenantId: number): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline)')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, description, attachment_url, attachment_name)')
       .eq('person_id', personId)
-      .gt('attendance.date', this.getCurrentAttDate());
+      .gt('attendance.date', this.getCurrentAttDate()) as any;
 
     if (!data) {return [];}
 

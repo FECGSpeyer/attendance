@@ -12,7 +12,10 @@
       "Bash(npx ng *)",
       "Bash(npx cap *)",
       "Bash(npx @capacitor/assets --help)",
-      "Bash(npx *)"
+      "Bash(npx *)",
+      "WebFetch(domain:capacitorjs.com)",
+      "Bash(npm install *)",
+      "Bash(keytool -list -v -keystore \"C:/Users/D062831/secrets/attendix\")"
     ]
   }
 }

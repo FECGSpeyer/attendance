@@ -1,6 +1,9 @@
 /* eslint-disable arrow-body-style */
 import { Component, effect, inject, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, isPlatform, ModalController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
+import { ActivatedRoute } from '@angular/router';
 import dayjs from 'dayjs';
 // pdf-lib is lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
@@ -20,6 +23,8 @@ export class SignoutPage implements OnInit {
   private audioPlayer = inject(AudioPlayerService);
   @ViewChild('signoutAccordionGroup') signoutAccordionGroup: IonAccordionGroup;
   @ViewChild('excuseModal') excuseModal: IonModal;
+  @ViewChild('descriptionModal') descriptionModal: IonModal;
+  public selectedDescription: string = '';
   public player: Player;
   public attendances: Attendance[] = [];
   public personAttendances: PersonAttendance[] = [];
@@ -46,7 +51,8 @@ export class SignoutPage implements OnInit {
     public db: DbService,
     private actionSheetController: ActionSheetController,
     private alertController: AlertController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private route: ActivatedRoute,
   ) {
     effect(async () => {
       if (this.db.tenant()) {
@@ -57,6 +63,12 @@ export class SignoutPage implements OnInit {
 
   async ngOnInit() {
     await this.initialize();
+    this.route.queryParams.subscribe(params => {
+      const attendanceId = params['openAttendance'];
+      if (attendanceId) {
+        this.openAttendanceById(Number(attendanceId));
+      }
+    });
   }
 
   async initialize() {
@@ -187,6 +199,24 @@ export class SignoutPage implements OnInit {
     }
   }
 
+  private openAttendanceById(attendanceId: number): void {
+    const att = this.personAttendances.find(pa => pa.attendance_id === attendanceId);
+    if (att) {
+      this.presentActionSheetForChoice(att);
+    }
+  }
+
+  openAttachment(attendance: any) {
+    if (attendance?.attachment_url) {
+      Browser.open({ url: attendance.attachment_url });
+    }
+  }
+
+  async openDescription(attendance: PersonAttendance) {
+    this.selectedDescription = attendance.attendance?.description || '';
+    this.descriptionModal.present();
+  }
+
   async presentActionSheetForChoice(attendance: PersonAttendance) {
     this.reasonSelection = 'Krankheitsbedingt';
     let buttons = [
@@ -309,6 +339,24 @@ export class SignoutPage implements OnInit {
       });
     }
 
+    if (attendance.attendance?.description) {
+      const cancelBtn = buttons.find(btn => btn.role === 'destructive');
+      const cancelIndex = buttons.indexOf(cancelBtn);
+      buttons.splice(cancelIndex, 0, {
+        text: 'Beschreibung anzeigen',
+        handler: () => this.openDescription(attendance),
+      });
+    }
+
+    if (attendance.attendance?.attachment_url) {
+      const cancelBtn = buttons.find(btn => btn.role === 'destructive');
+      const cancelIndex = buttons.indexOf(cancelBtn);
+      buttons.splice(cancelIndex, 0, {
+        text: 'Anhang öffnen',
+        handler: () => this.openAttachment(attendance.attendance),
+      });
+    }
+
     if (buttons.length <= 1) {
       Utils.showToast('Für diesen Termin sind keine Aktionen verfügbar.', 'warning', 4000);
       return;
@@ -415,7 +463,7 @@ export class SignoutPage implements OnInit {
 
   openSongLink(link: string) {
     if (link) {
-      window.open(link, '_blank');
+      Browser.open({ url: link });
     }
   }
 
@@ -456,12 +504,7 @@ export class SignoutPage implements OnInit {
             const file = files[0];
             if (file) {
               const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), song.id);
-              const url = window.URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = file.fileName;
-              a.click();
-              window.URL.revokeObjectURL(url);
+              Utils.downloadFileNative(blob, file.fileName);
             }
           },
         });
@@ -472,7 +515,7 @@ export class SignoutPage implements OnInit {
         handler: () => {
           const file = files[0];
           if (file) {
-            window.open(file.url, '_blank');
+            Utils.openFileNative(file.url, file.fileName);
           }
         },
       });
@@ -482,29 +525,31 @@ export class SignoutPage implements OnInit {
         handler: () => {
           const file = files[0];
           if (file) {
-            const printWindow = window.open(file.url, '_blank');
-            if (printWindow) {
-              // Use both onload and setTimeout as fallback
-              let printed = false;
-              printWindow.onload = () => {
-                if (!printed) {
-                  printed = true;
-                  printWindow.print();
-                }
-              };
-              // Fallback timeout for when onload doesn't fire (common with PDFs)
-              setTimeout(() => {
-                if (!printed && printWindow) {
-                  printed = true;
-                  try {
-                    printWindow.print();
-                  } catch (e) {
-                    console.error('Print failed:', e);
-                  }
-                }
-              }, 1000);
+            if (Capacitor.isNativePlatform()) {
+              Utils.openFileNative(file.url, file.fileName);
             } else {
-              Utils.showToast('Popup wurde blockiert. Bitte erlaube Popups für diese Seite.', 'warning');
+              const printWindow = window.open(file.url, '_blank');
+              if (printWindow) {
+                let printed = false;
+                printWindow.onload = () => {
+                  if (!printed) {
+                    printed = true;
+                    printWindow.print();
+                  }
+                };
+                setTimeout(() => {
+                  if (!printed && printWindow) {
+                    printed = true;
+                    try {
+                      printWindow.print();
+                    } catch (e) {
+                      console.error('Print failed:', e);
+                    }
+                  }
+                }, 1000);
+              } else {
+                Utils.showToast('Popup wurde blockiert. Bitte erlaube Popups für diese Seite.', 'warning');
+              }
             }
           }
         },
@@ -520,12 +565,7 @@ export class SignoutPage implements OnInit {
                 role: '',
                 handler: async () => {
                   const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), song.id);
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = file.fileName;
-                  a.click();
-                  window.URL.revokeObjectURL(url);
+                  Utils.downloadFileNative(blob, file.fileName);
                 },
               };
             });
@@ -554,7 +594,7 @@ export class SignoutPage implements OnInit {
               text: file.fileName,
               role: '',
               handler: () => {
-                window.open(file.url, '_blank');
+                Utils.openFileNative(file.url, file.fileName);
               },
             };
           });
@@ -582,29 +622,31 @@ export class SignoutPage implements OnInit {
               text: file.fileName,
               role: '',
               handler: () => {
-                const printWindow = window.open(file.url, '_blank');
-                if (printWindow) {
-                  // Use both onload and setTimeout as fallback
-                  let printed = false;
-                  printWindow.onload = () => {
-                    if (!printed) {
-                      printed = true;
-                      printWindow.print();
-                    }
-                  };
-                  // Fallback timeout for when onload doesn't fire (common with PDFs)
-                  setTimeout(() => {
-                    if (!printed && printWindow) {
-                      printed = true;
-                      try {
-                        printWindow.print();
-                      } catch (e) {
-                        console.error('Print failed:', e);
-                      }
-                    }
-                  }, 1000);
+                if (Capacitor.isNativePlatform()) {
+                  Utils.openFileNative(file.url, file.fileName);
                 } else {
-                  Utils.showToast('Popup wurde blockiert. Bitte erlaube Popups für diese Seite.', 'warning');
+                  const printWindow = window.open(file.url, '_blank');
+                  if (printWindow) {
+                    let printed = false;
+                    printWindow.onload = () => {
+                      if (!printed) {
+                        printed = true;
+                        printWindow.print();
+                      }
+                    };
+                    setTimeout(() => {
+                      if (!printed && printWindow) {
+                        printed = true;
+                        try {
+                          printWindow.print();
+                        } catch (e) {
+                          console.error('Print failed:', e);
+                        }
+                      }
+                    }, 1000);
+                  } else {
+                    Utils.showToast('Popup wurde blockiert. Bitte erlaube Popups für diese Seite.', 'warning');
+                  }
                 }
               },
             };
@@ -644,7 +686,7 @@ export class SignoutPage implements OnInit {
         text: 'Liedtext ansehen',
         handler: () => {
           const file = liedtextFiles[0];
-          window.open(file.url, '_blank');
+          Utils.openFileNative(file.url, file.fileName);
         },
       });
     } else if (liedtextFiles.length > 1) {
@@ -656,7 +698,7 @@ export class SignoutPage implements OnInit {
               text: file.fileName,
               role: '',
               handler: () => {
-                window.open(file.url, '_blank');
+                Utils.openFileNative(file.url, file.fileName);
               },
             };
           });
@@ -754,41 +796,40 @@ export class SignoutPage implements OnInit {
       // Save and print the merged PDF
       const mergedPdfBytes = await mergedPdf.save();
       const blob = new Blob([mergedPdfBytes as BlobPart], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
 
-      const printWindow = window.open(url, '_blank');
-      if (printWindow) {
-        // Use both onload and setTimeout as fallback
-        let printed = false;
-        printWindow.onload = () => {
-          if (!printed) {
-            printed = true;
-            printWindow.print();
-          }
-          // Clean up after printing
-          setTimeout(() => URL.revokeObjectURL(url), 60000);
-        };
-        // Fallback timeout for when onload doesn't fire (common with PDFs)
-        setTimeout(() => {
-          if (!printed && printWindow) {
-            printed = true;
-            try {
-              printWindow.print();
-            } catch (e) {
-              console.error('Print failed:', e);
-            }
-          }
-          // Clean up after printing
-          setTimeout(() => URL.revokeObjectURL(url), 60000);
-        }, 1500);
+      if (Capacitor.isNativePlatform()) {
+        await Utils.downloadFileNative(blob, 'aktuelle_noten.pdf');
       } else {
-        // Fallback: download the file
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'aktuelle_noten.pdf';
-        a.click();
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
-        Utils.showToast('PDF heruntergeladen - bitte manuell drucken', 'warning');
+        const url = URL.createObjectURL(blob);
+        const printWindow = window.open(url, '_blank');
+        if (printWindow) {
+          let printed = false;
+          printWindow.onload = () => {
+            if (!printed) {
+              printed = true;
+              printWindow.print();
+            }
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+          };
+          setTimeout(() => {
+            if (!printed && printWindow) {
+              printed = true;
+              try {
+                printWindow.print();
+              } catch (e) {
+                console.error('Print failed:', e);
+              }
+            }
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+          }, 1500);
+        } else {
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'aktuelle_noten.pdf';
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 60000);
+          Utils.showToast('PDF heruntergeladen - bitte manuell drucken', 'warning');
+        }
       }
     } catch (err) {
       console.error('Fehler beim Zusammenführen der PDFs:', err);

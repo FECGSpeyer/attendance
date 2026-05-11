@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.stephanus.attendix",
+      "sha256_cert_fingerprints": ["CA:E2:8E:CB:62:48:C5:96:70:3B:F8:EA:C5:E4:2C:B0:8A:6B:51:F6:97:4B:C9:C5:19:E4:C9:CB:F5:20:01:6F"]
+    }
+  }
+]

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
+import { QuillModule } from 'ngx-quill';
 
 import { ParentsPageRoutingModule } from './parents-routing.module';
 
@@ -15,7 +16,8 @@ import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.co
     FormsModule,
     IonicModule,
     ParentsPageRoutingModule,
-    PlanViewerComponent
+    PlanViewerComponent,
+    QuillModule.forRoot(),
   ],
   declarations: [ParentsPage]
 })

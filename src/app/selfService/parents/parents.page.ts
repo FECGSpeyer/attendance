@@ -1,5 +1,7 @@
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, IonModal, ModalController } from '@ionic/angular';
+import { Browser } from '@capacitor/browser';
+import { ActivatedRoute } from '@angular/router';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS } from 'src/app/utilities/constants';
@@ -39,11 +41,14 @@ export class ParentsPage implements OnInit {
   public lateReasons: string[] = [];
 
   @ViewChild('excuseModal') excuseModal: IonModal;
+  @ViewChild('descriptionModal') descriptionModal: IonModal;
+  public selectedDescription: string = '';
 
   constructor(
     public db: DbService,
     private actionSheetController: ActionSheetController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private route: ActivatedRoute,
   ) {
     effect(async () => {
       if (this.db.tenant()) {
@@ -54,6 +59,12 @@ export class ParentsPage implements OnInit {
 
   async ngOnInit() {
     await this.initialize();
+    this.route.queryParams.subscribe(params => {
+      const attendanceId = params['openAttendance'];
+      if (attendanceId) {
+        this.openAttendanceById(Number(attendanceId));
+      }
+    });
   }
 
   async initialize() {
@@ -98,6 +109,9 @@ export class ParentsPage implements OnInit {
           type: pa.attendance?.type,
           plan: pa.attendance?.plan,
           share_plan: pa.attendance?.share_plan,
+          description: pa.attendance?.description,
+          attachment_url: pa.attendance?.attachment_url,
+          attachment_name: pa.attendance?.attachment_name,
         } as unknown as Attendance);
       }
     }
@@ -139,6 +153,24 @@ export class ParentsPage implements OnInit {
     this.currentAttendance = current[0];
     this.upcomingAttendances = upcoming;
     this.pastAttendances = past.slice(0, 10); // Limit past attendances
+  }
+
+  private openAttendanceById(attendanceId: number): void {
+    const att = this.attendances.find(a => a.id === attendanceId);
+    if (att) {
+      this.openActionSheet(att, true);
+    }
+  }
+
+  openAttachment(attendance: any) {
+    if (attendance?.attachment_url) {
+      Browser.open({ url: attendance.attachment_url });
+    }
+  }
+
+  openDescription(attendance: any) {
+    this.selectedDescription = attendance?.description || '';
+    this.descriptionModal.present();
   }
 
   calculateKidStats() {
@@ -266,6 +298,24 @@ export class ParentsPage implements OnInit {
       });
     }
 
+    if (attendance.description) {
+      const cancelBtn = buttons.find(btn => btn.role === 'destructive');
+      const cancelIndex = buttons.indexOf(cancelBtn);
+      buttons.splice(cancelIndex, 0, {
+        text: 'Beschreibung anzeigen',
+        handler: () => this.openDescription(attendance),
+      });
+    }
+
+    if (attendance.attachment_url) {
+      const cancelBtn = buttons.find(btn => btn.role === 'destructive');
+      const cancelIndex = buttons.indexOf(cancelBtn);
+      buttons.splice(cancelIndex, 0, {
+        text: 'Anhang öffnen',
+        handler: () => this.openAttachment(attendance),
+      });
+    }
+
     const actionSheet = await this.actionSheetController.create({
       buttons,
     });
@@ -355,7 +405,7 @@ export class ParentsPage implements OnInit {
 
   openSongLink(link: string) {
     if (link) {
-      window.open(link, '_blank');
+      Browser.open({ url: link });
     }
   }
 

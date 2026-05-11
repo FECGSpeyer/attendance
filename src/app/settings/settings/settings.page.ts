@@ -1,6 +1,7 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonRouterOutlet, isPlatform, ModalController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import { ExportPage } from 'src/app/export/export.page';
 import { HistoryPage } from 'src/app/history/history.page';
 import { PersonPage } from 'src/app/people/person/person.page';
@@ -650,7 +651,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       }, {
         text: 'Anleitung öffen',
         handler: () => {
-          window.open(this.isIos ? 'https://support.apple.com/de-de/102301' : 'https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid', '_blank');
+          Browser.open({ url: this.isIos ? 'https://support.apple.com/de-de/102301' : 'https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid' });
         }
       }, {
         text: 'Schließen',
@@ -844,7 +845,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   openTelegramSupport() {
-    window.open('https://t.me/Eckstaedt', '_blank');
+    Browser.open({ url: 'https://t.me/Eckstaedt' });
   }
 
   async sendQuestion(modal: IonModal) {

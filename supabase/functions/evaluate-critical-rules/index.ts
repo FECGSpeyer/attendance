@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
       const hasSeasonRule = tenant.critical_rules.some(r => r.period_type === CriticalRulePeriodType.SEASON);
       const hasAllTimeRule = tenant.critical_rules.some(r => r.period_type === CriticalRulePeriodType.ALL_TIME);
       const maxPeriodDays = Math.max(...tenant.critical_rules.map(r => r.period_days || 365));
-      
+
       let startDate: Date;
       if (hasAllTimeRule) {
         // Fetch all attendances (use a very old date)
@@ -261,10 +261,10 @@ function evaluateSingleRule(
   seasonStart: string | null
 ): boolean {
   const now = new Date();
-  
+
   // Determine period start based on period_type
   let periodStart: Date | null = null;
-  
+
   switch (rule.period_type) {
     case CriticalRulePeriodType.DAYS:
       periodStart = new Date();
@@ -295,10 +295,10 @@ function evaluateSingleRule(
   // Filter attendances by period and attendance type
   const relevantAttendances = attendances.filter(att => {
     const attDate = new Date(att.attendance.date);
-    
+
     // Must be before now
     if (attDate > now) return false;
-    
+
     // Must be after period start (if set)
     if (periodStart && attDate <= periodStart) return false;
 
@@ -393,9 +393,11 @@ async function sendCriticalNotifications(
       .map(p => `• ${p.firstName || ''} ${p.lastName || ''}`.trim())
       .join('\n');
 
+    const link = `\n\n[Personen öffnen](https://attendix.de/tabs/list?tenantId=${tenantId})`;
+
     const message = `⚠️ *Neue Problemfälle (${tenantName})*\n\n` +
       `${newCriticalPlayers.length} Person(en) wurden als Problemfall markiert:\n\n` +
-      `${playerNames}`;
+      `${playerNames}${link}`;
 
     // Send Telegram messages
     const telegramToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
@@ -404,8 +406,24 @@ async function sendCriticalNotifications(
     }
 
     for (const notif of eligibleNotifications) {
-      // Send via Telegram
-      if (notif.telegram_chat_id && telegramToken) {
+      let pushSentSuccessfully = false;
+
+      // Send via Push (preferred channel)
+      if (notif.push_enabled) {
+        try {
+          const pushSent = await sendPushToUser(supabase, notif.id, {
+            title: `⚠️ Neue Problemfälle (${tenantName})`,
+            body: `${newCriticalPlayers.length} Person(en) wurden als Problemfall markiert`,
+            data: { type: 'criticals', tenantId: String(tenantId) },
+          });
+          if (pushSent > 0) pushSentSuccessfully = true;
+        } catch (err) {
+          console.error(`Error sending push to ${notif.id}:`, err);
+        }
+      }
+
+      // Send via Telegram only if push was not sent
+      if (notif.telegram_chat_id && telegramToken && !pushSentSuccessfully) {
         try {
           const response = await fetch(
             `https://api.telegram.org/bot${telegramToken}/sendMessage`,
@@ -426,19 +444,6 @@ async function sendCriticalNotifications(
           }
         } catch (err) {
           console.error(`Error sending Telegram to ${notif.telegram_chat_id}:`, err);
-        }
-      }
-
-      // Send via Push
-      if (notif.push_enabled) {
-        try {
-          await sendPushToUser(supabase, notif.id, {
-            title: `⚠️ Neue Problemfälle (${tenantName})`,
-            body: `${newCriticalPlayers.length} Person(en) wurden als Problemfall markiert`,
-            data: { type: 'criticals', tenantId: String(tenantId) },
-          });
-        } catch (err) {
-          console.error(`Error sending push to ${notif.id}:`, err);
         }
       }
     }

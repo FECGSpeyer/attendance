@@ -1,9 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
-import { PushNotifications } from '@capacitor/push-notifications';
+import { PushNotifications, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
 import { AlertController } from '@ionic/angular';
 import { supabase } from '../base/supabase';
 import { Router } from '@angular/router';
+import { DbService } from '../db.service';
+import { Role } from '../../utilities/constants';
 
 const PUSH_PROMPT_SHOWN_KEY = 'push_prompt_shown';
 
@@ -16,6 +18,8 @@ export class PushService {
   constructor(
     private router: Router,
     private alertController: AlertController,
+    private zone: NgZone,
+    private db: DbService,
   ) {}
 
   async promptAndEnable(): Promise<void> {
@@ -87,16 +91,71 @@ export class PushService {
       console.error('Push registration error:', error.error);
     });
 
-    PushNotifications.addListener('pushNotificationReceived', (notification) => {
-      console.log('Push received in foreground:', notification);
+    PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
+      this.zone.run(() => {
+        this.showForegroundAlert(notification);
+      });
     });
 
-    PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-      const data = notification.notification.data;
-      if (data?.route) {
-        this.router.navigateByUrl(data.route);
-      }
+    PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
+      this.zone.run(() => {
+        this.navigateFromData(action.notification.data);
+      });
     });
+  }
+
+  private async showForegroundAlert(notification: PushNotificationSchema): Promise<void> {
+    const alert = await this.alertController.create({
+      header: notification.title || 'Benachrichtigung',
+      message: notification.body || '',
+      buttons: [
+        { text: 'OK', role: 'cancel' },
+        {
+          text: 'Anzeigen',
+          handler: () => {
+            this.navigateFromData(notification.data);
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  private async navigateFromData(data: any): Promise<void> {
+    if (!data) return;
+
+    if (data.tenantId && Number(data.tenantId) !== this.db.tenant()?.id) {
+      await this.db.setTenant(Number(data.tenantId));
+    }
+
+    if (data.route) {
+      this.router.navigateByUrl(data.route);
+      return;
+    }
+
+    switch (data.type) {
+      case 'attendance':
+      case 'reminder':
+      case 'checklist':
+        if (data.attendanceId) {
+          const role = this.db.tenantUser()?.role;
+          if (role === Role.ADMIN || role === Role.RESPONSIBLE || role === Role.HELPER || role === Role.VOICE_LEADER_HELPER) {
+            this.router.navigate(['/tabs/attendance'], { queryParams: { openAttendance: data.attendanceId } });
+          } else if (role === Role.PARENT) {
+            this.router.navigate(['/tabs/parents'], { queryParams: { openAttendance: data.attendanceId } });
+          } else {
+            this.router.navigate(['/tabs/signout'], { queryParams: { openAttendance: data.attendanceId } });
+          }
+        } else {
+          this.router.navigateByUrl('/tabs/attendance');
+        }
+        break;
+      case 'criticals':
+        this.router.navigateByUrl('/tabs/list');
+        break;
+      default:
+        this.router.navigateByUrl('/tabs/player');
+    }
   }
 
   async removeToken(): Promise<void> {

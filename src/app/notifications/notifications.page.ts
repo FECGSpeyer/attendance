@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
@@ -52,7 +53,7 @@ export class NotificationsPage implements OnInit, OnDestroy {
   }
 
   connectTelegram() {
-    window.open(`https://t.me/attendix_bot?start=${this.db.tenantUser().userId}`, '_blank');
+    Browser.open({ url: `https://t.me/attendix_bot?start=${this.db.tenantUser().userId}` });
   }
 
   async disconnectTelegram() {

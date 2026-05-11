@@ -48,6 +48,13 @@
           label="Push-Benachrichtigungen">Push-Benachrichtigungen</ion-toggle>
       </ion-item>
       }
+      @if (notificationConfig.push_enabled && notificationConfig.telegram_chat_id) {
+      <ion-item lines="none">
+        <ion-note color="medium" class="ion-text-wrap" style="font-size: 12px; padding: 8px 0;">
+          Push-Benachrichtigungen werden bevorzugt. Telegram wird nur als Fallback genutzt, wenn keine Push-Zustellung möglich ist.
+        </ion-note>
+      </ion-item>
+      }
     </ion-card>
     @if (notificationConfig.enabled) {
     <ion-card-subtitle>Benachrichtigungen</ion-card-subtitle>

@@ -132,6 +132,24 @@
       </ng-template>
     </ion-modal>
 
+    <ion-modal #descriptionModal [initialBreakpoint]="0.6" [breakpoints]="[0, 0.6, 1]">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Beschreibung</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="descriptionModal.dismiss()">
+                <ion-icon slot="icon-only" name="close"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="ion-padding">
+          <quill-view [content]="selectedDescription"></quill-view>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+
     <!-- Chronological View -->
     @if (groupingMode === 'chronological' && !db.crossTenantAttendancesLoading()) {
       <ion-accordion-group [multiple]="true" [value]="['current', 'upcoming']">
@@ -154,6 +172,17 @@
                     }
                     @if (currentAttendance.notes) {
                       <ion-note [style.fontSize]="'.8rem'" color="medium">Notiz: {{ currentAttendance.notes }}</ion-note>
+                    }
+                    @if (currentAttendance.attendance?.description || currentAttendance.attendance?.attachment_url) {
+                      <ion-note [style.fontSize]="'.8rem'" color="primary">
+                        @if (currentAttendance.attendance?.description) {
+                          <ion-icon name="document-text-outline" style="vertical-align: middle;"></ion-icon>
+                        }
+                        @if (currentAttendance.attendance?.attachment_url) {
+                          <ion-icon name="attach-outline" style="vertical-align: middle;"></ion-icon>
+                        }
+                        Infos verfügbar
+                      </ion-note>
                     }
                   </ion-label>
                   <ion-badge slot="end" [color]="getBadgeColor(currentAttendance)">
@@ -184,6 +213,17 @@
                     }
                     @if (att.notes) {
                       <ion-note [style.fontSize]="'.8rem'" color="medium">Notiz: {{ att.notes }}</ion-note>
+                    }
+                    @if (att.attendance?.description || att.attendance?.attachment_url) {
+                      <ion-note [style.fontSize]="'.8rem'" color="primary">
+                        @if (att.attendance?.description) {
+                          <ion-icon name="document-text-outline" style="vertical-align: middle;"></ion-icon>
+                        }
+                        @if (att.attendance?.attachment_url) {
+                          <ion-icon name="attach-outline" style="vertical-align: middle;"></ion-icon>
+                        }
+                        Infos verfügbar
+                      </ion-note>
                     }
                   </ion-label>
                   <ion-badge slot="end" [color]="getBadgeColor(att)">
@@ -268,6 +308,17 @@
                       }
                       @if (att.notes) {
                         <ion-note [style.fontSize]="'.8rem'" color="medium">Notiz: {{ att.notes }}</ion-note>
+                      }
+                      @if (att.attendance?.description || att.attendance?.attachment_url) {
+                        <ion-note [style.fontSize]="'.8rem'" color="primary">
+                          @if (att.attendance?.description) {
+                            <ion-icon name="document-text-outline" style="vertical-align: middle;"></ion-icon>
+                          }
+                          @if (att.attendance?.attachment_url) {
+                            <ion-icon name="attach-outline" style="vertical-align: middle;"></ion-icon>
+                          }
+                          Infos verfügbar
+                        </ion-note>
                       }
                     </ion-label>
                     <ion-badge slot="end" [color]="getBadgeColor(att)">

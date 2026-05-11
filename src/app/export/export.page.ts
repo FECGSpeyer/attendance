@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, IonItemSliding, ItemReorderEventDetail, ModalController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 // jsPDF and xlsx are lazy-loaded for better initial bundle size
 import { DbService } from '../services/db.service';
@@ -146,7 +147,13 @@ export class ExportPage implements OnInit {
         fillColor: [0, 82, 56]
       }
     });
-    doc.save(`${shortName}_Spielerliste_Stand_${date}.pdf`);
+    const fileName = `${shortName}_Spielerliste_Stand_${date}.pdf`;
+    if (Capacitor.isNativePlatform()) {
+      const blob = doc.output('blob');
+      await Utils.downloadFileNative(blob, fileName);
+    } else {
+      doc.save(fileName);
+    }
   }
 
   async exportType(shortName: string) {
@@ -251,7 +258,13 @@ export class ExportPage implements OnInit {
         }
       },
     });
-    doc.save(`${shortName}_Anwesenheit_Stand_${date}.pdf`);
+    const attFileName = `${shortName}_Anwesenheit_Stand_${date}.pdf`;
+    if (Capacitor.isNativePlatform()) {
+      const blob = doc.output('blob');
+      await Utils.downloadFileNative(blob, attFileName);
+    } else {
+      doc.save(attFileName);
+    }
   }
 
   getFieldValues(player: Player) {

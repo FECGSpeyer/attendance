@@ -1,4 +1,5 @@
 import { ToastController, LoadingController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
 import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, FieldType, PlayerHistoryType, Role } from './constants';
@@ -562,7 +563,12 @@ export class Utils {
         }
         return doc.output('blob');
       } else {
-        doc.save(`${typeText}_${date}_2x.pdf`);
+        const fileName = `${typeText}_${date}_2x.pdf`;
+        if (Capacitor.isNativePlatform()) {
+          await Utils.downloadFileNative(doc.output('blob'), fileName);
+        } else {
+          doc.save(fileName);
+        }
       }
       return;
     }
@@ -609,7 +615,12 @@ export class Utils {
       }
       return doc.output('blob');
     } else {
-      doc.save(`${typeText}_${date}.pdf`);
+      const fileName = `${typeText}_${date}.pdf`;
+      if (Capacitor.isNativePlatform()) {
+        await Utils.downloadFileNative(doc.output('blob'), fileName);
+      } else {
+        doc.save(fileName);
+      }
     }
   }
 
@@ -1056,5 +1067,80 @@ export class Utils {
     }
 
     return type.planning_title || typeInfo || type.name || 'Probenplan';
+  }
+
+  static async openFileNative(urlOrBlob: string | Blob, fileName?: string): Promise<void> {
+    if (!Capacitor.isNativePlatform()) {
+      if (typeof urlOrBlob === 'string') {
+        window.open(urlOrBlob, '_blank');
+      } else {
+        const url = window.URL.createObjectURL(urlOrBlob);
+        window.open(url, '_blank');
+      }
+      return;
+    }
+
+    const { FileViewer } = await import('@capacitor/file-viewer');
+
+    if (typeof urlOrBlob === 'string' && urlOrBlob.startsWith('http')) {
+      await FileViewer.openDocumentFromUrl({ url: urlOrBlob });
+      return;
+    }
+
+    const { Filesystem, Directory } = await import('@capacitor/filesystem');
+    let base64: string;
+
+    if (typeof urlOrBlob === 'string') {
+      const response = await fetch(urlOrBlob);
+      const blob = await response.blob();
+      base64 = await Utils.blobToBase64(blob);
+    } else {
+      base64 = await Utils.blobToBase64(urlOrBlob);
+    }
+
+    const name = fileName || `document_${Date.now()}.pdf`;
+    const result = await Filesystem.writeFile({
+      path: name,
+      data: base64,
+      directory: Directory.Cache,
+    });
+
+    await FileViewer.openDocumentFromLocalPath({ path: result.uri });
+  }
+
+  static async downloadFileNative(blob: Blob, fileName: string): Promise<void> {
+    if (!Capacitor.isNativePlatform()) {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      return;
+    }
+
+    const { Filesystem, Directory } = await import('@capacitor/filesystem');
+    const base64 = await Utils.blobToBase64(blob);
+
+    const result = await Filesystem.writeFile({
+      path: fileName,
+      data: base64,
+      directory: Directory.Cache,
+    });
+
+    const { FileViewer } = await import('@capacitor/file-viewer');
+    await FileViewer.openDocumentFromLocalPath({ path: result.uri });
+  }
+
+  private static blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        resolve(dataUrl.split(',')[1]);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   }
 }

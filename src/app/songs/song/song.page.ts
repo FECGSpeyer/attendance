@@ -1,6 +1,8 @@
 import { Component, inject, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, LoadingController, isPlatform } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 // JSZip and pdf-lib are lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
@@ -234,21 +236,16 @@ export class SongPage implements OnInit {
   }
 
   openFile(file: SongFile) {
-    window.open(file.url, '_blank');
+    Utils.openFileNative(file.url, file.fileName);
   }
 
   openLink(link: string) {
-    window.open(link, '_blank');
+    Browser.open({ url: link });
   }
 
   async downloadFile(file: SongFile) {
     const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), this.song.id);
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = file.fileName;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    Utils.downloadFileNative(blob, file.fileName);
   }
 
   async deleteFile(file: SongFile) {
@@ -428,7 +425,7 @@ export class SongPage implements OnInit {
           if (isAudio) {
             this.audioPlayer.play(file, this.song.name);
           } else {
-            window.open(file.url, '_blank');
+            Utils.openFileNative(file.url, file.fileName);
           }
         }
       },
@@ -828,15 +825,14 @@ export class SongPage implements OnInit {
       // Save and download/print
       const mergedPdfBytes = await mergedPdf.save();
       const blob = new Blob([mergedPdfBytes as BlobPart], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
+      const fileName = `${this.song.name || 'song'}_print.pdf`;
 
-      // iOS/PWA: use Share API or download
-      if (isPlatform('ios') || isPlatform('mobileweb')) {
+      if (Capacitor.isNativePlatform()) {
+        await Utils.downloadFileNative(blob, fileName);
+      } else if (isPlatform('ios') || isPlatform('mobileweb')) {
         try {
-          const fileName = `${this.song.name || 'song'}_print.pdf`;
           const filesArray = [new File([blob], fileName, { type: 'application/pdf' })];
 
-          // Check if Web Share API is available
           if (navigator.share && navigator.canShare && navigator.canShare({ files: filesArray })) {
             await navigator.share({
               files: filesArray,
@@ -844,34 +840,34 @@ export class SongPage implements OnInit {
               text: 'Drucke diese Datei'
             });
           } else {
-            // Fallback: download the file
+            const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = fileName;
             a.click();
+            window.URL.revokeObjectURL(url);
             Utils.showToast('PDF heruntergeladen - bitte aus Dateien-App drucken', 'success');
           }
         } catch (error) {
           console.error('Share/download failed:', error);
-          // Final fallback: download
+          const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `${this.song.name || 'song'}_print.pdf`;
+          a.download = fileName;
           a.click();
+          window.URL.revokeObjectURL(url);
           Utils.showToast('PDF heruntergeladen - bitte aus Dateien-App drucken', 'success');
         }
       } else {
-        // Desktop: Open in new tab for printing
+        const url = window.URL.createObjectURL(blob);
         const printWindow = window.open(url, '_blank');
 
         if (printWindow) {
-          // Use both onload and setTimeout as fallback
           let printed = false;
 
           printWindow.onload = () => {
             if (!printed) {
               printed = true;
-              // Small delay to ensure PDF is fully rendered
               setTimeout(() => {
                 try {
                   printWindow.print();
@@ -882,8 +878,6 @@ export class SongPage implements OnInit {
             }
           };
 
-          // Fallback timeout for when onload doesn't fire (common with PDFs)
-          // Increased timeout for larger PDFs
           setTimeout(() => {
             if (!printed && printWindow) {
               printed = true;
@@ -895,13 +889,13 @@ export class SongPage implements OnInit {
             }
           }, 2000);
         } else {
-          // Fallback: download the file
           const a = document.createElement('a');
           a.href = url;
-          a.download = `${this.song.name || 'song'}_print.pdf`;
+          a.download = fileName;
           a.click();
           Utils.showToast('PDF heruntergeladen - bitte manuell drucken', 'success');
         }
+        window.URL.revokeObjectURL(url);
       }
 
       await loading.dismiss();

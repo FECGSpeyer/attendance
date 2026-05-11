@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
 import { Attendance, FieldSelection, GroupCategory, History, Group, Person, Song, AttendanceType } from '../utilities/interfaces';
@@ -543,7 +544,13 @@ export class PlanningPage implements OnInit {
       }
       this.db.sendPlanPerTelegram(blob, `Registerprobenplan_${dayjs().format('DD_MM_YYYY')}`, asImage);
     } else {
-      doc.save(`${this.db.tenant().shortName} Registerprobenplan: ${date}.pdf`);
+      const fileName = `${this.db.tenant().shortName} Registerprobenplan: ${date}.pdf`;
+      if (Capacitor.isNativePlatform()) {
+        const blob = doc.output('blob');
+        await Utils.downloadFileNative(blob, fileName);
+      } else {
+        doc.save(fileName);
+      }
     }
 
     modal.dismiss();

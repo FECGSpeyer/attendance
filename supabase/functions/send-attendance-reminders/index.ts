@@ -332,11 +332,33 @@ Deno.serve(async (req) => {
               attType.name,
               attendance.date,
               attendance.start_time,
-              matchedReminder
+              matchedReminder,
+              attendance.id,
+              attendance.tenantId
             );
 
-            // Send via Telegram
-            if (notifConfig.telegram_chat_id) {
+            let pushSentSuccessfully = false;
+
+            // Send via Push (preferred channel)
+            if (notifConfig.push_enabled) {
+              try {
+                const pushSent = await sendPushToUser(supabase, notifConfig.id, {
+                  title: '⏰ Terminerinnerung',
+                  body: `${attType.name} startet ${matchedReminder === 1 ? 'in 1 Stunde' : matchedReminder < 24 ? `in ${matchedReminder} Stunden` : `in ${Math.floor(matchedReminder / 24)} Tag(en)`}`,
+                  data: { type: 'reminder', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
+                });
+                if (pushSent > 0) {
+                  totalReminders++;
+                  pushSentSuccessfully = true;
+                  console.log(`Push reminder sent to ${notifConfig.id} for ${attType.name}`);
+                }
+              } catch (e) {
+                console.error(`Error sending push notification:`, e);
+              }
+            }
+
+            // Send via Telegram only if push was not sent
+            if (notifConfig.telegram_chat_id && !pushSentSuccessfully) {
               try {
                 const telegramRes = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
                   method: 'POST',
@@ -356,23 +378,6 @@ Deno.serve(async (req) => {
                 }
               } catch (e) {
                 console.error(`Error sending Telegram message:`, e);
-              }
-            }
-
-            // Send via Push
-            if (notifConfig.push_enabled) {
-              try {
-                const pushSent = await sendPushToUser(supabase, notifConfig.id, {
-                  title: '⏰ Terminerinnerung',
-                  body: `${attType.name} startet ${matchedReminder === 1 ? 'in 1 Stunde' : matchedReminder < 24 ? `in ${matchedReminder} Stunden` : `in ${Math.floor(matchedReminder / 24)} Tag(en)`}`,
-                  data: { type: 'reminder', attendanceId: String(attendance.id) },
-                });
-                if (pushSent > 0) {
-                  totalReminders++;
-                  console.log(`Push reminder sent to ${notifConfig.id} for ${attType.name}`);
-                }
-              } catch (e) {
-                console.error(`Error sending push notification:`, e);
               }
             }
           }
@@ -413,7 +418,9 @@ function formatReminderMessage(
   typeName: string,
   date: string,
   startTime: string,
-  hoursAhead: number
+  hoursAhead: number,
+  attendanceId: number,
+  tenantId: number
 ): string {
   const reminderText = hoursAhead === 0
     ? 'jetzt'
@@ -434,5 +441,7 @@ function formatReminderMessage(
   // Ensure startTime is in HH:mm format
   const timeStr = startTime.includes(':') ? startTime : '00:00';
 
-  return `⏰ *Terminerinnerung*\n\n${reminderText}:\n\n📋 ${typeName}\n📅 ${formattedDate}\n🕐 ${timeStr}`;
+  const link = `\n\n[Anwesenheit öffnen](https://attendix.de/tabs/attendance?openAttendance=${attendanceId}&tenantId=${tenantId})`;
+
+  return `⏰ *Terminerinnerung*\n\n${reminderText}:\n\n📋 ${typeName}\n📅 ${formattedDate}\n🕐 ${timeStr}${link}`;
 }

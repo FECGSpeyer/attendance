@@ -157,7 +157,7 @@ export class SongsPage implements OnInit {
   }
 
   openFile(url: string): void {
-    window.open(url, '_blank');
+    Utils.openFileNative(url);
   }
 
   resetGroupSelection(): void {

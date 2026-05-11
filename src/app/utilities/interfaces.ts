@@ -261,6 +261,9 @@ export interface Attendance {
   deadline?: string;
   duration_days?: number;
   checklist?: ChecklistItem[];
+  description?: string;
+  attachment_url?: string;
+  attachment_name?: string;
 }
 
 export interface Plan {

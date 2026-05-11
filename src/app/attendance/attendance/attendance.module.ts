@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
+import { QuillModule } from 'ngx-quill';
 
 import { AttendancePageRoutingModule } from './attendance-routing.module';
 
@@ -14,7 +15,8 @@ import { StatusInfoComponent } from './status-info/status-info.component';
     CommonModule,
     FormsModule,
     IonicModule,
-    AttendancePageRoutingModule
+    AttendancePageRoutingModule,
+    QuillModule.forRoot(),
   ],
   declarations: [AttendancePage, StatusInfoComponent]
 })

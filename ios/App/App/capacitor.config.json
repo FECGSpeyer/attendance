@@ -1,7 +1,7 @@
 {
 	"appId": "io.stephanus.attendix",
 	"appName": "Attendix",
-	"webDir": "www/browser",
+	"webDir": "www",
 	"plugins": {
 		"PushNotifications": {
 			"presentationOptions": [
@@ -14,6 +14,8 @@
 	"packageClassList": [
 		"AppPlugin",
 		"CAPBrowserPlugin",
+		"FileViewerPlugin",
+		"FilesystemPlugin",
 		"HapticsPlugin",
 		"KeyboardPlugin",
 		"CAPNetworkPlugin",

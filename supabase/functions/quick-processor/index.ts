@@ -81,7 +81,7 @@ Deno.serve(async (req)=>{
       });
     }
 
-    const chatIds: string[] = [];
+    const chatIds: { userId: string; chatId: string }[] = [];
     const pushUserIds: string[] = [];
 
     for (const noti of notiData as NotificationConfig[]) {
@@ -95,7 +95,7 @@ Deno.serve(async (req)=>{
       if (!shouldNotify) continue;
 
       if (noti.telegram_chat_id) {
-        chatIds.push(noti.telegram_chat_id);
+        chatIds.push({ userId: noti.id, chatId: noti.telegram_chat_id });
       }
       if (noti.push_enabled) {
         pushUserIds.push(noti.id);
@@ -118,6 +118,7 @@ Deno.serve(async (req)=>{
     };
     const suffix = isParents ? "\n(von Elternteil abgemeldet)" : "";
     const formattedDate = DD + '.' + MM + '.' + yyyy + getAttendanceText(attendanceData.attendance);
+    const attendanceLink = `\n\n[Anwesenheit öffnen](https://attendix.de/tabs/attendance?openAttendance=${attendanceData.attendance_id}&tenantId=${attendanceData.attendance.tenant.id})`;
 
     let messageText = `*${attendanceData.attendance.tenant.longName}*\n`;
     let pushBody = '';
@@ -158,8 +159,23 @@ Deno.serve(async (req)=>{
         pushBody = `${name} hat sich für den ${formattedDate} abgemeldet. Grund: ${reason}${suffix}`;
     }
 
-    // Send Telegram messages
-    for (const chatId of chatIds) {
+    messageText += attendanceLink;
+
+    // Send push notifications first (preferred channel)
+    const pushTitle = attendanceData.attendance.tenant.longName;
+    const pushSentUserIds = new Set<string>();
+    for (const userId of pushUserIds) {
+      const pushSent = await sendPushToUser(supabase, userId, {
+        title: pushTitle,
+        body: pushBody,
+        data: { type: 'attendance', attendanceId: String(attendanceData.attendance_id), tenantId: String(attendanceData.attendance.tenant.id) },
+      });
+      if (pushSent > 0) pushSentUserIds.add(userId);
+    }
+
+    // Send Telegram messages only to users who did not receive push
+    for (const { userId, chatId } of chatIds) {
+      if (pushSentUserIds.has(userId)) continue;
       await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -168,15 +184,6 @@ Deno.serve(async (req)=>{
           text: messageText,
           parse_mode: "markdown"
         })
-      });
-    }
-
-    // Send push notifications
-    const pushTitle = attendanceData.attendance.tenant.longName;
-    for (const userId of pushUserIds) {
-      await sendPushToUser(supabase, userId, {
-        title: pushTitle,
-        body: pushBody,
       });
     }
 

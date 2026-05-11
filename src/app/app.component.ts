@@ -1,8 +1,9 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, NgZone, ViewChild } from '@angular/core';
 import { AlertController, IonRouterOutlet, Platform } from '@ionic/angular';
-import { App } from '@capacitor/app';
+import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { Storage } from '@ionic/storage-angular';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter } from 'rxjs/operators';
@@ -27,11 +28,14 @@ export class AppComponent {
     private db: DbService,
     private swUpdate: SwUpdate,
     private pushService: PushService,
+    private router: Router,
+    private zone: NgZone,
   ) {
     this.initializeApp();
     this.titleService.setTitle('Attendix');
     this.listenToAuthChanges();
     this.checkForUpdates();
+    this.setupDeepLinks();
   }
 
   async ngOnInit() {
@@ -84,6 +88,7 @@ export class AppComponent {
       }
       if (event === 'SIGNED_IN') {
         this.pushService.promptAndEnable();
+        this.showNativeAppAd();
       }
       if (event === 'SIGNED_OUT') {
         this.pushService.removeToken();
@@ -121,5 +126,46 @@ export class AppComponent {
       // Also check immediately on app start
       this.swUpdate.checkForUpdate();
     }
+  }
+
+  async showNativeAppAd() {
+    if (Capacitor.isNativePlatform()) return;
+    const shown = localStorage.getItem('native_app_ad_shown');
+    if (shown) return;
+
+    localStorage.setItem('native_app_ad_shown', 'true');
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const storeUrl = isIOS
+      ? 'https://apps.apple.com/app/attendix/id6743612798'
+      : 'https://play.google.com/store/apps/details?id=io.stephanus.attendix';
+    const storeName = isIOS ? 'App Store' : 'Play Store';
+
+    const alert = await this.alertController.create({
+      header: 'Attendix als App verfügbar!',
+      message: `Attendix gibt es jetzt als native App mit Push-Benachrichtigungen und schnellerem Zugriff. Jetzt im ${storeName} herunterladen!`,
+      buttons: [
+        { text: 'Später', role: 'cancel' },
+        {
+          text: 'Zum ' + storeName,
+          handler: () => {
+            window.open(storeUrl, '_blank');
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  setupDeepLinks() {
+    App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
+      this.zone.run(() => {
+        const url = new URL(event.url);
+        const fullPath = url.pathname + url.search;
+        if (fullPath) {
+          this.router.navigateByUrl(fullPath);
+        }
+      });
+    });
   }
 }

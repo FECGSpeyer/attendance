@@ -167,6 +167,24 @@
       </ng-template>
     </ion-modal>
 
+    <ion-modal #descriptionModal [initialBreakpoint]="0.6" [breakpoints]="[0, 0.6, 1]">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Beschreibung</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="descriptionModal.dismiss()">
+                <ion-icon slot="icon-only" name="close"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="ion-padding">
+          <quill-view [content]="selectedDescription"></quill-view>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+
     <!-- Current Attendance -->
     @if (currentAttendance) {
       <ion-accordion value="current">
@@ -188,6 +206,19 @@
                 </ion-button>
               }
             </ion-item-divider>
+            @if (currentAttendance.description || currentAttendance.attachment_url) {
+              <ion-item lines="none">
+                <ion-note color="primary" style="font-size: .8rem;">
+                  @if (currentAttendance.description) {
+                    <ion-icon name="document-text-outline" style="vertical-align: middle;"></ion-icon>
+                  }
+                  @if (currentAttendance.attachment_url) {
+                    <ion-icon name="attach-outline" style="vertical-align: middle;"></ion-icon>
+                  }
+                  Infos verfügbar
+                </ion-note>
+              </ion-item>
+            }
             @if (kids.length !== 1) {
               <ion-item button (click)="openActionSheet(currentAttendance, true)">
                 <ion-label>
@@ -238,6 +269,19 @@
                   </ion-button>
                 }
               </ion-item-divider>
+              @if (att.description || att.attachment_url) {
+                <ion-item lines="none">
+                  <ion-note color="primary" style="font-size: .8rem;">
+                    @if (att.description) {
+                      <ion-icon name="document-text-outline" style="vertical-align: middle;"></ion-icon>
+                    }
+                    @if (att.attachment_url) {
+                      <ion-icon name="attach-outline" style="vertical-align: middle;"></ion-icon>
+                    }
+                    Infos verfügbar
+                  </ion-note>
+                </ion-item>
+              }
               @if (kids.length !== 1) {
                 <ion-item button (click)="openActionSheet(att, true)">
                   <ion-label>

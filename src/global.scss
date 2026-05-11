@@ -37,7 +37,8 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/* Quill CSS moved to meeting.page.scss for lazy loading */
+@import 'quill/dist/quill.core.css';
+@import 'quill/dist/quill.snow.css';
 
 [contenteditable] {
     -webkit-user-select: text;

@@ -1,6 +1,7 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ConnectionStatus, Network } from '@capacitor/network';
+import { Browser } from '@capacitor/browser';
 import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
 import { Storage } from '@ionic/storage-angular';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
@@ -317,6 +318,70 @@ export class AttendancePage implements OnInit {
         loading.dismiss();
         Utils.showToast('Fehler beim hinzufügen des Bildes, versuche es später erneut', 'danger');
       }
+    }
+  }
+
+  async onDescriptionChanged() {
+    await this.db.updateAttendance({
+      description: this.attendance.description || null,
+    }, this.attendance.id);
+  }
+
+  async onAttachmentSelect(evt: any) {
+    const file: File = evt.target.files[0];
+    if (!file) return;
+
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `${this.attendance.id}/attachment/${safeName}`;
+      const { error } = await this.db.getSupabase().storage
+        .from('attendances')
+        .upload(path, file, { upsert: true });
+
+      if (error) throw error;
+
+      const { data } = this.db.getSupabase().storage
+        .from('attendances')
+        .getPublicUrl(path);
+
+      this.attendance.attachment_url = data.publicUrl;
+      this.attendance.attachment_name = file.name;
+
+      await this.db.updateAttendance({
+        attachment_url: data.publicUrl,
+        attachment_name: file.name,
+      }, this.attendance.id);
+
+      Utils.showToast('Anhang hochgeladen', 'success');
+    } catch (error) {
+      Utils.showToast('Fehler beim Hochladen', 'danger');
+    }
+
+    await loading.dismiss();
+    evt.target.value = '';
+  }
+
+  async removeAttachment() {
+    const path = `${this.attendance.id}/attachment/${this.attendance.attachment_name}`;
+    await this.db.getSupabase().storage
+      .from('attendances')
+      .remove([path]);
+
+    this.attendance.attachment_url = null;
+    this.attendance.attachment_name = null;
+
+    await this.db.updateAttendance({
+      attachment_url: null,
+      attachment_name: null,
+    }, this.attendance.id);
+  }
+
+  openAttachment() {
+    if (this.attendance.attachment_url) {
+      Browser.open({ url: this.attendance.attachment_url });
     }
   }
 
@@ -834,6 +899,44 @@ export class AttendancePage implements OnInit {
     });
 
     await modal.present();
+  }
+
+  async sendAdHocReminder(): Promise<void> {
+    const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === this.attendance.type_id);
+    const typeName = attType?.name || 'Termin';
+    const dateStr = dayjs(this.attendance.date).format('DD.MM.YYYY');
+    const timeStr = this.attendance.start_time ? ` um ${this.attendance.start_time} Uhr` : '';
+    const infoStr = this.attendance.typeInfo ? ` (${this.attendance.typeInfo})` : '';
+    const defaultMessage = `${typeName} am ${dateStr}${timeStr}${infoStr}`;
+
+    const alert = await this.alertController.create({
+      header: 'Erinnerung versenden',
+      message: 'Möchtest du jetzt eine Erinnerung an alle Mitglieder versenden?',
+      inputs: [
+        { name: 'message', type: 'textarea', placeholder: 'Nachricht', value: defaultMessage }
+      ],
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Versenden',
+          handler: async (data) => {
+            const { error } = await this.db.getSupabase().functions.invoke('send-ad-hoc-reminder', {
+              body: {
+                attendanceId: this.attendance.id,
+                tenantId: this.attendance.tenantId,
+                message: data.message || undefined,
+              },
+            });
+            if (error) {
+              Utils.showToast('Fehler beim Versenden', 'danger');
+            } else {
+              Utils.showToast('Erinnerung versendet', 'success');
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   /**

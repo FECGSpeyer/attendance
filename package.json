@@ -1,6 +1,6 @@
 {
   "name": "attendix",
-  "version": "3.15.0",
+  "version": "4.0.0",
   "author": "Matthias Eckstaedt",
   "homepage": "https://attendix.de/",
   "engines": {
@@ -36,6 +36,8 @@
     "@capacitor/app": "^8.0.0",
     "@capacitor/browser": "^8.0.0",
     "@capacitor/core": "^8.0.2",
+    "@capacitor/file-viewer": "^2.0.1",
+    "@capacitor/filesystem": "^8.1.2",
     "@capacitor/haptics": "^8.0.0",
     "@capacitor/ios": "^8.0.2",
     "@capacitor/keyboard": "^8.0.0",
@@ -95,14 +97,5 @@
     "typescript": "~5.9.3",
     "vitest": "^4.0.18"
   },
-  "description": "An Ionic project",
-  "browserslist": [
-    "Chrome >=61",
-    "ChromeAndroid >=61",
-    "Firefox >=63",
-    "Firefox ESR",
-    "Edge >=79",
-    "Safari >=13",
-    "iOS >=13"
-  ]
+  "description": "An Ionic project"
 }
