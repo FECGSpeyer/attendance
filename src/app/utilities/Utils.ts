@@ -371,7 +371,6 @@ export class Utils {
 
     const data: any[] = [];
 
-    let row = 1;
     let currentTime = startingTime;
 
     for (const field of props.fields) {
@@ -451,7 +450,6 @@ export class Utils {
       } else {
         if (hasConductors) {
           data.push([
-            row.toString(),
             `${currentTime.format('HH:mm')} Uhr`,
             fieldName,
             field.conductor || '',
@@ -459,7 +457,6 @@ export class Utils {
           ]);
         } else {
           data.push([
-            row.toString(),
             `${currentTime.format('HH:mm')} Uhr`,
             fieldName,
             `${field.time} min`,
@@ -467,18 +464,15 @@ export class Utils {
         }
 
         currentTime = currentTime.add(parseInt(field.time), 'minutes');
-        row++;
       }
     }
 
     const head = hasConductors ? [[
-      { content: '#', styles: { fontSize: props.sideBySide ? 8 : 11 } },
       { content: 'Uhrzeit', styles: { fontSize: props.sideBySide ? 8 : 11 } },
       { content: 'Programmpunkt', styles: { fontSize: props.sideBySide ? 8 : 11 } },
       { content: 'Ausführung', styles: { fontSize: props.sideBySide ? 8 : 11 } },
       { content: 'Dauer', styles: { fontSize: props.sideBySide ? 8 : 11 } },
     ]] : [[
-      { content: '#', styles: { fontSize: props.sideBySide ? 8 : 11 } },
       { content: 'Uhrzeit', styles: { fontSize: props.sideBySide ? 8 : 11 } },
       { content: 'Programmpunkt', styles: { fontSize: props.sideBySide ? 8 : 11 } },
       { content: 'Dauer', styles: { fontSize: props.sideBySide ? 8 : 11 } },
@@ -692,16 +686,13 @@ export class Utils {
   ): Promise<void> {
     // Lazy load xlsx to reduce initial bundle size
     const { utils, writeFile } = await import('xlsx');
-
-    let row = 1;
     let data;
 
     if (churches?.length) {
-      data = [['', 'Nachname', 'Vorname', 'Gruppe', 'Gemeinde', 'Status', 'Bemerkung']];
+      data = [['Nachname', 'Vorname', 'Gruppe', 'Gemeinde', 'Status', 'Bemerkung']];
 
       for (const user of players) {
         data.push([
-          row.toString(),
           user.lastName,
           user.firstName,
           user.groupName,
@@ -709,14 +700,12 @@ export class Utils {
           Utils.getAttText(user),
           user.notes || ''
         ]);
-        row++;
       }
     } else {
       data = [['', 'Nachname', 'Vorname', 'Gruppe', 'Status', 'Bemerkung']];
 
       for (const user of players) {
-        data.push([row.toString(), user.lastName, user.firstName, user.groupName, Utils.getAttText(user), user.notes || '']);
-        row++;
+        data.push([user.lastName, user.firstName, user.groupName, Utils.getAttText(user), user.notes || '']);
       }
     }
 
