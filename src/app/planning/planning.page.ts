@@ -37,6 +37,7 @@ export class PlanningPage implements OnInit {
   public planConductors: string[] = [];
   public groupCategories: GroupCategory[];
   public sharePlan = false;
+  public planTitle = '';
   public isGeneral = false;
   public songSearchTerm = '';
   public filteredSongs: Song[] = [];
@@ -68,6 +69,7 @@ export class PlanningPage implements OnInit {
       const att = this.attendances.find((att: Attendance) => att.id === this.attendanceId);
       this.notes = att?.notes || '';
       this.sharePlan = att?.share_plan || false;
+      this.planTitle = att?.plan?.title ?? this.getDefaultPlanTitle(att);
       if (att?.plan) {
         this.end = att.plan.end;
         this.time = att.plan.time;
@@ -83,6 +85,7 @@ export class PlanningPage implements OnInit {
       this.attendance = upcomingAttendances[0].id;
       this.notes = upcomingAttendances[0].notes;
       this.sharePlan = upcomingAttendances[0].share_plan || false;
+      this.planTitle = upcomingAttendances[0].plan?.title ?? this.getDefaultPlanTitle(upcomingAttendances[0]);
       if (upcomingAttendances[0].plan) {
         this.end = upcomingAttendances[0].plan.end;
         this.time = upcomingAttendances[0].plan.time;
@@ -165,10 +168,8 @@ export class PlanningPage implements OnInit {
       return;
     }
 
-    const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
     const name: string = this.attendance ? dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format('DD_MM_YYYY') : dayjs().format('DD_MM_YYYY');
-    const type = this.db.attendanceTypes().find(type => type.id === attendance.type_id);
-    const planningTitle = Utils.getPlanningTitle(type, attendance.typeInfo);
+    const planningTitle = this.getEffectivePlanTitle();
     const blob = await Utils.createPlanExport({
       time: this.time,
       end: this.end,
@@ -189,6 +190,7 @@ export class PlanningPage implements OnInit {
 
     this.notes = attendance.notes;
     this.sharePlan = attendance.share_plan || false;
+    this.planTitle = attendance.plan?.title ?? this.getDefaultPlanTitle(attendance);
     if (attendance.plan) {
       this.end = attendance.plan.end;
       this.time = attendance.plan.time;
@@ -353,9 +355,7 @@ export class PlanningPage implements OnInit {
       return;
     }
 
-    const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
-    const type = this.db.attendanceTypes().find(type => type.id === attendance.type_id);
-    const planningTitle = Utils.getPlanningTitle(type, attendance.typeInfo);
+    const planningTitle = this.getEffectivePlanTitle();
 
     await Utils.createPlanExport({
       time: this.time,
@@ -389,6 +389,17 @@ export class PlanningPage implements OnInit {
   getAttTypeText(attendance: Attendance): string {
     const type = this.db.attendanceTypes().find((t: AttendanceType) => t.id === attendance.type_id);
     return Utils.getTypeTitle(type, attendance.typeInfo);
+  }
+
+  private getDefaultPlanTitle(attendance: Attendance | undefined): string {
+    if (!attendance) {return '';}
+    const type = this.db.attendanceTypes().find((t: AttendanceType) => t.id === attendance.type_id);
+    return type ? Utils.getPlanningTitle(type, attendance.typeInfo) : '';
+  }
+
+  private getEffectivePlanTitle(): string {
+    const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
+    return this.planTitle?.trim() || this.getDefaultPlanTitle(attendance);
   }
 
   async showOptions() {
@@ -606,6 +617,7 @@ export class PlanningPage implements OnInit {
           time: this.time,
           fields: this.selectedFields,
           end: this.end,
+          title: this.planTitle?.trim() || undefined,
         }
       }, this.attendance);
 

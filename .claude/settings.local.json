@@ -15,7 +15,15 @@
       "Bash(npx *)",
       "WebFetch(domain:capacitorjs.com)",
       "Bash(npm install *)",
-      "Bash(keytool -list -v -keystore \"C:/Users/D062831/secrets/attendix\")"
+      "Bash(keytool -list -v -keystore \"C:/Users/D062831/secrets/attendix\")",
+      "Bash(/cygdrive/c/Users/D062831/projects/attendance/node_modules/.bin/tsc --noEmit -p /cygdrive/c/Users/D062831/projects/attendance/tsconfig.app.json)",
+      "Bash(HOME=/cygdrive/c/Users/D062831 bash -c \"cd /cygdrive/c/Users/D062831/projects/attendance && ./node_modules/.bin/tsc --noEmit -p tsconfig.app.json\")",
+      "Bash(./node_modules/.bin/tsc --noEmit -p tsconfig.app.json)",
+      "Bash(cd /cygdrive/c/Users/D062831/projects/attendance)",
+      "Bash(echo \"EXIT=$?\")",
+      "Read(//tmp/**)",
+      "Bash(ls ios/App)",
+      "Bash(ls ios/App/App)"
     ]
   }
 }

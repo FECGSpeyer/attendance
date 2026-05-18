@@ -270,6 +270,7 @@ export interface Plan {
   end: string;
   time: string;
   fields: FieldSelection[];
+  title?: string;
 }
 
 export interface PersonAttendance {

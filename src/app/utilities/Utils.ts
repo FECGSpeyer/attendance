@@ -487,10 +487,8 @@ export class Utils {
     };
 
     const columnStyles = props.sideBySide ? {
-      0: { cellWidth: 8, halign: 'center' as const },
       1: { cellWidth: 20 },
     } : {
-      0: { cellWidth: 12, halign: 'center' as const },
       1: { cellWidth: 28 },
     };
 

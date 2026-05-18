@@ -139,7 +139,7 @@ export class PlanViewerComponent implements OnInit {
     }
 
     const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
-    const planningTitle = Utils.getPlanningTitle(type, this.attendance.typeInfo);
+    const planningTitle = this.plan?.title?.trim() || Utils.getPlanningTitle(type, this.attendance.typeInfo);
 
     await Utils.createPlanExport({
       time: this.plan.time,
@@ -158,7 +158,7 @@ export class PlanViewerComponent implements OnInit {
     }
 
     const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
-    const planningTitle = Utils.getPlanningTitle(type, this.attendance.typeInfo);
+    const planningTitle = this.plan?.title?.trim() || Utils.getPlanningTitle(type, this.attendance.typeInfo);
     const name = this.attendance?.date
       ? dayjs(this.attendance.date).format('DD_MM_YYYY')
       : dayjs().format('DD_MM_YYYY');

@@ -278,7 +278,7 @@ Deno.serve(async (req) => {
 
           // 6. Get all users with role 1 (ADMIN) or 5 (RESPONSIBLE) in this tenant
           const { data: tenantUsers, error: tuError } = await supabase
-            .from('tenant_users')
+            .from('tenantUsers')
             .select('userId, tenantId, role')
             .eq('tenantId', attType.tenant_id)
             .in('role', REMINDER_ROLES);

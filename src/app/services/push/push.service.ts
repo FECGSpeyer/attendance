@@ -1,6 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
+import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import { AlertController } from '@ionic/angular';
 import { supabase } from '../base/supabase';
 import { Router } from '@angular/router';
@@ -82,9 +83,21 @@ export class PushService {
 
     await PushNotifications.register();
 
+    const isIos = Capacitor.getPlatform() === 'ios';
+
     PushNotifications.addListener('registration', async (token) => {
-      this.currentToken = token.value;
-      await this.saveToken(token.value);
+      if (isIos) {
+        try {
+          const { token: fcmToken } = await FirebaseMessaging.getToken();
+          this.currentToken = fcmToken;
+          await this.saveToken(fcmToken);
+        } catch (e) {
+          console.error('Failed to fetch FCM token via FirebaseMessaging:', e);
+        }
+      } else {
+        this.currentToken = token.value;
+        await this.saveToken(token.value);
+      }
     });
 
     PushNotifications.addListener('registrationError', (error) => {
@@ -166,6 +179,14 @@ export class PushService {
       .from('device_tokens')
       .delete()
       .eq('token', this.currentToken);
+
+    if (Capacitor.getPlatform() === 'ios') {
+      try {
+        await FirebaseMessaging.deleteToken();
+      } catch (e) {
+        console.error('Failed to delete FCM token:', e);
+      }
+    }
 
     this.currentToken = null;
   }

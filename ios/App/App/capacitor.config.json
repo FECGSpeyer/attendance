@@ -12,6 +12,7 @@
 		}
 	},
 	"packageClassList": [
+		"FirebaseMessagingPlugin",
 		"AppPlugin",
 		"CAPBrowserPlugin",
 		"FileViewerPlugin",
