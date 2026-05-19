@@ -25,7 +25,9 @@
       "Bash(ls ios/App)",
       "Bash(ls ios/App/App)",
       "Bash(node -e ' *)",
-      "Bash(node -e \"console.log\\(require\\('sharp'\\).versions\\)\")"
+      "Bash(node -e \"console.log\\(require\\('sharp'\\).versions\\)\")",
+      "Bash(xcodebuild -showBuildSettings -project App.xcodeproj -target App)",
+      "Bash(pod install *)"
     ]
   }
 }
