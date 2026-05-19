@@ -23,7 +23,9 @@
       "Bash(echo \"EXIT=$?\")",
       "Read(//tmp/**)",
       "Bash(ls ios/App)",
-      "Bash(ls ios/App/App)"
+      "Bash(ls ios/App/App)",
+      "Bash(node -e ' *)",
+      "Bash(node -e \"console.log\\(require\\('sharp'\\).versions\\)\")"
     ]
   }
 }

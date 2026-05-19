@@ -487,9 +487,9 @@ export class Utils {
     };
 
     const columnStyles = props.sideBySide ? {
-      1: { cellWidth: 20 },
+      0: { cellWidth: 20 },
     } : {
-      1: { cellWidth: 28 },
+      0: { cellWidth: 28 },
     };
 
     // Side-by-side A5 landscape mode
