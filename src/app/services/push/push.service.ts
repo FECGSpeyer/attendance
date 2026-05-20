@@ -100,38 +100,35 @@ export class PushService {
         // Request Firebase Messaging permissions
         await FirebaseMessaging.requestPermissions();
 
+        // Wait for APNS registration to complete before getting FCM token
+        const registrationPromise = new Promise<void>((resolve, reject) => {
+          PushNotifications.addListener('registration', (token) => {
+            // APNS token received, now AppDelegate has set it on Firebase Messaging
+            resolve();
+          });
+
+          PushNotifications.addListener('registrationError', (error) => {
+            reject(new Error(error.error));
+          });
+
+          // Timeout after 10 seconds
+          setTimeout(() => reject(new Error('Registration timeout')), 10000);
+        });
+
         // Register for push notifications - this triggers APNS registration in AppDelegate
         await PushNotifications.register();
 
-        // Wait for APNS token to be registered (the AppDelegate callback needs time to execute)
-        // Try multiple times with increasing delays
-        let fcmToken: string | null = null;
-        let attempts = 0;
-        const maxAttempts = 5;
+        // Wait for the registration listener to fire
+        await registrationPromise;
 
-        while (!fcmToken && attempts < maxAttempts) {
-          attempts++;
-
-          // Wait before attempting (longer each time)
-          await new Promise(resolve => setTimeout(resolve, attempts * 500));
-
-          try {
-            const result = await FirebaseMessaging.getToken();
-            if (result.token) {
-              fcmToken = result.token;
-            }
-          } catch (e) {
-            // Token not ready yet, will retry
-            await this.showDebugAlert('iOS Token Attempt', `Attempt ${attempts}/${maxAttempts}: ${e.message || 'Token not ready'}`);
-          }
-        }
-
-        if (fcmToken) {
-          this.currentToken = fcmToken;
-          await this.saveToken(fcmToken);
-          await this.showDebugAlert('iOS Push Token Saved', `Token: ${fcmToken.substring(0, 20)}...`);
+        // Now get the FCM token (APNS token should be set by now)
+        const result = await FirebaseMessaging.getToken();
+        if (result.token) {
+          this.currentToken = result.token;
+          await this.saveToken(result.token);
+          await this.showDebugAlert('iOS Push Token Saved', `Token: ${result.token.substring(0, 20)}...`);
         } else {
-          await this.showDebugAlert('iOS Push Error', `Failed to get FCM token after ${maxAttempts} attempts. Check Firebase Console APNS setup.`);
+          await this.showDebugAlert('iOS Push Error', 'No FCM token received from getToken()');
         }
       } catch (e) {
         await this.showDebugAlert('iOS Push Error', `Failed to initialize: ${e.message || JSON.stringify(e)}`);
