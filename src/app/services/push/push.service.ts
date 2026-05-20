@@ -81,9 +81,18 @@ export class PushService {
       return;
     }
 
-    await PushNotifications.register();
-
     const isIos = Capacitor.getPlatform() === 'ios';
+
+    // For iOS, request Firebase Messaging permissions first
+    if (isIos) {
+      try {
+        await FirebaseMessaging.requestPermissions();
+      } catch (e) {
+        console.error('Failed to request Firebase Messaging permissions:', e);
+      }
+    }
+
+    await PushNotifications.register();
 
     PushNotifications.addListener('registration', async (token) => {
       if (isIos) {
@@ -93,6 +102,9 @@ export class PushService {
           await this.saveToken(fcmToken);
         } catch (e) {
           console.error('Failed to fetch FCM token via FirebaseMessaging:', e);
+          // Fallback: use the APNS token if FCM fails
+          this.currentToken = token.value;
+          await this.saveToken(token.value);
         }
       } else {
         this.currentToken = token.value;
@@ -218,6 +230,15 @@ export class PushService {
 
     const platform = Capacitor.getPlatform();
 
+    // First, remove any existing entries for this token from other users
+    // This ensures a device token is only associated with one user at a time
+    await supabase
+      .from('device_tokens')
+      .delete()
+      .eq('token', token)
+      .neq('user_id', user.id);
+
+    // Then upsert the token for the current user
     await supabase
       .from('device_tokens')
       .upsert({
