@@ -10,7 +10,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "appflow:build": "node server.js; ng build -c production",
+    "appflow:build": "node server.js; ng build",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",

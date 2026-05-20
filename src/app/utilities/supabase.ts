@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       attendance: {
         Row: {
+          attachment_name: string | null
+          attachment_url: string | null
           checklist: Json | null
           conductors: Json | null
           created_at: string | null
@@ -23,6 +25,7 @@ export type Database = {
           criticalPlayers: number[] | null
           date: string | null
           deadline: string | null
+          description: string | null
           duration_days: number | null
           end_time: string | null
           excused: string[]
@@ -42,6 +45,8 @@ export type Database = {
           typeInfo: string | null
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_url?: string | null
           checklist?: Json | null
           conductors?: Json | null
           created_at?: string | null
@@ -49,6 +54,7 @@ export type Database = {
           criticalPlayers?: number[] | null
           date?: string | null
           deadline?: string | null
+          description?: string | null
           duration_days?: number | null
           end_time?: string | null
           excused?: string[]
@@ -68,6 +74,8 @@ export type Database = {
           typeInfo?: string | null
         }
         Update: {
+          attachment_name?: string | null
+          attachment_url?: string | null
           checklist?: Json | null
           conductors?: Json | null
           created_at?: string | null
@@ -75,6 +83,7 @@ export type Database = {
           criticalPlayers?: number[] | null
           date?: string | null
           deadline?: string | null
+          description?: string | null
           duration_days?: number | null
           end_time?: string | null
           excused?: string[]
