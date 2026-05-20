@@ -83,34 +83,41 @@ export class PushService {
 
     const isIos = Capacitor.getPlatform() === 'ios';
 
-    // For iOS, request Firebase Messaging permissions first
+    // For iOS, use Firebase Messaging directly for token handling
     if (isIos) {
       try {
+        // Request Firebase Messaging permissions
         await FirebaseMessaging.requestPermissions();
-      } catch (e) {
-        console.error('Failed to request Firebase Messaging permissions:', e);
-      }
-    }
 
-    await PushNotifications.register();
+        // Register for push notifications
+        await PushNotifications.register();
 
-    PushNotifications.addListener('registration', async (token) => {
-      if (isIos) {
-        try {
-          const { token: fcmToken } = await FirebaseMessaging.getToken();
+        // Get the FCM token directly
+        const { token: fcmToken } = await FirebaseMessaging.getToken();
+        if (fcmToken) {
           this.currentToken = fcmToken;
           await this.saveToken(fcmToken);
-        } catch (e) {
-          console.error('Failed to fetch FCM token via FirebaseMessaging:', e);
-          // Fallback: use the APNS token if FCM fails
-          this.currentToken = token.value;
-          await this.saveToken(token.value);
         }
-      } else {
+
+        // Listen for token refresh
+        FirebaseMessaging.addListener('tokenReceived', async (event) => {
+          if (event.token) {
+            this.currentToken = event.token;
+            await this.saveToken(event.token);
+          }
+        });
+      } catch (e) {
+        console.error('Failed to initialize Firebase Messaging:', e);
+      }
+    } else {
+      // Android uses standard PushNotifications plugin
+      await PushNotifications.register();
+
+      PushNotifications.addListener('registration', async (token) => {
         this.currentToken = token.value;
         await this.saveToken(token.value);
-      }
-    });
+      });
+    }
 
     PushNotifications.addListener('registrationError', (error) => {
       console.error('Push registration error:', error.error);
@@ -235,17 +242,20 @@ export class PushService {
     await supabase
       .from('device_tokens')
       .delete()
-      .eq('token', token)
-      .neq('user_id', user.id);
+      .eq('token', token);
 
-    // Then upsert the token for the current user
-    await supabase
+    // Then insert the token for the current user
+    const { error } = await supabase
       .from('device_tokens')
-      .upsert({
+      .insert({
         user_id: user.id,
         token,
         platform,
         updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id,token' });
+      });
+
+    if (error) {
+      console.error('Failed to save device token:', error);
+    }
   }
 }
