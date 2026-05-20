@@ -28,7 +28,11 @@
       "Bash(node -e \"console.log\\(require\\('sharp'\\).versions\\)\")",
       "Bash(xcodebuild -showBuildSettings -project App.xcodeproj -target App)",
       "Bash(pod install *)",
-      "Bash(git clean *)"
+      "Bash(git clean *)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:firebase.google.com)",
+      "Bash(/usr/libexec/PlistBuddy -c \"Print CFBundleIdentifier\" \"C:/Users/D062831/projects/attendance/ios/App/App/Info.plist\")"
     ]
   }
 }

@@ -86,30 +86,53 @@ export class PushService {
     // For iOS, use Firebase Messaging directly for token handling
     if (isIos) {
       try {
+        // Set up listener for token changes/refreshes
+        await FirebaseMessaging.addListener('tokenReceived', async (event) => {
+          this.zone.run(async () => {
+            if (event.token) {
+              this.currentToken = event.token;
+              await this.saveToken(event.token);
+              await this.showDebugAlert('iOS Token Refreshed', `Token updated: ${event.token.substring(0, 20)}...`);
+            }
+          });
+        });
+
         // Request Firebase Messaging permissions
         await FirebaseMessaging.requestPermissions();
 
-        // Register for push notifications
+        // Register for push notifications - this triggers APNS registration in AppDelegate
         await PushNotifications.register();
 
-        // Get the FCM token directly
-        const { token: fcmToken } = await FirebaseMessaging.getToken();
+        // Wait for APNS token to be registered (the AppDelegate callback needs time to execute)
+        // Try multiple times with increasing delays
+        let fcmToken: string | null = null;
+        let attempts = 0;
+        const maxAttempts = 5;
+
+        while (!fcmToken && attempts < maxAttempts) {
+          attempts++;
+
+          // Wait before attempting (longer each time)
+          await new Promise(resolve => setTimeout(resolve, attempts * 500));
+
+          try {
+            const result = await FirebaseMessaging.getToken();
+            if (result.token) {
+              fcmToken = result.token;
+            }
+          } catch (e) {
+            // Token not ready yet, will retry
+            await this.showDebugAlert('iOS Token Attempt', `Attempt ${attempts}/${maxAttempts}: ${e.message || 'Token not ready'}`);
+          }
+        }
+
         if (fcmToken) {
           this.currentToken = fcmToken;
           await this.saveToken(fcmToken);
           await this.showDebugAlert('iOS Push Token Saved', `Token: ${fcmToken.substring(0, 20)}...`);
         } else {
-          await this.showDebugAlert('iOS Push Error', 'No FCM token received');
+          await this.showDebugAlert('iOS Push Error', `Failed to get FCM token after ${maxAttempts} attempts. Check Firebase Console APNS setup.`);
         }
-
-        // Listen for token refresh
-        FirebaseMessaging.addListener('tokenReceived', async (event) => {
-          if (event.token) {
-            this.currentToken = event.token;
-            await this.saveToken(event.token);
-            await this.showDebugAlert('iOS Token Refreshed', `New token: ${event.token.substring(0, 20)}...`);
-          }
-        });
       } catch (e) {
         await this.showDebugAlert('iOS Push Error', `Failed to initialize: ${e.message || JSON.stringify(e)}`);
       }

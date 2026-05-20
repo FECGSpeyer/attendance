@@ -46,6 +46,7 @@
     "@capacitor/network": "^8.0.0",
     "@capacitor/push-notifications": "^8.0.0",
     "@capacitor/status-bar": "^8.0.0",
+    "@capawesome/capacitor-android-edge-to-edge-support": "^8.0.8",
     "@ionic/angular": "^8.7.17",
     "@ionic/core": "^8.7.17",
     "@ionic/storage-angular": "^4.0.0",
