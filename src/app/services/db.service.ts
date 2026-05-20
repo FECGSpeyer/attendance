@@ -10,6 +10,7 @@ import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 import { supabase, attendanceSelect } from './base/supabase';
+import { pickPersonFields, pickTenantUserFields } from '../utilities/db-helpers';
 
 // Import new modular services
 import { AuthService } from './auth/auth.service';
@@ -713,9 +714,10 @@ export class DbService {
   }
 
   async updateTenantUser(updates: Partial<TenantUser>, userId: string): Promise<void> {
-    const { data, error } = await supabase
+    const dbFields = pickTenantUserFields(updates);
+    const { data, error} = await supabase
       .from('tenantUsers')
-      .update(updates)
+      .update(dbFields as any)
       .match({ tenantId: this.tenant().id, userId });
 
     if (error) {
@@ -1205,12 +1207,12 @@ export class DbService {
 
     const { data, error } = await supabase
       .from('player')
-      .insert({
+      .insert(pickPersonFields({
         ...player,
         tenantId: tenantId ?? this.tenant().id,
         id: Utils.getId(),
         history: player.history as any
-      })
+      }) as any)
       .select()
       .single();
 
@@ -1499,10 +1501,10 @@ export class DbService {
 
     const { data, error } = await supabase
       .from('player')
-      .update({
+      .update(pickPersonFields({
         ...dataToUpdate,
         history: dataToUpdate.history as any,
-      })
+      }) as any)
       .match({ id: player.id })
       .select();
 

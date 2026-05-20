@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { Teacher } from '../../utilities/interfaces';
+import { pickTeacherFields } from '../../utilities/db-helpers';
 
 @Injectable({
   providedIn: 'root'
@@ -20,24 +21,20 @@ export class TeacherService {
   }
 
   async addTeacher(teacher: Teacher, tenantId: number): Promise<Teacher[]> {
+    const dbFields = pickTeacherFields({ ...teacher, tenantId });
     const { data } = await supabase
       .from('teachers')
-      .insert({
-        ...teacher,
-        tenantId,
-      })
+      .insert(dbFields as any)
       .select();
 
     return data;
   }
 
   async updateTeacher(teacher: Partial<Teacher>, id: number): Promise<Teacher[]> {
-    delete (teacher as any).insNames;
-    delete (teacher as any).playerCount;
-
+    const dbFields = pickTeacherFields(teacher);
     const { data } = await supabase
       .from('teachers')
-      .update(teacher)
+      .update(dbFields as any)
       .match({ id });
 
     return data;

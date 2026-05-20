@@ -63,9 +63,11 @@ export class AdminService {
   }
 
   async updateTenantUser(updates: Partial<TenantUser>, userId: string, tenantId: number): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { telegram_chat_id, ...dbUpdates } = updates as any;
     const { error } = await supabase
       .from('tenantUsers')
-      .update(updates)
+      .update(dbUpdates as any)
       .match({ tenantId, userId });
 
     if (error) {

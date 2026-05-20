@@ -3,6 +3,7 @@ import { History, Song } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { supabase } from '../base/supabase';
 import dayjs from 'dayjs';
+import { pickHistoryFields } from '../../utilities/db-helpers';
 
 @Injectable({
   providedIn: 'root'
@@ -34,9 +35,10 @@ export class HistoryService {
   }
 
   async updateHistoryEntry(id: number, history: Partial<History>): Promise<History[]> {
+    const dbFields = pickHistoryFields(history);
     const { data, error } = await supabase
       .from('history')
-      .update(history)
+      .update(dbFields as any)
       .match({ id });
 
     if (error) {
@@ -48,9 +50,10 @@ export class HistoryService {
   }
 
   async addHistoryEntry(history: History[], tenantId: number): Promise<History[]> {
+    const dbEntries = history.map((h: History) => pickHistoryFields({ ...h, tenantId }));
     const { data } = await supabase
       .from('history')
-      .insert(history.map((h: History) => ({ ...h, tenantId })))
+      .insert(dbEntries as any)
       .select();
 
     return data;
@@ -70,9 +73,10 @@ export class HistoryService {
   }
 
   async addSongsToHistory(historyEntries: History[]): Promise<void> {
+    const dbEntries = historyEntries.map(entry => pickHistoryFields(entry));
     const { error } = await supabase
       .from('history')
-      .insert(historyEntries)
+      .insert(dbEntries as any)
       .select();
 
     if (error) {

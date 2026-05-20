@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Group, GroupCategory, Teacher } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { supabase } from '../base/supabase';
+import { pickGroupFields, pickTeacherFields } from '../../utilities/db-helpers';
 
 @Injectable({
   providedIn: 'root'
@@ -42,9 +43,10 @@ export class GroupService {
   }
 
   async updateGroup(updates: Partial<Group>, id: number): Promise<Group[]> {
+    const dbFields = pickGroupFields(updates);
     const { data, error } = await supabase
       .from('instruments')
-      .update(updates)
+      .update(dbFields as any)
       .match({ id })
       .select();
 
@@ -120,21 +122,20 @@ export class GroupService {
   }
 
   async addTeacher(teacher: Teacher, tenantId: number): Promise<Teacher[]> {
+    const dbFields = pickTeacherFields({ ...teacher, tenantId });
     const { data } = await supabase
       .from('teachers')
-      .insert({ ...teacher, tenantId })
+      .insert(dbFields as any)
       .select();
 
     return data;
   }
 
   async updateTeacher(teacher: Partial<Teacher>, id: number): Promise<Teacher[]> {
-    delete teacher.insNames;
-    delete teacher.playerCount;
-
+    const dbFields = pickTeacherFields(teacher);
     const { data } = await supabase
       .from('teachers')
-      .update(teacher)
+      .update(dbFields as any)
       .match({ id });
 
     return data;

@@ -4,6 +4,7 @@ import { AttendanceStatus } from '../../utilities/constants';
 import { Attendance, AttendanceType, Person, PersonAttendance } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { supabase, attendanceSelect } from '../base/supabase';
+import { pickPersonAttendanceFields } from '../../utilities/db-helpers';
 
 @Injectable({
   providedIn: 'root'
@@ -223,13 +224,14 @@ export class AttendanceService {
   }
 
   async updatePersonAttendance(id: string, att: Partial<PersonAttendance>, userId?: string): Promise<void> {
+    const dbFields = pickPersonAttendanceFields({
+      ...att,
+      changed_by: userId || null,
+      changed_at: new Date().toISOString(),
+    });
     const { error } = await supabase
       .from('person_attendances')
-      .update({
-        ...att,
-        changed_by: userId || null,
-        changed_at: new Date().toISOString(),
-      })
+      .update(dbFields as any)
       .match({ id });
 
     if (error) {

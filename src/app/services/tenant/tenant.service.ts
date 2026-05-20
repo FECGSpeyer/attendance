@@ -3,6 +3,7 @@ import { Role, SupabaseTable } from '../../utilities/constants';
 import { Admin, Group, Organisation, Parent, Tenant, TenantUser, Viewer } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { supabase } from '../base/supabase';
+import { pickTenantUserFields } from '../../utilities/db-helpers';
 
 @Injectable({
   providedIn: 'root'
@@ -94,9 +95,10 @@ export class TenantService {
   }
 
   async updateTenantUser(updates: Partial<TenantUser>, userId: string, tenantId: number): Promise<void> {
+    const dbFields = pickTenantUserFields(updates);
     const { error } = await supabase
       .from('tenantUsers')
-      .update(updates)
+      .update(dbFields as any)
       .match({ userId, tenantId });
 
     if (error) {

@@ -4,6 +4,7 @@ import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable
 import { Attendance, AttendanceType, Group, Person, PersonAttendance, Player, PlayerHistoryEntry, ShiftPlan, Tenant, TenantUser } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { supabase } from '../base/supabase';
+import { pickPersonFields } from '../../utilities/db-helpers';
 
 @Injectable({
   providedIn: 'root'
@@ -212,12 +213,12 @@ export class PlayerService {
 
     const { data, error } = await supabase
       .from('player')
-      .insert({
+      .insert(pickPersonFields({
         ...player,
         tenantId,
         id: Utils.getId(),
         history: player.history as any
-      })
+      }) as any)
       .select()
       .single();
 
@@ -251,10 +252,10 @@ export class PlayerService {
 
     const { data, error } = await supabase
       .from('player')
-      .update({
+      .update(pickPersonFields({
         ...dataToUpdate,
         history: dataToUpdate.history as any,
-      })
+      }) as any)
       .match({ id: player.id })
       .select();
 
@@ -304,7 +305,7 @@ export class PlayerService {
   async updatePlayerField(id: number, field: string, value: any): Promise<void> {
     const { error } = await supabase
       .from('player')
-      .update({ [field]: value })
+      .update({ [field]: value } as any)
       .match({ id });
 
     if (error) {

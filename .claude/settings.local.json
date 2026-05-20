@@ -27,7 +27,8 @@
       "Bash(node -e ' *)",
       "Bash(node -e \"console.log\\(require\\('sharp'\\).versions\\)\")",
       "Bash(xcodebuild -showBuildSettings -project App.xcodeproj -target App)",
-      "Bash(pod install *)"
+      "Bash(pod install *)",
+      "Bash(git clean *)"
     ]
   }
 }

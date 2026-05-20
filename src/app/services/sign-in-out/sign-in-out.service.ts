@@ -3,6 +3,7 @@ import { supabase } from '../base/supabase';
 import { PersonAttendance } from '../../utilities/interfaces';
 import { AttendanceStatus } from '../../utilities/constants';
 import { TelegramService } from '../telegram/telegram.service';
+import { pickPersonAttendanceFields } from '../../utilities/db-helpers';
 
 @Injectable({
   providedIn: 'root'
@@ -55,13 +56,14 @@ export class SignInOutService {
     att: Partial<PersonAttendance>,
     userId?: string
   ): Promise<void> {
+    const dbFields = pickPersonAttendanceFields({
+      ...att,
+      changed_by: userId || null,
+      changed_at: new Date().toISOString(),
+    });
     const { error } = await supabase
       .from('person_attendances')
-      .update({
-        ...att,
-        changed_by: userId || null,
-        changed_at: new Date().toISOString(),
-      })
+      .update(dbFields as any)
       .match({ id });
 
     if (error) {
