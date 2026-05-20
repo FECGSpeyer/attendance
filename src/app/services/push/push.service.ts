@@ -97,6 +97,9 @@ export class PushService {
         if (fcmToken) {
           this.currentToken = fcmToken;
           await this.saveToken(fcmToken);
+          await this.showDebugAlert('iOS Push Token Saved', `Token: ${fcmToken.substring(0, 20)}...`);
+        } else {
+          await this.showDebugAlert('iOS Push Error', 'No FCM token received');
         }
 
         // Listen for token refresh
@@ -104,10 +107,11 @@ export class PushService {
           if (event.token) {
             this.currentToken = event.token;
             await this.saveToken(event.token);
+            await this.showDebugAlert('iOS Token Refreshed', `New token: ${event.token.substring(0, 20)}...`);
           }
         });
       } catch (e) {
-        console.error('Failed to initialize Firebase Messaging:', e);
+        await this.showDebugAlert('iOS Push Error', `Failed to initialize: ${e.message || JSON.stringify(e)}`);
       }
     } else {
       // Android uses standard PushNotifications plugin
@@ -119,8 +123,8 @@ export class PushService {
       });
     }
 
-    PushNotifications.addListener('registrationError', (error) => {
-      console.error('Push registration error:', error.error);
+    PushNotifications.addListener('registrationError', async (error) => {
+      await this.showDebugAlert('Registration Error', error.error);
     });
 
     PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
@@ -134,6 +138,15 @@ export class PushService {
         this.navigateFromData(action.notification.data);
       });
     });
+  }
+
+  private async showDebugAlert(header: string, message: string): Promise<void> {
+    const alert = await this.alertController.create({
+      header,
+      message,
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 
   private async showForegroundAlert(notification: PushNotificationSchema): Promise<void> {
@@ -233,29 +246,36 @@ export class PushService {
 
   private async saveToken(token: string): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      await this.showDebugAlert('Save Token Error', 'No authenticated user found');
+      return;
+    }
 
     const platform = Capacitor.getPlatform();
 
-    // First, remove any existing entries for this token from other users
-    // This ensures a device token is only associated with one user at a time
-    await supabase
-      .from('device_tokens')
-      .delete()
-      .eq('token', token);
+    try {
+      // First, remove any existing entries for this token from other users
+      // This ensures a device token is only associated with one user at a time
+      await supabase
+        .from('device_tokens')
+        .delete()
+        .eq('token', token);
 
-    // Then insert the token for the current user
-    const { error } = await supabase
-      .from('device_tokens')
-      .insert({
-        user_id: user.id,
-        token,
-        platform,
-        updated_at: new Date().toISOString(),
-      });
+      // Then insert the token for the current user
+      const { error } = await supabase
+        .from('device_tokens')
+        .insert({
+          user_id: user.id,
+          token,
+          platform,
+          updated_at: new Date().toISOString(),
+        });
 
-    if (error) {
-      console.error('Failed to save device token:', error);
+      if (error) {
+        await this.showDebugAlert('Save Token Error', `DB Error: ${error.message}`);
+      }
+    } catch (e) {
+      await this.showDebugAlert('Save Token Exception', `${e.message || JSON.stringify(e)}`);
     }
   }
 }
