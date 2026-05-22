@@ -258,7 +258,9 @@ export class AttendancePage implements OnInit {
 
   getAttendedPlayersForGroup(groupName: string): number {
     return this.players.filter((p: PersonAttendance) =>
-      p.groupName === groupName && (p.status === AttendanceStatus.Late || p.status === AttendanceStatus.Present)
+      p.groupName === groupName && (
+        p.status === AttendanceStatus.Late || p.status === AttendanceStatus.Present || p.status === AttendanceStatus.LateExcused
+      )
     ).length;
   }
 
