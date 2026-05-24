@@ -92,7 +92,6 @@ export class PushService {
             if (event.token) {
               this.currentToken = event.token;
               await this.saveToken(event.token);
-              await this.showDebugAlert('iOS Token Refreshed', `Token updated: ${event.token.substring(0, 20)}...`);
             }
           });
         });
@@ -126,12 +125,11 @@ export class PushService {
         if (result.token) {
           this.currentToken = result.token;
           await this.saveToken(result.token);
-          await this.showDebugAlert('iOS Push Token Saved', `Token: ${result.token.substring(0, 20)}...`);
         } else {
-          await this.showDebugAlert('iOS Push Error', 'No FCM token received from getToken()');
+          console.error('iOS Push Error: no FCM token received from getToken()');
         }
       } catch (e) {
-        await this.showDebugAlert('iOS Push Error', `Failed to initialize: ${e.message || JSON.stringify(e)}`);
+        console.error('iOS Push Error:', e);
       }
     } else {
       // Android uses standard PushNotifications plugin
@@ -144,7 +142,7 @@ export class PushService {
     }
 
     PushNotifications.addListener('registrationError', async (error) => {
-      await this.showDebugAlert('Registration Error', error.error);
+      console.error('Push registration error:', error);
     });
 
     PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
@@ -158,15 +156,6 @@ export class PushService {
         this.navigateFromData(action.notification.data);
       });
     });
-  }
-
-  private async showDebugAlert(header: string, message: string): Promise<void> {
-    const alert = await this.alertController.create({
-      header,
-      message,
-      buttons: ['OK']
-    });
-    await alert.present();
   }
 
   private async showForegroundAlert(notification: PushNotificationSchema): Promise<void> {
@@ -267,7 +256,7 @@ export class PushService {
   private async saveToken(token: string): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      await this.showDebugAlert('Save Token Error', 'No authenticated user found');
+      console.error('Save Token Error: no authenticated user found');
       return;
     }
 
@@ -292,10 +281,10 @@ export class PushService {
         });
 
       if (error) {
-        await this.showDebugAlert('Save Token Error', `DB Error: ${error.message}`);
+        console.error('Save Token Error:', error);
       }
     } catch (e) {
-      await this.showDebugAlert('Save Token Exception', `${e.message || JSON.stringify(e)}`);
+      console.error('Save Token Exception:', e);
     }
   }
 }
