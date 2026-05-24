@@ -122,7 +122,10 @@ export class AttListPage implements OnInit {
       }
       const attendanceId = params['openAttendance'];
       if (attendanceId) {
-        this.openAttendance({ id: Number(attendanceId) });
+        // Small delay to ensure view is fully rendered before opening modal
+        setTimeout(() => {
+          this.openAttendance({ id: Number(attendanceId) });
+        }, 300);
       }
     });
   }

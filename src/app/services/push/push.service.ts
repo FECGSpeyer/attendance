@@ -22,7 +22,9 @@ export class PushService {
     private alertController: AlertController,
     private zone: NgZone,
     private db: DbService,
-  ) {}
+  ) {
+    this.setupPushListeners();
+  }
 
   async promptAndEnable(): Promise<void> {
     if (!Capacitor.isNativePlatform()) return;
@@ -146,21 +148,28 @@ export class PushService {
       console.error('Push registration error:', error);
     });
 
+    // Clear badge when app initializes push
+    await this.clearBadge();
+  }
+
+  private setupPushListeners(): void {
+    if (!Capacitor.isNativePlatform()) return;
+
+    // Set up listener for push notification actions - this must be done early
+    // so it captures notifications from cold app launch on iOS
+    PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
+      this.zone.run(async () => {
+        await this.clearBadge();
+        await this.navigateFromData(action.notification.data);
+      });
+    });
+
+    // Handle notifications received when app is in foreground
     PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
       this.zone.run(() => {
         this.showForegroundAlert(notification);
       });
     });
-
-    PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
-      this.zone.run(() => {
-        this.clearBadge();
-        this.navigateFromData(action.notification.data);
-      });
-    });
-
-    // Clear badge when app initializes push
-    await this.clearBadge();
   }
 
   private async showForegroundAlert(notification: PushNotificationSchema): Promise<void> {
@@ -182,6 +191,13 @@ export class PushService {
 
   private async navigateFromData(data: any): Promise<void> {
     if (!data) return;
+
+    // Ensure user is authenticated before navigating
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.warn('Notification clicked but user not authenticated, navigation postponed');
+      return;
+    }
 
     if (data.tenantId && Number(data.tenantId) !== this.db.tenant()?.id) {
       await this.db.setTenant(Number(data.tenantId));
