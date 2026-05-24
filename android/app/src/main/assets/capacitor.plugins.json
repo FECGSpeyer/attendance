@@ -42,5 +42,9 @@
 	{
 		"pkg": "@capawesome/capacitor-android-edge-to-edge-support",
 		"classpath": "io.capawesome.capacitorjs.plugins.androidedgetoedgesupport.EdgeToEdgePlugin"
+	},
+	{
+		"pkg": "@capawesome/capacitor-badge",
+		"classpath": "io.capawesome.capacitorjs.plugins.badge.BadgePlugin"
 	}
 ]

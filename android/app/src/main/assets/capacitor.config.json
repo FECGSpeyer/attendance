@@ -9,6 +9,10 @@
 				"sound",
 				"alert"
 			]
+		},
+		"Badge": {
+			"persist": false,
+			"autoClear": true
 		}
 	}
 }

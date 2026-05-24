@@ -2,6 +2,7 @@ import { Injectable, NgZone } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
+import { Badge } from '@capawesome/capacitor-badge';
 import { AlertController } from '@ionic/angular';
 import { supabase } from '../base/supabase';
 import { Router } from '@angular/router';
@@ -153,9 +154,13 @@ export class PushService {
 
     PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
       this.zone.run(() => {
+        this.clearBadge();
         this.navigateFromData(action.notification.data);
       });
     });
+
+    // Clear badge when app initializes push
+    await this.clearBadge();
   }
 
   private async showForegroundAlert(notification: PushNotificationSchema): Promise<void> {
@@ -232,6 +237,16 @@ export class PushService {
     this.currentToken = null;
   }
 
+  private async clearBadge(): Promise<void> {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      await Badge.clear();
+    } catch (e) {
+      // Badge API not available on all platforms
+      console.debug('Could not clear badge:', e);
+    }
+  }
+
   async togglePush(enabled: boolean, userId: string): Promise<void> {
     await supabase
       .from('notifications')
@@ -263,17 +278,24 @@ export class PushService {
     const platform = Capacitor.getPlatform();
 
     try {
-      // First, remove any existing entries for this token from other users
-      // This ensures a device token is only associated with one user at a time
+      // Remove this token from other users (ensures a token is only for one user)
       await supabase
         .from('device_tokens')
         .delete()
-        .eq('token', token);
+        .eq('token', token)
+        .neq('user_id', user.id);
 
-      // Then insert the token for the current user
+      // Remove other tokens for this user (one token per user)
+      await supabase
+        .from('device_tokens')
+        .delete()
+        .eq('user_id', user.id)
+        .neq('token', token);
+
+      // Upsert the current token (handles both insert and update cases)
       const { error } = await supabase
         .from('device_tokens')
-        .insert({
+        .upsert({
           user_id: user.id,
           token,
           platform,

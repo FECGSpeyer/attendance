@@ -9,6 +9,10 @@
 				"sound",
 				"alert"
 			]
+		},
+		"Badge": {
+			"persist": false,
+			"autoClear": true
 		}
 	},
 	"packageClassList": [
@@ -21,6 +25,7 @@
 		"KeyboardPlugin",
 		"CAPNetworkPlugin",
 		"PushNotificationsPlugin",
-		"StatusBarPlugin"
+		"StatusBarPlugin",
+		"BadgePlugin"
 	]
 }

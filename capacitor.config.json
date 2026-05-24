@@ -5,6 +5,10 @@
 	"plugins": {
 		"PushNotifications": {
 			"presentationOptions": ["badge", "sound", "alert"]
+		},
+		"Badge": {
+			"persist": false,
+			"autoClear": true
 		}
 	}
 }
