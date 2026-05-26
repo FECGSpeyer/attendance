@@ -8,7 +8,7 @@ const path = require('path');
 const sharp = require('sharp');
 
 const ROOT = path.resolve(__dirname, '..');
-const SRC = path.join(ROOT, 'resources', 'icon-only.png');
+const SRC = path.join(ROOT, 'resources', 'icon-rounded.png');
 const ANDROID_RES = path.join(ROOT, 'android', 'app', 'src', 'main', 'res');
 
 // Standard launcher-icon densities. Sized so the icon renders at ~108dp

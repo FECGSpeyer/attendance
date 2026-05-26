@@ -5,7 +5,7 @@ const path = require('path');
 const sharp = require('sharp');
 
 const ROOT = path.resolve(__dirname, '..');
-const ICON = path.join(ROOT, 'resources', 'icon-only.png');
+const ICON = path.join(ROOT, 'resources', 'icon-rounded.png');
 const OUT_LIGHT = path.join(ROOT, 'resources', 'splash.png');
 const OUT_DARK = path.join(ROOT, 'resources', 'splash-dark.png');
 

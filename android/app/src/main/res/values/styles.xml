@@ -17,16 +17,13 @@
 
 
     <!--
-        Splash theme. Two paths must work:
-        - API < 31: the system shows windowBackground while the activity loads,
-          so we point it at our centered layer-list (white bg + centered icon).
-        - API >= 31: AndroidX SplashScreen kicks in via postSplashScreenTheme.
-          windowSplashScreenBackground / windowSplashScreenAnimatedIcon would be
-          the canonical attrs there, but the v31 variant in values-v31/styles.xml
-          owns that path. Here we only need windowBackground for the legacy fallback.
+        Splash theme. We deliberately use Theme.AppCompat (not Theme.SplashScreen)
+        so the same layer-list drawable renders on every API level. The API 31+
+        SplashScreen API would circle-mask the icon, which crops a rounded-square
+        logo awkwardly — using windowBackground gives identical, predictable
+        rendering on Android 7-15.
     -->
-    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+    <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@drawable/splash_screen</item>
-        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
 </resources>
