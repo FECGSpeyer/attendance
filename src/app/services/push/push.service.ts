@@ -1,11 +1,13 @@
-import { Injectable, NgZone, effect } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
-import { PushNotifications, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
+import { PushNotifications, ActionPerformed } from '@capacitor/push-notifications';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import { Badge } from '@capawesome/capacitor-badge';
 import { AlertController } from '@ionic/angular';
 import { supabase } from '../base/supabase';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter, take } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 import { DbService } from '../db.service';
 import { Role } from '../../utilities/constants';
 
@@ -16,7 +18,11 @@ const PUSH_PROMPT_SHOWN_KEY = 'push_prompt_shown';
 })
 export class PushService {
   private currentToken: string | null = null;
-  private pendingNavigationData: any = null;
+  // Set when a push action arrives; consumed by handlePendingPushNavigation()
+  // after the LoginGuard's startup redirect lands. This ordering avoids a
+  // race where our navigate() would otherwise be replaced by the guard's
+  // redirect to Utils.getUrl(role).
+  public pendingPushData: any = null;
 
   constructor(
     private router: Router,
@@ -25,19 +31,6 @@ export class PushService {
     private db: DbService,
   ) {
     this.setupPushListeners();
-
-    // Replay any pending navigation once auth + tenant + tenantUser become ready.
-    // On cold launch from a notification tap, the action listener can fire before
-    // Supabase has restored the session and DbService has loaded the tenant/user.
-    effect(() => {
-      const tenant = this.db.tenant();
-      const tenantUser = this.db.tenantUser();
-      if (this.pendingNavigationData && tenant && tenantUser) {
-        const data = this.pendingNavigationData;
-        this.pendingNavigationData = null;
-        this.zone.run(() => this.navigateFromData(data));
-      }
-    });
   }
 
   async promptAndEnable(): Promise<void> {
@@ -169,24 +162,46 @@ export class PushService {
   private setupPushListeners(): void {
     if (!Capacitor.isNativePlatform()) return;
 
-    // Set up listener for push notification actions - this must be done early
-    // so it captures notifications from cold app launch on iOS
-    PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
-      this.zone.run(async () => {
-        await this.clearBadge();
-        await this.navigateFromData(action.notification.data);
+    // Use FirebaseMessaging listeners for foreground notifications. The standard
+    // @capacitor/push-notifications `pushNotificationReceived` event is unreliable
+    // on iOS when FirebaseMessaging is installed (FCM swizzling intercepts the
+    // delivery before Capacitor's plugin sees it), so we listen via Firebase.
+    // FirebaseMessaging handles both iOS and Android foreground delivery.
+    FirebaseMessaging.addListener('notificationReceived', (event) => {
+      this.zone.run(() => {
+        const n = event.notification;
+        this.showForegroundAlert({
+          title: n.title || '',
+          body: n.body || '',
+          data: (n.data as Record<string, any>) || {},
+        });
       });
     });
 
-    // Handle notifications received when app is in foreground
-    PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
-      this.zone.run(() => {
-        this.showForegroundAlert(notification);
+    FirebaseMessaging.addListener('notificationActionPerformed', (event) => {
+      this.zone.run(async () => {
+        await this.clearBadge();
+        this.pendingPushData = event.notification.data;
+        await this.handlePendingPushNavigation();
+      });
+    });
+
+    // Keep the @capacitor/push-notifications action listener as a fallback. On
+    // Android cold-launch the standard plugin sometimes delivers the action
+    // before FirebaseMessaging is ready. Both paths funnel into the same
+    // pendingPushData / handlePendingPushNavigation flow, which is idempotent.
+    PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
+      this.zone.run(async () => {
+        await this.clearBadge();
+        this.pendingPushData = action.notification.data;
+        await this.handlePendingPushNavigation();
       });
     });
   }
 
-  private async showForegroundAlert(notification: PushNotificationSchema): Promise<void> {
+  // Minimal shape used by showForegroundAlert — accepts both PushNotificationSchema
+  // and FirebaseMessaging Notification.
+  private async showForegroundAlert(notification: { title?: string; body?: string; data?: any }): Promise<void> {
     const alert = await this.alertController.create({
       header: notification.title || 'Benachrichtigung',
       message: notification.body || '',
@@ -203,15 +218,47 @@ export class PushService {
     await alert.present();
   }
 
+  /**
+   * Resolve any pending push navigation. Called from:
+   *   - the push action listener itself (warm start: runs immediately)
+   *   - AppComponent after auth state and initial route are settled (cold start)
+   *
+   * The two-step design avoids a race with LoginGuard, which on cold start
+   * also runs db.checkToken() and then navigates the user to Utils.getUrl(role).
+   * If we navigated first, the guard's later navigate() would replace us and
+   * the openAttendance query param would be lost.
+   */
+  async handlePendingPushNavigation(): Promise<void> {
+    if (!this.pendingPushData) return;
+
+    // Wait for the first NavigationEnd so the initial route (login redirect or
+    // restored route) has settled. Then our navigation runs last and wins.
+    if (!this.router.navigated) {
+      try {
+        await firstValueFrom(
+          this.router.events.pipe(filter(e => e instanceof NavigationEnd), take(1))
+        );
+      } catch {
+        /* router never settles — proceed anyway */
+      }
+    }
+
+    // Ensure tenant + tenantUser are loaded. checkToken is idempotent (uses
+    // initPromise) so this is safe even if a guard already triggered it.
+    await this.db.checkToken();
+
+    const data = this.pendingPushData;
+    this.pendingPushData = null;
+    await this.navigateFromData(data);
+  }
+
   private async navigateFromData(data: any): Promise<void> {
     if (!data) return;
 
-    // Ensure user is authenticated before navigating. On cold launch from a
-    // notification tap, Supabase may not have restored the session yet — buffer
-    // the action and replay it from the auth/tenant effect once ready.
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      this.pendingNavigationData = data;
+    // tenant/tenantUser must be loaded — caller (handlePendingPushNavigation)
+    // has already awaited checkToken. For warm-start "Anzeigen" it's already set.
+    if (!this.db.tenant() || !this.db.tenantUser()) {
+      // No session — nothing we can do. Let the normal login flow proceed.
       return;
     }
 
@@ -219,15 +266,8 @@ export class PushService {
       await this.db.setTenant(Number(data.tenantId));
     }
 
-    // Role-based routing requires tenantUser to be populated. If it isn't yet,
-    // buffer the action — the effect in the constructor will replay it.
-    if (!this.db.tenant() || !this.db.tenantUser()) {
-      this.pendingNavigationData = data;
-      return;
-    }
-
     if (data.route) {
-      this.router.navigateByUrl(data.route);
+      await this.router.navigateByUrl(data.route);
       return;
     }
 
@@ -238,21 +278,21 @@ export class PushService {
         if (data.attendanceId) {
           const role = this.db.tenantUser()?.role;
           if (role === Role.ADMIN || role === Role.RESPONSIBLE || role === Role.HELPER || role === Role.VOICE_LEADER_HELPER) {
-            this.router.navigate(['/tabs/attendance'], { queryParams: { openAttendance: data.attendanceId } });
+            await this.router.navigate(['/tabs/attendance'], { queryParams: { openAttendance: data.attendanceId } });
           } else if (role === Role.PARENT) {
-            this.router.navigate(['/tabs/parents'], { queryParams: { openAttendance: data.attendanceId } });
+            await this.router.navigate(['/tabs/parents'], { queryParams: { openAttendance: data.attendanceId } });
           } else {
-            this.router.navigate(['/tabs/signout'], { queryParams: { openAttendance: data.attendanceId } });
+            await this.router.navigate(['/tabs/signout'], { queryParams: { openAttendance: data.attendanceId } });
           }
         } else {
-          this.router.navigateByUrl('/tabs/attendance');
+          await this.router.navigateByUrl('/tabs/attendance');
         }
         break;
       case 'criticals':
-        this.router.navigateByUrl('/tabs/list');
+        await this.router.navigateByUrl('/tabs/list');
         break;
       default:
-        this.router.navigateByUrl('/tabs/player');
+        await this.router.navigateByUrl('/tabs/player');
     }
   }
 

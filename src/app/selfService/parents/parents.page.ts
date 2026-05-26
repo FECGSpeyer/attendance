@@ -1,7 +1,7 @@
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, IonModal, ModalController } from '@ionic/angular';
 import { Browser } from '@capacitor/browser';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS } from 'src/app/utilities/constants';
@@ -49,6 +49,7 @@ export class ParentsPage implements OnInit {
     private actionSheetController: ActionSheetController,
     private modalController: ModalController,
     private route: ActivatedRoute,
+    private router: Router,
   ) {
     effect(async () => {
       if (this.db.tenant()) {
@@ -62,6 +63,13 @@ export class ParentsPage implements OnInit {
     this.route.queryParams.subscribe(async params => {
       const attendanceId = params['openAttendance'];
       if (attendanceId) {
+        // Strip the query param so navigating away and back doesn't reopen the modal.
+        await this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { openAttendance: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
         await this.waitForAttendance(Number(attendanceId));
         this.openAttendanceById(Number(attendanceId));
       }

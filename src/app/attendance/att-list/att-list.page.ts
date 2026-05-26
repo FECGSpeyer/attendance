@@ -1,7 +1,7 @@
 import { Component, OnInit, effect } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { format, isSameDay, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
@@ -101,6 +101,7 @@ export class AttListPage implements OnInit {
     private alertController: AlertController,
     private routerOutlet: IonRouterOutlet,
     private route: ActivatedRoute,
+    private router: Router,
   ) {
     effect(async () => {
       this.db.tenant();
@@ -122,6 +123,13 @@ export class AttListPage implements OnInit {
       }
       const attendanceId = params['openAttendance'];
       if (attendanceId) {
+        // Strip the query param so navigating away and back doesn't reopen the modal.
+        await this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { openAttendance: null, tenantId: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
         await this.waitForLoaded();
         await this.openAttendance({ id: Number(attendanceId) });
       }

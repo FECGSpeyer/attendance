@@ -33,7 +33,12 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:firebase.google.com)",
       "Bash(/usr/libexec/PlistBuddy -c \"Print CFBundleIdentifier\" \"C:/Users/D062831/projects/attendance/ios/App/App/Info.plist\")",
-      "Bash(grep -E \"\\\\.\\(sql|ts\\)$\")"
+      "Bash(grep -E \"\\\\.\\(sql|ts\\)$\")",
+      "Bash(node -e \"console.log\\(process.version\\)\")",
+      "Bash(node -e \"const s=require\\('C:/Users/D062831/projects/attendance/node_modules/sharp'\\); console.log\\('sharp ok', s.versions\\)\")",
+      "Bash(node scripts/build-splash-source.js)",
+      "Bash(node scripts/build-splash-assets.js)",
+      "Bash(node scripts/build-splash-icon.js)"
     ]
   }
 }
