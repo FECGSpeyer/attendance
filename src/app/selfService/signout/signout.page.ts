@@ -63,11 +63,26 @@ export class SignoutPage implements OnInit {
 
   async ngOnInit() {
     await this.initialize();
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe(async params => {
       const attendanceId = params['openAttendance'];
       if (attendanceId) {
+        await this.waitForPersonAttendance(Number(attendanceId));
         this.openAttendanceById(Number(attendanceId));
       }
+    });
+  }
+
+  private waitForPersonAttendance(attendanceId: number): Promise<void> {
+    return new Promise(resolve => {
+      const start = Date.now();
+      const check = () => {
+        if (this.personAttendances.find(pa => pa.attendance_id === attendanceId) || Date.now() - start > 5000) {
+          resolve();
+        } else {
+          setTimeout(check, 100);
+        }
+      };
+      check();
     });
   }
 

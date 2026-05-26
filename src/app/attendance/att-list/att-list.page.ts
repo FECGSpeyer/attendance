@@ -122,11 +122,27 @@ export class AttListPage implements OnInit {
       }
       const attendanceId = params['openAttendance'];
       if (attendanceId) {
-        // Small delay to ensure view is fully rendered before opening modal
-        setTimeout(() => {
-          this.openAttendance({ id: Number(attendanceId) });
-        }, 300);
+        await this.waitForLoaded();
+        await this.openAttendance({ id: Number(attendanceId) });
       }
+    });
+  }
+
+  private waitForLoaded(): Promise<void> {
+    return new Promise(resolve => {
+      if (this.loaded) {
+        resolve();
+        return;
+      }
+      const start = Date.now();
+      const check = () => {
+        if (this.loaded || Date.now() - start > 5000) {
+          resolve();
+        } else {
+          setTimeout(check, 50);
+        }
+      };
+      check();
     });
   }
 

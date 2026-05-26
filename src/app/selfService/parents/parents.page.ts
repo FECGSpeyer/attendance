@@ -59,11 +59,26 @@ export class ParentsPage implements OnInit {
 
   async ngOnInit() {
     await this.initialize();
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe(async params => {
       const attendanceId = params['openAttendance'];
       if (attendanceId) {
+        await this.waitForAttendance(Number(attendanceId));
         this.openAttendanceById(Number(attendanceId));
       }
+    });
+  }
+
+  private waitForAttendance(attendanceId: number): Promise<void> {
+    return new Promise(resolve => {
+      const start = Date.now();
+      const check = () => {
+        if (this.attendances.find(a => a.id === attendanceId) || Date.now() - start > 5000) {
+          resolve();
+        } else {
+          setTimeout(check, 100);
+        }
+      };
+      check();
     });
   }
 

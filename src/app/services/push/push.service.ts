@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, NgZone, effect } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
@@ -16,6 +16,7 @@ const PUSH_PROMPT_SHOWN_KEY = 'push_prompt_shown';
 })
 export class PushService {
   private currentToken: string | null = null;
+  private pendingNavigationData: any = null;
 
   constructor(
     private router: Router,
@@ -24,6 +25,19 @@ export class PushService {
     private db: DbService,
   ) {
     this.setupPushListeners();
+
+    // Replay any pending navigation once auth + tenant + tenantUser become ready.
+    // On cold launch from a notification tap, the action listener can fire before
+    // Supabase has restored the session and DbService has loaded the tenant/user.
+    effect(() => {
+      const tenant = this.db.tenant();
+      const tenantUser = this.db.tenantUser();
+      if (this.pendingNavigationData && tenant && tenantUser) {
+        const data = this.pendingNavigationData;
+        this.pendingNavigationData = null;
+        this.zone.run(() => this.navigateFromData(data));
+      }
+    });
   }
 
   async promptAndEnable(): Promise<void> {
@@ -192,15 +206,24 @@ export class PushService {
   private async navigateFromData(data: any): Promise<void> {
     if (!data) return;
 
-    // Ensure user is authenticated before navigating
+    // Ensure user is authenticated before navigating. On cold launch from a
+    // notification tap, Supabase may not have restored the session yet — buffer
+    // the action and replay it from the auth/tenant effect once ready.
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      console.warn('Notification clicked but user not authenticated, navigation postponed');
+      this.pendingNavigationData = data;
       return;
     }
 
     if (data.tenantId && Number(data.tenantId) !== this.db.tenant()?.id) {
       await this.db.setTenant(Number(data.tenantId));
+    }
+
+    // Role-based routing requires tenantUser to be populated. If it isn't yet,
+    // buffer the action — the effect in the constructor will replay it.
+    if (!this.db.tenant() || !this.db.tenantUser()) {
+      this.pendingNavigationData = data;
+      return;
     }
 
     if (data.route) {
