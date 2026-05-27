@@ -1,13 +1,16 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Group, GroupCategory, Teacher } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { supabase } from '../base/supabase';
 import { pickGroupFields, pickTeacherFields } from '../../utilities/db-helpers';
+import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GroupService {
+
+  private tracking = inject(TrackingService);
 
   constructor() {}
 
@@ -39,6 +42,7 @@ export class GroupService {
       })
       .select();
 
+    this.tracking.track(TrackingEvent.InstrumentAdded, { maingroup });
     return data;
   }
 
@@ -59,6 +63,7 @@ export class GroupService {
       throw new Error('Fehler beim updaten des Instruments');
     }
 
+    this.tracking.track(TrackingEvent.InstrumentUpdated);
     return data;
   }
 
@@ -69,6 +74,7 @@ export class GroupService {
       .match({ id })
       .select();
 
+    this.tracking.track(TrackingEvent.InstrumentRemoved);
     return data;
   }
 
@@ -128,6 +134,7 @@ export class GroupService {
       .insert(dbFields as any)
       .select();
 
+    this.tracking.track(TrackingEvent.TeacherAdded);
     return data;
   }
 
@@ -138,6 +145,7 @@ export class GroupService {
       .update(dbFields as any)
       .match({ id });
 
+    this.tracking.track(TrackingEvent.TeacherUpdated);
     return data;
   }
 }

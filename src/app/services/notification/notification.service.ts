@@ -1,12 +1,15 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { NotificationConfig } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
+import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class NotificationService {
+
+  private tracking = inject(TrackingService);
 
   async getNotificationConfig(userId: string): Promise<NotificationConfig> {
     const { data } = await supabase
@@ -53,6 +56,10 @@ export class NotificationService {
       throw new Error(error.message);
     }
 
+    this.tracking.track(TrackingEvent.NotificationSettingsChanged, {
+      enabled: config.enabled,
+      pushEnabled: config.push_enabled,
+    });
     return;
   }
 

@@ -5,11 +5,14 @@ import { Attendance, AttendanceType, Group, Person, PersonAttendance, Player, Pl
 import { Utils } from '../../utilities/Utils';
 import { supabase } from '../base/supabase';
 import { pickPersonFields } from '../../utilities/db-helpers';
+import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PlayerService {
+
+  private tracking = inject(TrackingService);
 
   constructor() {}
 
@@ -226,6 +229,7 @@ export class PlayerService {
       throw new Error(error.message);
     }
 
+    this.tracking.track(TrackingEvent.PlayerAdded, { instrumentId: player.instrument ?? null });
     return data.id;
   }
 
@@ -263,6 +267,7 @@ export class PlayerService {
       throw new Error('Fehler beim updaten des Spielers');
     }
 
+    this.tracking.track(TrackingEvent.PlayerUpdated);
     return data.map((player) => ({
       ...player,
       history: player.history as any,
@@ -318,6 +323,7 @@ export class PlayerService {
       .from('player')
       .delete()
       .match({ id: player.id });
+    this.tracking.track(TrackingEvent.PlayerRemoved);
   }
 
   async archivePlayer(player: Player, left: string, notes: string): Promise<void> {

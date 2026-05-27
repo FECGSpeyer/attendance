@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
+import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -18,6 +19,7 @@ export class DeleteAccountPage {
   constructor(
     public db: DbService,
     private alertController: AlertController,
+    private tracking: TrackingService,
   ) {}
 
   private generateCode(): string {
@@ -51,6 +53,7 @@ export class DeleteAccountPage {
             const loading = await Utils.getLoadingElement(60000, 'Konto wird gelöscht...');
             await loading.present();
             try {
+              this.tracking.track(TrackingEvent.AccountDeleted);
               await this.db.deleteAccount();
               await loading.dismiss();
               Utils.showToast('Dein Konto wurde gelöscht.', 'success', 4000);

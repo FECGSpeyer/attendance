@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { supabase } from '../base/supabase';
+import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
 
 export interface StorageEntry {
   name: string;
@@ -13,6 +14,7 @@ export interface StorageEntry {
   providedIn: 'root'
 })
 export class FilesService {
+  private tracking = inject(TrackingService);
   private readonly bucket = 'files';
   private readonly cyrillicMap: Record<string, string> = {
     А: 'A', а: 'a', Б: 'B', б: 'b', В: 'V', в: 'v', Г: 'G', г: 'g', Д: 'D', д: 'd',
@@ -269,6 +271,8 @@ export class FilesService {
     if (error) {
       throw error;
     }
+
+    this.tracking.track(TrackingEvent.FileUploaded, { size: file.size, mime: file.type || null });
   }
 
   async downloadFile(tenantId: number, relativePath: string): Promise<{ blob: Blob; fileName: string }> {
