@@ -6,6 +6,7 @@ import { format, isSameDay, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
 import { DbService } from 'src/app/services/db.service';
+import { PushService } from 'src/app/services/push/push.service';
 import { Attendance, PersonAttendance, Player, Song, History, Person, ChecklistItem } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { DefaultAttendanceType, Role } from 'src/app/utilities/constants';
@@ -102,6 +103,7 @@ export class AttListPage implements OnInit {
     private routerOutlet: IonRouterOutlet,
     private route: ActivatedRoute,
     private router: Router,
+    private pushService: PushService,
   ) {
     effect(async () => {
       this.db.tenant();
@@ -110,6 +112,15 @@ export class AttListPage implements OnInit {
 
     effect(() => {
       this.type_id = this.db.attendanceTypes().find(type => type.visible)?.id;
+    });
+
+    effect(async () => {
+      const id = this.pushService.pendingAttendanceId();
+      if (id !== null) {
+        this.pushService.consumePendingAttendanceId();
+        await this.waitForLoaded();
+        await this.openAttendance({ id });
+      }
     });
   }
 
@@ -120,18 +131,6 @@ export class AttListPage implements OnInit {
       if (tenantId && Number(tenantId) !== this.db.tenant()?.id) {
         await this.db.setTenant(Number(tenantId));
         await this.init();
-      }
-      const attendanceId = params['openAttendance'];
-      if (attendanceId) {
-        // Strip the query param so navigating away and back doesn't reopen the modal.
-        await this.router.navigate([], {
-          relativeTo: this.route,
-          queryParams: { openAttendance: null, tenantId: null },
-          queryParamsHandling: 'merge',
-          replaceUrl: true,
-        });
-        await this.waitForLoaded();
-        await this.openAttendance({ id: Number(attendanceId) });
       }
     });
   }

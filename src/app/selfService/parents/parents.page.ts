@@ -4,6 +4,7 @@ import { Browser } from '@capacitor/browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
+import { PushService } from 'src/app/services/push/push.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS } from 'src/app/utilities/constants';
 import { Attendance, AttendanceType, History, Person, PersonAttendance, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -50,30 +51,26 @@ export class ParentsPage implements OnInit {
     private modalController: ModalController,
     private route: ActivatedRoute,
     private router: Router,
+    private pushService: PushService,
   ) {
     effect(async () => {
       if (this.db.tenant()) {
         await this.initialize();
       }
     });
+
+    effect(async () => {
+      const id = this.pushService.pendingAttendanceId();
+      if (id !== null) {
+        this.pushService.consumePendingAttendanceId();
+        await this.waitForAttendance(id);
+        this.openAttendanceById(id);
+      }
+    });
   }
 
   async ngOnInit() {
     await this.initialize();
-    this.route.queryParams.subscribe(async params => {
-      const attendanceId = params['openAttendance'];
-      if (attendanceId) {
-        // Strip the query param so navigating away and back doesn't reopen the modal.
-        await this.router.navigate([], {
-          relativeTo: this.route,
-          queryParams: { openAttendance: null },
-          queryParamsHandling: 'merge',
-          replaceUrl: true,
-        });
-        await this.waitForAttendance(Number(attendanceId));
-        this.openAttendanceById(Number(attendanceId));
-      }
-    });
   }
 
   private waitForAttendance(attendanceId: number): Promise<void> {

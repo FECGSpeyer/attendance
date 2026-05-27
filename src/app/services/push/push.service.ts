@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, NgZone, signal } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications, ActionPerformed } from '@capacitor/push-notifications';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
@@ -23,6 +23,13 @@ export class PushService {
   // race where our navigate() would otherwise be replaced by the guard's
   // redirect to Utils.getUrl(role).
   public pendingPushData: any = null;
+
+  // Set when push routing targets an attendance modal. The destination page
+  // reads this signal in an effect, opens the modal, then clears it via
+  // consumePendingAttendanceId(). Using a signal instead of a query param
+  // sidesteps cold-start races where the LoginGuard's redirect can replace
+  // a router.navigate() with queryParams before the destination page subscribes.
+  public readonly pendingAttendanceId = signal<number | null>(null);
 
   constructor(
     private router: Router,
@@ -226,7 +233,7 @@ export class PushService {
    * The two-step design avoids a race with LoginGuard, which on cold start
    * also runs db.checkToken() and then navigates the user to Utils.getUrl(role).
    * If we navigated first, the guard's later navigate() would replace us and
-   * the openAttendance query param would be lost.
+   * the user would land on the wrong route.
    */
   async handlePendingPushNavigation(): Promise<void> {
     if (!this.pendingPushData) return;
@@ -276,13 +283,17 @@ export class PushService {
       case 'reminder':
       case 'checklist':
         if (data.attendanceId) {
+          // Stash the ID before navigating. The destination page picks it up
+          // via an effect on pendingAttendanceId() — no query params, no race
+          // with the LoginGuard's startup redirect.
+          this.pendingAttendanceId.set(Number(data.attendanceId));
           const role = this.db.tenantUser()?.role;
           if (role === Role.ADMIN || role === Role.RESPONSIBLE || role === Role.HELPER || role === Role.VOICE_LEADER_HELPER) {
-            await this.router.navigate(['/tabs/attendance'], { queryParams: { openAttendance: data.attendanceId } });
+            await this.router.navigateByUrl('/tabs/attendance');
           } else if (role === Role.PARENT) {
-            await this.router.navigate(['/tabs/parents'], { queryParams: { openAttendance: data.attendanceId } });
+            await this.router.navigateByUrl('/tabs/parents');
           } else {
-            await this.router.navigate(['/tabs/signout'], { queryParams: { openAttendance: data.attendanceId } });
+            await this.router.navigateByUrl('/tabs/signout');
           }
         } else {
           await this.router.navigateByUrl('/tabs/attendance');
@@ -302,6 +313,15 @@ export class PushService {
       default:
         await this.router.navigateByUrl('/tabs/player');
     }
+  }
+
+  // Read-and-clear the pending attendance ID. Called by destination pages
+  // after they open the modal so a later visit to the same page doesn't
+  // reopen it.
+  consumePendingAttendanceId(): number | null {
+    const id = this.pendingAttendanceId();
+    if (id !== null) this.pendingAttendanceId.set(null);
+    return id;
   }
 
   async removeToken(): Promise<void> {
