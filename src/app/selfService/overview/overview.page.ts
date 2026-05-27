@@ -6,6 +6,7 @@ import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS } from 'src/app/utilities/constants';
 import { CrossTenantPersonAttendance, AttendanceType } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 
 type GroupingMode = 'chronological' | 'byTenant';
 
@@ -49,7 +50,8 @@ export class OverviewPage implements OnInit {
   constructor(
     public db: DbService,
     private actionSheetController: ActionSheetController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private tracking: TrackingService,
   ) {
     effect(async () => {
       if (this.db.tenants() && this.db.tenantUsers()) {
@@ -303,6 +305,7 @@ export class OverviewPage implements OnInit {
         attendance.status === AttendanceStatus.Neutral ? 'neutralSignin' : 'signin',
       notes
     );
+    this.tracking.track(TrackingEvent.AttendanceCheckIn);
 
     Utils.showToast('Schön, dass du dabei bist 🙂', 'success', 4000);
     await this.loadAttendances(true);
@@ -310,6 +313,7 @@ export class OverviewPage implements OnInit {
 
   async signout() {
     await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent);
+    this.tracking.track(TrackingEvent.AttendanceCheckOut, { count: this.selAttIds.length, isLate: this.isLateComingEvent });
 
     this.excuseModal.dismiss();
     this.reason = '';

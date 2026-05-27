@@ -4,6 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 // jsPDF and xlsx are lazy-loaded for better initial bundle size
 import { DbService } from '../services/db.service';
+import { TrackingEvent, TrackingService } from '../services/tracking/tracking.service';
 import { Attendance, ExtraField, Player } from '../utilities/interfaces';
 import { FieldType } from '../utilities/constants';
 import { Utils } from '../utilities/Utils';
@@ -33,6 +34,7 @@ export class ExportPage implements OnInit {
     private modalController: ModalController,
     private db: DbService,
     private alertController: AlertController,
+    private tracking: TrackingService,
   ) { }
 
   async ngOnInit() {
@@ -104,6 +106,7 @@ export class ExportPage implements OnInit {
   }
 
   async exportPlayerExcel(shortName: string) {
+    this.tracking.track(TrackingEvent.ReportExported, { format: 'xlsx', kind: 'player' });
     const { utils, writeFile } = await import('xlsx');
     let row = 1;
 
@@ -123,6 +126,7 @@ export class ExportPage implements OnInit {
   }
 
   async exportPlayerPDF(shortName: string) {
+    this.tracking.track(TrackingEvent.ReportExported, { format: 'pdf', kind: 'player' });
     const { jsPDF } = await import('jspdf');
     await import('jspdf-autotable');
     let row = 1;
@@ -198,6 +202,7 @@ export class ExportPage implements OnInit {
   }
 
   async exportAttExcel(data: any[], shortName: string) {
+    this.tracking.track(TrackingEvent.ReportExported, { format: 'xlsx', kind: 'attendance' });
     const { utils, writeFile } = await import('xlsx');
     const date: string = dayjs().format('DD.MM.YYYY');
 
@@ -213,6 +218,7 @@ export class ExportPage implements OnInit {
   }
 
   async exportAttPDF(data: any[], header: string[], shortName: string) {
+    this.tracking.track(TrackingEvent.ReportExported, { format: 'pdf', kind: 'attendance' });
     const { jsPDF } = await import('jspdf');
     await import('jspdf-autotable');
     const date: string = dayjs().format('DD.MM.YYYY');

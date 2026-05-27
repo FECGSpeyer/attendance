@@ -158,3 +158,5 @@ export const DEFAULT_LATE_REASONS = [
     'Familienbedingt',
 ];
 
+export const SUPER_DEVELOPER_EMAIL = 'developer@attendix.de';
+

@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
+import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS } from 'src/app/utilities/constants';
 import { Attendance, AttendanceType, History, Person, PersonAttendance, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -52,6 +53,7 @@ export class ParentsPage implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private pushService: PushService,
+    private tracking: TrackingService,
   ) {
     effect(async () => {
       if (this.db.tenant()) {
@@ -345,6 +347,7 @@ export class ParentsPage implements OnInit {
 
   async signout() {
     await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent, true);
+    this.tracking.track(TrackingEvent.ParentSignOut, { count: this.selAttIds.length, isLate: this.isLateComingEvent });
 
     this.excuseModal.dismiss();
     this.reason = '';
@@ -373,6 +376,7 @@ export class ParentsPage implements OnInit {
     for (const attId of this.selAttIds) {
       await this.db.signin(attId, attendance.status === AttendanceStatus.LateExcused ? 'lateSignIn' : attendance.status === AttendanceStatus.Neutral ? 'neutralSignin' : 'signin');
     }
+    this.tracking.track(TrackingEvent.ParentSignIn, { count: this.selAttIds.length });
 
     Utils.showToast('Danke für die Anmeldung 🙂', 'success', 4000);
 

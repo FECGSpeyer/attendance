@@ -10,6 +10,7 @@ import { filter, take } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 import { DbService } from '../db.service';
 import { Role } from '../../utilities/constants';
+import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
 
 const PUSH_PROMPT_SHOWN_KEY = 'push_prompt_shown';
 
@@ -36,6 +37,7 @@ export class PushService {
     private alertController: AlertController,
     private zone: NgZone,
     private db: DbService,
+    private tracking: TrackingService,
   ) {
     this.setupPushListeners();
   }
@@ -177,6 +179,7 @@ export class PushService {
     FirebaseMessaging.addListener('notificationReceived', (event) => {
       this.zone.run(() => {
         const n = event.notification;
+        this.tracking.track(TrackingEvent.PushReceived);
         this.showForegroundAlert({
           title: n.title || '',
           body: n.body || '',
@@ -188,6 +191,7 @@ export class PushService {
     FirebaseMessaging.addListener('notificationActionPerformed', (event) => {
       this.zone.run(async () => {
         await this.clearBadge();
+        this.tracking.track(TrackingEvent.PushOpened);
         this.pendingPushData = event.notification.data;
         await this.handlePendingPushNavigation();
       });

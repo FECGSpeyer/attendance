@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController, NavController } from '@ionic/angular';
 import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
+import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 import { DEFAULT_IMAGE, PlayerHistoryType } from 'src/app/utilities/constants';
 import { Group, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -22,6 +23,7 @@ export class HandoverDetailPage implements OnInit {
     private navCtrl: NavController,
     private db: DbService,
     private alertController: AlertController,
+    private tracking: TrackingService,
   ) { }
 
   async ngOnInit() {
@@ -132,6 +134,11 @@ export class HandoverDetailPage implements OnInit {
       } else {
         Utils.showToast(`${this.handoverData.persons.length} Personen wurden übertragen.`, 'success');
       }
+      this.tracking.track(TrackingEvent.HandoverCreated, {
+        count: this.handoverData.persons.length,
+        stayInInstance: this.handoverData.stayInInstance,
+        failed: result.length,
+      });
       this.navCtrl.navigateBack('/tabs/settings');
     } catch (error) {
       await loading.dismiss();

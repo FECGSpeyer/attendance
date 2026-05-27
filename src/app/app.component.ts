@@ -3,13 +3,14 @@ import { AlertController, IonRouterOutlet, Platform } from '@ionic/angular';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { Title } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { Storage } from '@ionic/storage-angular';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter } from 'rxjs/operators';
 import { Utils } from './utilities/Utils';
 import { DbService } from './services/db.service';
 import { PushService } from './services/push/push.service';
+import { TrackingEvent, TrackingService } from './services/tracking/tracking.service';
 
 @Component({
     selector: 'app-root',
@@ -30,12 +31,14 @@ export class AppComponent {
     private pushService: PushService,
     private router: Router,
     private zone: NgZone,
+    private tracking: TrackingService,
   ) {
     this.initializeApp();
     this.titleService.setTitle('Attendix');
     this.listenToAuthChanges();
     this.checkForUpdates();
     this.setupDeepLinks();
+    this.trackPageViews();
   }
 
   async ngOnInit() {
@@ -87,6 +90,7 @@ export class AppComponent {
         this.presentPasswordRecoveryAlert();
       }
       if (event === 'SIGNED_IN') {
+        this.tracking.track(TrackingEvent.Login);
         this.pushService.promptAndEnable();
         this.showNativeAppAd();
       }
@@ -167,5 +171,15 @@ export class AppComponent {
         }
       });
     });
+  }
+
+  private trackPageViews() {
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe(event => {
+        const url = event.urlAfterRedirects;
+        if (url.includes('/login') || url.includes('/legal')) return;
+        this.tracking.track(TrackingEvent.PageView, { url });
+      });
   }
 }

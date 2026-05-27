@@ -4,7 +4,7 @@ import { AlertController, Platform } from '@ionic/angular';
 import { SupabaseClient, User } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
-import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SupabaseTable } from '../utilities/constants';
+import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SUPER_DEVELOPER_EMAIL, SupabaseTable } from '../utilities/constants';
 import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
@@ -483,6 +483,10 @@ export class DbService {
 
   isBeta() {
     return this.tenantUser()?.email?.endsWith('developer@attendix.de') || this.user?.email?.toLocaleLowerCase().endsWith('erwinfast98@gmail.com') || this.tenant()?.id === 12;
+  }
+
+  isSuperDeveloper(): boolean {
+    return this.user?.email === SUPER_DEVELOPER_EMAIL;
   }
 
   async getTenants(): Promise<Tenant[]> {
@@ -2231,10 +2235,10 @@ export class DbService {
       userId: '665fe2b4-d53f-4f17-a66b-46c0949af99a',
       role: Role.ADMIN,
       tenantId: data.id,
-      email: 'developer@attendix.de'
+      email: SUPER_DEVELOPER_EMAIL
     }];
 
-    if (this.user.email !== 'developer@attendix.de') {
+    if (!this.isSuperDeveloper()) {
       usersToAdd.push({
         userId: this.user.id,
         role: Role.ADMIN,

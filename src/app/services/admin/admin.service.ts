@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { Admin, TenantUser } from '../../utilities/interfaces';
-import { Role } from '../../utilities/constants';
+import { Role, SUPER_DEVELOPER_EMAIL } from '../../utilities/constants';
 import { Utils } from '../../utilities/Utils';
 
 @Injectable({
@@ -21,7 +21,7 @@ export class AdminService {
       throw error;
     }
 
-    return data.filter((e: Admin) => Boolean(e) && e.email !== 'developer@attendix.de');
+    return data.filter((e: Admin) => Boolean(e) && e.email !== SUPER_DEVELOPER_EMAIL);
   }
 
   async removeUserFromTenant(appId: string, tenantId: number, deleteAdmin: boolean = false): Promise<void> {

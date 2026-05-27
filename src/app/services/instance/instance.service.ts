@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { Tenant } from '../../utilities/interfaces';
-import { Role } from '../../utilities/constants';
+import { Role, SUPER_DEVELOPER_EMAIL } from '../../utilities/constants';
 import { Utils } from '../../utilities/Utils';
 
 @Injectable({
@@ -39,10 +39,10 @@ export class InstanceService {
       userId: '665fe2b4-d53f-4f17-a66b-46c0949af99a',
       role: Role.ADMIN,
       tenantId: data.id,
-      email: 'developer@attendix.de'
+      email: SUPER_DEVELOPER_EMAIL
     }];
 
-    if (userEmail !== 'developer@attendix.de') {
+    if (userEmail !== SUPER_DEVELOPER_EMAIL) {
       usersToAdd.push({
         userId,
         role: Role.ADMIN,

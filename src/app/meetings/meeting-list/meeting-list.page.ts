@@ -3,6 +3,7 @@ import { AlertController, IonModal } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
+import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 import { Meeting } from 'src/app/utilities/interfaces';
 
 @Component({
@@ -18,7 +19,8 @@ export class MeetingListPage implements OnInit {
 
   constructor(
     private db: DbService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private tracking: TrackingService,
   ) { }
 
   async ngOnInit() {
@@ -38,6 +40,7 @@ export class MeetingListPage implements OnInit {
       notes: '',
       attendees: [],
     });
+    this.tracking.track(TrackingEvent.MeetingCreated);
 
     await modal.dismiss();
     this.meetings = await this.db.getMeetings();

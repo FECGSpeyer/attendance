@@ -1,0 +1,83 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Usage Dashboard</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="range" (ionChange)="onRangeChange($any($event.detail.value))">
+      <ion-segment-button value="7d"><ion-label>7 Tage</ion-label></ion-segment-button>
+      <ion-segment-button value="30d"><ion-label>30 Tage</ion-label></ion-segment-button>
+      <ion-segment-button value="90d"><ion-label>90 Tage</ion-label></ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="loading" class="loading">
+    <ion-spinner></ion-spinner>
+  </div>
+
+  <div *ngIf="!loading && !hasData" class="empty">
+    <ion-icon name="bar-chart-outline"></ion-icon>
+    <p>Keine Events im gewählten Zeitraum.</p>
+  </div>
+
+  <div *ngIf="!loading && hasData">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Events gesamt</div>
+        <div class="kpi-value">{{ totalEvents }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Aktive Instanzen</div>
+        <div class="kpi-value">{{ distinctTenants }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Aktiv (7T)</div>
+        <div class="kpi-value">{{ activeTenantsLast7 }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Top Event</div>
+        <div class="kpi-value top-event">{{ topEvent }}</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Events pro Tag</h3>
+      <div class="chart-wrap" [style.height.px]="280">
+        <canvas baseChart [data]="eventsPerDayData" [options]="eventsPerDayOptions" type="line"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Top Events</h3>
+      <div class="chart-wrap" [style.height.px]="360">
+        <canvas baseChart [data]="eventsByNameData" [options]="eventsByNameOptions" type="bar"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Top Instanzen</h3>
+      <div class="chart-wrap" [style.height.px]="360">
+        <canvas baseChart [data]="topTenantsData" [options]="topTenantsOptions" type="bar"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-card">
+        <h3>Event-Verteilung</h3>
+        <div class="chart-wrap" [style.height.px]="280">
+          <canvas baseChart [data]="eventDistributionData" [options]="eventDistributionOptions" type="doughnut"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>Geräte</h3>
+        <div class="chart-wrap" [style.height.px]="280">
+          <canvas baseChart [data]="deviceTypeData" [options]="deviceTypeOptions" type="doughnut"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

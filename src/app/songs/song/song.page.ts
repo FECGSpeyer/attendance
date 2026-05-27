@@ -6,6 +6,7 @@ import { Browser } from '@capacitor/browser';
 // JSZip and pdf-lib are lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
+import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 import { Role } from 'src/app/utilities/constants';
 import { matchInstrument, detectSpecialFileType } from 'src/app/utilities/instrument-matcher';
 import { Group, History, Organisation, Player, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
@@ -56,7 +57,8 @@ export class SongPage implements OnInit {
     private actionSheetController: ActionSheetController,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private tracking: TrackingService,
   ) { }
 
   async ngOnInit() {
@@ -575,6 +577,7 @@ export class SongPage implements OnInit {
 
   copyShareLink() {
     navigator?.clipboard.writeText(this.getSongSharingLink());
+    this.tracking.track(TrackingEvent.SongShared);
     Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
   }
 

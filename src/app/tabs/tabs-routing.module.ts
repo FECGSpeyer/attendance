@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../services/auth.guard';
+import { SuperDeveloperGuard } from '../services/super-developer.guard';
 import { TabsPage } from './tabs.page';
 
 const routes: Routes = [
@@ -100,6 +101,11 @@ const routes: Routes = [
       {
         path: 'settings/delete-account',
         loadChildren: () => import('./../settings/delete-account/delete-account.module').then(m => m.DeleteAccountPageModule)
+      },
+      {
+        path: 'dashboard',
+        canActivate: [SuperDeveloperGuard],
+        loadChildren: () => import('./../dashboard/dashboard.module').then(m => m.DashboardPageModule)
       },
       {
         path: 'parents',
