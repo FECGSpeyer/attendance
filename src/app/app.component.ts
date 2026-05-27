@@ -131,7 +131,7 @@ export class AppComponent {
   async showNativeAppAd() {
     if (Capacitor.isNativePlatform()) return;
     const shown = localStorage.getItem('native_app_ad_shown');
-    if (shown) return;
+    if (false && shown) return;
 
     localStorage.setItem('native_app_ad_shown', 'true');
 

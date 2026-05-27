@@ -8,13 +8,15 @@ import { LoginPageRoutingModule } from './login-routing.module';
 
 import { LoginPage } from './login.page';
 import { LegalModalComponent } from './legal-modal/legal-modal.component';
+import { LegalContentComponent } from './legal-modal/legal-content.component';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    LoginPageRoutingModule
+    LoginPageRoutingModule,
+    LegalContentComponent
   ],
   declarations: [LoginPage, LegalModalComponent]
 })

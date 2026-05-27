@@ -1,0 +1,50 @@
+.warning-box {
+  background: var(--ion-color-danger-tint);
+  color: var(--ion-color-danger-contrast);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+
+  ion-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+
+  ul {
+    padding-left: 20px;
+    margin: 8px 0;
+
+    li {
+      margin: 4px 0;
+    }
+  }
+}
+
+.verification-box {
+  margin: 24px 0 8px;
+  text-align: center;
+
+  p {
+    margin: 0 0 12px;
+    color: var(--ion-color-medium);
+  }
+
+  .code-display {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    background: var(--ion-color-light);
+    color: var(--ion-color-dark);
+    padding: 14px 18px;
+    border-radius: 10px;
+    user-select: none;
+    -webkit-user-select: none;
+    display: inline-block;
+  }
+}

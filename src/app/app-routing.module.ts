@@ -24,6 +24,10 @@ const routes: Routes = [
     loadChildren: () => import('./register/tenant-register/tenant-register.module').then( m => m.TenantRegisterPageModule)
   },
   {
+    path: 'legal',
+    loadChildren: () => import('./legal/legal.module').then(m => m.LegalPageModule)
+  },
+  {
     path: ':songSharingId',
     loadChildren: () => import('./songs/songs.module').then( m => m.SongsPageModule)
   },

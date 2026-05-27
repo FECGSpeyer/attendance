@@ -96,3 +96,16 @@ ion-card {
         color: var(--ion-color-primary-tint);
     }
 }
+
+.delete-account-link {
+    --background: transparent;
+    margin-top: 24px;
+    font-size: 13px;
+    opacity: 0.55;
+    text-align: center;
+
+    ion-label {
+        text-align: center;
+        text-decoration: underline;
+    }
+}

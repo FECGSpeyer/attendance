@@ -98,6 +98,10 @@ const routes: Routes = [
         loadChildren: () => import('./../settings/role-permissions/role-permissions.module').then(m => m.RolePermissionsPageModule)
       },
       {
+        path: 'settings/delete-account',
+        loadChildren: () => import('./../settings/delete-account/delete-account.module').then(m => m.DeleteAccountPageModule)
+      },
+      {
         path: 'parents',
         loadChildren: () => import('./../selfService/parents/parents.module').then(m => m.ParentsPageModule)
       },

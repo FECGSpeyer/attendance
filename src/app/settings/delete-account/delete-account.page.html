@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Konto löschen</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="warning-box">
+    <ion-icon name="warning-outline" color="light"></ion-icon>
+    <h2>Achtung</h2>
+    <p>
+      Wenn du dein Konto löschst, werden <strong>alle</strong> deine Daten unwiderruflich entfernt:
+    </p>
+    <ul>
+      <li>Dein Profil und Passbild</li>
+      <li>Alle deine Anwesenheitsdaten</li>
+      <li>Alle deine Mitgliedschaften in jeder Instanz</li>
+      <li>Dein Zugang zur App</li>
+    </ul>
+    <p>
+      Diese Aktion kann <strong>nicht rückgängig</strong> gemacht werden.
+    </p>
+  </div>
+
+  <div class="verification-box">
+    <p>Bitte gib zur Bestätigung den folgenden Code ein:</p>
+    <div class="code-display">{{ verificationCode }}</div>
+  </div>
+
+  <ion-item>
+    <ion-label position="stacked">Bestätigungscode</ion-label>
+    <ion-input
+      [(ngModel)]="confirmText"
+      placeholder="Code eingeben"
+      autocomplete="off"
+      autocapitalize="characters">
+    </ion-input>
+  </ion-item>
+
+  <ion-button
+    expand="block"
+    color="danger"
+    class="ion-margin-top"
+    [disabled]="!canDelete()"
+    (click)="deleteAccount()">
+    <ion-icon slot="start" name="trash-outline"></ion-icon>
+    Konto endgültig löschen
+  </ion-button>
+</ion-content>

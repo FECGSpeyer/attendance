@@ -525,6 +525,22 @@ export class DbService {
     this.router.navigateByUrl('/login');
   }
 
+  /**
+   * Permanently deletes the calling user's account: removes all tenant memberships,
+   * player rows linked via appId, device tokens, notification config, and the auth
+   * user itself. The edge function derives the user from their JWT, so a user can
+   * only delete themselves. Signs out and redirects to /login on success.
+   */
+  async deleteAccount(): Promise<void> {
+    const { error } = await supabase.functions.invoke('delete-account');
+    if (error) {
+      throw new Error(error.message || 'Fehler beim Löschen des Kontos');
+    }
+    await supabase.auth.signOut();
+    this.clearState();
+    this.router.navigateByUrl('/login');
+  }
+
   /** Clears all tenant/user state. Called on SIGNED_OUT event or explicit logout. */
   clearState() {
     this.tenant.set(undefined);
