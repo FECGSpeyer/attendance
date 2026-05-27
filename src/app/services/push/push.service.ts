@@ -288,8 +288,16 @@ export class PushService {
           await this.router.navigateByUrl('/tabs/attendance');
         }
         break;
+      case 'birthday':
+        const birthdayRole = this.db.tenantUser()?.role;
+        // Only navigate to list page if user has access (ADMIN, RESPONSIBLE, or VIEWER)
+        if (birthdayRole === Role.ADMIN || birthdayRole === Role.RESPONSIBLE || birthdayRole === Role.VIEWER) {
+          await this.router.navigateByUrl('/tabs/player');
+        }
+        // For users without list access, don't navigate - they just see the notification
+        break;
       case 'criticals':
-        await this.router.navigateByUrl('/tabs/list');
+        await this.router.navigateByUrl('/tabs/player');
         break;
       default:
         await this.router.navigateByUrl('/tabs/player');
