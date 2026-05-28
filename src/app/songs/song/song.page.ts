@@ -347,11 +347,15 @@ export class SongPage implements OnInit {
 
   private focusAlertInput(alert: HTMLIonAlertElement): void {
     // Ionic doesn't expose autofocus on alert inputs; query the rendered DOM and focus manually.
-    requestAnimationFrame(() => {
+    // iOS WKWebView blocks programmatic focus outside a user gesture; click() before focus()
+    // tricks Safari into treating it as user-initiated.
+    setTimeout(() => {
       const input = alert.querySelector<HTMLInputElement>('input.alert-input');
-      input?.focus();
-      input?.select();
-    });
+      if (!input) return;
+      try { input.click(); } catch {}
+      input.focus();
+      input.setSelectionRange?.(input.value.length, input.value.length);
+    }, 150);
   }
 
   async saveFileChange(file: SongFile, instrumentId?: number | null, note?: string) {
