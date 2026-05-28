@@ -8,6 +8,7 @@ import { DbService } from 'src/app/services/db.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
 import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 import { NoteInputModalComponent } from './note-input-modal.component';
+import { CategorySelectModalComponent, CategorySelectResult } from './category-select-modal.component';
 import { Role } from 'src/app/utilities/constants';
 import { matchInstrument, detectSpecialFileType } from 'src/app/utilities/instrument-matcher';
 import { Group, History, Organisation, Player, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
@@ -263,62 +264,18 @@ export class SongPage implements OnInit {
   }
 
   async changeCategory(file: SongFile) {
-    const alert = await this.alertController.create({
-      header: 'Kategorie ändern',
-      inputs: [{
-        name: 'instrument',
-        type: 'radio' as const,
-        label: 'Sonstige (Freitext möglich)',
-        value: null,
-        checked: file.instrumentId === null
-      }, {
-        name: 'instrument',
-        type: 'radio' as const,
-        label: 'Aufnahme',
-        value: 1,
-        checked: file.instrumentId === 1
-      }, {
-        name: 'instrument',
-        type: 'radio' as const,
-        label: 'Liedtext',
-        value: 2,
-        checked: file.instrumentId === 2
-      }].concat(this.instruments.map(inst => ({
-        name: 'instrument',
-        type: 'radio' as const,
-        label: inst.name,
-        value: inst.id,
-        checked: file.instrumentId === inst.id
-      }))),
-      buttons: [
-        {
-          text: 'Abbrechen',
-          role: 'cancel'
-        },
-        {
-          text: 'Speichern',
-          handler: async (data) => {
-            if (!data) {
-              await this.showNoteInputAlert(file);
-            } else {
-              await this.saveFileChange(file, data);
-            }
-          }
-        }
-      ]
-    });
-    await alert.present();
-  }
-
-  async showNoteInputAlert(file: SongFile) {
     const modal = await this.modalController.create({
-      component: NoteInputModalComponent,
-      componentProps: { value: file.note || '' },
+      component: CategorySelectModalComponent,
+      componentProps: {
+        instruments: this.instruments,
+        instrumentId: file.instrumentId ?? null,
+        note: file.note || '',
+      },
     });
     await modal.present();
-    const { data, role } = await modal.onWillDismiss();
-    if (role === 'save') {
-      await this.saveFileChange(file, null, data ?? '');
+    const { data, role } = await modal.onWillDismiss<CategorySelectResult>();
+    if (role === 'save' && data) {
+      await this.saveFileChange(file, data.instrumentId, data.note);
     }
   }
 
