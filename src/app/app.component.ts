@@ -97,6 +97,10 @@ export class AppComponent {
       if (event === 'SIGNED_OUT') {
         this.pushService.removeToken();
         this.db.clearState();
+        const url = this.router.url.split('?')[0];
+        if (url.startsWith('/tabs')) {
+          this.router.navigateByUrl('/login');
+        }
       }
     });
   }

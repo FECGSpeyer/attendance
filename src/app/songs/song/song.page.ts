@@ -173,6 +173,7 @@ export class SongPage implements OnInit {
         ]
       });
       await alert.present();
+      this.focusAlertInput(alert);
     } else {
       this.selectedFileInfos[index].instrumentId = instrumentId;
     }
@@ -341,6 +342,16 @@ export class SongPage implements OnInit {
       ]
     });
     await alert.present();
+    this.focusAlertInput(alert);
+  }
+
+  private focusAlertInput(alert: HTMLIonAlertElement): void {
+    // Ionic doesn't expose autofocus on alert inputs; query the rendered DOM and focus manually.
+    requestAnimationFrame(() => {
+      const input = alert.querySelector<HTMLInputElement>('input.alert-input');
+      input?.focus();
+      input?.select();
+    });
   }
 
   async saveFileChange(file: SongFile, instrumentId?: number | null, note?: string) {

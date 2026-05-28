@@ -57,7 +57,8 @@ export class SettingsPage implements OnInit, OnDestroy {
   private sub: RealtimeChannel | null = null;
   public versionHistory = require('../../../../version-history.json').versions;
   public wantInstanceSelection = false;
-  public showPwaHint = false;
+  public showAppPromo = false;
+  public isMobile = false;
   public fieldTypes = FieldType;
   public passImageZoomScale = 1;
   private passPinchStartDistance = 0;
@@ -80,7 +81,8 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.isIos = isPlatform('ios');
-    this.checkPwaInstallation();
+    this.isMobile = isPlatform('ios') || isPlatform('android');
+    this.checkAppPromo();
     await this.initialize();
   }
 
@@ -188,20 +190,28 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.viewers = await this.db.getViewers();
   }
 
-  checkPwaInstallation(): void {
+  checkAppPromo(): void {
+    // Hidden behind super-developer check until the native apps are publicly released.
+    if (!this.db.isSuperDeveloper()) return;
     if (Capacitor.isNativePlatform()) return;
-    const isMobile = isPlatform('ios') || isPlatform('android');
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
-    const dismissed = localStorage.getItem('pwaHintDismissed');
+    const dismissed = localStorage.getItem('appPromoDismissed');
 
-    if (isMobile && !isStandalone && !dismissed) {
-      this.showPwaHint = true;
+    if (!dismissed) {
+      this.showAppPromo = true;
     }
   }
 
-  dismissPwaHint(): void {
-    this.showPwaHint = false;
-    localStorage.setItem('pwaHintDismissed', 'true');
+  dismissAppPromo(): void {
+    this.showAppPromo = false;
+    localStorage.setItem('appPromoDismissed', 'true');
+  }
+
+  openAppStore(platform: 'ios' | 'android' | 'auto' = 'auto'): void {
+    const target = platform === 'auto' ? (this.isIos ? 'ios' : 'android') : platform;
+    const url = target === 'ios'
+      ? 'https://apps.apple.com/app/attendix/id6743612798'
+      : 'https://play.google.com/store/apps/details?id=io.stephanus.attendix';
+    window.open(url, '_blank');
   }
 
   async logout() {
