@@ -516,6 +516,24 @@ export type Database = {
           },
         ]
       }
+      legal_content: {
+        Row: {
+          content_html: string
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          content_html: string
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          content_html?: string
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       meetings: {
         Row: {
           attendees: number[] | null
