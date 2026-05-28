@@ -1,13 +1,12 @@
 import { Component, inject, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, LoadingController, ModalController, isPlatform } from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, LoadingController, isPlatform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 // JSZip and pdf-lib are lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
 import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
-import { NoteInputModalComponent } from './note-input-modal.component';
 import { Role } from 'src/app/utilities/constants';
 import { matchInstrument, detectSpecialFileType } from 'src/app/utilities/instrument-matcher';
 import { Group, History, Organisation, Player, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
@@ -60,7 +59,6 @@ export class SongPage implements OnInit {
     private cdr: ChangeDetectorRef,
     private loadingController: LoadingController,
     private tracking: TrackingService,
-    private modalController: ModalController,
   ) { }
 
   async ngOnInit() {
@@ -148,21 +146,34 @@ export class SongPage implements OnInit {
 
   async changeFileInstrument(index: number, instrumentId: number | null, note?: string) {
     if (!instrumentId) {
-      const modal = await this.modalController.create({
-        component: NoteInputModalComponent,
-        componentProps: { value: note || '' },
+      const alert = await this.alertController.create({
+        header: 'Sonstige Kategorie eingeben',
+        inputs: [
+          {
+            name: 'note',
+            type: 'text',
+            placeholder: 'Beliebige Kategorie eingeben...',
+            value: note || ''
+          }
+        ],
+        buttons: [
+          {
+            text: 'Speichern',
+            handler: async (data) => {
+              // Replace the entire object to trigger change detection in ion-select
+              this.selectedFileInfos[index] = {
+                ...this.selectedFileInfos[index],
+                note: data.note ?? '',
+                instrumentId: null
+              };
+              this.selectedFileInfos = [...this.selectedFileInfos];
+              this.cdr.detectChanges();
+            }
+          }
+        ]
       });
-      await modal.present();
-      const { data, role } = await modal.onWillDismiss();
-      if (role === 'save') {
-        this.selectedFileInfos[index] = {
-          ...this.selectedFileInfos[index],
-          note: data ?? '',
-          instrumentId: null,
-        };
-        this.selectedFileInfos = [...this.selectedFileInfos];
-        this.cdr.detectChanges();
-      }
+      await alert.present();
+      this.focusAlertInput(alert);
     } else {
       this.selectedFileInfos[index].instrumentId = instrumentId;
     }
@@ -311,15 +322,40 @@ export class SongPage implements OnInit {
   }
 
   async showNoteInputAlert(file: SongFile) {
-    const modal = await this.modalController.create({
-      component: NoteInputModalComponent,
-      componentProps: { value: file.note || '' },
+    const alert = await this.alertController.create({
+      header: 'Sonstige Kategorie eingeben',
+      inputs: [
+        {
+          name: 'note',
+          type: 'text',
+          placeholder: 'Beliebige Kategorie eingeben...',
+          value: file.note || ''
+        }
+      ],
+      buttons: [
+        {
+          text: 'Speichern',
+          handler: async (data) => {
+            await this.saveFileChange(file, null, data.note ?? '');
+          }
+        }
+      ]
     });
-    await modal.present();
-    const { data, role } = await modal.onWillDismiss();
-    if (role === 'save') {
-      await this.saveFileChange(file, null, data ?? '');
-    }
+    await alert.present();
+    this.focusAlertInput(alert);
+  }
+
+  private focusAlertInput(alert: HTMLIonAlertElement): void {
+    // Ionic doesn't expose autofocus on alert inputs; query the rendered DOM and focus manually.
+    // iOS WKWebView blocks programmatic focus outside a user gesture; click() before focus()
+    // tricks Safari into treating it as user-initiated.
+    setTimeout(() => {
+      const input = alert.querySelector<HTMLInputElement>('input.alert-input');
+      if (!input) return;
+      try { input.click(); } catch {}
+      input.focus();
+      input.setSelectionRange?.(input.value.length, input.value.length);
+    }, 150);
   }
 
   async saveFileChange(file: SongFile, instrumentId?: number | null, note?: string) {
