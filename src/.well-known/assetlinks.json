@@ -1,10 +1,16 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "io.stephanus.attendix",
-      "sha256_cert_fingerprints": ["CA:E2:8E:CB:62:48:C5:96:70:3B:F8:EA:C5:E4:2C:B0:8A:6B:51:F6:97:4B:C9:C5:19:E4:C9:CB:F5:20:01:6F"]
+      "sha256_cert_fingerprints": [
+        "CA:E2:8E:CB:62:48:C5:96:70:3B:F8:EA:C5:E4:2C:B0:8A:6B:51:F6:97:4B:C9:C5:19:E4:C9:CB:F5:20:01:6F",
+        "32:A1:E4:10:85:17:2C:82:B0:F7:87:FE:39:8F:69:05:25:6C:64:FE:77:7C:17:B2:94:E1:A0:20:5F:91:F0:5A"
+      ]
     }
   }
 ]
