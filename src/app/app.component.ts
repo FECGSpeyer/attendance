@@ -145,7 +145,7 @@ export class AppComponent {
 
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const storeUrl = isIOS
-      ? 'https://apps.apple.com/app/attendix/id6743612798'
+      ? 'https://apps.apple.com/app/attendix/id6771119302'
       : 'https://play.google.com/store/apps/details?id=io.stephanus.attendix';
     const storeName = isIOS ? 'App Store' : 'Play Store';
 

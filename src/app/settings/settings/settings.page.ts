@@ -209,7 +209,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   openAppStore(platform: 'ios' | 'android' | 'auto' = 'auto'): void {
     const target = platform === 'auto' ? (this.isIos ? 'ios' : 'android') : platform;
     const url = target === 'ios'
-      ? 'https://apps.apple.com/app/attendix/id6743612798'
+      ? 'https://apps.apple.com/app/attendix/id6771119302'
       : 'https://play.google.com/store/apps/details?id=io.stephanus.attendix';
     window.open(url, '_blank');
   }
