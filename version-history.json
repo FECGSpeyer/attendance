@@ -4,6 +4,7 @@
           "version": "4.0.1",
           "date": "29.5.2026",
           "changes": [
+            "📝 Schnelle Notizauswahl: Beim Hinzufügen einer Notiz pro Person in der Anwesenheit können vordefinierte Gründe direkt per Tap ausgewählt oder eine eigene Notiz eingegeben werden.",
             "🐛 Fehlerbehebungen"
           ]
         },

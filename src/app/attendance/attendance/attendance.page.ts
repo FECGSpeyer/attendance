@@ -2,7 +2,7 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { Browser } from '@capacitor/browser';
-import { AlertController, IonItemSliding, ModalController } from '@ionic/angular';
+import { AlertController, ActionSheetController, IonItemSliding, ModalController } from '@ionic/angular';
 import { Storage } from '@ionic/storage-angular';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { format } from 'date-fns';
@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { StatusInfoComponent } from './status-info/status-info.component';
 import { DbService } from 'src/app/services/db.service';
-import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode, CHECKLIST_DEADLINE_OPTIONS } from 'src/app/utilities/constants';
+import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode, CHECKLIST_DEADLINE_OPTIONS, DEFAULT_ABSENCE_REASONS } from 'src/app/utilities/constants';
 import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { Router } from '@angular/router';
@@ -70,6 +70,7 @@ export class AttendancePage implements OnInit {
     private modalController: ModalController,
     public db: DbService,
     private alertController: AlertController,
+    private actionSheetController: ActionSheetController,
     private storage: Storage,
     private router: Router
   ) { }
@@ -267,36 +268,74 @@ export class AttendancePage implements OnInit {
   async addNote(player: PersonAttendance, slider: IonItemSliding) {
     slider.close();
 
-    const buttons = [{
-      text: 'Abbrechen',
-    }, {
-      text: 'Notiz löschen',
-      handler: async (): Promise<void> => {
-        this.db.updatePersonAttendance(player.id, { notes: '' });
-      }
-    }, {
-      text: 'Speichern',
-      handler: async (evt: { note: string }): Promise<void> => {
-        this.db.updatePersonAttendance(player.id, { notes: evt.note });
-      }
-    }];
+    const presetReasons = this.getPresetReasons();
 
-    if (!player.notes || player.notes === '') {
-      buttons.splice(1, 1);
+    const buttons: any[] = presetReasons.map(reason => ({
+      text: reason,
+      handler: async (): Promise<void> => {
+        await this.db.updatePersonAttendance(player.id, { notes: reason });
+      },
+    }));
+
+    buttons.push({
+      text: 'Eigene Notiz...',
+      handler: async (): Promise<void> => {
+        await this.promptCustomNote(player);
+      },
+    });
+
+    if (player.notes) {
+      buttons.push({
+        text: 'Notiz löschen',
+        role: 'destructive',
+        handler: async (): Promise<void> => {
+          await this.db.updatePersonAttendance(player.id, { notes: '' });
+        },
+      });
     }
 
-    const alert: HTMLIonAlertElement = await this.alertController.create({
+    buttons.push({
+      text: 'Abbrechen',
+      role: 'cancel',
+    });
+
+    const actionSheet = await this.actionSheetController.create({
       header: 'Notiz hinzufügen',
-      inputs: [{
-        type: 'textarea',
-        placeholder: 'Notiz eingeben...',
-        value: player.notes,
-        name: 'note',
-      }],
+      subHeader: player.notes ? `Aktuell: ${player.notes}` : undefined,
       buttons,
     });
 
+    await actionSheet.present();
+  }
+
+  private async promptCustomNote(player: PersonAttendance): Promise<void> {
+    const isPreset = player.notes && this.getPresetReasons().includes(player.notes);
+    const alert: HTMLIonAlertElement = await this.alertController.create({
+      header: 'Eigene Notiz',
+      inputs: [{
+        type: 'textarea',
+        placeholder: 'Notiz eingeben...',
+        value: isPreset ? '' : (player.notes || ''),
+        name: 'note',
+      }],
+      buttons: [{
+        text: 'Abbrechen',
+        role: 'cancel',
+      }, {
+        text: 'Speichern',
+        handler: async (evt: { note: string }): Promise<void> => {
+          await this.db.updatePersonAttendance(player.id, { notes: evt.note });
+        },
+      }],
+    });
+
     await alert.present();
+  }
+
+  private getPresetReasons(): string[] {
+    return this.db.tenant().absence_reasons?.length
+      ? this.db.tenant().absence_reasons
+      : DEFAULT_ABSENCE_REASONS;
   }
 
   async onImageSelect(evt: any) {
