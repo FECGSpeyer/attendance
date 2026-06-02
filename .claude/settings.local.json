@@ -39,7 +39,11 @@
       "Bash(node scripts/build-splash-source.js)",
       "Bash(node scripts/build-splash-assets.js)",
       "Bash(node scripts/build-splash-icon.js)",
-      "Skill(update-config)"
+      "Skill(update-config)",
+      "Bash(xargs grep -l -i \"attendance.*modal\\\\|attendanceModal\")",
+      "Bash(xargs grep -l -i \"attendance.*modal\\\\|AttendanceModal\")",
+      "Bash(xargs grep -l \"person_attendances\\\\|person attendance\")",
+      "Bash(xargs grep -l \"type.*attendance\\\\|attendanceId\")"
     ]
   }
 }

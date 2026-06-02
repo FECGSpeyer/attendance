@@ -76,6 +76,13 @@ export class AttendancePage implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
+    // When opened via push on a cold start, the modal can race ahead of
+    // setTenant() — tenant()/tenantUser()/groups() may still be undefined or
+    // empty. checkToken() is idempotent (initPromise) and resolves once the
+    // tenant context is fully loaded, so awaiting it here makes the rest of
+    // ngOnInit safe to read those signals synchronously.
+    await this.db.checkToken();
+
     this.songs = await this.db.getSongs();
     this.filteredSongs = [...this.songs];
     this.instruments = this.db.groups().filter((instrument: Group) => !instrument.maingroup);
@@ -146,7 +153,12 @@ export class AttendancePage implements OnInit {
   }
 
   initializeAttObjects() {
-    if (!this.attendance.persons) {
+    // attendance.persons is populated only when the row was fetched via
+    // getAttendanceById (which selects the person_attendances join).
+    // Realtime postgres_changes payloads only carry the bare attendance row,
+    // so onAttRealtimeChanges() leaves persons undefined — bail here so we
+    // don't blow away an already-populated players list.
+    if (!this.attendance?.persons) {
       return;
     }
 

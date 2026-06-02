@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.0.2",
+          "date": "2.6.2026",
+          "changes": [
+            "🐛 Push-Benachrichtigungen: Beim Öffnen einer Anwesenheit über eine Push-Benachrichtigung war die Personenliste manchmal leer. Behoben durch robustere Initialisierung beim Kaltstart und Schutz gegen Realtime-Events ohne Personendaten."
+          ]
+        },
+        {
           "version": "4.0.1",
           "date": "29.5.2026",
           "changes": [

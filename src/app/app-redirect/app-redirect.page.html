@@ -1,0 +1,19 @@
+<ion-content class="ion-padding">
+  @if (showLanding) {
+    <div class="landing">
+      <img src="assets/icons/icon-192.webp" alt="Attendix" class="logo" />
+      <h1>Attendix</h1>
+      <p>Lade die App im Store deines Geräts:</p>
+
+      <ion-button expand="block" fill="solid" color="light" (click)="openAppStore()">
+        <ion-icon name="logo-apple" slot="start"></ion-icon>
+        App Store
+      </ion-button>
+
+      <ion-button expand="block" fill="solid" color="light" (click)="openPlayStore()" style="margin-top: 8px;">
+        <ion-icon name="logo-google-playstore" slot="start"></ion-icon>
+        Google Play
+      </ion-button>
+    </div>
+  }
+</ion-content>

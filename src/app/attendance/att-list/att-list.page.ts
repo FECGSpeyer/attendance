@@ -107,6 +107,10 @@ export class AttListPage implements OnInit {
   ) {
     effect(async () => {
       this.db.tenant();
+      // Reset loaded BEFORE awaiting init() so a concurrent push effect
+      // (which calls waitForLoaded) actually waits for this tenant's data
+      // instead of resolving against the previous tenant's stale flag.
+      this.loaded = false;
       await this.init();
     });
 
