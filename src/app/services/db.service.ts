@@ -1890,6 +1890,13 @@ export class DbService {
     return this.attendanceSvc.getAttendanceById(id);
   }
 
+  async getAttendanceByIdRobust(
+    id: number,
+    opts: { context?: 'modal_open' | 'visibility_resume' } = {}
+  ): Promise<Attendance> {
+    return this.attendanceSvc.getAttendanceByIdRobust(id, opts);
+  }
+
   async updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance> {
     this.checkDemoRestriction();
     return this.attendanceSvc.updateAttendance(att, id);

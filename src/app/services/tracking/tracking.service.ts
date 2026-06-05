@@ -27,6 +27,13 @@ export const TrackingEvent = {
   NotificationSettingsChanged: 'notification_settings_changed',
   FileUploaded: 'file_uploaded',
   AccountDeleted: 'account_deleted',
+  // Diagnostics for the cold-start push → attendance modal flow. Each fetch
+  // attempt of a person_attendances join writes one of these so we can spot
+  // races / read-replica lag in production by querying usage_events.
+  AttendanceFetchAttempt: 'attendance_fetch_attempt',
+  AttendanceFetchStageB: 'attendance_fetch_stage_b',
+  AttendanceFetchResolved: 'attendance_fetch_resolved',
+  AttendanceFetchModifyThrow: 'attendance_fetch_modify_throw',
 } as const;
 export type TrackingEvent = typeof TrackingEvent[keyof typeof TrackingEvent];
 

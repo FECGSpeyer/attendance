@@ -1,15 +1,18 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import dayjs from 'dayjs';
 import { AttendanceStatus } from '../../utilities/constants';
 import { Attendance, AttendanceType, Person, PersonAttendance } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { supabase, attendanceSelect } from '../base/supabase';
 import { pickPersonAttendanceFields } from '../../utilities/db-helpers';
+import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AttendanceService {
+
+  private tracking = inject(TrackingService);
 
   constructor() {}
 
@@ -146,6 +149,198 @@ export class AttendanceService {
       .single();
 
     return Utils.getModifiedAttendanceData(data as any);
+  }
+
+  /**
+   * Cold-start-resilient version of getAttendanceById, used when the modal
+   * opens via push notification. The plain join query in getAttendanceById
+   * occasionally returns the parent attendance row with persons:[] on cold
+   * start — embedded-resource RLS evaluates against tenantUsers via
+   * auth.uid(), and during the cold-start window (token refresh, replica
+   * lag, etc.) the embed silently filters to []. Two-stage strategy:
+   *
+   *   Stage A: bounded exponential retry of the same join, racing a
+   *   one-shot TOKEN_REFRESHED listener so a refresh resumes us early.
+   *   Stage B: deterministic fallback — fetch attendance + person_attendances
+   *   as separate queries, combine client-side. Different RLS code path
+   *   from the embed, which is what's actually failing.
+   *
+   * Throws when even Stage B can't load the attendance row, so the caller
+   * can show a toast + close instead of rendering a silent empty modal.
+   */
+  async getAttendanceByIdRobust(
+    id: number,
+    opts: { context?: 'modal_open' | 'visibility_resume' } = {}
+  ): Promise<Attendance> {
+    const context = opts.context ?? 'modal_open';
+    const startedAt = Date.now();
+    const backoffs = [50, 150, 400, 1000];
+    const maxAttempts = backoffs.length + 1; // 5 attempts total
+
+    let lastData: any = null;
+    let lastError: string | undefined;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const attemptStartedAt = Date.now();
+      let outcome: 'success' | 'empty' | 'error' | 'throw' = 'error';
+      let errorText: string | undefined;
+      try {
+        const { data, error } = await supabase
+          .from('attendance')
+          .select(attendanceSelect)
+          .match({ id })
+          .order('date', { ascending: false })
+          .single();
+
+        if (error) {
+          outcome = 'error';
+          errorText = error.message;
+          lastError = errorText;
+        } else if (!data) {
+          outcome = 'error';
+          errorText = 'no row returned';
+          lastError = errorText;
+        } else if (!(data as any).persons || (data as any).persons.length === 0) {
+          outcome = 'empty';
+          lastData = data;
+        } else {
+          outcome = 'success';
+          lastData = data;
+        }
+      } catch (e: any) {
+        outcome = 'throw';
+        errorText = e?.message ?? String(e);
+        lastError = errorText;
+      }
+
+      this.tracking.track(TrackingEvent.AttendanceFetchAttempt, {
+        attempt,
+        stage: 'A',
+        elapsed_ms: Date.now() - attemptStartedAt,
+        attendance_id: id,
+        context,
+        outcome,
+        error_text: errorText,
+      });
+      if (outcome !== 'success' && outcome !== 'empty') {
+        console.warn(`[attendance fetch] attempt ${attempt} ${outcome}: ${errorText}`);
+      }
+
+      if (outcome === 'success') {
+        this.tracking.track(TrackingEvent.AttendanceFetchResolved, {
+          total_elapsed_ms: Date.now() - startedAt,
+          attempts: attempt,
+          stage: 'A',
+          persons_count: (lastData as any).persons.length,
+          attendance_id: id,
+          context,
+        });
+        return this.safeModify(lastData, id);
+      }
+
+      if (attempt < maxAttempts) {
+        await this.raceTokenRefreshOrSleep(backoffs[attempt - 1]);
+      }
+    }
+
+    // Stage B — separate-query fallback. Different RLS code path from the
+    // embedded-resource path, which is the actual deterministic fix.
+    const stageBStartedAt = Date.now();
+    const [attRes, paRes] = await Promise.all([
+      supabase
+        .from('attendance')
+        .select('*')
+        .match({ id })
+        .single(),
+      supabase
+        .from('person_attendances')
+        .select('*, person:person_id(firstName, lastName, img, instrument(id, name), joined, appId, additional_fields)')
+        .eq('attendance_id', id),
+    ]);
+
+    const attendanceOk = !attRes.error && !!attRes.data;
+    const persons = (paRes.data ?? []) as any[];
+
+    this.tracking.track(TrackingEvent.AttendanceFetchStageB, {
+      elapsed_ms: Date.now() - stageBStartedAt,
+      attendance_id: id,
+      context,
+      persons_count: persons.length,
+      attendance_ok: attendanceOk,
+      pa_error_text: paRes.error?.message,
+    });
+
+    if (!attendanceOk) {
+      this.tracking.track(TrackingEvent.AttendanceFetchResolved, {
+        total_elapsed_ms: Date.now() - startedAt,
+        attempts: maxAttempts,
+        stage: 'B_fail',
+        persons_count: 0,
+        attendance_id: id,
+        context,
+      });
+      throw new Error(
+        `getAttendanceByIdRobust: failed to load attendance ${id} after ${maxAttempts} attempts + Stage B fallback (${lastError ?? attRes.error?.message ?? 'unknown'})`
+      );
+    }
+
+    const combined = { ...(attRes.data as any), persons };
+    this.tracking.track(TrackingEvent.AttendanceFetchResolved, {
+      total_elapsed_ms: Date.now() - startedAt,
+      attempts: maxAttempts,
+      stage: 'B',
+      persons_count: persons.length,
+      attendance_id: id,
+      context,
+    });
+    return this.safeModify(combined, id);
+  }
+
+  /**
+   * Wraps Utils.getModifiedAttendanceData to survive a single bad row
+   * (e.g. a player with instrument=null — the schema allows it and the
+   * unwrapped util does `(person.person.instrument as any).id` which throws).
+   * Filters the bad row, tracks it, then defers to the existing util so the
+   * downstream shape is identical to the non-robust path.
+   */
+  private safeModify(data: any, attendanceId: number): Attendance {
+    if (!data) return data;
+    if (!Array.isArray(data.persons)) return data;
+    const good: any[] = [];
+    for (const person of data.persons) {
+      const instrumentObj = person?.person?.instrument as any;
+      if (!instrumentObj || instrumentObj.id == null) {
+        this.tracking.track(TrackingEvent.AttendanceFetchModifyThrow, {
+          attendance_id: attendanceId,
+          person_id: person?.person_id,
+          message: instrumentObj == null ? 'person.instrument is null' : 'person.instrument.id is null',
+        });
+        continue;
+      }
+      good.push(person);
+    }
+    data.persons = good;
+    return Utils.getModifiedAttendanceData(data);
+  }
+
+  /**
+   * Sleep for `ms`, but resume early if Supabase fires TOKEN_REFRESHED —
+   * a refresh is the most likely event to clear the cold-start RLS race.
+   */
+  private raceTokenRefreshOrSleep(ms: number): Promise<void> {
+    return new Promise((resolve) => {
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        try { sub.data.subscription.unsubscribe(); } catch { /* noop */ }
+        resolve();
+      };
+      const sub = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'TOKEN_REFRESHED') finish();
+      });
+      setTimeout(finish, ms);
+    });
   }
 
   async updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance> {

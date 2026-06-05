@@ -100,9 +100,15 @@ export class AttendancePage implements OnInit {
     // corrupting the active modal's state.
     this.onVisibilityChange = async () => {
       if (!document.hidden) {
-        this.attendance = await this.fetchAttendanceWithRetry();
-        this.initializeAttObjects();
-        this.subsribeOnChannels();
+        try {
+          this.attendance = await this.fetchAttendance('visibility_resume');
+          this.initializeAttObjects();
+          this.subsribeOnChannels();
+        } catch (e) {
+          // Visibility-resume failure is non-fatal — the modal is already
+          // open with valid data; we just couldn't refresh on resume.
+          console.warn('[attendance] visibility-resume refetch failed:', e);
+        }
       }
     };
     document.addEventListener('visibilitychange', this.onVisibilityChange);
@@ -111,7 +117,14 @@ export class AttendancePage implements OnInit {
     this.activeConductors = this.conductors.filter((con: Person) => !con.left);
     this.historyEntry.person_id = this.activeConductors[0]?.id;
     this.withExcuses = this.db.tenant().withExcuses;
-    this.attendance = await this.fetchAttendanceWithRetry();
+    try {
+      this.attendance = await this.fetchAttendance('modal_open');
+    } catch (e) {
+      console.error('[attendance] failed to load attendance after retries + fallback:', e);
+      Utils.showToast('Anwesenheit konnte nicht geladen werden — bitte erneut öffnen.', 'danger');
+      this.modalController.dismiss();
+      return;
+    }
     this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendanceId);
     this.isHelper = await this.db.tenantUser().role === Role.HELPER;
 
@@ -209,23 +222,14 @@ export class AttendancePage implements OnInit {
   }
 
   /**
-   * Fetch the attendance row + person_attendances join, retrying once on a
-   * cold-start race where the first request comes back with an empty/missing
-   * `persons` array even though the row exists in DB. We've seen this when
-   * the modal opens via push notification before Supabase's auth header is
-   * fully attached: RLS silently filters the join to [] while the parent row
-   * still resolves. A short backoff + one retry is enough to clear it.
+   * Cold-start-resilient fetch. Delegates to AttendanceService's
+   * getAttendanceByIdRobust which handles bounded exponential retry of the
+   * embedded-resource join + a separate-query fallback if the embed keeps
+   * coming back empty (RLS race after auth restore). Throws on total
+   * failure — caller decides whether to toast+close or retry.
    */
-  private async fetchAttendanceWithRetry(): Promise<Attendance> {
-    const att = await this.db.getAttendanceById(this.attendanceId);
-    if (att && (!att.persons || att.persons.length === 0)) {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      const retry = await this.db.getAttendanceById(this.attendanceId);
-      if (retry?.persons?.length) {
-        return retry;
-      }
-    }
-    return att;
+  private fetchAttendance(context: 'modal_open' | 'visibility_resume'): Promise<Attendance> {
+    return this.db.getAttendanceByIdRobust(this.attendanceId, { context });
   }
 
   onAttRealtimeChanges(payload: RealtimePostgresChangesPayload<any>) {
