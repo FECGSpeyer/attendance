@@ -48,3 +48,6 @@ ios/App/App/GoogleService-Info.plist
 
 resources/ios/**/*
 resources/android/**/*
+
+# Per-user Claude Code permissions / settings — not shared with the team.
+.claude/settings.local.json
