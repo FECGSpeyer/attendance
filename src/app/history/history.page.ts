@@ -286,11 +286,14 @@ export class HistoryPage implements OnInit {
   }
 
   toggleSongSelection(songId: number) {
-    const index = this.selectedSongs.indexOf(songId);
-    if (index > -1) {
-      this.selectedSongs.splice(index, 1);
+    // Replace the array (don't mutate in place) so Angular sees a new
+    // reference and `<ion-checkbox [checked]>` updates reliably on iOS /
+    // macOS Safari, which otherwise can ignore prop changes when the host
+    // array reference is unchanged.
+    if (this.selectedSongs.includes(songId)) {
+      this.selectedSongs = this.selectedSongs.filter(id => id !== songId);
     } else {
-      this.selectedSongs.push(songId);
+      this.selectedSongs = [...this.selectedSongs, songId];
     }
   }
 }

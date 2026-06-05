@@ -285,7 +285,7 @@
                                           <ion-checkbox
                                             slot="start"
                                             [checked]="selectedSongs.includes(song.id)"
-                                            (click)="$event.stopPropagation()">
+                                            style="pointer-events: none;">
                                           </ion-checkbox>
                                           <ion-label>
                                             <h2>{{ song.prefix }}{{ song.number }} {{ song.name }}</h2>

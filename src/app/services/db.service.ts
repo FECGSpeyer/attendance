@@ -10,7 +10,7 @@ import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 import { supabase, attendanceSelect } from './base/supabase';
-import { pickPersonFields, pickTenantUserFields } from '../utilities/db-helpers';
+import { pickPersonFields, pickTenantUserFields, sanitizeImg } from '../utilities/db-helpers';
 
 // Import new modular services
 import { AuthService } from './auth/auth.service';
@@ -989,9 +989,46 @@ export class DbService {
 
   async updateProfile(updates: Partial<Player>, churchId?: string): Promise<void> {
     this.checkDemoRestriction();
+
+    const safeUpdates: any = { ...updates };
+
+    // Never persist a data URL in `img`. If one slipped in (e.g. stale form
+    // state after a failed image upload), upload it now and store the public
+    // URL instead; if we can't, drop the field so we at least don't pollute
+    // the row.
+    if (typeof safeUpdates.img === 'string' && safeUpdates.img.startsWith('data:image/')) {
+      try {
+        const response = await fetch(safeUpdates.img);
+        const blob = await response.blob();
+        const file = new File([blob], `${Utils.getId()}.jpg`, { type: blob.type });
+
+        const { data: existing } = await supabase
+          .from('player')
+          .select('id, appId')
+          .eq('appId', this.user.id)
+          .limit(1)
+          .single();
+
+        if (existing?.id) {
+          safeUpdates.img = await this.imageSvc.updateImage(existing.id, file, existing.appId, this.user.id);
+        } else {
+          delete safeUpdates.img;
+        }
+      } catch (e) {
+        console.error('updateProfile: failed to convert data URL to upload', e);
+        delete safeUpdates.img;
+      }
+    } else {
+      // Defense in depth: any other non-image data: URL is also invalid.
+      const sanitized = sanitizeImg(safeUpdates.img);
+      if (sanitized === undefined && 'img' in safeUpdates) {
+        delete safeUpdates.img;
+      }
+    }
+
     const { error } = await supabase
       .from('player')
-      .update(updates as any)
+      .update(safeUpdates as any)
       .match({ appId: this.user.id });
 
     if (error) {
@@ -1223,6 +1260,11 @@ export class DbService {
         console.error('Error converting data URL to File:', error);
         player.img = ''; // Fallback: clear the data URL
       }
+    }
+
+    // Defense in depth: never let any other `data:` URL reach the DB.
+    if (sanitizeImg(player.img) === undefined) {
+      player.img = '';
     }
 
     const { data, error } = await supabase

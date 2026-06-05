@@ -7,6 +7,21 @@ import { Database } from './supabase';
 type Tables = Database['public']['Tables'];
 
 /**
+ * Never persist a `data:` image URL to the database.
+ * Returns `undefined` for data URLs so the field is omitted from the
+ * insert/update payload entirely; otherwise returns the value untouched.
+ *
+ * Use this on every code path that writes an `img` column directly. Insert/update
+ * paths that use `pickPersonFields` are already safe because `img` is not picked.
+ */
+export function sanitizeImg<T extends string | null | undefined>(img: T): T | undefined {
+  if (typeof img === 'string' && img.startsWith('data:')) {
+    return undefined;
+  }
+  return img;
+}
+
+/**
  * Pick only Insert-valid fields for a given table
  */
 export function pickInsertFields<T extends keyof Tables>(
@@ -55,6 +70,16 @@ export function pickPersonAttendanceFields(att: any) {
 
 /**
  * Pick only the fields that are valid for persons table
+ *
+ * NOTE: keep this in sync with the `player` table schema in `supabase.ts`.
+ * Any column missing here will be silently dropped from inserts/updates,
+ * which is exactly how the pause feature broke (paused / paused_until were
+ * absent and pause never persisted).
+ *
+ * Intentionally excluded:
+ *   - id           — used in `.match({ id })`, not in the update body
+ *   - img          — written exclusively through ImageService / sanitized
+ *                    paths so a `data:` URL can never reach the DB
  */
 export function pickPersonFields(person: any) {
   const {
@@ -67,9 +92,12 @@ export function pickPersonFields(person: any) {
     phone,
     mobile,
     instrument,
+    instruments,
     playsSince,
     isLeader,
+    isCritical,
     hasTeacher,
+    teacher,
     history,
     created_at,
     street,
@@ -78,6 +106,7 @@ export function pickPersonFields(person: any) {
     joined,
     left,
     legacyId,
+    legacyConductorId,
     notes,
     testResult,
     examinee,
@@ -93,6 +122,18 @@ export function pickPersonFields(person: any) {
     iban,
     bic,
     bank,
+    paused,
+    paused_until,
+    pending,
+    self_register,
+    parent_id,
+    shift_id,
+    shift_name,
+    shift_start,
+    range,
+    otherExercise,
+    otherOrchestras,
+    lastSolve,
   } = person;
   return {
     id,
@@ -104,9 +145,12 @@ export function pickPersonFields(person: any) {
     phone,
     mobile,
     instrument,
+    instruments,
     playsSince,
     isLeader,
+    isCritical,
     hasTeacher,
+    teacher,
     history,
     created_at,
     street,
@@ -115,6 +159,7 @@ export function pickPersonFields(person: any) {
     joined,
     left,
     legacyId,
+    legacyConductorId,
     notes,
     testResult,
     examinee,
@@ -130,6 +175,18 @@ export function pickPersonFields(person: any) {
     iban,
     bic,
     bank,
+    paused,
+    paused_until,
+    pending,
+    self_register,
+    parent_id,
+    shift_id,
+    shift_name,
+    shift_start,
+    range,
+    otherExercise,
+    otherOrchestras,
+    lastSolve,
   };
 }
 

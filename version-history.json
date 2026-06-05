@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "4.0.3",
+          "date": "5.6.2026",
+          "changes": [
+            "🐛 Werkauswahl auf iOS/Mac: Im Werkauswahl-Dialog (Anwesenheit, Werkhistorie) wurden ausgewählte Werke auf iPhone/iPad/Mac nicht übernommen. Auswahl funktioniert jetzt zuverlässig auf allen Plattformen.",
+            "🐛 Profilbild: Verhindert, dass in seltenen Fällen ein eingebettetes Bild (data:-URL) anstelle eines hochgeladenen Bildes in der Datenbank gespeichert wird – beim Speichern wird ein solches Bild nun automatisch hochgeladen und durch die echte URL ersetzt.",
+            "🐛 Pausieren: Pausieren einer Person hat den Status nicht mehr gespeichert – die Felder 'paused' und 'paused_until' (sowie weitere Felder wie Schicht, Eltern-Verknüpfung, Stimmführer-Helfer) wurden beim Update versehentlich verworfen. Behoben."
+          ]
+        },
+        {
           "version": "4.0.2",
           "date": "2.6.2026",
           "changes": [
