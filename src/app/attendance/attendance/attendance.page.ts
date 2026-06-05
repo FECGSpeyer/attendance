@@ -32,6 +32,12 @@ export class AttendancePage implements OnInit {
   public attendance: Attendance;
   private sub: RealtimeChannel;
   private personAttSub: RealtimeChannel;
+  // Bound reference so we can `removeEventListener` on close. Without this,
+  // the listener leaked: when a second modal opened it triggered the previous
+  // (dead) instance's handler, which re-fetched the wrong attendance and
+  // re-subscribed channels on the same Supabase topics — corrupting the new
+  // modal's state.
+  private onVisibilityChange: () => void;
   public isHelper = false;
   public canViewNotes = true;
   public canViewChecklist = true;
@@ -88,19 +94,24 @@ export class AttendancePage implements OnInit {
     this.instruments = this.db.groups().filter((instrument: Group) => !instrument.maingroup);
     this.groupCategories = await this.db.getGroupCategories();
     this.mainGroup = this.db.getMainGroup().id;
-    document.addEventListener('visibilitychange', async () => {
+    // Bind so we can remove it on close(). The previous inline arrow leaked
+    // — every dead modal instance kept its handler, and on a cold-start
+    // visibility flip both the dead and live modals re-fetched/resubscribed,
+    // corrupting the active modal's state.
+    this.onVisibilityChange = async () => {
       if (!document.hidden) {
-        this.attendance = await this.db.getAttendanceById(this.attendanceId);
+        this.attendance = await this.fetchAttendanceWithRetry();
         this.initializeAttObjects();
         this.subsribeOnChannels();
       }
-    });
+    };
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
     this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.conductors = await this.db.getConductors(true);
     this.activeConductors = this.conductors.filter((con: Person) => !con.left);
     this.historyEntry.person_id = this.activeConductors[0]?.id;
     this.withExcuses = this.db.tenant().withExcuses;
-    this.attendance = await this.db.getAttendanceById(this.attendanceId);
+    this.attendance = await this.fetchAttendanceWithRetry();
     this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendanceId);
     this.isHelper = await this.db.tenantUser().role === Role.HELPER;
 
@@ -190,7 +201,31 @@ export class AttendancePage implements OnInit {
     await Network.removeAllListeners();
     await this.sub?.unsubscribe();
     await this.personAttSub?.unsubscribe();
+    if (this.onVisibilityChange) {
+      document.removeEventListener('visibilitychange', this.onVisibilityChange);
+      this.onVisibilityChange = undefined;
+    }
     this.modalController.dismiss();
+  }
+
+  /**
+   * Fetch the attendance row + person_attendances join, retrying once on a
+   * cold-start race where the first request comes back with an empty/missing
+   * `persons` array even though the row exists in DB. We've seen this when
+   * the modal opens via push notification before Supabase's auth header is
+   * fully attached: RLS silently filters the join to [] while the parent row
+   * still resolves. A short backoff + one retry is enough to clear it.
+   */
+  private async fetchAttendanceWithRetry(): Promise<Attendance> {
+    const att = await this.db.getAttendanceById(this.attendanceId);
+    if (att && (!att.persons || att.persons.length === 0)) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      const retry = await this.db.getAttendanceById(this.attendanceId);
+      if (retry?.persons?.length) {
+        return retry;
+      }
+    }
+    return att;
   }
 
   onAttRealtimeChanges(payload: RealtimePostgresChangesPayload<any>) {

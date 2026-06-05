@@ -129,12 +129,18 @@ export class AttListPage implements OnInit {
   }
 
   async ngOnInit() {
-    await this.init();
+    // NOTE: don't call init() here. The constructor's effect on db.tenant()
+    // already triggers init() once tenant is set, and a duplicate run was
+    // creating a second set of realtime channels (`att-changes`,
+    // `person-att-changes`) on the same Supabase topic — events ended up
+    // being delivered to the older subscription, which on cold-start
+    // could silently swallow updates that the modal relied on.
     this.route.queryParams.subscribe(async params => {
       const tenantId = params['tenantId'];
       if (tenantId && Number(tenantId) !== this.db.tenant()?.id) {
         await this.db.setTenant(Number(tenantId));
-        await this.init();
+        // setTenant updates the tenant signal → constructor effect re-runs
+        // init() automatically; no need to call it here.
       }
     });
   }
@@ -189,6 +195,12 @@ export class AttListPage implements OnInit {
   }
 
   subscribeOnAttChannel() {
+    // Tear down any prior subscriptions before resubscribing. Without this,
+    // tenant changes / cold-start push flow / repeated modal opens would
+    // accumulate subscriptions on the same Supabase topic, and events could
+    // end up delivered to a stale closure instead of the live one.
+    this.sub?.unsubscribe();
+    this.persSub?.unsubscribe();
     this.sub = this.db.getSupabase()
       .channel('att-changes').on(
         'postgres_changes',
