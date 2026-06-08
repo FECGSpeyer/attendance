@@ -10,6 +10,7 @@ import {
 } from '../../utilities/interfaces';
 import { AttendanceStatus, Role } from '../../utilities/constants';
 import { Utils } from '../../utilities/Utils';
+import { rankCandidates, RankedMatch } from '../../utilities/person-matcher';
 
 @Injectable({
   providedIn: 'root'
@@ -253,14 +254,30 @@ export class CrossTenantService {
     firstName: string,
     lastName: string,
     linkedTenants: Tenant[],
-    onlyWithAccount: boolean = true
-  ): Promise<Player[]> {
+    onlyWithAccount: boolean = false
+  ): Promise<RankedMatch<Player>[]> {
+    if (!linkedTenants?.length) {return [];}
+
+    const safeFirst = this.sanitizeOrToken(firstName);
+    const safeLast = this.sanitizeOrToken(lastName);
+    if (!safeFirst && !safeLast) {return [];}
+
+    // Broad OR-prefix query: prefix on first OR last (and initial-letter
+    // fallback when one side is short). The fuzzy ranker narrows the rest.
+    const orParts: string[] = [];
+    if (safeFirst.length >= 2) {orParts.push(`firstName.ilike.${safeFirst}%`);}
+    if (safeLast.length >= 2) {orParts.push(`lastName.ilike.${safeLast}%`);}
+    if (safeFirst.length >= 1) {orParts.push(`firstName.ilike.${safeFirst.charAt(0)}%`);}
+    if (safeLast.length >= 1) {orParts.push(`lastName.ilike.${safeLast.charAt(0)}%`);}
+
     let query = supabase
       .from('player')
       .select('*, instrument(name), tenantId(id, shortName, longName)')
-      .ilike('firstName', `%${firstName.trim()}%`)
-      .ilike('lastName', `%${lastName.trim()}%`)
-      .is('pending', false);
+      .in('tenantId', linkedTenants.map(t => t.id))
+      .is('pending', false)
+      .is('left', null)
+      .or(orParts.join(','))
+      .limit(100);
 
     if (onlyWithAccount) {
       query = query.neq('email', null);
@@ -273,6 +290,45 @@ export class CrossTenantService {
       throw error;
     }
 
-    return data.filter((p: any) => linkedTenants.find((lt) => lt.id === p.tenantId.id)) as unknown as Player[];
+    return rankCandidates(
+      { firstName, lastName },
+      (data ?? []) as unknown as Player[],
+      { prefixMode: true },
+    );
+  }
+
+  async getPossiblePersonsByEmail(
+    email: string,
+    linkedTenants: Tenant[]
+  ): Promise<Player[]> {
+    if (!linkedTenants?.length) {return [];}
+    const normalized = (email ?? '').trim().toLowerCase();
+    if (!normalized) {return [];}
+
+    const { data, error } = await supabase
+      .from('player')
+      .select('*, instrument(name), tenantId(id, shortName, longName)')
+      .in('tenantId', linkedTenants.map(t => t.id))
+      .is('pending', false)
+      .is('left', null)
+      .ilike('email', normalized);
+
+    if (error) {
+      Utils.showToast('Fehler beim Laden der Personen', 'danger');
+      throw error;
+    }
+
+    return (data ?? []) as unknown as Player[];
+  }
+
+  /**
+   * Strip characters that have meaning in Supabase's `.or()` parser
+   * (`,*%():`) and cap length so user input cannot break the filter.
+   */
+  private sanitizeOrToken(input: string): string {
+    return (input ?? '')
+      .replace(/[,*%():]+/g, '')
+      .trim()
+      .slice(0, 50);
   }
 }

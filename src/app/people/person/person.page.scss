@@ -61,3 +61,16 @@ ion-modal.dateModal ion-datetime {
   object-fit: contain;
   transition: transform 0.12s ease-out;
 }
+
+.name-suggestions {
+  margin-top: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+
+  .reason {
+    font-size: 0.75em;
+    color: var(--ion-color-medium);
+  }
+}
