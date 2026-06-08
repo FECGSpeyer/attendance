@@ -105,8 +105,6 @@ export class PersonPage implements OnInit, AfterViewInit {
   public nameSuggestions: WritableSignal<RankedMatch<Player>[]> = signal([]);
   /** Race guard for async typeahead lookups. */
   private nameLookupSeq = 0;
-  /** Skip the blur-fallback alert when the user already tapped a suggestion. */
-  private suggestionApplied = false;
   /** Avoid re-firing the email-blur lookup for the same value. */
   private lastEmailLookup = '';
 
@@ -661,8 +659,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   /**
    * Typeahead handler — runs as the user types first/last name. Fetches
    * cross-tenant matches in linked tenants and feeds the inline suggestion
-   * list. The blur-fallback (`onChangeName`) opens the same matches as an
-   * alert if the user didn't tap one inline.
+   * list (the only surface for these matches; there is no blur fallback).
    */
   async onNameInput() {
     if (this.readOnly) {return;}
@@ -682,7 +679,6 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     const mySeq = ++this.nameLookupSeq;
-    this.suggestionApplied = false;
     try {
       const matches = await this.db.getPossiblePersonsByName(this.player.firstName, this.player.lastName, false);
       // Drop stale results.
@@ -692,44 +688,6 @@ export class PersonPage implements OnInit, AfterViewInit {
     } catch {
       // Silent — toast already raised by the service.
     }
-  }
-
-  async onChangeName() {
-    if (this.readOnly) {return;}
-    if (this.suggestionApplied) {return;}
-    if (!this.player.firstName?.length || !this.player.lastName?.length) {return;}
-
-    // Refresh in case the user blurred without an input event firing.
-    if (this.nameSuggestions().length === 0) {
-      await this.onNameInput();
-    }
-
-    const matches = this.nameSuggestions();
-    if (!matches.length) {return;}
-
-    const alert = await this.alertController.create({
-      header: 'Mögliche Übereinstimmung',
-      message: 'Es wurden mögliche Übereinstimmungen in anderen Instanzen gefunden. Möchtest du die Daten übernehmen?',
-      inputs: matches.map((m, index) => ({
-        type: 'radio',
-        checked: index === 0,
-        label: `${m.candidate.firstName} ${m.candidate.lastName} · ${(m.candidate as any).instrument?.name ?? '?'} (${(m.candidate as any).tenantId?.longName ?? '?'}) — ${m.reason}`,
-        value: m.candidate,
-      })),
-      buttons: [
-        {
-          text: 'Abbrechen',
-          role: 'destructive',
-        }, {
-          text: 'Ja',
-          handler: (value: Player) => {
-            this.applyMatchedPerson(value);
-          }
-        }
-      ]
-    });
-
-    await alert.present();
   }
 
   /**
@@ -750,7 +708,6 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.player.instrument = instrument.id;
     }
 
-    this.suggestionApplied = true;
     this.nameSuggestions.set([]);
     Utils.showToast('Die Daten wurden erfolgreich übernommen', 'success');
   }
