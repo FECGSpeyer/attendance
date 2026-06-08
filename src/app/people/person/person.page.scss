@@ -65,19 +65,27 @@ ion-modal.dateModal ion-datetime {
 .name-suggestions {
   position: relative;
   margin-top: 4px;
-  max-height: 240px;
-  overflow-y: auto;
-  background: var(--ion-color-light);
-  border-radius: 8px;
+
+  ion-list {
+    max-height: 240px;
+    overflow-y: auto;
+    background: var(--ion-color-light);
+    border-radius: 8px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
 
   .suggestions-close {
     position: absolute;
     top: 4px;
     right: 4px;
-    z-index: 1;
+    z-index: 2;
+    margin: 0;
     --padding-start: 6px;
     --padding-end: 6px;
-    margin: 0;
+    height: 28px;
+    width: 28px;
+    --border-radius: 14px;
   }
 
   .reason {
