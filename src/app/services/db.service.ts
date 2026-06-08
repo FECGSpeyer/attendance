@@ -11,6 +11,7 @@ import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 import { supabase, attendanceSelect } from './base/supabase';
 import { pickPersonFields, pickTenantUserFields, sanitizeImg } from '../utilities/db-helpers';
+import { RankedMatch } from '../utilities/person-matcher';
 
 // Import new modular services
 import { AuthService } from './auth/auth.service';
@@ -2328,9 +2329,14 @@ export class DbService {
     }
   }
 
-  async getPossiblePersonsByName(firstName: string, lastName: string, onlyWithAccount: boolean = true): Promise<Person[]> {
+  async getPossiblePersonsByName(firstName: string, lastName: string, onlyWithAccount: boolean = false): Promise<RankedMatch<Player>[]> {
     const linkedTenants = await this.getLinkedTenants();
     return this.crossTenantSvc.getPossiblePersonsByName(firstName, lastName, linkedTenants, onlyWithAccount);
+  }
+
+  async getPossiblePersonsByEmail(email: string): Promise<Player[]> {
+    const linkedTenants = await this.getLinkedTenants();
+    return this.crossTenantSvc.getPossiblePersonsByEmail(email, linkedTenants);
   }
 
   async getLinkedTenants(): Promise<Tenant[]> {

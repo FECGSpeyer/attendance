@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild, signal, WritableSignal } from '@angular/core';
 import { ActionSheetButton, ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
 import { AttendanceStatus, DefaultAttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role, FieldType } from 'src/app/utilities/constants';
+import { RankedMatch } from 'src/app/utilities/person-matcher';
 dayjs.extend(utc);
 
 @Component({
@@ -99,6 +100,15 @@ export class PersonPage implements OnInit, AfterViewInit {
   private passPinchStartDistance = 0;
   private passPinchStartScale = 1;
   private lastPassImageTapAt = 0;
+
+  /** Live cross-tenant suggestions while the user types a name. */
+  public nameSuggestions: WritableSignal<RankedMatch<Player>[]> = signal([]);
+  /** Race guard for async typeahead lookups. */
+  private nameLookupSeq = 0;
+  /** Skip the blur-fallback alert when the user already tapped a suggestion. */
+  private suggestionApplied = false;
+  /** Avoid re-firing the email-blur lookup for the same value. */
+  private lastEmailLookup = '';
 
   constructor(
     public db: DbService,
@@ -648,50 +658,150 @@ export class PersonPage implements OnInit, AfterViewInit {
     await alert.present();
   }
 
-  async onChangeName() {
-    if (this.player.firstName?.length && this.player.lastName?.length) {
-      const names = await this.db.getPossiblePersonsByName(this.player.firstName, this.player.lastName, false);
-
-      if (names.length) {
-        const alert = await this.alertController.create({
-          header: 'Mögliche Übereinstimmung',
-          message: 'Es wurden mögliche Übereinstimmungen in anderen Instanzen gefunden. Möchtest du die Daten übernehmen?',
-          inputs: names.map((person: Person, index: number) => ({
-            type: 'radio',
-            checked: index === 0,
-            label: `${(person as any).instrument.name} (${(person as any).tenantId.longName})`,
-            value: person,
-          })),
-          buttons: [
-            {
-              text: 'Abbrechen',
-              role: 'destructive',
-            }, {
-              text: 'Ja',
-              handler: async (value: Player) => {
-                this.player.email = value.email;
-                if (value.correctBirthday) {
-                  this.player.birthday = value.birthday;
-                  this.birthdayString = this.formatDate(this.player.birthday);
-                }
-                this.player.img = value.img || DEFAULT_IMAGE;
-                this.player.otherExercise = value.otherExercise;
-                this.player.range = value.range;
-
-                const instrument = this.db.groups().find((i: Group) => i.name === (value as any).instrument.name);
-                if (instrument) {
-                  this.player.instrument = instrument.id;
-                }
-
-                Utils.showToast('Die Daten wurden erfolgreich übernommen', 'success');
-              }
-            }
-          ]
-        });
-
-        await alert.present();
-      }
+  /**
+   * Typeahead handler — runs as the user types first/last name. Fetches
+   * cross-tenant matches in linked tenants and feeds the inline suggestion
+   * list. The blur-fallback (`onChangeName`) opens the same matches as an
+   * alert if the user didn't tap one inline.
+   */
+  async onNameInput() {
+    if (this.readOnly) {return;}
+    const first = (this.player.firstName ?? '').trim();
+    const last = (this.player.lastName ?? '').trim();
+    // Skip until the user has typed something meaningful in either field.
+    if (first.length < 2 && last.length < 2) {
+      this.nameSuggestions.set([]);
+      return;
     }
+    // In edit mode, only re-suggest if the name actually changed.
+    if (this.existingPlayer
+        && this.existingPlayer.firstName === this.player.firstName
+        && this.existingPlayer.lastName === this.player.lastName) {
+      this.nameSuggestions.set([]);
+      return;
+    }
+
+    const mySeq = ++this.nameLookupSeq;
+    this.suggestionApplied = false;
+    try {
+      const matches = await this.db.getPossiblePersonsByName(this.player.firstName, this.player.lastName, false);
+      // Drop stale results.
+      if (mySeq !== this.nameLookupSeq) {return;}
+      const filtered = matches.filter(m => m.candidate.id !== this.existingPlayer?.id);
+      this.nameSuggestions.set(filtered);
+    } catch {
+      // Silent — toast already raised by the service.
+    }
+  }
+
+  async onChangeName() {
+    if (this.readOnly) {return;}
+    if (this.suggestionApplied) {return;}
+    if (!this.player.firstName?.length || !this.player.lastName?.length) {return;}
+
+    // Refresh in case the user blurred without an input event firing.
+    if (this.nameSuggestions().length === 0) {
+      await this.onNameInput();
+    }
+
+    const matches = this.nameSuggestions();
+    if (!matches.length) {return;}
+
+    const alert = await this.alertController.create({
+      header: 'Mögliche Übereinstimmung',
+      message: 'Es wurden mögliche Übereinstimmungen in anderen Instanzen gefunden. Möchtest du die Daten übernehmen?',
+      inputs: matches.map((m, index) => ({
+        type: 'radio',
+        checked: index === 0,
+        label: `${m.candidate.firstName} ${m.candidate.lastName} · ${(m.candidate as any).instrument?.name ?? '?'} (${(m.candidate as any).tenantId?.longName ?? '?'}) — ${m.reason}`,
+        value: m.candidate,
+      })),
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'destructive',
+        }, {
+          text: 'Ja',
+          handler: (value: Player) => {
+            this.applyMatchedPerson(value);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Adopts data from a matched cross-tenant person into the form.
+   */
+  applyMatchedPerson(value: Player): void {
+    this.player.email = value.email;
+    if (value.correctBirthday) {
+      this.player.birthday = value.birthday;
+      this.birthdayString = this.formatDate(this.player.birthday);
+    }
+    this.player.img = value.img || DEFAULT_IMAGE;
+    this.player.otherExercise = value.otherExercise;
+    this.player.range = value.range;
+
+    const instrument = this.db.groups().find((i: Group) => i.name === (value as any).instrument?.name);
+    if (instrument) {
+      this.player.instrument = instrument.id;
+    }
+
+    this.suggestionApplied = true;
+    this.nameSuggestions.set([]);
+    Utils.showToast('Die Daten wurden erfolgreich übernommen', 'success');
+  }
+
+  /**
+   * On email blur, propose existing cross-tenant people who already use
+   * this email, so the user can adopt their record instead of creating
+   * a duplicate.
+   */
+  async onEmailBlur() {
+    if (this.readOnly) {return;}
+    const email = (this.player.email ?? '').trim();
+    if (!email || !Utils.validateEmail(email)) {return;}
+    if (email === this.lastEmailLookup) {return;}
+    if (this.existingPlayer && this.existingPlayer.email === this.player.email) {return;}
+    this.lastEmailLookup = email;
+
+    let matches: Player[] = [];
+    try {
+      matches = await this.db.getPossiblePersonsByEmail(email);
+    } catch {
+      return;
+    }
+    matches = matches.filter(m => m.id !== this.existingPlayer?.id);
+    if (!matches.length) {return;}
+
+    const alert = await this.alertController.create({
+      header: 'E-Mail bereits vergeben',
+      message: matches.length === 1
+        ? `Diese E-Mail wird in einer anderen Instanz von ${matches[0].firstName} ${matches[0].lastName} verwendet. Daten übernehmen?`
+        : 'Diese E-Mail wird bereits in anderen Instanzen verwendet. Daten welcher Person übernehmen?',
+      inputs: matches.length === 1 ? undefined : matches.map((p, index) => ({
+        type: 'radio',
+        checked: index === 0,
+        label: `${p.firstName} ${p.lastName} · ${(p as any).instrument?.name ?? '?'} (${(p as any).tenantId?.longName ?? '?'})`,
+        value: p,
+      })),
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'destructive',
+        }, {
+          text: 'Ja',
+          handler: (value: Player) => {
+            this.applyMatchedPerson(value ?? matches[0]);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   onChange() {
@@ -957,22 +1067,22 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async searchPerson() {
-    const names = await this.db.getPossiblePersonsByName(this.player.firstName, this.player.lastName);
+    const matches = await this.db.getPossiblePersonsByName(this.player.firstName, this.player.lastName);
 
-    if (names.length === 0) {
+    if (matches.length === 0) {
       Utils.showToast('Es wurde keine passende Person in einer anderen Instanz gefunden', 'danger');
       return;
     }
 
     const actionSheet = await this.actionSheetController.create({
       header: 'Eintrag auswählen',
-      buttons: names.map((name) => ({
-          text: `${(name as any).instrument.name} (${(name as any).tenantId.longName})`,
+      buttons: matches.map((m) => ({
+          text: `${m.candidate.firstName} ${m.candidate.lastName} · ${(m.candidate as any).instrument?.name ?? '?'} (${(m.candidate as any).tenantId?.longName ?? '?'})`,
           handler: async () => {
-            this.player.email = name.email;
+            this.player.email = m.candidate.email;
             await this.db.updatePlayer({
               ...this.player,
-              email: name.email,
+              email: m.candidate.email,
             });
             Utils.showToast('Die E-Mail Adresse wurde erfolgreich aktualisiert', 'success');
           }

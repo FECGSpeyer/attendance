@@ -24,18 +24,41 @@
       <ion-col>
         <ion-item lines="none">
           <ion-label position="stacked">Vorname</ion-label>
-          <ion-input [disabled]="readOnly" (ionBlur)="onChangeName()" (ionChange)="onChange()"
+          <ion-input [disabled]="readOnly" [debounce]="250" (ionInput)="onNameInput()"
+            (ionBlur)="onChangeName()" (ionChange)="onChange()"
             [(ngModel)]="player.firstName"></ion-input>
         </ion-item>
       </ion-col>
       <ion-col>
         <ion-item lines="none">
           <ion-label position="stacked">Nachname</ion-label>
-          <ion-input [disabled]="readOnly" (ionBlur)="onChangeName()" (ionChange)="onChange()"
+          <ion-input [disabled]="readOnly" [debounce]="250" (ionInput)="onNameInput()"
+            (ionBlur)="onChangeName()" (ionChange)="onChange()"
             [(ngModel)]="player.lastName"></ion-input>
         </ion-item>
       </ion-col>
     </ion-row>
+    @if (!existingPlayer && !readOnly && nameSuggestions().length > 0) {
+    <ion-row>
+      <ion-col>
+        <ion-list class="name-suggestions" lines="full">
+          <ion-list-header><ion-label>Mögliche Übereinstimmungen</ion-label></ion-list-header>
+          @for (m of nameSuggestions(); track m.candidate.id) {
+            <ion-item button (click)="applyMatchedPerson(m.candidate)">
+              <ion-icon slot="start"
+                [name]="m.candidate.appId ? 'person-circle' : (m.candidate.email ? 'mail' : 'help-circle-outline')"></ion-icon>
+              <ion-label>
+                <h3>{{ m.candidate.firstName }} {{ m.candidate.lastName }}</h3>
+                <p>{{ $any(m.candidate).instrument?.name }} · {{ $any(m.candidate).tenantId?.longName }}</p>
+                <p class="reason">{{ m.reason }}</p>
+              </ion-label>
+              <ion-badge slot="end" color="medium">{{ (m.score * 100) | number:'1.0-0' }}%</ion-badge>
+            </ion-item>
+          }
+        </ion-list>
+      </ion-col>
+    </ion-row>
+    }
     @if (existingPlayer && isAdmin) {
     <ion-row>
       <ion-col>
@@ -419,7 +442,8 @@
           <ion-col>
             <ion-item>
               <ion-label position="stacked">E-Mail</ion-label>
-              <ion-input [disabled]="player.appId || readOnly" (ionChange)="onChange()"
+              <ion-input [disabled]="player.appId || readOnly" [debounce]="500"
+                (ionBlur)="onEmailBlur()" (ionChange)="onChange()"
                 [(ngModel)]="player.email"></ion-input>
               @if (!player.appId && !readOnly) {
               <ion-button slot="end" (click)="searchPerson()">
