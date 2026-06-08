@@ -25,7 +25,7 @@
         <ion-item lines="none">
           <ion-label position="stacked">Vorname</ion-label>
           <ion-input [disabled]="readOnly" [debounce]="250" (ionInput)="onNameInput()"
-            (ionBlur)="onChangeName()" (ionChange)="onChange()"
+            (ionChange)="onChange()"
             [(ngModel)]="player.firstName"></ion-input>
         </ion-item>
       </ion-col>
@@ -33,7 +33,7 @@
         <ion-item lines="none">
           <ion-label position="stacked">Nachname</ion-label>
           <ion-input [disabled]="readOnly" [debounce]="250" (ionInput)="onNameInput()"
-            (ionBlur)="onChangeName()" (ionChange)="onChange()"
+            (ionChange)="onChange()"
             [(ngModel)]="player.lastName"></ion-input>
         </ion-item>
       </ion-col>
@@ -46,12 +46,18 @@
           @for (m of nameSuggestions(); track m.candidate.id) {
             <ion-item button (click)="applyMatchedPerson(m.candidate)">
               <ion-icon slot="start"
+                [color]="m.candidate.appId ? 'success' : (m.candidate.email ? 'primary' : 'medium')"
                 [name]="m.candidate.appId ? 'person-circle' : (m.candidate.email ? 'mail' : 'help-circle-outline')"></ion-icon>
               <ion-label>
                 <h3>{{ m.candidate.firstName }} {{ m.candidate.lastName }}</h3>
                 <p>{{ $any(m.candidate).instrument?.name }} · {{ $any(m.candidate).tenantId?.longName }}</p>
                 <p class="reason">{{ m.reason }}</p>
               </ion-label>
+              @if (m.candidate.appId) {
+                <ion-badge slot="end" color="success">Konto</ion-badge>
+              } @else if (m.candidate.email) {
+                <ion-badge slot="end" color="primary">E-Mail</ion-badge>
+              }
               <ion-badge slot="end" color="medium">{{ (m.score * 100) | number:'1.0-0' }}%</ion-badge>
             </ion-item>
           }

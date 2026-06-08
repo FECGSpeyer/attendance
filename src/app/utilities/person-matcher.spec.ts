@@ -158,4 +158,24 @@ describe('rankCandidates', () => {
     );
     expect(r[0].reason).toBe('Vor-/Nachname vertauscht');
   });
+
+  it('dedupes the same person across linked tenants, keeping the account holder', () => {
+    const sameAcrossTenants: PersonLike[] = [
+      {firstName: 'Hans', lastName: 'Müller', appId: null},
+      {firstName: 'Hans', lastName: 'Mueller', appId: 'u1'},
+      {firstName: 'Hans', lastName: 'Müller', appId: null},
+    ];
+    const r = rankCandidates({firstName: 'Hans', lastName: 'Müller'}, sameAcrossTenants);
+    expect(r.length).toBe(1);
+    expect(r[0].candidate.appId).toBe('u1');
+  });
+
+  it('boosts an account holder above a slightly closer no-account match', () => {
+    const candidatesMix: PersonLike[] = [
+      {firstName: 'Hans', lastName: 'Mueler', appId: null},  // closer literal name (typo)
+      {firstName: 'Hans', lastName: 'Mueller', appId: 'u1'}, // account holder
+    ];
+    const r = rankCandidates({firstName: 'Hans', lastName: 'Mueler'}, candidatesMix);
+    expect(r[0].candidate.appId).toBe('u1');
+  });
 });

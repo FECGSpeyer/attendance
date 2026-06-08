@@ -169,8 +169,16 @@ function reasonFor(
 }
 
 /**
- * Score, filter, and sort `candidates`. Tie-breaks prefer candidates that
- * already have an account (`appId`) — they are the stronger identity.
+ * Score, filter, sort, and dedupe `candidates`.
+ *
+ * Account-holders (candidates with an `appId`) are preferred: their score
+ * gets a small boost so they outrank no-account hits with comparable name
+ * similarity, and they win the dedup tiebreak when the same person appears
+ * across multiple linked tenants.
+ *
+ * Dedup key: normalized "firstName lastName". When two candidates collide,
+ * keep the one with the strongest identity (account > email > nothing),
+ * then the higher score.
  */
 export function rankCandidates<T extends PersonLike>(
   query: { firstName: string; lastName: string },
@@ -182,7 +190,11 @@ export function rankCandidates<T extends PersonLike>(
 
   const scored: RankedMatch<T>[] = [];
   for (const candidate of candidates) {
-    const score = nameSimilarity(query, candidate);
+    const base = nameSimilarity(query, candidate);
+    // Boost account-holders so they rank above no-account hits with a
+    // similar name (capped at 1).
+    const boost = candidate.appId ? 0.1 : 0;
+    const score = Math.min(1, base + boost);
     if (score >= threshold) {
       scored.push({
         candidate,
@@ -192,12 +204,29 @@ export function rankCandidates<T extends PersonLike>(
     }
   }
 
-  scored.sort((a, b) => {
+  // Dedupe across linked tenants: same normalized name = same person.
+  const identityRank = (c: PersonLike): number =>
+    c.appId ? 2 : (c.email ? 1 : 0);
+  const byKey = new Map<string, RankedMatch<T>>();
+  for (const m of scored) {
+    const key = `${normalizeName(m.candidate.firstName)} ${normalizeName(m.candidate.lastName)}`;
+    const prev = byKey.get(key);
+    if (!prev) {
+      byKey.set(key, m);
+      continue;
+    }
+    const prevId = identityRank(prev.candidate);
+    const currId = identityRank(m.candidate);
+    if (currId > prevId || (currId === prevId && m.score > prev.score)) {
+      byKey.set(key, m);
+    }
+  }
+
+  const deduped = Array.from(byKey.values());
+  deduped.sort((a, b) => {
     if (b.score !== a.score) {return b.score - a.score;}
-    const aHas = a.candidate.appId ? 0 : 1;
-    const bHas = b.candidate.appId ? 0 : 1;
-    return aHas - bHas;
+    return identityRank(b.candidate) - identityRank(a.candidate);
   });
 
-  return scored.slice(0, limit);
+  return deduped.slice(0, limit);
 }
