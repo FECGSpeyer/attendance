@@ -105,6 +105,8 @@ export class PersonPage implements OnInit, AfterViewInit {
   public nameSuggestions: WritableSignal<RankedMatch<Player>[]> = signal([]);
   /** Race guard for async typeahead lookups. */
   private nameLookupSeq = 0;
+  /** Name the user explicitly dismissed; suppresses suggestions until name changes. */
+  private dismissedFor: string | null = null;
   /** Avoid re-firing the email-blur lookup for the same value. */
   private lastEmailLookup = '';
 
@@ -677,6 +679,13 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.nameSuggestions.set([]);
       return;
     }
+    // Honour an explicit dismissal until the name changes.
+    const key = `${first}|${last}`;
+    if (this.dismissedFor === key) {
+      this.nameSuggestions.set([]);
+      return;
+    }
+    this.dismissedFor = null;
 
     const mySeq = ++this.nameLookupSeq;
     try {
@@ -688,6 +697,17 @@ export class PersonPage implements OnInit, AfterViewInit {
     } catch {
       // Silent — toast already raised by the service.
     }
+  }
+
+  /**
+   * Hides the suggestion list. Re-opens automatically once the user
+   * changes the name; until then the dismissal is sticky.
+   */
+  dismissNameSuggestions(): void {
+    const first = (this.player.firstName ?? '').trim();
+    const last = (this.player.lastName ?? '').trim();
+    this.dismissedFor = `${first}|${last}`;
+    this.nameSuggestions.set([]);
   }
 
   /**
