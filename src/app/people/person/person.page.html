@@ -42,7 +42,10 @@
     <ion-row>
       <ion-col>
         <ion-list class="name-suggestions" lines="full">
-          <ion-list-header><ion-label>Mögliche Übereinstimmungen</ion-label></ion-list-header>
+          <ion-button class="suggestions-close" fill="clear" size="small"
+            (click)="dismissNameSuggestions()" aria-label="Vorschläge schließen">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+          </ion-button>
           @for (m of nameSuggestions(); track m.candidate.id) {
             <ion-item button (click)="applyMatchedPerson(m.candidate)">
               <ion-icon slot="start"
