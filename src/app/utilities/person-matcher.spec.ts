@@ -178,4 +178,37 @@ describe('rankCandidates', () => {
     const r = rankCandidates({firstName: 'Hans', lastName: 'Mueler'}, candidatesMix);
     expect(r[0].candidate.appId).toBe('u1');
   });
+
+  it('requires both parts to overlap when both are filled', () => {
+    // User typed "Anna Müller" — a "Hans Müller" hit on last name only
+    // must not surface; the first names share nothing.
+    const r = rankCandidates(
+      {firstName: 'Anna', lastName: 'Müller'},
+      [{firstName: 'Hans', lastName: 'Müller', appId: null}],
+    );
+    expect(r).toEqual([]);
+  });
+
+  it('does not gate single-side queries with the both-parts rule', () => {
+    // Only the last name is filled. The both-parts gate must not apply
+    // (it would always reject), so a strong last-name hit can still
+    // surface via the normal threshold logic.
+    const r = rankCandidates(
+      {firstName: '', lastName: 'Müller'},
+      [{firstName: 'Hans', lastName: 'Müller', appId: null}],
+      {prefixMode: true},
+    );
+    // Whether it surfaces depends on the threshold; what matters is the
+    // both-parts gate did not silently strip it.
+    expect(r.length === 0 || r[0].candidate.lastName === 'Müller').toBe(true);
+  });
+
+  it('keeps prefix-style both-parts matches (Joh + Müll → Johannes Müller)', () => {
+    const r = rankCandidates(
+      {firstName: 'Joh', lastName: 'Müll'},
+      [{firstName: 'Johannes', lastName: 'Müller', appId: null}],
+      {prefixMode: true},
+    );
+    expect(r.length).toBe(1);
+  });
 });

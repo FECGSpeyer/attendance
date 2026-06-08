@@ -35,6 +35,14 @@ export interface RankOptions {
   limit?: number;
   /** When true, slightly lower bar so prefix-only typing surfaces hits. Default false */
   prefixMode?: boolean;
+  /**
+   * When BOTH query parts are filled, require each to have at least this
+   * per-part similarity to keep the candidate. Prevents matches that hit
+   * one side perfectly and miss the other entirely (e.g. user types
+   * "Anna Schmidt", a "Bernd Schmidt" should NOT surface). Default 0.5.
+   * Set to 0 to disable.
+   */
+  bothPartsMinSim?: number;
 }
 
 /**
@@ -187,9 +195,29 @@ export function rankCandidates<T extends PersonLike>(
 ): RankedMatch<T>[] {
   const threshold = opts.threshold ?? (opts.prefixMode ? 0.5 : 0.55);
   const limit = opts.limit ?? 10;
+  const bothPartsMinSim = opts.bothPartsMinSim ?? 0.5;
+
+  // If the user filled in BOTH first AND last name, require each side to
+  // have a real overlap with the candidate. Otherwise a perfect last-name
+  // hit alone clears the combined threshold and surfaces obviously-wrong
+  // people (different first name, same last name).
+  const qFirst = normalizeName(query.firstName ?? '');
+  const qLast = normalizeName(query.lastName ?? '');
+  const enforceBothParts = bothPartsMinSim > 0 && qFirst.length >= 2 && qLast.length >= 2;
 
   const scored: RankedMatch<T>[] = [];
   for (const candidate of candidates) {
+    if (enforceBothParts) {
+      const firstSim = partSimilarity(query.firstName ?? '', candidate.firstName ?? '');
+      const lastSim = partSimilarity(query.lastName ?? '', candidate.lastName ?? '');
+      const swapFirst = partSimilarity(query.firstName ?? '', candidate.lastName ?? '');
+      const swapLast = partSimilarity(query.lastName ?? '', candidate.firstName ?? '');
+      // Either straight-pair (first↔first AND last↔last) or swapped-pair
+      // (first↔last AND last↔first) must both clear the per-part floor.
+      const straightOk = firstSim >= bothPartsMinSim && lastSim >= bothPartsMinSim;
+      const swappedOk = swapFirst >= bothPartsMinSim && swapLast >= bothPartsMinSim;
+      if (!straightOk && !swappedOk) {continue;}
+    }
     const base = nameSimilarity(query, candidate);
     // Boost account-holders so they rank above no-account hits with a
     // similar name (capped at 1).
