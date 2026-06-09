@@ -262,22 +262,38 @@ export class CrossTenantService {
     const safeLast = this.sanitizeOrToken(lastName);
     if (!safeFirst && !safeLast) {return [];}
 
-    // Broad OR-prefix query: prefix on first OR last (and initial-letter
-    // fallback when one side is short). The fuzzy ranker narrows the rest.
+    // OR-prefix query: at least 2 chars on a side gives a tight `name%`
+    // prefix; only fall back to a single-letter prefix when that side is
+    // a 1-char initial. The 1-letter fallback used to fire alongside the
+    // 2-char prefix and pulled in unrelated people (e.g. "Jan" → matches
+    // every J* first name), wasting the row budget so the actual match
+    // could fall outside the LIMIT and never reach the ranker.
     const orParts: string[] = [];
-    if (safeFirst.length >= 2) {orParts.push(`firstName.ilike.${safeFirst}%`);}
-    if (safeLast.length >= 2) {orParts.push(`lastName.ilike.${safeLast}%`);}
-    if (safeFirst.length >= 1) {orParts.push(`firstName.ilike.${safeFirst.charAt(0)}%`);}
-    if (safeLast.length >= 1) {orParts.push(`lastName.ilike.${safeLast.charAt(0)}%`);}
+    if (safeFirst.length >= 2) {
+      orParts.push(`firstName.ilike.${safeFirst}%`);
+    } else if (safeFirst.length === 1) {
+      orParts.push(`firstName.ilike.${safeFirst}%`);
+    }
+    if (safeLast.length >= 2) {
+      orParts.push(`lastName.ilike.${safeLast}%`);
+    } else if (safeLast.length === 1) {
+      orParts.push(`lastName.ilike.${safeLast}%`);
+    }
 
     let query = supabase
       .from('player')
       .select('*, instrument(name), tenantId(id, shortName, longName)')
       .in('tenantId', linkedTenants.map(t => t.id))
       .is('pending', false)
-      .is('left', null)
+      // Note: do NOT filter by `left IS NULL`. Ex-members from a linked
+      // tenant are exactly the cross-tenant identity we want to surface
+      // when someone is being re-added in another tenant.
       .or(orParts.join(','))
-      .limit(100);
+      // Deterministic ordering so the LIMIT cuts predictably — same-last-name
+      // candidates cluster together and the actual match is reached.
+      .order('lastName', { ascending: true })
+      .order('firstName', { ascending: true })
+      .limit(500);
 
     if (onlyWithAccount) {
       query = query.neq('email', null);
