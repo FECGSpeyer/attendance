@@ -256,10 +256,15 @@ export function pickTeacherFields(teacher: any) {
 
 /**
  * Pick only the fields that are valid for history table
+ *
+ * Intentionally excluded:
+ *   - id          — used in `.match({ id })` for updates and auto-generated
+ *                   on insert; passing it in the body sends `null` and
+ *                   trips the NOT NULL constraint when adding songs.
+ *   - created_at  — let the DB default fill this on insert; never overridden.
  */
 export function pickHistoryFields(history: any) {
   const {
-    id,
     tenantId,
     date,
     songId,
@@ -267,10 +272,8 @@ export function pickHistoryFields(history: any) {
     person_id,
     attendance_id,
     visible,
-    created_at,
   } = history;
   return {
-    id,
     tenantId,
     date,
     songId,
@@ -278,7 +281,6 @@ export function pickHistoryFields(history: any) {
     person_id,
     attendance_id,
     visible,
-    created_at,
   };
 }
 
