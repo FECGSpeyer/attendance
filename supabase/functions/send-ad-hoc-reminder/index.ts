@@ -41,6 +41,8 @@ Deno.serve(async (req) => {
     const telegramBotToken = Deno.env.get('TELEGRAM_BOT_TOKEN')!;
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const startedAt = Date.now();
+    console.log(`[send-ad-hoc-reminder] start attendanceId=${attendanceId} tenantId=${tenantId}`);
 
     // Fetch attendance details
     const { data: attendance, error: attError } = await supabase
@@ -50,6 +52,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (attError || !attendance) {
+      console.error(`[send-ad-hoc-reminder] attendance ${attendanceId} not found:`, attError);
       return new Response(JSON.stringify({ error: 'Attendance not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
@@ -70,13 +73,18 @@ Deno.serve(async (req) => {
       .from('tenantUsers')
       .select('userId, role')
       .eq('tenantId', tenantId)
-      .neq('role', VIEWER_ROLE);
+      .neq('role', VIEWER_ROLE)
+      .range(0, 4999); // guard against PostgREST's 1000-row default
 
     if (tuError || !tenantUsers || tenantUsers.length === 0) {
+      console.warn(`[send-ad-hoc-reminder] tenant=${tenantId} no eligible users (tuError=${tuError?.message ?? 'none'} count=${tenantUsers?.length ?? 0})`);
       return new Response(JSON.stringify({ error: 'No eligible users found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
+    }
+    if (tenantUsers.length >= 4900) {
+      console.warn(`[send-ad-hoc-reminder] tenant=${tenantId} tenantUsers=${tenantUsers.length} approaching the 5000-row range cap`);
     }
 
     const userIds = tenantUsers.map(tu => tu.userId);
@@ -87,12 +95,17 @@ Deno.serve(async (req) => {
       .select('id, enabled, telegram_chat_id, push_enabled, reminders, enabled_tenants')
       .eq('enabled', true)
       .eq('reminders', true)
-      .in('id', userIds);
+      .in('id', userIds)
+      .range(0, 4999); // guard against PostgREST's 1000-row default
 
     if (notifError || !notifConfigs || notifConfigs.length === 0) {
+      console.log(`[send-ad-hoc-reminder] tenant=${tenantId} no users with reminders enabled (notifError=${notifError?.message ?? 'none'})`);
       return new Response(JSON.stringify({ sent: 0, message: 'No users with reminders enabled' }), {
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
+    }
+    if (notifConfigs.length >= 4900) {
+      console.warn(`[send-ad-hoc-reminder] tenant=${tenantId} notifications=${notifConfigs.length} approaching the 5000-row range cap`);
     }
 
     // Filter by enabled_tenants and at least one channel
@@ -104,10 +117,12 @@ Deno.serve(async (req) => {
     });
 
     if (eligibleConfigs.length === 0) {
+      console.log(`[send-ad-hoc-reminder] tenant=${tenantId} no eligible recipients after enabled_tenants/channel filter`);
       return new Response(JSON.stringify({ sent: 0, message: 'No eligible recipients' }), {
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
     }
+    console.log(`[send-ad-hoc-reminder] tenant=${tenantId} eligibleRecipients=${eligibleConfigs.length}`);
 
     // Format date
     const dateObj = new Date(attendance.date);
@@ -169,11 +184,12 @@ Deno.serve(async (req) => {
       }
     }
 
+    console.log(`[send-ad-hoc-reminder] done attendanceId=${attendanceId} tenant=${tenantId} sent=${sent} recipients=${eligibleConfigs.length} elapsedMs=${Date.now() - startedAt}`);
     return new Response(JSON.stringify({ sent, recipients: eligibleConfigs.length }), {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });
   } catch (error) {
-    console.error('Error in send-ad-hoc-reminder:', error);
+    console.error('[send-ad-hoc-reminder] fatal:', error);
     return new Response(JSON.stringify({ error: 'Internal Server Error', details: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },

@@ -156,7 +156,8 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const now = new Date();
-    console.log(`[${now.toISOString()}] Checking for checklist reminders`);
+    const startedAt = Date.now();
+    console.log(`[send-checklist-reminders] start now=${now.toISOString()}`);
 
     // 1. Fetch all tenants with their timezones
     const { data: tenants, error: tenantsError } = await supabase
@@ -164,7 +165,7 @@ Deno.serve(async (req) => {
       .select('id, timezone');
 
     if (tenantsError) {
-      console.error('Error fetching tenants:', tenantsError);
+      console.error('[send-checklist-reminders] error fetching tenants:', tenantsError);
       throw tenantsError;
     }
 
@@ -173,6 +174,7 @@ Deno.serve(async (req) => {
     for (const tenant of (tenants || [])) {
       tenantTimezones.set(tenant.id, tenant.timezone || DEFAULT_TIMEZONE);
     }
+    console.log(`[send-checklist-reminders] tenants=${tenants?.length ?? 0}`);
 
     // 2. Fetch all attendance types for name lookup
     const { data: attendanceTypes, error: typesError } = await supabase
@@ -180,7 +182,7 @@ Deno.serve(async (req) => {
       .select('id, name, tenant_id');
 
     if (typesError) {
-      console.error('Error fetching attendance types:', typesError);
+      console.error('[send-checklist-reminders] error fetching attendance types:', typesError);
       throw typesError;
     }
 
@@ -200,28 +202,41 @@ Deno.serve(async (req) => {
       .limit(500);
 
     if (attError) {
-      console.error('Error fetching attendances:', attError);
+      console.error('[send-checklist-reminders] error fetching attendances:', attError);
       throw attError;
     }
 
     if (!attendances || attendances.length === 0) {
-      console.log('No attendances with checklists found');
+      console.log('[send-checklist-reminders] no attendances with checklists found');
       return new Response(JSON.stringify({ success: true, processed: 0 }), {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+    if (attendances.length >= 500) {
+      console.warn('[send-checklist-reminders] attendance fetch hit the .limit(500) cap; some checklists may be unprocessed');
+    }
 
-    console.log(`Found ${attendances.length} attendances with checklists`);
+    console.log(`[send-checklist-reminders] found ${attendances.length} attendances with checklists`);
 
-    // 4. Get all tenant_users with role ADMIN (1) or RESPONSIBLE (5) grouped by tenant
+    // 4. Get all tenant_users with role ADMIN (1) or RESPONSIBLE (5) grouped by tenant.
+    // Scope to only the tenants that actually have qualifying attendances and
+    // bound the result set so PostgREST's default 1000-row cap can't truncate
+    // large tenants' admin lists.
+    const tenantIdsWithChecklists = [...new Set(attendances.map(a => a.tenantId))];
     const { data: allTenantUsers, error: tuError } = await supabase
       .from('tenantUsers')
       .select('userId, tenantId, role')
-      .in('role', REMINDER_ROLES);
+      .in('role', REMINDER_ROLES)
+      .in('tenantId', tenantIdsWithChecklists)
+      .range(0, 4999);
 
     if (tuError) {
-      console.error('Error fetching tenant users:', tuError);
+      console.error('[send-checklist-reminders] error fetching tenant users:', tuError);
       throw tuError;
+    }
+
+    if ((allTenantUsers?.length ?? 0) >= 4900) {
+      console.warn(`[send-checklist-reminders] tenantUsers count=${allTenantUsers?.length} approaching the 5000-row range cap`);
     }
 
     // Create a map of tenantId -> eligible userIds
@@ -231,17 +246,26 @@ Deno.serve(async (req) => {
       users.push(tu.userId);
       tenantEligibleUsers.set(tu.tenantId, users);
     }
+    console.log(`[send-checklist-reminders] tenantsWithChecklists=${tenantIdsWithChecklists.length} eligibleTenantUserRows=${allTenantUsers?.length ?? 0}`);
 
-    // 5. Get all users with checklist notifications enabled
+    // 5. Get all users with checklist notifications enabled.
+    // notifications has no tenantId column (per-user with `enabled_tenants`
+    // jsonb), so the most we can do beyond enabled+checklist filters is bound
+    // the page size against PostgREST's 1000-row default.
     const { data: allNotificationConfigs, error: notifError } = await supabase
       .from('notifications')
       .select('id, enabled, telegram_chat_id, push_enabled, checklist, enabled_tenants')
       .eq('enabled', true)
-      .eq('checklist', true);
+      .eq('checklist', true)
+      .range(0, 4999);
 
     if (notifError) {
-      console.error('Error fetching notification configs:', notifError);
+      console.error('[send-checklist-reminders] error fetching notification configs:', notifError);
       throw notifError;
+    }
+
+    if ((allNotificationConfigs?.length ?? 0) >= 4900) {
+      console.warn(`[send-checklist-reminders] notifications count=${allNotificationConfigs?.length} approaching the 5000-row range cap`);
     }
 
     // Filter to users who have at least one channel configured
@@ -250,13 +274,13 @@ Deno.serve(async (req) => {
     );
 
     if (!filteredConfigs || filteredConfigs.length === 0) {
-      console.log('No users with checklist notifications enabled');
+      console.log('[send-checklist-reminders] no users with checklist notifications enabled');
       return new Response(JSON.stringify({ success: true, processed: 0 }), {
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    console.log(`Found ${filteredConfigs.length} users with checklist notifications enabled`);
+    console.log(`[send-checklist-reminders] users with checklist notifications enabled=${filteredConfigs.length}`);
 
     let totalReminders = 0;
 
@@ -391,7 +415,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Completed. Total checklist reminders sent: ${totalReminders}`);
+    console.log(`[send-checklist-reminders] done totalReminders=${totalReminders} elapsedMs=${Date.now() - startedAt}`);
     return new Response(
       JSON.stringify({
         success: true,
@@ -403,7 +427,7 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error in send-checklist-reminders:', error);
+    console.error('[send-checklist-reminders] fatal:', error);
     return new Response(
       JSON.stringify({
         success: false,

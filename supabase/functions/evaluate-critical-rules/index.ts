@@ -92,6 +92,9 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const startedAt = Date.now();
+    console.log(`[evaluate-critical-rules] start now=${new Date().toISOString()}`);
+
     // 1. Fetch all tenants with critical_rules
     const { data: tenants, error: tenantsError } = await supabase
       .from('tenants')
@@ -100,19 +103,31 @@ Deno.serve(async (req) => {
 
     if (tenantsError) throw tenantsError;
 
+    console.log(`[evaluate-critical-rules] tenants with critical_rules=${tenants?.length ?? 0}`);
+
     const results: { tenantId: number; playersUpdated: number }[] = [];
 
     for (const tenant of (tenants as Tenant[]) || []) {
       if (!tenant.critical_rules || tenant.critical_rules.length === 0) continue;
 
       // 2. Fetch active players for this tenant
+      // Explicit range so PostgREST's default 1000-row cap can't silently
+      // drop players from large tenants. 5000 is well above any plausible
+      // single-tenant active roster today; if a tenant ever approaches it,
+      // switch to pagination/RPC.
       const { data: players, error: playersError } = await supabase
         .from('player')
         .select('id, tenantId, firstName, lastName, isCritical, lastSolve, left')
         .eq('tenantId', tenant.id)
-        .is('left', null); // Only active players
+        .is('left', null) // Only active players
+        .range(0, 4999);
 
       if (playersError) throw playersError;
+
+      const playerCount = players?.length ?? 0;
+      if (playerCount >= 4900) {
+        console.warn(`[evaluate-critical-rules] tenant=${tenant.id} player count=${playerCount} approaching the 5000-row range cap; consider raising the cap or switching to RPC`);
+      }
 
       // 3. Calculate the date range we need
       // For SEASON or ALL_TIME rules, we need to fetch from seasonStart or all time
@@ -136,22 +151,46 @@ Deno.serve(async (req) => {
       }
       const now = new Date();
 
-      // 4. Fetch all person_attendances for this tenant in the period
-      // Join with attendance table to get date, type_id and tenantId
-      // Only include past attendances (date < now)
+      // 4. Fetch all person_attendances for this tenant in the period.
+      // Uses an RPC (server-side join + filter) so the result isn't subject
+      // to PostgREST's 1000-row cap and to avoid join-filter ordering quirks
+      // where rows can be truncated before the joined-table filter applies.
+      // SQL: supabase/sql/add_evaluate_critical_rules_attendances.sql
       const { data: attendances, error: attError } = await supabase
-        .from('person_attendances')
-        .select('id, person_id, status, attendance:attendance_id(id, date, type_id, tenantId)')
-        .eq('attendance.tenantId', tenant.id)
-        .gte('attendance.date', startDate.toISOString())
-        .lt('attendance.date', now.toISOString());
+        .rpc('evaluate_critical_rules_attendances', {
+          p_tenant_id: tenant.id,
+          p_start: startDate.toISOString(),
+          p_end: now.toISOString(),
+        });
 
       if (attError) throw attError;
 
-      // Group attendances by player
+      console.log(`[evaluate-critical-rules] tenant=${tenant.id} players=${playerCount} attendanceRows=${attendances?.length ?? 0} window=[${startDate.toISOString()}..${now.toISOString()})`);
+
+      // Group attendances by player. The RPC returns a flat shape
+      // (attendance_id, attendance_date, attendance_type_id) — re-nest under
+      // `attendance` so the downstream rule evaluator keeps its current
+      // PersonAttendance.attendance.{date,type_id} expectations.
       const attendancesByPlayer = new Map<number, PersonAttendance[]>();
-      for (const att of (attendances as PersonAttendance[]) || []) {
-        if (!att.attendance) continue; // Skip if no attendance relation
+      for (const row of (attendances as Array<{
+        id: string;
+        person_id: number;
+        status: number;
+        attendance_id: number;
+        attendance_date: string;
+        attendance_type_id: string;
+      }>) || []) {
+        const att: PersonAttendance = {
+          id: row.id,
+          person_id: row.person_id,
+          status: row.status,
+          attendance: {
+            id: row.attendance_id,
+            date: row.attendance_date,
+            type_id: row.attendance_type_id,
+            tenantId: tenant.id,
+          },
+        } as PersonAttendance;
         if (!attendancesByPlayer.has(att.person_id)) {
           attendancesByPlayer.set(att.person_id, []);
         }
@@ -180,7 +219,7 @@ Deno.serve(async (req) => {
             .eq('id', player.id);
 
           if (updateError) {
-            console.error(`Failed to update player ${player.id}:`, updateError);
+            console.error(`[evaluate-critical-rules] tenant=${tenant.id} failed to update player ${player.id}:`, updateError);
           } else {
             playersUpdated++;
             // Track newly critical players for notifications
@@ -191,6 +230,8 @@ Deno.serve(async (req) => {
         }
       }
 
+      console.log(`[evaluate-critical-rules] tenant=${tenant.id} playersUpdated=${playersUpdated} newCritical=${newCriticalPlayers.length}`);
+
       // 6. Send Telegram notifications for new critical players
       if (newCriticalPlayers.length > 0) {
         await sendCriticalNotifications(supabase, tenant.id, newCriticalPlayers);
@@ -198,6 +239,9 @@ Deno.serve(async (req) => {
 
       results.push({ tenantId: tenant.id, playersUpdated });
     }
+
+    const totalUpdated = results.reduce((s, r) => s + r.playersUpdated, 0);
+    console.log(`[evaluate-critical-rules] done tenants=${results.length} totalPlayersUpdated=${totalUpdated} elapsedMs=${Date.now() - startedAt}`);
 
     return new Response(
       JSON.stringify({
@@ -209,7 +253,7 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error evaluating critical rules:', error);
+    console.error('[evaluate-critical-rules] fatal:', error);
     return new Response(
       JSON.stringify({ success: false, error: (error as Error).message }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }

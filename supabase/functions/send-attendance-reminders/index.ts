@@ -155,8 +155,9 @@ Deno.serve(async (req) => {
 
     // Get current UTC time
     const now = new Date();
+    const startedAt = Date.now();
 
-    console.log(`[${now.toISOString()}] Checking for reminders`);
+    console.log(`[send-attendance-reminders] start now=${now.toISOString()}`);
 
     // 1. Fetch all tenants with their timezones
     const { data: tenants, error: tenantsError } = await supabase
@@ -164,7 +165,7 @@ Deno.serve(async (req) => {
       .select('id, timezone');
 
     if (tenantsError) {
-      console.error('Error fetching tenants:', tenantsError);
+      console.error('[send-attendance-reminders] error fetching tenants:', tenantsError);
       throw tenantsError;
     }
 
@@ -182,16 +183,18 @@ Deno.serve(async (req) => {
       .not('reminders', 'is', null);
 
     if (typesError) {
-      console.error('Error fetching attendance types:', typesError);
+      console.error('[send-attendance-reminders] error fetching attendance types:', typesError);
       throw typesError;
     }
 
     if (!attendanceTypes || attendanceTypes.length === 0) {
-      console.log('No attendance types with reminders enabled');
+      console.log('[send-attendance-reminders] no attendance types with reminders enabled');
       return new Response(JSON.stringify({ success: true, processed: 0 }), {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+
+    console.log(`[send-attendance-reminders] tenants=${tenants?.length ?? 0} reminderTypes=${attendanceTypes.length}`);
 
     const typeIds = attendanceTypes.map((t: any) => t.id);
     let totalReminders = 0;
@@ -281,16 +284,21 @@ Deno.serve(async (req) => {
             .from('tenantUsers')
             .select('userId, tenantId, role')
             .eq('tenantId', attType.tenant_id)
-            .in('role', REMINDER_ROLES);
+            .in('role', REMINDER_ROLES)
+            .range(0, 4999); // guard against PostgREST's 1000-row default
 
           if (tuError) {
-            console.error('Error fetching tenant users:', tuError);
+            console.error(`[send-attendance-reminders] tenant=${attType.tenant_id} att=${attendance.id} error fetching tenant users:`, tuError);
             continue;
           }
 
           if (!tenantUsers || tenantUsers.length === 0) {
-            console.log(`No users with ADMIN/RESPONSIBLE role in tenant ${attType.tenant_id}`);
+            console.log(`[send-attendance-reminders] tenant=${attType.tenant_id} no admin/responsible users`);
             continue;
+          }
+
+          if (tenantUsers.length >= 4900) {
+            console.warn(`[send-attendance-reminders] tenant=${attType.tenant_id} tenantUsers=${tenantUsers.length} approaching the 5000-row range cap`);
           }
 
           const eligibleUserIds = tenantUsers.map((tu: TenantUser) => tu.userId);
@@ -301,11 +309,16 @@ Deno.serve(async (req) => {
             .select('id, enabled, telegram_chat_id, push_enabled, reminders, enabled_tenants')
             .eq('enabled', true)
             .eq('reminders', true)
-            .in('id', eligibleUserIds);
+            .in('id', eligibleUserIds)
+            .range(0, 4999); // guard against PostgREST's 1000-row default
 
           if (notifError) {
-            console.error('Error fetching notification configs:', notifError);
+            console.error(`[send-attendance-reminders] tenant=${attType.tenant_id} att=${attendance.id} error fetching notification configs:`, notifError);
             continue;
+          }
+
+          if ((notificationConfigs?.length ?? 0) >= 4900) {
+            console.warn(`[send-attendance-reminders] tenant=${attType.tenant_id} notifications=${notificationConfigs?.length} approaching the 5000-row range cap`);
           }
 
           // Filter to users who have at least one channel configured
@@ -385,7 +398,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Completed. Total reminders sent: ${totalReminders}`);
+    console.log(`[send-attendance-reminders] done totalReminders=${totalReminders} elapsedMs=${Date.now() - startedAt}`);
     return new Response(
       JSON.stringify({
         success: true,
@@ -397,7 +410,7 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error in send-attendance-reminders:', error);
+    console.error('[send-attendance-reminders] fatal:', error);
     return new Response(
       JSON.stringify({
         success: false,

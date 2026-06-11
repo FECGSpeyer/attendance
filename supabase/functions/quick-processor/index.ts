@@ -40,8 +40,10 @@ Deno.serve(async (req)=>{
       });
     }
     const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    console.log(`[quick-processor] start attId=${attId} type=${type} isParents=${!!isParents}`);
     const { data: attendanceData, error: attendanceError } = await supabase.from('person_attendances').select('*, attendance:attendance_id(date, type, typeInfo, tenant:tenantId(id, longName)), person:person_id(firstName, lastName)').eq('id', attId).single();
     if (attendanceError || !attendanceData) {
+      console.error(`[quick-processor] attId=${attId} attendance lookup failed:`, attendanceError);
       return new Response(JSON.stringify({
         error: 'Attendance record not found'
       }), {
@@ -54,8 +56,9 @@ Deno.serve(async (req)=>{
       });
     }
     const telegramBotToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
-    const { data: tenantData, error: tenantError } = await supabase.from("tenantUsers").select("userId").or('role.eq.5,role.eq.1').eq('tenantId', attendanceData.attendance.tenant.id);
+    const { data: tenantData, error: tenantError } = await supabase.from("tenantUsers").select("userId").or('role.eq.5,role.eq.1').eq('tenantId', attendanceData.attendance.tenant.id).range(0, 4999);
     if (tenantError || !tenantData) {
+      console.error(`[quick-processor] attId=${attId} tenant=${attendanceData.attendance.tenant.id} tenantUsers lookup failed:`, tenantError);
       return new Response(JSON.stringify({
         error: 'Tenant users record not found'
       }), {
@@ -67,8 +70,12 @@ Deno.serve(async (req)=>{
         }
       });
     }
-    const { data: notiData, error: notiError } = await supabase.from("notifications").select("*").or(`${tenantData.map((entry: any)=>`id.eq.${entry.userId}`).join(",")}`);
+    if (tenantData.length >= 4900) {
+      console.warn(`[quick-processor] tenant=${attendanceData.attendance.tenant.id} tenantUsers=${tenantData.length} approaching the 5000-row range cap`);
+    }
+    const { data: notiData, error: notiError } = await supabase.from("notifications").select("*").or(`${tenantData.map((entry: any)=>`id.eq.${entry.userId}`).join(",")}`).range(0, 4999);
     if (notiError || !notiData) {
+      console.error(`[quick-processor] attId=${attId} notifications lookup failed:`, notiError);
       return new Response(JSON.stringify({
         error: 'Notification config not found'
       }), {
@@ -187,6 +194,7 @@ Deno.serve(async (req)=>{
       });
     }
 
+    console.log(`[quick-processor] done attId=${attId} tenantUsers=${tenantData.length} notifications=${notiData.length}`);
     return new Response(JSON.stringify({
       message: 'Notifications sent successfully',
       attId: attId
@@ -198,6 +206,7 @@ Deno.serve(async (req)=>{
       }
     });
   } catch (error) {
+    console.error('[quick-processor] fatal:', error);
     return new Response(JSON.stringify({
       error: 'Internal Server Error',
       details: error.message

@@ -1,6 +1,5 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import dayjs from "https://deno.land/x/deno_dayjs@v0.5.0/mod.ts";
 import { Telegraf } from 'npm:telegraf@4.16.3';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { sendPushToUser } from '../_shared/send-push.ts';
@@ -8,39 +7,37 @@ import { sendPushToUser } from '../_shared/send-push.ts';
 console.info('server started');
 const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
 const getBirthdays = async ()=>{
-  // Get current month and day for birthday filtering
-  const currentMonth = dayjs().month() + 1; // dayjs months are 0-indexed, PostgreSQL months are 1-indexed
-  const currentDay = dayjs().date();
+  const startedAt = Date.now();
+  // "Today" is always evaluated in Europe/Berlin so the cron's wall-clock
+  // intent (08:00 Berlin) matches the date we compare against, regardless
+  // of the runtime's tz (Edge Functions run in UTC).
+  const berlinParts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Berlin',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+    }).formatToParts(new Date()).map(p => [p.type, p.value])
+  );
+  const todayMonth = Number(berlinParts.month); // 1-12
+  const todayDay = Number(berlinParts.day);
 
-  // Optimize: Filter birthdays in the database using PostgreSQL date functions
-  // Only select fields we actually need
-  const { data: birthdays, error: birthdaysError } = await supabase
-    .from('player')
-    .select('id, firstName, lastName, birthday, tenantId')
-    .is("left", null)
-    .is("correctBirthday", true)
-    .filter('birthday', 'not.is', null);
+  console.log(`[birthday-sync] start month=${todayMonth} day=${todayDay} (Europe/Berlin) now=${new Date().toISOString()}`);
+
+  // Filter month+day server-side via the select_todays_birthdays RPC so we
+  // only pull today's matches instead of paging through every active player.
+  // (The RPC's WHERE clause mirrors the previous JS filter; see
+  // supabase/sql/add_select_todays_birthdays.sql.)
+  const { data: todaysBirthdays, error: birthdaysError } = await supabase
+    .rpc('select_todays_birthdays', { p_month: todayMonth, p_day: todayDay });
 
   if (birthdaysError) {
     throw new Error("Failed to load players: " + JSON.stringify(birthdaysError));
   }
 
-  if (!birthdays?.length) {
-    console.log('No players with birthdays found');
-    return;
-  }
-
-  // Filter birthdays in memory (PostgreSQL date extraction in filters is complex)
-  const todaysBirthdays = birthdays.filter((p)=>{
-    return dayjs(p.birthday).date() === currentDay && dayjs(p.birthday).month() === dayjs().month();
-  });
+  console.log(`[birthday-sync] found ${todaysBirthdays?.length ?? 0} birthday(s) today`);
 
   if (!todaysBirthdays?.length) {
-    console.log('No birthdays today');
     return;
   }
-
-  console.log(`Found ${todaysBirthdays.length} birthday(s) today`);
 
   const telegraf = new Telegraf(Deno.env.get("TELEGRAM_BOT_TOKEN"));
 
@@ -52,15 +49,19 @@ const getBirthdays = async ()=>{
     .from("tenantUsers")
     .select("userId, tenantId, role")
     .in("tenantId", tenantIds)
-    .neq("role", 3); // Exclude role 3
+    .neq("role", 3) // Exclude role 3
+    .range(0, 4999); // guard against PostgREST's 1000-row default
 
   if (tenantError) {
     throw new Error("No tenant data found: " + JSON.stringify(tenantError));
   }
 
   if (!tenantUsers?.length) {
-    console.log('No tenant users found for these tenants');
+    console.log(`[birthday-sync] no tenant users found for tenants ${JSON.stringify(tenantIds)}`);
     return;
+  }
+  if (tenantUsers.length >= 4900) {
+    console.warn(`[birthday-sync] tenantUsers=${tenantUsers.length} approaching the 5000-row range cap`);
   }
 
   // Get all unique user IDs from tenantUsers
@@ -72,16 +73,21 @@ const getBirthdays = async ()=>{
     .select("id, enabled, birthdays, telegram_chat_id, push_enabled, enabled_tenants")
     .eq("enabled", true)
     .eq("birthdays", true)
-    .in("id", userIds);
+    .in("id", userIds)
+    .range(0, 4999); // guard against PostgREST's 1000-row default
 
   if (notiError) {
     throw new Error("Failed to load notification data: " + JSON.stringify(notiError));
   }
 
   if (!allNotifications?.length) {
-    console.log('No users with birthday notifications enabled');
+    console.log('[birthday-sync] no users with birthday notifications enabled');
     return;
   }
+  if (allNotifications.length >= 4900) {
+    console.warn(`[birthday-sync] notifications=${allNotifications.length} approaching the 5000-row range cap`);
+  }
+  console.log(`[birthday-sync] tenants=${tenantIds.length} eligibleNotifConfigs=${allNotifications.length}`);
 
   const getBirthdayString = (bs)=>{
     let bString = "";
@@ -134,7 +140,7 @@ const getBirthdays = async ()=>{
       return nd.enabled_tenants.includes(tenantId);
     });
 
-    console.log(`Sending ${tenantBirthdays.length} birthday notification(s) to ${eligibleUsers.length} user(s) in tenant ${tenantId}`);
+    console.log(`[birthday-sync] tenant=${tenantId} sending ${tenantBirthdays.length} birthday notification(s) to ${eligibleUsers.length} user(s)`);
 
     // Send notifications to all eligible users
     for (const user of eligibleUsers){
@@ -175,11 +181,14 @@ const getBirthdays = async ()=>{
       }
     }
   }
+
+  console.log(`[birthday-sync] done tenants=${tenantIds.length} elapsedMs=${Date.now() - startedAt}`);
 };
 Deno.serve(async ()=>{
   try {
     await getBirthdays();
   } catch (error) {
+    console.error('[birthday-sync] fatal:', error);
     return new Response(JSON.stringify({
       error: error?.message ?? "Failed to send notifications!"
     }), {
