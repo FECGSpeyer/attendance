@@ -591,6 +591,103 @@ export class AttendancePage implements OnInit {
     this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendance.id);
   }
 
+  async onHistoryEntryClick(entry: History): Promise<void> {
+    const actionSheet = await this.actionSheetController.create({
+      header: this.getSongInfo(entry),
+      subHeader: this.getConductorInfo(entry),
+      buttons: [
+        {
+          text: 'Dirigent ändern',
+          handler: async (): Promise<void> => {
+            await this.changeConductor(entry);
+          },
+        },
+        {
+          text: 'Zum Werk',
+          handler: async (): Promise<void> => {
+            await this.navigateToSong(entry.songId);
+          },
+        },
+        {
+          text: 'Abbrechen',
+          role: 'cancel',
+        },
+      ],
+    });
+    await actionSheet.present();
+  }
+
+  private async changeConductor(entry: History): Promise<void> {
+    const inputs: any[] = this.activeConductors.map((con: Person) => ({
+      type: 'radio',
+      label: `${con.firstName} ${con.lastName}`,
+      value: con.id,
+      checked: !entry.otherConductor && entry.person_id === con.id,
+    }));
+    inputs.push({
+      type: 'radio',
+      label: 'Anderer Dirigent',
+      value: this.otherConductor,
+      checked: Boolean(entry.otherConductor),
+    });
+
+    const alert = await this.alertController.create({
+      header: 'Dirigent ändern',
+      inputs,
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Speichern',
+          handler: async (selected: number): Promise<void> => {
+            if (selected === undefined || selected === null) {
+              return;
+            }
+            if (selected === this.otherConductor) {
+              await this.promptOtherConductor(entry);
+            } else {
+              await this.db.updateHistoryEntry(entry.id, {
+                person_id: selected,
+                otherConductor: null,
+              });
+              this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendance.id);
+            }
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async promptOtherConductor(entry: History): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Dirigent eingeben',
+      inputs: [{
+        type: 'text',
+        name: 'conductor',
+        placeholder: 'Dirigent',
+        value: entry.otherConductor || '',
+      }],
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Speichern',
+          handler: async (data: { conductor: string }): Promise<void> => {
+            const name = (data.conductor || '').trim();
+            if (!name) {
+              return;
+            }
+            await this.db.updateHistoryEntry(entry.id, {
+              person_id: null,
+              otherConductor: name,
+            });
+            this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendance.id);
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
   getSongInfo(entry: History): string {
     const song: Song = this.songs.find((s: Song) => s.id === entry.songId);
     if (!song) {

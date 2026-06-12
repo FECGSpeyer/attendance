@@ -220,7 +220,7 @@
             @if (manageSongs) {
             <ion-list>
               @for (entry of historyEntries; track entry) {
-              <ion-item button detail="false" (click)="navigateToSong(entry.songId)">
+              <ion-item button detail="false" (click)="onHistoryEntryClick(entry)">
                 <ion-label>
                   <h2 style="color: var(--ion-color-primary)">{{ getSongInfo(entry) }}</h2>
                   <h3>{{ getConductorInfo(entry) }}</h3>

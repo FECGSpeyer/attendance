@@ -7,7 +7,8 @@
             "🔍 Bessere Personensuche über Instanzen hinweg: Beim Hinzufügen einer Person werden mögliche Übereinstimmungen aus verbundenen Instanzen jetzt direkt während der Eingabe als Vorschlagsliste angezeigt – mit Treffergenauigkeit und Hinweis, ob die Person bereits ein Konto hat.",
             "✨ Tippfehler- und Umlaut-tolerant: Müller ↔ Mueller ↔ Muller werden als gleiche Person erkannt, ebenso kleine Tippfehler und vertauschte Vor-/Nachnamen.",
             "👤 Auch Personen ohne Konto werden vorgeschlagen: Personen aus verbundenen Instanzen werden jetzt unabhängig vom Account-Status als mögliche Übereinstimmung angezeigt.",
-            "✉️ Vorschlag bei E-Mail-Eingabe: Wenn eine E-Mail bereits in einer anderen Instanz verwendet wird, wird die zugehörige Person zur Datenübernahme vorgeschlagen."
+            "✉️ Vorschlag bei E-Mail-Eingabe: Wenn eine E-Mail bereits in einer anderen Instanz verwendet wird, wird die zugehörige Person zur Datenübernahme vorgeschlagen.",
+            "🎵 Dirigent in Werk-Liste ändern: In der Anwesenheit kann der Dirigent eines Werks direkt geändert werden. Tippen auf ein Werk öffnet eine Auswahl: Dirigent ändern oder zum Werk navigieren."
           ]
         },
         {

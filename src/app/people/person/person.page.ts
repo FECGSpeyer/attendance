@@ -151,8 +151,8 @@ export class PersonPage implements OnInit, AfterViewInit {
       if (!this.existingPlayer.additional_fields) {
         this.existingPlayer.additional_fields = {};
       }
-      if (this.db.tenant().additional_fields?.length) {
-        for (const field of this.db.tenant().additional_fields) {
+      if (this.db.tenant()?.additional_fields?.length) {
+        for (const field of this.db.tenant()?.additional_fields ?? []) {
           this.existingPlayer.additional_fields[field.id] = this.existingPlayer.additional_fields[field.id] ?? this.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options);
         }
       }
@@ -161,7 +161,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.birthdayString = this.formatDate(this.existingPlayer.birthday);
       this.playsSinceString = this.existingPlayer.playsSince ? this.formatDate(this.existingPlayer.playsSince) : '';
       this.joinedString = this.formatDate(this.existingPlayer.joined);
-      this.player.teacherName = this.player.teacher ? this.teachers.find((teacher: Teacher) => teacher).name : '';
+      this.player.teacherName = this.player.teacher ? this.teachers.find((teacher: Teacher) => teacher)?.name : '';
       this.player.criticalReasonText = this.player.criticalReason ? Utils.getPlayerHistoryTypeText(this.player.criticalReason) : '';
 
       if (this.player.appId) {
