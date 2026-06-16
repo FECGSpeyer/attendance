@@ -167,6 +167,20 @@ export class PersonPage implements OnInit, AfterViewInit {
       if (this.player.appId) {
         const role = await this.db.getRoleFromTenantUser(this.player.appId);
         this.role = role === Role.NONE || !role ? Role.PLAYER : role;
+
+        // Reconcile half-approved state: pending=false but role still APPLICANT
+        // means a previous approval committed the player update but failed to
+        // update the tenantUser role. Promote now to recover.
+        if (this.role === Role.APPLICANT && this.player.pending === false) {
+          const mainGroupId = this.db.getMainGroup()?.id;
+          const promotedRole = this.player.instrument === mainGroupId ? Role.RESPONSIBLE : Role.PLAYER;
+          try {
+            await this.db.updateTenantUser({ role: promotedRole }, this.player.appId);
+            this.role = promotedRole;
+          } catch {
+            // Leave role as-is; admin can retry via approvePlayer or the role selector.
+          }
+        }
       } else {
         this.role = Role.PLAYER;
       }
@@ -1177,6 +1191,21 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async transferPerson() {
+    const targetTenant = this.tenants.find(t => t.id === this.tenantId);
+    if (!targetTenant) {
+      return;
+    }
+
+    if (await this.db.personExistsInTenant(this.player, targetTenant.id)) {
+      const blockAlert = await this.alertController.create({
+        header: this.copy ? 'Kopieren nicht möglich' : 'Übertragen nicht möglich',
+        message: `In der Instanz "${targetTenant.longName}" existiert bereits eine Person mit der E-Mail-Adresse "${this.player.email}".`,
+        buttons: ['Ok'],
+      });
+      await blockAlert.present();
+      return;
+    }
+
     const alert = await this.alertController.create({
       header: this.copy ? 'Person kopieren' : 'Person übertragen',
       message: this.copy ? 'Möchtest du die Person wirklich in die andere Instanz kopieren?' : 'Möchtest du die Person wirklich in die andere Instanz übertragen? Alle zugehörigen Daten (Abwesenheiten, Notizen, etc.) gehen dabei verloren!',
@@ -1188,7 +1217,7 @@ export class PersonPage implements OnInit, AfterViewInit {
           text: 'Ja',
           handler: async () => {
             try {
-              await this.db.handoverPerson(this.player, this.tenants.find(t => t.id === this.tenantId), this.targetGroupId, this.copy, this.isMainGroup ? this.player.instrument : null);
+              await this.db.handoverPerson(this.player, targetTenant, this.targetGroupId, this.copy, this.isMainGroup ? this.player.instrument : null);
               this.isTransferModalOpen = false;
               if (!this.copy) {
                 this.hasChanges = false;

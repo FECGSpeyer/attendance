@@ -2504,6 +2504,10 @@ export class DbService {
 
     for (const person of persons) {
       try {
+        if (await this.personExistsInTenant(person, targetTenant.id)) {
+          failedPersons.push(person);
+          continue;
+        }
         await this.handoverPerson(person, targetTenant, groupMapping[person.id], stayInInstance, mainGroup);
       } catch (error) {
         failedPersons.push(person);
@@ -2513,7 +2517,35 @@ export class DbService {
     return failedPersons;
   }
 
+  /**
+   * True if a person with the same email already exists in the target tenant.
+   * Persons without an email are never considered duplicates.
+   */
+  async personExistsInTenant(person: Player, targetTenantId: number): Promise<boolean> {
+    const email = (person.email ?? '').trim();
+    if (!email) {
+      return false;
+    }
+
+    const { data, error } = await supabase
+      .from('player')
+      .select('id')
+      .eq('tenantId', targetTenantId)
+      .ilike('email', email)
+      .limit(1);
+
+    if (error) {
+      throw error;
+    }
+
+    return (data?.length ?? 0) > 0;
+  }
+
   async handoverPerson(person: Player, targetTenant: Tenant, groupId: number, stayInInstance: boolean = false, mainGroup: number | null): Promise<void> {
+    if (await this.personExistsInTenant(person, targetTenant.id)) {
+      throw new Error(`In der Zielinstanz existiert bereits eine Person mit der E-Mail-Adresse "${person.email}".`);
+    }
+
     const newPerson: Player = {
       tenantId: targetTenant.id,
       firstName: person.firstName,
