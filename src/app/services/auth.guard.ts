@@ -24,7 +24,7 @@ export class AuthGuard {
       return false;
     }
 
-    if (state.url === '/tabs/attendance') {
+    if (state.url === '/tabs/attendance' || state.url.startsWith('/tabs/attendance/') || state.url.startsWith('/tabs/attendance?')) {
       return role === Role.ADMIN || role === Role.HELPER || role === Role.VOICE_LEADER_HELPER || role === Role.VIEWER || role === Role.RESPONSIBLE;
     } else if (state.url === '/tabs/signout') {
       return role === Role.APPLICANT || role === Role.HELPER || role === Role.PLAYER || role === Role.NONE || role === Role.VOICE_LEADER || role === Role.VOICE_LEADER_HELPER;

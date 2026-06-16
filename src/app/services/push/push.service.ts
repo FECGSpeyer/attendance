@@ -287,16 +287,20 @@ export class PushService {
       case 'reminder':
       case 'checklist':
         if (data.attendanceId) {
-          // Stash the ID before navigating. The destination page picks it up
-          // via an effect on pendingAttendanceId() — no query params, no race
-          // with the LoginGuard's startup redirect.
-          this.pendingAttendanceId.set(Number(data.attendanceId));
           const role = this.db.tenantUser()?.role;
           if (role === Role.ADMIN || role === Role.RESPONSIBLE || role === Role.HELPER || role === Role.VOICE_LEADER_HELPER) {
-            await this.router.navigateByUrl('/tabs/attendance');
+            // Conductor / helper roles open the full attendance detail page
+            // directly. The detail route is self-loading (it calls
+            // checkToken() in its own init), so no signal hand-off is needed.
+            await this.router.navigateByUrl(`/tabs/attendance/${Number(data.attendanceId)}`);
           } else if (role === Role.PARENT) {
+            // PARENT and signout roles still see role-specific action sheets
+            // on their landing pages — those pages consume pendingAttendanceId
+            // to know which attendance the push referred to.
+            this.pendingAttendanceId.set(Number(data.attendanceId));
             await this.router.navigateByUrl('/tabs/parents');
           } else {
+            this.pendingAttendanceId.set(Number(data.attendanceId));
             await this.router.navigateByUrl('/tabs/signout');
           }
         } else {

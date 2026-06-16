@@ -772,6 +772,12 @@ export class Utils {
           return [Role.ADMIN, Role.RESPONSIBLE].includes(role);
         } else if (url.includes('/tabs/settings/general/types/')) {
           return [Role.ADMIN, Role.RESPONSIBLE].includes(role);
+        } else if (url.startsWith('/tabs/attendance/') || url.startsWith('/tabs/attendance?')) {
+          // Detail route /tabs/attendance/:id (and any future query-param
+          // variant) inherits the role gate of the attendance list. Without
+          // this branch, TabsPage's url-check effect kicks the user back to
+          // their home page on a hard reload of the detail URL.
+          return [Role.ADMIN, Role.HELPER, Role.VOICE_LEADER_HELPER, Role.VIEWER, Role.RESPONSIBLE].includes(role);
         }
 
 

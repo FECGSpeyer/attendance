@@ -1,5 +1,8 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/attendance"></ion-back-button>
+    </ion-buttons>
     @if (players) {
     <ion-title>{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(players) }}/{{
       players.length }}</ion-title>
@@ -48,9 +51,6 @@
           </ion-list>
         </ng-template>
       </ion-popover>
-      <ion-button (click)="close()">
-        <ion-icon slot="icon-only" name="close"></ion-icon>
-      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>

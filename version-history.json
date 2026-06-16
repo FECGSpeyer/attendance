@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "4.0.5",
+          "date": "16.6.2026",
+          "changes": [
+            "📲 Anwesenheit als eigene Seite: Die Anwesenheit ist jetzt eine echte Seite mit eigener URL (/tabs/attendance/<id>) statt eines Dialogs. Anwesenheiten lassen sich direkt verlinken, per Push öffnen und beim Neuladen bleibt man auf der gewünschten Anwesenheit.",
+            "🔙 Zurück-Button: Oben links ist jetzt ein Standard-Zurück-Button – er nutzt die Navigations-Historie und fällt sauber auf die Anwesenheitsliste zurück, wenn die Seite über einen Link oder Push geöffnet wurde.",
+            "🔔 Push-Benachrichtigungen: Tippen auf eine Anwesenheits-Benachrichtigung führt für Dirigenten und Helfer direkt auf die Anwesenheitsseite – ohne Umweg über die Liste."
+          ]
+        },
+        {
           "version": "4.0.4",
           "date": "8.6.2026",
           "changes": [

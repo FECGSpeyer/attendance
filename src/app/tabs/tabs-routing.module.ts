@@ -31,6 +31,10 @@ const routes: Routes = [
         loadChildren: () => import('./../attendance/att-list/att-list.module').then(m => m.AttListPageModule),
       },
       {
+        path: 'attendance/:id',
+        loadChildren: () => import('./../attendance/attendance/attendance.module').then(m => m.AttendancePageModule),
+      },
+      {
         path: 'settings',
         loadChildren: () => import('./../settings/settings/settings.module').then(m => m.SettingsPageModule),
       },

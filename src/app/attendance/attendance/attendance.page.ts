@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { Browser } from '@capacitor/browser';
@@ -13,7 +13,9 @@ import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode, CHECKLIST_DEADLINE_OPTIONS, DEFAULT_ABSENCE_REASONS } from 'src/app/utilities/constants';
 import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 
 @Component({
@@ -22,8 +24,8 @@ import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracki
     styleUrls: ['./attendance.page.scss'],
     standalone: false
 })
-export class AttendancePage implements OnInit {
-  @Input() attendanceId: number;
+export class AttendancePage implements OnInit, OnDestroy {
+  public attendanceId!: number;
   @ViewChild('chooser') chooser: ElementRef;
   public players: PersonAttendance[] = [];
   public conductors: Person[] = [];
@@ -84,15 +86,69 @@ export class AttendancePage implements OnInit {
     private actionSheetController: ActionSheetController,
     private storage: Storage,
     private router: Router,
+    private route: ActivatedRoute,
+    private location: Location,
     private tracking: TrackingService,
   ) { }
 
+  private routeSub?: Subscription;
+
   async ngOnInit(): Promise<void> {
-    // When opened via push on a cold start, the modal can race ahead of
+    // Re-run init() whenever the :id route param changes. Angular reuses the
+    // component instance when only the param changes, so this is the only way
+    // to refresh state on detail-to-detail navigation. Also handles the
+    // initial mount.
+    this.routeSub = this.route.paramMap.subscribe(async params => {
+      const idParam = params.get('id');
+      if (!idParam) return;
+      const newId = Number(idParam);
+      if (newId === this.attendanceId) return;
+
+      // Tear down any previous run before starting a new one. Safe on first
+      // mount because the listeners are undefined.
+      await this.teardown();
+      this.attendanceId = newId;
+      await this.init();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.routeSub?.unsubscribe();
+    void this.teardown();
+  }
+
+  /**
+   * Releases listeners and realtime channels owned by this page. Called by
+   * the param-change subscription before a re-init and by ngOnDestroy.
+   * Safe to call multiple times.
+   */
+  private async teardown(): Promise<void> {
+    await Network.removeAllListeners();
+    await this.sub?.unsubscribe();
+    await this.personAttSub?.unsubscribe();
+    this.sub = undefined;
+    this.personAttSub = undefined;
+    if (this.onVisibilityChange) {
+      document.removeEventListener('visibilitychange', this.onVisibilityChange);
+      this.onVisibilityChange = undefined;
+    }
+  }
+
+  private async init(): Promise<void> {
+    // Honour an explicit ?tenantId= query param. Push deep links use this so
+    // a user with multiple tenants ends up looking at the right one before
+    // any data load runs. checkToken() below is idempotent and re-runs after
+    // setTenant() has updated the tenant signal.
+    const tenantIdParam = this.route.snapshot.queryParamMap.get('tenantId');
+    if (tenantIdParam && Number(tenantIdParam) !== this.db.tenant()?.id) {
+      await this.db.setTenant(Number(tenantIdParam));
+    }
+
+    // When opened via push on a cold start, this page can race ahead of
     // setTenant() — tenant()/tenantUser()/groups() may still be undefined or
     // empty. checkToken() is idempotent (initPromise) and resolves once the
     // tenant context is fully loaded, so awaiting it here makes the rest of
-    // ngOnInit safe to read those signals synchronously.
+    // init() safe to read those signals synchronously.
     await this.db.checkToken();
 
     this.songs = await this.db.getSongs();
@@ -100,10 +156,10 @@ export class AttendancePage implements OnInit {
     this.instruments = this.db.groups().filter((instrument: Group) => !instrument.maingroup);
     this.groupCategories = await this.db.getGroupCategories();
     this.mainGroup = this.db.getMainGroup().id;
-    // Bind so we can remove it on close(). The previous inline arrow leaked
-    // — every dead modal instance kept its handler, and on a cold-start
-    // visibility flip both the dead and live modals re-fetched/resubscribed,
-    // corrupting the active modal's state.
+    // Bind so we can remove it on teardown(). The previous inline arrow
+    // leaked — every dead page instance kept its handler, and on a
+    // cold-start visibility flip both the dead and live pages re-fetched
+    // and resubscribed, corrupting the active page's state.
     this.onVisibilityChange = async () => {
       if (!document.hidden) {
         try {
@@ -133,7 +189,7 @@ export class AttendancePage implements OnInit {
     } catch (e) {
       console.error('[attendance] failed to load attendance after retries + fallback:', e);
       Utils.showToast('Anwesenheit konnte nicht geladen werden — bitte erneut öffnen.', 'danger');
-      this.modalController.dismiss();
+      this.navigateBack();
       return;
     }
 
@@ -305,23 +361,23 @@ export class AttendancePage implements OnInit {
     });
   }
 
-  async close() {
-    if (this.withExcuses) {
-      // const unexcusedPlayers: Player[] = this.players.filter((p: Player) =>
-      //   !p.isPresent && !p.isCritical && !this.excused.has(String(p.id)) && !this.attendance.criticalPlayers.includes(p.id)
-      // );
-
-      // await this.updateCriticalPlayers(unexcusedPlayers);
+  /**
+   * Return to the attendance list — used by the realtime "this row was
+   * deleted" handlers, by the fetch-failure early-return, and before
+   * navigating to a song. Prefers history.back() when there is one (so the
+   * list keeps its scroll/state); falls back to a forward navigation when
+   * this page was opened via a deep link / push and has no history.
+   *
+   * Listener and realtime-channel cleanup runs automatically through
+   * ngOnDestroy → teardown() once Angular destroys this component, so no
+   * explicit teardown is needed here.
+   */
+  private navigateBack(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      void this.router.navigateByUrl('/tabs/attendance');
     }
-
-    await Network.removeAllListeners();
-    await this.sub?.unsubscribe();
-    await this.personAttSub?.unsubscribe();
-    if (this.onVisibilityChange) {
-      document.removeEventListener('visibilitychange', this.onVisibilityChange);
-      this.onVisibilityChange = undefined;
-    }
-    this.modalController.dismiss();
   }
 
   /**
@@ -338,7 +394,7 @@ export class AttendancePage implements OnInit {
   onAttRealtimeChanges(payload: RealtimePostgresChangesPayload<any>) {
     if (!Object.keys(payload.new).length && payload.old && (payload.old as { id: number }).id === this.attendance.id) {
       Utils.showToast('Die Anwesenheit wurde soeben von einem anderen Nutzer gelöscht', 'danger', 3000);
-      this.close();
+      this.navigateBack();
       return;
     }
 
@@ -353,7 +409,7 @@ export class AttendancePage implements OnInit {
     if (!Object.keys(payload.new).length) {
       if (payload.old && this.players.find((p: PersonAttendance) => p.id === (payload.old as { id: string }).id)) {
         Utils.showToast('Die Anwesenheit wurde soeben von einem anderen Nutzer gelöscht', 'danger', 3000);
-        this.close();
+        this.navigateBack();
         return;
       }
     }
@@ -1440,7 +1496,6 @@ export class AttendancePage implements OnInit {
   }
 
   async navigateToSong(songId: number): Promise<void> {
-    await this.close();
-    this.router.navigate([`/tabs/settings/songs/`, songId]);
+    await this.router.navigate([`/tabs/settings/songs/`, songId]);
   }
 }

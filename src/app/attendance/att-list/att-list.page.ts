@@ -11,7 +11,6 @@ import { Attendance, PersonAttendance, Player, Song, History, Person, ChecklistI
 import { Utils } from 'src/app/utilities/Utils';
 import { DefaultAttendanceType, Role } from 'src/app/utilities/constants';
 import { RealtimeChannel } from '@supabase/supabase-js';
-import { AttendancePage } from '../attendance/attendance.page';
 
 @Component({
     selector: 'app-att-list',
@@ -107,9 +106,9 @@ export class AttListPage implements OnInit {
   ) {
     effect(async () => {
       this.db.tenant();
-      // Reset loaded BEFORE awaiting init() so a concurrent push effect
-      // (which calls waitForLoaded) actually waits for this tenant's data
-      // instead of resolving against the previous tenant's stale flag.
+      // Reset loaded BEFORE awaiting init() so any consumer reading `loaded`
+      // sees the in-flight state of this tenant's data instead of resolving
+      // against the previous tenant's stale flag.
       this.loaded = false;
       await this.init();
     });
@@ -118,14 +117,10 @@ export class AttListPage implements OnInit {
       this.type_id = this.db.attendanceTypes().find(type => type.visible)?.id;
     });
 
-    effect(async () => {
-      const id = this.pushService.pendingAttendanceId();
-      if (id !== null) {
-        this.pushService.consumePendingAttendanceId();
-        await this.waitForLoaded();
-        await this.openAttendance({ id });
-      }
-    });
+    // Push notifications now navigate conductor/helper roles directly to
+    // /tabs/attendance/:id, so the list page no longer needs to consume the
+    // pendingAttendanceId signal. PARENT and signout roles still consume it
+    // from their own pages — see push.service.ts navigateFromData().
   }
 
   async ngOnInit() {
@@ -145,22 +140,16 @@ export class AttListPage implements OnInit {
     });
   }
 
-  private waitForLoaded(): Promise<void> {
-    return new Promise(resolve => {
-      if (this.loaded) {
-        resolve();
-        return;
-      }
-      const start = Date.now();
-      const check = () => {
-        if (this.loaded || Date.now() - start > 5000) {
-          resolve();
-        } else {
-          setTimeout(check, 50);
-        }
-      };
-      check();
-    });
+  /**
+   * Refresh the list when returning from /tabs/attendance/:id. The detail
+   * page edits attendance/persons rows, and while realtime usually pushes
+   * those updates, the explicit refresh on re-entry is the safety net for
+   * the cold-start window where the channel may have been torn down.
+   */
+  ionViewWillEnter(): void {
+    if (this.loaded) {
+      void this.getAttendance();
+    }
   }
 
   async init(): Promise<void> {
@@ -463,21 +452,7 @@ export class AttListPage implements OnInit {
       return;
     }
 
-    this.sub?.unsubscribe();
-    this.persSub?.unsubscribe();
-
-    const modal = await this.modalController.create({
-      component: AttendancePage,
-      componentProps: {
-        attendanceId: attendance.id,
-      },
-      presentingElement: this.routerOutlet.nativeEl,
-    });
-
-    await modal.present();
-    await modal.onWillDismiss();
-    await this.getAttendance();
-    this.subscribeOnAttChannel();
+    await this.router.navigateByUrl(`/tabs/attendance/${attendance.id}`);
   }
 
   addSong(modal: IonModal): void {
