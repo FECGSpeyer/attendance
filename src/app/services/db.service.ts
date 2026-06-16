@@ -2609,6 +2609,18 @@ export class DbService {
     return this.attTypeSvc.getAttendanceTypes(tenantId || this.tenant().id);
   }
 
+  /**
+   * Re-fetch the attendance type catalog for the current tenant and update the
+   * signal. Use when a consumer (e.g. AttendancePage cold-start) reads
+   * attendanceTypes() and finds it empty or missing the type it expects —
+   * deterministic recovery instead of crashing on undefined.
+   */
+  async refreshAttendanceTypes(): Promise<AttendanceType[]> {
+    const fresh = await this.getAttendanceTypes();
+    this.attendanceTypes.set(fresh);
+    return fresh;
+  }
+
   async getAttendanceType(id: string): Promise<AttendanceType> {
     return this.attTypeSvc.getAttendanceType(id);
   }

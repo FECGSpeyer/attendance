@@ -14,6 +14,7 @@ import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPIN
 import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { Router } from '@angular/router';
+import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 
 @Component({
     selector: 'app-attendance',
@@ -71,6 +72,10 @@ export class AttendancePage implements OnInit {
   public isLoadingPersons = false;
   public songSearchTerm = '';
   public filteredSongs: Song[] = [];
+  // True when fetchAttendance succeeded but `attendance.persons` came back
+  // empty (and the helperGroupId filter isn't responsible). Surfaces an inline
+  // "Neu laden" banner so the user can recover without dismissing the modal.
+  public personsLoadFailed = false;
 
   constructor(
     private modalController: ModalController,
@@ -78,7 +83,8 @@ export class AttendancePage implements OnInit {
     private alertController: AlertController,
     private actionSheetController: ActionSheetController,
     private storage: Storage,
-    private router: Router
+    private router: Router,
+    private tracking: TrackingService,
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -104,6 +110,11 @@ export class AttendancePage implements OnInit {
           this.attendance = await this.fetchAttendance('visibility_resume');
           this.initializeAttObjects();
           this.subsribeOnChannels();
+          // If the modal was sitting on the empty-state banner waiting for
+          // a manual reload, a successful resume-refetch is a recovery too.
+          if (Array.isArray(this.attendance?.persons) && this.attendance.persons.length > 0) {
+            this.personsLoadFailed = false;
+          }
         } catch (e) {
           // Visibility-resume failure is non-fatal — the modal is already
           // open with valid data; we just couldn't refresh on resume.
@@ -125,34 +136,126 @@ export class AttendancePage implements OnInit {
       this.modalController.dismiss();
       return;
     }
-    this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendanceId);
-    this.isHelper = await this.db.tenantUser().role === Role.HELPER;
 
-    const isHelperRole = this.db.tenantUser().role === Role.HELPER || this.db.tenantUser().role === Role.VOICE_LEADER_HELPER;
+    // Helper-role profile must be resolved BEFORE initializeAttObjects() so
+    // helperGroupId is set when the persons filter runs. Kept in its own
+    // try/catch so a profile-fetch hiccup can't block the persons render —
+    // the worst case here is "helper sees the unfiltered list", which is
+    // strictly better than the previous "everyone sees an empty list".
+    this.isHelper = this.db.tenantUser().role === Role.HELPER;
+    const isHelperRole =
+      this.db.tenantUser().role === Role.HELPER ||
+      this.db.tenantUser().role === Role.VOICE_LEADER_HELPER;
     if (isHelperRole) {
-      const perm = this.db.getPermissionForRole(this.db.tenantUser().role);
-      this.canViewNotes = perm?.player_notes_view || false;
-      this.canViewChecklist = perm?.checklist_view || false;
-      if (perm && !perm.attendance_all_groups) {
-        const profile = await this.db.getPlayerProfile();
-        this.helperGroupId = profile?.instrument ?? null;
+      try {
+        const perm = this.db.getPermissionForRole(this.db.tenantUser().role);
+        this.canViewNotes = perm?.player_notes_view || false;
+        this.canViewChecklist = perm?.checklist_view || false;
+        if (perm && !perm.attendance_all_groups) {
+          const profile = await this.db.getPlayerProfile();
+          this.helperGroupId = profile?.instrument ?? null;
+        }
+      } catch (e) {
+        console.warn('[attendance] helper-role init failed; falling back to unfiltered list:', e);
       }
     }
 
-    this.attendanceViewMode = await this.storage.get('attendanceViewMode') || AttendanceViewMode.CLICK;
-
-    void this.listenOnNetworkChanges();
-    this.selectedSongs = this.attendance.songs || [];
-    this.type = this.db.attendanceTypes().find((type: AttendanceType) => type.id === this.attendance.type_id);
-    this.manageSongs = this.type.manage_songs || false;
-    this.hasDeadline = !!this.attendance.deadline;
-    if (this.hasDeadline) {
-      this.maxDeadlineDate = dayjs(this.attendance.date).hour(this.type.start_time ? Number(this.type.start_time.substring(0, 2)) : 19).minute(this.type.start_time ? Number(this.type.start_time.substring(3, 5)) : 30).toISOString();
-      this.isDeadlineReadonly = dayjs(this.attendance.date).isBefore(dayjs());
-    }
-
-    this.subsribeOnChannels();
+    // Render the persons list NOW, before any other awaited or signal-reading
+    // work that could throw and abort ngOnInit. This is the actual fix for
+    // the iOS push-open "0/0 modal" bug: previously, an unguarded read of
+    // `this.type.manage_songs` further down threw when the type catalog
+    // didn't contain the row's type_id, and initializeAttObjects() never ran.
     this.initializeAttObjects();
+
+    // Detect the "fetch returned no persons" case so the UI can show a retry
+    // banner instead of a silent 0/0. Telemetry shows this isn't currently
+    // happening, but the inline-recovery path is the safety net for any
+    // future cold-start RLS regression that the robust fetch can't recover.
+    this.personsLoadFailed =
+      this.helperGroupId == null &&
+      Array.isArray(this.attendance?.persons) &&
+      this.attendance.persons.length === 0;
+
+    // Everything past here is supplementary: history, song selection, type
+    // metadata, deadline, channel subscriptions. Each section degrades
+    // gracefully when its data is missing; wrapping the whole block in a
+    // try/catch means a future regression can't take the persons list down
+    // with it. AttendanceSecondaryInitFailed surfaces such regressions.
+    try {
+      this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendanceId);
+      this.attendanceViewMode = await this.storage.get('attendanceViewMode') || AttendanceViewMode.CLICK;
+
+      void this.listenOnNetworkChanges();
+      this.selectedSongs = this.attendance.songs || [];
+      this.type = await this.resolveAttendanceType();
+      this.manageSongs = this.type?.manage_songs || false;
+      this.hasDeadline = !!this.attendance.deadline;
+      if (this.hasDeadline) {
+        const startHour = this.type?.start_time ? Number(this.type.start_time.substring(0, 2)) : 19;
+        const startMin = this.type?.start_time ? Number(this.type.start_time.substring(3, 5)) : 30;
+        this.maxDeadlineDate = dayjs(this.attendance.date).hour(startHour).minute(startMin).toISOString();
+        this.isDeadlineReadonly = dayjs(this.attendance.date).isBefore(dayjs());
+      }
+
+      this.subsribeOnChannels();
+    } catch (e) {
+      console.error('[attendance] secondary init failed (persons list still rendered):', e);
+      this.tracking.track(TrackingEvent.AttendanceSecondaryInitFailed, {
+        attendance_id: this.attendanceId,
+        message: e?.message ?? String(e),
+      });
+    }
+  }
+
+  /**
+   * Resolve `this.attendance.type_id` against `db.attendanceTypes()`. If the
+   * catalog is empty or the id isn't there, refresh the catalog once and try
+   * again — this is the deterministic recovery for cold-start signal-replay
+   * cases where the catalog hadn't been populated yet when ngOnInit ran. If
+   * the id is still missing, return undefined; downstream callers must
+   * optional-chain access (`this.type?.X`) instead of crashing.
+   */
+  private async resolveAttendanceType(): Promise<AttendanceType | undefined> {
+    const typeId = this.attendance?.type_id;
+    if (typeId == null) return undefined;
+
+    const catalog = this.db.attendanceTypes();
+    let matched = catalog.find((t: AttendanceType) => t.id === typeId);
+    if (matched) return matched;
+
+    // Either the catalog is empty (signal-replay race) or the row references
+    // a type the local catalog doesn't know about. One refresh attempt.
+    const fresh = await this.db.refreshAttendanceTypes();
+    matched = fresh.find((t: AttendanceType) => t.id === typeId);
+
+    if (!matched) {
+      this.tracking.track(TrackingEvent.AttendanceTypeUnresolved, {
+        attendance_id: this.attendanceId,
+        type_id: typeId,
+        types_count_before: catalog.length,
+        types_count_after: fresh.length,
+      });
+    }
+    return matched;
+  }
+
+  /**
+   * Re-fetch the attendance row and re-render the persons list. Used by the
+   * inline "Neu laden" banner when `personsLoadFailed` is true.
+   */
+  async reloadAttendance(): Promise<void> {
+    try {
+      this.attendance = await this.fetchAttendance('modal_open');
+    } catch (e) {
+      console.warn('[attendance] reloadAttendance failed:', e);
+      Utils.showToast('Neu laden fehlgeschlagen — bitte erneut versuchen.', 'danger');
+      return;
+    }
+    this.initializeAttObjects();
+    this.personsLoadFailed =
+      this.helperGroupId == null &&
+      Array.isArray(this.attendance?.persons) &&
+      this.attendance.persons.length === 0;
   }
 
   subsribeOnChannels() {

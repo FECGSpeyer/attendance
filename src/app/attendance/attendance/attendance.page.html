@@ -447,6 +447,18 @@
       </ion-accordion-group>
     </ion-item-group>
     <ion-item-group>
+      @if (personsLoadFailed && players.length === 0) {
+      <ion-item lines="none" class="ion-padding-vertical ion-text-center">
+        <ion-label class="ion-text-wrap">
+          <h2>Anwesenheitsliste konnte nicht geladen werden</h2>
+          <p>Bitte versuche es erneut.</p>
+        </ion-label>
+        <ion-button slot="end" fill="outline" (click)="reloadAttendance()">
+          <ion-icon slot="start" name="refresh-outline"></ion-icon>
+          Neu laden
+        </ion-button>
+      </ion-item>
+      }
       @for (player of players; track player.id) {
       @if (player.firstOfInstrument) {
       <ion-item-divider color="primary" sticky="true">

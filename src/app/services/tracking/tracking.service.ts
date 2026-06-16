@@ -34,6 +34,13 @@ export const TrackingEvent = {
   AttendanceFetchStageB: 'attendance_fetch_stage_b',
   AttendanceFetchResolved: 'attendance_fetch_resolved',
   AttendanceFetchModifyThrow: 'attendance_fetch_modify_throw',
+  // Fetch returned 44 persons in 72ms but the modal still rendered 0/0 on iOS
+  // push-open. Root cause: ngOnInit threw on `this.type.manage_songs` because
+  // attendance.type_id wasn't in the type catalog, aborting before
+  // initializeAttObjects() could populate `this.players`. These two events
+  // make the failure modes that bypass the persons render observable.
+  AttendanceTypeUnresolved: 'attendance_type_unresolved',
+  AttendanceSecondaryInitFailed: 'attendance_secondary_init_failed',
 } as const;
 export type TrackingEvent = typeof TrackingEvent[keyof typeof TrackingEvent];
 
