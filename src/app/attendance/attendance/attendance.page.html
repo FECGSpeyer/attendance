@@ -653,4 +653,12 @@
       </ion-content>
     </ng-template>
   </ion-modal>
+
+  @if (isIos && attendance) {
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="editPlan()">
+      <ion-icon name="list-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+  }
 </ion-content>

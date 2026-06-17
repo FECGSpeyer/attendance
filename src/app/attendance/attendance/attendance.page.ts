@@ -2,7 +2,7 @@ import { Component, ElementRef, OnDestroy, OnInit, ViewChild, effect } from '@an
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { Browser } from '@capacitor/browser';
-import { AlertController, ActionSheetController, IonItemSliding, ModalController } from '@ionic/angular';
+import { AlertController, ActionSheetController, IonItemSliding, ModalController, isPlatform } from '@ionic/angular';
 import { Storage } from '@ionic/storage-angular';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { format } from 'date-fns';
@@ -78,6 +78,11 @@ export class AttendancePage implements OnInit, OnDestroy {
   // empty (and the helperGroupId filter isn't responsible). Surfaces an inline
   // "Neu laden" banner so the user can recover without dismissing the modal.
   public personsLoadFailed = false;
+
+  // Mirrors the gate used on the settings page for its instance-switcher FAB.
+  // We surface a parallel FAB here for editing/creating the Ablaufplan, only
+  // on iOS where the floating action pattern matches the platform's UX.
+  public isIos = isPlatform('ios');
 
   // The tenant this page was loaded for. Captured the first time the tenant
   // signal is non-empty (init() may run before checkToken() resolves and
