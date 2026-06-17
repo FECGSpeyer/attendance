@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { Browser } from '@capacitor/browser';
@@ -79,6 +79,14 @@ export class AttendancePage implements OnInit, OnDestroy {
   // "Neu laden" banner so the user can recover without dismissing the modal.
   public personsLoadFailed = false;
 
+  // The tenant this page was loaded for. Captured the first time the tenant
+  // signal is non-empty (init() may run before checkToken() resolves and
+  // tenant() is briefly undefined on cold start). When the tenant signal
+  // later flips to a different id — e.g. the user switches tenants in the
+  // settings tab — we kick this page off the attendance tab's stack so it
+  // can't keep showing data from the previous tenant.
+  private ownedTenantId: number | undefined;
+
   constructor(
     private modalController: ModalController,
     public db: DbService,
@@ -89,7 +97,24 @@ export class AttendancePage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private location: Location,
     private tracking: TrackingService,
-  ) { }
+  ) {
+    // Watch for cross-tenant switches. Ionic keeps each tab's stack alive, so
+    // a tenant change made from the settings tab doesn't tear this page
+    // down — without this effect, returning to the attendance tab would show
+    // the previous tenant's record. Skip until ownedTenantId is set by init()
+    // so we don't redirect during the initial cold-start race where tenant()
+    // is briefly undefined.
+    effect(() => {
+      const currentTenantId = this.db.tenant()?.id;
+      if (
+        this.ownedTenantId !== undefined &&
+        currentTenantId !== undefined &&
+        currentTenantId !== this.ownedTenantId
+      ) {
+        void this.router.navigateByUrl('/tabs/attendance');
+      }
+    });
+  }
 
   private routeSub?: Subscription;
 
@@ -132,6 +157,10 @@ export class AttendancePage implements OnInit, OnDestroy {
       document.removeEventListener('visibilitychange', this.onVisibilityChange);
       this.onVisibilityChange = undefined;
     }
+    // Unpin the tenant so the cross-tenant-switch effect stays quiet until
+    // the next init() repins it. Otherwise a teardown→init cycle could fire
+    // a stale redirect if the tenant signal flickers between the two.
+    this.ownedTenantId = undefined;
   }
 
   private async init(): Promise<void> {
@@ -150,6 +179,10 @@ export class AttendancePage implements OnInit, OnDestroy {
     // tenant context is fully loaded, so awaiting it here makes the rest of
     // init() safe to read those signals synchronously.
     await this.db.checkToken();
+
+    // Pin the tenant this page belongs to. The constructor's effect uses
+    // this to detect cross-tenant switches and navigate away.
+    this.ownedTenantId = this.db.tenant()?.id;
 
     this.songs = await this.db.getSongs();
     this.filteredSongs = [...this.songs];
