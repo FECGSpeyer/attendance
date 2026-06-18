@@ -394,45 +394,59 @@ export class DbService {
     this.tenants.set(await this.getTenants());
     const storedTenantId: string | null = tenantId || this.user.user_metadata?.currentTenantId;
     const wantSelection: boolean = (this.user.user_metadata?.wantInstanceSelection || false) && showSelector;
+    // Pick the next tenant into a local variable. We deliberately do NOT flip
+    // the `tenant` signal yet — see the atomic update at the end of this
+    // method. Flipping early made effects watching `tenant()` fire while
+    // `tenantUser`, `groups`, `attendanceTypes`, etc. were still the previous
+    // tenant's values, so consumer pages (e.g. ListPage) reloaded with a
+    // mismatched mix and showed the old tenant's data until the next refresh.
+    let nextTenant: Tenant | undefined;
     if (!wantSelection && storedTenantId && this.tenants().find((t: Tenant) => t.id === Number(storedTenantId))) {
-      this.tenant.set(this.tenants().find((t: Tenant) => t.id === Number(storedTenantId)));
+      nextTenant = this.tenants().find((t: Tenant) => t.id === Number(storedTenantId));
     } else if (wantSelection) {
       await loading?.dismiss();
-      const tenantId = await this.getWantedTenant(Number(storedTenantId));
-      if (tenantId !== Number(storedTenantId)) {
+      const selectedTenantId = await this.getWantedTenant(Number(storedTenantId));
+      if (selectedTenantId !== Number(storedTenantId)) {
         loader = await Utils.getLoadingElement();
         await loader.present();
       }
-      this.tenant.set(this.tenants().find((t: Tenant) => t.id === tenantId));
+      nextTenant = this.tenants().find((t: Tenant) => t.id === selectedTenantId);
     } else {
-      this.tenant.set(this.tenants()[0]);
+      nextTenant = this.tenants()[0];
     }
 
-    if (this.user.user_metadata?.currentTenantId !== this.tenant().id) {
-      this.user.user_metadata.currentTenantId = this.tenant().id;
+    if (this.user.user_metadata?.currentTenantId !== nextTenant?.id) {
+      this.user.user_metadata.currentTenantId = nextTenant?.id;
       supabase.auth.updateUser({
         data: {
-          currentTenantId: this.tenant().id,
+          currentTenantId: nextTenant?.id,
           wantInstanceSelection: this.user.user_metadata?.wantInstanceSelection || false,
         }
       });
     }
 
-    const user = this.tenantUsers().find((tu: TenantUser) => tu.tenantId === this.tenant().id);
+    const user = this.tenantUsers().find((tu: TenantUser) => tu.tenantId === nextTenant?.id);
 
-    // Parallelize independent data fetching for faster startup
-    const needsChurches = this.tenant().additional_fields?.find(field => field.id === 'bfecg_church');
-    const [config, groups, attendanceTypes, organisation, , , churches, rolePermissions] = await Promise.all([
+    // Fetch all tenant-scoped data with the chosen tenant ID explicitly so we
+    // don't depend on `this.tenant()` (which is still the previous tenant
+    // here, by design).
+    const nextTenantId = nextTenant?.id;
+    const needsChurches = nextTenant?.additional_fields?.find(field => field.id === 'bfecg_church');
+    const [config, groups, attendanceTypes, organisation, songCategories, shifts, churches, rolePermissions] = await Promise.all([
       this.getNotifcationConfig(user?.userId),
-      this.getGroups(),
-      this.getAttendanceTypes(),
-      this.getOrganisationFromTenant(),
-      this.getSongCategories(),  // Sets this.songCategories internally
-      this.loadShifts(),  // Sets this.shifts internally
-      needsChurches ? this.getChurches() : Promise.resolve(undefined as Church[] | undefined),
-      this.rolePermissionSvc.getPermissions(this.tenant().id),
+      this.groupSvc.getGroups(nextTenantId),
+      this.attTypeSvc.getAttendanceTypes(nextTenantId),
+      this.orgSvc.getOrganisationFromTenant(nextTenantId),
+      this.songCategorySvc.getSongCategories(nextTenantId),
+      this.shiftSvc.loadShifts(nextTenantId),
+      needsChurches ? this.churchSvc.getChurches() : Promise.resolve(undefined as Church[] | undefined),
+      this.rolePermissionSvc.getPermissions(nextTenantId),
     ]);
 
+    // Atomic flip: set every tenant-scoped signal in one synchronous block so
+    // any effect that wakes up on `tenant()` change observes a fully
+    // consistent snapshot for the new tenant.
+    this.tenant.set(nextTenant);
     this.tenantUser.set({
       ...user,
       telegram_chat_id: config?.telegram_chat_id,
@@ -440,6 +454,8 @@ export class DbService {
     this.groups.set(groups);
     this.attendanceTypes.set(attendanceTypes);
     this.organisation.set(organisation);
+    this.songCategories.set(songCategories);
+    this.shifts.set(shifts);
     if (churches) {
       this.churches.set(churches);
     }
