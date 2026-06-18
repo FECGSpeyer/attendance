@@ -23,7 +23,7 @@
     "lint": "ng lint",
     "resources": "ionic cordova resources ios && ionic cordova resources android && node scripts/resources.js && npx cap sync",
     "genTypes": "npx supabase gen types typescript --project-id \"ultyjzgwejpehfjuyenr\" --schema public > src/app/utilities/supabase.ts",
-    "openA": "ng build && npx cap sync android && npx cap open android"
+    "openA": "ng build && npx cap copy android && npx cap sync android && npx cap open android"
   },
   "private": true,
   "dependencies": {
