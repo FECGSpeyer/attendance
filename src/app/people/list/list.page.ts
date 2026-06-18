@@ -88,6 +88,14 @@ export class ListPage implements OnInit, OnDestroy {
   async ngOnInit() {
     this.currentTenantId = this.db.tenant()?.id;
     await this.initializeData();
+    // The tenant may have been switched (e.g. by a push notification handler)
+    // while initializeData() was awaiting. The effect above skipped that
+    // change because `initialized` was still false; reconcile here so the
+    // list reflects whatever tenant is now active.
+    while (this.db.tenant()?.id !== this.currentTenantId) {
+      this.currentTenantId = this.db.tenant()?.id;
+      await this.initializeData();
+    }
     this.initialized = true;
   }
 
