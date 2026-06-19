@@ -587,7 +587,7 @@ export class SongPage implements OnInit {
   }
 
   getSongSharingLink(): string {
-    return `${window.location.origin}/${this.sharing_id ?? this.db.tenant()?.song_sharing_id}/${this.song.id}`;
+    return `https://attendix.de/${this.sharing_id ?? this.db.tenant()?.song_sharing_id}/${this.song.id}`;
   }
 
   copyShareLink() {

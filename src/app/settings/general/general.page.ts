@@ -501,7 +501,7 @@ export class GeneralPage implements OnInit {
   }
 
   getSongSharingLink(): string {
-    return `${window.location.origin}/${this.db.tenant().song_sharing_id}`;
+    return `https://attendix.de/${this.db.tenant().song_sharing_id}`;
   }
 
   copySongSharingLink() {
@@ -510,7 +510,7 @@ export class GeneralPage implements OnInit {
   }
 
   getRegisterLink(): string {
-    return `${window.location.origin}/register/${this.db.tenant().register_id}`;
+    return `https://attendix.de/register/${this.db.tenant().register_id}`;
   }
 
   copyRegisterLink() {

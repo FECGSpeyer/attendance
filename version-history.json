@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.0.6",
+          "date": "19.6.2026",
+          "changes": [
+            "🔗 Teil-Links auf nativen Apps korrigiert: Beim Kopieren von Lied-, Stimmregister- und Sharing-Links wurde auf iOS/Android bisher die interne App-URL eingefügt (z. B. capacitor://localhost). Die Links zeigen jetzt zuverlässig auf https://attendix.de/ und lassen sich überall öffnen."
+          ]
+        },
+        {
           "version": "4.0.5",
           "date": "16.6.2026",
           "changes": [
