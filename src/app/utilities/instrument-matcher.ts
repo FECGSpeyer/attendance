@@ -165,23 +165,89 @@ export function normalizeFilename(filename: string): string {
 }
 
 /**
+ * Normalizes an instrument or synonym name (no extension stripping).
+ * Synonyms like "Hr." or "1. Hr" would otherwise be mangled by the
+ * file-extension regex in normalizeFilename().
+ */
+function normalizeName(name: string): string {
+  let normalized = name
+    .normalize()
+    .toLowerCase()
+    .replace(/[_\-\.]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  for (const [roman, arabic] of ROMAN_TO_ARABIC) {
+    const regex = new RegExp(`\\b${roman}\\b`, 'gi');
+    normalized = normalized.replace(regex, arabic);
+  }
+
+  return normalized;
+}
+
+/**
+ * Checks whether a candidate string matches inside the filename.
+ * - When both contain a number, the numbers must overlap (so "Waldhorn 1"
+ *   doesn't match a file labelled "Waldhorn 2", and "1. Althorn" doesn't
+ *   match an instrument "Althorn 2").
+ * - When both contain a matching number, also accept a number-prefix
+ *   filename like "1. Waldhorn" against an instrument "Waldhorn 1" by
+ *   matching the candidate's word-part (without digits) inside the file.
+ * - Short candidates (≤3 chars) must match on a word boundary, so the
+ *   "alt" variation of viola/alto doesn't fire inside "althorn".
+ */
+function filenameMatches(normalizedFilename: string, candidate: string): boolean {
+  if (!candidate) {return false;}
+
+  const fileNumbers = normalizedFilename.match(/\d+/g);
+  const candidateNumbers = candidate.match(/\d+/g);
+  let numbersAgree = false;
+  if (fileNumbers && candidateNumbers) {
+    // Both have numbers — at least one candidate number must appear in the filename.
+    if (!candidateNumbers.some(n => fileNumbers.includes(n))) {
+      return false;
+    }
+    numbersAgree = true;
+  }
+
+  if (candidate.length <= 3) {
+    const escaped = candidate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(^|[^a-zа-яё0-9])${escaped}([^a-zа-яё0-9]|$)`, 'i').test(normalizedFilename);
+  }
+
+  if (normalizedFilename.includes(candidate)) {return true;}
+
+  // When numbers agree, allow the word-part of the candidate (digits + spaces
+  // stripped) to match independently of digit position. This catches the
+  // common "1. Waldhorn" naming where the digit comes before the instrument.
+  if (numbersAgree) {
+    const candidateWord = candidate.replace(/\d+/g, '').replace(/\s+/g, ' ').trim();
+    if (candidateWord.length >= 4 && normalizedFilename.includes(candidateWord)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Generates all possible name variations for an instrument
  * including translations, abbreviations, and number variations
  */
 export function generateInstrumentVariations(instrumentName: string): string[] {
   const variations: Set<string> = new Set();
-  const normalizedName = normalizeFilename(instrumentName);
+  const normalizedName = normalizeName(instrumentName);
 
   variations.add(normalizedName);
 
   // Check if this instrument has translations
   for (const [english, variants] of Object.entries(INSTRUMENT_TRANSLATIONS)) {
-    const normalizedEnglish = normalizeFilename(english);
+    const normalizedEnglish = normalizeName(english);
     const numberMatch = normalizedName.match(/\d+/);
 
     // If the instrument name matches any variant (including English key), add ALL variants
     const matchesEnglish = normalizedName.includes(normalizedEnglish);
-    const matchesVariant = variants.some(v => normalizedName.includes(normalizeFilename(v)));
+    const matchesVariant = variants.some(v => normalizedName.includes(normalizeName(v)));
 
     if (matchesEnglish || matchesVariant) {
       // Add English
@@ -192,7 +258,7 @@ export function generateInstrumentVariations(instrumentName: string): string[] {
 
       // Add all variants (German, Russian, Italian, etc.)
       for (const variant of variants) {
-        const normalizedVariant = normalizeFilename(variant);
+        const normalizedVariant = normalizeName(variant);
         variations.add(normalizedVariant);
         if (numberMatch) {
           variations.add(`${normalizedVariant} ${numberMatch[0]}`);
@@ -204,7 +270,7 @@ export function generateInstrumentVariations(instrumentName: string): string[] {
   // Add abbreviation expansions
   for (const [abbr, expansions] of Object.entries(ABBREVIATIONS)) {
     for (const expansion of expansions) {
-      if (normalizedName.includes(normalizeFilename(expansion))) {
+      if (normalizedName.includes(normalizeName(expansion))) {
         variations.add(abbr);
         const numberMatch = normalizedName.match(/\d+/);
         if (numberMatch) {
@@ -229,24 +295,37 @@ export function matchInstrument(filename: string, instruments: Group[]): Group |
   // e.g., "Violine 1" should match before "Violine"
   const sortedInstruments = [...instruments].sort((a, b) => b.name.length - a.name.length);
 
-  // First pass: exact substring match with instrument name
+  // First pass: exact substring match with instrument name (number-consistent)
   for (const instrument of sortedInstruments) {
-    const normalizedInstrumentName = normalizeFilename(instrument.name);
+    const normalizedInstrumentName = normalizeName(instrument.name);
+    const instrumentNumbers = normalizedInstrumentName.match(/\d+/g);
+    const fileNumbers = normalizedFilename.match(/\d+/g);
 
-    if (normalizedFilename.includes(normalizedInstrumentName)) {
+    if (filenameMatches(normalizedFilename, normalizedInstrumentName)) {
       return instrument;
     }
 
-    // Check synonyms
+    // Check synonyms. If the synonym carries no number but the instrument
+    // name does, require the instrument's number to appear in the filename —
+    // otherwise both "Althorn 1" and "Althorn 2" (sharing synonym "Horn Es")
+    // would match "Horn Es 2.pdf" indistinguishably.
     if (instrument.synonyms) {
-      const synonyms = instrument.synonyms.split(',').map(s => normalizeFilename(s.trim()));
-      if (synonyms.some(syn => normalizedFilename.includes(syn))) {
-        return instrument;
-      }
+      const synonyms = instrument.synonyms.split(',').map(s => normalizeName(s.trim()));
+      const synonymMatch = synonyms.some(syn => {
+        if (!filenameMatches(normalizedFilename, syn)) {return false;}
+        const synonymHasNumber = /\d/.test(syn);
+        if (!synonymHasNumber && instrumentNumbers && fileNumbers) {
+          return instrumentNumbers.some(n => fileNumbers.includes(n));
+        }
+        return true;
+      });
+      if (synonymMatch) {return instrument;}
     }
   }
 
-  // Second pass: check against generated variations (translations, abbreviations)
+  // Second pass: check against generated variations (translations, abbreviations).
+  // filenameMatches enforces number-consistency and word-boundary for short
+  // variations so e.g. "alt" doesn't fire inside "althorn".
   for (const instrument of sortedInstruments) {
     const variations = generateInstrumentVariations(instrument.name);
 
@@ -259,7 +338,7 @@ export function matchInstrument(filename: string, instruments: Group[]): Group |
     }
 
     for (const variation of variations) {
-      if (normalizedFilename.includes(variation)) {
+      if (filenameMatches(normalizedFilename, variation)) {
         return instrument;
       }
     }
@@ -273,8 +352,8 @@ export function matchInstrument(filename: string, instruments: Group[]): Group |
       // Try to find matching instrument
       for (const expansion of expansions) {
         for (const instrument of sortedInstruments) {
-          const normalizedInstrumentName = normalizeFilename(instrument.name);
-          if (normalizedInstrumentName.includes(normalizeFilename(expansion))) {
+          const normalizedInstrumentName = normalizeName(instrument.name);
+          if (normalizedInstrumentName.includes(normalizeName(expansion))) {
             // Check for number match (e.g., "vl1" should match "Violine 1" not "Violine 2")
             const filenameNumber = normalizedFilename.match(/\d+/);
             const instrumentNumber = normalizedInstrumentName.match(/\d+/);

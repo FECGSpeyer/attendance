@@ -186,4 +186,70 @@ describe('instrument-matcher', () => {
       expect(detectSpecialFileType('Violine_1.pdf', 'application/pdf')).toBeNull();
     });
   });
+
+  /**
+   * Regression tests for the Waldhorn / Althorn misassignment bug.
+   * Uses a realistic Blasorchester lineup with the synonyms reported by the user.
+   */
+  describe('Waldhorn / Althorn regression', () => {
+    const orchestra: Group[] = [
+      { id: 1, name: 'Flöte', tenantId: 1, maingroup: false },
+      { id: 2, name: 'Oboe', tenantId: 1, maingroup: false },
+      { id: 3, name: 'Klarinette 1', tenantId: 1, maingroup: false },
+      { id: 4, name: 'Klarinette 2', tenantId: 1, maingroup: false },
+      { id: 5, name: 'Klarinette 3', tenantId: 1, maingroup: false },
+      { id: 6, name: 'Alt-Saxophon', tenantId: 1, maingroup: false },
+      { id: 7, name: 'Tenor-Saxophon', tenantId: 1, maingroup: false },
+      { id: 8, name: 'Trompete 1', tenantId: 1, maingroup: false },
+      { id: 9, name: 'Trompete 2', tenantId: 1, maingroup: false },
+      { id: 10, name: 'Trompete 3', tenantId: 1, maingroup: false },
+      { id: 11, name: 'Waldhorn 1', tenantId: 1, maingroup: false, synonyms: 'Horn F, Waldhorn F' },
+      { id: 12, name: 'Waldhorn 2', tenantId: 1, maingroup: false, synonyms: 'Horn F, Waldhorn F' },
+      { id: 13, name: 'Althorn 1', tenantId: 1, maingroup: false, synonyms: 'Alt Es, Alt Eb, Horn Es, Horn Eb' },
+      { id: 14, name: 'Althorn 2', tenantId: 1, maingroup: false, synonyms: 'Alt Es, Alt Eb, Horn Es, Horn Eb' },
+      { id: 15, name: 'Tenorhorn 1', tenantId: 1, maingroup: false },
+      { id: 16, name: 'Tenorhorn 2', tenantId: 1, maingroup: false },
+      { id: 17, name: 'Bariton', tenantId: 1, maingroup: false },
+      { id: 18, name: 'Posaune 1', tenantId: 1, maingroup: false },
+      { id: 19, name: 'Posaune 2', tenantId: 1, maingroup: false },
+      { id: 20, name: 'Tuba', tenantId: 1, maingroup: false },
+    ];
+
+    it('matches Waldhorn 1.pdf to Waldhorn 1', () => {
+      expect(matchInstrument('Waldhorn 1.pdf', orchestra)?.name).toBe('Waldhorn 1');
+    });
+    it('matches Waldhorn 2.pdf to Waldhorn 2', () => {
+      expect(matchInstrument('Waldhorn 2.pdf', orchestra)?.name).toBe('Waldhorn 2');
+    });
+    it('matches Althorn 1.pdf to Althorn 1', () => {
+      expect(matchInstrument('Althorn 1.pdf', orchestra)?.name).toBe('Althorn 1');
+    });
+    it('matches Althorn 2.pdf to Althorn 2', () => {
+      expect(matchInstrument('Althorn 2.pdf', orchestra)?.name).toBe('Althorn 2');
+    });
+    it('matches "Horn F 1.pdf" to Waldhorn 1 via synonym', () => {
+      expect(matchInstrument('Horn F 1.pdf', orchestra)?.name).toBe('Waldhorn 1');
+    });
+    it('matches "Horn Es 2.pdf" to Althorn 2 (number from filename disambiguates shared synonym)', () => {
+      expect(matchInstrument('Horn Es 2.pdf', orchestra)?.name).toBe('Althorn 2');
+    });
+    it('matches "Alt Es 1.pdf" to Althorn 1 via synonym', () => {
+      expect(matchInstrument('Alt Es 1.pdf', orchestra)?.name).toBe('Althorn 1');
+    });
+    it('matches Alt-Saxophon.pdf to Alt-Saxophon (not Althorn)', () => {
+      expect(matchInstrument('Alt-Saxophon.pdf', orchestra)?.name).toBe('Alt-Saxophon');
+    });
+    it('does not misroute "Alt-Sax.pdf" to Althorn via the "alt" substring', () => {
+      expect(matchInstrument('Alt-Sax.pdf', orchestra)?.name?.includes('Althorn')).toBeFalsy();
+    });
+    it('matches "1. Waldhorn.pdf" to Waldhorn 1 (number-prefix naming)', () => {
+      expect(matchInstrument('1. Waldhorn.pdf', orchestra)?.name).toBe('Waldhorn 1');
+    });
+    it('matches "1. Althorn.pdf" to Althorn 1 (number-prefix naming)', () => {
+      expect(matchInstrument('1. Althorn.pdf', orchestra)?.name).toBe('Althorn 1');
+    });
+    it('matches Tenorhorn 1.pdf to Tenorhorn 1 (not Waldhorn)', () => {
+      expect(matchInstrument('Tenorhorn 1.pdf', orchestra)?.name).toBe('Tenorhorn 1');
+    });
+  });
 });
