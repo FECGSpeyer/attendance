@@ -44,6 +44,7 @@ export class ListPage implements OnInit, OnDestroy {
   public archiveNote = '';
   public isPauseModalOpen = false;
   public pauseReason = '';
+  public pauseFrom = '';
   public pauseUntil = '';
   public minPauseDate: string = dayjs().format('YYYY-MM-DD');
   public playerToPause: Player | null = null;
@@ -637,6 +638,7 @@ export class ListPage implements OnInit, OnDestroy {
     this.playerToPause = player;
     this.sliderToPause = slider;
     this.pauseReason = '';
+    this.pauseFrom = '';
     this.pauseUntil = '';
     this.isPauseModalOpen = true;
   }
@@ -647,11 +649,18 @@ export class ListPage implements OnInit, OnDestroy {
       return;
     }
 
-    const history: PlayerHistoryEntry[] = [...this.playerToPause.history];
-    const pauseText = this.pauseUntil
-      ? `${this.pauseReason} (bis ${dayjs(this.pauseUntil).format('DD.MM.YYYY')})`
+    const segments: string[] = [];
+    if (this.pauseFrom) {
+      segments.push(`ab ${dayjs(this.pauseFrom).format('DD.MM.YYYY')}`);
+    }
+    if (this.pauseUntil) {
+      segments.push(`bis ${dayjs(this.pauseUntil).format('DD.MM.YYYY')}`);
+    }
+    const pauseText = segments.length
+      ? `${this.pauseReason} (${segments.join(' ')})`
       : this.pauseReason;
 
+    const history: PlayerHistoryEntry[] = [...this.playerToPause.history];
     history.push({
       date: new Date().toISOString(),
       text: pauseText,
@@ -664,7 +673,7 @@ export class ListPage implements OnInit, OnDestroy {
         paused: true,
         paused_until: this.pauseUntil || null,
         history,
-      }, true);
+      }, true, undefined, undefined, undefined, this.pauseFrom || undefined);
     } catch (error) {
       Utils.showToast(error, 'danger');
     }
@@ -678,6 +687,7 @@ export class ListPage implements OnInit, OnDestroy {
     this.playerToPause = null;
     this.sliderToPause = null;
     this.pauseReason = '';
+    this.pauseFrom = '';
     this.pauseUntil = '';
   }
 

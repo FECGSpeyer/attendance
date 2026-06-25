@@ -337,6 +337,33 @@
         </ion-list>
 
         <ion-accordion-group>
+          <ion-accordion value="from">
+            <ion-item slot="header" color="light">
+              <ion-label>
+                <h3>Pausiert ab (optional)</h3>
+                @if (pauseFrom) {
+                  <p>{{ pauseFrom | date:'dd.MM.yyyy' }}</p>
+                } @else {
+                  <p>Ab heute</p>
+                }
+              </ion-label>
+              @if (pauseFrom) {
+                <ion-button fill="clear" slot="end" (click)="pauseFrom = ''; $event.stopPropagation()">
+                  <ion-icon slot="icon-only" name="close-circle-outline" color="medium"></ion-icon>
+                </ion-button>
+              }
+            </ion-item>
+            <div slot="content">
+              <ion-datetime
+                locale="de-DE"
+                [firstDayOfWeek]="1"
+                [max]="minPauseDate"
+                [(ngModel)]="pauseFrom"
+                presentation="date"
+                size="cover">
+              </ion-datetime>
+            </div>
+          </ion-accordion>
           <ion-accordion value="date">
             <ion-item slot="header" color="light">
               <ion-label>
@@ -367,7 +394,7 @@
         </ion-accordion-group>
 
         <ion-note class="ion-padding" color="medium" style="display: block;">
-          Wenn ein Enddatum angegeben wird, wird die Person automatisch reaktiviert.
+          Mit einem Startdatum in der Vergangenheit wird die Person auch aus zurückliegenden Anwesenheiten ab diesem Datum entfernt. Wenn ein Enddatum angegeben wird, wird die Person automatisch reaktiviert.
         </ion-note>
 
         <ion-button expand="block" class="ion-margin-top" (click)="confirmPause()" [disabled]="!pauseReason">

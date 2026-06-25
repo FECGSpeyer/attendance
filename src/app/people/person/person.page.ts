@@ -84,6 +84,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public archiveNote = '';
   public isPauseModalOpen = false;
   public pauseReason = '';
+  public pauseFrom = '';
   public pauseUntil = '';
   public minPauseDate: string = dayjs().format('YYYY-MM-DD');
   public isTransferModalOpen = false;
@@ -1115,6 +1116,7 @@ export class PersonPage implements OnInit, AfterViewInit {
         text: 'Pausieren',
         handler: async () => {
           this.pauseReason = '';
+          this.pauseFrom = '';
           this.pauseUntil = '';
           this.isPauseModalOpen = true;
         }
@@ -1256,10 +1258,17 @@ export class PersonPage implements OnInit, AfterViewInit {
       Utils.showToast('Bitte gib einen Grund an!', 'danger');
       return;
     }
+    const segments: string[] = [];
+    if (this.pauseFrom) {
+      segments.push(`ab ${dayjs(this.pauseFrom).format('DD.MM.YYYY')}`);
+    }
+    if (this.pauseUntil) {
+      segments.push(`bis ${dayjs(this.pauseUntil).format('DD.MM.YYYY')}`);
+    }
     const history: PlayerHistoryEntry[] = this.player.history;
     history.push({
       date: new Date().toISOString(),
-      text: this.pauseReason + (this.pauseUntil ? ` (bis ${dayjs(this.pauseUntil).format('DD.MM.YYYY')})` : ''),
+      text: this.pauseReason + (segments.length ? ` (${segments.join(' ')})` : ''),
       type: PlayerHistoryType.PAUSED,
     });
     try {
@@ -1268,7 +1277,7 @@ export class PersonPage implements OnInit, AfterViewInit {
         paused: true,
         paused_until: this.pauseUntil || null,
         history,
-      }, true);
+      }, true, undefined, undefined, undefined, this.pauseFrom || undefined);
       this.hasChanges = false;
       this.isPauseModalOpen = false;
       await this.dismiss();
@@ -1280,6 +1289,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   dismissPauseModal(): void {
     this.isPauseModalOpen = false;
     this.pauseReason = '';
+    this.pauseFrom = '';
     this.pauseUntil = '';
   }
 

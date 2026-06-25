@@ -5,6 +5,7 @@
           "date": "19.6.2026",
           "changes": [
             "🔗 Teil-Links auf nativen Apps korrigiert: Beim Kopieren von Lied-, Stimmregister- und Sharing-Links wurde auf iOS/Android bisher die interne App-URL eingefügt (z. B. capacitor://localhost). Die Links zeigen jetzt zuverlässig auf https://attendix.de/ und lassen sich überall öffnen.",
+            "🎵 Pausieren mit Startdatum: Admins können beim Pausieren einer Person optional ein Startdatum in der Vergangenheit angeben. Die Person wird dann ab diesem Datum aus allen Anwesenheiten entfernt, die nach dem Startdatum liegen. Ein Enddatum reaktiviert die Person automatisch.",
             "🎺 Noten-Upload: Waldhorn- und Althorn-Stimmen werden wieder korrekt zugeordnet. Hintergrund: Der erweiterte Instrumenten-Matcher hatte zwei Regressionen – die kurze Variante \"alt\" (für Bratsche/Alto) traf fälschlich auf \"althorn\", und Dateinamen mit vorangestellter Nummer (z. B. \"1. Waldhorn.pdf\") fielen in den unsicheren Fallback. Beides ist jetzt durch eine Nummern-Konsistenzprüfung und Wortgrenzen-Match für kurze Aliase behoben.",
             "🎺 Synonyme bei gleichnamigen Stimmen: Wenn mehrere Stimmen denselben Synonym-Eintrag teilen (z. B. \"Horn Es\" für Althorn 1 und Althorn 2), entscheidet jetzt die Nummer im Dateinamen – \"Horn Es 2.pdf\" landet bei Althorn 2 statt zufällig bei Althorn 1."
           ]

@@ -1441,8 +1441,25 @@ export class DbService {
     }
   }
 
-  async removePlayerFromUpcomingAttendances(id: number, left?: string) {
-    const attData: Attendance[] = left ? await this.getAttendancesByDate(left) : await this.getUpcomingAttendances();
+  async removePlayerFromUpcomingAttendances(id: number, left?: string, from?: string) {
+    let attData: Attendance[];
+
+    if (left) {
+      attData = await this.getAttendancesByDate(left);
+    } else if (from) {
+      // Pause with a start date: drop the player from every attendance on/after `from`
+      // (including past ones), so historical and upcoming participation both reflect the pause.
+      const fromIso = dayjs(from).startOf('day').toISOString();
+      const { data } = await supabase
+        .from('attendance')
+        .select('*')
+        .eq('tenantId', this.tenant().id)
+        .gte('date', fromIso)
+        .order('date', { ascending: false });
+      attData = (data as any) ?? [];
+    } else {
+      attData = await this.getUpcomingAttendances();
+    }
 
     if (attData?.length) {
       await this.deletePersonAttendances(attData.map((att: Attendance) => att.id), id);
@@ -1554,7 +1571,8 @@ export class DbService {
     pausedAction?: boolean,
     createAccount?: boolean,
     role?: Role,
-    updateShifts?: boolean
+    updateShifts?: boolean,
+    pauseFrom?: string
   ): Promise<Player[]> {
     this.checkDemoRestriction();
     const dataToUpdate: Player = { ...player };
@@ -1593,7 +1611,7 @@ export class DbService {
 
     if (pausedAction) {
       if (player.paused) {
-        this.removePlayerFromUpcomingAttendances(player.id);
+        this.removePlayerFromUpcomingAttendances(player.id, undefined, pauseFrom);
       } else {
         this.addPlayerToUpcomingAttendances(player, player.instrument, player.shift_id);
       }
