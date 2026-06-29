@@ -35,6 +35,13 @@ const routes: Routes = [
     loadChildren: () => import('./app-redirect/app-redirect.module').then(m => m.AppRedirectModule)
   },
   {
+    // Public, unauthenticated ad-hoc Ablaufplanungs-Tool. Must be registered
+    // before the :songSharingId wildcard below or it would be treated as a
+    // song-sharing id.
+    path: 'planung',
+    loadChildren: () => import('./public-planning/public-planning.module').then(m => m.PublicPlanningPageModule)
+  },
+  {
     path: ':songSharingId',
     loadChildren: () => import('./songs/songs.module').then( m => m.SongsPageModule)
   },
