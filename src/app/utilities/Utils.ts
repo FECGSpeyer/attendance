@@ -1095,22 +1095,32 @@ export class Utils {
 
   static async downloadFileNative(blob: Blob, fileName: string): Promise<void> {
     if (!Capacitor.isNativePlatform()) {
-      // Try the Web Share API first — on iOS Safari this opens the native
-      // share sheet so the user can save to Files, AirDrop, Mail, etc.
-      // The plain <a download> trick is ignored by iOS Safari (it just opens
-      // the blob in a new tab without a way to share it).
+      // On mobile browsers (iOS/iPadOS Safari especially) the <a download>
+      // trick is ignored — the file just opens as a blob URL in a new tab
+      // and the user has no way to share or save it. Use the Web Share API
+      // there so the system share sheet pops up (Files, AirDrop, Mail, …).
+      // Desktop browsers (Mac/Windows incl. Safari on macOS) get the direct
+      // anchor download instead — that's what users expect on a desktop.
+      const ua = navigator.userAgent || '';
+      const isIOS = /iPad|iPhone|iPod/.test(ua)
+        || (ua.includes('Macintosh') && (navigator as any).maxTouchPoints > 1); // iPadOS 13+ reports as Mac
+      const isAndroid = /Android/i.test(ua);
+      const isMobile = isIOS || isAndroid;
       const mimeType = blob.type || (fileName.endsWith('.png') ? 'image/png' : 'application/pdf');
-      try {
-        const file = new File([blob], fileName, { type: mimeType });
-        const nav: any = navigator;
-        if (nav?.canShare?.({ files: [file] }) && typeof nav.share === 'function') {
-          await nav.share({ files: [file], title: fileName });
-          return;
+
+      if (isMobile) {
+        try {
+          const file = new File([blob], fileName, { type: mimeType });
+          const nav: any = navigator;
+          if (nav?.canShare?.({ files: [file] }) && typeof nav.share === 'function') {
+            await nav.share({ files: [file], title: fileName });
+            return;
+          }
+        } catch (err: any) {
+          // AbortError = user dismissed the share sheet; treat as success.
+          if (err?.name === 'AbortError') {return;}
+          // Otherwise fall through to the anchor-download path.
         }
-      } catch (err: any) {
-        // AbortError = user dismissed the share sheet; treat as success.
-        if (err?.name === 'AbortError') {return;}
-        // Otherwise fall through to the anchor-download path.
       }
 
       const url = window.URL.createObjectURL(blob);
@@ -1118,7 +1128,6 @@ export class Utils {
       a.href = url;
       a.download = fileName;
       a.rel = 'noopener';
-      a.target = '_blank';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
