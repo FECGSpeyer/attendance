@@ -3,8 +3,7 @@
     <ion-title>Ablaufplanung</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="showExportOptions()" fill="clear">
-        <ion-icon slot="start" name="share-outline"></ion-icon>
-        Export
+        <ion-icon name="share-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -13,21 +12,13 @@
 <ion-content color="light">
   <ion-list [inset]="true">
     <ion-item>
-      <ion-input
-        label="Titel"
-        labelPlacement="stacked"
-        [(ngModel)]="planTitle"
-        (ionBlur)="calculateEnd()"
+      <ion-input label="Titel" labelPlacement="stacked" [(ngModel)]="planTitle" (ionBlur)="calculateEnd()"
         placeholder="Ablaufplan"></ion-input>
     </ion-item>
     <ion-item>
-      <ion-select
-        label="Vorlage"
-        [(ngModel)]="selectedTemplateId"
-        (ionChange)="onTemplateChange()"
-        interface="popover">
+      <ion-select label="Vorlage" [(ngModel)]="selectedTemplateId" (ionChange)="onTemplateChange()" interface="popover">
         @for (tpl of templates; track tpl.id) {
-          <ion-select-option [value]="tpl.id">{{ tpl.name }}</ion-select-option>
+        <ion-select-option [value]="tpl.id">{{ tpl.name }}</ion-select-option>
         }
       </ion-select>
     </ion-item>
@@ -36,20 +27,14 @@
       <ion-datetime-button datetime="dateOnly"></ion-datetime-button>
       <ion-modal [keepContentsMounted]="true">
         <ng-template>
-          <ion-datetime
-            id="dateOnly"
-            presentation="date"
-            locale="de-DE"
-            [(ngModel)]="date"
+          <ion-datetime id="dateOnly" presentation="date" locale="de-DE" [(ngModel)]="date"
             (ionChange)="onDateChange()"></ion-datetime>
         </ng-template>
       </ion-modal>
     </ion-item>
-    <ion-item lines="none">
-      <ion-button (click)="resetPlan()" fill="clear" size="small" slot="end">
-        <ion-icon slot="start" name="refresh"></ion-icon>
-        Zurücksetzen
-      </ion-button>
+    <ion-item detail="false" (click)="resetPlan()" button lines="none">
+      <ion-icon color="primary" slot="start" name="refresh"></ion-icon>
+      <ion-label color="primary">Zurücksetzen</ion-label>
     </ion-item>
   </ion-list>
 
@@ -71,72 +56,61 @@
       </ion-popover>
     </ion-list-header>
 
-    <ion-item>
-      <ion-label>Start</ion-label>
-      <ion-datetime-button datetime="startTime"></ion-datetime-button>
-      <ion-modal [keepContentsMounted]="true">
-        <ng-template>
-          <ion-datetime
-            id="startTime"
-            presentation="time"
-            locale="de-DE"
-            [(ngModel)]="time"
-            (ionChange)="calculateEnd()"
-            [formatOptions]="{ time: { hour: '2-digit', minute: '2-digit', hour12: false } }">
-          </ion-datetime>
-        </ng-template>
-      </ion-modal>
-    </ion-item>
-
-    <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
-      @for (field of selectedFields; track trackByFieldId(i, field); let i = $index) {
-        <ion-item-sliding #slider>
-          <ion-item>
-            <ion-label (click)="editField(field, slider)">
-              <h2>{{ field.name }}</h2>
-              @if (!field.id.includes('noteFld')) {
-                <h3>{{ calculateTime(field, i) }}</h3>
-              }
-            </ion-label>
-            @if (!field.id.includes('noteFld')) {
-              <ion-input
-                required="true"
-                style="width: 3rem;"
-                (ionBlur)="calculateEnd()"
-                [(ngModel)]="field.time"
-                placeholder="min"
-                type="number"
-                slot="end"></ion-input>
-            }
-            <ion-reorder slot="end"></ion-reorder>
-          </ion-item>
-          <ion-item-options (ionSwipe)="removeField(i, slider)">
-            <ion-item-option expandable color="danger" (click)="removeField(i, slider)">
-              <ion-icon name="trash"></ion-icon>
-            </ion-item-option>
-          </ion-item-options>
-        </ion-item-sliding>
-      }
-    </ion-reorder-group>
-
-    @if (end) {
-      <ion-item lines="none">
-        <ion-label>Ende</ion-label>
-        <ion-datetime-button datetime="endTime"></ion-datetime-button>
+    <ion-item-group>
+      <ion-item>
+        <ion-label>Start</ion-label>
+        <ion-datetime-button datetime="startTime"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime
-              id="endTime"
-              presentation="time"
-              locale="de-DE"
-              disabled="true"
-              [(ngModel)]="end"
+            <ion-datetime id="startTime" presentation="time" locale="de-DE" [(ngModel)]="time"
+              (ionChange)="calculateEnd()"
               [formatOptions]="{ time: { hour: '2-digit', minute: '2-digit', hour12: false } }">
             </ion-datetime>
           </ng-template>
         </ion-modal>
       </ion-item>
-    }
+
+      <ion-list>
+        <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
+          @for (field of selectedFields; track trackByFieldId(i, field); let i = $index) {
+          <ion-item-sliding #slider>
+            <ion-item>
+              <ion-label (click)="editField(field, slider)">
+                <h2>{{ field.name }}</h2>
+                @if (!field.id.includes('noteFld')) {
+                <h3>{{ calculateTime(field, i) }}</h3>
+                }
+              </ion-label>
+              @if (!field.id.includes('noteFld')) {
+              <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
+                placeholder="min" type="number" slot="end"></ion-input>
+              }
+              <ion-reorder slot="end"></ion-reorder>
+            </ion-item>
+            <ion-item-options (ionSwipe)="removeField(i, slider)">
+              <ion-item-option expandable color="danger" (click)="removeField(i, slider)">
+                <ion-icon name="trash"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+          }
+        </ion-reorder-group>
+      </ion-list>
+
+      @if (end) {
+      <ion-item lines="none">
+        <ion-label>Ende</ion-label>
+        <ion-datetime-button datetime="endTime"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime id="endTime" presentation="time" locale="de-DE" disabled="true" [(ngModel)]="end"
+              [formatOptions]="{ time: { hour: '2-digit', minute: '2-digit', hour12: false } }">
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+      }
+    </ion-item-group>
   </ion-list>
 
   <div class="ion-padding export-action">

@@ -226,26 +226,11 @@ export class PublicPlanningPage implements OnInit {
     );
   }
 
-  async exportImage(sideBySide = false) {
-    if (!this.validate()) {return;}
-    const title = this.planTitle?.trim() || 'Ablaufplan';
-    const blob = await Utils.createPlanExport(
-      { time: this.time, end: this.end, fields: this.selectedFields, sideBySide, asBlob: true, asImage: true },
-      title,
-    );
-    if (!blob) {return;}
-    const dateStr = dayjs(this.time).isValid() ? dayjs(this.time).format('DD_MM_YYYY') : dayjs().format('DD_MM_YYYY');
-    const fileName = `${title}_${dateStr}${sideBySide ? '_2x' : ''}.png`;
-    await Utils.downloadFileNative(blob, fileName);
-  }
-
   async showExportOptions() {
     if (!this.validate()) {return;}
     const buttons: ActionSheetButton[] = [
       { text: 'PDF (A4)',       handler: () => this.export(false) },
       { text: 'PDF (2x A5)',    handler: () => this.export(true) },
-      { text: 'Bild (A4)',      handler: () => this.exportImage(false) },
-      { text: 'Bild (2x A5)',   handler: () => this.exportImage(true) },
       { text: 'Abbrechen',      role: 'cancel' },
     ];
     const actionSheet = await this.actionSheetController.create({
