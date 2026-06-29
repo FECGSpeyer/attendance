@@ -422,12 +422,7 @@ export class SongPage implements OnInit {
 
     const result = await jszip.generateAsync({ type: 'blob' });
 
-    const url = window.URL.createObjectURL(result);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${this.song.name || 'songs'}.zip`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    await Utils.downloadFileNative(result, `${this.song.name || 'songs'}.zip`);
 
     await loading.dismiss();
   }

@@ -152,12 +152,7 @@ export class ExportPage implements OnInit {
       }
     });
     const fileName = `${shortName}_Spielerliste_Stand_${date}.pdf`;
-    if (Capacitor.isNativePlatform()) {
-      const blob = doc.output('blob');
-      await Utils.downloadFileNative(blob, fileName);
-    } else {
-      doc.save(fileName);
-    }
+    await Utils.downloadFileNative(doc.output('blob'), fileName);
   }
 
   async exportType(shortName: string) {
@@ -265,12 +260,7 @@ export class ExportPage implements OnInit {
       },
     });
     const attFileName = `${shortName}_Anwesenheit_Stand_${date}.pdf`;
-    if (Capacitor.isNativePlatform()) {
-      const blob = doc.output('blob');
-      await Utils.downloadFileNative(blob, attFileName);
-    } else {
-      doc.save(attFileName);
-    }
+    await Utils.downloadFileNative(doc.output('blob'), attFileName);
   }
 
   getFieldValues(player: Player) {

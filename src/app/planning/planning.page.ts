@@ -556,12 +556,7 @@ export class PlanningPage implements OnInit {
       this.db.sendPlanPerTelegram(blob, `Registerprobenplan_${dayjs().format('DD_MM_YYYY')}`, asImage);
     } else {
       const fileName = `${this.db.tenant().shortName} Registerprobenplan: ${date}.pdf`;
-      if (Capacitor.isNativePlatform()) {
-        const blob = doc.output('blob');
-        await Utils.downloadFileNative(blob, fileName);
-      } else {
-        doc.save(fileName);
-      }
+      await Utils.downloadFileNative(doc.output('blob'), fileName);
     }
 
     modal.dismiss();
