@@ -10,19 +10,19 @@ export interface PublicPlanningTemplate {
 export const PUBLIC_PLANNING_TEMPLATES: PublicPlanningTemplate[] = [
   {
     id: 'gottesdienst', name: 'Gottesdienst', startTime: '09:40', fields: [
-      { id: 'g-1', name: 'Gemeinsamer Gesang',    time: '20' },
+      { id: 'g-1', name: 'Gemeinsamer Gesang',    time: '20', conductor: 'Dirigenten' },
       { id: 'g-2', name: 'Segensgebet',           time: '5' },
-      { id: 'g-3', name: 'Gemeinsamer Gesang',    time: '5' },
+      { id: 'g-3', name: 'Gemeinsamer Gesang',    time: '5', conductor: 'Dirigenten' },
       { id: 'g-4', name: '1. Predigt mit Gebet',  time: '20' },
-      { id: 'g-5', name: 'Gemeinsamer Gesang',    time: '5' },
+      { id: 'g-5', name: 'Gemeinsamer Gesang',    time: '5', conductor: 'Dirigenten' },
       { id: 'noteFld-1', name: '4 & 5 jährige Kinder gehen zur Sonntgsschule', time: '0' },
       { id: 'g-6', name: '1. Werk',               time: '5' },
       { id: 'g-7', name: 'Programm',              time: '15' },
       { id: 'g-8', name: '2. Werk',               time: '5' },
-      { id: 'g-9', name: 'Gemeinsamer Gesang',    time: '5' },
+      { id: 'g-9', name: 'Gemeinsamer Gesang',    time: '5', conductor: 'Dirigenten' },
       { id: 'g-10', name: '2. Predigt',           time: '15' },
       { id: 'g-11', name: '3. Werk',              time: '3' },
-      { id: 'g-12', name: 'Gemeinsamer Gesang',   time: '2' },
+      { id: 'g-12', name: 'Gemeinsamer Gesang',   time: '2', conductor: 'Dirigenten' },
       { id: 'g-13', name: 'Abschlusspredigt mit Gebet',   time: '25' },
       { id: 'g-14', name: 'Vermeldungen',   time: '10' },
     ]
