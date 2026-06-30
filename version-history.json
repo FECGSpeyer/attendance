@@ -4,6 +4,7 @@
           "version": "4.0.7",
           "date": "29.6.2026",
           "changes": [
+            "🚀 Schnellere Updates der nativen App: Kleine Verbesserungen am Web-Teil der App werden jetzt direkt beim nächsten Start eingespielt – ohne Umweg über App Store oder Play Store. Native Updates (neue Berechtigungen, native Plugins) brauchen weiterhin ein Store-Update.",
             "📋 Öffentliches Ablaufplanungs-Tool: Unter https://attendix.de/planung steht ein abgespecktes Ablaufplanungs-Tool ohne Login zur Verfügung – ideal für Ad-hoc-Planungen externer Benutzer. Mit drei Vorlagen (Gottesdienst, Chorprobe, Orchesterprobe), die per Klick als Startpunkt geladen werden.",
             "📤 Export als PDF oder Bild, jeweils einseitig (A4) oder als 2x A5 nebeneinander. Der Plan wird im Browser lokal gespeichert, sodass ein Reload die Arbeit nicht verwirft."
           ]

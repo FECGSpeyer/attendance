@@ -13,6 +13,9 @@
 		"Badge": {
 			"persist": false,
 			"autoClear": true
+		},
+		"LiveUpdate": {
+			"publicKey": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqu5erQkIkKL3ZTc27XeQ\nArYDpo6UrPXur92cpmwNAWaQC2iDLE+Ieo7xHsSHXluHPdfjfzzj0kUTDEtV0Jtq\nEzv+deqJxB+SVNYjsOLK5eRAO+SERTqjZ6qvZ7gJX62FuzuT+tT1vfCKq47MEW6/\nc1LN/TRzcUFa/VM+QFicvclgoaeksXyjKY3lGXO04UnxDRxa6O3MZDaHdwDIqBfg\nZygUyjOpmAH6Wb310e0iUH6nI42mj1Lvr2tt+o+NgsFIolhMkjW2ibvEJQavgZGb\nGtoVXp+hLEEfj/cB6yV9uv6kfNVAV6fSK+oQWRa+DpUMPgo+O3Xo2WqNvw9BEFHV\nowIDAQAB\n-----END PUBLIC KEY-----"
 		}
 	}
 }

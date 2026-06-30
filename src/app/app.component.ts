@@ -11,6 +11,7 @@ import { Utils } from './utilities/Utils';
 import { DbService } from './services/db.service';
 import { PushService } from './services/push/push.service';
 import { TrackingEvent, TrackingService } from './services/tracking/tracking.service';
+import { LiveUpdateService } from './services/live-update/live-update.service';
 
 @Component({
     selector: 'app-root',
@@ -32,11 +33,13 @@ export class AppComponent {
     private router: Router,
     private zone: NgZone,
     private tracking: TrackingService,
+    private liveUpdate: LiveUpdateService,
   ) {
     this.initializeApp();
     this.titleService.setTitle('Attendix');
     this.listenToAuthChanges();
     this.checkForUpdates();
+    this.liveUpdate.init();
     this.setupDeepLinks();
     this.trackPageViews();
   }
