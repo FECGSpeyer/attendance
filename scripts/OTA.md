@@ -79,6 +79,32 @@ The release script needs two secrets:
 - `SUPABASE_SERVICE_ROLE_KEY` (env var)
 - `ota-private.pem` at the repo root (write from a secret before invoking the script, never commit)
 
+## Vercel auto-publish
+
+Every **production** Vercel deploy automatically publishes an OTA bundle. Preview deploys (PRs, branch previews) never publish.
+
+How it works:
+- `package.json` exposes a `vercel-build` script: `node server.js && ng build && node scripts/ota-vercel-publish.mjs`. Vercel auto-runs `vercel-build` in preference to `build`.
+- `scripts/ota-vercel-publish.mjs` inspects `VERCEL_ENV` — if it's `production`, it calls `ota-release.mjs --skip-build` (reusing the already-built `www/`). Anything else: skip.
+- An OTA publish failure does NOT fail the Vercel deploy — the PWA at attendix.de still goes live; mobile users just stay on their previous bundle until the next deploy.
+
+### Vercel env vars to set
+
+In Vercel → Project Settings → Environment Variables, add **with scope = Production only**:
+
+| Name | Value |
+|---|---|
+| `SUPABASE_SERVICE_ROLE_KEY` | the service-role JWT from Supabase Settings → API |
+| `OTA_PRIVATE_KEY` | the full contents of `ota-private.pem` including the `-----BEGIN PRIVATE KEY-----` / `-----END PRIVATE KEY-----` lines |
+
+The signing script will use `OTA_PRIVATE_KEY` when no local `ota-private.pem` is present.
+
+**Important — scope these to Production only.** If they leak into Preview, every PR preview build can publish an OTA, which would ship unfinished code to mobile users.
+
+### Manual local release (still works)
+
+Local releases continue to work with the file-based key. `OTA_PRIVATE_KEY` is only a fallback when the file isn't there.
+
 ## Manifest schema
 
 ```json

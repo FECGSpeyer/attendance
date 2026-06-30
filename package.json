@@ -11,6 +11,7 @@
     "start": "ng serve",
     "build": "ng build",
     "appflow:build": "node server.js; ng build",
+    "vercel-build": "node server.js && ng build && node scripts/ota-vercel-publish.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",

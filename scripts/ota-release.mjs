@@ -19,8 +19,10 @@
 //   • Env var SUPABASE_SERVICE_ROLE_KEY — service-role key for the project.
 //     The anon key cannot write to Storage; service-role is needed only here,
 //     never bundled into the app.
-//   • ota-private.pem at repo root (created by scripts/ota-keygen.js).
-//     .gitignored — keep it in a password manager / CI secret store.
+//   • Signing key — supply EITHER:
+//       - file `ota-private.pem` at the repo root (local dev / manual releases),
+//       - OR env var OTA_PRIVATE_KEY containing the full PEM (CI / Vercel).
+//     Local file is preferred when present.
 //   • A public bucket named `ota-bundles` (see scripts/OTA.md).
 //
 // Usage:
@@ -58,13 +60,24 @@ function fail(msg) {
   process.exit(1);
 }
 
-if (!SERVICE_KEY) fail('SUPABASE_SERVICE_ROLE_KEY env var is required.');
-if (!fs.existsSync(PRIVATE_KEY_PATH)) {
+function loadPrivateKey() {
+  // Local file wins when present — matches the keygen-script output and keeps
+  // local releases working without any env var dance.
+  if (fs.existsSync(PRIVATE_KEY_PATH)) return fs.readFileSync(PRIVATE_KEY_PATH, 'utf8');
+  if (process.env.OTA_PRIVATE_KEY) {
+    // Vercel UI sometimes strips trailing newlines from multiline secrets, and
+    // some pipelines pass the PEM with literal `\n` escapes. Handle both.
+    return process.env.OTA_PRIVATE_KEY.replace(/\\n/g, '\n');
+  }
   fail(
-    `ota-private.pem not found at ${PRIVATE_KEY_PATH}.\n` +
+    'No signing key found.\n' +
+      `   Either place ota-private.pem at ${PRIVATE_KEY_PATH}\n` +
+      '   or set the OTA_PRIVATE_KEY env var to the full PEM contents.\n' +
       '   Generate one with: node scripts/ota-keygen.js',
   );
 }
+
+if (!SERVICE_KEY) fail('SUPABASE_SERVICE_ROLE_KEY env var is required.');
 
 const args = process.argv.slice(2);
 const skipBuild = args.includes('--skip-build');
@@ -88,7 +101,7 @@ async function main() {
 
   console.log('▶ Signing bundle (RSA-SHA256)...');
   const zipBytes = fs.readFileSync(zipPath);
-  const privateKey = fs.readFileSync(PRIVATE_KEY_PATH, 'utf8');
+  const privateKey = loadPrivateKey();
   const signer = crypto.createSign('RSA-SHA256');
   signer.update(zipBytes);
   signer.end();
