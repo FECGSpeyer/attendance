@@ -129,6 +129,39 @@
     </ion-popover>
   </div>
 
+  @if (loaded && todaysBirthdays.length) {
+    <div class="birthday-banner">
+      <div class="birthday-banner__glow"></div>
+      <div class="birthday-banner__header">
+        <span class="birthday-banner__emoji" aria-hidden="true">🎉</span>
+        <div class="birthday-banner__title">
+          @if (todaysBirthdays.length === 1) {
+            Geburtstag heute
+          } @else {
+            {{ todaysBirthdays.length }} Geburtstage heute
+          }
+        </div>
+      </div>
+      <div class="birthday-banner__list">
+        @for (player of todaysBirthdays; track player.id) {
+          <button type="button" class="birthday-banner__entry" (click)="openModal(player)">
+            @if (player.img) {
+              <ion-avatar class="birthday-banner__avatar">
+                <img [src]="player.img" />
+              </ion-avatar>
+            } @else {
+              <span class="birthday-banner__cake" aria-hidden="true">🎂</span>
+            }
+            <span class="birthday-banner__name">
+              {{ player.firstName }} {{ player.lastName }}
+            </span>
+            <span class="birthday-banner__age">{{ getBirthdayAge(player) }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  }
+
   @if (players.length && playersFiltered?.length) {
     <ion-list style="padding-top: 0;" class="marginBottom">
       <ion-list-header>

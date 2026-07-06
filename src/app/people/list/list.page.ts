@@ -22,6 +22,7 @@ export class ListPage implements OnInit, OnDestroy {
   public players: Player[] = [];
   public conductors: Person[] = [];
   public playersFiltered: Player[] = [];
+  public todaysBirthdays: Player[] = [];
   public instruments: Group[] = [];
   public playerToArchive: Player;
   public searchTerm = '';
@@ -184,8 +185,20 @@ export class ListPage implements OnInit, OnDestroy {
     this.onViewChanged();
     this.initializeItems();
     this.onSortChanged();
+    this.computeTodaysBirthdays();
 
     this.loaded = true;
+  }
+
+  private computeTodaysBirthdays(): void {
+    const today = dayjs().format('MM-DD');
+    this.todaysBirthdays = this.players.filter(
+      p => p.birthday && dayjs(p.birthday).format('MM-DD') === today,
+    );
+  }
+
+  getBirthdayAge(player: Player): number {
+    return Utils.calculateAge(new Date(player.birthday));
   }
 
   userById(_: number, person: Person): string {

@@ -23,3 +23,118 @@ ion-modal.dateModal {
 ion-modal.dateModal ion-datetime {
   height: 382px;
 }
+
+.birthday-banner {
+  position: relative;
+  margin: 12px 16px 0;
+  padding: 16px;
+  border-radius: 16px;
+  color: #fff;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ff8a65 0%, #ff5e9c 50%, #a06cff 100%);
+  animation: birthday-banner-in 0.35s ease-out both;
+
+  &__glow {
+    position: absolute;
+    inset: -40% -20% auto auto;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 65%);
+    pointer-events: none;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+  }
+
+  &__emoji {
+    font-size: 1.6rem;
+    line-height: 1;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+  }
+
+  &__title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  &__list {
+    position: relative;
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  &__entry {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px 6px 6px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(6px);
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.28);
+    }
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+
+  &__avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  &__cake {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+    font-size: 0.95rem;
+  }
+
+  &__name {
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  &__age {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.28);
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+}
+
+@keyframes birthday-banner-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
