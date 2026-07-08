@@ -778,10 +778,17 @@ export class Utils {
   }
 
   public static calculateAge(birthdate: Date): number {
-    const msDiff = Date.now() - birthdate.getTime();
-    const ageDiff = new Date(msDiff);
-
-    return Math.abs(ageDiff.getUTCFullYear() - 1970);
+    // Use calendar arithmetic rather than ms-diff: a raw ms diff crosses the
+    // year boundary a few hours early when the local timezone is ahead of UTC
+    // (birthdate parses at UTC midnight, `Date.now()` is compared against it
+    // in UTC), so on the actual birthday the age came out one year too low.
+    const today = new Date();
+    let age = today.getFullYear() - birthdate.getUTCFullYear();
+    const monthDiff = today.getMonth() - birthdate.getUTCMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthdate.getUTCDate())) {
+      age--;
+    }
+    return age;
   }
 
   public static getAttText(att: PersonAttendance): string {
