@@ -9,6 +9,7 @@ import { LoginPageRoutingModule } from './login-routing.module';
 import { LoginPage } from './login.page';
 import { LegalModalComponent } from './legal-modal/legal-modal.component';
 import { LegalContentComponent } from './legal-modal/legal-content.component';
+import { RegisterModalComponent } from './register-modal/register-modal.component';
 
 @NgModule({
   imports: [
@@ -18,6 +19,6 @@ import { LegalContentComponent } from './legal-modal/legal-content.component';
     LoginPageRoutingModule,
     LegalContentComponent
   ],
-  declarations: [LoginPage, LegalModalComponent]
+  declarations: [LoginPage, LegalModalComponent, RegisterModalComponent]
 })
 export class LoginPageModule {}

@@ -1186,7 +1186,9 @@ export class DbService {
   async resetPassword(email: string) {
     const loading = await Utils.getLoadingElement();
     loading.present();
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://attendix.de/resetPassword',
+    });
 
     loading.dismiss();
 

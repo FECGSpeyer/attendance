@@ -170,8 +170,64 @@ export class AppComponent {
 
   setupDeepLinks() {
     App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
-      this.zone.run(() => {
+      this.zone.run(async () => {
         const url = new URL(event.url);
+
+        // Supabase auth deep links (password recovery + signup email confirmation).
+        // Two possible shapes:
+        //   PKCE (default in supabase-js v2):  ?code=...
+        //   Implicit (legacy):                 #access_token=...&refresh_token=...&type=recovery|signup
+        // In both cases we must feed the tokens/code to supabase-js manually because
+        // Capacitor never surfaces the URL to window.location, so detectSessionInUrl can't fire.
+        const hash = new URLSearchParams(url.hash.startsWith('#') ? url.hash.substring(1) : url.hash);
+        const query = url.searchParams;
+        const type = hash.get('type') || query.get('type');
+        const code = query.get('code');
+        const accessToken = hash.get('access_token');
+        const refreshToken = hash.get('refresh_token');
+        const errorDescription = hash.get('error_description') || query.get('error_description');
+
+        const isRecovery = type === 'recovery' || (!!code && url.pathname.includes('resetPassword'));
+        const isSignupConfirm = type === 'signup' || (!!code && !isRecovery);
+
+        if (isRecovery || isSignupConfirm) {
+          if (errorDescription) {
+            Utils.showToast(decodeURIComponent(errorDescription), 'danger');
+            this.router.navigateByUrl('/login');
+            return;
+          }
+
+          try {
+            if (accessToken && refreshToken) {
+              await this.db.getSupabase().auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+            } else if (code) {
+              await this.db.getSupabase().auth.exchangeCodeForSession(code);
+            }
+
+            if (isRecovery) {
+              // PASSWORD_RECOVERY fired by setSession/exchangeCodeForSession triggers
+              // presentPasswordRecoveryAlert(). Route to /login for a stable host page.
+              this.router.navigateByUrl('/login');
+            } else {
+              // Signup confirmation: user is now signed in. Confirm to the user and let
+              // the SIGNED_IN listener route them into the app.
+              Utils.showToast('E-Mail-Adresse bestätigt. Willkommen!', 'success', 4000);
+            }
+          } catch (e) {
+            Utils.showToast(
+              isRecovery
+                ? 'Der Link zum Zurücksetzen ist ungültig oder abgelaufen.'
+                : 'Der Bestätigungslink ist ungültig oder abgelaufen.',
+              'danger'
+            );
+            this.router.navigateByUrl('/login');
+          }
+          return;
+        }
+
         const fullPath = url.pathname + url.search;
         if (fullPath) {
           this.router.navigateByUrl(fullPath);

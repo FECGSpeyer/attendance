@@ -1,0 +1,93 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Registrieren</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()" aria-label="Schließen">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="intro">
+    <h2>Willkommen bei Attendix!</h2>
+    <p>
+      Lege einen Account an, um deine Anwesenheit zu verwalten oder eine neue
+      Instanz für deine Gruppe, deinen Chor oder dein Orchester zu erstellen.
+    </p>
+    <p class="hint">
+      Nach der Registrierung senden wir dir eine Bestätigungs-E-Mail. Bitte
+      klicke auf den Link darin, um deinen Account zu aktivieren.
+    </p>
+  </div>
+
+  <form (ngSubmit)="submit()" #regForm="ngForm" novalidate>
+    <ion-list lines="full" class="register-list">
+      <ion-item>
+        <ion-input
+          label="E-Mail"
+          labelPlacement="stacked"
+          type="email"
+          autocomplete="email"
+          placeholder="deine@email.de"
+          name="email"
+          [(ngModel)]="email"
+          required>
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Passwort"
+          labelPlacement="stacked"
+          [type]="showPassword ? 'text' : 'password'"
+          autocomplete="new-password"
+          placeholder="Mindestens 6 Zeichen"
+          name="password"
+          [(ngModel)]="password"
+          required>
+          <ion-button fill="clear" slot="end" (click)="showPassword = !showPassword" aria-label="Passwort anzeigen" type="button">
+            <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Passwort bestätigen"
+          labelPlacement="stacked"
+          [type]="showPassword ? 'text' : 'password'"
+          autocomplete="new-password"
+          placeholder="Passwort erneut eingeben"
+          name="passwordConfirm"
+          [(ngModel)]="passwordConfirm"
+          required>
+        </ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-item lines="none" class="privacy-item">
+      <ion-checkbox
+        slot="start"
+        [(ngModel)]="privacyAccepted"
+        name="privacyAccepted"
+        aria-label="Datenschutzerklärung akzeptieren">
+      </ion-checkbox>
+      <ion-label class="ion-text-wrap privacy-label">
+        Ich habe die
+        <a href="#" (click)="openPrivacy($event)">Datenschutzerklärung</a>
+        gelesen und stimme der Verarbeitung meiner Daten zu.
+      </ion-label>
+    </ion-item>
+
+    <div class="actions">
+      <ion-button expand="block" type="submit" [disabled]="!canSubmit || !regForm.form.valid">
+        Registrieren
+      </ion-button>
+      <ion-button expand="block" fill="clear" type="button" (click)="dismiss()">
+        Abbrechen
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

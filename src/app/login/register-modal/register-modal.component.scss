@@ -1,0 +1,57 @@
+ion-content {
+  --background: #fff;
+}
+
+.intro {
+  margin-bottom: 1rem;
+
+  h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.25rem;
+  }
+
+  p {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: var(--ion-color-medium-shade);
+  }
+
+  .hint {
+    font-size: 0.85rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.register-list {
+  background: transparent;
+  margin-bottom: 1rem;
+}
+
+.privacy-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  margin: 0.5rem 0 1rem;
+
+  ion-checkbox {
+    margin-right: 0.75rem;
+  }
+}
+
+.privacy-label {
+  font-size: 0.9rem;
+  line-height: 1.4;
+
+  a {
+    color: var(--ion-color-primary);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
+
+.actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}

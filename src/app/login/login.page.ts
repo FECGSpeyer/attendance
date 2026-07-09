@@ -5,6 +5,7 @@ import { DbService } from '../services/db.service';
 import { Utils } from '../utilities/Utils';
 import { environment } from 'src/environments/environment';
 import { LegalModalComponent } from './legal-modal/legal-modal.component';
+import { RegisterModalComponent } from './register-modal/register-modal.component';
 
 @Component({
   selector: 'app-login',
@@ -112,57 +113,29 @@ export class LoginPage implements OnInit {
   }
 
   async register() {
-    const alert = await this.alertController.create({
-      header: 'Registrieren',
-      inputs: [
-        {
-          name: 'email',
-          type: 'email',
-          placeholder: 'E-Mail eingeben...',
-          value: this.regCredentials.email
-        },
-        {
-          name: 'password',
-          type: 'password',
-          placeholder: 'Passwort eingeben...',
-          value: this.regCredentials.password
-        },
-        {
-          name: 'passwordConfirm',
-          type: 'password',
-          placeholder: 'Passwort bestätigen...',
-          value: this.regCredentials.passwordConfirm
-        }
-      ],
-      buttons: [
-        {
-          text: 'Abbrechen',
-          role: 'cancel'
-        }, {
-          text: 'Registrieren',
-          handler: async (values: any) => {
-            if (values.password !== values.passwordConfirm) {
-              Utils.showToast('Passwörter stimmen nicht überein', 'danger');
-              return false;
-            }
-
-            if (!Utils.validateEmail(values.email)) {
-              Utils.showToast('Ungültige E-Mail-Adresse', 'danger');
-              return false;
-            }
-
-            this.regCredentials.email = values.email;
-            this.regCredentials.password = values.password;
-            const res = await this.db.register(this.regCredentials.email, this.regCredentials.password);
-
-            if (res) {
-              Utils.showToast('Registrierung erfolgreich, bitte bestätige deine E-Mail-Adresse.', 'success');
-            }
-          }
-        }
-      ]
+    const modal = await this.modalController.create({
+      component: RegisterModalComponent,
     });
+    await modal.present();
 
-    await alert.present();
+    const { data } = await modal.onDidDismiss<{ email: string; password: string } | undefined>();
+    if (!data) {
+      return;
+    }
+
+    this.regCredentials.email = data.email;
+    this.regCredentials.password = data.password;
+
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+
+    try {
+      const res = await this.db.register(data.email, data.password);
+      if (res) {
+        Utils.showToast('Registrierung erfolgreich, bitte bestätige deine E-Mail-Adresse.', 'success');
+      }
+    } finally {
+      await loading.dismiss();
+    }
   }
 }
