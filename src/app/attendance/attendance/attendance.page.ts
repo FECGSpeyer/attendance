@@ -1297,7 +1297,7 @@ export class AttendancePage implements OnInit, OnDestroy {
 
     const alert = await this.alertController.create({
       header: 'Erinnerung versenden',
-      message: 'Möchtest du jetzt eine Erinnerung an alle Mitglieder versenden?',
+      message: 'Möchtest du jetzt eine Erinnerung an alle Mitglieder versenden? Sie wird per App-Benachrichtigung und per E-Mail (an Mitglieder mit E-Mail-Adresse) verschickt.',
       inputs: [
         { name: 'message', type: 'textarea', placeholder: 'Nachricht', value: defaultMessage }
       ],

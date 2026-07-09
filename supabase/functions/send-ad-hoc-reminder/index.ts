@@ -1,5 +1,14 @@
+// supabase/functions/send-ad-hoc-reminder/index.ts
+// Deploy: supabase functions deploy send-ad-hoc-reminder
+//
+// Notifies app users via Push (preferred) / Telegram (fallback) AND additionally
+// emails all confirmed attendees of the appointment who have an email address,
+// excluding anyone in the mainGroup. Email delivery uses Resend and requires the
+// RESEND_API_KEY secret plus a verified sender domain (see _shared/send-email.ts).
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendPushToUser } from '../_shared/send-push.ts'
+import { sendEmail } from '../_shared/send-email.ts'
 
 const VIEWER_ROLE = 3;
 
@@ -185,7 +194,61 @@ Deno.serve(async (req) => {
     }
 
     console.log(`[send-ad-hoc-reminder] done attendanceId=${attendanceId} tenant=${tenantId} sent=${sent} recipients=${eligibleConfigs.length} elapsedMs=${Date.now() - startedAt}`);
-    return new Response(JSON.stringify({ sent, recipients: eligibleConfigs.length }), {
+
+    // Additionally email all confirmed attendees who have an email address,
+    // excluding anyone in the mainGroup. Independent of the push/Telegram
+    // app-user recipients above (a person may receive both).
+    let emailsSent = 0;
+    try {
+      // Resolve the tenant's mainGroup id so we can exclude its members.
+      const { data: mainGroup } = await supabase
+        .from('groups')
+        .select('id')
+        .eq('tenantId', tenantId)
+        .eq('maingroup', true)
+        .single();
+      const mainGroupId = mainGroup?.id ?? null;
+
+      // Fetch confirmed attendees (non-null status) joined to their player record.
+      const { data: attendees, error: attendeesError } = await supabase
+        .from('person_attendances')
+        .select('person:player(id, email, instrument, firstName, lastName)')
+        .eq('attendance_id', attendanceId)
+        .not('status', 'is', null)
+        .range(0, 4999); // guard against PostgREST's 1000-row default
+
+      if (attendeesError) {
+        console.error(`[send-ad-hoc-reminder] error fetching attendees for email:`, attendeesError);
+      } else if (attendees && attendees.length > 0) {
+        // Filter to attendees with an email who are NOT in the mainGroup, deduped by email.
+        const emailSet = new Set<string>();
+        for (const row of attendees as { person: { email: string | null; instrument: number | null } | null }[]) {
+          const person = row.person;
+          if (!person) continue;
+          const email = (person.email || '').trim();
+          if (!email) continue;
+          if (mainGroupId !== null && person.instrument === mainGroupId) continue;
+          emailSet.add(email.toLowerCase());
+        }
+
+        if (emailSet.size > 0) {
+          const subject = `🔔 Erinnerung: ${typeName} am ${formattedDate}`;
+          const emailHtml = `<p>${body.replace(/\n/g, '<br>')}</p>` +
+            `<p><a href="https://attendix.de/tabs/attendance?openAttendance=${attendanceId}&tenantId=${tenantId}">Anwesenheit öffnen</a></p>`;
+
+          emailsSent = await sendEmail({
+            to: Array.from(emailSet),
+            subject,
+            html: emailHtml,
+          });
+        }
+      }
+    } catch (e) {
+      console.error(`[send-ad-hoc-reminder] email block error:`, e);
+    }
+
+    console.log(`[send-ad-hoc-reminder] emailsSent=${emailsSent} attendanceId=${attendanceId} tenant=${tenantId}`);
+    return new Response(JSON.stringify({ sent, recipients: eligibleConfigs.length, emailsSent }), {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });
   } catch (error) {
