@@ -148,7 +148,7 @@ Deno.serve(async (req) => {
       : `${typeName} am ${formattedDate}`;
 
     const body = message || defaultBody;
-    const link = `\n\n[Anwesenheit öffnen](https://attendix.de/tabs/attendance?openAttendance=${attendanceId}&tenantId=${tenantId})`;
+    const link = `\n\n[Anwesenheit öffnen](https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId})`;
     const telegramMessage = `🔔 *Erinnerung*\n\n${body}${link}`;
     const pushBody = `${body}`;
 
@@ -234,7 +234,7 @@ Deno.serve(async (req) => {
         if (emailSet.size > 0) {
           const subject = `🔔 Erinnerung: ${typeName} am ${formattedDate}`;
           const emailHtml = `<p>${body.replace(/\n/g, '<br>')}</p>` +
-            `<p><a href="https://attendix.de/tabs/attendance?openAttendance=${attendanceId}&tenantId=${tenantId}">Anwesenheit öffnen</a></p>`;
+            `<p><a href="https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId}">Anwesenheit öffnen</a></p>`;
 
           emailsSent = await sendEmail({
             to: Array.from(emailSet),

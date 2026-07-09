@@ -468,7 +468,7 @@ function formatChecklistReminderMessage(
 
   const formattedDueDate = formatDueDate(dueDate, timezone);
 
-  const link = `\n\n[Anwesenheit öffnen](https://attendix.de/tabs/attendance?openAttendance=${attendanceId}&tenantId=${tenantId})`;
+  const link = `\n\n[Anwesenheit öffnen](https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId})`;
 
   return `${urgencyText}\n\n📋 *Checklisten-Erinnerung*\n\n✅ ${itemText}\n📅 Termin: ${typeName} am ${formattedAttDate}\n⏳ Fällig: ${formattedDueDate}${link}`;
 }

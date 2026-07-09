@@ -42,6 +42,14 @@ const routes: Routes = [
     loadChildren: () => import('./public-planning/public-planning.module').then(m => m.PublicPlanningPageModule)
   },
   {
+    // Deep link from reminder emails / Telegram messages. Resolves the target
+    // attendance and role-routes the user (players → signout action sheet,
+    // admins → detail page). Must be registered before the :songSharingId
+    // wildcard below or it would be treated as a song-sharing id.
+    path: 'open-attendance',
+    loadChildren: () => import('./open-attendance/open-attendance.module').then(m => m.OpenAttendanceModule)
+  },
+  {
     path: ':songSharingId',
     loadChildren: () => import('./songs/songs.module').then( m => m.SongsPageModule)
   },

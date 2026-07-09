@@ -287,22 +287,7 @@ export class PushService {
       case 'reminder':
       case 'checklist':
         if (data.attendanceId) {
-          const role = this.db.tenantUser()?.role;
-          if (role === Role.ADMIN || role === Role.RESPONSIBLE || role === Role.HELPER || role === Role.VOICE_LEADER_HELPER) {
-            // Conductor / helper roles open the full attendance detail page
-            // directly. The detail route is self-loading (it calls
-            // checkToken() in its own init), so no signal hand-off is needed.
-            await this.router.navigateByUrl(`/tabs/attendance/${Number(data.attendanceId)}`);
-          } else if (role === Role.PARENT) {
-            // PARENT and signout roles still see role-specific action sheets
-            // on their landing pages — those pages consume pendingAttendanceId
-            // to know which attendance the push referred to.
-            this.pendingAttendanceId.set(Number(data.attendanceId));
-            await this.router.navigateByUrl('/tabs/parents');
-          } else {
-            this.pendingAttendanceId.set(Number(data.attendanceId));
-            await this.router.navigateByUrl('/tabs/signout');
-          }
+          await this.navigateToAttendance(Number(data.attendanceId));
         } else {
           await this.router.navigateByUrl('/tabs/attendance');
         }
@@ -320,6 +305,29 @@ export class PushService {
         break;
       default:
         await this.router.navigateByUrl('/tabs/player');
+    }
+  }
+
+  /**
+   * Route to the given attendance based on the current user's role. Shared by
+   * push routing and the /open-attendance web deep-link resolver so there is a
+   * single definition of "where does an attendance link go for this role".
+   *
+   * ADMIN / RESPONSIBLE / helpers open the full attendance detail page directly
+   * (that route is self-loading via its own checkToken()). PARENT and the
+   * signout roles instead land on their role-specific page, which consumes
+   * pendingAttendanceId to know which attendance to open in an action sheet.
+   */
+  async navigateToAttendance(attendanceId: number): Promise<void> {
+    const role = this.db.tenantUser()?.role;
+    if (role === Role.ADMIN || role === Role.RESPONSIBLE || role === Role.HELPER || role === Role.VOICE_LEADER_HELPER) {
+      await this.router.navigateByUrl(`/tabs/attendance/${attendanceId}`);
+    } else if (role === Role.PARENT) {
+      this.pendingAttendanceId.set(attendanceId);
+      await this.router.navigateByUrl('/tabs/parents');
+    } else {
+      this.pendingAttendanceId.set(attendanceId);
+      await this.router.navigateByUrl('/tabs/signout');
     }
   }
 

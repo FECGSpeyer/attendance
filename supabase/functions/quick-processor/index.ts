@@ -125,7 +125,7 @@ Deno.serve(async (req)=>{
     };
     const suffix = isParents ? "\n(von Elternteil abgemeldet)" : "";
     const formattedDate = DD + '.' + MM + '.' + yyyy + getAttendanceText(attendanceData.attendance);
-    const attendanceLink = `\n\n[Anwesenheit öffnen](https://attendix.de/tabs/attendance?openAttendance=${attendanceData.attendance_id}&tenantId=${attendanceData.attendance.tenant.id})`;
+    const attendanceLink = `\n\n[Anwesenheit öffnen](https://attendix.de/open-attendance?id=${attendanceData.attendance_id}&tenantId=${attendanceData.attendance.tenant.id})`;
 
     let messageText = `*${attendanceData.attendance.tenant.longName}*\n`;
     let pushBody = '';

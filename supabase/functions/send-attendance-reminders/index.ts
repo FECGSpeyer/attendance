@@ -454,7 +454,7 @@ function formatReminderMessage(
   // Ensure startTime is in HH:mm format
   const timeStr = startTime.includes(':') ? startTime : '00:00';
 
-  const link = `\n\n[Anwesenheit öffnen](https://attendix.de/tabs/attendance?openAttendance=${attendanceId}&tenantId=${tenantId})`;
+  const link = `\n\n[Anwesenheit öffnen](https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId})`;
 
   return `⏰ *Terminerinnerung*\n\n${reminderText}:\n\n📋 ${typeName}\n📅 ${formattedDate}\n🕐 ${timeStr}${link}`;
 }
