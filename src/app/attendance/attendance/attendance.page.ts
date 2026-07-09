@@ -2,7 +2,7 @@ import { Component, ElementRef, OnDestroy, OnInit, ViewChild, effect } from '@an
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { Browser } from '@capacitor/browser';
-import { AlertController, ActionSheetController, IonItemSliding, ModalController, isPlatform } from '@ionic/angular';
+import { AlertController, ActionSheetController, IonItemSliding, ModalController, isPlatform, LoadingController } from '@ionic/angular';
 import { Storage } from '@ionic/storage-angular';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { format } from 'date-fns';
@@ -96,6 +96,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     private modalController: ModalController,
     public db: DbService,
     private alertController: AlertController,
+    private loadingController: LoadingController,
     private actionSheetController: ActionSheetController,
     private storage: Storage,
     private router: Router,
@@ -1306,17 +1307,23 @@ export class AttendancePage implements OnInit, OnDestroy {
         {
           text: 'Versenden',
           handler: async (data) => {
-            const { error } = await this.db.getSupabase().functions.invoke('send-ad-hoc-reminder', {
-              body: {
-                attendanceId: this.attendance.id,
-                tenantId: this.attendance.tenantId,
-                message: data.message || undefined,
-              },
-            });
-            if (error) {
-              Utils.showToast('Fehler beim Versenden', 'danger');
-            } else {
-              Utils.showToast('Erinnerung versendet', 'success');
+            const loading = await this.loadingController.create({ message: 'Wird versendet...' });
+            await loading.present();
+            try {
+              const { error } = await this.db.getSupabase().functions.invoke('send-ad-hoc-reminder', {
+                body: {
+                  attendanceId: this.attendance.id,
+                  tenantId: this.attendance.tenantId,
+                  message: data.message || undefined,
+                },
+              });
+              if (error) {
+                Utils.showToast('Fehler beim Versenden', 'danger');
+              } else {
+                Utils.showToast('Erinnerung versendet', 'success');
+              }
+            } finally {
+              await loading.dismiss();
             }
           }
         }
