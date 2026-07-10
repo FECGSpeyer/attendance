@@ -79,6 +79,11 @@ export class AttendancePage implements OnInit, OnDestroy {
   // "Neu laden" banner so the user can recover without dismissing the modal.
   public personsLoadFailed = false;
 
+  // Re-entrancy guard for the ad-hoc reminder send. Prevents a second
+  // "Versenden" tap from firing another send (and duplicate emails) while
+  // one invocation is still in flight.
+  private isSendingReminder = false;
+
   // Mirrors the gate used on the settings page for its instance-switcher FAB.
   // We surface a parallel FAB here for editing/creating the Ablaufplan, only
   // on iOS where the floating action pattern matches the platform's UX.
@@ -1307,6 +1312,11 @@ export class AttendancePage implements OnInit, OnDestroy {
         {
           text: 'Versenden',
           handler: async (data) => {
+            // Guard against a double-press sending the reminder (and emails) twice.
+            if (this.isSendingReminder) {
+              return;
+            }
+            this.isSendingReminder = true;
             const loading = await this.loadingController.create({ message: 'Wird versendet...' });
             await loading.present();
             try {
@@ -1324,6 +1334,7 @@ export class AttendancePage implements OnInit, OnDestroy {
               }
             } finally {
               await loading.dismiss();
+              this.isSendingReminder = false;
             }
           }
         }
