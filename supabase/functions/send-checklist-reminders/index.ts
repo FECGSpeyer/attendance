@@ -10,6 +10,8 @@ const DEFAULT_TIMEZONE = 'Europe/Berlin';
 interface Tenant {
   id: number;
   timezone: string | null;
+  longName: string | null;
+  shortName: string | null;
 }
 
 interface ChecklistItem {
@@ -162,7 +164,7 @@ Deno.serve(async (req) => {
     // 1. Fetch all tenants with their timezones
     const { data: tenants, error: tenantsError } = await supabase
       .from('tenants')
-      .select('id, timezone');
+      .select('id, timezone, longName, shortName');
 
     if (tenantsError) {
       console.error('[send-checklist-reminders] error fetching tenants:', tenantsError);
@@ -171,8 +173,11 @@ Deno.serve(async (req) => {
 
     // Create a map of tenant_id -> timezone
     const tenantTimezones = new Map<number, string>();
+    // Create a map of tenant_id -> display name
+    const tenantNames = new Map<number, string>();
     for (const tenant of (tenants || [])) {
       tenantTimezones.set(tenant.id, tenant.timezone || DEFAULT_TIMEZONE);
+      tenantNames.set(tenant.id, tenant.longName || tenant.shortName || '');
     }
     console.log(`[send-checklist-reminders] tenants=${tenants?.length ?? 0}`);
 
@@ -346,7 +351,8 @@ Deno.serve(async (req) => {
               timezone,
               hoursUntilDue,
               attendance.id,
-              attendance.tenantId
+              attendance.tenantId,
+              tenantNames.get(attendance.tenantId) || ''
             );
 
             let pushSentSuccessfully = false;
@@ -355,9 +361,13 @@ Deno.serve(async (req) => {
             if (notifConfig.push_enabled) {
               try {
                 const pushTitle = hoursUntilDue === 0 ? '⚠️ Jetzt fällig!' : '⏰ Demnächst fällig';
+                const tenantName = tenantNames.get(attendance.tenantId) || '';
+                const pushBody = tenantName
+                  ? `${tenantName}: ${item.text} (${attType?.name || 'Termin'})`
+                  : `${item.text} (${attType?.name || 'Termin'})`;
                 const pushSent = await sendPushToUser(supabase, notifConfig.id, {
                   title: pushTitle,
-                  body: `${item.text} (${attType?.name || 'Termin'})`,
+                  body: pushBody,
                   data: { type: 'checklist', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
                 });
                 if (pushSent > 0) {
@@ -452,7 +462,8 @@ function formatChecklistReminderMessage(
   timezone: string,
   hoursUntilDue: number,
   attendanceId: number,
-  tenantId: number
+  tenantId: number,
+  tenantName: string
 ): string {
   const urgencyText = hoursUntilDue === 0
     ? '⚠️ *Jetzt fällig!*'
@@ -470,5 +481,7 @@ function formatChecklistReminderMessage(
 
   const link = `\n\n[Anwesenheit öffnen](https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId})`;
 
-  return `${urgencyText}\n\n📋 *Checklisten-Erinnerung*\n\n✅ ${itemText}\n📅 Termin: ${typeName} am ${formattedAttDate}\n⏳ Fällig: ${formattedDueDate}${link}`;
+  const tenantLine = tenantName ? `\n🏛️ ${tenantName}` : '';
+
+  return `${urgencyText}\n\n📋 *Checklisten-Erinnerung*${tenantLine}\n\n✅ ${itemText}\n📅 Termin: ${typeName} am ${formattedAttDate}\n⏳ Fällig: ${formattedDueDate}${link}`;
 }
