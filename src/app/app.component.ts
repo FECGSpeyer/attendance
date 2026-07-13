@@ -22,6 +22,8 @@ import { LiveUpdateService } from './services/live-update/live-update.service';
 export class AppComponent {
   @ViewChild(IonRouterOutlet, { static: true }) routerOutlet: IonRouterOutlet;
 
+  private passwordRecoveryAlertOpen = false;
+
   constructor(
     private platform: Platform,
     private titleService: Title,
@@ -57,6 +59,13 @@ export class AppComponent {
   }
 
   async presentPasswordRecoveryAlert() {
+    // Guard against showing two alerts: both the explicit call from the deep
+    // link handler and a possible PASSWORD_RECOVERY auth event can arrive.
+    if (this.passwordRecoveryAlertOpen) {
+      return;
+    }
+    this.passwordRecoveryAlertOpen = true;
+
     const alert = await this.alertController.create({
       header: 'Neues Passwort eingeben',
       inputs: [
@@ -75,6 +84,9 @@ export class AppComponent {
           handler: (values: any) => {
             if (values.password.length < 6) {
               Utils.showToast('Bitte gib ein Passwort mit mindestens 6 Zeichen ein', 'danger');
+              // The alert dismisses after this handler runs; reset the guard so
+              // the re-prompt isn't suppressed by it.
+              this.passwordRecoveryAlertOpen = false;
               this.presentPasswordRecoveryAlert();
             } else {
               this.db.updatePassword(values.password);
@@ -85,6 +97,8 @@ export class AppComponent {
     });
 
     await alert.present();
+    await alert.onDidDismiss();
+    this.passwordRecoveryAlertOpen = false;
   }
 
   async listenToAuthChanges() {
@@ -208,9 +222,14 @@ export class AppComponent {
             }
 
             if (isRecovery) {
-              // PASSWORD_RECOVERY fired by setSession/exchangeCodeForSession triggers
-              // presentPasswordRecoveryAlert(). Route to /login for a stable host page.
-              this.router.navigateByUrl('/login');
+              // Route to /login for a stable host page, then present the
+              // password reset alert directly. We must NOT rely on the
+              // PASSWORD_RECOVERY auth event here: the PKCE flow
+              // (exchangeCodeForSession) emits SIGNED_IN rather than
+              // PASSWORD_RECOVERY, so the onAuthStateChange handler would
+              // never show the alert and the user would be stuck.
+              await this.router.navigateByUrl('/login');
+              this.presentPasswordRecoveryAlert();
             } else {
               // Signup confirmation: user is now signed in. Confirm to the user and let
               // the SIGNED_IN listener route them into the app.
