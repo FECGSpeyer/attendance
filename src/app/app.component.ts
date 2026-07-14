@@ -43,6 +43,7 @@ export class AppComponent {
     this.checkForUpdates();
     this.liveUpdate.init();
     this.setupDeepLinks();
+    this.handleWebAuthLink();
     this.trackPageViews();
   }
 
@@ -187,63 +188,8 @@ export class AppComponent {
       this.zone.run(async () => {
         const url = new URL(event.url);
 
-        // Supabase auth deep links (password recovery + signup email confirmation).
-        // Two possible shapes:
-        //   PKCE (default in supabase-js v2):  ?code=...
-        //   Implicit (legacy):                 #access_token=...&refresh_token=...&type=recovery|signup
-        // In both cases we must feed the tokens/code to supabase-js manually because
-        // Capacitor never surfaces the URL to window.location, so detectSessionInUrl can't fire.
-        const hash = new URLSearchParams(url.hash.startsWith('#') ? url.hash.substring(1) : url.hash);
-        const query = url.searchParams;
-        const type = hash.get('type') || query.get('type');
-        const code = query.get('code');
-        const accessToken = hash.get('access_token');
-        const refreshToken = hash.get('refresh_token');
-        const errorDescription = hash.get('error_description') || query.get('error_description');
-
-        const isRecovery = type === 'recovery' || (!!code && url.pathname.includes('resetPassword'));
-        const isSignupConfirm = type === 'signup' || (!!code && !isRecovery);
-
-        if (isRecovery || isSignupConfirm) {
-          if (errorDescription) {
-            Utils.showToast(decodeURIComponent(errorDescription), 'danger');
-            this.router.navigateByUrl('/login');
-            return;
-          }
-
-          try {
-            if (accessToken && refreshToken) {
-              await this.db.getSupabase().auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken,
-              });
-            } else if (code) {
-              await this.db.getSupabase().auth.exchangeCodeForSession(code);
-            }
-
-            if (isRecovery) {
-              // Route to /login for a stable host page, then present the
-              // password reset alert directly. We must NOT rely on the
-              // PASSWORD_RECOVERY auth event here: the PKCE flow
-              // (exchangeCodeForSession) emits SIGNED_IN rather than
-              // PASSWORD_RECOVERY, so the onAuthStateChange handler would
-              // never show the alert and the user would be stuck.
-              await this.router.navigateByUrl('/login');
-              this.presentPasswordRecoveryAlert();
-            } else {
-              // Signup confirmation: user is now signed in. Confirm to the user and let
-              // the SIGNED_IN listener route them into the app.
-              Utils.showToast('E-Mail-Adresse bestätigt. Willkommen!', 'success', 4000);
-            }
-          } catch (e) {
-            Utils.showToast(
-              isRecovery
-                ? 'Der Link zum Zurücksetzen ist ungültig oder abgelaufen.'
-                : 'Der Bestätigungslink ist ungültig oder abgelaufen.',
-              'danger'
-            );
-            this.router.navigateByUrl('/login');
-          }
+        const handled = await this.handleAuthUrl(url);
+        if (handled) {
           return;
         }
 
@@ -253,6 +199,116 @@ export class AppComponent {
         }
       });
     });
+  }
+
+  /**
+   * Web entry point for Supabase auth links. On native, links arrive via the
+   * appUrlOpen listener; on web the browser navigates directly to the URL, so
+   * we inspect window.location once at startup. The token-hash flow is not
+   * auto-handled by detectSessionInUrl, so we must process it ourselves here
+   * too. Runs only on web to avoid double-handling on native.
+   */
+  private async handleWebAuthLink() {
+    if (Capacitor.isNativePlatform()) {
+      return;
+    }
+    try {
+      const url = new URL(window.location.href);
+      await this.handleAuthUrl(url);
+    } catch {
+      // Malformed URL – nothing to handle.
+    }
+  }
+
+  /**
+   * Process a Supabase auth deep link (password recovery + signup confirmation).
+   * Possible shapes, in order of preference:
+   *   Token-hash (OTP):  ?token_hash=...&type=recovery|signup   (verifyOtp)
+   *   PKCE:              ?code=...                              (exchangeCodeForSession)
+   *   Implicit (legacy): #access_token=...&refresh_token=...&type=...  (setSession)
+   * We feed the tokens/code to supabase-js manually because on native Capacitor
+   * never surfaces the URL to window.location, so detectSessionInUrl can't fire.
+   * The token-hash flow is preferred: it carries no PKCE code_verifier
+   * dependency, so it works even when the link is opened on a different
+   * device/app instance than the one that requested the reset.
+   * @returns true if the URL was an auth link and was handled, false otherwise.
+   */
+  private async handleAuthUrl(url: URL): Promise<boolean> {
+    const hash = new URLSearchParams(url.hash.startsWith('#') ? url.hash.substring(1) : url.hash);
+    const query = url.searchParams;
+    const type = hash.get('type') || query.get('type');
+    const tokenHash = query.get('token_hash') || hash.get('token_hash');
+    const code = query.get('code');
+    const accessToken = hash.get('access_token');
+    const refreshToken = hash.get('refresh_token');
+    const errorDescription = hash.get('error_description') || query.get('error_description');
+
+    const isRecovery = type === 'recovery' ||
+      ((!!code || !!tokenHash) && url.pathname.includes('resetPassword'));
+    const isSignupConfirm = type === 'signup' || ((!!code || !!tokenHash) && !isRecovery);
+
+    if (!isRecovery && !isSignupConfirm) {
+      return false;
+    }
+
+    if (errorDescription) {
+      Utils.showToast(decodeURIComponent(errorDescription), 'danger');
+      this.router.navigateByUrl('/login');
+      return true;
+    }
+
+    try {
+      let sessionError: unknown = null;
+
+      if (tokenHash) {
+        const { error } = await this.db.getSupabase().auth.verifyOtp({
+          token_hash: tokenHash,
+          type: isRecovery ? 'recovery' : 'signup',
+        });
+        sessionError = error;
+      } else if (accessToken && refreshToken) {
+        const { error } = await this.db.getSupabase().auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        sessionError = error;
+      } else if (code) {
+        const { error } = await this.db.getSupabase().auth.exchangeCodeForSession(code);
+        sessionError = error;
+      }
+
+      // supabase-js returns errors in the result object rather than throwing.
+      // If verification failed we have no session, so updateUser() would later
+      // fail with "Auth session missing". Surface it here instead of showing a
+      // dead recovery alert.
+      if (sessionError) {
+        throw sessionError;
+      }
+
+      if (isRecovery) {
+        // Route to /login for a stable host page, then present the password
+        // reset alert directly. We must NOT rely on the PASSWORD_RECOVERY auth
+        // event here: verifyOtp/exchangeCodeForSession emit SIGNED_IN rather
+        // than PASSWORD_RECOVERY, so the onAuthStateChange handler would never
+        // show the alert and the user would be stuck.
+        await this.router.navigateByUrl('/login');
+        this.presentPasswordRecoveryAlert();
+      } else {
+        // Signup confirmation: user is now signed in. Confirm to the user and
+        // let the SIGNED_IN listener route them into the app.
+        Utils.showToast('E-Mail-Adresse bestätigt. Willkommen!', 'success', 4000);
+      }
+    } catch (e) {
+      console.error('[handleAuthUrl] failed:', e);
+      Utils.showToast(
+        isRecovery
+          ? 'Der Link zum Zurücksetzen ist ungültig oder abgelaufen.'
+          : 'Der Bestätigungslink ist ungültig oder abgelaufen.',
+        'danger'
+      );
+      this.router.navigateByUrl('/login');
+    }
+    return true;
   }
 
   private trackPageViews() {

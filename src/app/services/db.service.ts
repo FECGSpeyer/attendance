@@ -1209,8 +1209,11 @@ export class DbService {
 
     loading.dismiss();
 
-    if (data) { Utils.showToast('Passwort wurde erfolgreich aktualisiert', 'success'); }
-    if (error) { Utils.showToast('Fehler beim zurücksetzen, versuche es noch einmal', 'danger'); }
+    if (data?.user) { Utils.showToast('Passwort wurde erfolgreich aktualisiert', 'success'); }
+    if (error) {
+      console.error('[updatePassword] failed:', error);
+      Utils.showToast('Fehler beim zurücksetzen, versuche es noch einmal', 'danger');
+    }
   }
 
   async getLeftPlayers(): Promise<Player[]> {
