@@ -313,17 +313,12 @@ export class AppComponent {
       }
     } catch (e) {
       console.error('[handleAuthUrl] failed:', e);
-      // TEMP DIAGNOSTIC: surface the real cause on-device (no desktop inspector
-      // available). Remove once the root cause is identified.
-      const err: any = e;
-      const diag = [
-        `type=${type ?? 'none'}`,
-        `flow=${isRecovery ? 'recovery' : 'signup'}`,
-        `th=${tokenHash ? tokenHash.length + 'chars' : 'none'}`,
-        `code=${code ? 'yes' : 'no'}`,
-        `msg=${err?.message ?? err?.error_description ?? err?.code ?? String(err)}`,
-      ].join(' | ');
-      Utils.showToast(diag, 'danger', 15000);
+      Utils.showToast(
+        isRecovery
+          ? 'Der Link zum Zurücksetzen ist ungültig oder abgelaufen.'
+          : 'Der Bestätigungslink ist ungültig oder abgelaufen.',
+        'danger'
+      );
       this.router.navigateByUrl('/login');
     }
     return true;

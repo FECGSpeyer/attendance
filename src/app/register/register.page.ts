@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -30,6 +30,7 @@ export class RegisterPage implements OnInit {
   constructor(
     private db: DbService,
     private modalController: ModalController,
+    private alertController: AlertController,
   ) { }
 
   ngOnInit() {
@@ -84,6 +85,43 @@ export class RegisterPage implements OnInit {
 
   async close() {
     await this.modalController.dismiss();
+  }
+
+  /**
+   * A freshly-confirmed user with no tenant lands on this page as a full page
+   * (canDismiss === false). Without these actions they'd be stuck — unable to
+   * leave, log out, or remove their account if they don't want to create an
+   * instance. Both db methods sign out and navigate to /login themselves.
+   */
+  async logout() {
+    await this.db.logout();
+  }
+
+  async confirmDeleteAccount() {
+    const alert = await this.alertController.create({
+      header: 'Konto wirklich löschen?',
+      message: 'Dein Konto wird unwiderruflich entfernt. Diese Aktion kann nicht rückgängig gemacht werden.',
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Endgültig löschen',
+          role: 'destructive',
+          handler: async () => {
+            const loading = await Utils.getLoadingElement(60000, 'Konto wird gelöscht...');
+            await loading.present();
+            try {
+              await this.db.deleteAccount();
+              await loading.dismiss();
+              Utils.showToast('Dein Konto wurde gelöscht.', 'success', 4000);
+            } catch (error: any) {
+              await loading.dismiss();
+              Utils.showToast(`Fehler beim Löschen: ${error?.message || 'Unbekannt'}`, 'danger', 5000);
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
 }

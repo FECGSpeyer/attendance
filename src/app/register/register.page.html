@@ -7,6 +7,28 @@
         <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
+    } @else {
+    <ion-buttons slot="end">
+      <ion-button id="register-account-menu">
+        <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
+      </ion-button>
+      <ion-popover trigger="register-account-menu" triggerAction="click" dismissOnSelect="true">
+        <ng-template>
+          <ion-content>
+            <ion-list lines="none">
+              <ion-item button detail="false" (click)="logout()">
+                <ion-icon slot="start" name="log-out-outline"></ion-icon>
+                <ion-label>Abmelden</ion-label>
+              </ion-item>
+              <ion-item button detail="false" (click)="confirmDeleteAccount()">
+                <ion-icon slot="start" name="trash-outline" color="danger"></ion-icon>
+                <ion-label color="danger">Konto löschen</ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-popover>
+    </ion-buttons>
     }
   </ion-toolbar>
 </ion-header>
