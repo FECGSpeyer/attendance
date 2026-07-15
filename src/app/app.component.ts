@@ -82,16 +82,23 @@ export class AppComponent {
           role: 'cancel'
         }, {
           text: 'Passwort ändern',
-          handler: (values: any) => {
-            if (values.password.length < 6) {
+          // Returning false keeps the alert open so the user can retry without
+          // losing the recovery session. We only let it dismiss on success.
+          handler: async (values: any) => {
+            const password = values?.password ?? '';
+            if (password.length < 6) {
               Utils.showToast('Bitte gib ein Passwort mit mindestens 6 Zeichen ein', 'danger');
-              // The alert dismisses after this handler runs; reset the guard so
-              // the re-prompt isn't suppressed by it.
-              this.passwordRecoveryAlertOpen = false;
-              this.presentPasswordRecoveryAlert();
-            } else {
-              this.db.updatePassword(values.password);
+              return false;
             }
+
+            const result = await this.db.updatePassword(password);
+            if (result.success) {
+              Utils.showToast(result.message, 'success');
+              return true;
+            }
+
+            Utils.showToast(result.message, 'danger');
+            return false;
           }
         }
       ]
@@ -243,8 +250,12 @@ export class AppComponent {
     const refreshToken = hash.get('refresh_token');
     const errorDescription = hash.get('error_description') || query.get('error_description');
 
+    // `type` (recovery|signup) is authoritative when present. The pathname is
+    // only a fallback for legacy links that carry a code/token but no type.
+    // Note: signup-confirmation links may also point at /resetPassword, so we
+    // must NOT infer recovery from the path when type explicitly says signup.
     const isRecovery = type === 'recovery' ||
-      ((!!code || !!tokenHash) && url.pathname.includes('resetPassword'));
+      (!type && (!!code || !!tokenHash) && url.pathname.includes('resetPassword'));
     const isSignupConfirm = type === 'signup' || ((!!code || !!tokenHash) && !isRecovery);
 
     if (!isRecovery && !isSignupConfirm) {
@@ -294,9 +305,11 @@ export class AppComponent {
         await this.router.navigateByUrl('/login');
         this.presentPasswordRecoveryAlert();
       } else {
-        // Signup confirmation: user is now signed in. Confirm to the user and
-        // let the SIGNED_IN listener route them into the app.
+        // Signup confirmation: verifyOtp/exchangeCodeForSession established a
+        // session. Load the tenant context and route to the correct landing
+        // page (freshly-confirmed users without a tenant go to /register).
         Utils.showToast('E-Mail-Adresse bestätigt. Willkommen!', 'success', 4000);
+        await this.db.routeAfterAuth();
       }
     } catch (e) {
       console.error('[handleAuthUrl] failed:', e);

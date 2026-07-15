@@ -89,7 +89,7 @@
   <ion-card id="master-data-button" button="true" style="margin-top: 16px;">
     <ion-card-content style="display: flex; flex-direction: column; align-items: center; padding: 24px 16px;">
       <ion-avatar style="width: 72px; height: 72px; margin-bottom: 12px;">
-        <img [src]="userData.img" alt="Profilbild" />
+        <img [src]="userData.img" alt="Profilbild" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
       </ion-avatar>
       <strong style="font-size: 1.1rem;">{{ userData.firstName }} {{ userData.lastName }}</strong>
       <div style="margin-top: 8px; color: var(--ion-color-medium); text-align: center; font-size: 0.9rem;">
@@ -130,7 +130,7 @@
                 type="file" />
               <ion-label>Passbild</ion-label>
               <ion-avatar slot="end">
-                <img [src]="userData.img" alt="Profilbild" />
+                <img [src]="userData.img" alt="Profilbild" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
               </ion-avatar>
             </ion-item>
             <ion-item>
@@ -219,6 +219,7 @@
           <img [src]="userData.img.replace('?quality=20', '')"
             alt="Passbild"
             class="pass-preview-image"
+            (error)="$event.target.src='assets/icon/avatar-placeholder.svg'"
             [style.transform]="'scale(' + passImageZoomScale + ')'" />
         </div>
       </ion-content>

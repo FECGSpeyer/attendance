@@ -28,14 +28,15 @@ Change the action link to:
 ### Confirm signup
 
 ```html
-<a href="https://attendix.de/resetPassword?token_hash={{ .TokenHash }}&type=signup">
+<a href="https://attendix.de/login?token_hash={{ .TokenHash }}&type=signup">
   E-Mail-Adresse bestätigen
 </a>
 ```
 
-> The path can stay `resetPassword` for both; `handleAuthUrl` distinguishes
-> recovery vs. signup via the `type` param. If you prefer a dedicated signup
-> path, any path works as long as `type=signup` is present.
+> `type=signup` is authoritative — the app (`handleAuthUrl`) picks the flow from
+> `type`, not the path. The signup link points at `/login` (matching
+> `emailRedirectTo` in `register()`), the recovery link at `/resetPassword`;
+> either path works as long as the correct `type` is present.
 
 ## Redirect allow-list
 
@@ -43,6 +44,7 @@ Dashboard → Authentication → URL Configuration → Redirect URLs must includ
 
 ```
 https://attendix.de/resetPassword
+https://attendix.de/login
 ```
 
 ## Notes

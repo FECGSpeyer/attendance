@@ -56,7 +56,7 @@
           @if (tenantData.registration_fields?.includes('picture')) {
             <ion-item (click)="changeImg()" button detail="false">
               <ion-avatar slot="start">
-                <img [src]="profilePicture" />
+                <img [src]="profilePicture" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
               </ion-avatar>
               <ion-label color="primary">Wähle ein Passbild aus (max. 15 MB)</ion-label>
               <input style="display: none;" name="file" #chooser (change)="onImageSelect($event)" accept="image/*"

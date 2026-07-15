@@ -147,7 +147,7 @@
           <button type="button" class="birthday-banner__entry" (click)="openModal(player)">
             @if (player.img) {
               <ion-avatar class="birthday-banner__avatar">
-                <img [src]="player.img" />
+                <img [src]="player.img" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
               </ion-avatar>
             } @else {
               <span class="birthday-banner__cake" aria-hidden="true">🎂</span>
@@ -177,7 +177,7 @@
           <ion-item button detail="false" (click)="openModal(player)">
             @if (showImg) {
               <ion-avatar slot="start">
-                <img [src]="player.img" />
+                <img [src]="player.img" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
               </ion-avatar>
             }
             <ion-label>

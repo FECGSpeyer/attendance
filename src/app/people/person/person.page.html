@@ -417,7 +417,7 @@
               <ion-item button lines="none" (click)="changeImg()">
                 <ion-label>Passbild</ion-label>
                 <ion-avatar slot="end">
-                  <img [src]="player.img" />
+                  <img [src]="player.img" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
                 </ion-avatar>
                 <ion-modal #imageViewer (ionModalDidDismiss)="closePassImageViewer()" [isOpen]="isImageViewerOpen"
                   [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
@@ -431,6 +431,7 @@
                         <img [src]="player.img.replace('?quality=20', '')"
                           alt="Passbild"
                           class="pass-preview-image"
+                          (error)="$event.target.src='assets/icon/avatar-placeholder.svg'"
                           [style.transform]="'scale(' + passImageZoomScale + ')'" />
                       </div>
                     </ion-content>

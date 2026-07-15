@@ -40,7 +40,7 @@
     @for (member of groupMembers; track member.id; let last = $last) {
     <ion-item class="person-item" [lines]="last ? 'none' : 'inset'">
       <ion-avatar class="person-avatar" slot="start">
-        <img [src]="member.img" alt="Profilbild" />
+        <img [src]="member.img" alt="Profilbild" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
       </ion-avatar>
       <ion-label>
         <h2>

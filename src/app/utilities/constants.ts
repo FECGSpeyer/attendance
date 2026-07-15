@@ -53,6 +53,9 @@ export enum DefaultAttendanceType {
 
 export const DEFAULT_IMAGE = 'https://ionicframework.com/docs/img/demos/avatar.svg';
 
+// Local placeholder shown when a profile image is missing, corrupted, or fails to load.
+export const PLACEHOLDER_IMAGE = 'assets/icon/avatar-placeholder.svg';
+
 export const ATTENDANCE_STATUS_MAPPING = {
     DEFAULT: {
         [AttendanceStatus.Neutral]: AttendanceStatus.Present,

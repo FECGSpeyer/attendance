@@ -953,17 +953,27 @@ export class DbService {
         return true;
       }
 
-      await this.setTenant(undefined, true, loading);
-      if (this.tenantUser()) {
-        this.router.navigateByUrl(Utils.getUrl(this.tenantUser().role));
-      } else {
-        this.router.navigateByUrl('/register');
-      }
+      await this.routeAfterAuth(loading);
     } else {
       Utils.showToast('Bitte gib die richtigen Daten an!', 'danger');
     }
 
     return Boolean(data.user);
+  }
+
+  /**
+   * Load the user's tenant context and navigate to the correct landing page.
+   * Used after a normal login as well as after a signup email confirmation
+   * (which establishes a session via verifyOtp without going through login()).
+   * A freshly-confirmed user with no tenantUser is sent to /register.
+   */
+  async routeAfterAuth(loading?: HTMLIonLoadingElement) {
+    await this.setTenant(undefined, true, loading);
+    if (this.tenantUser()) {
+      this.router.navigateByUrl(Utils.getUrl(this.tenantUser().role));
+    } else {
+      this.router.navigateByUrl('/register');
+    }
   }
 
   async register(email: string, password: string): Promise<{ user: User; new: boolean } | null> {
@@ -1200,7 +1210,12 @@ export class DbService {
     Utils.showToast('Eine E-Mail mit weiteren Anweisungen wurde dir zugesandt', 'success', 4000);
   }
 
-  async updatePassword(password: string) {
+  /**
+   * Set a new password for the currently authenticated (recovery) user.
+   * Returns a result the caller can act on instead of toasting directly, so
+   * the recovery alert can stay open and let the user retry on failure.
+   */
+  async updatePassword(password: string): Promise<{ success: boolean; message: string }> {
     const loading = await Utils.getLoadingElement();
     loading.present();
     const { data, error } = await supabase.auth.updateUser({
@@ -1209,11 +1224,35 @@ export class DbService {
 
     loading.dismiss();
 
-    if (data?.user) { Utils.showToast('Passwort wurde erfolgreich aktualisiert', 'success'); }
-    if (error) {
-      console.error('[updatePassword] failed:', error);
-      Utils.showToast('Fehler beim zurücksetzen, versuche es noch einmal', 'danger');
+    if (!error && data?.user) {
+      return { success: true, message: 'Passwort wurde erfolgreich aktualisiert' };
     }
+
+    console.error('[updatePassword] failed:', error);
+
+    let message: string;
+    switch (error?.code) {
+      case 'same_password':
+        message = 'Das neue Passwort darf nicht mit dem alten übereinstimmen.';
+        break;
+      case 'weak_password':
+      case 'password_strength_insufficient':
+        message = 'Das Passwort ist zu schwach. Bitte wähle ein sichereres Passwort.';
+        break;
+      case 'over_request_rate_limit':
+      case 'too_many_requests':
+        message = 'Zu viele Versuche. Bitte warte einen Moment und versuche es erneut.';
+        break;
+      case 'session_not_found':
+      case 'session_expired':
+        message = 'Deine Sitzung ist abgelaufen. Bitte fordere den Link zum Zurücksetzen erneut an.';
+        break;
+      default:
+        message = 'Passwort konnte nicht geändert werden. Bitte versuche es erneut.';
+        break;
+    }
+
+    return { success: false, message };
   }
 
   async getLeftPlayers(): Promise<Player[]> {
