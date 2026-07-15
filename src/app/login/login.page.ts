@@ -19,7 +19,6 @@ export class LoginPage implements OnInit {
   loginForm: UntypedFormGroup;
   registerCredentials = { password: '', email: '' };
   showPassword = false;
-  regCredentials = { password: '', email: '', passwordConfirm: '' };
   public version: string = require('../../../package.json').version;
 
   constructor(
@@ -118,24 +117,12 @@ export class LoginPage implements OnInit {
     });
     await modal.present();
 
-    const { data } = await modal.onDidDismiss<{ email: string; password: string } | undefined>();
-    if (!data) {
-      return;
-    }
-
-    this.regCredentials.email = data.email;
-    this.regCredentials.password = data.password;
-
-    const loading = await Utils.getLoadingElement();
-    await loading.present();
-
-    try {
-      const res = await this.db.register(data.email, data.password);
-      if (res) {
-        Utils.showToast('Registrierung erfolgreich, bitte bestätige deine E-Mail-Adresse.', 'success');
-      }
-    } finally {
-      await loading.dismiss();
+    // The modal performs the backend registration itself and only dismisses
+    // with { success: true } once it succeeds — so on failure it stays open
+    // with the user's data intact. Nothing to retry here.
+    const { data } = await modal.onDidDismiss<{ success: boolean } | undefined>();
+    if (data?.success) {
+      Utils.showToast('Registrierung erfolgreich, bitte bestätige deine E-Mail-Adresse.', 'success');
     }
   }
 }

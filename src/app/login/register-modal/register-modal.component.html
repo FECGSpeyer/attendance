@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-title>Registrieren</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="dismiss()" aria-label="Schließen">
+      <ion-button (click)="dismiss()" aria-label="Schließen" [disabled]="submitting">
         <ion-icon name="close" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -82,10 +82,11 @@
     </ion-item>
 
     <div class="actions">
-      <ion-button expand="block" fill="solid" type="submit" [disabled]="!canSubmit || !regForm.form.valid">
-        Registrieren
+      <ion-button expand="block" fill="solid" type="submit" [disabled]="!canSubmit || !regForm.form.valid || submitting">
+        <ion-spinner *ngIf="submitting" name="crescent" slot="start"></ion-spinner>
+        {{ submitting ? 'Wird registriert...' : 'Registrieren' }}
       </ion-button>
-      <ion-button expand="block" fill="clear" type="button" (click)="dismiss()">
+      <ion-button expand="block" fill="clear" type="button" (click)="dismiss()" [disabled]="submitting">
         Abbrechen
       </ion-button>
     </div>
