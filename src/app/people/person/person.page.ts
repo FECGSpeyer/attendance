@@ -97,6 +97,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   public fieldTypes = FieldType;
   public shift: ShiftPlan = null;
   public isImageViewerOpen = false;
+  public editingName = false;
   public passImageZoomScale = 1;
   private passPinchStartDistance = 0;
   private passPinchStartScale = 1;

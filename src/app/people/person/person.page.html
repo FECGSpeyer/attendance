@@ -33,8 +33,16 @@
       </div>
       }
     </div>
-    @if (player.firstName || player.lastName) {
-    <h1 class="profile-name">{{ player.firstName }} {{ player.lastName }}</h1>
+    @if (player.firstName || player.lastName || (existingPlayer && !readOnly)) {
+    <div class="profile-name-row">
+      <h1 class="profile-name">{{ player.firstName }} {{ player.lastName }}</h1>
+      @if (existingPlayer && !readOnly && !editingName) {
+      <ion-button class="profile-name-edit" fill="clear" size="small" (click)="editingName = true"
+        aria-label="Namen bearbeiten">
+        <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+      </ion-button>
+      }
+    </div>
     }
     <ion-modal #imageViewer (ionModalDidDismiss)="closePassImageViewer()" [isOpen]="isImageViewerOpen"
       [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
@@ -58,6 +66,7 @@
   }
   @if (player) {
   <ion-grid>
+    @if (!existingPlayer || editingName) {
     <ion-row>
       <ion-col>
         <ion-item lines="none">
@@ -76,6 +85,17 @@
         </ion-item>
       </ion-col>
     </ion-row>
+    @if (existingPlayer && editingName) {
+    <ion-row>
+      <ion-col>
+        <ion-button expand="block" fill="clear" size="small" (click)="editingName = false">
+          <ion-icon slot="start" name="checkmark-outline"></ion-icon>
+          Fertig
+        </ion-button>
+      </ion-col>
+    </ion-row>
+    }
+    }
     @if (!existingPlayer && !readOnly && nameSuggestions().length > 0) {
     <ion-row>
       <ion-col>
