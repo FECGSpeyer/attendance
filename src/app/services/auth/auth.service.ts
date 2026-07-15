@@ -140,6 +140,23 @@ export class AuthService {
     };
   }
 
+  async resendConfirmationEmail(email: string): Promise<void> {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: `https://attendix.de/login`,
+      }
+    });
+
+    if (error) {
+      Utils.showToast('Fehler beim Senden der Bestätigungs-E-Mail', 'danger');
+      throw error;
+    }
+
+    Utils.showToast('Bestätigungs-E-Mail wurde erneut gesendet', 'success');
+  }
+
   async logout(): Promise<void> {
     await supabase.auth.signOut();
     this.user = undefined;

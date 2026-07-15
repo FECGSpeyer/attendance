@@ -63,11 +63,37 @@ export class LoginPage implements OnInit {
       // catch below only needs to ensure the spinner is dismissed. The finally
       // guarantees dismissal whether login succeeds, returns false, or throws.
       await this.db.login(this.registerCredentials.email, this.registerCredentials.password, false, loading);
-    } catch {
-      // Error toast already surfaced by db.login.
+    } catch (error: any) {
+      // The account exists but the email was never confirmed. Offer to resend
+      // the verification mail so the user can complete registration.
+      if (error?.code === 'email_not_confirmed') {
+        await this.promptResendConfirmation();
+      }
+      // Other error toasts already surfaced by db.login.
     } finally {
       loading.dismiss();
     }
+  }
+
+  private async promptResendConfirmation(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'E-Mail nicht bestätigt',
+      message: 'Deine E-Mail-Adresse wurde noch nicht bestätigt. Möchtest du die Bestätigungs-E-Mail erneut senden?',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel'
+        },
+        {
+          text: 'Erneut senden',
+          handler: () => {
+            this.db.resendConfirmationEmail(this.registerCredentials.email);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   async startDemo() {

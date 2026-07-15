@@ -1210,6 +1210,10 @@ export class DbService {
     Utils.showToast('Eine E-Mail mit weiteren Anweisungen wurde dir zugesandt', 'success', 4000);
   }
 
+  async resendConfirmationEmail(email: string): Promise<void> {
+    return this.authSvc.resendConfirmationEmail(email);
+  }
+
   /**
    * Set a new password for the currently authenticated (recovery) user.
    * Returns a result the caller can act on instead of toasting directly, so
@@ -1518,6 +1522,122 @@ export class DbService {
    * @param player The player with updated additional_fields
    * @param oldAdditionalFields The previous additional_fields values
    */
+  /**
+   * Recompute a player's membership in all upcoming attendances after a
+   * change to a filter-relevant property (group / `instrument` or an
+   * additional field). Attendance types can be scoped by `relevant_groups`
+   * and/or `additional_fields_filter`; when a bulk "Einteilung" moves a person
+   * between groups or changes such a field, the person must be added to
+   * attendances they now match and removed from ones they no longer match.
+   *
+   * Only touches attendance types that actually declare a filter, and only
+   * runs when the group or a filter-relevant additional field changed — so a
+   * no-op edit costs one attendanceTypes() scan and nothing else.
+   */
+  async syncPlayerWithUpcomingAttendances(
+    player: Player,
+    oldInstrument: number | undefined,
+    oldAdditionalFields: Record<string, any> | undefined
+  ): Promise<void> {
+    // Types that scope participation by group and/or additional field.
+    const filteredTypes = this.attendanceTypes().filter(
+      (type: AttendanceType) =>
+        (type.relevant_groups?.length > 0) ||
+        (type.additional_fields_filter?.key && type.additional_fields_filter?.option)
+    );
+
+    if (filteredTypes.length === 0) {
+      return;
+    }
+
+    const groupChanged = oldInstrument !== player.instrument;
+
+    // Determine which additional fields (used by any filtered type) changed.
+    const changedFields = new Set<string>();
+    const newFields = player.additional_fields || {};
+    const oldFields = oldAdditionalFields || {};
+    for (const type of filteredTypes) {
+      const filterKey = type.additional_fields_filter?.key;
+      if (!filterKey) {continue;}
+      const fieldDef = this.tenant().additional_fields?.find(f => f.id === filterKey);
+      if (!fieldDef) {continue;}
+      const oldValue = oldFields[filterKey] ?? fieldDef.defaultValue;
+      const newValue = newFields[filterKey] ?? fieldDef.defaultValue;
+      if (oldValue !== newValue) {
+        changedFields.add(filterKey);
+      }
+    }
+
+    if (!groupChanged && changedFields.size === 0) {
+      return;
+    }
+
+    const upcomingAttendances = await this.getUpcomingAttendances();
+    if (!upcomingAttendances?.length) {
+      return;
+    }
+
+    const existingPersonAttendances = await this.getPersonAttendances(player.id, false);
+    const existingAttendanceIds = new Set(existingPersonAttendances.map(pa => pa.attendance_id));
+
+    const attToAdd: PersonAttendance[] = [];
+    const attToRemove: number[] = [];
+
+    for (const att of upcomingAttendances) {
+      const attType = filteredTypes.find(t => t.id === att.type_id);
+      if (!attType) {continue;}
+
+      // Skip this attendance unless a change we made could affect its filter.
+      const affectsGroup = groupChanged && attType.relevant_groups?.length > 0;
+      const filterKey = attType.additional_fields_filter?.key;
+      const affectsField = !!filterKey && changedFields.has(filterKey);
+      if (!affectsGroup && !affectsField) {continue;}
+
+      const shouldBeInAttendance = this.playerMatchesAttendanceType(player, attType);
+      const isInAttendance = existingAttendanceIds.has(att.id);
+
+      if (shouldBeInAttendance && !isInAttendance) {
+        attToAdd.push({
+          attendance_id: att.id,
+          person_id: player.id,
+          notes: '',
+          status: attType.default_status,
+        });
+      } else if (!shouldBeInAttendance && isInAttendance) {
+        attToRemove.push(att.id);
+      }
+    }
+
+    if (attToAdd.length > 0) {
+      await this.addPersonAttendances(attToAdd);
+    }
+    if (attToRemove.length > 0) {
+      await this.deletePersonAttendances(attToRemove, player.id);
+    }
+  }
+
+  /** Whether a player currently satisfies an attendance type's group + additional-field filters. */
+  private playerMatchesAttendanceType(player: Player, attType: AttendanceType): boolean {
+    if (player.paused) {return false;}
+
+    if (attType.relevant_groups?.length > 0 && !attType.relevant_groups.includes(player.instrument)) {
+      return false;
+    }
+
+    const filterKey = attType.additional_fields_filter?.key;
+    if (filterKey && attType.additional_fields_filter?.option) {
+      const fieldDef = this.tenant().additional_fields?.find(f => f.id === filterKey);
+      if (fieldDef) {
+        const playerValue = player.additional_fields?.[filterKey] ?? fieldDef.defaultValue;
+        if (playerValue !== attType.additional_fields_filter.option) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
   async syncPlayerWithUpcomingAttendancesByAdditionalFields(
     player: Player,
     oldAdditionalFields: Record<string, any> | undefined

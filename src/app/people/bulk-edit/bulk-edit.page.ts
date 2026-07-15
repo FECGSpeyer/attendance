@@ -156,6 +156,10 @@ export class BulkEditPage implements OnInit {
 
       const changedCount = this.changedCount;
       const updates: Promise<void>[] = [];
+      // Players whose upcoming attendances may need re-syncing because a
+      // filter-relevant field (group or an additional field) changed. Each
+      // entry captures the pre-edit filter state so the sync can diff.
+      const toSync: { player: Player; oldInstrument: number; oldAdditionalFields: Record<string, any> }[] = [];
 
       for (const player of this.players) {
         const original = this.originalValues.get(player.id);
@@ -166,16 +170,49 @@ export class BulkEditPage implements OnInit {
           updates.push(
             this.db.playerSvc.updatePlayerField(player.id, this.selectedField.key, edited)
           );
+
+          // A group ("instrument") change can move a person in/out of
+          // attendances whose type filters by group. Capture the old state
+          // and reflect the new value on the player object for the sync.
+          if (this.selectedField.key === 'instrument') {
+            toSync.push({
+              player,
+              oldInstrument: player.instrument,
+              oldAdditionalFields: player.additional_fields,
+            });
+            player.instrument = edited;
+          }
         } else {
           // Extra field: merge into existing additional_fields
-          const merged = { ...(player.additional_fields || {}), [this.selectedField.extraField.id]: edited };
+          const oldAdditionalFields = player.additional_fields || {};
+          const merged = { ...oldAdditionalFields, [this.selectedField.extraField.id]: edited };
           updates.push(
             this.db.playerSvc.updatePlayerAdditionalFields(player.id, merged)
           );
+
+          // An additional field can be used as an attendance-type filter, so
+          // re-sync upcoming attendances for it as well.
+          toSync.push({
+            player,
+            oldInstrument: player.instrument,
+            oldAdditionalFields,
+          });
+          player.additional_fields = merged;
         }
       }
 
       await Promise.all(updates);
+
+      // Re-sync upcoming attendances (add/remove participants) for any person
+      // whose filter-relevant field changed. Best-effort: a sync failure must
+      // not fail the whole bulk edit, which already persisted successfully.
+      for (const { player, oldInstrument, oldAdditionalFields } of toSync) {
+        try {
+          await this.db.syncPlayerWithUpcomingAttendances(player, oldInstrument, oldAdditionalFields);
+        } catch (e) {
+          console.warn('Could not sync player with upcoming attendances:', e);
+        }
+      }
 
       Utils.showToast(`${changedCount} Person(en) aktualisiert`, 'success');
       this.modalController.dismiss({ updated: true });
