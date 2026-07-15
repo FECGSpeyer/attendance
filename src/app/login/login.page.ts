@@ -58,24 +58,27 @@ export class LoginPage implements OnInit {
   async login() {
     const loading = await Utils.getLoadingElement();
     loading.present();
-    const res: boolean = await this.db.login(this.registerCredentials.email, this.registerCredentials.password, false, loading);
-
-    loading.dismiss();
-
-    if (!res) {
-      Utils.showToast('Fehler bei der Anmeldung, versuche es erneut', 'danger');
+    try {
+      // db.login shows a specific error toast and rethrows on failure, so the
+      // catch below only needs to ensure the spinner is dismissed. The finally
+      // guarantees dismissal whether login succeeds, returns false, or throws.
+      await this.db.login(this.registerCredentials.email, this.registerCredentials.password, false, loading);
+    } catch {
+      // Error toast already surfaced by db.login.
+    } finally {
+      loading.dismiss();
     }
   }
 
   async startDemo() {
     const loading = await Utils.getLoadingElement();
     loading.present();
-    const res: boolean = await this.db.login(environment.demoMail, environment.demoPassword, false, loading);
-
-    loading.dismiss();
-
-    if (!res) {
-      Utils.showToast('Fehler bei der Anmeldung, versuche es erneut', 'danger');
+    try {
+      await this.db.login(environment.demoMail, environment.demoPassword, false, loading);
+    } catch {
+      // Error toast already surfaced by db.login.
+    } finally {
+      loading.dismiss();
     }
   }
 
