@@ -899,6 +899,14 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
   }
 
+  onProfileImageClick(): void {
+    if (this.existingPlayer && !this.readOnly) {
+      this.changeImg();
+    } else if (this.player?.img && this.player.img !== DEFAULT_IMAGE) {
+      this.openPassImageViewer();
+    }
+  }
+
   async changeImg() {
     const additionalButtons: {}[] = [];
 

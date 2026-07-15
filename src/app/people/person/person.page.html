@@ -19,6 +19,44 @@
 
 <ion-content class="modalBackground" #content>
   @if (player) {
+  <div class="profile-header">
+    <input style="display: none;" name="file" #chooser (change)="onImageSelect($event)" accept="image/*"
+      class="inputFile" type="file" />
+    <div class="profile-avatar-wrapper" [class.editable]="existingPlayer && !readOnly"
+      (click)="onProfileImageClick()">
+      <ion-avatar class="profile-avatar">
+        <img [src]="player.img" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" alt="Passbild" />
+      </ion-avatar>
+      @if (existingPlayer && !readOnly) {
+      <div class="profile-avatar-badge">
+        <ion-icon name="camera"></ion-icon>
+      </div>
+      }
+    </div>
+    @if (player.firstName || player.lastName) {
+    <h1 class="profile-name">{{ player.firstName }} {{ player.lastName }}</h1>
+    }
+    <ion-modal #imageViewer (ionModalDidDismiss)="closePassImageViewer()" [isOpen]="isImageViewerOpen"
+      [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
+      <ng-template>
+        <ion-content color="dark" class="pass-preview-content">
+          <div class="pass-preview-container"
+            (dblclick)="onPassImageDblClick()"
+            (touchstart)="onPassImageTouchStart($event)"
+            (touchmove)="onPassImageTouchMove($event)"
+            (touchend)="onPassImageTouchEnd($event)">
+            <img [src]="player.img.replace('?quality=20', '')"
+              alt="Passbild"
+              class="pass-preview-image"
+              (error)="$event.target.src='assets/icon/avatar-placeholder.svg'"
+              [style.transform]="'scale(' + passImageZoomScale + ')'" />
+          </div>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+  </div>
+  }
+  @if (player) {
   <ion-grid>
     <ion-row>
       <ion-col>
@@ -405,38 +443,6 @@
                 <ion-label position="stacked">Sonstige Dienste</ion-label>
                 <ion-input [disabled]="readOnly" (ionChange)="onChange()"
                   [(ngModel)]="player.otherExercise"></ion-input>
-              </ion-item>
-            </ion-col>
-          </ion-row>
-          }
-          @if (existingPlayer && !readOnly) {
-          <ion-row>
-            <ion-col>
-              <input style="display: none;" name="file" #chooser (change)="onImageSelect($event)" accept="image/*"
-                class="inputFile" type="file" />
-              <ion-item button lines="none" (click)="changeImg()">
-                <ion-label>Passbild</ion-label>
-                <ion-avatar slot="end">
-                  <img [src]="player.img" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
-                </ion-avatar>
-                <ion-modal #imageViewer (ionModalDidDismiss)="closePassImageViewer()" [isOpen]="isImageViewerOpen"
-                  [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
-                  <ng-template>
-                    <ion-content color="dark" class="pass-preview-content">
-                      <div class="pass-preview-container"
-                        (dblclick)="onPassImageDblClick()"
-                        (touchstart)="onPassImageTouchStart($event)"
-                        (touchmove)="onPassImageTouchMove($event)"
-                        (touchend)="onPassImageTouchEnd($event)">
-                        <img [src]="player.img.replace('?quality=20', '')"
-                          alt="Passbild"
-                          class="pass-preview-image"
-                          (error)="$event.target.src='assets/icon/avatar-placeholder.svg'"
-                          [style.transform]="'scale(' + passImageZoomScale + ')'" />
-                      </div>
-                    </ion-content>
-                  </ng-template>
-                </ion-modal>
               </ion-item>
             </ion-col>
           </ion-row>
