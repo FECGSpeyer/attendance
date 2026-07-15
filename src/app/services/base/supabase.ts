@@ -6,7 +6,11 @@ const options: SupabaseClientOptions<any> = {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true,
+    // We process every auth link shape ourselves in AppComponent.handleAuthUrl
+    // (token_hash → verifyOtp, code → exchangeCodeForSession, access_token →
+    // setSession). Auto-detection is therefore redundant and can race our own
+    // handling for the single-use token, so we disable it.
+    detectSessionInUrl: false,
   }
 };
 
