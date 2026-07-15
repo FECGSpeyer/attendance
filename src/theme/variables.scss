@@ -4,7 +4,11 @@
 /** Ionic CSS Variables **/
 :root {
   /** primary **/
-  --ion-color-primary-brightness: #438e96 !important;
+  // The iOS26 theme uses --ion-color-primary-brightness as the *text* color for
+  // solid submit buttons (on top of the primary-colored background). It must be
+  // a contrasting color — not the primary color itself, which would make the
+  // label invisible (teal text on a teal button).
+  --ion-color-primary-brightness: #ffffff !important;
   --ion-color-primary: #438e96 !important;
   --ion-color-primary-rgb: 67, 142, 150 !important;
   --ion-color-primary-contrast: #ffffff !important;

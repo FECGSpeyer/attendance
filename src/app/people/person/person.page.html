@@ -22,12 +22,12 @@
   <div class="profile-header">
     <input style="display: none;" name="file" #chooser (change)="onImageSelect($event)" accept="image/*"
       class="inputFile" type="file" />
-    <div class="profile-avatar-wrapper" [class.editable]="existingPlayer && !readOnly"
+    <div class="profile-avatar-wrapper" [class.editable]="!readOnly"
       (click)="onProfileImageClick()">
       <ion-avatar class="profile-avatar">
         <img [src]="player.img" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" alt="Passbild" />
       </ion-avatar>
-      @if (existingPlayer && !readOnly) {
+      @if (!readOnly) {
       <div class="profile-avatar-badge">
         <ion-icon name="camera"></ion-icon>
       </div>
@@ -168,9 +168,9 @@
       <ion-card-title>🕐 Häufige Verspätungen</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <p>Diese Person ist <strong>{{ lateCount }}×</strong> unentschuldigt zu spät gekommen.</p>
+      <p>Diese Person ist <strong>{{ lateCount }}x</strong> unentschuldigt zu spät gekommen.</p>
       @if (lateCountExcused > 0) {
-      <p class="excused-info">Zusätzlich {{ lateCountExcused }}× entschuldigt zu spät.</p>
+      <p class="excused-info">Zusätzlich {{ lateCountExcused }}x entschuldigt zu spät.</p>
       }
       <ion-button fill="solid" size="small" color="dark" (click)="resetLateCount()">
         <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>

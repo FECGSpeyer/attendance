@@ -901,7 +901,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   onProfileImageClick(): void {
-    if (this.existingPlayer && !this.readOnly) {
+    if (!this.readOnly) {
       this.changeImg();
     } else if (this.player?.img && this.player.img !== DEFAULT_IMAGE) {
       this.openPassImageViewer();
@@ -910,17 +910,23 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   async changeImg() {
     const additionalButtons: {}[] = [];
+    const hasImage = !!this.player.img && this.player.img !== DEFAULT_IMAGE;
 
-    if (this.player.img !== DEFAULT_IMAGE) {
+    if (hasImage) {
       additionalButtons.push({
         text: 'Passbild entfernen',
         handler: () => {
-          this.db.removeImage(this.player.id, this.player.img.split('/')[this.player.img.split('/').length - 1].replace('?quality=20', ''), true);
+          if (this.existingPlayer) {
+            this.db.removeImage(this.player.id, this.player.img.split('/')[this.player.img.split('/').length - 1].replace('?quality=20', ''), true);
+          }
           this.player.img = DEFAULT_IMAGE;
           Utils.showToast('Das Passbild wurde erfolgreich entfernt', 'success');
         }
       });
 
+      // A picked-but-not-yet-uploaded image is a data URL; the viewer strips a
+      // '?quality=20' query param that only exists on uploaded URLs, so it is
+      // safe to view either way.
       additionalButtons.push({
         text: 'Passbild ansehen',
         handler: () => {
@@ -931,7 +937,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     const actionSheet = await this.actionSheetController.create({
       buttons: [{
-        text: 'Passbild ersetzen',
+        text: hasImage ? 'Passbild ersetzen' : 'Passbild hinzufügen',
         handler: () => {
           this.chooser.nativeElement.click();
         }
@@ -1031,21 +1037,43 @@ export class PersonPage implements OnInit, AfterViewInit {
       }
 
       if (imgFile.type.substring(0, 5) === 'image') {
-        const reader: FileReader = new FileReader();
-
-        reader.readAsDataURL(imgFile);
+        if (!this.existingPlayer) {
+          // New person: no player id exists yet, so keep the image as a data URL.
+          // addPlayer() converts it to a File and uploads it after the insert.
+          try {
+            const dataUrl = await this.readFileAsDataUrl(imgFile);
+            this.player.img = dataUrl;
+          } catch (error) {
+            Utils.showToast('Fehler beim Laden des Passbildes', 'danger');
+          }
+          loading.dismiss();
+          return;
+        }
 
         try {
           const url: string = await this.db.updateImage(this.player.id, imgFile, this.player.appId);
           this.player.img = url;
         } catch (error) {
           Utils.showToast(error, 'danger');
+        } finally {
+          loading.dismiss();
         }
       } else {
         loading.dismiss();
         Utils.showToast('Fehler beim ändern des Passbildes, versuche es später erneut', 'danger');
       }
+    } else {
+      loading.dismiss();
     }
+  }
+
+  private readFileAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader: FileReader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
   }
 
   getAttText(text: string) {
