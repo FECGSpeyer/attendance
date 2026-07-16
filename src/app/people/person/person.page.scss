@@ -157,10 +157,25 @@ ion-modal.dateModal ion-datetime {
   }
 }
 
+// The footer buttons (Ersetzen / Entfernen) live in an ion-buttons in the
+// toolbar's default slot, inside .toolbar-content (flex:1; min-width:0). The
+// ion-buttons must span that width AND allow its buttons to shrink, otherwise
+// the labelled buttons overflow past the right screen edge on narrow phones.
 .pass-preview-actions {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   width: 100%;
+
+  ion-button {
+    flex: 1 1 0;
+    min-width: 0;
+    --padding-start: 4px;
+    --padding-end: 4px;
+  }
+}
+
+ion-header.ios:not(.ios26-disabled) ion-buttons, ion-footer.ios:not(.ios26-disabled) ion-buttons {
+  margin: 0 !important;
 }
 
 .name-suggestions {

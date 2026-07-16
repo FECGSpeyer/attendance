@@ -398,6 +398,14 @@ export class AttListPage implements OnInit {
     Utils.showToast(this.dates.length === 1 ? 'Anwesenheit hinzugefügt' : 'Anwesenheiten hinzugefügt', 'success');
     await modal.dismiss();
 
+    // Refresh directly instead of relying solely on the `att-changes` realtime
+    // channel. Realtime can silently drop the INSERT in the cold-start /
+    // reconnect / backgrounded-tab window (see subscribeOnAttChannel notes),
+    // which is why a freshly created attendance did not always show up in the
+    // list right away. getAttendance() is idempotent — a later realtime event
+    // just reloads the same rows.
+    await this.getAttendance();
+
     this.notes = '';
     this.type = 'uebung';
     this.dates = [new Date().toISOString()];

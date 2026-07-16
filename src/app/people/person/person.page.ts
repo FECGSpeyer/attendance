@@ -928,13 +928,37 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   /** Remove the current picture from within the viewer. */
-  removeImgFromViewer(): void {
-    if (this.existingPlayer) {
-      this.db.removeImage(this.player.id, this.player.img.split('/')[this.player.img.split('/').length - 1].replace('?quality=20', ''), true);
-    }
-    this.player.img = DEFAULT_IMAGE;
-    this.closePassImageViewer();
-    Utils.showToast('Das Passbild wurde erfolgreich entfernt', 'success');
+  async removeImgFromViewer(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Passbild entfernen',
+      message: 'Möchtest du das Passbild wirklich entfernen?',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel',
+        },
+        {
+          text: 'Entfernen',
+          role: 'destructive',
+          handler: async () => {
+            if (this.existingPlayer) {
+              // newUser must be false so removeImage() actually clears the
+              // player.img DB column — passing true only deletes the storage
+              // object and leaves the row's img URL intact, so the picture
+              // came back on reload. appId lets the self-edit case match by
+              // appId instead of id.
+              const fileName = this.player.img.split('/').pop().replace('?quality=20', '');
+              await this.db.removeImage(this.player.id, fileName, false, this.player.appId || '');
+            }
+            this.player.img = DEFAULT_IMAGE;
+            this.closePassImageViewer();
+            Utils.showToast('Das Passbild wurde erfolgreich entfernt', 'success');
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 
   private getTouchDistance(event: TouchEvent): number {
