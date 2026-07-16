@@ -45,8 +45,6 @@ export class TypesPage implements OnInit {
       componentProps: {
         isNew: true,
       },
-      breakpoints: [0, 1],
-      initialBreakpoint: 1,
       presentingElement: this.routerOutlet.nativeEl,
     });
     await modal.present();
