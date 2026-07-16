@@ -212,7 +212,7 @@ Deno.serve(async (req) => {
       // Fetch confirmed attendees (non-null status) joined to their player record.
       const { data: attendees, error: attendeesError } = await supabase
         .from('person_attendances')
-        .select('person:player(id, email, instrument, firstName, lastName)')
+        .select('person:player(id, email, instrument, firstName, lastName, left)')
         .eq('attendance_id', attendanceId)
         .not('status', 'is', null)
         .range(0, 4999); // guard against PostgREST's 1000-row default
@@ -220,11 +220,13 @@ Deno.serve(async (req) => {
       if (attendeesError) {
         console.error(`[send-ad-hoc-reminder] error fetching attendees for email:`, attendeesError);
       } else if (attendees && attendees.length > 0) {
-        // Filter to attendees with an email who are NOT in the mainGroup, deduped by email.
+        // Filter to attendees with an email who are NOT in the mainGroup and NOT
+        // archived (left set), deduped by email.
         const emailSet = new Set<string>();
-        for (const row of attendees as { person: { email: string | null; instrument: number | null } | null }[]) {
+        for (const row of attendees as { person: { email: string | null; instrument: number | null; left: string | null } | null }[]) {
           const person = row.person;
           if (!person) continue;
+          if (person.left) continue; // skip archived people
           const email = (person.email || '').trim();
           if (!email) continue;
           if (mainGroupId !== null && person.instrument === mainGroupId) continue;
