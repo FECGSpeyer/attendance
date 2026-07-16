@@ -83,7 +83,18 @@ const args = process.argv.slice(2);
 const skipBuild = args.includes('--skip-build');
 const minNativeIdx = args.indexOf('--min-native');
 const pkg = require(path.join(ROOT, 'package.json'));
-const minNativeVersion = minNativeIdx >= 0 ? args[minNativeIdx + 1] : pkg.version;
+
+// Default minNativeVersion floors the patch segment: `major.minor.0`.
+// A patch OTA (e.g. 4.0.8) then reaches every native 4.0.x shell, while a new
+// minor version (e.g. 4.1.0) requires a native shell that ships that minor.
+// Override with --min-native <x.y.z> when a bundle genuinely needs a newer
+// native shell (e.g. a new native plugin).
+function defaultMinNative(version) {
+  const [major = '0', minor = '0'] = version.split('.');
+  return `${major}.${minor}.0`;
+}
+const minNativeVersion =
+  minNativeIdx >= 0 ? args[minNativeIdx + 1] : defaultMinNative(pkg.version);
 
 const bundleId = `${pkg.version}-${Date.now()}`;
 const zipName = `${bundleId}.zip`;
