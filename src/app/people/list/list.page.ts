@@ -193,7 +193,7 @@ export class ListPage implements OnInit, OnDestroy {
   private computeTodaysBirthdays(): void {
     const today = dayjs().format('MM-DD');
     this.todaysBirthdays = this.players.filter(
-      p => p.birthday && dayjs(p.birthday).format('MM-DD') === today,
+      p => p.birthday && p.correctBirthday && dayjs(p.birthday).format('MM-DD') === today,
     );
   }
 
