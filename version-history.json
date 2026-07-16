@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.0.8",
+          "date": "30.6.2026",
+          "changes": [
+            "👤 Verbesserte Ansicht für Passbilder: Passbilder werden jetzt in der Mitglieder-Ansicht und im Profil größer angezeigt, sodass sie besser erkennbar sind."
+          ]
+        },
+        {
           "version": "4.0.7",
           "date": "29.6.2026",
           "changes": [
