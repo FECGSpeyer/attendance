@@ -44,6 +44,7 @@ import { TelegramService } from './telegram/telegram.service';
 import { SignInOutService } from './sign-in-out/sign-in-out.service';
 import { SongCategoryService } from './song-category/song-category.service';
 import { RolePermissionService } from './role-permission/role-permission.service';
+import { UserNotificationService } from './user-notification/user-notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -94,6 +95,7 @@ export class DbService {
   public readonly signInOutSvc = inject(SignInOutService);
   public readonly songCategorySvc = inject(SongCategoryService);
   public readonly rolePermissionSvc = inject(RolePermissionService);
+  public readonly userNotificationSvc = inject(UserNotificationService);
 
   private initPromise: Promise<void> | null = null;
 
@@ -2425,6 +2427,34 @@ export class DbService {
 
   async updateNotificationConfig(config: NotificationConfig) {
     return this.notificationSvc.updateNotificationConfig(config);
+  }
+
+  getUserNotifications() {
+    return this.userNotificationSvc.getNotifications(this.user.id, this.tenant().id);
+  }
+
+  getUnreadNotificationCount() {
+    return this.userNotificationSvc.getUnreadCount(this.user.id, this.tenant().id);
+  }
+
+  markNotificationRead(id: string) {
+    return this.userNotificationSvc.markRead(id);
+  }
+
+  markMatchingNotificationsRead(type: string, attendanceId?: string | number | null, tenantId?: number) {
+    return this.userNotificationSvc.markMatchingRead(this.user.id, tenantId ?? this.tenant().id, type, attendanceId);
+  }
+
+  markNotificationsReadByAttendance(attendanceId: string | number, tenantId?: number) {
+    return this.userNotificationSvc.markReadByAttendance(this.user.id, tenantId ?? this.tenant().id, attendanceId);
+  }
+
+  markAllNotificationsRead() {
+    return this.userNotificationSvc.markAllRead(this.user.id, this.tenant().id);
+  }
+
+  deleteAllNotifications() {
+    return this.userNotificationSvc.deleteAll(this.user.id, this.tenant().id);
   }
 
   async deleteInstance(tenantId: number): Promise<void> {

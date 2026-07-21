@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "4.1.0",
+          "date": "20.7.2026",
+          "changes": [
+            "🔔 Benachrichtigungszentrale: Über das Glocken-Symbol oben rechts sind jetzt auf jedem Tab alle an dich gesendeten Benachrichtigungen an einem Ort einsehbar – mit Gelesen-/Ungelesen-Status und einem Zähler für ungelesene Einträge.",
+            "📥 Alle Kanäle: Push-, Telegram- und E-Mail-Erinnerungen landen jetzt zusätzlich in der Benachrichtigungszentrale. So sehen auch Mitglieder ohne aktivierte Push- oder Telegram-Benachrichtigungen ihre Erinnerungen direkt in der App.",
+            "➡️ Direkt zum Termin: Ein Tipp auf eine Termin-Benachrichtigung öffnet die zugehörige Anwesenheit – bei Bedarf wird automatisch zur richtigen Instanz gewechselt."
+          ]
+        },
+        {
           "version": "4.0.8",
           "date": "30.6.2026",
           "changes": [

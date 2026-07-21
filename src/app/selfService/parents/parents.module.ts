@@ -9,6 +9,7 @@ import { ParentsPageRoutingModule } from './parents-routing.module';
 
 import { ParentsPage } from './parents.page';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
+import { NotificationBellComponent } from 'src/app/shared/notification-bell/notification-bell.component';
 
 @NgModule({
   imports: [
@@ -17,6 +18,7 @@ import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.co
     IonicModule,
     ParentsPageRoutingModule,
     PlanViewerComponent,
+    NotificationBellComponent,
     QuillModule.forRoot(),
   ],
   declarations: [ParentsPage]

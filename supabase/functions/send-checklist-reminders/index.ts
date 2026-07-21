@@ -4,6 +4,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendPushToUser } from '../_shared/send-push.ts'
+import { logNotification } from '../_shared/log-notification.ts'
 
 const DEFAULT_TIMEZONE = 'Europe/Berlin';
 
@@ -356,24 +357,33 @@ Deno.serve(async (req) => {
             );
 
             let pushSentSuccessfully = false;
+            const checklistTitle = hoursUntilDue === 0 ? '⚠️ Jetzt fällig!' : '⏰ Demnächst fällig';
+            const checklistTenantName = tenantNames.get(attendance.tenantId) || '';
+            const checklistBody = checklistTenantName
+              ? `${checklistTenantName}: ${item.text} (${attType?.name || 'Termin'})`
+              : `${item.text} (${attType?.name || 'Termin'})`;
 
             // Send via Push (preferred channel)
             if (notifConfig.push_enabled) {
               try {
-                const pushTitle = hoursUntilDue === 0 ? '⚠️ Jetzt fällig!' : '⏰ Demnächst fällig';
-                const tenantName = tenantNames.get(attendance.tenantId) || '';
-                const pushBody = tenantName
-                  ? `${tenantName}: ${item.text} (${attType?.name || 'Termin'})`
-                  : `${item.text} (${attType?.name || 'Termin'})`;
                 const pushSent = await sendPushToUser(supabase, notifConfig.id, {
-                  title: pushTitle,
-                  body: pushBody,
+                  title: checklistTitle,
+                  body: checklistBody,
                   data: { type: 'checklist', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
                 });
                 if (pushSent > 0) {
                   totalReminders++;
                   pushSentSuccessfully = true;
                   console.log(`Checklist reminder sent via Push to ${notifConfig.id} for "${item.text}"`);
+                  await logNotification(supabase, {
+                    userId: notifConfig.id,
+                    tenantId: attendance.tenantId,
+                    type: 'checklist',
+                    title: checklistTitle,
+                    body: checklistBody,
+                    channels: ['push'],
+                    data: { type: 'checklist', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
+                  });
                 }
               } catch (e) {
                 console.error(`Error sending push notification:`, e);
@@ -398,6 +408,15 @@ Deno.serve(async (req) => {
                 } else {
                   totalReminders++;
                   console.log(`Checklist reminder sent via Telegram to ${notifConfig.telegram_chat_id} for "${item.text}"`);
+                  await logNotification(supabase, {
+                    userId: notifConfig.id,
+                    tenantId: attendance.tenantId,
+                    type: 'checklist',
+                    title: checklistTitle,
+                    body: checklistBody,
+                    channels: ['telegram'],
+                    data: { type: 'checklist', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
+                  });
                 }
               } catch (e) {
                 console.error(`Error sending Telegram message:`, e);

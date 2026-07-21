@@ -524,7 +524,7 @@ export type Database = {
         }
         Insert: {
           content_html: string
-          id?: number
+          id: number
           updated_at?: string
         }
         Update: {
@@ -1372,6 +1372,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_notifications: {
+        Row: {
+          body: string
+          channels: string[]
+          created_at: string
+          data: Json
+          email: string | null
+          id: string
+          read: boolean
+          tenantId: number
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          body: string
+          channels?: string[]
+          created_at?: string
+          data?: Json
+          email?: string | null
+          id?: string
+          read?: boolean
+          tenantId: number
+          title: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          body?: string
+          channels?: string[]
+          created_at?: string
+          data?: Json
+          email?: string | null
+          id?: string
+          read?: boolean
+          tenantId?: number
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       viewers: {
         Row: {
           appId: string | null
@@ -1415,6 +1457,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      evaluate_critical_rules_attendances: {
+        Args: { p_end: string; p_start: string; p_tenant_id: number }
+        Returns: {
+          attendance_date: string
+          attendance_id: number
+          attendance_type_id: string
+          id: string
+          person_id: number
+          status: number
+        }[]
+      }
       get_active_players_with_attendance: {
         Args: { p_tenant_id: number }
         Returns: Json
@@ -1423,6 +1476,16 @@ export type Database = {
         Args: { email: string }
         Returns: {
           id: string
+        }[]
+      }
+      select_todays_birthdays: {
+        Args: { p_day: number; p_month: number }
+        Returns: {
+          birthday: string
+          firstName: string
+          id: number
+          lastName: string
+          tenantId: number
         }[]
       }
     }

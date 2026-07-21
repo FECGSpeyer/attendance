@@ -277,6 +277,20 @@ export class PushService {
       await this.db.setTenant(Number(data.tenantId));
     }
 
+    // Opening a notification (push tap) marks the matching feed entries read in
+    // the notification center. Best-effort — never block navigation on it.
+    if (data.type) {
+      try {
+        await this.db.markMatchingNotificationsRead(
+          data.type,
+          data.attendanceId ?? null,
+          data.tenantId ? Number(data.tenantId) : undefined,
+        );
+      } catch (e) {
+        console.error('[push] markMatchingNotificationsRead failed:', e);
+      }
+    }
+
     if (data.route) {
       await this.router.navigateByUrl(data.route);
       return;

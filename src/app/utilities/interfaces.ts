@@ -114,6 +114,20 @@ export interface NotificationConfig {
   push_enabled?: boolean;
 }
 
+export interface UserNotification {
+  id: string;
+  user_id: string | null;
+  tenantId: number;
+  type: string;
+  title: string;
+  body: string;
+  channels: string[];
+  email?: string | null;
+  data: { attendanceId?: string; tenantId?: string; [key: string]: any };
+  read: boolean;
+  created_at: string;
+}
+
 export interface Viewer {
   id?: number;
   created_at?: string;

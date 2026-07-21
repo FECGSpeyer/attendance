@@ -8,6 +8,7 @@ import { QuillModule } from 'ngx-quill';
 import { OverviewPageRoutingModule } from './overview-routing.module';
 
 import { OverviewPage } from './overview.page';
+import { NotificationBellComponent } from 'src/app/shared/notification-bell/notification-bell.component';
 
 @NgModule({
   imports: [
@@ -15,6 +16,7 @@ import { OverviewPage } from './overview.page';
     FormsModule,
     IonicModule,
     OverviewPageRoutingModule,
+    NotificationBellComponent,
     QuillModule.forRoot(),
   ],
   declarations: [OverviewPage]
