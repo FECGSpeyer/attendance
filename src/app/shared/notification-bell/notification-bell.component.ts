@@ -6,6 +6,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
 import { UserNotification } from 'src/app/utilities/interfaces';
+import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
   selector: 'app-notification-bell',
@@ -22,7 +23,6 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   unread = signal(0);
   notifications = signal<UserNotification[]>([]);
   isOpen = signal(false);
-  loading = signal(false);
 
   private sub: RealtimeChannel | null = null;
 
@@ -84,11 +84,17 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   }
 
   async open(): Promise<void> {
-    this.isOpen.set(true);
-    this.loading.set(true);
+    // Load first so we know whether there is anything to show. With no
+    // notifications we skip the (empty) modal and just show an info toast.
     await this.load();
     await this.refreshCount();
-    this.loading.set(false);
+
+    if (this.notifications().length === 0) {
+      Utils.showToast('Keine Benachrichtigungen vorhanden.', 'medium');
+      return;
+    }
+
+    this.isOpen.set(true);
   }
 
   onDismiss(): void {

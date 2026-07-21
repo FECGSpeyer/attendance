@@ -30,7 +30,7 @@
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
-      @if (!loading() && notifications().length === 0) {
+      @if (notifications().length === 0) {
         <div class="empty-state">
           <ion-icon name="notifications-off-outline"></ion-icon>
           <p>Keine Benachrichtigungen</p>
