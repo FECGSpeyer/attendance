@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { Telegraf } from 'npm:telegraf@4.16.3';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { sendPushToUser } from '../_shared/send-push.ts';
+import { logNotification } from '../_shared/log-notification.ts';
 
 console.info('server started');
 const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
@@ -161,6 +162,16 @@ const getBirthdays = async ()=>{
           if (pushSent > 0) {
             pushSentSuccessfully = true;
             console.log(`✓ Push birthday notification sent to ${user.id}`);
+            await logNotification(supabase, {
+              userId: user.id,
+              tenantId,
+              type: 'birthday',
+              title: '🎉 Geburtstag',
+              body: message,
+              channels: ['push'],
+              data: { type: 'birthday', tenantId: String(tenantId) },
+              read: true,
+            });
           } else {
             console.log(`✗ Push failed for ${user.id} (no devices)`);
           }
@@ -175,6 +186,16 @@ const getBirthdays = async ()=>{
         try {
           await telegraf.telegram.sendMessage(user.telegram_chat_id, message);
           console.log(`✓ Telegram birthday notification sent to ${user.telegram_chat_id}`);
+          await logNotification(supabase, {
+            userId: user.id,
+            tenantId,
+            type: 'birthday',
+            title: '🎉 Geburtstag',
+            body: message,
+            channels: ['telegram'],
+            data: { type: 'birthday', tenantId: String(tenantId) },
+            read: true,
+          });
         } catch (e) {
           console.error(`✗ Error sending Telegram message to ${user.telegram_chat_id}:`, e);
         }

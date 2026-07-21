@@ -9,6 +9,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendPushToUser } from '../_shared/send-push.ts'
 import { sendEmail } from '../_shared/send-email.ts'
+import { logNotification } from '../_shared/log-notification.ts'
 
 const VIEWER_ROLE = 3;
 
@@ -168,6 +169,15 @@ Deno.serve(async (req) => {
           if (pushSent > 0) {
             sent++;
             pushSentSuccessfully = true;
+            await logNotification(supabase, {
+              userId: config.id,
+              tenantId,
+              type: 'reminder',
+              title: '🔔 Erinnerung',
+              body: pushBody,
+              channels: ['push'],
+              data: { type: 'reminder', attendanceId: String(attendanceId), tenantId: String(tenantId) },
+            });
           }
         } catch (e) {
           console.error(`Push send error for ${config.id}:`, e);
@@ -186,7 +196,18 @@ Deno.serve(async (req) => {
               parse_mode: 'Markdown',
             }),
           });
-          if (res.ok) sent++;
+          if (res.ok) {
+            sent++;
+            await logNotification(supabase, {
+              userId: config.id,
+              tenantId,
+              type: 'reminder',
+              title: '🔔 Erinnerung',
+              body: pushBody,
+              channels: ['telegram'],
+              data: { type: 'reminder', attendanceId: String(attendanceId), tenantId: String(tenantId) },
+            });
+          }
         } catch (e) {
           console.error(`Telegram send error for ${config.id}:`, e);
         }
@@ -212,7 +233,7 @@ Deno.serve(async (req) => {
       // Fetch confirmed attendees (non-null status) joined to their player record.
       const { data: attendees, error: attendeesError } = await supabase
         .from('person_attendances')
-        .select('person:player(id, email, instrument, firstName, lastName, left)')
+        .select('person:player(id, email, appId, instrument, firstName, lastName, left)')
         .eq('attendance_id', attendanceId)
         .not('status', 'is', null)
         .range(0, 4999); // guard against PostgREST's 1000-row default
@@ -223,7 +244,11 @@ Deno.serve(async (req) => {
         // Filter to attendees with an email who are NOT in the mainGroup and NOT
         // archived (left set), deduped by email.
         const emailSet = new Set<string>();
-        for (const row of attendees as { person: { email: string | null; instrument: number | null; left: string | null } | null }[]) {
+        // Emailed attendees who ARE app users (have an appId) → log to their feed
+        // so users with push/Telegram disabled still see the reminder in-app.
+        // Deduped by appId; external attendees without an appId are emailed only.
+        const appIdSet = new Set<string>();
+        for (const row of attendees as { person: { email: string | null; appId: string | null; instrument: number | null; left: string | null } | null }[]) {
           const person = row.person;
           if (!person) continue;
           if (person.left) continue; // skip archived people
@@ -231,6 +256,7 @@ Deno.serve(async (req) => {
           if (!email) continue;
           if (mainGroupId !== null && person.instrument === mainGroupId) continue;
           emailSet.add(email.toLowerCase());
+          if (person.appId) appIdSet.add(person.appId);
         }
 
         if (emailSet.size > 0) {
@@ -243,6 +269,21 @@ Deno.serve(async (req) => {
             subject,
             html: emailHtml,
           });
+
+          // Record the emailed reminder in the notification center for app users.
+          if (emailsSent > 0) {
+            for (const appId of appIdSet) {
+              await logNotification(supabase, {
+                userId: appId,
+                tenantId,
+                type: 'reminder',
+                title: '🔔 Erinnerung',
+                body: pushBody,
+                channels: ['email'],
+                data: { type: 'reminder', attendanceId: String(attendanceId), tenantId: String(tenantId) },
+              });
+            }
+          }
         }
       }
     } catch (e) {

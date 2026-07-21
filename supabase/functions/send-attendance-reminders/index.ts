@@ -4,6 +4,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendPushToUser } from '../_shared/send-push.ts'
+import { logNotification } from '../_shared/log-notification.ts'
 
 const DEFAULT_TIMEZONE = 'Europe/Berlin';
 
@@ -351,19 +352,30 @@ Deno.serve(async (req) => {
             );
 
             let pushSentSuccessfully = false;
+            const reminderTitle = '⏰ Terminerinnerung';
+            const reminderBody = `${attType.name} startet ${matchedReminder === 1 ? 'in 1 Stunde' : matchedReminder < 24 ? `in ${matchedReminder} Stunden` : `in ${Math.floor(matchedReminder / 24)} Tag(en)`}`;
 
             // Send via Push (preferred channel)
             if (notifConfig.push_enabled) {
               try {
                 const pushSent = await sendPushToUser(supabase, notifConfig.id, {
-                  title: '⏰ Terminerinnerung',
-                  body: `${attType.name} startet ${matchedReminder === 1 ? 'in 1 Stunde' : matchedReminder < 24 ? `in ${matchedReminder} Stunden` : `in ${Math.floor(matchedReminder / 24)} Tag(en)`}`,
+                  title: reminderTitle,
+                  body: reminderBody,
                   data: { type: 'reminder', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
                 });
                 if (pushSent > 0) {
                   totalReminders++;
                   pushSentSuccessfully = true;
                   console.log(`Push reminder sent to ${notifConfig.id} for ${attType.name}`);
+                  await logNotification(supabase, {
+                    userId: notifConfig.id,
+                    tenantId: attendance.tenantId,
+                    type: 'reminder',
+                    title: reminderTitle,
+                    body: reminderBody,
+                    channels: ['push'],
+                    data: { type: 'reminder', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
+                  });
                 }
               } catch (e) {
                 console.error(`Error sending push notification:`, e);
@@ -388,6 +400,15 @@ Deno.serve(async (req) => {
                 } else {
                   totalReminders++;
                   console.log(`Telegram reminder sent to ${notifConfig.telegram_chat_id} for ${attType.name}`);
+                  await logNotification(supabase, {
+                    userId: notifConfig.id,
+                    tenantId: attendance.tenantId,
+                    type: 'reminder',
+                    title: reminderTitle,
+                    body: reminderBody,
+                    channels: ['telegram'],
+                    data: { type: 'reminder', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
+                  });
                 }
               } catch (e) {
                 console.error(`Error sending Telegram message:`, e);

@@ -56,6 +56,17 @@ export class OpenAttendancePage implements OnInit {
       await this.db.setTenant(Number(tenantIdParam));
     }
 
+    // Opening an appointment via an email/Telegram deep link marks any matching
+    // notification-center entries for this attendance read. Best-effort.
+    try {
+      await this.db.markNotificationsReadByAttendance(
+        attendanceId,
+        tenantIdParam ? Number(tenantIdParam) : undefined,
+      );
+    } catch (e) {
+      console.error('[open-attendance] markNotificationsReadByAttendance failed:', e);
+    }
+
     await this.pushService.navigateToAttendance(attendanceId);
   }
 }

@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { sendPushToUser } from '../_shared/send-push.ts'
+import { logNotification } from '../_shared/log-notification.ts'
 
 interface NotificationConfig {
   id: string;
@@ -177,7 +178,18 @@ Deno.serve(async (req)=>{
         body: pushBody,
         data: { type: 'attendance', attendanceId: String(attendanceData.attendance_id), tenantId: String(attendanceData.attendance.tenant.id) },
       });
-      if (pushSent > 0) pushSentUserIds.add(userId);
+      if (pushSent > 0) {
+        pushSentUserIds.add(userId);
+        await logNotification(supabase, {
+          userId,
+          tenantId: attendanceData.attendance.tenant.id,
+          type: 'attendance',
+          title: pushTitle,
+          body: pushBody,
+          channels: ['push'],
+          data: { type: 'attendance', attendanceId: String(attendanceData.attendance_id), tenantId: String(attendanceData.attendance.tenant.id) },
+        });
+      }
     }
 
     // Send Telegram messages only to users who did not receive push
@@ -191,6 +203,15 @@ Deno.serve(async (req)=>{
           text: messageText,
           parse_mode: "markdown"
         })
+      });
+      await logNotification(supabase, {
+        userId,
+        tenantId: attendanceData.attendance.tenant.id,
+        type: 'attendance',
+        title: pushTitle,
+        body: pushBody,
+        channels: ['telegram'],
+        data: { type: 'attendance', attendanceId: String(attendanceData.attendance_id), tenantId: String(attendanceData.attendance.tenant.id) },
       });
     }
 

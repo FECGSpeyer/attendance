@@ -4,6 +4,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendPushToUser } from '../_shared/send-push.ts'
+import { logNotification } from '../_shared/log-notification.ts'
 
 // Enums matching the frontend
 enum AttendanceStatus {
@@ -451,16 +452,29 @@ async function sendCriticalNotifications(
 
     for (const notif of eligibleNotifications) {
       let pushSentSuccessfully = false;
+      const notifTitle = `⚠️ Neue Problemfälle (${tenantName})`;
+      const notifBody = `${newCriticalPlayers.length} Person(en) wurden als Problemfall markiert`;
 
       // Send via Push (preferred channel)
       if (notif.push_enabled) {
         try {
           const pushSent = await sendPushToUser(supabase, notif.id, {
-            title: `⚠️ Neue Problemfälle (${tenantName})`,
-            body: `${newCriticalPlayers.length} Person(en) wurden als Problemfall markiert`,
+            title: notifTitle,
+            body: notifBody,
             data: { type: 'criticals', tenantId: String(tenantId) },
           });
-          if (pushSent > 0) pushSentSuccessfully = true;
+          if (pushSent > 0) {
+            pushSentSuccessfully = true;
+            await logNotification(supabase, {
+              userId: notif.id,
+              tenantId,
+              type: 'criticals',
+              title: notifTitle,
+              body: notifBody,
+              channels: ['push'],
+              data: { type: 'criticals', tenantId: String(tenantId) },
+            });
+          }
         } catch (err) {
           console.error(`Error sending push to ${notif.id}:`, err);
         }
@@ -485,6 +499,16 @@ async function sendCriticalNotifications(
           if (!response.ok) {
             const errorText = await response.text();
             console.error(`Failed to send Telegram to ${notif.telegram_chat_id}:`, errorText);
+          } else {
+            await logNotification(supabase, {
+              userId: notif.id,
+              tenantId,
+              type: 'criticals',
+              title: notifTitle,
+              body: notifBody,
+              channels: ['telegram'],
+              data: { type: 'criticals', tenantId: String(tenantId) },
+            });
           }
         } catch (err) {
           console.error(`Error sending Telegram to ${notif.telegram_chat_id}:`, err);

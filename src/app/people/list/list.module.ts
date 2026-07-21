@@ -9,6 +9,7 @@ import { ListPageRoutingModule } from './list-routing.module';
 import { ListPage } from './list.page';
 import { PersonPageModule } from '../person/person.module';
 import { BulkEditPageModule } from '../bulk-edit/bulk-edit.module';
+import { NotificationBellComponent } from 'src/app/shared/notification-bell/notification-bell.component';
 
 @NgModule({
   imports: [
@@ -17,7 +18,8 @@ import { BulkEditPageModule } from '../bulk-edit/bulk-edit.module';
     IonicModule,
     ListPageRoutingModule,
     PersonPageModule,
-    BulkEditPageModule
+    BulkEditPageModule,
+    NotificationBellComponent
   ],
   declarations: [ListPage]
 })

@@ -9,6 +9,7 @@ import { SignoutPageRoutingModule } from './signout-routing.module';
 
 import { SignoutPage } from './signout.page';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
+import { NotificationBellComponent } from 'src/app/shared/notification-bell/notification-bell.component';
 
 @NgModule({
   imports: [
@@ -17,6 +18,7 @@ import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.co
     IonicModule,
     SignoutPageRoutingModule,
     PlanViewerComponent,
+    NotificationBellComponent,
     QuillModule.forRoot(),
   ],
   declarations: [SignoutPage]

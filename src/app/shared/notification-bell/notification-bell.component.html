@@ -1,0 +1,60 @@
+<!-- Bell button (sits inside an <ion-buttons slot="end"> on each page toolbar) -->
+<ion-button (click)="open()">
+  <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+  @if (unread() > 0) {
+    <ion-badge class="bell-badge" color="danger">{{ unread() > 99 ? '99+' : unread() }}</ion-badge>
+  }
+</ion-button>
+
+<!-- Notification center panel -->
+<ion-modal [isOpen]="isOpen()" [breakpoints]="[0, 0.75, 1]" [initialBreakpoint]="0.75" (ionModalDidDismiss)="onDismiss()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Benachrichtigungen</ion-title>
+        <ion-buttons slot="end">
+          @if (unread() > 0) {
+            <ion-button (click)="markAll()">Alle gelesen</ion-button>
+          }
+          @if (notifications().length > 0) {
+            <ion-button color="danger" (click)="deleteAll()">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
+          }
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content color="light">
+      <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+      </ion-refresher>
+
+      @if (!loading() && notifications().length === 0) {
+        <div class="empty-state">
+          <ion-icon name="notifications-off-outline"></ion-icon>
+          <p>Keine Benachrichtigungen</p>
+        </div>
+      } @else {
+        <ion-list [inset]="true">
+          @for (n of notifications(); track n.id) {
+            <ion-item
+              [button]="!!n.data?.attendanceId"
+              [detail]="!!n.data?.attendanceId"
+              (click)="onTap(n)"
+              [class.unread]="!n.read">
+              @if (!n.read) {
+                <div slot="start" class="unread-dot"></div>
+              }
+              <ion-label class="ion-text-wrap">
+                <h2>{{ n.title }}</h2>
+                <p>{{ n.body }}</p>
+                <ion-note>{{ n.created_at | date: 'dd.MM.yyyy HH:mm' }}</ion-note>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      }
+    </ion-content>
+  </ng-template>
+</ion-modal>

@@ -1,0 +1,48 @@
+:host {
+  display: inline-block;
+}
+
+ion-button {
+  position: relative;
+}
+
+.bell-badge {
+  position: absolute;
+  top: 2px;
+  inset-inline-end: 0;
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  line-height: 1;
+}
+
+.unread-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ion-color-danger);
+  margin-inline-end: 4px;
+}
+
+ion-item.unread h2 {
+  font-weight: 600;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+
+  p {
+    margin: 0;
+  }
+}
