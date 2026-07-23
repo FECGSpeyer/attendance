@@ -10,6 +10,7 @@ import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS } from 
 import { Attendance, AttendanceType, History, Person, PersonAttendance, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
+import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
 
 interface KidStats {
   perc: number;
@@ -26,11 +27,8 @@ export class ParentsPage implements OnInit {
   public kids: Person[] = [];
   public attendances: Attendance[] = [];
   public personAttendances: PersonAttendance[] = [];
-  public reason: string;
-  public isLateComingEvent: boolean;
   public selAttIds: string[] = [];
   public selPersAttIds: string[] = [];
-  public reasonSelection: string;
 
   // New properties for optimized UI
   public currentAttendance: Attendance;
@@ -42,7 +40,7 @@ export class ParentsPage implements OnInit {
   public absenceReasons: string[] = [];
   public lateReasons: string[] = [];
 
-  @ViewChild('excuseModal') excuseModal: IonModal;
+  @ViewChild('excusePicker') excusePicker: ExcuseReasonPickerComponent;
   @ViewChild('descriptionModal') descriptionModal: IonModal;
   public selectedDescription: string = '';
 
@@ -255,7 +253,6 @@ export class ParentsPage implements OnInit {
     this.selAttIds = allKids
       ? this.personAttendances.filter((pa) => pa.attendance_id === attendance.id).map((pa) => pa.id)
       : personAttendance ? [personAttendance.id] : [];
-    this.reasonSelection = 'Krankheitsbedingt';
 
     let buttons = [
       {
@@ -265,29 +262,15 @@ export class ParentsPage implements OnInit {
       {
         text: 'Abmelden',
         handler: () => {
-          if (dayjs(attendance.date).isSame(dayjs(), 'day')) {
-            this.reasonSelection = 'Sonstiger Grund';
-            this.reason = '';
-          } else {
-            this.reason = 'Krankheitsbedingt';
-          }
-          this.excuseModal.present();
-          this.isLateComingEvent = false;
           this.actionSheetController.dismiss();
+          this.excusePicker.open(false, dayjs(attendance.date).isSame(dayjs(), 'day'));
         },
       },
       {
         text: 'Verspätung eintragen',
         handler: () => {
-          if (dayjs(attendance.date).isSame(dayjs(), 'day')) {
-            this.reasonSelection = 'Sonstiger Grund';
-            this.reason = '';
-          } else {
-            this.reason = 'Krankheitsbedingt';
-          }
-          this.excuseModal.present();
-          this.isLateComingEvent = true;
           this.actionSheetController.dismiss();
+          this.excusePicker.open(true, dayjs(attendance.date).isSame(dayjs(), 'day'));
         },
       },
       {
@@ -345,31 +328,13 @@ export class ParentsPage implements OnInit {
     await actionSheet.present();
   }
 
-  async signout() {
-    await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent, true);
-    this.tracking.track(TrackingEvent.ParentSignOut, { count: this.selAttIds.length, isLate: this.isLateComingEvent });
+  async onExcuseConfirm({ reason, isLate }: { reason: string; isLate: boolean }) {
+    await this.db.signout(this.selAttIds, reason, isLate, true);
+    this.tracking.track(TrackingEvent.ParentSignOut, { count: this.selAttIds.length, isLate });
 
-    this.excuseModal.dismiss();
-    this.reason = '';
-
-    Utils.showToast(this.isLateComingEvent ? 'Vielen Dank für die Info und Gottes Segen!' : 'Vielen Dank für die rechtzeitige Abmeldung und Gottes Segen!', 'success', 4000);
-
-    this.reasonSelection = '';
+    Utils.showToast(isLate ? 'Vielen Dank für die Info und Gottes Segen!' : 'Vielen Dank für die rechtzeitige Abmeldung und Gottes Segen!', 'success', 4000);
 
     await this.refreshPersonAttendances();
-  }
-
-  onReasonSelect(event) {
-    const currentReasonSelection = event.detail.value;
-    if (!currentReasonSelection) {return;}
-
-    if (currentReasonSelection !== 'Sonstiger Grund') {
-      this.excuseModal.setCurrentBreakpoint(0.3);
-      this.reason = currentReasonSelection;
-    } else {
-      this.excuseModal.setCurrentBreakpoint(0.4);
-      this.reason = '';
-    }
   }
 
   async signin(attendance: PersonAttendance) {
@@ -401,25 +366,6 @@ export class ParentsPage implements OnInit {
 
     this.organizeAttendances();
     this.calculateKidStats();
-  }
-
-  dismissExcuseModal() {
-    this.excuseModal.dismiss();
-  }
-
-  increaseModalBreakpoint() {
-    this.excuseModal.setCurrentBreakpoint(0.8);
-  }
-
-  decreaseModalBreakpoint() {
-    this.excuseModal.setCurrentBreakpoint(0.4);
-  }
-
-  isReasonSelectionInvalid(reason: string): boolean {
-    if (!(reason && reason.length > 4) || /\S/.test(reason) === false) {
-      return true;
-    }
-    return false;
   }
 
   async handleRefresh(event) {

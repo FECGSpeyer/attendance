@@ -7,6 +7,7 @@ import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS } from 
 import { CrossTenantPersonAttendance, AttendanceType } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
+import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
 
 type GroupingMode = 'chronological' | 'byTenant';
 
@@ -24,7 +25,7 @@ interface TenantGroup {
     standalone: false
 })
 export class OverviewPage implements OnInit {
-  @ViewChild('excuseModal') excuseModal: IonModal;
+  @ViewChild('excusePicker') excusePicker: ExcuseReasonPickerComponent;
   @ViewChild('descriptionModal') descriptionModal: IonModal;
   public selectedDescription: string = '';
 
@@ -37,9 +38,6 @@ export class OverviewPage implements OnInit {
 
   public groupingMode: GroupingMode = 'chronological';
   public selAttIds: string[] = [];
-  public reason = '';
-  public reasonSelection = 'Krankheitsbedingt';
-  public isLateComingEvent = false;
   public selectedAttendance: CrossTenantPersonAttendance | null = null;
 
   public perc = 0;
@@ -160,7 +158,6 @@ export class OverviewPage implements OnInit {
 
   async presentActionSheetForChoice(attendance: CrossTenantPersonAttendance) {
     this.selectedAttendance = attendance;
-    this.reasonSelection = 'Krankheitsbedingt';
 
     let buttons = [
       {
@@ -174,29 +171,15 @@ export class OverviewPage implements OnInit {
       {
         text: 'Abmelden',
         handler: () => {
-          if (this.isAttToday(attendance)) {
-            this.reasonSelection = 'Sonstiger Grund';
-            this.reason = '';
-          } else {
-            this.reason = 'Krankheitsbedingt';
-          }
-          this.excuseModal.present();
-          this.isLateComingEvent = false;
           this.actionSheetController.dismiss();
+          this.excusePicker.open(false, this.isAttToday(attendance));
         },
       },
       {
         text: 'Verspätung eintragen',
         handler: () => {
-          if (this.isAttToday(attendance)) {
-            this.reasonSelection = 'Sonstiger Grund';
-            this.reason = '';
-          } else {
-            this.reason = 'Krankheitsbedingt';
-          }
-          this.excuseModal.present();
-          this.isLateComingEvent = true;
           this.actionSheetController.dismiss();
+          this.excusePicker.open(true, this.isAttToday(attendance));
         },
       },
       {
@@ -311,22 +294,18 @@ export class OverviewPage implements OnInit {
     await this.loadAttendances(true);
   }
 
-  async signout() {
-    await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent);
-    this.tracking.track(TrackingEvent.AttendanceCheckOut, { count: this.selAttIds.length, isLate: this.isLateComingEvent });
-
-    this.excuseModal.dismiss();
-    this.reason = '';
+  async onExcuseConfirm({ reason, isLate }: { reason: string; isLate: boolean }) {
+    await this.db.signout(this.selAttIds, reason, isLate);
+    this.tracking.track(TrackingEvent.AttendanceCheckOut, { count: this.selAttIds.length, isLate });
 
     Utils.showToast(
-      this.isLateComingEvent
+      isLate
         ? 'Vielen Dank für die Info und Gottes Segen dir!'
         : 'Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.',
       'success',
       4000
     );
 
-    this.reasonSelection = '';
     await this.loadAttendances(true);
   }
 
@@ -358,31 +337,6 @@ export class OverviewPage implements OnInit {
     await alert.present();
   }
 
-  onReasonSelect(event: any) {
-    const currentReasonSelection = event.detail.value;
-    if (!currentReasonSelection) {return;}
-
-    if (currentReasonSelection !== 'Sonstiger Grund') {
-      this.excuseModal.setCurrentBreakpoint(0.3);
-      this.reason = currentReasonSelection;
-    } else {
-      this.excuseModal.setCurrentBreakpoint(0.4);
-      this.reason = '';
-    }
-  }
-
-  dismissExcuseModal() {
-    this.excuseModal.dismiss();
-  }
-
-  increaseModalBreakpoint() {
-    this.excuseModal.setCurrentBreakpoint(0.8);
-  }
-
-  decreaseModalBreakpoint() {
-    this.excuseModal.setCurrentBreakpoint(0.4);
-  }
-
   attHasPassed(att: CrossTenantPersonAttendance): boolean {
     return dayjs(att.date).isBefore(dayjs(), 'day');
   }
@@ -397,13 +351,6 @@ export class OverviewPage implements OnInit {
 
   getReadableDate(date: string, attType?: AttendanceType): string {
     return Utils.getReadableDate(date, attType);
-  }
-
-  isReasonSelectionInvalid(reason: string): boolean {
-    if (!(reason && reason.length > 4) || /\S/.test(reason) === false) {
-      return true;
-    }
-    return false;
   }
 
   showDeadlineInfo(att: CrossTenantPersonAttendance): boolean {

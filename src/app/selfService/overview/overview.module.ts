@@ -9,6 +9,7 @@ import { OverviewPageRoutingModule } from './overview-routing.module';
 
 import { OverviewPage } from './overview.page';
 import { NotificationBellComponent } from 'src/app/shared/notification-bell/notification-bell.component';
+import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
 
 @NgModule({
   imports: [
@@ -17,6 +18,7 @@ import { NotificationBellComponent } from 'src/app/shared/notification-bell/noti
     IonicModule,
     OverviewPageRoutingModule,
     NotificationBellComponent,
+    ExcuseReasonPickerComponent,
     QuillModule.forRoot(),
   ],
   declarations: [OverviewPage]

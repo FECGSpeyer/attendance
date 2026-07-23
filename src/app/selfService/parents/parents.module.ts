@@ -10,6 +10,7 @@ import { ParentsPageRoutingModule } from './parents-routing.module';
 import { ParentsPage } from './parents.page';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { NotificationBellComponent } from 'src/app/shared/notification-bell/notification-bell.component';
+import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
 
 @NgModule({
   imports: [
@@ -19,6 +20,7 @@ import { NotificationBellComponent } from 'src/app/shared/notification-bell/noti
     ParentsPageRoutingModule,
     PlanViewerComponent,
     NotificationBellComponent,
+    ExcuseReasonPickerComponent,
     QuillModule.forRoot(),
   ],
   declarations: [ParentsPage]

@@ -13,6 +13,7 @@ import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, Role }
 import { Attendance, PersonAttendance, Player, Song, Tenant, History, SongFile, AttendanceType, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
+import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
 
 @Component({
   selector: 'app-signout',
@@ -23,7 +24,7 @@ import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.co
 export class SignoutPage implements OnInit {
   private audioPlayer = inject(AudioPlayerService);
   @ViewChild('signoutAccordionGroup') signoutAccordionGroup: IonAccordionGroup;
-  @ViewChild('excuseModal') excuseModal: IonModal;
+  @ViewChild('excusePicker') excusePicker: ExcuseReasonPickerComponent;
   @ViewChild('descriptionModal') descriptionModal: IonModal;
   public selectedDescription: string = '';
   public player: Player;
@@ -32,11 +33,8 @@ export class SignoutPage implements OnInit {
   public actualAttendances: PersonAttendance[] = [];
   public currentAttendance: PersonAttendance;
   public selAttIds: string[] = [];
-  public reason: string;
   public perc: number;
   public name: string;
-  public isLateComingEvent: boolean;
-  public reasonSelection;
   public signoutTitle: string;
   public lateCount = 0;
   public songs: Song[] = [];
@@ -134,18 +132,13 @@ export class SignoutPage implements OnInit {
     }
   }
 
-  async signout() {
+  async onExcuseConfirm({ reason, isLate }: { reason: string; isLate: boolean }) {
     const loading = await Utils.getLoadingElement(10000);
     await loading.present();
     try {
-      await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent);
+      await this.db.signout(this.selAttIds, reason, isLate);
 
-      this.excuseModal.dismiss();
-      this.reason = '';
-
-      Utils.showToast(this.isLateComingEvent ? 'Vielen Dank für die Info und Gottes Segen dir!' : 'Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.', 'success', 4000);
-
-      this.reasonSelection = '';
+      Utils.showToast(isLate ? 'Vielen Dank für die Info und Gottes Segen dir!' : 'Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.', 'success', 4000);
 
       await this.getAttendances();
     } finally {
@@ -244,7 +237,6 @@ export class SignoutPage implements OnInit {
   }
 
   async presentActionSheetForChoice(attendance: PersonAttendance) {
-    this.reasonSelection = 'Krankheitsbedingt';
     let buttons = [
       {
         text: 'Anmelden',
@@ -257,29 +249,15 @@ export class SignoutPage implements OnInit {
       {
         text: 'Abmelden',
         handler: () => {
-          if (this.isAttToday(attendance)) {
-            this.reasonSelection = 'Sonstiger Grund';
-            this.reason = '';
-          } else {
-            this.reason = 'Krankheitsbedingt';
-          }
-          this.excuseModal.present();
-          this.isLateComingEvent = false;
           this.actionSheetController.dismiss();
+          this.excusePicker.open(false, this.isAttToday(attendance));
         },
       },
       {
         text: 'Verspätung eintragen',
         handler: () => {
-          if (this.isAttToday(attendance)) {
-            this.reasonSelection = 'Sonstiger Grund';
-            this.reason = '';
-          } else {
-            this.reason = 'Krankheitsbedingt';
-          }
-          this.excuseModal.present();
-          this.isLateComingEvent = true;
           this.actionSheetController.dismiss();
+          this.excusePicker.open(true, this.isAttToday(attendance));
         },
       },
       {
@@ -396,31 +374,6 @@ export class SignoutPage implements OnInit {
     await actionSheet.present();
   }
 
-  onReasonSelect(event) {
-    const currentReasonSelection = event.detail.value;
-    if (!currentReasonSelection) {return;}
-
-    if (currentReasonSelection !== 'Sonstiger Grund') {
-      this.excuseModal.setCurrentBreakpoint(0.3);
-      this.reason = currentReasonSelection;
-    } else {
-      this.excuseModal.setCurrentBreakpoint(0.4);
-      this.reason = '';
-    }
-  }
-
-  dismissExcuseModal() {
-    this.excuseModal.dismiss();
-  }
-
-  increaseModalBreakpoint() {
-    this.excuseModal.setCurrentBreakpoint(0.8);
-  }
-
-  decreaseModalBreakpoint() {
-    this.excuseModal.setCurrentBreakpoint(0.4);
-  }
-
   hasPastAttendances(attendances: PersonAttendance[]): boolean {
     return attendances.some((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
   }
@@ -478,13 +431,6 @@ export class SignoutPage implements OnInit {
     return songIds.map((id: number) => {
       return `${this.songs.find((s: Song) => s.id === id).number} ${this.songs.find((s: Song) => s.id === id).name}`;
     }).join(', ');
-  }
-
-  isReasonSelectionInvalid(reason: string): boolean {
-    if (!(reason && reason.length > 4) || /\S/.test(reason) === false) {
-      return true;
-    }
-    return false;
   }
 
   openSongLink(link: string) {
