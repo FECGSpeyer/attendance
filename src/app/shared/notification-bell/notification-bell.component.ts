@@ -23,6 +23,8 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   unread = signal(0);
   notifications = signal<UserNotification[]>([]);
   isOpen = signal(false);
+  menuOpen = signal(false);
+  menuEvent: Event | undefined;
 
   private sub: RealtimeChannel | null = null;
 
@@ -84,10 +86,17 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   }
 
   async open(): Promise<void> {
-    // Load first so we know whether there is anything to show. With no
-    // notifications we skip the (empty) modal and just show an info toast.
-    await this.load();
-    await this.refreshCount();
+    // Show a loading indicator while we fetch. We load first so we know whether
+    // there is anything to show — with no notifications we skip the (empty)
+    // modal and just show an info toast.
+    const loading = await Utils.getLoadingElement(10000);
+    await loading.present();
+    try {
+      await this.load();
+      await this.refreshCount();
+    } finally {
+      await loading.dismiss();
+    }
 
     if (this.notifications().length === 0) {
       Utils.showToast('Keine Benachrichtigungen vorhanden.', 'medium');
@@ -107,13 +116,20 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     event.target.complete();
   }
 
+  openMenu(event: Event): void {
+    this.menuEvent = event;
+    this.menuOpen.set(true);
+  }
+
   async markAll(): Promise<void> {
+    this.menuOpen.set(false);
     await this.db.markAllNotificationsRead();
     await this.load();
     await this.refreshCount();
   }
 
   async deleteAll(): Promise<void> {
+    this.menuOpen.set(false);
     const alert = await this.alertController.create({
       header: 'Alle Benachrichtigungen löschen?',
       message: 'Diese Aktion kann nicht rückgängig gemacht werden.',

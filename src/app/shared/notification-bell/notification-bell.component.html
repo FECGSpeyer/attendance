@@ -1,10 +1,12 @@
-<!-- Bell button (sits inside an <ion-buttons slot="end"> on each page toolbar) -->
-<ion-button (click)="open()">
-  <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+<!-- Bell (sits inside an <ion-buttons slot="end"> on each page toolbar).
+     Rendered without ion-button so no native circular background can paint
+     over the badge on iOS — the badge always shows fully. -->
+<button class="bell-trigger" type="button" (click)="open()" aria-label="Benachrichtigungen">
+  <ion-icon name="notifications-outline"></ion-icon>
   @if (unread() > 0) {
     <ion-badge class="bell-badge" color="danger">{{ unread() > 99 ? '99+' : unread() }}</ion-badge>
   }
-</ion-button>
+</button>
 
 <!-- Notification center panel -->
 <ion-modal [isOpen]="isOpen()" [breakpoints]="[0, 0.75, 1]" [initialBreakpoint]="0.75" (ionModalDidDismiss)="onDismiss()">
@@ -13,17 +15,33 @@
       <ion-toolbar>
         <ion-title>Benachrichtigungen</ion-title>
         <ion-buttons slot="end">
-          @if (unread() > 0) {
-            <ion-button (click)="markAll()">Alle gelesen</ion-button>
-          }
           @if (notifications().length > 0) {
-            <ion-button color="danger" (click)="deleteAll()">
-              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            <ion-button (click)="openMenu($event)">
+              <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
             </ion-button>
           }
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
+
+    <ion-popover [isOpen]="menuOpen()" [event]="menuEvent" (didDismiss)="menuOpen.set(false)" [dismissOnSelect]="true">
+      <ng-template>
+        <ion-content>
+          <ion-list [inset]="false" lines="none">
+            @if (unread() > 0) {
+              <ion-item button [detail]="false" (click)="markAll()">
+                <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>
+                <ion-label>Alle gelesen</ion-label>
+              </ion-item>
+            }
+            <ion-item button [detail]="false" (click)="deleteAll()">
+              <ion-icon slot="start" color="danger" name="trash-outline"></ion-icon>
+              <ion-label color="danger">Alle löschen</ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-content>
+      </ng-template>
+    </ion-popover>
 
     <ion-content color="light">
       <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
