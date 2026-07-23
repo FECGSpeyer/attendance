@@ -135,16 +135,22 @@ export class SignoutPage implements OnInit {
   }
 
   async signout() {
-    await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent);
+    const loading = await Utils.getLoadingElement(10000);
+    await loading.present();
+    try {
+      await this.db.signout(this.selAttIds, this.reason, this.isLateComingEvent);
 
-    this.excuseModal.dismiss();
-    this.reason = '';
+      this.excuseModal.dismiss();
+      this.reason = '';
 
-    Utils.showToast(this.isLateComingEvent ? 'Vielen Dank für die Info und Gottes Segen dir!' : 'Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.', 'success', 4000);
+      Utils.showToast(this.isLateComingEvent ? 'Vielen Dank für die Info und Gottes Segen dir!' : 'Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.', 'success', 4000);
 
-    this.reasonSelection = '';
+      this.reasonSelection = '';
 
-    await this.getAttendances();
+      await this.getAttendances();
+    } finally {
+      await loading.dismiss();
+    }
   }
 
   async showNoteAlertForSignin(attendance: PersonAttendance) {
