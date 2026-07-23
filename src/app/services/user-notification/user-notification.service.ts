@@ -102,6 +102,28 @@ export class UserNotificationService {
     }
   }
 
+  async markUnread(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('user_notifications' as any)
+      .update({ read: false })
+      .eq('id', id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async deleteOne(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('user_notifications' as any)
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
   async markAllRead(userId: string, tenantId: number): Promise<void> {
     const { error } = await supabase
       .from('user_notifications' as any)

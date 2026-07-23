@@ -2441,6 +2441,14 @@ export class DbService {
     return this.userNotificationSvc.markRead(id);
   }
 
+  markNotificationUnread(id: string) {
+    return this.userNotificationSvc.markUnread(id);
+  }
+
+  deleteNotification(id: string) {
+    return this.userNotificationSvc.deleteOne(id);
+  }
+
   markMatchingNotificationsRead(type: string, attendanceId?: string | number | null, tenantId?: number) {
     return this.userNotificationSvc.markMatchingRead(this.user.id, tenantId ?? this.tenant().id, type, attendanceId);
   }

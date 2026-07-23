@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AlertController, IonicModule } from '@ionic/angular';
+import { AlertController, IonicModule, IonItemSliding } from '@ionic/angular';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
@@ -146,6 +146,33 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       }]
     });
     await alert.present();
+  }
+
+  /**
+   * Swipe-right action: toggle a single notification's read state. Updates the
+   * row in place so the list doesn't re-sort, then refreshes the unread count.
+   */
+  async toggleRead(n: UserNotification, slidingItem?: IonItemSliding): Promise<void> {
+    await slidingItem?.close();
+    if (n.read) {
+      await this.db.markNotificationUnread(n.id);
+      n.read = false;
+    } else {
+      await this.db.markNotificationRead(n.id);
+      n.read = true;
+    }
+    await this.refreshCount();
+  }
+
+  /**
+   * Swipe-left action: delete a single notification. Removes it from the local
+   * list optimistically, then refreshes the unread count.
+   */
+  async deleteOne(n: UserNotification, slidingItem?: IonItemSliding): Promise<void> {
+    await slidingItem?.close();
+    await this.db.deleteNotification(n.id);
+    this.notifications.update(list => list.filter(item => item.id !== n.id));
+    await this.refreshCount();
   }
 
   async onTap(n: UserNotification): Promise<void> {
