@@ -1,4 +1,4 @@
-<ion-modal #modal [breakpoints]="[0, 0.6, 0.9]" [initialBreakpoint]="0.6">
+<ion-modal #modal [breakpoints]="[0, 0.6, 1]" [initialBreakpoint]="0.6" (didDismiss)="onDidDismiss()">
   <ng-template>
     <ion-header>
       <ion-toolbar>
@@ -30,11 +30,12 @@
       </ion-radio-group>
 
       @if (reasonSelection === customReasonValue) {
-      <ion-item class="custom-reason">
+      <ion-item class="custom-reason" #customReasonField>
         <ion-label position="stacked">Grund</ion-label>
         <ion-textarea [(ngModel)]="customReason" placeholder="Mindestens 5 Zeichen eingeben..."
           autoGrow="true"></ion-textarea>
       </ion-item>
+      <div class="keyboard-spacer"></div>
       }
     </ion-content>
   </ng-template>

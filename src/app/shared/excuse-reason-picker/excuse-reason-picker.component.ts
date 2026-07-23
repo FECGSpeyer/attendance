@@ -1,7 +1,9 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, IonModal } from '@ionic/angular';
+import { IonicModule, IonModal, Platform } from '@ionic/angular';
+import { Keyboard } from '@capacitor/keyboard';
+import type { PluginListenerHandle } from '@capacitor/core';
 
 const CUSTOM_REASON = 'Sonstiger Grund';
 
@@ -19,12 +21,17 @@ export class ExcuseReasonPickerComponent {
   @Output() confirm = new EventEmitter<{ reason: string; isLate: boolean }>();
 
   @ViewChild('modal') private modal: IonModal;
+  @ViewChild('customReasonField', { read: ElementRef }) private customReasonField?: ElementRef<HTMLElement>;
 
   readonly customReasonValue = CUSTOM_REASON;
 
   isLate = false;
   reasonSelection = '';
   customReason = '';
+
+  private keyboardShowListener?: PluginListenerHandle;
+
+  constructor(private platform: Platform) {}
 
   get reasons(): string[] {
     return this.isLate ? this.lateReasons : this.absenceReasons;
@@ -42,12 +49,14 @@ export class ExcuseReasonPickerComponent {
     this.customReason = '';
     this.reasonSelection = isToday ? CUSTOM_REASON : (this.reasons[0] ?? CUSTOM_REASON);
     await this.modal.present();
+    this.registerKeyboardListener();
   }
 
   onReasonChange(): void {
-    // Grow the sheet only when the free-text field is revealed so the keyboard
-    // does not cover it; shrink back for the plain radio list.
-    this.modal.setCurrentBreakpoint(this.reasonSelection === CUSTOM_REASON ? 0.9 : 0.6);
+    // Expand the sheet to full height when the free-text field is revealed so
+    // there is scroll room to lift the textarea above the keyboard; shrink back
+    // to the compact height for the plain radio list.
+    this.modal.setCurrentBreakpoint(this.reasonSelection === CUSTOM_REASON ? 1 : 0.6);
   }
 
   isConfirmable(): boolean {
@@ -61,10 +70,34 @@ export class ExcuseReasonPickerComponent {
   onConfirm(): void {
     const reason = this.reasonSelection === CUSTOM_REASON ? this.customReason.trim() : this.reasonSelection;
     this.confirm.emit({ reason, isLate: this.isLate });
-    this.modal.dismiss();
+    this.dismiss();
   }
 
   dismiss(): void {
     this.modal.dismiss();
+  }
+
+  onDidDismiss(): void {
+    // Clean up the keyboard listener regardless of how the sheet was closed
+    // (confirm, cancel button, backdrop tap, or swipe-down gesture).
+    this.removeKeyboardListener();
+  }
+
+  private registerKeyboardListener(): void {
+    if (!this.platform.is('capacitor') || this.keyboardShowListener) {
+      return;
+    }
+    // When the native keyboard appears, scroll the textarea into view so it is
+    // not hidden behind the keyboard.
+    Keyboard.addListener('keyboardWillShow', () => {
+      this.customReasonField?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }).then((handle) => {
+      this.keyboardShowListener = handle;
+    });
+  }
+
+  private removeKeyboardListener(): void {
+    this.keyboardShowListener?.remove();
+    this.keyboardShowListener = undefined;
   }
 }

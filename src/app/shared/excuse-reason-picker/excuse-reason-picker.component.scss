@@ -1,3 +1,9 @@
 .custom-reason {
   margin-top: 0.75rem;
 }
+
+// Extra scroll room below the textarea so it can be scrolled clear of the
+// on-screen keyboard when focused on mobile.
+.keyboard-spacer {
+  height: 50vh;
+}
