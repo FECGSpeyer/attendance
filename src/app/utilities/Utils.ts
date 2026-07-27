@@ -457,70 +457,106 @@ export class Utils {
   }
 
   /**
-   * Draw a small, unobtrusive branding block (logo top-right + optional text
-   * beneath) on the current page of a jsPDF doc. Deliberately subtle — a small
-   * logo anchored to the top-right corner with small gray text.
+   * Draw a clean letterhead-style header at the top of the current page and
+   * return the Y coordinate where table content should begin (so callers can
+   * set `margin.top` to it):
+   *   top-left    -> logo + branding text (organization name) side by side
+   *   top-right   -> "Erstellt am: {DD.MM.YYYY HH:mm}" (export generation time)
+   *   below       -> large title + smaller "Stand: {date}" subtitle
+   *   underneath  -> a thin colored divider rule spanning the content width
+   * All branding parts are optional; the title/subtitle and rule are always drawn.
+   *
+   * In `sideBySide` mode the header is scaled down and anchored within the
+   * region [startX, startX + regionWidth] so it fits an A5 half-page column.
    */
-  /**
-   * Draw a subtle footer at the bottom of the current page:
-   *   left  -> logo + branding text side by side
-   *   right -> "Erstellt am: {DD.MM.YYYY HH:mm}" (export generation time)
-   * Both parts are optional; the "Erstellt am" stamp is always drawn.
-   */
-  public static addBrandingFooter(
+  public static addBrandingHeader(
     doc: any,
     branding: { logo?: { dataUrl: string; width: number; height: number }; text?: string } | undefined,
-    opts: { startX?: number; regionWidth: number; sideBySide?: boolean },
-  ): void {
+    opts: {
+      title: string;
+      subtitle?: string;
+      accentColor?: [number, number, number];
+      startX?: number;
+      regionWidth?: number;
+      sideBySide?: boolean;
+    },
+  ): number {
+    const sideBySide = Boolean(opts.sideBySide);
     const startX = opts.startX ?? 0;
-    const margin = opts.sideBySide ? 5 : 14;
+    const regionWidth = opts.regionWidth ?? doc.internal.pageSize.getWidth();
+    const margin = sideBySide ? 5 : 14;
     const leftX = startX + margin;
-    const rightEdge = startX + opts.regionWidth - margin;
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const baselineY = pageHeight - (opts.sideBySide ? 6 : 10);
-    const logoHeight = opts.sideBySide ? 6 : 9;
-    const fontSize = opts.sideBySide ? 6 : 8;
+    const rightEdge = startX + regionWidth - margin;
+    const accent = opts.accentColor ?? [0, 82, 56];
 
     const prevFontSize = doc.getFontSize();
 
-    // ---- left: logo + text side by side (text vertically centered to logo) ----
+    // ---- top row: logo + branding text (left) and creation stamp (right) ----
+    const topRowY = sideBySide ? 11 : 16;
+    const logoHeight = sideBySide ? 7 : 10;
+    const brandFontSize = sideBySide ? 9 : 12;
+    const stampFontSize = sideBySide ? 6 : 8;
     let cursorX = leftX;
-    let logoTop = baselineY - logoHeight;
-    let logoMidY = baselineY - logoHeight / 2;
+    const logoMidY = topRowY;
+
     if (branding?.logo) {
       const aspect = branding.logo.width / branding.logo.height;
       const logoWidth = logoHeight * aspect;
-      logoTop = baselineY - logoHeight;
-      logoMidY = logoTop + logoHeight / 2;
+      const logoTop = topRowY - logoHeight / 2;
       try {
-        // Pass a stable alias so jsPDF embeds the image bytes once and
-        // references them on every page / both A5 halves, instead of
-        // re-embedding the logo per didDrawPage call (which bloated exports).
         doc.addImage(branding.logo.dataUrl, 'PNG', cursorX, logoTop, logoWidth, logoHeight, 'brandingLogo', 'FAST');
       } catch {
         // ignore image render failures — keep the export intact
       }
-      cursorX += logoWidth + (opts.sideBySide ? 2 : 3);
-    }
-    if (branding?.text) {
-      doc.setFontSize(fontSize);
-      doc.setTextColor(120, 120, 120);
-      // baseline 'middle' aligns the text's vertical center with the logo's center.
-      doc.text(branding.text, cursorX, logoMidY, { baseline: 'middle' });
+      cursorX += logoWidth + (sideBySide ? 2 : 4);
     }
 
-    // ---- right: creation timestamp (centered to logo height) ----
-    doc.setFontSize(fontSize);
-    doc.setTextColor(120, 120, 120);
+    if (branding?.text) {
+      doc.setFont(undefined, 'bold');
+      doc.setFontSize(brandFontSize);
+      doc.setTextColor(60, 60, 60);
+      doc.text(branding.text, cursorX, logoMidY, { baseline: 'middle' });
+      doc.setFont(undefined, 'normal');
+    }
+
+    // creation timestamp, right-aligned, vertically centered to the top row
+    doc.setFontSize(stampFontSize);
+    doc.setTextColor(140, 140, 140);
     doc.text(`Erstellt am: ${dayjs().format('DD.MM.YYYY HH:mm')}`, rightEdge, logoMidY, { align: 'right', baseline: 'middle' });
+
+    // ---- title + subtitle block ----
+    let y = topRowY + logoHeight / 2 + (sideBySide ? 6 : 9);
+    doc.setFont(undefined, 'bold');
+    doc.setFontSize(sideBySide ? 13 : 20);
+    doc.setTextColor(30, 30, 30);
+    doc.text(opts.title, leftX, y);
+    doc.setFont(undefined, 'normal');
+
+    if (opts.subtitle) {
+      y += sideBySide ? 4.5 : 6;
+      doc.setFontSize(sideBySide ? 8 : 10);
+      doc.setTextColor(120, 120, 120);
+      doc.text(opts.subtitle, leftX, y);
+    }
+
+    // ---- divider rule ----
+    y += sideBySide ? 3 : 4;
+    doc.setDrawColor(accent[0], accent[1], accent[2]);
+    doc.setLineWidth(sideBySide ? 0.4 : 0.6);
+    doc.line(leftX, y, rightEdge, y);
 
     // Restore defaults for subsequent drawing.
     doc.setFontSize(prevFontSize);
     doc.setTextColor(30, 30, 30);
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.2);
+
+    // Content should start a little below the rule.
+    return y + (sideBySide ? 4 : 6);
   }
 
   /**
-   * Build the branding block passed into createPlanExport / addBrandingFooter
+   * Build the branding block passed into createPlanExport / addBrandingHeader
    * from a tenant's configured logo_url + branding_text. Resolves the logo to a
    * data URL (or omits it on failure). Returns undefined when nothing is set.
    */
@@ -717,14 +753,14 @@ export class Utils {
 
       // Helper function to render one side
       const renderSide = (startX: number, maxWidth: number) => {
-        doc.setFontSize(14);
-        doc.text(`${typeText} ${date}`, startX + 5, 15);
+        const headerOpts = { title: typeText, subtitle: date, startX, regionWidth: maxWidth, sideBySide: true };
+        const sideContentTop = Utils.addBrandingHeader(doc, props.branding, headerOpts);
 
         (doc as any).autoTable({
           head,
           body: data,
-          startY: 22,
-          margin: { left: startX + 5, right: pageWidth - startX - maxWidth + 5, bottom: 16 },
+          startY: sideContentTop,
+          margin: { left: startX + 5, right: pageWidth - startX - maxWidth + 5, bottom: 12 },
           tableWidth: maxWidth - 10,
           theme: 'plain',
           styles: tableStyles,
@@ -746,7 +782,7 @@ export class Utils {
           willDrawCell,
           didDrawCell,
           didDrawPage: () => {
-            Utils.addBrandingFooter(doc, props.branding, { startX, regionWidth: maxWidth, sideBySide: true });
+            Utils.addBrandingHeader(doc, props.branding, headerOpts);
           },
         });
       };
@@ -772,12 +808,12 @@ export class Utils {
 
     // Standard A4 portrait mode
     const doc = new jsPDF({ compress: true });
-    doc.setFontSize(20);
-    doc.text(`${typeText} ${date}`, 14, 25);
+    const headerOpts = { title: typeText, subtitle: date };
+    const contentTop = Utils.addBrandingHeader(doc, props.branding, headerOpts);
     (doc as any).autoTable({
       head,
       body: data,
-      margin: { top: 40, bottom: 18 },
+      margin: { top: contentTop, bottom: 14 },
       theme: 'plain',
       styles: tableStyles,
       headStyles: {
@@ -798,7 +834,7 @@ export class Utils {
       willDrawCell,
       didDrawCell,
       didDrawPage: () => {
-        Utils.addBrandingFooter(doc, props.branding, { regionWidth: doc.internal.pageSize.getWidth() });
+        Utils.addBrandingHeader(doc, props.branding, headerOpts);
       },
     });
 

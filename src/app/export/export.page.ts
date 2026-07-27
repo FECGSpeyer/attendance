@@ -140,19 +140,25 @@ export class ExportPage implements OnInit {
     }
 
     const doc = new jsPDF({ compress: true });
-    doc.text(`${shortName} Spielerliste Stand: ${date}`, 14, 25);
     const branding = await Utils.buildTenantBranding(this.db.tenant());
+    const headerOpts = {
+      title: `${shortName} Spielerliste`,
+      subtitle: `Stand: ${date}`,
+    };
+    // Draw once up front to learn where the table should start; it is redrawn
+    // per page in didDrawPage so multi-page exports keep the header.
+    const contentTop = Utils.addBrandingHeader(doc, branding, headerOpts);
     (doc as any).autoTable({
       head: [['', ...this.selectedFields]],
       body: data,
-      margin: { top: 40, bottom: 18 },
+      margin: { top: contentTop, bottom: 14 },
       theme: 'grid',
       headStyles: {
         halign: 'center',
         fillColor: [0, 82, 56]
       },
       didDrawPage: () => {
-        Utils.addBrandingFooter(doc, branding, { regionWidth: doc.internal.pageSize.getWidth() });
+        Utils.addBrandingHeader(doc, branding, headerOpts);
       }
     });
     const fileName = `${shortName}_Spielerliste_Stand_${date}.pdf`;
@@ -223,12 +229,16 @@ export class ExportPage implements OnInit {
     const date: string = dayjs().format('DD.MM.YYYY');
     const doc = new jsPDF({ compress: true });
 
-    doc.text(`${shortName} Anwesenheit Stand: ${date}`, 14, 25);
     const branding = await Utils.buildTenantBranding(this.db.tenant());
+    const headerOpts = {
+      title: `${shortName} Anwesenheit`,
+      subtitle: `Stand: ${date}`,
+    };
+    const contentTop = Utils.addBrandingHeader(doc, branding, headerOpts);
     (doc as any).autoTable({
       head: [header],
       body: data,
-      margin: { top: 40, bottom: 18 },
+      margin: { top: contentTop, bottom: 14 },
       theme: 'grid',
       headStyles: {
         fontSize: 8,
@@ -239,7 +249,7 @@ export class ExportPage implements OnInit {
         fontSize: 8,
       },
       didDrawPage: () => {
-        Utils.addBrandingFooter(doc, branding, { regionWidth: doc.internal.pageSize.getWidth() });
+        Utils.addBrandingHeader(doc, branding, headerOpts);
       },
       didParseCell: (cellData: any) => {
         if (cellData.cell.raw === 'A') {

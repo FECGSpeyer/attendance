@@ -545,19 +545,23 @@ export class PlanningPage implements OnInit {
     const { jsPDF } = await import('jspdf');
     await import('jspdf-autotable');
     const doc = new jsPDF({ compress: true });
-    doc.text(`${this.db.tenant().shortName} Registerprobenplan: ${date}`, 14, 25);
     const branding = await Utils.buildTenantBranding(this.db.tenant());
+    const headerOpts = {
+      title: `${this.db.tenant().shortName} Registerprobenplan`,
+      subtitle: `Stand: ${date}`,
+    };
+    const contentTop = Utils.addBrandingHeader(doc, branding, headerOpts);
     (doc as any).autoTable({
       head: [['Minuten', ...this.planGroups]],
       body: data,
-      margin: { top: 40, bottom: 18 },
+      margin: { top: contentTop, bottom: 14 },
       theme: 'grid',
       headStyles: {
         halign: 'center',
         fillColor: [0, 82, 56]
       },
       didDrawPage: () => {
-        Utils.addBrandingFooter(doc, branding, { regionWidth: doc.internal.pageSize.getWidth() });
+        Utils.addBrandingHeader(doc, branding, headerOpts);
       }
     });
 
