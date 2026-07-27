@@ -245,9 +245,36 @@ Deno.serve(async (req) => {
       console.warn(`[send-checklist-reminders] tenantUsers count=${allTenantUsers?.length} approaching the 5000-row range cap`);
     }
 
+    // Exclude users linked to an archived player (player.left != null). Recipients
+    // come purely from tenantUsers/notifications, which never reflect archival state
+    // — archival lives on player.left — so an archived person's leftover app account
+    // would otherwise keep getting checklist reminders. Keyed per (tenantId, appId)
+    // because the same app account can be active in one tenant and archived in another.
+    const archivedByTenant = new Map<number, Set<string>>();
+    if (tenantIdsWithChecklists.length > 0) {
+      const { data: archivedPlayers, error: archivedError } = await supabase
+        .from('player')
+        .select('appId, tenantId')
+        .in('tenantId', tenantIdsWithChecklists)
+        .not('left', 'is', null)
+        .not('appId', 'is', null)
+        .range(0, 4999);
+
+      if (archivedError) {
+        console.error('[send-checklist-reminders] error fetching archived players:', archivedError);
+      } else {
+        for (const p of (archivedPlayers || [])) {
+          const set = archivedByTenant.get(p.tenantId) || new Set<string>();
+          set.add(p.appId);
+          archivedByTenant.set(p.tenantId, set);
+        }
+      }
+    }
+
     // Create a map of tenantId -> eligible userIds
     const tenantEligibleUsers = new Map<number, string[]>();
     for (const tu of (allTenantUsers || [])) {
+      if (archivedByTenant.get(tu.tenantId)?.has(tu.userId)) continue; // skip archived
       const users = tenantEligibleUsers.get(tu.tenantId) || [];
       users.push(tu.userId);
       tenantEligibleUsers.set(tu.tenantId, users);

@@ -1948,9 +1948,11 @@ export class DbService {
 
   async archivePlayer(player: Player, left: string, notes: string): Promise<void> {
     this.checkDemoRestriction();
+    let clearAppId = false;
     if (player.appId && player.email) {
       await this.removeEmailFromAuth(player.appId, player.email);
       delete player.appId;
+      clearAppId = true;
     }
 
     player.history.push({
@@ -1961,7 +1963,7 @@ export class DbService {
 
     await supabase
       .from('player')
-      .update({ left, history: player.history as any })
+      .update({ left, history: player.history as any, ...(clearAppId ? { appId: null } : {}) })
       .match({ id: player.id });
 
     await this.removePlayerFromUpcomingAttendances(player.id, left);

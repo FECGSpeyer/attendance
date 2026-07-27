@@ -97,7 +97,31 @@ Deno.serve(async (req) => {
       console.warn(`[send-ad-hoc-reminder] tenant=${tenantId} tenantUsers=${tenantUsers.length} approaching the 5000-row range cap`);
     }
 
-    const userIds = tenantUsers.map(tu => tu.userId);
+    let userIds = tenantUsers.map(tu => tu.userId);
+
+    // Exclude users linked to an archived player (player.left != null) in this tenant.
+    // The push/Telegram recipient path selects purely from tenantUsers/notifications,
+    // which never reflect archival state (that lives on player.left), so without this
+    // an archived person's leftover app account keeps getting reminders. (The email
+    // branch below already filters `left` separately.)
+    if (userIds.length > 0) {
+      const { data: archivedPlayers, error: archivedError } = await supabase
+        .from('player')
+        .select('appId')
+        .eq('tenantId', tenantId)
+        .not('left', 'is', null)
+        .not('appId', 'is', null)
+        .in('appId', userIds)
+        .range(0, 4999);
+
+      if (archivedError) {
+        console.error(`[send-ad-hoc-reminder] tenant=${tenantId} error fetching archived players:`, archivedError);
+      } else if (archivedPlayers && archivedPlayers.length > 0) {
+        const archivedAppIds = new Set(archivedPlayers.map((p: { appId: string }) => p.appId));
+        userIds = userIds.filter(id => !archivedAppIds.has(id));
+        console.log(`[send-ad-hoc-reminder] tenant=${tenantId} excluded ${archivedAppIds.size} archived player(s)`);
+      }
+    }
 
     // Fetch notification configs
     const { data: notifConfigs, error: notifError } = await supabase

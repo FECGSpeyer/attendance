@@ -302,7 +302,34 @@ Deno.serve(async (req) => {
             console.warn(`[send-attendance-reminders] tenant=${attType.tenant_id} tenantUsers=${tenantUsers.length} approaching the 5000-row range cap`);
           }
 
-          const eligibleUserIds = tenantUsers.map((tu: TenantUser) => tu.userId);
+          let eligibleUserIds = tenantUsers.map((tu: TenantUser) => tu.userId);
+
+          // 6b. Exclude users linked to an archived player (player.left != null) in
+          // this tenant. Recipients are selected purely from tenantUsers/notifications,
+          // which never reflect archival state — archival lives on player.left. Without
+          // this guard, an archived person's leftover app account keeps getting reminders.
+          if (eligibleUserIds.length > 0) {
+            const { data: archivedPlayers, error: archivedError } = await supabase
+              .from('player')
+              .select('appId')
+              .eq('tenantId', attType.tenant_id)
+              .not('left', 'is', null)
+              .not('appId', 'is', null)
+              .in('appId', eligibleUserIds)
+              .range(0, 4999);
+
+            if (archivedError) {
+              console.error(`[send-attendance-reminders] tenant=${attType.tenant_id} att=${attendance.id} error fetching archived players:`, archivedError);
+            } else if (archivedPlayers && archivedPlayers.length > 0) {
+              const archivedAppIds = new Set(archivedPlayers.map((p: { appId: string }) => p.appId));
+              eligibleUserIds = eligibleUserIds.filter((id: string) => !archivedAppIds.has(id));
+              console.log(`[send-attendance-reminders] tenant=${attType.tenant_id} excluded ${archivedAppIds.size} archived player(s) from reminders`);
+              if (eligibleUserIds.length === 0) {
+                console.log(`[send-attendance-reminders] tenant=${attType.tenant_id} no eligible users after archived filter`);
+                continue;
+              }
+            }
+          }
 
           // 7. Get notification configs for eligible users
           const { data: notificationConfigs, error: notifError } = await supabase
