@@ -240,14 +240,37 @@ export class PublicPlanningPage implements OnInit {
     await actionSheet.present();
   }
 
-  async resetPlan() {
+  async resetToTemplate() {
+    const tpl = this.templates.find(t => t.id === this.selectedTemplateId);
+    if (!tpl) {
+      Utils.showToast('Keine Vorlage ausgewählt.', 'warning');
+      return;
+    }
     const alert = await this.alertController.create({
-      header: 'Plan zurücksetzen',
-      message: 'Alle Felder entfernen?',
+      header: 'Vorlage wiederherstellen',
+      message: `Alle Änderungen verwerfen und die Standardwerte der Vorlage „${tpl.name}“ wiederherstellen?`,
       buttons: [
         { text: 'Abbrechen', role: 'cancel' },
         {
-          text: 'Zurücksetzen',
+          text: 'Wiederherstellen',
+          handler: () => {
+            this.applyTemplate(tpl);
+          }
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  async clearFields() {
+    const alert = await this.alertController.create({
+      header: 'Alle Felder entfernen',
+      message: 'Wirklich alle Felder entfernen?',
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Entfernen',
+          role: 'destructive',
           handler: () => {
             this.selectedFields = [];
             this.calculateEnd();
