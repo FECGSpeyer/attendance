@@ -74,11 +74,14 @@
         <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
           @for (field of selectedFields; track trackByFieldId(i, field); let i = $index) {
           <ion-item-sliding #slider>
-            <ion-item>
+            <ion-item [class.note-item]="field.id.includes('noteFld')" [lines]="field.id.includes('noteFld') ? 'none' : 'full'">
               <ion-label (click)="editField(field, slider)" [class.note-field]="field.id.includes('noteFld')">
                 <h2>{{ field.name }}</h2>
                 @if (!field.id.includes('noteFld')) {
                 <h3>{{ calculateTime(field, i) }}</h3>
+                }
+                @if (field.info && !field.id.includes('noteFld')) {
+                <p class="field-info">{{ field.info }}</p>
                 }
               </ion-label>
               @if (!field.id.includes('noteFld')) {

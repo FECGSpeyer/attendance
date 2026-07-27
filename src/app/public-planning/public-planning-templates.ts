@@ -15,8 +15,13 @@ export const PUBLIC_PLANNING_TEMPLATES: PublicPlanningTemplate[] = [
       { id: 'g-3', name: 'Gemeinsamer Gesang',    time: '5', conductor: 'Dirigenten' },
       { id: 'g-4', name: '1. Predigt',            time: '15' },
       { id: 'g-5', name: 'Gebet',                 time: '5' },
-      { id: 'g-6', name: 'Gemeinsamer Gesang',    time: '5', conductor: 'Dirigenten' },
-      { id: 'noteFld-1', name: '4 & 5 jährige Kinder gehen zur Sonntgsschule', time: '0' },
+      {
+        id: 'g-6',
+        name: 'Gemeinsamer Gesang',
+        time: '5',
+        conductor: 'Dirigenten',
+        info: '4 & 5 jährige Kinder gehen zur Sonntgsschule'
+      },
       { id: 'g-7', name: 'Chor/Orchester',               time: '5' },
       { id: 'g-8', name: 'Programm',              time: '15' },
       { id: 'g-9', name: 'Chor/Orchester',               time: '5' },

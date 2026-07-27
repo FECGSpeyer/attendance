@@ -130,6 +130,11 @@ export class PlanningPage implements OnInit {
       name: 'conductor',
       value: clone.conductor,
       placeholder: 'Ausführenden eingeben...'
+    }, {
+      label: 'Info',
+      name: 'info',
+      value: clone.info,
+      placeholder: 'Info-Text (optional)...'
     }];
 
     if (field.id.includes('noteFld')) {
@@ -155,6 +160,7 @@ export class PlanningPage implements OnInit {
           }
           field.name = evt.field;
           field.conductor = evt.conductor ?? '';
+          field.info = evt.info?.trim() || undefined;
           this.calculateEnd();
         }
       }]

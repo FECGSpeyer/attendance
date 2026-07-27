@@ -154,6 +154,7 @@ export class PublicPlanningPage implements OnInit {
       : [
           { name: 'field',     value: field.name,      placeholder: 'Programmpunkt' },
           { name: 'conductor', value: field.conductor, placeholder: 'Ausführender' },
+          { name: 'info',      value: field.info,      placeholder: 'Info-Text (optional)' },
         ];
     const alert = await this.alertController.create({
       header: 'Feld bearbeiten',
@@ -169,6 +170,7 @@ export class PublicPlanningPage implements OnInit {
             }
             field.name = evt.field;
             field.conductor = evt.conductor ?? '';
+            field.info = evt.info?.trim() || undefined;
             this.calculateEnd();
           }
         },

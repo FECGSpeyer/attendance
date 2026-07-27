@@ -360,6 +360,27 @@ export class Utils {
     return await new LoadingController().create({ duration, message });
   }
 
+  /**
+   * Transliterate Cyrillic characters to Latin so they render in the PDF export
+   * font (which lacks Cyrillic glyphs). Used for every piece of user text that
+   * ends up in the exported plan (field names and their attached info).
+   */
+  private static transliterateCyrillic(input: string): string {
+    const map: Record<string, string> = {
+      'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'E',
+      'Ж': 'Zh', 'З': 'Z', 'И': 'I', 'Й': 'I', 'К': 'K', 'Л': 'L', 'М': 'M',
+      'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
+      'Ф': 'F', 'Х': 'Kh', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch',
+      'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya',
+      'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e',
+      'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'i', 'к': 'k', 'л': 'l', 'м': 'm',
+      'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+      'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch',
+      'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
+    };
+    return input.replace(/[А-Яа-яЁё]/g, (ch) => map[ch] ?? ch);
+  }
+
   public static async createPlanExport(props: any, typeText: string) {
     // Lazy load jsPDF to reduce initial bundle size
     const { default: jsPDF } = await import('jspdf');
@@ -374,91 +395,32 @@ export class Utils {
     let currentTime = startingTime;
 
     for (const field of props.fields) {
-      let fieldName = field.name;
-
-      fieldName = fieldName.replace(/А/g, 'A');
-      fieldName = fieldName.replace(/Б/g, 'B');
-      fieldName = fieldName.replace(/В/g, 'V');
-      fieldName = fieldName.replace(/Г/g, 'G');
-      fieldName = fieldName.replace(/Д/g, 'D');
-      fieldName = fieldName.replace(/Е/g, 'E');
-      fieldName = fieldName.replace(/Ё/g, 'E');
-      fieldName = fieldName.replace(/Ж/g, 'Zh');
-      fieldName = fieldName.replace(/З/g, 'Z');
-      fieldName = fieldName.replace(/И/g, 'I');
-      fieldName = fieldName.replace(/Й/g, 'I');
-      fieldName = fieldName.replace(/К/g, 'K');
-      fieldName = fieldName.replace(/Л/g, 'L');
-      fieldName = fieldName.replace(/М/g, 'M');
-      fieldName = fieldName.replace(/Н/g, 'N');
-      fieldName = fieldName.replace(/О/g, 'O');
-      fieldName = fieldName.replace(/П/g, 'P');
-      fieldName = fieldName.replace(/Р/g, 'R');
-      fieldName = fieldName.replace(/С/g, 'S');
-      fieldName = fieldName.replace(/Т/g, 'T');
-      fieldName = fieldName.replace(/У/g, 'U');
-      fieldName = fieldName.replace(/Ф/g, 'F');
-      fieldName = fieldName.replace(/Х/g, 'Kh');
-      fieldName = fieldName.replace(/Ц/g, 'Ts');
-      fieldName = fieldName.replace(/Ч/g, 'Ch');
-      fieldName = fieldName.replace(/Ш/g, 'Sh');
-      fieldName = fieldName.replace(/Щ/g, 'Shch');
-      fieldName = fieldName.replace(/Ъ/g, '');
-      fieldName = fieldName.replace(/Ы/g, 'Y');
-      fieldName = fieldName.replace(/Ь/g, '');
-      fieldName = fieldName.replace(/Э/g, 'E');
-      fieldName = fieldName.replace(/Ю/g, 'Yu');
-      fieldName = fieldName.replace(/Я/g, 'Ya');
-      fieldName = fieldName.replace(/а/g, 'a');
-      fieldName = fieldName.replace(/б/g, 'b');
-      fieldName = fieldName.replace(/в/g, 'v');
-      fieldName = fieldName.replace(/г/g, 'g');
-      fieldName = fieldName.replace(/д/g, 'd');
-      fieldName = fieldName.replace(/е/g, 'e');
-      fieldName = fieldName.replace(/ё/g, 'e');
-      fieldName = fieldName.replace(/ж/g, 'zh');
-      fieldName = fieldName.replace(/з/g, 'z');
-      fieldName = fieldName.replace(/и/g, 'i');
-      fieldName = fieldName.replace(/й/g, 'i');
-      fieldName = fieldName.replace(/к/g, 'k');
-      fieldName = fieldName.replace(/л/g, 'l');
-      fieldName = fieldName.replace(/м/g, 'm');
-      fieldName = fieldName.replace(/н/g, 'n');
-      fieldName = fieldName.replace(/о/g, 'o');
-      fieldName = fieldName.replace(/п/g, 'p');
-      fieldName = fieldName.replace(/р/g, 'r');
-      fieldName = fieldName.replace(/с/g, 's');
-      fieldName = fieldName.replace(/т/g, 't');
-      fieldName = fieldName.replace(/у/g, 'u');
-      fieldName = fieldName.replace(/ф/g, 'f');
-      fieldName = fieldName.replace(/х/g, 'kh');
-      fieldName = fieldName.replace(/ц/g, 'ts');
-      fieldName = fieldName.replace(/ч/g, 'ch');
-      fieldName = fieldName.replace(/ш/g, 'sh');
-      fieldName = fieldName.replace(/щ/g, 'shch');
-      fieldName = fieldName.replace(/ъ/g, '');
-      fieldName = fieldName.replace(/ы/g, 'y');
-      fieldName = fieldName.replace(/ь/g, '');
-      fieldName = fieldName.replace(/э/g, 'e');
-      fieldName = fieldName.replace(/ю/g, 'yu');
-      fieldName = fieldName.replace(/я/g, 'ya');
+      const fieldName = Utils.transliterateCyrillic(field.name);
 
       if (field.id.includes('noteFld')) {
         data.push([
           { content: fieldName, colSpan: hasConductors ? 5 : 4 }
         ]);
       } else {
+        // Field-attached info is carried on the Programmpunkt cell so it renders
+        // as a second (italic) line inside the same row as its field. The custom
+        // `_info` marker is picked up by the draw hooks below; autotable ignores it.
+        const info = field.info ? Utils.transliterateCyrillic(field.info) : '';
+        const nameCell: any = info
+          ? { content: `${fieldName}\n${info}`, _name: fieldName, _info: info }
+          : fieldName;
+
         if (hasConductors) {
           data.push([
             `${currentTime.format('HH:mm')} Uhr`,
-            fieldName,
+            nameCell,
             field.conductor || '',
             `${field.time} min`,
           ]);
         } else {
           data.push([
             `${currentTime.format('HH:mm')} Uhr`,
-            fieldName,
+            nameCell,
             `${field.time} min`,
           ]);
         }
@@ -490,6 +452,74 @@ export class Utils {
       0: { cellWidth: 20 },
     } : {
       0: { cellWidth: 28 },
+    };
+
+    // ---- shared autotable hooks (used by both the A4 and side-by-side tables) ----
+
+    // Style standalone note rows (full-width, gray, italic) and mark info-bearing
+    // Programmpunkt cells for custom two-line drawing.
+    const didParseCell = (hookData: any) => {
+      const raw = hookData.row.raw;
+      if (raw && raw.length === 1 && raw[0].colSpan) {
+        // Standalone note row: gray background + italic text, normal padding.
+        hookData.cell.styles.fontStyle = 'italic';
+        hookData.cell.styles.fillColor = [235, 235, 235];
+        hookData.cell.styles.textColor = [80, 80, 80];
+      }
+    };
+
+    // Skip autotable's default text render for info cells; we draw both lines
+    // ourselves (name normal, info italic) in didDrawCell.
+    const willDrawCell = (hookData: any) => {
+      if (hookData.section === 'body' && hookData.cell.raw?._info) {
+        hookData.cell.text = [];
+      }
+    };
+
+    // Draw the field name (normal) and its attached info (italic) within the
+    // same Programmpunkt cell. Each part is wrapped to the cell width (matching
+    // how autotable split the combined "name\ninfo" content to size the row),
+    // and the whole block is vertically centered like autotable's own renderer
+    // (valign middle, line-height factor 1.15) so it aligns with sibling cells.
+    const didDrawCell = (hookData: any) => {
+      const raw = hookData.cell.raw;
+      if (hookData.section !== 'body' || !raw?._info) {
+        return;
+      }
+      const doc = hookData.doc;
+      const cell = hookData.cell;
+      const k = doc.internal.scaleFactor;
+      const fontSize = cell.styles.fontSize / k;
+      const lineHeightFactor = 1.15;
+      const lineHeight = fontSize * lineHeightFactor;
+
+      const x = cell.x + cell.padding('left');
+      const maxWidth = cell.width - cell.padding('horizontal');
+
+      doc.setFontSize(cell.styles.fontSize);
+      const nameLines: string[] = doc.splitTextToSize(raw._name, maxWidth);
+      const infoLines: string[] = doc.splitTextToSize(raw._info, maxWidth);
+      const totalLines = nameLines.length + infoLines.length;
+
+      const netHeight = cell.height - cell.padding('vertical');
+      let y = cell.y + netHeight / 2 + cell.padding('top');
+      y += fontSize * (2 - lineHeightFactor);
+      y -= (totalLines / 2) * lineHeight;
+
+      doc.setTextColor(30, 30, 30);
+      doc.setFont(undefined, 'normal');
+      for (const line of nameLines) {
+        doc.text(line, x, y);
+        y += lineHeight;
+      }
+
+      doc.setTextColor(80, 80, 80);
+      doc.setFont(undefined, 'italic');
+      for (const line of infoLines) {
+        doc.text(line, x, y);
+        y += lineHeight;
+      }
+      doc.setFont(undefined, 'normal');
     };
 
     // Side-by-side A5 landscape mode
@@ -532,13 +562,9 @@ export class Utils {
             fillColor: [245, 245, 245],
           },
           columnStyles,
-          didParseCell: (hookData: any) => {
-            if (hookData.row.raw && hookData.row.raw.length === 1 && hookData.row.raw[0].colSpan) {
-              hookData.cell.styles.fontStyle = 'italic';
-              hookData.cell.styles.fillColor = [235, 235, 235];
-              hookData.cell.styles.textColor = [80, 80, 80];
-            }
-          },
+          didParseCell,
+          willDrawCell,
+          didDrawCell,
         });
       };
 
@@ -585,14 +611,9 @@ export class Utils {
         fillColor: [245, 245, 245],
       },
       columnStyles,
-      didParseCell: (hookData: any) => {
-        // Style note rows (spanning all columns) differently
-        if (hookData.row.raw && hookData.row.raw.length === 1 && hookData.row.raw[0].colSpan) {
-          hookData.cell.styles.fontStyle = 'italic';
-          hookData.cell.styles.fillColor = [235, 235, 235];
-          hookData.cell.styles.textColor = [80, 80, 80];
-        }
-      },
+      didParseCell,
+      willDrawCell,
+      didDrawCell,
     });
 
     if (props.asBlob) {
