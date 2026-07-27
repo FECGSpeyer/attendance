@@ -83,6 +83,38 @@ export class ExcuseReasonPickerComponent {
     this.removeKeyboardListener();
   }
 
+  /**
+   * On the web/PWA path the Capacitor keyboard events never fire, so scroll the
+   * textarea clear of the on-screen keyboard when it gains focus. We wait for
+   * the visual viewport to shrink (the browser reporting the keyboard, incl. its
+   * suggestion/helper toolbar) before scrolling so the field ends up just above
+   * it rather than hidden behind it.
+   */
+  onCustomReasonFocus(): void {
+    if (this.platform.is('capacitor')) {
+      return;
+    }
+
+    const scrollIntoView = () => this.customReasonField?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const viewport = window.visualViewport;
+
+    if (viewport) {
+      // Scroll once the keyboard has actually resized the viewport, so the
+      // helper toolbar's height is accounted for; fall back after a short delay.
+      const onResize = () => {
+        viewport.removeEventListener('resize', onResize);
+        scrollIntoView();
+      };
+      viewport.addEventListener('resize', onResize);
+      setTimeout(() => {
+        viewport.removeEventListener('resize', onResize);
+        scrollIntoView();
+      }, 350);
+    } else {
+      setTimeout(scrollIntoView, 350);
+    }
+  }
+
   private registerKeyboardListener(): void {
     if (!this.platform.is('capacitor') || this.keyboardShowListener) {
       return;
