@@ -1,7 +1,7 @@
 import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, IonModal, Platform } from '@ionic/angular';
+import { IonContent, IonicModule, IonModal, Platform } from '@ionic/angular';
 import { Keyboard } from '@capacitor/keyboard';
 import type { PluginListenerHandle } from '@capacitor/core';
 
@@ -21,6 +21,7 @@ export class ExcuseReasonPickerComponent {
   @Output() confirm = new EventEmitter<{ reason: string; isLate: boolean }>();
 
   @ViewChild('modal') private modal: IonModal;
+  @ViewChild('content') private content?: IonContent;
   @ViewChild('customReasonField', { read: ElementRef }) private customReasonField?: ElementRef<HTMLElement>;
 
   readonly customReasonValue = CUSTOM_REASON;
@@ -84,34 +85,53 @@ export class ExcuseReasonPickerComponent {
   }
 
   /**
-   * On the web/PWA path the Capacitor keyboard events never fire, so scroll the
-   * textarea clear of the on-screen keyboard when it gains focus. We wait for
-   * the visual viewport to shrink (the browser reporting the keyboard, incl. its
-   * suggestion/helper toolbar) before scrolling so the field ends up just above
-   * it rather than hidden behind it.
+   * On the web/PWA path the Capacitor keyboard events never fire, and Ionic's
+   * `ion-content` inside a sheet modal does not auto-scroll focused inputs clear
+   * of the browser's on-screen keyboard. We listen for the visual viewport to
+   * shrink (the browser reporting the keyboard, incl. its suggestion/helper
+   * toolbar) and then scroll the content by exactly the amount needed to lift
+   * the textarea's bottom edge just above the keyboard. `scrollIntoView` alone
+   * is unreliable here because it targets the (unshrunk) layout viewport, so the
+   * field can still end up hidden behind the keyboard.
    */
   onCustomReasonFocus(): void {
     if (this.platform.is('capacitor')) {
       return;
     }
 
-    const scrollIntoView = () => this.customReasonField?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     const viewport = window.visualViewport;
 
+    const lift = () => {
+      const field = this.customReasonField?.nativeElement;
+      if (!field) {
+        return;
+      }
+      // The keyboard occupies everything below the visual viewport's bottom.
+      const keyboardTop = viewport ? viewport.height + viewport.offsetTop : window.innerHeight;
+      const fieldBottom = field.getBoundingClientRect().bottom;
+      const margin = 12;
+      const overlap = fieldBottom - (keyboardTop - margin);
+      if (overlap > 0) {
+        this.content?.getScrollElement().then((el) => {
+          el.scrollTo({ top: el.scrollTop + overlap, behavior: 'smooth' });
+        });
+      }
+    };
+
     if (viewport) {
-      // Scroll once the keyboard has actually resized the viewport, so the
-      // helper toolbar's height is accounted for; fall back after a short delay.
+      // Scroll once the keyboard has actually resized the viewport, so its
+      // real height (incl. helper toolbar) is known; fall back after a delay.
       const onResize = () => {
         viewport.removeEventListener('resize', onResize);
-        scrollIntoView();
+        lift();
       };
       viewport.addEventListener('resize', onResize);
       setTimeout(() => {
         viewport.removeEventListener('resize', onResize);
-        scrollIntoView();
+        lift();
       }, 350);
     } else {
-      setTimeout(scrollIntoView, 350);
+      setTimeout(lift, 350);
     }
   }
 
