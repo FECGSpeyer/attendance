@@ -262,25 +262,6 @@ export class PublicPlanningPage implements OnInit {
     await alert.present();
   }
 
-  async clearFields() {
-    const alert = await this.alertController.create({
-      header: 'Alle Felder entfernen',
-      message: 'Wirklich alle Felder entfernen?',
-      buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        {
-          text: 'Entfernen',
-          role: 'destructive',
-          handler: () => {
-            this.selectedFields = [];
-            this.calculateEnd();
-          }
-        },
-      ],
-    });
-    await alert.present();
-  }
-
   // ---- localStorage backup ----
   private persist() {
     try {

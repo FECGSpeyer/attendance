@@ -47,6 +47,9 @@ export const PUBLIC_PLANNING_TEMPLATES: PublicPlanningTemplate[] = [
       { id: 'o-5', name: 'Werk 3 (Tutti)',    time: '20' },
     ]
   },
+  {
+    id: 'leer', name: 'Leerer Ablauf', fields: []
+  },
 ];
 
 /**
