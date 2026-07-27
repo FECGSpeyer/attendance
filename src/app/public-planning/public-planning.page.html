@@ -75,7 +75,7 @@
           @for (field of selectedFields; track trackByFieldId(i, field); let i = $index) {
           <ion-item-sliding #slider>
             <ion-item>
-              <ion-label (click)="editField(field, slider)">
+              <ion-label (click)="editField(field, slider)" [class.note-field]="field.id.includes('noteFld')">
                 <h2>{{ field.name }}</h2>
                 @if (!field.id.includes('noteFld')) {
                 <h3>{{ calculateTime(field, i) }}</h3>
