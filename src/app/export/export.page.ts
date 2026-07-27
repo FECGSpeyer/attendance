@@ -139,7 +139,7 @@ export class ExportPage implements OnInit {
       row++;
     }
 
-    const doc = new jsPDF();
+    const doc = new jsPDF({ compress: true });
     doc.text(`${shortName} Spielerliste Stand: ${date}`, 14, 25);
     const branding = await Utils.buildTenantBranding(this.db.tenant());
     (doc as any).autoTable({
@@ -221,7 +221,7 @@ export class ExportPage implements OnInit {
     const { jsPDF } = await import('jspdf');
     await import('jspdf-autotable');
     const date: string = dayjs().format('DD.MM.YYYY');
-    const doc = new jsPDF();
+    const doc = new jsPDF({ compress: true });
 
     doc.text(`${shortName} Anwesenheit Stand: ${date}`, 14, 25);
     const branding = await Utils.buildTenantBranding(this.db.tenant());

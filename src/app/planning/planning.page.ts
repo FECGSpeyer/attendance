@@ -544,7 +544,7 @@ export class PlanningPage implements OnInit {
     // Lazy load jsPDF
     const { jsPDF } = await import('jspdf');
     await import('jspdf-autotable');
-    const doc = new jsPDF();
+    const doc = new jsPDF({ compress: true });
     doc.text(`${this.db.tenant().shortName} Registerprobenplan: ${date}`, 14, 25);
     const branding = await Utils.buildTenantBranding(this.db.tenant());
     (doc as any).autoTable({

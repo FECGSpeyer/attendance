@@ -386,9 +386,12 @@ export class Utils {
   private static brandingImageCache = new Map<string, { dataUrl: string; width: number; height: number }>();
 
   /**
-   * Fetch a remote image URL and return it as a data URL plus its natural
-   * dimensions. jsPDF.addImage needs a data URL / Image element, not a remote
-   * URL. Returns null on any failure so branding never breaks an export.
+   * Fetch a remote image URL, downscale it to a small size suitable for the
+   * tiny footer logo, and return it as a data URL plus its (scaled) dimensions.
+   * jsPDF.addImage needs a data URL, not a remote URL. Downscaling keeps the
+   * embedded image — which is placed on every page — from bloating the export
+   * (a full-res logo can add many MB per page). Returns null on any failure so
+   * branding never breaks an export.
    */
   public static async loadImageDataUrl(
     url: string,
@@ -405,21 +408,46 @@ export class Utils {
         return null;
       }
       const blob = await response.blob();
-      const dataUrl: string = await new Promise((resolve, reject) => {
+      const rawDataUrl: string = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
         reader.onerror = () => reject(reader.error);
         reader.readAsDataURL(blob);
       });
-      const { width, height } = await new Promise<{ width: number; height: number }>((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
-        img.onerror = () => reject(new Error('Failed to decode branding image'));
-        img.src = dataUrl;
+      const img: HTMLImageElement = await new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error('Failed to decode branding image'));
+        image.src = rawDataUrl;
       });
-      if (!width || !height) {
+      if (!img.naturalWidth || !img.naturalHeight) {
         return null;
       }
+
+      // Cap the logo to a small footprint (the footer renders it ~9mm tall).
+      // 120px on the longest side is ample and keeps the embedded bytes tiny.
+      const MAX_EDGE = 120;
+      const scale = Math.min(1, MAX_EDGE / Math.max(img.naturalWidth, img.naturalHeight));
+      const width = Math.max(1, Math.round(img.naturalWidth * scale));
+      const height = Math.max(1, Math.round(img.naturalHeight * scale));
+
+      let dataUrl = rawDataUrl;
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          // PNG preserves transparency; the small canvas keeps it compact.
+          dataUrl = canvas.toDataURL('image/png');
+        }
+      } catch {
+        // Canvas can taint on cross-origin images without CORS; fall back to
+        // the original data URL (still correct, just larger).
+        dataUrl = rawDataUrl;
+      }
+
       const result = { dataUrl, width, height };
       Utils.brandingImageCache.set(url, result);
       return result;
@@ -465,7 +493,10 @@ export class Utils {
       logoTop = baselineY - logoHeight;
       logoMidY = logoTop + logoHeight / 2;
       try {
-        doc.addImage(branding.logo.dataUrl, 'PNG', cursorX, logoTop, logoWidth, logoHeight);
+        // Pass a stable alias so jsPDF embeds the image bytes once and
+        // references them on every page / both A5 halves, instead of
+        // re-embedding the logo per didDrawPage call (which bloated exports).
+        doc.addImage(branding.logo.dataUrl, 'PNG', cursorX, logoTop, logoWidth, logoHeight, 'brandingLogo', 'FAST');
       } catch {
         // ignore image render failures — keep the export intact
       }
@@ -673,7 +704,7 @@ export class Utils {
 
     // Side-by-side A5 landscape mode
     if (props.sideBySide) {
-      const doc = new jsPDF({ orientation: 'landscape', format: 'a4' });
+      const doc = new jsPDF({ orientation: 'landscape', format: 'a4', compress: true });
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       const halfWidth = pageWidth / 2;
@@ -740,7 +771,7 @@ export class Utils {
     }
 
     // Standard A4 portrait mode
-    const doc = new jsPDF();
+    const doc = new jsPDF({ compress: true });
     doc.setFontSize(20);
     doc.text(`${typeText} ${date}`, 14, 25);
     (doc as any).autoTable({
