@@ -9,8 +9,8 @@ export interface PublicPlanningTemplate {
 
 export const PUBLIC_PLANNING_TEMPLATES: PublicPlanningTemplate[] = [
   {
-    id: 'gottesdienst', name: 'Gottesdienst', startTime: '09:40', fields: [
-      { id: 'g-1', name: 'Gemeinsamer Gesang',    time: '20', conductor: 'Dirigenten' },
+    id: 'gottesdienst', name: 'Gottesdienst', startTime: '09:35', fields: [
+      { id: 'g-1', name: 'Gemeinsamer Gesang',    time: '25', conductor: 'Dirigenten' },
       { id: 'g-2', name: 'Segensgebet',           time: '5' },
       { id: 'g-3', name: 'Gemeinsamer Gesang',    time: '5', conductor: 'Dirigenten' },
       { id: 'g-4', name: '1. Predigt',            time: '15' },
