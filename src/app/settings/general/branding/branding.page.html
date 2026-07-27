@@ -16,7 +16,8 @@
   <ion-list [inset]="true">
     <ion-item lines="none">
       <ion-label class="ion-text-wrap">
-        <p>Logo und Text erscheinen dezent auf exportierten Plänen und Listen (PDF/Bild). Das Logo darf maximal 2&nbsp;MB groß sein.</p>
+        <p>Logo und Text erscheinen dezent auf exportierten Plänen und Listen (PDF/Bild). Das Logo darf maximal
+          2&nbsp;MB groß sein.</p>
       </ion-label>
     </ion-item>
   </ion-list>
@@ -25,27 +26,28 @@
     <ion-list-header>
       <ion-label>Logo</ion-label>
     </ion-list-header>
-
-    @if (logoUrl) {
+    <ion-item-group>
+      @if (logoUrl) {
       <ion-item lines="none">
         <div class="logo-preview">
           <img [src]="logoUrl" alt="Logo" />
         </div>
       </ion-item>
-    }
+      }
 
-    <ion-item button lines="none" (click)="logoInput.click()">
-      <ion-icon slot="start" name="image-outline" color="primary"></ion-icon>
-      <ion-label color="primary">{{ logoUrl ? 'Logo ersetzen' : 'Logo hochladen' }}</ion-label>
-      <input #logoInput hidden type="file" accept="image/*" (change)="onLogoSelect($event)" />
-    </ion-item>
+      <ion-item button lines="none" (click)="logoInput.click()">
+        <ion-icon slot="start" name="image-outline" color="primary"></ion-icon>
+        <ion-label color="primary">{{ logoUrl ? 'Logo ersetzen' : 'Logo hochladen' }}</ion-label>
+        <input #logoInput hidden type="file" accept="image/*" (change)="onLogoSelect($event)" />
+      </ion-item>
 
-    @if (logoUrl) {
+      @if (logoUrl) {
       <ion-item button lines="none" (click)="removeLogo()">
         <ion-icon slot="start" name="trash-outline" color="danger"></ion-icon>
         <ion-label color="danger">Logo entfernen</ion-label>
       </ion-item>
-    }
+      }
+    </ion-item-group>
   </ion-list>
 
   <ion-list [inset]="true">

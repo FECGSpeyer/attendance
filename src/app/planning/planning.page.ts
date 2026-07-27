@@ -39,6 +39,7 @@ export class PlanningPage implements OnInit {
   public sharePlan = false;
   public planTitle = '';
   public isGeneral = false;
+  public includeBranding = true;
   public songSearchTerm = '';
   public filteredSongs: Song[] = [];
   public isSongSelectorOpen = false;
@@ -176,7 +177,9 @@ export class PlanningPage implements OnInit {
 
     const name: string = this.attendance ? dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format('DD_MM_YYYY') : dayjs().format('DD_MM_YYYY');
     const planningTitle = this.getEffectivePlanTitle();
-    const branding = await Utils.buildTenantBranding(this.db.tenant());
+    const branding = this.includeBranding
+      ? await Utils.buildTenantBranding(this.db.tenant())
+      : undefined;
     const blob = await Utils.createPlanExport({
       time: this.time,
       end: this.end,
@@ -358,13 +361,22 @@ export class PlanningPage implements OnInit {
     this.updateAttendance();
   }
 
+  /** True when the tenant has a logo and/or branding text configured. Gates the
+   *  "Branding einbeziehen" toggle — no point offering it when nothing is defined. */
+  public hasBranding(): boolean {
+    const tenant = this.db.tenant();
+    return Boolean(tenant?.logo_url || tenant?.branding_text);
+  }
+
   async export(sideBySide: boolean = false) {
     if (!this.validate()) {
       return;
     }
 
     const planningTitle = this.getEffectivePlanTitle();
-    const branding = await Utils.buildTenantBranding(this.db.tenant());
+    const branding = this.includeBranding
+      ? await Utils.buildTenantBranding(this.db.tenant())
+      : undefined;
 
     await Utils.createPlanExport({
       time: this.time,
@@ -545,7 +557,9 @@ export class PlanningPage implements OnInit {
     const { jsPDF } = await import('jspdf');
     await import('jspdf-autotable');
     const doc = new jsPDF({ compress: true });
-    const branding = await Utils.buildTenantBranding(this.db.tenant());
+    const branding = this.includeBranding
+      ? await Utils.buildTenantBranding(this.db.tenant())
+      : undefined;
     const headerOpts = {
       title: `${this.db.tenant().shortName} Registerprobenplan`,
       subtitle: `Stand: ${date}`,

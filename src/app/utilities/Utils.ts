@@ -333,9 +333,23 @@ export class Utils {
     }
   }
 
-  public static async showToast(message: string, color: string = 'success', duration: number = 3000): Promise<void> {
+  public static async showToast(message: unknown, color: string = 'success', duration: number = 3000): Promise<void> {
+    // Coerce non-string values (e.g. an Error object passed from a catch block)
+    // to readable text — Ionic renders `message` as-is and shows nothing for a
+    // non-string, which surfaces as an empty toast.
+    let text: string;
+    if (typeof message === 'string') {
+      text = message;
+    } else if (message instanceof Error) {
+      text = message.message || String(message);
+    } else if (message && typeof (message as any).message === 'string') {
+      text = (message as any).message;
+    } else {
+      text = String(message ?? '');
+    }
+
     const toast: HTMLIonToastElement = await new ToastController().create({
-      message,
+      message: text,
       color,
       position: 'bottom',
       duration,
@@ -990,6 +1004,7 @@ export class Utils {
         return [Role.ADMIN, Role.RESPONSIBLE, Role.VIEWER].includes(role);
       case '/tabs/settings/general':
       case '/tabs/settings/general/types':
+      case '/tabs/settings/general/branding':
       case '/tabs/settings/instruments':
       case '/tabs/settings/meetings':
       case '/tabs/settings/handover':
