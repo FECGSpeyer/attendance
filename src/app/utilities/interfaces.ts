@@ -37,6 +37,8 @@ export interface Tenant {
   created_at?: string;
   shortName: string;
   longName: string;
+  logo_url?: string;
+  branding_text?: string;
   maintainTeachers: boolean;
   showHolidays: boolean;
   type: string;

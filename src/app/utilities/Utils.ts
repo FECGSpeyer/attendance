@@ -381,6 +381,132 @@ export class Utils {
     return input.replace(/[А-Яа-яЁё]/g, (ch) => map[ch] ?? ch);
   }
 
+  // Cache resolved logo data URLs per source URL for the session, so repeated
+  // exports don't refetch the same image.
+  private static brandingImageCache = new Map<string, { dataUrl: string; width: number; height: number }>();
+
+  /**
+   * Fetch a remote image URL and return it as a data URL plus its natural
+   * dimensions. jsPDF.addImage needs a data URL / Image element, not a remote
+   * URL. Returns null on any failure so branding never breaks an export.
+   */
+  public static async loadImageDataUrl(
+    url: string,
+  ): Promise<{ dataUrl: string; width: number; height: number } | null> {
+    if (!url) {
+      return null;
+    }
+    if (Utils.brandingImageCache.has(url)) {
+      return Utils.brandingImageCache.get(url);
+    }
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        return null;
+      }
+      const blob = await response.blob();
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+      const { width, height } = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+        img.onerror = () => reject(new Error('Failed to decode branding image'));
+        img.src = dataUrl;
+      });
+      if (!width || !height) {
+        return null;
+      }
+      const result = { dataUrl, width, height };
+      Utils.brandingImageCache.set(url, result);
+      return result;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Draw a small, unobtrusive branding block (logo top-right + optional text
+   * beneath) on the current page of a jsPDF doc. Deliberately subtle — a small
+   * logo anchored to the top-right corner with small gray text.
+   */
+  /**
+   * Draw a subtle footer at the bottom of the current page:
+   *   left  -> logo + branding text side by side
+   *   right -> "Erstellt am: {DD.MM.YYYY HH:mm}" (export generation time)
+   * Both parts are optional; the "Erstellt am" stamp is always drawn.
+   */
+  public static addBrandingFooter(
+    doc: any,
+    branding: { logo?: { dataUrl: string; width: number; height: number }; text?: string } | undefined,
+    opts: { startX?: number; regionWidth: number; sideBySide?: boolean },
+  ): void {
+    const startX = opts.startX ?? 0;
+    const margin = opts.sideBySide ? 5 : 14;
+    const leftX = startX + margin;
+    const rightEdge = startX + opts.regionWidth - margin;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const baselineY = pageHeight - (opts.sideBySide ? 6 : 10);
+    const logoHeight = opts.sideBySide ? 6 : 9;
+    const fontSize = opts.sideBySide ? 6 : 8;
+
+    const prevFontSize = doc.getFontSize();
+
+    // ---- left: logo + text side by side (text vertically centered to logo) ----
+    let cursorX = leftX;
+    let logoTop = baselineY - logoHeight;
+    let logoMidY = baselineY - logoHeight / 2;
+    if (branding?.logo) {
+      const aspect = branding.logo.width / branding.logo.height;
+      const logoWidth = logoHeight * aspect;
+      logoTop = baselineY - logoHeight;
+      logoMidY = logoTop + logoHeight / 2;
+      try {
+        doc.addImage(branding.logo.dataUrl, 'PNG', cursorX, logoTop, logoWidth, logoHeight);
+      } catch {
+        // ignore image render failures — keep the export intact
+      }
+      cursorX += logoWidth + (opts.sideBySide ? 2 : 3);
+    }
+    if (branding?.text) {
+      doc.setFontSize(fontSize);
+      doc.setTextColor(120, 120, 120);
+      // baseline 'middle' aligns the text's vertical center with the logo's center.
+      doc.text(branding.text, cursorX, logoMidY, { baseline: 'middle' });
+    }
+
+    // ---- right: creation timestamp (centered to logo height) ----
+    doc.setFontSize(fontSize);
+    doc.setTextColor(120, 120, 120);
+    doc.text(`Erstellt am: ${dayjs().format('DD.MM.YYYY HH:mm')}`, rightEdge, logoMidY, { align: 'right', baseline: 'middle' });
+
+    // Restore defaults for subsequent drawing.
+    doc.setFontSize(prevFontSize);
+    doc.setTextColor(30, 30, 30);
+  }
+
+  /**
+   * Build the branding block passed into createPlanExport / addBrandingFooter
+   * from a tenant's configured logo_url + branding_text. Resolves the logo to a
+   * data URL (or omits it on failure). Returns undefined when nothing is set.
+   */
+  public static async buildTenantBranding(
+    tenant: { logo_url?: string; branding_text?: string } | undefined,
+  ): Promise<{ logo?: { dataUrl: string; width: number; height: number }; text?: string } | undefined> {
+    if (!tenant || (!tenant.logo_url && !tenant.branding_text)) {
+      return undefined;
+    }
+    const logo = tenant.logo_url ? await Utils.loadImageDataUrl(tenant.logo_url) : null;
+    const text = tenant.branding_text?.trim() || undefined;
+    if (!logo && !text) {
+      return undefined;
+    }
+    return { logo: logo || undefined, text };
+  }
+
   public static async createPlanExport(props: any, typeText: string) {
     // Lazy load jsPDF to reduce initial bundle size
     const { default: jsPDF } = await import('jspdf');
@@ -468,24 +594,41 @@ export class Utils {
       }
     };
 
-    // Skip autotable's default text render for info cells; we draw both lines
-    // ourselves (name normal, info italic) in didDrawCell.
+    // Skip autotable's default text render for the Programmpunkt name cells; we
+    // draw them ourselves in didDrawCell with a medium (faux-bold) weight — a bit
+    // heavier than body text but lighter than the bold header. Info cells draw
+    // both their name and italic info line the same way.
+    const isNameCell = (hookData: any) =>
+      hookData.section === 'body' &&
+      hookData.column.index === 1 &&
+      !(hookData.row.raw && hookData.row.raw.length === 1 && hookData.row.raw[0]?.colSpan);
+
     const willDrawCell = (hookData: any) => {
-      if (hookData.section === 'body' && hookData.cell.raw?._info) {
+      if (isNameCell(hookData)) {
         hookData.cell.text = [];
       }
     };
 
-    // Draw the field name (normal) and its attached info (italic) within the
-    // same Programmpunkt cell. Each part is wrapped to the cell width (matching
-    // how autotable split the combined "name\ninfo" content to size the row),
-    // and the whole block is vertically centered like autotable's own renderer
-    // (valign middle, line-height factor 1.15) so it aligns with sibling cells.
+    // Draw a string with a light stroke to fake a medium font weight (between
+    // normal and bold). Uses jsPDF text render mode 2 (fill + stroke).
+    const drawMediumText = (doc: any, text: string, x: number, y: number) => {
+      doc.setDrawColor(30, 30, 30);
+      doc.setLineWidth(0.12);
+      (doc as any).setTextRenderingMode?.(2);
+      doc.text(text, x, y);
+      (doc as any).setTextRenderingMode?.(0);
+    };
+
+    // Draw the field name (medium weight) and, when present, its attached info
+    // line (italic) within the same Programmpunkt cell. Each part is wrapped to
+    // the cell width (matching how autotable sized the row), and the whole block
+    // is vertically centered like autotable's own renderer (valign middle,
+    // line-height factor 1.15) so it aligns with sibling cells.
     const didDrawCell = (hookData: any) => {
-      const raw = hookData.cell.raw;
-      if (hookData.section !== 'body' || !raw?._info) {
+      if (!isNameCell(hookData)) {
         return;
       }
+      const raw = hookData.cell.raw;
       const doc = hookData.doc;
       const cell = hookData.cell;
       const k = doc.internal.scaleFactor;
@@ -493,12 +636,16 @@ export class Utils {
       const lineHeightFactor = 1.15;
       const lineHeight = fontSize * lineHeightFactor;
 
+      // Name is on raw._name for info cells, otherwise the raw cell string.
+      const nameText: string = raw?._info ? raw._name : (typeof raw === 'string' ? raw : String(raw ?? ''));
+      const infoText: string = raw?._info || '';
+
       const x = cell.x + cell.padding('left');
       const maxWidth = cell.width - cell.padding('horizontal');
 
       doc.setFontSize(cell.styles.fontSize);
-      const nameLines: string[] = doc.splitTextToSize(raw._name, maxWidth);
-      const infoLines: string[] = doc.splitTextToSize(raw._info, maxWidth);
+      const nameLines: string[] = doc.splitTextToSize(nameText, maxWidth);
+      const infoLines: string[] = infoText ? doc.splitTextToSize(infoText, maxWidth) : [];
       const totalLines = nameLines.length + infoLines.length;
 
       const netHeight = cell.height - cell.padding('vertical');
@@ -509,17 +656,19 @@ export class Utils {
       doc.setTextColor(30, 30, 30);
       doc.setFont(undefined, 'normal');
       for (const line of nameLines) {
-        doc.text(line, x, y);
+        drawMediumText(doc, line, x, y);
         y += lineHeight;
       }
 
-      doc.setTextColor(80, 80, 80);
-      doc.setFont(undefined, 'italic');
-      for (const line of infoLines) {
-        doc.text(line, x, y);
-        y += lineHeight;
+      if (infoLines.length) {
+        doc.setTextColor(80, 80, 80);
+        doc.setFont(undefined, 'italic');
+        for (const line of infoLines) {
+          doc.text(line, x, y);
+          y += lineHeight;
+        }
+        doc.setFont(undefined, 'normal');
       }
-      doc.setFont(undefined, 'normal');
     };
 
     // Side-by-side A5 landscape mode
@@ -544,7 +693,7 @@ export class Utils {
           head,
           body: data,
           startY: 22,
-          margin: { left: startX + 5, right: pageWidth - startX - maxWidth + 5 },
+          margin: { left: startX + 5, right: pageWidth - startX - maxWidth + 5, bottom: 16 },
           tableWidth: maxWidth - 10,
           theme: 'plain',
           styles: tableStyles,
@@ -565,6 +714,9 @@ export class Utils {
           didParseCell,
           willDrawCell,
           didDrawCell,
+          didDrawPage: () => {
+            Utils.addBrandingFooter(doc, props.branding, { startX, regionWidth: maxWidth, sideBySide: true });
+          },
         });
       };
 
@@ -594,7 +746,7 @@ export class Utils {
     (doc as any).autoTable({
       head,
       body: data,
-      margin: { top: 40 },
+      margin: { top: 40, bottom: 18 },
       theme: 'plain',
       styles: tableStyles,
       headStyles: {
@@ -614,6 +766,9 @@ export class Utils {
       didParseCell,
       willDrawCell,
       didDrawCell,
+      didDrawPage: () => {
+        Utils.addBrandingFooter(doc, props.branding, { regionWidth: doc.internal.pageSize.getWidth() });
+      },
     });
 
     if (props.asBlob) {

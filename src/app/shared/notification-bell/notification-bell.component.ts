@@ -23,8 +23,6 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   unread = signal(0);
   notifications = signal<UserNotification[]>([]);
   isOpen = signal(false);
-  menuOpen = signal(false);
-  menuEvent: Event | undefined;
 
   private sub: RealtimeChannel | null = null;
 
@@ -116,20 +114,13 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     event.target.complete();
   }
 
-  openMenu(event: Event): void {
-    this.menuEvent = event;
-    this.menuOpen.set(true);
-  }
-
   async markAll(): Promise<void> {
-    this.menuOpen.set(false);
     await this.db.markAllNotificationsRead();
     await this.load();
     await this.refreshCount();
   }
 
   async deleteAll(): Promise<void> {
-    this.menuOpen.set(false);
     const alert = await this.alertController.create({
       header: 'Alle Benachrichtigungen löschen?',
       message: 'Diese Aktion kann nicht rückgängig gemacht werden.',

@@ -6,6 +6,8 @@ import { Utils } from '../utilities/Utils';
 import {
   PUBLIC_PLANNING_TEMPLATES,
   PublicPlanningTemplate,
+  PUBLIC_BRANDINGS,
+  PublicBranding,
   cloneTemplateFields,
 } from './public-planning-templates';
 
@@ -20,6 +22,8 @@ const STORAGE_KEY = 'attendix-public-plan';
 export class PublicPlanningPage implements OnInit {
   public templates: PublicPlanningTemplate[] = PUBLIC_PLANNING_TEMPLATES;
   public selectedTemplateId: string | null = null;
+  public brandings: PublicBranding[] = PUBLIC_BRANDINGS;
+  public selectedBrandingId = 'none';
 
   public planTitle = 'Ablaufplan';
   public date: string = dayjs().format('YYYY-MM-DD');
@@ -222,10 +226,23 @@ export class PublicPlanningPage implements OnInit {
 
   async export(sideBySide = false) {
     if (!this.validate()) {return;}
+    const branding = await this.buildBranding();
     await Utils.createPlanExport(
-      { time: this.time, end: this.end, fields: this.selectedFields, sideBySide },
+      { time: this.time, end: this.end, fields: this.selectedFields, sideBySide, branding },
       this.planTitle?.trim() || 'Ablaufplan',
     );
+  }
+
+  private async buildBranding(): Promise<{ logo?: { dataUrl: string; width: number; height: number }; text?: string } | undefined> {
+    const selected = this.brandings.find(b => b.id === this.selectedBrandingId);
+    if (!selected || selected.id === 'none') {
+      return undefined;
+    }
+    const logo = selected.logoUrl ? await Utils.loadImageDataUrl(selected.logoUrl) : null;
+    if (!logo && !selected.text) {
+      return undefined;
+    }
+    return { logo: logo || undefined, text: selected.text };
   }
 
   async showExportOptions() {
@@ -273,6 +290,7 @@ export class PublicPlanningPage implements OnInit {
         time: this.time,
         end: this.end,
         selectedTemplateId: this.selectedTemplateId,
+        selectedBrandingId: this.selectedBrandingId,
         selectedFields: this.selectedFields,
       }));
     } catch {
@@ -291,6 +309,7 @@ export class PublicPlanningPage implements OnInit {
       this.time = s.time ?? this.time;
       this.end = s.end ?? '';
       this.selectedTemplateId = s.selectedTemplateId ?? null;
+      this.selectedBrandingId = s.selectedBrandingId ?? 'none';
       this.selectedFields = s.selectedFields;
       return true;
     } catch {

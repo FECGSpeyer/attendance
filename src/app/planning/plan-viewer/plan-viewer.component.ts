@@ -148,6 +148,7 @@ export class PlanViewerComponent implements OnInit {
       attendance: this.attendance?.id,
       attendances: this.attendance ? [this.attendance] : [],
       sideBySide,
+      branding: await Utils.buildTenantBranding(this.db.tenant()),
     }, planningTitle);
   }
 
@@ -171,7 +172,8 @@ export class PlanViewerComponent implements OnInit {
       asImage,
       sideBySide,
       attendance: this.attendance?.id,
-      attendances: this.attendance ? [this.attendance] : []
+      attendances: this.attendance ? [this.attendance] : [],
+      branding: await Utils.buildTenantBranding(this.db.tenant()),
     }, planningTitle);
 
     this.db.sendPlanPerTelegram(

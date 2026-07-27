@@ -1,0 +1,61 @@
+<ion-header translucent="true">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="tabs/settings/general"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Branding</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()">
+        <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <ion-list [inset]="true">
+    <ion-item lines="none">
+      <ion-label class="ion-text-wrap">
+        <p>Logo und Text erscheinen dezent auf exportierten Plänen und Listen (PDF/Bild).</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-list [inset]="true">
+    <ion-list-header>
+      <ion-label>Logo</ion-label>
+    </ion-list-header>
+
+    @if (logoUrl) {
+      <ion-item lines="none">
+        <div class="logo-preview">
+          <img [src]="logoUrl" alt="Logo" />
+        </div>
+      </ion-item>
+    }
+
+    <ion-item button lines="none" (click)="logoInput.click()">
+      <ion-icon slot="start" name="image-outline" color="primary"></ion-icon>
+      <ion-label color="primary">{{ logoUrl ? 'Logo ersetzen' : 'Logo hochladen' }}</ion-label>
+      <input #logoInput hidden type="file" accept="image/*" (change)="onLogoSelect($event)" />
+    </ion-item>
+
+    @if (logoUrl) {
+      <ion-item button lines="none" (click)="removeLogo()">
+        <ion-icon slot="start" name="trash-outline" color="danger"></ion-icon>
+        <ion-label color="danger">Logo entfernen</ion-label>
+      </ion-item>
+    }
+  </ion-list>
+
+  <ion-list [inset]="true">
+    <ion-item>
+      <ion-input label="Branding-Text" labelPlacement="stacked" [(ngModel)]="brandingText"
+        placeholder="z.B. Gemeindename" maxlength="60"></ion-input>
+    </ion-item>
+  </ion-list>
+
+  <div class="ion-padding">
+    <ion-button expand="block" (click)="save()">Speichern</ion-button>
+  </div>
+</ion-content>

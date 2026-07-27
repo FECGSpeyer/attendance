@@ -58,8 +58,39 @@ export class ImageService {
     return data.publicUrl;
   }
 
-  async updateAttendanceImage(id: number, image: File): Promise<string> {
+  /**
+   * Upload a tenant branding logo to the public `branding` bucket, keyed by
+   * tenant id, and return its public URL. Unlike updateImage this does NOT
+   * write the tenant row — the caller persists logo_url via
+   * DbService.updateTenantData so the tenant signal stays in sync.
+   */
+  async updateTenantLogo(tenantId: number, image: File | Blob): Promise<string> {
+    const fileName = `${tenantId}`;
+
     const { error } = await supabase.storage
+      .from('branding')
+      .upload(fileName, image, { upsert: true });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const { data } = await supabase
+      .storage
+      .from('branding')
+      .getPublicUrl(fileName);
+
+    // Cache-bust so an updated logo isn't served from the CDN-cached old URL.
+    return `${data.publicUrl}?v=${Date.now()}`;
+  }
+
+  async removeTenantLogo(tenantId: number): Promise<void> {
+    await supabase.storage
+      .from('branding')
+      .remove([`${tenantId}`]);
+  }
+
+  async updateAttendanceImage(id: number, image: File): Promise<string> {    const { error } = await supabase.storage
       .from('attendances')
       .upload(id.toString(), image, { upsert: true });
 

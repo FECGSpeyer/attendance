@@ -176,6 +176,7 @@ export class PlanningPage implements OnInit {
 
     const name: string = this.attendance ? dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format('DD_MM_YYYY') : dayjs().format('DD_MM_YYYY');
     const planningTitle = this.getEffectivePlanTitle();
+    const branding = await Utils.buildTenantBranding(this.db.tenant());
     const blob = await Utils.createPlanExport({
       time: this.time,
       end: this.end,
@@ -184,7 +185,8 @@ export class PlanningPage implements OnInit {
       asImage,
       sideBySide,
       attendance: this.attendance,
-      attendances: this.attendances
+      attendances: this.attendances,
+      branding,
     }, planningTitle);
     this.db.sendPlanPerTelegram(blob, `${planningTitle.replace('(', '').replace(')', '')}_${name}${sideBySide ? '_2x' : ''}`, asImage);
   }
@@ -362,6 +364,7 @@ export class PlanningPage implements OnInit {
     }
 
     const planningTitle = this.getEffectivePlanTitle();
+    const branding = await Utils.buildTenantBranding(this.db.tenant());
 
     await Utils.createPlanExport({
       time: this.time,
@@ -371,6 +374,7 @@ export class PlanningPage implements OnInit {
       attendance: this.attendance,
       attendances: this.attendances,
       sideBySide,
+      branding,
     }, planningTitle);
   }
 
@@ -542,14 +546,18 @@ export class PlanningPage implements OnInit {
     await import('jspdf-autotable');
     const doc = new jsPDF();
     doc.text(`${this.db.tenant().shortName} Registerprobenplan: ${date}`, 14, 25);
+    const branding = await Utils.buildTenantBranding(this.db.tenant());
     (doc as any).autoTable({
       head: [['Minuten', ...this.planGroups]],
       body: data,
-      margin: { top: 40 },
+      margin: { top: 40, bottom: 18 },
       theme: 'grid',
       headStyles: {
         halign: 'center',
         fillColor: [0, 82, 56]
+      },
+      didDrawPage: () => {
+        Utils.addBrandingFooter(doc, branding, { regionWidth: doc.internal.pageSize.getWidth() });
       }
     });
 

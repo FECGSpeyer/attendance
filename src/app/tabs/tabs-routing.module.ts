@@ -95,6 +95,10 @@ const routes: Routes = [
         loadChildren: () => import('./../settings/general/type/type.module').then(m => m.TypePageModule)
       },
       {
+        path: 'settings/general/branding',
+        loadChildren: () => import('./../settings/general/branding/branding.module').then(m => m.BrandingPageModule)
+      },
+      {
         path: 'settings/voice-leader',
         loadChildren: () => import('./../settings/voice-leader/voice-leader.module').then(m => m.VoiceLeaderPageModule)
       },

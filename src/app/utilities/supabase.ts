@@ -1219,10 +1219,12 @@ export type Database = {
           additional_fields: Json[] | null
           auto_approve_registrations: boolean | null
           betaProgram: boolean
+          branding_text: string | null
           created_at: string
           critical_rules: Json | null
           id: number
           late_reasons: string[] | null
+          logo_url: string | null
           longName: string | null
           maintainTeachers: boolean | null
           parents: boolean | null
@@ -1246,10 +1248,12 @@ export type Database = {
           additional_fields?: Json[] | null
           auto_approve_registrations?: boolean | null
           betaProgram?: boolean
+          branding_text?: string | null
           created_at?: string
           critical_rules?: Json | null
           id?: number
           late_reasons?: string[] | null
+          logo_url?: string | null
           longName?: string | null
           maintainTeachers?: boolean | null
           parents?: boolean | null
@@ -1273,10 +1277,12 @@ export type Database = {
           additional_fields?: Json[] | null
           auto_approve_registrations?: boolean | null
           betaProgram?: boolean
+          branding_text?: string | null
           created_at?: string
           critical_rules?: Json | null
           id?: number
           late_reasons?: string[] | null
+          logo_url?: string | null
           longName?: string | null
           maintainTeachers?: boolean | null
           parents?: boolean | null

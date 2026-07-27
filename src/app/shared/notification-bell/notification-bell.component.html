@@ -15,33 +15,19 @@
       <ion-toolbar>
         <ion-title>Benachrichtigungen</ion-title>
         <ion-buttons slot="end">
+          @if (unread() > 0) {
+            <ion-button (click)="markAll()" aria-label="Alle gelesen">
+              <ion-icon slot="icon-only" name="checkmark-done-outline"></ion-icon>
+            </ion-button>
+          }
           @if (notifications().length > 0) {
-            <ion-button (click)="openMenu($event)">
-              <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
+            <ion-button (click)="deleteAll()" color="danger" aria-label="Alle löschen">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
             </ion-button>
           }
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
-
-    <ion-popover [isOpen]="menuOpen()" [event]="menuEvent" (didDismiss)="menuOpen.set(false)" [dismissOnSelect]="true">
-      <ng-template>
-        <ion-content>
-          <ion-list [inset]="false" lines="none">
-            @if (unread() > 0) {
-              <ion-item button [detail]="false" (click)="markAll()">
-                <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>
-                <ion-label>Alle gelesen</ion-label>
-              </ion-item>
-            }
-            <ion-item button [detail]="false" (click)="deleteAll()">
-              <ion-icon slot="start" color="danger" name="trash-outline"></ion-icon>
-              <ion-label color="danger">Alle löschen</ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-content>
-      </ng-template>
-    </ion-popover>
 
     <ion-content color="light">
       <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">

@@ -402,8 +402,11 @@
       </ion-button>
       <ion-popover #addFieldPopover trigger="add-field-trigger" triggerAction="click">
         <ng-template>
-          <ion-item (click)="addExtraField(addFieldPopover)" [lines]="isGeneral ? 'none' : 'full'">
+          <ion-item (click)="addExtraField(addFieldPopover)">
             <ion-label>Feld hinzufügen</ion-label>
+          </ion-item>
+          <ion-item (click)="addNoteField(addFieldPopover)" [lines]="isGeneral ? 'none' : 'full'">
+            <ion-label>Notizfeld hinzufügen</ion-label>
           </ion-item>
           @if (!isGeneral) {
             <ion-item (click)="addSongPlaceholder(addFieldPopover)" lines="none">
@@ -443,13 +446,20 @@
       <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
         @for (field of type.default_plan.fields; track field; let i = $index) {
           <ion-item-sliding #slider>
-            <ion-item>
-              <ion-label (click)="changeField(field)">
+            <ion-item [class.note-item]="field.id.includes('noteFld')" [lines]="field.id.includes('noteFld') ? 'none' : 'full'">
+              <ion-label (click)="changeField(field)" [class.note-field]="field.id.includes('noteFld')">
                 <h2>{{ field.name }}</h2>
-                <h3>{{ calculateTime(field, i) }}</h3>
+                @if (!field.id.includes('noteFld')) {
+                  <h3>{{ calculateTime(field, i) }}</h3>
+                }
+                @if (field.info && !field.id.includes('noteFld')) {
+                  <p class="field-info">{{ field.info }}</p>
+                }
               </ion-label>
-              <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
-              placeholder="min" type="number" slot="end"></ion-input>
+              @if (!field.id.includes('noteFld')) {
+                <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
+                placeholder="min" type="number" slot="end"></ion-input>
+              }
               <ion-reorder slot="end"></ion-reorder>
             </ion-item>
             <ion-item-options (ionSwipe)="removeField(i, slider)">

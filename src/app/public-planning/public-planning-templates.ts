@@ -7,6 +7,23 @@ export interface PublicPlanningTemplate {
   fields: FieldSelection[];
 }
 
+export interface PublicBranding {
+  id: string;
+  name: string;
+  logoUrl?: string;
+  text?: string;
+}
+
+// Predefined brandings selectable on the public planning page (which has no
+// tenant context). Both FECG options share the same logo; only the text differs.
+const FECG_LOGO = 'https://ultyjzgwejpehfjuyenr.supabase.co/storage/v1/object/public/public_files/fecg_speyer.png';
+
+export const PUBLIC_BRANDINGS: PublicBranding[] = [
+  { id: 'none', name: 'Kein Branding' },
+  { id: 'fecg-speyer', name: 'FECG Speyer', logoUrl: FECG_LOGO, text: 'FECG Speyer' },
+  { id: 'fecg-schwegenheim', name: 'FECG Schwegenheim', logoUrl: FECG_LOGO, text: 'FECG Schwegenheim' },
+];
+
 export const PUBLIC_PLANNING_TEMPLATES: PublicPlanningTemplate[] = [
   {
     id: 'gottesdienst', name: 'Gottesdienst', startTime: '09:35', fields: [

@@ -141,14 +141,18 @@ export class ExportPage implements OnInit {
 
     const doc = new jsPDF();
     doc.text(`${shortName} Spielerliste Stand: ${date}`, 14, 25);
+    const branding = await Utils.buildTenantBranding(this.db.tenant());
     (doc as any).autoTable({
       head: [['', ...this.selectedFields]],
       body: data,
-      margin: { top: 40 },
+      margin: { top: 40, bottom: 18 },
       theme: 'grid',
       headStyles: {
         halign: 'center',
         fillColor: [0, 82, 56]
+      },
+      didDrawPage: () => {
+        Utils.addBrandingFooter(doc, branding, { regionWidth: doc.internal.pageSize.getWidth() });
       }
     });
     const fileName = `${shortName}_Spielerliste_Stand_${date}.pdf`;
@@ -220,10 +224,11 @@ export class ExportPage implements OnInit {
     const doc = new jsPDF();
 
     doc.text(`${shortName} Anwesenheit Stand: ${date}`, 14, 25);
+    const branding = await Utils.buildTenantBranding(this.db.tenant());
     (doc as any).autoTable({
       head: [header],
       body: data,
-      margin: { top: 40 },
+      margin: { top: 40, bottom: 18 },
       theme: 'grid',
       headStyles: {
         fontSize: 8,
@@ -232,6 +237,9 @@ export class ExportPage implements OnInit {
       },
       bodyStyles: {
         fontSize: 8,
+      },
+      didDrawPage: () => {
+        Utils.addBrandingFooter(doc, branding, { regionWidth: doc.internal.pageSize.getWidth() });
       },
       didParseCell: (cellData: any) => {
         if (cellData.cell.raw === 'A') {

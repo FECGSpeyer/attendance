@@ -23,6 +23,13 @@
       </ion-select>
     </ion-item>
     <ion-item>
+      <ion-select label="Branding" [(ngModel)]="selectedBrandingId" (ionChange)="calculateEnd()" interface="popover">
+        @for (b of brandings; track b.id) {
+        <ion-select-option [value]="b.id">{{ b.name }}</ion-select-option>
+        }
+      </ion-select>
+    </ion-item>
+    <ion-item>
       <ion-label>Datum</ion-label>
       <ion-datetime-button datetime="dateOnly"></ion-datetime-button>
       <ion-modal [keepContentsMounted]="true">

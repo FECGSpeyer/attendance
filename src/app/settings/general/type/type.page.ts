@@ -1,6 +1,6 @@
 import { Component, HostListener, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, IonItemSliding, IonModal, IonPopover, IonRouterOutlet, ItemReorderEventDetail, ModalController, NavController } from '@ionic/angular';
+import { AlertController, AlertInput, IonItemSliding, IonModal, IonPopover, IonRouterOutlet, ItemReorderEventDetail, ModalController, NavController } from '@ionic/angular';
 import dayjs from 'dayjs';
 import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
@@ -320,6 +320,36 @@ export class TypePage implements OnInit {
     this.calculateEnd();
   }
 
+  async addNoteField(popover: IonPopover) {
+    await popover.dismiss();
+
+    const alert = await this.alertController.create({
+      header: 'Notizfeld hinzufügen',
+      inputs: [{
+        type: 'textarea',
+        name: 'field',
+        placeholder: 'Notiz eingeben...'
+      }],
+      buttons: [{
+        text: 'Abbrechen'
+      }, {
+        text: 'Hinzufügen',
+        handler: (evt: any) => {
+          this.type.default_plan.fields.push({
+            id: `noteFld ${evt.field}`,
+            name: evt.field,
+            conductor: '',
+            time: '0',
+          });
+
+          this.calculateEnd();
+        }
+      }]
+    });
+
+    await alert.present();
+  }
+
   handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
     ev.detail.complete(this.type.default_plan.fields);
 
@@ -335,21 +365,39 @@ export class TypePage implements OnInit {
   async changeField(field: FieldSelection, slider?: IonItemSliding) {
     slider?.close();
     const clone: FieldSelection = JSON.parse(JSON.stringify(field));
-    const alert = await this.alertController.create({
-      header: 'Feld bearbeiten',
-      inputs: [{
-        label: 'Programmpunkt',
-        type: 'text',
+    let inputs: AlertInput[] = [{
+      label: 'Programmpunkt',
+      type: 'text',
+      name: 'field',
+      value: clone.name,
+      placeholder: 'Programmpunkt eingeben...'
+    }, {
+      label: 'Ausführender',
+      type: 'text',
+      name: 'conductor',
+      value: clone.conductor,
+      placeholder: 'Ausführenden eingeben...'
+    }, {
+      label: 'Info',
+      type: 'text',
+      name: 'info',
+      value: clone.info,
+      placeholder: 'Info-Text (optional)...'
+    }];
+
+    if (field.id.includes('noteFld')) {
+      inputs = [{
+        label: 'Notiz',
+        type: 'textarea',
         name: 'field',
         value: clone.name,
-        placeholder: 'Programmpunkt eingeben...'
-      }, {
-        label: 'Ausführender',
-        type: 'text',
-        name: 'conductor',
-        value: clone.conductor,
-        placeholder: 'Ausführenden eingeben...'
-      }],
+        placeholder: 'Notiz eingeben...'
+      }];
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Feld bearbeiten',
+      inputs,
       buttons: [{
         text: 'Abbrechen'
       }, {
@@ -360,7 +408,8 @@ export class TypePage implements OnInit {
             return false;
           }
           field.name = evt.field;
-          field.conductor = evt.conductor;
+          field.conductor = evt.conductor ?? '';
+          field.info = evt.info?.trim() || undefined;
           this.calculateEnd();
         }
       }]
