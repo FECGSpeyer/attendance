@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, AlertController, AlertInput, IonItemSliding, IonModal, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
@@ -121,17 +121,20 @@ export class PlanningPage implements OnInit {
   async changeField(field: FieldSelection, slider?: IonItemSliding) {
     slider?.close();
     const clone: FieldSelection = JSON.parse(JSON.stringify(field));
-    let inputs = [{
+    let inputs: AlertInput[] = [{
+      type: 'textarea',
       label: 'Programmpunkt',
       name: 'field',
       value: clone.name,
       placeholder: 'Programmpunkt eingeben...'
     }, {
+      type: 'textarea',
       label: 'Ausführender',
       name: 'conductor',
       value: clone.conductor,
       placeholder: 'Ausführenden eingeben...'
     }, {
+      type: 'textarea',
       label: 'Info',
       name: 'info',
       value: clone.info,
@@ -140,6 +143,7 @@ export class PlanningPage implements OnInit {
 
     if (field.id.includes('noteFld')) {
       inputs = [{
+        type: 'textarea',
         label: 'Notiz',
         name: 'field',
         value: clone.name,
@@ -251,7 +255,7 @@ export class PlanningPage implements OnInit {
         name: 'field',
         placeholder: 'Freitext eingeben...'
       }, {
-        type: 'text',
+        type: 'textarea',
         name: 'conductor',
         placeholder: 'Ausführenden eingeben...'
       }],

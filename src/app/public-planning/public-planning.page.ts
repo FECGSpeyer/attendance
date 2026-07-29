@@ -97,7 +97,7 @@ export class PublicPlanningPage implements OnInit {
       header: 'Feld hinzufügen',
       inputs: [
         { type: 'textarea', name: 'field',     placeholder: 'Programmpunkt eingeben...' },
-        { type: 'text',     name: 'conductor', placeholder: 'Ausführender (optional)' },
+        { type: 'textarea', name: 'conductor', placeholder: 'Ausführender (optional)' },
       ],
       buttons: [
         { text: 'Abbrechen', role: 'cancel' },
@@ -154,11 +154,11 @@ export class PublicPlanningPage implements OnInit {
     slider?.close();
     const isNote = field.id.includes('noteFld');
     const inputs: any[] = isNote
-      ? [{ name: 'field', value: field.name, placeholder: 'Notiz' }]
+      ? [{ type: 'textarea', name: 'field', value: field.name, placeholder: 'Notiz' }]
       : [
-          { name: 'field',     value: field.name,      placeholder: 'Programmpunkt' },
-          { name: 'conductor', value: field.conductor, placeholder: 'Ausführender' },
-          { name: 'info',      value: field.info,      placeholder: 'Info-Text (optional)' },
+          { type: 'textarea', name: 'field',     value: field.name,      placeholder: 'Programmpunkt' },
+          { type: 'textarea', name: 'conductor', value: field.conductor, placeholder: 'Ausführender' },
+          { type: 'textarea', name: 'info', value: field.info, placeholder: 'Info-Text (optional)' },
         ];
     const alert = await this.alertController.create({
       header: 'Feld bearbeiten',
