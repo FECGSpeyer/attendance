@@ -374,17 +374,18 @@ export class Utils {
     return await new LoadingController().create({ duration, message });
   }
 
-  // Name of the embedded Unicode font (DejaVu Sans) used for exports. It covers
+  // Name of the embedded Unicode font (Noto Sans) used for exports. It covers
   // full Cyrillic + Latin so user text renders as-is, unlike jsPDF's built-in
-  // Helvetica which is limited to Latin-1.
-  public static readonly EXPORT_FONT = 'DejaVuSans';
+  // Helvetica which is limited to Latin-1. Noto Sans is close to Helvetica/Arial
+  // in look, so the exports read as a neutral document sans-serif.
+  public static readonly EXPORT_FONT = 'NotoSans';
 
-  // The three DejaVu Sans variants, keyed by the jsPDF font style they back.
+  // The three Noto Sans variants, keyed by the jsPDF font style they back.
   // Filenames live under src/assets/fonts and are served as static assets.
   private static readonly EXPORT_FONT_FILES: { style: 'normal' | 'bold' | 'italic'; file: string }[] = [
-    { style: 'normal', file: 'DejaVuSans.ttf' },
-    { style: 'bold', file: 'DejaVuSans-Bold.ttf' },
-    { style: 'italic', file: 'DejaVuSans-Oblique.ttf' },
+    { style: 'normal', file: 'NotoSans-Regular.ttf' },
+    { style: 'bold', file: 'NotoSans-Bold.ttf' },
+    { style: 'italic', file: 'NotoSans-Italic.ttf' },
   ];
 
   // Session cache of base64-encoded font data so repeated exports don't refetch
