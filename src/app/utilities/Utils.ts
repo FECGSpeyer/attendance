@@ -1433,7 +1433,7 @@ export class Utils {
           const file = new File([blob], fileName, { type: mimeType });
           const nav: any = navigator;
           if (nav?.canShare?.({ files: [file] }) && typeof nav.share === 'function') {
-            await nav.share({ files: [file], title: fileName });
+            await nav.share({ files: [file] });
             return;
           }
         } catch (err: any) {
