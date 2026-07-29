@@ -374,25 +374,69 @@ export class Utils {
     return await new LoadingController().create({ duration, message });
   }
 
+  // Name of the embedded Unicode font (DejaVu Sans) used for exports. It covers
+  // full Cyrillic + Latin so user text renders as-is, unlike jsPDF's built-in
+  // Helvetica which is limited to Latin-1.
+  public static readonly EXPORT_FONT = 'DejaVuSans';
+
+  // The three DejaVu Sans variants, keyed by the jsPDF font style they back.
+  // Filenames live under src/assets/fonts and are served as static assets.
+  private static readonly EXPORT_FONT_FILES: { style: 'normal' | 'bold' | 'italic'; file: string }[] = [
+    { style: 'normal', file: 'DejaVuSans.ttf' },
+    { style: 'bold', file: 'DejaVuSans-Bold.ttf' },
+    { style: 'italic', file: 'DejaVuSans-Oblique.ttf' },
+  ];
+
+  // Session cache of base64-encoded font data so repeated exports don't refetch
+  // the (~2MB total) TTFs. Populated lazily on first registration.
+  private static exportFontCache: { style: 'normal' | 'bold' | 'italic'; file: string; base64: string }[] | null = null;
+
   /**
-   * Transliterate Cyrillic characters to Latin so they render in the PDF export
-   * font (which lacks Cyrillic glyphs). Used for every piece of user text that
-   * ends up in the exported plan (field names and their attached info).
+   * Register the embedded Unicode font (DejaVu Sans) on a jsPDF document and set
+   * it as the active font. This is what lets Cyrillic (and other non-Latin1)
+   * text render in PDF/image exports instead of coming out blank/garbled.
+   *
+   * The TTFs are fetched from the app's static assets, base64-encoded, and added
+   * to the document's virtual file system for each style (normal/bold/italic).
+   * Encoded data is cached for the session. Failure is swallowed so exports fall
+   * back to Helvetica rather than breaking outright.
    */
-  private static transliterateCyrillic(input: string): string {
-    const map: Record<string, string> = {
-      'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'E',
-      'Ж': 'Zh', 'З': 'Z', 'И': 'I', 'Й': 'I', 'К': 'K', 'Л': 'L', 'М': 'M',
-      'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
-      'Ф': 'F', 'Х': 'Kh', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch',
-      'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya',
-      'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e',
-      'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'i', 'к': 'k', 'л': 'l', 'м': 'm',
-      'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
-      'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch',
-      'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
-    };
-    return input.replace(/[А-Яа-яЁё]/g, (ch) => map[ch] ?? ch);
+  public static async registerExportFont(doc: any): Promise<void> {
+    try {
+      if (!Utils.exportFontCache) {
+        Utils.exportFontCache = await Promise.all(
+          Utils.EXPORT_FONT_FILES.map(async ({ style, file }) => {
+            const res = await fetch(`assets/fonts/${file}`);
+            if (!res.ok) {
+              throw new Error(`font fetch failed: ${file} (${res.status})`);
+            }
+            const buffer = await res.arrayBuffer();
+            return { style, file, base64: Utils.arrayBufferToBase64(buffer) };
+          }),
+        );
+      }
+
+      for (const { style, file, base64 } of Utils.exportFontCache) {
+        doc.addFileToVFS(file, base64);
+        doc.addFont(file, Utils.EXPORT_FONT, style);
+      }
+      doc.setFont(Utils.EXPORT_FONT, 'normal');
+    } catch {
+      // Keep the export working with the built-in font if anything fails.
+      Utils.exportFontCache = null;
+    }
+  }
+
+  // Encode an ArrayBuffer to a base64 string (jsPDF's addFileToVFS expects the
+  // raw font bytes as base64). Chunked to avoid call-stack limits on large fonts.
+  private static arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunkSize)));
+    }
+    return btoa(binary);
   }
 
   // Cache resolved logo data URLs per source URL for the session, so repeated
@@ -504,6 +548,10 @@ export class Utils {
     const accent = opts.accentColor ?? [0, 82, 56];
 
     const prevFontSize = doc.getFontSize();
+    // Reuse whatever font is active on the doc (the embedded Unicode font when
+    // registered, else the built-in) so header text renders Cyrillic too and
+    // matches the table body.
+    const fontName = doc.getFont?.()?.fontName || undefined;
 
     // ---- top row: logo + branding text (left) and creation stamp (right) ----
     const topRowY = sideBySide ? 11 : 16;
@@ -526,11 +574,11 @@ export class Utils {
     }
 
     if (branding?.text) {
-      doc.setFont(undefined, 'bold');
+      doc.setFont(fontName, 'bold');
       doc.setFontSize(brandFontSize);
       doc.setTextColor(60, 60, 60);
       doc.text(branding.text, cursorX, logoMidY, { baseline: 'middle' });
-      doc.setFont(undefined, 'normal');
+      doc.setFont(fontName, 'normal');
     }
 
     // creation timestamp, right-aligned, vertically centered to the top row
@@ -540,11 +588,11 @@ export class Utils {
 
     // ---- title + subtitle block ----
     let y = topRowY + logoHeight / 2 + (sideBySide ? 6 : 9);
-    doc.setFont(undefined, 'bold');
+    doc.setFont(fontName, 'bold');
     doc.setFontSize(sideBySide ? 13 : 20);
     doc.setTextColor(30, 30, 30);
     doc.text(opts.title, leftX, y);
-    doc.setFont(undefined, 'normal');
+    doc.setFont(fontName, 'normal');
 
     if (opts.subtitle) {
       y += sideBySide ? 4.5 : 6;
@@ -602,7 +650,7 @@ export class Utils {
     let currentTime = startingTime;
 
     for (const field of props.fields) {
-      const fieldName = Utils.transliterateCyrillic(field.name);
+      const fieldName = field.name;
 
       if (field.id.includes('noteFld')) {
         data.push([
@@ -612,7 +660,7 @@ export class Utils {
         // Field-attached info is carried on the Programmpunkt cell so it renders
         // as a second (italic) line inside the same row as its field. The custom
         // `_info` marker is picked up by the draw hooks below; autotable ignores it.
-        const info = field.info ? Utils.transliterateCyrillic(field.info) : '';
+        const info = field.info || '';
         const nameCell: any = info
           ? { content: `${fieldName}\n${info}`, _name: fieldName, _info: info }
           : fieldName;
@@ -648,6 +696,7 @@ export class Utils {
     ]];
 
     const tableStyles = {
+      font: Utils.EXPORT_FONT,
       fontSize: props.sideBySide ? 8 : 11,
       cellPadding: props.sideBySide ? 2 : 3.5,
       textColor: [30, 30, 30] as [number, number, number],
@@ -712,6 +761,9 @@ export class Utils {
       const raw = hookData.cell.raw;
       const doc = hookData.doc;
       const cell = hookData.cell;
+      // Reuse the doc's active font (embedded Unicode font when registered) so
+      // the custom-drawn name/info lines render Cyrillic like the rest.
+      const cellFont = doc.getFont?.()?.fontName || undefined;
       const k = doc.internal.scaleFactor;
       const fontSize = cell.styles.fontSize / k;
       const lineHeightFactor = 1.15;
@@ -735,7 +787,7 @@ export class Utils {
       y -= (totalLines / 2) * lineHeight;
 
       doc.setTextColor(30, 30, 30);
-      doc.setFont(undefined, 'normal');
+      doc.setFont(cellFont, 'normal');
       for (const line of nameLines) {
         drawMediumText(doc, line, x, y);
         y += lineHeight;
@@ -743,18 +795,19 @@ export class Utils {
 
       if (infoLines.length) {
         doc.setTextColor(80, 80, 80);
-        doc.setFont(undefined, 'italic');
+        doc.setFont(cellFont, 'italic');
         for (const line of infoLines) {
           doc.text(line, x, y);
           y += lineHeight;
         }
-        doc.setFont(undefined, 'normal');
+        doc.setFont(cellFont, 'normal');
       }
     };
 
     // Side-by-side A5 landscape mode
     if (props.sideBySide) {
       const doc = new jsPDF({ orientation: 'landscape', format: 'a4', compress: true });
+      await Utils.registerExportFont(doc);
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       const halfWidth = pageWidth / 2;
@@ -822,6 +875,7 @@ export class Utils {
 
     // Standard A4 portrait mode
     const doc = new jsPDF({ compress: true });
+    await Utils.registerExportFont(doc);
     const headerOpts = { title: typeText, subtitle: date };
     const contentTop = Utils.addBrandingHeader(doc, props.branding, headerOpts);
     (doc as any).autoTable({

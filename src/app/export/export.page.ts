@@ -140,6 +140,7 @@ export class ExportPage implements OnInit {
     }
 
     const doc = new jsPDF({ compress: true });
+    await Utils.registerExportFont(doc);
     const branding = await Utils.buildTenantBranding(this.db.tenant());
     const headerOpts = {
       title: `${shortName} Spielerliste`,
@@ -153,6 +154,9 @@ export class ExportPage implements OnInit {
       body: data,
       margin: { top: contentTop, bottom: 14 },
       theme: 'grid',
+      styles: {
+        font: Utils.EXPORT_FONT,
+      },
       headStyles: {
         halign: 'center',
         fillColor: [0, 82, 56]
@@ -228,6 +232,7 @@ export class ExportPage implements OnInit {
     await import('jspdf-autotable');
     const date: string = dayjs().format('DD.MM.YYYY');
     const doc = new jsPDF({ compress: true });
+    await Utils.registerExportFont(doc);
 
     const branding = await Utils.buildTenantBranding(this.db.tenant());
     const headerOpts = {
@@ -240,6 +245,9 @@ export class ExportPage implements OnInit {
       body: data,
       margin: { top: contentTop, bottom: 14 },
       theme: 'grid',
+      styles: {
+        font: Utils.EXPORT_FONT,
+      },
       headStyles: {
         fontSize: 8,
         halign: 'center',
