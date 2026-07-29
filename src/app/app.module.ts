@@ -11,9 +11,14 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { popoverEnterAnimation, popoverLeaveAnimation } from '@rdlabo/ionic-theme-ios26';
 import { AuthService } from './services/auth/auth.service';
+import { TeamsService } from './services/teams/teams.service';
 
 function initAuth(authSvc: AuthService) {
   return () => authSvc.sessionReady;
+}
+
+function initTeams(teamsSvc: TeamsService) {
+  return () => teamsSvc.init();
 }
 
 @NgModule({
@@ -35,6 +40,7 @@ function initAuth(authSvc: AuthService) {
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    { provide: APP_INITIALIZER, useFactory: initTeams, deps: [TeamsService], multi: true },
     { provide: APP_INITIALIZER, useFactory: initAuth, deps: [AuthService], multi: true },
   ],
   bootstrap: [AppComponent]

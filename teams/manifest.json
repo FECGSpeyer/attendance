@@ -1,0 +1,42 @@
+{
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.19/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.19",
+    "version": "4.0.9",
+    "id": "de00f72d-b675-4e2b-a608-f372ee586cab",
+    "developer": {
+        "name": "Attendix",
+        "websiteUrl": "https://attendix.de",
+        "privacyUrl": "https://attendix.de/legal",
+        "termsOfUseUrl": "https://attendix.de/legal"
+    },
+    "name": {
+        "short": "Attendix",
+        "full": "Attendix – Attendance Tracking"
+    },
+    "description": {
+        "short": "Track attendance for your group directly inside Teams.",
+        "full": "Attendix lets you manage members, plan sessions, and record attendance. Open it as a personal tab and sign in with your existing Attendix account."
+    },
+    "icons": {
+        "color": "color.png",
+        "outline": "outline.png"
+    },
+    "accentColor": "#4A9B9B",
+    "staticTabs": [
+        {
+            "entityId": "attendix",
+            "name": "Attendix",
+            "contentUrl": "https://attendix.de/",
+            "websiteUrl": "https://attendix.de/",
+            "scopes": [
+                "personal"
+            ]
+        }
+    ],
+    "permissions": [
+        "identity"
+    ],
+    "validDomains": [
+        "attendix.de"
+    ]
+}

@@ -54,3 +54,6 @@ resources/android/**/*
 
 # OTA bundle signing — private key never leaves your machine / CI secret store
 ota-private.pem
+
+# Teams app package — build artifact, regenerate with `npm run teams:package`
+teams/attendix-teams.zip

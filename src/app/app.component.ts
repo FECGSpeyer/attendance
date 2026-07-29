@@ -12,6 +12,7 @@ import { DbService } from './services/db.service';
 import { PushService } from './services/push/push.service';
 import { TrackingEvent, TrackingService } from './services/tracking/tracking.service';
 import { LiveUpdateService } from './services/live-update/live-update.service';
+import { TeamsService } from './services/teams/teams.service';
 
 @Component({
     selector: 'app-root',
@@ -36,6 +37,7 @@ export class AppComponent {
     private zone: NgZone,
     private tracking: TrackingService,
     private liveUpdate: LiveUpdateService,
+    private teams: TeamsService,
   ) {
     this.initializeApp();
     this.titleService.setTitle('Attendix');
@@ -163,6 +165,9 @@ export class AppComponent {
 
   async showNativeAppAd() {
     if (Capacitor.isNativePlatform()) return;
+    // Inside a Teams tab we're a web context but there's no point pushing the
+    // native app store — the user is deliberately in Teams.
+    if (this.teams.isInTeams()) return;
     const shown = localStorage.getItem('native_app_ad_shown');
     if (shown) return;
 
