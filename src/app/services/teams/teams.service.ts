@@ -2,6 +2,22 @@ import { Injectable } from '@angular/core';
 import { app as teamsApp } from '@microsoft/teams-js';
 
 /**
+ * True when the app is running inside an iframe (e.g. a Microsoft Teams tab,
+ * which frames us from teams.cloud.microsoft / *.teams.microsoft.com). Safe to
+ * call at module-evaluation time, before Angular bootstraps — used to disable
+ * the service worker in embedded contexts. A top-level PWA/browser visit is not
+ * framed; a Teams tab always is.
+ */
+export function isInIframe(): boolean {
+  try {
+    return window.self !== window.top;
+  } catch {
+    // Cross-origin access to window.top throws — that only happens when framed.
+    return true;
+  }
+}
+
+/**
  * Detects and initializes the Microsoft Teams host context.
  *
  * The app is embedded in Teams as a personal tab (an iframe pointing at the

@@ -11,7 +11,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { popoverEnterAnimation, popoverLeaveAnimation } from '@rdlabo/ionic-theme-ios26';
 import { AuthService } from './services/auth/auth.service';
-import { TeamsService } from './services/teams/teams.service';
+import { TeamsService, isInIframe } from './services/teams/teams.service';
 
 function initAuth(authSvc: AuthService) {
   return () => authSvc.sessionReady;
@@ -34,7 +34,11 @@ function initTeams(teamsSvc: TeamsService) {
     AppRoutingModule,
     IonicStorageModule.forRoot(),
     ServiceWorkerModule.register('ngsw-worker.js', {
-      enabled: !isDevMode() && !Capacitor.isNativePlatform(),
+      // Disabled inside an iframe (Teams tab): the SW caches index.html along
+      // with its response headers (incl. CSP frame-ancestors), which would pin
+      // a stale policy and break framing after a redeploy. It also gives no
+      // offline benefit in an embedded host.
+      enabled: !isDevMode() && !Capacitor.isNativePlatform() && !isInIframe(),
       registrationStrategy: 'registerWhenStable:30000'
     }),
   ],
