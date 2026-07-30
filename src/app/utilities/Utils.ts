@@ -1006,7 +1006,7 @@ export class Utils {
         ]);
       }
     } else {
-      data = [['', 'Nachname', 'Vorname', 'Gruppe', 'Status', 'Bemerkung']];
+      data = [['Nachname', 'Vorname', 'Gruppe', 'Status', 'Bemerkung']];
 
       for (const user of players) {
         data.push([user.lastName, user.firstName, user.groupName, Utils.getAttText(user), user.notes || '']);
