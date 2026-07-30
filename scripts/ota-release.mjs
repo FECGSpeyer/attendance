@@ -29,7 +29,10 @@
 //   SUPABASE_SERVICE_ROLE_KEY=eyJ... node scripts/ota-release.mjs
 //
 // Optional flags:
-//   --min-native <x.y.z>   Set manifest.minNativeVersion (default: package.json version)
+//   --min-native <x.y.z>   Set manifest.minNativeVersion. Default: major.0.0 of
+//                          the package version, so a minor/patch OTA reaches any
+//                          native shell of the same major. Pass this to pin the
+//                          floor higher when a bundle needs a newer native shell.
 //   --skip-build           Reuse existing www/ instead of re-running ng build
 //
 // ESM (.mjs) is required because archiver@8 ships as "type": "module" and
@@ -84,14 +87,17 @@ const skipBuild = args.includes('--skip-build');
 const minNativeIdx = args.indexOf('--min-native');
 const pkg = require(path.join(ROOT, 'package.json'));
 
-// Default minNativeVersion floors the patch segment: `major.minor.0`.
-// A patch OTA (e.g. 4.0.8) then reaches every native 4.0.x shell, while a new
-// minor version (e.g. 4.1.0) requires a native shell that ships that minor.
-// Override with --min-native <x.y.z> when a bundle genuinely needs a newer
-// native shell (e.g. a new native plugin).
+// Default minNativeVersion floors to `major.0.0`, so an OTA bundle reaches
+// every native shell that shares its MAJOR version. That lets a new minor
+// (e.g. 4.1.0, which for Attendix is a pure web/JS change — Teams SSO, theming,
+// etc.) roll out to existing 4.0.x shells without a store release.
+//
+// Only bump the major when a bundle genuinely requires a newer native shell
+// (new/updated native plugin, Capacitor upgrade, changed native permissions).
+// In that case pass --min-native <x.y.z> explicitly to pin the floor higher.
 function defaultMinNative(version) {
-  const [major = '0', minor = '0'] = version.split('.');
-  return `${major}.${minor}.0`;
+  const [major = '0'] = version.split('.');
+  return `${major}.0.0`;
 }
 const minNativeVersion =
   minNativeIdx >= 0 ? args[minNativeIdx + 1] : defaultMinNative(pkg.version);
