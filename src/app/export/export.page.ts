@@ -107,7 +107,7 @@ export class ExportPage implements OnInit {
 
   async exportPlayerExcel(shortName: string) {
     this.tracking.track(TrackingEvent.ReportExported, { format: 'xlsx', kind: 'player' });
-    const { utils, writeFile } = await import('xlsx');
+    const { utils } = await import('xlsx');
     let row = 1;
 
     const date: string = dayjs().format('DD.MM.YYYY');
@@ -122,7 +122,7 @@ export class ExportPage implements OnInit {
     const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, 'Anwesenheit');
 
-    writeFile(wb, `${shortName}_Spielerliste_Stand_${date}.xlsx`);
+    await Utils.saveWorkbook(wb, `${shortName}_Spielerliste_Stand_${date}.xlsx`);
   }
 
   async exportPlayerPDF(shortName: string) {
@@ -212,7 +212,7 @@ export class ExportPage implements OnInit {
 
   async exportAttExcel(data: any[], shortName: string) {
     this.tracking.track(TrackingEvent.ReportExported, { format: 'xlsx', kind: 'attendance' });
-    const { utils, writeFile } = await import('xlsx');
+    const { utils } = await import('xlsx');
     const date: string = dayjs().format('DD.MM.YYYY');
 
     /* generate worksheet */
@@ -223,7 +223,7 @@ export class ExportPage implements OnInit {
     utils.book_append_sheet(wb, ws, 'Anwesenheit');
 
     /* save to file */
-    writeFile(wb, `${shortName}_Anwesenheit_Stand_${date}.xlsx`);
+    await Utils.saveWorkbook(wb, `${shortName}_Anwesenheit_Stand_${date}.xlsx`);
   }
 
   async exportAttPDF(data: any[], header: string[], shortName: string) {

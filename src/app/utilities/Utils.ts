@@ -987,7 +987,7 @@ export class Utils {
     churches?: Church[],
   ): Promise<void> {
     // Lazy load xlsx to reduce initial bundle size
-    const { utils, writeFile } = await import('xlsx');
+    const { utils } = await import('xlsx');
     let data;
 
     if (churches?.length) {
@@ -1015,7 +1015,37 @@ export class Utils {
     const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, 'Anwesenheit');
 
-    writeFile(wb, `${attendance.typeInfo ?? type.name}_${dayjs(attendance.date).format('DD_MM_YYYY')}_Anwesenheit.xlsx`);
+    const fileName = `${attendance.typeInfo ?? type.name}_${dayjs(attendance.date).format('DD_MM_YYYY')}_Anwesenheit.xlsx`;
+    await Utils.saveWorkbook(wb, fileName);
+  }
+
+  /**
+   * Saves an xlsx workbook to a file across all platforms.
+   *
+   * xlsx's own writeFile() relies on a DOM `<a download>`, which does nothing on
+   * the native app (no file lands on disk, nothing opens) and is unreliable on
+   * mobile web. On native + mobile web we instead serialise the workbook to a
+   * binary buffer and hand it to downloadFileNative(), which writes it to the
+   * Cache dir and opens the system viewer / share sheet. Desktop web keeps the
+   * direct writeFile() download users expect there.
+   */
+  public static async saveWorkbook(wb: unknown, fileName: string): Promise<void> {
+    const { write, writeFile } = await import('xlsx');
+
+    const ua = navigator.userAgent || '';
+    const isMobileWeb = /iPad|iPhone|iPod|Android/i.test(ua)
+      || (ua.includes('Macintosh') && (navigator as any).maxTouchPoints > 1); // iPadOS 13+
+
+    if (Capacitor.isNativePlatform() || isMobileWeb) {
+      const buffer: ArrayBuffer = write(wb, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      await Utils.downloadFileNative(blob, fileName);
+      return;
+    }
+
+    writeFile(wb, fileName);
   }
 
   public static getUrl(role: Role) {
