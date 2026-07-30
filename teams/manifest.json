@@ -44,8 +44,8 @@
         }
     ],
     "webApplicationInfo": {
-        "id": "REPLACE_WITH_AZURE_AD_CLIENT_ID",
-        "resource": "api://attendix.de/REPLACE_WITH_AZURE_AD_CLIENT_ID"
+        "id": "cde5d88f-84e9-4cb3-9caf-05c62bf59c1a",
+        "resource": "api://attendix.de/cde5d88f-84e9-4cb3-9caf-05c62bf59c1a"
     },
     "permissions": [
         "identity"
