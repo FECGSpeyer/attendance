@@ -99,12 +99,17 @@ supabase functions deploy teams-sso
 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_ANON_KEY` are provided
 to Edge Functions automatically.
 
-**Database** — run the RPC + index once against the project DB:
+**Database** — run the RPC once against the project DB:
 
 ```bash
 # via the SQL editor or psql:
 supabase/sql/add_get_user_id_by_msoid.sql
 ```
+
+(Creates the `get_user_id_by_msoid` SECURITY DEFINER function only. It does not
+create indexes on `auth.users` — that role isn't the table owner on Supabase —
+so uniqueness of the oid→account link is enforced by the Edge Function's 409
+guards instead.)
 
 ---
 

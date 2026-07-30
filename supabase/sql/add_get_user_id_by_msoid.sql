@@ -36,9 +36,12 @@ REVOKE ALL ON FUNCTION public.get_user_id_by_msoid(text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.get_user_id_by_msoid(text) FROM anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.get_user_id_by_msoid(text) TO service_role;
 
--- Enforce one Supabase user per Microsoft identity. A partial unique index on
--- the msoid extracted from app_metadata prevents two accounts ever claiming the
--- same oid (defence-in-depth alongside the 409 guard in the link action).
-CREATE UNIQUE INDEX IF NOT EXISTS users_msoid_unique_idx
-  ON auth.users ((raw_app_meta_data->>'msoid'))
-  WHERE raw_app_meta_data->>'msoid' IS NOT NULL;
+-- NOTE: we intentionally do NOT create a unique index on auth.users here.
+-- The auth schema is owned by supabase_auth_admin, and the SQL editor / postgres
+-- role is not the owner of auth.users, so `CREATE INDEX ... ON auth.users`
+-- fails with "must be owner of table users" on Supabase.
+--
+-- One Supabase user per Microsoft identity is instead enforced at the
+-- application layer: the teams-sso Edge Function's `link` action rejects (409)
+-- both an oid already linked to a different user and an account already linked
+-- to a different oid before writing app_metadata.msoid.
