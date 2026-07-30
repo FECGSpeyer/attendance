@@ -7,6 +7,7 @@ import { HistoryPage } from 'src/app/history/history.page';
 import { PersonPage } from 'src/app/people/person/person.page';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
+import { TeamsService } from 'src/app/services/teams/teams.service';
 import { StatsPage } from 'src/app/stats/stats.page';
 import { DEFAULT_IMAGE, FieldType, Role } from 'src/app/utilities/constants';
 import { Admin, Church, Parent, Person, Player, Tenant } from 'src/app/utilities/interfaces';
@@ -72,6 +73,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     private router: Router,
     private alertController: AlertController,
     private actionSheetController: ActionSheetController,
+    private teams: TeamsService,
   ) {
     effect(async () => {
       this.db.tenant();
@@ -194,6 +196,8 @@ export class SettingsPage implements OnInit, OnDestroy {
     // Hidden behind super-developer check until the native apps are publicly released.
     if (!this.db.isSuperDeveloper()) return;
     if (Capacitor.isNativePlatform()) return;
+    // Inside a Teams tab there's no point promoting the native app store.
+    if (this.teams.isInTeams()) return;
     const dismissed = localStorage.getItem('appPromoDismissed');
 
     if (!dismissed) {

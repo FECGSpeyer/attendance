@@ -82,6 +82,13 @@ ion-modal.ios:not(.ios26-disabled):has(.ion-delegate-host):has(ion-datetime).pla
     }
 }
 
+// Teams dark theme (class-based; see variables.scss for why).
+body.teams-dark ion-modal.ios:not(.ios26-disabled):has(.ion-delegate-host):has(ion-datetime).planningModal,
+body.teams-contrast ion-modal.ios:not(.ios26-disabled):has(.ion-delegate-host):has(ion-datetime).planningModal {
+    --border-radius: 10px;
+    --background: #000;
+}
+
 ion-toast.ios:not(.ios26-disabled) {
     --border-radius: 24px;
 }
@@ -104,6 +111,11 @@ ion-content.modalBackground {
     ion-content.modalBackground {
         background: #000;
     }
+}
+
+body.teams-dark ion-content.modalBackground,
+body.teams-contrast ion-content.modalBackground {
+    background: #000;
 }
 
 .flex {

@@ -7,6 +7,15 @@
         </ion-avatar>
       </a>
       <form novalidate (keyup.enter)="login()" (ngSubmit)="login()" #registerForm="ngForm">
+        <ion-row *ngIf="linkMode">
+          <ion-col>
+            <ion-note class="linkModeNote">
+              Verknüpfe dein Attendix-Konto einmalig mit Microsoft. Melde dich mit
+              deinen Attendix-Zugangsdaten an – danach wirst du in Teams automatisch
+              angemeldet.
+            </ion-note>
+          </ion-col>
+        </ion-row>
         <ion-row>
           <ion-col>
             <ion-item class="mailItem">
@@ -30,7 +39,7 @@
         </ion-row>
         <ion-row>
           <ion-col class="signup-col">
-            <ion-button (click)="login()" color="primary" expand="block" [disabled]="!registerForm.form.valid">Anmelden</ion-button>
+            <ion-button (click)="login()" color="primary" expand="block" [disabled]="!registerForm.form.valid">{{ linkMode ? 'Verknüpfen & anmelden' : 'Anmelden' }}</ion-button>
           </ion-col>
         </ion-row>
       </form>

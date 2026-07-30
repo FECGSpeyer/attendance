@@ -1,0 +1,29 @@
+<ion-content class="ion-padding">
+  <div *ngIf="loading" class="center">
+    <ion-spinner></ion-spinner>
+  </div>
+
+  <div *ngIf="notInTeams && !loading" class="center">
+    <p>Diese Seite wird nur innerhalb von Microsoft Teams verwendet.</p>
+  </div>
+
+  <div *ngIf="!loading && !notInTeams">
+    <h2>Attendix-Tab einrichten</h2>
+
+    <p *ngIf="tenants.length === 0">
+      Kein Attendix-Konto gefunden. Bitte melde dich zuerst im Attendix-Tab an.
+    </p>
+
+    <ion-list *ngIf="tenants.length > 0">
+      <ion-radio-group [(ngModel)]="selectedTenantId" (ionChange)="onTenantChange()">
+        <ion-item *ngFor="let tenant of tenants">
+          <ion-radio [value]="tenant.id">{{ tenant.longName || tenant.shortName }}</ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </ion-list>
+
+    <p class="hint" *ngIf="tenants.length > 0">
+      Wähle aus, welche Attendix-Instanz in diesem Kanal angezeigt werden soll.
+    </p>
+  </div>
+</ion-content>

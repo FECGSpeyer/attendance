@@ -47,6 +47,33 @@ export class AppComponent {
     this.setupDeepLinks();
     this.handleWebAuthLink();
     this.trackPageViews();
+    this.trySsoSignIn();
+  }
+
+  /**
+   * Inside Teams, attempt a silent Microsoft SSO sign-in when there's no session.
+   * On success the SIGNED_IN handler + routeAfterAuth take over. If the Microsoft
+   * user isn't linked to an Attendix account yet, route to the login page in
+   * one-time "link mode". If SSO isn't possible, fall through to normal login.
+   */
+  private async trySsoSignIn(): Promise<void> {
+    if (!this.teams.isInTeams()) {
+      return;
+    }
+    // APP_INITIALIZER already ran teams.init(); checkToken() awaits sessionReady
+    // and populates tenantUser() when a persisted session exists.
+    await this.db.checkToken();
+    if (this.db.tenantUser()) {
+      return; // Already signed in (persisted session).
+    }
+
+    const result = await this.teams.ssoSignIn();
+    if (result === 'ok') {
+      await this.db.routeAfterAuth();
+    } else if (result === 'needs-link') {
+      this.router.navigateByUrl('/login?teamsLink=1');
+    }
+    // 'failed' → leave the user on the normal login form.
   }
 
   async ngOnInit() {

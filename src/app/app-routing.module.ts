@@ -50,6 +50,14 @@ const routes: Routes = [
     loadChildren: () => import('./open-attendance/open-attendance.module').then(m => m.OpenAttendanceModule)
   },
   {
+    // Configuration page for the Attendix channel (configurable) Teams tab.
+    // Loaded by Teams when adding the tab to a channel. Must be registered
+    // before the :songSharingId wildcard below or it would be treated as a
+    // song-sharing id.
+    path: 'teams-config',
+    loadChildren: () => import('./teams-config/teams-config.module').then(m => m.TeamsConfigModule)
+  },
+  {
     path: ':songSharingId',
     loadChildren: () => import('./songs/songs.module').then( m => m.SongsPageModule)
   },

@@ -1,7 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { AlertController, IonInput, ModalController } from '@ionic/angular';
 import { DbService } from '../services/db.service';
+import { TeamsService } from '../services/teams/teams.service';
 import { Utils } from '../utilities/Utils';
 import { environment } from 'src/environments/environment';
 import { LegalModalComponent } from './legal-modal/legal-modal.component';
@@ -19,15 +21,24 @@ export class LoginPage implements OnInit {
   loginForm: UntypedFormGroup;
   registerCredentials = { password: '', email: '' };
   showPassword = false;
+  /** One-time Teams account-linking mode (set when SSO found no linked account). */
+  linkMode = false;
   public version: string = require('../../../package.json').version;
 
   constructor(
     private db: DbService,
     private alertController: AlertController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private route: ActivatedRoute,
+    private teams: TeamsService,
   ) { }
 
   async ngOnInit() {
+    // Enter link mode only inside Teams when redirected here by a failed silent
+    // SSO (Microsoft user verified, but not yet linked to an Attendix account).
+    this.linkMode = this.teams.isInTeams()
+      && this.route.snapshot.queryParamMap.get('teamsLink') === '1';
+
     this.loginForm = new UntypedFormGroup({
       user: new UntypedFormControl('', [
         Validators.required,
@@ -59,6 +70,20 @@ export class LoginPage implements OnInit {
     const loading = await Utils.getLoadingElement();
     loading.present();
     try {
+      if (this.linkMode) {
+        // One-time linking: verify Attendix credentials, then bind the Microsoft
+        // identity so future Teams launches sign in silently.
+        const ok = await this.teams.ssoLink(
+          this.registerCredentials.email,
+          this.registerCredentials.password,
+        );
+        if (ok) {
+          this.linkMode = false;
+          Utils.showToast('Microsoft-Konto verknüpft. Du wirst künftig automatisch angemeldet.', 'success', 4000);
+          await this.db.routeAfterAuth();
+        }
+        return;
+      }
       // db.login shows a specific error toast and rethrows on failure, so the
       // catch below only needs to ensure the spinner is dismissed. The finally
       // guarantees dismissal whether login succeeds, returns false, or throws.

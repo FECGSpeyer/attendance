@@ -33,8 +33,25 @@ export class OpenAttendancePage implements OnInit {
     const tenantIdParam = this.route.snapshot.queryParamMap.get('tenantId');
     const attendanceId = Number(idParam);
 
-    // Malformed link — fall back to the normal entry flow.
-    if (!idParam || Number.isNaN(attendanceId)) {
+    // Channel-tab / tenant-only entry: no attendance id, just a tenant to open.
+    // Used by the Teams channel tab (contentUrl = ...?tenantId=<id>). Switch to
+    // that tenant and route to the user's role landing rather than a session.
+    if (!idParam) {
+      await this.db.checkToken();
+      if (!this.db.tenantUser()) {
+        // Not signed in yet (SSO/session pending) — send through login.
+        await this.router.navigateByUrl('/login');
+        return;
+      }
+      if (tenantIdParam && Number(tenantIdParam) !== this.db.tenant()?.id) {
+        await this.db.setTenant(Number(tenantIdParam));
+      }
+      await this.db.routeAfterAuth();
+      return;
+    }
+
+    // Malformed link (id present but not a number) — fall back to normal entry.
+    if (Number.isNaN(attendanceId)) {
       await this.router.navigateByUrl('/login');
       return;
     }
