@@ -4,7 +4,9 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/de';
 import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, FieldType, PlayerHistoryType, Role } from './constants';
 import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftPlan, Church } from './interfaces';
-// jsPDF and xlsx are lazy-loaded for better initial bundle size
+// jsPDF and xlsx are lazy-loaded for better initial bundle size. Type-only
+// import (erased at compile time) so it doesn't pull xlsx into the main bundle.
+import type { WorkBook } from 'xlsx';
 
 export class Utils {
   public static getId(): number {
@@ -1029,7 +1031,7 @@ export class Utils {
    * Cache dir and opens the system viewer / share sheet. Desktop web keeps the
    * direct writeFile() download users expect there.
    */
-  public static async saveWorkbook(wb: unknown, fileName: string): Promise<void> {
+  public static async saveWorkbook(wb: WorkBook, fileName: string): Promise<void> {
     const { write, writeFile } = await import('xlsx');
 
     const ua = navigator.userAgent || '';
