@@ -31,6 +31,8 @@ export class TenantRegisterPage implements OnInit {
   public notes = '';
   public churches: Church[] = [];
   public customChurchName = '';
+  public isChurchModalOpen = false;
+  public churchSearch = '';
 
   constructor(
     public db: DbService,
@@ -150,6 +152,8 @@ export class TenantRegisterPage implements OnInit {
       // Normalize email
       const normalizedEmail = (this.db.user?.email ?? this.email).toLowerCase().trim();
 
+      const hasBirthDateField = Boolean(this.tenantData?.registration_fields?.includes('birthDate'));
+
       const { userId, created } = await this.db.addPlayer({
         firstName: this.firstName,
         lastName: this.lastName,
@@ -164,7 +168,7 @@ export class TenantRegisterPage implements OnInit {
         playsSince: dayjs().startOf('day').utc(true).toISOString(),
         isCritical: false,
         isLeader: false,
-        correctBirthday: true,
+        correctBirthday: hasBirthDateField,
         history: [],
         tenantId: this.tenantData.id,
         joined: dayjs().startOf('day').utc(true).toISOString(),
@@ -333,5 +337,31 @@ export class TenantRegisterPage implements OnInit {
         Utils.showToast('Fehler beim ändern des Passbildes, versuche es später erneut', 'danger');
       }
     }
+  }
+
+  get filteredChurches(): Church[] {
+    const term = this.churchSearch.trim().toLowerCase();
+    if (!term) {
+      return this.churches;
+    }
+    return this.churches.filter(c => c.name.toLowerCase().includes(term));
+  }
+
+  getChurchLabel(field: { value: any }): string {
+    if (field.value === '') {
+      return 'Nicht gelistet';
+    }
+    const church = this.churches.find(c => c.id === field.value);
+    return church ? church.name : 'Gemeinde auswählen';
+  }
+
+  openChurchModal() {
+    this.churchSearch = '';
+    this.isChurchModalOpen = true;
+  }
+
+  selectChurch(field: { value: any }, churchId: string) {
+    field.value = churchId;
+    this.isChurchModalOpen = false;
   }
 }
