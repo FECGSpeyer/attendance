@@ -65,7 +65,7 @@ export class TenantRegisterPage implements OnInit {
         this.additionalFields.push({
           id: field.id,
           name: field.name,
-          value: field?.id === 'bfecg_church' ? '' : field.defaultValue,
+          value: field?.id === 'bfecg_church' ? null : field.defaultValue,
           type: field.type,
           options: field.options
         });
@@ -348,11 +348,14 @@ export class TenantRegisterPage implements OnInit {
   }
 
   getChurchLabel(field: { value: any }): string {
+    if (field.value === null || field.value === undefined) {
+      return 'Bitte auswählen';
+    }
     if (field.value === '') {
       return 'Nicht gelistet';
     }
     const church = this.churches.find(c => c.id === field.value);
-    return church ? church.name : 'Gemeinde auswählen';
+    return church ? church.name : 'Bitte auswählen';
   }
 
   openChurchModal() {
