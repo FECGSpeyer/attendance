@@ -427,12 +427,17 @@
         </ion-item>
       }
       <ion-item>
-        <ion-label>Start</ion-label>
+        <ion-label>
+          <h2>Start</h2>
+          @if (type.all_day) {
+            <h3>Startzeit für den Ablaufplan bei ganztägigen Terminen</h3>
+          }
+        </ion-label>
         <ion-datetime-button datetime="datetimestartplan"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime locale="de-DE" disabled="true" (ionChange)="calculateEnd()" [(ngModel)]="type.start_time"
-              presentation="time" id="datetimestartplan" [formatOptions]="{
+            <ion-datetime locale="de-DE" [disabled]="!type.all_day" (ionChange)="calculateEnd()" [(ngModel)]="type.start_time"
+              presentation="time" id="datetimestartplan" minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" [formatOptions]="{
                       time: {
                         hour: '2-digit',
                         minute: '2-digit',

@@ -100,6 +100,13 @@ export class TypePage implements OnInit {
         default_plan: existingType.default_plan ? { ...existingType.default_plan } : undefined
       };
 
+      // All-day types may have been created without a start_time. The plan's
+      // start-time picker (ion-datetime, presentation="time") needs a valid
+      // value to render and be editable, so backfill a sensible default.
+      if (!this.type.start_time) {
+        this.type.start_time = '19:00';
+      }
+
       if (!this.type.default_plan?.fields) {
         this.type.default_plan = { ...this.defaultPlan };
       }
