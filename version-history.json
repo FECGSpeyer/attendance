@@ -1,6 +1,14 @@
     {
       "versions": [
         {
+          "version": "4.1.1",
+          "date": "31.7.2026",
+          "changes": [
+            "🔍 Gemeindeauswahl mit Suche: Im Registrierungsformular lässt sich die Gemeinde jetzt über ein Suchfeld schnell finden, statt durch die gesamte Liste zu scrollen.",
+            "🔔 Registrierungs-Benachrichtigungen: Neue Registrierungen werden nun bevorzugt per Push benachrichtigt (Telegram nur als Fallback) und erscheinen zusätzlich in der Benachrichtigungszentrale."
+          ]
+        },
+        {
           "version": "4.1.0",
           "date": "20.7.2026",
           "changes": [
