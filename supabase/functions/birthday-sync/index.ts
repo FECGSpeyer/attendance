@@ -68,20 +68,33 @@ const getBirthdays = async ()=>{
   // Get all unique user IDs from tenantUsers
   const userIds = [...new Set(tenantUsers.map(tu => tu.userId))];
 
-  // Optimize: Fetch all notification configs in a single query
-  const { data: allNotifications, error: notiError } = await supabase
-    .from("notifications")
-    .select("id, enabled, birthdays, telegram_chat_id, push_enabled, enabled_tenants")
-    .eq("enabled", true)
-    .eq("birthdays", true)
-    .in("id", userIds)
-    .range(0, 4999); // guard against PostgREST's 1000-row default
+  // Fetch notification configs in chunks. A single `.in("id", userIds)` over
+  // hundreds of UUIDs pushes the PostgREST GET URL past its size limit, and the
+  // underlying fetch throws "TypeError: error sending request" — aborting the
+  // whole function before any birthday is sent. Batching the id list keeps each
+  // request URL small. (100 × 36-char UUIDs is well within limits.)
+  const NOTIF_ID_CHUNK = 100;
+  const allNotifications: any[] = [];
+  for (let i = 0; i < userIds.length; i += NOTIF_ID_CHUNK) {
+    const chunk = userIds.slice(i, i + NOTIF_ID_CHUNK);
+    const { data: chunkNotifications, error: notiError } = await supabase
+      .from("notifications")
+      .select("id, enabled, birthdays, telegram_chat_id, push_enabled, enabled_tenants")
+      .eq("enabled", true)
+      .eq("birthdays", true)
+      .in("id", chunk)
+      .range(0, 4999); // guard against PostgREST's 1000-row default
 
-  if (notiError) {
-    throw new Error("Failed to load notification data: " + JSON.stringify(notiError));
+    if (notiError) {
+      throw new Error("Failed to load notification data: " + JSON.stringify(notiError));
+    }
+
+    if (chunkNotifications?.length) {
+      allNotifications.push(...chunkNotifications);
+    }
   }
 
-  if (!allNotifications?.length) {
+  if (!allNotifications.length) {
     console.log('[birthday-sync] no users with birthday notifications enabled');
     return;
   }
