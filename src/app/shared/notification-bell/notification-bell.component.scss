@@ -52,6 +52,18 @@ ion-item.unread h2 {
   font-weight: 600;
 }
 
+// Tenant tag shown in the "Alle" view so each row's instance is identifiable.
+.tenant-tag {
+  display: block;
+  font-weight: 600;
+}
+
+// Timestamp: smaller than the message body.
+.date-note {
+  display: block;
+  font-size: 11px;
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;

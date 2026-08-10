@@ -23,6 +23,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   unread = signal(0);
   notifications = signal<UserNotification[]>([]);
   isOpen = signal(false);
+  segment = signal<'current' | 'all'>('current');
 
   private sub: RealtimeChannel | null = null;
 
@@ -32,6 +33,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     // rescopes the realtime channel + unread count to the new tenant.
     effect(() => {
       this.db.tenant();
+      this.segment.set('current');
       this.subscribe();
       this.refreshCount();
     });
@@ -57,11 +59,15 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
         { event: '*', schema: 'public', table: 'user_notifications', filter: `user_id=eq.${userId}` },
         (payload: any) => {
           const rowTenant = payload.new?.tenantId ?? payload.old?.tenantId;
-          if (rowTenant === this.db.tenant()?.id) {
+          const isCurrent = rowTenant === this.db.tenant()?.id;
+          // Badge counts current-tenant unread only.
+          if (isCurrent) {
             this.refreshCount();
-            if (this.isOpen()) {
-              this.load();
-            }
+          }
+          // Reload the open list when it would show this row: always in the
+          // 'all' segment, only same-tenant rows in the 'current' segment.
+          if (this.isOpen() && (this.segment() === 'all' || isCurrent)) {
+            this.load();
           }
         })
       .subscribe();
@@ -77,26 +83,67 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   async load(): Promise<void> {
     try {
-      this.notifications.set(await this.db.getUserNotifications());
+      const list = this.segment() === 'all'
+        ? await this.db.getAllUserNotifications()
+        : await this.db.getUserNotifications();
+      this.notifications.set(list);
     } catch (e) {
       console.error('[notification-bell] load failed:', e);
     }
   }
 
+  /**
+   * Switch between the current-tenant feed and the all-tenants feed. Reloads
+   * the list (with a spinner) so the visible rows match the selected segment.
+   */
+  async onSegmentChange(value: 'current' | 'all'): Promise<void> {
+    if (value === this.segment()) return;
+    this.segment.set(value);
+
+    const loading = await Utils.getLoadingElement(10000);
+    await loading.present();
+    try {
+      await this.load();
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  /**
+   * Resolve the tenant's display name for a notification (used in the 'all'
+   * view to tag which instance each row belongs to). Returns '' when the user
+   * is no longer a member of that tenant → the template hides the label.
+   */
+  tenantNameFor(n: UserNotification): string {
+    const tenant = this.db.tenants()?.find(t => t.id === n.tenantId);
+    return tenant?.shortName ?? tenant?.longName ?? '';
+  }
+
   async open(): Promise<void> {
+    // Always open on the current-tenant segment for a predictable default.
+    this.segment.set('current');
+
     // Show a loading indicator while we fetch. We load first so we know whether
-    // there is anything to show — with no notifications we skip the (empty)
-    // modal and just show an info toast.
+    // there is anything to show.
     const loading = await Utils.getLoadingElement(10000);
     await loading.present();
     try {
       await this.load();
       await this.refreshCount();
+
+      // No notifications for the current tenant — fall back to the all-tenants
+      // view so the user still sees notifications from their other instances.
+      if (this.notifications().length === 0) {
+        this.segment.set('all');
+        await this.load();
+      }
     } finally {
       await loading.dismiss();
     }
 
+    // Only skip the (empty) modal when there is nothing in any tenant.
     if (this.notifications().length === 0) {
+      this.segment.set('current');
       Utils.showToast('Keine Benachrichtigungen vorhanden.', 'medium');
       return;
     }
@@ -106,6 +153,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   onDismiss(): void {
     this.isOpen.set(false);
+    this.segment.set('current');
   }
 
   async handleRefresh(event: any): Promise<void> {
@@ -115,22 +163,49 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   }
 
   async markAll(): Promise<void> {
+    if (this.segment() === 'all') {
+      // Cross-tenant: confirm, since it affects every instance the user belongs to.
+      const alert = await this.alertController.create({
+        header: 'Alle als gelesen markieren?',
+        message: 'Alle Benachrichtigungen aus allen Instanzen werden als gelesen markiert.',
+        buttons: [{
+          text: 'Abbrechen',
+        }, {
+          text: 'Markieren',
+          handler: async (): Promise<void> => {
+            await this.db.markAllNotificationsReadAllTenants();
+            await this.load();
+            await this.refreshCount();
+          }
+        }]
+      });
+      await alert.present();
+      return;
+    }
+
     await this.db.markAllNotificationsRead();
     await this.load();
     await this.refreshCount();
   }
 
   async deleteAll(): Promise<void> {
+    const allTenants = this.segment() === 'all';
     const alert = await this.alertController.create({
       header: 'Alle Benachrichtigungen löschen?',
-      message: 'Diese Aktion kann nicht rückgängig gemacht werden.',
+      message: allTenants
+        ? 'Alle Benachrichtigungen aus allen Instanzen werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.'
+        : 'Diese Aktion kann nicht rückgängig gemacht werden.',
       buttons: [{
         text: 'Abbrechen',
       }, {
         text: 'Löschen',
         role: 'destructive',
         handler: async (): Promise<void> => {
-          await this.db.deleteAllNotifications();
+          if (allTenants) {
+            await this.db.deleteAllNotificationsAllTenants();
+          } else {
+            await this.db.deleteAllNotifications();
+          }
           await this.load();
           await this.refreshCount();
         }

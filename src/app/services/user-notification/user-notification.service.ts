@@ -32,6 +32,26 @@ export class UserNotificationService {
     return (data ?? []) as unknown as UserNotification[];
   }
 
+  /**
+   * Cross-tenant variant of getNotifications: returns every feed row for the
+   * user across all their tenants. RLS on user_notifications keys only on
+   * user_id, so dropping the tenant filter is safe and needs no policy change.
+   */
+  async getAllNotifications(userId: string, limit = 50): Promise<UserNotification[]> {
+    const { data, error } = await supabase
+      .from('user_notifications' as any)
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return (data ?? []) as unknown as UserNotification[];
+  }
+
   async getUnreadCount(userId: string, tenantId: number): Promise<number> {
     const { count, error } = await supabase
       .from('user_notifications' as any)
@@ -143,6 +163,37 @@ export class UserNotificationService {
       .delete()
       .eq('user_id', userId)
       .eq('tenantId', tenantId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  /**
+   * Cross-tenant variant of markAllRead: marks every unread feed row for the
+   * user read, across all tenants. Keyed only on user_id (RLS-safe).
+   */
+  async markAllReadAllTenants(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('user_notifications' as any)
+      .update({ read: true })
+      .eq('user_id', userId)
+      .eq('read', false);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  /**
+   * Cross-tenant variant of deleteAll: deletes every feed row for the user,
+   * across all tenants. Keyed only on user_id (RLS-safe).
+   */
+  async deleteAllAllTenants(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('user_notifications' as any)
+      .delete()
+      .eq('user_id', userId);
 
     if (error) {
       throw new Error(error.message);

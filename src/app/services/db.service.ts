@@ -1880,6 +1880,79 @@ export class DbService {
     }
   }
 
+  /**
+   * Recompute shift-based statuses for every person in a single attendance.
+   * Counterpart to updateShiftAssignmentsForPerson: that method fixes all of
+   * one person's attendances after their shift changes; this one fixes all
+   * persons in one attendance after the attendance's time window changes.
+   *
+   * Guarded the same way as updateShiftAssignmentsForPerson so a manually-set
+   * status is never overwritten:
+   *  - set -> Excused only when the row still carries the type default,
+   *  - reset -> default only when the row is still a shift-caused Excused that
+   *    no longer conflicts (or the person lost their shift entirely).
+   *
+   * Skips past events and all-day types (shift overlap is time-based).
+   */
+  async updateShiftAssignmentsForAttendance(attendanceId: number): Promise<void> {
+    const att = await this.getAttendanceById(attendanceId);
+    if (dayjs(att.date).isBefore(dayjs(), 'day')) {
+      return;
+    }
+
+    const type = this.attendanceTypes().find((t: AttendanceType) => t.id === att.type_id);
+    if (!type || type.all_day) {
+      return;
+    }
+
+    // person_attendances (att.persons) don't carry shift fields — those live on
+    // the player row. Fetch players once and index by id.
+    const players = await this.getPlayers(true);
+    const byId = new Map(players.map((p: Person) => [p.id, p]));
+
+    for (const pa of att.persons ?? []) {
+      const person = byId.get(pa.person_id);
+      const shift = person?.shift_id
+        ? this.shifts().find((s: ShiftPlan) => s.id === person.shift_id)
+        : undefined;
+
+      if (shift) {
+        const result = Utils.getStatusByShift(
+          shift,
+          att.date,
+          att.start_time ?? type.start_time,
+          att.end_time ?? type.end_time,
+          type.default_status,
+          person.shift_start,
+          person.shift_name,
+        );
+
+        if (result.status === AttendanceStatus.Excused && pa.status === type.default_status) {
+          await this.updatePersonAttendance(pa.id, {
+            status: result.status,
+            notes: result.note,
+          });
+        } else if (
+          result.status !== AttendanceStatus.Excused &&
+          Utils.isWorkExcused(pa.notes) &&
+          pa.status === AttendanceStatus.Excused
+        ) {
+          // Previously shift-excused, but the new time no longer overlaps.
+          await this.updatePersonAttendance(pa.id, {
+            status: type.default_status,
+            notes: '',
+          });
+        }
+      } else if (Utils.isWorkExcused(pa.notes) && pa.status === AttendanceStatus.Excused) {
+        // Person no longer has a shift but the row is still shift-excused.
+        await this.updatePersonAttendance(pa.id, {
+          status: type.default_status,
+          notes: '',
+        });
+      }
+    }
+  }
+
   async updatePlayerHistory(id: number, history: PlayerHistoryEntry[]) {
     this.checkDemoRestriction();
     return this.playerSvc.updatePlayerHistory(id, history);
@@ -2436,6 +2509,10 @@ export class DbService {
     return this.userNotificationSvc.getNotifications(this.user.id, this.tenant().id);
   }
 
+  getAllUserNotifications() {
+    return this.userNotificationSvc.getAllNotifications(this.user.id);
+  }
+
   getUnreadNotificationCount() {
     return this.userNotificationSvc.getUnreadCount(this.user.id, this.tenant().id);
   }
@@ -2464,8 +2541,16 @@ export class DbService {
     return this.userNotificationSvc.markAllRead(this.user.id, this.tenant().id);
   }
 
+  markAllNotificationsReadAllTenants() {
+    return this.userNotificationSvc.markAllReadAllTenants(this.user.id);
+  }
+
   deleteAllNotifications() {
     return this.userNotificationSvc.deleteAll(this.user.id, this.tenant().id);
+  }
+
+  deleteAllNotificationsAllTenants() {
+    return this.userNotificationSvc.deleteAllAllTenants(this.user.id);
   }
 
   async deleteInstance(tenantId: number): Promise<void> {

@@ -731,6 +731,12 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   async onInfoChanged() {
+    // Remember the persisted times before normalization so we can tell whether
+    // this edit actually moved the time window (vs. a type/notes/deadline edit
+    // that flows through the same handler).
+    const previousStart = this.attendance.start_time;
+    const previousEnd = this.attendance.end_time;
+
     // start_time is a date string and need to be converted to "HH:mm"
     if (!this.attendance.start_time || this.attendance.start_time === 'Invalid Date') {
       this.attendance.start_time = '19:30';
@@ -754,6 +760,16 @@ export class AttendancePage implements OnInit, OnDestroy {
       end_time,
       deadline: this.attendance.deadline,
     }, this.attendance.id);
+
+    // When the time window moved, re-run the shift computation for everyone in
+    // this event: a person auto-excused by a shift that overlapped the old time
+    // may no longer overlap the new one (and vice versa). Then reload so the
+    // list reflects the recomputed statuses.
+    if (start_time !== previousStart || end_time !== previousEnd) {
+      await this.db.updateShiftAssignmentsForAttendance(this.attendance.id);
+      this.attendance = await this.db.getAttendanceById(this.attendanceId);
+      this.initializeAttObjects();
+    }
 
     if (this.historyEntries.length && this.historyEntries[0].visible !== this.attendance.save_in_history) {
       for (const entry of this.historyEntries) {

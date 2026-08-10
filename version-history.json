@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.1.3",
+          "date": "10.8.2026",
+          "changes": [
+            "🔔 Benachrichtigungszentrale über alle Instanzen: In der Benachrichtigungszentrale gibt es jetzt zwei Ansichten – „Aktuelle Instanz“ (Standard) und „Alle“. In der Ansicht „Alle“ werden Benachrichtigungen aus allen deinen Instanzen angezeigt und mit der jeweiligen Instanz gekennzeichnet. Ein Tippen auf eine Benachrichtigung aus einer anderen Instanz wechselt automatisch dorthin. Sind für die aktuelle Instanz keine Benachrichtigungen vorhanden, öffnet sich direkt die Ansicht „Alle“."
+          ]
+        },
+        {
           "version": "4.1.2",
           "date": "10.8.2026",
           "changes": [

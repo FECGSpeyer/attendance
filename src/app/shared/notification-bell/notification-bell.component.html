@@ -27,6 +27,16 @@
           }
         </ion-buttons>
       </ion-toolbar>
+      <ion-toolbar>
+        <ion-segment [value]="segment()" (ionChange)="onSegmentChange($any($event.detail.value))">
+          <ion-segment-button value="current">
+            <ion-label>Aktuelle Instanz</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="all">
+            <ion-label>Alle</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </ion-toolbar>
     </ion-header>
 
     <ion-content color="light">
@@ -59,9 +69,11 @@
                   <div slot="start" class="unread-dot"></div>
                 }
                 <ion-label class="ion-text-wrap">
-                  <h2>{{ n.title }}</h2>
+                  @if (segment() === 'all' && tenantNameFor(n)) {
+                    <ion-note color="medium" class="tenant-tag">{{ tenantNameFor(n) }}</ion-note>
+                  }
                   <p>{{ n.body }}</p>
-                  <ion-note>{{ n.created_at | date: 'dd.MM.yyyy HH:mm' }}</ion-note>
+                  <ion-note class="date-note">{{ n.created_at | date: 'dd.MM.yyyy HH:mm' }}</ion-note>
                 </ion-label>
               </ion-item>
 
