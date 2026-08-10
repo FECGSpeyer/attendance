@@ -166,9 +166,12 @@ export class AppComponent {
       this.swUpdate.versionUpdates
         .pipe(filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
         .subscribe(async () => {
+          // Register the pending update so the login/settings pages can offer a
+          // manual "Aktualisieren" button if the user dismisses this prompt.
+          this.liveUpdate.markAvailable(() => document.location.reload());
           const alert = await this.alertController.create({
             header: 'Update verfügbar',
-            message: 'Eine neue Version ist verfügbar. Jetzt aktualisieren?',
+            message: 'Eine neue Version ist verfügbar. Die Aktualisierung dauert nur einen kurzen Moment und du kannst danach direkt weiterarbeiten. Jetzt aktualisieren?',
             buttons: [
               { text: 'Später', role: 'cancel' },
               {

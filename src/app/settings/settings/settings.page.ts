@@ -8,6 +8,7 @@ import { PersonPage } from 'src/app/people/person/person.page';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { DbService } from 'src/app/services/db.service';
 import { TeamsService } from 'src/app/services/teams/teams.service';
+import { LiveUpdateService } from 'src/app/services/live-update/live-update.service';
 import { StatsPage } from 'src/app/stats/stats.page';
 import { DEFAULT_IMAGE, FieldType, Role } from 'src/app/utilities/constants';
 import { Admin, Church, Parent, Person, Player, Tenant } from 'src/app/utilities/interfaces';
@@ -74,6 +75,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     private alertController: AlertController,
     private actionSheetController: ActionSheetController,
     private teams: TeamsService,
+    public liveUpdate: LiveUpdateService,
   ) {
     effect(async () => {
       this.db.tenant();

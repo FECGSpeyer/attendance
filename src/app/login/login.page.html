@@ -45,6 +45,14 @@
       </form>
     </div>
   </div>
+  @if (liveUpdate.updateAvailable()) {
+    <div class="update-banner">
+      <ion-button size="small" fill="solid" color="success" (click)="liveUpdate.applyUpdate()">
+        <ion-icon name="cloud-download-outline" slot="start"></ion-icon>
+        Update installieren
+      </ion-button>
+    </div>
+  }
   <ion-label class="version">Version {{ version }} | <a (click)="startDemo()">Demo starten</a> | <a (click)="openLegal()">Impressum & Datenschutz</a></ion-label>
 </ion-content>
 

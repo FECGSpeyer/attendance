@@ -933,7 +933,8 @@ export class DbService {
           Utils.showToast('Benutzer nicht gefunden', 'danger');
           break;
         case 'email_not_confirmed':
-          Utils.showToast('Bitte bestätige zuerst deine E-Mail-Adresse.', 'danger');
+          // No toast here: the login page catches this code and shows an
+          // actionable prompt offering to resend the confirmation email.
           break;
         case 'password_strength_insufficient':
           Utils.showToast('Das Passwort erfüllt nicht die Sicherheitsanforderungen.', 'danger');
@@ -942,7 +943,7 @@ export class DbService {
           Utils.showToast('Ungültige Anmeldedaten', 'danger');
           break;
         default:
-          Utils.showToast(error.code === 'email_not_confirmed' ? 'Bitte bestätige zuerst deine E-Mail-Adresse.' : 'Fehler beim Anmelden', 'danger');
+          Utils.showToast('Fehler beim Anmelden', 'danger');
           break;
       }
       throw error;

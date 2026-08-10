@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "4.1.2",
+          "date": "10.8.2026",
+          "changes": [
+            "🖼️ Bild-Export im öffentlichen Ablaufplanungs-Tool: Unter https://attendix.de/planung lässt sich der Plan jetzt zusätzlich zu den PDF-Exporten auch als Bild (PNG) exportieren.",
+            "✉️ Bestätigungs-E-Mail erneut senden: Wer sich mit einer noch nicht bestätigten E-Mail-Adresse anmeldet, wird jetzt gefragt, ob die Bestätigungs-E-Mail erneut gesendet werden soll – die Adresse kann dabei direkt korrigiert werden.",
+            "⬆️ Update jederzeit nachholen: Wird ein verfügbares Update mit „Später“ verschoben, erscheint auf der Anmelde- und der Einstellungsseite eine Schaltfläche „Update installieren“, um es manuell einzuspielen. Der Update-Hinweis erklärt zudem, dass die Aktualisierung nur einen kurzen Moment dauert und man danach direkt weiterarbeiten kann."
+          ]
+        },
+        {
           "version": "4.1.1",
           "date": "31.7.2026",
           "changes": [

@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { AlertController, IonInput, ModalController } from '@ionic/angular';
 import { DbService } from '../services/db.service';
 import { TeamsService } from '../services/teams/teams.service';
+import { LiveUpdateService } from '../services/live-update/live-update.service';
 import { Utils } from '../utilities/Utils';
 import { environment } from 'src/environments/environment';
 import { LegalModalComponent } from './legal-modal/legal-modal.component';
@@ -31,6 +32,7 @@ export class LoginPage implements OnInit {
     private modalController: ModalController,
     private route: ActivatedRoute,
     private teams: TeamsService,
+    public liveUpdate: LiveUpdateService,
   ) { }
 
   async ngOnInit() {
@@ -101,9 +103,18 @@ export class LoginPage implements OnInit {
   }
 
   private async promptResendConfirmation(): Promise<void> {
+    const email = this.registerCredentials.email?.trim();
     const alert = await this.alertController.create({
       header: 'E-Mail nicht bestätigt',
       message: 'Deine E-Mail-Adresse wurde noch nicht bestätigt. Möchtest du die Bestätigungs-E-Mail erneut senden?',
+      inputs: [
+        {
+          name: 'email',
+          type: 'email',
+          value: email,
+          placeholder: 'E-Mail eingeben...',
+        }
+      ],
       buttons: [
         {
           text: 'Abbrechen',
@@ -111,8 +122,14 @@ export class LoginPage implements OnInit {
         },
         {
           text: 'Erneut senden',
-          handler: () => {
-            this.db.resendConfirmationEmail(this.registerCredentials.email);
+          handler: (values: { email?: string }) => {
+            const target = values?.email?.trim();
+            if (!target) {
+              Utils.showToast('Bitte gib deine E-Mail-Adresse ein.', 'warning');
+              return false;
+            }
+            this.db.resendConfirmationEmail(target);
+            return true;
           }
         }
       ]

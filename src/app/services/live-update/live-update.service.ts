@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
@@ -48,6 +48,20 @@ const MANIFEST_PATH = 'manifest.json';
 @Injectable({ providedIn: 'root' })
 export class LiveUpdateService {
   private initialized = false;
+
+  /**
+   * True once an update has been downloaded/installed and is ready to apply.
+   * Set for both the native OTA flow (bundle staged via setNextBundle) and the
+   * web SwUpdate flow (new service worker installed). Pages read this to show a
+   * manual "update now" button after the user tapped "Später" on the prompt.
+   */
+  readonly updateAvailable = signal(false);
+
+  /**
+   * How to apply the pending update. Native: LiveUpdate.reload(). Web: a full
+   * page reload activating the new service worker. Set alongside updateAvailable.
+   */
+  private applyFn: (() => void | Promise<void>) | null = null;
 
   constructor(private alertController: AlertController) {}
 
@@ -100,6 +114,13 @@ export class LiveUpdateService {
     }
 
     await LiveUpdate.setNextBundle({ bundleId: manifest.bundleId });
+    this.markAvailable(async () => {
+      try {
+        await LiveUpdate.reload();
+      } catch (e) {
+        console.warn('[LiveUpdate] reload failed', e);
+      }
+    });
     await this.promptReload();
   }
 
@@ -139,21 +160,34 @@ export class LiveUpdateService {
   private async promptReload(): Promise<void> {
     const alert = await this.alertController.create({
       header: 'Update verfügbar',
-      message: 'Eine neue Version ist verfügbar. Jetzt aktualisieren?',
+      message: 'Eine neue Version ist verfügbar. Die Aktualisierung dauert nur einen kurzen Moment und du kannst danach direkt weiterarbeiten. Jetzt aktualisieren?',
       buttons: [
+        // "Später" keeps the update staged; updateAvailable stays true so the
+        // login and settings pages can offer a manual "Aktualisieren" button.
         { text: 'Später', role: 'cancel' },
         {
           text: 'Aktualisieren',
           handler: async () => {
-            try {
-              await LiveUpdate.reload();
-            } catch (e) {
-              console.warn('[LiveUpdate] reload failed', e);
-            }
+            await this.applyUpdate();
           },
         },
       ],
     });
     await alert.present();
+  }
+
+  /**
+   * Register a downloaded/installed update as ready to apply. Called by the
+   * native OTA flow here and by the web SwUpdate flow in AppComponent.
+   */
+  markAvailable(apply: () => void | Promise<void>): void {
+    this.applyFn = apply;
+    this.updateAvailable.set(true);
+  }
+
+  /** Apply the pending update, if any. Safe to call when none is staged. */
+  async applyUpdate(): Promise<void> {
+    if (!this.applyFn) return;
+    await this.applyFn();
   }
 }
