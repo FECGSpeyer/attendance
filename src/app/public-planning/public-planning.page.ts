@@ -233,6 +233,19 @@ export class PublicPlanningPage implements OnInit {
     );
   }
 
+  async exportImage(sideBySide = false) {
+    if (!this.validate()) {return;}
+    const branding = await this.buildBranding();
+    const title = this.planTitle?.trim() || 'Ablaufplan';
+    const blob = await Utils.createPlanExport(
+      { time: this.time, end: this.end, fields: this.selectedFields, sideBySide, branding, asBlob: true, asImage: true },
+      title,
+    );
+    if (!blob) {return;}
+    const dateStr = dayjs(this.date).isValid() ? dayjs(this.date).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD');
+    await Utils.downloadFileNative(blob, `${title}_${dateStr}${sideBySide ? '_2x' : ''}.png`);
+  }
+
   private async buildBranding(): Promise<{ logo?: { dataUrl: string; width: number; height: number }; text?: string } | undefined> {
     const selected = this.brandings.find(b => b.id === this.selectedBrandingId);
     if (!selected || selected.id === 'none') {
@@ -250,6 +263,7 @@ export class PublicPlanningPage implements OnInit {
     const buttons: ActionSheetButton[] = [
       { text: 'PDF (A4)',       handler: () => this.export(false) },
       { text: 'PDF (2x A5)',    handler: () => this.export(true) },
+      { text: 'Bild (A4)',      handler: () => this.exportImage(false) },
       { text: 'Abbrechen',      role: 'cancel' },
     ];
     const actionSheet = await this.actionSheetController.create({
