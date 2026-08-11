@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.1.4",
+          "date": "11.8.2026",
+          "changes": [
+            "🔔 Benachrichtigungszentrale: Statusänderungen bei Anwesenheiten (An- und Abmeldungen) landen jetzt zuverlässig in der Benachrichtigungszentrale. Bisher konnte es passieren, dass bei mehreren Änderungen zum selben Termin zwar die Push-Benachrichtigung ankam, der Eintrag in der Zentrale aber fehlte."
+          ]
+        },
+        {
           "version": "4.1.3",
           "date": "10.8.2026",
           "changes": [

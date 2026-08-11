@@ -2,16 +2,26 @@ import { Component, OnInit } from '@angular/core';
 import dayjs from 'dayjs';
 import { Chart, ChartConfiguration, ChartData, registerables } from 'chart.js';
 import { supabase } from '../services/base/supabase';
+import { TrackingEvent } from '../services/tracking/tracking.service';
+import { Database } from '../utilities/supabase';
 
 Chart.register(...registerables);
 
+// Row shapes returned by the usage_* aggregation RPCs, derived from the
+// generated DB types so they stay in sync with the SQL.
+type Fns = Database['public']['Functions'];
+type UsageKpis = Fns['usage_kpis']['Returns'][number];
+type PerDayRow = Fns['usage_events_per_day']['Returns'][number];
+type ByNameRow = Fns['usage_events_by_name']['Returns'][number];
+type ByTenantRow = Fns['usage_events_by_tenant']['Returns'][number];
+type ByDeviceRow = Fns['usage_events_by_device']['Returns'][number];
+
 type RangeKey = '7d' | '30d' | '90d';
-interface UsageEventRow {
-  event_name: string;
-  tenant_id: number | null;
-  device_type: 'ios' | 'android' | 'web' | null;
-  created_at: string;
-}
+
+// The current app's event names, passed to the aggregation RPCs so stale names
+// from older app versions (removed/renamed events still sitting in the table)
+// are excluded. Single source of truth for "what the app tracks today".
+const KNOWN_EVENTS: string[] = Object.values(TrackingEvent);
 
 const PALETTE = ['#2dd36f', '#3880ff', '#ffc409', '#eb445a', '#5260ff', '#ff9f0a', '#36a2eb', '#9966ff', '#4bc0c0', '#ff9f40', '#c9cbcf', '#aaff80'];
 
@@ -59,50 +69,53 @@ export class DashboardPage implements OnInit {
     this.loading = true;
     try {
       const since = dayjs().subtract(this.rangeDays(), 'day').toISOString();
-      const { data, error } = await supabase
-        .from('usage_events')
-        .select('event_name, tenant_id, device_type, created_at')
-        .gte('created_at', since)
-        .order('created_at', { ascending: true });
+      const params = { p_since: since, p_events: KNOWN_EVENTS };
 
-      if (error) {
+      // Aggregate server-side. Counting raw rows client-side hit PostgREST's
+      // 1000-row cap, so every range returned the same truncated 1000 events
+      // and all metrics were wrong. These RPCs GROUP BY in SQL — exact counts,
+      // no row cap.
+      const [kpis, perDay, byName, byTenant, byDevice] = await Promise.all([
+        supabase.rpc('usage_kpis', params),
+        supabase.rpc('usage_events_per_day', params),
+        supabase.rpc('usage_events_by_name', params),
+        supabase.rpc('usage_events_by_tenant', params),
+        supabase.rpc('usage_events_by_device', params),
+      ]);
+
+      if (kpis.error || perDay.error || byName.error || byTenant.error || byDevice.error) {
         this.hasData = false;
         return;
       }
 
-      const rows = (data ?? []) as UsageEventRow[];
-      this.hasData = rows.length > 0;
-      this.computeKpis(rows);
-      this.buildCharts(rows);
+      const kpiRow = (kpis.data ?? [])[0];
+      const perDayRows = perDay.data ?? [];
+      const byNameRows = byName.data ?? [];
+      const byTenantRows = byTenant.data ?? [];
+      const byDeviceRows = byDevice.data ?? [];
+
+      this.hasData = Number(kpiRow?.total_events ?? 0) > 0;
+      this.computeKpis(kpiRow, byNameRows);
+      this.buildCharts(perDayRows, byNameRows, byTenantRows, byDeviceRows);
     } finally {
       this.loading = false;
     }
   }
 
-  private computeKpis(rows: UsageEventRow[]) {
-    this.totalEvents = rows.length;
-    const tenantSet = new Set<number>();
-    rows.forEach(r => { if (r.tenant_id != null) tenantSet.add(r.tenant_id); });
-    this.distinctTenants = tenantSet.size;
-
-    const last7Cutoff = dayjs().subtract(7, 'day');
-    const active = new Set<number>();
-    rows.forEach(r => {
-      if (r.tenant_id != null && dayjs(r.created_at).isAfter(last7Cutoff)) {
-        active.add(r.tenant_id);
-      }
-    });
-    this.activeTenantsLast7 = active.size;
-
-    const counts = new Map<string, number>();
-    rows.forEach(r => counts.set(r.event_name, (counts.get(r.event_name) ?? 0) + 1));
-    let topName = '—';
-    let topCount = 0;
-    counts.forEach((c, name) => { if (c > topCount) { topCount = c; topName = name; } });
-    this.topEvent = topName;
+  private computeKpis(kpi: UsageKpis | undefined, byName: ByNameRow[]) {
+    this.totalEvents = Number(kpi?.total_events ?? 0);
+    this.distinctTenants = Number(kpi?.distinct_tenants ?? 0);
+    this.activeTenantsLast7 = Number(kpi?.active_tenants_7d ?? 0);
+    // byName is returned already sorted by count desc.
+    this.topEvent = byName.length > 0 ? byName[0].event_name : '—';
   }
 
-  private buildCharts(rows: UsageEventRow[]) {
+  private buildCharts(
+    perDay: PerDayRow[],
+    byName: ByNameRow[],
+    byTenant: ByTenantRow[],
+    byDevice: ByDeviceRow[],
+  ) {
     const days = this.rangeDays();
     const labels: string[] = [];
     const dayCounts = new Map<string, number>();
@@ -111,9 +124,9 @@ export class DashboardPage implements OnInit {
       labels.push(dayjs(d).format('DD.MM.'));
       dayCounts.set(d, 0);
     }
-    rows.forEach(r => {
-      const k = dayjs(r.created_at).format('YYYY-MM-DD');
-      if (dayCounts.has(k)) dayCounts.set(k, (dayCounts.get(k) ?? 0) + 1);
+    perDay.forEach(r => {
+      const k = dayjs(r.day).format('YYYY-MM-DD');
+      if (dayCounts.has(k)) dayCounts.set(k, Number(r.count));
     });
     this.eventsPerDayData = {
       labels,
@@ -132,14 +145,12 @@ export class DashboardPage implements OnInit {
       plugins: { legend: { display: false } },
     };
 
-    const counts = new Map<string, number>();
-    rows.forEach(r => counts.set(r.event_name, (counts.get(r.event_name) ?? 0) + 1));
-    const sortedNames = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const sortedNames = byName.slice(0, 10);
     this.eventsByNameData = {
-      labels: sortedNames.map(([name]) => name),
+      labels: sortedNames.map(r => r.event_name),
       datasets: [{
         label: 'Events',
-        data: sortedNames.map(([, c]) => c),
+        data: sortedNames.map(r => Number(r.count)),
         backgroundColor: sortedNames.map((_, i) => PALETTE[i % PALETTE.length]),
       }],
     };
@@ -150,16 +161,12 @@ export class DashboardPage implements OnInit {
       plugins: { legend: { display: false } },
     };
 
-    const tenantCounts = new Map<number, number>();
-    rows.forEach(r => {
-      if (r.tenant_id != null) tenantCounts.set(r.tenant_id, (tenantCounts.get(r.tenant_id) ?? 0) + 1);
-    });
-    const sortedTenants = Array.from(tenantCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const sortedTenants = byTenant.slice(0, 10);
     this.topTenantsData = {
-      labels: sortedTenants.map(([id]) => `#${id}`),
+      labels: sortedTenants.map(r => `#${r.tenant_id}`),
       datasets: [{
         label: 'Events',
-        data: sortedTenants.map(([, c]) => c),
+        data: sortedTenants.map(r => Number(r.count)),
         backgroundColor: sortedTenants.map((_, i) => PALETTE[i % PALETTE.length]),
       }],
     };
@@ -170,9 +177,9 @@ export class DashboardPage implements OnInit {
     };
 
     this.eventDistributionData = {
-      labels: sortedNames.map(([name]) => name),
+      labels: sortedNames.map(r => r.event_name),
       datasets: [{
-        data: sortedNames.map(([, c]) => c),
+        data: sortedNames.map(r => Number(r.count)),
         backgroundColor: sortedNames.map((_, i) => PALETTE[i % PALETTE.length]),
       }],
     };
@@ -181,17 +188,12 @@ export class DashboardPage implements OnInit {
       maintainAspectRatio: false,
     };
 
-    const deviceCounts = new Map<string, number>();
-    rows.forEach(r => {
-      const k = r.device_type ?? 'unknown';
-      deviceCounts.set(k, (deviceCounts.get(k) ?? 0) + 1);
-    });
     const deviceColors: Record<string, string> = { ios: '#a2aaad', android: '#3ddc84', web: '#3880ff', unknown: '#c9cbcf' };
-    const deviceLabels = Array.from(deviceCounts.keys());
+    const deviceLabels = byDevice.map(r => r.device_type);
     this.deviceTypeData = {
       labels: deviceLabels,
       datasets: [{
-        data: deviceLabels.map(k => deviceCounts.get(k) ?? 0),
+        data: byDevice.map(r => Number(r.count)),
         backgroundColor: deviceLabels.map(k => deviceColors[k] ?? '#999'),
       }],
     };

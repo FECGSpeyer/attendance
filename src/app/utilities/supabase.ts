@@ -1494,6 +1494,42 @@ export type Database = {
           tenantId: number
         }[]
       }
+      usage_events_by_device: {
+        Args: { p_events: string[]; p_since: string }
+        Returns: {
+          count: number
+          device_type: string
+        }[]
+      }
+      usage_events_by_name: {
+        Args: { p_events: string[]; p_since: string }
+        Returns: {
+          count: number
+          event_name: string
+        }[]
+      }
+      usage_events_by_tenant: {
+        Args: { p_events: string[]; p_since: string }
+        Returns: {
+          count: number
+          tenant_id: number
+        }[]
+      }
+      usage_events_per_day: {
+        Args: { p_events: string[]; p_since: string }
+        Returns: {
+          count: number
+          day: string
+        }[]
+      }
+      usage_kpis: {
+        Args: { p_events: string[]; p_since: string }
+        Returns: {
+          active_tenants_7d: number
+          distinct_tenants: number
+          total_events: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

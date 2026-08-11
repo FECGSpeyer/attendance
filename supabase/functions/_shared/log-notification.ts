@@ -9,7 +9,11 @@
 // creating a duplicate entry, so the user never sees the same notification
 // twice. Dedupe key: (user_id, tenantId, type, data->>attendanceId). Rows
 // without an attendanceId (birthday/criticals) are never merged — they may
-// legitimately recur — and are always inserted.
+// legitimately recur — and are always inserted. Type 'attendance'
+// (status-change events) is also never merged: several distinct events can
+// share one appointment id, so merging would collapse them into a single feed
+// row (push still fires per event, but the notification center would miss all
+// but the first). Each status change is always inserted.
 //
 // Best-effort: this must never throw into the send flow. A failed log is logged
 // to the console and swallowed so it can't break notification delivery.
@@ -35,9 +39,17 @@ export async function logNotification(
   try {
     const attendanceId = p.data?.attendanceId ?? null;
 
-    // Rows tied to an attendance are deduped: if one already exists for this
-    // (user, tenant, type, attendance), merge the channel into it.
-    if (p.userId && attendanceId) {
+    // Cross-channel dedupe: if a row already exists for this
+    // (user, tenant, type, attendance), merge the channel into it instead of
+    // inserting a duplicate.
+    //
+    // Excluded from dedupe:
+    //  - rows without an attendanceId (birthday/criticals) — may legitimately recur.
+    //  - type 'attendance' (status-change events) — multiple distinct events can
+    //    target the same appointment (attendanceId), and the dedupe key can't tell
+    //    them apart, so it would wrongly collapse them into one feed row. Each
+    //    status change is its own notification and must always be inserted.
+    if (p.userId && attendanceId && p.type !== 'attendance') {
       const { data: existing, error: selErr } = await supabase
         .from('user_notifications')
         .select('id, channels')
