@@ -135,7 +135,7 @@ export function pickPersonFields(person: any) {
     otherOrchestras,
     lastSolve,
   } = person;
-  return {
+  const picked = {
     id,
     tenantId,
     firstName,
@@ -188,6 +188,15 @@ export function pickPersonFields(person: any) {
     otherOrchestras,
     lastSolve,
   };
+  // Timestamp columns reject empty strings ("invalid input syntax for type
+  // timestamp with time zone: \"\""). Normalize blanks to null defensively so
+  // no caller can crash the insert/update by passing an empty date string.
+  for (const key of ['birthday', 'joined', 'left', 'paused_until', 'registration_date', 'lastSolve', 'shift_start', 'playsSince', 'created_at'] as const) {
+    if ((picked as any)[key] === '') {
+      (picked as any)[key] = null;
+    }
+  }
+  return picked;
 }
 
 /**

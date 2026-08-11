@@ -1,0 +1,37 @@
+.intro {
+  color: var(--ion-color-medium);
+  font-size: 0.9rem;
+}
+
+.hint {
+  color: var(--ion-color-warning-shade);
+  font-size: 0.85rem;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.excluded {
+  opacity: 0.55;
+}
+
+.msg-error {
+  color: var(--ion-color-danger);
+  font-size: 0.8rem;
+}
+
+.msg-warn {
+  color: var(--ion-color-warning-shade);
+  font-size: 0.8rem;
+}
+
+.unresolved-group {
+  --border-color: var(--ion-color-warning);
+  border: 1px solid var(--ion-color-warning);
+  border-radius: 6px;
+  padding-inline: 8px;
+  margin-top: 2px;
+}

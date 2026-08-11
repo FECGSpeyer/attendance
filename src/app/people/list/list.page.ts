@@ -6,6 +6,7 @@ import { DbService } from 'src/app/services/db.service';
 import { Attendance, Group, Person, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
 import { PersonPage } from '../person/person.page';
 import { BulkEditPage } from '../bulk-edit/bulk-edit.page';
+import { ImportPage } from '../import/import.page';
 import { DefaultAttendanceType, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from 'src/app/utilities/Utils';
@@ -798,6 +799,21 @@ export class ListPage implements OnInit, OnDestroy {
 
     const { data } = await modal.onWillDismiss();
     if (data?.updated) {
+      await this.getPlayers();
+    }
+  }
+
+  async openImportModal() {
+    const modal = await this.modalController.create({
+      component: ImportPage,
+      presentingElement: this.routerOutlet.nativeEl,
+      backdropDismiss: false,
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onWillDismiss();
+    if (data?.imported) {
       await this.getPlayers();
     }
   }

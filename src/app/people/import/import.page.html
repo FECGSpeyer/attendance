@@ -1,0 +1,145 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Personen importieren</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <!-- Step 1: pick a file -->
+  @if (step === 'file') {
+    <div class="intro ion-padding">
+      <p>
+        Importiere Personen aus einer Excel- (.xlsx/.xls) oder CSV-Datei. Die erste Zeile muss
+        Spaltenüberschriften enthalten. Am einfachsten ist es, die Vorlage herunterzuladen und auszufüllen.
+      </p>
+    </div>
+
+    <ion-list [inset]="true">
+      <ion-item button detail="false" (click)="triggerFilePicker(fileInput)">
+        <ion-icon slot="start" name="cloud-upload-outline" color="primary"></ion-icon>
+        <ion-label color="primary">Datei auswählen</ion-label>
+        <input #fileInput hidden type="file" accept=".xlsx,.xls,.csv" (change)="onFileSelect($event)" />
+      </ion-item>
+      <ion-item button detail="false" (click)="downloadTemplate()">
+        <ion-icon slot="start" name="download-outline"></ion-icon>
+        <ion-label>Vorlage herunterladen</ion-label>
+      </ion-item>
+    </ion-list>
+  }
+
+  <!-- Step 2: map columns -->
+  @if (step === 'mapping') {
+    <div class="intro ion-padding">
+      <p><strong>{{ fileName }}</strong> — {{ rawRows.length }} Zeile(n)</p>
+      <p>Ordne die Spalten deiner Datei den Personenfeldern zu. Vorname und Nachname (oder eine kombinierte
+        Namensspalte) sind erforderlich.</p>
+    </div>
+
+    <ion-list [inset]="true">
+      @for (header of fileHeaders; track header) {
+        <ion-item>
+          <ion-select [label]="header" labelPlacement="stacked" interface="popover"
+            [(ngModel)]="mapping[header]" placeholder="Feld wählen...">
+            @for (opt of targetOptions; track opt.label) {
+              <ion-select-option [value]="opt.key">{{ opt.label }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      }
+    </ion-list>
+
+    @if (!canProceedFromMapping) {
+      <p class="hint ion-padding-horizontal" color="warning">
+        Bitte ordne Spalten für Vor- und Nachnamen zu (oder eine kombinierte Namensspalte).
+      </p>
+    }
+  }
+
+  <!-- Step 3: preview -->
+  @if (step === 'preview') {
+    <div class="summary ion-padding">
+      <ion-chip color="success" outline="true">{{ importableRows.length }} bereit</ion-chip>
+      @if (warningCount) { <ion-chip color="warning" outline="true">{{ warningCount }} mit Hinweis</ion-chip> }
+      @if (duplicateCount) { <ion-chip color="medium" outline="true">{{ duplicateCount }} Duplikat(e)</ion-chip> }
+      @if (errorCount) { <ion-chip color="danger" outline="true">{{ errorCount }} fehlerhaft</ion-chip> }
+    </div>
+
+    @if (unresolvedGroupCount) {
+      <p class="hint ion-padding-horizontal">
+        {{ unresolvedGroupCount }} Person(en) konnten keiner Gruppe zugeordnet werden. Bitte prüfe und
+        passe die Gruppe unten an – vorerst ist die Hauptgruppe hinterlegt.
+      </p>
+    }
+
+    <ion-list [inset]="true">
+      <ion-item lines="full">
+        <ion-toggle [(ngModel)]="createAccounts">Konten erstellen</ion-toggle>
+      </ion-item>
+      @if (createAccounts) {
+        <ion-item lines="none">
+          <ion-note color="warning">
+            Für Personen mit E-Mail-Adresse werden Benutzerkonten erstellt und Einladungs-E-Mails versendet.
+          </ion-note>
+        </ion-item>
+      }
+    </ion-list>
+
+    <ion-list [inset]="true">
+      @for (row of mappedRows; track row.rowIndex) {
+        <ion-item [class.excluded]="rowStatus(row) === 'error' || rowStatus(row) === 'duplicate'">
+          <ion-icon slot="start" size="small"
+            [name]="rowStatus(row) === 'ok' ? 'checkmark-circle' : (rowStatus(row) === 'error' ? 'close-circle' : (rowStatus(row) === 'duplicate' ? 'copy' : 'warning'))"
+            [color]="rowStatus(row) === 'ok' ? 'success' : (rowStatus(row) === 'error' ? 'danger' : (rowStatus(row) === 'duplicate' ? 'medium' : 'warning'))">
+          </ion-icon>
+          <ion-label class="ion-text-wrap">
+            <h3>{{ row.player.firstName }} {{ row.player.lastName }}</h3>
+            <p>
+              @if (row.player.email) { {{ row.player.email }} }
+            </p>
+            @if (rowStatus(row) !== 'error') {
+              <ion-select label="Gruppe" labelPlacement="stacked" interface="popover"
+                [class.unresolved-group]="!row.groupResolved"
+                [(ngModel)]="row.player.instrument" (ionChange)="onRowGroupChange(row)">
+                @for (group of groupOptions; track group.id) {
+                  <ion-select-option [value]="group.id">{{ group.name }}</ion-select-option>
+                }
+              </ion-select>
+            } @else {
+              <p>{{ groupName(row.player.instrument) }}</p>
+            }
+            @for (err of row.errors; track err) { <p class="msg-error">{{ err }}</p> }
+            @for (warn of row.warnings; track warn) { <p class="msg-warn">{{ warn }}</p> }
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  }
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    @if (step === 'mapping') {
+      <ion-buttons slot="start">
+        <ion-button (click)="step = 'file'">Zurück</ion-button>
+      </ion-buttons>
+      <ion-buttons slot="end">
+        <ion-button strong="true" [disabled]="!canProceedFromMapping" (click)="proceedToPreview()">Weiter</ion-button>
+      </ion-buttons>
+    }
+    @if (step === 'preview') {
+      <ion-buttons slot="start">
+        <ion-button (click)="backToMapping()">Zurück</ion-button>
+      </ion-buttons>
+      <ion-buttons slot="end">
+        <ion-button strong="true" [disabled]="isImporting || !importableRows.length" (click)="startImport()">
+          {{ importableRows.length }} importieren
+        </ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-footer>

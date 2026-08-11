@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.2.0",
+          "date": "11.8.2026",
+          "changes": [
+            "📥 Personen aus Excel/CSV importieren: Als Administrator kannst du jetzt über die Personenliste (Optionen-Menü → „Personen importieren“) mehrere Personen auf einmal aus einer Excel- (.xlsx/.xls) oder CSV-Datei anlegen. Die Spalten werden automatisch zugeordnet und lassen sich bei Bedarf manuell anpassen, eine Vorlage steht zum Download bereit. In der Vorschau siehst du vor dem Import alle Personen inklusive Hinweisen und Duplikaten. Ein kombiniertes Namensfeld (Vor- und Nachname in einer Spalte) wird unterstützt. Konten und Einladungs-E-Mails werden nur auf Wunsch erstellt (standardmäßig aus). Lässt sich eine Gruppe nicht eindeutig zuordnen, kann sie für jede Person direkt in der Vorschau ausgewählt werden."
+          ]
+        },
+        {
           "version": "4.1.4",
           "date": "11.8.2026",
           "changes": [

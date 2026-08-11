@@ -2842,8 +2842,81 @@ export class DbService {
   }
 
   /**
-   * True if a person with the same email already exists in the target tenant.
-   * Persons without an email are never considered duplicates.
+   * Import a batch of persons into the current tenant. Each person is inserted
+   * via `addPlayer` (which handles the player row + attendance backfill, and —
+   * only when `createAccounts` is on and the person has an email — the auth
+   * account + tenantUsers link + invitation email). Role is derived from group:
+   * a person in the main group becomes RESPONSIBLE, otherwise PLAYER. Failures
+   * are collected per-row rather than aborting the whole import.
+   */
+  async importPlayers(
+    players: Player[],
+    opts: { createAccounts: boolean; onProgress?: (done: number, total: number) => void },
+  ): Promise<{ imported: Player[]; failed: { player: Player; reason: string }[] }> {
+    this.checkDemoRestriction();
+    const imported: Player[] = [];
+    const failed: { player: Player; reason: string }[] = [];
+    const mainGroupId = this.getMainGroup()?.id;
+    const total = players.length;
+    let done = 0;
+
+    for (const player of players) {
+      try {
+        const role = player.instrument === mainGroupId ? Role.RESPONSIBLE : Role.PLAYER;
+        const register = opts.createAccounts && Boolean(player.email);
+        await this.addPlayer(player, register, role);
+        imported.push(player);
+      } catch (error) {
+        failed.push({ player, reason: error?.message ?? 'Unbekannter Fehler' });
+      } finally {
+        done++;
+        opts.onProgress?.(done, total);
+      }
+    }
+
+    return { imported, failed };
+  }
+
+  /**
+   * Return the set of lowercased, non-empty emails already used by players in
+   * the tenant, for duplicate detection during import. Paginated to defeat the
+   * PostgREST 1000-row default read cap on large tenants.
+   */
+  async getExistingEmails(tenantId?: number): Promise<Set<string>> {
+    const id = tenantId ?? this.tenant().id;
+    const emails = new Set<string>();
+    const pageSize = 1000;
+    let from = 0;
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const { data, error } = await supabase
+        .from('player')
+        .select('email')
+        .eq('tenantId', id)
+        .range(from, from + pageSize - 1);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      for (const row of data ?? []) {
+        const email = (row.email ?? '').trim().toLowerCase();
+        if (email) {
+          emails.add(email);
+        }
+      }
+
+      if (!data || data.length < pageSize) {
+        break;
+      }
+      from += pageSize;
+    }
+
+    return emails;
+  }
+
+  /**
    */
   async personExistsInTenant(person: Player, targetTenantId: number): Promise<boolean> {
     const email = (person.email ?? '').trim();
