@@ -337,12 +337,14 @@ export class AppComponent {
         // event here: verifyOtp/exchangeCodeForSession emit SIGNED_IN rather
         // than PASSWORD_RECOVERY, so the onAuthStateChange handler would never
         // show the alert and the user would be stuck.
+        window.history.replaceState({}, '', '/login');
         await this.router.navigateByUrl('/login');
         this.presentPasswordRecoveryAlert();
       } else {
         // Signup confirmation: verifyOtp/exchangeCodeForSession established a
         // session. Load the tenant context and route to the correct landing
         // page (freshly-confirmed users without a tenant go to /register).
+        window.history.replaceState({}, '', '/login');
         Utils.showToast('E-Mail-Adresse bestätigt. Willkommen!', 'success', 4000);
         await this.db.routeAfterAuth();
       }

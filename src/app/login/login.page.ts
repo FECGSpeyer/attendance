@@ -109,6 +109,10 @@ export class LoginPage implements OnInit, OnDestroy {
       // the verification mail so the user can complete registration.
       if (error?.code === 'email_not_confirmed') {
         await this.promptResendConfirmation();
+      } else if (error?.code === 'invalid_login_credentials' || error?.code === 'invalid_credentials') {
+        await this.promptSwitchToOtp();
+      } else if (error?.code === 'user_not_found') {
+        await this.promptRegister();
       }
       // Other error toasts already surfaced by db.login.
     } finally {
@@ -170,6 +174,8 @@ export class LoginPage implements OnInit, OnDestroy {
         this.otpSent = true;
         this.startResendCooldown();
       }
+    } catch {
+      await this.promptRegister();
     } finally {
       loading.dismiss();
     }
@@ -246,6 +252,46 @@ export class LoginPage implements OnInit, OnDestroy {
       ]
     });
 
+    await alert.present();
+  }
+
+  private async promptRegister(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Kein Konto gefunden',
+      message: 'Für diese E-Mail-Adresse existiert noch kein Konto. Möchtest du dich jetzt registrieren?',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel'
+        },
+        {
+          text: 'Registrieren',
+          handler: () => {
+            this.register();
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  private async promptSwitchToOtp(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Anmeldung fehlgeschlagen',
+      message: 'E-Mail oder Passwort ist falsch. Falls du kein Passwort gesetzt hast, kannst du dich stattdessen mit einem Code per E-Mail anmelden.',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel'
+        },
+        {
+          text: 'Code per E-Mail',
+          handler: () => {
+            this.enterOtpMode();
+          }
+        }
+      ]
+    });
     await alert.present();
   }
 

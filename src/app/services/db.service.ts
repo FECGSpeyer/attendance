@@ -915,7 +915,7 @@ export class DbService {
     if (error) {
       switch (error.code) {
         case 'invalid_login_credentials':
-          Utils.showToast('Ungültige Anmeldedaten', 'danger');
+          Utils.showToast('E-Mail oder Passwort falsch. Falls du kein Passwort gesetzt hast, nutze den Anmelde-Code per E-Mail.', 'danger', 5000);
           break;
         case 'user_disabled':
           Utils.showToast('Dein Konto wurde deaktiviert. Bitte wende dich an den Administrator deiner Instanz.', 'danger');
@@ -930,7 +930,7 @@ export class DbService {
           Utils.showToast('Ungültiges Passwort', 'danger');
           break;
         case 'user_not_found':
-          Utils.showToast('Benutzer nicht gefunden', 'danger');
+          Utils.showToast('Kein Konto mit dieser E-Mail-Adresse gefunden. Bitte registriere dich zuerst.', 'danger', 5000);
           break;
         case 'email_not_confirmed':
           // No toast here: the login page catches this code and shows an
@@ -940,7 +940,7 @@ export class DbService {
           Utils.showToast('Das Passwort erfüllt nicht die Sicherheitsanforderungen.', 'danger');
           break;
         case 'invalid_credentials':
-          Utils.showToast('Ungültige Anmeldedaten', 'danger');
+          Utils.showToast('E-Mail oder Passwort falsch. Falls du kein Passwort gesetzt hast, nutze den Anmelde-Code per E-Mail.', 'danger', 5000);
           break;
         default:
           Utils.showToast('Fehler beim Anmelden', 'danger');
@@ -994,12 +994,24 @@ export class DbService {
           break;
         case 'signup_disabled':
         case 'otp_disabled':
+          // On a sign-in-only surface these codes mean Supabase refused to create
+          // a new user — i.e. no account exists for this email.
+          if (!allowCreate) {
+            Utils.showToast('Kein Konto mit dieser E-Mail-Adresse gefunden. Bitte registriere dich zuerst.', 'danger', 5000);
+            throw error;
+          }
           Utils.showToast('Anmeldung per Code ist derzeit nicht möglich.', 'danger');
           break;
         case 'user_not_found':
-          Utils.showToast('Kein Konto mit dieser E-Mail Adresse gefunden.', 'danger');
-          break;
+          Utils.showToast('Kein Konto mit dieser E-Mail-Adresse gefunden. Bitte registriere dich zuerst.', 'danger', 5000);
+          throw error;
         default:
+          // Supabase returns signup_disabled/otp_disabled (not user_not_found) when
+          // shouldCreateUser=false and the email is unknown — catch that here too.
+          if (!allowCreate) {
+            Utils.showToast('Kein Konto mit dieser E-Mail-Adresse gefunden. Bitte registriere dich zuerst.', 'danger', 5000);
+            throw error;
+          }
           // Unknown-email on a sign-in-only surface may return a generic error
           // (enumeration protection), so we do not rely on a specific code here.
           Utils.showToast('Der Code konnte nicht gesendet werden. Bitte versuche es erneut.', 'danger');

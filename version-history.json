@@ -1,6 +1,14 @@
     {
       "versions": [
         {
+          "version": "4.3.3",
+          "date": "12.8.2026",
+          "changes": [
+            "💬 Bessere Fehlermeldungen beim Anmelden: Hinweise auf fehlende Konten oder nicht gesetztes Passwort mit direktem Angebot zur Registrierung oder zum Code-Login.",
+            "🔗 Bestätigungslink: Nach dem Klick auf den Bestätigungslink wurde fälschlicherweise eine Erfolgs- und eine Fehlermeldung gleichzeitig angezeigt – das ist jetzt behoben."
+          ]
+        },
+        {
           "version": "4.3.2",
           "date": "12.8.2026",
           "changes": [

@@ -66,6 +66,11 @@
         } @else {
           @if (!otpSent) {
             <ion-row>
+              <ion-col>
+                <ion-button (click)="register()" size="small" fill="clear">Registrieren</ion-button>
+              </ion-col>
+            </ion-row>
+            <ion-row>
               <ion-col class="signup-col">
                 <ion-button (click)="requestCode()" color="primary" expand="block" [disabled]="!registerCredentials.email">Code senden</ion-button>
               </ion-col>
