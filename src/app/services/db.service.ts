@@ -1013,11 +1013,26 @@ export class DbService {
   async verifyEmailOtp(email: string, code: string, returnEarly: boolean = false, loading?: HTMLIonLoadingElement): Promise<boolean> {
     // ion-input-otp may bind the value as a number; coerce to a string token.
     const token = String(code ?? '').trim();
-    const { data, error } = await supabase.auth.verifyOtp({
+
+    // Supabase issues the code against different OTP types depending on the
+    // surface: an existing user gets a 'magiclink'/'email' code, a brand-new
+    // user (shouldCreateUser: true) gets a 'signup' confirmation code. The
+    // token is only valid against its own type, so try 'email' first and fall
+    // back to 'signup' on an invalid-token error. This lets the same method
+    // serve login (existing) and registration (new) without the caller knowing.
+    let { data, error } = await supabase.auth.verifyOtp({
       email,
       token,
       type: 'email',
     });
+
+    if (error && error.code !== 'otp_expired' && error.code !== 'too_many_requests') {
+      ({ data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'signup',
+      }));
+    }
 
     if (error) {
       switch (error.code) {
