@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.3.1",
+          "date": "12.8.2026",
+          "changes": [
+            "🔑 Registrierung per Code zuverlässiger: Beim Anlegen eines Kontos ohne Passwort wird jetzt zuverlässig ein 6-stelliger Code per E-Mail versendet, den du direkt in der App eingibst. Bisher konnte es passieren, dass stattdessen nur eine Bestätigungs-E-Mail ankam und die App weiter auf den Code wartete."
+          ]
+        },
+        {
           "version": "4.3.0",
           "date": "12.8.2026",
           "changes": [

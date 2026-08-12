@@ -973,7 +973,14 @@ export class DbService {
   async sendEmailOtp(email: string, allowCreate: boolean): Promise<boolean> {
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { shouldCreateUser: allowCreate },
+      options: {
+        shouldCreateUser: allowCreate,
+        // Flag OTP registrations so the "Confirm signup" email template shows the
+        // 6-digit code instead of the confirmation link (which dead-ends the code
+        // flow: the app is waiting on code entry). Only new-user creation sends
+        // "Confirm signup"; existing users get the separate "Magic Link" template.
+        data: allowCreate ? { signup_method: 'otp' } : undefined,
+      },
     });
 
     if (error) {
