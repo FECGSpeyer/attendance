@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.2.1",
+          "date": "12.8.2026",
+          "changes": [
+            "🔄 Update-Hinweis nach Neuinstallation behoben: Nach einer frischen Installation der App aus dem Store erschien fälschlicherweise sofort ein „Update verfügbar“-Hinweis, obwohl bereits die neueste Version installiert war. Updates werden jetzt nur noch angeboten, wenn tatsächlich eine neuere Version vorliegt."
+          ]
+        },
+        {
           "version": "4.2.0",
           "date": "11.8.2026",
           "changes": [

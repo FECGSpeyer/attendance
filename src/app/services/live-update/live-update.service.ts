@@ -100,7 +100,23 @@ export class LiveUpdateService {
     }
 
     const current = await LiveUpdate.getCurrentBundle();
-    if (current?.bundleId === manifest.bundleId) return; // already on latest
+    if (current?.bundleId === manifest.bundleId) return; // already on latest OTA
+
+    // Fresh-install / same-version guard: if no OTA bundle is active yet, the app
+    // is running the JS baked into the native shell. Only pull an OTA bundle that
+    // is strictly NEWER than the native shell version — otherwise we'd prompt the
+    // user to "update" to the same code they just installed from the store (the
+    // manifest bundleId can never match a store build, which ships no OTA id).
+    const isOtaActive = !!current?.bundleId;
+    if (
+      !isOtaActive &&
+      this.compareVersions(this.bundleVersion(manifest.bundleId), nativeVersion) <= 0
+    ) {
+      console.log(
+        `[LiveUpdate] skipping bundle ${manifest.bundleId}: not newer than native ${nativeVersion} and no OTA active`,
+      );
+      return;
+    }
 
     // Skip re-downloading a bundle we already have on disk.
     const { bundleIds } = await LiveUpdate.getBundles();
@@ -143,18 +159,28 @@ export class LiveUpdateService {
     }
   }
 
-  /** Numeric "x.y.z" compare; non-numeric segments fall back to string compare. */
-  private satisfiesMin(current: string, min: string): boolean {
-    const cur = current.split('.').map(s => parseInt(s, 10) || 0);
-    const m = min.split('.').map(s => parseInt(s, 10) || 0);
-    const len = Math.max(cur.length, m.length);
+  /** Extract the version prefix from a bundleId (`"4.2.0-1786448165423"` -> `"4.2.0"`). */
+  private bundleVersion(bundleId: string): string {
+    return bundleId.split('-')[0];
+  }
+
+  /** Numeric "x.y.z" compare. Returns -1 if a<b, 0 if equal, 1 if a>b. */
+  private compareVersions(a: string, b: string): number {
+    const av = a.split('.').map(s => parseInt(s, 10) || 0);
+    const bv = b.split('.').map(s => parseInt(s, 10) || 0);
+    const len = Math.max(av.length, bv.length);
     for (let i = 0; i < len; i++) {
-      const a = cur[i] ?? 0;
-      const b = m[i] ?? 0;
-      if (a > b) return true;
-      if (a < b) return false;
+      const x = av[i] ?? 0;
+      const y = bv[i] ?? 0;
+      if (x > y) return 1;
+      if (x < y) return -1;
     }
-    return true; // equal is fine
+    return 0;
+  }
+
+  /** True when `current` is >= `min` (equal is fine). */
+  private satisfiesMin(current: string, min: string): boolean {
+    return this.compareVersions(current, min) >= 0;
   }
 
   private async promptReload(): Promise<void> {
