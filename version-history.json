@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.3.2",
+          "date": "12.8.2026",
+          "changes": [
+            "🌙 Dunkelmodus: Die Anmeldeseite passt sich jetzt dem Systemdesign an."
+          ]
+        },
+        {
           "version": "4.3.1",
           "date": "12.8.2026",
           "changes": [

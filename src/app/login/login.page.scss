@@ -36,7 +36,7 @@
     -ms-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
     width: 60%;
-    background-color: #fff;
+    background-color: var(--ion-card-background, var(--ion-background-color, #fff));
     padding: 1.75rem 1.5rem 1.5rem;
     border-radius: 1.25rem;
     max-width: 500px;
@@ -48,7 +48,7 @@
         width: 115px;
         height: 115px;
         margin-bottom: 2rem;
-        background-color: #fff;
+        background-color: var(--ion-card-background, var(--ion-background-color, #fff));
         position: relative;
         box-shadow: 0 16px 38px -12px rgba(0, 0, 0, 0.56), 0 4px 25px 0px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.2);
         // border: 3px solid #ffffff;
@@ -60,11 +60,11 @@
 
     .mailItem {
         margin-bottom: 1rem;
-        color: #000;
+        color: var(--ion-text-color);
       }
 
       .inputFontBlack {
-        color: #000;
+        color: var(--ion-text-color);
       }
       .login {
         margin-top: 0.5rem;
@@ -95,7 +95,7 @@
 }
 
 ion-item {
-    --background: #fff;
+    --background: var(--ion-card-background, var(--ion-background-color, #fff));
     --padding-start: 0;
     // Force the bottom separator to render edge-to-edge. Ionic insets the line
     // by --inner-padding-end/--padding-start, which on narrow screens could
@@ -108,7 +108,7 @@ ion-item {
 }
 
 ion-label {
-    --color: #000;
+    --color: var(--ion-text-color);
 }
 
 @media (max-width: 700px) {
@@ -153,7 +153,7 @@ a {
 
 // Keep the 6 OTP boxes within the login card on narrow screens.
 ion-input-otp {
-    color: #000;
+    color: var(--ion-text-color);
     --min-width: 0;
     --width: clamp(32px, 12vw, 44px);
     --height: clamp(38px, 13vw, 48px);
