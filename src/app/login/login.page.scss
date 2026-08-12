@@ -112,3 +112,12 @@ ion-label {
 a {
     color: #fff
 }
+
+// Keep the 6 OTP boxes within the login card on narrow screens.
+ion-input-otp {
+    color: #000;
+    --min-width: 0;
+    --width: clamp(32px, 12vw, 44px);
+    --height: clamp(38px, 13vw, 48px);
+    margin-inline: auto;
+}

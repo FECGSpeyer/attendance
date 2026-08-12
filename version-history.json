@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.3.0",
+          "date": "12.8.2026",
+          "changes": [
+            "🔑 Anmelden & Registrieren mit Code per E-Mail: Du kannst dich jetzt ganz ohne Passwort anmelden. Fordere auf der Anmeldeseite über „Anmelden mit Code per E-Mail“ einen 6-stelligen Code an, den wir dir per E-Mail schicken, und gib ihn direkt in der App ein. Auch bei der Registrierung über einen Einladungslink oder das Registrierungsfenster kannst du dein Konto ohne Passwort anlegen. Den Code kannst du bei Bedarf erneut anfordern."
+          ]
+        },
+        {
           "version": "4.2.1",
           "date": "12.8.2026",
           "changes": [

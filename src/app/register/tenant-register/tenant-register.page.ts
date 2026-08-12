@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, AlertController } from '@ionic/angular';
 import dayjs from 'dayjs';
@@ -13,7 +13,7 @@ import { Utils } from 'src/app/utilities/Utils';
     styleUrls: ['./tenant-register.page.scss'],
     standalone: false
 })
-export class TenantRegisterPage implements OnInit {
+export class TenantRegisterPage implements OnInit, OnDestroy {
   @ViewChild('chooser') chooser: ElementRef;
   public tenantData: Tenant | null = null;
   public groups: Group[] = [];
@@ -33,6 +33,12 @@ export class TenantRegisterPage implements OnInit {
   public customChurchName = '';
   public isChurchModalOpen = false;
   public churchSearch = '';
+  /** Passwordless email-OTP (code) registration state. */
+  public otpMode = false;
+  public otpSent = false;
+  public otpCode = '';
+  public resendCooldown = 0;
+  private cooldownTimer: any = null;
 
   constructor(
     public db: DbService,
@@ -88,6 +94,89 @@ export class TenantRegisterPage implements OnInit {
       return;
     }
     await loading.dismiss();
+  }
+
+  ngOnDestroy() {
+    this.clearCooldown();
+  }
+
+  enterOtpMode() {
+    this.otpMode = true;
+    this.otpSent = false;
+    this.otpCode = '';
+  }
+
+  exitOtpMode() {
+    this.otpMode = false;
+    this.otpSent = false;
+    this.otpCode = '';
+    this.clearCooldown();
+  }
+
+  async requestCode() {
+    const email = this.email?.toLowerCase().trim();
+    if (!Utils.validateEmail(email)) {
+      Utils.showToast('Bitte eine gültige E-Mail Adresse eingeben.', 'danger');
+      return;
+    }
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+    try {
+      // Registration surface: allow creating a new account.
+      const ok = await this.db.sendEmailOtp(email, true);
+      if (ok) {
+        this.otpSent = true;
+        this.startResendCooldown();
+      }
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  async resendCode() {
+    if (this.resendCooldown > 0) {
+      return;
+    }
+    await this.requestCode();
+  }
+
+  async verifyCode() {
+    const email = this.email?.toLowerCase().trim();
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+    try {
+      // returnEarly: stay on this page so the user can complete the profile form.
+      const ok = await this.db.verifyEmailOtp(email, this.otpCode, true);
+      if (!ok) {
+        return;
+      }
+      await loading.dismiss();
+      // Signed in now: if already a member of this tenant, checkExistent redirects
+      // to /login; otherwise db.user is set, the account block collapses to the
+      // "angemeldet als" state, and the user completes the profile + taps Registrieren.
+      await this.checkExistent();
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  private startResendCooldown() {
+    this.clearCooldown();
+    this.resendCooldown = 30;
+    this.cooldownTimer = setInterval(() => {
+      this.resendCooldown -= 1;
+      if (this.resendCooldown <= 0) {
+        this.clearCooldown();
+      }
+    }, 1000);
+  }
+
+  private clearCooldown() {
+    if (this.cooldownTimer) {
+      clearInterval(this.cooldownTimer);
+      this.cooldownTimer = null;
+    }
+    this.resendCooldown = 0;
   }
 
   async login() {

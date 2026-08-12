@@ -55,3 +55,11 @@ ion-content {
   flex-direction: column;
   gap: 0.25rem;
 }
+
+// Keep the 6 OTP boxes within the modal on narrow screens.
+ion-input-otp {
+  --min-width: 0;
+  --width: clamp(32px, 12vw, 44px);
+  --height: clamp(38px, 13vw, 48px);
+  margin-inline: auto;
+}

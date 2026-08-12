@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AlertController, IonInput, ModalController } from '@ionic/angular';
@@ -16,7 +16,7 @@ import { RegisterModalComponent } from './register-modal/register-modal.componen
   styleUrls: ['./login.page.scss'],
   standalone: false
 })
-export class LoginPage implements OnInit {
+export class LoginPage implements OnInit, OnDestroy {
   @ViewChild('emailInput', { static: true }) emailInput: IonInput;
   @ViewChild('passwordInput', { static: true }) passwordInput: IonInput;
   loginForm: UntypedFormGroup;
@@ -24,6 +24,12 @@ export class LoginPage implements OnInit {
   showPassword = false;
   /** One-time Teams account-linking mode (set when SSO found no linked account). */
   linkMode = false;
+  /** Passwordless email-OTP (code) mode state. */
+  otpMode = false;
+  otpSent = false;
+  otpCode = '';
+  resendCooldown = 0;
+  private cooldownTimer: any = null;
   public version: string = require('../../../package.json').version;
 
   constructor(
@@ -100,6 +106,94 @@ export class LoginPage implements OnInit {
     } finally {
       loading.dismiss();
     }
+  }
+
+  ngOnDestroy() {
+    this.clearCooldown();
+  }
+
+  /** Route Enter/submit to the action appropriate for the current mode. */
+  onEnter() {
+    if (this.otpMode) {
+      if (this.otpSent) {
+        this.verifyCode();
+      } else {
+        this.requestCode();
+      }
+      return;
+    }
+    this.login();
+  }
+
+  enterOtpMode() {
+    this.otpMode = true;
+    this.otpSent = false;
+    this.otpCode = '';
+  }
+
+  exitOtpMode() {
+    this.otpMode = false;
+    this.otpSent = false;
+    this.otpCode = '';
+    this.clearCooldown();
+  }
+
+  async requestCode() {
+    const email = this.registerCredentials.email?.trim();
+    if (!Utils.validateEmail(email)) {
+      Utils.showToast('Bitte eine gültige E-Mail Adresse eingeben.', 'danger');
+      return;
+    }
+    const loading = await Utils.getLoadingElement();
+    loading.present();
+    try {
+      // Login surface: sign-in only, never create a new account.
+      const ok = await this.db.sendEmailOtp(email, false);
+      if (ok) {
+        this.otpSent = true;
+        this.startResendCooldown();
+      }
+    } finally {
+      loading.dismiss();
+    }
+  }
+
+  async resendCode() {
+    if (this.resendCooldown > 0) {
+      return;
+    }
+    await this.requestCode();
+  }
+
+  async verifyCode() {
+    const email = this.registerCredentials.email?.trim();
+    const loading = await Utils.getLoadingElement();
+    loading.present();
+    try {
+      // verifyEmailOtp shows its own error toast; on success it routes via routeAfterAuth.
+      await this.db.verifyEmailOtp(email, this.otpCode, false, loading);
+    } finally {
+      loading.dismiss();
+    }
+  }
+
+  private startResendCooldown() {
+    this.clearCooldown();
+    this.resendCooldown = 30;
+    this.cooldownTimer = setInterval(() => {
+      this.resendCooldown -= 1;
+      if (this.resendCooldown <= 0) {
+        this.clearCooldown();
+      }
+    }, 1000);
+  }
+
+  private clearCooldown() {
+    if (this.cooldownTimer) {
+      clearInterval(this.cooldownTimer);
+      this.cooldownTimer = null;
+    }
+    this.resendCooldown = 0;
   }
 
   private async promptResendConfirmation(): Promise<void> {
@@ -191,8 +285,11 @@ export class LoginPage implements OnInit {
     // The modal performs the backend registration itself and only dismisses
     // with { success: true } once it succeeds — so on failure it stays open
     // with the user's data intact. Nothing to retry here.
-    const { data } = await modal.onDidDismiss<{ success: boolean } | undefined>();
-    if (data?.success) {
+    const { data } = await modal.onDidDismiss<{ success: boolean; signedIn?: boolean } | undefined>();
+    if (data?.signedIn) {
+      // Passwordless OTP registration already created AND signed the user in.
+      await this.db.routeAfterAuth();
+    } else if (data?.success) {
       Utils.showToast('Registrierung erfolgreich, bitte bestätige deine E-Mail-Adresse.', 'success');
     }
   }

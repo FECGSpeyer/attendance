@@ -22,7 +22,7 @@
     </p>
   </div>
 
-  <form (ngSubmit)="submit()" #regForm="ngForm" novalidate>
+  <form (ngSubmit)="onSubmit()" #regForm="ngForm" novalidate>
     <ion-list lines="full" class="register-list">
       <ion-item>
         <ion-input
@@ -33,38 +33,53 @@
           placeholder="deine@email.de"
           name="email"
           [(ngModel)]="email"
+          [readonly]="otpMode && otpSent"
           required>
         </ion-input>
       </ion-item>
 
-      <ion-item>
-        <ion-input
-          label="Passwort"
-          labelPlacement="stacked"
-          [type]="showPassword ? 'text' : 'password'"
-          autocomplete="new-password"
-          placeholder="Mindestens 6 Zeichen"
-          name="password"
-          [(ngModel)]="password"
-          required>
-          <ion-button fill="clear" slot="end" (click)="showPassword = !showPassword" aria-label="Passwort anzeigen" type="button">
-            <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" slot="icon-only"></ion-icon>
-          </ion-button>
-        </ion-input>
-      </ion-item>
+      @if (!otpMode) {
+        <ion-item>
+          <ion-input
+            label="Passwort"
+            labelPlacement="stacked"
+            [type]="showPassword ? 'text' : 'password'"
+            autocomplete="new-password"
+            placeholder="Mindestens 6 Zeichen"
+            name="password"
+            [(ngModel)]="password"
+            required>
+            <ion-button fill="clear" slot="end" (click)="showPassword = !showPassword" aria-label="Passwort anzeigen" type="button">
+              <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-input>
+        </ion-item>
 
-      <ion-item>
-        <ion-input
-          label="Passwort bestätigen"
-          labelPlacement="stacked"
-          [type]="showPassword ? 'text' : 'password'"
-          autocomplete="new-password"
-          placeholder="Passwort erneut eingeben"
-          name="passwordConfirm"
-          [(ngModel)]="passwordConfirm"
-          required>
-        </ion-input>
-      </ion-item>
+        <ion-item>
+          <ion-input
+            label="Passwort bestätigen"
+            labelPlacement="stacked"
+            [type]="showPassword ? 'text' : 'password'"
+            autocomplete="new-password"
+            placeholder="Passwort erneut eingeben"
+            name="passwordConfirm"
+            [(ngModel)]="passwordConfirm"
+            required>
+          </ion-input>
+        </ion-item>
+      } @else if (otpSent) {
+        <ion-item lines="none">
+          <ion-input-otp
+            size="small"
+            type="text"
+            length="6"
+            name="otpCode"
+            [(ngModel)]="otpCode"
+            (ionComplete)="verifyCode()">
+            Code aus der E-Mail
+          </ion-input-otp>
+        </ion-item>
+      }
     </ion-list>
 
     <ion-item lines="none" class="privacy-item">
@@ -82,10 +97,33 @@
     </ion-item>
 
     <div class="actions">
-      <ion-button expand="block" fill="solid" type="submit" [disabled]="!canSubmit || !regForm.form.valid || submitting">
-        <ion-spinner *ngIf="submitting" name="crescent" slot="start"></ion-spinner>
-        {{ submitting ? 'Wird registriert...' : 'Registrieren' }}
-      </ion-button>
+      @if (!otpMode) {
+        <ion-button expand="block" fill="solid" type="submit" [disabled]="!canSubmit || !regForm.form.valid || submitting">
+          <ion-spinner *ngIf="submitting" name="crescent" slot="start"></ion-spinner>
+          {{ submitting ? 'Wird registriert...' : 'Registrieren' }}
+        </ion-button>
+        <ion-button expand="block" fill="clear" type="button" (click)="enterOtpMode()" [disabled]="submitting">
+          Ohne Passwort (Code per E-Mail)
+        </ion-button>
+      } @else {
+        @if (!otpSent) {
+          <ion-button expand="block" fill="solid" type="submit" [disabled]="!email || !privacyAccepted || submitting">
+            <ion-spinner *ngIf="submitting" name="crescent" slot="start"></ion-spinner>
+            Code senden
+          </ion-button>
+        } @else {
+          <ion-button expand="block" fill="solid" type="submit" [disabled]="!otpCode || submitting">
+            <ion-spinner *ngIf="submitting" name="crescent" slot="start"></ion-spinner>
+            Bestätigen
+          </ion-button>
+          <ion-button expand="block" fill="clear" type="button" (click)="resendCode()" [disabled]="resendCooldown > 0 || submitting">
+            {{ resendCooldown > 0 ? 'Erneut senden (' + resendCooldown + 's)' : 'Code erneut senden' }}
+          </ion-button>
+        }
+        <ion-button expand="block" fill="clear" type="button" (click)="exitOtpMode()" [disabled]="submitting">
+          Zurück (mit Passwort)
+        </ion-button>
+      }
       <ion-button expand="block" fill="clear" type="button" (click)="dismiss()" [disabled]="submitting">
         Abbrechen
       </ion-button>

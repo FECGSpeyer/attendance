@@ -965,6 +965,89 @@ export class DbService {
   }
 
   /**
+   * Passwordless: request a 6-digit sign-in code by email.
+   * @param allowCreate `shouldCreateUser` — `true` on registration surfaces
+   * (tenant-register, register modal), `false` on the login page (sign-in only).
+   * Returns `true` if the code was sent. Never throws; surfaces a German toast on error.
+   */
+  async sendEmailOtp(email: string, allowCreate: boolean): Promise<boolean> {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: allowCreate },
+    });
+
+    if (error) {
+      switch (error.code) {
+        case 'over_email_send_rate_limit':
+        case 'too_many_requests':
+          Utils.showToast('Zu viele Anfragen. Bitte warte einen Moment und versuche es erneut.', 'danger');
+          break;
+        case 'invalid_email':
+          Utils.showToast('Ungültige E-Mail Adresse', 'danger');
+          break;
+        case 'signup_disabled':
+        case 'otp_disabled':
+          Utils.showToast('Anmeldung per Code ist derzeit nicht möglich.', 'danger');
+          break;
+        case 'user_not_found':
+          Utils.showToast('Kein Konto mit dieser E-Mail Adresse gefunden.', 'danger');
+          break;
+        default:
+          // Unknown-email on a sign-in-only surface may return a generic error
+          // (enumeration protection), so we do not rely on a specific code here.
+          Utils.showToast('Der Code konnte nicht gesendet werden. Bitte versuche es erneut.', 'danger');
+          break;
+      }
+      return false;
+    }
+
+    Utils.showToast('Wir haben dir einen Code per E-Mail gesendet.', 'success');
+    return true;
+  }
+
+  /**
+   * Passwordless: verify the 6-digit code and establish a session.
+   * On success sets `this.user`; unless `returnEarly` is set, routes via
+   * `routeAfterAuth`. Returns `true` on success. Never throws; German toast on error.
+   */
+  async verifyEmailOtp(email: string, code: string, returnEarly: boolean = false, loading?: HTMLIonLoadingElement): Promise<boolean> {
+    // ion-input-otp may bind the value as a number; coerce to a string token.
+    const token = String(code ?? '').trim();
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email',
+    });
+
+    if (error) {
+      switch (error.code) {
+        case 'otp_expired':
+          Utils.showToast('Der Code ist abgelaufen. Bitte fordere einen neuen an.', 'danger');
+          break;
+        case 'too_many_requests':
+          Utils.showToast('Zu viele Versuche. Bitte versuche es später erneut.', 'danger');
+          break;
+        default:
+          Utils.showToast('Der Code ist ungültig. Bitte überprüfe deine Eingabe.', 'danger');
+          break;
+      }
+      return false;
+    }
+
+    if (data.user) {
+      this.user = data.user;
+
+      if (returnEarly) {
+        return true;
+      }
+
+      await this.routeAfterAuth(loading);
+    }
+
+    return Boolean(data.user);
+  }
+
+  /**
    * Load the user's tenant context and navigate to the correct landing page.
    * Used after a normal login as well as after a signup email confirmation
    * (which establishes a session via verifyOtp without going through login()).

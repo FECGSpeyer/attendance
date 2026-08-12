@@ -6,7 +6,7 @@
           <img src="../../../assets/icon/favicon.png">
         </ion-avatar>
       </a>
-      <form novalidate (keyup.enter)="login()" (ngSubmit)="login()" #registerForm="ngForm">
+      <form novalidate (keyup.enter)="onEnter()" (ngSubmit)="onEnter()" #registerForm="ngForm">
         <ion-row *ngIf="linkMode">
           <ion-col>
             <ion-note class="linkModeNote">
@@ -20,28 +20,69 @@
           <ion-col>
             <ion-item class="mailItem">
               <ion-label position="stacked">E-Mail</ion-label>
-              <ion-input #emailInput class="inputFontBlack" type="text" placeholder="E-Mail" name="email" [(ngModel)]="registerCredentials.email" required></ion-input>
+              <ion-input #emailInput class="inputFontBlack" type="text" placeholder="E-Mail" name="email" [(ngModel)]="registerCredentials.email" [readonly]="otpMode && otpSent" required></ion-input>
             </ion-item>
-            <ion-item>
-              <ion-input #passwordInput class="inputFontBlack" [type]="showPassword ? 'text' : 'password'" label="Passwort" labelPlacement="stacked" placeholder="Passwort" name="password" [(ngModel)]="registerCredentials.password" required>
-                <ion-button fill="clear" slot="end" (click)="showPassword = !showPassword" aria-label="Passwort anzeigen">
-                  <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" slot="icon-only"></ion-icon>
-                </ion-button>
-              </ion-input>
-            </ion-item>
+            @if (!otpMode) {
+              <ion-item>
+                <ion-input #passwordInput class="inputFontBlack" [type]="showPassword ? 'text' : 'password'" label="Passwort" labelPlacement="stacked" placeholder="Passwort" name="password" [(ngModel)]="registerCredentials.password" required>
+                  <ion-button fill="clear" slot="end" (click)="showPassword = !showPassword" aria-label="Passwort anzeigen">
+                    <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </ion-input>
+              </ion-item>
+            }
+            @if (otpMode && otpSent) {
+              <ion-item lines="none">
+                <ion-input-otp size="small" type="text" length="6" name="otpCode" [(ngModel)]="otpCode" (ionComplete)="verifyCode()">Code aus der E-Mail</ion-input-otp>
+              </ion-item>
+            }
           </ion-col>
         </ion-row>
-        <ion-row>
-          <ion-col>
-            <ion-button (click)="register()" size="small" fill="clear">Registrieren</ion-button>
-            <ion-button (click)="forgotPassword()" size="small" fill="clear">Passwort vergessen?</ion-button>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col class="signup-col">
-            <ion-button (click)="login()" color="primary" expand="block" [disabled]="!registerForm.form.valid">{{ linkMode ? 'Verknüpfen & anmelden' : 'Anmelden' }}</ion-button>
-          </ion-col>
-        </ion-row>
+
+        @if (!otpMode) {
+          <ion-row>
+            <ion-col>
+              <ion-button (click)="register()" size="small" fill="clear">Registrieren</ion-button>
+              <ion-button (click)="forgotPassword()" size="small" fill="clear">Passwort vergessen?</ion-button>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col class="signup-col">
+              <ion-button (click)="login()" color="primary" expand="block" [disabled]="!registerForm.form.valid">{{ linkMode ? 'Verknüpfen & anmelden' : 'Anmelden' }}</ion-button>
+            </ion-col>
+          </ion-row>
+          @if (!linkMode) {
+            <ion-row>
+              <ion-col class="signup-col">
+                <ion-button (click)="enterOtpMode()" size="small" fill="clear">Anmelden mit Code per E-Mail</ion-button>
+              </ion-col>
+            </ion-row>
+          }
+        } @else {
+          @if (!otpSent) {
+            <ion-row>
+              <ion-col class="signup-col">
+                <ion-button (click)="requestCode()" color="primary" expand="block" [disabled]="!registerCredentials.email">Code senden</ion-button>
+              </ion-col>
+            </ion-row>
+          } @else {
+            <ion-row>
+              <ion-col class="signup-col">
+                <ion-button (click)="verifyCode()" color="primary" expand="block" [disabled]="!otpCode">Anmelden</ion-button>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col class="signup-col">
+                <ion-button (click)="resendCode()" size="small" fill="clear" [disabled]="resendCooldown > 0">{{ resendCooldown > 0 ? 'Erneut senden (' + resendCooldown + 's)' : 'Code erneut senden' }}</ion-button>
+              </ion-col>
+            </ion-row>
+          }
+          <ion-row>
+            <ion-col class="signup-col">
+              <ion-button (click)="exitOtpMode()" size="small" fill="clear">Zurück zur Passwort-Anmeldung</ion-button>
+            </ion-col>
+          </ion-row>
+        }
       </form>
     </div>
   </div>
