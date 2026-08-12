@@ -113,6 +113,15 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     this.clearCooldown();
   }
 
+  /** Segment handler: switch between password and email-code (OTP) registration. */
+  onModeChange(ev: CustomEvent) {
+    if (ev.detail.value === 'otp') {
+      this.enterOtpMode();
+    } else {
+      this.exitOtpMode();
+    }
+  }
+
   async requestCode() {
     const email = this.email?.toLowerCase().trim();
     if (!Utils.validateEmail(email)) {
@@ -265,7 +274,10 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
         self_register: true
       }, true, Role.APPLICANT, this.tenantData.id, this.password, this.tenantData.longName);
 
-      isNew = created && !this.db.user;
+      // A brand-new account only needs email confirmation when it was created
+      // with a password. OTP registration already verified the email and signed
+      // the user in (db.user is set), so no confirmation step remains.
+      isNew = created && !this.db.user && !this.otpMode;
 
       // Only upload if addPlayer didn't already handle it (i.e., if we have a File object and img wasn't a data URL)
       if (this.tenantData?.registration_fields?.includes('picture') && this.profileImgFile && !this.profilePicture.startsWith('data:image/')) {

@@ -72,6 +72,18 @@ export class RegisterModalComponent implements OnDestroy {
     this.clearCooldown();
   }
 
+  /** Segment handler: switch between password and email-code (OTP) registration. */
+  onModeChange(ev: CustomEvent) {
+    if (this.submitting) {
+      return;
+    }
+    if (ev.detail.value === 'otp') {
+      this.enterOtpMode();
+    } else {
+      this.exitOtpMode();
+    }
+  }
+
   async requestCode() {
     if (this.submitting) {
       return;

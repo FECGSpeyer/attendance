@@ -3,6 +3,31 @@
     padding-right: 1rem;
 }
 
+// Auth-method switcher (Passwort / Code per E-Mail) in the Account section.
+.mode-segment {
+    width: 100%;
+    --background: rgba(var(--ion-color-primary-rgb), 0.1);
+    border-radius: 0.75rem;
+    padding: 3px;
+
+    ion-segment-button {
+        // Dark-teal checked label reads in both Ionic modes (MD's thin underline
+        // and iOS's filled pill); paired with a light teal-tinted checked pill.
+        --color: rgba(var(--ion-color-primary-rgb), 0.6);
+        --color-checked: var(--ion-color-primary);
+        --background-checked: rgba(var(--ion-color-primary-rgb), 0.18);
+        --indicator-color: rgba(var(--ion-color-primary-rgb), 0.18);
+        --border-radius: 0.6rem;
+        --indicator-box-shadow: none;
+        --indicator-height: 100%;
+        min-height: 34px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: 0;
+    }
+}
+
 // Keep the 6 OTP boxes within the form on narrow screens.
 ion-input-otp {
     --min-width: 0;

@@ -37,9 +37,10 @@
     transform: translate(-50%, -50%);
     width: 60%;
     background-color: #fff;
-    padding: 1.5rem;
-    border-radius: 1rem;
+    padding: 1.75rem 1.5rem 1.5rem;
+    border-radius: 1.25rem;
     max-width: 500px;
+    box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.45);
 
     .avatar {
         margin: -50px auto 0;
@@ -60,7 +61,6 @@
     .mailItem {
         margin-bottom: 1rem;
         color: #000;
-
       }
 
       .inputFontBlack {
@@ -97,6 +97,14 @@
 ion-item {
     --background: #fff;
     --padding-start: 0;
+    // Force the bottom separator to render edge-to-edge. Ionic insets the line
+    // by --inner-padding-end/--padding-start, which on narrow screens could
+    // collapse it to nothing; pin it explicitly so it never disappears.
+    --inner-padding-end: 0;
+    --border-color: rgba(var(--ion-color-primary-rgb), 0.3);
+    --border-width: 0 0 1px 0;
+    --highlight-height: 2px;
+    --highlight-color-focused: var(--ion-color-primary);
 }
 
 ion-label {
@@ -111,6 +119,36 @@ ion-label {
 
 a {
     color: #fff
+}
+
+// Auth-method switcher (Passwort / Code per E-Mail) at the top of the card.
+.mode-col {
+    padding-bottom: 0.25rem;
+}
+
+.mode-segment {
+    --background: rgba(var(--ion-color-primary-rgb), 0.08);
+    border-radius: 0.75rem;
+    padding: 3px;
+
+    ion-segment-button {
+        // Keep the checked label dark teal (readable in MD mode, where the
+        // indicator is only a thin underline, AND on the iOS filled pill).
+        --color: rgba(var(--ion-color-primary-rgb), 0.6);
+        --color-checked: var(--ion-color-primary);
+        // Solid teal-tinted pill behind the checked button so it reads as a
+        // selected segment in both Ionic modes.
+        --background-checked: rgba(var(--ion-color-primary-rgb), 0.18);
+        --indicator-color: rgba(var(--ion-color-primary-rgb), 0.18);
+        --border-radius: 0.6rem;
+        --indicator-box-shadow: none;
+        --indicator-height: 100%;
+        min-height: 34px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: 0;
+    }
 }
 
 // Keep the 6 OTP boxes within the login card on narrow screens.

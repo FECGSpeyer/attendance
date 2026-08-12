@@ -61,17 +61,25 @@ export class LoginPage implements OnInit, OnDestroy {
     const nativeEmailInput = await this.emailInput.getInputElement();
     const nativePasswordInput = await this.passwordInput.getInputElement();
 
-    nativeEmailInput.addEventListener('change', (ev: Event) => {
+    // Browser/password-manager autofill often fires only a native `input` event
+    // (sometimes with no `change` at all) and can bypass Ionic's ngModel sync.
+    // Mirror both events straight into the model so autofilled credentials are
+    // always captured, whichever event the platform emits.
+    const syncEmail = (ev: Event) => {
       requestAnimationFrame(() => {
         this.registerCredentials.email = (ev.target as HTMLInputElement).value;
       });
-    });
-
-    nativePasswordInput.addEventListener('change', (ev: Event) => {
+    };
+    const syncPassword = (ev: Event) => {
       requestAnimationFrame(() => {
         this.registerCredentials.password = (ev.target as HTMLInputElement).value;
       });
-    });
+    };
+
+    nativeEmailInput.addEventListener('change', syncEmail);
+    nativeEmailInput.addEventListener('input', syncEmail);
+    nativePasswordInput.addEventListener('change', syncPassword);
+    nativePasswordInput.addEventListener('input', syncPassword);
   }
 
   async login() {
@@ -129,6 +137,15 @@ export class LoginPage implements OnInit, OnDestroy {
     this.otpMode = true;
     this.otpSent = false;
     this.otpCode = '';
+  }
+
+  /** Segment handler: switch between password and email-code (OTP) sign-in. */
+  onModeChange(ev: CustomEvent) {
+    if (ev.detail.value === 'otp') {
+      this.enterOtpMode();
+    } else {
+      this.exitOtpMode();
+    }
   }
 
   exitOtpMode() {
