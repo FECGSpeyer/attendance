@@ -210,7 +210,10 @@ export class SongsPage implements OnInit {
               }
             }
 
-            const blob = new Blob([await mergedPdf.save()], { type: 'application/pdf' });
+            const pdfBytes = await mergedPdf.save();
+const blob = new Blob([new Uint8Array(pdfBytes).buffer], {
+  type: 'application/pdf'
+});
             const groupName = groups.find(g => g.id === groupId)?.name ?? 'Gruppe';
             const fileName = `Noten_${groupName}_${new Date().toISOString().slice(0, 10)}.pdf`;
 
