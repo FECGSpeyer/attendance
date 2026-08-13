@@ -7,6 +7,7 @@ import { Role } from '../utilities/constants';
 import { Storage } from '@ionic/storage-angular';
 import { Router } from '@angular/router';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { Capacitor } from '@capacitor/core';
 
 @Component({
     selector: 'app-songs',
@@ -19,6 +20,7 @@ export class SongsPage implements OnInit {
   public songsFiltered: Song[] = [];
   searchTerm = '';
   public isAdmin = false;
+  public showSongsTab = false;
   public withChoir = false;
   public withSolo = false;
   public inclChoir = false;
@@ -60,9 +62,10 @@ export class SongsPage implements OnInit {
 
   async ngOnInit() {
     const pathParts = window.location.pathname.split('/');
-    const songSharingId = pathParts[pathParts.length - 1];
-    if (songSharingId !== 'songs') {
-      this.tenantData = await this.db.getTenantBySongSharingId(songSharingId);
+    const lastSegment = pathParts[pathParts.length - 1];
+    const isAuthenticatedRoute = lastSegment === 'songs' || lastSegment === 'songs-tab';
+    if (!isAuthenticatedRoute) {
+      this.tenantData = await this.db.getTenantBySongSharingId(lastSegment);
       if (!this.tenantData) {
         Utils.showToast('Ungültiger Freigabe-Link.');
         return;
@@ -80,6 +83,7 @@ export class SongsPage implements OnInit {
 
     await this.getSongs();
     this.buildGroupsWithFiles();
+    this.showSongsTab = this.db.getShowSongsTab();
 
     this.subscribeToUpdates();
   }
@@ -142,6 +146,93 @@ export class SongsPage implements OnInit {
     this.groupsWithFiles = this.instruments
       .filter(g => groupIdsWithFiles.has(g.id!))
       .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async toggleSongsTab(): Promise<void> {
+    this.showSongsTab = !this.showSongsTab;
+    await this.db.setShowSongsTab(this.showSongsTab);
+    Utils.showToast(this.showSongsTab ? 'Werke-Tab aktiviert' : 'Werke-Tab ausgeblendet', 'success');
+  }
+
+  async printNotesForGroup(): Promise<void> {
+    const groups = this.db.groups().filter(g => !g.maingroup);
+    const alert = await this.alertController.create({
+      header: 'Gruppe wählen',
+      inputs: groups.map(g => ({
+        type: 'radio' as const,
+        label: g.name,
+        value: g.id,
+      })),
+      buttons: [{
+        text: 'Abbrechen',
+        role: 'cancel',
+      }, {
+        text: 'Noten drucken',
+        handler: async (groupId: number) => {
+          if (!groupId) {
+            Utils.showToast('Bitte eine Gruppe auswählen.', 'warning');
+            return false;
+          }
+
+          const currentSongs = await this.db.getCurrentSongs();
+          const filesToPrint: { song: Song; file: SongFile }[] = [];
+
+          for (const group of currentSongs) {
+            for (const his of group.history) {
+              if (his.song?.files) {
+                const file = his.song.files.find(f => f.instrumentId === groupId);
+                if (file) filesToPrint.push({ song: his.song, file });
+              }
+            }
+          }
+
+          if (!filesToPrint.length) {
+            Utils.showToast('Keine Noten für diese Gruppe in den aktuellen Werken gefunden.', 'warning');
+            return;
+          }
+
+          Utils.showToast('PDFs werden zusammengeführt...', 'primary');
+          try {
+            const { PDFDocument } = await import('pdf-lib');
+            const mergedPdf = await PDFDocument.create();
+
+            for (const entry of filesToPrint) {
+              try {
+                const pdfBlob = await this.db.downloadSongFile(
+                  entry.file.storageName ?? entry.file.url.split('/').pop(),
+                  entry.song.id
+                );
+                const pdf = await PDFDocument.load(await pdfBlob.arrayBuffer());
+                const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                pages.forEach(page => mergedPdf.addPage(page));
+              } catch {
+                // skip individual file errors
+              }
+            }
+
+            const blob = new Blob([await mergedPdf.save()], { type: 'application/pdf' });
+            const groupName = groups.find(g => g.id === groupId)?.name ?? 'Gruppe';
+            const fileName = `Noten_${groupName}_${new Date().toISOString().slice(0, 10)}.pdf`;
+
+            if (Capacitor.isNativePlatform()) {
+              await Utils.downloadFileNative(blob, fileName);
+            } else {
+              const url = URL.createObjectURL(blob);
+              const win = window.open(url, '_blank');
+              if (win) {
+                win.onload = () => { win.print(); setTimeout(() => URL.revokeObjectURL(url), 60000); };
+                setTimeout(() => { try { win.print(); } catch { } setTimeout(() => URL.revokeObjectURL(url), 60000); }, 1500);
+              } else {
+                await Utils.downloadFileNative(blob, fileName);
+              }
+            }
+          } catch {
+            Utils.showToast('Fehler beim Zusammenführen der Noten.', 'danger');
+          }
+        },
+      }],
+    });
+    await alert.present();
   }
 
   selectGroup(group: Group): void {

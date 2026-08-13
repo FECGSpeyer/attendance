@@ -548,6 +548,19 @@ export class DbService {
     this.router.navigateByUrl('/login');
   }
 
+  getShowSongsTab(): boolean {
+    return this.user?.user_metadata?.[`showSongsTab_${this.tenant()?.id}`] || false;
+  }
+
+  async setShowSongsTab(value: boolean): Promise<void> {
+    await supabase.auth.updateUser({
+      data: { [`showSongsTab_${this.tenant()?.id}`]: value }
+    });
+    if (this.user?.user_metadata) {
+      this.user.user_metadata[`showSongsTab_${this.tenant()?.id}`] = value;
+    }
+  }
+
   /**
    * Permanently deletes the calling user's account: removes all tenant memberships,
    * player rows linked via appId, device tokens, notification config, and the auth

@@ -35,6 +35,10 @@ const routes: Routes = [
         loadChildren: () => import('./../attendance/attendance/attendance.module').then(m => m.AttendancePageModule),
       },
       {
+        path: 'songs-tab',
+        loadChildren: () => import('./../songs/songs.module').then(m => m.SongsPageModule),
+      },
+      {
         path: 'settings',
         loadChildren: () => import('./../settings/settings/settings.module').then(m => m.SettingsPageModule),
       },

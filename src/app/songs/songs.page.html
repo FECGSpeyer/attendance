@@ -1,7 +1,7 @@
 <ion-header translucent="true">
   <ion-toolbar color="light">
     <ion-buttons slot="start">
-      <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
+      <ion-back-button text="" [defaultHref]="tenantData ? '/' : 'tabs/settings'"></ion-back-button>
     </ion-buttons>
     @if (tenantData) {
       <ion-title>{{ tenantData.longName }}</ion-title>
@@ -55,6 +55,16 @@
       @if (tenantData?.song_sharing_id ?? db.tenant()?.song_sharing_id) {
         <ion-button (click)="copyShareLink()">
           <ion-icon slot="icon-only" name="link-outline"></ion-icon>
+        </ion-button>
+      }
+      @if (!tenantData && isAdmin) {
+        <ion-button fill="clear" (click)="printNotesForGroup()">
+          <ion-icon slot="icon-only" name="print-outline"></ion-icon>
+        </ion-button>
+      }
+      @if (!tenantData) {
+        <ion-button fill="clear" (click)="toggleSongsTab()">
+          <ion-icon slot="icon-only" [name]="showSongsTab ? 'pin' : 'pin-outline'"></ion-icon>
         </ion-button>
       }
     </ion-buttons>
