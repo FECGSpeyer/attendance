@@ -211,9 +211,13 @@ export class SongsPage implements OnInit {
             }
 
             const pdfBytes = await mergedPdf.save();
-const blob = new Blob([new Uint8Array(pdfBytes).buffer], {
-  type: 'application/pdf'
-});
+
+            const arrayBuffer = pdfBytes.buffer.slice(
+              pdfBytes.byteOffset,
+              pdfBytes.byteOffset + pdfBytes.byteLength
+            ) as ArrayBuffer;
+
+            const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
             const groupName = groups.find(g => g.id === groupId)?.name ?? 'Gruppe';
             const fileName = `Noten_${groupName}_${new Date().toISOString().slice(0, 10)}.pdf`;
 
