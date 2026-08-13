@@ -6,6 +6,8 @@
 -- excluding rows that left the team or have correctBirthday=false/null.
 -- ============================================
 
+DROP FUNCTION IF EXISTS public.select_todays_birthdays(int, int);
+
 CREATE OR REPLACE FUNCTION public.select_todays_birthdays(
   p_month int,
   p_day   int
@@ -15,14 +17,15 @@ RETURNS TABLE (
   "firstName" text,
   "lastName"  text,
   birthday    timestamptz,
-  "tenantId"  bigint
+  "tenantId"  bigint,
+  "appId"     text
 )
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = public
 AS $$
-  SELECT id, "firstName", "lastName", birthday, "tenantId"
+  SELECT id, "firstName", "lastName", birthday, "tenantId", "appId"
   FROM public.player
   WHERE "left" IS NULL
     AND "correctBirthday" IS TRUE

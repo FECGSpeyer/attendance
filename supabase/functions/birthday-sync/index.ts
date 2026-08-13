@@ -65,8 +65,9 @@ const getBirthdays = async ()=>{
     console.warn(`[birthday-sync] tenantUsers=${tenantUsers.length} approaching the 5000-row range cap`);
   }
 
-  // Get all unique user IDs from tenantUsers
-  const userIds = [...new Set(tenantUsers.map(tu => tu.userId))];
+  // Get all unique user IDs from tenantUsers; strip all whitespace to guard against
+  // UUIDs stored with embedded newlines/spaces that cause 22P02 from PostgREST.
+  const userIds = [...new Set(tenantUsers.map(tu => (tu.userId as string).replace(/\s+/g, '')))];
 
   // Fetch notification configs in chunks. A single `.in("id", userIds)` over
   // hundreds of UUIDs pushes the PostgREST GET URL past its size limit, and the
@@ -160,13 +161,19 @@ const getBirthdays = async ()=>{
     for (const user of eligibleUsers){
       let pushSentSuccessfully = false;
 
+      // If the recipient is themselves a birthday person, send a personalized wish
+      const isBirthdayPerson = tenantBirthdays.some(b => b.appId === user.id);
+      const userMessage = isBirthdayPerson
+        ? `Herzlichen Glückwunsch zum Geburtstag! 🎂`
+        : message;
+
       // Try push notification first (preferred channel)
       if (user.push_enabled) {
-        console.log(`[SENDING] PUSH to user ${user.id}: "${message}"`);
+        console.log(`[SENDING] PUSH to user ${user.id}: "${userMessage}"`);
         try {
           const pushSent = await sendPushToUser(supabase, user.id, {
             title: '🎉 Geburtstag',
-            body: message,
+            body: userMessage,
             data: {
               type: 'birthday',
               tenantId: String(tenantId),
@@ -180,7 +187,7 @@ const getBirthdays = async ()=>{
               tenantId,
               type: 'birthday',
               title: '🎉 Geburtstag',
-              body: message,
+              body: userMessage,
               channels: ['push'],
               data: { type: 'birthday', tenantId: String(tenantId) },
               read: true,
@@ -195,16 +202,16 @@ const getBirthdays = async ()=>{
 
       // Fallback to Telegram if push was not sent successfully
       if (user.telegram_chat_id && !pushSentSuccessfully) {
-        console.log(`[SENDING] TELEGRAM to ${user.telegram_chat_id}: "${message}"`);
+        console.log(`[SENDING] TELEGRAM to ${user.telegram_chat_id}: "${userMessage}"`);
         try {
-          await telegraf.telegram.sendMessage(user.telegram_chat_id, message);
+          await telegraf.telegram.sendMessage(user.telegram_chat_id, userMessage);
           console.log(`✓ Telegram birthday notification sent to ${user.telegram_chat_id}`);
           await logNotification(supabase, {
             userId: user.id,
             tenantId,
             type: 'birthday',
             title: '🎉 Geburtstag',
-            body: message,
+            body: userMessage,
             channels: ['telegram'],
             data: { type: 'birthday', tenantId: String(tenantId) },
             read: true,
