@@ -534,6 +534,58 @@ export class SettingsPage implements OnInit, OnDestroy {
     return found?.role === Role.ADMIN && !this.db.isDemo();
   }
 
+  isVorkursTenant(tenant: Tenant): boolean {
+    return tenant.shortName?.toLowerCase().includes('vorkurs') ||
+           tenant.longName?.toLowerCase().includes('vorkurs');
+  }
+
+  async generateVorkursCertificates(): Promise<void> {
+    const groups = this.db.groups();
+
+    const alert = await this.alertController.create({
+      header: 'Gruppen auswählen',
+      message: 'Für welche Gruppen sollen Urkunden erstellt werden?',
+      inputs: groups.map(g => ({
+        type: 'checkbox' as const,
+        label: g.name,
+        value: g.id,
+        checked: true,
+      })),
+      buttons: [{
+        text: 'Abbrechen',
+        role: 'cancel',
+      }, {
+        text: 'Generieren',
+        handler: async (selectedGroupIds: number[]) => {
+          if (!selectedGroupIds?.length) {
+            Utils.showToast('Bitte mindestens eine Gruppe auswählen.', 'warning');
+            return false;
+          }
+          const loading = await Utils.getLoadingElement(9999, 'Urkunden werden erstellt...');
+          await loading.present();
+          try {
+            const players = await this.db.getPlayers(true);
+            const filtered = players.filter(p =>
+              !p.left && !p.paused && !p.pending &&
+              selectedGroupIds.includes(p.instrument)
+            );
+            if (!filtered.length) {
+              Utils.showToast('Keine Personen in den gewählten Gruppen gefunden.', 'warning');
+              return;
+            }
+            await Utils.generateVorkursCertificates(filtered);
+          } catch {
+            Utils.showToast('Fehler beim Erstellen der Urkunden.', 'danger');
+          } finally {
+            await loading.dismiss();
+          }
+        },
+      }],
+    });
+
+    await alert.present();
+  }
+
   async openAdminsAlert() {
     const alert = await this.alertController.create({
       header: 'Admin hinzufügen',

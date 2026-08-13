@@ -1511,4 +1511,63 @@ export class Utils {
       reader.readAsDataURL(blob);
     });
   }
+
+  /**
+   * Generate one A4-portrait certificate PDF page per player, overlaying
+   * name, fixed body text, and today's date on the Vorkurs Urkunde background.
+   * Downloads as a single multi-page PDF.
+   */
+  public static async generateVorkursCertificates(
+    players: { firstName: string; lastName: string }[],
+    city: string = 'Speyer',
+  ): Promise<void> {
+    const { default: jsPDF } = await import('jspdf');
+
+    const bgRes = await fetch('assets/urkunde-vorkurs.jpg');
+    if (!bgRes.ok) throw new Error('Hintergrundbild nicht gefunden');
+    const bgBlob = await bgRes.blob();
+    const bgDataUrl: string = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(bgBlob);
+    });
+
+    const today = dayjs().locale('de').format('D.M.YYYY');
+    const W = 210;
+    const H = 297;
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    players.forEach((player, i) => {
+      if (i > 0) doc.addPage();
+
+      doc.addImage(bgDataUrl, 'JPEG', 0, 0, W, H, `bg${i}`, 'FAST');
+
+      const fullName = `${player.firstName} ${player.lastName}`;
+
+      doc.setFont('times', 'bolditalic');
+      const maxNameWidth = W - 60; // 30mm margin each side
+      let nameFontSize = 48;
+      doc.setFontSize(nameFontSize);
+      while (nameFontSize > 28 && doc.getTextWidth(fullName) > maxNameWidth) {
+        nameFontSize -= 2;
+        doc.setFontSize(nameFontSize);
+      }
+      doc.setTextColor(20, 20, 20);
+      doc.text(fullName, W / 2, 138, { align: 'center' });
+
+      doc.setFont('times', 'bolditalic');
+      doc.setFontSize(33);
+      doc.text('hat die Vorkursprüfung', W / 2, 168, { align: 'center' });
+      doc.text('erfolgreich bestanden', W / 2, 186, { align: 'center' });
+
+      doc.setFont('times', 'italic');
+      doc.setFontSize(24);
+      doc.text(`${city}, den ${today}`, 35, 252, { align: 'left' });
+    });
+
+    const fileName = `Urkunden_Vorkurs_${dayjs().format('YYYY-MM-DD')}.pdf`;
+    await Utils.downloadFileNative(doc.output('blob'), fileName);
+  }
 }

@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.3.5",
+          "date": "13.8.2026",
+          "changes": [
+            "🎓 Vorkurs-Urkunden: Urkunden für Vorkurs-Instanzen können jetzt direkt aus der App generiert und als PDF exportiert werden."
+          ]
+        },
+        {
           "version": "4.3.4",
           "date": "13.8.2026",
           "changes": [
