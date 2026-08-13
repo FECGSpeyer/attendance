@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "4.3.4",
+          "date": "13.8.2026",
+          "changes": [
+            "🎂 Geburtstagsbenachrichtigungen: Wer selbst Geburtstag hat, erhält jetzt einen persönlichen Glückwunsch.",
+            "🔧 Geburtstags-Sync: Absturz durch fehlerhafte UUID in der Datenbank behoben.",
+            "🎨 Segment-Buttons (iOS): Doppelter Auswahlhintergrund mit unterschiedlichem Eckenradius behoben."
+          ]
+        },
+        {
           "version": "4.3.3",
           "date": "12.8.2026",
           "changes": [

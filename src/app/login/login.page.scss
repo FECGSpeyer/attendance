@@ -132,12 +132,10 @@ a {
     padding: 3px;
 
     ion-segment-button {
-        // Keep the checked label dark teal (readable in MD mode, where the
-        // indicator is only a thin underline, AND on the iOS filled pill).
+        // Dark-teal checked label reads in both Ionic modes.
         --color: rgba(var(--ion-color-primary-rgb), 0.6);
         --color-checked: var(--ion-color-primary);
-        // Solid teal-tinted pill behind the checked button so it reads as a
-        // selected segment in both Ionic modes.
+        // MD: indicator fills to pill height, tinted background gives the selection look.
         --background-checked: rgba(var(--ion-color-primary-rgb), 0.18);
         --indicator-color: rgba(var(--ion-color-primary-rgb), 0.18);
         --border-radius: 0.6rem;
@@ -148,6 +146,14 @@ a {
         font-weight: 600;
         text-transform: none;
         letter-spacing: 0;
+    }
+
+    // iOS renders its own native filled pill — adding --background-checked on top
+    // produces a double background with mismatched border-radii.
+    .ios & ion-segment-button {
+        --border-radius: 25px;
+        --indicator-color: transparent;
+        --indicator-height: 0%;
     }
 }
 

@@ -36,8 +36,7 @@ ion-content {
   margin-bottom: 1rem;
 
   ion-segment-button {
-    // Dark-teal checked label reads in both Ionic modes (MD's thin underline
-    // and iOS's filled pill); paired with a light teal-tinted checked pill.
+    // Dark-teal checked label reads in both Ionic modes.
     --color: rgba(var(--ion-color-primary-rgb), 0.6);
     --color-checked: var(--ion-color-primary);
     --background-checked: rgba(var(--ion-color-primary-rgb), 0.18);
@@ -50,6 +49,14 @@ ion-content {
     font-weight: 600;
     text-transform: none;
     letter-spacing: 0;
+  }
+
+  // iOS renders its own native filled pill — adding --background-checked on top
+  // produces a double background with mismatched border-radii.
+  .ios & ion-segment-button {
+    --border-radius: 25px;
+    --indicator-color: transparent;
+    --indicator-height: 0%;
   }
 }
 
