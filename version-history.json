@@ -1,6 +1,14 @@
     {
       "versions": [
         {
+          "version": "4.4.0",
+          "date": "13.8.2026",
+          "changes": [
+            "🎵 Werke-Tab: Dirigenten können die Werke-Datenbank jetzt direkt als Tab in der Tab-Leiste anpinnen (Pin-Icon in der Werke-Datenbank).",
+            "🖨️ Noten-Sammeldruck: Alle aktuellen Noten einer Stimme lassen sich mit einem Klick als ein PDF zusammenführen und drucken."
+          ]
+        },
+        {
           "version": "4.3.5",
           "date": "13.8.2026",
           "changes": [
