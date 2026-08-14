@@ -254,7 +254,7 @@ export class AttListPage implements OnInit {
   async remove(id: number, slider: IonItemSliding): Promise<void> {
     try { await Haptics.impact({ style: ImpactStyle.Medium }); } catch { /* Haptics not available in PWA */ }
     const alert: HTMLIonAlertElement = await this.alertController.create({
-      header: 'Möchtest du die Anwesenheit wirklich entfernen?',
+      header: 'Möchtest du den Termin wirklich entfernen?',
       buttons: [{
         text: 'Abbrechen',
       }, {
@@ -395,7 +395,7 @@ export class AttListPage implements OnInit {
     }
 
     await loading.dismiss();
-    Utils.showToast(this.dates.length === 1 ? 'Anwesenheit hinzugefügt' : 'Anwesenheiten hinzugefügt', 'success');
+    Utils.showToast(this.dates.length === 1 ? 'Termin hinzugefügt' : 'Termine hinzugefügt', 'success');
     await modal.dismiss();
 
     // Refresh directly instead of relying solely on the `att-changes` realtime
