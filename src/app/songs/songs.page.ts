@@ -191,7 +191,8 @@ export class SongsPage implements OnInit {
             return;
           }
 
-          Utils.showToast('PDFs werden zusammengeführt...', 'primary');
+          const loader = await Utils.getLoadingElement(0, 'PDFs werden zusammengeführt...');
+          await loader.present();
           try {
             const { PDFDocument } = await import('pdf-lib');
             const mergedPdf = await PDFDocument.create();
@@ -221,6 +222,8 @@ export class SongsPage implements OnInit {
             const groupName = groups.find(g => g.id === groupId)?.name ?? 'Gruppe';
             const fileName = `Noten_${groupName}_${new Date().toISOString().slice(0, 10)}.pdf`;
 
+            await loader.dismiss();
+
             if (Capacitor.isNativePlatform()) {
               await Utils.downloadFileNative(blob, fileName);
             } else {
@@ -234,6 +237,7 @@ export class SongsPage implements OnInit {
               }
             }
           } catch {
+            await loader.dismiss();
             Utils.showToast('Fehler beim Zusammenführen der Noten.', 'danger');
           }
         },
