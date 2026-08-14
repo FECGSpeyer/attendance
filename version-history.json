@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.4.1",
+          "date": "14.8.2026",
+          "changes": [
+            "🐛 Geburtsdatum auf der Profilkarte wird jetzt immer korrekt angezeigt."
+          ]
+        },
+        {
           "version": "4.4.0",
           "date": "13.8.2026",
           "changes": [
