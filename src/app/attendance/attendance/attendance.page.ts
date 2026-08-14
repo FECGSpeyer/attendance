@@ -66,6 +66,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   public type: AttendanceType;
   public attendanceViewMode: AttendanceViewMode = AttendanceViewMode.CLICK;
   public AttendanceViewMode = AttendanceViewMode;
+  public showAvatars = false;
   private helperGroupId: number | null = null;
   public isAddPersonModalOpen = false;
   public availablePersons: (Person & { groupName?: string })[] = [];
@@ -284,6 +285,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     try {
       this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendanceId);
       this.attendanceViewMode = await this.storage.get('attendanceViewMode') || AttendanceViewMode.CLICK;
+      this.showAvatars = (await this.storage.get('attendanceShowAvatars')) ?? false;
 
       void this.listenOnNetworkChanges();
       this.selectedSongs = this.attendance.songs || [];
@@ -1076,6 +1078,11 @@ export class AttendancePage implements OnInit, OnDestroy {
     this.attendanceViewMode = this.attendanceViewMode === AttendanceViewMode.CLICK ? AttendanceViewMode.SELECT : AttendanceViewMode.CLICK;
 
     await this.storage.set('attendanceViewMode', this.attendanceViewMode);
+  }
+
+  async toggleShowAvatars() {
+    this.showAvatars = !this.showAvatars;
+    await this.storage.set('attendanceShowAvatars', this.showAvatars);
   }
 
   // ========== CHECKLIST METHODS ==========
