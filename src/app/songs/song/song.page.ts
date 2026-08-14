@@ -23,6 +23,7 @@ export class SongPage implements OnInit {
   private audioPlayer = inject(AudioPlayerService);
   public song: Song;
   public isOrchestra = false;
+  public isStandaloneTab = false;
   public instruments: Group[] = [];
   public selectedFileInfos: {
     file: File;
@@ -62,8 +63,13 @@ export class SongPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    const songId = Number(window.location.pathname.split('/')[4] ?? window.location.pathname.split('/')[2]);
-    if (!window.location.pathname.split('/')[4]) {
+    const segments = window.location.pathname.split('/');
+    const isStandaloneTab = segments[2] === 'songs-tab';
+    this.isStandaloneTab = isStandaloneTab;
+    const songId = isStandaloneTab
+      ? Number(segments[3])
+      : Number(segments[4] ?? segments[2]);
+    if (!isStandaloneTab && !segments[4]) {
       this.sharing_id = window.location.pathname.split('/')[1];
       this.tenant = await this.db.getTenantBySongSharingId(this.sharing_id);
       this.isOrchestra = this.tenant?.type === 'orchestra';

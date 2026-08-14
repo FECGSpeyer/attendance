@@ -59,14 +59,9 @@
           <ion-icon slot="icon-only" name="link-outline"></ion-icon>
         </ion-button>
       }
-      @if (!tenantData && isAdmin) {
-        <ion-button fill="clear" (click)="printNotesForGroup()">
-          <ion-icon slot="icon-only" name="print-outline"></ion-icon>
-        </ion-button>
-      }
       @if (!tenantData) {
         <ion-button fill="clear" (click)="toggleSongsTab()">
-          <ion-icon slot="icon-only" [name]="showSongsTab ? 'pin' : 'pin-outline'"></ion-icon>
+          <ion-icon slot="icon-only" [name]="showSongsTab ? 'bookmark' : 'bookmark-outline'"></ion-icon>
         </ion-button>
       }
     </ion-buttons>
@@ -200,6 +195,13 @@
         <ion-header>
           <ion-toolbar>
             <ion-title>Aktuelle Werke</ion-title>
+            @if (isAdmin) {
+              <ion-buttons slot="end">
+                <ion-button fill="clear" (click)="printNotesForGroup()">
+                  <ion-icon slot="icon-only" name="print-outline"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            }
           </ion-toolbar>
         </ion-header>
         <ion-content color="light">
@@ -274,7 +276,7 @@
     </ion-list-header>
     <ion-item-group>
       @for (song of songsFiltered; track trackBySongId($index, song)) {
-        <ion-item detail="false" [routerLink]="tenantData ? [song.id] : ['/tabs/settings/songs/', song.id]"
+        <ion-item detail="false" [routerLink]="tenantData ? [song.id] : isStandaloneTab ? ['/tabs/songs-tab', song.id] : ['/tabs/settings/songs', song.id]"
           >
           <ion-label>
             <h2>{{ song.prefix }}{{ song.number }} {{ song.name }}</h2>

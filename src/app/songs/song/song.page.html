@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="light">
     <ion-buttons slot="start">
-      <ion-back-button text="" [defaultHref]="tenant ? sharing_id : 'tabs/settings/songs'"></ion-back-button>
+      <ion-back-button text="" [defaultHref]="tenant ? sharing_id : isStandaloneTab ? 'tabs/songs-tab' : 'tabs/settings/songs'"></ion-back-button>
     </ion-buttons>
     @if (readOnly) {
     @if (song) {

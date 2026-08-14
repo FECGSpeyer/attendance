@@ -153,7 +153,6 @@ export class SongsPage implements OnInit {
   async toggleSongsTab(): Promise<void> {
     this.showSongsTab = !this.showSongsTab;
     await this.db.setShowSongsTab(this.showSongsTab);
-    Utils.showToast(this.showSongsTab ? 'Werke-Tab aktiviert' : 'Werke-Tab ausgeblendet', 'success');
   }
   async printNotesForGroup(): Promise<void> {
     const groups = this.db.groups().filter(g => !g.maingroup);
@@ -296,7 +295,11 @@ export class SongsPage implements OnInit {
     await modal.dismiss();
 
     if (song?.id) {
-      this.router.navigate([`tabs`, `settings`, 'songs', `${song.id}`]);
+      if (this.isStandaloneTab) {
+        this.router.navigate(['tabs', 'songs-tab', `${song.id}`]);
+      } else {
+        this.router.navigate([`tabs`, `settings`, 'songs', `${song.id}`]);
+      }
     }
   }
 
