@@ -21,6 +21,7 @@ export class SongsPage implements OnInit {
   searchTerm = '';
   public isAdmin = false;
   public showSongsTab = false;
+  public isStandaloneTab = false;
   public withChoir = false;
   public withSolo = false;
   public inclChoir = false;
@@ -64,6 +65,7 @@ export class SongsPage implements OnInit {
     const pathParts = window.location.pathname.split('/');
     const lastSegment = pathParts[pathParts.length - 1];
     const isAuthenticatedRoute = lastSegment === 'songs' || lastSegment === 'songs-tab';
+    this.isStandaloneTab = lastSegment === 'songs-tab';
     if (!isAuthenticatedRoute) {
       this.tenantData = await this.db.getTenantBySongSharingId(lastSegment);
       if (!this.tenantData) {

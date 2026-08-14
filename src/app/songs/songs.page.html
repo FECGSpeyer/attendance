@@ -1,8 +1,10 @@
 <ion-header translucent="true">
   <ion-toolbar color="light">
-    <ion-buttons slot="start">
-      <ion-back-button text="" [defaultHref]="tenantData ? '/' : 'tabs/settings'"></ion-back-button>
-    </ion-buttons>
+    @if (!isStandaloneTab) {
+      <ion-buttons slot="start">
+        <ion-back-button text="" [defaultHref]="tenantData ? '/' : 'tabs/settings'"></ion-back-button>
+      </ion-buttons>
+    }
     @if (tenantData) {
       <ion-title>{{ tenantData.longName }}</ion-title>
     } @else {
