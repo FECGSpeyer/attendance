@@ -153,7 +153,6 @@ export class SongsPage implements OnInit {
     await this.db.setShowSongsTab(this.showSongsTab);
     Utils.showToast(this.showSongsTab ? 'Werke-Tab aktiviert' : 'Werke-Tab ausgeblendet', 'success');
   }
-
   async printNotesForGroup(): Promise<void> {
     const groups = this.db.groups().filter(g => !g.maingroup);
     const alert = await this.alertController.create({

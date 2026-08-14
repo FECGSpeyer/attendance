@@ -34,7 +34,7 @@ export class TabsPage {
     this.isParent = this.db.tenantUser().role === Role.PARENT;
     this.isPlayer = this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.NONE;
     this.showMembersTab = [Role.HELPER, Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER, Role.PLAYER, Role.NONE].includes(this.db.tenantUser().role) && this.db.tenant()?.showMembersList === true;
-    this.showSongsTab = this.db.getShowSongsTab() && this.db.tenant()?.type !== 'general' && this.db.tenantUser().role !== Role.APPLICANT;
+    this.showSongsTab = this.db.showSongsTabSignal() && this.db.tenant()?.type !== 'general' && this.db.tenantUser().role !== Role.APPLICANT;
     this.hasMultipleTenants = (this.db.tenants()?.length || 0) > 1;
 
     effect(() => {
@@ -43,7 +43,7 @@ export class TabsPage {
       this.isParent = this.db.tenantUser().role === Role.PARENT;
       this.isPlayer = this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.NONE;
       this.showMembersTab = [Role.HELPER, Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER, Role.PLAYER, Role.NONE].includes(this.db.tenantUser().role) && this.db.tenant()?.showMembersList === true;
-      this.showSongsTab = this.db.getShowSongsTab() && this.db.tenant()?.type !== 'general' && this.db.tenantUser().role !== Role.APPLICANT;
+      this.showSongsTab = this.db.showSongsTabSignal() && this.db.tenant()?.type !== 'general' && this.db.tenantUser().role !== Role.APPLICANT;
       this.hasMultipleTenants = (this.db.tenants()?.length || 0) > 1;
 
       const url: string = Utils.getUrl(this.db.tenantUser().role);

@@ -63,6 +63,7 @@ export class DbService {
   public churches: WritableSignal<Church[] | undefined>;
   public songCategories: WritableSignal<SongCategory[]>;
   public rolePermissions: WritableSignal<TenantRolePermission[]>;
+  public showSongsTabSignal: WritableSignal<boolean>;
 
   // Injected modular services - use these for new code
   public readonly authSvc = inject(AuthService);
@@ -115,6 +116,7 @@ export class DbService {
     this.churches = signal([]);
     this.songCategories = signal([]);
     this.rolePermissions = signal([]);
+    this.showSongsTabSignal = signal(false);
   }
 
   getSupabase(): SupabaseClient {
@@ -549,7 +551,9 @@ export class DbService {
   }
 
   getShowSongsTab(): boolean {
-    return this.user?.user_metadata?.[`showSongsTab_${this.tenant()?.id}`] || false;
+    const value = this.user?.user_metadata?.[`showSongsTab_${this.tenant()?.id}`] || false;
+    this.showSongsTabSignal.set(value);
+    return value;
   }
 
   async setShowSongsTab(value: boolean): Promise<void> {
@@ -559,6 +563,7 @@ export class DbService {
     if (this.user?.user_metadata) {
       this.user.user_metadata[`showSongsTab_${this.tenant()?.id}`] = value;
     }
+    this.showSongsTabSignal.set(value);
   }
 
   /**
