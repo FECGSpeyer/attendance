@@ -464,6 +464,7 @@ export class DbService {
       this.churches.set(churches);
     }
     this.rolePermissions.set(rolePermissions);
+    this.getShowSongsTab();
 
     await loader?.dismiss();
   }
