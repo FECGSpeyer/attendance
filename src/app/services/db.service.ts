@@ -386,6 +386,10 @@ export class DbService {
 
   async setTenant(tenantId?: number, showSelector: boolean = false, loading?: HTMLIonLoadingElement) {
     let loader;
+    const freshUser = await this.authSvc.checkToken();
+    if (freshUser) {
+      this.user = freshUser;
+    }
     this.tenantUsers.set((await this.getTenantsByUserId()));
 
     if (this.tenantUsers().length === 0) {

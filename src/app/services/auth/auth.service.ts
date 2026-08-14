@@ -34,6 +34,7 @@ export class AuthService {
           break;
         case 'SIGNED_IN':
         case 'TOKEN_REFRESHED':
+        case 'USER_UPDATED':
           this.handleSession(session);
           break;
         case 'SIGNED_OUT':
