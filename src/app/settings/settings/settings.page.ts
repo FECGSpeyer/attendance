@@ -47,6 +47,8 @@ export class SettingsPage implements OnInit, OnDestroy {
   public pendingPersons: Player[] = [];
   public isApplicant = false;
   public churches: Church[] = [];
+  public isChurchModalOpen = false;
+  public churchSearch = '';
   public userData: Person | null = null;
   public oldUserData: Person | null = null;
   public isImageViewerOpen = false;
@@ -125,7 +127,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.db.getViewers(),
       this.parentsEnabled ? this.db.getParents() : Promise.resolve([]),
       this.db.getAdmins(),
-      this.db.isBeta() ? this.db.getChurches() : Promise.resolve([]),
+      this.db.tenant()?.additional_fields?.some(f => f.type === FieldType.BFECG_CHURCH) ? this.db.getChurches() : Promise.resolve([]),
       this.db.getPlayersWithoutAccount(),
       this.db.getUserRolesForTenants(this.db.tenantUser().userId),
       this.db.getPlayerProfile()
@@ -688,6 +690,30 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   getVisibleExtraFields() {
     return this.db.tenant()?.additional_fields?.filter(f => f.visibleToPlayers) || [];
+  }
+
+  get filteredChurches(): Church[] {
+    const term = this.churchSearch.trim().toLowerCase();
+    if (!term) { return this.churches; }
+    return this.churches.filter(c => c.name.toLowerCase().includes(term));
+  }
+
+  getChurchLabel(): string {
+    const value = this.userData?.additional_fields?.['bfecg_church'];
+    if (value === null || value === undefined) { return 'Bitte auswählen'; }
+    if (value === '') { return 'Nicht gelistet'; }
+    const church = this.churches.find(c => c.id === value);
+    return church ? church.name : 'Bitte auswählen';
+  }
+
+  openChurchModal() {
+    this.churchSearch = '';
+    this.isChurchModalOpen = true;
+  }
+
+  selectChurch(fieldId: string, churchId: string) {
+    this.userData.additional_fields[fieldId] = churchId;
+    this.isChurchModalOpen = false;
   }
 
   getExtraFieldDisplayValue(field: any): string {

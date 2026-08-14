@@ -634,13 +634,48 @@
             <ion-textarea [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()" [label]="field.name"
               labelPlacement="stacked" [(ngModel)]="player.additional_fields[field.id]"></ion-textarea>
             } @else if (field.type === fieldTypes.BFECG_CHURCH) {
-            <ion-select (ionChange)="onChange()" interface="modal" [label]="field.name"
-              [(ngModel)]="player.additional_fields[field.id]">
-              @for (church of db.churches(); track church) {
-              <ion-select-option [value]="church.id">{{ church.name
-                }}</ion-select-option>
-              }
-            </ion-select>
+            <ion-label>{{ field.name }}</ion-label>
+            <ion-button slot="end" fill="clear" [disabled]="readOnly" (click)="openChurchModal()">
+              {{ getChurchLabel(field.id) }}
+            </ion-button>
+            <ion-modal [isOpen]="isChurchModalOpen" (didDismiss)="isChurchModalOpen = false">
+              <ng-template>
+                <ion-header>
+                  <ion-toolbar color="light">
+                    <ion-title>{{ field.name }}</ion-title>
+                    <ion-buttons slot="end">
+                      <ion-button (click)="isChurchModalOpen = false">Schließen</ion-button>
+                    </ion-buttons>
+                  </ion-toolbar>
+                  <ion-toolbar color="light">
+                    <ion-searchbar [(ngModel)]="churchSearch" placeholder="Gemeinde suchen" [debounce]="0"></ion-searchbar>
+                  </ion-toolbar>
+                </ion-header>
+                <ion-content color="light">
+                  <ion-list [inset]="true">
+                    <ion-item button detail="false" (click)="selectChurch(field.id, '')">
+                      <ion-label>Nicht gelistet</ion-label>
+                      @if (player.additional_fields[field.id] === '') {
+                        <ion-icon name="checkmark-outline" slot="end" color="primary"></ion-icon>
+                      }
+                    </ion-item>
+                    @for (church of filteredChurches; track church.id) {
+                      <ion-item button detail="false" (click)="selectChurch(field.id, church.id)">
+                        <ion-label>{{ church.name }}</ion-label>
+                        @if (player.additional_fields[field.id] === church.id) {
+                          <ion-icon name="checkmark-outline" slot="end" color="primary"></ion-icon>
+                        }
+                      </ion-item>
+                    }
+                    @if (filteredChurches.length === 0) {
+                      <ion-item lines="none">
+                        <ion-label class="ion-text-wrap" color="medium">Keine Gemeinde gefunden.</ion-label>
+                      </ion-item>
+                    }
+                  </ion-list>
+                </ion-content>
+              </ng-template>
+            </ion-modal>
             }
           </ion-item>
           }

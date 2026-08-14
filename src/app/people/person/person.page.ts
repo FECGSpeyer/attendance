@@ -52,6 +52,8 @@ export class PersonPage implements OnInit, AfterViewInit {
   public readonly VOICE_LEADER_HELPER: Role = Role.VOICE_LEADER_HELPER;
   public readonly VOICE_LEADER: Role = Role.VOICE_LEADER;
   public player: Player;
+  public isChurchModalOpen = false;
+  public churchSearch = '';
   public birthdayString: string = format(new Date(), 'dd.MM.yyyy');
   public playsSinceString: string = format(new Date(), 'dd.MM.yyyy');
   public joinedString: string = format(new Date(), 'dd.MM.yyyy');
@@ -254,6 +256,31 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   getFieldTypeDefaultValue(fieldType: FieldType, defaultValue: any, options?: string[]): any {
     return Utils.getFieldTypeDefaultValue(fieldType, defaultValue, options, this.db.churches());
+  }
+
+  get filteredChurches() {
+    const term = this.churchSearch.trim().toLowerCase();
+    if (!term) { return this.db.churches(); }
+    return this.db.churches().filter(c => c.name.toLowerCase().includes(term));
+  }
+
+  getChurchLabel(fieldId: string): string {
+    const value = this.player?.additional_fields?.[fieldId];
+    if (value === null || value === undefined) { return 'Bitte auswählen'; }
+    if (value === '') { return 'Nicht gelistet'; }
+    const church = this.db.churches()?.find(c => c.id === value);
+    return church ? church.name : 'Bitte auswählen';
+  }
+
+  openChurchModal() {
+    this.churchSearch = '';
+    this.isChurchModalOpen = true;
+  }
+
+  selectChurch(fieldId: string, churchId: string) {
+    this.player.additional_fields[fieldId] = churchId;
+    this.isChurchModalOpen = false;
+    this.onChange();
   }
 
   async onTenantChange(): Promise<void> {
