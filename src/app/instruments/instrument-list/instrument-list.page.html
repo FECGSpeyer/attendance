@@ -9,7 +9,7 @@
         <ion-button (click)="toggleReorderMode()">
           <ion-icon [name]="isReordering ? 'checkmark' : 'swap-vertical'"></ion-icon>
         </ion-button>
-        <ion-button id="cat-button">Kategorien</ion-button>
+        <ion-button id="cat-button"><ion-icon name="pricetags-outline"></ion-icon></ion-button>
         <ion-modal trigger="cat-button" [breakpoints]="[0, 0.6, 1]" [initialBreakpoint]="0.6">
           <ng-template>
             <ion-content>
