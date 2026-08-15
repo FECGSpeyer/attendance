@@ -236,7 +236,7 @@ export class Utils {
   public static getModifiedAttendanceData(attendance: Attendance): Attendance {
     attendance.persons = attendance.persons.map((person: PersonAttendance): PersonAttendance => ({
         ...person,
-        img: person.img || DEFAULT_IMAGE,
+        img: (person.person as any)?.img || DEFAULT_IMAGE,
         instrument: (person.person.instrument as any).id,
         groupName: (person.person.instrument as any).name,
       }));
