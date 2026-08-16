@@ -302,7 +302,7 @@
     </ion-item-group>
     }
 
-    @if (!readOnly && organisation && availableTenants.length > 0) {
+    @if (organisation && availableTenants.length > 0) {
     <ion-item-group>
       <ion-item (click)="isCopyModalOpen = true">
         <ion-icon slot="start" name="copy-outline"></ion-icon>

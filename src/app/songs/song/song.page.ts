@@ -94,15 +94,24 @@ export class SongPage implements OnInit {
       // Non-critical, ignore errors
     }
 
-    // Load organisation and tenants for copy feature (only for admin/responsible)
-    if (!this.readOnly) {
-      this.organisation = await this.db.getOrganisationFromTenant();
-      if (this.organisation) {
-        this.availableTenants = await this.db.getTenantsFromOrganisation();
-        if (this.availableTenants.length > 0) {
-          this.targetTenantId = this.availableTenants[0].id;
-          this.targetGroups = await this.db.getGroups(this.targetTenantId);
-        }
+    // Load organisation and tenants for copy feature.
+    // Available to any logged-in user — filtered to tenants where they have
+    // ADMIN or RESPONSIBLE rights, so a read-only member can still copy a
+    // song into an instance where they do have the required permissions.
+    this.organisation = await this.db.getOrganisationFromTenant();
+    if (this.organisation) {
+      const allTenants = await this.db.getTenantsFromOrganisation();
+      // Keep only tenants where the user holds ADMIN or RESPONSIBLE role,
+      // and exclude the current tenant (no point copying to yourself).
+      const currentTenantId = this.db.tenant()?.id;
+      this.availableTenants = allTenants.filter(t => {
+        if (t.id === currentTenantId) { return false; }
+        const tu = this.db.tenantUsers()?.find(u => u.tenantId === t.id);
+        return tu?.role === Role.ADMIN || tu?.role === Role.RESPONSIBLE;
+      });
+      if (this.availableTenants.length > 0) {
+        this.targetTenantId = this.availableTenants[0].id;
+        this.targetGroups = await this.db.getGroups(this.targetTenantId);
       }
     }
   }
