@@ -24,11 +24,15 @@ const DEFAULT_ATT_FIELDS = ['Vorname', 'Nachname', 'Gruppe'];
 export class ExportPage implements OnInit {
   public type = 'pdf';
   public players: Player[] = [];
+  private allPlayers: Player[] = [];
   public content = 'player';
   public attendance: Attendance[] = [];
   public selectedFields: string[] = DEFAULT_PLAYER_FIELDS;
   public fields: string[] = [];
   public additionalFields: ExtraField[] = [];
+  public sortField = 'gruppe';
+  public sortDirection: 'asc' | 'desc' = 'asc';
+  public sortableFields: { value: string; label: string }[] = [];
 
   constructor(
     private modalController: ModalController,
@@ -39,7 +43,7 @@ export class ExportPage implements OnInit {
 
   async ngOnInit() {
     this.attendance = (await this.db.getAttendance(false, true)).filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
-    this.players = Utils.getModifiedPlayersForList(
+    this.allPlayers = Utils.getModifiedPlayersForList(
       await this.db.getPlayers(),
       this.db.groups(),
       await this.db.getAttendance(),
@@ -50,6 +54,8 @@ export class ExportPage implements OnInit {
     );
     this.additionalFields = this.db.tenant().additional_fields || [];
     this.updateFields();
+    this.updateSortableFields();
+    this.applySort();
   }
 
   updateFields() {
@@ -58,13 +64,65 @@ export class ExportPage implements OnInit {
     this.fields = [...standardFields, ...extraFieldNames];
   }
 
+  updateSortableFields() {
+    const standard = this.content === 'player'
+      ? [
+          { value: 'nachname', label: 'Nachname' },
+          { value: 'vorname', label: 'Vorname' },
+          { value: 'gruppe', label: 'Gruppe' },
+          { value: 'geburtsdatum', label: 'Geburtsdatum' },
+          { value: 'eingetreten', label: 'Eingetreten' },
+          { value: 'anwesenheit', label: 'Anwesenheit %' },
+        ]
+      : [
+          { value: 'nachname', label: 'Nachname' },
+          { value: 'vorname', label: 'Vorname' },
+          { value: 'gruppe', label: 'Gruppe' },
+        ];
+    const extra = this.additionalFields.map(f => ({ value: `extra_${f.id}`, label: f.name }));
+    this.sortableFields = [...standard, ...extra];
+  }
+
+  applySort() {
+    const dir = this.sortDirection === 'asc' ? 1 : -1;
+    this.players = [...this.allPlayers].sort((a, b) => {
+      let aVal: any;
+      let bVal: any;
+
+      if (this.sortField.startsWith('extra_')) {
+        const fieldId = this.sortField.slice(6);
+        aVal = a.additional_fields?.[fieldId] ?? '';
+        bVal = b.additional_fields?.[fieldId] ?? '';
+      } else {
+        switch (this.sortField) {
+          case 'nachname':   aVal = a.lastName  || ''; bVal = b.lastName  || ''; break;
+          case 'vorname':    aVal = a.firstName || ''; bVal = b.firstName || ''; break;
+          case 'gruppe':     aVal = a.groupName || ''; bVal = b.groupName || ''; break;
+          case 'geburtsdatum': aVal = a.birthday || ''; bVal = b.birthday || ''; break;
+          case 'eingetreten':  aVal = a.joined   || ''; bVal = b.joined   || ''; break;
+          case 'anwesenheit':  aVal = a.percentage ?? 0; bVal = b.percentage ?? 0; break;
+          default:           aVal = ''; bVal = ''; break;
+        }
+      }
+
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return (aVal - bVal) * dir;
+      }
+      return String(aVal).localeCompare(String(bVal)) * dir;
+    });
+  }
+
   dismiss() {
     this.modalController.dismiss();
   }
 
   onSegmentChange() {
     this.updateFields();
+    this.updateSortableFields();
+    this.sortField = 'gruppe';
+    this.sortDirection = 'asc';
     this.selectedFields = this.content === 'player' ? [...DEFAULT_PLAYER_FIELDS] : [...DEFAULT_ATT_FIELDS];
+    this.applySort();
   }
 
   handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {

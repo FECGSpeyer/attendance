@@ -48,6 +48,21 @@
     <ion-button (click)="addExtraField()" style="margin-left: '16px'" size="small">Extrafeld hinzufügen</ion-button>
 
     <ion-item>
+      <ion-select label="Sortieren nach" interface="popover" [(ngModel)]="sortField" (ionChange)="applySort()">
+        @for (field of sortableFields; track field.value) {
+          <ion-select-option [value]="field.value">{{ field.label }}</ion-select-option>
+        }
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-select label="Reihenfolge" interface="popover" [(ngModel)]="sortDirection" (ionChange)="applySort()">
+        <ion-select-option value="asc">Aufsteigend (A–Z)</ion-select-option>
+        <ion-select-option value="desc">Absteigend (Z–A)</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
       <ion-select label="Export-Typ" interface="popover" [(ngModel)]="type">
         <ion-select-option value="pdf">PDF</ion-select-option>
         <ion-select-option value="excel">Excel</ion-select-option>
