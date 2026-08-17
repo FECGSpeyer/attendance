@@ -120,6 +120,7 @@ export class ListPage implements OnInit, OnDestroy {
     this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.filterOpt = (await this.storage.get(`filterOpt${this.db.tenant().id}`)) || 'all';
+    this.sortOpt = (await this.storage.get(`sortOpt${this.db.tenant().id}`)) || 'instrument';
     this.mainGroup = this.db.getMainGroup()?.id;
 
     if (this.isAdmin) {
@@ -230,6 +231,8 @@ export class ListPage implements OnInit, OnDestroy {
   }
 
   onSortChanged() {
+    this.storage.set(`sortOpt${this.db.tenant().id}`, this.sortOpt);
+
     if (this.sortOpt === 'vorname') {
       this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => a.firstName.localeCompare(b.firstName));
       return;
