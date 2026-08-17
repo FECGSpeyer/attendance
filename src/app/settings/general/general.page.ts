@@ -285,6 +285,14 @@ export class GeneralPage implements OnInit {
   }
 
   async saveGeneralSettings() {
+    if (!this.longName?.trim()) {
+      Utils.showToast('Der Gruppenname darf nicht leer sein.', 'danger');
+      return;
+    }
+    if (!this.shortName?.trim()) {
+      Utils.showToast('Der Kurzname darf nicht leer sein.', 'danger');
+      return;
+    }
     // Validate extra fields
     for (const field of this.extraFields) {
       if (!field.name || field.name.trim().length === 0) {
