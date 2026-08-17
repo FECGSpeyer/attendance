@@ -317,6 +317,18 @@ export class ListPage implements OnInit, OnDestroy {
 
         return new Date(b.joined).getTime() - new Date(a.joined).getTime();
       });
+
+      // Recompute firstOfInstrument and instrumentLength after reordering
+      const seenGroups = new Set<number>();
+      const groupLengths = new Map<number, number>();
+      for (const p of this.playersFiltered) {
+        groupLengths.set(p.instrument, (groupLengths.get(p.instrument) || 0) + 1);
+      }
+      for (const p of this.playersFiltered) {
+        p.firstOfInstrument = !seenGroups.has(p.instrument);
+        p.instrumentLength = groupLengths.get(p.instrument) || 0;
+        seenGroups.add(p.instrument);
+      }
       return;
     }
 

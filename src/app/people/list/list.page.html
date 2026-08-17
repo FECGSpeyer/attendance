@@ -176,7 +176,7 @@
         <ion-label>Personen ({{ playersFiltered?.length }})</ion-label>
       </ion-list-header>
       @for (player of playersFiltered; track userById($index, player)) {
-        @if (player.firstOfInstrument && sortOpt === 'instrument') {
+        @if (player.firstOfInstrument && (sortOpt === 'instrument' || sortOpt === 'groupJoined')) {
           <ion-item-divider color="primary">
             <ion-label>{{ player.groupName }} ({{ player.instrumentLength }})</ion-label>
           </ion-item-divider>
