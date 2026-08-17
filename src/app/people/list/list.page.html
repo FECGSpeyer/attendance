@@ -292,6 +292,12 @@
         <ion-icon name="people-outline" size="large"></ion-icon>
         <ion-label>Bisher wurden noch keine Personen angelegt</ion-label>
         <ion-button size="small" fill="outline" (click)="openModal()">Person hinzufügen</ion-button>
+        @if (isAdmin) {
+          <ion-button size="small" fill="outline" (click)="openImportModal()">
+            <ion-icon slot="start" name="cloud-upload-outline"></ion-icon>
+            Personen importieren
+          </ion-button>
+        }
       </div>
     </div>
   } @else {

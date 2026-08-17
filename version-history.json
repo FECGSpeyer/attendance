@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.4.3",
+          "date": "17.8.2026",
+          "changes": [
+            "👥 Personen: Beim ersten Aufruf ohne angelegte Personen wird ein direkter Button zum Importieren angeboten."
+          ]
+        },
+        {
           "version": "4.4.2",
           "date": "14.8.2026",
           "changes": [
