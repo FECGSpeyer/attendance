@@ -293,6 +293,33 @@ export class ListPage implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.sortOpt === 'groupJoined') {
+      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => {
+        // Group ordering: main group first, then sort_order, then name
+        if (a.instrument === this.mainGroup && b.instrument !== this.mainGroup) { return -1; }
+        if (b.instrument === this.mainGroup && a.instrument !== this.mainGroup) { return 1; }
+
+        const aInstr = this.instruments.find(i => i.id === a.instrument);
+        const bInstr = this.instruments.find(i => i.id === b.instrument);
+        const aSortOrder = aInstr?.sort_order;
+        const bSortOrder = bInstr?.sort_order;
+
+        if (aSortOrder != null && bSortOrder != null && aSortOrder !== bSortOrder) {
+          return aSortOrder - bSortOrder;
+        }
+
+        const groupCompare = (a.groupName || '').localeCompare(b.groupName || '');
+        if (groupCompare !== 0) { return groupCompare; }
+
+        // Within group: voice leader first, then descending joined date
+        if (a.isLeader && !b.isLeader) { return -1; }
+        if (b.isLeader && !a.isLeader) { return 1; }
+
+        return new Date(b.joined).getTime() - new Date(a.joined).getTime();
+      });
+      return;
+    }
+
     if (this.sortOpt === 'instrument') {
       this.initializeItems();
       this.onFilterChanged(true);
