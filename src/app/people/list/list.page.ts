@@ -321,17 +321,18 @@ export class ListPage implements OnInit, OnDestroy {
         return new Date(a.joined).getTime() - new Date(b.joined).getTime();
       });
 
-      // Recompute firstOfInstrument and instrumentLength after reordering
+      // Recompute firstOfInstrument and instrumentLength after reordering.
+      // Use spread to avoid mutating the shared objects in this.players.
       const seenGroups = new Set<number>();
       const groupLengths = new Map<number, number>();
       for (const p of this.playersFiltered) {
         groupLengths.set(p.instrument, (groupLengths.get(p.instrument) || 0) + 1);
       }
-      for (const p of this.playersFiltered) {
-        p.firstOfInstrument = !seenGroups.has(p.instrument);
-        p.instrumentLength = groupLengths.get(p.instrument) || 0;
+      this.playersFiltered = this.playersFiltered.map(p => {
+        const firstOfInstrument = !seenGroups.has(p.instrument);
         seenGroups.add(p.instrument);
-      }
+        return { ...p, firstOfInstrument, instrumentLength: groupLengths.get(p.instrument) || 0 };
+      });
       return;
     }
 
