@@ -315,7 +315,7 @@ export class ListPage implements OnInit, OnDestroy {
         if (a.isLeader && !b.isLeader) { return -1; }
         if (b.isLeader && !a.isLeader) { return 1; }
 
-        return new Date(b.joined).getTime() - new Date(a.joined).getTime();
+        return new Date(a.joined).getTime() - new Date(b.joined).getTime();
       });
 
       // Recompute firstOfInstrument and instrumentLength after reordering
