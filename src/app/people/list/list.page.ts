@@ -302,8 +302,8 @@ export class ListPage implements OnInit, OnDestroy {
         if (a.instrument === this.mainGroup && b.instrument !== this.mainGroup) { return -1; }
         if (b.instrument === this.mainGroup && a.instrument !== this.mainGroup) { return 1; }
 
-        const aInstr = this.instruments.find(i => i.id === a.instrument);
-        const bInstr = this.instruments.find(i => i.id === b.instrument);
+        const aInstr = this.db.groups().find(i => i.id === a.instrument);
+        const bInstr = this.db.groups().find(i => i.id === b.instrument);
         const aSortOrder = aInstr?.sort_order;
         const bSortOrder = bInstr?.sort_order;
 
