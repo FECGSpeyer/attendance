@@ -332,7 +332,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       const attendanceType = this.db.attendanceTypes().find((type) => type.id === att.typeId);
       return attendanceType?.include_in_average;
     }).length;
-    this.perc = attendances.length ? Math.round(attendedCount / allCount * 100) : 0;
+    this.perc = allCount ? Math.round(attendedCount / allCount * 100) : 0;
 
     // Count late attendances (only after lastSolve if set)
     const lastSolveDate = this.player.lastSolve ? dayjs(this.player.lastSolve) : null;
