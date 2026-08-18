@@ -205,8 +205,8 @@ export class SignoutPage implements OnInit {
       });
       vergangene[0].showDivider = true;
       const attended = vergangeneToCalcPerc.filter((att: PersonAttendance) => att.attended);
-      this.perc = vergangeneToCalcPerc.length ? Math.round(
-        attended.length / vergangeneToCalcPerc.length * 100) : 0;
+      this.perc = Math.round(
+        attended.length / vergangeneToCalcPerc.length * 100);
     } else {
       this.perc = 0;
     }
