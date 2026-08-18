@@ -115,7 +115,7 @@
               }
               @if (db.tenant().additional_fields?.length) {
                 @for (field of db.tenant().additional_fields; track field.id) {
-                  @if (field.type === "boolean" || field.type === "text" || field.type === "select" || field.type === "bfecg_church") {
+                  @if (field.type === "boolean" || field.type === "text" || field.type === "select" || field.type === "bfecg_church" || field.type === "number") {
                     <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>
                   }
                 }
@@ -245,6 +245,8 @@
                        <ion-badge color="dark" slot="end">{{ player.additional_fields[field.id] }}</ion-badge>
                     } @else if (field.type === "bfecg_church") {
                        <ion-badge color="dark" slot="end">{{ getChurchName(player.additional_fields[field.id]) }}</ion-badge>
+                    } @else if (field.type === "number") {
+                       <ion-badge color="dark" slot="end">{{ field.name }} {{ player.additional_fields[field.id] }}</ion-badge>
                     }
                   }
                 }
