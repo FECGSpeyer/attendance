@@ -322,14 +322,22 @@ export class PersonPage implements OnInit, AfterViewInit {
       .filter((att: PersonAttendance) => dayjs((att as any).date).isAfter(dayjs()))
       .sort((a, b) => new Date((a as any).date).getTime() - new Date((b as any).date).getTime());
 
+    // Load attendance types for the player's own tenant (may differ from current tenant)
+    const playerTenantId = this.player.tenantId ?? this.db.tenant().id;
+    let attTypes = this.db.attendanceTypes();
+    if (playerTenantId !== this.db.tenant().id) {
+      const typeMap = await this.db.getAttendanceTypesForTenants([playerTenantId]);
+      attTypes = typeMap.get(playerTenantId) ?? [];
+    }
+
     // Calculate attendance percentage
     const attendedCount = attendances.filter((att: PersonAttendance) => {
-      const attendanceType = this.db.attendanceTypes().find((type) => type.id === att.typeId);
-      return att.attended && (attendanceType?.include_in_average ?? true);
+      const attendanceType = attTypes.find((type) => type.id === att.typeId);
+      return att.attended && (attendanceType?.include_in_average ?? false);
     }).length;
     const allCount = attendances.filter((att: PersonAttendance) => {
-      const attendanceType = this.db.attendanceTypes().find((type) => type.id === att.typeId);
-      return attendanceType?.include_in_average ?? true;
+      const attendanceType = attTypes.find((type) => type.id === att.typeId);
+      return attendanceType?.include_in_average ?? false;
     }).length;
     this.perc = allCount ? Math.round(attendedCount / allCount * 100) : 0;
 
