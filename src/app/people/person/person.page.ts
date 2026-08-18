@@ -591,7 +591,10 @@ export class PersonPage implements OnInit, AfterViewInit {
   async continueUpdatingPlayer(createAccount = false, loading: HTMLIonLoadingElement, assignVoiceLeaderRole = false): Promise<void> {
     const mainGroupId = this.db.getMainGroup()?.id;
     if (this.player.appId && (this.existingPlayer.instrument !== this.player.instrument && this.player.instrument === mainGroupId || this.existingPlayer.instrument === mainGroupId)) {
-      await this.db.updateTenantUser({ role: this.player.instrument === mainGroupId ? Role.RESPONSIBLE : Role.PLAYER }, this.player.appId);
+      const currentRole = await this.db.getRoleFromTenantUser(this.player.appId);
+      if (currentRole !== Role.ADMIN) {
+        await this.db.updateTenantUser({ role: this.player.instrument === mainGroupId ? Role.RESPONSIBLE : Role.PLAYER }, this.player.appId);
+      }
     }
 
     // Handle Voice Leader role assignment
