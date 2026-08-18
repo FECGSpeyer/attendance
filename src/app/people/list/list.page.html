@@ -53,7 +53,7 @@
               }
               @if (db.tenant().additional_fields?.length) {
                 @for (field of db.tenant().additional_fields; track field.id) {
-                  @if (field.type === "boolean" || field.type === "select") {
+                  @if (field.type === "boolean" || field.type === "select" || field.type === "number") {
                     <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>
                   } @else if (field.type === "bfecg_church") {
                     <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>

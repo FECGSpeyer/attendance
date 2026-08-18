@@ -357,7 +357,7 @@ export class ListPage implements OnInit, OnDestroy {
   onFilterDismissed() {
     if (
       this.prevFilterValue === this.filterOpt &&
-      (this.filterOpt === 'otherInstance' || (this.db.tenant().additional_fields?.find(field => field.type === 'select' && this.filterOpt === field.id)))) {
+      (this.filterOpt === 'otherInstance' || (this.db.tenant().additional_fields?.find(field => (field.type === 'select' || field.type === 'number') && this.filterOpt === field.id)))) {
       this.onFilterChanged();
     }
   }
@@ -423,6 +423,51 @@ export class ListPage implements OnInit, OnDestroy {
               this.tenantName = this.linkedTenants.find((t) => t.id === value)?.longName || '';
               await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
               await this.storage.set(`filterOptAdd${this.db.tenant().id}`, this.tenantName);
+            }
+          }
+        ]
+      });
+      await alert.present();
+      return;
+    } else if (this.db.tenant().additional_fields?.find(field => field.type === 'number' && this.filterOpt === field.id)) {
+      const extraField = this.db.tenant().additional_fields.find(field => field.type === 'number' && this.filterOpt === field.id);
+      const option = await this.storage.get(`filterOptAdd${this.db.tenant().id}`);
+
+      if (implicit) {
+        if (option !== null && option !== '') {
+          this.playersFiltered = Utils.getModifiedPlayersForList(
+            this.players.filter((player: Player) => String(player.additional_fields?.[this.filterOpt]) === String(option)),
+            this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup,
+            this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
+          await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
+        }
+        return;
+      }
+
+      const alert = await this.alertController.create({
+        header: extraField.name,
+        inputs: [{ type: 'number', placeholder: 'Wert eingeben', value: option ?? '' }],
+        buttons: [
+          {
+            text: 'Abbrechen',
+            role: 'destructive',
+            handler: () => { this.filterOpt = 'all'; this.onFilterChanged(); }
+          },
+          {
+            text: 'Filtern',
+            handler: async (data) => {
+              const value = data[0];
+              if (value === '' || value === null || value === undefined) {
+                this.filterOpt = 'all';
+                this.onFilterChanged();
+                return;
+              }
+              this.playersFiltered = Utils.getModifiedPlayersForList(
+                this.players.filter((player: Player) => String(player.additional_fields?.[this.filterOpt]) === String(value)),
+                this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup,
+                this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
+              await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
+              await this.storage.set(`filterOptAdd${this.db.tenant().id}`, String(value));
             }
           }
         ]
@@ -601,15 +646,21 @@ export class ListPage implements OnInit, OnDestroy {
     if (this.searchTerm === '') {
       return this.players;
     } else {
+      const term = this.searchTerm.toLowerCase();
+      const numberFields = this.db.tenant().additional_fields?.filter(f => f.type === 'number') ?? [];
       return this.players.filter((player: Player) => {
-        if (this.searchTerm) {
-          if (player.firstName.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1 ||
-            player.lastName.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1 ||
-            player.groupName.toString().toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1) {
+        if (player.firstName.toLowerCase().indexOf(term) > -1 ||
+          player.lastName.toLowerCase().indexOf(term) > -1 ||
+          player.groupName.toString().toLowerCase().indexOf(term) > -1) {
+          return true;
+        }
+        for (const field of numberFields) {
+          const val = player.additional_fields?.[field.id];
+          if (val !== undefined && val !== null && String(val).indexOf(term) > -1) {
             return true;
           }
-          return false;
         }
+        return false;
       });
     }
   }
