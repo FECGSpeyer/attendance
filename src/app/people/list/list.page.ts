@@ -788,12 +788,13 @@ export class ListPage implements OnInit, OnDestroy {
 
     const pausedPlayer = this.playerToPause;
     const pauseUntil = this.pauseUntil;
+    const pauseFrom = this.pauseFrom;
     this.dismissPauseModal();
 
     if (pausedPlayer.appId) {
       const otherTenants = await this.db.getTenantsFromUser(pausedPlayer.appId);
       if (otherTenants.length) {
-        await this.askPauseInOtherTenants(pausedPlayer, pauseUntil, history, otherTenants);
+        await this.askPauseInOtherTenants(pausedPlayer, pauseUntil, pauseFrom, history, otherTenants);
       }
     }
   }
@@ -801,6 +802,7 @@ export class ListPage implements OnInit, OnDestroy {
   private async askPauseInOtherTenants(
     player: Player,
     pauseUntil: string,
+    pauseFrom: string,
     history: PlayerHistoryEntry[],
     otherTenants: Tenant[]
   ): Promise<void> {
@@ -823,7 +825,7 @@ export class ListPage implements OnInit, OnDestroy {
                 try {
                   const personRef = await this.db.getPersonIdFromTenant(player.appId, tenant.id);
                   if (personRef) {
-                    await this.db.pausePlayerInOtherTenant(personRef.id, true, pauseUntil || null, history);
+                    await this.db.pausePlayerInOtherTenant(personRef.id, tenant.id, true, pauseUntil || null, history, pauseFrom || undefined);
                   }
                 } catch (error) {
                   Utils.showToast(`Fehler bei ${tenant.shortName}: ${error}`, 'danger');

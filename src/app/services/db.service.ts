@@ -1632,11 +1632,11 @@ export class DbService {
     }
   }
 
-  async removePlayerFromUpcomingAttendances(id: number, left?: string, from?: string) {
+  async removePlayerFromUpcomingAttendances(id: number, left?: string, from?: string, tenantId?: number) {
     let attData: Attendance[];
 
     if (left) {
-      attData = await this.getAttendancesByDate(left);
+      attData = await this.getAttendancesByDate(left, tenantId);
     } else if (from) {
       // Pause with a start date: drop the player from every attendance on/after `from`
       // (including past ones), so historical and upcoming participation both reflect the pause.
@@ -1644,12 +1644,12 @@ export class DbService {
       const { data } = await supabase
         .from('attendance')
         .select('*')
-        .eq('tenantId', this.tenant().id)
+        .eq('tenantId', tenantId ?? this.tenant().id)
         .gte('date', fromIso)
         .order('date', { ascending: false });
       attData = (data as any) ?? [];
     } else {
-      attData = await this.getUpcomingAttendances();
+      attData = await this.getUpcomingAttendances(tenantId);
     }
 
     if (attData?.length) {
@@ -1936,9 +1936,11 @@ export class DbService {
 
   async pausePlayerInOtherTenant(
     playerId: number,
+    tenantId: number,
     paused: boolean,
     pausedUntil: string | null,
-    history: PlayerHistoryEntry[]
+    history: PlayerHistoryEntry[],
+    pauseFrom?: string
   ): Promise<void> {
     const { error } = await supabase
       .from('player')
@@ -1947,6 +1949,10 @@ export class DbService {
 
     if (error) {
       throw new Error('Fehler beim Pausieren in anderer Instanz');
+    }
+
+    if (paused) {
+      await this.removePlayerFromUpcomingAttendances(playerId, undefined, pauseFrom, tenantId);
     }
   }
 
@@ -2293,11 +2299,11 @@ export class DbService {
     });
   }
 
-  async getUpcomingAttendances(): Promise<Attendance[]> {
+  async getUpcomingAttendances(tenantId?: number): Promise<Attendance[]> {
     const { data } = await supabase
       .from('attendance')
       .select('*')
-      .eq('tenantId', this.tenant().id)
+      .eq('tenantId', tenantId ?? this.tenant().id)
       .gt('date', dayjs().startOf('day').toISOString())
       .order('date', {
         ascending: false,

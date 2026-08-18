@@ -1411,7 +1411,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.isPauseModalOpen = false;
 
       if (this.otherTenants.length) {
-        await this.askPauseInOtherTenants(history);
+        await this.askPauseInOtherTenants(history, this.pauseFrom);
       }
 
       await this.dismiss();
@@ -1420,7 +1420,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
   }
 
-  private async askPauseInOtherTenants(history: PlayerHistoryEntry[]): Promise<void> {
+  private async askPauseInOtherTenants(history: PlayerHistoryEntry[], pauseFrom: string): Promise<void> {
     await new Promise<void>(async (resolve) => {
       const alert = await this.alertController.create({
         header: 'Auch in anderen Instanzen pausieren?',
@@ -1440,7 +1440,7 @@ export class PersonPage implements OnInit, AfterViewInit {
                 try {
                   const personRef = await this.db.getPersonIdFromTenant(this.player.appId, tenant.id);
                   if (personRef) {
-                    await this.db.pausePlayerInOtherTenant(personRef.id, true, this.pauseUntil || null, history);
+                    await this.db.pausePlayerInOtherTenant(personRef.id, tenant.id, true, this.pauseUntil || null, history, pauseFrom || undefined);
                   }
                 } catch (error) {
                   Utils.showToast(`Fehler bei ${tenant.shortName}: ${error}`, 'danger');
