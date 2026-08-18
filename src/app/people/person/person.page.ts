@@ -1409,10 +1409,50 @@ export class PersonPage implements OnInit, AfterViewInit {
       }, true, undefined, undefined, undefined, this.pauseFrom || undefined);
       this.hasChanges = false;
       this.isPauseModalOpen = false;
+
+      if (this.otherTenants.length) {
+        await this.askPauseInOtherTenants(history);
+      }
+
       await this.dismiss();
     } catch (error) {
       Utils.showToast(error, 'danger');
     }
+  }
+
+  private async askPauseInOtherTenants(history: PlayerHistoryEntry[]): Promise<void> {
+    await new Promise<void>(async (resolve) => {
+      const alert = await this.alertController.create({
+        header: 'Auch in anderen Instanzen pausieren?',
+        message: `${this.player.firstName} ${this.player.lastName} ist auch in anderen Instanzen aktiv. In welchen soll die Person ebenfalls pausiert werden?`,
+        inputs: this.otherTenants.map((t) => ({
+          type: 'checkbox' as const,
+          label: t.longName || t.shortName,
+          value: t,
+          checked: false,
+        })),
+        buttons: [
+          { text: 'Überspringen', role: 'cancel', handler: () => resolve() },
+          {
+            text: 'Pausieren',
+            handler: async (selected: Tenant[]) => {
+              for (const tenant of selected) {
+                try {
+                  const personRef = await this.db.getPersonIdFromTenant(this.player.appId, tenant.id);
+                  if (personRef) {
+                    await this.db.pausePlayerInOtherTenant(personRef.id, true, this.pauseUntil || null, history);
+                  }
+                } catch (error) {
+                  Utils.showToast(`Fehler bei ${tenant.shortName}: ${error}`, 'danger');
+                }
+              }
+              resolve();
+            },
+          },
+        ],
+      });
+      await alert.present();
+    });
   }
 
   dismissPauseModal(): void {

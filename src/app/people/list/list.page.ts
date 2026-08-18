@@ -786,7 +786,56 @@ export class ListPage implements OnInit, OnDestroy {
       Utils.showToast(error, 'danger');
     }
 
+    const pausedPlayer = this.playerToPause;
+    const pauseUntil = this.pauseUntil;
     this.dismissPauseModal();
+
+    if (pausedPlayer.appId) {
+      const otherTenants = await this.db.getTenantsFromUser(pausedPlayer.appId);
+      if (otherTenants.length) {
+        await this.askPauseInOtherTenants(pausedPlayer, pauseUntil, history, otherTenants);
+      }
+    }
+  }
+
+  private async askPauseInOtherTenants(
+    player: Player,
+    pauseUntil: string,
+    history: PlayerHistoryEntry[],
+    otherTenants: Tenant[]
+  ): Promise<void> {
+    await new Promise<void>(async (resolve) => {
+      const alert = await this.alertController.create({
+        header: 'Auch in anderen Instanzen pausieren?',
+        message: `${player.firstName} ${player.lastName} ist auch in anderen Instanzen aktiv. In welchen soll die Person ebenfalls pausiert werden?`,
+        inputs: otherTenants.map((t) => ({
+          type: 'checkbox' as const,
+          label: t.longName || t.shortName,
+          value: t,
+          checked: false,
+        })),
+        buttons: [
+          { text: 'Überspringen', role: 'cancel', handler: () => resolve() },
+          {
+            text: 'Pausieren',
+            handler: async (selected: Tenant[]) => {
+              for (const tenant of selected) {
+                try {
+                  const personRef = await this.db.getPersonIdFromTenant(player.appId, tenant.id);
+                  if (personRef) {
+                    await this.db.pausePlayerInOtherTenant(personRef.id, true, pauseUntil || null, history);
+                  }
+                } catch (error) {
+                  Utils.showToast(`Fehler bei ${tenant.shortName}: ${error}`, 'danger');
+                }
+              }
+              resolve();
+            },
+          },
+        ],
+      });
+      await alert.present();
+    });
   }
 
   dismissPauseModal() {

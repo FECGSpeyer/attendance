@@ -1934,6 +1934,22 @@ export class DbService {
       })) as unknown as Player[];
   }
 
+  async pausePlayerInOtherTenant(
+    playerId: number,
+    paused: boolean,
+    pausedUntil: string | null,
+    history: PlayerHistoryEntry[]
+  ): Promise<void> {
+    const { error } = await supabase
+      .from('player')
+      .update({ paused, paused_until: pausedUntil, history: history as any })
+      .eq('id', playerId);
+
+    if (error) {
+      throw new Error('Fehler beim Pausieren in anderer Instanz');
+    }
+  }
+
   async checkAndUnpausePlayers(): Promise<void> {
     const today = dayjs().format('YYYY-MM-DD');
 
