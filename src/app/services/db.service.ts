@@ -2327,13 +2327,13 @@ export class DbService {
   async getPersonAttendances(id: number, all: boolean = false): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan, description, attachment_url, attachment_name)')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan, description, attachment_url, attachment_name, attType:type_id(id, highlight, include_in_average, name, color))')
       .eq('person_id', id)
       .gt('attendance.date', all ? dayjs('2020-01-01').toISOString() : this.getCurrentAttDate()) as any;
 
     return data.filter((a: any) => Boolean(a.attendance)).map((att: any): PersonAttendance => {
       const attText = Utils.getAttText(att);
-      const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.attendance.type_id);
+      const attType = att.attendance.attType ?? this.attendanceTypes().find((type: AttendanceType) => type.id === att.attendance.type_id);
       let title = '';
 
       if (attType) {
@@ -2353,6 +2353,7 @@ export class DbService {
         typeId: att.attendance.type_id,
         attendance: att.attendance,
         highlight: attType ? attType.highlight : att.attendance.type === 'vortrag',
+        include_in_average: attType?.include_in_average ?? false,
       } as any;
     });
   }
