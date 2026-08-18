@@ -325,11 +325,12 @@ export class PersonPage implements OnInit, AfterViewInit {
     // Calculate attendance percentage
     const attendedCount = attendances.filter((att: PersonAttendance) => {
       const attendanceType = this.db.attendanceTypes().find((type) => type.id === att.typeId);
-      return att.attended && (attendanceType?.include_in_average ?? true);
+
+      return att.attended && attendanceType?.include_in_average;
     }).length;
     const allCount = attendances.filter((att: PersonAttendance) => {
       const attendanceType = this.db.attendanceTypes().find((type) => type.id === att.typeId);
-      return attendanceType?.include_in_average ?? true;
+      return attendanceType?.include_in_average;
     }).length;
     this.perc = allCount ? Math.round(attendedCount / allCount * 100) : 0;
 
