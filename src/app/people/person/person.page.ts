@@ -322,10 +322,17 @@ export class PersonPage implements OnInit, AfterViewInit {
       .filter((att: PersonAttendance) => dayjs((att as any).date).isAfter(dayjs()))
       .sort((a, b) => new Date((a as any).date).getTime() - new Date((b as any).date).getTime());
 
-    // Calculate attendance percentage using include_in_average from the attendance object itself
-    const attendedCount = attendances.filter((att: PersonAttendance) => att.attended && (att as any).include_in_average).length;
-    const allCount = attendances.filter((att: PersonAttendance) => (att as any).include_in_average).length;
-    this.perc = allCount ? Math.round(attendedCount / allCount * 100) : 0;
+    // Calculate attendance percentage
+    const attendedCount = attendances.filter((att: PersonAttendance) => {
+      const attendanceType = this.db.attendanceTypes().find((type) => type.id === att.typeId);
+
+      return att.attended && attendanceType?.include_in_average;
+    }).length;
+    const allCount = attendances.filter((att: PersonAttendance) => {
+      const attendanceType = this.db.attendanceTypes().find((type) => type.id === att.typeId);
+      return attendanceType?.include_in_average;
+    }).length;
+    this.perc = attendances.length ? Math.round(attendedCount / allCount * 100) : 0;
 
     // Count late attendances (only after lastSolve if set)
     const lastSolveDate = this.player.lastSolve ? dayjs(this.player.lastSolve) : null;
