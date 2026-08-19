@@ -237,6 +237,15 @@ export class ExportPage implements OnInit {
       if (probe2.getNumberOfPages() > 1) {
         styles = { ...styles, fontSize: 8 };
         headStyles = { ...headStyles, fontSize: 8 };
+
+        // Third probe: minimal padding + smaller font.
+        const probe3 = new jsPDF({ compress: true });
+        await Utils.registerExportFont(probe3);
+        buildTable(probe3, styles, headStyles);
+        if (probe3.getNumberOfPages() > 1) {
+          styles = { ...styles, cellPadding: { top: 0.5, bottom: 0.5, left: 1, right: 1 }, fontSize: 6 };
+          headStyles = { ...headStyles, fontSize: 6 };
+        }
       }
     }
 
@@ -381,6 +390,16 @@ export class ExportPage implements OnInit {
       if (probe2.getNumberOfPages() > 1) {
         headStyles = { ...headStyles, fontSize: 7 };
         bodyStyles = { ...bodyStyles, fontSize: 7 };
+
+        // Third probe: minimal padding + smaller font.
+        const probe3 = new jsPDF({ compress: true });
+        await Utils.registerExportFont(probe3);
+        buildTable(probe3, styles, headStyles, bodyStyles);
+        if (probe3.getNumberOfPages() > 1) {
+          styles = { ...styles, cellPadding: { top: 0.5, bottom: 0.5, left: 1, right: 1 }, fontSize: 6 };
+          headStyles = { ...headStyles, fontSize: 6 };
+          bodyStyles = { ...bodyStyles, fontSize: 6 };
+        }
       }
     }
 
