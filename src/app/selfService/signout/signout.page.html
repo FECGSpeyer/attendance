@@ -1,6 +1,29 @@
 <ion-header translucent="true">
   <ion-toolbar>
-    <ion-title>{{ db.tenant()?.shortName }}</ion-title>
+    @if ((db.tenants()?.length ?? 0) > 1) {
+      <ion-buttons slot="start">
+        <ion-button id="tenant-switcher-signout">
+          {{ db.tenant()?.shortName }}
+          <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <ion-popover trigger="tenant-switcher-signout" triggerAction="click" dismissOnSelect="true">
+        <ng-template>
+          <ion-list lines="none">
+            @for (tenant of db.tenants(); track tenant.id) {
+              <ion-item button detail="false" (click)="onTenantChange(tenant.id)">
+                <ion-label>{{ tenant.shortName }}</ion-label>
+                @if (tenant.id === db.tenant()?.id) {
+                  <ion-badge slot="end" color="primary">Aktuell</ion-badge>
+                }
+              </ion-item>
+            }
+          </ion-list>
+        </ng-template>
+      </ion-popover>
+    } @else {
+      <ion-title>{{ db.tenant()?.shortName }}</ion-title>
+    }
     <ion-buttons slot="end">
       <ion-button id="legend-button">
         <ion-icon slot="icon-only" name="information-outline"></ion-icon>

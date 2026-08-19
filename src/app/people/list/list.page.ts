@@ -88,6 +88,15 @@ export class ListPage implements OnInit, OnDestroy {
     });
   }
 
+  async onTenantChange(tenantId: number): Promise<void> {
+    if (this.db.tenant().id === tenantId) { return; }
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+    await this.db.setTenant(tenantId);
+    await this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser().role));
+    await loading.dismiss();
+  }
+
   async ngOnInit() {
     this.currentTenantId = this.db.tenant()?.id;
     await this.initializeData();
@@ -647,16 +656,16 @@ export class ListPage implements OnInit, OnDestroy {
       return this.players;
     } else {
       const term = this.searchTerm.toLowerCase();
-      const numberFields = this.db.tenant().additional_fields?.filter(f => f.type === 'number') ?? [];
+      const searchableFields = this.db.tenant().additional_fields?.filter(f => f.type === 'number' || f.type === 'text') ?? [];
       return this.players.filter((player: Player) => {
         if (player.firstName.toLowerCase().indexOf(term) > -1 ||
           player.lastName.toLowerCase().indexOf(term) > -1 ||
           player.groupName.toString().toLowerCase().indexOf(term) > -1) {
           return true;
         }
-        for (const field of numberFields) {
+        for (const field of searchableFields) {
           const val = player.additional_fields?.[field.id];
-          if (val !== undefined && val !== null && String(val).indexOf(term) > -1) {
+          if (val !== undefined && val !== null && String(val).toLowerCase().indexOf(term) > -1) {
             return true;
           }
         }

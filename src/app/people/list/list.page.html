@@ -1,6 +1,29 @@
 <ion-header translucent="true">
   <ion-toolbar>
-    <ion-title>{{ db.tenant()?.longName }}</ion-title>
+    @if ((db.tenants()?.length ?? 0) > 1) {
+      <ion-buttons slot="start">
+        <ion-button id="tenant-switcher-list">
+          {{ db.tenant()?.longName }}
+          <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <ion-popover trigger="tenant-switcher-list" triggerAction="click" dismissOnSelect="true">
+        <ng-template>
+          <ion-list lines="none">
+            @for (tenant of db.tenants(); track tenant.id) {
+              <ion-item button detail="false" (click)="onTenantChange(tenant.id)">
+                <ion-label>{{ tenant.longName }}</ion-label>
+                @if (tenant.id === db.tenant()?.id) {
+                  <ion-badge slot="end" color="primary">Aktuell</ion-badge>
+                }
+              </ion-item>
+            }
+          </ion-list>
+        </ng-template>
+      </ion-popover>
+    } @else {
+      <ion-title>{{ db.tenant()?.longName }}</ion-title>
+    }
     <ion-buttons slot="end">
       <app-notification-bell></app-notification-bell>
     </ion-buttons>

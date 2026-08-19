@@ -1213,8 +1213,35 @@ export class PersonPage implements OnInit, AfterViewInit {
     await actionSheet.present();
   }
 
+  async assignMyAccount() {
+    const me = this.db.tenantUser();
+    const loading = await this.loadingController.create();
+    await loading.present();
+    try {
+      const updated = await this.db.createAccount({ ...this.player, email: me.email });
+      this.player.appId = updated.appId;
+      this.player.email = me.email;
+      this.existingPlayer = { ...this.existingPlayer, appId: updated.appId, email: me.email };
+      this.role = await this.db.getRoleFromTenantUser(updated.appId);
+      Utils.showToast('Benutzer wurde erfolgreich zugewiesen', 'success');
+    } catch (error) {
+      Utils.showToast(error.message, 'danger');
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
   async openMoreMenu() {
     const buttons: ActionSheetButton[] = [];
+
+    if (!this.player.appId && this.isAdmin) {
+      buttons.push({
+        text: 'Meinen Benutzer zuweisen',
+        handler: async () => {
+          await this.assignMyAccount();
+        }
+      });
+    }
 
     if (this.player.paused) {
       buttons.push({

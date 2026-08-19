@@ -69,6 +69,15 @@ export class ParentsPage implements OnInit {
     });
   }
 
+  async onTenantChange(tenantId: number): Promise<void> {
+    if (this.db.tenant().id === tenantId) { return; }
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+    await this.db.setTenant(tenantId);
+    await this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser().role));
+    await loading.dismiss();
+  }
+
   async ngOnInit() {
     await this.initialize();
   }
