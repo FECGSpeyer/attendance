@@ -197,32 +197,53 @@ export class ExportPage implements OnInit {
       row++;
     }
 
-    const doc = new jsPDF({ compress: true });
-    await Utils.registerExportFont(doc);
     const branding = await Utils.buildTenantBranding(this.db.tenant());
     const headerOpts = {
       title: `${shortName} Spielerliste`,
       subtitle: `Stand: ${date}`,
     };
-    // Draw once up front to learn where the table should start; it is redrawn
-    // per page in didDrawPage so multi-page exports keep the header.
-    const contentTop = Utils.addBrandingHeader(doc, branding, headerOpts);
-    (doc as any).autoTable({
-      head: [['', ...this.selectedFields]],
-      body: data,
-      margin: { top: contentTop, bottom: 14 },
-      theme: 'grid',
-      styles: {
-        font: Utils.EXPORT_FONT,
-      },
-      headStyles: {
-        halign: 'center',
-        fillColor: [0, 82, 56]
-      },
-      didDrawPage: () => {
-        Utils.addBrandingHeader(doc, branding, headerOpts);
+
+    const buildTable = (doc: any, styles: any, headStyles: any) => {
+      const contentTop = Utils.addBrandingHeader(doc, branding, headerOpts);
+      (doc as any).autoTable({
+        head: [['', ...this.selectedFields]],
+        body: data,
+        margin: { top: contentTop, bottom: 14 },
+        theme: 'grid',
+        styles,
+        headStyles,
+        didDrawPage: () => { Utils.addBrandingHeader(doc, branding, headerOpts); },
+      });
+    };
+
+    const defaultStyles = { font: Utils.EXPORT_FONT };
+    const defaultHeadStyles = { halign: 'center', fillColor: [0, 82, 56] };
+
+    // Dry-run to detect overflow; adjust cell padding or font size if needed.
+    const probe = new jsPDF({ compress: true });
+    await Utils.registerExportFont(probe);
+    buildTable(probe, defaultStyles, defaultHeadStyles);
+    const pages = probe.getNumberOfPages();
+
+    let styles = defaultStyles as any;
+    let headStyles = defaultHeadStyles as any;
+    if (pages > 1) {
+      styles = { ...defaultStyles, cellPadding: { top: 1.5, bottom: 1.5, left: 2, right: 2 } };
+
+      // Second probe with reduced padding.
+      const probe2 = new jsPDF({ compress: true });
+      await Utils.registerExportFont(probe2);
+      buildTable(probe2, styles, headStyles);
+      if (probe2.getNumberOfPages() > 1) {
+        styles = { ...styles, fontSize: 8 };
+        headStyles = { ...headStyles, fontSize: 8 };
       }
-    });
+    }
+
+    const doc = new jsPDF({ compress: true });
+    await Utils.registerExportFont(doc);
+    buildTable(doc, styles, headStyles);
+
     const fileName = `${shortName}_Spielerliste_Stand_${date}.pdf`;
     await Utils.downloadFileNative(doc.output('blob'), fileName);
   }
@@ -289,60 +310,84 @@ export class ExportPage implements OnInit {
     const { jsPDF } = await import('jspdf');
     await import('jspdf-autotable');
     const date: string = dayjs().format('DD.MM.YYYY');
-    const doc = new jsPDF({ compress: true });
-    await Utils.registerExportFont(doc);
 
     const branding = await Utils.buildTenantBranding(this.db.tenant());
     const headerOpts = {
       title: `${shortName} Anwesenheit`,
       subtitle: `Stand: ${date}`,
     };
-    const contentTop = Utils.addBrandingHeader(doc, branding, headerOpts);
-    (doc as any).autoTable({
-      head: [header],
-      body: data,
-      margin: { top: contentTop, bottom: 14 },
-      theme: 'grid',
-      styles: {
-        font: Utils.EXPORT_FONT,
-      },
-      headStyles: {
-        fontSize: 8,
-        halign: 'center',
-        fillColor: [0, 82, 56]
-      },
-      bodyStyles: {
-        fontSize: 8,
-      },
-      didDrawPage: () => {
-        Utils.addBrandingHeader(doc, branding, headerOpts);
-      },
-      didParseCell: (cellData: any) => {
-        if (cellData.cell.raw === 'A') {
-          cellData.cell.styles.fillColor = [178, 34, 34];
-          cellData.cell.styles.textColor = [255, 255, 255];
-          cellData.cell.styles.halign = 'center';
-        } else if (cellData.cell.raw === 'X') {
-          cellData.cell.styles.fillColor = [50, 205, 50];
-          cellData.cell.styles.textColor = [255, 255, 255];
-          cellData.cell.styles.halign = 'center';
-        } else if (cellData.cell.raw === 'E') {
-          cellData.cell.styles.fillColor = [255, 196, 9];
-          cellData.cell.styles.textColor = [255, 255, 255];
-          cellData.cell.styles.halign = 'center';
-        } else if (cellData.cell.raw === 'L') {
-          cellData.cell.styles.fillColor = [0, 191, 255];
-          cellData.cell.styles.textColor = [255, 255, 255];
-          cellData.cell.styles.halign = 'center';
-        } else if (cellData.cell.raw === 'N') {
-          cellData.cell.styles.fillColor = [220, 220, 220];
-          cellData.cell.styles.textColor = [255, 255, 255];
-          cellData.cell.styles.halign = 'center';
-        } else if (cellData.cell.raw?.toString().includes('%')) {
-          cellData.cell.styles.halign = 'center';
-        }
-      },
-    });
+
+    const didParseCell = (cellData: any) => {
+      if (cellData.cell.raw === 'A') {
+        cellData.cell.styles.fillColor = [178, 34, 34];
+        cellData.cell.styles.textColor = [255, 255, 255];
+        cellData.cell.styles.halign = 'center';
+      } else if (cellData.cell.raw === 'X') {
+        cellData.cell.styles.fillColor = [50, 205, 50];
+        cellData.cell.styles.textColor = [255, 255, 255];
+        cellData.cell.styles.halign = 'center';
+      } else if (cellData.cell.raw === 'E') {
+        cellData.cell.styles.fillColor = [255, 196, 9];
+        cellData.cell.styles.textColor = [255, 255, 255];
+        cellData.cell.styles.halign = 'center';
+      } else if (cellData.cell.raw === 'L') {
+        cellData.cell.styles.fillColor = [0, 191, 255];
+        cellData.cell.styles.textColor = [255, 255, 255];
+        cellData.cell.styles.halign = 'center';
+      } else if (cellData.cell.raw === 'N') {
+        cellData.cell.styles.fillColor = [220, 220, 220];
+        cellData.cell.styles.textColor = [255, 255, 255];
+        cellData.cell.styles.halign = 'center';
+      } else if (cellData.cell.raw?.toString().includes('%')) {
+        cellData.cell.styles.halign = 'center';
+      }
+    };
+
+    const buildTable = (doc: any, styles: any, headStyles: any, bodyStyles: any) => {
+      const contentTop = Utils.addBrandingHeader(doc, branding, headerOpts);
+      (doc as any).autoTable({
+        head: [header],
+        body: data,
+        margin: { top: contentTop, bottom: 14 },
+        theme: 'grid',
+        styles,
+        headStyles,
+        bodyStyles,
+        didDrawPage: () => { Utils.addBrandingHeader(doc, branding, headerOpts); },
+        didParseCell,
+      });
+    };
+
+    const defaultStyles = { font: Utils.EXPORT_FONT };
+    const defaultHeadStyles = { fontSize: 8, halign: 'center', fillColor: [0, 82, 56] };
+    const defaultBodyStyles = { fontSize: 8 };
+
+    // Dry-run to detect overflow; adjust cell padding or font size if needed.
+    const probe = new jsPDF({ compress: true });
+    await Utils.registerExportFont(probe);
+    buildTable(probe, defaultStyles, defaultHeadStyles, defaultBodyStyles);
+    const pages = probe.getNumberOfPages();
+
+    let styles = defaultStyles as any;
+    let headStyles = defaultHeadStyles as any;
+    let bodyStyles = defaultBodyStyles as any;
+    if (pages > 1) {
+      styles = { ...defaultStyles, cellPadding: { top: 1.5, bottom: 1.5, left: 2, right: 2 } };
+
+      // Second probe with reduced padding.
+      const probe2 = new jsPDF({ compress: true });
+      await Utils.registerExportFont(probe2);
+      buildTable(probe2, styles, headStyles, bodyStyles);
+      if (probe2.getNumberOfPages() > 1) {
+        headStyles = { ...headStyles, fontSize: 7 };
+        bodyStyles = { ...bodyStyles, fontSize: 7 };
+      }
+    }
+
+    const doc = new jsPDF({ compress: true });
+    await Utils.registerExportFont(doc);
+    buildTable(doc, styles, headStyles, bodyStyles);
+
     const attFileName = `${shortName}_Anwesenheit_Stand_${date}.pdf`;
     await Utils.downloadFileNative(doc.output('blob'), attFileName);
   }

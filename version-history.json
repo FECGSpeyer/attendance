@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.4.6",
+          "date": "19.8.2026",
+          "changes": [
+            "📄 Export: PDF-Export passt Zellabstand und Schriftgröße automatisch an, um den Inhalt auf einer Seite darzustellen."
+          ]
+        },
+        {
           "version": "4.4.5",
           "date": "18.8.2026",
           "changes": [
