@@ -216,7 +216,7 @@ export class ExportPage implements OnInit {
       });
     };
 
-    const defaultStyles = { font: Utils.EXPORT_FONT, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 } };
+    const defaultStyles = { font: Utils.EXPORT_FONT, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 }, minCellHeight: 7 };
     const defaultHeadStyles = { halign: 'center', fillColor: [0, 82, 56] };
 
     // Dry-run to detect overflow; adjust cell padding or font size if needed.
@@ -367,7 +367,7 @@ export class ExportPage implements OnInit {
       });
     };
 
-    const defaultStyles = { font: Utils.EXPORT_FONT, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 } };
+    const defaultStyles = { font: Utils.EXPORT_FONT, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 }, minCellHeight: 7 };
     const defaultHeadStyles = { fontSize: 8, halign: 'center', fillColor: [0, 82, 56] };
     const defaultBodyStyles = { fontSize: 8 };
 
