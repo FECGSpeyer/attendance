@@ -877,37 +877,76 @@ export class Utils {
     }
 
     // Standard A4 portrait mode
+    const buildA4Table = (doc: any, styles: any) => {
+      const fs = styles.fontSize ?? (props.sideBySide ? 8 : 11);
+      const scaledHead = hasConductors ? [[
+        { content: 'Uhrzeit', styles: { fontSize: fs } },
+        { content: 'Programmpunkt', styles: { fontSize: fs } },
+        { content: 'Ausführung', styles: { fontSize: fs } },
+        { content: 'Dauer', styles: { fontSize: fs } },
+      ]] : [[
+        { content: 'Uhrzeit', styles: { fontSize: fs } },
+        { content: 'Programmpunkt', styles: { fontSize: fs } },
+        { content: 'Dauer', styles: { fontSize: fs } },
+      ]];
+      const headerOpts = { title: typeText, subtitle: date };
+      const contentTop = Utils.addBrandingHeader(doc, props.branding, headerOpts);
+      (doc as any).autoTable({
+        head: scaledHead,
+        body: data,
+        margin: { top: contentTop, bottom: 14 },
+        theme: 'plain',
+        styles,
+        headStyles: {
+          fillColor: false,
+          textColor: [50, 50, 50],
+          fontStyle: 'bold',
+          lineWidth: { bottom: 0.5 },
+          lineColor: [100, 100, 100],
+        },
+        bodyStyles: {
+          fillColor: false,
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245],
+        },
+        columnStyles,
+        didParseCell,
+        willDrawCell,
+        didDrawCell,
+        didDrawPage: () => {
+          Utils.addBrandingHeader(doc, props.branding, { title: typeText, subtitle: date });
+        },
+      });
+    };
+
+    // Dry-run auto-fit: progressively compress until it fits one page.
+    const probe1 = new jsPDF({ compress: true });
+    await Utils.registerExportFont(probe1);
+    buildA4Table(probe1, tableStyles);
+
+    let finalStyles = { ...tableStyles };
+    if (probe1.getNumberOfPages() > 1) {
+      finalStyles = { ...tableStyles, fontSize: 9, cellPadding: 2 };
+
+      const probe2 = new jsPDF({ compress: true });
+      await Utils.registerExportFont(probe2);
+      buildA4Table(probe2, finalStyles);
+      if (probe2.getNumberOfPages() > 1) {
+        finalStyles = { ...tableStyles, fontSize: 8, cellPadding: 1.5 };
+
+        const probe3 = new jsPDF({ compress: true });
+        await Utils.registerExportFont(probe3);
+        buildA4Table(probe3, finalStyles);
+        if (probe3.getNumberOfPages() > 1) {
+          finalStyles = { ...tableStyles, fontSize: 7, cellPadding: 1 };
+        }
+      }
+    }
+
     const doc = new jsPDF({ compress: true });
     await Utils.registerExportFont(doc);
-    const headerOpts = { title: typeText, subtitle: date };
-    const contentTop = Utils.addBrandingHeader(doc, props.branding, headerOpts);
-    (doc as any).autoTable({
-      head,
-      body: data,
-      margin: { top: contentTop, bottom: 14 },
-      theme: 'plain',
-      styles: tableStyles,
-      headStyles: {
-        fillColor: false,
-        textColor: [50, 50, 50],
-        fontStyle: 'bold',
-        lineWidth: { bottom: 0.5 },
-        lineColor: [100, 100, 100],
-      },
-      bodyStyles: {
-        fillColor: false,
-      },
-      alternateRowStyles: {
-        fillColor: [245, 245, 245],
-      },
-      columnStyles,
-      didParseCell,
-      willDrawCell,
-      didDrawCell,
-      didDrawPage: () => {
-        Utils.addBrandingHeader(doc, props.branding, headerOpts);
-      },
-    });
+    buildA4Table(doc, finalStyles);
 
     if (props.asBlob) {
       if (props.asImage) {
