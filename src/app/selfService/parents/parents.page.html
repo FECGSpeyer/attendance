@@ -1,4 +1,4 @@
-<ion-header [translucent]="true" collapse="fade">
+<ion-header [translucent]="true">
   <ion-toolbar>
     @if ((db.tenants()?.length ?? 0) > 1) {
       <ion-buttons slot="start">
@@ -71,32 +71,13 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  @if ((db.tenants()?.length ?? 0) <= 1) {
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">{{ db.tenant()?.longName }}</ion-title>
-      @if ((db.tenants()?.length ?? 0) > 1) {
-        <ion-buttons slot="end">
-          <ion-button id="tenant-switcher-parents-lg">
-            <ion-icon slot="icon-only" name="chevron-down-circle-outline"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-        <ion-popover trigger="tenant-switcher-parents-lg" triggerAction="click" dismissOnSelect="true" style="--width: 220px">
-          <ng-template>
-            <ion-list lines="none">
-              @for (tenant of db.tenants(); track tenant.id) {
-                <ion-item button detail="false" (click)="onTenantChange(tenant.id)">
-                  <ion-label>{{ tenant.longName }}</ion-label>
-                  @if (tenant.id === db.tenant()?.id) {
-                    <ion-badge slot="end" color="primary">Aktuell</ion-badge>
-                  }
-                </ion-item>
-              }
-            </ion-list>
-          </ng-template>
-        </ion-popover>
-      }
     </ion-toolbar>
   </ion-header>
+  }
 
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
