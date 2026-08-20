@@ -134,6 +134,7 @@ export function pickPersonFields(person: any) {
     otherExercise,
     otherOrchestras,
     lastSolve,
+    global_person_id,
   } = person;
   const picked = {
     id,
@@ -187,6 +188,7 @@ export function pickPersonFields(person: any) {
     otherExercise,
     otherOrchestras,
     lastSolve,
+    global_person_id,
   };
   // Timestamp columns reject empty strings ("invalid input syntax for type
   // timestamp with time zone: \"\""). Normalize blanks to null defensively so

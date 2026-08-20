@@ -63,6 +63,15 @@
           </ion-button>
         }
       </ion-item>
+      @if (isSuperAdmin && db.organisation()) {
+        <ion-item button (click)="openLinkPersons()">
+          <ion-icon name="git-merge-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>
+            <h2>Personen verknüpfen</h2>
+            <h3>Personen aus verschiedenen Instanzen miteinander verbinden</h3>
+          </ion-label>
+        </ion-item>
+      }
     </ion-item-group>
 
     <ion-list-header><ion-label>Anwesenheiten</ion-label></ion-list-header>

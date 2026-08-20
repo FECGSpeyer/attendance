@@ -18,6 +18,8 @@ export interface PersonLike {
   lastName: string;
   email?: string | null;
   appId?: string | null;
+  global_person_id?: string | null;
+  birthday?: string | null;
 }
 
 export interface RankedMatch<T extends PersonLike = PersonLike> {
@@ -99,8 +101,36 @@ export function levenshtein(a: string, b: string): number {
 }
 
 /**
+ * Compares two birthday strings (ISO 8601 / timestamptz).
+ * Uses UTC accessors to avoid timezone drift on midnight boundaries.
+ *
+ *  'match'    — same year, month and day
+ *  'close'    — same month+day, year differs by exactly 1 (common entry typo)
+ *  'mismatch' — both present but clearly different
+ *  'unknown'  — at least one side is absent or unparseable
+ */
+export type BirthdayCompare = 'match' | 'close' | 'mismatch' | 'unknown';
+
+export function compareBirthdays(
+  a: string | null | undefined,
+  b: string | null | undefined,
+): BirthdayCompare {
+  if (!a || !b) {return 'unknown';}
+  const da = new Date(a);
+  const db = new Date(b);
+  if (isNaN(da.getTime()) || isNaN(db.getTime())) {return 'unknown';}
+  const yearDiff = Math.abs(da.getUTCFullYear() - db.getUTCFullYear());
+  if (yearDiff === 0
+    && da.getUTCMonth() === db.getUTCMonth()
+    && da.getUTCDate() === db.getUTCDate()) {return 'match';}
+  if (yearDiff === 1
+    && da.getUTCMonth() === db.getUTCMonth()
+    && da.getUTCDate() === db.getUTCDate()) {return 'close';}
+  return 'mismatch';
+}
+
+/**
  * Per-part similarity helper. Combines edit-distance similarity with a
- * prefix bonus so partial typing (`Joh` → `Johannes`) still scores well.
  */
 function partSimilarity(query: string, candidate: string): number {
   const q = normalizeName(query);
@@ -179,17 +209,18 @@ function reasonFor(
 /**
  * Score, filter, sort, and dedupe `candidates`.
  *
- * Account-holders (candidates with an `appId`) are preferred: their score
- * gets a small boost so they outrank no-account hits with comparable name
- * similarity, and they win the dedup tiebreak when the same person appears
- * across multiple linked tenants.
+ * Identity signals in priority order:
+ *  1. Shared `global_person_id` → definitive match, score 1.0
+ *  2. Matching `appId` (account-holders) → score boost +0.1
+ *  3. Matching `email` → definitive match, score 1.0
+ *  4. `birthday` corroboration → ±0.25/0.10/−0.40 on top of name score
+ *  5. Fuzzy name similarity (Levenshtein + diacritic normalisation)
  *
  * Dedup key: normalized "firstName lastName". When two candidates collide,
- * keep the one with the strongest identity (account > email > nothing),
- * then the higher score.
+ * keep the one with the strongest identity, then the higher score.
  */
 export function rankCandidates<T extends PersonLike>(
-  query: { firstName: string; lastName: string },
+  query: { firstName: string; lastName: string; email?: string | null; global_person_id?: string | null; birthday?: string | null },
   candidates: T[],
   opts: RankOptions = {},
 ): RankedMatch<T>[] {
@@ -197,44 +228,61 @@ export function rankCandidates<T extends PersonLike>(
   const limit = opts.limit ?? 10;
   const bothPartsMinSim = opts.bothPartsMinSim ?? 0.5;
 
-  // If the user filled in BOTH first AND last name, require each side to
-  // have a real overlap with the candidate. Otherwise a perfect last-name
-  // hit alone clears the combined threshold and surfaces obviously-wrong
-  // people (different first name, same last name).
   const qFirst = normalizeName(query.firstName ?? '');
   const qLast = normalizeName(query.lastName ?? '');
   const enforceBothParts = bothPartsMinSim > 0 && qFirst.length >= 2 && qLast.length >= 2;
+  const qEmail = (query.email ?? '').trim().toLowerCase();
+  const qGlobalId = query.global_person_id ?? null;
+
+  const identityRank = (c: PersonLike): number =>
+    (c.appId || c.global_person_id) ? 3 : (c.email ? 2 : (c.birthday ? 1 : 0));
 
   const scored: RankedMatch<T>[] = [];
   for (const candidate of candidates) {
+    // Definitive match: shared global_person_id
+    if (qGlobalId && candidate.global_person_id && qGlobalId === candidate.global_person_id) {
+      scored.push({ candidate, score: 1.0, reason: 'Verknüpfte Person' });
+      continue;
+    }
+
+    // Definitive match: same non-empty email
+    const cEmail = (candidate.email ?? '').trim().toLowerCase();
+    if (qEmail && cEmail && qEmail === cEmail) {
+      scored.push({ candidate, score: 1.0, reason: 'E-Mail identisch' });
+      continue;
+    }
+
+    // Name-based scoring with birthday corroboration
     if (enforceBothParts) {
       const firstSim = partSimilarity(query.firstName ?? '', candidate.firstName ?? '');
       const lastSim = partSimilarity(query.lastName ?? '', candidate.lastName ?? '');
       const swapFirst = partSimilarity(query.firstName ?? '', candidate.lastName ?? '');
       const swapLast = partSimilarity(query.lastName ?? '', candidate.firstName ?? '');
-      // Either straight-pair (first↔first AND last↔last) or swapped-pair
-      // (first↔last AND last↔first) must both clear the per-part floor.
       const straightOk = firstSim >= bothPartsMinSim && lastSim >= bothPartsMinSim;
       const swappedOk = swapFirst >= bothPartsMinSim && swapLast >= bothPartsMinSim;
       if (!straightOk && !swappedOk) {continue;}
     }
+
     const base = nameSimilarity(query, candidate);
-    // Boost account-holders so they rank above no-account hits with a
-    // similar name (capped at 1).
-    const boost = candidate.appId ? 0.1 : 0;
-    const score = Math.min(1, base + boost);
+    const accountBoost = candidate.appId ? 0.1 : 0;
+
+    const bdCompare = compareBirthdays(query.birthday, candidate.birthday);
+    const bdDelta = bdCompare === 'match' ? 0.25
+      : bdCompare === 'close' ? 0.10
+      : bdCompare === 'mismatch' ? -0.40
+      : 0;
+
+    const score = Math.min(1, Math.max(0, base + accountBoost + bdDelta));
     if (score >= threshold) {
-      scored.push({
-        candidate,
-        score,
-        reason: reasonFor(query, candidate, score),
-      });
+      const reason = bdCompare === 'match' && base >= 0.7 ? 'Gleicher Geburtstag'
+        : bdCompare === 'close' && base >= 0.7 ? 'Ähnlicher Geburtstag'
+        : reasonFor(query, candidate, score);
+      scored.push({ candidate, score, reason });
     }
   }
 
   // Dedupe across linked tenants: same normalized name = same person.
-  const identityRank = (c: PersonLike): number =>
-    c.appId ? 2 : (c.email ? 1 : 0);
+  // When two candidates collide, keep the stronger identity, then higher score.
   const byKey = new Map<string, RankedMatch<T>>();
   for (const m of scored) {
     const key = `${normalizeName(m.candidate.firstName)} ${normalizeName(m.candidate.lastName)}`;

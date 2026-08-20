@@ -1200,11 +1200,25 @@ export class PersonPage implements OnInit, AfterViewInit {
       buttons: matches.map((m) => ({
           text: `${m.candidate.firstName} ${m.candidate.lastName} · ${(m.candidate as any).instrument?.name ?? '?'} (${(m.candidate as any).tenantId?.longName ?? '?'})`,
           handler: async () => {
-            this.player.email = m.candidate.email;
+            const candidate = m.candidate;
+            // Determine or create the shared identity UUID
+            const globalPersonId: string = (candidate as any).global_person_id ?? crypto.randomUUID();
+
+            // Copy shared identity fields from the matched candidate
+            this.player.email = candidate.email;
+            this.player.global_person_id = globalPersonId;
+
             await this.db.updatePlayer({
               ...this.player,
-              email: m.candidate.email,
+              email: candidate.email,
+              global_person_id: globalPersonId,
             });
+
+            // Back-fill the candidate's row if it didn't have a global_person_id yet
+            if (!(candidate as any).global_person_id) {
+              await this.db.setGlobalPersonId([(candidate as any).id], globalPersonId);
+            }
+
             Utils.showToast('Die E-Mail Adresse wurde erfolgreich aktualisiert', 'success');
           }
         }))

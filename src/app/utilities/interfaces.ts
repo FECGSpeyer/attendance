@@ -161,6 +161,7 @@ export interface Person {
   left?: string;
   email?: string;
   appId?: string;
+  global_person_id?: string | null;
   notes: string;
   img?: string;
   attStatus?: AttendanceStatus;

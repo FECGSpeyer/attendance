@@ -1,0 +1,67 @@
+.info-text {
+  font-size: 0.85em;
+  color: var(--ion-color-medium);
+  padding: 12px 16px 4px;
+}
+
+.match-card {
+  margin: 8px 12px;
+}
+
+.person-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 4px 0;
+
+  &.representative {
+    padding-left: 4px;
+  }
+
+  &.match {
+    padding-left: 2px;
+  }
+}
+
+.person-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+
+  .name {
+    font-weight: 500;
+    font-size: 0.95em;
+  }
+
+  .meta {
+    font-size: 0.8em;
+    color: var(--ion-color-medium);
+  }
+}
+
+.reason-badge {
+  align-self: flex-start;
+  font-size: 0.7em;
+  margin-top: 2px;
+}
+
+.match-divider {
+  display: flex;
+  align-items: center;
+  color: var(--ion-color-medium);
+  padding: 4px 4px;
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px solid var(--ion-color-light);
+}

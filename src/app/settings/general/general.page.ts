@@ -1,5 +1,5 @@
 import { Component, HostListener, inject, OnInit } from '@angular/core';
-import { AlertController, IonModal, NavController } from '@ionic/angular';
+import { AlertController, IonModal, ModalController, NavController } from '@ionic/angular';
 import { PlayerService } from 'src/app/services/player/player.service';
 import { format, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
@@ -7,6 +7,7 @@ import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, FieldType, Role } from 'src/app/utilities/constants';
 import { AttendanceType, Church, CriticalRule, CriticalRuleOperator, CriticalRulePeriodType, CriticalRuleThresholdType, ExtraField, Organisation } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { LinkPersonsPage } from './link-persons/link-persons.page';
 
 @Component({
   selector: 'app-general',
@@ -111,6 +112,7 @@ export class GeneralPage implements OnInit {
     public db: DbService,
     private alertController: AlertController,
     private navController: NavController,
+    private modalController: ModalController,
   ) {
 
   }
@@ -494,6 +496,15 @@ export class GeneralPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  async openLinkPersons() {
+    const modal = await this.modalController.create({
+      component: LinkPersonsPage,
+      breakpoints: [0, 0.5, 1],
+      initialBreakpoint: 1,
+    });
+    await modal.present();
   }
 
   formatDate(value: string): string {

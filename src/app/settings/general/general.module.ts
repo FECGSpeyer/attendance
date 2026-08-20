@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { GeneralPageRoutingModule } from './general-routing.module';
 
 import { GeneralPage } from './general.page';
+import { LinkPersonsPageModule } from './link-persons/link-persons.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    GeneralPageRoutingModule
+    GeneralPageRoutingModule,
+    LinkPersonsPageModule,
   ],
   declarations: [GeneralPage]
 })

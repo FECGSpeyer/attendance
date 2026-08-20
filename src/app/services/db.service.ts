@@ -2120,6 +2120,11 @@ export class DbService {
     return this.playerSvc.updatePlayerHistory(id, history);
   }
 
+  async setGlobalPersonId(playerIds: number[], globalPersonId: string): Promise<void> {
+    this.checkDemoRestriction();
+    return this.playerSvc.setGlobalPersonId(playerIds, globalPersonId);
+  }
+
   async removePlayer(player: Person): Promise<void> {
     this.checkDemoRestriction();
     await this.playerSvc.removePlayer(player);

@@ -1,0 +1,73 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Personen verknüpfen</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">Schließen</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (loading) {
+    <div class="ion-text-center ion-padding">
+      <ion-spinner></ion-spinner>
+    </div>
+  } @else if (groups.length === 0) {
+    <div class="ion-text-center ion-padding">
+      <ion-icon name="checkmark-circle-outline" color="success" style="font-size: 48px; display: block; margin: 24px auto 8px"></ion-icon>
+      <p>Keine weiteren Vorschläge.</p>
+      @if (linkedCount > 0) {
+        <p><strong>{{ linkedCount }} Personen wurden verknüpft.</strong></p>
+      }
+    </div>
+  } @else {
+    <p class="info-text">
+      Mögliche Übereinstimmungen aus verschiedenen Instanzen. Verknüpfte Personen synchronisieren Name, Geburtstag, E-Mail und Telefon automatisch.
+    </p>
+
+    @for (group of groups; track group.representative.id) {
+      <ion-card class="match-card">
+        <ion-card-content>
+          <!-- Representative row -->
+          <div class="person-row representative">
+            <div class="person-info">
+              <span class="name">{{ group.representative.firstName }} {{ group.representative.lastName }}</span>
+              <span class="meta">{{ tenantName(group.representative.tenantId) }} · {{ formatBirthday(group.representative.birthday) }}</span>
+            </div>
+          </div>
+
+          <div class="match-divider">
+            <ion-icon name="git-merge-outline"></ion-icon>
+          </div>
+
+          <!-- Match rows with checkboxes -->
+          @for (match of group.matches; track match.candidate.id) {
+            <div class="person-row match">
+              <ion-checkbox
+                [(ngModel)]="match.selected"
+                [checked]="true"
+                (ionChange)="match.selected = $event.detail.checked">
+              </ion-checkbox>
+              <div class="person-info">
+                <span class="name">{{ match.candidate.firstName }} {{ match.candidate.lastName }}</span>
+                <span class="meta">{{ tenantName(match.candidate.tenantId) }} · {{ formatBirthday(match.candidate.birthday) }}</span>
+                <ion-badge class="reason-badge" color="medium">{{ match.reason }}</ion-badge>
+              </div>
+            </div>
+          }
+
+          <!-- Actions -->
+          <div class="card-actions">
+            <ion-button fill="outline" color="medium" size="small" (click)="ignore(group)">
+              Ignorieren
+            </ion-button>
+            <ion-button fill="solid" color="primary" size="small"
+              (click)="link(group, getSelectedMatches(group))">
+              Verknüpfen
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    }
+  }
+</ion-content>

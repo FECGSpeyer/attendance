@@ -267,6 +267,24 @@ export class PlayerService {
       throw new Error('Fehler beim updaten des Spielers');
     }
 
+    // Propagate shared identity fields to all linked rows
+    if (player.global_person_id) {
+      const SHARED_FIELDS = ['firstName', 'lastName', 'birthday', 'email', 'phone'] as const;
+      const patch: Partial<Record<typeof SHARED_FIELDS[number], any>> = {};
+      for (const f of SHARED_FIELDS) {
+        if ((player as any)[f] !== undefined) {
+          patch[f] = (player as any)[f];
+        }
+      }
+      if (Object.keys(patch).length) {
+        await supabase
+          .from('player')
+          .update(patch as any)
+          .eq('global_person_id', player.global_person_id)
+          .neq('id', player.id);
+      }
+    }
+
     this.tracking.track(TrackingEvent.PlayerUpdated);
     return data.map((player) => ({
       ...player,
@@ -287,6 +305,17 @@ export class PlayerService {
     }
 
     return data;
+  }
+
+  async setGlobalPersonId(playerIds: number[], globalPersonId: string): Promise<void> {
+    const { error } = await supabase
+      .from('player')
+      .update({ global_person_id: globalPersonId } as any)
+      .in('id', playerIds);
+
+    if (error) {
+      throw new Error('Fehler beim Verknüpfen der Personen');
+    }
   }
 
   /**

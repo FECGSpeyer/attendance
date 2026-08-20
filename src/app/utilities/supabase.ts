@@ -731,6 +731,7 @@ export type Database = {
           notes: string | null
           otherExercise: string | null
           otherOrchestras: string[] | null
+          global_person_id: string | null
           parent_id: number | null
           paused: boolean | null
           paused_until: string | null
@@ -773,6 +774,7 @@ export type Database = {
           notes?: string | null
           otherExercise?: string | null
           otherOrchestras?: string[] | null
+          global_person_id?: string | null
           parent_id?: number | null
           paused?: boolean | null
           paused_until?: string | null
@@ -815,6 +817,7 @@ export type Database = {
           notes?: string | null
           otherExercise?: string | null
           otherOrchestras?: string[] | null
+          global_person_id?: string | null
           parent_id?: number | null
           paused?: boolean | null
           paused_until?: string | null

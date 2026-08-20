@@ -6,6 +6,7 @@ import { DbService } from '../services/db.service';
 import { Attendance, Group, Person, Player, Tenant } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 import { AttendanceStatus, DefaultAttendanceType } from '../utilities/constants';
+import { normalizeName } from '../utilities/person-matcher';
 
 // Register Chart.js components
 Chart.register(...registerables);
@@ -508,27 +509,23 @@ export class StatsPage implements OnInit {
   async getOrganizationStats() {
     this.tenants = await this.db.getInstancesOfOrganisations(this.db.organisation().id);
     this.allPersonsFromOrganisation = await this.db.getAllPersonsFromOrganisation(this.tenants);
-    const uniquePersons = this.allPersonsFromOrganisation.reduce((acc: Player[], person: Player) => {
-      if (person.appId && !acc.find(p => p.appId === person.appId)) {
-        acc.push(person);
-        return acc;
-      } else if (
-        !person.appId &&
-        !acc.find(p => p.firstName === person.firstName && p.lastName === person.lastName && new Date(p.birthday).getTime() === new Date(person.birthday).getTime())
-      ) {
-        acc.push(person);
-      }
 
+    const seen = new Set<string>();
+    const uniquePersons = this.allPersonsFromOrganisation.reduce((acc: Player[], person: Player) => {
+      const key = person.global_person_id ?? person.appId
+        ?? `${normalizeName(person.firstName)}|${normalizeName(person.lastName)}|${person.birthday ?? ''}`;
+      if (!seen.has(key)) { seen.add(key); acc.push(person); }
       return acc;
     }, []);
 
     this.allUniquePersons = uniquePersons.map(p => {
-      let persons;
-
-      if (p.appId) {
-        persons = this.allPersonsFromOrganisation.filter(per => per.appId === p.appId);
+      let samePersonRows: Player[];
+      if (p.global_person_id) {
+        samePersonRows = this.allPersonsFromOrganisation.filter(per => per.global_person_id === p.global_person_id);
+      } else if (p.appId) {
+        samePersonRows = this.allPersonsFromOrganisation.filter(per => per.appId === p.appId);
       } else {
-        persons = this.allPersonsFromOrganisation.filter(per =>
+        samePersonRows = this.allPersonsFromOrganisation.filter(per =>
           per.firstName === p.firstName &&
           per.lastName === p.lastName &&
           new Date(per.birthday).getTime() === new Date(p.birthday).getTime()
@@ -537,10 +534,8 @@ export class StatsPage implements OnInit {
 
       return {
         ...p,
-        tenants: persons.map(per => per.tenantId).map(tid => {
-          const tenant = this.tenants.find(t => t.id === tid);
-          return tenant;
-        }).filter(t => t !== undefined) as Tenant[]
+        tenants: samePersonRows.map(per => this.tenants.find(t => t.id === per.tenantId))
+          .filter((t): t is Tenant => t !== undefined)
       };
     }).sort((a, b) => b.tenants.length - a.tenants.length);
     this.uniquePersons = this.allUniquePersons;
