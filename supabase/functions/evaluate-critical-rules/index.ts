@@ -67,6 +67,7 @@ interface NotificationConfig {
   push_enabled: boolean | null;
   criticals: boolean | null;
   enabled_tenants: number[] | null;
+  push_and_telegram?: boolean | null;
 }
 
 interface PersonAttendance {
@@ -413,7 +414,7 @@ async function sendCriticalNotifications(
     // Find users who have criticals notifications enabled
     const { data: notifications, error: notifError } = await supabase
       .from('notifications')
-      .select('id, telegram_chat_id, push_enabled, enabled_tenants')
+      .select('id, telegram_chat_id, push_enabled, push_and_telegram, enabled_tenants')
       .eq('enabled', true)
       .eq('criticals', true)
       .in('id', authorizedUserIds);
@@ -451,68 +452,58 @@ async function sendCriticalNotifications(
     }
 
     for (const notif of eligibleNotifications) {
-      let pushSentSuccessfully = false;
+      const parallelMode = !!notif.push_and_telegram && !!notif.push_enabled && !!notif.telegram_chat_id;
       const notifTitle = `⚠️ Neue Problemfälle (${tenantName})`;
       const notifBody = `${newCriticalPlayers.length} Person(en) wurden als Problemfall markiert`;
 
-      // Send via Push (preferred channel)
+      let pushSent = 0;
+      let telegramSent = false;
+
       if (notif.push_enabled) {
         try {
-          const pushSent = await sendPushToUser(supabase, notif.id, {
+          pushSent = await sendPushToUser(supabase, notif.id, {
             title: notifTitle,
             body: notifBody,
             data: { type: 'criticals', tenantId: String(tenantId) },
           });
-          if (pushSent > 0) {
-            pushSentSuccessfully = true;
-            await logNotification(supabase, {
-              userId: notif.id,
-              tenantId,
-              type: 'criticals',
-              title: notifTitle,
-              body: notifBody,
-              channels: ['push'],
-              data: { type: 'criticals', tenantId: String(tenantId) },
-            });
-          }
         } catch (err) {
           console.error(`Error sending push to ${notif.id}:`, err);
         }
       }
 
-      // Send via Telegram only if push was not sent
-      if (notif.telegram_chat_id && telegramToken && !pushSentSuccessfully) {
+      if (notif.telegram_chat_id && telegramToken && (parallelMode || pushSent === 0)) {
         try {
           const response = await fetch(
             `https://api.telegram.org/bot${telegramToken}/sendMessage`,
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: notif.telegram_chat_id,
-                text: message,
-                parse_mode: 'Markdown',
-              }),
+              body: JSON.stringify({ chat_id: notif.telegram_chat_id, text: message, parse_mode: 'Markdown' }),
             }
           );
-
           if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`Failed to send Telegram to ${notif.telegram_chat_id}:`, errorText);
+            console.error(`Failed to send Telegram to ${notif.telegram_chat_id}:`, await response.text());
           } else {
-            await logNotification(supabase, {
-              userId: notif.id,
-              tenantId,
-              type: 'criticals',
-              title: notifTitle,
-              body: notifBody,
-              channels: ['telegram'],
-              data: { type: 'criticals', tenantId: String(tenantId) },
-            });
+            telegramSent = true;
           }
         } catch (err) {
           console.error(`Error sending Telegram to ${notif.telegram_chat_id}:`, err);
         }
+      }
+
+      if (pushSent > 0 || telegramSent) {
+        const channels: string[] = [];
+        if (pushSent > 0) channels.push('push');
+        if (telegramSent) channels.push('telegram');
+        await logNotification(supabase, {
+          userId: notif.id,
+          tenantId,
+          type: 'criticals',
+          title: notifTitle,
+          body: notifBody,
+          channels,
+          data: { type: 'criticals', tenantId: String(tenantId) },
+        });
       }
     }
   } catch (error) {

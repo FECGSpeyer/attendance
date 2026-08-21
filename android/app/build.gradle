@@ -7,8 +7,8 @@ android {
         applicationId "io.stephanus.attendix"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 42
-        versionName "4.4.7"
+        versionCode 43
+        versionName "4.4.8"
         resValue "string", "capawesome_live_update_default_channel", "production"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

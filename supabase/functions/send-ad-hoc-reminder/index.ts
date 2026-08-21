@@ -20,6 +20,7 @@ interface NotificationConfig {
   push_enabled: boolean | null;
   reminders: boolean | null;
   enabled_tenants: number[] | null;
+  push_and_telegram?: boolean | null;
 }
 
 Deno.serve(async (req) => {
@@ -126,7 +127,7 @@ Deno.serve(async (req) => {
     // Fetch notification configs
     const { data: notifConfigs, error: notifError } = await supabase
       .from('notifications')
-      .select('id, enabled, telegram_chat_id, push_enabled, reminders, enabled_tenants')
+      .select('id, enabled, telegram_chat_id, push_enabled, push_and_telegram, reminders, enabled_tenants')
       .eq('enabled', true)
       .eq('reminders', true)
       .in('id', userIds)
@@ -180,61 +181,50 @@ Deno.serve(async (req) => {
     let sent = 0;
 
     for (const config of eligibleConfigs) {
-      let pushSentSuccessfully = false;
+      const parallelMode = !!config.push_and_telegram && !!config.push_enabled && !!config.telegram_chat_id;
 
-      // Send via Push (preferred channel)
+      let pushSent = 0;
+      let telegramSent = false;
+
       if (config.push_enabled) {
         try {
-          const pushSent = await sendPushToUser(supabase, config.id, {
+          pushSent = await sendPushToUser(supabase, config.id, {
             title: '🔔 Erinnerung',
             body: pushBody,
             data: { type: 'reminder', attendanceId: String(attendanceId), tenantId: String(tenantId) },
           });
-          if (pushSent > 0) {
-            sent++;
-            pushSentSuccessfully = true;
-            await logNotification(supabase, {
-              userId: config.id,
-              tenantId,
-              type: 'reminder',
-              title: '🔔 Erinnerung',
-              body: pushBody,
-              channels: ['push'],
-              data: { type: 'reminder', attendanceId: String(attendanceId), tenantId: String(tenantId) },
-            });
-          }
         } catch (e) {
           console.error(`Push send error for ${config.id}:`, e);
         }
       }
 
-      // Send via Telegram only if push was not sent
-      if (config.telegram_chat_id && !pushSentSuccessfully) {
+      if (config.telegram_chat_id && (parallelMode || pushSent === 0)) {
         try {
           const res = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: config.telegram_chat_id,
-              text: telegramMessage,
-              parse_mode: 'Markdown',
-            }),
+            body: JSON.stringify({ chat_id: config.telegram_chat_id, text: telegramMessage, parse_mode: 'Markdown' }),
           });
-          if (res.ok) {
-            sent++;
-            await logNotification(supabase, {
-              userId: config.id,
-              tenantId,
-              type: 'reminder',
-              title: '🔔 Erinnerung',
-              body: pushBody,
-              channels: ['telegram'],
-              data: { type: 'reminder', attendanceId: String(attendanceId), tenantId: String(tenantId) },
-            });
-          }
+          telegramSent = res.ok;
         } catch (e) {
           console.error(`Telegram send error for ${config.id}:`, e);
         }
+      }
+
+      if (pushSent > 0 || telegramSent) {
+        sent++;
+        const channels: string[] = [];
+        if (pushSent > 0) channels.push('push');
+        if (telegramSent) channels.push('telegram');
+        await logNotification(supabase, {
+          userId: config.id,
+          tenantId,
+          type: 'reminder',
+          title: '🔔 Erinnerung',
+          body: pushBody,
+          channels,
+          data: { type: 'reminder', attendanceId: String(attendanceId), tenantId: String(tenantId) },
+        });
       }
     }
 

@@ -46,6 +46,7 @@ interface NotificationConfig {
   push_enabled: boolean | null;
   checklist: boolean | null;
   enabled_tenants: number[] | null;
+  push_and_telegram?: boolean | null;
 }
 
 interface TenantUser {
@@ -287,7 +288,7 @@ Deno.serve(async (req) => {
     // the page size against PostgREST's 1000-row default.
     const { data: allNotificationConfigs, error: notifError } = await supabase
       .from('notifications')
-      .select('id, enabled, telegram_chat_id, push_enabled, checklist, enabled_tenants')
+      .select('id, enabled, telegram_chat_id, push_enabled, push_and_telegram, checklist, enabled_tenants')
       .eq('enabled', true)
       .eq('checklist', true)
       .range(0, 4999);
@@ -383,71 +384,61 @@ Deno.serve(async (req) => {
               tenantNames.get(attendance.tenantId) || ''
             );
 
-            let pushSentSuccessfully = false;
             const checklistTitle = hoursUntilDue === 0 ? '⚠️ Jetzt fällig!' : '⏰ Demnächst fällig';
             const checklistTenantName = tenantNames.get(attendance.tenantId) || '';
             const checklistBody = checklistTenantName
               ? `${checklistTenantName}: ${item.text} (${attType?.name || 'Termin'})`
               : `${item.text} (${attType?.name || 'Termin'})`;
+            const parallelMode = !!notifConfig.push_and_telegram && !!notifConfig.push_enabled && !!notifConfig.telegram_chat_id;
 
-            // Send via Push (preferred channel)
+            let pushSent = 0;
+            let telegramSent = false;
+
             if (notifConfig.push_enabled) {
               try {
-                const pushSent = await sendPushToUser(supabase, notifConfig.id, {
+                pushSent = await sendPushToUser(supabase, notifConfig.id, {
                   title: checklistTitle,
                   body: checklistBody,
                   data: { type: 'checklist', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
                 });
-                if (pushSent > 0) {
-                  totalReminders++;
-                  pushSentSuccessfully = true;
-                  console.log(`Checklist reminder sent via Push to ${notifConfig.id} for "${item.text}"`);
-                  await logNotification(supabase, {
-                    userId: notifConfig.id,
-                    tenantId: attendance.tenantId,
-                    type: 'checklist',
-                    title: checklistTitle,
-                    body: checklistBody,
-                    channels: ['push'],
-                    data: { type: 'checklist', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
-                  });
-                }
+                if (pushSent > 0) console.log(`Checklist reminder sent via Push to ${notifConfig.id} for "${item.text}"`);
               } catch (e) {
                 console.error(`Error sending push notification:`, e);
               }
             }
 
-            // Send via Telegram only if push was not sent
-            if (notifConfig.telegram_chat_id && !pushSentSuccessfully) {
+            if (notifConfig.telegram_chat_id && (parallelMode || pushSent === 0)) {
               try {
                 const telegramRes = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    chat_id: notifConfig.telegram_chat_id,
-                    text: message,
-                    parse_mode: 'Markdown',
-                  }),
+                  body: JSON.stringify({ chat_id: notifConfig.telegram_chat_id, text: message, parse_mode: 'Markdown' }),
                 });
-
                 if (!telegramRes.ok) {
                   console.error(`Failed to send Telegram message to ${notifConfig.telegram_chat_id}:`, await telegramRes.text());
                 } else {
-                  totalReminders++;
+                  telegramSent = true;
                   console.log(`Checklist reminder sent via Telegram to ${notifConfig.telegram_chat_id} for "${item.text}"`);
-                  await logNotification(supabase, {
-                    userId: notifConfig.id,
-                    tenantId: attendance.tenantId,
-                    type: 'checklist',
-                    title: checklistTitle,
-                    body: checklistBody,
-                    channels: ['telegram'],
-                    data: { type: 'checklist', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
-                  });
                 }
               } catch (e) {
                 console.error(`Error sending Telegram message:`, e);
               }
+            }
+
+            if (pushSent > 0 || telegramSent) {
+              totalReminders++;
+              const channels: string[] = [];
+              if (pushSent > 0) channels.push('push');
+              if (telegramSent) channels.push('telegram');
+              await logNotification(supabase, {
+                userId: notifConfig.id,
+                tenantId: attendance.tenantId,
+                type: 'checklist',
+                title: checklistTitle,
+                body: checklistBody,
+                channels,
+                data: { type: 'checklist', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
+              });
             }
           }
 

@@ -10,6 +10,7 @@ interface NotificationConfig {
   signouts: boolean;
   enabled_tenants: number[] | null;
   push_enabled: boolean;
+  push_and_telegram?: boolean | null;
 }
 
 Deno.serve(async (req)=>{
@@ -89,8 +90,7 @@ Deno.serve(async (req)=>{
       });
     }
 
-    const chatIds: { userId: string; chatId: string }[] = [];
-    const pushUserIds: string[] = [];
+    const recipients: { userId: string; chatId: string | null; pushEnabled: boolean; parallelMode: boolean }[] = [];
 
     for (const noti of notiData as NotificationConfig[]) {
       if (!noti.enabled) continue;
@@ -102,12 +102,14 @@ Deno.serve(async (req)=>{
       const shouldNotify = (noti.signins && isSigninType) || (noti.signouts && isSignoutType);
       if (!shouldNotify) continue;
 
-      if (noti.telegram_chat_id) {
-        chatIds.push({ userId: noti.id, chatId: noti.telegram_chat_id });
-      }
-      if (noti.push_enabled) {
-        pushUserIds.push(noti.id);
-      }
+      const hasPush = !!noti.push_enabled;
+      const hasTelegram = !!noti.telegram_chat_id;
+      recipients.push({
+        userId: noti.id,
+        chatId: hasTelegram ? noti.telegram_chat_id : null,
+        pushEnabled: hasPush,
+        parallelMode: !!noti.push_and_telegram && hasPush && hasTelegram,
+      });
     }
 
     // Build message
@@ -169,50 +171,43 @@ Deno.serve(async (req)=>{
 
     messageText += attendanceLink;
 
-    // Send push notifications first (preferred channel)
+    // Send push and/or Telegram per recipient
     const pushTitle = attendanceData.attendance.tenant.longName;
-    const pushSentUserIds = new Set<string>();
-    for (const userId of pushUserIds) {
-      const pushSent = await sendPushToUser(supabase, userId, {
-        title: pushTitle,
-        body: pushBody,
-        data: { type: 'attendance', attendanceId: String(attendanceData.attendance_id), tenantId: String(attendanceData.attendance.tenant.id) },
-      });
-      if (pushSent > 0) {
-        pushSentUserIds.add(userId);
+    for (const r of recipients) {
+      let pushSent = 0;
+      let telegramSent = false;
+
+      if (r.pushEnabled) {
+        pushSent = await sendPushToUser(supabase, r.userId, {
+          title: pushTitle,
+          body: pushBody,
+          data: { type: 'attendance', attendanceId: String(attendanceData.attendance_id), tenantId: String(attendanceData.attendance.tenant.id) },
+        });
+      }
+
+      if (r.chatId && (r.parallelMode || pushSent === 0)) {
+        const res = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: r.chatId, text: messageText, parse_mode: "markdown" }),
+        });
+        telegramSent = res.ok;
+      }
+
+      if (pushSent > 0 || telegramSent) {
+        const channels: string[] = [];
+        if (pushSent > 0) channels.push('push');
+        if (telegramSent) channels.push('telegram');
         await logNotification(supabase, {
-          userId,
+          userId: r.userId,
           tenantId: attendanceData.attendance.tenant.id,
           type: 'attendance',
           title: pushTitle,
           body: pushBody,
-          channels: ['push'],
+          channels,
           data: { type: 'attendance', attendanceId: String(attendanceData.attendance_id), tenantId: String(attendanceData.attendance.tenant.id) },
         });
       }
-    }
-
-    // Send Telegram messages only to users who did not receive push
-    for (const { userId, chatId } of chatIds) {
-      if (pushSentUserIds.has(userId)) continue;
-      await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: messageText,
-          parse_mode: "markdown"
-        })
-      });
-      await logNotification(supabase, {
-        userId,
-        tenantId: attendanceData.attendance.tenant.id,
-        type: 'attendance',
-        title: pushTitle,
-        body: pushBody,
-        channels: ['telegram'],
-        data: { type: 'attendance', attendanceId: String(attendanceData.attendance_id), tenantId: String(attendanceData.attendance.tenant.id) },
-      });
     }
 
     console.log(`[quick-processor] done attId=${attId} tenantUsers=${tenantData.length} notifications=${notiData.length}`);

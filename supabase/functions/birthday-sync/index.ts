@@ -80,7 +80,7 @@ const getBirthdays = async ()=>{
     const chunk = userIds.slice(i, i + NOTIF_ID_CHUNK);
     const { data: chunkNotifications, error: notiError } = await supabase
       .from("notifications")
-      .select("id, enabled, birthdays, telegram_chat_id, push_enabled, enabled_tenants")
+      .select("id, enabled, birthdays, telegram_chat_id, push_enabled, push_and_telegram, enabled_tenants")
       .eq("enabled", true)
       .eq("birthdays", true)
       .in("id", chunk)
@@ -159,39 +159,27 @@ const getBirthdays = async ()=>{
 
     // Send notifications to all eligible users
     for (const user of eligibleUsers){
-      let pushSentSuccessfully = false;
-
       // If the recipient is themselves a birthday person, send a personalized wish
       const isBirthdayPerson = tenantBirthdays.some(b => b.appId === user.id);
       const userMessage = isBirthdayPerson
         ? `Herzlichen Glückwunsch zum Geburtstag! 🎂`
         : message;
 
-      // Try push notification first (preferred channel)
+      const parallelMode = !!user.push_and_telegram && !!user.push_enabled && !!user.telegram_chat_id;
+
+      let pushSent = 0;
+      let telegramSent = false;
+
       if (user.push_enabled) {
         console.log(`[SENDING] PUSH to user ${user.id}: "${userMessage}"`);
         try {
-          const pushSent = await sendPushToUser(supabase, user.id, {
+          pushSent = await sendPushToUser(supabase, user.id, {
             title: '🎉 Geburtstag',
             body: userMessage,
-            data: {
-              type: 'birthday',
-              tenantId: String(tenantId),
-            },
+            data: { type: 'birthday', tenantId: String(tenantId) },
           });
           if (pushSent > 0) {
-            pushSentSuccessfully = true;
             console.log(`✓ Push birthday notification sent to ${user.id}`);
-            await logNotification(supabase, {
-              userId: user.id,
-              tenantId,
-              type: 'birthday',
-              title: '🎉 Geburtstag',
-              body: userMessage,
-              channels: ['push'],
-              data: { type: 'birthday', tenantId: String(tenantId) },
-              read: true,
-            });
           } else {
             console.log(`✗ Push failed for ${user.id} (no devices)`);
           }
@@ -200,25 +188,31 @@ const getBirthdays = async ()=>{
         }
       }
 
-      // Fallback to Telegram if push was not sent successfully
-      if (user.telegram_chat_id && !pushSentSuccessfully) {
+      if (user.telegram_chat_id && (parallelMode || pushSent === 0)) {
         console.log(`[SENDING] TELEGRAM to ${user.telegram_chat_id}: "${userMessage}"`);
         try {
           await telegraf.telegram.sendMessage(user.telegram_chat_id, userMessage);
+          telegramSent = true;
           console.log(`✓ Telegram birthday notification sent to ${user.telegram_chat_id}`);
-          await logNotification(supabase, {
-            userId: user.id,
-            tenantId,
-            type: 'birthday',
-            title: '🎉 Geburtstag',
-            body: userMessage,
-            channels: ['telegram'],
-            data: { type: 'birthday', tenantId: String(tenantId) },
-            read: true,
-          });
         } catch (e) {
           console.error(`✗ Error sending Telegram message to ${user.telegram_chat_id}:`, e);
         }
+      }
+
+      if (pushSent > 0 || telegramSent) {
+        const channels: string[] = [];
+        if (pushSent > 0) channels.push('push');
+        if (telegramSent) channels.push('telegram');
+        await logNotification(supabase, {
+          userId: user.id,
+          tenantId,
+          type: 'birthday',
+          title: '🎉 Geburtstag',
+          body: userMessage,
+          channels,
+          data: { type: 'birthday', tenantId: String(tenantId) },
+          read: true,
+        });
       }
     }
   }

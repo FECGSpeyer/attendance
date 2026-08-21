@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.4.8",
+          "date": "21.8.2026",
+          "changes": [
+            "🔔 Benachrichtigungen: Neuer Toggle \"Beide Kanäle gleichzeitig\" – Push und Telegram werden parallel gesendet, wenn beide konfiguriert sind."
+          ]
+        },
+        {
           "version": "4.4.7",
           "date": "20.8.2026",
           "changes": [

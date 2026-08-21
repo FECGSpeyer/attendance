@@ -9,6 +9,7 @@ interface NotificationConfig {
   registrations: boolean;
   enabled_tenants: number[] | null;
   push_enabled: boolean;
+  push_and_telegram?: boolean | null;
 }
 
 const CORS_HEADERS = {
@@ -88,20 +89,21 @@ Deno.serve(async (req) => {
       }), { status: 404, headers: CORS_HEADERS });
     }
 
-    const chatIds: { userId: string; chatId: string }[] = [];
-    const pushUserIds: string[] = [];
+    const recipients: { userId: string; chatId: string | null; pushEnabled: boolean; parallelMode: boolean }[] = [];
 
     for (const noti of notiData as NotificationConfig[]) {
       if (!noti.enabled) continue;
       if (noti.enabled_tenants && !noti.enabled_tenants.includes(tenantId)) continue;
       if (!noti.registrations) continue;
 
-      if (noti.push_enabled) {
-        pushUserIds.push(noti.id);
-      }
-      if (noti.telegram_chat_id) {
-        chatIds.push({ userId: noti.id, chatId: noti.telegram_chat_id });
-      }
+      const hasPush = !!noti.push_enabled;
+      const hasTelegram = !!noti.telegram_chat_id;
+      recipients.push({
+        userId: noti.id,
+        chatId: hasTelegram ? noti.telegram_chat_id : null,
+        pushEnabled: hasPush,
+        parallelMode: !!noti.push_and_telegram && hasPush && hasTelegram,
+      });
     }
 
     // Tenant name + group name for the message body.
@@ -137,52 +139,44 @@ Deno.serve(async (req) => {
     const pushTitle = tenantName;
     const notifData = { type: 'registration', tenantId: String(tenantId) };
 
-    // Push first (preferred channel).
-    const pushSentUserIds = new Set<string>();
-    for (const userId of pushUserIds) {
-      const pushSent = await sendPushToUser(supabase, userId, {
-        title: pushTitle,
-        body: pushBody,
-        data: notifData,
-      });
-      if (pushSent > 0) {
-        pushSentUserIds.add(userId);
+    for (const r of recipients) {
+      let pushSent = 0;
+      let telegramSent = false;
+
+      if (r.pushEnabled) {
+        pushSent = await sendPushToUser(supabase, r.userId, {
+          title: pushTitle,
+          body: pushBody,
+          data: notifData,
+        });
+      }
+
+      if (r.chatId && (r.parallelMode || pushSent === 0)) {
+        const res = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: r.chatId, text: messageText, parse_mode: 'markdown' }),
+        });
+        telegramSent = res.ok;
+      }
+
+      if (pushSent > 0 || telegramSent) {
+        const channels: string[] = [];
+        if (pushSent > 0) channels.push('push');
+        if (telegramSent) channels.push('telegram');
         await logNotification(supabase, {
-          userId,
+          userId: r.userId,
           tenantId,
           type: 'registration',
           title: pushTitle,
           body: pushBody,
-          channels: ['push'],
+          channels,
           data: notifData,
         });
       }
     }
 
-    // Telegram only for recipients who did not receive a push.
-    for (const { userId, chatId } of chatIds) {
-      if (pushSentUserIds.has(userId)) continue;
-      await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: messageText,
-          parse_mode: 'markdown',
-        }),
-      });
-      await logNotification(supabase, {
-        userId,
-        tenantId,
-        type: 'registration',
-        title: pushTitle,
-        body: pushBody,
-        channels: ['telegram'],
-        data: notifData,
-      });
-    }
-
-    console.log(`[new-registration-notifier] done tenant=${tenantId} push=${pushSentUserIds.size} telegram=${chatIds.filter((c) => !pushSentUserIds.has(c.userId)).length}`);
+    console.log(`[new-registration-notifier] done tenant=${tenantId} recipients=${recipients.length}`);
     return new Response(JSON.stringify({
       message: 'Registration notification sent successfully',
       tenantId,

@@ -56,6 +56,7 @@ interface NotificationConfig {
   push_enabled: boolean | null;
   reminders: boolean | null;
   enabled_tenants: number[] | null;
+  push_and_telegram?: boolean | null;
 }
 
 interface TenantUser {
@@ -334,7 +335,7 @@ Deno.serve(async (req) => {
           // 7. Get notification configs for eligible users
           const { data: notificationConfigs, error: notifError } = await supabase
             .from('notifications')
-            .select('id, enabled, telegram_chat_id, push_enabled, reminders, enabled_tenants')
+            .select('id, enabled, telegram_chat_id, push_enabled, push_and_telegram, reminders, enabled_tenants')
             .eq('enabled', true)
             .eq('reminders', true)
             .in('id', eligibleUserIds)
@@ -378,68 +379,58 @@ Deno.serve(async (req) => {
               attendance.tenantId
             );
 
-            let pushSentSuccessfully = false;
             const reminderTitle = '⏰ Terminerinnerung';
             const reminderBody = `${attType.name} startet ${matchedReminder === 1 ? 'in 1 Stunde' : matchedReminder < 24 ? `in ${matchedReminder} Stunden` : `in ${Math.floor(matchedReminder / 24)} Tag(en)`}`;
+            const parallelMode = !!notifConfig.push_and_telegram && !!notifConfig.push_enabled && !!notifConfig.telegram_chat_id;
 
-            // Send via Push (preferred channel)
+            let pushSent = 0;
+            let telegramSent = false;
+
             if (notifConfig.push_enabled) {
               try {
-                const pushSent = await sendPushToUser(supabase, notifConfig.id, {
+                pushSent = await sendPushToUser(supabase, notifConfig.id, {
                   title: reminderTitle,
                   body: reminderBody,
                   data: { type: 'reminder', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
                 });
-                if (pushSent > 0) {
-                  totalReminders++;
-                  pushSentSuccessfully = true;
-                  console.log(`Push reminder sent to ${notifConfig.id} for ${attType.name}`);
-                  await logNotification(supabase, {
-                    userId: notifConfig.id,
-                    tenantId: attendance.tenantId,
-                    type: 'reminder',
-                    title: reminderTitle,
-                    body: reminderBody,
-                    channels: ['push'],
-                    data: { type: 'reminder', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
-                  });
-                }
+                if (pushSent > 0) console.log(`Push reminder sent to ${notifConfig.id} for ${attType.name}`);
               } catch (e) {
                 console.error(`Error sending push notification:`, e);
               }
             }
 
-            // Send via Telegram only if push was not sent
-            if (notifConfig.telegram_chat_id && !pushSentSuccessfully) {
+            if (notifConfig.telegram_chat_id && (parallelMode || pushSent === 0)) {
               try {
                 const telegramRes = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    chat_id: notifConfig.telegram_chat_id,
-                    text: message,
-                    parse_mode: 'Markdown',
-                  }),
+                  body: JSON.stringify({ chat_id: notifConfig.telegram_chat_id, text: message, parse_mode: 'Markdown' }),
                 });
-
                 if (!telegramRes.ok) {
                   console.error(`Failed to send Telegram message to ${notifConfig.telegram_chat_id}:`, await telegramRes.text());
                 } else {
-                  totalReminders++;
+                  telegramSent = true;
                   console.log(`Telegram reminder sent to ${notifConfig.telegram_chat_id} for ${attType.name}`);
-                  await logNotification(supabase, {
-                    userId: notifConfig.id,
-                    tenantId: attendance.tenantId,
-                    type: 'reminder',
-                    title: reminderTitle,
-                    body: reminderBody,
-                    channels: ['telegram'],
-                    data: { type: 'reminder', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
-                  });
                 }
               } catch (e) {
                 console.error(`Error sending Telegram message:`, e);
               }
+            }
+
+            if (pushSent > 0 || telegramSent) {
+              totalReminders++;
+              const channels: string[] = [];
+              if (pushSent > 0) channels.push('push');
+              if (telegramSent) channels.push('telegram');
+              await logNotification(supabase, {
+                userId: notifConfig.id,
+                tenantId: attendance.tenantId,
+                type: 'reminder',
+                title: reminderTitle,
+                body: reminderBody,
+                channels,
+                data: { type: 'reminder', attendanceId: String(attendance.id), tenantId: String(attendance.tenantId) },
+              });
             }
           }
         }

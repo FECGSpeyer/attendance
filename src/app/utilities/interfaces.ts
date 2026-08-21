@@ -114,6 +114,7 @@ export interface NotificationConfig {
   reminders: boolean;
   checklist: boolean;
   push_enabled?: boolean;
+  push_and_telegram?: boolean;
 }
 
 export interface UserNotification {
