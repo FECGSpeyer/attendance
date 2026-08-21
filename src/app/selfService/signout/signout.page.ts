@@ -9,6 +9,7 @@ import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
+import { TelegramService } from 'src/app/services/telegram/telegram.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Attendance, PersonAttendance, Player, PlayerHistoryEntry, Song, Tenant, History, SongFile, AttendanceType, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -58,6 +59,7 @@ export class SignoutPage implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private pushService: PushService,
+    private telegramService: TelegramService,
   ) {
     effect(async () => {
       if (this.db.tenant()) {
@@ -907,6 +909,7 @@ export class SignoutPage implements OnInit {
         paused_until: this.pauseUntil || null,
         history,
       }, true);
+      this.telegramService.notifyPlayerPaused(this.player.id, this.tenantId, this.pauseReason, this.pauseUntil);
       this.player = await this.db.getPlayerByAppId();
       this.dismissPauseModal();
     } catch (error) {

@@ -90,13 +90,14 @@ export class TelegramService {
     notes: string = ''
   ): Promise<void> {
     await supabase.functions.invoke('quick-processor', {
-      body: {
-        attId,
-        type,
-        reason,
-        isParents,
-        notes
-      },
+      body: { attId, type, reason, isParents, notes },
+      method: 'POST',
+    });
+  }
+
+  async notifyPlayerPaused(playerId: number, tenantId: number, reason: string, pauseUntil: string): Promise<void> {
+    await supabase.functions.invoke('quick-processor', {
+      body: { type: 'playerPaused', playerId, tenantId, reason, pauseUntil },
       method: 'POST',
     });
   }

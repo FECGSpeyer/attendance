@@ -28,7 +28,71 @@ Deno.serve(async (req)=>{
     });
   }
   try {
-    const { attId, reason, type, notes, isParents } = await req.json();
+    const { attId, reason, type, notes, isParents, playerId, tenantId: pauseTenantId, pauseUntil } = await req.json();
+
+    // --- Player self-pause notification path ---
+    if (type === 'playerPaused' && playerId && pauseTenantId) {
+      const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+      const telegramBotToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
+      console.log(`[quick-processor] playerPaused playerId=${playerId} tenantId=${pauseTenantId}`);
+
+      const { data: playerData } = await supabase.from('player').select('firstName, lastName').eq('id', playerId).single();
+      const { data: tenantDataRow } = await supabase.from('tenant').select('longName').eq('id', pauseTenantId).single();
+      const { data: tenantUsers } = await supabase.from('tenantUsers').select('userId').or('role.eq.5,role.eq.1').eq('tenantId', pauseTenantId).range(0, 4999);
+
+      if (!playerData || !tenantDataRow || !tenantUsers?.length) {
+        return new Response(JSON.stringify({ message: 'No recipients or player not found' }), {
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' }
+        });
+      }
+
+      const { data: notiData } = await supabase.from('notifications').select('*').or(tenantUsers.map((e: any) => `id.eq.${e.userId}`).join(','));
+
+      const name = `${playerData.firstName} ${playerData.lastName}`;
+      const tenantName = tenantDataRow.longName;
+      const untilText = pauseUntil ? ` (bis ${pauseUntil})` : '';
+      const reasonText = reason ? `\nGrund: ${reason}` : '';
+      const pushBody = `${name} hat sich selbst pausiert${untilText}.${reason ? ' Grund: ' + reason : ''}`;
+      const messageText = `*${tenantName}*\n${name} hat sich selbst pausiert${untilText}.${reasonText}`;
+
+      for (const noti of (notiData ?? []) as NotificationConfig[]) {
+        if (!noti.enabled) continue;
+        if (noti.enabled_tenants && !noti.enabled_tenants.includes(Number(pauseTenantId))) continue;
+        if (!noti.signins) continue;
+
+        const hasPush = !!noti.push_enabled;
+        const hasTelegram = !!noti.telegram_chat_id;
+        const parallelMode = !!noti.push_and_telegram && hasPush && hasTelegram;
+
+        let pushSent = 0;
+        let telegramSent = false;
+
+        if (hasPush) {
+          pushSent = await sendPushToUser(supabase, noti.id, { title: tenantName, body: pushBody, data: { type: 'pause', tenantId: String(pauseTenantId) } });
+        }
+        if (hasTelegram && (parallelMode || pushSent === 0)) {
+          const res = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: noti.telegram_chat_id, text: messageText, parse_mode: 'markdown' }),
+          });
+          telegramSent = res.ok;
+        }
+        if (pushSent > 0 || telegramSent) {
+          const channels: string[] = [];
+          if (pushSent > 0) channels.push('push');
+          if (telegramSent) channels.push('telegram');
+          await logNotification(supabase, { userId: noti.id, tenantId: Number(pauseTenantId), type: 'pause', title: tenantName, body: pushBody, channels, data: { type: 'pause', tenantId: String(pauseTenantId) } });
+        }
+      }
+
+      console.log(`[quick-processor] playerPaused done`);
+      return new Response(JSON.stringify({ message: 'Pause notifications sent' }), {
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' }
+      });
+    }
+
+    // --- Standard attendance notification path ---
     if (!attId || !type) {
       return new Response(JSON.stringify({
         error: 'Missing required parameters'
