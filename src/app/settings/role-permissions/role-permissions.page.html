@@ -48,7 +48,7 @@
                   @if (showNotesToggle(section.role)) {
                     <ion-item>
                       <ion-toggle
-                        helperText="Wenn aktiviert, können Personen mit dieser Rolle die Notizen der Spieler in der Anwesenheitsansicht sehen."
+                        helperText="Wenn aktiviert, können Personen mit dieser Rolle die Notizen der Mitglieder in der Anwesenheitsansicht sehen."
                         [(ngModel)]="section.permission.player_notes_view">
                         Spielernotizen sehen
                       </ion-toggle>
@@ -60,6 +60,15 @@
                         helperText="Wenn aktiviert, können Personen mit dieser Rolle die Checkliste in der Anwesenheitsansicht sehen."
                         [(ngModel)]="section.permission.checklist_view">
                         Checkliste sehen
+                      </ion-toggle>
+                    </ion-item>
+                  }
+                  @if (showSelfPauseToggle(section.role)) {
+                    <ion-item>
+                      <ion-toggle
+                        helperText="Wenn aktiviert, können Spieler sich selbst pausieren und reaktivieren."
+                        [(ngModel)]="section.permission.player_self_pause">
+                        Eigene Pausierung erlauben
                       </ion-toggle>
                     </ion-item>
                   }

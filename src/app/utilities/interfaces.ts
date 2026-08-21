@@ -97,6 +97,7 @@ export interface TenantRolePermission {
   attendance_create: boolean;
   player_notes_view: boolean;
   checklist_view: boolean;
+  player_self_pause: boolean;
 }
 
 export interface NotificationConfig {

@@ -105,6 +105,18 @@
       @if (player.paused) {
       <h1 class="title">Shalom {{ player.firstName }}! Du pausierst gerade.</h1>
       }
+      @if (canSelfPause) {
+        @if (!player.paused) {
+          <ion-button fill="outline" color="warning" size="small" (click)="openPauseModal()">
+            Pausieren
+          </ion-button>
+        }
+        @if (player.paused) {
+          <ion-button fill="outline" color="success" size="small" (click)="confirmUnpause()">
+            Wieder aktivieren
+          </ion-button>
+        }
+      }
       @if (perc) {
       Du warst bisher an <ion-label [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'">{{ perc
         }}%</ion-label> der Termine anwesend.
@@ -314,5 +326,41 @@
     </ion-accordion>
   </ion-accordion-group>
   }
+
+  <ion-modal [isOpen]="isPauseModalOpen" (didDismiss)="dismissPauseModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Pausieren</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="dismissPauseModal()">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-item>
+          <ion-textarea label="Grund" labelPlacement="stacked" [(ngModel)]="pauseReason"
+            placeholder="Warum möchtest du pausieren?" rows="3"></ion-textarea>
+        </ion-item>
+        <ion-item>
+          <ion-label>Pausiert bis (optional)</ion-label>
+          <ion-datetime-button datetime="selfPauseUntilDt"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime id="selfPauseUntilDt" presentation="date" [(ngModel)]="pauseUntil"></ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+        <p class="ion-padding-horizontal">
+          <small>Wenn ein Enddatum angegeben ist, wirst du danach automatisch wieder aktiviert.</small>
+        </p>
+        <ion-button expand="block" color="warning" class="ion-margin-top" (click)="confirmPause()">
+          Pausieren bestätigen
+        </ion-button>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>
 }

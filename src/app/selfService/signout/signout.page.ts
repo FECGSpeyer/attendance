@@ -9,8 +9,8 @@ import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
-import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, Role } from 'src/app/utilities/constants';
-import { Attendance, PersonAttendance, Player, Song, Tenant, History, SongFile, AttendanceType, Plan } from 'src/app/utilities/interfaces';
+import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, PlayerHistoryType, Role } from 'src/app/utilities/constants';
+import { Attendance, PersonAttendance, Player, PlayerHistoryEntry, Song, Tenant, History, SongFile, AttendanceType, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
@@ -45,6 +45,10 @@ export class SignoutPage implements OnInit {
   public isApplicant = false;
   public absenceReasons: string[] = [];
   public lateReasons: string[] = [];
+  public canSelfPause = false;
+  public isPauseModalOpen = false;
+  public pauseReason = '';
+  public pauseUntil = '';
 
   constructor(
     public db: DbService,
@@ -123,6 +127,13 @@ export class SignoutPage implements OnInit {
       this.player = await this.db.getPlayerByAppId();
       this.songs = await this.db.getSongs();
       await this.getAttendances();
+
+      const perm = this.db.getPermissionForRole(Role.PLAYER);
+      this.canSelfPause = !!perm?.player_self_pause;
+      if (this.canSelfPause) {
+        await this.db.checkAndUnpausePlayers();
+        this.player = await this.db.getPlayerByAppId();
+      }
     } if (this.db.tenantUser()?.role === Role.APPLICANT) {
       this.player = await this.db.getPlayerByAppId();
       this.isApplicant = true;
@@ -854,5 +865,86 @@ export class SignoutPage implements OnInit {
     }
 
     return hasInstrumentId;
+  }
+
+  openPauseModal(): void {
+    this.pauseReason = '';
+    this.pauseUntil = '';
+    this.isPauseModalOpen = true;
+  }
+
+  dismissPauseModal(): void {
+    this.isPauseModalOpen = false;
+    this.pauseReason = '';
+    this.pauseUntil = '';
+  }
+
+  async confirmPause(): Promise<void> {
+    if (!this.pauseReason) {
+      Utils.showToast('Bitte gib einen Grund an!', 'warning');
+      return;
+    }
+
+    const segments: string[] = [];
+    if (this.pauseUntil) {
+      segments.push(`bis ${dayjs(this.pauseUntil).format('DD.MM.YYYY')}`);
+    }
+    const pauseText = segments.length
+      ? `${this.pauseReason} (${segments.join(' ')})`
+      : this.pauseReason;
+
+    const history: PlayerHistoryEntry[] = [...this.player.history];
+    history.push({
+      date: new Date().toISOString(),
+      text: pauseText,
+      type: PlayerHistoryType.PAUSED,
+    });
+
+    try {
+      await this.db.updatePlayer({
+        ...this.player,
+        paused: true,
+        paused_until: this.pauseUntil || null,
+        history,
+      }, true);
+      this.player = await this.db.getPlayerByAppId();
+      this.dismissPauseModal();
+    } catch (error) {
+      Utils.showToast(error, 'danger');
+    }
+  }
+
+  async confirmUnpause(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Pausierung beenden',
+      message: 'Möchtest du deine Pausierung wirklich beenden und wieder aktiv werden?',
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Reaktivieren',
+          handler: async () => {
+            const history: PlayerHistoryEntry[] = [...this.player.history];
+            history.push({
+              date: new Date().toISOString(),
+              text: 'Selbst reaktiviert',
+              type: PlayerHistoryType.UNPAUSED,
+            });
+
+            try {
+              await this.db.updatePlayer({
+                ...this.player,
+                paused: false,
+                paused_until: null,
+                history,
+              }, true);
+              this.player = await this.db.getPlayerByAppId();
+            } catch (error) {
+              Utils.showToast(error, 'danger');
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 }

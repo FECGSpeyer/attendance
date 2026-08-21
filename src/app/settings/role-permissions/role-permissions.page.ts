@@ -39,7 +39,7 @@ export class RolePermissionsPage implements OnInit {
       { role: Role.HELPER, label: 'Helfer' },
       { role: Role.VOICE_LEADER_HELPER, label: 'Stimmführer-Helfer' },
       { role: Role.VOICE_LEADER, label: 'Stimmführer' },
-      { role: Role.PLAYER, label: 'Spieler' },
+      { role: Role.PLAYER, label: Utils.getRoleText(Role.PLAYER) },
       { role: Role.VIEWER, label: 'Beobachter' },
       { role: Role.PARENT, label: 'Eltern' },
     ];
@@ -60,6 +60,7 @@ export class RolePermissionsPage implements OnInit {
       attendance_create: s.permission?.attendance_create,
       player_notes_view: s.permission?.player_notes_view,
       checklist_view: s.permission?.checklist_view,
+      player_self_pause: s.permission?.player_self_pause,
     })));
   }
 
@@ -117,6 +118,7 @@ export class RolePermissionsPage implements OnInit {
             attendance_create: section.permission.attendance_create,
             player_notes_view: section.permission.player_notes_view,
             checklist_view: section.permission.checklist_view,
+            player_self_pause: section.permission.player_self_pause,
           });
         }
       }
@@ -143,7 +145,11 @@ export class RolePermissionsPage implements OnInit {
     return [Role.HELPER, Role.VOICE_LEADER_HELPER].includes(role);
   }
 
+  showSelfPauseToggle(role: Role): boolean {
+    return role === Role.PLAYER;
+  }
+
   hasAnyToggle(role: Role): boolean {
-    return this.showAttendanceToggle(role) || this.showAttendanceCreateToggle(role) || this.showNotesToggle(role) || this.showChecklistToggle(role);
+    return this.showAttendanceToggle(role) || this.showAttendanceCreateToggle(role) || this.showNotesToggle(role) || this.showChecklistToggle(role) || this.showSelfPauseToggle(role);
   }
 }
