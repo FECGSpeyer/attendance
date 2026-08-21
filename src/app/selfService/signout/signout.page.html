@@ -25,6 +25,18 @@
       <ion-title>{{ db.tenant()?.shortName }}</ion-title>
     }
     <ion-buttons slot="end">
+      @if (canSelfPause && player) {
+        @if (!player.paused) {
+          <ion-button (click)="openPauseModal()">
+            <ion-icon slot="icon-only" name="pause-circle-outline"></ion-icon>
+          </ion-button>
+        }
+        @if (player.paused) {
+          <ion-button (click)="confirmUnpause()">
+            <ion-icon slot="icon-only" name="play-circle-outline"></ion-icon>
+          </ion-button>
+        }
+      }
       <ion-button id="legend-button">
         <ion-icon slot="icon-only" name="information-outline"></ion-icon>
       </ion-button>
@@ -104,18 +116,6 @@
       }
       @if (player.paused) {
       <h1 class="title">Shalom {{ player.firstName }}! Du pausierst gerade.</h1>
-      }
-      @if (canSelfPause) {
-        @if (!player.paused) {
-          <ion-button fill="outline" color="warning" size="small" (click)="openPauseModal()">
-            Pausieren
-          </ion-button>
-        }
-        @if (player.paused) {
-          <ion-button fill="outline" color="success" size="small" (click)="confirmUnpause()">
-            Wieder aktivieren
-          </ion-button>
-        }
       }
       @if (perc) {
       Du warst bisher an <ion-label [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'">{{ perc
