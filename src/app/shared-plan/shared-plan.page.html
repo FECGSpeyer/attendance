@@ -35,7 +35,12 @@
   @if (!loading && !notFound) {
     <ion-list [inset]="true">
       <ion-list-header>
-        <ion-label (click)="editTitle()" [style.cursor]="isEditMode ? 'pointer' : ''">{{ planTitle }}</ion-label>
+        <ion-label (click)="editTitle()" [style.cursor]="isEditMode ? 'pointer' : ''">
+          {{ planTitle }}
+          @if (isEditMode) {
+            <ion-icon name="create-outline" color="medium" style="font-size: 0.9rem; margin-left: 4px; vertical-align: middle;"></ion-icon>
+          }
+        </ion-label>
         @if (isEditMode) {
           <ion-button fill="clear" (click)="addNote()">
             <ion-icon slot="icon-only" name="add"></ion-icon>
