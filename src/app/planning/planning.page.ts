@@ -428,8 +428,65 @@ export class PlanningPage implements OnInit {
     return this.planTitle?.trim() || this.getDefaultPlanTitle(attendance);
   }
 
+  async shareCurrentPlan(editLink = false) {
+    if (!this.attendance) {
+      Utils.showToast('Bitte wähle zuerst einen Termin aus.', 'warning');
+      return;
+    }
+    const att = this.attendances.find((a: Attendance) => a.id === this.attendance);
+    if (!att) { return; }
+
+    let shareKey = att.share_key;
+    let shareEditKey = att.share_edit_key;
+
+    if (!shareKey) {
+      shareKey = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+      shareEditKey = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+      await this.db.updateAttendance({ share_key: shareKey, share_edit_key: shareEditKey } as any, this.attendance);
+      att.share_key = shareKey;
+      att.share_edit_key = shareEditKey;
+    } else if (editLink && !shareEditKey) {
+      shareEditKey = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+      await this.db.updateAttendance({ share_edit_key: shareEditKey } as any, this.attendance);
+      att.share_edit_key = shareEditKey;
+    }
+
+    const base = `https://attendix.de/plan?id=${this.attendance}&key=${shareKey}`;
+    const url = editLink ? `${base}&edit=${shareEditKey}` : base;
+
+    if (navigator.share) {
+      await navigator.share({ url, title: this.getEffectivePlanTitle() });
+    } else {
+      await navigator.clipboard.writeText(url);
+      Utils.showToast('Link in Zwischenablage kopiert', 'success');
+    }
+  }
+
+  async revokeSharePlan() {
+    if (!this.attendance) { return; }
+    const alert = await this.alertController.create({
+      header: 'Freigabe aufheben?',
+      message: 'Der öffentliche Link wird ungültig. Fortfahren?',
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Aufheben',
+          role: 'destructive',
+          handler: async () => {
+            await this.db.updateAttendance({ share_key: null, share_edit_key: null } as any, this.attendance);
+            const att = this.attendances.find((a: Attendance) => a.id === this.attendance);
+            if (att) { att.share_key = null; att.share_edit_key = null; }
+            Utils.showToast('Freigabe aufgehoben', 'success');
+          }
+        },
+      ],
+    });
+    await alert.present();
+  }
+
   async showOptions() {
     const buttons: ActionSheetButton[] = [];
+    const att = this.attendances.find((a: Attendance) => a.id === this.attendance);
 
     if (this.selectedFields.length) {
       buttons.push({
@@ -470,9 +527,27 @@ export class PlanningPage implements OnInit {
       });
     }
 
+    if (this.attendance) {
+      buttons.push({
+        text: att?.share_key ? 'Link teilen' : 'Plan-Link erstellen & teilen',
+        handler: () => this.shareCurrentPlan(false)
+      });
+      buttons.push({
+        text: 'Edit-Link teilen',
+        handler: () => this.shareCurrentPlan(true)
+      });
+      if (att?.share_key) {
+        buttons.push({
+          text: 'Freigabe aufheben',
+          role: 'destructive',
+          handler: () => this.revokeSharePlan()
+        });
+      }
+    }
+
     buttons.push({
       text: 'Abbrechen',
-      role: 'destructive',
+      role: 'cancel',
     });
 
     const actionSheet = await this.actionSheetController.create({

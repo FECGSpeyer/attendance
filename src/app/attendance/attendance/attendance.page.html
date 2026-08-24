@@ -397,6 +397,13 @@
         <ion-accordion value="plan">
           <ion-item slot="header">
             <ion-label>Ablaufplan</ion-label>
+            @if (isPlanLiveNow()) {
+              <ion-button slot="end" fill="clear" size="small"
+                [color]="planLiveMode ? 'danger' : 'primary'"
+                (click)="$event.stopPropagation(); togglePlanLive()">
+                <ion-icon slot="icon-only" [name]="planLiveMode ? 'radio' : 'radio-outline'"></ion-icon>
+              </ion-button>
+            }
           </ion-item>
           @if (attendance.plan) {
           <div slot="content">
@@ -405,7 +412,7 @@
               <ion-badge slot="end">{{ attendance.plan.time }} Uhr</ion-badge>
             </ion-item>
             @for (field of attendance.plan.fields; track field; let i = $index) {
-            <ion-item>
+            <ion-item [class.active-slot]="planLiveMode && i === planActiveFieldIndex">
               <ion-label>
                 <h2>{{ field.name }}</h2>
                 @if (field.songId && !isGeneral) {

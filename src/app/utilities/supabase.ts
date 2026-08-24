@@ -37,6 +37,8 @@ export type Database = {
           players: Json | null
           save_in_history: boolean | null
           share_plan: boolean | null
+          share_key: string | null
+          share_edit_key: string | null
           songs: number[]
           start_time: string | null
           tenantId: number
@@ -66,6 +68,8 @@ export type Database = {
           players?: Json | null
           save_in_history?: boolean | null
           share_plan?: boolean | null
+          share_key?: string | null
+          share_edit_key?: string | null
           songs?: number[]
           start_time?: string | null
           tenantId: number
@@ -95,6 +99,8 @@ export type Database = {
           players?: Json | null
           save_in_history?: boolean | null
           share_plan?: boolean | null
+          share_key?: string | null
+          share_edit_key?: string | null
           songs?: number[]
           start_time?: string | null
           tenantId?: number
@@ -1004,6 +1010,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      shared_plans: {
+        Row: {
+          id: string
+          edit_key: string
+          plan_title: string | null
+          date: string | null
+          time: string | null
+          end_time: string | null
+          fields: Json | null
+          branding_id: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id: string
+          edit_key: string
+          plan_title?: string | null
+          date?: string | null
+          time?: string | null
+          end_time?: string | null
+          fields?: Json | null
+          branding_id?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          edit_key?: string
+          plan_title?: string | null
+          date?: string | null
+          time?: string | null
+          end_time?: string | null
+          fields?: Json | null
+          branding_id?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
       }
       songs: {
         Row: {

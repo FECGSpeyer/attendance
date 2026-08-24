@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController, ActionSheetController } from '@ionic/angular';
 import dayjs from 'dayjs';
@@ -13,7 +13,7 @@ import { DbService } from '../../services/db.service';
   standalone: true,
   imports: [CommonModule, IonicModule]
 })
-export class PlanViewerComponent implements OnInit {
+export class PlanViewerComponent implements OnInit, OnDestroy {
   @Input() attendance: Partial<Attendance>;
   @Input() plan: Plan;
   @Input() isPractice = true;
@@ -21,6 +21,9 @@ export class PlanViewerComponent implements OnInit {
   @Input() songs: Song[] = [];
 
   public hasChatId = false;
+  public liveMode = false;
+  public activeFieldIndex = -1;
+  private liveInterval: any;
 
   constructor(
     private modalController: ModalController,
@@ -32,8 +35,57 @@ export class PlanViewerComponent implements OnInit {
     this.hasChatId = Boolean(this.db.tenantUser()?.telegram_chat_id);
   }
 
+  ngOnDestroy() {
+    this.stopLive();
+  }
+
   dismiss() {
     this.modalController.dismiss();
+  }
+
+  isLiveNow(): boolean {
+    if (!this.attendance?.date || !this.plan?.time || !this.plan?.fields?.length) { return false; }
+    const now = dayjs();
+    const timeBase = dayjs(this.plan.time).isValid()
+      ? dayjs(this.plan.time)
+      : dayjs().hour(Number(this.plan.time.substring(0, 2))).minute(Number(this.plan.time.substring(3, 5)));
+    const start = dayjs(this.attendance.date).hour(timeBase.hour()).minute(timeBase.minute()).second(0);
+    const totalMinutes = this.plan.fields.reduce((s, f) => s + (Number(f.time) || 0), 0);
+    const end = start.add(totalMinutes, 'minute');
+    return now.isAfter(start.subtract(5, 'minute')) && now.isBefore(end.add(15, 'minute'));
+  }
+
+  toggleLive() {
+    this.liveMode = !this.liveMode;
+    if (this.liveMode) {
+      this.updateActiveIndex();
+      this.liveInterval = setInterval(() => this.updateActiveIndex(), 30000);
+    } else {
+      this.stopLive();
+    }
+  }
+
+  private stopLive() {
+    if (this.liveInterval) { clearInterval(this.liveInterval); this.liveInterval = null; }
+    this.activeFieldIndex = -1;
+    this.liveMode = false;
+  }
+
+  updateActiveIndex() {
+    if (!this.plan?.fields?.length || !this.plan.time || !this.attendance?.date) {
+      this.activeFieldIndex = -1;
+      return;
+    }
+    const now = dayjs();
+    const timeBase = dayjs(this.plan.time).isValid()
+      ? dayjs(this.plan.time)
+      : dayjs().hour(Number(this.plan.time.substring(0, 2))).minute(Number(this.plan.time.substring(3, 5)));
+    let t = dayjs(this.attendance.date).hour(timeBase.hour()).minute(timeBase.minute()).second(0);
+    for (let i = 0; i < this.plan.fields.length; i++) {
+      t = t.add(Number(this.plan.fields[i].time) || 0, 'minute');
+      if (now.isBefore(t)) { this.activeFieldIndex = i; return; }
+    }
+    this.activeFieldIndex = this.plan.fields.length - 1;
   }
 
   calculateTime(field: FieldSelection, index: number): string {

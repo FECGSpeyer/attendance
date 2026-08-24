@@ -10,6 +10,7 @@ import {
   PublicBranding,
   cloneTemplateFields,
 } from './public-planning-templates';
+import { getSupabase } from '../services/base/supabase';
 
 const STORAGE_KEY = 'attendix-public-plan';
 
@@ -264,6 +265,8 @@ export class PublicPlanningPage implements OnInit {
       { text: 'PDF (A4)',       handler: () => this.export(false) },
       { text: 'PDF (2x A5)',    handler: () => this.export(true) },
       { text: 'Bild (A4)',      handler: () => this.exportImage(false) },
+      { text: 'Link teilen',    handler: () => this.shareCurrentPlan(false) },
+      { text: 'Edit-Link teilen', handler: () => this.shareCurrentPlan(true) },
       { text: 'Abbrechen',      role: 'cancel' },
     ];
     const actionSheet = await this.actionSheetController.create({
@@ -271,6 +274,37 @@ export class PublicPlanningPage implements OnInit {
       buttons,
     });
     await actionSheet.present();
+  }
+
+  async shareCurrentPlan(editLink = false) {
+    if (!this.validate()) { return; }
+    const id = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+    const editKey = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+    const { error } = await getSupabase().from('shared_plans').insert({
+      id,
+      edit_key: editKey,
+      plan_title: this.planTitle?.trim() || 'Ablaufplan',
+      date: this.date,
+      time: this.time,
+      end_time: this.end,
+      fields: this.selectedFields as any,
+      branding_id: this.selectedBrandingId !== 'none' ? this.selectedBrandingId : null,
+    } as any);
+
+    if (error) {
+      Utils.showToast('Fehler beim Erstellen des Links', 'danger');
+      return;
+    }
+
+    const base = `https://attendix.de/plan?key=${id}`;
+    const url = editLink ? `${base}&edit=${editKey}` : base;
+
+    if (navigator.share) {
+      await navigator.share({ url, title: this.planTitle?.trim() || 'Ablaufplan' });
+    } else {
+      await navigator.clipboard.writeText(url);
+      Utils.showToast('Link in Zwischenablage kopiert', 'success');
+    }
   }
 
   async resetToTemplate() {

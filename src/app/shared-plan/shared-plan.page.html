@@ -1,0 +1,94 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ getDateFormatted() }}</ion-title>
+    <ion-buttons slot="end">
+      @if (isLiveNow()) {
+        <ion-button (click)="toggleLive()" [color]="liveMode ? 'danger' : 'primary'" fill="clear">
+          <ion-icon slot="icon-only" [name]="liveMode ? 'radio' : 'radio-outline'"></ion-icon>
+        </ion-button>
+      }
+      @if (!loading && !notFound) {
+        <ion-button (click)="showExportOptions()" fill="clear">
+          <ion-icon slot="icon-only" name="share-outline"></ion-icon>
+        </ion-button>
+      }
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+
+  @if (loading) {
+    <div class="ion-padding ion-text-center">
+      <ion-spinner></ion-spinner>
+    </div>
+  }
+
+  @if (!loading && notFound) {
+    <ion-card class="ion-margin">
+      <ion-card-content>
+        <p>Plan nicht gefunden. Der Link ist möglicherweise abgelaufen oder ungültig.</p>
+      </ion-card-content>
+    </ion-card>
+  }
+
+  @if (!loading && !notFound) {
+    @if (liveMode) {
+      <div class="live-badge ion-padding-horizontal ion-padding-top">
+        <ion-chip color="danger">
+          <ion-icon name="radio"></ion-icon>
+          <ion-label>Live</ion-label>
+        </ion-chip>
+      </div>
+    }
+
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-label>{{ planTitle }}</ion-label>
+      </ion-list-header>
+
+      <ion-item>
+        <ion-label>Start</ion-label>
+        <ion-note slot="end">{{ getStartTime() }} Uhr</ion-note>
+      </ion-item>
+
+      @for (field of fields; track field.id; let i = $index) {
+        <ion-item
+          [class.active-slot]="liveMode && i === activeFieldIndex"
+          [button]="isEditMode && true"
+          (click)="editField(field)"
+          [detail]="false">
+          <ion-label [class.note-field]="field.id.includes('noteFld')">
+            <h2>{{ field.name }}</h2>
+            @if (!field.id.includes('noteFld')) {
+              <p>{{ calculateTime(field, i) }}</p>
+            }
+            @if (field.info && !field.id.includes('noteFld')) {
+              <p class="field-info">{{ field.info }}</p>
+            }
+          </ion-label>
+          @if (!field.id.includes('noteFld')) {
+            <ion-note slot="end">{{ field.time }} min</ion-note>
+          }
+          @if (isEditMode) {
+            <ion-icon slot="end" name="create-outline" color="medium"></ion-icon>
+          }
+        </ion-item>
+      }
+
+      @if (end) {
+        <ion-item lines="none">
+          <ion-label>Ende</ion-label>
+          <ion-note slot="end">{{ getEndTime() }} Uhr</ion-note>
+        </ion-item>
+      }
+    </ion-list>
+
+    @if (isEditMode) {
+      <div class="ion-padding">
+        <ion-note color="medium">Bearbeitungsmodus aktiv — tippe auf ein Feld zum Bearbeiten.</ion-note>
+      </div>
+    }
+  }
+
+</ion-content>

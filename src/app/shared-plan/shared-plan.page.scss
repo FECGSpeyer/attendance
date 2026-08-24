@@ -1,0 +1,27 @@
+.active-slot {
+  --background: rgba(var(--ion-color-primary-rgb), 0.12);
+  border-left: 3px solid var(--ion-color-primary);
+
+  h2 {
+    font-weight: 600;
+    color: var(--ion-color-primary);
+  }
+}
+
+.note-field {
+  font-style: italic;
+  color: var(--ion-color-medium);
+}
+
+.field-info {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+}
+
+.live-badge {
+  ion-chip {
+    ion-icon {
+      margin-right: 4px;
+    }
+  }
+}

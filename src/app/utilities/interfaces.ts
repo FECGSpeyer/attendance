@@ -270,6 +270,8 @@ export interface Attendance {
   img?: string;
   plan?: Plan;
   share_plan?: boolean;
+  share_key?: string;
+  share_edit_key?: string;
   lateExcused?: string[];
   songs?: number[];
   tenantId?: number;
@@ -290,6 +292,18 @@ export interface Plan {
   time: string;
   fields: FieldSelection[];
   title?: string;
+}
+
+export interface SharedPlan {
+  id: string;
+  edit_key: string;
+  plan_title?: string;
+  date?: string;
+  time?: string;
+  end_time?: string;
+  fields?: FieldSelection[];
+  branding_id?: string;
+  created_at?: string;
 }
 
 export interface PersonAttendance {

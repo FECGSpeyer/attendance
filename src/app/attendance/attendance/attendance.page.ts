@@ -75,6 +75,9 @@ export class AttendancePage implements OnInit, OnDestroy {
   public isLoadingPersons = false;
   public songSearchTerm = '';
   public filteredSongs: Song[] = [];
+  public planLiveMode = false;
+  public planActiveFieldIndex = -1;
+  private planLiveInterval: any;
   // True when fetchAttendance succeeded but `attendance.persons` came back
   // empty (and the helperGroupId filter isn't responsible). Surfaces an inline
   // "Neu laden" banner so the user can recover without dismissing the modal.
@@ -165,6 +168,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     await this.personAttSub?.unsubscribe();
     this.sub = undefined;
     this.personAttSub = undefined;
+    this.stopPlanLive();
     if (this.onVisibilityChange) {
       document.removeEventListener('visibilitychange', this.onVisibilityChange);
       this.onVisibilityChange = undefined;
@@ -682,6 +686,53 @@ export class AttendancePage implements OnInit, OnDestroy {
     }
   }
 
+  isPlanLiveNow(): boolean {
+    const plan = this.attendance?.plan;
+    if (!plan?.time || !plan?.fields?.length || !this.attendance?.date) { return false; }
+    const now = dayjs();
+    const start = dayjs(this.attendance.date)
+      .hour(Number(plan.time.substring(0, 2)))
+      .minute(Number(plan.time.substring(3, 5)))
+      .second(0);
+    const totalMinutes = plan.fields.reduce((s: number, f: FieldSelection) => s + (Number(f.time) || 0), 0);
+    const end = start.add(totalMinutes, 'minute');
+    return now.isAfter(start.subtract(5, 'minute')) && now.isBefore(end.add(15, 'minute'));
+  }
+
+  togglePlanLive() {
+    this.planLiveMode = !this.planLiveMode;
+    if (this.planLiveMode) {
+      this.updatePlanActiveIndex();
+      this.planLiveInterval = setInterval(() => this.updatePlanActiveIndex(), 30000);
+    } else {
+      this.stopPlanLive();
+    }
+  }
+
+  private stopPlanLive() {
+    if (this.planLiveInterval) { clearInterval(this.planLiveInterval); this.planLiveInterval = null; }
+    this.planLiveMode = false;
+    this.planActiveFieldIndex = -1;
+  }
+
+  updatePlanActiveIndex() {
+    const plan = this.attendance?.plan;
+    if (!plan?.fields?.length || !plan.time || !this.attendance?.date) {
+      this.planActiveFieldIndex = -1;
+      return;
+    }
+    const now = dayjs();
+    let t = dayjs(this.attendance.date)
+      .hour(Number(plan.time.substring(0, 2)))
+      .minute(Number(plan.time.substring(3, 5)))
+      .second(0);
+    for (let i = 0; i < plan.fields.length; i++) {
+      t = t.add(Number(plan.fields[i].time) || 0, 'minute');
+      if (now.isBefore(t)) { this.planActiveFieldIndex = i; return; }
+    }
+    this.planActiveFieldIndex = plan.fields.length - 1;
+  }
+
   calculateTime(field: FieldSelection, index: number) {
     let minutesToAdd = 0;
     let currentIndex = 0;
@@ -702,6 +753,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       attendance: this.attendance.id,
       attendances: await this.db.getAttendance(),
       sideBySide,
+      branding: await Utils.buildTenantBranding(this.db.tenant()),
     }, Utils.getPlanningTitle(type, this.attendance.typeInfo));
   }
 
@@ -715,6 +767,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       asBlob: true,
       asImage,
       sideBySide,
+      branding: await Utils.buildTenantBranding(this.db.tenant()),
     }, planningTitle);
 
     this.db.sendPlanPerTelegram(blob, `${planningTitle.replace('(', '').replace(')', '')}_${dayjs(this.attendance.date).format('DD_MM_YYYY')}${sideBySide ? '_2x' : ''}`, asImage);

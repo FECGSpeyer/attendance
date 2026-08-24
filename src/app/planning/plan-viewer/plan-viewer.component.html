@@ -7,6 +7,11 @@
             </ion-button>
         </ion-buttons>
         <ion-buttons slot="end">
+            @if (isLiveNow()) {
+              <ion-button (click)="toggleLive()" [color]="liveMode ? 'danger' : 'primary'" fill="clear">
+                <ion-icon slot="icon-only" [name]="liveMode ? 'radio' : 'radio-outline'"></ion-icon>
+              </ion-button>
+            }
             <ion-button (click)="showExportOptions()">
                 <ion-icon slot="icon-only" name="share-outline"></ion-icon>
             </ion-button>
@@ -15,6 +20,14 @@
 </ion-header>
 
 <ion-content color="light">
+    @if (liveMode) {
+      <div class="ion-padding-horizontal ion-padding-top">
+        <ion-chip color="danger">
+          <ion-icon name="radio"></ion-icon>
+          <ion-label>Live</ion-label>
+        </ion-chip>
+      </div>
+    }
     @if (plan?.fields?.length) {
     <ion-list [inset]="true">
         <ion-list-header>
@@ -28,7 +41,7 @@
             </ion-item>
 
             @for (field of plan.fields; track field.id; let i = $index) {
-            <ion-item>
+            <ion-item [class.active-slot]="liveMode && i === activeFieldIndex">
                 <ion-label>
                     <h2>{{ field.name }}</h2>
                     @if (isInstrumentMissing(field)) {

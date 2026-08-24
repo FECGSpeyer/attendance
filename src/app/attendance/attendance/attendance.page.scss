@@ -2,6 +2,16 @@
     color: var(--ion-color-danger);
 }
 
+.active-slot {
+    --background: rgba(var(--ion-color-primary-rgb), 0.12);
+    border-left: 3px solid var(--ion-color-primary);
+
+    h2 {
+        font-weight: 600;
+        color: var(--ion-color-primary);
+    }
+}
+
 ion-item-group {
     background: #fff;
 }

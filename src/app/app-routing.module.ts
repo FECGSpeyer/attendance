@@ -42,6 +42,13 @@ const routes: Routes = [
     loadChildren: () => import('./public-planning/public-planning.module').then(m => m.PublicPlanningPageModule)
   },
   {
+    // Public shareable plan viewer — attendance plans and ad-hoc plans.
+    // Read-only by default; edit key in URL enables editing.
+    // Must be registered before :songSharingId wildcard.
+    path: 'plan',
+    loadChildren: () => import('./shared-plan/shared-plan.module').then(m => m.SharedPlanPageModule)
+  },
+  {
     // Deep link from reminder emails / Telegram messages. Resolves the target
     // attendance and role-routes the user (players → signout action sheet,
     // admins → detail page). Must be registered before the :songSharingId
