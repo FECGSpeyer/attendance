@@ -2,6 +2,9 @@
   <ion-toolbar>
     <ion-title>Ablaufplan erstellen</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="shareCurrentPlan(false)" fill="clear">
+        <ion-icon slot="icon-only" name="link-outline"></ion-icon>
+      </ion-button>
       <ion-button (click)="dismiss()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>

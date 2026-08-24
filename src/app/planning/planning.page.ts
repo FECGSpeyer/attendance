@@ -433,6 +433,18 @@ export class PlanningPage implements OnInit {
       Utils.showToast('Bitte wähle zuerst einen Termin aus.', 'warning');
       return;
     }
+    const sheet = await this.actionSheetController.create({
+      header: 'Link teilen',
+      buttons: [
+        { text: 'Nur-Lesen-Link', handler: () => this.doShareAttendancePlan(false) },
+        { text: 'Bearbeitungs-Link', handler: () => this.doShareAttendancePlan(true) },
+        { text: 'Abbrechen', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+  }
+
+  private async doShareAttendancePlan(editLink: boolean) {
     const att = this.attendances.find((a: Attendance) => a.id === this.attendance);
     if (!att) { return; }
 
@@ -486,10 +498,8 @@ export class PlanningPage implements OnInit {
 
   async showOptions() {
     const buttons: ActionSheetButton[] = [];
-    const att = this.attendances.find((a: Attendance) => a.id === this.attendance);
 
-    if (this.selectedFields.length) {
-      buttons.push({
+    if (this.selectedFields.length) {      buttons.push({
         text: 'PDF exportieren',
         handler: () => this.export()
       });
@@ -525,24 +535,6 @@ export class PlanningPage implements OnInit {
           this.isPlanModalOpen = true;
         }
       });
-    }
-
-    if (this.attendance) {
-      buttons.push({
-        text: att?.share_key ? 'Link teilen' : 'Plan-Link erstellen & teilen',
-        handler: () => this.shareCurrentPlan(false)
-      });
-      buttons.push({
-        text: 'Edit-Link teilen',
-        handler: () => this.shareCurrentPlan(true)
-      });
-      if (att?.share_key) {
-        buttons.push({
-          text: 'Freigabe aufheben',
-          role: 'destructive',
-          handler: () => this.revokeSharePlan()
-        });
-      }
     }
 
     buttons.push({

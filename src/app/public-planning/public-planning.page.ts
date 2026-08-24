@@ -265,8 +265,6 @@ export class PublicPlanningPage implements OnInit {
       { text: 'PDF (A4)',       handler: () => this.export(false) },
       { text: 'PDF (2x A5)',    handler: () => this.export(true) },
       { text: 'Bild (A4)',      handler: () => this.exportImage(false) },
-      { text: 'Link teilen',    handler: () => this.shareCurrentPlan(false) },
-      { text: 'Edit-Link teilen', handler: () => this.shareCurrentPlan(true) },
       { text: 'Abbrechen',      role: 'cancel' },
     ];
     const actionSheet = await this.actionSheetController.create({
@@ -278,6 +276,18 @@ export class PublicPlanningPage implements OnInit {
 
   async shareCurrentPlan(editLink = false) {
     if (!this.validate()) { return; }
+    const sheet = await this.actionSheetController.create({
+      header: 'Link teilen',
+      buttons: [
+        { text: 'Nur-Lesen-Link', handler: () => this.doShare(false) },
+        { text: 'Bearbeitungs-Link', handler: () => this.doShare(true) },
+        { text: 'Abbrechen', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+  }
+
+  private async doShare(editLink: boolean) {
     const id = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
     const editKey = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
     const { error } = await getSupabase().from('shared_plans').insert({

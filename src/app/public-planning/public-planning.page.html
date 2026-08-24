@@ -2,7 +2,10 @@
   <ion-toolbar>
     <ion-title>Ablaufplanung</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="showExportOptions()" fill="clear">
+      <ion-button (click)="shareCurrentPlan(false)" fill="clear" title="Plan-Link teilen">
+        <ion-icon name="link-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="showExportOptions()" fill="clear" title="Exportieren">
         <ion-icon name="share-outline"></ion-icon>
       </ion-button>
     </ion-buttons>

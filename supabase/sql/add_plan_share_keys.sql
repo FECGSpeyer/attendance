@@ -36,8 +36,14 @@ CREATE POLICY "anon_insert_shared_plans"
   TO anon
   WITH CHECK (true);
 
--- Anyone can update a shared plan (edit_key verification is enforced in the app)
-CREATE POLICY "anon_update_shared_plans"
+-- Authenticated users can also create shared plans (same client instance used when logged in)
+CREATE POLICY "auth_insert_shared_plans"
+  ON shared_plans FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+-- Authenticated users can update shared plans (edit_key check is in the app)
+CREATE POLICY "auth_update_shared_plans"
   ON shared_plans FOR UPDATE
-  TO anon
+  TO authenticated
   USING (true);
