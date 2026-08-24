@@ -31,6 +31,7 @@ export class PublicPlanningPage implements OnInit {
   public time: string = dayjs().hour(10).minute(0).format('YYYY-MM-DDTHH:mm');
   public end = '';
   public selectedFields: FieldSelection[] = [];
+  public isLoggedIn = false;
 
   constructor(
     private alertController: AlertController,
@@ -39,7 +40,9 @@ export class PublicPlanningPage implements OnInit {
 
   trackByFieldId = (_: number, f: FieldSelection): string => f.id;
 
-  ngOnInit() {
+  async ngOnInit() {
+    const { data } = await getSupabase().auth.getSession();
+    this.isLoggedIn = !!data.session;
     if (!this.loadFromLocalStorage()) {
       this.selectedTemplateId = this.templates[0].id;
       this.applyTemplate(this.templates[0]);

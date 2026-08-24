@@ -1,7 +1,9 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/settings"></ion-back-button>
+      @if (isLoggedIn) {
+        <ion-back-button defaultHref="/tabs/home"></ion-back-button>
+      }
     </ion-buttons>
     <ion-title>Ablaufplanung</ion-title>
     <ion-buttons slot="end">
