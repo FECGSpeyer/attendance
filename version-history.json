@@ -1,6 +1,14 @@
     {
       "versions": [
         {
+          "version": "4.5.0",
+          "date": "24.8.2026",
+          "changes": [
+            "🔗 Ablaufpläne können als öffentlicher Link geteilt werden (auch ohne Account). Optional mit Edit-Schlüssel zum Bearbeiten.",
+            "📡 Live-Ansicht: Wenn der Plan gerade läuft, kann der aktuelle Programmblock hervorgehoben werden – in der Plan-Ansicht, im Probenmanager und auf der geteilten Seite."
+          ]
+        },
+        {
           "version": "4.4.9",
           "date": "21.8.2026",
           "changes": [
