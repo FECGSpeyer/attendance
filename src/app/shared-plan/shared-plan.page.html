@@ -44,7 +44,7 @@
 
     <ion-list [inset]="true">
       <ion-list-header>
-        <ion-label [button]="isEditMode" (click)="editTitle()">{{ planTitle }}</ion-label>
+        <ion-label (click)="editTitle()" [style.cursor]="isEditMode ? 'pointer' : ''">{{ planTitle }}</ion-label>
         @if (isEditMode) {
           <ion-button fill="clear" (click)="addNote()">
             <ion-icon slot="icon-only" name="add"></ion-icon>
