@@ -86,9 +86,20 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
     let t = dayjs(this.attendance.date).hour(timeBase.hour()).minute(timeBase.minute()).second(0);
     for (let i = 0; i < this.plan.fields.length; i++) {
       t = t.add(Number(this.plan.fields[i].time) || 0, 'minute');
-      if (now.isBefore(t)) { this.activeFieldIndex = i; return; }
+      if (now.isBefore(t)) {
+        this.activeFieldIndex = i;
+        this.scrollToActive();
+        return;
+      }
     }
     this.activeFieldIndex = this.plan.fields.length - 1;
+    this.scrollToActive();
+  }
+
+  private scrollToActive() {
+    setTimeout(() => {
+      document.querySelector('.active-slot')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
   }
 
   calculateTime(field: FieldSelection, index: number): string {

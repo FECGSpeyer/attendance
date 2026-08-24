@@ -729,9 +729,20 @@ export class AttendancePage implements OnInit, OnDestroy {
       .second(0);
     for (let i = 0; i < plan.fields.length; i++) {
       t = t.add(Number(plan.fields[i].time) || 0, 'minute');
-      if (now.isBefore(t)) { this.planActiveFieldIndex = i; return; }
+      if (now.isBefore(t)) {
+        this.planActiveFieldIndex = i;
+        this.scrollToActiveSlot();
+        return;
+      }
     }
     this.planActiveFieldIndex = plan.fields.length - 1;
+    this.scrollToActiveSlot();
+  }
+
+  private scrollToActiveSlot() {
+    setTimeout(() => {
+      document.querySelector('.active-slot')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
   }
 
   calculateTime(field: FieldSelection, index: number) {

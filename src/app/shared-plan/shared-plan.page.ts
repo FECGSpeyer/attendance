@@ -252,10 +252,18 @@ export class SharedPlanPage implements OnInit, OnDestroy {
       t = t.add(Number(this.fields[i].time) || 0, 'minute');
       if (now.isBefore(t)) {
         this.activeFieldIndex = i;
+        this.scrollToActive();
         return;
       }
     }
     this.activeFieldIndex = this.fields.length - 1;
+    this.scrollToActive();
+  }
+
+  private scrollToActive() {
+    setTimeout(() => {
+      document.querySelector('.active-slot')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
   }
 
   // ---- edit mode ----
