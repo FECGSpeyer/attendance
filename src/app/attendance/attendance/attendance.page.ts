@@ -271,6 +271,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     // `this.type.manage_songs` further down threw when the type catalog
     // didn't contain the row's type_id, and initializeAttObjects() never ran.
     this.initializeAttObjects();
+    if (this.isPlanLiveNow()) { this.togglePlanLive(); }
 
     // Detect the "fetch returned no persons" case so the UI can show a retry
     // banner instead of a silent 0/0. Telemetry shows this isn't currently

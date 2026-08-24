@@ -119,6 +119,10 @@ const routes: Routes = [
         loadChildren: () => import('./../settings/delete-account/delete-account.module').then(m => m.DeleteAccountPageModule)
       },
       {
+        path: 'settings/planung',
+        loadChildren: () => import('./../public-planning/public-planning.module').then(m => m.PublicPlanningPageModule)
+      },
+      {
         path: 'dashboard',
         canActivate: [SuperDeveloperGuard],
         loadChildren: () => import('./../dashboard/dashboard.module').then(m => m.DashboardPageModule)

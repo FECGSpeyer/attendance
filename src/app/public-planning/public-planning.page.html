@@ -1,5 +1,8 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/settings"></ion-back-button>
+    </ion-buttons>
     <ion-title>Ablaufplanung</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="shareCurrentPlan(false)" fill="clear" title="Plan-Link teilen">

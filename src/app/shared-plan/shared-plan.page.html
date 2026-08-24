@@ -44,7 +44,12 @@
 
     <ion-list [inset]="true">
       <ion-list-header>
-        <ion-label>{{ planTitle }}</ion-label>
+        <ion-label [button]="isEditMode" (click)="editTitle()">{{ planTitle }}</ion-label>
+        @if (isEditMode) {
+          <ion-button fill="clear" (click)="addNote()">
+            <ion-icon slot="icon-only" name="add"></ion-icon>
+          </ion-button>
+        }
       </ion-list-header>
 
       <ion-item>
@@ -55,7 +60,7 @@
       @for (field of fields; track field.id; let i = $index) {
         <ion-item
           [class.active-slot]="liveMode && i === activeFieldIndex"
-          [button]="isEditMode && true"
+          [button]="isEditMode"
           (click)="editField(field)"
           [detail]="false">
           <ion-label [class.note-field]="field.id.includes('noteFld')">
@@ -70,8 +75,10 @@
           @if (!field.id.includes('noteFld')) {
             <ion-note slot="end">{{ field.time }} min</ion-note>
           }
-          @if (isEditMode) {
-            <ion-icon slot="end" name="create-outline" color="medium"></ion-icon>
+          @if (isEditMode && field.id.includes('noteFld')) {
+            <ion-button slot="end" fill="clear" color="danger" (click)="$event.stopPropagation(); removeField(i)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
           }
         </ion-item>
       }
@@ -84,11 +91,6 @@
       }
     </ion-list>
 
-    @if (isEditMode) {
-      <div class="ion-padding">
-        <ion-note color="medium">Bearbeitungsmodus aktiv — tippe auf ein Feld zum Bearbeiten.</ion-note>
-      </div>
-    }
   }
 
 </ion-content>

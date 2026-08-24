@@ -33,6 +33,9 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.hasChatId = Boolean(this.db.tenantUser()?.telegram_chat_id);
+    if (this.isLiveNow()) {
+      this.toggleLive();
+    }
   }
 
   ngOnDestroy() {

@@ -25,7 +25,7 @@ import { NotificationBellComponent } from 'src/app/shared/notification-bell/noti
     ExportPageModule,
     PlanningPageModule,
     PersonPageModule,
-    NotificationBellComponent
+    NotificationBellComponent,
   ],
   declarations: [SettingsPage]
 })

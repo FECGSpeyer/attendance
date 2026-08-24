@@ -65,6 +65,10 @@ export class SharedPlanPage implements OnInit, OnDestroy {
     }
 
     this.loading = false;
+
+    if (this.isLiveNow()) {
+      this.toggleLive();
+    }
   }
 
   ngOnDestroy() {
@@ -255,6 +259,57 @@ export class SharedPlanPage implements OnInit, OnDestroy {
   }
 
   // ---- edit mode ----
+
+  async editTitle() {
+    if (!this.isEditMode) { return; }
+    const alert = await this.alertController.create({
+      header: 'Titel bearbeiten',
+      inputs: [{ type: 'text', name: 'title', value: this.planTitle, placeholder: 'Titel' }],
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Speichern',
+          handler: (evt: any) => {
+            if (!evt.title?.trim()) { return false; }
+            this.planTitle = evt.title.trim();
+            this.saveEdits();
+          }
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  async addNote() {
+    if (!this.isEditMode) { return; }
+    const alert = await this.alertController.create({
+      header: 'Notiz hinzufügen',
+      inputs: [{ type: 'textarea', name: 'text', placeholder: 'Notiz eingeben...' }],
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Hinzufügen',
+          handler: (evt: any) => {
+            if (!evt.text?.trim()) { return false; }
+            this.fields.push({
+              id: `noteFld ${evt.text.trim()}-${Date.now()}`,
+              name: evt.text.trim(),
+              conductor: '',
+              time: '0',
+            });
+            this.saveEdits();
+          }
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  removeField(index: number) {
+    if (!this.isEditMode) { return; }
+    this.fields.splice(index, 1);
+    this.saveEdits();
+  }
 
   async editField(field: FieldSelection) {
     if (!this.isEditMode) { return; }
