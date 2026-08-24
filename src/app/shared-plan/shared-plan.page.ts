@@ -288,7 +288,37 @@ export class SharedPlanPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  async addNote() {
+  async addField(popover?: any) {
+    popover?.dismiss();
+    if (!this.isEditMode) { return; }
+    const alert = await this.alertController.create({
+      header: 'Feld hinzufügen',
+      inputs: [
+        { type: 'textarea', name: 'field', placeholder: 'Programmpunkt eingeben...' },
+        { type: 'textarea', name: 'conductor', placeholder: 'Ausführender (optional)' },
+      ],
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Hinzufügen',
+          handler: (evt: any) => {
+            if (!evt.field?.trim()) { return false; }
+            this.fields.push({
+              id: `${evt.field.trim()}-${Date.now()}`,
+              name: evt.field.trim(),
+              conductor: evt.conductor?.trim() ?? '',
+              time: '20',
+            });
+            this.saveEdits();
+          }
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  async addNote(popover?: any) {
+    popover?.dismiss();
     if (!this.isEditMode) { return; }
     const alert = await this.alertController.create({
       header: 'Notiz hinzufügen',
@@ -313,10 +343,36 @@ export class SharedPlanPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
+  handleReorder(ev: CustomEvent<any>) {
+    ev.detail.complete(this.fields);
+    this.saveEdits();
+  }
+
   removeField(index: number) {
     if (!this.isEditMode) { return; }
     this.fields.splice(index, 1);
     this.saveEdits();
+  }
+
+  async editStartTime() {
+    if (!this.isEditMode) { return; }
+    const current = this.getStartTime();
+    const alert = await this.alertController.create({
+      header: 'Startzeit bearbeiten',
+      inputs: [{ type: 'time', name: 'time', value: current }],
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Speichern',
+          handler: (evt: any) => {
+            if (!evt.time) { return false; }
+            this.time = this.date ? `${this.date}T${evt.time}` : evt.time;
+            this.saveEdits();
+          }
+        },
+      ],
+    });
+    await alert.present();
   }
 
   async editField(field: FieldSelection) {
@@ -328,6 +384,7 @@ export class SharedPlanPage implements OnInit, OnDestroy {
           { type: 'textarea', name: 'field', value: field.name, placeholder: 'Programmpunkt' },
           { type: 'textarea', name: 'conductor', value: field.conductor, placeholder: 'Ausführender' },
           { type: 'textarea', name: 'info', value: field.info, placeholder: 'Info-Text (optional)' },
+          { type: 'number', name: 'time', value: field.time, placeholder: 'Dauer (min)' },
         ];
     const alert = await this.alertController.create({
       header: 'Feld bearbeiten',
@@ -342,6 +399,7 @@ export class SharedPlanPage implements OnInit, OnDestroy {
             if (!isNote) {
               field.conductor = evt.conductor ?? '';
               field.info = evt.info?.trim() || undefined;
+              if (evt.time) { field.time = String(evt.time); }
             }
             this.saveEdits();
           }

@@ -10,6 +10,10 @@ ion-item p {
   color: var(--ion-color-medium);
 }
 
+.done-slot {
+  opacity: 0.4;
+}
+
 .active-slot {
   --background: rgba(var(--ion-color-primary-rgb), 0.12);
   border-left: 3px solid var(--ion-color-primary);

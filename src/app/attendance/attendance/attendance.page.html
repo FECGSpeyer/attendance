@@ -412,7 +412,8 @@
               <ion-badge slot="end">{{ attendance.plan.time }} Uhr</ion-badge>
             </ion-item>
             @for (field of attendance.plan.fields; track field; let i = $index) {
-            <ion-item [class.active-slot]="planLiveMode && i === planActiveFieldIndex">
+            <ion-item [class.active-slot]="planLiveMode && i === planActiveFieldIndex"
+                      [class.done-slot]="planLiveMode && i < planActiveFieldIndex">
               <ion-label>
                 <h2>{{ field.name }}</h2>
                 @if (field.songId && !isGeneral) {

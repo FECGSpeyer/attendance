@@ -42,42 +42,56 @@
           }
         </ion-label>
         @if (isEditMode) {
-          <ion-button fill="clear" (click)="addNote()">
+          <ion-button fill="clear" id="add-field-trigger">
             <ion-icon slot="icon-only" name="add"></ion-icon>
           </ion-button>
+          <ion-popover #addPopover trigger="add-field-trigger" triggerAction="click">
+            <ng-template>
+              <ion-item button (click)="addField(addPopover)">
+                <ion-label>Feld hinzufügen</ion-label>
+              </ion-item>
+              <ion-item button lines="none" (click)="addNote(addPopover)">
+                <ion-label>Notizfeld hinzufügen</ion-label>
+              </ion-item>
+            </ng-template>
+          </ion-popover>
         }
       </ion-list-header>
 
-      <ion-item>
+      <ion-item [button]="isEditMode" [detail]="false" (click)="editStartTime()">
         <ion-label>Start</ion-label>
         <ion-note slot="end">{{ getStartTime() }} Uhr</ion-note>
       </ion-item>
 
-      @for (field of fields; track field.id; let i = $index) {
-        <ion-item
-          [class.active-slot]="liveMode && i === activeFieldIndex"
-          [button]="isEditMode"
-          (click)="editField(field)"
-          [detail]="false">
-          <ion-label [class.note-field]="field.id.includes('noteFld')">
-            <h2>{{ field.name }}</h2>
-            @if (!field.id.includes('noteFld')) {
-              <p>{{ calculateTime(field, i) }}</p>
+      <ion-reorder-group [disabled]="!isEditMode" (ionItemReorder)="handleReorder($any($event))">
+        @for (field of fields; track field.id; let i = $index) {
+          <ion-item
+            [class.active-slot]="liveMode && i === activeFieldIndex"
+            [class.done-slot]="liveMode && i < activeFieldIndex"
+            [button]="isEditMode"
+            (click)="editField(field)"
+            [detail]="false">
+            <ion-label [class.note-field]="field.id.includes('noteFld')">
+              <h2>{{ field.name }}</h2>
+              @if (!field.id.includes('noteFld')) {
+                <p>{{ calculateTime(field, i) }}</p>
+              }
+              @if (field.info && !field.id.includes('noteFld')) {
+                <p class="field-info">{{ field.info }}</p>
+              }
+            </ion-label>
+            @if (!field.id.includes('noteFld') && !isEditMode) {
+              <ion-note slot="end">{{ field.time }} min</ion-note>
             }
-            @if (field.info && !field.id.includes('noteFld')) {
-              <p class="field-info">{{ field.info }}</p>
+            @if (isEditMode) {
+              <ion-button slot="end" fill="clear" color="danger" (click)="$event.stopPropagation(); removeField(i)">
+                <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-button>
+              <ion-reorder slot="end"></ion-reorder>
             }
-          </ion-label>
-          @if (!field.id.includes('noteFld')) {
-            <ion-note slot="end">{{ field.time }} min</ion-note>
-          }
-          @if (isEditMode && field.id.includes('noteFld')) {
-            <ion-button slot="end" fill="clear" color="danger" (click)="$event.stopPropagation(); removeField(i)">
-              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-            </ion-button>
-          }
-        </ion-item>
-      }
+          </ion-item>
+        }
+      </ion-reorder-group>
 
       @if (end) {
         <ion-item lines="none">
