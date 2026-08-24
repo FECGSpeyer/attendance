@@ -20,14 +20,6 @@
 </ion-header>
 
 <ion-content color="light">
-    @if (liveMode) {
-      <div class="ion-padding-horizontal ion-padding-top">
-        <ion-chip color="danger">
-          <ion-icon name="radio"></ion-icon>
-          <ion-label>Live</ion-label>
-        </ion-chip>
-      </div>
-    }
     @if (plan?.fields?.length) {
     <ion-list [inset]="true">
         <ion-list-header>

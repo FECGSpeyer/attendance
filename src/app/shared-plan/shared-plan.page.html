@@ -33,15 +33,6 @@
   }
 
   @if (!loading && !notFound) {
-    @if (liveMode) {
-      <div class="live-badge ion-padding-horizontal ion-padding-top">
-        <ion-chip color="danger">
-          <ion-icon name="radio"></ion-icon>
-          <ion-label>Live</ion-label>
-        </ion-chip>
-      </div>
-    }
-
     <ion-list [inset]="true">
       <ion-list-header>
         <ion-label (click)="editTitle()" [style.cursor]="isEditMode ? 'pointer' : ''">{{ planTitle }}</ion-label>
