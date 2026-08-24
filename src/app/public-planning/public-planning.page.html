@@ -7,6 +7,11 @@
     </ion-buttons>
     <ion-title>Ablaufplanung</ion-title>
     <ion-buttons slot="end">
+      @if (isLoggedIn) {
+        <ion-button (click)="openMyPlans()" fill="clear" title="Meine Pläne">
+          <ion-icon name="list-outline"></ion-icon>
+        </ion-button>
+      }
       <ion-button (click)="shareCurrentPlan(false)" fill="clear" title="Plan-Link teilen">
         <ion-icon name="link-outline"></ion-icon>
       </ion-button>
@@ -51,6 +56,12 @@
       <ion-icon color="primary" slot="start" name="refresh"></ion-icon>
       <ion-label color="primary">Vorlage wiederherstellen</ion-label>
     </ion-item>
+    @if (isLoggedIn) {
+      <ion-item detail="false" (click)="newPlan()" button lines="none">
+        <ion-icon color="medium" slot="start" name="add-circle-outline"></ion-icon>
+        <ion-label color="medium">Neuer Plan</ion-label>
+      </ion-item>
+    }
   </ion-list>
 
   <ion-list [inset]="true">
@@ -105,11 +116,6 @@
               }
               <ion-reorder slot="end"></ion-reorder>
             </ion-item>
-            <ion-item-options (ionSwipe)="removeField(i, slider)">
-              <ion-item-option expandable color="danger" (click)="removeField(i, slider)">
-                <ion-icon name="trash"></ion-icon>
-              </ion-item-option>
-            </ion-item-options>
           </ion-item-sliding>
           }
         </ion-reorder-group>

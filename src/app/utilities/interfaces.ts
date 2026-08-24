@@ -303,6 +303,7 @@ export interface SharedPlan {
   end_time?: string;
   fields?: FieldSelection[];
   branding_id?: string;
+  creator_user_id?: string | null;
   created_at?: string;
 }
 

@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonPopover, ItemReorderEventDetail } from '@ionic/angular';
+import { Router } from '@angular/router';
+import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular';
 import dayjs from 'dayjs';
-import { FieldSelection } from '../utilities/interfaces';
+import { FieldSelection, SharedPlan } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 import {
   PUBLIC_PLANNING_TEMPLATES,
@@ -11,6 +12,7 @@ import {
   cloneTemplateFields,
 } from './public-planning-templates';
 import { getSupabase } from '../services/base/supabase';
+import { MyPlansComponent } from './my-plans/my-plans.component';
 
 const STORAGE_KEY = 'attendix-public-plan';
 
@@ -33,9 +35,15 @@ export class PublicPlanningPage implements OnInit {
   public selectedFields: FieldSelection[] = [];
   public isLoggedIn = false;
 
+  private currentPlanId: string | null = null;
+  private currentEditKey: string | null = null;
+  private dbSaveTimeout: any = null;
+
   constructor(
     private alertController: AlertController,
     private actionSheetController: ActionSheetController,
+    private modalController: ModalController,
+    private router: Router,
   ) { }
 
   trackByFieldId = (_: number, f: FieldSelection): string => f.id;
@@ -43,6 +51,13 @@ export class PublicPlanningPage implements OnInit {
   async ngOnInit() {
     const { data } = await getSupabase().auth.getSession();
     this.isLoggedIn = !!data.session;
+
+    // Redirect logged-in users from public /planung to the in-app route
+    if (this.isLoggedIn && this.router.url === '/planung') {
+      this.router.navigateByUrl('/tabs/settings/planung', { replaceUrl: true });
+      return;
+    }
+
     if (!this.loadFromLocalStorage()) {
       this.selectedTemplateId = this.templates[0].id;
       this.applyTemplate(this.templates[0]);
@@ -156,6 +171,7 @@ export class PublicPlanningPage implements OnInit {
 
   async editField(field: FieldSelection, slider?: IonItemSliding) {
     slider?.close();
+    const index = this.selectedFields.indexOf(field);
     const isNote = field.id.includes('noteFld');
     const inputs: any[] = isNote
       ? [{ type: 'textarea', name: 'field', value: field.name, placeholder: 'Notiz' }]
@@ -168,9 +184,20 @@ export class PublicPlanningPage implements OnInit {
       header: 'Feld bearbeiten',
       inputs,
       buttons: [
+        {
+          text: 'Löschen',
+          role: 'destructive',
+          cssClass: 'alert-button-danger',
+          handler: () => {
+            if (index !== -1) {
+              this.selectedFields.splice(index, 1);
+              this.calculateEnd();
+            }
+          },
+        },
         { text: 'Abbrechen', role: 'cancel' },
         {
-          text: 'Updaten',
+          text: 'Speichern',
           handler: (evt: any) => {
             if (!evt.field) {
               alert.message = 'Bitte einen Programmpunkt eingeben.';
@@ -187,12 +214,6 @@ export class PublicPlanningPage implements OnInit {
     await alert.present();
   }
 
-  removeField(index: number, slider: IonItemSliding) {
-    this.selectedFields.splice(index, 1);
-    slider.close();
-    this.calculateEnd();
-  }
-
   handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
     ev.detail.complete(this.selectedFields);
     this.calculateEnd();
@@ -207,6 +228,7 @@ export class PublicPlanningPage implements OnInit {
     }
     this.end = t.format('YYYY-MM-DDTHH:mm');
     this.persist();
+    this.schedulePersistToDb();
   }
 
   onDateChange() {
@@ -291,6 +313,27 @@ export class PublicPlanningPage implements OnInit {
   }
 
   private async doShare(editLink: boolean) {
+    if (this.isLoggedIn) {
+      // Logged-in: ensure stable plan row exists, then share its URL
+      if (!this.currentPlanId) {
+        await this.persistToDb();
+      }
+      if (!this.currentPlanId) {
+        Utils.showToast('Fehler beim Erstellen des Links', 'danger');
+        return;
+      }
+      const base = `https://attendix.de/plan?key=${this.currentPlanId}`;
+      const url = editLink ? `${base}&edit=${this.currentEditKey}` : base;
+      if (navigator.share) {
+        await navigator.share({ url, title: this.planTitle?.trim() || 'Ablaufplan' });
+      } else {
+        await navigator.clipboard.writeText(url);
+        Utils.showToast('Link in Zwischenablage kopiert', 'success');
+      }
+      return;
+    }
+
+    // Anon: one-off insert, no creator
     const id = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
     const editKey = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
     const { error } = await getSupabase().from('shared_plans').insert({
@@ -311,13 +354,99 @@ export class PublicPlanningPage implements OnInit {
 
     const base = `https://attendix.de/plan?key=${id}`;
     const url = editLink ? `${base}&edit=${editKey}` : base;
-
     if (navigator.share) {
       await navigator.share({ url, title: this.planTitle?.trim() || 'Ablaufplan' });
     } else {
       await navigator.clipboard.writeText(url);
       Utils.showToast('Link in Zwischenablage kopiert', 'success');
     }
+  }
+
+  async openMyPlans() {
+    const modal = await this.modalController.create({
+      component: MyPlansComponent,
+      breakpoints: [0, 0.5, 0.9],
+      initialBreakpoint: 0.9,
+    });
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss();
+    if (role === 'load' && data?.plan) {
+      this.loadPlan(data.plan as SharedPlan);
+    }
+  }
+
+  private loadPlan(plan: SharedPlan) {
+    this.currentPlanId = plan.id;
+    this.currentEditKey = plan.edit_key;
+    this.planTitle = plan.plan_title || 'Ablaufplan';
+    this.date = plan.date || dayjs().format('YYYY-MM-DD');
+    this.time = plan.time || dayjs().hour(10).minute(0).format('YYYY-MM-DDTHH:mm');
+    this.end = plan.end_time || '';
+    this.selectedFields = (plan.fields as unknown as FieldSelection[]) || [];
+    this.selectedBrandingId = plan.branding_id || 'none';
+    this.persist();
+  }
+
+  async newPlan() {
+    if (this.selectedFields.length) {
+      const alert = await this.alertController.create({
+        header: 'Neuer Plan',
+        message: 'Aktuellen Plan verwerfen und einen neuen erstellen?',
+        buttons: [
+          { text: 'Abbrechen', role: 'cancel' },
+          { text: 'Neuer Plan', handler: () => this.resetToNew() },
+        ],
+      });
+      await alert.present();
+    } else {
+      this.resetToNew();
+    }
+  }
+
+  private resetToNew() {
+    this.currentPlanId = null;
+    this.currentEditKey = null;
+    this.planTitle = 'Ablaufplan';
+    this.date = dayjs().format('YYYY-MM-DD');
+    this.time = dayjs().hour(10).minute(0).format('YYYY-MM-DDTHH:mm');
+    this.end = '';
+    this.selectedFields = [];
+    this.selectedTemplateId = null;
+    this.selectedBrandingId = 'none';
+    this.persist();
+  }
+
+  // ---- DB persistence (logged-in only) ----
+
+  private schedulePersistToDb() {
+    if (!this.isLoggedIn) { return; }
+    if (this.dbSaveTimeout) { clearTimeout(this.dbSaveTimeout); }
+    this.dbSaveTimeout = setTimeout(() => this.persistToDb(), 500);
+  }
+
+  private async persistToDb() {
+    if (!this.isLoggedIn) { return; }
+    const { data: sessionData } = await getSupabase().auth.getSession();
+    const userId = sessionData.session?.user.id;
+    if (!userId) { return; }
+
+    if (!this.currentPlanId) {
+      this.currentPlanId = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+      this.currentEditKey = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+      this.persist();
+    }
+
+    await getSupabase().from('shared_plans').upsert({
+      id: this.currentPlanId,
+      edit_key: this.currentEditKey!,
+      plan_title: this.planTitle?.trim() || 'Ablaufplan',
+      date: this.date,
+      time: this.time,
+      end_time: this.end,
+      fields: this.selectedFields as any,
+      branding_id: this.selectedBrandingId !== 'none' ? this.selectedBrandingId : null,
+      creator_user_id: userId,
+    } as any, { onConflict: 'id' });
   }
 
   async resetToTemplate() {
@@ -353,6 +482,8 @@ export class PublicPlanningPage implements OnInit {
         selectedTemplateId: this.selectedTemplateId,
         selectedBrandingId: this.selectedBrandingId,
         selectedFields: this.selectedFields,
+        currentPlanId: this.currentPlanId,
+        currentEditKey: this.currentEditKey,
       }));
     } catch {
       // Safari Private Mode / Quota: ignorieren
@@ -372,6 +503,8 @@ export class PublicPlanningPage implements OnInit {
       this.selectedTemplateId = s.selectedTemplateId ?? null;
       this.selectedBrandingId = s.selectedBrandingId ?? 'none';
       this.selectedFields = s.selectedFields;
+      this.currentPlanId = s.currentPlanId ?? null;
+      this.currentEditKey = s.currentEditKey ?? null;
       return true;
     } catch {
       return false;

@@ -1021,6 +1021,7 @@ export type Database = {
           end_time: string | null
           fields: Json | null
           branding_id: string | null
+          creator_user_id: string | null
           created_at: string | null
         }
         Insert: {
@@ -1032,6 +1033,7 @@ export type Database = {
           end_time?: string | null
           fields?: Json | null
           branding_id?: string | null
+          creator_user_id?: string | null
           created_at?: string | null
         }
         Update: {
@@ -1043,6 +1045,7 @@ export type Database = {
           end_time?: string | null
           fields?: Json | null
           branding_id?: string | null
+          creator_user_id?: string | null
           created_at?: string | null
         }
         Relationships: []

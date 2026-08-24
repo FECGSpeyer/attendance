@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { PublicPlanningPageRoutingModule } from './public-planning-routing.module';
 
 import { PublicPlanningPage } from './public-planning.page';
+import { MyPlansComponent } from './my-plans/my-plans.component';
 
 @NgModule({
   imports: [
@@ -15,6 +16,6 @@ import { PublicPlanningPage } from './public-planning.page';
     IonicModule,
     PublicPlanningPageRoutingModule
   ],
-  declarations: [PublicPlanningPage]
+  declarations: [PublicPlanningPage, MyPlansComponent]
 })
 export class PublicPlanningPageModule {}

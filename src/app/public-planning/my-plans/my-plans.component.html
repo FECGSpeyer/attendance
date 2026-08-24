@@ -1,0 +1,42 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Meine Pläne</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">Schließen</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  @if (loading) {
+    <div class="ion-padding ion-text-center">
+      <ion-spinner></ion-spinner>
+    </div>
+  }
+
+  @if (!loading) {
+    <ion-list [inset]="true">
+      @for (plan of plans; track plan.id) {
+        <ion-item-sliding>
+          <ion-item button detail="false" (click)="loadPlan(plan)">
+            <ion-label>
+              <h2>{{ plan.plan_title || 'Ablaufplan' }}</h2>
+              <p>{{ formatDate(plan) }}{{ fieldCount(plan) ? ' · ' + fieldCount(plan) + ' Felder' : '' }}</p>
+            </ion-label>
+            <ion-icon slot="end" name="chevron-forward-outline" color="medium"></ion-icon>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="danger" (click)="deletePlan(plan)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      }
+      @if (!plans.length) {
+        <ion-item lines="none">
+          <ion-label color="medium" class="ion-text-center ion-padding">Keine Pläne vorhanden.</ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  }
+</ion-content>
