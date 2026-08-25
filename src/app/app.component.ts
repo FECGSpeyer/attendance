@@ -24,6 +24,7 @@ export class AppComponent {
   @ViewChild(IonRouterOutlet, { static: true }) routerOutlet: IonRouterOutlet;
 
   private passwordRecoveryAlertOpen = false;
+  private icalMigrationWarningShown = false;
 
   constructor(
     private platform: Platform,
@@ -227,7 +228,9 @@ export class AppComponent {
   }
 
   async checkIcalMigrationWarning() {
+    if (this.icalMigrationWarningShown) return;
     if (localStorage.getItem('ical_migration_warned')) return;
+    this.icalMigrationWarningShown = true;
 
     const alert = await this.alertController.create({
       header: '⚠️ Kalender-Link aktualisiert',
