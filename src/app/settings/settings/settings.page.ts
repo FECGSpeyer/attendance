@@ -736,24 +736,24 @@ export class SettingsPage implements OnInit, OnDestroy {
     const alert = await this.alertController.create({
       header: 'Kalender abonnieren',
       message: `Kopiere den folgenden Link in deine Kalender-App, um die Termine zu abonnieren:\n\n${link}`,
-      buttons: [{
-        text: 'Link kopieren',
-        handler: () => {
-          navigator?.clipboard.writeText(link);
-          Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
-          return false;
-        }
-      }, {
-        text: 'Anleitung öffen',
-        handler: () => {
-          Browser.open({ url: this.isIos ? 'https://support.apple.com/de-de/102301' : 'https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid' });
-        }
-      }, {
-        text: 'Schließen',
-        role: 'destructive'
-      }]
+      buttons: [
+        {
+          text: 'Link kopieren',
+          handler: () => {
+            navigator?.clipboard.writeText(link);
+            Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
+            return false;
+          },
+        },
+        {
+          text: 'Anleitung öffnen',
+          handler: () => {
+            Browser.open({ url: this.isIos ? 'https://support.apple.com/de-de/102301' : 'https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid' });
+          },
+        },
+        { text: 'Schließen', role: 'cancel' },
+      ],
     });
-
     await alert.present();
   }
 

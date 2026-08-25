@@ -147,6 +147,7 @@ export class AppComponent {
         this.tracking.track(TrackingEvent.Login);
         this.pushService.promptAndEnable();
         this.showNativeAppAd();
+        this.checkIcalMigrationWarning();
       }
       if (event === 'SIGNED_OUT') {
         this.pushService.removeToken();
@@ -221,6 +222,25 @@ export class AppComponent {
           }
         }
       ]
+    });
+    await alert.present();
+  }
+
+  async checkIcalMigrationWarning() {
+    if (localStorage.getItem('ical_migration_warned')) return;
+
+    const alert = await this.alertController.create({
+      header: '⚠️ Kalender-Link geändert',
+      message: 'Der bisherige n8n-Kalender-Link funktioniert ab 2025 nicht mehr. Falls du Attendix-Termine in deiner Kalender-App abonniert hast, ersetze den alten Link durch den neuen unter Einstellungen → Kalender abonnieren.',
+      buttons: [
+        {
+          text: 'Nicht mehr anzeigen',
+          handler: () => {
+            localStorage.setItem('ical_migration_warned', 'true');
+          },
+        },
+        { text: 'OK', role: 'cancel' },
+      ],
     });
     await alert.present();
   }
