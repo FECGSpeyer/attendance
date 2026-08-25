@@ -284,8 +284,11 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
   }
 
   private openOrCopyCalendarUrl(httpsUrl: string) {
-    if (isPlatform('capacitor')) {
+    if (isPlatform('capacitor') && isPlatform('ios')) {
       window.open(httpsUrl.replace('https://', 'webcal://'), '_system');
+    } else if (isPlatform('capacitor') && isPlatform('android')) {
+      navigator.clipboard.writeText(httpsUrl);
+      Utils.showToast('URL kopiert – in Google Kalender unter „Weitere Kalender → Per URL" einfügen', 'success', 6000);
     } else {
       navigator.clipboard.writeText(httpsUrl);
       Utils.showToast('Kalender-URL kopiert', 'success');
