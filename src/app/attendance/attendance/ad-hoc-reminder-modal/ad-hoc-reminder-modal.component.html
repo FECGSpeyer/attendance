@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Erinnerung versenden</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-list [inset]="true">
+    <ion-item>
+      <ion-input
+        label="Betreff"
+        labelPlacement="stacked"
+        [(ngModel)]="title"
+        placeholder="Betreff der Erinnerung"
+        clearInput="true">
+      </ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-textarea
+        label="Nachricht"
+        labelPlacement="stacked"
+        [(ngModel)]="message"
+        [autoGrow]="true"
+        rows="4"
+        placeholder="Nachrichtentext">
+      </ion-textarea>
+    </ion-item>
+  </ion-list>
+
+  <ion-note class="ion-padding-horizontal" color="medium">
+    Die Erinnerung wird per App-Benachrichtigung und per E-Mail verschickt.
+  </ion-note>
+
+  @if (attendanceLink) {
+  <ion-list [inset]="true" class="ion-margin-top">
+    <ion-item>
+      <ion-label>
+        <p>Link in der E-Mail</p>
+        <p><a [href]="attendanceLink" target="_blank">{{ attendanceLink }}</a></p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+  }
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">Abbrechen</ion-button>
+      <ion-button fill="solid" color="primary" (click)="send()" [disabled]="!title.trim() && !message.trim()">
+        Versenden
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

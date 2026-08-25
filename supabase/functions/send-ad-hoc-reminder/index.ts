@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { attendanceId, tenantId, message } = await req.json();
+    const { attendanceId, tenantId, title, message } = await req.json();
 
     if (!attendanceId || !tenantId) {
       return new Response(JSON.stringify({ error: 'Missing attendanceId or tenantId' }), {
@@ -174,8 +174,9 @@ Deno.serve(async (req) => {
       : `${typeName} am ${formattedDate}`;
 
     const body = message || defaultBody;
+    const pushTitle = title || '🔔 Erinnerung';
     const link = `\n\n[Anwesenheit öffnen](https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId})`;
-    const telegramMessage = `🔔 *Erinnerung*\n\n${body}${link}`;
+    const telegramMessage = `*${pushTitle}*\n\n${body}${link}`;
     const pushBody = `${body}`;
 
     let sent = 0;
@@ -189,7 +190,7 @@ Deno.serve(async (req) => {
       if (config.push_enabled) {
         try {
           pushSent = await sendPushToUser(supabase, config.id, {
-            title: '🔔 Erinnerung',
+            title: pushTitle,
             body: pushBody,
             data: { type: 'reminder', attendanceId: String(attendanceId), tenantId: String(tenantId) },
           });
@@ -220,7 +221,7 @@ Deno.serve(async (req) => {
           userId: config.id,
           tenantId,
           type: 'reminder',
-          title: '🔔 Erinnerung',
+          title: pushTitle,
           body: pushBody,
           channels,
           data: { type: 'reminder', attendanceId: String(attendanceId), tenantId: String(tenantId) },
@@ -274,7 +275,7 @@ Deno.serve(async (req) => {
         }
 
         if (emailSet.size > 0) {
-          const subject = `🔔 Erinnerung: ${typeName} am ${formattedDate}`;
+          const subject = title || `🔔 Erinnerung: ${typeName} am ${formattedDate}`;
           const emailHtml = `<p>${body.replace(/\n/g, '<br>')}</p>` +
             `<p><a href="https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId}">Anwesenheit öffnen</a></p>`;
 
@@ -291,7 +292,7 @@ Deno.serve(async (req) => {
                 userId: appId,
                 tenantId,
                 type: 'reminder',
-                title: '🔔 Erinnerung',
+                title: pushTitle,
                 body: pushBody,
                 channels: ['email'],
                 data: { type: 'reminder', attendanceId: String(attendanceId), tenantId: String(tenantId) },

@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import dayjs from 'dayjs';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { StatusInfoComponent } from './status-info/status-info.component';
+import { AdHocReminderModalComponent, AdHocReminderResult } from './ad-hoc-reminder-modal/ad-hoc-reminder-modal.component';
 import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode, CHECKLIST_DEADLINE_OPTIONS, DEFAULT_ABSENCE_REASONS } from 'src/app/utilities/constants';
 import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem } from 'src/app/utilities/interfaces';
@@ -1388,48 +1389,55 @@ export class AttendancePage implements OnInit, OnDestroy {
     const dateStr = dayjs(this.attendance.date).format('DD.MM.YYYY');
     const timeStr = this.attendance.start_time ? ` um ${this.attendance.start_time} Uhr` : '';
     const infoStr = this.attendance.typeInfo ? ` (${this.attendance.typeInfo})` : '';
-    const defaultMessage = `${typeName} am ${dateStr}${timeStr}${infoStr}`;
+    const defaultTitle = `🔔 Erinnerung: ${typeName} am ${dateStr}${timeStr}${infoStr}`;
+    const tenantLongName = this.db.tenant()?.longName || '';
+    const defaultMessage = tenantLongName
+      ? `${tenantLongName}\n${typeName} am ${dateStr}${timeStr}${infoStr}`
+      : `${typeName} am ${dateStr}${timeStr}${infoStr}`;
+    const attendanceLink = `https://attendix.de/open-attendance?id=${this.attendance.id}&tenantId=${this.attendance.tenantId}`;
 
-    const alert = await this.alertController.create({
-      header: 'Erinnerung versenden',
-      message: 'Möchtest du jetzt eine Erinnerung an alle Mitglieder versenden? Sie wird per App-Benachrichtigung und per E-Mail (an Mitglieder mit E-Mail-Adresse) verschickt.',
-      inputs: [
-        { name: 'message', type: 'textarea', placeholder: 'Nachricht', value: defaultMessage }
-      ],
-      buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        {
-          text: 'Versenden',
-          handler: async (data) => {
-            // Guard against a double-press sending the reminder (and emails) twice.
-            if (this.isSendingReminder) {
-              return;
-            }
-            this.isSendingReminder = true;
-            const loading = await this.loadingController.create({ message: 'Wird versendet...' });
-            await loading.present();
-            try {
-              const { error } = await this.db.getSupabase().functions.invoke('send-ad-hoc-reminder', {
-                body: {
-                  attendanceId: this.attendance.id,
-                  tenantId: this.attendance.tenantId,
-                  message: data.message || undefined,
-                },
-              });
-              if (error) {
-                Utils.showToast('Fehler beim Versenden', 'danger');
-              } else {
-                Utils.showToast('Erinnerung versendet', 'success');
-              }
-            } finally {
-              await loading.dismiss();
-              this.isSendingReminder = false;
-            }
-          }
-        }
-      ]
+    const modal = await this.modalController.create({
+      component: AdHocReminderModalComponent,
+      componentProps: {
+        defaultTitle,
+        defaultMessage,
+        attendanceLink,
+      },
+      breakpoints: [0, 1],
+      initialBreakpoint: 1,
     });
-    await alert.present();
+
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss<AdHocReminderResult>();
+
+    if (role !== 'send' || !data) {
+      return;
+    }
+
+    if (this.isSendingReminder) {
+      return;
+    }
+    this.isSendingReminder = true;
+    const loading = await this.loadingController.create({ message: 'Wird versendet...' });
+    await loading.present();
+    try {
+      const { error } = await this.db.getSupabase().functions.invoke('send-ad-hoc-reminder', {
+        body: {
+          attendanceId: this.attendance.id,
+          tenantId: this.attendance.tenantId,
+          title: data.title || undefined,
+          message: data.message || undefined,
+        },
+      });
+      if (error) {
+        Utils.showToast('Fehler beim Versenden', 'danger');
+      } else {
+        Utils.showToast('Erinnerung versendet', 'success');
+      }
+    } finally {
+      await loading.dismiss();
+      this.isSendingReminder = false;
+    }
   }
 
   /**

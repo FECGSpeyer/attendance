@@ -9,6 +9,7 @@ import { AttendancePageRoutingModule } from './attendance-routing.module';
 
 import { AttendancePage } from './attendance.page';
 import { StatusInfoComponent } from './status-info/status-info.component';
+import { AdHocReminderModalComponent } from './ad-hoc-reminder-modal/ad-hoc-reminder-modal.component';
 
 @NgModule({
   imports: [
@@ -18,6 +19,6 @@ import { StatusInfoComponent } from './status-info/status-info.component';
     AttendancePageRoutingModule,
     QuillModule.forRoot(),
   ],
-  declarations: [AttendancePage, StatusInfoComponent]
+  declarations: [AttendancePage, StatusInfoComponent, AdHocReminderModalComponent]
 })
 export class AttendancePageModule {}
