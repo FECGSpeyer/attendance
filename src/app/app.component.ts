@@ -230,8 +230,8 @@ export class AppComponent {
     if (localStorage.getItem('ical_migration_warned')) return;
 
     const alert = await this.alertController.create({
-      header: '⚠️ Kalender-Link geändert',
-      message: 'Der bisherige n8n-Kalender-Link funktioniert ab 2025 nicht mehr. Falls du Attendix-Termine in deiner Kalender-App abonniert hast, ersetze den alten Link durch den neuen unter Einstellungen → Kalender abonnieren.',
+      header: 'Kalender-Link aktualisiert',
+      message: 'Der Kalender-Link für Attendix-Termine hat sich geändert. Falls du die Termine in deiner Kalender-App abonniert hast, ersetze den Link durch den neuen unter Einstellungen → Kalender abonnieren.',
       buttons: [
         {
           text: 'Nicht mehr anzeigen',
