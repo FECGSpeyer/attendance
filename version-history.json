@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "4.6.2",
+          "date": "25.8.2026",
+          "changes": [
+            "👥 Personen: Admins können die Reihenfolge von Personen innerhalb einer Gruppe per Drag & Drop anpassen. Die Reihenfolge wird für alle Nutzer gespeichert und gilt auch in der Terminansicht.",
+            "📝 Personenliste: Die Notizen-Ansichtsoption zeigt den vollständigen Notiztext direkt unter dem Namen an.",
+            "⌨️ Alle Eingabefelder: Automatische Großschreibung des ersten Buchstabens aktiviert."
+          ]
+        },
+        {
           "version": "4.6.1",
           "date": "25.8.2026",
           "changes": [
