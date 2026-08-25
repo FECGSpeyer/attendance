@@ -81,7 +81,7 @@ Deno.serve(async (req: Request) => {
   // Fetch all attendance rows with their type joined
   const { data: rows } = await supabase
     .from('attendance')
-    .select('id, date, type_id, typeInfo, start_time, end_time, duration_days, attendanceType:type_id(name, start_time, end_time, all_day, duration_days)')
+    .select('id, date, type_id, typeInfo, start_time, end_time, duration_days, plan, attendanceType:type_id(name, start_time, end_time, all_day, duration_days)')
     .eq('tenantId', tenantId)
     .order('date', { ascending: true });
 
@@ -115,6 +115,11 @@ Deno.serve(async (req: Request) => {
     lines.push(icalLine('UID', `att-${ev.id}-${++uid}@attendix.de`));
     lines.push(`DTSTAMP:${dtstamp}`);
     lines.push(icalLine('SUMMARY', escapeIcal(`${tenant.shortName} ${title}`)));
+
+    const planTitle: string = (ev.plan as any)?.title || '';
+    if (planTitle) {
+      lines.push(icalLine('DESCRIPTION', escapeIcal(planTitle)));
+    }
 
     if (isAllDay) {
       lines.push(`DTSTART;VALUE=DATE:${formatDate(s)}`);

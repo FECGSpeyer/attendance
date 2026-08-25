@@ -231,7 +231,7 @@ export class AppComponent {
 
     const alert = await this.alertController.create({
       header: '⚠️ Kalender-Link aktualisiert',
-      message: 'Der Kalender-Link für Attendix-Termine hat sich geändert. Falls du die Termine in deiner Kalender-App abonniert hast, ersetze den Link durch den neuen unter Einstellungen → Kalender abonnieren.',
+      message: 'Der Kalender-Link für Attendix-Termine hat sich geändert. Der alte Link funktioniert noch bis Ende 2026. Falls du die Termine in deiner Kalender-App abonniert hast, ersetze den Link durch den neuen unter Einstellungen → Kalender abonnieren.',
       buttons: [
         {
           text: 'Nicht mehr anzeigen',
