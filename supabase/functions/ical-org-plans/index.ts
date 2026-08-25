@@ -154,6 +154,7 @@ function buildDescription(fields: FieldSelection[], startTime: string, date: str
 }
 
 function buildIcal(orgName: string, plans: PlanEntry[], detailed: boolean): string {
+  const dtstamp = toIcalDate(new Date());
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -177,6 +178,7 @@ function buildIcal(orgName: string, plans: PlanEntry[], detailed: boolean): stri
       lines.push(
         'BEGIN:VEVENT',
         icalLine('UID', `${plan.uid}@attendix.de`),
+        `DTSTAMP:${dtstamp}`,
         icalLine('DTSTART', toIcalDate(dtStart)),
         icalLine('DTEND', toIcalDate(endDate)),
         icalLine('SUMMARY', escapeIcal(plan.title)),
@@ -197,6 +199,7 @@ function buildIcal(orgName: string, plans: PlanEntry[], detailed: boolean): stri
         lines.push(
           'BEGIN:VEVENT',
           icalLine('UID', `${plan.uid}-${i}@attendix.de`),
+          `DTSTAMP:${dtstamp}`,
           icalLine('DTSTART', toIcalDate(dtStart)),
           icalLine('DTEND', toIcalDate(dtEnd)),
           icalLine('SUMMARY', summary),

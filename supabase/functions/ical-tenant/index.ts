@@ -101,6 +101,8 @@ Deno.serve(async (req: Request) => {
     'X-PUBLISHED-TTL:PT1H',
   ];
 
+  const dtstamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+
   let uid = 0;
   for (const ev of (rows ?? []) as any[]) {
     const type = ev.attendanceType as any;
@@ -116,6 +118,7 @@ Deno.serve(async (req: Request) => {
 
     lines.push('BEGIN:VEVENT');
     lines.push(icalLine('UID', `att-${ev.id}-${++uid}@attendix.de`));
+    lines.push(`DTSTAMP:${dtstamp}`);
     lines.push(icalLine('SUMMARY', escapeIcal(`${tenant.shortName} ${title}`)));
 
     if (isAllDay) {
