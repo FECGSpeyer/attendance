@@ -2,6 +2,9 @@
   <ion-toolbar>
     <ion-title>{{ orgName || 'Organisationspläne' }}</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="subscribeCalendar()" title="Kalender abonnieren">
+        <ion-icon slot="icon-only" name="calendar-outline"></ion-icon>
+      </ion-button>
       @if (pastPlans.length > 0) {
         <ion-button (click)="showHistory = true" title="Vergangene Pläne">
           <ion-icon slot="icon-only" name="time-outline"></ion-icon>

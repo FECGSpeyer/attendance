@@ -1,12 +1,14 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular/lazy';
+import { isPlatform } from '@ionic/angular';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
 import { FieldSelection, SharedPlan } from '../utilities/interfaces';
 import { getSupabase } from '../services/base/supabase';
 import { Utils } from '../utilities/Utils';
+import { environment } from 'src/environments/environment';
 
 interface OrgPlanEntry {
   kind: 'attendance';
@@ -51,6 +53,7 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
   public upcomingPlans: PlanEntry[] = [];
   public pastPlans: PlanEntry[] = [];
   public showHistory = false;
+  public publicKey: string | null = null;
   private channels: RealtimeChannel[] = [];
 
   constructor(private route: ActivatedRoute, private actionSheetController: ActionSheetController) {}
@@ -58,6 +61,7 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
   async ngOnInit() {
     const key = this.route.snapshot.queryParamMap.get('key');
     if (!key) { this.notFound = true; this.loading = false; return; }
+    this.publicKey = key;
 
     const { data: org } = await getSupabase()
       .from('tenant_groups')
@@ -257,6 +261,35 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
       if (now.isBefore(t)) { entry.activeFieldIndex = i; return; }
     }
     entry.activeFieldIndex = entry.fields.length - 1;
+  }
+
+  async subscribeCalendar() {
+    if (!this.publicKey) return;
+    const base = `${environment.apiUrl}/functions/v1/ical-org-plans?key=${this.publicKey}`;
+    const sheet = await this.actionSheetController.create({
+      header: 'Kalender abonnieren',
+      buttons: [
+        {
+          text: 'Einfach (1 Termin je Plan)',
+          handler: () => this.openOrCopyCalendarUrl(base),
+        },
+        {
+          text: 'Detailliert (je Programmpunkt)',
+          handler: () => this.openOrCopyCalendarUrl(`${base}&detailed=true`),
+        },
+        { text: 'Abbrechen', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+  }
+
+  private openOrCopyCalendarUrl(httpsUrl: string) {
+    if (isPlatform('capacitor')) {
+      window.open(httpsUrl.replace('https://', 'webcal://'), '_system');
+    } else {
+      navigator.clipboard.writeText(httpsUrl);
+      Utils.showToast('Kalender-URL kopiert', 'success');
+    }
   }
 
   async exportPlan(entry: PlanEntry) {

@@ -10,6 +10,11 @@
       <ion-button (click)="toggleOrgTab()" [title]="showOrgTab ? 'Tab ausblenden' : 'Als Tab anzeigen'">
         <ion-icon slot="icon-only" [name]="showOrgTab ? 'bookmark' : 'bookmark-outline'"></ion-icon>
       </ion-button>
+      @if (publicKey) {
+        <ion-button (click)="subscribeCalendar()" title="Kalender abonnieren">
+          <ion-icon slot="icon-only" name="calendar-outline"></ion-icon>
+        </ion-button>
+      }
       <ion-button (click)="managePublicLink()" title="Öffentlicher Link">
         <ion-icon slot="icon-only" [name]="publicKey ? 'link' : 'link-outline'"></ion-icon>
       </ion-button>
