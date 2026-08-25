@@ -13,6 +13,7 @@ import {
 } from './public-planning-templates';
 import { getSupabase } from '../services/base/supabase';
 import { MyPlansComponent } from './my-plans/my-plans.component';
+import { DbService } from '../services/db.service';
 
 const STORAGE_KEY = 'attendix-public-plan';
 
@@ -34,6 +35,10 @@ export class PublicPlanningPage implements OnInit {
   public end = '';
   public selectedFields: FieldSelection[] = [];
   public isLoggedIn = false;
+  public hasOrg = false;
+  public isOrgPlan = false;
+  public fromOrgPlans = false;
+  public orgPlansBackHref = '/tabs/settings';
 
   private currentPlanId: string | null = null;
   private currentEditKey: string | null = null;
@@ -44,6 +49,7 @@ export class PublicPlanningPage implements OnInit {
     private actionSheetController: ActionSheetController,
     private modalController: ModalController,
     private router: Router,
+    public db: DbService,
   ) { }
 
   trackByFieldId = (_: number, f: FieldSelection): string => f.id;
@@ -51,6 +57,12 @@ export class PublicPlanningPage implements OnInit {
   async ngOnInit() {
     const { data } = await getSupabase().auth.getSession();
     this.isLoggedIn = !!data.session;
+    this.hasOrg = this.isLoggedIn && !!this.db.organisation?.();
+    this.fromOrgPlans = this.router.url.includes('org-plans/planung');
+    const isTabOrgPlans = this.router.url.startsWith('/tabs/org-plans');
+    if (this.fromOrgPlans) {
+      this.orgPlansBackHref = isTabOrgPlans ? '/tabs/org-plans' : '/tabs/settings/org-plans';
+    }
 
     // Redirect logged-in users from public /planung to the in-app route
     if (this.isLoggedIn && this.router.url === '/planung') {
@@ -302,10 +314,13 @@ export class PublicPlanningPage implements OnInit {
   async shareCurrentPlan(editLink = false) {
     if (!this.validate()) { return; }
     const sheet = await this.actionSheetController.create({
-      header: 'Link teilen',
+      header: 'Teilen & Exportieren',
       buttons: [
         { text: 'Nur-Lesen-Link', handler: () => this.doShare(false) },
         { text: 'Bearbeitungs-Link', handler: () => this.doShare(true) },
+        { text: 'PDF (A4)',       handler: () => this.export(false) },
+        { text: 'PDF (2x A5)',    handler: () => this.export(true) },
+        { text: 'Bild (A4)',      handler: () => this.exportImage(false) },
         { text: 'Abbrechen', role: 'cancel' },
       ],
     });
@@ -385,6 +400,7 @@ export class PublicPlanningPage implements OnInit {
     this.end = plan.end_time || '';
     this.selectedFields = (plan.fields as unknown as FieldSelection[]) || [];
     this.selectedBrandingId = plan.branding_id || 'none';
+    this.isOrgPlan = !!(plan as any).org_id;
     this.persist();
   }
 
@@ -414,6 +430,7 @@ export class PublicPlanningPage implements OnInit {
     this.selectedFields = [];
     this.selectedTemplateId = null;
     this.selectedBrandingId = 'none';
+    this.isOrgPlan = false;
     this.persist();
   }
 
@@ -448,6 +465,48 @@ export class PublicPlanningPage implements OnInit {
       branding_id: this.selectedBrandingId !== 'none' ? this.selectedBrandingId : null,
       creator_user_id: userId,
     } as any, { onConflict: 'id' });
+  }
+
+  async addToOrg() {
+    const org = this.db.organisation?.();
+    if (!org?.id) { return; }
+    if (!this.validate()) { return; }
+
+    await this.persistToDb();
+    if (!this.currentPlanId) {
+      Utils.showToast('Fehler beim Speichern des Plans', 'danger');
+      return;
+    }
+
+    const { error } = await getSupabase()
+      .from('shared_plans')
+      .update({ org_id: org.id } as any)
+      .eq('id', this.currentPlanId);
+
+    if (error) {
+      Utils.showToast('Fehler beim Hinzufügen zur Organisation', 'danger');
+      return;
+    }
+
+    this.isOrgPlan = true;
+    Utils.showToast(`Plan zur Organisation "${org.name}" hinzugefügt`, 'success');
+  }
+
+  async removeFromOrg() {
+    if (!this.currentPlanId) { return; }
+
+    const { error } = await getSupabase()
+      .from('shared_plans')
+      .update({ org_id: null } as any)
+      .eq('id', this.currentPlanId);
+
+    if (error) {
+      Utils.showToast('Fehler beim Entfernen aus der Organisation', 'danger');
+      return;
+    }
+
+    this.isOrgPlan = false;
+    Utils.showToast('Plan aus Organisation entfernt', 'success');
   }
 
   async resetToTemplate() {

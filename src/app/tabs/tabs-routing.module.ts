@@ -119,6 +119,30 @@ const routes: Routes = [
         loadChildren: () => import('./../settings/delete-account/delete-account.module').then(m => m.DeleteAccountPageModule)
       },
       {
+        path: 'org-plans',
+        loadChildren: () => import('./../org-plans/org-plans.module').then(m => m.OrgPlansPageModule)
+      },
+      {
+        path: 'org-plans/planung',
+        loadChildren: () => import('./../public-planning/public-planning.module').then(m => m.PublicPlanningPageModule)
+      },
+      {
+        path: 'settings/org-plans',
+        loadChildren: () => import('./../org-plans/org-plans.module').then(m => m.OrgPlansPageModule)
+      },
+      {
+        path: 'settings/org-plans/planung',
+        loadChildren: () => import('./../public-planning/public-planning.module').then(m => m.PublicPlanningPageModule)
+      },
+      {
+        path: 'settings/org-settings',
+        loadChildren: () => import('./../org-settings/org-settings.module').then(m => m.OrgSettingsPageModule)
+      },
+      {
+        path: 'settings/org-settings/branding',
+        loadChildren: () => import('./../settings/general/branding/branding.module').then(m => m.BrandingPageModule)
+      },
+      {
         path: 'settings/planung',
         loadChildren: () => import('./../public-planning/public-planning.module').then(m => m.PublicPlanningPageModule)
       },

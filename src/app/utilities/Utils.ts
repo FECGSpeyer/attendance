@@ -1136,6 +1136,13 @@ export class Utils {
       case '/tabs/settings/handover':
       case '/tabs/settings/handover/detail':
       case '/tabs/settings/role-permissions':
+      case '/tabs/settings/org-settings':
+      case '/tabs/settings/org-settings/branding':
+      case '/tabs/settings/org-plans':
+      case '/tabs/settings/org-plans/planung':
+      case '/tabs/settings/planung':
+      case '/tabs/org-plans':
+      case '/tabs/org-plans/planung':
         return [Role.ADMIN, Role.RESPONSIBLE].includes(role);
       case '/tabs/settings/files':
         return [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER].includes(role);

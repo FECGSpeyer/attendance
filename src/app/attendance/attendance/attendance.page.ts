@@ -765,7 +765,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       attendance: this.attendance.id,
       attendances: await this.db.getAttendance(),
       sideBySide,
-      branding: await Utils.buildTenantBranding(this.db.tenant()),
+      branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
     }, Utils.getPlanningTitle(type, this.attendance.typeInfo));
   }
 
@@ -779,7 +779,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       asBlob: true,
       asImage,
       sideBySide,
-      branding: await Utils.buildTenantBranding(this.db.tenant()),
+      branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
     }, planningTitle);
 
     this.db.sendPlanPerTelegram(blob, `${planningTitle.replace('(', '').replace(')', '')}_${dayjs(this.attendance.date).format('DD_MM_YYYY')}${sideBySide ? '_2x' : ''}`, asImage);

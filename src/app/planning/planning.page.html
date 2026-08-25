@@ -43,6 +43,13 @@
             <ion-label>Plan mit Mitgliedern teilen</ion-label>
           </ion-toggle>
         </ion-item>
+        @if (db.organisation()) {
+          <ion-item lines="none">
+            <ion-toggle [(ngModel)]="isOrgPlan" (ionChange)="toggleOrgPlan()">
+              <ion-label>Organisationsplan</ion-label>
+            </ion-toggle>
+          </ion-item>
+        }
         <ion-item lines="none">
           <ion-input
             label="Ablaufplan Überschrift"

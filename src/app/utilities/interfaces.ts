@@ -272,6 +272,7 @@ export interface Attendance {
   share_plan?: boolean;
   share_key?: string;
   share_edit_key?: string;
+  is_org_plan?: boolean;
   lateExcused?: string[];
   songs?: number[];
   tenantId?: number;
@@ -305,6 +306,7 @@ export interface SharedPlan {
   branding_id?: string;
   creator_user_id?: string | null;
   created_at?: string;
+  org_id?: number | null;
 }
 
 export interface PersonAttendance {
@@ -437,6 +439,9 @@ export interface Organisation {
   id?: number;
   created_at?: string;
   name: string;
+  public_plan_key?: string;
+  logo_url?: string;
+  branding_text?: string;
 }
 
 export interface AttendanceType {

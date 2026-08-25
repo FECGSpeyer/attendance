@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
-import { Organisation, Tenant, Player } from '../../utilities/interfaces';
+import { Organisation, Tenant, Player, Attendance } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 
 @Injectable({
@@ -180,5 +180,101 @@ export class OrganisationService {
     return tenantGroupTenants.filter((tgt: any) =>
       groups.some((g: any) => g.tenant_group === tgt.tenant_group) && tgt.tenant_id !== tenantId
     ).map((tgt: any) => tgt.tenant) as unknown as Tenant[];
+  }
+
+  async getOrgPlans(orgId: number): Promise<(Attendance & { tenantName?: string })[]> {
+    const { data: tgts, error: tgtError } = await supabase
+      .from('tenant_group_tenants')
+      .select('tenant_id, tenant:tenant_id(longName)')
+      .eq('tenant_group', orgId);
+
+    if (tgtError) {
+      Utils.showToast('Fehler beim Laden der Organisationspläne', 'danger');
+      throw tgtError;
+    }
+
+    const tenantIds = tgts.map((t: any) => t.tenant_id);
+    const tenantNameById: Record<number, string> = {};
+    for (const t of tgts as any[]) {
+      tenantNameById[t.tenant_id] = t.tenant?.longName ?? '';
+    }
+
+    if (!tenantIds.length) { return []; }
+
+    const query = supabase.from('attendance').select('id, date, plan, typeInfo, type_id, tenantId, is_org_plan') as any;
+    const { data, error } = await query
+      .in('tenantId', tenantIds)
+      .eq('is_org_plan', true)
+      .not('plan', 'is', null)
+      .order('date', { ascending: true });
+
+    if (error) {
+      Utils.showToast('Fehler beim Laden der Organisationspläne', 'danger');
+      throw error;
+    }
+
+    return (data as any[]).map(row => ({
+      ...row,
+      tenantName: tenantNameById[row.tenantId] ?? '',
+    }));
+  }
+
+  async generatePublicPlanKey(orgId: number): Promise<string> {
+    const key = crypto.randomUUID().replace(/-/g, '').slice(0, 16);
+    const { error } = await supabase
+      .from('tenant_groups')
+      .update({ public_plan_key: key } as any)
+      .eq('id', orgId);
+
+    if (error) {
+      Utils.showToast('Fehler beim Erstellen des öffentlichen Links', 'danger');
+      throw error;
+    }
+
+    return key;
+  }
+
+  async revokePublicPlanKey(orgId: number): Promise<void> {
+    const { error } = await supabase
+      .from('tenant_groups')
+      .update({ public_plan_key: null } as any)
+      .eq('id', orgId);
+
+    if (error) {
+      Utils.showToast('Fehler beim Widerrufen des öffentlichen Links', 'danger');
+      throw error;
+    }
+  }
+
+  async updateOrgName(orgId: number, name: string): Promise<Organisation> {
+    const { data, error } = await supabase
+      .from('tenant_groups')
+      .update({ name })
+      .eq('id', orgId)
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast('Fehler beim Umbenennen der Organisation', 'danger');
+      throw error;
+    }
+
+    return data as unknown as Organisation;
+  }
+
+  async updateOrgBranding(orgId: number, updates: { logo_url?: string | null; branding_text?: string | null }): Promise<Organisation> {
+    const { data, error } = await supabase
+      .from('tenant_groups')
+      .update(updates as any)
+      .eq('id', orgId)
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast('Fehler beim Speichern des Brandings', 'danger');
+      throw error;
+    }
+
+    return data as unknown as Organisation;
   }
 }

@@ -1,0 +1,41 @@
+ion-list {
+  margin-bottom: 0 !important;
+}
+
+.org-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ion-color-medium);
+  margin-bottom: 2px;
+}
+
+.done-slot {
+  opacity: 0.4;
+}
+
+.active-slot {
+  --background: rgba(var(--ion-color-primary-rgb), 0.12);
+  border-left: 3px solid var(--ion-color-primary);
+
+  h2 {
+    font-weight: 600;
+    color: var(--ion-color-primary);
+  }
+}
+
+ion-item-group {
+  background: #fff;
+}
+
+.note-field h2 {
+  font-style: italic;
+}
+
+.field-info {
+  font-style: italic;
+  color: var(--ion-color-medium, #808289);
+  margin: 2px 0 0;
+  white-space: pre-wrap;
+}

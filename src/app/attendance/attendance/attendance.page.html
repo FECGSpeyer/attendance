@@ -397,13 +397,6 @@
         <ion-accordion value="plan">
           <ion-item slot="header">
             <ion-label>Ablaufplan</ion-label>
-            @if (isPlanLiveNow()) {
-              <ion-button slot="end" fill="clear" size="small"
-                [color]="planLiveMode ? 'danger' : 'primary'"
-                (click)="$event.stopPropagation(); togglePlanLive()">
-                <ion-icon slot="icon-only" [name]="planLiveMode ? 'radio' : 'radio-outline'"></ion-icon>
-              </ion-button>
-            }
           </ion-item>
           @if (attendance.plan) {
           <div slot="content">

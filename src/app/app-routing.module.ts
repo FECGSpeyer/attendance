@@ -65,6 +65,12 @@ const routes: Routes = [
     loadChildren: () => import('./teams-config/teams-config.module').then(m => m.TeamsConfigModule)
   },
   {
+    // Public, unauthenticated read-only viewer for all org plans.
+    // Must be registered before :songSharingId wildcard.
+    path: 'org-plan',
+    loadChildren: () => import('./org-plan-public/org-plan-public.module').then(m => m.OrgPlanPublicPageModule)
+  },
+  {
     path: ':songSharingId',
     loadChildren: () => import('./songs/songs.module').then( m => m.SongsPageModule)
   },

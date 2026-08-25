@@ -1,0 +1,158 @@
+<ion-header translucent="true">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      @if (!isTabRoute) {
+        <ion-back-button text="" defaultHref="tabs/settings/org-settings"></ion-back-button>
+      }
+    </ion-buttons>
+    <ion-title>Org-Pläne</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleOrgTab()" [title]="showOrgTab ? 'Tab ausblenden' : 'Als Tab anzeigen'">
+        <ion-icon slot="icon-only" [name]="showOrgTab ? 'bookmark' : 'bookmark-outline'"></ion-icon>
+      </ion-button>
+      <ion-button (click)="managePublicLink()" title="Öffentlicher Link">
+        <ion-icon slot="icon-only" [name]="publicKey ? 'link' : 'link-outline'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" fullscreen="true">
+  <ion-header collapse="condense">
+    <ion-toolbar color="light">
+      <ion-title size="large">Org-Pläne</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  @if (!db.organisation()) {
+    <ion-list [inset]="true">
+      <ion-item lines="none">
+        <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
+        <ion-label class="ion-text-wrap">
+          <p>Diese Instanz ist keiner Organisation zugeordnet.</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  } @else if (loading) {
+    <ion-list [inset]="true">
+      @for (_ of [1,2,3]; track $index) {
+        <ion-item>
+          <ion-label>
+            <h2><ion-skeleton-text animated style="width: 55%"></ion-skeleton-text></h2>
+            <p><ion-skeleton-text animated style="width: 35%"></ion-skeleton-text></p>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  } @else if (upcomingPlans.length === 0) {
+    <ion-list [inset]="true">
+      <ion-item lines="none">
+        <ion-icon name="calendar-outline" slot="start" color="medium"></ion-icon>
+        <ion-label class="ion-text-wrap">
+          <p>Keine bevorstehenden Org-Pläne. Pläne können über die Ablaufplanung zur Organisation hinzugefügt werden.</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  } @else {
+    <ion-list [inset]="true">
+      @for (entry of upcomingPlans; track $index) {
+        <ion-item button detail (click)="openPlan(entry)">
+          <ion-label>
+            <h2>{{ getPlanTitle(entry) }}</h2>
+            <div class="plan-meta">
+              <span>{{ getPlanDate(entry) }}</span>
+              @if (getFieldCount(entry) > 0) {
+                <span>· {{ getFieldCount(entry) }} Punkte</span>
+              }
+            </div>
+            @if (getPlanTenantLabel(entry)) {
+              <p class="tenant-label">{{ getPlanTenantLabel(entry) }}</p>
+            }
+          </ion-label>
+          @if (entry.kind === 'adhoc') {
+            <ion-button slot="end" fill="clear" color="medium"
+              (click)="$event.stopPropagation(); deleteAdHocPlan(entry)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
+          }
+        </ion-item>
+      }
+    </ion-list>
+  }
+
+  @if (pastPlans.length > 0 || db.organisation()) {
+    <ion-list [inset]="true">
+      <ion-item button detail [routerLink]="isTabRoute ? '/tabs/org-plans/planung' : '/tabs/settings/org-plans/planung'" lines="none">
+        <ion-icon name="add-circle-outline" slot="start" color="primary"></ion-icon>
+        <ion-label color="primary">Ablaufplanung öffnen</ion-label>
+      </ion-item>
+      @if (pastPlans.length > 0) {
+        <ion-item button detail="false" (click)="showHistory = true" lines="none">
+          <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
+          <ion-label color="medium">Vergangene Pläne</ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  }
+
+  @if (publicKey) {
+    <ion-list [inset]="true">
+      <ion-item lines="none">
+        <ion-icon name="globe-outline" slot="start" color="success"></ion-icon>
+        <ion-label class="ion-text-wrap">
+          <p>Öffentlicher Link aktiv. Alle Org-Pläne sind für jeden mit dem Link einsehbar.</p>
+        </ion-label>
+        <ion-button slot="end" fill="clear" (click)="managePublicLink()">Verwalten</ion-button>
+      </ion-item>
+    </ion-list>
+  }
+</ion-content>
+
+<!-- History modal -->
+<ion-modal [isOpen]="showHistory" (didDismiss)="showHistory = false">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Vergangene Pläne</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="showHistory = false">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content color="light">
+      <ion-list [inset]="true">
+        @for (entry of pastPlans; track $index) {
+          <ion-item button detail (click)="openPlan(entry)">
+            <ion-label>
+              <h2>{{ getPlanTitle(entry) }}</h2>
+              <div class="plan-meta">
+                <span>{{ getPlanDate(entry) }}</span>
+                @if (getFieldCount(entry) > 0) {
+                  <span>· {{ getFieldCount(entry) }} Punkte</span>
+                }
+              </div>
+              @if (getPlanTenantLabel(entry)) {
+                <p class="tenant-label">{{ getPlanTenantLabel(entry) }}</p>
+              }
+            </ion-label>
+            @if (entry.kind === 'adhoc') {
+              <ion-button slot="end" fill="clear" color="medium"
+                (click)="$event.stopPropagation(); deleteAdHocPlan(entry)">
+                <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-button>
+            }
+          </ion-item>
+        }
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+@if (isTabRoute && isIos) {
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button [routerLink]="'/tabs/org-plans/planung'">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+}

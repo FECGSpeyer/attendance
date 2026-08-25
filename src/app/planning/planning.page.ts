@@ -37,6 +37,7 @@ export class PlanningPage implements OnInit {
   public planConductors: string[] = [];
   public groupCategories: GroupCategory[];
   public sharePlan = false;
+  public isOrgPlan = false;
   public planTitle = '';
   public isGeneral = false;
   public includeBranding = true;
@@ -70,6 +71,7 @@ export class PlanningPage implements OnInit {
       const att = this.attendances.find((att: Attendance) => att.id === this.attendanceId);
       this.notes = att?.notes || '';
       this.sharePlan = att?.share_plan || false;
+      this.isOrgPlan = att?.is_org_plan || false;
       this.planTitle = att?.plan?.title ?? this.getDefaultPlanTitle(att);
       if (att?.plan) {
         this.end = att.plan.end;
@@ -86,6 +88,7 @@ export class PlanningPage implements OnInit {
       this.attendance = upcomingAttendances[0].id;
       this.notes = upcomingAttendances[0].notes;
       this.sharePlan = upcomingAttendances[0].share_plan || false;
+      this.isOrgPlan = upcomingAttendances[0].is_org_plan || false;
       this.planTitle = upcomingAttendances[0].plan?.title ?? this.getDefaultPlanTitle(upcomingAttendances[0]);
       if (upcomingAttendances[0].plan) {
         this.end = upcomingAttendances[0].plan.end;
@@ -182,7 +185,7 @@ export class PlanningPage implements OnInit {
     const name: string = this.attendance ? dayjs(this.attendances.find((att: Attendance) => att.id === this.attendance).date).format('DD_MM_YYYY') : dayjs().format('DD_MM_YYYY');
     const planningTitle = this.getEffectivePlanTitle();
     const branding = this.includeBranding
-      ? await Utils.buildTenantBranding(this.db.tenant())
+      ? await Utils.buildTenantBranding(this.db.getBrandingSource())
       : undefined;
     const blob = await Utils.createPlanExport({
       time: this.time,
@@ -205,6 +208,7 @@ export class PlanningPage implements OnInit {
 
     this.notes = attendance.notes;
     this.sharePlan = attendance.share_plan || false;
+    this.isOrgPlan = attendance.is_org_plan || false;
     this.planTitle = attendance.plan?.title ?? this.getDefaultPlanTitle(attendance);
     if (attendance.plan) {
       this.end = attendance.plan.end;
@@ -227,6 +231,16 @@ export class PlanningPage implements OnInit {
     const att = this.attendances.find((a: Attendance) => a.id === this.attendance);
     if (att) {
       att.share_plan = this.sharePlan;
+    }
+  }
+
+  async toggleOrgPlan() {
+    if (!this.attendance) {return;}
+
+    await this.db.updateAttendance({ is_org_plan: this.isOrgPlan }, this.attendance);
+    const att = this.attendances.find((a: Attendance) => a.id === this.attendance);
+    if (att) {
+      att.is_org_plan = this.isOrgPlan;
     }
   }
 
@@ -379,7 +393,7 @@ export class PlanningPage implements OnInit {
 
     const planningTitle = this.getEffectivePlanTitle();
     const branding = this.includeBranding
-      ? await Utils.buildTenantBranding(this.db.tenant())
+      ? await Utils.buildTenantBranding(this.db.getBrandingSource())
       : undefined;
 
     await Utils.createPlanExport({
@@ -629,7 +643,7 @@ export class PlanningPage implements OnInit {
     await import('jspdf-autotable');
     const doc = new jsPDF({ compress: true });
     const branding = this.includeBranding
-      ? await Utils.buildTenantBranding(this.db.tenant())
+      ? await Utils.buildTenantBranding(this.db.getBrandingSource())
       : undefined;
     const headerOpts = {
       title: `${this.db.tenant().shortName} Registerprobenplan`,

@@ -1,0 +1,112 @@
+<ion-header translucent="true">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="/tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Organisation</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar color="light">
+      <ion-title size="large">Organisation</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- ===== NO ORG ===== -->
+  @if (!db.organisation()) {
+  <ion-list [inset]="true">
+    <ion-item-group>
+      <ion-item lines="none">
+        <ion-label class="ion-text-wrap">
+          <h2>Keine Organisation verknüpft</h2>
+          @if (isSuperAdmin) {
+          <p>Erstelle eine neue Organisation oder verknüpfe diese Instanz mit einer bestehenden, um Personen organisationsweit zu verbinden und gemeinsame Pläne zu nutzen.</p>
+          } @else {
+          <p>Diese Instanz ist keiner Organisation zugewiesen. Nur Administratoren können Organisationen verwalten.</p>
+          }
+        </ion-label>
+      </ion-item>
+      @if (isSuperAdmin) {
+      <ion-item button lines="none" (click)="openOrganisationAlert()">
+        <ion-icon name="add-circle-outline" slot="start" color="primary"></ion-icon>
+        <ion-label color="primary">Organisation erstellen / verknüpfen</ion-label>
+      </ion-item>
+      }
+    </ion-item-group>
+  </ion-list>
+  }
+
+  <!-- ===== WITH ORG ===== -->
+  @if (db.organisation()) {
+
+  <!-- Org Info -->
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Organisation</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item [button]="isSuperAdmin" [detail]="isSuperAdmin" (click)="isSuperAdmin ? renameOrg() : null">
+        <ion-icon name="business-outline" slot="start"></ion-icon>
+        <ion-label>
+          <h2>{{ db.organisation().name }}</h2>
+          @if (isSuperAdmin) {
+          <p>Tippen zum Umbenennen</p>
+          }
+        </ion-label>
+      </ion-item>
+      @if (isSuperAdmin) {
+      <ion-item button lines="none" (click)="deleteOrganisation()">
+        <ion-icon name="unlink-outline" slot="start" color="danger"></ion-icon>
+        <ion-label color="danger">Instanz trennen</ion-label>
+      </ion-item>
+      }
+    </ion-item-group>
+  </ion-list>
+
+  <!-- Branding & Pläne -->
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Darstellung & Pläne</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item button routerLink="/tabs/settings/org-settings/branding">
+        <ion-icon name="color-palette-outline" slot="start"></ion-icon>
+        <ion-label>Branding</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/tabs/settings/org-plans" lines="none">
+        <ion-icon name="calendar-outline" slot="start"></ion-icon>
+        <ion-label>Org-Pläne</ion-label>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+
+  <!-- Personen -->
+  @if (isSuperAdmin) {
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Personen</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item button (click)="openLinkPersons()" lines="none">
+        <ion-icon name="git-merge-outline" slot="start"></ion-icon>
+        <ion-label>
+          <h2>Personen verknüpfen</h2>
+          <p>Personen aus verschiedenen Instanzen miteinander verbinden</p>
+        </ion-label>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+  }
+
+  <!-- Personenübergabe -->
+  @if (isAdmin) {
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Übergabe</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item button routerLink="/tabs/settings/handover" lines="none">
+        <ion-icon name="swap-horizontal-outline" slot="start"></ion-icon>
+        <ion-label>Personenübergabe</ion-label>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+  }
+
+  }
+
+</ion-content>

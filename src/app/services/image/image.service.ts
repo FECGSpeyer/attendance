@@ -90,6 +90,29 @@ export class ImageService {
       .remove([`${tenantId}`]);
   }
 
+  async updateOrgLogo(orgId: number, image: File | Blob): Promise<string> {
+    const fileName = `org-${orgId}`;
+    const { error } = await supabase.storage
+      .from('branding')
+      .upload(fileName, image, { upsert: true });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const { data } = await supabase.storage
+      .from('branding')
+      .getPublicUrl(fileName);
+
+    return `${data.publicUrl}?v=${Date.now()}`;
+  }
+
+  async removeOrgLogo(orgId: number): Promise<void> {
+    await supabase.storage
+      .from('branding')
+      .remove([`org-${orgId}`]);
+  }
+
   async updateAttendanceImage(id: number, image: File): Promise<string> {    const { error } = await supabase.storage
       .from('attendances')
       .upload(id.toString(), image, { upsert: true });

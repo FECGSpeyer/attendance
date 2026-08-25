@@ -1,23 +1,35 @@
 <ion-header translucent="true">
   <ion-toolbar color="light">
     <ion-buttons slot="start">
-      <ion-back-button text="" defaultHref="tabs/settings/general"></ion-back-button>
+      <ion-back-button text="" defaultHref="tabs/settings/org-settings"></ion-back-button>
     </ion-buttons>
     <ion-title>Branding</ion-title>
+    @if (hasOrg) {
     <ion-buttons slot="end">
       <ion-button (click)="save()">
         <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
+    }
   </ion-toolbar>
 </ion-header>
 
 <ion-content color="light">
+  @if (!hasOrg) {
+  <ion-list [inset]="true">
+    <ion-item lines="none">
+      <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
+      <ion-label class="ion-text-wrap">
+        <p>Branding wird auf Organisationsebene verwaltet. Diese Instanz ist keiner Organisation zugeordnet.</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+  } @else {
   <ion-list [inset]="true">
     <ion-item lines="none">
       <ion-label class="ion-text-wrap">
         <p>Logo und Text erscheinen dezent auf exportierten Plänen und Listen (PDF/Bild). Das Logo darf maximal
-          2&nbsp;MB groß sein.</p>
+          2&nbsp;MB groß sein. Das Branding gilt für alle Instanzen der Organisation.</p>
       </ion-label>
     </ion-item>
   </ion-list>
@@ -53,11 +65,12 @@
   <ion-list [inset]="true">
     <ion-item>
       <ion-input label="Branding-Text" labelPlacement="stacked" [(ngModel)]="brandingText"
-        placeholder="z.B. Gemeindename" maxlength="60"></ion-input>
+        placeholder="z.B. Verbandsname" maxlength="60"></ion-input>
     </ion-item>
   </ion-list>
 
   <div class="ion-padding">
     <ion-button expand="block" (click)="save()">Speichern</ion-button>
   </div>
+  }
 </ion-content>

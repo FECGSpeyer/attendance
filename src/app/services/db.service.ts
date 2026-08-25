@@ -64,6 +64,7 @@ export class DbService {
   public songCategories: WritableSignal<SongCategory[]>;
   public rolePermissions: WritableSignal<TenantRolePermission[]>;
   public showSongsTabSignal: WritableSignal<boolean>;
+  public showOrgPlansTabSignal: WritableSignal<boolean>;
 
   // Injected modular services - use these for new code
   public readonly authSvc = inject(AuthService);
@@ -117,6 +118,7 @@ export class DbService {
     this.songCategories = signal([]);
     this.rolePermissions = signal([]);
     this.showSongsTabSignal = signal(false);
+    this.showOrgPlansTabSignal = signal(false);
   }
 
   getSupabase(): SupabaseClient {
@@ -469,6 +471,7 @@ export class DbService {
     }
     this.rolePermissions.set(rolePermissions);
     this.getShowSongsTab();
+    this.getShowOrgPlansTab();
 
     await loader?.dismiss();
   }
@@ -541,6 +544,32 @@ export class DbService {
     return data;
   }
 
+  async updateOrgName(name: string): Promise<void> {
+    this.checkDemoRestriction();
+    const org = this.organisation();
+    if (!org?.id) { return; }
+    const data = await this.orgSvc.updateOrgName(org.id, name);
+    this.organisation.set({ ...org, ...data });
+  }
+
+  async updateOrgBranding(updates: { logo_url?: string | null; branding_text?: string | null }): Promise<void> {
+    this.checkDemoRestriction();
+    const org = this.organisation();
+    if (!org?.id) { return; }
+    const data = await this.orgSvc.updateOrgBranding(org.id, updates);
+    this.organisation.set({ ...org, ...data });
+  }
+
+  /** Returns the org branding source if the tenant belongs to an org with
+   *  branding set, otherwise falls back to the tenant's own branding fields. */
+  getBrandingSource(): { logo_url?: string; branding_text?: string } {
+    const org = this.organisation();
+    if (org?.logo_url || org?.branding_text) {
+      return { logo_url: org.logo_url, branding_text: org.branding_text };
+    }
+    return this.tenant() ?? {};
+  }
+
   async getTenantsByUserId(): Promise<TenantUser[]> {
     return this.tenantSvc.getTenantsByUserId(this.user.id);
   }
@@ -569,6 +598,22 @@ export class DbService {
       this.user.user_metadata[`showSongsTab_${this.tenant()?.id}`] = value;
     }
     this.showSongsTabSignal.set(value);
+  }
+
+  getShowOrgPlansTab(): boolean {
+    const value = this.user?.user_metadata?.[`showOrgPlansTab_${this.tenant()?.id}`] || false;
+    this.showOrgPlansTabSignal.set(value);
+    return value;
+  }
+
+  async setShowOrgPlansTab(value: boolean): Promise<void> {
+    await supabase.auth.updateUser({
+      data: { [`showOrgPlansTab_${this.tenant()?.id}`]: value }
+    });
+    if (this.user?.user_metadata) {
+      this.user.user_metadata[`showOrgPlansTab_${this.tenant()?.id}`] = value;
+    }
+    this.showOrgPlansTabSignal.set(value);
   }
 
   /**

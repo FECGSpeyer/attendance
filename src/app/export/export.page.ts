@@ -197,7 +197,7 @@ export class ExportPage implements OnInit {
       row++;
     }
 
-    const branding = await Utils.buildTenantBranding(this.db.tenant());
+    const branding = await Utils.buildTenantBranding(this.db.getBrandingSource());
     const headerOpts = {
       title: `${shortName} Spielerliste`,
       subtitle: `Stand: ${date}`,
@@ -320,7 +320,7 @@ export class ExportPage implements OnInit {
     await import('jspdf-autotable');
     const date: string = dayjs().format('DD.MM.YYYY');
 
-    const branding = await Utils.buildTenantBranding(this.db.tenant());
+    const branding = await Utils.buildTenantBranding(this.db.getBrandingSource());
     const headerOpts = {
       title: `${shortName} Anwesenheit`,
       subtitle: `Stand: ${date}`,

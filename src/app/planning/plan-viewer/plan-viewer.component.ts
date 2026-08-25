@@ -19,6 +19,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
   @Input() isPractice = true;
   @Input() playerInstrument: number;
   @Input() songs: Song[] = [];
+  @Input() defaultLive = false;
 
   public hasChatId = false;
   public liveMode = false;
@@ -33,7 +34,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.hasChatId = Boolean(this.db.tenantUser()?.telegram_chat_id);
-    if (this.isLiveNow()) {
+    if (this.defaultLive || this.isLiveNow()) {
       this.toggleLive();
     }
   }
@@ -49,6 +50,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
   isLiveNow(): boolean {
     if (!this.attendance?.date || !this.plan?.time || !this.plan?.fields?.length) { return false; }
     const now = dayjs();
+    if (!now.isSame(dayjs(this.attendance.date), 'day')) { return false; }
     const timeBase = dayjs(this.plan.time).isValid()
       ? dayjs(this.plan.time)
       : dayjs().hour(Number(this.plan.time.substring(0, 2))).minute(Number(this.plan.time.substring(3, 5)));
@@ -214,7 +216,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
       attendance: this.attendance?.id,
       attendances: this.attendance ? [this.attendance] : [],
       sideBySide,
-      branding: await Utils.buildTenantBranding(this.db.tenant()),
+      branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
     }, planningTitle);
   }
 
@@ -239,7 +241,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
       sideBySide,
       attendance: this.attendance?.id,
       attendances: this.attendance ? [this.attendance] : [],
-      branding: await Utils.buildTenantBranding(this.db.tenant()),
+      branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
     }, planningTitle);
 
     this.db.sendPlanPerTelegram(
