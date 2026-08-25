@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.6.1",
+          "date": "25.8.2026",
+          "changes": [
+            "📅 Kalender-Abo: Nur noch die eigenen Termine werden abonniert (Admins sehen weiterhin alle). Der Ablaufplan wird mit Zeiten und Programmpunkten in der Beschreibung angezeigt. Status (Zugesagt, Entschuldigt etc.) erscheint im Termintitel. Terminkategorie-Farbe wird übernommen. Erinnerung bei offener Anmeldung, wenn eine Anmeldefrist gesetzt ist."
+          ]
+        },
+        {
           "version": "4.6.0",
           "date": "25.8.2026",
           "changes": [

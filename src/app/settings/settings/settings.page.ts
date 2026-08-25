@@ -732,7 +732,13 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   async openCalendarSubscription() {
-    const link = `${environment.apiUrl}/functions/v1/ical-tenant?tenantId=${this.db.tenant().id}`;
+    let link = `${environment.apiUrl}/functions/v1/ical-tenant?tenantId=${this.db.tenant().id}`;
+    if (!this.isAdmin) {
+      const personId = await this.db.getPersonIdForTenant(this.db.tenant().id);
+      if (personId) {
+        link += `&personId=${personId}`;
+      }
+    }
     const alert = await this.alertController.create({
       header: 'Kalender abonnieren',
       message: `Kopiere den folgenden Link in deine Kalender-App, um die Termine zu abonnieren:\n\n${link}`,
