@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar [color]="player?.isCritical ? 'danger' : ''">
     @if (!existingPlayer) {
     <ion-title>Person hinzufügen</ion-title>
@@ -546,7 +546,7 @@
           <ion-icon slot="start" name="help-circle-outline"></ion-icon>
           Hilfe
         </ion-button>
-        <ion-modal #accountHelpModal trigger="accountHelpButton" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
+        <ion-modal #accountHelpModal trigger="accountHelpButton" handle-behavior="none" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
           <ng-template>
             <ion-header>
               <ion-toolbar>
@@ -878,7 +878,7 @@
   }
   }
 
-  <ion-modal [breakpoints]="[0, 0.75, 1]" [initialBreakpoint]="0.75" backdropDismiss="true" [isOpen]="isPauseModalOpen"
+  <ion-modal handle-behavior="none" [breakpoints]="[0, 0.75, 1]" [initialBreakpoint]="0.75" backdropDismiss="true" [isOpen]="isPauseModalOpen"
     (ionModalDidDismiss)="dismissPauseModal()">
     <ng-template>
       <ion-header>
@@ -989,7 +989,7 @@
     </ng-template>
   </ion-modal>
 
-  <ion-modal (ionModalDidDismiss)="isTransferModalOpen = false" backdropDismiss="true" [breakpoints]="[0, 0.5, 1]"
+  <ion-modal (ionModalDidDismiss)="isTransferModalOpen = false" backdropDismiss="true" handle-behavior="none" [breakpoints]="[0, 0.5, 1]"
     [initialBreakpoint]="0.5" [isOpen]="isTransferModalOpen">
     <ng-template>
       <ion-header>

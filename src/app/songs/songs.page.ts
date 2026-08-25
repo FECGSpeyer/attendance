@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { GroupCategory, History, Group, Person, Song, Tenant, SongCategory, SongFile } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
-import { AlertController, IonModal, ItemReorderEventDetail } from '@ionic/angular';
+import { AlertController, IonModal, ItemReorderEventDetail } from '@ionic/angular/lazy';
 import { Utils } from '../utilities/Utils';
 import { Role } from '../utilities/constants';
 import { Storage } from '@ionic/storage-angular';
@@ -33,6 +33,7 @@ export class SongsPage implements OnInit {
     header: 'Gruppen wählen',
     breakpoints: [0, 0.7, 1],
     initialBreakpoint: 0.7,
+    handleBehavior: 'none',
   };
   public groupCategories: GroupCategory[] = [];
   public filterOpts = {};

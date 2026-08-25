@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+﻿<ion-header [translucent]="true">
   <ion-toolbar color="light">
     <ion-buttons slot="start">
       <ion-back-button text="" [defaultHref]="tenant ? sharing_id : isStandaloneTab ? 'tabs/songs-tab' : 'tabs/settings/songs'"></ion-back-button>
@@ -189,7 +189,7 @@
       </ion-button>
       }
       <ion-modal [isOpen]="isFilesModalOpen" (ionModalDidDismiss)="isFilesModalOpen = false" #fileUploadModal
-        [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+        handle-behavior="none" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
         <ng-template>
           <ion-header>
             <ion-toolbar>
@@ -315,7 +315,7 @@
 </ion-content>
 
 <!-- Copy to other instance modal -->
-<ion-modal (ionModalDidDismiss)="isCopyModalOpen = false" backdropDismiss="true" [breakpoints]="[0, 0.6, 1]"
+<ion-modal (ionModalDidDismiss)="isCopyModalOpen = false" backdropDismiss="true" handle-behavior="none" [breakpoints]="[0, 0.6, 1]"
   [initialBreakpoint]="0.6" [isOpen]="isCopyModalOpen">
   <ng-template>
     <ion-header>

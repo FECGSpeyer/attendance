@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar color="light">
     <ion-title>Statistiken</ion-title>
     <ion-buttons slot="end">
@@ -259,7 +259,7 @@
       <ion-label>Personen über alle Instanzen</ion-label>
       <ion-badge slot="end">{{ uniquePersons.length }}</ion-badge>
 
-      <ion-modal trigger="persons-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+      <ion-modal trigger="persons-button" handle-behavior="none" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
         <ng-template>
           <ion-content color="light">
             <ion-header>

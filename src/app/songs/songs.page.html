@@ -1,4 +1,4 @@
-<ion-header translucent="true">
+﻿<ion-header translucent="true">
   <ion-toolbar color="light">
     @if (!isStandaloneTab) {
       <ion-buttons slot="start">
@@ -14,7 +14,7 @@
       <ion-button id="song-categories-button" fill="clear">
         <ion-icon slot="icon-only" name="library-outline"></ion-icon>
       </ion-button>
-      <ion-modal trigger="song-categories-button" [breakpoints]="[0, 0.6, 1]" [initialBreakpoint]="0.6">
+      <ion-modal trigger="song-categories-button" handle-behavior="none" [breakpoints]="[0, 0.6, 1]" [initialBreakpoint]="0.6">
         <ng-template>
           <ion-header>
             <ion-toolbar>
@@ -190,6 +190,7 @@
     <!-- Modals outside of conditional item-group -->
     <ion-modal #currentSongsModal [isOpen]="isCurrentSongsModalOpen" (ionModalDidDismiss)="isCurrentSongsModalOpen = false"
       [initialBreakpoint]="currentSongs.length > 1 ? 0.8 : 0.5"
+      handle-behavior="none"
       [breakpoints]="currentSongs.length > 1 ? [0, 0.8, 1] : [0, 0.5, 1]">
       <ng-template>
         <ion-header>
@@ -225,7 +226,7 @@
       </ng-template>
     </ion-modal>
 
-    <ion-modal #groupDirectoryModal [isOpen]="isGroupDirectoryModalOpen" (ionModalDidDismiss)="isGroupDirectoryModalOpen = false; resetGroupSelection()" [initialBreakpoint]="0.9" [breakpoints]="[0, 0.9, 1]">
+    <ion-modal #groupDirectoryModal [isOpen]="isGroupDirectoryModalOpen" (ionModalDidDismiss)="isGroupDirectoryModalOpen = false; resetGroupSelection()" [initialBreakpoint]="0.9" handle-behavior="none" [breakpoints]="[0, 0.9, 1]">
       <ng-template>
         <ion-header>
           <ion-toolbar>
@@ -335,7 +336,7 @@
       <ion-fab-button id="add-songs-button">
         <ion-icon name="add"></ion-icon>
       </ion-fab-button>
-      <ion-modal #addSongsModal trigger="add-songs-button" [breakpoints]="[0, 0.9]" [initialBreakpoint]="0.9">
+      <ion-modal #addSongsModal trigger="add-songs-button" handle-behavior="none" [breakpoints]="[0, 0.9]" [initialBreakpoint]="0.9">
         <ng-template>
           <ion-content>
             <ion-header>

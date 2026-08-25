@@ -1,6 +1,6 @@
 import { Component, inject, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, LoadingController, isPlatform } from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, LoadingController, isPlatform } from '@ionic/angular/lazy';
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 // JSZip and pdf-lib are lazy-loaded for better initial bundle size

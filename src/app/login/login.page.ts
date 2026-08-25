@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { AlertController, IonInput, ModalController } from '@ionic/angular';
+import { AlertController, IonInput, ModalController } from '@ionic/angular/lazy';
 import { DbService } from '../services/db.service';
 import { TeamsService } from '../services/teams/teams.service';
 import { LiveUpdateService } from '../services/live-update/live-update.service';

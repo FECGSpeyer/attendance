@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { AlertController, ModalController, IonRouterOutlet } from '@ionic/angular';
+import { AlertController, ModalController, IonRouterOutlet } from '@ionic/angular/lazy';
 
 import { AttListPage } from './att-list.page';
 import { DbService } from 'src/app/services/db.service';

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { ExtraField, Group } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';

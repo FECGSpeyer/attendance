@@ -5,7 +5,7 @@ import { ComponentFixture, TestBed, TestModuleMetadata } from '@angular/core/tes
 import { Type } from '@angular/core';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular/lazy';
 import { DbService } from '../../app/services/db.service';
 import { createDbServiceMock, DbServiceMockOptions } from '../mocks/db-service.mock';
 import {
@@ -23,7 +23,7 @@ import {
     LoadingController,
     Platform,
     NavController,
-} from '@ionic/angular';
+} from '@ionic/angular/lazy';
 
 export interface ComponentTestConfig<T> extends Partial<TestModuleMetadata> {
     component: Type<T>;

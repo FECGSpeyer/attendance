@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { AlertController, ActionSheetController } from '@ionic/angular';
+import { AlertController, ActionSheetController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
 import { FieldSelection, SharedPlan } from '../utilities/interfaces';

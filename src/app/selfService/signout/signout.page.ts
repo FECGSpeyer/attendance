@@ -1,6 +1,6 @@
 /* eslint-disable arrow-body-style */
 import { Component, effect, inject, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, isPlatform, ModalController } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, isPlatform, ModalController } from '@ionic/angular/lazy';
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { ActivatedRoute, Router } from '@angular/router';

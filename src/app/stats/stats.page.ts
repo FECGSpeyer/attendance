@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { Chart, ChartConfiguration, ChartData, registerables } from 'chart.js';
 import { DbService } from '../services/db.service';

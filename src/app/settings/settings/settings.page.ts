@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
-import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonRouterOutlet, isPlatform, ModalController } from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonRouterOutlet, isPlatform, ModalController } from '@ionic/angular/lazy';
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { ExportPage } from 'src/app/export/export.page';

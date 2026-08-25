@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/lazy';
 
 import { RegisterPage } from './register.page';
 import { DbService } from 'src/app/services/db.service';

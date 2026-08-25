@@ -75,6 +75,7 @@
         </ion-item>
         <ion-modal #currentSongsModal trigger="current-songs-button"
           [initialBreakpoint]="currentSongs.length > 1 ? 0.8 : 0.5"
+          handle-behavior="none"
           [breakpoints]="currentSongs.length > 1 ? [0, 0.8, 1] : [0, 0.5, 1]">
           <ng-template>
             <ion-header>

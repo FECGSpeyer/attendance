@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, effect } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { ActionSheetController, AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { Attendance, Group, Person, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';

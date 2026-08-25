@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonModal } from '@ionic/angular';
+import { IonModal } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { History, Song, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';

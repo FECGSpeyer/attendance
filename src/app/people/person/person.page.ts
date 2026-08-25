@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild, signal, WritableSignal } from '@angular/core';
-import { ActionSheetButton, ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular/lazy';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
 import { Group, Organisation, Parent, Person, PersonAttendance, Player, PlayerHistoryEntry, ShiftPlan, Teacher, Tenant } from 'src/app/utilities/interfaces';

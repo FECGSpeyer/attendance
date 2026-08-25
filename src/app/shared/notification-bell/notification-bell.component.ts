@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AlertController, IonicModule, IonItemSliding } from '@ionic/angular';
+import { AlertController, IonicModule, IonItemSliding } from '@ionic/angular/lazy';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';

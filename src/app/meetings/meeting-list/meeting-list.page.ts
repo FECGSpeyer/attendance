@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, IonModal } from '@ionic/angular';
+import { AlertController, IonModal } from '@ionic/angular/lazy';
 import { format, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';

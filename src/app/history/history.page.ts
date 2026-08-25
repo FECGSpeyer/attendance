@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { AlertController, IonItemSliding, IonModal, ModalController } from '@ionic/angular';
+import { AlertController, IonItemSliding, IonModal, ModalController } from '@ionic/angular/lazy';
 import { format, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import { DbService } from '../services/db.service';

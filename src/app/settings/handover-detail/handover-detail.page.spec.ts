@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { AlertController, NavController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular/lazy';
 
 import { HandoverDetailPage } from './handover-detail.page';
 import { DbService } from 'src/app/services/db.service';

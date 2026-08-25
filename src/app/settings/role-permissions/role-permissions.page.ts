@@ -1,5 +1,5 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { AlertController, NavController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { Role } from 'src/app/utilities/constants';
 import { TenantRolePermission } from 'src/app/utilities/interfaces';

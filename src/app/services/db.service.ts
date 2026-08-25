@@ -1,6 +1,6 @@
 import { Injectable, WritableSignal, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController, Platform } from '@ionic/angular';
+import { AlertController, Platform } from '@ionic/angular/lazy';
 import { SupabaseClient, User } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';

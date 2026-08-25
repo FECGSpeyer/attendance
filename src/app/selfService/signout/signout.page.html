@@ -1,4 +1,4 @@
-<ion-header translucent="true">
+﻿<ion-header translucent="true">
   <ion-toolbar>
     @if ((db.tenants()?.length ?? 0) > 1) {
       <ion-buttons slot="start">
@@ -40,7 +40,7 @@
       <ion-button id="legend-button">
         <ion-icon slot="icon-only" name="information-outline"></ion-icon>
       </ion-button>
-      <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="legend-button">
+      <ion-modal handle-behavior="none" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="legend-button">
         <ng-template>
           <ion-content color="light">
             <ion-list [inset]="true">
@@ -132,6 +132,7 @@
       </ion-button>
       <ion-modal class="songsModal" [isOpen]="songsModalOpen" (ionModalDidDismiss)="songsModalOpen = false" #songsModal
         [initialBreakpoint]="upcomingSongs.length > 1 ? 0.8 : 0.6"
+        handle-behavior="none"
         [breakpoints]="upcomingSongs.length > 1 ? [0, 0.8, 1] : [0, 0.6, 1]">
         <ng-template>
           <ion-header>
@@ -189,7 +190,7 @@
     <app-excuse-reason-picker #excusePicker [absenceReasons]="absenceReasons" [lateReasons]="lateReasons"
       (confirm)="onExcuseConfirm($event)"></app-excuse-reason-picker>
 
-    <ion-modal #descriptionModal [initialBreakpoint]="0.6" [breakpoints]="[0, 0.6, 1]">
+    <ion-modal #descriptionModal [initialBreakpoint]="0.6" handle-behavior="none" [breakpoints]="[0, 0.6, 1]">
       <ng-template>
         <ion-header>
           <ion-toolbar>
@@ -327,7 +328,7 @@
   </ion-accordion-group>
   }
 
-  <ion-modal [breakpoints]="[0, 0.75, 1]" [initialBreakpoint]="0.75" backdropDismiss="true" [isOpen]="isPauseModalOpen" (ionModalDidDismiss)="dismissPauseModal()">
+  <ion-modal handle-behavior="none" [breakpoints]="[0, 0.75, 1]" [initialBreakpoint]="0.75" backdropDismiss="true" [isOpen]="isPauseModalOpen" (ionModalDidDismiss)="dismissPauseModal()">
     <ng-template>
       <ion-header>
         <ion-toolbar>

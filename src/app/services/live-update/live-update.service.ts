@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/lazy';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import { LiveUpdate } from '@capawesome/capacitor-live-update';

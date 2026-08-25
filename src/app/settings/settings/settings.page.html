@@ -1,4 +1,4 @@
-<ion-header translucent="true">
+﻿<ion-header translucent="true">
   <ion-toolbar color="light">
     <ion-title>Mehr</ion-title>
     <ion-buttons slot="end">
@@ -62,7 +62,7 @@
       </div>
     </ion-card-content>
   </ion-card>
-  <ion-modal trigger="pending-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+  <ion-modal trigger="pending-button" handle-behavior="none" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
     <ng-template>
       <ion-content color="light">
         <ion-header>
@@ -118,7 +118,7 @@
 
   <!-- Master Data Modal -->
   @if (userData) {
-  <ion-modal trigger="master-data-button" [breakpoints]="[0, .9]" [initialBreakpoint]="0.9">
+  <ion-modal trigger="master-data-button" handle-behavior="none" [breakpoints]="[0, .9]" [initialBreakpoint]="0.9">
     <ng-template>
       <ion-content color="light">
         <ion-header>
@@ -373,7 +373,7 @@
   </ion-list>
 
   <!-- Admins Modal -->
-  <ion-modal trigger="admins-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+  <ion-modal trigger="admins-button" handle-behavior="none" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
     <ng-template>
       <ion-content color="light">
         <ion-header>
@@ -412,7 +412,7 @@
 
   <!-- Parents Modal -->
   @if (parentsEnabled) {
-  <ion-modal trigger="parents-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+  <ion-modal trigger="parents-button" handle-behavior="none" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
     <ng-template>
       <ion-content color="light">
         <ion-header>
@@ -451,7 +451,7 @@
   }
 
   <!-- Viewers Modal -->
-  <ion-modal trigger="viewer-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+  <ion-modal trigger="viewer-button" handle-behavior="none" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
     <ng-template>
       <ion-content color="light">
         <ion-header>
@@ -583,7 +583,7 @@
 
   <!-- Archive Modal -->
   @if (isAdmin) {
-  <ion-modal trigger="archive-button" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
+  <ion-modal trigger="archive-button" handle-behavior="none" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
     <ng-template>
       <ion-content>
         <ion-header>
@@ -677,7 +677,7 @@
   </ion-list>
 
   <!-- Feedback Modal -->
-  <ion-modal #feedbackModal trigger="feedback-button" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+  <ion-modal #feedbackModal trigger="feedback-button" handle-behavior="none" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
     <ng-template>
       <ion-content color="light">
         <ion-header>
@@ -765,7 +765,7 @@
   </ion-modal>
 
   <!-- What's New Modal -->
-  <ion-modal trigger="whatsnew-button" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
+  <ion-modal trigger="whatsnew-button" handle-behavior="none" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
     <ng-template>
       <ion-content color="light">
         <ion-header>
@@ -799,7 +799,7 @@
 
   <!-- Instances Modal -->
   <ion-modal (ionModalDidDismiss)="isInstancesModalOpen = false" #instancesModal [isOpen]="isInstancesModalOpen"
-    [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]=".5">
+    handle-behavior="none" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]=".5">
     <ng-template>
       <ion-content color="light">
         <ion-header>
@@ -814,7 +814,7 @@
               <ion-button id="instance-settings-button">
                 <ion-icon name="cog-outline" slot="icon-only"></ion-icon>
               </ion-button>
-              <ion-modal trigger="instance-settings-button" [breakpoints]="[0, .2]" [initialBreakpoint]=".2">
+              <ion-modal trigger="instance-settings-button" handle-behavior="none" [breakpoints]="[0, .2]" [initialBreakpoint]=".2">
                 <ng-template>
                   <ion-content color="light">
                     <ion-list [inset]="true">

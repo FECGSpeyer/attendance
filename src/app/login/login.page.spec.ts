@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/lazy';
 import { LoginPage } from './login.page';
 import { createDbServiceMock } from '../../testing/mocks/db-service.mock';
 import { createAlertControllerMock } from '../../testing/mocks/ionic.mock';

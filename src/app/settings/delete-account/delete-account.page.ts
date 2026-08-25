@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 import { Utils } from 'src/app/utilities/Utils';

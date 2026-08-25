@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
+import { IonModal, IonRouterOutlet, ModalController } from '@ionic/angular/lazy';
 import { DbService } from '../services/db.service';
 import { TeacherPage } from '../teacher/teacher.page';
 import { Role } from '../utilities/constants';

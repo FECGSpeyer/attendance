@@ -1,6 +1,6 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController, ActionSheetController } from '@ionic/angular';
+import { IonicModule, ModalController, ActionSheetController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { Attendance, FieldSelection, Plan, Song } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';

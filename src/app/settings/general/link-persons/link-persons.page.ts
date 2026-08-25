@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { Player, Tenant } from 'src/app/utilities/interfaces';
 import { RankedMatch, rankCandidates } from 'src/app/utilities/person-matcher';

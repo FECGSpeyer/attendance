@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NavController } from '@ionic/angular';
+import { NavController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { ExtraField, Group, PersonAttendance, Player } from 'src/app/utilities/interfaces';

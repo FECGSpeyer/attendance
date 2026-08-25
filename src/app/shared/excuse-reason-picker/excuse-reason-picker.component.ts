@@ -1,7 +1,7 @@
 import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonicModule, IonModal, Platform } from '@ionic/angular';
+import { IonContent, IonicModule, IonModal, Platform } from '@ionic/angular/lazy';
 import { Keyboard } from '@capacitor/keyboard';
 import type { PluginListenerHandle } from '@capacitor/core';
 

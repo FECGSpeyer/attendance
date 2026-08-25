@@ -5,7 +5,7 @@ import { AppComponent } from './app.component';
 import { createDbServiceMock } from '../testing/mocks/db-service.mock';
 import { createPlatformMock, createAlertControllerMock } from '../testing/mocks/ionic.mock';
 import { DbService } from './services/db.service';
-import { Platform, AlertController } from '@ionic/angular';
+import { Platform, AlertController } from '@ionic/angular/lazy';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Title } from '@angular/platform-browser';
 import { Storage } from '@ionic/storage-angular';

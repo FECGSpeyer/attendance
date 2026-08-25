@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/lazy';
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';

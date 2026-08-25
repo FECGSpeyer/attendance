@@ -1,5 +1,5 @@
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, IonModal, ModalController } from '@ionic/angular';
+import { ActionSheetController, IonModal, ModalController } from '@ionic/angular/lazy';
 import { Browser } from '@capacitor/browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import dayjs from 'dayjs';

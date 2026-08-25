@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular/lazy';
 import { AiService } from 'src/app/services/ai.service';
 import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType } from 'src/app/utilities/constants';

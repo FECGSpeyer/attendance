@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { IonicModule } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular/lazy';
 
 import { OpenAttendancePageRoutingModule } from './open-attendance-routing.module';
 import { OpenAttendancePage } from './open-attendance.page';

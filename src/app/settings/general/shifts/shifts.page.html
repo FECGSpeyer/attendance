@@ -1,4 +1,4 @@
-<ion-header translucent="true">
+﻿<ion-header translucent="true">
   <ion-toolbar color="light">
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="tabs/settings/general"></ion-back-button>
@@ -51,7 +51,7 @@
     <ion-icon name="add"></ion-icon>
   </ion-fab-button>
 
-  <ion-modal #addShiftModal [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7" trigger="add-shift-button">
+  <ion-modal #addShiftModal handle-behavior="none" [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7" trigger="add-shift-button">
     <ng-template>
       <ion-header>
         <ion-toolbar color="light">

@@ -1,11 +1,11 @@
-<ion-header translucent="true">
+﻿<ion-header translucent="true">
   <ion-toolbar>
     <ion-title>Alle Termine</ion-title>
     <ion-buttons slot="end">
       <ion-button id="legend-button-overview">
         <ion-icon slot="icon-only" name="information-outline"></ion-icon>
       </ion-button>
-      <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="legend-button-overview">
+      <ion-modal handle-behavior="none" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="legend-button-overview">
         <ng-template>
           <ion-content color="light">
             <ion-list [inset]="true">
@@ -96,7 +96,7 @@
     <app-excuse-reason-picker #excusePicker [absenceReasons]="absenceReasons" [lateReasons]="lateReasons"
       (confirm)="onExcuseConfirm($event)"></app-excuse-reason-picker>
 
-    <ion-modal #descriptionModal [initialBreakpoint]="0.6" [breakpoints]="[0, 0.6, 1]">
+    <ion-modal #descriptionModal [initialBreakpoint]="0.6" handle-behavior="none" [breakpoints]="[0, 0.6, 1]">
       <ng-template>
         <ion-header>
           <ion-toolbar>

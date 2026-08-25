@@ -3,7 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { PushNotifications, ActionPerformed } from '@capacitor/push-notifications';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import { Badge } from '@capawesome/capacitor-badge';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/lazy';
 import { supabase } from '../base/supabase';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, take } from 'rxjs/operators';

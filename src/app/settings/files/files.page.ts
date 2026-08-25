@@ -1,5 +1,5 @@
 import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
-import { AlertController, IonPopover, NavController } from '@ionic/angular';
+import { AlertController, IonPopover, NavController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
 import { FilesService, StorageEntry } from '../../services/files/files.service';

@@ -1,4 +1,4 @@
-<ion-header translucent="true">
+﻿<ion-header translucent="true">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
@@ -10,7 +10,7 @@
           <ion-icon [name]="isReordering ? 'checkmark' : 'swap-vertical'"></ion-icon>
         </ion-button>
         <ion-button id="cat-button"><ion-icon name="pricetags-outline"></ion-icon></ion-button>
-        <ion-modal trigger="cat-button" [breakpoints]="[0, 0.6, 1]" [initialBreakpoint]="0.6">
+        <ion-modal trigger="cat-button" handle-behavior="none" [breakpoints]="[0, 0.6, 1]" [initialBreakpoint]="0.6">
           <ng-template>
             <ion-content>
               <ion-header>
@@ -127,7 +127,7 @@
       <ion-fab-button id="add-instrument-button">
         <ion-icon name="add"></ion-icon>
       </ion-fab-button>
-      <ion-modal #modal trigger="add-instrument-button" [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
+      <ion-modal #modal trigger="add-instrument-button" handle-behavior="none" [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
         <ng-template>
           <ion-content>
             <ion-header>

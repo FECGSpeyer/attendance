@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
@@ -34,7 +34,7 @@
     </ion-list>
   }
 
-  <ion-modal #addAttModal trigger="addBtn" [breakpoints]="[0, 0.3]" [initialBreakpoint]="0.3">
+  <ion-modal #addAttModal trigger="addBtn" handle-behavior="none" [breakpoints]="[0, 0.3]" [initialBreakpoint]="0.3">
     <ng-template>
       <ion-content>
         <ion-header>

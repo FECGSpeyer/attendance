@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+﻿<ion-header [translucent]="true">
   <ion-toolbar>
     @if ((db.tenants()?.length ?? 0) > 1) {
       <ion-buttons slot="start">
@@ -28,7 +28,7 @@
       <ion-button id="legend-button-parents">
         <ion-icon slot="icon-only" name="information-outline"></ion-icon>
       </ion-button>
-      <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="legend-button-parents">
+      <ion-modal handle-behavior="none" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="legend-button-parents">
         <ng-template>
           <ion-content color="light">
             <ion-list [inset]="true">
@@ -112,6 +112,7 @@
   <!-- Songs Modal -->
   <ion-modal class="songsModal" [isOpen]="songsModalOpen" (ionModalDidDismiss)="songsModalOpen = false"
     [initialBreakpoint]="upcomingSongs.length > 1 ? 0.8 : 0.6"
+    handle-behavior="none"
     [breakpoints]="upcomingSongs.length > 1 ? [0, 0.8, 1] : [0, 0.6, 1]">
     <ng-template>
       <ion-header>
@@ -158,7 +159,7 @@
     <app-excuse-reason-picker #excusePicker [absenceReasons]="absenceReasons" [lateReasons]="lateReasons"
       (confirm)="onExcuseConfirm($event)"></app-excuse-reason-picker>
 
-    <ion-modal #descriptionModal [initialBreakpoint]="0.6" [breakpoints]="[0, 0.6, 1]">
+    <ion-modal #descriptionModal [initialBreakpoint]="0.6" handle-behavior="none" [breakpoints]="[0, 0.6, 1]">
       <ng-template>
         <ion-header>
           <ion-toolbar>

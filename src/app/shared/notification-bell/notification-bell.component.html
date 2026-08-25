@@ -1,4 +1,4 @@
-<!-- Bell (sits inside an <ion-buttons slot="end"> on each page toolbar).
+﻿<!-- Bell (sits inside an <ion-buttons slot="end"> on each page toolbar).
      Rendered without ion-button so no native circular background can paint
      over the badge on iOS — the badge always shows fully. -->
 <button class="bell-trigger" type="button" (click)="open()" aria-label="Benachrichtigungen">
@@ -9,7 +9,7 @@
 </button>
 
 <!-- Notification center panel -->
-<ion-modal [isOpen]="isOpen()" [breakpoints]="[0, 0.75, 1]" [initialBreakpoint]="0.75" (ionModalDidDismiss)="onDismiss()">
+<ion-modal [isOpen]="isOpen()" handle-behavior="none" [breakpoints]="[0, 0.75, 1]" [initialBreakpoint]="0.75" (ionModalDidDismiss)="onDismiss()">
   <ng-template>
     <ion-header>
       <ion-toolbar>

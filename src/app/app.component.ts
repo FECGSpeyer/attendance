@@ -1,5 +1,5 @@
 import { Component, NgZone, ViewChild } from '@angular/core';
-import { AlertController, IonRouterOutlet, Platform } from '@ionic/angular';
+import { AlertController, IonRouterOutlet, Platform } from '@ionic/angular/lazy';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { Title } from '@angular/platform-browser';

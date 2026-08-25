@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { FieldSelection, SharedPlan } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
@@ -367,6 +367,7 @@ export class PublicPlanningPage implements OnInit {
       component: MyPlansComponent,
       breakpoints: [0, 0.5, 0.9],
       initialBreakpoint: 0.9,
+      handleBehavior: 'none',
     });
     await modal.present();
     const { data, role } = await modal.onWillDismiss();

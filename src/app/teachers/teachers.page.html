@@ -1,4 +1,4 @@
-<ion-header translucent="true">
+﻿<ion-header translucent="true">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
@@ -25,7 +25,7 @@
     }
   </ion-list>
 
-  <ion-modal #modal trigger="add-teacher-button" [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7">
+  <ion-modal #modal trigger="add-teacher-button" handle-behavior="none" [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7">
     <ng-template>
       <ion-content>
         <ion-header>

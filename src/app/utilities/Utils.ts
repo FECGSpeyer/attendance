@@ -1,4 +1,4 @@
-import { ToastController, LoadingController } from '@ionic/angular';
+import { ToastController, LoadingController } from '@ionic/angular/lazy';
 import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';

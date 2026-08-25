@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
-import { AlertController, ModalController, Platform } from '@ionic/angular';
+import { AlertController, ModalController, Platform } from '@ionic/angular/lazy';
 import { Storage } from '@ionic/storage-angular';
 import { AttendancePage } from './attendance.page';
 import { createDbServiceMock } from '../../../testing/mocks/db-service.mock';

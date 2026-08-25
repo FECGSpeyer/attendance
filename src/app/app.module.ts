@@ -5,7 +5,7 @@ import { IonicStorageModule } from '@ionic/storage-angular';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { Capacitor } from '@capacitor/core';
 
-import { IonicModule, IonicRouteStrategy, isPlatform } from '@ionic/angular';
+import { IonicModule, IonicRouteStrategy, isPlatform } from '@ionic/angular/lazy';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';

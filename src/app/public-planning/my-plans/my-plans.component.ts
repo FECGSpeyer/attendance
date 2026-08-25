@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { SharedPlan } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';

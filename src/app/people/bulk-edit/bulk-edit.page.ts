@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { ExtraField, Group, Player } from 'src/app/utilities/interfaces';
 import { FieldType } from 'src/app/utilities/constants';

@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActionSheetController, AlertController } from '@ionic/angular';
+import { ActionSheetController, AlertController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { DEFAULT_IMAGE, FieldType, Role } from 'src/app/utilities/constants';

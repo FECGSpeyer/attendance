@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, IonRouterOutlet, ModalController } from '@ionic/angular';
+import { AlertController, IonRouterOutlet, ModalController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType, Role } from 'src/app/utilities/constants';
 import { GroupCategory, Group, Player } from 'src/app/utilities/interfaces';

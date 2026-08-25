@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ActionSheetController } from '@ionic/angular';
+import { ActionSheetController } from '@ionic/angular/lazy';
 
 import { ParentsPage } from './parents.page';
 import { DbService } from '../../services/db.service';

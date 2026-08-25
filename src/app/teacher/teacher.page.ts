@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/lazy';
 import { DbService } from '../services/db.service';
 import { Player, Teacher } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';

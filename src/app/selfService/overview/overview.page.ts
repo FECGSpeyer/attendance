@@ -1,5 +1,5 @@
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, AlertController, IonModal } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonModal } from '@ionic/angular/lazy';
 import { Browser } from '@capacitor/browser';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';

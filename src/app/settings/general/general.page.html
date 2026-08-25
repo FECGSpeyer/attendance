@@ -1,4 +1,4 @@
-<ion-header translucent="true">
+﻿<ion-header translucent="true">
   <ion-toolbar color="light">
     <ion-buttons slot="start">
       <ion-button (click)="navigateBack()">
@@ -259,7 +259,7 @@
       <ion-button id="addCriticalRuleBtn" fill="clear" size="small">
         <ion-icon name="add-outline"></ion-icon>
       </ion-button>
-      <ion-modal trigger="addCriticalRuleBtn" #addCriticalRuleModal initialBreakpoint="1" [breakpoints]="[0, 1]">
+      <ion-modal trigger="addCriticalRuleBtn" #addCriticalRuleModal initialBreakpoint="1" handle-behavior="none" [breakpoints]="[0, 1]">
         <ng-template>
           <ion-header>
             <ion-toolbar>
@@ -368,7 +368,7 @@
       <ion-button id="addExtraFieldBtn" fill="clear" size="small">
         <ion-icon name="add-outline"></ion-icon>
       </ion-button>
-      <ion-modal trigger="addExtraFieldBtn" #addCustomFieldModal initialBreakpoint="1" [breakpoints]="[0, 1]">
+      <ion-modal trigger="addExtraFieldBtn" #addCustomFieldModal initialBreakpoint="1" handle-behavior="none" [breakpoints]="[0, 1]">
         <ng-template>
           <ion-header>
             <ion-toolbar>
@@ -456,7 +456,7 @@
       </ion-modal>
 
       <!-- Edit Extra Field Modal -->
-      <ion-modal #editCustomFieldModal [isOpen]="isEditExtraFieldModalOpen" (ionModalDidDismiss)="closeEditExtraFieldModal()" initialBreakpoint="1" [breakpoints]="[0, 1]">
+      <ion-modal #editCustomFieldModal [isOpen]="isEditExtraFieldModalOpen" (ionModalDidDismiss)="closeEditExtraFieldModal()" initialBreakpoint="1" handle-behavior="none" [breakpoints]="[0, 1]">
         <ng-template>
           <ion-header>
             <ion-toolbar>

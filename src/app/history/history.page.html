@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-title>Werkhistorie</ion-title>
     <ion-buttons slot="end">
@@ -95,7 +95,7 @@
     </ion-accordion-group>
   }
 
-  <ion-modal #addHisModal trigger="add-his-button" [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7">
+  <ion-modal #addHisModal trigger="add-his-button" handle-behavior="none" [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7">
     <ng-template>
       <ion-content>
         <ion-header>

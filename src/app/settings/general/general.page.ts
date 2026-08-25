@@ -1,5 +1,5 @@
 import { Component, HostListener, inject, OnInit } from '@angular/core';
-import { AlertController, IonModal, ModalController, NavController } from '@ionic/angular';
+import { AlertController, IonModal, ModalController, NavController } from '@ionic/angular/lazy';
 import { PlayerService } from 'src/app/services/player/player.service';
 import { format, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
@@ -503,6 +503,7 @@ export class GeneralPage implements OnInit {
       component: LinkPersonsPage,
       breakpoints: [0, 0.5, 1],
       initialBreakpoint: 1,
+      handleBehavior: 'none',
     });
     await modal.present();
   }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IonModal, IonPopover, NavController } from '@ionic/angular';
+import { IonModal, IonPopover, NavController } from '@ionic/angular/lazy';
 import { format, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import { DataService } from 'src/app/services/data.service';

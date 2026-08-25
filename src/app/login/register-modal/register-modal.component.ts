@@ -1,5 +1,5 @@
 import { Component, OnDestroy } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/lazy';
 import { Utils } from '../../utilities/Utils';
 import { DbService } from '../../services/db.service';
 import { LegalModalComponent } from '../legal-modal/legal-modal.component';

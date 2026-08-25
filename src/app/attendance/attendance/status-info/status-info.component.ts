@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/lazy';
 import { AttendanceStatus } from 'src/app/utilities/constants';
 import { PersonAttendance } from 'src/app/utilities/interfaces';
 

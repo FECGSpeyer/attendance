@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IonRouterOutlet, ItemReorderEventDetail, ModalController } from '@ionic/angular';
+import { IonRouterOutlet, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { TypePage } from 'src/app/settings/general/type/type.page';
 import { AttendanceType } from 'src/app/utilities/interfaces';

@@ -1,11 +1,11 @@
-<ion-header translucent="true">
+﻿<ion-header translucent="true">
   <ion-toolbar>
     <ion-title>Termine</ion-title>
     <ion-buttons slot="end">
       <ion-button id="info-legend-button">
         <ion-icon slot="icon-only" name="information-outline"></ion-icon>
       </ion-button>
-      <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="info-legend-button">
+      <ion-modal handle-behavior="none" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="info-legend-button">
         <ng-template>
           <ion-content color="light">
             <ion-list [inset]="true">
@@ -208,7 +208,7 @@
     }
 
     <ion-modal #addAttModal (ionModalDidDismiss)="isAddModalOpen = false" [isOpen]="isAddModalOpen"
-      [breakpoints]="[0, 0.8, 1]" [initialBreakpoint]="0.8">
+      handle-behavior="none" [breakpoints]="[0, 0.8, 1]" [initialBreakpoint]="0.8">
       <ng-template>
         <ion-content color="light">
           <ion-header>
@@ -224,7 +224,7 @@
                 <ion-button id="info-button" fill="clear" slot="end">
                   <ion-icon name="information"></ion-icon>
                 </ion-button>
-                <ion-modal [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="info-button">
+                <ion-modal handle-behavior="none" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5" trigger="info-button">
                   <ng-template>
                     <ion-content color="light">
                       <ion-list [inset]="true">
@@ -316,7 +316,7 @@
                 <ion-button size="small" id="add-his-button">
                   <ion-icon name="add"></ion-icon>
                 </ion-button>
-                <ion-modal #addHisModal trigger="add-his-button" [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7">
+                <ion-modal #addHisModal trigger="add-his-button" handle-behavior="none" [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7">
                   <ng-template>
                     <ion-content color="light">
                       <ion-header>

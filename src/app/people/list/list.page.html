@@ -1,4 +1,4 @@
-<ion-header translucent="true">
+﻿<ion-header translucent="true">
   <ion-toolbar>
     @if ((db.tenants()?.length ?? 0) > 1) {
       <ion-buttons slot="start">
@@ -387,7 +387,7 @@
     </ng-template>
   </ion-modal>
 
-  <ion-modal [breakpoints]="[0, 0.75, 1]" [initialBreakpoint]="0.75" backdropDismiss="true" [isOpen]="isPauseModalOpen" (ionModalDidDismiss)="dismissPauseModal()">
+  <ion-modal handle-behavior="none" [breakpoints]="[0, 0.75, 1]" [initialBreakpoint]="0.75" backdropDismiss="true" [isOpen]="isPauseModalOpen" (ionModalDidDismiss)="dismissPauseModal()">
     <ng-template>
       <ion-header>
         <ion-toolbar>

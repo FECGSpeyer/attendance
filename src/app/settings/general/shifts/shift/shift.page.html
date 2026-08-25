@@ -1,4 +1,4 @@
-<ion-header translucent="true">
+﻿<ion-header translucent="true">
   <ion-toolbar color="light">
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="tabs/settings/general/shifts"></ion-back-button>
@@ -164,7 +164,7 @@
 }
 
 <ion-modal (ionModalDidDismiss)="isCalculateModalOpen = false" #calculateModal [isOpen]="isCalculateModalOpen"
-  [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+  handle-behavior="none" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
   <ng-template>
     <ion-content>
       <ion-header>

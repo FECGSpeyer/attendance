@@ -2,7 +2,7 @@ import { Component, ElementRef, OnDestroy, OnInit, ViewChild, effect } from '@an
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { Browser } from '@capacitor/browser';
-import { AlertController, ActionSheetController, IonItemSliding, ModalController, isPlatform, LoadingController } from '@ionic/angular';
+import { AlertController, ActionSheetController, IonItemSliding, ModalController, isPlatform, LoadingController } from '@ionic/angular/lazy';
 import { Storage } from '@ionic/storage-angular';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { format } from 'date-fns';
@@ -1376,6 +1376,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       },
       breakpoints: [0, 0.5, 0.75],
       initialBreakpoint: 0.5,
+      handleBehavior: 'none',
     });
 
     await modal.present();

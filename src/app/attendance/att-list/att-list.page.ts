@@ -1,6 +1,6 @@
 import { Component, OnInit, effect } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular';
+import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular/lazy';
 import { ActivatedRoute, Router } from '@angular/router';
 import { format, isSameDay, parseISO } from 'date-fns';
 import dayjs from 'dayjs';

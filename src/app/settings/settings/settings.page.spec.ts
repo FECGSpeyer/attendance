@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ActionSheetController, AlertController, ModalController, IonRouterOutlet } from '@ionic/angular';
+import { ActionSheetController, AlertController, ModalController, IonRouterOutlet } from '@ionic/angular/lazy';
 import { Router } from '@angular/router';
 
 import { SettingsPage } from './settings.page';

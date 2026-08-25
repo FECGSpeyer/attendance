@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ActionSheetButton, ActionSheetController, AlertController, AlertInput, IonItemSliding, IonModal, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, AlertController, AlertInput, IonItemSliding, IonModal, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
 import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 import { DbService } from '../services/db.service';

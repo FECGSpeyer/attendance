@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="/tabs/attendance"></ion-back-button>
@@ -174,7 +174,7 @@
     </ion-item-group>
 
     <!-- Description & Attachment Modal -->
-    <ion-modal #descriptionModal [initialBreakpoint]="0.8" [breakpoints]="[0, 0.8, 1]">
+    <ion-modal #descriptionModal [initialBreakpoint]="0.8" handle-behavior="none" [breakpoints]="[0, 0.8, 1]">
       <ng-template>
         <ion-header>
           <ion-toolbar>
@@ -236,7 +236,7 @@
               }
               <ion-item id="add-his-button" button detail="false">
                 <ion-label color="primary">Werk(e) hinzufügen</ion-label>
-                <ion-modal #addHisModal trigger="add-his-button" [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7">
+                <ion-modal #addHisModal trigger="add-his-button" handle-behavior="none" [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7">
                   <ng-template>
                     <ion-content color="light">
                       <ion-header>
@@ -579,7 +579,7 @@
 
   <!-- Modal for adding persons to attendance -->
   <ion-modal #addPersonModal [isOpen]="isAddPersonModalOpen" (ionModalDidDismiss)="isAddPersonModalOpen = false"
-    [initialBreakpoint]="0.8" [breakpoints]="[0, 0.8, 1]">
+    [initialBreakpoint]="0.8" handle-behavior="none" [breakpoints]="[0, 0.8, 1]">
     <ng-template>
       <ion-header>
         <ion-toolbar>

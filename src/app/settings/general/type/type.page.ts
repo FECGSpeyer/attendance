@@ -1,6 +1,6 @@
 import { Component, HostListener, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, AlertInput, IonItemSliding, IonModal, IonPopover, IonRouterOutlet, ItemReorderEventDetail, ModalController, NavController } from '@ionic/angular';
+import { AlertController, AlertInput, IonItemSliding, IonModal, IonPopover, IonRouterOutlet, ItemReorderEventDetail, ModalController, NavController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
