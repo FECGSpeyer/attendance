@@ -147,7 +147,6 @@ function buildIcal(orgName: string, plans: PlanEntry[], detailed: boolean): stri
     'VERSION:2.0',
     icalLine('PRODID', '-//Attendix//OrgPlans//DE'),
     'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
     icalLine('X-WR-CALNAME', escapeIcal(orgName)),
     'X-WR-TIMEZONE:Europe/Berlin',
     'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
