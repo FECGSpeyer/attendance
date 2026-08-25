@@ -31,34 +31,29 @@ function escapeIcal(t: string): string {
 
 // Fold iCal line at 75 octets, never splitting a \n escape or a UTF-8 multi-byte sequence.
 function icalLine(prop: string, value: string): string {
+  const full = `${prop}:${value}`;
   const encoder = new TextEncoder();
+  const bytes = encoder.encode(full);
+  if (bytes.length <= 75) return full;
 
-  const foldSegment = (segment: string, firstLimit: number): string[] => {
-    const bytes = encoder.encode(segment);
-    if (bytes.length <= firstLimit) return [segment];
-    const parts: string[] = [];
-    let bytePos = 0;
-    let limit = firstLimit;
-    while (bytePos < bytes.length) {
-      let end = bytePos + limit;
-      if (end >= bytes.length) {
-        end = bytes.length;
-      } else {
-        while (end > bytePos && (bytes[end] & 0xC0) === 0x80) end--;
-      }
-      parts.push(new TextDecoder().decode(bytes.slice(bytePos, end)));
-      bytePos = end;
-      limit = 74;
+  const parts: string[] = [];
+  let bytePos = 0;
+  let limit = 75;
+  while (bytePos < bytes.length) {
+    let end = bytePos + limit;
+    if (end >= bytes.length) {
+      end = bytes.length;
+    } else {
+      // Don't cut inside a multi-byte UTF-8 sequence
+      while (end > bytePos && (bytes[end] & 0xC0) === 0x80) end--;
+      // Don't cut between \ (0x5C) and n (0x6E) — would split \n escape
+      while (end > bytePos + 1 && bytes[end - 1] === 0x5C && bytes[end] === 0x6E) end--;
     }
-    return parts;
-  };
-
-  const segments = value.split('\\n');
-  const allParts: string[] = foldSegment(`${prop}:${segments[0]}`, 75);
-  for (let i = 1; i < segments.length; i++) {
-    allParts.push(...foldSegment(`\\n${segments[i]}`, 74));
+    parts.push(new TextDecoder().decode(bytes.slice(bytePos, end)));
+    bytePos = end;
+    limit = 74;
   }
-  return allParts.join('\r\n ');
+  return parts.join('\r\n ');
 }
 
 Deno.serve(async (req: Request) => {
