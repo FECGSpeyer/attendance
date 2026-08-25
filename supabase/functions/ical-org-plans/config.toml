@@ -1,0 +1,2 @@
+[functions.ical-org-plans]
+verify_jwt = false
