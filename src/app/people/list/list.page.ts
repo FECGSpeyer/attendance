@@ -64,6 +64,7 @@ export class ListPage implements OnInit, OnDestroy {
   public prevFilterValue = '';
   private initialized = false;
   private currentTenantId: number | undefined;
+  private sub: RealtimeChannel | undefined;
 
   constructor(
     private modalController: ModalController,
