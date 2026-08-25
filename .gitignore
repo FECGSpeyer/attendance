@@ -57,3 +57,6 @@ ota-private.pem
 
 # Teams app package — build artifact, regenerate with `npm run teams:package`
 teams/attendix-teams.zip
+
+# Supabase CLI local temp files
+supabase/.temp/
