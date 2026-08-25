@@ -82,9 +82,10 @@ function toIcalDate(d: Date): string {
   return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 }
 
-function foldLine(line: string): string {
-  // iCal spec: fold at 75 octets (bytes), continuation with CRLF + single space.
-  // Must not split a multi-byte UTF-8 sequence across lines.
+// Encode a property + value as a correctly folded iCal line (RFC 5545 §3.1).
+// Folds at 75 octets on UTF-8 byte boundaries; continuation lines start with a space.
+function icalLine(prop: string, value: string): string {
+  const line = `${prop}:${value}`;
   const encoder = new TextEncoder();
   const bytes = encoder.encode(line);
   if (bytes.length <= 75) return line;
@@ -93,18 +94,15 @@ function foldLine(line: string): string {
   let bytePos = 0;
   let limit = 75;
   while (bytePos < bytes.length) {
-    // Find the largest slice that fits within `limit` bytes without cutting a
-    // multi-byte sequence. UTF-8 continuation bytes are 0x80–0xBF.
     let end = bytePos + limit;
     if (end >= bytes.length) {
       end = bytes.length;
     } else {
-      // Walk back until we're not pointing at a continuation byte.
       while (end > bytePos && (bytes[end] & 0xC0) === 0x80) end--;
     }
     parts.push(new TextDecoder().decode(bytes.slice(bytePos, end)));
     bytePos = end;
-    limit = 74; // subsequent lines start with a space (1 byte), so 74 remain
+    limit = 74;
   }
   return parts.join('\r\n ');
 }
@@ -134,11 +132,12 @@ function buildDescription(fields: FieldSelection[], startTime: string, date: str
         timeStr = berlinFormatter.format(slotDate) + ' Uhr | ';
       }
       const conductorStr = f.conductor ? ` (${f.conductor})` : '';
-      const infoStr = f.info ? `\\n  ${escapeIcal(f.info)}` : '';
-      lines.push(escapeIcal(`${timeStr}${f.name}${conductorStr} – ${dur} min`) + infoStr);
+      lines.push(escapeIcal(`${timeStr}${f.name}${conductorStr} \u2013 ${dur} min`));
+      if (f.info) lines.push(escapeIcal(`  ${f.info}`));
     }
-    cumulativeMins += Number(f.time) || 0;
+    cumulativeMins += dur;
   }
+  // Join with literal \n (iCal escaped newline) — the whole value is one property.
   return lines.join('\\n');
 }
 
@@ -146,10 +145,10 @@ function buildIcal(orgName: string, plans: PlanEntry[], detailed: boolean): stri
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Attendix//OrgPlans//DE',
+    icalLine('PRODID', '-//Attendix//OrgPlans//DE'),
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    foldLine(`X-WR-CALNAME:${escapeIcal(orgName)}`),
+    icalLine('X-WR-CALNAME', escapeIcal(orgName)),
     'X-WR-TIMEZONE:Europe/Berlin',
     'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
     'X-PUBLISHED-TTL:PT1H',
@@ -159,24 +158,21 @@ function buildIcal(orgName: string, plans: PlanEntry[], detailed: boolean): stri
     if (!plan.date) continue;
 
     if (!detailed) {
-      // One event per plan
       const dtStart = parseLocalDateTime(plan.date, plan.time);
       const dtEnd = parseLocalDateTime(plan.date, plan.end);
       if (!dtStart) continue;
       const endDate = dtEnd ?? new Date(dtStart.getTime() + 60 * 60000);
-
       const desc = buildDescription(plan.fields, plan.time, plan.date);
       lines.push(
         'BEGIN:VEVENT',
-        foldLine(`UID:${plan.uid}@attendix.de`),
-        `DTSTART:${toIcalDate(dtStart)}`,
-        `DTEND:${toIcalDate(endDate)}`,
-        foldLine(`SUMMARY:${escapeIcal(plan.title)}`),
-        ...(desc ? [foldLine(`DESCRIPTION:${desc}`)] : []),
+        icalLine('UID', `${plan.uid}@attendix.de`),
+        icalLine('DTSTART', toIcalDate(dtStart)),
+        icalLine('DTEND', toIcalDate(endDate)),
+        icalLine('SUMMARY', escapeIcal(plan.title)),
+        ...(desc ? [icalLine('DESCRIPTION', desc)] : []),
         'END:VEVENT',
       );
     } else {
-      // One sub-event per (non-note) field
       let cumulativeMins = 0;
       for (let i = 0; i < plan.fields.length; i++) {
         const f = plan.fields[i];
@@ -186,16 +182,14 @@ function buildIcal(orgName: string, plans: PlanEntry[], detailed: boolean): stri
         if (!slotStart) { cumulativeMins += dur; continue; }
         const dtStart = new Date(slotStart.getTime() + cumulativeMins * 60000);
         const dtEnd = new Date(dtStart.getTime() + (dur || 15) * 60000);
-        const conductorStr = f.conductor ? ` (${f.conductor})` : '';
-        const summaryStr = `${f.name}${conductorStr}`;
-        const descStr = f.info ? escapeIcal(f.info) : '';
+        const summary = escapeIcal(f.conductor ? `${f.name} (${f.conductor})` : f.name);
         lines.push(
           'BEGIN:VEVENT',
-          foldLine(`UID:${plan.uid}-${i}@attendix.de`),
-          `DTSTART:${toIcalDate(dtStart)}`,
-          `DTEND:${toIcalDate(dtEnd)}`,
-          foldLine(`SUMMARY:${escapeIcal(summaryStr)}`),
-          ...(descStr ? [foldLine(`DESCRIPTION:${descStr}`)] : []),
+          icalLine('UID', `${plan.uid}-${i}@attendix.de`),
+          icalLine('DTSTART', toIcalDate(dtStart)),
+          icalLine('DTEND', toIcalDate(dtEnd)),
+          icalLine('SUMMARY', summary),
+          ...(f.info ? [icalLine('DESCRIPTION', escapeIcal(f.info))] : []),
           'END:VEVENT',
         );
         cumulativeMins += dur;
@@ -204,7 +198,8 @@ function buildIcal(orgName: string, plans: PlanEntry[], detailed: boolean): stri
   }
 
   lines.push('END:VCALENDAR');
-  return lines.join('\r\n');
+  // RFC 5545 requires the stream to end with CRLF after the last line.
+  return lines.join('\r\n') + '\r\n';
 }
 
 Deno.serve(async (req: Request) => {
