@@ -28,7 +28,7 @@
 
   <ion-list [inset]="true">
     <ion-item>
-      <ion-input label="Titel" labelPlacement="stacked" [(ngModel)]="planTitle" (ionBlur)="calculateEnd()"
+      <ion-input autocapitalize="words" label="Titel" labelPlacement="stacked" [(ngModel)]="planTitle" (ionBlur)="calculateEnd()"
         placeholder="Ablaufplan"></ion-input>
     </ion-item>
     <ion-item>
@@ -123,7 +123,7 @@
                 }
               </ion-label>
               @if (!field.id.includes('noteFld')) {
-              <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
+              <ion-input autocapitalize="words" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
                 placeholder="min" type="number" slot="end"></ion-input>
               }
               <ion-reorder slot="end"></ion-reorder>

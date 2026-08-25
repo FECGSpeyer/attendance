@@ -21,11 +21,11 @@
     <ion-item-group>
       <ion-item>
         <ion-label position="stacked">Gruppenname</ion-label>
-        <ion-input [(ngModel)]="longName"></ion-input>
+        <ion-input autocapitalize="words" [(ngModel)]="longName"></ion-input>
       </ion-item>
       <ion-item>
         <ion-label position="stacked">Kurzname</ion-label>
-        <ion-input helperText="Wird vor allem als Dateiname bei Exports verwendet" [(ngModel)]="shortName"></ion-input>
+        <ion-input autocapitalize="words" helperText="Wird vor allem als Dateiname bei Exports verwendet" [(ngModel)]="shortName"></ion-input>
       </ion-item>
     </ion-item-group>
 
@@ -33,7 +33,7 @@
     <ion-item-group>
       <ion-item>
         <ion-label position="stacked">Saisonbeginn</ion-label>
-        <ion-input helperText="Anwesenheiten werden erst ab diesem Datum bei den Personen berücksichtigt"
+        <ion-input autocapitalize="words" helperText="Anwesenheiten werden erst ab diesem Datum bei den Personen berücksichtigt"
         [(ngModel)]="attDateString" id="date-modal"></ion-input>
         <ion-modal class="attDateModal" #attModal trigger="date-modal">
           <ng-template>
@@ -74,7 +74,7 @@
           <div slot="content">
             @for (reason of absenceReasons; track $index; let i = $index) {
               <ion-item lines="inset">
-                <ion-input [(ngModel)]="absenceReasons[i]" placeholder="Grund eingeben..."></ion-input>
+                <ion-input autocapitalize="words" [(ngModel)]="absenceReasons[i]" placeholder="Grund eingeben..."></ion-input>
                 <ion-button fill="clear" slot="end" (click)="removeAbsenceReason(i)" color="danger">
                   <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
                 </ion-button>
@@ -104,7 +104,7 @@
           <div slot="content">
             @for (reason of lateReasons; track $index; let i = $index) {
               <ion-item lines="inset">
-                <ion-input [(ngModel)]="lateReasons[i]" placeholder="Grund eingeben..."></ion-input>
+                <ion-input autocapitalize="words" [(ngModel)]="lateReasons[i]" placeholder="Grund eingeben..."></ion-input>
                 <ion-button fill="clear" slot="end" (click)="removeLateReason(i)" color="danger">
                   <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
                 </ion-button>
@@ -225,7 +225,7 @@
             <ion-list [inset]="true">
               <ion-item-group>
                 <ion-item>
-                  <ion-input labelPlacement="stacked" label="Name (optional)" placeholder="z.B. Verspätungs-Warnung"
+                  <ion-input autocapitalize="words" labelPlacement="stacked" label="Name (optional)" placeholder="z.B. Verspätungs-Warnung"
                     [(ngModel)]="newCriticalRule.name"></ion-input>
                 </ion-item>
                 <ion-item>
@@ -252,7 +252,7 @@
                   </ion-select>
                 </ion-item>
                 <ion-item>
-                  <ion-input type="number" labelPlacement="stacked"
+                  <ion-input autocapitalize="words" type="number" labelPlacement="stacked"
                     [label]="newCriticalRule.threshold_type === CriticalRuleThresholdType.COUNT ? 'Anzahl' : 'Prozent'"
                     [(ngModel)]="newCriticalRule.threshold_value"></ion-input>
                 </ion-item>
@@ -268,7 +268,7 @@
                 </ion-item>
                 @if (newCriticalRule.period_type === CriticalRulePeriodType.DAYS) {
                   <ion-item>
-                    <ion-input type="number" labelPlacement="stacked" label="Anzahl Tage"
+                    <ion-input autocapitalize="words" type="number" labelPlacement="stacked" label="Anzahl Tage"
                       helperText="Anzahl der Tage, die zurück geprüft werden"
                       [(ngModel)]="newCriticalRule.period_days"></ion-input>
                   </ion-item>
@@ -346,7 +346,7 @@
                   </ion-select>
                 </ion-item>
                 <ion-item>
-                  <ion-input labelPlacement="stacked" label="Name" [(ngModel)]="newExtraField.name"></ion-input>
+                  <ion-input autocapitalize="words" labelPlacement="stacked" label="Name" [(ngModel)]="newExtraField.name"></ion-input>
                 </ion-item>
                 <ion-item>
                   <ion-toggle
@@ -377,7 +377,7 @@
                   } @else {
                     @for (option of newExtraField.options; track option; let i = $index) {
                       <ion-item>
-                        <ion-input [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined" placeholder="Wert eingeben..." [value]="option" (ionChange)="onExtraOptionChanged($event, i)"></ion-input>
+                        <ion-input autocapitalize="words" [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined" placeholder="Wert eingeben..." [value]="option" (ionChange)="onExtraOptionChanged($event, i)"></ion-input>
                         <ion-button slot="end" (click)="newExtraField.options.splice(i, 1)" fill="clear">
                           <ion-icon color="danger" name="trash-outline"></ion-icon>
                         </ion-button>
@@ -393,7 +393,7 @@
                       <ion-label>Standardwert</ion-label>
                       <ion-toggle slot="end" [(ngModel)]="newExtraField.defaultValue"></ion-toggle>
                     } @else {
-                      <ion-input [type]="newExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
+                      <ion-input autocapitalize="words" [type]="newExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
                         labelPlacement="stacked" label="Standardwert (optional)"
                       [(ngModel)]="newExtraField.defaultValue"></ion-input>
                     }
@@ -432,7 +432,7 @@
                     <ion-note slot="end">{{ getFieldTypeName(editingExtraField.type) }}</ion-note>
                   </ion-item>
                   <ion-item>
-                    <ion-input labelPlacement="stacked" label="Name" [(ngModel)]="editingExtraField.name"></ion-input>
+                    <ion-input autocapitalize="words" labelPlacement="stacked" label="Name" [(ngModel)]="editingExtraField.name"></ion-input>
                   </ion-item>
                   <ion-item>
                     <ion-toggle
@@ -462,7 +462,7 @@
                     } @else {
                       @for (option of editingExtraField.options; track option; let i = $index) {
                         <ion-item>
-                          <ion-input [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined" placeholder="Wert eingeben..." [value]="option" (ionChange)="onEditExtraOptionChanged($event, i)"></ion-input>
+                          <ion-input autocapitalize="words" [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined" placeholder="Wert eingeben..." [value]="option" (ionChange)="onEditExtraOptionChanged($event, i)"></ion-input>
                           <ion-button slot="end" (click)="removeEditExtraOption(i)" fill="clear">
                             <ion-icon color="danger" name="trash-outline"></ion-icon>
                           </ion-button>
@@ -478,7 +478,7 @@
                         <ion-label>Standardwert</ion-label>
                         <ion-toggle slot="end" [(ngModel)]="editingExtraField.defaultValue"></ion-toggle>
                       } @else {
-                        <ion-input [type]="editingExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
+                        <ion-input autocapitalize="words" [type]="editingExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
                           labelPlacement="stacked" label="Standardwert"
                         [(ngModel)]="editingExtraField.defaultValue"></ion-input>
                       }

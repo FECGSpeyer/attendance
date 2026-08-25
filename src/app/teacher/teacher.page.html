@@ -12,7 +12,7 @@
 <ion-content>
   <ion-item>
     <ion-label position="stacked">Name</ion-label>
-    <ion-input [(ngModel)]="editedTeacher.name"></ion-input>
+    <ion-input autocapitalize="words" [(ngModel)]="editedTeacher.name"></ion-input>
   </ion-item>
   <ion-item>
     <ion-select interface="modal" label="Instrumente" [(ngModel)]="editedTeacher.instruments" multiple="true">
@@ -26,11 +26,11 @@
   </ion-item>
   <ion-item>
     <ion-label position="stacked">Kontakt</ion-label>
-    <ion-input [(ngModel)]="editedTeacher.number"></ion-input>
+    <ion-input autocapitalize="words" [(ngModel)]="editedTeacher.number"></ion-input>
   </ion-item>
   <ion-item>
     <ion-label position="stacked">Notizen</ion-label>
-    <ion-textarea [(ngModel)]="editedTeacher.notes"></ion-textarea>
+    <ion-textarea autocapitalize="words" [(ngModel)]="editedTeacher.notes"></ion-textarea>
   </ion-item>
   @if (playersFromTeacher?.length) {
     <ion-accordion-group value="players">

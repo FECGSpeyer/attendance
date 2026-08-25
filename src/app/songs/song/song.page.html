@@ -44,16 +44,16 @@
     <ion-item-group>
       <ion-item>
         <ion-label position="stacked">Präfix (optional)</ion-label>
-        <ion-input helperText="Bspw. um Weihnachtslieder kennzeichnen zu können (z.B. W für Weihnachten -> W1)"
+        <ion-input autocapitalize="words" helperText="Bspw. um Weihnachtslieder kennzeichnen zu können (z.B. W für Weihnachten -> W1)"
           (ionBlur)="update()" [(ngModel)]="song.prefix" type="text" #prefix></ion-input>
       </ion-item>
       <ion-item>
         <ion-label position="stacked">Nummer</ion-label>
-        <ion-input (ionBlur)="update()" [(ngModel)]="song.number" type="number" #number></ion-input>
+        <ion-input autocapitalize="words" (ionBlur)="update()" [(ngModel)]="song.number" type="number" #number></ion-input>
       </ion-item>
       <ion-item>
         <ion-label position="stacked">Name</ion-label>
-        <ion-input (ionBlur)="update()" [(ngModel)]="song.name" #name></ion-input>
+        <ion-input autocapitalize="words" (ionBlur)="update()" [(ngModel)]="song.name" #name></ion-input>
       </ion-item>
 
       <ion-item>
@@ -296,7 +296,7 @@
       } @else {
       <ion-item>
         <ion-label position="stacked">Link</ion-label>
-        <ion-textarea (ionBlur)="update()" [(ngModel)]="song.link" autoGrow="true" #link></ion-textarea>
+        <ion-textarea autocapitalize="words" (ionBlur)="update()" [(ngModel)]="song.link" autoGrow="true" #link></ion-textarea>
       </ion-item>
       }
     </ion-item-group>

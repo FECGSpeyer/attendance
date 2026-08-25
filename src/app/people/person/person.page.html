@@ -99,7 +99,7 @@
       <ion-col>
         <ion-item lines="none">
           <ion-label position="stacked">Vorname</ion-label>
-          <ion-input [disabled]="readOnly" [debounce]="250" (ionInput)="onNameInput()"
+          <ion-input autocapitalize="words" [disabled]="readOnly" [debounce]="250" (ionInput)="onNameInput()"
             (ionChange)="onChange()"
             [(ngModel)]="player.firstName"></ion-input>
         </ion-item>
@@ -107,7 +107,7 @@
       <ion-col>
         <ion-item lines="none">
           <ion-label position="stacked">Nachname</ion-label>
-          <ion-input [disabled]="readOnly" [debounce]="250" (ionInput)="onNameInput()"
+          <ion-input autocapitalize="words" [disabled]="readOnly" [debounce]="250" (ionInput)="onNameInput()"
             (ionChange)="onChange()"
             [(ngModel)]="player.lastName"></ion-input>
         </ion-item>
@@ -161,7 +161,7 @@
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>
-          <ion-textarea [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()"
+          <ion-textarea autocapitalize="words" [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()"
             [(ngModel)]="player.notes"></ion-textarea>
         </ion-item>
       </ion-col>
@@ -183,7 +183,7 @@
         </ion-item>
         <ion-item *ngIf="solved">
           <ion-label position="stacked">Anmerkungen</ion-label>
-          <ion-textarea autoGrow="true" (ionChange)="onChange()" [(ngModel)]="notes"></ion-textarea>
+          <ion-textarea autocapitalize="words" autoGrow="true" (ionChange)="onChange()" [(ngModel)]="notes"></ion-textarea>
         </ion-item>
       </div>
     </ion-accordion>
@@ -235,7 +235,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Stimmumfang</ion-label>
-                <ion-input [disabled]="readOnly || !isAdmin" [(ngModel)]="player.range"></ion-input>
+                <ion-input autocapitalize="words" [disabled]="readOnly || !isAdmin" [(ngModel)]="player.range"></ion-input>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -244,7 +244,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Telefon-/Handynummer</ion-label>
-                <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.phone"></ion-input>
+                <ion-input autocapitalize="words" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.phone"></ion-input>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -252,7 +252,7 @@
             <ion-col>
               <ion-item [color]="!existingPlayer || player.correctBirthday || readOnly ? '' : 'warning'">
                 <ion-label position="stacked">Geburtsdatum</ion-label>
-                <ion-input
+                <ion-input autocapitalize="words"
                   [disabled]="readOnly"
                   [value]="formatDateForDisplay(player.birthday)"
                   (ionBlur)="onManualDateInput('birthday', $event)"
@@ -284,7 +284,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
-                <ion-input
+                <ion-input autocapitalize="words"
                   [disabled]="readOnly"
                   [value]="formatDateForDisplay(player.playsSince)"
                   (ionBlur)="onManualDateInput('playsSince', $event)"
@@ -316,7 +316,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Beigetreten am</ion-label>
-                <ion-input
+                <ion-input autocapitalize="words"
                   [disabled]="readOnly"
                   [value]="formatDateForDisplay(player.joined)"
                   (ionBlur)="onManualDateInput('joined', $event)"
@@ -400,7 +400,7 @@
           @if (!isMainGroup && isChoir) {
           <ion-item>
             <ion-label position="stacked">Instrumente</ion-label>
-            <ion-input [disabled]="readOnly || !isAdmin" (ionChange)="onChange()"
+            <ion-input autocapitalize="words" [disabled]="readOnly || !isAdmin" (ionChange)="onChange()"
               [(ngModel)]="player.instruments"></ion-input>
           </ion-item>
           }
@@ -433,7 +433,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Testergebnis</ion-label>
-                <ion-input [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.testResult"></ion-input>
+                <ion-input autocapitalize="words" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.testResult"></ion-input>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -489,7 +489,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Sonstige Dienste</ion-label>
-                <ion-input [disabled]="readOnly" (ionChange)="onChange()"
+                <ion-input autocapitalize="words" [disabled]="readOnly" (ionChange)="onChange()"
                   [(ngModel)]="player.otherExercise"></ion-input>
               </ion-item>
             </ion-col>
@@ -508,7 +508,7 @@
           <ion-col>
             <ion-item>
               <ion-label position="stacked">E-Mail</ion-label>
-              <ion-input [disabled]="player.appId || readOnly" [debounce]="500"
+              <ion-input autocapitalize="words" [disabled]="player.appId || readOnly" [debounce]="500"
                 (ionBlur)="onEmailBlur()" (ionChange)="onChange()"
                 [(ngModel)]="player.email"></ion-input>
               @if (!player.appId && !readOnly) {
@@ -588,10 +588,10 @@
           @for (field of db.tenant().additional_fields; track field) {
           <ion-item>
             @if (field.type === fieldTypes.TEXT) {
-            <ion-input [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name" labelPlacement="stacked"
+            <ion-input autocapitalize="words" [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name" labelPlacement="stacked"
               [(ngModel)]="player.additional_fields[field.id]"></ion-input>
             } @else if (field.type === fieldTypes.NUMBER) {
-            <ion-input type="number" [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name"
+            <ion-input autocapitalize="words" type="number" [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name"
               labelPlacement="stacked" [(ngModel)]="player.additional_fields[field.id]"></ion-input>
             } @else if (field.type === fieldTypes.BOOLEAN) {
             <ion-label>{{ field.name }}</ion-label>
@@ -599,7 +599,7 @@
               [(ngModel)]="player.additional_fields[field.id]"></ion-toggle>
             } @else if (field.type === fieldTypes.DATE) {
             <ion-label position="stacked">{{ field.name }}</ion-label>
-            <ion-input
+            <ion-input autocapitalize="words"
               [disabled]="readOnly"
               [value]="formatDateForDisplay($any(player.additional_fields[field.id]))"
               (ionBlur)="onManualDateInput('extra-' + field.id, $event)"
@@ -631,7 +631,7 @@
               }
             </ion-select>
             } @else if (field.type === fieldTypes.TEXTAREA) {
-            <ion-textarea [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()" [label]="field.name"
+            <ion-textarea autocapitalize="words" [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()" [label]="field.name"
               labelPlacement="stacked" [(ngModel)]="player.additional_fields[field.id]"></ion-textarea>
             } @else if (field.type === fieldTypes.BFECG_CHURCH) {
             <ion-label>{{ field.name }}</ion-label>
@@ -895,7 +895,7 @@
         <ion-list>
           <ion-item>
             <ion-label position="stacked">Grund *</ion-label>
-            <ion-textarea [(ngModel)]="pauseReason" placeholder="Gib einen Grund für die Pause an..."
+            <ion-textarea autocapitalize="words" [(ngModel)]="pauseReason" placeholder="Gib einen Grund für die Pause an..."
               [autoGrow]="true"></ion-textarea>
           </ion-item>
         </ion-list>
@@ -974,11 +974,11 @@
       <ion-content class="ion-padding">
         <ion-item>
           <ion-label position="stacked">Austrittsdatum</ion-label>
-          <ion-input type="date" [(ngModel)]="archiveDate"></ion-input>
+          <ion-input autocapitalize="words" type="date" [(ngModel)]="archiveDate"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Notiz</ion-label>
-          <ion-textarea [(ngModel)]="archiveNote"></ion-textarea>
+          <ion-textarea autocapitalize="words" [(ngModel)]="archiveNote"></ion-textarea>
         </ion-item>
         <ion-fab vertical="bottom" horizontal="end" slot="fixed">
           <ion-fab-button (click)="archivePlayer()">

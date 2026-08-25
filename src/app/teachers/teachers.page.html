@@ -35,7 +35,7 @@
         </ion-header>
         <ion-item>
           <ion-label position="stacked">Name</ion-label>
-          <ion-input #input></ion-input>
+          <ion-input autocapitalize="words" #input></ion-input>
         </ion-item>
         <ion-item>
           <ion-select interface="modal" label="Instrumente" [(ngModel)]="selInstruments" #select multiple="true">
@@ -50,11 +50,11 @@
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Kontakt</ion-label>
-          <ion-input #number></ion-input>
+          <ion-input autocapitalize="words" #number></ion-input>
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>
-          <ion-textarea #notes></ion-textarea>
+          <ion-textarea autocapitalize="words" #notes></ion-textarea>
         </ion-item>
         <ion-button (click)="addTeacher(input.value, select.value, notes.value, number.value, private.value, modal)" expand="full">Hinzufügen</ion-button>
       </ion-content>

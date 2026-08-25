@@ -43,11 +43,11 @@
     <ion-item-group>
       <ion-item>
         <ion-label position="stacked">Name</ion-label>
-        <ion-input [(ngModel)]="shift.name"></ion-input>
+        <ion-input autocapitalize="words" [(ngModel)]="shift.name"></ion-input>
       </ion-item>
       <ion-item>
         <ion-label position="stacked">Beschreibung</ion-label>
-        <ion-input [(ngModel)]="shift.description"></ion-input>
+        <ion-input autocapitalize="words" [(ngModel)]="shift.description"></ion-input>
       </ion-item>
     </ion-item-group>
 
@@ -97,7 +97,7 @@
             <ion-label position="stacked">
               <p>Dauer (in Stunden)</p>
             </ion-label>
-            <ion-input
+            <ion-input autocapitalize="words"
               helperText="Wenn die Schichtdauer keine ganze Zahl ist, bitte Dezimalstellen mit Punkt angeben. (z.B. 8.5 für 8 1/2 Stunden)"
             type="number" [(ngModel)]="s.duration"></ion-input>
           </ion-item>
@@ -106,7 +106,7 @@
           <ion-label position="stacked">
             <p>Wiederholungen</p>
           </ion-label>
-          <ion-input helperText="Anzahl der Wiederholungen dieser Schicht im Plan." type="number"
+          <ion-input autocapitalize="words" helperText="Anzahl der Wiederholungen dieser Schicht im Plan." type="number"
           [(ngModel)]="s.repeat_count"></ion-input>
         </ion-item>
       }
@@ -138,7 +138,7 @@
           <ion-button [disabled]="isUsed" slot="end" fill="clear" color="danger" (click)="removeShift(i)">
             <ion-icon name="trash-outline"></ion-icon>
           </ion-button>
-          <ion-input [disabled]="isUsed" [(ngModel)]="s.name"></ion-input>
+          <ion-input autocapitalize="words" [disabled]="isUsed" [(ngModel)]="s.name"></ion-input>
         </ion-item>
         <ion-item lines="none">
           <ion-label>Anfangsdatum</ion-label>

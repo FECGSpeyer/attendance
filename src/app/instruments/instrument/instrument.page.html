@@ -18,7 +18,7 @@
         <ion-col>
           <ion-item>
             <ion-label position="stacked">Name</ion-label>
-            <ion-input [(ngModel)]="instrument.name"></ion-input>
+            <ion-input autocapitalize="words" [(ngModel)]="instrument.name"></ion-input>
           </ion-item>
         </ion-col>
       </ion-row>
@@ -54,7 +54,7 @@
           <ion-col>
             <ion-item>
               <ion-label position="stacked">Tonumfang</ion-label>
-              <ion-input [(ngModel)]="instrument.range"></ion-input>
+              <ion-input autocapitalize="words" [(ngModel)]="instrument.range"></ion-input>
             </ion-item>
           </ion-col>
         </ion-row>
@@ -77,7 +77,7 @@
           <ion-col>
             <ion-item>
               <ion-label position="stacked">Synonyme</ion-label>
-              <ion-input helperText="Definiere Synonyme um beim Hinzufügen von Dateien zu Werken die Instrumente automatisch zuordnen zu können. Synonyme durch Komma trennen." [(ngModel)]="instrument.synonyms"></ion-input>
+              <ion-input autocapitalize="words" helperText="Definiere Synonyme um beim Hinzufügen von Dateien zu Werken die Instrumente automatisch zuordnen zu können. Synonyme durch Komma trennen." [(ngModel)]="instrument.synonyms"></ion-input>
               <ion-button slot="end" fill="clear" (click)="generateSynonyms()">
                 <ion-icon slot="icon-only" name="sparkles-outline"></ion-icon>
               </ion-button>
@@ -89,7 +89,7 @@
         <ion-col>
           <ion-item>
             <ion-label position="stacked">Notizen</ion-label>
-            <ion-textarea autoGrow="true" [(ngModel)]="instrument.notes"></ion-textarea>
+            <ion-textarea autocapitalize="words" autoGrow="true" [(ngModel)]="instrument.notes"></ion-textarea>
           </ion-item>
         </ion-col>
       </ion-row>

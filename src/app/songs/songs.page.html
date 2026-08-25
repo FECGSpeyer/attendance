@@ -346,20 +346,20 @@
             </ion-header>
             <ion-item>
               <ion-label position="stacked">Präfix (optional)</ion-label>
-              <ion-input helperText="Bspw. um Weihnachtslieder kennzeichnen zu können (z.B. W für Weihnachten -> W1)"
+              <ion-input autocapitalize="words" helperText="Bspw. um Weihnachtslieder kennzeichnen zu können (z.B. W für Weihnachten -> W1)"
               type="text" #prefix></ion-input>
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Nummer</ion-label>
-              <ion-input type="number" #number></ion-input>
+              <ion-input autocapitalize="words" type="number" #number></ion-input>
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Name</ion-label>
-              <ion-input #name></ion-input>
+              <ion-input autocapitalize="words" #name></ion-input>
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Link</ion-label>
-              <ion-textarea autoGrow="true" #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
+              <ion-textarea autocapitalize="words" autoGrow="true" #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
             </ion-item>
             <ion-item>
               <ion-toggle [(ngModel)]="withChoir" aria-label="Chor & Orchester">Chor & Orchester</ion-toggle>

@@ -137,7 +137,7 @@
             </ion-header>
             <ion-item>
               <ion-label position="stacked">Gruppe</ion-label>
-              <ion-input placeholder="z.B. Mädchen, Posaune, Alt 1, etc." #input></ion-input>
+              <ion-input autocapitalize="words" placeholder="z.B. Mädchen, Posaune, Alt 1, etc." #input></ion-input>
             </ion-item>
             <ion-button expand="block" (click)="addInstrument(input.value, modal)" expand="full">Hinzufügen</ion-button>
           </ion-content>

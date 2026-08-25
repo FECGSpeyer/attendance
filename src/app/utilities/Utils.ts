@@ -88,6 +88,11 @@ export class Utils {
       if (groupCompare !== 0) {return groupCompare;}
 
       // Then by lastName within same group
+      const aPlayerOrder = a.sort_order;
+      const bPlayerOrder = b.sort_order;
+      if (aPlayerOrder != null && bPlayerOrder != null) { return aPlayerOrder - bPlayerOrder; }
+      if (aPlayerOrder != null) { return -1; }
+      if (bPlayerOrder != null) { return 1; }
       return a.lastName.localeCompare(b.lastName);
     });
 
@@ -191,8 +196,15 @@ export class Utils {
     const mainGroup = players.filter(p => p.instrument === mainGroupId);
     const otherGroups = players.filter(p => p.instrument !== mainGroupId);
 
-    // Sort main group by lastName
-    const sortedMainGroup = mainGroup.sort((a, b) => (a.person?.lastName ?? a.lastName).localeCompare(b.person?.lastName ?? b.lastName));
+    // Sort main group by sort_order then lastName
+    const sortedMainGroup = mainGroup.sort((a, b) => {
+      const aOrder = (a as any).sort_order ?? a.person?.sort_order;
+      const bOrder = (b as any).sort_order ?? b.person?.sort_order;
+      if (aOrder != null && bOrder != null) { return aOrder - bOrder; }
+      if (aOrder != null) { return -1; }
+      if (bOrder != null) { return 1; }
+      return (a.person?.lastName ?? a.lastName).localeCompare(b.person?.lastName ?? b.lastName);
+    });
 
     // Group others by groupId
     const grouped = new Map<number, { groupName: string; players: PersonAttendance[]; sortOrder?: number }>();
@@ -225,7 +237,14 @@ export class Utils {
         return a.groupName.localeCompare(b.groupName);
       })
       .map(([, group]) =>
-        group.players.sort((a, b) => (a.person?.lastName ?? a.lastName).localeCompare(b.person?.lastName ?? b.lastName))
+        group.players.sort((a, b) => {
+          const aOrder = (a as any).sort_order ?? a.person?.sort_order;
+          const bOrder = (b as any).sort_order ?? b.person?.sort_order;
+          if (aOrder != null && bOrder != null) { return aOrder - bOrder; }
+          if (aOrder != null) { return -1; }
+          if (bOrder != null) { return 1; }
+          return (a.person?.lastName ?? a.lastName).localeCompare(b.person?.lastName ?? b.lastName);
+        })
       )
       .reduce((acc, val) => acc.concat(val), []);
 

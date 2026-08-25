@@ -138,15 +138,15 @@
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Vorname</ion-label>
-              <ion-input [(ngModel)]="userData.firstName" type="text"></ion-input>
+              <ion-input autocapitalize="words" [(ngModel)]="userData.firstName" type="text"></ion-input>
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Nachname</ion-label>
-              <ion-input [(ngModel)]="userData.lastName" type="text"></ion-input>
+              <ion-input autocapitalize="words" [(ngModel)]="userData.lastName" type="text"></ion-input>
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Handynummer</ion-label>
-              <ion-input [(ngModel)]="userData.phone" type="tel"></ion-input>
+              <ion-input autocapitalize="words" [(ngModel)]="userData.phone" type="tel"></ion-input>
             </ion-item>
             <ion-item>
               <ion-label>Geburtsdatum</ion-label>
@@ -218,9 +218,9 @@
                         </ng-template>
                       </ion-modal>
                     } @else if (field.type === fieldTypes.NUMBER) {
-                      <ion-input type="number" labelPlacement="stacked" [label]="field.name" [(ngModel)]="userData.additional_fields[field.id]"></ion-input>
+                      <ion-input autocapitalize="words" type="number" labelPlacement="stacked" [label]="field.name" [(ngModel)]="userData.additional_fields[field.id]"></ion-input>
                     } @else {
-                      <ion-input labelPlacement="stacked" [label]="field.name" [(ngModel)]="userData.additional_fields[field.id]"></ion-input>
+                      <ion-input autocapitalize="words" labelPlacement="stacked" [label]="field.name" [(ngModel)]="userData.additional_fields[field.id]"></ion-input>
                     }
                   } @else {
                     <ion-label>
@@ -727,12 +727,12 @@
               <ion-item-group>
                 <ion-item>
                   <ion-label position="stacked">Deine Frage</ion-label>
-                  <ion-textarea placeholder="Deine Frage eingeben..." [(ngModel)]="helpQuestion"
+                  <ion-textarea autocapitalize="words" placeholder="Deine Frage eingeben..." [(ngModel)]="helpQuestion"
                     rows="6"></ion-textarea>
                 </ion-item>
                 <ion-item>
                   <ion-label position="stacked">Deine Handynummer (optional)</ion-label>
-                  <ion-input helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel"
+                  <ion-input autocapitalize="words" helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel"
                     placeholder="Handynummer eingeben..." [(ngModel)]="feedbackPhone"></ion-input>
                 </ion-item>
               </ion-item-group>
@@ -753,7 +753,7 @@
                 </ion-item>
                 <ion-item>
                   <ion-label position="stacked">Dein Feedback</ion-label>
-                  <ion-textarea placeholder="Dein Feedback eingeben..." [(ngModel)]="feedbackText"
+                  <ion-textarea autocapitalize="words" placeholder="Dein Feedback eingeben..." [(ngModel)]="feedbackText"
                     rows="6"></ion-textarea>
                 </ion-item>
                 <ion-item>
@@ -762,7 +762,7 @@
                 @if (!anonymous) {
                 <ion-item>
                   <ion-label position="stacked">Deine Handynummer (optional)</ion-label>
-                  <ion-input helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel"
+                  <ion-input autocapitalize="words" helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel"
                     placeholder="Handynummer eingeben..." [(ngModel)]="feedbackPhone"></ion-input>
                 </ion-item>
                 }

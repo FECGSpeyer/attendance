@@ -32,7 +32,7 @@
       @if (reasonSelection === customReasonValue) {
       <ion-item class="custom-reason" #customReasonField>
         <ion-label position="stacked">Grund</ion-label>
-        <ion-textarea [(ngModel)]="customReason" placeholder="Mindestens 5 Zeichen eingeben..."
+        <ion-textarea autocapitalize="words" [(ngModel)]="customReason" placeholder="Mindestens 5 Zeichen eingeben..."
           autoGrow="true" (ionFocus)="onCustomReasonFocus()"></ion-textarea>
       </ion-item>
       <div class="keyboard-spacer"></div>

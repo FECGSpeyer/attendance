@@ -28,7 +28,7 @@
       <ion-item-group>
         <ion-item>
           <ion-label position="stacked">Name</ion-label>
-          <ion-input [(ngModel)]="type.name"></ion-input>
+          <ion-input autocapitalize="words" [(ngModel)]="type.name"></ion-input>
         </ion-item>
       </ion-item-group>
     </ion-list>
@@ -83,7 +83,7 @@
         @if (type.all_day) {
           <ion-item>
             <ion-label position="stacked">Standarddauer (in Tagen)</ion-label>
-            <ion-input type="number" [(ngModel)]="type.duration_days"></ion-input>
+            <ion-input autocapitalize="words" type="number" [(ngModel)]="type.duration_days"></ion-input>
           </ion-item>
         }
 
@@ -276,7 +276,7 @@
               </ion-list-header>
               <ion-item-group>
                 <ion-item lines="none" class="custom-reminder-item">
-                  <ion-input
+                  <ion-input autocapitalize="words"
                     type="number"
                     label="Stunden vor Termin"
                     labelPlacement="stacked"
@@ -419,7 +419,7 @@
     <ion-item-group>
       <ion-item>
         <ion-label position="stacked">Ablaufplan Überschrift</ion-label>
-        <ion-input helperText="Dieser Titel wird beim Exportieren eines Ablaufplans angezeigt. Falls eine Typ-Info vorhanden ist, wird diese in Klammern dahinter angezeigt. (z.B. Probenplan (Kantateprobe))" [(ngModel)]="type.planning_title"></ion-input>
+        <ion-input autocapitalize="words" helperText="Dieser Titel wird beim Exportieren eines Ablaufplans angezeigt. Falls eine Typ-Info vorhanden ist, wird diese in Klammern dahinter angezeigt. (z.B. Probenplan (Kantateprobe))" [(ngModel)]="type.planning_title"></ion-input>
       </ion-item>
       @if (!isGeneral) {
         <ion-item>
@@ -462,7 +462,7 @@
                 }
               </ion-label>
               @if (!field.id.includes('noteFld')) {
-                <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
+                <ion-input autocapitalize="words" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
                 placeholder="min" type="number" slot="end"></ion-input>
               }
               <ion-reorder slot="end"></ion-reorder>
@@ -536,7 +536,7 @@
 
       <!-- Add new checklist item -->
       <ion-item lines="none">
-        <ion-input
+        <ion-input autocapitalize="words"
           [(ngModel)]="newChecklistText"
           label="Neues To-Do"
           labelPlacement="stacked"
@@ -562,7 +562,7 @@
 
       @if (newChecklistDeadline === -1 || (newChecklistDeadline !== null && !isPresetDeadline(newChecklistDeadline))) {
         <ion-item>
-          <ion-input
+          <ion-input autocapitalize="words"
             type="number"
             [(ngModel)]="customChecklistDeadline"
             label="Stunden vor Termin"

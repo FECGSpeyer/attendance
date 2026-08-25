@@ -107,12 +107,12 @@
     </ion-list-header>
     <ion-item-group>
       <ion-item>
-        <ion-input label="Vollständiger Name" labelPlacement="stacked" [placeholder]="namePlaceholder"
+        <ion-input autocapitalize="words" label="Vollständiger Name" labelPlacement="stacked" [placeholder]="namePlaceholder"
           [(ngModel)]="tenant.longName" [counter]="true" maxlength="50"
           helperText="Der Name wird in der App angezeigt"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-input label="Kürzel" labelPlacement="stacked" [placeholder]="shortNamePlaceholder"
+        <ion-input autocapitalize="words" label="Kürzel" labelPlacement="stacked" [placeholder]="shortNamePlaceholder"
           [(ngModel)]="tenant.shortName"
           helperText="Wird für kompakte Darstellungen verwendet"></ion-input>
       </ion-item>
@@ -148,7 +148,7 @@
     </ion-list-header>
     <ion-item-group>
       <ion-item>
-        <ion-input label="Name der Hauptgruppe" labelPlacement="stacked" [placeholder]="mainGroupPlaceholder"
+        <ion-input autocapitalize="words" label="Name der Hauptgruppe" labelPlacement="stacked" [placeholder]="mainGroupPlaceholder"
           [(ngModel)]="mainGroupName" helperText="z.B. Leitung, Dirigenten, Vorstand"></ion-input>
       </ion-item>
     </ion-item-group>

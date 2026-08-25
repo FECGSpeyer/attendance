@@ -54,7 +54,7 @@ export class ListPage implements OnInit, OnDestroy {
   public isAdmin = false;
   public isChoir = false;
   public isGeneral = false;
-  public sub: RealtimeChannel;
+  public isReordering = false;
   public mainGroup: number | undefined;
   public attendances: Attendance[] = [];
   public teachers: Teacher[] = [];
@@ -130,6 +130,7 @@ export class ListPage implements OnInit, OnDestroy {
     this.isVoS = this.db.tenant().shortName === 'VoS';
     this.filterOpt = (await this.storage.get(`filterOpt${this.db.tenant().id}`)) || 'all';
     this.sortOpt = (await this.storage.get(`sortOpt${this.db.tenant().id}`)) || 'instrument';
+    if (this.sortOpt === 'groupJoined') { this.sortOpt = 'instrument'; }
     this.mainGroup = this.db.getMainGroup()?.id;
 
     if (this.isAdmin) {
@@ -305,46 +306,6 @@ export class ListPage implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.sortOpt === 'groupJoined') {
-      this.playersFiltered = this.playersFiltered.sort((a: Player, b: Player) => {
-        // Group ordering: main group first, then sort_order, then name
-        if (a.instrument === this.mainGroup && b.instrument !== this.mainGroup) { return -1; }
-        if (b.instrument === this.mainGroup && a.instrument !== this.mainGroup) { return 1; }
-
-        const aInstr = this.db.groups().find(i => i.id === a.instrument);
-        const bInstr = this.db.groups().find(i => i.id === b.instrument);
-        const aSortOrder = aInstr?.sort_order;
-        const bSortOrder = bInstr?.sort_order;
-
-        if (aSortOrder != null && bSortOrder != null && aSortOrder !== bSortOrder) {
-          return aSortOrder - bSortOrder;
-        }
-
-        const groupCompare = (a.groupName || '').localeCompare(b.groupName || '');
-        if (groupCompare !== 0) { return groupCompare; }
-
-        // Within group: voice leader first, then descending joined date
-        if (a.isLeader && !b.isLeader) { return -1; }
-        if (b.isLeader && !a.isLeader) { return 1; }
-
-        return new Date(a.joined).getTime() - new Date(b.joined).getTime();
-      });
-
-      // Recompute firstOfInstrument and instrumentLength after reordering.
-      // Use spread to avoid mutating the shared objects in this.players.
-      const seenGroups = new Set<number>();
-      const groupLengths = new Map<number, number>();
-      for (const p of this.playersFiltered) {
-        groupLengths.set(p.instrument, (groupLengths.get(p.instrument) || 0) + 1);
-      }
-      this.playersFiltered = this.playersFiltered.map(p => {
-        const firstOfInstrument = !seenGroups.has(p.instrument);
-        seenGroups.add(p.instrument);
-        return { ...p, firstOfInstrument, instrumentLength: groupLengths.get(p.instrument) || 0 };
-      });
-      return;
-    }
-
     if (this.sortOpt === 'instrument') {
       this.initializeItems();
       this.onFilterChanged(true);
@@ -355,10 +316,84 @@ export class ListPage implements OnInit, OnDestroy {
     this.prevFilterValue = this.filterOpt;
   }
 
+  toggleReorderMode(popover?: any): void {
+    this.isReordering = !this.isReordering;
+    popover?.dismiss();
+    if (!this.isReordering) {
+      this.savePlayerOrder();
+    }
+  }
+
+  handleReorder(event: any, _ignored: null): void {
+    const from = event.detail.from;
+    const to = event.detail.to;
+
+    // Cancel Ionic's DOM manipulation — we manage the array ourselves
+    event.detail.complete(false);
+
+    if (from === to) { return; }
+
+    // Determine the group of the dragged player
+    const dragged = this.playersFiltered[from];
+    if (!dragged) { return; }
+    const groupId = dragged.instrument;
+
+    // Only reorder within the same group — if target belongs to a different group, abort
+    const target = this.playersFiltered[to];
+    if (!target || target.instrument !== groupId) { return; }
+
+    // Extract just this group's players (in their current filtered order)
+    const groupIndices = this.playersFiltered
+      .map((p, i) => ({ p, i }))
+      .filter(({ p }) => p.instrument === groupId);
+
+    // Find local from/to within the group
+    const localFrom = groupIndices.findIndex(({ i }) => i === from);
+    const localTo   = groupIndices.findIndex(({ i }) => i === to);
+    if (localFrom < 0 || localTo < 0) { return; }
+
+    const groupPlayers = groupIndices.map(({ p }) => p);
+    const [moved] = groupPlayers.splice(localFrom, 1);
+    groupPlayers.splice(localTo, 0, moved);
+
+    // Assign sequential sort_order within group
+    groupPlayers.forEach((p, i) => { p.sort_order = i + 1; });
+
+    // Write new order back into playersFiltered in-place (replace group slots)
+    let gi = 0;
+    for (let i = 0; i < this.playersFiltered.length; i++) {
+      if (this.playersFiltered[i].instrument === groupId) {
+        this.playersFiltered[i] = groupPlayers[gi++];
+      }
+    }
+    this.playersFiltered = [...this.playersFiltered];
+
+    // Sync sort_order into this.players for savePlayerOrder
+    const orderMap = new Map(groupPlayers.map(p => [p.id, p.sort_order]));
+    this.players.forEach(p => {
+      if (orderMap.has(p.id)) { p.sort_order = orderMap.get(p.id); }
+    });
+  }
+
+  private async savePlayerOrder(): Promise<void> {
+    const loading = await Utils.getLoadingElement(5000, 'Reihenfolge wird gespeichert...');
+    await loading.present();
+    try {
+      const sb = this.db.getSupabase();
+      for (const player of this.players) {
+        if (player.sort_order != null) {
+          await sb.from('player').update({ sort_order: player.sort_order }).eq('id', player.id);
+        }
+      }
+      await loading.dismiss();
+      Utils.showToast('Reihenfolge gespeichert', 'success');
+    } catch {
+      await loading.dismiss();
+      Utils.showToast('Fehler beim Speichern der Reihenfolge', 'danger');
+    }
+  }
+
   async clearFilters() {
-    this.searchTerm = '';
-    this.filterOpt = 'all';
-    await this.storage.set(`filterOpt${this.db.tenant().id}`, 'all');
     await this.storage.set(`filterOptAdd${this.db.tenant().id}`, '');
     this.initializeItems();
   }

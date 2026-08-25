@@ -52,15 +52,15 @@
             } @else if (selectedField.key === 'isLeader') {
               <ion-toggle [(ngModel)]="bulkValue">Stimmführer</ion-toggle>
             } @else if (selectedField.key === 'notes') {
-              <ion-input [(ngModel)]="bulkValue" placeholder="Notiz..."></ion-input>
+              <ion-input autocapitalize="words" [(ngModel)]="bulkValue" placeholder="Notiz..."></ion-input>
             } @else if (selectedField.key === 'phone') {
-              <ion-input type="tel" [(ngModel)]="bulkValue" placeholder="Telefon..."></ion-input>
+              <ion-input autocapitalize="words" type="tel" [(ngModel)]="bulkValue" placeholder="Telefon..."></ion-input>
             }
             <!-- Extra fields by type -->
             @else if (selectedField.fieldType === FieldType.TEXT) {
-              <ion-input [(ngModel)]="bulkValue" [placeholder]="selectedField.label"></ion-input>
+              <ion-input autocapitalize="words" [(ngModel)]="bulkValue" [placeholder]="selectedField.label"></ion-input>
             } @else if (selectedField.fieldType === FieldType.NUMBER) {
-              <ion-input type="number" [(ngModel)]="bulkValue" [placeholder]="selectedField.label"></ion-input>
+              <ion-input autocapitalize="words" type="number" [(ngModel)]="bulkValue" [placeholder]="selectedField.label"></ion-input>
             } @else if (selectedField.fieldType === FieldType.BOOLEAN) {
               <ion-toggle [(ngModel)]="bulkValue">{{ selectedField.label }}</ion-toggle>
             } @else if (selectedField.fieldType === FieldType.SELECT) {
@@ -70,7 +70,7 @@
                 }
               </ion-select>
             } @else if (selectedField.fieldType === FieldType.TEXTAREA) {
-              <ion-textarea [(ngModel)]="bulkValue" [placeholder]="selectedField.label" [autoGrow]="true"></ion-textarea>
+              <ion-textarea autocapitalize="words" [(ngModel)]="bulkValue" [placeholder]="selectedField.label" [autoGrow]="true"></ion-textarea>
             } @else if (selectedField.fieldType === FieldType.BFECG_CHURCH) {
               <ion-select [(ngModel)]="bulkValue" interface="popover" [placeholder]="selectedField.label">
                 @for (church of db.churches(); track church) {
@@ -78,7 +78,7 @@
                 }
               </ion-select>
             } @else if (selectedField.fieldType === FieldType.DATE) {
-              <ion-input type="date" [(ngModel)]="bulkValue"></ion-input>
+              <ion-input autocapitalize="words" type="date" [(ngModel)]="bulkValue"></ion-input>
             }
           </div>
           <ion-button size="small" fill="outline" (click)="applyToAll()" class="bulk-apply-btn">
@@ -115,24 +115,24 @@
                 (ionChange)="setEditedValue(player.id, $event.detail.checked)">
               </ion-toggle>
             } @else if (selectedField.key === 'notes') {
-              <ion-input [ngModel]="getEditedValue(player.id)"
+              <ion-input autocapitalize="words" [ngModel]="getEditedValue(player.id)"
                 (ionChange)="setEditedValue(player.id, $event.detail.value)"
                 placeholder="Notiz...">
               </ion-input>
             } @else if (selectedField.key === 'phone') {
-              <ion-input type="tel" [ngModel]="getEditedValue(player.id)"
+              <ion-input autocapitalize="words" type="tel" [ngModel]="getEditedValue(player.id)"
                 (ionChange)="setEditedValue(player.id, $event.detail.value)"
                 placeholder="Telefon...">
               </ion-input>
             }
             <!-- Extra fields by type -->
             @else if (selectedField.fieldType === FieldType.TEXT) {
-              <ion-input [ngModel]="getEditedValue(player.id)"
+              <ion-input autocapitalize="words" [ngModel]="getEditedValue(player.id)"
                 (ionChange)="setEditedValue(player.id, $event.detail.value)"
                 [placeholder]="selectedField.label">
               </ion-input>
             } @else if (selectedField.fieldType === FieldType.NUMBER) {
-              <ion-input type="number" [ngModel]="getEditedValue(player.id)"
+              <ion-input autocapitalize="words" type="number" [ngModel]="getEditedValue(player.id)"
                 (ionChange)="setEditedValue(player.id, $event.detail.value)"
                 [placeholder]="selectedField.label">
               </ion-input>
@@ -149,7 +149,7 @@
                 }
               </ion-select>
             } @else if (selectedField.fieldType === FieldType.TEXTAREA) {
-              <ion-input [ngModel]="getEditedValue(player.id)"
+              <ion-input autocapitalize="words" [ngModel]="getEditedValue(player.id)"
                 (ionChange)="setEditedValue(player.id, $event.detail.value)"
                 [placeholder]="selectedField.label">
               </ion-input>
@@ -162,7 +162,7 @@
                 }
               </ion-select>
             } @else if (selectedField.fieldType === FieldType.DATE) {
-              <ion-input type="date" [ngModel]="getEditedValue(player.id)"
+              <ion-input autocapitalize="words" type="date" [ngModel]="getEditedValue(player.id)"
                 (ionChange)="setEditedValue(player.id, $event.detail.value)">
               </ion-input>
             }

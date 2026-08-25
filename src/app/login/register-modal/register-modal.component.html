@@ -39,7 +39,7 @@
 
     <ion-list lines="full" class="register-list">
       <ion-item>
-        <ion-input
+        <ion-input autocapitalize="words"
           label="E-Mail"
           labelPlacement="stacked"
           type="email"
@@ -54,7 +54,7 @@
 
       @if (!otpMode) {
         <ion-item>
-          <ion-input
+          <ion-input autocapitalize="words"
             label="Passwort"
             labelPlacement="stacked"
             [type]="showPassword ? 'text' : 'password'"
@@ -70,7 +70,7 @@
         </ion-item>
 
         <ion-item>
-          <ion-input
+          <ion-input autocapitalize="words"
             label="Passwort bestätigen"
             labelPlacement="stacked"
             [type]="showPassword ? 'text' : 'password'"

@@ -229,6 +229,7 @@ export interface Player extends Person {
   legacyConductorId?: number;
   parent_id?: number;
   newInstrument?: Group;
+  sort_order?: number;
 }
 
 export interface Group {

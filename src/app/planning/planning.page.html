@@ -34,7 +34,7 @@
       @if (attendance && notes) {
         <ion-item lines="none">
           <ion-label position="stacked">Anwesenheitsnotizen</ion-label>
-          <ion-textarea autoGrow="true" disabled="true">{{ notes }}</ion-textarea>
+          <ion-textarea autocapitalize="words" autoGrow="true" disabled="true">{{ notes }}</ion-textarea>
         </ion-item>
       }
       @if (attendance) {
@@ -51,7 +51,7 @@
           </ion-item>
         }
         <ion-item lines="none">
-          <ion-input
+          <ion-input autocapitalize="words"
             label="Ablaufplan Überschrift"
             labelPlacement="stacked"
             [(ngModel)]="planTitle"
@@ -197,7 +197,7 @@
                 }
               </ion-label>
               @if (!field.id.includes('noteFld')) {
-                <ion-input required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
+                <ion-input autocapitalize="words" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
                 placeholder="min" type="number" slot="end"></ion-input>
               }
               <ion-reorder slot="end"></ion-reorder>
@@ -258,7 +258,7 @@
         @for (group of planGroups; track trackByIndex($index); let last = $last) {
           <ion-item [lines]="last ? 'none' : ''">
             <ion-icon name="people-outline" slot="start" color="medium"></ion-icon>
-            <ion-input [(ngModel)]="planGroups[$index]" placeholder="Gruppenname"></ion-input>
+            <ion-input autocapitalize="words" [(ngModel)]="planGroups[$index]" placeholder="Gruppenname"></ion-input>
             @if (planGroups.length > 2) {
               <ion-button slot="end" fill="clear" color="danger" (click)="removePlanGroup($index)">
                 <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
@@ -280,7 +280,7 @@
         @for (con of planConductors; track trackByIndex($index); let last = $last) {
           <ion-item [lines]="last ? 'none' : ''">
             <ion-icon name="person-outline" slot="start" color="medium"></ion-icon>
-            <ion-input [(ngModel)]="planConductors[$index]" placeholder="Name"></ion-input>
+            <ion-input autocapitalize="words" [(ngModel)]="planConductors[$index]" placeholder="Name"></ion-input>
             @if (planConductors.length > 1) {
               <ion-button slot="end" fill="clear" color="danger" (click)="removePlanConductor($index)">
                 <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
@@ -294,7 +294,7 @@
       <ion-list [inset]="true">
         <ion-item lines="none">
           <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
-          <ion-input label="Zeit in Minuten" value="60" #input type="number"></ion-input>
+          <ion-input autocapitalize="words" label="Zeit in Minuten" value="60" #input type="number"></ion-input>
         </ion-item>
       </ion-list>
 

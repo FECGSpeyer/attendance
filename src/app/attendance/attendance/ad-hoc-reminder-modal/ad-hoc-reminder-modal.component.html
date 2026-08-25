@@ -16,7 +16,7 @@
 
   <ion-list lines="full" class="reminder-list">
     <ion-item>
-      <ion-textarea
+      <ion-textarea autocapitalize="words"
         label="Betreff"
         labelPlacement="stacked"
         [(ngModel)]="title"
@@ -26,7 +26,7 @@
       </ion-textarea>
     </ion-item>
     <ion-item>
-      <ion-textarea
+      <ion-textarea autocapitalize="words"
         label="Nachricht"
         labelPlacement="stacked"
         [(ngModel)]="message"

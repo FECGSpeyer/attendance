@@ -181,12 +181,12 @@
         </ion-item>
         @if (historyEntry.person_id === otherConductor && historyEntry.otherConductor) {
           <ion-item>
-            <ion-input [(ngModel)]="historyEntry.otherConductor"></ion-input>
+            <ion-input autocapitalize="words" [(ngModel)]="historyEntry.otherConductor"></ion-input>
           </ion-item>
         }
         <ion-item>
           <ion-label position="stacked">Datum</ion-label>
-          <ion-input
+          <ion-input autocapitalize="words"
             [value]="formatDate(historyEntry.date)"
             (ionBlur)="onManualDateInput($event)"
             placeholder="TT.MM.JJJJ"></ion-input>

@@ -75,12 +75,12 @@
             </ion-item>
             <ion-item lines="none">
               <ion-label position="stacked">Info-Text</ion-label>
-              <ion-input (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.typeInfo"></ion-input>
+              <ion-input autocapitalize="words" (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.typeInfo"></ion-input>
             </ion-item>
 
             <ion-item lines="none">
               <ion-label position="stacked">Notizen</ion-label>
-              <ion-textarea (ionBlur)="onInfoChanged()" autoGrow="true" [(ngModel)]="attendance.notes"></ion-textarea>
+              <ion-textarea autocapitalize="words" (ionBlur)="onInfoChanged()" autoGrow="true" [(ngModel)]="attendance.notes"></ion-textarea>
             </ion-item>
 
             @if (!isDeadlineReadonly) {
@@ -150,7 +150,7 @@
             @if (type?.all_day) {
             <ion-item>
               <ion-label position="stacked">Dauer (in Tagen)</ion-label>
-              <ion-input type="number" [(ngModel)]="attendance.duration_days" (ionBlur)="onInfoChanged()"></ion-input>
+              <ion-input autocapitalize="words" type="number" [(ngModel)]="attendance.duration_days" (ionBlur)="onInfoChanged()"></ion-input>
             </ion-item>
             }
 
@@ -320,7 +320,7 @@
                           </ion-item>
                           @if (historyEntry.person_id === otherConductor && historyEntry.otherConductor) {
                           <ion-item>
-                            <ion-input [(ngModel)]="historyEntry.otherConductor"></ion-input>
+                            <ion-input autocapitalize="words" [(ngModel)]="historyEntry.otherConductor"></ion-input>
                           </ion-item>
                           }
                         </ion-item-group>

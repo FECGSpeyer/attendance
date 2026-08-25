@@ -42,16 +42,16 @@
             </ion-item>
             <ion-item>
               <ion-label position="stacked">E-Mail Adresse</ion-label>
-              <ion-input [(ngModel)]="email" type="email" autocomplete="email" [readonly]="otpMode && otpSent"></ion-input>
+              <ion-input  [(ngModel)]="email" type="email" autocomplete="email" [readonly]="otpMode && otpSent"></ion-input>
             </ion-item>
             @if (!otpMode) {
               <ion-item>
                 <ion-label position="stacked">Passwort</ion-label>
-                <ion-input [(ngModel)]="password" type="password" autocomplete="new-password"></ion-input>
+                <ion-input  [(ngModel)]="password" type="password" autocomplete="new-password"></ion-input>
               </ion-item>
               <ion-item>
                 <ion-label position="stacked">Passwort bestätigen</ion-label>
-                <ion-input [(ngModel)]="confirmPassword" type="password" autocomplete="new-password"></ion-input>
+                <ion-input  [(ngModel)]="confirmPassword" type="password" autocomplete="new-password"></ion-input>
               </ion-item>
             } @else {
               @if (otpSent) {
@@ -93,11 +93,11 @@
           }
           <ion-item>
             <ion-label position="stacked">Vorname</ion-label>
-            <ion-input [(ngModel)]="firstName" type="text" autocomplete="given-name"></ion-input>
+            <ion-input autocapitalize="words" [(ngModel)]="firstName" type="text" autocomplete="given-name"></ion-input>
           </ion-item>
           <ion-item>
             <ion-label position="stacked">Nachname</ion-label>
-            <ion-input [(ngModel)]="lastName" type="text" autocomplete="family-name"></ion-input>
+            <ion-input autocapitalize="words" [(ngModel)]="lastName" type="text" autocomplete="family-name"></ion-input>
           </ion-item>
           @if (tenantData.registration_fields?.includes('birthDate')) {
             <ion-item>
@@ -113,7 +113,7 @@
           @if (tenantData.registration_fields?.includes('phone')) {
             <ion-item>
               <ion-label position="stacked">Handynummer</ion-label>
-              <ion-input [(ngModel)]="phone" type="tel" autocomplete="tel"></ion-input>
+              <ion-input autocapitalize="words" [(ngModel)]="phone" type="tel" autocomplete="tel"></ion-input>
             </ion-item>
           }
         </ion-item-group>
@@ -131,10 +131,10 @@
             <ion-item>
               @if (field.type === 'text') {
                 <ion-label position="stacked">{{ field.name }}</ion-label>
-                <ion-input [(ngModel)]="field.value" type="text"></ion-input>
+                <ion-input autocapitalize="words" [(ngModel)]="field.value" type="text"></ion-input>
               } @else if (field.type === 'number') {
                 <ion-label position="stacked">{{ field.name }}</ion-label>
-                <ion-input [(ngModel)]="field.value" type="number"></ion-input>
+                <ion-input autocapitalize="words" [(ngModel)]="field.value" type="number"></ion-input>
               } @else if (field.type === 'select') {
                 <ion-select [label]="field.name" [(ngModel)]="field.value">
                   @for (option of field.options; track option) {
@@ -192,13 +192,13 @@
             @if (field.type === 'bfecg_church' && field.value === '') {
               <ion-item>
                 <ion-label position="stacked">Gemeinde nicht gelistet? Bitte Namen eingeben</ion-label>
-                <ion-input [(ngModel)]="customChurchName" type="text" placeholder="Name deiner Gemeinde"></ion-input>
+                <ion-input autocapitalize="words" [(ngModel)]="customChurchName" type="text" placeholder="Name deiner Gemeinde"></ion-input>
               </ion-item>
             }
           }
           <ion-item>
             <ion-label position="stacked">Bemerkungen (optional)</ion-label>
-            <ion-textarea [(ngModel)]="notes"></ion-textarea>
+            <ion-textarea autocapitalize="words" [(ngModel)]="notes"></ion-textarea>
           </ion-item>
         </ion-item-group>
       }

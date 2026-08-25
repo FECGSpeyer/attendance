@@ -220,7 +220,7 @@
             <ion-item-group>
               <ion-item>
                 <ion-label position="stacked">Datum (Mehrfachauswahl möglich)</ion-label>
-                <ion-input (click)="onDateClick()" readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
+                <ion-input autocapitalize="words" (click)="onDateClick()" readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
                 <ion-button id="info-button" fill="clear" slot="end">
                   <ion-icon name="information"></ion-icon>
                 </ion-button>
@@ -301,12 +301,12 @@
               @if (isAllDay()) {
                 <ion-item>
                   <ion-label position="stacked">Dauer (in Tagen)</ion-label>
-                  <ion-input type="number" min="1" [(ngModel)]="allDayDuration"></ion-input>
+                  <ion-input autocapitalize="words" type="number" min="1" [(ngModel)]="allDayDuration"></ion-input>
                 </ion-item>
               }
               <ion-item>
                 <ion-label position="stacked">Info-Text (optional)</ion-label>
-                <ion-textarea helperText="Dieser Text wird anstelle des Typs angezeigt."
+                <ion-textarea autocapitalize="words" helperText="Dieser Text wird anstelle des Typs angezeigt."
                 [(ngModel)]="typeInfo"></ion-textarea>
               </ion-item>
             </ion-item-group>
@@ -405,7 +405,7 @@
                           </ion-item>
                           @if (historyEntry.person_id === otherConductor && historyEntry.otherConductor) {
                             <ion-item>
-                              <ion-input [(ngModel)]="historyEntry.otherConductor"></ion-input>
+                              <ion-input autocapitalize="words" [(ngModel)]="historyEntry.otherConductor"></ion-input>
                             </ion-item>
                           }
                         </ion-item-group>
