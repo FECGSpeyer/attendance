@@ -83,16 +83,30 @@ function toIcalDate(d: Date): string {
 }
 
 function foldLine(line: string): string {
-  // iCal lines must be max 75 octets; fold longer lines with CRLF + space.
-  if (line.length <= 75) return line;
-  let result = '';
-  let pos = 0;
-  while (pos < line.length) {
-    const chunk = line.substring(pos, pos + (pos === 0 ? 75 : 74));
-    result += (pos === 0 ? '' : '\r\n ') + chunk;
-    pos += chunk.length;
+  // iCal spec: fold at 75 octets (bytes), continuation with CRLF + single space.
+  // Must not split a multi-byte UTF-8 sequence across lines.
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(line);
+  if (bytes.length <= 75) return line;
+
+  const parts: string[] = [];
+  let bytePos = 0;
+  let limit = 75;
+  while (bytePos < bytes.length) {
+    // Find the largest slice that fits within `limit` bytes without cutting a
+    // multi-byte sequence. UTF-8 continuation bytes are 0x80–0xBF.
+    let end = bytePos + limit;
+    if (end >= bytes.length) {
+      end = bytes.length;
+    } else {
+      // Walk back until we're not pointing at a continuation byte.
+      while (end > bytePos && (bytes[end] & 0xC0) === 0x80) end--;
+    }
+    parts.push(new TextDecoder().decode(bytes.slice(bytePos, end)));
+    bytePos = end;
+    limit = 74; // subsequent lines start with a space (1 byte), so 74 remain
   }
-  return result;
+  return parts.join('\r\n ');
 }
 
 function escapeIcal(s: string): string {
