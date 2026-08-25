@@ -13,6 +13,7 @@ import { StatsPage } from 'src/app/stats/stats.page';
 import { DEFAULT_IMAGE, FieldType, Role } from 'src/app/utilities/constants';
 import { Admin, Church, Parent, Person, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { environment } from 'src/environments/environment';
 import { Viewer } from '../../utilities/interfaces';
 import { Router } from '@angular/router';
 import { RegisterPage } from 'src/app/register/register.page';
@@ -731,7 +732,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   async openCalendarSubscription() {
-    const link = `https://n8n.srv1053762.hstgr.cloud/webhook/attendix?tenantId=${this.db.tenant().id}`;
+    const link = `${environment.apiUrl}/functions/v1/ical-tenant?tenantId=${this.db.tenant().id}`;
     const alert = await this.alertController.create({
       header: 'Kalender abonnieren',
       message: `Kopiere den folgenden Link in deine Kalender-App, um die Termine zu abonnieren:\n\n${link}`,

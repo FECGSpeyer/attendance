@@ -1,0 +1,2 @@
+[functions.ical-tenant]
+verify_jwt = false
