@@ -191,7 +191,7 @@ export class OrgPlansPage implements OnInit {
 
   async subscribeCalendar() {
     if (!this.publicKey) return;
-    const base = `${environment.apiUrl}/functions/v1/ical-org-plans?key=${this.publicKey}`;
+    const base = `${environment.apiUrl}/functions/v1/ical-org-plans?apikey=${environment.apiKey}&key=${this.publicKey}`;
     const sheet = await this.actionSheetController.create({
       header: 'Kalender abonnieren',
       buttons: [
