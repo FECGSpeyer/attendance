@@ -1403,8 +1403,9 @@ export class AttendancePage implements OnInit, OnDestroy {
         defaultMessage,
         attendanceLink,
       },
-      breakpoints: [0, 1],
-      initialBreakpoint: 1,
+      breakpoints: [0, 0.75, 1],
+      initialBreakpoint: 0.75,
+      handleBehavior: 'cycle',
     });
 
     await modal.present();

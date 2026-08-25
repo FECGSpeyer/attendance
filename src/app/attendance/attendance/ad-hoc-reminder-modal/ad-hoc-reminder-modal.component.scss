@@ -1,0 +1,33 @@
+.intro {
+  margin-bottom: 1rem;
+
+  p {
+    margin: 0 0 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: var(--ion-color-medium-shade);
+  }
+}
+
+.reminder-list {
+  background: transparent;
+  margin-bottom: 1rem;
+
+  ion-item {
+    --background: var(--ion-item-background, var(--ion-background-color));
+  }
+
+  a {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+    font-size: 0.8rem;
+    word-break: break-all;
+  }
+}
+
+.actions {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}

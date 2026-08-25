@@ -9,6 +9,7 @@ export interface AdHocReminderResult {
 @Component({
   selector: 'app-ad-hoc-reminder-modal',
   templateUrl: './ad-hoc-reminder-modal.component.html',
+  styleUrls: ['./ad-hoc-reminder-modal.component.scss'],
   standalone: false
 })
 export class AdHocReminderModalComponent implements OnInit {
