@@ -84,27 +84,39 @@ function toIcalDate(d: Date): string {
 
 // Encode a property + value as a correctly folded iCal line (RFC 5545 §3.1).
 // Folds at 75 octets on UTF-8 byte boundaries; continuation lines start with a space.
+// Splits on \n (iCal escaped newline) first so that escape sequence is never torn
+// across a fold boundary, which crashes Apple Calendar.
 function icalLine(prop: string, value: string): string {
-  const line = `${prop}:${value}`;
   const encoder = new TextEncoder();
-  const bytes = encoder.encode(line);
-  if (bytes.length <= 75) return line;
 
-  const parts: string[] = [];
-  let bytePos = 0;
-  let limit = 75;
-  while (bytePos < bytes.length) {
-    let end = bytePos + limit;
-    if (end >= bytes.length) {
-      end = bytes.length;
-    } else {
-      while (end > bytePos && (bytes[end] & 0xC0) === 0x80) end--;
+  const foldSegment = (segment: string, firstLimit: number): string[] => {
+    const bytes = encoder.encode(segment);
+    if (bytes.length <= firstLimit) return [segment];
+    const parts: string[] = [];
+    let bytePos = 0;
+    let limit = firstLimit;
+    while (bytePos < bytes.length) {
+      let end = bytePos + limit;
+      if (end >= bytes.length) {
+        end = bytes.length;
+      } else {
+        while (end > bytePos && (bytes[end] & 0xC0) === 0x80) end--;
+      }
+      parts.push(new TextDecoder().decode(bytes.slice(bytePos, end)));
+      bytePos = end;
+      limit = 74;
     }
-    parts.push(new TextDecoder().decode(bytes.slice(bytePos, end)));
-    bytePos = end;
-    limit = 74;
+    return parts;
+  };
+
+  // Split on iCal escaped newlines so \n is never torn across a fold boundary.
+  const segments = value.split('\\n');
+  // First segment includes the property name; remaining are continuations.
+  const allParts: string[] = foldSegment(`${prop}:${segments[0]}`, 75);
+  for (let i = 1; i < segments.length; i++) {
+    allParts.push(...foldSegment(`\\n${segments[i]}`, 74));
   }
-  return parts.join('\r\n ');
+  return allParts.join('\r\n ');
 }
 
 function escapeIcal(s: string): string {
