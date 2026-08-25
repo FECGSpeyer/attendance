@@ -230,7 +230,7 @@ export class AppComponent {
     if (localStorage.getItem('ical_migration_warned')) return;
 
     const alert = await this.alertController.create({
-      header: 'Kalender-Link aktualisiert',
+      header: '⚠️ Kalender-Link aktualisiert',
       message: 'Der Kalender-Link für Attendix-Termine hat sich geändert. Falls du die Termine in deiner Kalender-App abonniert hast, ersetze den Link durch den neuen unter Einstellungen → Kalender abonnieren.',
       buttons: [
         {
