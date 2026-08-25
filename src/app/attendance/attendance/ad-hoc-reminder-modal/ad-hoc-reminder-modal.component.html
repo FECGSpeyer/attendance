@@ -16,12 +16,14 @@
 
   <ion-list lines="full" class="reminder-list">
     <ion-item>
-      <ion-input
+      <ion-textarea
         label="Betreff"
         labelPlacement="stacked"
         [(ngModel)]="title"
+        [autoGrow]="true"
+        rows="2"
         placeholder="z. B. 🔔 Erinnerung: Probe am 01.09.2026">
-      </ion-input>
+      </ion-textarea>
     </ion-item>
     <ion-item>
       <ion-textarea
