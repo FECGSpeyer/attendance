@@ -174,7 +174,7 @@ export class ListPage implements OnInit, OnDestroy {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'player' },
         (event: any) => {
-          if (event.new?.tenantId === this.db.tenant().id || event.old?.id) {
+          if (!this.isReordering && (event.new?.tenantId === this.db.tenant().id || event.old?.id)) {
             this.getPlayers();
           }
         })
