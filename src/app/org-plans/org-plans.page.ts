@@ -1,7 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActionSheetController, ModalController } from '@ionic/angular/lazy';
+import { ActionSheetController, AlertController, ModalController } from '@ionic/angular/lazy';
 import { isPlatform } from '@ionic/angular';
+import { Browser } from '@capacitor/browser';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
 import { DbService } from '../services/db.service';
@@ -35,6 +36,7 @@ export class OrgPlansPage implements OnInit {
   private router = inject(Router);
   private modalController = inject(ModalController);
   private actionSheetController = inject(ActionSheetController);
+  private alertController = inject(AlertController);
 
   public plans: PlanEntry[] = [];
   public upcomingPlans: PlanEntry[] = [];
@@ -197,11 +199,11 @@ export class OrgPlansPage implements OnInit {
       buttons: [
         {
           text: 'Einfach (1 Termin je Plan)',
-          handler: () => this.openOrCopyCalendarUrl(base),
+          handler: () => this.showCalendarAlert(base),
         },
         {
           text: 'Detailliert (je Programmpunkt)',
-          handler: () => this.openOrCopyCalendarUrl(`${base}&detailed=true`),
+          handler: () => this.showCalendarAlert(`${base}&detailed=true`),
         },
         { text: 'Abbrechen', role: 'cancel' },
       ],
@@ -209,16 +211,29 @@ export class OrgPlansPage implements OnInit {
     await sheet.present();
   }
 
-  private openOrCopyCalendarUrl(httpsUrl: string) {
-    if (isPlatform('capacitor') && isPlatform('ios')) {
-      window.open(httpsUrl.replace('https://', 'webcal://'), '_system');
-    } else if (isPlatform('capacitor') && isPlatform('android')) {
-      navigator.clipboard.writeText(httpsUrl);
-      Utils.showToast('URL kopiert – in Google Kalender unter „Weitere Kalender → Per URL" einfügen', 'success', 6000);
-    } else {
-      navigator.clipboard.writeText(httpsUrl);
-      Utils.showToast('Kalender-URL kopiert', 'success');
-    }
+  private async showCalendarAlert(link: string) {
+    const alert = await this.alertController.create({
+      header: 'Kalender abonnieren',
+      message: `Kopiere den folgenden Link in deine Kalender-App:\n\n${link}`,
+      buttons: [
+        {
+          text: 'Link kopieren',
+          handler: () => {
+            navigator.clipboard.writeText(link);
+            Utils.showToast('Link kopiert', 'success');
+            return false;
+          },
+        },
+        {
+          text: 'Anleitung öffnen',
+          handler: () => {
+            Browser.open({ url: isPlatform('ios') ? 'https://support.apple.com/de-de/102301' : 'https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid' });
+          },
+        },
+        { text: 'Schließen', role: 'cancel' },
+      ],
+    });
+    await alert.present();
   }
 
   async managePublicLink() {
