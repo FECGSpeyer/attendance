@@ -56,6 +56,9 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
   public showHistory = false;
   public publicKey: string | null = null;
   private channels: RealtimeChannel[] = [];
+  private orgId: number | null = null;
+  private nameById: Record<number, string> = {};
+  private tenantIds: number[] = [];
 
   constructor(private route: ActivatedRoute, private actionSheetController: ActionSheetController, private alertController: AlertController) {}
 
@@ -73,24 +76,40 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
     if (!org) { this.notFound = true; this.loading = false; return; }
 
     this.orgName = org.name;
+    this.orgId = org.id;
 
     const { data: tgts } = await getSupabase()
       .from('tenant_group_tenants')
       .select('tenant_id, tenant:tenant_id(longName)')
       .eq('tenant_group', org.id);
 
-    const tenantIds = (tgts ?? []).map((t: any) => t.tenant_id);
-    const nameById: Record<number, string> = {};
+    this.tenantIds = (tgts ?? []).map((t: any) => t.tenant_id);
+    this.nameById = {};
     for (const t of (tgts ?? []) as any[]) {
-      nameById[t.tenant_id] = t.tenant?.longName ?? '';
+      this.nameById[t.tenant_id] = t.tenant?.longName ?? '';
     }
 
+    await this.loadPlans();
+  }
+
+  async handleRefresh(event: any) {
+    await this.loadPlans();
+    event.target.complete();
+  }
+
+  async loadPlans() {
+    if (!this.orgId) { return; }
+    this.loading = true;
+
+    for (const ch of this.channels) { ch.unsubscribe(); }
+    this.channels = [];
+
     const [attRows, adhocRows] = await Promise.all([
-      tenantIds.length
+      this.tenantIds.length
         ? getSupabase()
             .from('attendance')
             .select('id, date, plan, typeInfo, tenantId')
-            .in('tenantId', tenantIds)
+            .in('tenantId', this.tenantIds)
             .eq('is_org_plan', true)
             .not('plan', 'is', null)
             .order('date', { ascending: true })
@@ -98,7 +117,7 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
       getSupabase()
         .from('shared_plans')
         .select('*')
-        .eq('org_id', org.id)
+        .eq('org_id', this.orgId)
         .order('date', { ascending: true }),
     ]);
 
@@ -108,7 +127,7 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
         kind: 'attendance',
         id: row.id,
         date: row.date,
-        tenantName: nameById[row.tenantId] ?? '',
+        tenantName: this.nameById[row.tenantId] ?? '',
         title: plan.title || row.typeInfo || 'Plan',
         time: plan.time || '',
         end: plan.end || '',

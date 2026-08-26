@@ -57,6 +57,11 @@ export class OrgPlansPage implements OnInit {
     await this.loadPlans();
   }
 
+  async handleRefresh(event: any) {
+    await this.loadPlans();
+    event.target.complete();
+  }
+
   async loadPlans() {
     this.loading = true;
     const org = this.db.organisation();
