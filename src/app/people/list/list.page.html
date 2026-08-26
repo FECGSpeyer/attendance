@@ -1,4 +1,12 @@
 ﻿<ion-header translucent="true">
+  @if (isReordering) {
+    <ion-toolbar color="warning">
+      <ion-title>Reihenfolge anpassen</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="toggleReorderMode()" strong="true">Speichern</ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  } @else {
   <ion-toolbar>
     @if ((db.tenants()?.length ?? 0) > 1) {
       <ion-buttons slot="start">
@@ -28,6 +36,7 @@
       <app-notification-bell></app-notification-bell>
     </ion-buttons>
   </ion-toolbar>
+  }
 </ion-header>
 
 <ion-content fullscreen="true">
@@ -41,7 +50,7 @@
     </ion-toolbar>
   </ion-header>
   }
-  <div class="flex">
+  <div class="flex" [style.display]="isReordering ? 'none' : ''">
     <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" placeholder="Person suchen...">
     </ion-searchbar>
     <ion-button id="filter-trigger" fill="none">
