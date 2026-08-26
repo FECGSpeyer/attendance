@@ -318,49 +318,42 @@ export class ListPage implements OnInit, OnDestroy {
   }
 
   toggleReorderMode(popover?: any): void {
-    this.isReordering = !this.isReordering;
     popover?.dismiss();
-    if (!this.isReordering) {
-      this.savePlayerOrder();
+    if (this.isReordering) {
+      this.savePlayerOrder().finally(() => { this.isReordering = false; });
+    } else {
+      this.isReordering = true;
     }
   }
 
-  handleReorder(event: any, _ignored: null): void {
+  get playerGroups(): { groupId: number; groupName: string; players: Player[] }[] {
+    const seen = new Map<number, { groupId: number; groupName: string; players: Player[] }>();
+    for (const p of this.playersFiltered) {
+      if (!seen.has(p.instrument)) {
+        seen.set(p.instrument, { groupId: p.instrument, groupName: p.groupName || '', players: [] });
+      }
+      seen.get(p.instrument).players.push(p);
+    }
+    return Array.from(seen.values());
+  }
+
+  handleReorder(event: any, groupId: number): void {
     const from = event.detail.from;
     const to = event.detail.to;
-
-    // Cancel Ionic's DOM manipulation — we manage the array ourselves
-    event.detail.complete(false);
+    event.detail.complete(true);
 
     if (from === to) { return; }
 
-    // Determine the group of the dragged player
-    const dragged = this.playersFiltered[from];
-    if (!dragged) { return; }
-    const groupId = dragged.instrument;
+    const group = this.playerGroups.find(g => g.groupId === groupId);
+    if (!group) { return; }
 
-    // Only reorder within the same group — if target belongs to a different group, abort
-    const target = this.playersFiltered[to];
-    if (!target || target.instrument !== groupId) { return; }
+    const groupPlayers = [...group.players];
+    const [moved] = groupPlayers.splice(from, 1);
+    groupPlayers.splice(to, 0, moved);
 
-    // Extract just this group's players (in their current filtered order)
-    const groupIndices = this.playersFiltered
-      .map((p, i) => ({ p, i }))
-      .filter(({ p }) => p.instrument === groupId);
-
-    // Find local from/to within the group
-    const localFrom = groupIndices.findIndex(({ i }) => i === from);
-    const localTo   = groupIndices.findIndex(({ i }) => i === to);
-    if (localFrom < 0 || localTo < 0) { return; }
-
-    const groupPlayers = groupIndices.map(({ p }) => p);
-    const [moved] = groupPlayers.splice(localFrom, 1);
-    groupPlayers.splice(localTo, 0, moved);
-
-    // Assign sequential sort_order within group
     groupPlayers.forEach((p, i) => { p.sort_order = i + 1; });
 
-    // Write new order back into playersFiltered in-place (replace group slots)
+    // Write back into playersFiltered
     let gi = 0;
     for (let i = 0; i < this.playersFiltered.length; i++) {
       if (this.playersFiltered[i].instrument === groupId) {
@@ -369,7 +362,7 @@ export class ListPage implements OnInit, OnDestroy {
     }
     this.playersFiltered = [...this.playersFiltered];
 
-    // Sync sort_order into this.players for savePlayerOrder
+    // Sync into this.players for savePlayerOrder
     const orderMap = new Map(groupPlayers.map(p => [p.id, p.sort_order]));
     this.players.forEach(p => {
       if (orderMap.has(p.id)) { p.sort_order = orderMap.get(p.id); }

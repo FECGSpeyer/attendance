@@ -205,110 +205,195 @@
       <ion-list-header>
         <ion-label>Personen ({{ playersFiltered?.length }})</ion-label>
       </ion-list-header>
-      <ion-reorder-group [disabled]="!isReordering" (ionItemReorder)="handleReorder($event, null)">
-      @for (player of playersFiltered; track userById($index, player)) {
-        @if (player.firstOfInstrument && sortOpt === 'instrument') {
+      @if (sortOpt === 'instrument') {
+        @for (group of playerGroups; track group.groupId) {
           <ion-item-divider color="primary">
-            <ion-label>{{ player.groupName }} ({{ player.instrumentLength }})</ion-label>
+            <ion-label>{{ group.groupName }} ({{ group.players.length }})</ion-label>
           </ion-item-divider>
+          <ion-reorder-group [disabled]="!isReordering" (ionItemReorder)="handleReorder($event, group.groupId)">
+            @for (player of group.players; track player.id) {
+              <ion-item-sliding #slider>
+                <ion-item button detail="false" (click)="!isReordering && openModal(player)">
+                  @if (isReordering) {
+                    <ion-reorder slot="start"></ion-reorder>
+                  }
+                  @if (showImg) {
+                    <ion-avatar slot="start">
+                      <img [src]="player.img" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
+                    </ion-avatar>
+                  }
+                  <ion-label>
+                    <h2>{{ player.firstName }} {{ player.lastName }}</h2>
+                    @if (player.text) {
+                      <h3>{{ player.text }}</h3>
+                    }
+                    @if (showInstruments) {
+                      @if (!player.text) {
+                        <h3>{{ player.groupName }}</h3>
+                      }
+                    }
+                    @if (player.instrument !== mainGroup) {
+                      @if (showTeachers && player.teacher) {
+                        <h3>Lehrer: {{ getTeacherName(player.teacher) }}</h3>
+                      } @else if (showTeachers && !player.teacher) {
+                        <h3>Kein Lehrer</h3>
+                      }
+                    }
+                    @if (this.filterOpt === 'otherInstance') {
+                      <h3>{{ tenantName }}</h3>
+                    }
+                    @if (showNotes && player.notes) {
+                      <p style="white-space: pre-line;">{{ player.notes }}</p>
+                    }
+                  </ion-label>
+                  @if (((showPaused && !player.paused) || !showPaused) && showLeader && player.isLeader) {
+                    <ion-badge color="secondary" slot="end">Stimmführer</ion-badge>
+                  }
+                  @if (((showPaused && !player.paused) || !showPaused) && showNew && player.isNew && !player.isLeader) {
+                    <ion-badge color="danger" slot="end">Neu</ion-badge>
+                  }
+                  @if (((showPaused && !player.paused) || !showPaused) && showCritical && player.isCritical) {
+                    <ion-badge color="danger" slot="end">Problemfall</ion-badge>
+                  }
+                  @if (showPaused && player.paused) {
+                    <ion-badge color="warning" slot="end">Pausiert</ion-badge>
+                  }
+                  @if (showExaminee && player.examinee) {
+                    <ion-badge color="dark" slot="end">Prüfling</ion-badge>
+                  }
+                  @if (db.tenant().additional_fields?.length) {
+                    @for (field of db.tenant().additional_fields; track field.id) {
+                      @if (viewOpts.includes(field.id)) {
+                        @if (player.additional_fields[field.id]) {
+                          @if (field.type === "boolean") {
+                            <ion-badge [color]="'success'" slot="end">{{ field.name }}</ion-badge>
+                          } @else if (field.type === "select" || field.type === "text") {
+                            <ion-badge color="dark" slot="end">{{ player.additional_fields[field.id] }}</ion-badge>
+                          } @else if (field.type === "bfecg_church") {
+                            <ion-badge color="dark" slot="end">{{ getChurchName(player.additional_fields[field.id]) }}</ion-badge>
+                          } @else if (field.type === "number") {
+                            <ion-badge color="dark" slot="end">{{ field.name }} {{ player.additional_fields[field.id] }}</ion-badge>
+                          }
+                        }
+                      }
+                    }
+                  }
+                  @if (showAttendance) {
+                    <ion-badge [color]="player.percentage >= 75 ? 'success' : player.percentage >= 50 ? 'warning' : 'danger'" slot="end">{{ player.percentage }}%</ion-badge>
+                  }
+                </ion-item>
+                @if (isAdmin) {
+                  <ion-item-options (ionSwipe)="player.paused ? unpausePlayer(player, slider) : pausePlayer(player, slider)">
+                    <ion-item-option (click)="remove(player, slider)" color="danger">
+                      <ion-icon name="trash"></ion-icon>
+                    </ion-item-option>
+                    @if (!player.paused) {
+                      <ion-item-option expandable (click)="pausePlayer(player, slider)" color="warning">
+                        <ion-icon name="pause"></ion-icon>
+                      </ion-item-option>
+                    }
+                    @if (player.paused) {
+                      <ion-item-option expandable (click)="unpausePlayer(player, slider)" color="success">
+                        <ion-icon name="play"></ion-icon>
+                      </ion-item-option>
+                    }
+                  </ion-item-options>
+                }
+              </ion-item-sliding>
+            }
+          </ion-reorder-group>
         }
-        <ion-item-sliding #slider>
-          <ion-item button detail="false" (click)="!isReordering && openModal(player)">
-            @if (isReordering) {
-              <ion-reorder slot="start"></ion-reorder>
-            }
-            @if (showImg) {
-              <ion-avatar slot="start">
-                <img [src]="player.img" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
-              </ion-avatar>
-            }
-            <ion-label>
-              <h2>{{ player.firstName }} {{ player.lastName }}</h2>
-              @if (player.text) {
-                <h3>{{ player.text }}</h3>
-              }
-              @if (showInstruments) {
-                @if (!player.text) {
-                  <h3>{{ player.groupName }}</h3>
+      } @else {
+        <ion-reorder-group [disabled]="true" (ionItemReorder)="$event.detail.complete(true)">
+          @for (player of playersFiltered; track player.id) {
+            <ion-item-sliding #slider>
+              <ion-item button detail="false" (click)="openModal(player)">
+                @if (showImg) {
+                  <ion-avatar slot="start">
+                    <img [src]="player.img" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
+                  </ion-avatar>
                 }
-              }
-              @if (player.instrument !== mainGroup) {
-                @if (showTeachers && player.teacher) {
-                  <h3>Lehrer: {{ getTeacherName(player.teacher) }}</h3>
-                } @else if (showTeachers && !player.teacher) {
-                  <h3>Kein Lehrer</h3>
+                <ion-label>
+                  <h2>{{ player.firstName }} {{ player.lastName }}</h2>
+                  @if (player.text) {
+                    <h3>{{ player.text }}</h3>
+                  }
+                  @if (showInstruments) {
+                    @if (!player.text) {
+                      <h3>{{ player.groupName }}</h3>
+                    }
+                  }
+                  @if (player.instrument !== mainGroup) {
+                    @if (showTeachers && player.teacher) {
+                      <h3>Lehrer: {{ getTeacherName(player.teacher) }}</h3>
+                    } @else if (showTeachers && !player.teacher) {
+                      <h3>Kein Lehrer</h3>
+                    }
+                  }
+                  @if (this.filterOpt === 'otherInstance') {
+                    <h3>{{ tenantName }}</h3>
+                  }
+                  @if (showNotes && player.notes) {
+                    <p style="white-space: pre-line;">{{ player.notes }}</p>
+                  }
+                </ion-label>
+                @if (((showPaused && !player.paused) || !showPaused) && showLeader && player.isLeader) {
+                  <ion-badge color="secondary" slot="end">Stimmführer</ion-badge>
                 }
-              }
-              @if (this.filterOpt === 'otherInstance') {
-                <h3>{{ tenantName }}</h3>
-              }
-              @if (showNotes && player.notes) {
-                <p style="white-space: pre-line;">{{ player.notes }}</p>
-              }
-            </ion-label>
-            @if (((showPaused && !player.paused) || !showPaused) && showLeader && player.isLeader) {
-              <ion-badge color="secondary"
-                slot="end">
-              Stimmführer</ion-badge>
-            }
-            @if (((showPaused && !player.paused) || !showPaused) && showNew && player.isNew && !player.isLeader) {
-              <ion-badge color="danger"
-              slot="end">Neu</ion-badge>
-            }
-            @if (((showPaused && !player.paused) || !showPaused) && showCritical && player.isCritical) {
-              <ion-badge color="danger"
-                slot="end">
-              Problemfall</ion-badge>
-            }
-            @if (showPaused && player.paused) {
-              <ion-badge color="warning" slot="end">Pausiert</ion-badge>
-            }
-            @if (showExaminee && player.examinee) {
-              <ion-badge color="dark" slot="end">Prüfling</ion-badge>
-            }
-            @if (db.tenant().additional_fields?.length) {
-              @for (field of db.tenant().additional_fields; track field.id) {
-                @if (viewOpts.includes(field.id)) {
-                  @if (player.additional_fields[field.id]) {
-                    @if (field.type === "boolean") {
-                       <ion-badge [color]="'success'" slot="end">{{ field.name }}</ion-badge>
-                    } @else if (field.type === "select" || field.type === "text") {
-                       <ion-badge color="dark" slot="end">{{ player.additional_fields[field.id] }}</ion-badge>
-                    } @else if (field.type === "bfecg_church") {
-                       <ion-badge color="dark" slot="end">{{ getChurchName(player.additional_fields[field.id]) }}</ion-badge>
-                    } @else if (field.type === "number") {
-                       <ion-badge color="dark" slot="end">{{ field.name }} {{ player.additional_fields[field.id] }}</ion-badge>
+                @if (((showPaused && !player.paused) || !showPaused) && showNew && player.isNew && !player.isLeader) {
+                  <ion-badge color="danger" slot="end">Neu</ion-badge>
+                }
+                @if (((showPaused && !player.paused) || !showPaused) && showCritical && player.isCritical) {
+                  <ion-badge color="danger" slot="end">Problemfall</ion-badge>
+                }
+                @if (showPaused && player.paused) {
+                  <ion-badge color="warning" slot="end">Pausiert</ion-badge>
+                }
+                @if (showExaminee && player.examinee) {
+                  <ion-badge color="dark" slot="end">Prüfling</ion-badge>
+                }
+                @if (db.tenant().additional_fields?.length) {
+                  @for (field of db.tenant().additional_fields; track field.id) {
+                    @if (viewOpts.includes(field.id)) {
+                      @if (player.additional_fields[field.id]) {
+                        @if (field.type === "boolean") {
+                          <ion-badge [color]="'success'" slot="end">{{ field.name }}</ion-badge>
+                        } @else if (field.type === "select" || field.type === "text") {
+                          <ion-badge color="dark" slot="end">{{ player.additional_fields[field.id] }}</ion-badge>
+                        } @else if (field.type === "bfecg_church") {
+                          <ion-badge color="dark" slot="end">{{ getChurchName(player.additional_fields[field.id]) }}</ion-badge>
+                        } @else if (field.type === "number") {
+                          <ion-badge color="dark" slot="end">{{ field.name }} {{ player.additional_fields[field.id] }}</ion-badge>
+                        }
+                      }
                     }
                   }
                 }
+                @if (showAttendance) {
+                  <ion-badge [color]="player.percentage >= 75 ? 'success' : player.percentage >= 50 ? 'warning' : 'danger'" slot="end">{{ player.percentage }}%</ion-badge>
+                }
+              </ion-item>
+              @if (isAdmin) {
+                <ion-item-options (ionSwipe)="player.paused ? unpausePlayer(player, slider) : pausePlayer(player, slider)">
+                  <ion-item-option (click)="remove(player, slider)" color="danger">
+                    <ion-icon name="trash"></ion-icon>
+                  </ion-item-option>
+                  @if (!player.paused) {
+                    <ion-item-option expandable (click)="pausePlayer(player, slider)" color="warning">
+                      <ion-icon name="pause"></ion-icon>
+                    </ion-item-option>
+                  }
+                  @if (player.paused) {
+                    <ion-item-option expandable (click)="unpausePlayer(player, slider)" color="success">
+                      <ion-icon name="play"></ion-icon>
+                    </ion-item-option>
+                  }
+                </ion-item-options>
               }
-            }
-            @if (showAttendance) {
-              <ion-badge [color]="player.percentage >= 75 ? 'success' : player.percentage >= 50 ? 'warning' : 'danger'"
-              slot="end">{{ player.percentage }}%</ion-badge>
-            }
-          </ion-item>
-          @if (isAdmin) {
-            <ion-item-options (ionSwipe)="player.paused ? unpausePlayer(player, slider) : pausePlayer(player, slider)"
-              >
-              <ion-item-option (click)="remove(player, slider)" color="danger">
-                <ion-icon name="trash"></ion-icon>
-              </ion-item-option>
-              @if (!player.paused) {
-                <ion-item-option expandable (click)="pausePlayer(player, slider)" color="warning">
-                  <ion-icon name="pause"></ion-icon>
-                </ion-item-option>
-              }
-              @if (player.paused) {
-                <ion-item-option expandable (click)="unpausePlayer(player, slider)" color="success">
-                  <ion-icon name="play"></ion-icon>
-                </ion-item-option>
-              }
-            </ion-item-options>
+            </ion-item-sliding>
           }
-        </ion-item-sliding>
+        </ion-reorder-group>
       }
-      </ion-reorder-group>
     </ion-list>
   } @else if (loaded && players?.length && !playersFiltered?.length && (filterOpt !== 'all' || searchTerm)) {
     <div class="noDataContainer">
