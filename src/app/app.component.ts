@@ -228,7 +228,7 @@ export class AppComponent {
   }
 
   async checkIcalMigrationWarning() {
-    if (true || this.icalMigrationWarningShown) return;
+    if (this.icalMigrationWarningShown) return;
     if (localStorage.getItem('ical_migration_warned')) return;
     this.icalMigrationWarningShown = true;
 
