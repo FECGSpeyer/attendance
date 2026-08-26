@@ -813,6 +813,8 @@ export class ListPage implements OnInit, OnDestroy {
       type: PlayerHistoryType.PAUSED,
     });
 
+    const loading = await Utils.getLoadingElement(5000, 'Wird pausiert...');
+    await loading.present();
     try {
       await this.db.updatePlayer({
         ...this.playerToPause,
@@ -821,8 +823,11 @@ export class ListPage implements OnInit, OnDestroy {
         history,
       }, true, undefined, undefined, undefined, this.pauseFrom || undefined);
     } catch (error) {
+      await loading.dismiss();
       Utils.showToast(error, 'danger');
+      return;
     }
+    await loading.dismiss();
 
     const pausedPlayer = this.playerToPause;
     const pauseUntil = this.pauseUntil;
@@ -905,6 +910,8 @@ export class ListPage implements OnInit, OnDestroy {
             text: 'Person wieder aktiv',
             type: PlayerHistoryType.UNPAUSED,
           });
+          const loading = await Utils.getLoadingElement(5000, 'Wird aktiviert...');
+          await loading.present();
           try {
             await this.db.updatePlayer({
               ...player,
@@ -915,6 +922,7 @@ export class ListPage implements OnInit, OnDestroy {
           } catch (error) {
             Utils.showToast(error, 'danger');
           }
+          await loading.dismiss();
           slider.close();
         }
       }]
