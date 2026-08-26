@@ -3,7 +3,9 @@
     <ion-toolbar color="warning">
       <ion-title>Reihenfolge anpassen</ion-title>
       <ion-buttons slot="end">
-        <ion-button (click)="toggleReorderMode()" strong="true">Speichern</ion-button>
+        <ion-button (click)="toggleReorderMode()">
+          <ion-icon slot="icon-only" name="checkmark"></ion-icon>
+        </ion-button>
       </ion-buttons>
     </ion-toolbar>
   } @else {
