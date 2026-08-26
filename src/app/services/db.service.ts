@@ -2306,7 +2306,7 @@ export class DbService {
         .from('attendance')
         .select(`*, persons:person_attendances(
           *, person:person_id(
-            firstName, lastName, img, instrument(id, name), joined
+            firstName, lastName, img, instrument(id, name), joined, sort_order
           )
         )`)
         .eq('tenantId', this.tenant().id)
