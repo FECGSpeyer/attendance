@@ -79,7 +79,7 @@
         <ion-select (ionDismiss)="update()" interface="modal" label="Besetzung" multiple="true"
           [(ngModel)]="song.instrument_ids">
           @for (instrument of instruments; track instrument) {
-          <ion-select-option [value]="instrument.id">{{ instrument.name
+          <ion-select-option [value]="instrument.id" [disabled]="instrumentIdsFromFiles.includes(instrument.id)">{{ instrument.name
             }}</ion-select-option>
           }
         </ion-select>

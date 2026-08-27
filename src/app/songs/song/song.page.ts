@@ -48,6 +48,20 @@ export class SongPage implements OnInit {
   // Song history
   public songHistory: History[] = [];
 
+  private syncInstrumentIdsFromFiles(): void {
+    if (!this.song) { return; }
+    const merged = [...new Set([...(this.song.instrument_ids || []), ...this.instrumentIdsFromFiles])];
+    this.song.instrument_ids = merged;
+  }
+
+  get instrumentIdsFromFiles(): number[] {
+    return [...new Set(
+      (this.song?.files || [])
+        .map(f => f.instrumentId)
+        .filter(id => id != null && id > 2) as number[]
+    )];
+  }
+
   getHistoryEntryTitle(entry: any): string {
     return entry.typeTitle || '';
   }
@@ -83,6 +97,7 @@ export class SongPage implements OnInit {
       const groups = this.tenant ? await this.db.getGroups(this.tenant.id) : this.db.groups();
       this.instruments = groups.filter((instrument: Group) => !instrument.maingroup);
     }
+    this.syncInstrumentIdsFromFiles();
 
     // Load song history (when played at events)
     try {
@@ -238,6 +253,7 @@ export class SongPage implements OnInit {
     }
 
     this.song = await this.db.getSong(this.song.id); // Refresh file list
+    this.syncInstrumentIdsFromFiles();
 
     this.selectedFileInfos = [];
     await fileUploadModal.dismiss();
@@ -597,6 +613,8 @@ export class SongPage implements OnInit {
   }
 
   async update() {
+    const merged = [...new Set([...(this.song.instrument_ids || []), ...this.instrumentIdsFromFiles])];
+    this.song.instrument_ids = merged;
     await this.db.editSong(this.song.id, this.song);
   }
 
