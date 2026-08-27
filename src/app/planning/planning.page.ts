@@ -694,7 +694,7 @@ export class PlanningPage implements OnInit {
       return '';
     }
 
-    const text = Utils.getInstrumentText(song.instrument_ids, this.db.groups().filter((group: Group) => !group.maingroup), this.groupCategories);
+    const text = Utils.getInstrumentText(song.instrument_ids, this.db.groups().filter((group: Group) => group.maingroup !== true), this.groupCategories);
     return text;
   }
 

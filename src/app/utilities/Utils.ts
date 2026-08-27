@@ -1246,7 +1246,7 @@ export class Utils {
   }
 
   public static getInstrumentText(instrumentIds: number[], instruments: Group[], groupCategories: GroupCategory[]): string {
-    const nonMainInstruments = instruments.filter((i: Group) => !i.maingroup);
+    const nonMainInstruments = instruments.filter((i: Group) => i.maingroup !== true);
     const filteredInstruments: Group[] = nonMainInstruments.filter((instrument: Group) => !instrumentIds.includes(instrument.id));
     // last instrument should be connected with 'und'
 

@@ -117,7 +117,7 @@ export class SongsPage implements OnInit {
     const conductors: Person[] = await this.db.getConductors(true, this.tenantData?.id, groups.find((g: Group) => g.maingroup)?.id);
     this.groupCategories = await this.db.getGroupCategories(this.tenantData?.id);
     if (this.isOrchestra) {
-      this.instruments = groups.filter((instrument: Group) => !instrument.maingroup);
+      this.instruments = groups.filter((instrument: Group) => instrument.maingroup !== true);
       this.selectedInstruments = groups.map((instrument: Group) => instrument.id);
     }
     this.songs = (await this.db.getSongs(this.tenantData?.id)).map((song: Song): Song => {
@@ -156,7 +156,7 @@ export class SongsPage implements OnInit {
     await this.db.setShowSongsTab(this.showSongsTab);
   }
   async printNotesForGroup(): Promise<void> {
-    const groups = this.db.groups().filter(g => !g.maingroup);
+    const groups = this.db.groups().filter(g => g.maingroup !== true);
     const alert = await this.alertController.create({
       header: 'Gruppe wählen',
       inputs: groups.map(g => ({

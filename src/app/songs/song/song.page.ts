@@ -95,7 +95,7 @@ export class SongPage implements OnInit {
     this.song = await this.db.getSong(songId, this.tenant?.id);
     if (this.isOrchestra) {
       const groups = this.tenant ? await this.db.getGroups(this.tenant.id) : this.db.groups();
-      this.instruments = groups.filter((instrument: Group) => !instrument.maingroup);
+      this.instruments = groups.filter((instrument: Group) => instrument.maingroup !== true);
     }
     this.syncInstrumentIdsFromFiles();
 

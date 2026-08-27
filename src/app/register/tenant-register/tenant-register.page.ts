@@ -78,7 +78,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
       }
     }
 
-    this.groups = (await this.db.getGroups(this.tenantData.id)).filter(g => !g.maingroup);
+    this.groups = (await this.db.getGroups(this.tenantData.id)).filter(g => g.maingroup !== true);
     this.selectedGroupId = this.groups.length > 0 ? this.groups[0].id : null;
   }
 

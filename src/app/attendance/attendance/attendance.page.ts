@@ -203,7 +203,7 @@ export class AttendancePage implements OnInit, OnDestroy {
 
     this.songs = await this.db.getSongs();
     this.filteredSongs = [...this.songs];
-    this.instruments = this.db.groups().filter((instrument: Group) => !instrument.maingroup);
+    this.instruments = this.db.groups().filter((instrument: Group) => instrument.maingroup !== true);
     this.groupCategories = await this.db.getGroupCategories();
     this.mainGroup = this.db.getMainGroup().id;
     // Bind so we can remove it on teardown(). The previous inline arrow

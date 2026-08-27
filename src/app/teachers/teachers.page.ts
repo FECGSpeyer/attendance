@@ -30,7 +30,7 @@ export class TeachersPage implements OnInit {
   async ngOnInit() {
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.players = await this.db.getPlayers();
-    this.instruments = this.db.groups().filter((ins: Group) => !ins.maingroup);
+    this.instruments = this.db.groups().filter((ins: Group) => ins.maingroup !== true);
     await this.getTeachers();
   }
 
