@@ -1246,7 +1246,8 @@ export class Utils {
   }
 
   public static getInstrumentText(instrumentIds: number[], instruments: Group[], groupCategories: GroupCategory[]): string {
-    const filteredInstruments: Group[] = instruments.filter((instrument: Group) => !instrumentIds.includes(instrument.id));
+    const nonMainInstruments = instruments.filter((i: Group) => !i.maingroup);
+    const filteredInstruments: Group[] = nonMainInstruments.filter((instrument: Group) => !instrumentIds.includes(instrument.id));
     // last instrument should be connected with 'und'
 
     if (filteredInstruments.length === 0) {
@@ -1276,7 +1277,7 @@ export class Utils {
     const categoriesMissingAllInstruments: string[] = [];
     Object.keys(categoryMap).forEach((categoryId: string) => {
       const catIdNum = Number(categoryId);
-      const totalInstrumentsInCategory = instruments.filter((instrument: Group) => instrument.category === catIdNum).length;
+      const totalInstrumentsInCategory = nonMainInstruments.filter((instrument: Group) => instrument.category === catIdNum).length;
       if (categoryMap[catIdNum].length === totalInstrumentsInCategory) {
         // all instruments of this category are missing
         const categoryName = catIdNum === -1 ? 'Sonstige' : groupCategories.find(cat => cat.id === catIdNum)?.name || 'Unbekannt';
