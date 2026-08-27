@@ -1,6 +1,14 @@
     {
       "versions": [
         {
+          "version": "4.6.3",
+          "date": "27.8.2026",
+          "changes": [
+            "🎵 Werke: Aufnahmen können jetzt auch heruntergeladen werden (Werkverzeichnis & Selbstauskunft).",
+            "🖨️ Werke: Drucken öffnet jetzt zuverlässig den Druckdialog statt die Datei nur im Browser anzuzeigen."
+          ]
+        },
+        {
           "version": "4.6.2",
           "date": "25.8.2026",
           "changes": [

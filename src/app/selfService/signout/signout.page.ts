@@ -662,14 +662,19 @@ export class SignoutPage implements OnInit {
       });
     }
 
-    if (song.files.find(f => f.instrumentId === 1)) {
+    const audioFile = song.files.find(f => f.instrumentId === 1);
+    if (audioFile) {
       buttons.push({
         text: 'Aufnahme anhören',
         handler: () => {
-          const file = song.files.find(f => f.instrumentId === 1);
-          if (file) {
-            this.audioPlayer.play(file, `${song.number} ${song.name}`);
-          }
+          this.audioPlayer.play(audioFile, `${song.number} ${song.name}`);
+        },
+      });
+      buttons.push({
+        text: 'Aufnahme herunterladen',
+        handler: async () => {
+          const blob = await this.db.downloadSongFile(audioFile.storageName ?? audioFile.url.split('/').pop(), song.id);
+          Utils.downloadFileNative(blob, audioFile.fileName);
         },
       });
     }

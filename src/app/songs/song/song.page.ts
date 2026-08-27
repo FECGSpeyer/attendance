@@ -493,39 +493,29 @@ export class SongPage implements OnInit {
               Utils.showToast('Datei geöffnet - bitte manuell drucken', 'success');
             }
           } else {
-            // Desktop: use traditional print dialog
-            const printWindow = window.open(file.url, '_blank');
+            const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), this.song.id);
+            const blobUrl = URL.createObjectURL(blob);
+            const printWindow = window.open(blobUrl, '_blank');
             if (printWindow) {
-              // Use both onload and setTimeout as fallback
               let printed = false;
-
               printWindow.onload = () => {
                 if (!printed) {
                   printed = true;
-                  // Small delay to ensure PDF is fully rendered
                   setTimeout(() => {
-                    try {
-                      printWindow.print();
-                    } catch (e) {
-                      console.error('Print failed in onload:', e);
-                    }
+                    try { printWindow.print(); } catch (e) { console.error('Print failed:', e); }
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
                   }, 500);
                 }
               };
-
-              // Fallback timeout for when onload doesn't fire (common with PDFs)
-              // Increased timeout for larger PDFs
               setTimeout(() => {
                 if (!printed && printWindow) {
                   printed = true;
-                  try {
-                    printWindow.print();
-                  } catch (e) {
-                    console.error('Print failed in timeout:', e);
-                  }
+                  try { printWindow.print(); } catch (e) { console.error('Print failed:', e); }
+                  setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
                 }
               }, 2000);
             } else {
+              URL.revokeObjectURL(blobUrl);
               Utils.showToast('Popup wurde blockiert. Bitte erlaube Popups für diese Seite.', 'warning');
             }
           }
@@ -533,9 +523,9 @@ export class SongPage implements OnInit {
       });
     }
 
-    if (!isPlatform('ios')) {
+    if (!isPlatform('ios') || isAudio) {
       buttons.push({
-        text: 'Datei herunterladen',
+        text: isAudio ? 'Aufnahme herunterladen' : 'Datei herunterladen',
         icon: 'download-outline',
         handler: () => {
           this.downloadFile(file);
