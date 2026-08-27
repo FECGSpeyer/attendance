@@ -378,7 +378,7 @@ export class SongPage implements OnInit {
     await this.db.editSong(this.song.id, {
       ...this.song,
       files,
-      instrument_ids: Array.from(new Set((files || []).map(f => f.instrumentId).filter(id => id !== null && id !== 1)))
+      instrument_ids: Array.from(new Set((files || []).map(f => f.instrumentId).filter(id => id !== null && id !== 1 && id !== 2 && id !== this.db.getMainGroup()?.id)))
     });
     this.song = await this.db.getSong(this.song.id); // Refresh file list
     this.cdr.detectChanges();
