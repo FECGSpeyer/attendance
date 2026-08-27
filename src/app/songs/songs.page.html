@@ -281,7 +281,7 @@
           >
           <ion-label>
             <h2>{{ song.prefix }}{{ song.number }} {{ song.name }}</h2>
-            @if (isOrchestra && song.instrument_ids?.length && viewOpts.includes('missingInstruments')) {
+            @if (isOrchestra && song.instrument_ids?.length && viewOpts.includes('missingInstruments') && getInstrumentText(song.instrument_ids)) {
               <h3 style="color: var(--ion-color-danger);"
                 >{{
               getInstrumentText(song.instrument_ids) }}</h3>
