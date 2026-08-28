@@ -81,8 +81,8 @@ export class PlanningPage implements OnInit {
             conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || '')
           }));
       } else {
-        const isPractice = this.attendances.find((att: Attendance) => att.id === this.attendance)?.type === 'uebung';
-        this.time = isPractice ? (this.db.tenant().practiceStart || '17:50') : '10:00';
+        const isPractice = att?.type === 'uebung';
+        this.time = att?.start_time || (isPractice ? (this.db.tenant().practiceStart || '17:50') : '10:00');
       }
     } else if (upcomingAttendances.length) {
       this.attendance = upcomingAttendances[0].id;
@@ -98,8 +98,9 @@ export class PlanningPage implements OnInit {
             conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || '')
           }));
       } else {
-        const isPractice = this.attendances.find((att: Attendance) => att.id === this.attendance)?.type === 'uebung';
-        this.time = isPractice ? (this.db.tenant().practiceStart || '17:50') : '10:00';
+        const upcomingAtt = upcomingAttendances[0];
+        const isPractice = upcomingAtt.type === 'uebung';
+        this.time = upcomingAtt.start_time || (isPractice ? (this.db.tenant().practiceStart || '17:50') : '10:00');
       }
     }
 

@@ -2,6 +2,30 @@
   <ion-toolbar>
     <ion-title>Termine</ion-title>
     <ion-buttons slot="end">
+      <ion-button id="att-filter-trigger">
+        <ion-icon slot="icon-only" [color]="filterTypeId !== 'all' ? 'primary' : ''" name="options"></ion-icon>
+      </ion-button>
+      <ion-popover trigger="att-filter-trigger" triggerAction="click" [dismissOnSelect]="true">
+        <ng-template>
+          <ion-list>
+            <ion-item button detail="false" (click)="setFilter('all')">
+              <ion-label [color]="filterTypeId === 'all' ? 'primary' : ''">Alle anzeigen</ion-label>
+              @if (filterTypeId === 'all') {
+                <ion-icon slot="end" name="checkmark" color="primary"></ion-icon>
+              }
+            </ion-item>
+            @for (type of db.attendanceTypes(); track type.id) {
+              <ion-item button detail="false" (click)="setFilter(type.id)">
+                <ion-icon slot="start" name="ellipse" [color]="type.color"></ion-icon>
+                <ion-label [color]="filterTypeId === type.id ? 'primary' : ''">{{ type.name }}</ion-label>
+                @if (filterTypeId === type.id) {
+                  <ion-icon slot="end" name="checkmark" color="primary"></ion-icon>
+                }
+              </ion-item>
+            }
+          </ion-list>
+        </ng-template>
+      </ion-popover>
       <ion-button id="info-legend-button">
         <ion-icon slot="icon-only" name="information-outline"></ion-icon>
       </ion-button>

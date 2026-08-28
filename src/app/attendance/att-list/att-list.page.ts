@@ -53,6 +53,7 @@ export class AttListPage implements OnInit {
   public historyEntries: History[] = [];
   public highlightedTypes: string[] = [];
   public isAddModalOpen = false;
+  public filterTypeId = 'all';
   public songSearchTerm = '';
   public filteredSongs: Song[] = [];
 
@@ -230,9 +231,12 @@ export class AttListPage implements OnInit {
       }));
 
     this.allAttendances = attendances;
-    this.attendances = attendances.filter((att: Attendance) => dayjs(att.date).isAfter(dayjs().startOf('day'))).reverse();
-    this.oldAttendances = attendances.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
-    this.viewerAttendances = attendances.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
+
+    const filtered = this.filterTypeId === 'all' ? attendances : attendances.filter(att => att.type_id === this.filterTypeId);
+
+    this.attendances = filtered.filter((att: Attendance) => dayjs(att.date).isAfter(dayjs().startOf('day'))).reverse();
+    this.oldAttendances = filtered.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
+    this.viewerAttendances = filtered.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
     if (this.attendances.length) {
       this.currentAttendance = { ...this.attendances[0] };
       this.viewerAttendances.unshift(this.attendances[0]);
@@ -530,6 +534,11 @@ export class AttListPage implements OnInit {
 
   showSongsSelection(): boolean {
     return !this.isGeneral && Boolean(this.db.attendanceTypes().find(type => type.id === this.type_id && type.manage_songs));
+  }
+
+  setFilter(typeId: string): void {
+    this.filterTypeId = typeId;
+    void this.getAttendance();
   }
 
   getCountText(att: Attendance) {

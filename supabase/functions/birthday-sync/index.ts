@@ -18,6 +18,7 @@ const getBirthdays = async ()=>{
       year: 'numeric', month: '2-digit', day: '2-digit',
     }).formatToParts(new Date()).map(p => [p.type, p.value])
   );
+  const todayYear = Number(berlinParts.year);
   const todayMonth = Number(berlinParts.month); // 1-12
   const todayDay = Number(berlinParts.day);
 
@@ -104,13 +105,27 @@ const getBirthdays = async ()=>{
   }
   console.log(`[birthday-sync] tenants=${tenantIds.length} eligibleNotifConfigs=${allNotifications.length}`);
 
-  const getBirthdayString = (bs)=>{
+  const getAge = (birthday: string, todayYear: number, todayMonth: number, todayDay: number): number | null => {
+    const d = new Date(birthday);
+    if (isNaN(d.getTime())) return null;
+    const birthYear = d.getUTCFullYear();
+    const birthMonth = d.getUTCMonth() + 1;
+    const birthDay = d.getUTCDate();
+    let age = todayYear - birthYear;
+    if (todayMonth < birthMonth || (todayMonth === birthMonth && todayDay < birthDay)) age--;
+    return age;
+  };
+
+  const ageLabel = (age: number | null): string => age !== null ? ` (${age})` : '';
+
+  const getBirthdayString = (bs, todayYear, todayMonth, todayDay)=>{
     let bString = "";
     bs.map((p, index)=>{
+      const age = getAge(p.birthday, todayYear, todayMonth, todayDay);
       if (bs.length === index + 1) {
-        bString += `${p.firstName} ${p.lastName} Geburtstag.`;
+        bString += `${p.firstName} ${p.lastName}${ageLabel(age)} Geburtstag.`;
       } else {
-        bString += `${p.firstName} ${p.lastName} und `;
+        bString += `${p.firstName} ${p.lastName}${ageLabel(age)} und `;
       }
     });
     return bString;
@@ -129,9 +144,11 @@ const getBirthdays = async ()=>{
     const tenantBirthdays = todaysBirthdays.filter(b => b.tenantId === tenantId);
 
     // Build message
+    const p0 = tenantBirthdays[0];
+    const age0 = getAge(p0.birthday, todayYear, todayMonth, todayDay);
     const message = tenantBirthdays.length === 1
-      ? `Heute hat ${tenantBirthdays[0].firstName} ${tenantBirthdays[0].lastName} Geburtstag.`
-      : `Heute haben ${getBirthdayString(tenantBirthdays)}`;
+      ? `Heute hat ${p0.firstName} ${p0.lastName}${ageLabel(age0)} Geburtstag.`
+      : `Heute haben ${getBirthdayString(tenantBirthdays, todayYear, todayMonth, todayDay)}`;
 
     // Get users for this tenant
     const tenantUserIds = tenantUsers
@@ -160,9 +177,10 @@ const getBirthdays = async ()=>{
     // Send notifications to all eligible users
     for (const user of eligibleUsers){
       // If the recipient is themselves a birthday person, send a personalized wish
-      const isBirthdayPerson = tenantBirthdays.some(b => b.appId === user.id);
-      const userMessage = isBirthdayPerson
-        ? `Herzlichen Glückwunsch zum Geburtstag! 🎂`
+      const birthdayEntry = tenantBirthdays.find(b => b.appId === user.id);
+      const selfAge = birthdayEntry ? getAge(birthdayEntry.birthday, todayYear, todayMonth, todayDay) : null;
+      const userMessage = birthdayEntry
+        ? `Herzlichen Glückwunsch zum Geburtstag${selfAge !== null ? ` – du wirst heute ${selfAge}` : ''}! 🎂`
         : message;
 
       const parallelMode = !!user.push_and_telegram && !!user.push_enabled && !!user.telegram_chat_id;
