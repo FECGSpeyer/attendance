@@ -182,8 +182,34 @@
         </ng-template>
       </ion-modal>
       }
+      @if (canPlannedAbsence) {
+      <br>
+      <ion-button fill="clear" size="small" (click)="isAbsenceModalOpen = true">
+        <ion-icon slot="start" name="calendar-outline"></ion-icon>
+        Abwesenheit melden
+      </ion-button>
+      }
     </ion-card-content>
   </ion-card>
+  }
+
+  @if (canPlannedAbsence && playerAbsences.length) {
+  <ion-list [inset]="true">
+    <ion-list-header>
+      <ion-label>Geplante Abwesenheiten</ion-label>
+    </ion-list-header>
+    @for (absence of playerAbsences; track absence.id) {
+    <ion-item>
+      <ion-label>
+        <h2>{{ absence.from_date | date:'dd.MM.yyyy' }} – {{ absence.until_date | date:'dd.MM.yyyy' }}</h2>
+        <p>{{ absence.reason }}</p>
+      </ion-label>
+      <ion-button fill="clear" slot="end" color="danger" (click)="deleteAbsence(absence)">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+    }
+  </ion-list>
   }
 
   <ion-accordion-group [multiple]="true" [value]="['current', 'first']">
@@ -375,6 +401,88 @@
         </ion-accordion-group>
         <ion-button expand="block" color="warning" class="ion-margin-top" (click)="confirmPause()">
           Pausieren bestätigen
+        </ion-button>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal handle-behavior="none" [breakpoints]="[0, 0.85, 1]" [initialBreakpoint]="0.85" backdropDismiss="true" [isOpen]="isAbsenceModalOpen"
+    (ionModalDidDismiss)="dismissAbsenceModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Abwesenheit melden</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="dismissAbsenceModal()">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-list>
+          <ion-item>
+            <ion-label position="stacked">Grund *</ion-label>
+            <ion-textarea autocapitalize="sentences" [(ngModel)]="absenceReason"
+              placeholder="z.B. Urlaub, Krankheit..." [autoGrow]="true"></ion-textarea>
+          </ion-item>
+        </ion-list>
+
+        <ion-accordion-group>
+          <ion-accordion value="from">
+            <ion-item slot="header" color="light">
+              <ion-label>
+                <h3>Von *</h3>
+                @if (absenceFrom) {
+                <p>{{ absenceFrom | date:'dd.MM.yyyy' }}</p>
+                } @else {
+                <p>Kein Datum gewählt</p>
+                }
+              </ion-label>
+              @if (absenceFrom) {
+              <ion-button fill="clear" slot="end" (click)="absenceFrom = ''; $event.stopPropagation()">
+                <ion-icon slot="icon-only" name="close-circle-outline" color="medium"></ion-icon>
+              </ion-button>
+              }
+            </ion-item>
+            <div slot="content">
+              <ion-datetime locale="de-DE" [firstDayOfWeek]="1" [(ngModel)]="absenceFrom"
+                presentation="date" size="cover">
+              </ion-datetime>
+            </div>
+          </ion-accordion>
+          <ion-accordion value="until">
+            <ion-item slot="header" color="light">
+              <ion-label>
+                <h3>Bis *</h3>
+                @if (absenceUntil) {
+                <p>{{ absenceUntil | date:'dd.MM.yyyy' }}</p>
+                } @else {
+                <p>Kein Datum gewählt</p>
+                }
+              </ion-label>
+              @if (absenceUntil) {
+              <ion-button fill="clear" slot="end" (click)="absenceUntil = ''; $event.stopPropagation()">
+                <ion-icon slot="icon-only" name="close-circle-outline" color="medium"></ion-icon>
+              </ion-button>
+              }
+            </ion-item>
+            <div slot="content">
+              <ion-datetime locale="de-DE" [firstDayOfWeek]="1" [min]="absenceFrom || undefined" [(ngModel)]="absenceUntil"
+                presentation="date" size="cover">
+              </ion-datetime>
+            </div>
+          </ion-accordion>
+        </ion-accordion-group>
+
+        <ion-note class="ion-padding" color="warning" style="display: block; margin-top: 8px;">
+          Für längere Abwesenheiten empfiehlt sich die Pausieren-Funktion, damit du nicht in neuen Terminen erscheinst.
+        </ion-note>
+
+        <ion-button expand="block" class="ion-margin-top" (click)="confirmAbsence()"
+          [disabled]="!absenceReason || !absenceFrom || !absenceUntil">
+          <ion-icon slot="start" name="calendar-outline"></ion-icon>
+          Abwesenheit eintragen
         </ion-button>
       </ion-content>
     </ng-template>

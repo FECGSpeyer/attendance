@@ -7,9 +7,9 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/de';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
-import { Attendance, PersonAttendance, Player, Song, History, Person, ChecklistItem } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, Player, PlayerAbsence, Song, History, Person, ChecklistItem } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
-import { DefaultAttendanceType, Role } from 'src/app/utilities/constants';
+import { AttendanceStatus, DefaultAttendanceType, Role } from 'src/app/utilities/constants';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 @Component({
@@ -293,6 +293,13 @@ export class AttListPage implements OnInit {
 
     let persons: PersonAttendance[] = [];
     let allPersons: Person[];
+    let tenantAbsences: PlayerAbsence[] = [];
+
+    try {
+      tenantAbsences = await this.db.getPlayerAbsencesForTenant();
+    } catch {
+      // non-fatal — proceed without absence check
+    }
 
     const attType = this.db.attendanceTypes().find(type => type.id === this.type_id);
     allPersons = (await this.db.getPlayers()).filter((player: Player) => {
@@ -375,6 +382,17 @@ export class AttListPage implements OnInit {
 
           playerStatus = result.status;
           notes = result.note;
+        }
+
+        const dateDay = dayjs(normalizedDate);
+        const absence = tenantAbsences.find(a =>
+          a.person_id === player.id &&
+          !dateDay.isBefore(dayjs(a.from_date), 'day') &&
+          !dateDay.isAfter(dayjs(a.until_date), 'day')
+        );
+        if (absence) {
+          playerStatus = AttendanceStatus.Excused;
+          notes = absence.reason;
         }
 
         persons.push({

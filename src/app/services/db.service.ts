@@ -5,7 +5,7 @@ import { SupabaseClient, User } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SUPER_DEVELOPER_EMAIL, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission } from '../utilities/interfaces';
+import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
@@ -45,6 +45,7 @@ import { SignInOutService } from './sign-in-out/sign-in-out.service';
 import { SongCategoryService } from './song-category/song-category.service';
 import { RolePermissionService } from './role-permission/role-permission.service';
 import { UserNotificationService } from './user-notification/user-notification.service';
+import { PlayerAbsenceService } from './player-absence/player-absence.service';
 
 @Injectable({
   providedIn: 'root'
@@ -98,6 +99,7 @@ export class DbService {
   public readonly songCategorySvc = inject(SongCategoryService);
   public readonly rolePermissionSvc = inject(RolePermissionService);
   public readonly userNotificationSvc = inject(UserNotificationService);
+  public readonly playerAbsenceSvc = inject(PlayerAbsenceService);
 
   private initPromise: Promise<void> | null = null;
 
@@ -3578,5 +3580,23 @@ export class DbService {
     this.rolePermissions.set(
       this.rolePermissions().map((p: TenantRolePermission) => p.id === id ? updated : p)
     );
+  }
+
+  async getPlayerAbsences(personId: number): Promise<PlayerAbsence[]> {
+    return this.playerAbsenceSvc.getAbsencesForPerson(personId, this.tenant().id);
+  }
+
+  async getPlayerAbsencesForTenant(): Promise<PlayerAbsence[]> {
+    return this.playerAbsenceSvc.getAbsencesForTenant(this.tenant().id);
+  }
+
+  async addPlayerAbsence(absence: PlayerAbsence): Promise<PlayerAbsence> {
+    this.checkDemoRestriction();
+    return this.playerAbsenceSvc.addAbsence(absence);
+  }
+
+  async deletePlayerAbsence(id: string): Promise<void> {
+    this.checkDemoRestriction();
+    return this.playerAbsenceSvc.deleteAbsence(id);
   }
 }

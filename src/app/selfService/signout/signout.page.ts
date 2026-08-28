@@ -11,7 +11,7 @@ import { PushService } from 'src/app/services/push/push.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
 import { TelegramService } from 'src/app/services/telegram/telegram.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, PlayerHistoryType, Role } from 'src/app/utilities/constants';
-import { Attendance, PersonAttendance, Player, PlayerHistoryEntry, Song, Tenant, History, SongFile, AttendanceType, Plan } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, Player, PlayerAbsence, PlayerHistoryEntry, Song, Tenant, History, SongFile, AttendanceType, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
@@ -50,6 +50,12 @@ export class SignoutPage implements OnInit {
   public isPauseModalOpen = false;
   public pauseReason = '';
   public pauseUntil = '';
+  public isAbsenceModalOpen = false;
+  public absenceReason = '';
+  public absenceFrom = '';
+  public absenceUntil = '';
+  public canPlannedAbsence = false;
+  public playerAbsences: PlayerAbsence[] = [];
 
   constructor(
     public db: DbService,
@@ -135,6 +141,13 @@ export class SignoutPage implements OnInit {
       if (this.canSelfPause) {
         await this.db.checkAndUnpausePlayers();
         this.player = await this.db.getPlayerByAppId();
+      }
+
+      const role = this.db.tenantUser().role;
+      const absencePerm = this.db.getPermissionForRole(role);
+      this.canPlannedAbsence = !!absencePerm?.player_planned_absence;
+      if (this.canPlannedAbsence && this.player) {
+        this.playerAbsences = await this.db.getPlayerAbsences(this.player.id);
       }
     } if (this.db.tenantUser()?.role === Role.APPLICANT) {
       this.player = await this.db.getPlayerByAppId();
@@ -920,6 +933,110 @@ export class SignoutPage implements OnInit {
     } catch (error) {
       Utils.showToast(error, 'danger');
     }
+  }
+
+  dismissAbsenceModal(): void {
+    this.isAbsenceModalOpen = false;
+    this.absenceReason = '';
+    this.absenceFrom = '';
+    this.absenceUntil = '';
+  }
+
+  async confirmAbsence(): Promise<void> {
+    if (!this.absenceReason || !this.absenceFrom || !this.absenceUntil) {
+      Utils.showToast('Bitte fülle alle Pflichtfelder aus', 'danger');
+      return;
+    }
+
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+
+    try {
+      await this.db.addPlayerAbsence({
+        tenant_id: this.db.tenant().id,
+        person_id: this.player.id,
+        from_date: this.absenceFrom,
+        until_date: this.absenceUntil,
+        reason: this.absenceReason,
+      });
+
+      const from = dayjs(this.absenceFrom);
+      const until = dayjs(this.absenceUntil);
+      const allUpcoming = [
+        ...(this.currentAttendance ? [this.currentAttendance] : []),
+        ...this.actualAttendances,
+      ];
+      const toExcuse = allUpcoming.filter(att =>
+        !dayjs((att as any).date).isBefore(from, 'day') &&
+        !dayjs((att as any).date).isAfter(until, 'day') &&
+        att.status !== AttendanceStatus.Excused
+      );
+
+      for (const att of toExcuse) {
+        await this.db.updatePersonAttendance(att.id, {
+          status: AttendanceStatus.Excused,
+          notes: this.absenceReason,
+        });
+      }
+
+      this.dismissAbsenceModal();
+      this.playerAbsences = await this.db.getPlayerAbsences(this.player.id);
+      await this.getAttendances();
+      Utils.showToast(
+        toExcuse.length > 0
+          ? `Abwesenheit eingetragen (${toExcuse.length} Termin${toExcuse.length > 1 ? 'e' : ''} entschuldigt)`
+          : 'Abwesenheit eingetragen',
+        'success'
+      );
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  async deleteAbsence(absence: PlayerAbsence): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Abwesenheit löschen',
+      message: 'Soll die Abwesenheit gelöscht werden? Bereits entschuldigte Termine in diesem Zeitraum werden auf "Neutral" zurückgesetzt.',
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Löschen',
+          role: 'destructive',
+          handler: async () => {
+            const loading = await Utils.getLoadingElement();
+            await loading.present();
+            try {
+              await this.db.deletePlayerAbsence(absence.id);
+
+              const from = dayjs(absence.from_date);
+              const until = dayjs(absence.until_date);
+              const allUpcoming = [
+                ...(this.currentAttendance ? [this.currentAttendance] : []),
+                ...this.actualAttendances,
+              ];
+              const toReset = allUpcoming.filter(att =>
+                !dayjs((att as any).date).isBefore(from, 'day') &&
+                !dayjs((att as any).date).isAfter(until, 'day') &&
+                att.status === AttendanceStatus.Excused &&
+                att.notes === absence.reason
+              );
+              for (const att of toReset) {
+                await this.db.updatePersonAttendance(att.id, {
+                  status: AttendanceStatus.Neutral,
+                  notes: '',
+                });
+              }
+              this.playerAbsences = await this.db.getPlayerAbsences(this.player.id);
+              await this.getAttendances();
+              Utils.showToast('Abwesenheit gelöscht', 'success');
+            } finally {
+              await loading.dismiss();
+            }
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   async confirmUnpause(): Promise<void> {

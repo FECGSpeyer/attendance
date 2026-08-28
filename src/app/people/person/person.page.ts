@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild, signal,
 import { ActionSheetButton, ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular/lazy';
 import { format, parseISO } from 'date-fns';
 import { DbService } from 'src/app/services/db.service';
-import { Group, Organisation, Parent, Person, PersonAttendance, Player, PlayerHistoryEntry, ShiftPlan, Teacher, Tenant } from 'src/app/utilities/interfaces';
+import { Group, Organisation, Parent, Person, PersonAttendance, Player, PlayerAbsence, PlayerHistoryEntry, ShiftPlan, Teacher, Tenant } from 'src/app/utilities/interfaces';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
@@ -90,6 +90,12 @@ export class PersonPage implements OnInit, AfterViewInit {
   public pauseFrom = '';
   public pauseUntil = '';
   public minPauseDate: string = dayjs().format('YYYY-MM-DD');
+  public isAbsenceModalOpen = false;
+  public absenceReason = '';
+  public absenceFrom = '';
+  public absenceUntil = '';
+  public playerAbsences: PlayerAbsence[] = [];
+  public canManagePlannedAbsences = false;
   public isTransferModalOpen = false;
   public copy = false;
   public tenantId: number;
@@ -140,6 +146,8 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
     this.isAdmin = this.db.tenantUser().role === Role.ADMIN || this.db.tenantUser().role === Role.RESPONSIBLE;
     this.isParent = this.db.tenantUser().role === Role.PARENT;
+    const absencePerm = this.db.getPermissionForRole(this.db.tenantUser().role);
+    this.canManagePlannedAbsences = this.isAdmin || !!absencePerm?.player_planned_absence;
     this.hasChanges = false;
     this.parentsEnabled = this.db.tenant().parents;
 
@@ -321,6 +329,10 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.upcomingAttendances = allAttendances
       .filter((att: PersonAttendance) => dayjs((att as any).date).isAfter(dayjs()))
       .sort((a, b) => new Date((a as any).date).getTime() - new Date((b as any).date).getTime());
+
+    if (this.canManagePlannedAbsences) {
+      this.playerAbsences = await this.db.getPlayerAbsences(this.player.id);
+    }
 
     // Calculate attendance percentage — include_in_average comes from the DB via getPersonAttendances
     const attendedCount = attendances.filter((att: PersonAttendance) => att.attended && (att as any).include_in_average).length;
@@ -1502,6 +1514,104 @@ export class PersonPage implements OnInit, AfterViewInit {
     this.pauseReason = '';
     this.pauseFrom = '';
     this.pauseUntil = '';
+  }
+
+  openAbsenceModal(): void {
+    this.isAbsenceModalOpen = true;
+  }
+
+  dismissAbsenceModal(): void {
+    this.isAbsenceModalOpen = false;
+    this.absenceReason = '';
+    this.absenceFrom = '';
+    this.absenceUntil = '';
+  }
+
+  async confirmAbsence(): Promise<void> {
+    if (!this.absenceReason || !this.absenceFrom || !this.absenceUntil) {
+      Utils.showToast('Bitte fülle alle Pflichtfelder aus', 'danger');
+      return;
+    }
+
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+
+    try {
+      await this.db.addPlayerAbsence({
+        tenant_id: this.db.tenant().id,
+        person_id: this.player.id,
+        from_date: this.absenceFrom,
+        until_date: this.absenceUntil,
+        reason: this.absenceReason,
+      });
+
+      const from = dayjs(this.absenceFrom);
+      const until = dayjs(this.absenceUntil);
+      const toExcuse = this.upcomingAttendances.filter(att =>
+        !dayjs((att as any).date).isBefore(from, 'day') &&
+        !dayjs((att as any).date).isAfter(until, 'day') &&
+        att.status !== AttendanceStatus.Excused
+      );
+
+      for (const att of toExcuse) {
+        await this.db.updatePersonAttendance(att.id, {
+          status: AttendanceStatus.Excused,
+          notes: this.absenceReason,
+        });
+      }
+
+      this.dismissAbsenceModal();
+      await this.getHistoryInfo();
+      Utils.showToast(
+        toExcuse.length > 0
+          ? `Abwesenheit eingetragen (${toExcuse.length} Termin${toExcuse.length > 1 ? 'e' : ''} entschuldigt)`
+          : 'Abwesenheit eingetragen',
+        'success'
+      );
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  async deleteAbsence(absence: PlayerAbsence): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Abwesenheit löschen',
+      message: 'Soll die Abwesenheit gelöscht werden? Bereits entschuldigte Termine in diesem Zeitraum werden auf "Neutral" zurückgesetzt.',
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Löschen',
+          role: 'destructive',
+          handler: async () => {
+            const loading = await Utils.getLoadingElement();
+            await loading.present();
+            try {
+              await this.db.deletePlayerAbsence(absence.id);
+
+              const from = dayjs(absence.from_date);
+              const until = dayjs(absence.until_date);
+              const toReset = this.upcomingAttendances.filter(att =>
+                !dayjs((att as any).date).isBefore(from, 'day') &&
+                !dayjs((att as any).date).isAfter(until, 'day') &&
+                att.status === AttendanceStatus.Excused &&
+                att.notes === absence.reason
+              );
+              for (const att of toReset) {
+                await this.db.updatePersonAttendance(att.id, {
+                  status: AttendanceStatus.Neutral,
+                  notes: '',
+                });
+              }
+              await this.getHistoryInfo();
+              Utils.showToast('Abwesenheit gelöscht', 'success');
+            } finally {
+              await loading.dismiss();
+            }
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   async activate(): Promise<void> {

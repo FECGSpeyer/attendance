@@ -6,7 +6,9 @@
           "changes": [
             "➕ Zusatzfelder für Werke (analog zu Personen-Zusatzfeldern).",
             "🔍 Werkliste: Zusatzfelder als Badge anzeigen und danach filtern.",
-            "⚙️ Zusatzfelder (Personen & Werke) in eigene Einstellungsseite ausgelagert."
+            "⚙️ Zusatzfelder (Personen & Werke) in eigene Einstellungsseite ausgelagert.",
+            "🗓️ Geplante Abwesenheiten: Personen können zukünftige Abwesenheitszeiträume eintragen. Passende Termine werden automatisch entschuldigt.",
+            "⚙️ Neue Rollenberechtigung: Geplante Abwesenheiten für Spieler, Helfer und Stimmführer-Helfer konfigurierbar."
           ]
         },
         {

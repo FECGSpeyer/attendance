@@ -72,6 +72,15 @@
                       </ion-toggle>
                     </ion-item>
                   }
+                  @if (showPlannedAbsenceToggle(section.role)) {
+                    <ion-item>
+                      <ion-toggle
+                        helperText="Wenn aktiviert, können Personen mit dieser Rolle geplante Abwesenheiten für sich selbst eintragen."
+                        [(ngModel)]="section.permission.player_planned_absence">
+                        Geplante Abwesenheiten eintragen
+                      </ion-toggle>
+                    </ion-item>
+                  }
                 </ion-item-group>
               </ion-list>
             </div>

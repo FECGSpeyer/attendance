@@ -61,6 +61,7 @@ export class RolePermissionsPage implements OnInit {
       player_notes_view: s.permission?.player_notes_view,
       checklist_view: s.permission?.checklist_view,
       player_self_pause: s.permission?.player_self_pause,
+      player_planned_absence: s.permission?.player_planned_absence,
     })));
   }
 
@@ -119,6 +120,7 @@ export class RolePermissionsPage implements OnInit {
             player_notes_view: section.permission.player_notes_view,
             checklist_view: section.permission.checklist_view,
             player_self_pause: section.permission.player_self_pause,
+            player_planned_absence: section.permission.player_planned_absence,
           });
         }
       }
@@ -149,7 +151,11 @@ export class RolePermissionsPage implements OnInit {
     return role === Role.PLAYER;
   }
 
+  showPlannedAbsenceToggle(role: Role): boolean {
+    return [Role.PLAYER, Role.HELPER, Role.VOICE_LEADER_HELPER].includes(role);
+  }
+
   hasAnyToggle(role: Role): boolean {
-    return this.showAttendanceToggle(role) || this.showAttendanceCreateToggle(role) || this.showNotesToggle(role) || this.showChecklistToggle(role) || this.showSelfPauseToggle(role);
+    return this.showAttendanceToggle(role) || this.showAttendanceCreateToggle(role) || this.showNotesToggle(role) || this.showChecklistToggle(role) || this.showSelfPauseToggle(role) || this.showPlannedAbsenceToggle(role);
   }
 }

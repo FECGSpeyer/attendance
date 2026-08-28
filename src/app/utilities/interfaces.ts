@@ -99,6 +99,18 @@ export interface TenantRolePermission {
   player_notes_view: boolean;
   checklist_view: boolean;
   player_self_pause: boolean;
+  player_planned_absence: boolean;
+}
+
+export interface PlayerAbsence {
+  id?: string;
+  created_at?: string;
+  created_by?: string;
+  tenant_id: number;
+  person_id: number;
+  from_date: string;
+  until_date: string;
+  reason: string;
 }
 
 export interface NotificationConfig {
