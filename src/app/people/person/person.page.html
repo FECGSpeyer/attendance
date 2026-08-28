@@ -512,7 +512,7 @@
                 (ionBlur)="onEmailBlur()" (ionChange)="onChange()"
                 [(ngModel)]="player.email"></ion-input>
               @if (!player.appId && !readOnly) {
-              <ion-button slot="end" (click)="searchPerson()">
+              <ion-button slot="end" (click)="searchPerson()" [disabled]="!player.email?.trim()">
                 <ion-icon name="search"></ion-icon>
               </ion-button>
               }

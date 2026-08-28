@@ -1201,6 +1201,7 @@ export class PersonPage implements OnInit, AfterViewInit {
           text: `${m.candidate.firstName} ${m.candidate.lastName} · ${(m.candidate as any).instrument?.name ?? '?'} (${(m.candidate as any).tenantId?.longName ?? '?'})`,
           handler: async () => {
             const candidate = m.candidate;
+            if (!candidate.email?.trim()) { return; }
             // Determine or create the shared identity UUID
             const globalPersonId: string = (candidate as any).global_person_id ?? crypto.randomUUID();
 
