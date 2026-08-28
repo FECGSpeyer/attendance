@@ -272,9 +272,11 @@ export class SignoutPage implements OnInit {
   }
 
   async presentActionSheetForChoice(attendance: PersonAttendance) {
+    const isExcused = attendance.status === AttendanceStatus.Excused || attendance.status === AttendanceStatus.LateExcused;
+
     let buttons = [
       {
-        text: 'Anmelden',
+        text: isExcused ? 'Abmeldung zurücknehmen' : 'Anmelden',
         handler: () => this.signin(attendance),
       },
       {
@@ -353,7 +355,7 @@ export class SignoutPage implements OnInit {
     }
 
     if (attendance.text === 'X' || !canSignin) {
-      buttons = buttons.filter((btn) => btn.text !== 'Anmelden' && btn.text !== 'Anmelden mit Notiz');
+      buttons = buttons.filter((btn) => btn.text !== 'Anmelden' && btn.text !== 'Abmeldung zurücknehmen' && btn.text !== 'Anmelden mit Notiz');
     } else if (attType && !attType.available_statuses.includes(AttendanceStatus.Excused)) {
       buttons = buttons.filter((btn) => btn.text !== 'Abmelden');
     } else if (attType && !attType.available_statuses.includes(AttendanceStatus.Late)) {
@@ -364,7 +366,9 @@ export class SignoutPage implements OnInit {
       buttons = buttons.filter((btn) => btn.text !== 'Notiz anpassen');
     }
 
-    if (attendance.text === 'E' || attendance.text === 'A') {
+    if (isExcused) {
+      buttons = buttons.filter((btn) => btn.text !== 'Anmelden mit Notiz' && btn.text !== 'Abmelden' && btn.text !== 'Verspätung eintragen');
+    } else if (attendance.text === 'A') {
       buttons = buttons.filter((btn) => btn.text !== 'Abmelden' && btn.text !== 'Verspätung eintragen');
     }
 
@@ -419,6 +423,10 @@ export class SignoutPage implements OnInit {
 
   attIsInFuture(att: PersonAttendance) {
     return dayjs(att.date).isAfter(dayjs(), 'day');
+  }
+
+  isExcusedStatus(att: PersonAttendance): boolean {
+    return att.status === AttendanceStatus.Excused || att.status === AttendanceStatus.LateExcused;
   }
 
   isAttToday(att: PersonAttendance) {

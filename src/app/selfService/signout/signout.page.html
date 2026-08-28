@@ -336,7 +336,8 @@
           </ion-item-divider>
           @for (att of personAttendances; track trackByAttendanceId($index, att)) {
           @if (attHasPassed(att)) {
-          <ion-item>
+          <ion-item [button]="isExcusedStatus(att)" [detail]="false"
+            (click)="isExcusedStatus(att) && presentActionSheetForChoice(att)">
             <ion-label>
               <h2>{{ getReadableDate(att.date, att.typeId) }}</h2>
               <h3 [style.fontWeight]="att.highlight ? 'bold' : 'normal'">{{ att.title }}</h3>
