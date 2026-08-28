@@ -28,7 +28,7 @@ Deno.serve(async (req)=>{
     });
   }
   try {
-    const { attId, reason, type, notes, isParents, playerId, tenantId: pauseTenantId, pauseUntil } = await req.json();
+    const { attId, reason, type, notes, isParents, isSelf, playerId, tenantId: pauseTenantId, pauseUntil } = await req.json();
 
     // --- Player self-pause notification path ---
     if (type === 'playerPaused' && playerId && pauseTenantId) {
@@ -190,7 +190,7 @@ Deno.serve(async (req)=>{
     const getAttendanceText = (attendance: any)=>{
       return attendance.typeInfo ? " " + attendance.typeInfo : attendance.type === "vortrag" ? " (Vortrag)" : "";
     };
-    const suffix = isParents ? "\n(von Elternteil abgemeldet)" : "";
+    const suffix = isParents ? "\n(von Elternteil abgemeldet)" : isSelf ? "\n(selbst abgemeldet)" : "";
     const formattedDate = DD + '.' + MM + '.' + yyyy + getAttendanceText(attendanceData.attendance);
     const attendanceLink = `\n\n[Anwesenheit öffnen](https://attendix.de/open-attendance?id=${attendanceData.attendance_id}&tenantId=${attendanceData.attendance.tenant.id})`;
 

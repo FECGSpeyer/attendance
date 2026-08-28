@@ -171,7 +171,7 @@ export class SignoutPage implements OnInit {
     const loading = await Utils.getLoadingElement(10000);
     await loading.present();
     try {
-      await this.db.signout(this.selAttIds, reason, isLate);
+      await this.db.signout(this.selAttIds, reason, isLate, false, true);
 
       Utils.showToast(isLate ? 'Vielen Dank für die Info und Gottes Segen dir!' : 'Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.', 'success', 4000);
 

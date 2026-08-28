@@ -2563,8 +2563,8 @@ export class DbService {
     return this.meetingSvc.removeMeeting(id);
   }
 
-  async signout(attIds: string[], reason: string, isLateExcused: boolean, isParents: boolean = false): Promise<void> {
-    return this.signInOutSvc.signout(attIds, reason, isLateExcused, isParents);
+  async signout(attIds: string[], reason: string, isLateExcused: boolean, isParents: boolean = false, isSelf: boolean = false): Promise<void> {
+    return this.signInOutSvc.signout(attIds, reason, isLateExcused, isParents, isSelf);
   }
 
   async signin(attId: string, status: string, notes: string = ''): Promise<void> {

@@ -87,10 +87,11 @@ export class TelegramService {
     type: string = 'signin',
     reason?: string,
     isParents: boolean = false,
-    notes: string = ''
+    notes: string = '',
+    isSelf: boolean = false
   ): Promise<void> {
     await supabase.functions.invoke('quick-processor', {
-      body: { attId, type, reason, isParents, notes },
+      body: { attId, type, reason, isParents, notes, isSelf },
       method: 'POST',
     });
   }

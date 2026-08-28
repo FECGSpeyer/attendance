@@ -15,7 +15,8 @@ export class SignInOutService {
     attIds: string[],
     reason: string,
     isLateExcused: boolean,
-    isParents: boolean = false
+    isParents: boolean = false,
+    isSelf: boolean = false
   ): Promise<void> {
     for (const attId of attIds) {
       await this.updatePersonAttendance(attId, {
@@ -28,7 +29,9 @@ export class SignInOutService {
       attIds[0],
       isLateExcused === true ? 'lateSignout' : 'signout',
       reason,
-      isParents
+      isParents,
+      '',
+      isSelf
     );
   }
 
