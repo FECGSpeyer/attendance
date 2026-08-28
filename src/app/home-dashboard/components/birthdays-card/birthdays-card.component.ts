@@ -1,0 +1,77 @@
+import { Component, OnInit } from '@angular/core';
+import dayjs from 'dayjs';
+import { DbService } from '../../../services/db.service';
+import { Player } from '../../../utilities/interfaces';
+import { Utils } from '../../../utilities/Utils';
+
+interface BirthdayEntry {
+  firstName: string;
+  lastName: string;
+  birthday: string;
+  age: number;
+  daysOffset: number; // negative = vergangen, 0 = heute, positive = bevorstehend
+}
+
+@Component({
+  selector: 'app-birthdays-card',
+  templateUrl: './birthdays-card.component.html',
+  styleUrls: ['./birthdays-card.component.scss'],
+  standalone: false,
+})
+export class BirthdaysCardComponent implements OnInit {
+  public entries: BirthdayEntry[] = [];
+  public loading = true;
+
+  constructor(public db: DbService) {}
+
+  async ngOnInit() {
+    await this.load();
+  }
+
+  async load() {
+    this.loading = true;
+    try {
+      const players: Player[] = await this.db.getPlayers(true);
+      const today = dayjs();
+      const WINDOW = 14;
+
+      this.entries = players
+        .filter(p => p.birthday && p.correctBirthday)
+        .map(p => {
+          const bday = dayjs(p.birthday);
+          const thisYear = bday.year(today.year());
+          let diff = thisYear.diff(today, 'day');
+          // Falls Geburtstag bereits vorbei ist und außerhalb Fenster: nächstes Jahr prüfen
+          if (diff < -WINDOW) {
+            const nextYear = bday.year(today.year() + 1);
+            diff = nextYear.diff(today, 'day');
+          }
+          return {
+            firstName: p.firstName,
+            lastName: p.lastName,
+            birthday: p.birthday,
+            age: Utils.calculateAge(new Date(p.birthday)),
+            daysOffset: diff,
+          };
+        })
+        .filter(e => e.daysOffset >= -WINDOW && e.daysOffset <= WINDOW)
+        .sort((a, b) => a.daysOffset - b.daysOffset);
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  formatDaysOffset(offset: number): string {
+    if (offset === 0) return 'Heute';
+    if (offset === -1) return 'Gestern';
+    if (offset === 1) return 'Morgen';
+    if (offset < 0) return `vor ${Math.abs(offset)} Tagen`;
+    return `in ${offset} Tagen`;
+  }
+
+  offsetColor(offset: number): string {
+    if (offset === 0) return 'success';
+    if (offset > 0) return 'primary';
+    return 'medium';
+  }
+}

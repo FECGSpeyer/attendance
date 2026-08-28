@@ -5,7 +5,7 @@ import { SupabaseClient, User } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SUPER_DEVELOPER_EMAIL, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence } from '../utilities/interfaces';
+import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence, DashboardCardConfig, DEFAULT_DASHBOARD_CARDS } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
@@ -66,6 +66,7 @@ export class DbService {
   public rolePermissions: WritableSignal<TenantRolePermission[]>;
   public showSongsTabSignal: WritableSignal<boolean>;
   public showOrgPlansTabSignal: WritableSignal<boolean>;
+  public showDashboardTabSignal: WritableSignal<boolean>;
 
   // Injected modular services - use these for new code
   public readonly authSvc = inject(AuthService);
@@ -121,6 +122,7 @@ export class DbService {
     this.rolePermissions = signal([]);
     this.showSongsTabSignal = signal(false);
     this.showOrgPlansTabSignal = signal(false);
+    this.showDashboardTabSignal = signal(false);
   }
 
   getSupabase(): SupabaseClient {
@@ -474,6 +476,7 @@ export class DbService {
     this.rolePermissions.set(rolePermissions);
     this.getShowSongsTab();
     this.getShowOrgPlansTab();
+    this.getShowDashboardTab();
 
     await loader?.dismiss();
   }
@@ -616,6 +619,39 @@ export class DbService {
       this.user.user_metadata[`showOrgPlansTab_${this.tenant()?.id}`] = value;
     }
     this.showOrgPlansTabSignal.set(value);
+  }
+
+  getShowDashboardTab(): boolean {
+    const value = this.user?.user_metadata?.[`showDashboardTab_${this.tenant()?.id}`] || false;
+    this.showDashboardTabSignal.set(value);
+    return value;
+  }
+
+  async setShowDashboardTab(value: boolean): Promise<void> {
+    await supabase.auth.updateUser({
+      data: { [`showDashboardTab_${this.tenant()?.id}`]: value }
+    });
+    if (this.user?.user_metadata) {
+      this.user.user_metadata[`showDashboardTab_${this.tenant()?.id}`] = value;
+    }
+    this.showDashboardTabSignal.set(value);
+  }
+
+  getDashboardCardConfig(): DashboardCardConfig[] {
+    const stored = this.user?.user_metadata?.[`dashboardCards_${this.tenant()?.id}`];
+    if (Array.isArray(stored) && stored.length > 0) {
+      return stored as DashboardCardConfig[];
+    }
+    return [...DEFAULT_DASHBOARD_CARDS];
+  }
+
+  async setDashboardCardConfig(cards: DashboardCardConfig[]): Promise<void> {
+    await supabase.auth.updateUser({
+      data: { [`dashboardCards_${this.tenant()?.id}`]: cards }
+    });
+    if (this.user?.user_metadata) {
+      this.user.user_metadata[`dashboardCards_${this.tenant()?.id}`] = cards;
+    }
   }
 
   /**

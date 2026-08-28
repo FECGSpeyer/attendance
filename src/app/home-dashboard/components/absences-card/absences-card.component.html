@@ -1,0 +1,42 @@
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>
+      <ion-icon name="moon-outline" style="vertical-align: middle; margin-right: 6px;"></ion-icon>
+      Abwesenheiten & Pausierungen
+    </ion-card-title>
+    <ion-card-subtitle>Letzte 4 Wochen</ion-card-subtitle>
+  </ion-card-header>
+  <ion-card-content style="padding: 0;">
+    @if (loading) {
+      <div style="text-align: center; padding: 16px;">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    } @else if (entries.length === 0) {
+      <ion-item lines="none">
+        <ion-label color="medium"><p>Keine Abwesenheiten im Zeitraum.</p></ion-label>
+      </ion-item>
+    } @else {
+      <ion-list lines="full" style="margin: 0;">
+        @for (e of entries; track e.fromDate + e.firstName) {
+          <ion-item>
+            <ion-icon
+              slot="start"
+              [name]="e.type === 'pause' ? 'pause-circle-outline' : 'calendar-clear-outline'"
+              color="medium">
+            </ion-icon>
+            <ion-label class="ion-text-wrap">
+              <h3>{{ e.firstName }} {{ e.lastName }}</h3>
+              <p>{{ formatDateRange(e.fromDate, e.untilDate) }}</p>
+              @if (e.reason) {
+                <p>{{ e.reason }}</p>
+              }
+            </ion-label>
+            <ion-badge slot="end" [color]="e.type === 'pause' ? 'warning' : 'medium'">
+              {{ e.type === 'pause' ? 'Pause' : 'Abwesend' }}
+            </ion-badge>
+          </ion-item>
+        }
+      </ion-list>
+    }
+  </ion-card-content>
+</ion-card>

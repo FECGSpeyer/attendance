@@ -156,6 +156,14 @@ const routes: Routes = [
         loadChildren: () => import('./../dashboard/dashboard.module').then(m => m.DashboardPageModule)
       },
       {
+        path: 'home-dashboard',
+        loadChildren: () => import('./../home-dashboard/home-dashboard.module').then(m => m.HomeDashboardPageModule)
+      },
+      {
+        path: 'settings/dashboard',
+        loadChildren: () => import('./../settings/dashboard/dashboard-settings.module').then(m => m.DashboardSettingsPageModule)
+      },
+      {
         path: 'parents',
         loadChildren: () => import('./../selfService/parents/parents.module').then(m => m.ParentsPageModule)
       },

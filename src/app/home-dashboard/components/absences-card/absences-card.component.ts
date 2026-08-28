@@ -1,0 +1,86 @@
+import { Component, OnInit } from '@angular/core';
+import dayjs from 'dayjs';
+import { DbService } from '../../../services/db.service';
+import { Player, PlayerAbsence, PlayerHistoryEntry } from '../../../utilities/interfaces';
+import { PlayerHistoryType } from '../../../utilities/constants';
+
+interface AbsenceEntry {
+  firstName: string;
+  lastName: string;
+  fromDate: string;
+  untilDate: string;
+  reason: string;
+  type: 'absence' | 'pause';
+}
+
+@Component({
+  selector: 'app-absences-card',
+  templateUrl: './absences-card.component.html',
+  styleUrls: ['./absences-card.component.scss'],
+  standalone: false,
+})
+export class AbsencesCardComponent implements OnInit {
+  public entries: AbsenceEntry[] = [];
+  public loading = true;
+  private readonly WEEKS = 4;
+
+  constructor(public db: DbService) {}
+
+  async ngOnInit() {
+    await this.load();
+  }
+
+  async load() {
+    this.loading = true;
+    try {
+      const cutoff = dayjs().subtract(this.WEEKS, 'week');
+      const [absences, players]: [PlayerAbsence[], Player[]] = await Promise.all([
+        this.db.getPlayerAbsencesForTenant(),
+        this.db.getPlayers(true),
+      ]);
+
+      const playerMap = new Map<number, Player>(players.map(p => [p.id!, p]));
+
+      const absenceEntries: AbsenceEntry[] = absences
+        .filter(a => dayjs(a.from_date).isAfter(cutoff) || dayjs(a.until_date).isAfter(cutoff))
+        .map(a => {
+          const p = playerMap.get(a.person_id);
+          return {
+            firstName: p?.firstName ?? '?',
+            lastName: p?.lastName ?? '',
+            fromDate: a.from_date,
+            untilDate: a.until_date,
+            reason: a.reason,
+            type: 'absence' as const,
+          };
+        });
+
+      const pauseEntries: AbsenceEntry[] = players
+        .filter(p => p.history?.length)
+        .flatMap(p =>
+          p.history
+            .filter((h: PlayerHistoryEntry) => h.type === PlayerHistoryType.PAUSED && dayjs(h.date).isAfter(cutoff))
+            .map((h: PlayerHistoryEntry) => ({
+              firstName: p.firstName,
+              lastName: p.lastName,
+              fromDate: h.date,
+              untilDate: p.paused_until ?? '',
+              reason: h.text ?? 'Pausiert',
+              type: 'pause' as const,
+            }))
+        );
+
+      this.entries = [...absenceEntries, ...pauseEntries]
+        .sort((a, b) => new Date(b.fromDate).getTime() - new Date(a.fromDate).getTime());
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  formatDateRange(from: string, until: string): string {
+    const f = dayjs(from).format('DD.MM.YY');
+    if (!until) return `ab ${f}`;
+    const u = dayjs(until).format('DD.MM.YY');
+    return `${f} – ${u}`;
+  }
+}

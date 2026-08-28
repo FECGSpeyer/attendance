@@ -673,6 +673,13 @@
       </ion-item>
       }
 
+      @if (isAdmin) {
+      <ion-item button detail="true" routerLink="/tabs/settings/dashboard">
+        <ion-icon name="grid-outline" slot="start"></ion-icon>
+        <ion-label>Dashboard konfigurieren</ion-label>
+      </ion-item>
+      }
+
       @if (db.isSuperDeveloper()) {
       <ion-item button detail="true" routerLink="/tabs/dashboard">
         <ion-icon name="analytics-outline" slot="start"></ion-icon>

@@ -1,0 +1,45 @@
+<ion-header translucent="true">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="/tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Dashboard</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="isReordering = !isReordering">
+        <ion-icon [name]="isReordering ? 'checkmark-outline' : 'reorder-three-outline'" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" fullscreen="true">
+
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Tab</ion-label></ion-list-header>
+    <ion-item>
+      <ion-toggle [(ngModel)]="showDashboardTab" (ionChange)="onTabToggle()">
+        Dashboard-Tab anzeigen
+      </ion-toggle>
+    </ion-item>
+  </ion-list>
+
+  <ion-list [inset]="true">
+    <ion-list-header>
+      <ion-label>Karten</ion-label>
+    </ion-list-header>
+    <ion-reorder-group [disabled]="!isReordering" (ionItemReorder)="handleReorder($event)">
+      @for (card of cards; track card.id) {
+        <ion-item>
+          <ion-reorder slot="start"></ion-reorder>
+          <ion-label>{{ cardLabels[card.id] }}</ion-label>
+          <ion-toggle slot="end" [(ngModel)]="card.visible" (ionChange)="onVisibilityToggle()" [disabled]="isReordering"></ion-toggle>
+        </ion-item>
+      }
+    </ion-reorder-group>
+  </ion-list>
+
+  <ion-note class="ion-padding" color="medium" style="display: block; font-size: 0.85rem; padding: 8px 16px;">
+    Tippe auf das Symbol oben rechts, um die Reihenfolge per Drag &amp; Drop anzupassen.
+  </ion-note>
+
+</ion-content>

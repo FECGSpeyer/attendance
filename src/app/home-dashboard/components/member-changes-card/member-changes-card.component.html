@@ -1,0 +1,39 @@
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>
+      <ion-icon name="people-outline" style="vertical-align: middle; margin-right: 6px;"></ion-icon>
+      Mitglieder-Veränderungen
+    </ion-card-title>
+    <ion-card-subtitle>Letzte 60 Tage</ion-card-subtitle>
+  </ion-card-header>
+  <ion-card-content style="padding: 0;">
+    @if (loading) {
+      <div style="text-align: center; padding: 16px;">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    } @else if (changes.length === 0) {
+      <ion-item lines="none">
+        <ion-label color="medium"><p>Keine Veränderungen im Zeitraum.</p></ion-label>
+      </ion-item>
+    } @else {
+      <ion-list lines="full" style="margin: 0;">
+        @for (c of changes; track c.date + c.firstName) {
+          <ion-item>
+            <ion-icon
+              slot="start"
+              [name]="c.type === 'joined' ? 'person-add-outline' : 'person-remove-outline'"
+              [color]="c.type === 'joined' ? 'success' : 'danger'">
+            </ion-icon>
+            <ion-label>
+              <h3>{{ c.firstName }} {{ c.lastName }}</h3>
+              <p>{{ c.date | date:'dd.MM.yyyy':'UTC' }}</p>
+            </ion-label>
+            <ion-badge slot="end" [color]="c.type === 'joined' ? 'success' : 'danger'">
+              {{ c.type === 'joined' ? 'Beitritt' : 'Austritt' }}
+            </ion-badge>
+          </ion-item>
+        }
+      </ion-list>
+    }
+  </ion-card-content>
+</ion-card>
