@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
-import { Player } from 'src/app/utilities/player';
+import { Player } from '../../../utilities/interfaces';
 import { PersonPage } from 'src/app/people/person/person.page';
 import { Role } from 'src/app/utilities/constants';
 import { Utils } from 'src/app/utilities/Utils';
