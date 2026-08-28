@@ -21,7 +21,7 @@
           @for (person of criticalPersons; track person.id) {
             <ion-item button detail="true" (click)="openPerson(person)">
               <ion-label>
-                <h3>{{ person.name }}</h3>
+                <h3>{{ person.firstName }}</h3>
                 @if (getReasonText(person)) {
                   <p>{{ getReasonText(person) }}</p>
                 }
