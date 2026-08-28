@@ -1021,8 +1021,9 @@ export class SignoutPage implements OnInit {
                 att.notes === absence.reason
               );
               for (const att of toReset) {
+                const attType = this.db.attendanceTypes().find(t => t.id === att.typeId);
                 await this.db.updatePersonAttendance(att.id, {
-                  status: AttendanceStatus.Neutral,
+                  status: attType?.default_status ?? AttendanceStatus.Neutral,
                   notes: '',
                 });
               }
