@@ -7,6 +7,7 @@ const CARD_LABELS: Record<DashboardCardId, string> = {
   'next-event': 'Termine',
   'member-changes': 'Mitglieder-Veränderungen',
   'absences': 'Abwesenheiten & Pausierungen',
+  'critical-persons': 'Problemfälle',
 };
 
 @Component({

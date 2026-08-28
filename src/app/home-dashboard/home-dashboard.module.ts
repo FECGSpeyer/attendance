@@ -9,6 +9,8 @@ import { BirthdaysCardComponent } from './components/birthdays-card/birthdays-ca
 import { NextEventCardComponent } from './components/next-event-card/next-event-card.component';
 import { MemberChangesCardComponent } from './components/member-changes-card/member-changes-card.component';
 import { AbsencesCardComponent } from './components/absences-card/absences-card.component';
+import { CriticalPersonsCardComponent } from './components/critical-persons-card/critical-persons-card.component';
+import { PersonPageModule } from '../people/person/person.module';
 
 @NgModule({
   imports: [
@@ -16,6 +18,7 @@ import { AbsencesCardComponent } from './components/absences-card/absences-card.
     FormsModule,
     IonicModule,
     HomeDashboardPageRoutingModule,
+    PersonPageModule,
   ],
   declarations: [
     HomeDashboardPage,
@@ -23,6 +26,7 @@ import { AbsencesCardComponent } from './components/absences-card/absences-card.
     NextEventCardComponent,
     MemberChangesCardComponent,
     AbsencesCardComponent,
+    CriticalPersonsCardComponent,
   ]
 })
 export class HomeDashboardPageModule {}

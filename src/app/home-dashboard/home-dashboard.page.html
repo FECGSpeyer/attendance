@@ -32,6 +32,9 @@
     @if (card.id === 'absences') {
       <app-absences-card></app-absences-card>
     }
+    @if (card.id === 'critical-persons') {
+      <app-critical-persons-card></app-critical-persons-card>
+    }
   }
 
   @if (visibleCards.length === 0) {

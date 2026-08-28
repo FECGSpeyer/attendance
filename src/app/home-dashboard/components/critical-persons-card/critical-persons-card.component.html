@@ -1,0 +1,36 @@
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>
+      <ion-icon name="warning-outline" style="vertical-align: middle; margin-right: 6px;" color="danger"></ion-icon>
+      Problemfälle
+    </ion-card-title>
+  </ion-card-header>
+  <ion-card-content style="padding: 0;">
+    @if (loading) {
+      <div style="text-align: center; padding: 16px;">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    } @else {
+      <ion-list lines="full" style="margin: 0;">
+        @if (criticalPersons.length === 0) {
+          <ion-item lines="none">
+            <ion-icon name="checkmark-circle-outline" slot="start" color="success"></ion-icon>
+            <ion-label color="medium"><p>Keine Problemfälle vorhanden.</p></ion-label>
+          </ion-item>
+        } @else {
+          @for (person of criticalPersons; track person.id) {
+            <ion-item button detail="true" (click)="openPerson(person)">
+              <ion-label>
+                <h3>{{ person.name }}</h3>
+                @if (getReasonText(person)) {
+                  <p>{{ getReasonText(person) }}</p>
+                }
+              </ion-label>
+              <ion-badge slot="end" color="danger">Problemfall</ion-badge>
+            </ion-item>
+          }
+        }
+      </ion-list>
+    }
+  </ion-card-content>
+</ion-card>
