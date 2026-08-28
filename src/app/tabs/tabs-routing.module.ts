@@ -107,6 +107,10 @@ const routes: Routes = [
         loadChildren: () => import('./../settings/general/branding/branding.module').then(m => m.BrandingPageModule)
       },
       {
+        path: 'settings/general/extra-fields',
+        loadChildren: () => import('./../settings/general/extra-fields/extra-fields.module').then(m => m.ExtraFieldsPageModule)
+      },
+      {
         path: 'settings/voice-leader',
         loadChildren: () => import('./../settings/voice-leader/voice-leader.module').then(m => m.VoiceLeaderPageModule)
       },

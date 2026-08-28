@@ -165,8 +165,36 @@
                   <ion-select-option value="lastSung">Zuletzt gesungen</ion-select-option>
                 }
               }
+              @for (field of db.tenant()?.song_additional_fields; track field.id) {
+                <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>
+              }
             </ion-select>
           </ion-item>
+
+          @for (field of db.tenant()?.song_additional_fields; track field.id) {
+            @if (field.type === fieldTypes.SELECT) {
+              <ion-item lines="none">
+                <ion-icon slot="start" name="funnel-outline" size="small"></ion-icon>
+                <ion-select slot="end" interface="popover" [placeholder]="field.name"
+                  (ionChange)="onFilterChanged()" [(ngModel)]="filterOpts[field.id]">
+                  <ion-select-option [value]="''">Alle</ion-select-option>
+                  @for (opt of field.options; track opt) {
+                    <ion-select-option [value]="opt">{{ opt }}</ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+            } @else if (field.type === fieldTypes.BOOLEAN) {
+              <ion-item lines="none">
+                <ion-icon slot="start" name="funnel-outline" size="small"></ion-icon>
+                <ion-select slot="end" interface="popover" [placeholder]="field.name"
+                  (ionChange)="onFilterChanged()" [(ngModel)]="filterOpts[field.id]">
+                  <ion-select-option value="">Alle</ion-select-option>
+                  <ion-select-option value="true">Ja</ion-select-option>
+                  <ion-select-option value="false">Nein</ion-select-option>
+                </ion-select>
+              </ion-item>
+            }
+          }
         </ion-list>
       </ng-template>
     </ion-popover>
@@ -325,6 +353,17 @@
                 Nicht definiert
               }
             </ion-badge>
+          }
+          @for (field of db.tenant()?.song_additional_fields; track field.id) {
+            @if (viewOpts.includes(field.id) && song.additional_fields?.[field.id] !== undefined && song.additional_fields?.[field.id] !== '' && song.additional_fields?.[field.id] !== false && song.additional_fields?.[field.id] !== null) {
+              <ion-badge slot="end" color="dark">
+                @if (field.type === fieldTypes.BOOLEAN) {
+                  {{ field.name }}
+                } @else {
+                  {{ song.additional_fields[field.id] }}
+                }
+              </ion-badge>
+            }
           }
         </ion-item>
       }

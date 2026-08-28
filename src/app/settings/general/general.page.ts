@@ -1,11 +1,10 @@
-import { Component, HostListener, inject, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { AlertController, IonModal, NavController } from '@ionic/angular/lazy';
-import { PlayerService } from 'src/app/services/player/player.service';
 import { format, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, FieldType, Role } from 'src/app/utilities/constants';
-import { AttendanceType, Church, CriticalRule, CriticalRuleOperator, CriticalRulePeriodType, CriticalRuleThresholdType, ExtraField } from 'src/app/utilities/interfaces';
+import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, Role } from 'src/app/utilities/constants';
+import { AttendanceType, Church, CriticalRule, CriticalRuleOperator, CriticalRulePeriodType, CriticalRuleThresholdType } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -51,21 +50,6 @@ export class GeneralPage implements OnInit {
   public churches: Church[] = [];
   public duplicateGroups: { target: Church; duplicates: Church[] }[] = [];
   public songSharingEnabled = false;
-  public newExtraField: ExtraField = {
-    id: '',
-    name: '',
-    type: FieldType.TEXT,
-    defaultValue: '',
-    options: [],
-    visibleToPlayers: false,
-    editableByPlayers: false,
-  };
-  public fieldTypes = FieldType;
-  public extraFields: ExtraField[] = [];
-  private originalExtraFields: ExtraField[] = [];
-  public editingExtraField: ExtraField | null = null;
-  public editingExtraFieldIndex = -1;
-  public isEditExtraFieldModalOpen = false;
   public registerAllowed = false;
   public autoApproveRegistrations = false;
   public registerFields: { key: string; label: string; disabled: boolean }[] = [
@@ -105,8 +89,6 @@ export class GeneralPage implements OnInit {
     }
   }
 
-  private playerSvc = inject(PlayerService);
-
   constructor(
     public db: DbService,
     private alertController: AlertController,
@@ -143,8 +125,6 @@ export class GeneralPage implements OnInit {
       })));
     }
     this.selectedRegisterFields = this.db.tenant().registration_fields?.length ? this.db.tenant().registration_fields : this.registerFields.filter(f => f.disabled).map(f => f.key);
-    this.extraFields = [...this.db.tenant().additional_fields ?? []].map(f => ({ ...f, options: f.options ? [...f.options] : [] }));
-    this.originalExtraFields = [...this.db.tenant().additional_fields ?? []].map(f => ({ ...f, options: f.options ? [...f.options] : [] }));
 
     // Load absence and late reasons (use defaults if not configured)
     this.absenceReasons = this.db.tenant().absence_reasons?.length
@@ -190,7 +170,6 @@ export class GeneralPage implements OnInit {
       registerAllowed: this.registerAllowed,
       autoApproveRegistrations: this.autoApproveRegistrations,
       selectedRegisterFields: this.selectedRegisterFields,
-      extraFields: this.extraFields,
       criticalRules: this.criticalRules,
       shiftExcusedAsPresent: this.shiftExcusedAsPresent,
     });
@@ -293,25 +272,6 @@ export class GeneralPage implements OnInit {
       Utils.showToast('Der Kurzname darf nicht leer sein.', 'danger');
       return;
     }
-    // Validate extra fields
-    for (const field of this.extraFields) {
-      if (!field.name || field.name.trim().length === 0) {
-        Utils.showToast('Alle Zusatzfelder müssen einen Namen haben.', 'danger');
-        return;
-      }
-
-      if (field.type === FieldType.SELECT) {
-        if (!field.options || field.options.length === 0) {
-          Utils.showToast(`Das Auswahlfeld "${field.name}" muss mindestens eine Option haben.`, 'danger');
-          return;
-        }
-
-        if (field.options.some((opt) => !opt || opt.trim().length === 0)) {
-          Utils.showToast(`Die Optionen im Feld "${field.name}" dürfen nicht leer sein.`, 'danger');
-          return;
-        }
-      }
-    }
 
     let song_sharing_id = this.songSharingEnabled ? this.db.tenant().song_sharing_id : null;
     if (this.songSharingEnabled && !this.db.tenant().song_sharing_id) {
@@ -343,7 +303,6 @@ export class GeneralPage implements OnInit {
         maintainTeachers: this.maintainTeachers,
         showHolidays: this.showHolidays,
         song_sharing_id: song_sharing_id || null,
-        additional_fields: this.extraFields,
         register_id: register_id || null,
         auto_approve_registrations: this.registerAllowed ? this.autoApproveRegistrations : false,
         registration_fields: this.registerAllowed ? this.selectedRegisterFields : [],
@@ -352,11 +311,6 @@ export class GeneralPage implements OnInit {
         absence_reasons: filteredAbsenceReasons.length > 0 ? filteredAbsenceReasons : null,
         late_reasons: filteredLateReasons.length > 0 ? filteredLateReasons : null,
       });
-
-      // Sanitize player additional_fields for invalid values after field changes
-      if (this.haveExtraFieldsChanged()) {
-        await this.sanitizePlayerAdditionalFields();
-      }
 
       // Evaluate critical rules for all players after saving
       try {
@@ -417,225 +371,6 @@ export class GeneralPage implements OnInit {
   copyRegisterLink() {
     navigator?.clipboard.writeText(this.getRegisterLink());
     Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
-  }
-
-  addExtraField(modal: IonModal) {
-    if (this.newExtraField.name.trim().length === 0) {
-      Utils.showToast('Bitte gib einen gültigen Namen für das Zusatzfeld ein.', 'danger');
-      return;
-    }
-
-    if (this.newExtraField.type === FieldType.BFECG_CHURCH) {
-      this.newExtraField.id = 'bfecg_church';
-    } else {
-      // id should have no spaces and be lowercase and remove special characters
-      this.newExtraField.id = this.newExtraField.name.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-    }
-
-    if (this.extraFields.find((f) => f.id === this.newExtraField.id)) {
-      Utils.showToast('Ein Zusatzfeld mit dieser ID existiert bereits. Bitte wähle einen anderen Namen.', 'danger');
-      return;
-    }
-
-    if (this.newExtraField.type === FieldType.SELECT) {
-      if (!this.newExtraField.options || this.newExtraField.options.length === 0) {
-        Utils.showToast('Bitte füge mindestens eine Option für das Auswahlfeld hinzu.', 'danger');
-        return;
-      }
-
-      if (this.newExtraField.options.some((opt) => opt.trim().length === 0)) {
-        Utils.showToast('Optionen dürfen nicht leer sein.', 'danger');
-        return;
-      }
-
-      this.newExtraField.defaultValue = this.newExtraField.options[0];
-    }
-
-    if (this.newExtraField.type === FieldType.BOOLEAN) {
-      this.newExtraField.defaultValue = true;
-    }
-
-    if (this.newExtraField.id.length === 0) {
-      Utils.showToast('Die ID des Zusatzfeldes darf nicht leer sein.', 'danger');
-      return;
-    }
-
-    this.extraFields.push({ ...this.newExtraField });
-    this.newExtraField = {
-      id: '',
-      name: '',
-      type: FieldType.TEXT,
-      defaultValue: '',
-      options: [],
-      visibleToPlayers: false,
-      editableByPlayers: false,
-    };
-    modal.dismiss();
-  }
-
-  async removeExtraField(index: number) {
-    const alert = await this.alertController.create({
-      header: 'Zusatzfeld löschen?',
-      message: `Möchtest du das Zusatzfeld '${this.extraFields[index].name}' wirklich löschen? Dies kann nicht rückgängig gemacht werden!`,
-      buttons: [{
-        text: 'Abbrechen'
-      }, {
-        text: 'Löschen',
-        handler: () => {
-          this.extraFields.splice(index, 1);
-        }
-      }]
-    });
-
-    await alert.present();
-  }
-
-  getFieldTypeName(type: FieldType): string {
-    switch (type) {
-      case FieldType.TEXT:
-        return 'Text';
-      case FieldType.TEXTAREA:
-        return 'Textbereich';
-      case FieldType.NUMBER:
-        return 'Zahl';
-      case FieldType.SELECT:
-        return 'Auswahl';
-      case FieldType.DATE:
-        return 'Datum';
-      case FieldType.BOOLEAN:
-        return 'Ja/Nein';
-      default:
-        return 'Unbekannt';
-    }
-  }
-
-  setDefaultValue() {
-    this.newExtraField.defaultValue = Utils.getFieldTypeDefaultValue(this.newExtraField.type, this.newExtraField.defaultValue, this.newExtraField.options, this.db.churches());
-  }
-
-  onExtraOptionChanged(event: any, index: number) {
-    this.newExtraField.options[index] = event.detail.value;
-  }
-
-  openEditExtraField(index: number) {
-    this.editingExtraFieldIndex = index;
-    this.editingExtraField = {
-      ...this.extraFields[index],
-      options: [...(this.extraFields[index].options || [])],
-    };
-    this.isEditExtraFieldModalOpen = true;
-  }
-
-  onEditExtraOptionChanged(event: any, index: number) {
-    if (this.editingExtraField) {
-      this.editingExtraField.options[index] = event.detail.value;
-    }
-  }
-
-  async removeEditExtraOption(index: number) {
-    if (!this.editingExtraField) {return;}
-
-    const optionToRemove = this.editingExtraField.options[index];
-    const isExistingOption = this.extraFields[this.editingExtraFieldIndex]?.options?.includes(optionToRemove);
-
-    if (isExistingOption && optionToRemove) {
-      const alert = await this.alertController.create({
-        header: 'Option löschen?',
-        message: `Wenn du die Option "${optionToRemove}" löschst, werden alle Personen mit diesem Wert auf den Standardwert zurückgesetzt.`,
-        buttons: [{
-          text: 'Abbrechen'
-        }, {
-          text: 'Löschen',
-          handler: async () => {
-            // Get new default value (first option after removal, or empty)
-            const newDefault = this.editingExtraField.options[0] === optionToRemove
-              ? (this.editingExtraField.options[1] || '')
-              : this.editingExtraField.options[0];
-
-            try {
-              const updatedCount = await this.playerSvc.updateExtraFieldValue(
-                this.db.tenant().id,
-                this.editingExtraField.id,
-                optionToRemove,
-                newDefault
-              );
-
-              this.editingExtraField.options.splice(index, 1);
-
-              if (updatedCount > 0) {
-                Utils.showToast(`${updatedCount} Personen aktualisiert`, 'success');
-              }
-            } catch (error) {
-              // Error toast already shown in service
-            }
-          }
-        }]
-      });
-
-      await alert.present();
-    } else {
-      // New option that was just added, can be removed without warning
-      this.editingExtraField.options.splice(index, 1);
-    }
-  }
-
-  closeEditExtraFieldModal() {
-    if (!this.editingExtraField || this.editingExtraFieldIndex === -1) {
-      this.isEditExtraFieldModalOpen = false;
-      return;
-    }
-
-    // Update default value for SELECT type
-    if (this.editingExtraField.type === FieldType.SELECT && this.editingExtraField.options?.length > 0) {
-      this.editingExtraField.defaultValue = this.editingExtraField.options[0];
-    }
-
-    // Apply changes to extraFields array
-    this.extraFields[this.editingExtraFieldIndex] = { ...this.editingExtraField };
-    this.isEditExtraFieldModalOpen = false;
-    this.editingExtraField = null;
-    this.editingExtraFieldIndex = -1;
-  }
-
-  async resetExtraFieldValues() {
-    if (!this.editingExtraField) {return;}
-
-    const alert = await this.alertController.create({
-      header: 'Werte zurücksetzen?',
-      message: `Möchtest du alle Werte des Feldes '${this.editingExtraField.name}' bei allen Personen auf den Standardwert zurücksetzen? Dies kann nicht rückgängig gemacht werden!`,
-      buttons: [{
-        text: 'Abbrechen'
-      }, {
-        text: 'Zurücksetzen',
-        handler: async () => {
-          await this.executeResetExtraFieldValues();
-        }
-      }]
-    });
-
-    await alert.present();
-  }
-
-  private async executeResetExtraFieldValues() {
-    if (!this.editingExtraField) {return;}
-
-    const resolvedDefault = Utils.getFieldTypeDefaultValue(
-      this.editingExtraField.type,
-      this.editingExtraField.type === FieldType.SELECT ? undefined : this.editingExtraField.defaultValue,
-      this.editingExtraField.options,
-      this.db.churches()
-    );
-
-    try {
-      const updatedCount = await this.playerSvc.resetExtraFieldValues(
-        this.db.tenant().id,
-        this.editingExtraField.id,
-        resolvedDefault
-      );
-      Utils.showToast(`${updatedCount} Personen aktualisiert`, 'success');
-    } catch (error) {
-      // Error toast already shown in service
-    }
   }
 
   // Critical rule methods
@@ -738,140 +473,6 @@ export class GeneralPage implements OnInit {
     const thresholdSymbol = rule.threshold_type === CriticalRuleThresholdType.COUNT ? 'x' : '%';
     const namePrefix = rule.name ? `${rule.name}: ` : '';
     return `${namePrefix}${rule.threshold_value}${thresholdSymbol} ${statusNames} ${periodText} (${typeNames})`;
-  }
-
-  /**
-   * Sanitize additional_fields for all players after extra fields configuration changes.
-   * - Removes values for fields that no longer exist
-   * - Resets SELECT field values to default if the current value is not in the options anymore
-   */
-  private async sanitizePlayerAdditionalFields(): Promise<void> {
-    try {
-      const players = await this.db.getPlayers();
-      const validFieldIds = new Set(this.extraFields.map(f => f.id));
-      const playersToUpdate: { id: number; additional_fields: Record<string, any> }[] = [];
-
-      for (const player of players) {
-        if (!player.additional_fields) {
-          continue;
-        }
-
-        let needsUpdate = false;
-        const sanitizedFields: Record<string, any> = {};
-
-        // Check each field in the player's additional_fields
-        for (const [fieldId, value] of Object.entries(player.additional_fields)) {
-          // Check if field still exists
-          if (!validFieldIds.has(fieldId)) {
-            // Field was deleted - don't include it (effectively removing it)
-            needsUpdate = true;
-            continue;
-          }
-
-          const fieldDef = this.extraFields.find(f => f.id === fieldId);
-          if (!fieldDef) {
-            needsUpdate = true;
-            continue;
-          }
-
-          // For SELECT fields, check if value is still valid
-          if (fieldDef.type === FieldType.SELECT) {
-            if (fieldDef.options && !fieldDef.options.includes(value)) {
-              // Value is not in options anymore - reset to default
-              sanitizedFields[fieldId] = Utils.getFieldTypeDefaultValue(
-                fieldDef.type,
-                fieldDef.defaultValue,
-                fieldDef.options
-              );
-              needsUpdate = true;
-            } else {
-              sanitizedFields[fieldId] = value;
-            }
-          } else {
-            // Keep the value for other field types
-            sanitizedFields[fieldId] = value;
-          }
-        }
-
-        if (needsUpdate) {
-          playersToUpdate.push({
-            id: player.id,
-            additional_fields: sanitizedFields
-          });
-        }
-      }
-
-      // Batch update all affected players
-      if (playersToUpdate.length > 0) {
-        for (const playerUpdate of playersToUpdate) {
-          await this.playerSvc.updatePlayerAdditionalFields(
-            playerUpdate.id,
-            playerUpdate.additional_fields
-          );
-        }
-        console.log(`Sanitized additional_fields for ${playersToUpdate.length} players`);
-      }
-
-      // Update originalExtraFields after successful sanitization
-      this.originalExtraFields = [...this.extraFields].map(f => ({ ...f, options: f.options ? [...f.options] : [] }));
-    } catch (error) {
-      console.warn('Could not sanitize player additional fields:', error);
-    }
-  }
-
-  /**
-   * Check if extra fields configuration has changed compared to original state.
-   * Returns true if fields were added, removed, or SELECT options changed.
-   */
-  private haveExtraFieldsChanged(): boolean {
-    // Different number of fields
-    if (this.extraFields.length !== this.originalExtraFields.length) {
-      return true;
-    }
-
-    // Check for deleted or new fields
-    const originalIds = new Set(this.originalExtraFields.map(f => f.id));
-    const currentIds = new Set(this.extraFields.map(f => f.id));
-
-    for (const id of originalIds) {
-      if (!currentIds.has(id)) {
-        return true; // Field was deleted
-      }
-    }
-    for (const id of currentIds) {
-      if (!originalIds.has(id)) {
-        return true; // Field was added
-      }
-    }
-
-    // Check SELECT field options changes
-    for (const currentField of this.extraFields) {
-      if (currentField.type !== FieldType.SELECT) {
-        continue;
-      }
-
-      const originalField = this.originalExtraFields.find(f => f.id === currentField.id);
-      if (!originalField) {
-        continue;
-      }
-
-      // Check if options changed
-      const originalOptions = originalField.options || [];
-      const currentOptions = currentField.options || [];
-
-      if (originalOptions.length !== currentOptions.length) {
-        return true;
-      }
-
-      // Check if any option was removed (added options don't affect existing values)
-      for (const option of originalOptions) {
-        if (!currentOptions.includes(option)) {
-          return true; // An option was removed
-        }
-      }
-    }
-
-    return false;
   }
 
   async openChurchInput() {

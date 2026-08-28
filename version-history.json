@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "4.7.0",
+          "date": "28.8.2026",
+          "changes": [
+            "➕ Zusatzfelder für Werke (analog zu Personen-Zusatzfeldern).",
+            "🔍 Werkliste: Zusatzfelder als Badge anzeigen und danach filtern.",
+            "⚙️ Zusatzfelder (Personen & Werke) in eigene Einstellungsseite ausgelagert."
+          ]
+        },
+        {
           "version": "4.6.4",
           "date": "28.8.2026",
           "changes": [

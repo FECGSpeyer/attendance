@@ -3,7 +3,7 @@ import { GroupCategory, History, Group, Person, Song, Tenant, SongCategory, Song
 import { DbService } from 'src/app/services/db.service';
 import { AlertController, IonModal, ItemReorderEventDetail } from '@ionic/angular/lazy';
 import { Utils } from '../utilities/Utils';
-import { Role } from '../utilities/constants';
+import { FieldType, Role } from '../utilities/constants';
 import { Storage } from '@ionic/storage-angular';
 import { Router } from '@angular/router';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
@@ -36,7 +36,6 @@ export class SongsPage implements OnInit {
     handleBehavior: 'none',
   };
   public groupCategories: GroupCategory[] = [];
-  public filterOpts = {};
   public sortOpt = 'numberAsc';
   public viewOpts: string[] = ['withChoir', 'withSolo', 'missingInstruments', 'link', 'lastSung'];
   public difficulty: number | null = null;
@@ -49,6 +48,8 @@ export class SongsPage implements OnInit {
   public isGroupDirectoryModalOpen = false;
   public tenantData?: Tenant;
   public selectedCategory = '';
+  public filterOpts: { [key: string]: any } = {};
+  public fieldTypes = FieldType;
   private sub: RealtimeChannel;
   public tenantType: string;
 
@@ -82,6 +83,7 @@ export class SongsPage implements OnInit {
     this.inclSolo = await this.storage.get(`inclSoloSongs${this.tenantData?.id ?? this.db.tenant().id}`) === 'true';
     this.instrumentsToFilter = JSON.parse(await this.storage.get(`instrumentsToFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`) || '[]');
     this.selectedCategory = await this.storage.get(`selectedCategorySongs${this.tenantData?.id ?? this.db.tenant().id}`) || '';
+    this.filterOpts = JSON.parse(await this.storage.get(`filterOptsSongs${this.tenantData?.id ?? this.db.tenant().id}`) || '{}');
     this.currentSongs = await this.db.getCurrentSongs(this.tenantData?.id ?? this.db.tenant().id);
 
     await this.getSongs();
@@ -377,6 +379,7 @@ export class SongsPage implements OnInit {
     await this.storage.set(`inclSoloSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.inclSolo ? 'true' : 'false');
     await this.storage.set(`instrumentsToFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`, JSON.stringify(this.instrumentsToFilter));
     await this.storage.set(`difficultyFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.difficulty);
+    await this.storage.set(`filterOptsSongs${this.tenantData?.id ?? this.db.tenant().id}`, JSON.stringify(this.filterOpts));
 
     this.searchTerm = '';
     this.initializeItems();
@@ -403,6 +406,16 @@ export class SongsPage implements OnInit {
     }).filter((song: Song) => {
       if (this.difficulty !== null && this.difficulty !== undefined) {
         return song.difficulty === this.difficulty;
+      }
+      return true;
+    }).filter((song: Song) => {
+      for (const field of this.db.tenant()?.song_additional_fields ?? []) {
+        const filterVal = this.filterOpts[field.id];
+        if (filterVal !== undefined && filterVal !== null && filterVal !== '') {
+          const songVal = song.additional_fields?.[field.id];
+          const normalizedFilter = filterVal === 'true' ? true : filterVal === 'false' ? false : filterVal;
+          if (songVal !== normalizedFilter) { return false; }
+        }
       }
       return true;
     });

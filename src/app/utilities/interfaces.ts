@@ -62,6 +62,7 @@ export interface Tenant {
   timezone: string;
   showMembersList?: boolean;
   shift_excused_as_present?: boolean;
+  song_additional_fields?: ExtraField[];
   absence_reasons?: string[];
   late_reasons?: string[];
 }
@@ -358,6 +359,7 @@ export interface Song {
   files?: SongFile[];
   difficulty?: number;
   category?: string;
+  additional_fields?: { [key: string]: any };
 }
 
 export interface SongFile {

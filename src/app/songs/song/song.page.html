@@ -131,6 +131,36 @@
     </ion-item-group>
     }
 
+    @if (db.tenant()?.song_additional_fields?.length) {
+    <ion-list-header>
+      <ion-label>Zusatzfelder</ion-label>
+    </ion-list-header>
+    <ion-item-group>
+      @for (field of db.tenant().song_additional_fields; track field.id) {
+      <ion-item>
+        @if (field.type === 'boolean') {
+          <ion-toggle [disabled]="readOnly" [(ngModel)]="song.additional_fields[field.id]" (ionChange)="update()">
+            {{ field.name }}
+          </ion-toggle>
+        } @else if (field.type === 'select') {
+          <ion-select [disabled]="readOnly" interface="popover" [label]="field.name"
+            [(ngModel)]="song.additional_fields[field.id]" (ionChange)="update()">
+            @for (opt of field.options; track opt) {
+              <ion-select-option [value]="opt">{{ opt }}</ion-select-option>
+            }
+          </ion-select>
+        } @else if (field.type === 'number') {
+          <ion-input [readonly]="readOnly" type="number" labelPlacement="stacked" [label]="field.name"
+            [(ngModel)]="song.additional_fields[field.id]" (ionBlur)="update()"></ion-input>
+        } @else {
+          <ion-input [readonly]="readOnly" type="text" autocapitalize="sentences" labelPlacement="stacked" [label]="field.name"
+            [(ngModel)]="song.additional_fields[field.id]" (ionBlur)="update()"></ion-input>
+        }
+      </ion-item>
+      }
+    </ion-item-group>
+    }
+
     @if (songHistory.length > 0) {
     <ion-list-header>
       <ion-label>Historie ({{ songHistory.length }}x)</ion-label>

@@ -93,6 +93,12 @@ export class SongPage implements OnInit {
     }
 
     this.song = await this.db.getSong(songId, this.tenant?.id);
+    if (!this.song.additional_fields) { this.song.additional_fields = {}; }
+    for (const field of this.db.tenant()?.song_additional_fields ?? []) {
+      if (this.song.additional_fields[field.id] === undefined || this.song.additional_fields[field.id] === null) {
+        this.song.additional_fields[field.id] = Utils.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options);
+      }
+    }
     if (this.isOrchestra) {
       const groups = this.tenant ? await this.db.getGroups(this.tenant.id) : this.db.groups();
       this.instruments = groups.filter((instrument: Group) => instrument.maingroup !== true);
