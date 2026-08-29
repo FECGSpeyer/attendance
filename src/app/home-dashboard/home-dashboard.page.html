@@ -13,11 +13,6 @@
   <ion-refresher slot="fixed" (ionRefresh)="refreshAllCards(); $event.target.complete()">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
-  <ion-header collapse="condense">
-    <ion-toolbar color="light">
-      <ion-title size="large">Dashboard</ion-title>
-    </ion-toolbar>
-  </ion-header>
 
   @for (card of visibleCards; track card.id) {
     @if (card.id === 'birthdays') {
