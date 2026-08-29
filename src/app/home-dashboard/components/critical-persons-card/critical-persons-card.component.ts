@@ -22,7 +22,6 @@ export class CriticalPersonsCardComponent {
     private routerOutlet: IonRouterOutlet,
   ) {}
 
-  async ngOnInit() { await this.load(); }
 
   async load() {
     this.loading = true;
