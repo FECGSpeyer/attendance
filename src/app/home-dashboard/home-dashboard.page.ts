@@ -1,6 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { DbService } from '../services/db.service';
 import { DashboardCardConfig } from '../utilities/interfaces';
+import { BirthdaysCardComponent } from './components/birthdays-card/birthdays-card.component';
+import { NextEventCardComponent } from './components/next-event-card/next-event-card.component';
+import { MemberChangesCardComponent } from './components/member-changes-card/member-changes-card.component';
+import { AbsencesCardComponent } from './components/absences-card/absences-card.component';
+import { CriticalPersonsCardComponent } from './components/critical-persons-card/critical-persons-card.component';
 
 @Component({
   selector: 'app-home-dashboard',
@@ -11,6 +16,12 @@ import { DashboardCardConfig } from '../utilities/interfaces';
 export class HomeDashboardPage implements OnInit {
   public cards: DashboardCardConfig[] = [];
 
+  @ViewChildren(BirthdaysCardComponent) birthdaysCards!: QueryList<BirthdaysCardComponent>;
+  @ViewChildren(NextEventCardComponent) nextEventCards!: QueryList<NextEventCardComponent>;
+  @ViewChildren(MemberChangesCardComponent) memberChangesCards!: QueryList<MemberChangesCardComponent>;
+  @ViewChildren(AbsencesCardComponent) absencesCards!: QueryList<AbsencesCardComponent>;
+  @ViewChildren(CriticalPersonsCardComponent) criticalPersonsCards!: QueryList<CriticalPersonsCardComponent>;
+
   constructor(public db: DbService) {}
 
   ngOnInit() {
@@ -19,6 +30,17 @@ export class HomeDashboardPage implements OnInit {
 
   ionViewWillEnter() {
     this.cards = this.db.getDashboardCardConfig();
+  }
+
+  async refreshAllCards() {
+    const reloads: Promise<void>[] = [
+      ...this.birthdaysCards.map(c => c.load()),
+      ...this.nextEventCards.map(c => c.load()),
+      ...this.memberChangesCards.map(c => c.load()),
+      ...this.absencesCards.map(c => c.load()),
+      ...this.criticalPersonsCards.map(c => c.load()),
+    ];
+    await Promise.all(reloads);
   }
 
   get visibleCards(): DashboardCardConfig[] {

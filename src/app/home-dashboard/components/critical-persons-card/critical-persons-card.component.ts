@@ -1,10 +1,10 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { IonRouterOutlet, ModalController } from '@ionic/angular';
-import { DbService } from 'src/app/services/db.service';
+import { DbService } from '../../../services/db.service';
 import { Player } from '../../../utilities/interfaces';
-import { PersonPage } from 'src/app/people/person/person.page';
-import { Role } from 'src/app/utilities/constants';
-import { Utils } from 'src/app/utilities/Utils';
+import { PersonPage } from '../../../people/person/person.page';
+import { Role } from '../../../utilities/constants';
+import { Utils } from '../../../utilities/Utils';
 
 @Component({
   selector: 'app-critical-persons-card',
@@ -23,6 +23,10 @@ export class CriticalPersonsCardComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    await this.load();
+  }
+
+  async load() {
     this.loading = true;
     const players = await this.db.getPlayers(true);
     this.criticalPersons = players.filter(p => p.isCritical);

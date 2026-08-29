@@ -10,7 +10,7 @@
 </ion-header>
 
 <ion-content color="light" fullscreen="true">
-  <ion-refresher slot="fixed" (ionRefresh)="ionViewWillEnter(); $event.target.complete()">
+  <ion-refresher slot="fixed" (ionRefresh)="refreshAllCards(); $event.target.complete()">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
   <ion-header collapse="condense">
