@@ -1,7 +1,7 @@
 import { Component, effect } from '@angular/core';
 import dayjs from 'dayjs';
 import { DbService } from '../../../services/db.service';
-import { Attendance } from '../../../utilities/interfaces';
+import { Attendance, PersonAttendance } from '../../../utilities/interfaces';
 import { Utils } from '../../../utilities/Utils';
 import { AttendanceStatus } from '../../../utilities/constants';
 
@@ -12,6 +12,7 @@ import { AttendanceStatus } from '../../../utilities/constants';
   standalone: false,
 })
 export class NextEventCardComponent {
+  readonly AttendanceStatus = AttendanceStatus;
   public lastEvent: Attendance | null = null;
   public nextEvent: Attendance | null = null;
 
@@ -25,6 +26,7 @@ export class NextEventCardComponent {
   public nextExcused = 0;
   public nextShiftWorkers = 0;
   public nextNeutral = 0;
+  public nextExcusedPersons: PersonAttendance[] = [];
 
   public loading = true;
   private loadDone = false;
@@ -80,6 +82,9 @@ export class NextEventCardComponent {
           Utils.isWorkExcused(p.notes)
         ).length;
         this.nextNeutral = persons.filter(p => p.status === AttendanceStatus.Neutral).length;
+        this.nextExcusedPersons = persons
+          .filter(p => p.status === AttendanceStatus.Excused || p.status === AttendanceStatus.LateExcused)
+          .sort((a, b) => (a.groupName ?? '').localeCompare(b.groupName ?? '') || (a.lastName ?? '').localeCompare(b.lastName ?? ''));
       }
     } finally {
       this.loading = false;
@@ -90,5 +95,13 @@ export class NextEventCardComponent {
     if (perc >= 75) return 'success';
     if (perc >= 50) return 'warning';
     return 'danger';
+  }
+
+  statusLabel(status: AttendanceStatus): string {
+    return status === AttendanceStatus.LateExcused ? 'Entsch. verspätet' : 'Entschuldigt';
+  }
+
+  isShift(notes: string): boolean {
+    return Utils.isWorkExcused(notes);
   }
 }

@@ -72,7 +72,7 @@
             }
 
             @if (nextExcused > 0) {
-              <ion-item>
+              <ion-item button id="open-excused-modal">
                 <div class="avatar-circle avatar-absent" slot="start">
                   <ion-icon name="person-remove-outline"></ion-icon>
                 </div>
@@ -84,6 +84,33 @@
                 </ion-label>
                 <ion-note slot="end" class="note-value">{{ nextExcused }}</ion-note>
               </ion-item>
+
+              <ion-modal trigger="open-excused-modal" [initialBreakpoint]="0.75" [breakpoints]="[0, 0.5, 0.75, 1]">
+                <ng-template>
+                  <ion-header>
+                    <ion-toolbar>
+                      <ion-title>Abmeldungen</ion-title>
+                    </ion-toolbar>
+                  </ion-header>
+                  <ion-content>
+                    <ion-list>
+                      @for (p of nextExcusedPersons; track p.person_id) {
+                        <ion-item>
+                          <ion-label>
+                            <h3>{{ p.firstName }} {{ p.lastName }}</h3>
+                            @if (p.groupName) { <p>{{ p.groupName }}</p> }
+                            @if (p.notes) { <p>{{ p.notes }}</p> }
+                          </ion-label>
+                          <ion-badge slot="end" [color]="p.status === AttendanceStatus.LateExcused ? 'warning' : 'primary'">
+                            {{ statusLabel(p.status) }}
+                            @if (isShift(p.notes)) { · Schicht }
+                          </ion-badge>
+                        </ion-item>
+                      }
+                    </ion-list>
+                  </ion-content>
+                </ng-template>
+              </ion-modal>
             }
 
             @if (nextNeutral > 0) {
