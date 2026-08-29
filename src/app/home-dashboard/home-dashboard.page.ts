@@ -1,4 +1,4 @@
-import { Component, QueryList, ViewChildren } from '@angular/core';
+import { Component, QueryList, ViewChildren, effect } from '@angular/core';
 import { DbService } from '../services/db.service';
 import { DashboardCardConfig } from '../utilities/interfaces';
 import { BirthdaysCardComponent } from './components/birthdays-card/birthdays-card.component';
@@ -15,6 +15,7 @@ import { CriticalPersonsCardComponent } from './components/critical-persons-card
 })
 export class HomeDashboardPage {
   public cards: DashboardCardConfig[] = [];
+  private initialized = false;
 
   @ViewChildren(BirthdaysCardComponent) birthdaysCards!: QueryList<BirthdaysCardComponent>;
   @ViewChildren(NextEventCardComponent) nextEventCards!: QueryList<NextEventCardComponent>;
@@ -22,12 +23,21 @@ export class HomeDashboardPage {
   @ViewChildren(AbsencesCardComponent) absencesCards!: QueryList<AbsencesCardComponent>;
   @ViewChildren(CriticalPersonsCardComponent) criticalPersonsCards!: QueryList<CriticalPersonsCardComponent>;
 
-  constructor(public db: DbService) {}
+  constructor(public db: DbService) {
+    effect(() => {
+      if (this.db.tenant()) {
+        this.cards = this.db.getDashboardCardConfig();
+        setTimeout(() => this.refreshAllCards(), 0);
+      }
+    });
+  }
 
-  async ionViewWillEnter() {
-    await this.db.checkToken();
-    this.cards = this.db.getDashboardCardConfig();
-    setTimeout(() => this.refreshAllCards(), 0);
+  ionViewWillEnter() {
+    if (this.initialized) {
+      this.cards = this.db.getDashboardCardConfig();
+      setTimeout(() => this.refreshAllCards(), 0);
+    }
+    this.initialized = true;
   }
 
   async refreshAllCards() {

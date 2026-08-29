@@ -641,9 +641,12 @@ export class DbService {
     const stored = this.user?.user_metadata?.[`dashboardCards_${this.tenant()?.id}`];
     if (Array.isArray(stored) && stored.length > 0) {
       const storedCards = stored as DashboardCardConfig[];
-      // Merge: add new cards from defaults that aren't in stored config yet
+      // Add any new cards from defaults not yet in stored config
       const newCards = DEFAULT_DASHBOARD_CARDS.filter(d => !storedCards.some(s => s.id === d.id));
-      return newCards.length > 0 ? [...storedCards, ...newCards] : storedCards;
+      const merged = newCards.length > 0 ? [...storedCards, ...newCards] : storedCards;
+      // Filter out any stored cards with unknown IDs
+      const validIds = DEFAULT_DASHBOARD_CARDS.map(d => d.id);
+      return merged.filter(c => validIds.includes(c.id));
     }
     return [...DEFAULT_DASHBOARD_CARDS];
   }
