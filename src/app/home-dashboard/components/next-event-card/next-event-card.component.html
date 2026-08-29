@@ -18,7 +18,6 @@
         @if (nextEvent) {
           <ion-item-divider class="card-divider">
             <ion-label>Nächster Termin</ion-label>
-            <ion-badge slot="end" color="primary">bevorstehend</ion-badge>
           </ion-item-divider>
 
           <ion-item>
@@ -77,18 +76,13 @@
                 <div class="avatar-circle avatar-absent" slot="start">
                   <ion-icon name="person-remove-outline"></ion-icon>
                 </div>
-                <ion-label>Abgemeldet</ion-label>
+                <ion-label>
+                  Abgemeldet
+                  @if (nextShiftWorkers > 0) {
+                    <p>davon {{ nextShiftWorkers }} schichtbedingt</p>
+                  }
+                </ion-label>
                 <ion-note slot="end" class="note-value">{{ nextExcused }}</ion-note>
-              </ion-item>
-            }
-
-            @if (nextShiftWorkers > 0) {
-              <ion-item>
-                <div class="avatar-circle avatar-shift" slot="start">
-                  <ion-icon name="briefcase-outline"></ion-icon>
-                </div>
-                <ion-label>Schichtbedingt</ion-label>
-                <ion-note slot="end" class="note-value">{{ nextShiftWorkers }}</ion-note>
               </ion-item>
             }
 

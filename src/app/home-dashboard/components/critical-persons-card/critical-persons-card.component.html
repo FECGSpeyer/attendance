@@ -24,9 +24,12 @@
               <ion-icon name="person-outline"></ion-icon>
             </div>
             <ion-label>
-              <h3>{{ person.firstName }}</h3>
+              <h3>{{ person.firstName }} {{ person.lastName }}</h3>
               @if (getReasonText(person)) {
                 <p>{{ getReasonText(person) }}</p>
+              }
+              @if (getCriticalSince(person)) {
+                <p>seit {{ getCriticalSince(person) }}</p>
               }
             </ion-label>
             <ion-badge slot="end" color="danger">Problemfall</ion-badge>

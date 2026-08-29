@@ -1162,6 +1162,8 @@ export class Utils {
       case '/tabs/settings/planung':
       case '/tabs/org-plans':
       case '/tabs/org-plans/planung':
+      case '/tabs/home-dashboard':
+      case '/tabs/settings/dashboard':
         return [Role.ADMIN, Role.RESPONSIBLE].includes(role);
       case '/tabs/settings/files':
         return [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER].includes(role);

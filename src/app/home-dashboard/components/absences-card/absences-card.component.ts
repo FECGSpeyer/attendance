@@ -1,6 +1,6 @@
 import { Component, effect } from '@angular/core';
 import dayjs from 'dayjs';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/lazy';
 import { DbService } from '../../../services/db.service';
 import { Player, PlayerAbsence, PlayerHistoryEntry } from '../../../utilities/interfaces';
 import { PlayerHistoryType, Role } from '../../../utilities/constants';

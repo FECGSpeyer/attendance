@@ -215,9 +215,22 @@ Deno.serve(async (req) => {
 
         // Only update if status changed
         if (isCritical !== player.isCritical) {
+          // Fetch current history to append to it
+          const { data: playerData, error: fetchError } = await supabase
+            .from('player')
+            .select('history')
+            .eq('id', player.id)
+            .single();
+
+          const currentHistory: unknown[] = (!fetchError && playerData?.history) ? playerData.history : [];
+
+          const updatedHistory = isCritical
+            ? [...currentHistory, { date: new Date().toISOString(), text: '', type: 'CRITICAL_PERSON' }]
+            : currentHistory;
+
           const { error: updateError } = await supabase
             .from('player')
-            .update({ isCritical })
+            .update({ isCritical, history: updatedHistory })
             .eq('id', player.id);
 
           if (updateError) {

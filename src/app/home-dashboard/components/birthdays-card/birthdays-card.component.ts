@@ -1,6 +1,6 @@
 import { Component, OnInit, effect } from '@angular/core';
 import dayjs from 'dayjs';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/lazy';
 import { DbService } from '../../../services/db.service';
 import { Player } from '../../../utilities/interfaces';
 import { Utils } from '../../../utilities/Utils';
@@ -67,7 +67,7 @@ export class BirthdaysCardComponent {
           };
         })
         .filter(e => e.daysOffset >= -WINDOW && e.daysOffset <= WINDOW)
-        .sort((a, b) => a.daysOffset - b.daysOffset);
+        .sort((a, b) => Math.abs(a.daysOffset) - Math.abs(b.daysOffset));
     } finally {
       this.loading = false;
     }

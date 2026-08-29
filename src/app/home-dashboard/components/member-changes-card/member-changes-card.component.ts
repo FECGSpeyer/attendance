@@ -1,6 +1,6 @@
 import { Component, effect } from '@angular/core';
 import dayjs from 'dayjs';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/lazy';
 import { DbService } from '../../../services/db.service';
 import { Player } from '../../../utilities/interfaces';
 import { PersonPage } from '../../../people/person/person.page';
