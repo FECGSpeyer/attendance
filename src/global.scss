@@ -205,6 +205,10 @@ ion-select-popover ion-list {
       --padding-start: 16px;
       --inner-padding-end: 12px;
       --background: var(--ion-card-background, var(--ion-item-background));
+
+      .avatar-circle {
+        margin-inline-end: 12px;
+      }
     }
 
     ion-item-divider {
