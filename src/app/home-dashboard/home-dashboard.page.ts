@@ -15,7 +15,6 @@ import { CriticalPersonsCardComponent } from './components/critical-persons-card
 })
 export class HomeDashboardPage {
   public cards: DashboardCardConfig[] = [];
-  private initialized = false;
 
   @ViewChildren(BirthdaysCardComponent) birthdaysCards!: QueryList<BirthdaysCardComponent>;
   @ViewChildren(NextEventCardComponent) nextEventCards!: QueryList<NextEventCardComponent>;
@@ -27,17 +26,14 @@ export class HomeDashboardPage {
     effect(() => {
       if (this.db.tenant()) {
         this.cards = this.db.getDashboardCardConfig();
-        setTimeout(() => this.refreshAllCards(), 0);
       }
     });
   }
 
   ionViewWillEnter() {
-    if (this.initialized) {
+    if (this.db.tenant()) {
       this.cards = this.db.getDashboardCardConfig();
-      setTimeout(() => this.refreshAllCards(), 0);
     }
-    this.initialized = true;
   }
 
   async refreshAllCards() {

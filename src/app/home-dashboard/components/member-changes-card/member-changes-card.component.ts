@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Injector, OnInit, effect, inject } from '@angular/core';
 import dayjs from 'dayjs';
 import { IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from '../../../services/db.service';
@@ -20,9 +20,10 @@ interface MemberChange {
   styleUrls: ['./member-changes-card.component.scss'],
   standalone: false,
 })
-export class MemberChangesCardComponent {
+export class MemberChangesCardComponent implements OnInit {
   public changes: MemberChange[] = [];
   public loading = true;
+  private loadDone = false;
   private readonly DAYS = 60;
 
   constructor(
@@ -31,8 +32,18 @@ export class MemberChangesCardComponent {
     private routerOutlet: IonRouterOutlet,
   ) {}
 
+  ngOnInit() {
+    const injector = inject(Injector);
+    effect(() => {
+      if (this.db.tenant() && !this.loadDone) {
+        this.loadDone = true;
+        this.load();
+      }
+    }, { injector });
+  }
 
   async load() {
+    this.loadDone = false;
     this.loading = true;
     try {
       const cutoff = dayjs().subtract(this.DAYS, 'day');

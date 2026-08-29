@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Injector, OnInit, effect, inject } from '@angular/core';
 import { IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from '../../../services/db.service';
 import { Player } from '../../../utilities/interfaces';
@@ -12,9 +12,10 @@ import { Utils } from '../../../utilities/Utils';
   styleUrls: ['./critical-persons-card.component.scss'],
   standalone: false,
 })
-export class CriticalPersonsCardComponent {
+export class CriticalPersonsCardComponent implements OnInit {
   public loading = true;
   public criticalPersons: Player[] = [];
+  private loadDone = false;
 
   constructor(
     private db: DbService,
@@ -22,8 +23,18 @@ export class CriticalPersonsCardComponent {
     private routerOutlet: IonRouterOutlet,
   ) {}
 
+  ngOnInit() {
+    const injector = inject(Injector);
+    effect(() => {
+      if (this.db.tenant() && !this.loadDone) {
+        this.loadDone = true;
+        this.load();
+      }
+    }, { injector });
+  }
 
   async load() {
+    this.loadDone = false;
     this.loading = true;
     const players = await this.db.getPlayers(true);
     this.criticalPersons = players.filter(p => p.isCritical);

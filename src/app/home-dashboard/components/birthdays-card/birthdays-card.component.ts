@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Injector, OnInit, effect, inject } from '@angular/core';
 import dayjs from 'dayjs';
 import { IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from '../../../services/db.service';
@@ -22,9 +22,10 @@ interface BirthdayEntry {
   styleUrls: ['./birthdays-card.component.scss'],
   standalone: false,
 })
-export class BirthdaysCardComponent {
+export class BirthdaysCardComponent implements OnInit {
   public entries: BirthdayEntry[] = [];
   public loading = true;
+  private loadDone = false;
 
   constructor(
     public db: DbService,
@@ -32,8 +33,18 @@ export class BirthdaysCardComponent {
     private routerOutlet: IonRouterOutlet,
   ) {}
 
+  ngOnInit() {
+    const injector = inject(Injector);
+    effect(() => {
+      if (this.db.tenant() && !this.loadDone) {
+        this.loadDone = true;
+        this.load();
+      }
+    }, { injector });
+  }
 
   async load() {
+    this.loadDone = false;
     this.loading = true;
     try {
       const players: Player[] = await this.db.getPlayers(true);
