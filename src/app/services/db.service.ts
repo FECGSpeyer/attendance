@@ -648,6 +648,12 @@ export class DbService {
     return [...DEFAULT_DASHBOARD_CARDS];
   }
 
+  async resetDashboardCardConfig(): Promise<DashboardCardConfig[]> {
+    const cards = [...DEFAULT_DASHBOARD_CARDS];
+    await this.setDashboardCardConfig(cards);
+    return cards;
+  }
+
   async setDashboardCardConfig(cards: DashboardCardConfig[]): Promise<void> {
     await supabase.auth.updateUser({
       data: { [`dashboardCards_${this.tenant()?.id}`]: cards }

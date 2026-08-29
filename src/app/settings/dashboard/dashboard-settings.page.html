@@ -36,6 +36,10 @@
         </ion-item>
       }
     </ion-reorder-group>
+    <ion-item lines="none" button (click)="resetCards()" color="light">
+      <ion-icon name="refresh-outline" slot="start" color="medium"></ion-icon>
+      <ion-label color="medium">Zurücksetzen</ion-label>
+    </ion-item>
   </ion-list>
 
   <ion-note class="ion-padding" color="medium" style="display: block; font-size: 0.85rem; padding: 8px 16px;">

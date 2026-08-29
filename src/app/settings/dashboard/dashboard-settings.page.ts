@@ -37,7 +37,9 @@ export class DashboardSettingsPage implements OnInit {
     await this.db.setDashboardCardConfig(this.cards);
   }
 
-  handleReorder(event: any) {
+  async resetCards() {
+    this.cards = (await this.db.resetDashboardCardConfig());
+  }
     const from = event.detail.from;
     const to = event.detail.to;
     event.detail.complete(true);
