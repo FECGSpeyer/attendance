@@ -25,7 +25,9 @@
             </div>
             <ion-label class="ion-text-wrap">
               <h3>{{ e.firstName }} {{ e.lastName }}</h3>
-              <p>{{ formatDateRange(e.fromDate, e.untilDate) }}</p>
+              @if (e.type === 'absence') {
+                <p>{{ formatDateRange(e.fromDate, e.untilDate) }}</p>
+              }
               @if (e.reason) {
                 <p class="reason-text">{{ e.reason }}</p>
               }
