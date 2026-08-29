@@ -1,4 +1,4 @@
-import { Component, Injector, OnInit, effect, inject } from '@angular/core';
+import { Component, effect } from '@angular/core';
 import dayjs from 'dayjs';
 import { DbService } from '../../../services/db.service';
 import { Attendance } from '../../../utilities/interfaces';
@@ -11,17 +11,15 @@ import { AttendanceStatus } from '../../../utilities/constants';
   styleUrls: ['./next-event-card.component.scss'],
   standalone: false,
 })
-export class NextEventCardComponent implements OnInit {
+export class NextEventCardComponent {
   public lastEvent: Attendance | null = null;
   public nextEvent: Attendance | null = null;
 
-  // Letzter Termin
   public lastPerc = 0;
   public lastPresent = 0;
   public lastExcused = 0;
   public lastTotal = 0;
 
-  // Nächster Termin
   public nextTotal = 0;
   public nextPresent = 0;
   public nextExcused = 0;
@@ -31,16 +29,13 @@ export class NextEventCardComponent implements OnInit {
   public loading = true;
   private loadDone = false;
 
-  constructor(public db: DbService) {}
-
-  ngOnInit() {
-    const injector = inject(Injector);
+  constructor(public db: DbService) {
     effect(() => {
       if (this.db.tenant() && !this.loadDone) {
         this.loadDone = true;
         this.load();
       }
-    }, { injector });
+    });
   }
 
   async load() {

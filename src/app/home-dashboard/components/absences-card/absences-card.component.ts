@@ -1,6 +1,6 @@
-import { Component, Injector, OnInit, effect, inject } from '@angular/core';
+import { Component, effect } from '@angular/core';
 import dayjs from 'dayjs';
-import { IonRouterOutlet, ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { DbService } from '../../../services/db.service';
 import { Player, PlayerAbsence, PlayerHistoryEntry } from '../../../utilities/interfaces';
 import { PlayerHistoryType, Role } from '../../../utilities/constants';
@@ -22,7 +22,7 @@ interface AbsenceEntry {
   styleUrls: ['./absences-card.component.scss'],
   standalone: false,
 })
-export class AbsencesCardComponent implements OnInit {
+export class AbsencesCardComponent {
   public entries: AbsenceEntry[] = [];
   public loading = true;
   private loadDone = false;
@@ -31,17 +31,13 @@ export class AbsencesCardComponent implements OnInit {
   constructor(
     public db: DbService,
     private modalController: ModalController,
-    private routerOutlet: IonRouterOutlet,
-  ) {}
-
-  ngOnInit() {
-    const injector = inject(Injector);
+  ) {
     effect(() => {
       if (this.db.tenant() && !this.loadDone) {
         this.loadDone = true;
         this.load();
       }
-    }, { injector });
+    });
   }
 
   async load() {
@@ -99,7 +95,7 @@ export class AbsencesCardComponent implements OnInit {
     const isAdmin = [Role.ADMIN, Role.RESPONSIBLE].includes(this.db.tenantUser()?.role);
     const modal = await this.modalController.create({
       component: PersonPage,
-      presentingElement: this.routerOutlet.nativeEl,
+      presentingElement: document.querySelector('ion-router-outlet'),
       componentProps: { existingPlayer: { ...player }, readOnly: !isAdmin },
       backdropDismiss: false,
     });

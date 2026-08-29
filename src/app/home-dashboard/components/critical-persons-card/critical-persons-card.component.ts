@@ -1,5 +1,5 @@
-import { Component, Injector, OnInit, effect, inject } from '@angular/core';
-import { IonRouterOutlet, ModalController } from '@ionic/angular';
+import { Component, effect } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 import { DbService } from '../../../services/db.service';
 import { Player } from '../../../utilities/interfaces';
 import { PersonPage } from '../../../people/person/person.page';
@@ -12,25 +12,21 @@ import { Utils } from '../../../utilities/Utils';
   styleUrls: ['./critical-persons-card.component.scss'],
   standalone: false,
 })
-export class CriticalPersonsCardComponent implements OnInit {
+export class CriticalPersonsCardComponent {
   public loading = true;
   public criticalPersons: Player[] = [];
   private loadDone = false;
 
   constructor(
-    private db: DbService,
+    public db: DbService,
     private modalController: ModalController,
-    private routerOutlet: IonRouterOutlet,
-  ) {}
-
-  ngOnInit() {
-    const injector = inject(Injector);
+  ) {
     effect(() => {
       if (this.db.tenant() && !this.loadDone) {
         this.loadDone = true;
         this.load();
       }
-    }, { injector });
+    });
   }
 
   async load() {
@@ -51,7 +47,7 @@ export class CriticalPersonsCardComponent implements OnInit {
     const isAdmin = [Role.ADMIN, Role.RESPONSIBLE].includes(this.db.tenantUser()?.role);
     const modal = await this.modalController.create({
       component: PersonPage,
-      presentingElement: this.routerOutlet.nativeEl,
+      presentingElement: document.querySelector('ion-router-outlet'),
       componentProps: { existingPlayer: { ...player }, readOnly: !isAdmin },
       backdropDismiss: false,
     });
