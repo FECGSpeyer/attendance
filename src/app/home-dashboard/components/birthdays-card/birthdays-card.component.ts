@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import dayjs from 'dayjs';
 import { IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from '../../../services/db.service';
@@ -22,7 +22,7 @@ interface BirthdayEntry {
   styleUrls: ['./birthdays-card.component.scss'],
   standalone: false,
 })
-export class BirthdaysCardComponent implements OnInit {
+export class BirthdaysCardComponent {
   public entries: BirthdayEntry[] = [];
   public loading = true;
 
@@ -31,10 +31,6 @@ export class BirthdaysCardComponent implements OnInit {
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
   ) {}
-
-  async ngOnInit() {
-    await this.load();
-  }
 
   async load() {
     this.loading = true;

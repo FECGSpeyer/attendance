@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import dayjs from 'dayjs';
 import { IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from '../../../services/db.service';
@@ -22,7 +22,7 @@ interface AbsenceEntry {
   styleUrls: ['./absences-card.component.scss'],
   standalone: false,
 })
-export class AbsencesCardComponent implements OnInit {
+export class AbsencesCardComponent {
   public entries: AbsenceEntry[] = [];
   public loading = true;
   private readonly WEEKS = 4;
@@ -32,10 +32,6 @@ export class AbsencesCardComponent implements OnInit {
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
   ) {}
-
-  async ngOnInit() {
-    await this.load();
-  }
 
   async load() {
     this.loading = true;

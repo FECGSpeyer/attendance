@@ -1,4 +1,4 @@
-import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, QueryList, ViewChildren } from '@angular/core';
 import { DbService } from '../services/db.service';
 import { DashboardCardConfig } from '../utilities/interfaces';
 import { BirthdaysCardComponent } from './components/birthdays-card/birthdays-card.component';
@@ -13,7 +13,7 @@ import { CriticalPersonsCardComponent } from './components/critical-persons-card
   styleUrls: ['./home-dashboard.page.scss'],
   standalone: false,
 })
-export class HomeDashboardPage implements OnInit {
+export class HomeDashboardPage {
   public cards: DashboardCardConfig[] = [];
 
   @ViewChildren(BirthdaysCardComponent) birthdaysCards!: QueryList<BirthdaysCardComponent>;
@@ -24,12 +24,9 @@ export class HomeDashboardPage implements OnInit {
 
   constructor(public db: DbService) {}
 
-  ngOnInit() {
+  async ionViewWillEnter() {
     this.cards = this.db.getDashboardCardConfig();
-  }
-
-  ionViewWillEnter() {
-    this.cards = this.db.getDashboardCardConfig();
+    await this.refreshAllCards();
   }
 
   async refreshAllCards() {

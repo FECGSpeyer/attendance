@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from '../../../services/db.service';
 import { Player } from '../../../utilities/interfaces';
@@ -12,7 +12,7 @@ import { Utils } from '../../../utilities/Utils';
   styleUrls: ['./critical-persons-card.component.scss'],
   standalone: false,
 })
-export class CriticalPersonsCardComponent implements OnInit {
+export class CriticalPersonsCardComponent {
   public loading = true;
   public criticalPersons: Player[] = [];
 
@@ -21,10 +21,6 @@ export class CriticalPersonsCardComponent implements OnInit {
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
   ) {}
-
-  async ngOnInit() {
-    await this.load();
-  }
 
   async load() {
     this.loading = true;

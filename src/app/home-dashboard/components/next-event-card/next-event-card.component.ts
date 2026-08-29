@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import dayjs from 'dayjs';
 import { DbService } from '../../../services/db.service';
 import { Attendance } from '../../../utilities/interfaces';
@@ -11,7 +11,7 @@ import { AttendanceStatus } from '../../../utilities/constants';
   styleUrls: ['./next-event-card.component.scss'],
   standalone: false,
 })
-export class NextEventCardComponent implements OnInit {
+export class NextEventCardComponent {
   public lastEvent: Attendance | null = null;
   public nextEvent: Attendance | null = null;
 
@@ -30,10 +30,6 @@ export class NextEventCardComponent implements OnInit {
   public loading = true;
 
   constructor(public db: DbService) {}
-
-  async ngOnInit() {
-    await this.load();
-  }
 
   async load() {
     this.loading = true;
