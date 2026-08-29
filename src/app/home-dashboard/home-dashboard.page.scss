@@ -16,3 +16,128 @@
     margin-bottom: 16px;
   }
 }
+
+// ── Shared dashboard card styles ─────────────────────────────────────────────
+
+.dashboard-card {
+  margin: 12px 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+
+  .card-header-strip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px 12px;
+    color: #fff;
+
+    > ion-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+      opacity: 0.92;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .card-subtitle {
+      font-size: 0.78rem;
+      opacity: 0.82;
+      margin-top: 1px;
+    }
+  }
+
+  // Per-card accent colours
+  .strip-birthday  { background: linear-gradient(135deg, #e91e8c, #c2185b); }
+  .strip-event     { background: linear-gradient(135deg, #3a6bff, #1a3fc7); }
+  .strip-members   { background: linear-gradient(135deg, #00897b, #00695c); }
+  .strip-absences  { background: linear-gradient(135deg, #f57c00, #e65100); }
+  .strip-critical  { background: linear-gradient(135deg, #d32f2f, #b71c1c); }
+
+  .card-body {
+    padding: 0 !important;
+  }
+
+  .card-list {
+    margin: 0;
+    background: transparent;
+
+    ion-item {
+      --padding-start: 16px;
+      --inner-padding-end: 12px;
+      --background: var(--ion-card-background, var(--ion-item-background));
+    }
+
+    ion-item-divider {
+      --padding-start: 16px;
+      --background: var(--ion-color-light-shade, #e8e8e8);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ion-color-medium);
+      min-height: 28px;
+    }
+  }
+
+  .loading-center {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .empty-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px;
+    color: var(--ion-color-medium);
+    font-size: 0.9rem;
+
+    ion-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+  }
+
+  .note-value {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .reason-text {
+    font-style: italic;
+  }
+}
+
+// ── Avatar circles ────────────────────────────────────────────────────────────
+
+.avatar-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 17px;
+    color: #fff;
+  }
+}
+
+.avatar-birthday { background: #e91e8c; }
+.avatar-event    { background: #3a6bff; }
+.avatar-stat     { background: #3a6bff; }
+.avatar-absent   { background: #ef5350; }
+.avatar-shift    { background: #78909c; }
+.avatar-next     { background: #29b6f6; }
+.avatar-joined   { background: #43a047; }
+.avatar-left     { background: #e53935; }
+.avatar-pause    { background: #fb8c00; }
+.avatar-critical { background: #d32f2f; }

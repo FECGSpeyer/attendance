@@ -1,27 +1,31 @@
-<ion-card>
-  <ion-card-header>
-    <ion-card-title>
-      <ion-icon name="gift-outline" style="vertical-align: middle; margin-right: 6px;"></ion-icon>
-      Geburtstage
-    </ion-card-title>
-    <ion-card-subtitle>±14 Tage</ion-card-subtitle>
-  </ion-card-header>
-  <ion-card-content style="padding: 0;">
+<ion-card class="dashboard-card">
+  <div class="card-header-strip strip-birthday">
+    <ion-icon name="gift-outline"></ion-icon>
+    <div>
+      <div class="card-title">Geburtstage</div>
+      <div class="card-subtitle">±14 Tage</div>
+    </div>
+  </div>
+  <ion-card-content class="card-body">
     @if (loading) {
-      <div style="text-align: center; padding: 16px;">
+      <div class="loading-center">
         <ion-spinner name="crescent"></ion-spinner>
       </div>
     } @else if (entries.length === 0) {
-      <ion-item lines="none">
-        <ion-label color="medium"><p>Keine Geburtstage im Zeitraum.</p></ion-label>
-      </ion-item>
+      <div class="empty-row">
+        <ion-icon name="happy-outline" color="medium"></ion-icon>
+        <span>Keine Geburtstage im Zeitraum.</span>
+      </div>
     } @else {
-      <ion-list lines="full" style="margin: 0;">
+      <ion-list lines="full" class="card-list">
         @for (entry of entries; track entry.birthday + entry.firstName) {
-          <ion-item>
+          <ion-item button detail="true" (click)="openPerson(entry.player)">
+            <div class="avatar-circle avatar-birthday" slot="start">
+              <ion-icon name="gift-outline"></ion-icon>
+            </div>
             <ion-label>
               <h3>{{ entry.firstName }} {{ entry.lastName }}</h3>
-              <p>{{ entry.birthday | date:'dd.MM.':'UTC' }} · {{ entry.age }} Jahre</p>
+              <p>{{ entry.birthday | date:'dd. MMMM':'UTC' }} · {{ entry.age }} Jahre</p>
             </ion-label>
             <ion-badge slot="end" [color]="offsetColor(entry.daysOffset)">
               {{ formatDaysOffset(entry.daysOffset) }}

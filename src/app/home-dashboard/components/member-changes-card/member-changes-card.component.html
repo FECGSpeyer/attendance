@@ -1,29 +1,28 @@
-<ion-card>
-  <ion-card-header>
-    <ion-card-title>
-      <ion-icon name="people-outline" style="vertical-align: middle; margin-right: 6px;"></ion-icon>
-      Mitglieder-Veränderungen
-    </ion-card-title>
-    <ion-card-subtitle>Letzte 60 Tage</ion-card-subtitle>
-  </ion-card-header>
-  <ion-card-content style="padding: 0;">
+<ion-card class="dashboard-card">
+  <div class="card-header-strip strip-members">
+    <ion-icon name="people-outline"></ion-icon>
+    <div>
+      <div class="card-title">Mitglieder-Veränderungen</div>
+      <div class="card-subtitle">Letzte 60 Tage</div>
+    </div>
+  </div>
+  <ion-card-content class="card-body">
     @if (loading) {
-      <div style="text-align: center; padding: 16px;">
+      <div class="loading-center">
         <ion-spinner name="crescent"></ion-spinner>
       </div>
     } @else if (changes.length === 0) {
-      <ion-item lines="none">
-        <ion-label color="medium"><p>Keine Veränderungen im Zeitraum.</p></ion-label>
-      </ion-item>
+      <div class="empty-row">
+        <ion-icon name="people-outline" color="medium"></ion-icon>
+        <span>Keine Veränderungen im Zeitraum.</span>
+      </div>
     } @else {
-      <ion-list lines="full" style="margin: 0;">
+      <ion-list lines="full" class="card-list">
         @for (c of changes; track c.date + c.firstName) {
-          <ion-item>
-            <ion-icon
-              slot="start"
-              [name]="c.type === 'joined' ? 'person-add-outline' : 'person-remove-outline'"
-              [color]="c.type === 'joined' ? 'success' : 'danger'">
-            </ion-icon>
+          <ion-item button detail="true" (click)="openPerson(c.player)">
+            <div class="avatar-circle" [class]="c.type === 'joined' ? 'avatar-joined' : 'avatar-left'" slot="start">
+              <ion-icon [name]="c.type === 'joined' ? 'person-add-outline' : 'person-remove-outline'"></ion-icon>
+            </div>
             <ion-label>
               <h3>{{ c.firstName }} {{ c.lastName }}</h3>
               <p>{{ c.date | date:'dd.MM.yyyy':'UTC' }}</p>

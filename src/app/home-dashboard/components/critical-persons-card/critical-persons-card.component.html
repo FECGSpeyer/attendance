@@ -1,34 +1,36 @@
-<ion-card>
-  <ion-card-header>
-    <ion-card-title>
-      <ion-icon name="warning-outline" style="vertical-align: middle; margin-right: 6px;" color="danger"></ion-icon>
-      Problemfälle
-    </ion-card-title>
-  </ion-card-header>
-  <ion-card-content style="padding: 0;">
+<ion-card class="dashboard-card">
+  <div class="card-header-strip strip-critical">
+    <ion-icon name="warning-outline"></ion-icon>
+    <div>
+      <div class="card-title">Problemfälle</div>
+      <div class="card-subtitle">Aktuelle Problemfälle</div>
+    </div>
+  </div>
+  <ion-card-content class="card-body">
     @if (loading) {
-      <div style="text-align: center; padding: 16px;">
+      <div class="loading-center">
         <ion-spinner name="crescent"></ion-spinner>
       </div>
+    } @else if (criticalPersons.length === 0) {
+      <div class="empty-row">
+        <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+        <span>Keine Problemfälle vorhanden.</span>
+      </div>
     } @else {
-      <ion-list lines="full" style="margin: 0;">
-        @if (criticalPersons.length === 0) {
-          <ion-item lines="none">
-            <ion-icon name="checkmark-circle-outline" slot="start" color="success"></ion-icon>
-            <ion-label color="medium"><p>Keine Problemfälle vorhanden.</p></ion-label>
+      <ion-list lines="full" class="card-list">
+        @for (person of criticalPersons; track person.id) {
+          <ion-item button detail="true" (click)="openPerson(person)">
+            <div class="avatar-circle avatar-critical" slot="start">
+              <ion-icon name="person-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>{{ person.firstName }}</h3>
+              @if (getReasonText(person)) {
+                <p>{{ getReasonText(person) }}</p>
+              }
+            </ion-label>
+            <ion-badge slot="end" color="danger">Problemfall</ion-badge>
           </ion-item>
-        } @else {
-          @for (person of criticalPersons; track person.id) {
-            <ion-item button detail="true" (click)="openPerson(person)">
-              <ion-label>
-                <h3>{{ person.firstName }}</h3>
-                @if (getReasonText(person)) {
-                  <p>{{ getReasonText(person) }}</p>
-                }
-              </ion-label>
-              <ion-badge slot="end" color="danger">Problemfall</ion-badge>
-            </ion-item>
-          }
         }
       </ion-list>
     }

@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import dayjs from 'dayjs';
+import { IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from '../../../services/db.service';
 import { Player, PlayerAbsence, PlayerHistoryEntry } from '../../../utilities/interfaces';
-import { PlayerHistoryType } from '../../../utilities/constants';
+import { PlayerHistoryType, Role } from '../../../utilities/constants';
+import { PersonPage } from '../../../people/person/person.page';
 
 interface AbsenceEntry {
+  player: Player;
   firstName: string;
   lastName: string;
   fromDate: string;
@@ -24,7 +27,11 @@ export class AbsencesCardComponent implements OnInit {
   public loading = true;
   private readonly WEEKS = 4;
 
-  constructor(public db: DbService) {}
+  constructor(
+    public db: DbService,
+    private modalController: ModalController,
+    private routerOutlet: IonRouterOutlet,
+  ) {}
 
   async ngOnInit() {
     await this.load();
@@ -46,6 +53,7 @@ export class AbsencesCardComponent implements OnInit {
         .map(a => {
           const p = playerMap.get(a.person_id);
           return {
+            player: p,
             firstName: p?.firstName ?? '?',
             lastName: p?.lastName ?? '',
             fromDate: a.from_date,
@@ -61,6 +69,7 @@ export class AbsencesCardComponent implements OnInit {
           p.history
             .filter((h: PlayerHistoryEntry) => h.type === PlayerHistoryType.PAUSED && dayjs(h.date).isAfter(cutoff))
             .map((h: PlayerHistoryEntry) => ({
+              player: p,
               firstName: p.firstName,
               lastName: p.lastName,
               fromDate: h.date,
@@ -75,6 +84,18 @@ export class AbsencesCardComponent implements OnInit {
     } finally {
       this.loading = false;
     }
+  }
+
+  async openPerson(player: Player) {
+    if (!player) return;
+    const isAdmin = [Role.ADMIN, Role.RESPONSIBLE].includes(this.db.tenantUser()?.role);
+    const modal = await this.modalController.create({
+      component: PersonPage,
+      presentingElement: this.routerOutlet.nativeEl,
+      componentProps: { existingPlayer: { ...player }, readOnly: !isAdmin },
+      backdropDismiss: false,
+    });
+    await modal.present();
   }
 
   formatDateRange(from: string, until: string): string {

@@ -1,15 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import dayjs from 'dayjs';
+import { IonRouterOutlet, ModalController } from '@ionic/angular';
 import { DbService } from '../../../services/db.service';
 import { Player } from '../../../utilities/interfaces';
 import { Utils } from '../../../utilities/Utils';
+import { PersonPage } from '../../../people/person/person.page';
+import { Role } from '../../../utilities/constants';
 
 interface BirthdayEntry {
+  player: Player;
   firstName: string;
   lastName: string;
   birthday: string;
   age: number;
-  daysOffset: number; // negative = vergangen, 0 = heute, positive = bevorstehend
+  daysOffset: number;
 }
 
 @Component({
@@ -22,7 +26,11 @@ export class BirthdaysCardComponent implements OnInit {
   public entries: BirthdayEntry[] = [];
   public loading = true;
 
-  constructor(public db: DbService) {}
+  constructor(
+    public db: DbService,
+    private modalController: ModalController,
+    private routerOutlet: IonRouterOutlet,
+  ) {}
 
   async ngOnInit() {
     await this.load();
@@ -41,12 +49,12 @@ export class BirthdaysCardComponent implements OnInit {
           const bday = dayjs(p.birthday);
           const thisYear = bday.year(today.year());
           let diff = thisYear.diff(today, 'day');
-          // Falls Geburtstag bereits vorbei ist und außerhalb Fenster: nächstes Jahr prüfen
           if (diff < -WINDOW) {
             const nextYear = bday.year(today.year() + 1);
             diff = nextYear.diff(today, 'day');
           }
           return {
+            player: p,
             firstName: p.firstName,
             lastName: p.lastName,
             birthday: p.birthday,
@@ -59,6 +67,17 @@ export class BirthdaysCardComponent implements OnInit {
     } finally {
       this.loading = false;
     }
+  }
+
+  async openPerson(player: Player) {
+    const isAdmin = [Role.ADMIN, Role.RESPONSIBLE].includes(this.db.tenantUser()?.role);
+    const modal = await this.modalController.create({
+      component: PersonPage,
+      presentingElement: this.routerOutlet.nativeEl,
+      componentProps: { existingPlayer: { ...player }, readOnly: !isAdmin },
+      backdropDismiss: false,
+    });
+    await modal.present();
   }
 
   formatDaysOffset(offset: number): string {

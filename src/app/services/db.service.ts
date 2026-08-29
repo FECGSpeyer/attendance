@@ -640,7 +640,10 @@ export class DbService {
   getDashboardCardConfig(): DashboardCardConfig[] {
     const stored = this.user?.user_metadata?.[`dashboardCards_${this.tenant()?.id}`];
     if (Array.isArray(stored) && stored.length > 0) {
-      return stored as DashboardCardConfig[];
+      const storedCards = stored as DashboardCardConfig[];
+      // Merge: add new cards from defaults that aren't in stored config yet
+      const newCards = DEFAULT_DASHBOARD_CARDS.filter(d => !storedCards.some(s => s.id === d.id));
+      return newCards.length > 0 ? [...storedCards, ...newCards] : storedCards;
     }
     return [...DEFAULT_DASHBOARD_CARDS];
   }

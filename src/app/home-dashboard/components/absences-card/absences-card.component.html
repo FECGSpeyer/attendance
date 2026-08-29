@@ -1,34 +1,33 @@
-<ion-card>
-  <ion-card-header>
-    <ion-card-title>
-      <ion-icon name="moon-outline" style="vertical-align: middle; margin-right: 6px;"></ion-icon>
-      Abwesenheiten & Pausierungen
-    </ion-card-title>
-    <ion-card-subtitle>Letzte 4 Wochen</ion-card-subtitle>
-  </ion-card-header>
-  <ion-card-content style="padding: 0;">
+<ion-card class="dashboard-card">
+  <div class="card-header-strip strip-absences">
+    <ion-icon name="moon-outline"></ion-icon>
+    <div>
+      <div class="card-title">Abwesenheiten &amp; Pausierungen</div>
+      <div class="card-subtitle">Letzte 4 Wochen</div>
+    </div>
+  </div>
+  <ion-card-content class="card-body">
     @if (loading) {
-      <div style="text-align: center; padding: 16px;">
+      <div class="loading-center">
         <ion-spinner name="crescent"></ion-spinner>
       </div>
     } @else if (entries.length === 0) {
-      <ion-item lines="none">
-        <ion-label color="medium"><p>Keine Abwesenheiten im Zeitraum.</p></ion-label>
-      </ion-item>
+      <div class="empty-row">
+        <ion-icon name="checkmark-circle-outline" color="medium"></ion-icon>
+        <span>Keine Abwesenheiten im Zeitraum.</span>
+      </div>
     } @else {
-      <ion-list lines="full" style="margin: 0;">
+      <ion-list lines="full" class="card-list">
         @for (e of entries; track e.fromDate + e.firstName) {
-          <ion-item>
-            <ion-icon
-              slot="start"
-              [name]="e.type === 'pause' ? 'pause-circle-outline' : 'calendar-clear-outline'"
-              color="medium">
-            </ion-icon>
+          <ion-item button detail="true" (click)="openPerson(e.player)">
+            <div class="avatar-circle" [class]="e.type === 'pause' ? 'avatar-pause' : 'avatar-absent'" slot="start">
+              <ion-icon [name]="e.type === 'pause' ? 'pause-circle-outline' : 'calendar-clear-outline'"></ion-icon>
+            </div>
             <ion-label class="ion-text-wrap">
               <h3>{{ e.firstName }} {{ e.lastName }}</h3>
               <p>{{ formatDateRange(e.fromDate, e.untilDate) }}</p>
               @if (e.reason) {
-                <p>{{ e.reason }}</p>
+                <p class="reason-text">{{ e.reason }}</p>
               }
             </ion-label>
             <ion-badge slot="end" [color]="e.type === 'pause' ? 'warning' : 'medium'">
