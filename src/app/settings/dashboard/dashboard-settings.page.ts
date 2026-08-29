@@ -38,8 +38,10 @@ export class DashboardSettingsPage implements OnInit {
   }
 
   async resetCards() {
-    this.cards = (await this.db.resetDashboardCardConfig());
+    this.cards = await this.db.resetDashboardCardConfig();
   }
+
+  handleReorder(event: any) {
     const from = event.detail.from;
     const to = event.detail.to;
     event.detail.complete(true);
