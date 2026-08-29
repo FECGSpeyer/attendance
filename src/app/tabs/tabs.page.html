@@ -2,12 +2,6 @@
 
   <app-audio-player />
 
-  @if (showDashboardTab) {
-    <ion-tab tab="home-dashboard">
-      <ion-nav></ion-nav>
-    </ion-tab>
-  }
-
   <ion-tab-bar slot="bottom">
     @if (isParent) {
       <ion-tab-button tab="parents">
