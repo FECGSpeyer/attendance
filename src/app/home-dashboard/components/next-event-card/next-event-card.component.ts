@@ -14,9 +14,19 @@ import { AttendanceStatus } from '../../../utilities/constants';
 export class NextEventCardComponent implements OnInit {
   public lastEvent: Attendance | null = null;
   public nextEvent: Attendance | null = null;
+
+  // Letzter Termin
   public lastPerc = 0;
+  public lastPresent = 0;
   public lastExcused = 0;
-  public lastShiftWorkers = 0;
+  public lastTotal = 0;
+
+  // Nächster Termin
+  public nextTotal = 0;
+  public nextExcused = 0;
+  public nextShiftWorkers = 0;
+  public nextNeutral = 0;
+
   public loading = true;
 
   constructor(public db: DbService) {}
@@ -41,11 +51,28 @@ export class NextEventCardComponent implements OnInit {
       this.nextEvent = upcoming[0] ?? null;
 
       if (this.lastEvent?.persons) {
-        this.lastPerc = Utils.getPercentage(this.lastEvent.persons, this.db.tenant()?.shift_excused_as_present);
-        this.lastExcused = this.lastEvent.persons.filter(p => p.status === AttendanceStatus.Excused || p.status === AttendanceStatus.LateExcused).length;
-        this.lastShiftWorkers = this.lastEvent.persons.filter(p =>
-          p.status === AttendanceStatus.Excused && Utils.isWorkExcused(p.notes)
+        const persons = this.lastEvent.persons;
+        this.lastPerc = Utils.getPercentage(persons, this.db.tenant()?.shift_excused_as_present);
+        this.lastPresent = persons.filter(p =>
+          p.status === AttendanceStatus.Present || p.status === AttendanceStatus.Late
         ).length;
+        this.lastExcused = persons.filter(p =>
+          p.status === AttendanceStatus.Excused || p.status === AttendanceStatus.LateExcused
+        ).length;
+        this.lastTotal = persons.length;
+      }
+
+      if (this.nextEvent?.persons) {
+        const persons = this.nextEvent.persons;
+        this.nextTotal = persons.length;
+        this.nextExcused = persons.filter(p =>
+          p.status === AttendanceStatus.Excused || p.status === AttendanceStatus.LateExcused
+        ).length;
+        this.nextShiftWorkers = persons.filter(p =>
+          (p.status === AttendanceStatus.Excused || p.status === AttendanceStatus.LateExcused) &&
+          Utils.isWorkExcused(p.notes)
+        ).length;
+        this.nextNeutral = persons.filter(p => p.status === AttendanceStatus.Neutral).length;
       }
     } finally {
       this.loading = false;

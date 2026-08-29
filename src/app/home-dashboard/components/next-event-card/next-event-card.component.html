@@ -3,7 +3,7 @@
     <ion-icon name="calendar-outline"></ion-icon>
     <div>
       <div class="card-title">Termine</div>
-      <div class="card-subtitle">Letzter &amp; nächster Termin</div>
+      <div class="card-subtitle">Nächster &amp; letzter Termin</div>
     </div>
   </div>
   <ion-card-content class="card-body">
@@ -14,6 +14,95 @@
     } @else {
       <ion-list lines="full" class="card-list">
 
+        <!-- ── Nächster Termin (oben, detailliert) ───────────────── -->
+        @if (nextEvent) {
+          <ion-item-divider class="card-divider">
+            <ion-label>Nächster Termin</ion-label>
+            <ion-badge slot="end" color="primary">bevorstehend</ion-badge>
+          </ion-item-divider>
+
+          <ion-item>
+            <div class="avatar-circle avatar-next" slot="start">
+              <ion-icon name="calendar-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>{{ nextEvent.typeInfo }}</h3>
+              <p>{{ nextEvent.date | date:'EEEE, dd.MM.yyyy':'UTC' }}</p>
+              @if (nextEvent.start_time) {
+                <p>
+                  <ion-icon name="time-outline" style="vertical-align:middle; margin-right:3px; font-size:12px;"></ion-icon>
+                  {{ nextEvent.start_time }}
+                  @if (nextEvent.end_time) { – {{ nextEvent.end_time }} }
+                  Uhr
+                </p>
+              }
+            </ion-label>
+          </ion-item>
+
+          @if (nextEvent.description) {
+            <ion-item>
+              <div class="avatar-circle avatar-stat" slot="start">
+                <ion-icon name="information-outline"></ion-icon>
+              </div>
+              <ion-label class="ion-text-wrap">
+                <p>{{ nextEvent.description }}</p>
+              </ion-label>
+            </ion-item>
+          }
+
+          @if (nextEvent.notes) {
+            <ion-item>
+              <div class="avatar-circle avatar-shift" slot="start">
+                <ion-icon name="document-text-outline"></ion-icon>
+              </div>
+              <ion-label class="ion-text-wrap">
+                <p>{{ nextEvent.notes }}</p>
+              </ion-label>
+            </ion-item>
+          }
+
+          @if (nextTotal > 0) {
+            <ion-item>
+              <div class="avatar-circle avatar-event" slot="start">
+                <ion-icon name="people-outline"></ion-icon>
+              </div>
+              <ion-label>Teilnehmer</ion-label>
+              <ion-note slot="end" class="note-value">{{ nextTotal }}</ion-note>
+            </ion-item>
+
+            @if (nextExcused > 0) {
+              <ion-item>
+                <div class="avatar-circle avatar-absent" slot="start">
+                  <ion-icon name="person-remove-outline"></ion-icon>
+                </div>
+                <ion-label>Abmeldungen</ion-label>
+                <ion-note slot="end" class="note-value">{{ nextExcused }}</ion-note>
+              </ion-item>
+            }
+
+            @if (nextShiftWorkers > 0) {
+              <ion-item>
+                <div class="avatar-circle avatar-shift" slot="start">
+                  <ion-icon name="briefcase-outline"></ion-icon>
+                </div>
+                <ion-label>Schichtbedingt</ion-label>
+                <ion-note slot="end" class="note-value">{{ nextShiftWorkers }}</ion-note>
+              </ion-item>
+            }
+
+            @if (nextNeutral > 0) {
+              <ion-item>
+                <div class="avatar-circle avatar-stat" slot="start">
+                  <ion-icon name="help-outline"></ion-icon>
+                </div>
+                <ion-label>Noch keine Rückmeldung</ion-label>
+                <ion-note slot="end" class="note-value">{{ nextNeutral }}</ion-note>
+              </ion-item>
+            }
+          }
+        }
+
+        <!-- ── Letzter Termin (unten, kompakt) ───────────────────── -->
         @if (lastEvent) {
           <ion-item-divider class="card-divider">
             <ion-label>Letzter Termin</ion-label>
@@ -26,50 +115,15 @@
               <h3>{{ lastEvent.typeInfo }}</h3>
               <p>{{ lastEvent.date | date:'EE, dd.MM.yyyy':'UTC' }}</p>
             </ion-label>
+            <ion-badge slot="end" [color]="percColor(lastPerc)">{{ lastPerc }}%</ion-badge>
           </ion-item>
-          <ion-item>
+          <ion-item lines="none">
             <div class="avatar-circle avatar-stat" slot="start">
               <ion-icon name="stats-chart-outline"></ion-icon>
             </div>
-            <ion-label>Anwesenheit</ion-label>
-            <ion-badge slot="end" [color]="percColor(lastPerc)">{{ lastPerc }}%</ion-badge>
-          </ion-item>
-          @if (lastExcused > 0) {
-            <ion-item>
-              <div class="avatar-circle avatar-absent" slot="start">
-                <ion-icon name="person-remove-outline"></ion-icon>
-              </div>
-              <ion-label>Abmeldungen</ion-label>
-              <ion-note slot="end" class="note-value">{{ lastExcused }}</ion-note>
-            </ion-item>
-          }
-          @if (lastShiftWorkers > 0) {
-            <ion-item>
-              <div class="avatar-circle avatar-shift" slot="start">
-                <ion-icon name="briefcase-outline"></ion-icon>
-              </div>
-              <ion-label>Schichtbedingt</ion-label>
-              <ion-note slot="end" class="note-value">{{ lastShiftWorkers }}</ion-note>
-            </ion-item>
-          }
-        }
-
-        @if (nextEvent) {
-          <ion-item-divider class="card-divider">
-            <ion-label>Nächster Termin</ion-label>
-          </ion-item-divider>
-          <ion-item lines="none">
-            <div class="avatar-circle avatar-next" slot="start">
-              <ion-icon name="arrow-forward-outline"></ion-icon>
-            </div>
-            <ion-label>
-              <h3>{{ nextEvent.typeInfo }}</h3>
-              <p>{{ nextEvent.date | date:'EE, dd.MM.yyyy':'UTC' }}</p>
-              @if (nextEvent.start_time) {
-                <p>{{ nextEvent.start_time }} Uhr</p>
-              }
+            <ion-label color="medium">
+              <p>{{ lastPresent }} anwesend · {{ lastExcused }} entschuldigt · {{ lastTotal }} gesamt</p>
             </ion-label>
-            <ion-badge slot="end" color="primary">bevorstehend</ion-badge>
           </ion-item>
         }
 
@@ -81,6 +135,7 @@
             </div>
           </ion-item>
         }
+
       </ion-list>
     }
   </ion-card-content>
