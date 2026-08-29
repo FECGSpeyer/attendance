@@ -62,20 +62,22 @@
           }
 
           @if (nextTotal > 0) {
-            <ion-item>
-              <div class="avatar-circle avatar-event" slot="start">
-                <ion-icon name="people-outline"></ion-icon>
-              </div>
-              <ion-label>Teilnehmer</ion-label>
-              <ion-note slot="end" class="note-value">{{ nextTotal }}</ion-note>
-            </ion-item>
+            @if (nextPresent > 0) {
+              <ion-item>
+                <div class="avatar-circle avatar-joined" slot="start">
+                  <ion-icon name="checkmark-outline"></ion-icon>
+                </div>
+                <ion-label>Anwesend</ion-label>
+                <ion-note slot="end" class="note-value">{{ nextPresent }}</ion-note>
+              </ion-item>
+            }
 
             @if (nextExcused > 0) {
               <ion-item>
                 <div class="avatar-circle avatar-absent" slot="start">
                   <ion-icon name="person-remove-outline"></ion-icon>
                 </div>
-                <ion-label>Abmeldungen</ion-label>
+                <ion-label>Abgemeldet</ion-label>
                 <ion-note slot="end" class="note-value">{{ nextExcused }}</ion-note>
               </ion-item>
             }
@@ -95,10 +97,18 @@
                 <div class="avatar-circle avatar-stat" slot="start">
                   <ion-icon name="help-outline"></ion-icon>
                 </div>
-                <ion-label>Noch keine Rückmeldung</ion-label>
+                <ion-label>Keine Rückmeldung</ion-label>
                 <ion-note slot="end" class="note-value">{{ nextNeutral }}</ion-note>
               </ion-item>
             }
+
+            <ion-item>
+              <div class="avatar-circle avatar-event" slot="start">
+                <ion-icon name="people-outline"></ion-icon>
+              </div>
+              <ion-label color="medium">Gesamt</ion-label>
+              <ion-note slot="end" class="note-value">{{ nextTotal }}</ion-note>
+            </ion-item>
           }
         }
 

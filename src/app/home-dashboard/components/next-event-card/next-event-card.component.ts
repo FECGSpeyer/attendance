@@ -23,6 +23,7 @@ export class NextEventCardComponent {
 
   // Nächster Termin
   public nextTotal = 0;
+  public nextPresent = 0;
   public nextExcused = 0;
   public nextShiftWorkers = 0;
   public nextNeutral = 0;
@@ -61,6 +62,9 @@ export class NextEventCardComponent {
       if (this.nextEvent?.persons) {
         const persons = this.nextEvent.persons;
         this.nextTotal = persons.length;
+        this.nextPresent = persons.filter(p =>
+          p.status === AttendanceStatus.Present || p.status === AttendanceStatus.Late
+        ).length;
         this.nextExcused = persons.filter(p =>
           p.status === AttendanceStatus.Excused || p.status === AttendanceStatus.LateExcused
         ).length;
