@@ -45,26 +45,20 @@
       </ion-tab-button>
     }
 
-    @if (showDashboardTab) {
-      <ion-tab-button tab="home-dashboard">
-        <ion-icon name="grid-outline"></ion-icon>
-        <ion-label>Dashboard</ion-label>
-      </ion-tab-button>
-    }
+    <ion-tab-button tab="home-dashboard" [style.display]="showDashboardTab ? '' : 'none'">
+      <ion-icon name="grid-outline"></ion-icon>
+      <ion-label>Dashboard</ion-label>
+    </ion-tab-button>
 
-    @if (showSongsTab) {
-      <ion-tab-button tab="songs-tab">
-        <ion-icon name="musical-notes-outline"></ion-icon>
-        <ion-label>Werke</ion-label>
-      </ion-tab-button>
-    }
+    <ion-tab-button tab="songs-tab" [style.display]="showSongsTab ? '' : 'none'">
+      <ion-icon name="musical-notes-outline"></ion-icon>
+      <ion-label>Werke</ion-label>
+    </ion-tab-button>
 
-    @if (showOrgPlansTab) {
-      <ion-tab-button tab="org-plans">
-        <ion-icon name="business-outline"></ion-icon>
-        <ion-label>Org</ion-label>
-      </ion-tab-button>
-    }
+    <ion-tab-button tab="org-plans" [style.display]="showOrgPlansTab ? '' : 'none'">
+      <ion-icon name="business-outline"></ion-icon>
+      <ion-label>Org</ion-label>
+    </ion-tab-button>
 
     <ion-tab-button tab="settings">
       <ion-icon name="ellipsis-horizontal"></ion-icon>
