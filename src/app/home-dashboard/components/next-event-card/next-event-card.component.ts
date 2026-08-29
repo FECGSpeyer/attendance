@@ -32,6 +32,8 @@ export class NextEventCardComponent {
 
   constructor(public db: DbService) {}
 
+  async ngOnInit() { await this.load(); }
+
   async load() {
     this.loading = true;
     try {

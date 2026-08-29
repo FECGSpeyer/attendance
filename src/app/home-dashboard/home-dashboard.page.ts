@@ -24,9 +24,10 @@ export class HomeDashboardPage {
 
   constructor(public db: DbService) {}
 
-  async ionViewWillEnter() {
+  ionViewWillEnter() {
     this.cards = this.db.getDashboardCardConfig();
-    await this.refreshAllCards();
+    // Wait for Angular to render the @for loop before calling load()
+    setTimeout(() => this.refreshAllCards(), 0);
   }
 
   async refreshAllCards() {
