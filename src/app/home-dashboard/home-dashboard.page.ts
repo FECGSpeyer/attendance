@@ -1,6 +1,6 @@
 import { Component, QueryList, ViewChildren, effect } from '@angular/core';
 import { DbService } from '../services/db.service';
-import { DashboardCardConfig } from '../utilities/interfaces';
+import { DashboardCardConfig, DEFAULT_DASHBOARD_CARDS } from '../utilities/interfaces';
 import { BirthdaysCardComponent } from './components/birthdays-card/birthdays-card.component';
 import { NextEventCardComponent } from './components/next-event-card/next-event-card.component';
 import { MemberChangesCardComponent } from './components/member-changes-card/member-changes-card.component';
@@ -14,7 +14,7 @@ import { CriticalPersonsCardComponent } from './components/critical-persons-card
   standalone: false,
 })
 export class HomeDashboardPage {
-  public cards: DashboardCardConfig[] = [];
+  public cards: DashboardCardConfig[] = [...DEFAULT_DASHBOARD_CARDS];
 
   @ViewChildren(BirthdaysCardComponent) birthdaysCards!: QueryList<BirthdaysCardComponent>;
   @ViewChildren(NextEventCardComponent) nextEventCards!: QueryList<NextEventCardComponent>;
@@ -31,9 +31,7 @@ export class HomeDashboardPage {
   }
 
   ionViewWillEnter() {
-    if (this.db.tenant()) {
-      this.cards = this.db.getDashboardCardConfig();
-    }
+    this.cards = this.db.getDashboardCardConfig();
   }
 
   async refreshAllCards() {
