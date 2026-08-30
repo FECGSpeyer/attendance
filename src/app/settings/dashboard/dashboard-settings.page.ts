@@ -8,6 +8,7 @@ const CARD_LABELS: Record<DashboardCardId, string> = {
   'member-changes': 'Mitglieder-Veränderungen',
   'absences': 'Abwesenheiten & Pausierungen',
   'critical-persons': 'Problemfälle',
+  'current-songs': 'Aktuelle Werke',
 };
 
 @Component({

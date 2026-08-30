@@ -10,6 +10,7 @@ import { NextEventCardComponent } from './components/next-event-card/next-event-
 import { MemberChangesCardComponent } from './components/member-changes-card/member-changes-card.component';
 import { AbsencesCardComponent } from './components/absences-card/absences-card.component';
 import { CriticalPersonsCardComponent } from './components/critical-persons-card/critical-persons-card.component';
+import { CurrentSongsCardComponent } from './components/current-songs-card/current-songs-card.component';
 import { PersonPageModule } from '../people/person/person.module';
 import { AttendancePageModule } from '../attendance/attendance/attendance.module';
 
@@ -29,6 +30,7 @@ import { AttendancePageModule } from '../attendance/attendance/attendance.module
     MemberChangesCardComponent,
     AbsencesCardComponent,
     CriticalPersonsCardComponent,
+    CurrentSongsCardComponent,
   ]
 })
 export class HomeDashboardPageModule {}

@@ -60,6 +60,9 @@
     @if (card.id === 'critical-persons') {
       <app-critical-persons-card></app-critical-persons-card>
     }
+    @if (card.id === 'current-songs') {
+      <app-current-songs-card></app-current-songs-card>
+    }
   }
 
   @if (visibleCards.length === 0) {

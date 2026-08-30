@@ -1,0 +1,38 @@
+<ion-card class="dashboard-card">
+  <div class="card-header-strip strip-songs">
+    <ion-icon name="musical-notes-outline"></ion-icon>
+    <div>
+      <div class="card-title">Aktuelle Werke</div>
+      <div class="card-subtitle">Geplante Werke</div>
+    </div>
+  </div>
+  <ion-card-content class="card-body">
+    @if (loading) {
+      <div class="loading-center">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    } @else if (entries.length === 0) {
+      <div class="empty-row">
+        <ion-icon name="musical-notes-outline" color="medium"></ion-icon>
+        <span>Keine geplanten Werke.</span>
+      </div>
+    } @else {
+      <ion-list lines="full" class="card-list">
+        @for (entry of entries; track entry.songId) {
+          <ion-item button detail="true" (click)="openSong(entry.songId)">
+            <div class="avatar-circle avatar-songs" slot="start">
+              <ion-icon name="musical-note-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>{{ songLabel(entry) }}</h3>
+              @if (entry.conductorName) {
+                <p>{{ entry.conductorName }}</p>
+              }
+              <p>{{ entry.dateLabel }}</p>
+            </ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    }
+  </ion-card-content>
+</ion-card>

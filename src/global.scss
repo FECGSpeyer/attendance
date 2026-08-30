@@ -192,6 +192,7 @@ ion-select-popover ion-list {
   .strip-members   { background: linear-gradient(135deg, #00897b, #00695c); }
   .strip-absences  { background: linear-gradient(135deg, #f57c00, #e65100); }
   .strip-critical  { background: linear-gradient(135deg, #d32f2f, #b71c1c); }
+  .strip-songs     { background: linear-gradient(135deg, #7b1fa2, #4a148c); }
 
   .card-body {
     padding: 0 !important;
@@ -283,3 +284,4 @@ ion-select-popover ion-list {
 .avatar-left     { background: #e53935; }
 .avatar-pause    { background: #fb8c00; }
 .avatar-critical { background: #d32f2f; }
+.avatar-songs    { background: #7b1fa2; }

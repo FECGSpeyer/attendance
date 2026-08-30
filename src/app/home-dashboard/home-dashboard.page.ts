@@ -8,6 +8,7 @@ import { NextEventCardComponent } from './components/next-event-card/next-event-
 import { MemberChangesCardComponent } from './components/member-changes-card/member-changes-card.component';
 import { AbsencesCardComponent } from './components/absences-card/absences-card.component';
 import { CriticalPersonsCardComponent } from './components/critical-persons-card/critical-persons-card.component';
+import { CurrentSongsCardComponent } from './components/current-songs-card/current-songs-card.component';
 
 @Component({
   selector: 'app-home-dashboard',
@@ -23,6 +24,7 @@ export class HomeDashboardPage {
   @ViewChildren(MemberChangesCardComponent) memberChangesCards!: QueryList<MemberChangesCardComponent>;
   @ViewChildren(AbsencesCardComponent) absencesCards!: QueryList<AbsencesCardComponent>;
   @ViewChildren(CriticalPersonsCardComponent) criticalPersonsCards!: QueryList<CriticalPersonsCardComponent>;
+  @ViewChildren(CurrentSongsCardComponent) currentSongsCards!: QueryList<CurrentSongsCardComponent>;
 
   constructor(public db: DbService, private router: Router) {
     effect(() => {
@@ -43,6 +45,7 @@ export class HomeDashboardPage {
       ...this.memberChangesCards.map(c => c.load()),
       ...this.absencesCards.map(c => c.load()),
       ...this.criticalPersonsCards.map(c => c.load()),
+      ...this.currentSongsCards.map(c => c.load()),
     ];
     await Promise.all(reloads);
   }
