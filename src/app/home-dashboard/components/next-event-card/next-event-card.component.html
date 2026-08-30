@@ -14,19 +14,19 @@
     } @else {
       <ion-list lines="full" class="card-list">
 
-        <!-- ── Nächster Termin (oben, detailliert) ───────────────── -->
+        <!-- ── Nächster Termin (oben, detailliert) ───────────────────── -->
         @if (nextEvent) {
           <ion-item-divider class="card-divider">
             <ion-label>Nächster Termin</ion-label>
           </ion-item-divider>
 
-          <ion-item>
+          <ion-item [button]="canOpenAttendance" [detail]="canOpenAttendance" (click)="canOpenAttendance && openAttendance(nextEvent.id)">
             <div class="avatar-circle avatar-next" slot="start">
               <ion-icon name="calendar-outline"></ion-icon>
             </div>
             <ion-label>
               <h3>{{ nextEvent.typeInfo }}</h3>
-              <p>{{ nextEvent.date | date:'EEEE, dd.MM.yyyy':'UTC' }}</p>
+              <p>{{ formatDate(nextEvent.date, 'dddd, DD.MM.YYYY') }}</p>
               @if (nextEvent.start_time) {
                 <p>
                   <ion-icon name="time-outline" style="vertical-align:middle; margin-right:3px; font-size:12px;"></ion-icon>
@@ -138,13 +138,13 @@
           <ion-item-divider class="card-divider">
             <ion-label>Letzter Termin</ion-label>
           </ion-item-divider>
-          <ion-item>
+          <ion-item [button]="canOpenAttendance" [detail]="canOpenAttendance" (click)="canOpenAttendance && openAttendance(lastEvent.id)">
             <div class="avatar-circle avatar-event" slot="start">
               <ion-icon name="time-outline"></ion-icon>
             </div>
             <ion-label>
               <h3>{{ lastEvent.typeInfo }}</h3>
-              <p>{{ lastEvent.date | date:'EE, dd.MM.yyyy':'UTC' }}</p>
+              <p>{{ formatDate(lastEvent.date, 'dd, DD.MM.YYYY') }}</p>
             </ion-label>
             <ion-badge slot="end" [color]="percColor(lastPerc)">{{ lastPerc }}%</ion-badge>
           </ion-item>

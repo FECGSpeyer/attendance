@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { Browser } from '@capacitor/browser';
@@ -26,6 +26,7 @@ import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracki
     standalone: false
 })
 export class AttendancePage implements OnInit, OnDestroy {
+  @Input() isModal = false;
   public attendanceId!: number;
   @ViewChild('chooser') chooser: ElementRef;
   public players: PersonAttendance[] = [];
@@ -135,6 +136,10 @@ export class AttendancePage implements OnInit, OnDestroy {
   private routeSub?: Subscription;
 
   async ngOnInit(): Promise<void> {
+    if (this.isModal) {
+      await this.init();
+      return;
+    }
     // Re-run init() whenever the :id route param changes. Angular reuses the
     // component instance when only the param changes, so this is the only way
     // to refresh state on detail-to-detail navigation. Also handles the
@@ -424,7 +429,11 @@ export class AttendancePage implements OnInit, OnDestroy {
    * ngOnDestroy → teardown() once Angular destroys this component, so no
    * explicit teardown is needed here.
    */
-  private navigateBack(): void {
+  navigateBack(): void {
+    if (this.isModal) {
+      void this.modalController.dismiss();
+      return;
+    }
     if (window.history.length > 1) {
       this.location.back();
     } else {

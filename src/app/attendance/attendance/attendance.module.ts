@@ -19,6 +19,7 @@ import { AdHocReminderModalComponent } from './ad-hoc-reminder-modal/ad-hoc-remi
     AttendancePageRoutingModule,
     QuillModule.forRoot(),
   ],
-  declarations: [AttendancePage, StatusInfoComponent, AdHocReminderModalComponent]
+  declarations: [AttendancePage, StatusInfoComponent, AdHocReminderModalComponent],
+  exports: [AttendancePage],
 })
 export class AttendancePageModule {}

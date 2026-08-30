@@ -11,6 +11,7 @@ import { MemberChangesCardComponent } from './components/member-changes-card/mem
 import { AbsencesCardComponent } from './components/absences-card/absences-card.component';
 import { CriticalPersonsCardComponent } from './components/critical-persons-card/critical-persons-card.component';
 import { PersonPageModule } from '../people/person/person.module';
+import { AttendancePageModule } from '../attendance/attendance/attendance.module';
 
 @NgModule({
   imports: [
@@ -19,6 +20,7 @@ import { PersonPageModule } from '../people/person/person.module';
     IonicModule,
     HomeDashboardPageRoutingModule,
     PersonPageModule,
+    AttendancePageModule,
   ],
   declarations: [
     HomeDashboardPage,

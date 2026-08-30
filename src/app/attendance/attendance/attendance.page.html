@@ -1,7 +1,13 @@
 ﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button text="" defaultHref="/tabs/attendance"></ion-back-button>
+      @if (isModal) {
+        <ion-button (click)="navigateBack()">
+          <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+        </ion-button>
+      } @else {
+        <ion-back-button text="" defaultHref="/tabs/attendance"></ion-back-button>
+      }
     </ion-buttons>
     @if (players) {
     <ion-title>{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(players) }}/{{

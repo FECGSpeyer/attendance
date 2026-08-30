@@ -1,9 +1,12 @@
 import { Component, effect } from '@angular/core';
+import { ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
+import 'dayjs/locale/de';
+import { AttendancePage } from '../../../attendance/attendance/attendance.page';
 import { DbService } from '../../../services/db.service';
 import { Attendance, PersonAttendance } from '../../../utilities/interfaces';
 import { Utils } from '../../../utilities/Utils';
-import { AttendanceStatus } from '../../../utilities/constants';
+import { AttendanceStatus, Role } from '../../../utilities/constants';
 
 @Component({
   selector: 'app-next-event-card',
@@ -28,15 +31,24 @@ export class NextEventCardComponent {
   public nextNeutral = 0;
   public nextExcusedPersons: PersonAttendance[] = [];
 
+  public canOpenAttendance = false;
   public loading = true;
   private loadDone = false;
 
-  constructor(public db: DbService) {
+  constructor(public db: DbService, private modalController: ModalController) {
     effect(() => {
       if (this.db.tenant() && !this.loadDone) {
         this.loadDone = true;
         this.load();
       }
+    });
+
+    effect(() => {
+      const role = this.db.tenantUser()?.role;
+      this.canOpenAttendance = role === Role.ADMIN
+        || role === Role.RESPONSIBLE
+        || role === Role.HELPER
+        || role === Role.VOICE_LEADER_HELPER;
     });
   }
 
@@ -89,6 +101,19 @@ export class NextEventCardComponent {
     } finally {
       this.loading = false;
     }
+  }
+
+  async openAttendance(id: number): Promise<void> {
+    const modal = await this.modalController.create({
+      component: AttendancePage,
+      presentingElement: document.querySelector('ion-router-outlet'),
+      componentProps: { attendanceId: id, isModal: true },
+    });
+    await modal.present();
+  }
+
+  formatDate(date: string, format: string): string {
+    return dayjs(date).locale('de').format(format);
   }
 
   percColor(perc: number): string {
