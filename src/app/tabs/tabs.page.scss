@@ -1,1 +1,6 @@
-
+// The iOS26 theme removes the FAB offset when ≥5 tab buttons are present.
+// Re-apply it so the tab bar never overlaps the bottom-right FAB.
+ion-tab-bar.ios:not(.ios26-disabled):has(:nth-child(5)) {
+  width: calc(100% - (18px + var(--ion-safe-area-left, 0px)) - (18px + var(--ion-safe-area-left, 0px)) - 60px - 12px);
+  max-width: 474px;
+}
