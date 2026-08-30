@@ -110,6 +110,8 @@ export class NextEventCardComponent {
       componentProps: { attendanceId: id, isModal: true },
     });
     await modal.present();
+    await modal.onDidDismiss();
+    await this.load();
   }
 
   formatDate(date: string, format: string): string {
