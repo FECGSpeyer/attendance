@@ -1,5 +1,6 @@
 import { Component, QueryList, ViewChildren, effect } from '@angular/core';
 import { Router } from '@angular/router';
+import { Platform } from '@ionic/angular';
 import { DbService } from '../services/db.service';
 import { DashboardCardConfig, DEFAULT_DASHBOARD_CARDS } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
@@ -26,7 +27,11 @@ export class HomeDashboardPage {
   @ViewChildren(CriticalPersonsCardComponent) criticalPersonsCards!: QueryList<CriticalPersonsCardComponent>;
   @ViewChildren(CurrentSongsCardComponent) currentSongsCards!: QueryList<CurrentSongsCardComponent>;
 
-  constructor(public db: DbService, private router: Router) {
+  get isIos(): boolean {
+    return this.platform.is('ios');
+  }
+
+  constructor(public db: DbService, private router: Router, private platform: Platform) {
     effect(() => {
       if (this.db.tenant()) {
         this.cards = this.db.getDashboardCardConfig();

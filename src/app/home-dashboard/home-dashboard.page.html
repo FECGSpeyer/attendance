@@ -24,11 +24,13 @@
     } @else {
       <ion-title>Dashboard</ion-title>
     }
-    <ion-buttons slot="end">
-      <ion-button routerLink="/tabs/settings/dashboard">
-        <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+    @if (!isIos) {
+      <ion-buttons slot="end">
+        <ion-button routerLink="/tabs/settings/dashboard">
+          <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    }
   </ion-toolbar>
 </ion-header>
 
@@ -71,5 +73,13 @@
       <p>Alle Karten sind ausgeblendet. Konfiguriere das Dashboard unter Einstellungen.</p>
       <ion-button fill="outline" routerLink="/tabs/settings/dashboard">Dashboard konfigurieren</ion-button>
     </div>
+  }
+
+  @if (isIos) {
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab-button routerLink="/tabs/settings/dashboard" size="small">
+        <ion-icon name="settings-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
   }
 </ion-content>
