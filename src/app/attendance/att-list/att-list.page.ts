@@ -224,6 +224,15 @@ export class AttListPage implements OnInit {
     event.target.complete();
   }
 
+  async onTenantChange(tenantId: number): Promise<void> {
+    if (this.db.tenant().id === tenantId) { return; }
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+    await this.db.setTenant(tenantId);
+    await this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser().role));
+    await loading.dismiss();
+  }
+
   async getAttendance(): Promise<void> {
     const attendances: Attendance[] = (await this.db.getAttendance(false, true)).map((att: Attendance): Attendance => ({
         ...att,
