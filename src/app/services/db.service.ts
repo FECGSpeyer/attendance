@@ -1208,7 +1208,11 @@ export class DbService {
   async routeAfterAuth(loading?: HTMLIonLoadingElement) {
     await this.setTenant(undefined, true, loading);
     if (this.tenantUser()) {
-      this.router.navigateByUrl(Utils.getUrl(this.tenantUser().role));
+      const role = this.tenantUser().role;
+      const useDashboard =
+        this.showDashboardTabSignal() &&
+        [Role.ADMIN, Role.RESPONSIBLE].includes(role);
+      this.router.navigateByUrl(useDashboard ? '/tabs/home-dashboard' : Utils.getUrl(role));
     } else {
       this.router.navigateByUrl('/register');
     }

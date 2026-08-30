@@ -3,6 +3,11 @@
   <app-audio-player />
 
   <ion-tab-bar slot="bottom">
+    <ion-tab-button tab="home-dashboard" [style.display]="showDashboardTab ? '' : 'none'">
+      <ion-icon name="grid-outline"></ion-icon>
+      <ion-label>Dashboard</ion-label>
+    </ion-tab-button>
+
     @if (isParent) {
       <ion-tab-button tab="parents">
         <ion-icon name="person-outline"></ion-icon>
@@ -44,11 +49,6 @@
         <ion-label>Termine</ion-label>
       </ion-tab-button>
     }
-
-    <ion-tab-button tab="home-dashboard" [style.display]="showDashboardTab ? '' : 'none'">
-      <ion-icon name="grid-outline"></ion-icon>
-      <ion-label>Dashboard</ion-label>
-    </ion-tab-button>
 
     <ion-tab-button tab="songs-tab" [style.display]="showSongsTab ? '' : 'none'">
       <ion-icon name="musical-notes-outline"></ion-icon>

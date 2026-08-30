@@ -14,8 +14,11 @@ export class LoginGuard  {
     await this.db.checkToken();
 
     if (this.db.tenantUser()) {
-      const url: string = Utils.getUrl(this.db.tenantUser().role);
-
+      const role = this.db.tenantUser().role;
+      const useDashboard =
+        this.db.showDashboardTabSignal() &&
+        [Role.ADMIN, Role.RESPONSIBLE].includes(role);
+      const url = useDashboard ? '/tabs/home-dashboard' : Utils.getUrl(role);
       this.router.navigateByUrl(url);
       return false;
     }
