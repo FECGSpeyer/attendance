@@ -1,4 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { Network } from '@capacitor/network';
+import { Storage } from '@ionic/storage-angular';
 import { Song, SongCategory, SongFile } from '../../utilities/interfaces';
 import { supabase } from '../base/supabase';
 
@@ -6,6 +8,8 @@ import { supabase } from '../base/supabase';
   providedIn: 'root'
 })
 export class SongService {
+
+  private storage = inject(Storage);
 
   constructor() {}
 
@@ -28,12 +32,21 @@ export class SongService {
   }
 
   async getSongs(tenantId: number): Promise<Song[]> {
+    const cacheKey = `offline_songs_v1_${tenantId}`;
+    const { connected } = await Network.getStatus();
+
+    if (!connected) {
+      const cached = await this.storage.get(cacheKey);
+      return (cached ?? []) as Song[];
+    }
+
     const { data } = await supabase
       .from('songs')
       .select('*')
       .eq('tenantId', tenantId)
       .order('number', { ascending: true });
 
+    if (data) { void this.storage.set(cacheKey, data); }
     return data as any;
   }
 

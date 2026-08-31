@@ -1,4 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { Network } from '@capacitor/network';
+import { Storage } from '@ionic/storage-angular';
 import { supabase } from '../base/supabase';
 import { GroupCategory } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
@@ -8,7 +10,17 @@ import { Utils } from '../../utilities/Utils';
 })
 export class GroupCategoryService {
 
+  private storage = inject(Storage);
+
   async getGroupCategories(tenantId: number): Promise<GroupCategory[]> {
+    const cacheKey = `offline_group_categories_v1_${tenantId}`;
+    const { connected } = await Network.getStatus();
+
+    if (!connected) {
+      const cached = await this.storage.get(cacheKey);
+      return (cached ?? []) as GroupCategory[];
+    }
+
     const { data, error } = await supabase
       .from('group_categories')
       .select('*')
@@ -21,6 +33,7 @@ export class GroupCategoryService {
       throw error;
     }
 
+    void this.storage.set(cacheKey, data);
     return data;
   }
 
