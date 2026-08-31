@@ -1,6 +1,16 @@
     {
       "versions": [
         {
+          "version": "4.7.4",
+          "date": "31.8.2026",
+          "changes": [
+            "📶 Offline-Modus: Statusänderungen und Notizen werden bei fehlender Internetverbindung lokal gespeichert und automatisch synchronisiert, sobald die Verbindung wiederhergestellt ist.",
+            "⚡ Anwesenheit: Flackern beim Ändern des Status behoben – kurzes Zurückspringen auf den alten Wert tritt nicht mehr auf.",
+            "🔔 Dashboard: Benachrichtigungsglocke jetzt auch auf der Dashboard-Seite sichtbar.",
+            "🔕 Benachrichtigungen: Hinweis \"(selbst abgemeldet)\" entfernt – nur \"(von Elternteil abgemeldet)\" wird weiterhin angezeigt."
+          ]
+        },
+        {
           "version": "4.7.3",
           "date": "31.8.2026",
           "changes": [
