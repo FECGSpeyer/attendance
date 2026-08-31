@@ -26,10 +26,10 @@
     }
     @if (!isIos) {
       <ion-buttons slot="end">
-        <app-notification-bell></app-notification-bell>
         <ion-button routerLink="/tabs/settings/dashboard">
           <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
         </ion-button>
+        <app-notification-bell></app-notification-bell>
       </ion-buttons>
     } @else {
       <ion-buttons slot="end">
