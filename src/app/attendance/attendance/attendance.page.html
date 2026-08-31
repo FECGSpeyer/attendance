@@ -10,10 +10,64 @@
       }
     </ion-buttons>
     @if (players) {
-    <ion-title>{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(players) }}/{{
-      players.length }}</ion-title>
+    <ion-title>{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(filteredPlayers) }}/{{
+      filteredPlayers.length }}</ion-title>
     }
     <ion-buttons slot="end">
+      <ion-button id="attendance-filter-trigger">
+        <ion-icon slot="icon-only" [color]="isFilterActive ? 'primary' : ''" name="filter"></ion-icon>
+        @if (isFilterActive) {
+        <ion-badge color="primary" class="filter-badge">{{ statusFilter.size }}</ion-badge>
+        }
+      </ion-button>
+      <ion-popover trigger="attendance-filter-trigger" triggerAction="click" [dismissOnSelect]="false">
+        <ng-template>
+          <ion-list lines="none">
+            @if (type?.available_statuses.includes(0)) {
+            <ion-item button detail="false" (click)="toggleStatusFilter(0)">
+              <ion-checkbox slot="start" [checked]="statusFilter.has(0)" style="pointer-events: none;"></ion-checkbox>
+              <ion-label>Neutral</ion-label>
+            </ion-item>
+            }
+            @if (type?.available_statuses.includes(1)) {
+            <ion-item button detail="false" (click)="toggleStatusFilter(1)">
+              <ion-checkbox slot="start" [checked]="statusFilter.has(1)" style="pointer-events: none;"></ion-checkbox>
+              <ion-label>Anwesend</ion-label>
+            </ion-item>
+            }
+            @if (type?.available_statuses.includes(2)) {
+            <ion-item button detail="false" (click)="toggleStatusFilter(2)">
+              <ion-checkbox slot="start" [checked]="statusFilter.has(2)" style="pointer-events: none;"></ion-checkbox>
+              <ion-label>Entschuldigt</ion-label>
+            </ion-item>
+            }
+            @if (type?.available_statuses.includes(3)) {
+            <ion-item button detail="false" (click)="toggleStatusFilter(3)">
+              <ion-checkbox slot="start" [checked]="statusFilter.has(3)" style="pointer-events: none;"></ion-checkbox>
+              <ion-label>Verspätet</ion-label>
+            </ion-item>
+            }
+            @if (type?.available_statuses.includes(3)) {
+            <ion-item button detail="false" (click)="toggleStatusFilter(5)">
+              <ion-checkbox slot="start" [checked]="statusFilter.has(5)" style="pointer-events: none;"></ion-checkbox>
+              <ion-label>Verspätet entschuldigt</ion-label>
+            </ion-item>
+            }
+            @if (type?.available_statuses.includes(4)) {
+            <ion-item button detail="false" (click)="toggleStatusFilter(4)">
+              <ion-checkbox slot="start" [checked]="statusFilter.has(4)" style="pointer-events: none;"></ion-checkbox>
+              <ion-label>Abwesend</ion-label>
+            </ion-item>
+            }
+            @if (isFilterActive) {
+            <ion-item button detail="false" (click)="clearStatusFilter()">
+              <ion-icon slot="start" name="close-circle-outline" color="danger"></ion-icon>
+              <ion-label color="danger">Filter löschen</ion-label>
+            </ion-item>
+            }
+          </ion-list>
+        </ng-template>
+      </ion-popover>
       <ion-button id="attendance-options-trigger">
         <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
       </ion-button>
@@ -459,11 +513,10 @@
         </ion-button>
       </ion-item>
       }
-      @for (player of players; track player.id) {
+      @for (player of filteredPlayers; track player.id) {
       @if (player.firstOfInstrument) {
       <ion-item-divider color="primary" sticky="true">
-        <ion-label>{{ player.groupName }} ({{ getAttendedPlayersForGroup(player.groupName) }}/{{ player.instrumentLength
-          }})</ion-label>
+        <ion-label>{{ player.groupName }} ({{ getAttendedPlayersForGroup(player.groupName, filteredPlayers) }}/{{ player.instrumentLength }})</ion-label>
       </ion-item-divider>
       }
       <ion-item-sliding #slider>

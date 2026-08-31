@@ -84,6 +84,46 @@ export class AttendancePage implements OnInit, OnDestroy {
   // empty (and the helperGroupId filter isn't responsible). Surfaces an inline
   // "Neu laden" banner so the user can recover without dismissing the modal.
   public personsLoadFailed = false;
+  public statusFilter: Set<number> = new Set();
+
+  get filteredPlayers(): PersonAttendance[] {
+    const list = this.statusFilter.size === 0
+      ? this.players
+      : this.players.filter(p => this.statusFilter.has(p.status));
+    return this.recalculateGroupHeaders(list);
+  }
+
+  private recalculateGroupHeaders(players: PersonAttendance[]): PersonAttendance[] {
+    const seenGroups = new Set<string>();
+    const groupCounts = new Map<string, number>();
+    for (const p of players) {
+      const g = p.groupName ?? '';
+      groupCounts.set(g, (groupCounts.get(g) || 0) + 1);
+    }
+    return players.map(p => {
+      const g = p.groupName ?? '';
+      const isFirst = !seenGroups.has(g);
+      if (isFirst) seenGroups.add(g);
+      return { ...p, firstOfInstrument: isFirst, instrumentLength: groupCounts.get(g) || 0 };
+    });
+  }
+
+  get isFilterActive(): boolean {
+    return this.statusFilter.size > 0;
+  }
+
+  toggleStatusFilter(status: number): void {
+    if (this.statusFilter.has(status)) {
+      this.statusFilter.delete(status);
+    } else {
+      this.statusFilter.add(status);
+    }
+    this.statusFilter = new Set(this.statusFilter);
+  }
+
+  clearStatusFilter(): void {
+    this.statusFilter = new Set();
+  }
 
   // Re-entrancy guard for the ad-hoc reminder send. Prevents a second
   // "Versenden" tap from firing another send (and duplicate emails) while
@@ -528,8 +568,8 @@ export class AttendancePage implements OnInit, OnDestroy {
     return players.filter((p: PersonAttendance) => p.status === AttendanceStatus.Late || p.status === AttendanceStatus.Present).length;
   }
 
-  getAttendedPlayersForGroup(groupName: string): number {
-    return this.players.filter((p: PersonAttendance) =>
+  getAttendedPlayersForGroup(groupName: string, list: PersonAttendance[] = this.players): number {
+    return list.filter((p: PersonAttendance) =>
       p.groupName === groupName && (
         p.status === AttendanceStatus.Late || p.status === AttendanceStatus.Present || p.status === AttendanceStatus.LateExcused
       )

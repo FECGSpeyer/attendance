@@ -77,3 +77,14 @@ ion-item-group {
 .marginBottom {
     margin-bottom: 5rem;
 }
+
+.filter-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 16px;
+    height: 16px;
+    font-size: 10px;
+    padding: 0 4px;
+    border-radius: 8px;
+}
