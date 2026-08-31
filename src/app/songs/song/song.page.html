@@ -25,7 +25,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="light" [fullscreen]="true">
+<ion-content color="light" [fullscreen]="true" [style.--padding-bottom]="aufnahmeFile ? '80px' : null">
   <ion-header collapse="condense">
     <ion-toolbar color="light">
       @if (readOnly) {
@@ -343,6 +343,14 @@
   </ion-list>
   }
 </ion-content>
+
+@if (aufnahmeFile) {
+<ion-fab slot="fixed" vertical="bottom" horizontal="end">
+  <ion-fab-button (click)="playAufnahme()">
+    <ion-icon name="play"></ion-icon>
+  </ion-fab-button>
+</ion-fab>
+}
 
 <!-- Copy to other instance modal -->
 <ion-modal (ionModalDidDismiss)="isCopyModalOpen = false" backdropDismiss="true" handle-behavior="none" [breakpoints]="[0, 0.6, 1]"

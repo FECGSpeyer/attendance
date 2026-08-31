@@ -54,6 +54,17 @@ export class SongPage implements OnInit {
     this.song.instrument_ids = merged;
   }
 
+  get aufnahmeFile(): SongFile | null {
+    return this.song?.files?.find(f => f.instrumentId === 1 && AudioPlayerService.isAudioFile(f)) ?? null;
+  }
+
+  playAufnahme() {
+    const file = this.aufnahmeFile;
+    if (file) {
+      this.audioPlayer.play(file, this.song.name);
+    }
+  }
+
   get instrumentIdsFromFiles(): number[] {
     return [...new Set(
       (this.song?.files || [])
