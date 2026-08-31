@@ -18,6 +18,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
+import { OfflineQueueService } from 'src/app/services/offline-queue/offline-queue.service';
 
 @Component({
     selector: 'app-attendance',
@@ -143,6 +144,10 @@ export class AttendancePage implements OnInit, OnDestroy {
   // can't keep showing data from the previous tenant.
   private ownedTenantId: number | undefined;
 
+  // Tracks personAttendanceIds whose Supabase write is in-flight so the
+  // realtime echo doesn't flicker the UI back to the old value.
+  private inFlightWrites = new Set<string>();
+
   constructor(
     private modalController: ModalController,
     public db: DbService,
@@ -154,6 +159,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private location: Location,
     private tracking: TrackingService,
+    public offlineQueue: OfflineQueueService,
   ) {
     // Watch for cross-tenant switches. Ionic keeps each tab's stack alive, so
     // a tenant change made from the settings tab doesn't tear this page
@@ -455,6 +461,9 @@ export class AttendancePage implements OnInit, OnDestroy {
     Network.addListener('networkStatusChange', (status: ConnectionStatus) => {
       this.isOnline = status.connected;
       Utils.showToast(status.connected ? 'Verbindung wiederhergestellt' : 'Keine Internetverbindung vorhanden', status.connected ? 'success' : 'danger');
+      if (status.connected) {
+        void this.offlineQueue.flush();
+      }
     });
   }
 
@@ -519,6 +528,11 @@ export class AttendancePage implements OnInit, OnDestroy {
       return;
     }
 
+    // Skip echo of our own in-flight write to prevent UI flicker
+    if (this.inFlightWrites.has(payload.new.id)) {
+      return;
+    }
+
     const idx: number = this.players.findIndex((p: PersonAttendance) => p.id === payload.new.id);
     this.players[idx] = {
       ...this.players[idx],
@@ -557,11 +571,16 @@ export class AttendancePage implements OnInit, OnDestroy {
 
     individual.status = status;
 
-    this.db.updatePersonAttendance(individual.id, { status: individual.status });
+    this.inFlightWrites.add(individual.id);
+    this.db.updatePersonAttendance(individual.id, { status: individual.status })
+      .finally(() => this.inFlightWrites.delete(individual.id));
   }
 
   onAttStaticChange(individual: PersonAttendance, event: any) {
-    this.db.updatePersonAttendance(individual.id, { status: event.detail.value });
+    individual.status = event.detail.value;
+    this.inFlightWrites.add(individual.id);
+    this.db.updatePersonAttendance(individual.id, { status: individual.status })
+      .finally(() => this.inFlightWrites.delete(individual.id));
   }
 
   getAttendedPlayers(players: PersonAttendance[]): number {
@@ -1122,13 +1141,17 @@ export class AttendancePage implements OnInit, OnDestroy {
   toNeutral(player: PersonAttendance, slider: IonItemSliding) {
     slider.close();
     player.status = AttendanceStatus.Neutral;
-    this.db.updatePersonAttendance(player.id, { status: player.status });
+    this.inFlightWrites.add(player.id);
+    this.db.updatePersonAttendance(player.id, { status: player.status })
+      .finally(() => this.inFlightWrites.delete(player.id));
   }
 
   toLateExcused(player: PersonAttendance, slider: IonItemSliding) {
     slider.close();
     player.status = AttendanceStatus.LateExcused;
-    this.db.updatePersonAttendance(player.id, { status: player.status });
+    this.inFlightWrites.add(player.id);
+    this.db.updatePersonAttendance(player.id, { status: player.status })
+      .finally(() => this.inFlightWrites.delete(player.id));
   }
 
   async removeFromAttendance(player: PersonAttendance, slider: IonItemSliding) {
@@ -1207,7 +1230,9 @@ export class AttendancePage implements OnInit, OnDestroy {
         icon: 'remove-circle-outline',
         handler: () => {
           player.status = AttendanceStatus.Neutral;
-          this.db.updatePersonAttendance(player.id, { status: player.status });
+          this.inFlightWrites.add(player.id);
+          this.db.updatePersonAttendance(player.id, { status: player.status })
+            .finally(() => this.inFlightWrites.delete(player.id));
         },
       });
     }
@@ -1218,7 +1243,9 @@ export class AttendancePage implements OnInit, OnDestroy {
         icon: 'time-outline',
         handler: () => {
           player.status = AttendanceStatus.LateExcused;
-          this.db.updatePersonAttendance(player.id, { status: player.status });
+          this.inFlightWrites.add(player.id);
+          this.db.updatePersonAttendance(player.id, { status: player.status })
+            .finally(() => this.inFlightWrites.delete(player.id));
         },
       });
     }

@@ -13,6 +13,7 @@ import { PushService } from './services/push/push.service';
 import { TrackingEvent, TrackingService } from './services/tracking/tracking.service';
 import { LiveUpdateService } from './services/live-update/live-update.service';
 import { TeamsService } from './services/teams/teams.service';
+import { OfflineQueueService } from './services/offline-queue/offline-queue.service';
 
 @Component({
     selector: 'app-root',
@@ -39,6 +40,7 @@ export class AppComponent {
     private tracking: TrackingService,
     private liveUpdate: LiveUpdateService,
     private teams: TeamsService,
+    private offlineQueue: OfflineQueueService,
   ) {
     this.initializeApp();
     this.titleService.setTitle('Attendix');
@@ -79,6 +81,7 @@ export class AppComponent {
 
   async ngOnInit() {
     await this.storage.create();
+    void this.offlineQueue.init();
   }
 
   initializeApp() {

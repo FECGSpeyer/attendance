@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { Network } from '@capacitor/network';
 import dayjs from 'dayjs';
 import { AttendanceStatus } from '../../utilities/constants';
 import { Attendance, AttendanceType, Person, PersonAttendance } from '../../utilities/interfaces';
@@ -6,6 +7,7 @@ import { Utils } from '../../utilities/Utils';
 import { supabase, attendanceSelect } from '../base/supabase';
 import { pickPersonAttendanceFields } from '../../utilities/db-helpers';
 import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
+import { OfflineQueueService } from '../offline-queue/offline-queue.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +15,15 @@ import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
 export class AttendanceService {
 
   private tracking = inject(TrackingService);
+  private offlineQueue = inject(OfflineQueueService);
 
-  constructor() {}
+  constructor() {
+    // Register the actual Supabase write so OfflineQueueService can flush
+    // without importing AttendanceService (avoids circular dependency).
+    this.offlineQueue.registerFlushFn((id, payload, userId) =>
+      this.writePersonAttendanceToDb(id, payload, userId)
+    );
+  }
 
   getCurrentAttDate(): string {
     const attDate = localStorage.getItem('attDate');
@@ -419,6 +428,15 @@ export class AttendanceService {
   }
 
   async updatePersonAttendance(id: string, att: Partial<PersonAttendance>, userId?: string): Promise<void> {
+    const { connected } = await Network.getStatus();
+    if (!connected) {
+      await this.offlineQueue.enqueue(id, att, userId);
+      return;
+    }
+    await this.writePersonAttendanceToDb(id, att, userId);
+  }
+
+  private async writePersonAttendanceToDb(id: string, att: Partial<PersonAttendance>, userId?: string): Promise<void> {
     const dbFields = pickPersonAttendanceFields({
       ...att,
       changed_by: userId || null,

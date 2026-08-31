@@ -1,6 +1,8 @@
 import { Component, OnInit, effect } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { Network } from '@capacitor/network';
 import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular/lazy';
+import { Storage } from '@ionic/storage-angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { format, isSameDay, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
@@ -104,6 +106,7 @@ export class AttListPage implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private pushService: PushService,
+    private storage: Storage,
   ) {
     effect(async () => {
       this.db.tenant();
@@ -234,11 +237,27 @@ export class AttListPage implements OnInit {
   }
 
   async getAttendance(): Promise<void> {
+    const { connected } = await Network.getStatus();
+    const cacheKey = `offline_att_list_v1_${this.db.tenant()?.id}`;
+
+    if (!connected) {
+      const cached = await this.storage.get(cacheKey);
+      if (cached?.data) {
+        this.applyAttendances(cached.data);
+      }
+      return;
+    }
+
     const attendances: Attendance[] = (await this.db.getAttendance(false, true)).map((att: Attendance): Attendance => ({
         ...att,
         percentage: Utils.getPercentage(att.persons, this.db.tenant()?.shift_excused_as_present),
       }));
 
+    await this.storage.set(cacheKey, { tenantId: this.db.tenant()?.id, data: attendances, cachedAt: new Date().toISOString() });
+    this.applyAttendances(attendances);
+  }
+
+  private applyAttendances(attendances: Attendance[]): void {
     this.allAttendances = attendances;
 
     const filtered = this.filterTypeId === 'all' ? attendances : attendances.filter(att => att.type_id === this.filterTypeId);

@@ -13,6 +13,18 @@
     <ion-title>{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(filteredPlayers) }}/{{
       filteredPlayers.length }}</ion-title>
     }
+    @if (!isOnline) {
+    <div slot="end" style="margin-right: 4px; display: flex; align-items: center;">
+      <ion-chip color="warning" style="margin: 0; height: 28px; font-size: 12px; --padding-start: 8px; --padding-end: 8px;">
+        <ion-icon name="cloud-offline-outline" style="margin-right: 4px;"></ion-icon>
+        @if (offlineQueue.pendingCount() > 0) {
+          {{ offlineQueue.pendingCount() }} ausstehend
+        } @else {
+          Offline
+        }
+      </ion-chip>
+    </div>
+    }
     <ion-buttons slot="end">
       <ion-button id="attendance-filter-trigger">
         <ion-icon slot="icon-only" [color]="isFilterActive ? 'primary' : ''" name="filter"></ion-icon>
