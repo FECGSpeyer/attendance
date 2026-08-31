@@ -190,7 +190,7 @@ Deno.serve(async (req)=>{
     const getAttendanceText = (attendance: any)=>{
       return attendance.typeInfo ? " " + attendance.typeInfo : attendance.type === "vortrag" ? " (Vortrag)" : "";
     };
-    const suffix = "";
+    const suffix = isParents ? "\n(von Elternteil abgemeldet)" : "";
     const formattedDate = DD + '.' + MM + '.' + yyyy + getAttendanceText(attendanceData.attendance);
     const attendanceLink = `\n\n[Anwesenheit öffnen](https://attendix.de/open-attendance?id=${attendanceData.attendance_id}&tenantId=${attendanceData.attendance.tenant.id})`;
 
