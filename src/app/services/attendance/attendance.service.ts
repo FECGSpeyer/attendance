@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Network } from '@capacitor/network';
+import { Storage } from '@ionic/storage-angular';
 import dayjs from 'dayjs';
 import { AttendanceStatus } from '../../utilities/constants';
 import { Attendance, AttendanceType, Person, PersonAttendance } from '../../utilities/interfaces';
@@ -16,6 +17,7 @@ export class AttendanceService {
 
   private tracking = inject(TrackingService);
   private offlineQueue = inject(OfflineQueueService);
+  private storage = inject(Storage);
 
   constructor() {
     // Register the actual Supabase write so OfflineQueueService can flush
@@ -181,6 +183,15 @@ export class AttendanceService {
     id: number,
     opts: { context?: 'modal_open' | 'visibility_resume' } = {}
   ): Promise<Attendance> {
+    const cacheKey = `offline_att_detail_v1_${id}`;
+
+    const { connected } = await Network.getStatus();
+    if (!connected) {
+      const cached = await this.storage.get(cacheKey);
+      if (cached) { return cached as Attendance; }
+      throw new Error(`getAttendanceByIdRobust: offline and no cache for attendance ${id}`);
+    }
+
     const context = opts.context ?? 'modal_open';
     const startedAt = Date.now();
     const backoffs = [50, 150, 400, 1000];
@@ -244,7 +255,9 @@ export class AttendanceService {
           attendance_id: id,
           context,
         });
-        return this.safeModify(lastData, id);
+        const result = this.safeModify(lastData, id);
+        void this.storage.set(cacheKey, result);
+        return result;
       }
 
       if (attempt < maxAttempts) {
@@ -302,7 +315,9 @@ export class AttendanceService {
       attendance_id: id,
       context,
     });
-    return this.safeModify(combined, id);
+    const result = this.safeModify(combined, id);
+    void this.storage.set(cacheKey, result);
+    return result;
   }
 
   /**
