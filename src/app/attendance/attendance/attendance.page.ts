@@ -34,7 +34,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   public conductors: Person[] = [];
   public excused: Set<string> = new Set();
   public withExcuses: boolean;
-  public isOnline = true;
+  public isOnline = navigator.onLine;
   public attendance: Attendance;
   private sub: RealtimeChannel;
   private personAttSub: RealtimeChannel;
@@ -92,6 +92,11 @@ export class AttendancePage implements OnInit, OnDestroy {
       ? this.players
       : this.players.filter(p => this.statusFilter.has(p.status));
     return this.recalculateGroupHeaders(list);
+  }
+
+  private applyPlayerStatus(id: string, status: number): void {
+    const idx = this.players.findIndex(p => p.id === id);
+    if (idx >= 0) { this.players[idx] = { ...this.players[idx], status }; }
   }
 
   private recalculateGroupHeaders(players: PersonAttendance[]): PersonAttendance[] {
@@ -569,17 +574,18 @@ export class AttendancePage implements OnInit, OnDestroy {
       return;
     }
 
-    individual.status = status;
+    this.applyPlayerStatus(individual.id, status);
 
     this.inFlightWrites.add(individual.id);
-    this.db.updatePersonAttendance(individual.id, { status: individual.status })
+    this.db.updatePersonAttendance(individual.id, { status })
       .finally(() => this.inFlightWrites.delete(individual.id));
   }
 
   onAttStaticChange(individual: PersonAttendance, event: any) {
-    individual.status = event.detail.value;
+    const status = event.detail.value;
+    this.applyPlayerStatus(individual.id, status);
     this.inFlightWrites.add(individual.id);
-    this.db.updatePersonAttendance(individual.id, { status: individual.status })
+    this.db.updatePersonAttendance(individual.id, { status })
       .finally(() => this.inFlightWrites.delete(individual.id));
   }
 
@@ -1140,17 +1146,17 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   toNeutral(player: PersonAttendance, slider: IonItemSliding) {
     slider.close();
-    player.status = AttendanceStatus.Neutral;
+    this.applyPlayerStatus(player.id, AttendanceStatus.Neutral);
     this.inFlightWrites.add(player.id);
-    this.db.updatePersonAttendance(player.id, { status: player.status })
+    this.db.updatePersonAttendance(player.id, { status: AttendanceStatus.Neutral })
       .finally(() => this.inFlightWrites.delete(player.id));
   }
 
   toLateExcused(player: PersonAttendance, slider: IonItemSliding) {
     slider.close();
-    player.status = AttendanceStatus.LateExcused;
+    this.applyPlayerStatus(player.id, AttendanceStatus.LateExcused);
     this.inFlightWrites.add(player.id);
-    this.db.updatePersonAttendance(player.id, { status: player.status })
+    this.db.updatePersonAttendance(player.id, { status: AttendanceStatus.LateExcused })
       .finally(() => this.inFlightWrites.delete(player.id));
   }
 
@@ -1229,9 +1235,9 @@ export class AttendancePage implements OnInit, OnDestroy {
         text: 'Status neutral setzen',
         icon: 'remove-circle-outline',
         handler: () => {
-          player.status = AttendanceStatus.Neutral;
+          this.applyPlayerStatus(player.id, AttendanceStatus.Neutral);
           this.inFlightWrites.add(player.id);
-          this.db.updatePersonAttendance(player.id, { status: player.status })
+          this.db.updatePersonAttendance(player.id, { status: AttendanceStatus.Neutral })
             .finally(() => this.inFlightWrites.delete(player.id));
         },
       });
@@ -1242,9 +1248,9 @@ export class AttendancePage implements OnInit, OnDestroy {
         text: 'Verspätet entschuldigt',
         icon: 'time-outline',
         handler: () => {
-          player.status = AttendanceStatus.LateExcused;
+          this.applyPlayerStatus(player.id, AttendanceStatus.LateExcused);
           this.inFlightWrites.add(player.id);
-          this.db.updatePersonAttendance(player.id, { status: player.status })
+          this.db.updatePersonAttendance(player.id, { status: AttendanceStatus.LateExcused })
             .finally(() => this.inFlightWrites.delete(player.id));
         },
       });
