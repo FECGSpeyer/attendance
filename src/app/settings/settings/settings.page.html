@@ -89,31 +89,41 @@
 
   <!-- ==================== MEINE STAMMDATEN CARD ==================== -->
   @if (userData) {
-  <ion-card id="master-data-button" button="true" style="margin-top: 16px;">
-    <ion-card-content style="display: flex; flex-direction: column; align-items: center; padding: 24px 16px;">
-      <ion-avatar style="width: 72px; height: 72px; margin-bottom: 12px;">
-        <img [src]="userData.img" alt="Profilbild" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
+  <div class="hero-card" id="master-data-button" style="cursor: pointer;">
+    <div class="hero-content">
+      <ion-avatar class="hero-avatar">
+        <img [src]="userData.img || 'assets/icon/avatar-placeholder.svg'" alt="Profilbild"
+          (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
       </ion-avatar>
-      <strong style="font-size: 1.1rem;">{{ userData.firstName }} {{ userData.lastName }}</strong>
-      <div style="margin-top: 8px; color: var(--ion-color-medium); text-align: center; font-size: 0.9rem;">
-        @if (userData.birthday) {
-        <p style="margin: 2px 0;"><ion-icon name="calendar-outline"
-            style="vertical-align: middle; margin-right: 4px;"></ion-icon>{{ userData.birthday | date:'dd.MM.yyyy':'UTC' }}
-        </p>
-        }
-        @if (userData.phone) {
-        <p style="margin: 2px 0;"><ion-icon name="call-outline"
-            style="vertical-align: middle; margin-right: 4px;"></ion-icon>{{ userData.phone }}</p>
-        }
-        @for (field of getVisibleExtraFields(); track field.id) {
-          <p style="margin: 2px 0;"><ion-icon name="information-circle-outline"
-              style="vertical-align: middle; margin-right: 4px;"></ion-icon>{{ field.name }}: {{ getExtraFieldDisplayValue(field) }}
-          </p>
-        }
+      <div class="hero-text">
+        <h1>{{ userData.firstName }} {{ userData.lastName }}</h1>
+        <p class="hero-role">{{ getRoleName() }}</p>
       </div>
-      <p style="margin: 8px 0 0; color: var(--ion-color-primary); font-size: 0.85rem;">Stammdaten bearbeiten</p>
-    </ion-card-content>
-  </ion-card>
+      <ion-icon name="chevron-forward-outline" class="hero-chevron"></ion-icon>
+    </div>
+    @if (userData.birthday || userData.phone || getVisibleExtraFields().length > 0) {
+    <div class="hero-stats">
+      @if (userData.birthday) {
+        <div class="stat-chip">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <span>{{ userData.birthday | date:'dd.MM.yyyy':'UTC' }}</span>
+        </div>
+      }
+      @if (userData.phone) {
+        <div class="stat-chip">
+          <ion-icon name="call-outline"></ion-icon>
+          <span>{{ userData.phone }}</span>
+        </div>
+      }
+      @for (field of getVisibleExtraFields(); track field.id) {
+        <div class="stat-chip">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <span>{{ field.name }}: {{ getExtraFieldDisplayValue(field) }}</span>
+        </div>
+      }
+    </div>
+    }
+  </div>
   }
 
   <!-- Master Data Modal -->

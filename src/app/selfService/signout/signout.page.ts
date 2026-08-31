@@ -950,6 +950,46 @@ export class SignoutPage implements OnInit {
     this.absenceUntil = '';
   }
 
+  resetAbsenceRange(): void {
+    this.absenceFrom = '';
+    this.absenceUntil = '';
+  }
+
+  onAbsenceDatePick(event: CustomEvent): void {
+    const picked: string = event.detail.value;
+    if (!picked) return;
+    const date = picked.substring(0, 10);
+    if (!this.absenceFrom || (this.absenceFrom && this.absenceUntil)) {
+      // First tap: set start, clear end
+      this.absenceFrom = date;
+      this.absenceUntil = '';
+    } else {
+      // Second tap: set end (swap if before start)
+      if (date < this.absenceFrom) {
+        this.absenceUntil = this.absenceFrom;
+        this.absenceFrom = date;
+      } else {
+        this.absenceUntil = date;
+      }
+    }
+  }
+
+  get absenceHighlightedDates(): ((dateString: string) => { textColor: string; backgroundColor: string }) | undefined {
+    if (!this.absenceFrom || !this.absenceUntil) return undefined;
+    const from = this.absenceFrom;
+    const until = this.absenceUntil;
+    return (dateString: string) => {
+      const d = dateString.substring(0, 10);
+      if (d === from || d === until) {
+        return { textColor: '#ffffff', backgroundColor: 'var(--ion-color-primary)' };
+      }
+      if (d > from && d < until) {
+        return { textColor: 'var(--ion-color-primary)', backgroundColor: 'rgba(var(--ion-color-primary-rgb), 0.15)' };
+      }
+      return undefined;
+    };
+  }
+
   async confirmAbsence(): Promise<void> {
     if (!this.absenceReason || !this.absenceFrom || !this.absenceUntil) {
       Utils.showToast('Bitte fülle alle Pflichtfelder aus', 'danger');
@@ -1004,7 +1044,7 @@ export class SignoutPage implements OnInit {
   async deleteAbsence(absence: PlayerAbsence): Promise<void> {
     const alert = await this.alertController.create({
       header: 'Abwesenheit löschen',
-      message: 'Soll die Abwesenheit gelöscht werden? Bereits entschuldigte Termine in diesem Zeitraum werden auf "Neutral" zurückgesetzt.',
+      message: 'Soll die Abwesenheit gelöscht werden? Bereits entschuldigte Termine in diesem Zeitraum werden auf den Standardstatus des jeweiligen Termintyps zurückgesetzt.',
       buttons: [
         { text: 'Abbrechen', role: 'cancel' },
         {

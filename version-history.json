@@ -1,10 +1,21 @@
     {
       "versions": [
         {
+          "version": "4.7.2",
+          "date": "31.8.2026",
+          "changes": [
+            "🎨 Profilkarte auf Einstellungs-, Termine- und Übersichtsseite im neuen Hero-Design.",
+            "📅 Abwesenheit melden: Datumsauswahl als Range-Picker mit Hervorhebung des gewählten Zeitraums.",
+            "⚙️ Abwesenheit löschen: Rücksetztext nennt jetzt den Standardstatus des Termintyps.",
+            "🗑️ Termine löschen: Eintrag wird sofort aus der Liste entfernt.",
+            "🔒 Hinweis zur Pausieren-Funktion nur noch für berechtigte Personen sichtbar."
+          ]
+        },
+        {
           "version": "4.7.1",
           "date": "31.8.2026",
           "changes": [
-            "⚡ Anwesenheitsliste: Wischaktionen reduziert – nur noch Notiz direkt, Rest per „Mehr"-Button.",
+            "⚡ Anwesenheitsliste: Wischaktionen reduziert - nur noch Notiz direkt, Rest per 'Mehr'-Button.",
             "🔔 Erinnerung einzeln senden: Direkt aus dem Mehr-Menü einer Person.",
             "📜 Ablaufplan: Export- und Sendeoptionen in einem Teilen-Menü gebündelt.",
             "📍 Öffentlicher Ablaufplan: Scrollt automatisch zum aktuellen Programmpunkt.",

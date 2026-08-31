@@ -275,6 +275,11 @@ export class AttListPage implements OnInit {
         handler: async (): Promise<void> => {
           slider.close();
           await this.db.removeAttendance(id);
+          this.attendances = this.attendances.filter(a => a.id !== id);
+          this.oldAttendances = this.oldAttendances.filter(a => a.id !== id);
+          this.viewerAttendances = this.viewerAttendances.filter(a => a.id !== id);
+          this.allAttendances = this.allAttendances.filter(a => a.id !== id);
+          if (this.currentAttendance?.id === id) { this.currentAttendance = null; }
         }
       }]
     });

@@ -693,6 +693,22 @@ export class SettingsPage implements OnInit, OnDestroy {
     return this.db.tenant()?.additional_fields?.filter(f => f.visibleToPlayers) || [];
   }
 
+  getRoleName(): string {
+    const role = this.db.tenantUser()?.role;
+    const map: Partial<Record<Role, string>> = {
+      [Role.ADMIN]: 'Administrator',
+      [Role.RESPONSIBLE]: 'Verantwortlicher',
+      [Role.HELPER]: 'Helfer',
+      [Role.VOICE_LEADER]: 'Stimmführer',
+      [Role.VOICE_LEADER_HELPER]: 'Stimmführer-Helfer',
+      [Role.PLAYER]: 'Mitglied',
+      [Role.VIEWER]: 'Beobachter',
+      [Role.PARENT]: 'Elternteil',
+      [Role.APPLICANT]: 'Bewerber',
+    };
+    return map[role] ?? '';
+  }
+
   get filteredChurches(): Church[] {
     const term = this.churchSearch.trim().toLowerCase();
     if (!term) { return this.churches; }

@@ -80,17 +80,21 @@
 
   <!-- Statistics Card -->
   @if (!db.crossTenantAttendancesLoading() && pastAttendances.length > 0) {
-    <ion-card>
-      <ion-card-content>
-        <h1 class="title">Gesamtübersicht</h1>
-        Du warst bisher an <ion-label [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'">{{ perc }}%</ion-label> der Termine anwesend.
+    <div class="hero-card">
+      <div class="hero-stats">
+        <div class="stat-chip" [class.stat-good]="perc >= 75" [class.stat-warn]="perc >= 50 && perc < 75" [class.stat-bad]="perc < 50">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+          <span>{{ perc }}% Anwesenheit</span>
+        </div>
         @if (lateCount && lateCount !== 0) {
-          <br>
-            Davon bist du <ion-label color="tertiary">{{ lateCount }}x</ion-label> unentschuldigt zu spät gekommen.
-          }
-        </ion-card-content>
-      </ion-card>
-    }
+          <div class="stat-chip stat-late">
+            <ion-icon name="time-outline"></ion-icon>
+            <span>{{ lateCount }}× zu spät</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
 
     <!-- Excuse Modal -->
     <app-excuse-reason-picker #excusePicker [absenceReasons]="absenceReasons" [lateReasons]="lateReasons"
