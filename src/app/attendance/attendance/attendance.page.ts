@@ -779,6 +779,41 @@ export class AttendancePage implements OnInit, OnDestroy {
     }, Utils.getPlanningTitle(type, this.attendance.typeInfo));
   }
 
+  async sharePlan() {
+    const sheet = await this.actionSheetController.create({
+      header: 'Ablaufplan teilen',
+      buttons: [
+        {
+          text: 'Exportieren (PDF)',
+          icon: 'document-outline',
+          handler: () => this.exportPlan(),
+        },
+        {
+          text: 'Exportieren (PDF 2x A5)',
+          icon: 'documents-outline',
+          handler: () => this.exportPlan(true),
+        },
+        {
+          text: 'Per Telegram senden (PDF)',
+          icon: 'paper-plane-outline',
+          handler: () => this.send(false),
+        },
+        {
+          text: 'Per Telegram senden (PDF 2x A5)',
+          icon: 'paper-plane-outline',
+          handler: () => this.send(false, true),
+        },
+        {
+          text: 'Per Telegram senden (Bild)',
+          icon: 'image-outline',
+          handler: () => this.send(true),
+        },
+        { text: 'Abbrechen', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+  }
+
   async send(asImage: boolean = false, sideBySide: boolean = false) {
     const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
     const planningTitle = Utils.getPlanningTitle(type, this.attendance.typeInfo);
@@ -1121,6 +1156,70 @@ export class AttendancePage implements OnInit, OnDestroy {
     await alert.present();
   }
 
+  async openMoreSheet(player: PersonAttendance, slider: IonItemSliding) {
+    slider.close();
+
+    const buttons: any[] = [];
+
+    if (player.status !== 0) {
+      buttons.push({
+        text: 'Status neutral setzen',
+        icon: 'remove-circle-outline',
+        handler: () => {
+          player.status = AttendanceStatus.Neutral;
+          this.db.updatePersonAttendance(player.id, { status: player.status });
+        },
+      });
+    }
+
+    if (this.type?.available_statuses.includes(3) && this.attendanceViewMode === AttendanceViewMode.CLICK) {
+      buttons.push({
+        text: 'Verspätet entschuldigt',
+        icon: 'time-outline',
+        handler: () => {
+          player.status = AttendanceStatus.LateExcused;
+          this.db.updatePersonAttendance(player.id, { status: player.status });
+        },
+      });
+    }
+
+    if (!this.isHelper) {
+      buttons.push({
+        text: 'Wer hat geändert?',
+        icon: 'information-circle-outline',
+        handler: async () => {
+          await this.getModifierInfo(player, slider);
+        },
+      });
+
+      buttons.push({
+        text: 'Person entfernen',
+        role: 'destructive',
+        icon: 'trash-outline',
+        handler: async () => {
+          await this.removeFromAttendance(player, slider);
+        },
+      });
+    }
+
+    buttons.push({
+      text: 'Erinnerung senden',
+      icon: 'notifications-outline',
+      handler: async () => {
+        await this.sendAdHocReminder(player.person?.appId);
+      },
+    });
+
+    buttons.push({ text: 'Abbrechen', role: 'cancel' });
+
+    const sheet = await this.actionSheetController.create({
+      header: `${player.firstName} ${player.lastName}`,
+      buttons,
+    });
+
+    await sheet.present();
+  }
+
   async exportToExcel() {
     await Utils.exportAttendanceToExcel(
       this.attendance,
@@ -1392,7 +1491,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     await modal.present();
   }
 
-  async sendAdHocReminder(): Promise<void> {
+  async sendAdHocReminder(playerAppId?: string): Promise<void> {
     const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === this.attendance.type_id);
     const typeName = attType?.name || 'Termin';
     const dateStr = dayjs(this.attendance.date).format('DD.MM.YYYY');
@@ -1437,6 +1536,7 @@ export class AttendancePage implements OnInit, OnDestroy {
           tenantId: this.attendance.tenantId,
           title: data.title || undefined,
           message: data.message || undefined,
+          playerAppId: playerAppId || undefined,
         },
       });
       if (error) {

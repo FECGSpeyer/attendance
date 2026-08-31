@@ -278,9 +278,16 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
     let t = dayjs(entry.date).hour(startBase.hour()).minute(startBase.minute()).second(0);
     for (let i = 0; i < entry.fields.length; i++) {
       t = t.add(Number(entry.fields[i].time) || 0, 'minute');
-      if (now.isBefore(t)) { entry.activeFieldIndex = i; return; }
+      if (now.isBefore(t)) { entry.activeFieldIndex = i; this.scrollToActive(entry.id); return; }
     }
     entry.activeFieldIndex = entry.fields.length - 1;
+    this.scrollToActive(entry.id);
+  }
+
+  private scrollToActive(entryId: string | number) {
+    setTimeout(() => {
+      document.getElementById(`active-slot-${entryId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
   }
 
   async subscribeCalendar() {

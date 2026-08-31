@@ -1,6 +1,17 @@
     {
       "versions": [
         {
+          "version": "4.7.1",
+          "date": "31.8.2026",
+          "changes": [
+            "⚡ Anwesenheitsliste: Wischaktionen reduziert – nur noch Notiz direkt, Rest per „Mehr"-Button.",
+            "🔔 Erinnerung einzeln senden: Direkt aus dem Mehr-Menü einer Person.",
+            "📜 Ablaufplan: Export- und Sendeoptionen in einem Teilen-Menü gebündelt.",
+            "📍 Öffentlicher Ablaufplan: Scrollt automatisch zum aktuellen Programmpunkt.",
+            "🔔 Update-Hinweis nur noch bei Major- oder Minor-Updates als Dialog."
+          ]
+        },
+        {
           "version": "4.7.0",
           "date": "28.8.2026",
           "changes": [

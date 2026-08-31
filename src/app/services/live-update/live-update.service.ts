@@ -137,7 +137,12 @@ export class LiveUpdateService {
         console.warn('[LiveUpdate] reload failed', e);
       }
     });
-    await this.promptReload();
+
+    const newVersion = this.bundleVersion(manifest.bundleId);
+    const currentVersion = isOtaActive ? this.bundleVersion(current.bundleId) : nativeVersion;
+    if (this.isMajorOrMinorUpdate(currentVersion, newVersion)) {
+      await this.promptReload();
+    }
   }
 
   private async fetchManifest(): Promise<OtaManifest | null> {
@@ -181,6 +186,13 @@ export class LiveUpdateService {
   /** True when `current` is >= `min` (equal is fine). */
   private satisfiesMin(current: string, min: string): boolean {
     return this.compareVersions(current, min) >= 0;
+  }
+
+  /** True when the new version bumps major or minor relative to current. */
+  private isMajorOrMinorUpdate(current: string, next: string): boolean {
+    const c = current.split('.').map(s => parseInt(s, 10) || 0);
+    const n = next.split('.').map(s => parseInt(s, 10) || 0);
+    return (n[0] ?? 0) > (c[0] ?? 0) || (n[0] ?? 0) === (c[0] ?? 0) && (n[1] ?? 0) > (c[1] ?? 0);
   }
 
   private async promptReload(): Promise<void> {

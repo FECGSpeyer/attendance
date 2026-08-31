@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { attendanceId, tenantId, title, message } = await req.json();
+    const { attendanceId, tenantId, title, message, playerAppId } = await req.json();
 
     if (!attendanceId || !tenantId) {
       return new Response(JSON.stringify({ error: 'Missing attendanceId or tenantId' }), {
@@ -122,6 +122,11 @@ Deno.serve(async (req) => {
         userIds = userIds.filter(id => !archivedAppIds.has(id));
         console.log(`[send-ad-hoc-reminder] tenant=${tenantId} excluded ${archivedAppIds.size} archived player(s)`);
       }
+    }
+
+    // If targeting a single player, restrict to that one user only.
+    if (playerAppId) {
+      userIds = userIds.filter(id => id === playerAppId);
     }
 
     // Fetch notification configs
@@ -267,6 +272,7 @@ Deno.serve(async (req) => {
           const person = row.person;
           if (!person) continue;
           if (person.left) continue; // skip archived people
+          if (playerAppId && person.appId !== playerAppId) continue;
           const email = (person.email || '').trim();
           if (!email) continue;
           if (mainGroupId !== null && person.instrument === mainGroupId) continue;

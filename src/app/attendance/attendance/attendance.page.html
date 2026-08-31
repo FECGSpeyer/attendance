@@ -430,20 +430,9 @@
             <ion-item button (click)="editPlan()" detail="false">
               <ion-label color="primary">Ablaufplan bearbeiten</ion-label>
             </ion-item>
-            <ion-item button (click)="exportPlan()" detail="false">
-              <ion-label color="primary">Ablaufplan exportieren</ion-label>
-            </ion-item>
-            <ion-item button (click)="exportPlan(true)" detail="false">
-              <ion-label color="primary">Ablaufplan exportieren (2x A5)</ion-label>
-            </ion-item>
-            <ion-item button (click)="send(false)" detail="false">
-              <ion-label color="primary">Per Telegram senden (PDF)</ion-label>
-            </ion-item>
-            <ion-item button (click)="send(false, true)" detail="false">
-              <ion-label color="primary">Per Telegram senden (PDF 2x A5)</ion-label>
-            </ion-item>
-            <ion-item button (click)="send(true)" detail="false">
-              <ion-label color="primary">Per Telegram senden (Bild)</ion-label>
+            <ion-item button (click)="sharePlan()" detail="false">
+              <ion-icon name="share-outline" slot="start" color="primary"></ion-icon>
+              <ion-label color="primary">Teilen</ion-label>
             </ion-item>
           </div>
           }
@@ -548,26 +537,11 @@
         </ion-item>
         }
         <ion-item-options (ionSwipe)="addNote(player, slider)">
-          @if (!isHelper) {
-          <ion-item-option color="danger" (click)="removeFromAttendance(player, slider)">
-            <ion-icon name="trash-outline"></ion-icon>
-          </ion-item-option>
-          <ion-item-option expandable color="primary" (click)="getModifierInfo(player, slider)">
-            <ion-icon name="information-outline"></ion-icon>
-          </ion-item-option>
-          }
-          @if (player.status !== 0) {
-          <ion-item-option expandable color="medium" (click)="toNeutral(player, slider)">
-            N
-          </ion-item-option>
-          }
-          @if (type?.available_statuses.includes(3) && attendanceViewMode === AttendanceViewMode.CLICK) {
-          <ion-item-option color="rosa" expandable (click)="toLateExcused(player, slider)">
-            LE
-          </ion-item-option>
-          }
           <ion-item-option expandable color="warning" (click)="addNote(player, slider)">
             <ion-icon name="pencil"></ion-icon>
+          </ion-item-option>
+          <ion-item-option color="medium" (click)="openMoreSheet(player, slider)">
+            <ion-icon name="ellipsis-horizontal"></ion-icon>
           </ion-item-option>
         </ion-item-options>
       </ion-item-sliding>

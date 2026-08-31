@@ -87,6 +87,7 @@
                 </ion-item>
                 @for (field of entry.fields; track trackByField($index, field); let fi = $index) {
                   <ion-item
+                    [id]="entry.liveMode && fi === entry.activeFieldIndex ? 'active-slot-' + entry.id : null"
                     [class.active-slot]="entry.liveMode && fi === entry.activeFieldIndex"
                     [class.done-slot]="entry.liveMode && fi < entry.activeFieldIndex">
                     <ion-label [class.note-field]="field.id.includes('noteFld')">
