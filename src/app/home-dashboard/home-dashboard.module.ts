@@ -13,6 +13,7 @@ import { CriticalPersonsCardComponent } from './components/critical-persons-card
 import { CurrentSongsCardComponent } from './components/current-songs-card/current-songs-card.component';
 import { PersonPageModule } from '../people/person/person.module';
 import { AttendancePageModule } from '../attendance/attendance/attendance.module';
+import { NotificationBellComponent } from '../shared/notification-bell/notification-bell.component';
 
 @NgModule({
   imports: [
@@ -22,6 +23,7 @@ import { AttendancePageModule } from '../attendance/attendance/attendance.module
     HomeDashboardPageRoutingModule,
     PersonPageModule,
     AttendancePageModule,
+    NotificationBellComponent,
   ],
   declarations: [
     HomeDashboardPage,
