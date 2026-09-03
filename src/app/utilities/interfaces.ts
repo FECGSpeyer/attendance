@@ -387,6 +387,7 @@ export interface Song {
   files?: SongFile[];
   difficulty?: number;
   category?: string;
+  category_ids?: string[];
   additional_fields?: { [key: string]: any };
 }
 

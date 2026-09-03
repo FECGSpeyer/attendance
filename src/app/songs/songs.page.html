@@ -82,19 +82,6 @@
     </ion-toolbar>
   </ion-header>
 
-  @if (db.songCategories().length > 0) {
-    <ion-segment [scrollable]="true" mode="md" [(ngModel)]="selectedCategory" (ionChange)="onCategoryChanged()">
-      <ion-segment-button value="">
-        <ion-label>Alle</ion-label>
-      </ion-segment-button>
-      @for (category of db.songCategories(); track category.id) {
-        <ion-segment-button [value]="category.id">
-          <ion-label>{{ category.name }}</ion-label>
-        </ion-segment-button>
-      }
-    </ion-segment>
-  }
-
   <div class="flex">
     <ion-searchbar (ionInput)="search($event)" placeholder="Werk suchen..."></ion-searchbar>
     <ion-button id="filter-trigger-songs" fill="none">
@@ -136,6 +123,18 @@
             <ion-icon slot="start" name="person" size="small"></ion-icon>
             <ion-toggle [(ngModel)]="inclSolo" (ionChange)="onFilterChanged()">Solo</ion-toggle>
           </ion-item>
+
+          @if (db.songCategories().length > 0) {
+            <ion-item lines="none">
+              <ion-icon slot="start" name="pricetag-outline" size="small"></ion-icon>
+              <ion-select slot="end" (ionChange)="onFilterChanged()" multiple="true"
+                [(ngModel)]="selectedCategories">
+                @for (category of db.songCategories(); track category.id) {
+                  <ion-select-option [value]="category.id">{{ category.name }}</ion-select-option>
+                }
+              </ion-select>
+            </ion-item>
+          }
 
           <ion-item lines="none">
             <ion-icon slot="start" name="musical-notes" size="small"></ion-icon>
@@ -200,7 +199,7 @@
     </ion-popover>
   </div>
   <ion-list [inset]="true">
-    @if (selectedCategory === '') {
+    @if (selectedCategories.length === 0) {
       <ion-item-group>
         @if (currentSongs?.length > 0) {
           <ion-item lines="none" (click)="isCurrentSongsModalOpen = true" button>

@@ -204,6 +204,7 @@ export class SongService {
       difficulty: song.difficulty,
       instrument_ids: [],
       category: null,
+      category_ids: [],
     };
 
     const { data, error: insertError } = await supabase

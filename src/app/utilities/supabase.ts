@@ -1053,6 +1053,7 @@ export type Database = {
       songs: {
         Row: {
           category: string | null
+          category_ids: string[] | null
           created_at: string | null
           difficulty: number | null
           files: Json[] | null
@@ -1071,6 +1072,7 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          category_ids?: string[] | null
           created_at?: string | null
           difficulty?: number | null
           files?: Json[] | null
@@ -1089,6 +1091,7 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          category_ids?: string[] | null
           created_at?: string | null
           difficulty?: number | null
           files?: Json[] | null

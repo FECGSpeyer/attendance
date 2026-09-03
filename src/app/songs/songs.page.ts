@@ -47,7 +47,7 @@ export class SongsPage implements OnInit {
   public isCurrentSongsModalOpen = false;
   public isGroupDirectoryModalOpen = false;
   public tenantData?: Tenant;
-  public selectedCategory = '';
+  public selectedCategories: string[] = [];
   public filterOpts: { [key: string]: any } = {};
   public fieldTypes = FieldType;
   private sub: RealtimeChannel;
@@ -82,7 +82,7 @@ export class SongsPage implements OnInit {
     this.inclChoir = await this.storage.get(`inclChoirSongs${this.tenantData?.id ?? this.db.tenant().id}`) === 'true';
     this.inclSolo = await this.storage.get(`inclSoloSongs${this.tenantData?.id ?? this.db.tenant().id}`) === 'true';
     this.instrumentsToFilter = JSON.parse(await this.storage.get(`instrumentsToFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`) || '[]');
-    this.selectedCategory = await this.storage.get(`selectedCategorySongs${this.tenantData?.id ?? this.db.tenant().id}`) || '';
+    this.selectedCategories = JSON.parse(await this.storage.get(`selectedCategoriesSongs${this.tenantData?.id ?? this.db.tenant().id}`) || '[]');
     this.filterOpts = JSON.parse(await this.storage.get(`filterOptsSongs${this.tenantData?.id ?? this.db.tenant().id}`) || '{}');
     this.currentSongs = await this.db.getCurrentSongs(this.tenantData?.id ?? this.db.tenant().id);
 
@@ -380,6 +380,7 @@ export class SongsPage implements OnInit {
     await this.storage.set(`instrumentsToFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`, JSON.stringify(this.instrumentsToFilter));
     await this.storage.set(`difficultyFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`, this.difficulty);
     await this.storage.set(`filterOptsSongs${this.tenantData?.id ?? this.db.tenant().id}`, JSON.stringify(this.filterOpts));
+    await this.storage.set(`selectedCategoriesSongs${this.tenantData?.id ?? this.db.tenant().id}`, JSON.stringify(this.selectedCategories));
 
     this.searchTerm = '';
     this.initializeItems();
@@ -390,7 +391,8 @@ export class SongsPage implements OnInit {
   filter() {
     this.songsFiltered = this.songsFiltered.filter((song: Song) => {
       // Filter by category if selected
-      if (this.selectedCategory && song.category !== this.selectedCategory) {
+      if (this.selectedCategories.length > 0 &&
+          !this.selectedCategories.some(id => song.category_ids?.includes(id))) {
         return false;
       }
 
@@ -470,13 +472,6 @@ export class SongsPage implements OnInit {
 
   async onViewChanged() {
     await this.storage.set(`viewOptsSongs${this.tenantData?.id ?? this.db.tenant().id}`, JSON.stringify(this.viewOpts));
-  }
-
-  async onCategoryChanged() {
-    await this.storage.set(`selectedCategorySongs${this.tenantData?.id ?? this.db.tenant().id}`, this.selectedCategory);
-    this.searchTerm = '';
-    this.initializeItems();
-    this.filter();
   }
 
   initializeItems(): void {

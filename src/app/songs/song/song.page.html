@@ -88,11 +88,10 @@
 
       @if (!readOnly) {
       <ion-item>
-        <ion-select (ionChange)="update()" interface="popover" label="Kategorie" [(ngModel)]="song.category">
-          <ion-select-option [value]="null">Keine Kategorie</ion-select-option>
+        <ion-select (ionDismiss)="update()" interface="modal" label="Kategorien"
+          multiple="true" [(ngModel)]="song.category_ids">
           @for (category of db.songCategories(); track category) {
-          <ion-select-option [value]="category.id">{{ category.name
-            }}</ion-select-option>
+          <ion-select-option [value]="category.id">{{ category.name }}</ion-select-option>
           }
         </ion-select>
       </ion-item>
@@ -100,12 +99,14 @@
     </ion-item-group>
     }
 
-    @if (readOnly && song.category) {
+    @if (readOnly && song.category_ids?.length) {
     <ion-list-header>
-      <ion-label>Kategorie</ion-label>
+      <ion-label>Kategorien</ion-label>
     </ion-list-header>
     <ion-item-group>
-      <ion-chip color="secondary">{{ getCategoryName(song.category) }}</ion-chip>
+      @for (catId of song.category_ids; track catId) {
+      <ion-chip color="secondary">{{ getCategoryName(catId) }}</ion-chip>
+      }
     </ion-item-group>
     }
 
