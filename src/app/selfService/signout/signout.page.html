@@ -256,7 +256,7 @@
         <ion-list>
           @if (currentAttendance) {
           <ion-item button (click)="presentActionSheetForChoice(currentAttendance)" color="light"
-            [class.is-member]="currentAttendance.isMember || !showAllAttendances">
+            [class.not-member]="showAllAttendances && !currentAttendance.isMember">
             <ion-label>
               <h2>{{ getReadableDate(currentAttendance.date, currentAttendance.typeId) }}</h2>
               <h3 [style.fontWeight]="currentAttendance.highlight ? 'bold' : 'normal'">{{ currentAttendance.title }}
@@ -305,7 +305,7 @@
         <ion-list>
           @for (att of actualAttendances; track att.id) {
           <ion-item button (click)="presentActionSheetForChoice(att)"
-            [class.is-member]="att.isMember || !showAllAttendances">
+            [class.not-member]="showAllAttendances && !att.isMember">
             <ion-label>
               <h2>{{ getReadableDate(att.date, att.typeId) }}</h2>
               <h3 [style.fontWeight]="att.highlight ? 'bold' : 'normal'">{{ att.title }}</h3>

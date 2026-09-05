@@ -107,8 +107,8 @@
     }
 }
 
-.is-member {
-    border-left: 3px solid var(--ion-color-primary);
+.not-member {
+    border-left: 3px solid var(--ion-color-danger);
 }
 
 .all-attendances-info-text {
