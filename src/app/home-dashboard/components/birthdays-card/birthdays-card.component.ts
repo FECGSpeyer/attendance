@@ -44,7 +44,7 @@ export class BirthdaysCardComponent {
     this.loading = true;
     try {
       const players: Player[] = await this.db.getPlayers(true);
-      const today = dayjs();
+      const today = dayjs().startOf('day');
       const WINDOW = 14;
 
       this.entries = players
