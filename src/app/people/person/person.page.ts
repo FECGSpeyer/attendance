@@ -404,6 +404,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   onInstrumentChange(byUser = true) {
     if (byUser) {
       this.onChange();
+      this.player.isLeader = false;
     }
     this.teachers = this.allTeachers.filter((t: Teacher) => t.instruments.includes(this.player.instrument));
     if (this.db.groups().find((i: Group) => i.id === this.player.instrument).maingroup) {
