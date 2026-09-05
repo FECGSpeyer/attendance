@@ -53,6 +53,12 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Wird benötigt um ein Passbild aufzunehmen.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Wird benötigt um ein Passbild aus der Fotobibliothek auszuwählen.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Wird benötigt um Fotos zu speichern.</string>
 	<key>CapawesomeLiveUpdateDefaultChannel</key>
 	<string>production</string>
 </dict>
