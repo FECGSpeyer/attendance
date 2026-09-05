@@ -220,7 +220,8 @@ export class HistoryPage implements OnInit {
     for (const songId of this.selectedSongs) {
       historyEntries.push({
         ...this.historyEntry,
-        songId
+        songId,
+        visible: true,
       });
     }
 

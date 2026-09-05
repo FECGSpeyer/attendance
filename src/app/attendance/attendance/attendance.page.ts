@@ -965,6 +965,7 @@ export class AttendancePage implements OnInit, OnDestroy {
         tenantId: this.db.tenant().id,
         attendance_id: this.attendance.id,
         person_id: Boolean(this.historyEntry.otherConductor) ? null : this.historyEntry.person_id,
+        visible: true,
       });
     }
 
