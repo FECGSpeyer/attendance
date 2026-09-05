@@ -1286,6 +1286,8 @@ export type Database = {
           registration_fields: string[] | null
           seasonStart: string | null
           shift_excused_as_present: boolean
+          show_all_attendances: boolean | null
+          show_all_attendances_info_text: string | null
           shortName: string | null
           showHolidays: boolean | null
           showMembersList: boolean | null
@@ -1315,6 +1317,8 @@ export type Database = {
           registration_fields?: string[] | null
           seasonStart?: string | null
           shift_excused_as_present?: boolean
+          show_all_attendances?: boolean | null
+          show_all_attendances_info_text?: string | null
           shortName?: string | null
           showHolidays?: boolean | null
           showMembersList?: boolean | null
@@ -1344,6 +1348,8 @@ export type Database = {
           registration_fields?: string[] | null
           seasonStart?: string | null
           shift_excused_as_present?: boolean
+          show_all_attendances?: boolean | null
+          show_all_attendances_info_text?: string | null
           shortName?: string | null
           showHolidays?: boolean | null
           showMembersList?: boolean | null

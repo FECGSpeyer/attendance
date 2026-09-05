@@ -163,3 +163,5 @@ export const DEFAULT_LATE_REASONS = [
 
 export const SUPER_DEVELOPER_EMAIL = 'developer@attendix.de';
 
+export const DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT = 'Du bist bei diesem Termin nicht dabei.';
+

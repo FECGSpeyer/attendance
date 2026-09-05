@@ -10,7 +10,7 @@ import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
 import { TelegramService } from 'src/app/services/telegram/telegram.service';
-import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, PlayerHistoryType, Role } from 'src/app/utilities/constants';
+import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Attendance, PersonAttendance, Player, PlayerAbsence, PlayerHistoryEntry, Song, Tenant, History, SongFile, AttendanceType, Plan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
@@ -56,6 +56,8 @@ export class SignoutPage implements OnInit {
   public absenceUntil = '';
   public canPlannedAbsence = false;
   public playerAbsences: PlayerAbsence[] = [];
+  public showAllAttendances = false;
+  public showAllAttendancesInfoText = '';
 
   constructor(
     public db: DbService,
@@ -114,6 +116,9 @@ export class SignoutPage implements OnInit {
     this.name = this.db.tenant().longName;
     this.tenants = this.db.tenants();
     this.tenantId = this.db.tenant().id;
+    this.showAllAttendances = this.db.tenant().show_all_attendances === true;
+    this.showAllAttendancesInfoText = this.db.tenant().show_all_attendances_info_text
+      || DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT;
 
     // Load reasons from tenant config or use defaults
     this.absenceReasons = this.db.tenant().absence_reasons?.length
@@ -224,32 +229,67 @@ export class SignoutPage implements OnInit {
   }
 
   async getAttendances() {
-    const allPersonAttendances = (await this.db.getPersonAttendances(this.player.id)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     if (!this.player.paused) {
       this.selAttIds = [];
     }
 
-    this.personAttendances = allPersonAttendances;
+    if (this.showAllAttendances) {
+      // Vergangene: nur eigene Teilnahmen
+      const pastPAs = (await this.db.getPersonAttendances(this.player.id, true))
+        .filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf('day')))
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    const vergangene: PersonAttendance[] = this.personAttendances.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
-    if (vergangene.length) {
-      this.lateCount = vergangene.filter((a) => a.status === AttendanceStatus.Late).length;
-      const vergangeneToCalcPerc = vergangene.filter((att: PersonAttendance) => {
-        const type = this.db.attendanceTypes().find((t) => t.id === att.typeId);
-        return type?.include_in_average ?? true;
-      });
-      vergangene[0].showDivider = true;
-      const attended = vergangeneToCalcPerc.filter((att: PersonAttendance) => att.attended);
-      this.perc = vergangeneToCalcPerc.length ? Math.round(
-        attended.length / vergangeneToCalcPerc.length * 100) : 0;
+      // Zukünftige: alle Termine der Instanz + eigener Status
+      const upcomingAll = await this.db.getAllUpcomingAttendancesForSignout(this.player.id);
+
+      this.personAttendances = [...pastPAs, ...[...upcomingAll].reverse()];
+
+      if (pastPAs.length) {
+        this.lateCount = pastPAs.filter((a) => a.status === AttendanceStatus.Late).length;
+        const vergangeneToCalcPerc = pastPAs.filter((att: PersonAttendance) => {
+          const type = this.db.attendanceTypes().find((t) => t.id === att.typeId);
+          return type?.include_in_average ?? true;
+        });
+        pastPAs[0].showDivider = true;
+        const attended = vergangeneToCalcPerc.filter((att: PersonAttendance) => att.attended);
+        this.perc = vergangeneToCalcPerc.length
+          ? Math.round(attended.length / vergangeneToCalcPerc.length * 100)
+          : 0;
+      } else {
+        this.perc = 0;
+        this.lateCount = 0;
+      }
+
+      this.actualAttendances = [...upcomingAll];
+      if (this.actualAttendances.length) {
+        this.currentAttendance = this.actualAttendances[0];
+        this.actualAttendances.splice(0, 1);
+      }
     } else {
-      this.perc = 0;
-    }
+      const allPersonAttendances = (await this.db.getPersonAttendances(this.player.id)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    this.actualAttendances = allPersonAttendances.filter((att: PersonAttendance) => dayjs(att.date).isAfter(dayjs().startOf('day'))).reverse();
-    if (this.actualAttendances.length) {
-      this.currentAttendance = this.actualAttendances[0];
-      this.actualAttendances.splice(0, 1);
+      this.personAttendances = allPersonAttendances;
+
+      const vergangene: PersonAttendance[] = this.personAttendances.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
+      if (vergangene.length) {
+        this.lateCount = vergangene.filter((a) => a.status === AttendanceStatus.Late).length;
+        const vergangeneToCalcPerc = vergangene.filter((att: PersonAttendance) => {
+          const type = this.db.attendanceTypes().find((t) => t.id === att.typeId);
+          return type?.include_in_average ?? true;
+        });
+        vergangene[0].showDivider = true;
+        const attended = vergangeneToCalcPerc.filter((att: PersonAttendance) => att.attended);
+        this.perc = vergangeneToCalcPerc.length ? Math.round(
+          attended.length / vergangeneToCalcPerc.length * 100) : 0;
+      } else {
+        this.perc = 0;
+      }
+
+      this.actualAttendances = allPersonAttendances.filter((att: PersonAttendance) => dayjs(att.date).isAfter(dayjs().startOf('day'))).reverse();
+      if (this.actualAttendances.length) {
+        this.currentAttendance = this.actualAttendances[0];
+        this.actualAttendances.splice(0, 1);
+      }
     }
   }
 
@@ -273,6 +313,20 @@ export class SignoutPage implements OnInit {
 
   async presentActionSheetForChoice(attendance: PersonAttendance) {
     const isExcused = attendance.status === AttendanceStatus.Excused || attendance.status === AttendanceStatus.LateExcused;
+
+    // Read-only for non-participants in show-all mode
+    if (this.showAllAttendances && !attendance.id) {
+      if (attendance.attendance?.description) {
+        await this.openDescription(attendance);
+      } else if (attendance.attendance?.share_plan && attendance.attendance?.plan) {
+        await this.openPlanViewer(attendance);
+      } else if (attendance.attendance?.attachment_url) {
+        this.openAttachment(attendance.attendance);
+      } else {
+        Utils.showToast('Für diesen Termin sind keine weiteren Informationen verfügbar.', 'warning', 3000);
+      }
+      return;
+    }
 
     let buttons = [
       {

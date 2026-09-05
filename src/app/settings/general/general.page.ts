@@ -3,7 +3,7 @@ import { AlertController, IonModal, NavController } from '@ionic/angular/lazy';
 import { format, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, Role } from 'src/app/utilities/constants';
+import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT, Role } from 'src/app/utilities/constants';
 import { AttendanceType, Church, CriticalRule, CriticalRuleOperator, CriticalRulePeriodType, CriticalRuleThresholdType } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
@@ -65,6 +65,10 @@ export class GeneralPage implements OnInit {
   // Shift worker config
   public shiftExcusedAsPresent = false;
 
+  // Show all attendances config
+  public showAllAttendances = false;
+  public showAllAttendancesInfoText = '';
+
   // Absence and late reasons
   public absenceReasons: string[] = [];
   public lateReasons: string[] = [];
@@ -116,6 +120,9 @@ export class GeneralPage implements OnInit {
     this.registerAllowed = !!this.db.tenant().register_id;
     this.autoApproveRegistrations = this.db.tenant().auto_approve_registrations || false;
     this.shiftExcusedAsPresent = this.db.tenant().shift_excused_as_present || false;
+    this.showAllAttendances = this.db.tenant().show_all_attendances || false;
+    this.showAllAttendancesInfoText = this.db.tenant().show_all_attendances_info_text
+      || DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT;
 
     if (this.db.tenant().additional_fields?.length) {
       this.registerFields = this.registerFields.concat(this.db.tenant().additional_fields.map(field => ({
@@ -172,6 +179,8 @@ export class GeneralPage implements OnInit {
       selectedRegisterFields: this.selectedRegisterFields,
       criticalRules: this.criticalRules,
       shiftExcusedAsPresent: this.shiftExcusedAsPresent,
+      showAllAttendances: this.showAllAttendances,
+      showAllAttendancesInfoText: this.showAllAttendancesInfoText,
     });
   }
 
@@ -308,6 +317,10 @@ export class GeneralPage implements OnInit {
         registration_fields: this.registerAllowed ? this.selectedRegisterFields : [],
         critical_rules: this.criticalRules,
         shift_excused_as_present: this.shiftExcusedAsPresent,
+        show_all_attendances: this.showAllAttendances,
+        show_all_attendances_info_text: this.showAllAttendances
+          ? (this.showAllAttendancesInfoText?.trim() || DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT)
+          : null,
         absence_reasons: filteredAbsenceReasons.length > 0 ? filteredAbsenceReasons : null,
         late_reasons: filteredLateReasons.length > 0 ? filteredLateReasons : null,
       });

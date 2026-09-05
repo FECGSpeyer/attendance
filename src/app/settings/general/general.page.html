@@ -59,6 +59,22 @@
           helperText="Aktivieren, um schicht- oder arbeitsbedingt entschuldigte Abwesenheiten als anwesend für die prozentuale Berechnung zu werten."
         [(ngModel)]="shiftExcusedAsPresent">Schicht-/Arbeitsbedingt = Anwesend</ion-toggle>
       </ion-item>
+      <ion-item>
+        <ion-toggle
+          helperText="Aktivieren, damit Mitglieder auf der Abmelde-Seite alle Termine der Instanz sehen können (nicht nur eigene). Eigene Termine werden hervorgehoben."
+          [(ngModel)]="showAllAttendances">Alle Termine für Mitglieder sichtbar</ion-toggle>
+      </ion-item>
+      @if (showAllAttendances) {
+        <ion-item>
+          <ion-input
+            label="Info-Text für fremde Termine"
+            labelPlacement="stacked"
+            [(ngModel)]="showAllAttendancesInfoText"
+            placeholder="Du bist bei diesem Termin nicht dabei."
+            clearInput="true">
+          </ion-input>
+        </ion-item>
+      }
     </ion-item-group>
 
     <ion-list-header><ion-label>Abwesenheits- & Verspätungsgründe</ion-label></ion-list-header>

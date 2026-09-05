@@ -255,11 +255,15 @@
       <div slot="content">
         <ion-list>
           @if (currentAttendance) {
-          <ion-item button (click)="presentActionSheetForChoice(currentAttendance)" color="light">
+          <ion-item button (click)="presentActionSheetForChoice(currentAttendance)" color="light"
+            [class.is-member]="currentAttendance.isMember || !showAllAttendances">
             <ion-label>
               <h2>{{ getReadableDate(currentAttendance.date, currentAttendance.typeId) }}</h2>
               <h3 [style.fontWeight]="currentAttendance.highlight ? 'bold' : 'normal'">{{ currentAttendance.title }}
               </h3>
+              @if (showAllAttendances && !currentAttendance.isMember) {
+                <p class="all-attendances-info-text">{{ showAllAttendancesInfoText }}</p>
+              }
               @if (showDeadlineInfo(currentAttendance)) {
               <ion-note [style.fontSize]="'.9rem'" color="danger">{{ getDeadlineText(currentAttendance) }}</ion-note>
               }
@@ -282,9 +286,11 @@
                   style="vertical-align: middle;"></ion-icon> Ablaufplan verfügbar</ion-note>
               }
             </ion-label>
+            @if (!showAllAttendances || currentAttendance.isMember) {
             <ion-badge slot="end"
               [color]="currentAttendance.text === 'X' ? 'success' : currentAttendance.text === 'A' ? 'danger' : currentAttendance.text === 'L' ? (currentAttendance.status === 3 ? 'tertiary' : 'rosa') : currentAttendance.text === 'N' ? 'medium' : 'warning'">
               {{ currentAttendance.text === 'X' ? '✓' : currentAttendance.text === 'L' && currentAttendance.status !== 3 ? 'LE' : currentAttendance.text }}</ion-badge>
+            }
           </ion-item>
           }
         </ion-list>
@@ -298,10 +304,14 @@
       <div slot="content">
         <ion-list>
           @for (att of actualAttendances; track att.id) {
-          <ion-item button (click)="presentActionSheetForChoice(att)">
+          <ion-item button (click)="presentActionSheetForChoice(att)"
+            [class.is-member]="att.isMember || !showAllAttendances">
             <ion-label>
               <h2>{{ getReadableDate(att.date, att.typeId) }}</h2>
               <h3 [style.fontWeight]="att.highlight ? 'bold' : 'normal'">{{ att.title }}</h3>
+              @if (showAllAttendances && !att.isMember) {
+                <p class="all-attendances-info-text">{{ showAllAttendancesInfoText }}</p>
+              }
               @if (showDeadlineInfo(att)) {
               <ion-note [style.fontSize]="'.9rem'" color="danger">{{ getDeadlineText(att) }}</ion-note>
               }
@@ -324,9 +334,11 @@
                   style="vertical-align: middle;"></ion-icon> Ablaufplan verfügbar</ion-note>
               }
             </ion-label>
+            @if (!showAllAttendances || att.isMember) {
             <ion-badge slot="end"
               [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? (att.status === 3 ? 'tertiary' : 'rosa') : att.text === 'N' ? 'medium' : 'warning'">
               {{ att.text === 'X' ? '✓' : att.text === 'L' && att.status !== 3 ? 'LE' : att.text }}</ion-badge>
+            }
           </ion-item>
           }
         </ion-list>

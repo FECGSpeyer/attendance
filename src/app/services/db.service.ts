@@ -2484,6 +2484,50 @@ export class DbService {
     });
   }
 
+  async getAllUpcomingAttendancesForSignout(playerId: number): Promise<PersonAttendance[]> {
+    const { data: allAtts } = await supabase
+      .from('attendance')
+      .select('id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan, description, attachment_url, attachment_name, attType:type_id(id, highlight, include_in_average, name, color)')
+      .eq('tenantId', this.tenant().id)
+      .gt('date', dayjs().startOf('day').toISOString())
+      .order('date', { ascending: true }) as any;
+
+    if (!allAtts?.length) { return []; }
+
+    const { data: playerPAs } = await supabase
+      .from('person_attendances')
+      .select('id, attendance_id, status, notes')
+      .eq('person_id', playerId)
+      .in('attendance_id', allAtts.map((a: any) => a.id)) as any;
+
+    const paMap = new Map<number, any>((playerPAs ?? []).map((pa: any) => [pa.attendance_id, pa]));
+
+    return allAtts.map((att: any): PersonAttendance => {
+      const attType = att.attType ?? this.attendanceTypes().find((t: AttendanceType) => t.id === att.type_id);
+      const title = attType ? Utils.getTypeTitle(attType, att.typeInfo) : '';
+      const playerPa = paMap.get(att.id);
+
+      return {
+        id: playerPa?.id ?? null,
+        attendance_id: att.id,
+        person_id: playerId,
+        status: playerPa?.status ?? AttendanceStatus.Neutral,
+        date: att.date,
+        attended: playerPa?.status === AttendanceStatus.Present || playerPa?.status === AttendanceStatus.Late,
+        title,
+        text: playerPa ? Utils.getAttText({ ...playerPa, attendance: att }) : '',
+        notes: playerPa?.notes ?? '',
+        songs: att.songs,
+        attId: att.id,
+        typeId: att.type_id,
+        attendance: att,
+        highlight: attType?.highlight ?? att.type === 'vortrag',
+        include_in_average: attType?.include_in_average ?? false,
+        isMember: !!playerPa,
+      } as any;
+    });
+  }
+
   async getParentAttendances(player: Person[], attendances: Attendance[]): Promise<any[]> {
     return this.attendanceSvc.getParentAttendances(
       player.map(p => p.id),

@@ -107,6 +107,16 @@
     }
 }
 
+.is-member {
+    border-left: 3px solid var(--ion-color-primary);
+}
+
+.all-attendances-info-text {
+    font-size: 0.75rem;
+    color: var(--ion-color-medium);
+    margin: 2px 0 0;
+}
+
 .range-picker-header {
     display: flex;
     align-items: center;

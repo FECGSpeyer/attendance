@@ -62,6 +62,8 @@ export interface Tenant {
   timezone: string;
   showMembersList?: boolean;
   shift_excused_as_present?: boolean;
+  show_all_attendances?: boolean;
+  show_all_attendances_info_text?: string;
   song_additional_fields?: ExtraField[];
   absence_reasons?: string[];
   late_reasons?: string[];
@@ -367,6 +369,7 @@ export interface PersonAttendance {
   typeId?: string;
   changed_by?: string;
   changed_at?: string;
+  isMember?: boolean;
 }
 
 export interface Song {
