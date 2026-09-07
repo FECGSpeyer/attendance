@@ -110,4 +110,18 @@ export class CurrentPlanCardComponent {
     if (this.isToday) { return 'Heute'; }
     return dayjs(this.attendance?.date).locale('de').format('dddd, DD.MM.YYYY');
   }
+
+  get activeFieldIndex(): number {
+    if (!this.isLive || !this.plan?.fields?.length || !this.plan.time) { return -1; }
+    const startStr = this.plan.time;
+    let current = startStr.length > 5
+      ? dayjs(startStr)
+      : dayjs(this.attendance!.date).hour(Number(startStr.substring(0, 2))).minute(Number(startStr.substring(3, 5))).second(0);
+    const now = dayjs();
+    for (let i = 0; i < this.plan.fields.length; i++) {
+      current = current.add(parseInt(this.plan.fields[i].time, 10) || 0, 'minutes');
+      if (now.isBefore(current)) { return i; }
+    }
+    return -1;
+  }
 }
