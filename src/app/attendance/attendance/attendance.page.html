@@ -527,7 +527,11 @@
                 }
                 <h3>{{ calculateTime(field, i) }}</h3>
               </ion-label>
-              <ion-badge slot="end">{{ field.time }} min</ion-badge>
+              @if (planLiveMode && i === planActiveFieldIndex) {
+                <ion-badge slot="end" color="primary">{{ getPlanActiveCountdown() }}</ion-badge>
+              } @else {
+                <ion-badge slot="end">{{ field.time }} min</ion-badge>
+              }
             </ion-item>
             }
             <ion-item lines="none">

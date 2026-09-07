@@ -203,6 +203,19 @@ export class SharedPlanPage implements OnInit, OnDestroy {
     return field.conductor ? `${result} | ${field.conductor}` : result;
   }
 
+  getActiveCountdown(): string {
+    if (!this.liveMode || this.activeFieldIndex < 0 || !this.fields.length || !this.time || !this.date) { return ''; }
+    const startBase = dayjs(this.time).isValid()
+      ? dayjs(this.time)
+      : dayjs().hour(Number(this.time.substring(0, 2))).minute(Number(this.time.substring(3, 5)));
+    let t = dayjs(this.date).hour(startBase.hour()).minute(startBase.minute()).second(0);
+    for (let i = 0; i <= this.activeFieldIndex; i++) {
+      t = t.add(Number(this.fields[i].time) || 0, 'minute');
+    }
+    const remaining = t.diff(dayjs(), 'minute');
+    return remaining > 0 ? `${remaining} min` : '< 1 min';
+  }
+
   // ---- live viewer ----
 
   isLiveNow(): boolean {
@@ -224,7 +237,7 @@ export class SharedPlanPage implements OnInit, OnDestroy {
     this.liveMode = !this.liveMode;
     if (this.liveMode) {
       this.updateActiveIndex();
-      this.liveInterval = setInterval(() => this.updateActiveIndex(), 30000);
+      this.liveInterval = setInterval(() => this.updateActiveIndex(), 10000);
     } else {
       this.stopLive();
     }

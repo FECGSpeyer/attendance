@@ -242,6 +242,19 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
     return field.conductor ? `${result} | ${field.conductor}` : result;
   }
 
+  getActiveCountdown(entry: PlanEntry): string {
+    if (!entry.liveMode || entry.activeFieldIndex < 0 || !entry.fields.length || !entry.time || !entry.date) { return ''; }
+    const startBase = dayjs(entry.time).isValid()
+      ? dayjs(entry.time)
+      : dayjs().hour(Number(entry.time.substring(0, 2))).minute(Number(entry.time.substring(3, 5)));
+    let t = dayjs(entry.date).hour(startBase.hour()).minute(startBase.minute()).second(0);
+    for (let i = 0; i <= entry.activeFieldIndex; i++) {
+      t = t.add(Number(entry.fields[i].time) || 0, 'minute');
+    }
+    const remaining = t.diff(dayjs(), 'minute');
+    return remaining > 0 ? `${remaining} min` : '< 1 min';
+  }
+
   isLiveNow(entry: PlanEntry): boolean {
     if (!entry.date || !entry.time || !entry.fields.length) { return false; }
     const now = dayjs();
@@ -258,7 +271,7 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
     entry.liveMode = !entry.liveMode;
     if (entry.liveMode) {
       this.updateActiveIndex(entry);
-      entry.liveInterval = setInterval(() => this.updateActiveIndex(entry), 30000);
+      entry.liveInterval = setInterval(() => this.updateActiveIndex(entry), 10000);
     } else {
       this.stopLive(entry);
     }

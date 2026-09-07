@@ -64,7 +64,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
     this.liveMode = !this.liveMode;
     if (this.liveMode) {
       this.updateActiveIndex();
-      this.liveInterval = setInterval(() => this.updateActiveIndex(), 30000);
+      this.liveInterval = setInterval(() => this.updateActiveIndex(), 10000);
     } else {
       this.stopLive();
     }
@@ -120,6 +120,19 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
       : dayjs().hour(Number(this.plan.time.substring(0, 2))).minute(Number(this.plan.time.substring(3, 5)));
 
     return `${time.add(minutesToAdd, 'minute').format('HH:mm')} ${field.conductor ? `| ${field.conductor}` : ''}`;
+  }
+
+  getActiveCountdown(): string {
+    if (!this.liveMode || this.activeFieldIndex < 0 || !this.plan?.fields || !this.plan.time || !this.attendance?.date) { return ''; }
+    const timeBase = dayjs(this.plan.time).isValid()
+      ? dayjs(this.plan.time)
+      : dayjs().hour(Number(this.plan.time.substring(0, 2))).minute(Number(this.plan.time.substring(3, 5)));
+    let t = dayjs(this.attendance.date).hour(timeBase.hour()).minute(timeBase.minute()).second(0);
+    for (let i = 0; i <= this.activeFieldIndex; i++) {
+      t = t.add(Number(this.plan.fields[i].time) || 0, 'minute');
+    }
+    const remaining = t.diff(dayjs(), 'minute');
+    return remaining > 0 ? `${remaining} min` : '< 1 min';
   }
 
   getEndTime(): string {

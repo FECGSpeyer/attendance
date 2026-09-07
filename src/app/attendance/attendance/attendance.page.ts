@@ -780,7 +780,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     this.planLiveMode = !this.planLiveMode;
     if (this.planLiveMode) {
       this.updatePlanActiveIndex();
-      this.planLiveInterval = setInterval(() => this.updatePlanActiveIndex(), 30000);
+      this.planLiveInterval = setInterval(() => this.updatePlanActiveIndex(), 10000);
     } else {
       this.stopPlanLive();
     }
@@ -819,6 +819,21 @@ export class AttendancePage implements OnInit, OnDestroy {
     setTimeout(() => {
       document.querySelector('.active-slot')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 50);
+  }
+
+  getPlanActiveCountdown(): string {
+    if (!this.planLiveMode || this.planActiveFieldIndex < 0) { return ''; }
+    const plan = this.attendance?.plan;
+    if (!plan?.fields?.length || !plan.time || !this.attendance?.date) { return ''; }
+    let t = dayjs(this.attendance.date)
+      .hour(Number(plan.time.substring(0, 2)))
+      .minute(Number(plan.time.substring(3, 5)))
+      .second(0);
+    for (let i = 0; i <= this.planActiveFieldIndex; i++) {
+      t = t.add(Number(plan.fields[i].time) || 0, 'minute');
+    }
+    const remaining = t.diff(dayjs(), 'minute');
+    return remaining > 0 ? `${remaining} min` : '< 1 min';
   }
 
   calculateTime(field: FieldSelection, index: number) {

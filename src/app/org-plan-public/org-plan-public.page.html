@@ -100,7 +100,11 @@
                       }
                     </ion-label>
                     @if (!field.id.includes('noteFld')) {
-                      <ion-badge slot="end">{{ field.time }} min</ion-badge>
+                      @if (entry.liveMode && fi === entry.activeFieldIndex) {
+                        <ion-badge slot="end" color="primary">{{ getActiveCountdown(entry) }}</ion-badge>
+                      } @else {
+                        <ion-badge slot="end">{{ field.time }} min</ion-badge>
+                      }
                     }
                   </ion-item>
                 }

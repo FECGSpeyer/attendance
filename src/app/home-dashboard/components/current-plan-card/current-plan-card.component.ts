@@ -1,4 +1,4 @@
-import { Component, effect } from '@angular/core';
+import { Component, OnDestroy, effect, ChangeDetectorRef } from '@angular/core';
 import { ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { PlanViewerComponent } from '../../../planning/plan-viewer/plan-viewer.component';
@@ -12,21 +12,25 @@ import { Role } from '../../../utilities/constants';
   styleUrls: ['./current-plan-card.component.scss'],
   standalone: false,
 })
-export class CurrentPlanCardComponent {
+export class CurrentPlanCardComponent implements OnDestroy {
   public loading = true;
   public attendance: Attendance | null = null;
   public plan: Plan | null = null;
   public isToday = false;
-
   private loadDone = false;
+  private liveInterval: any;
 
-  constructor(public db: DbService, private modalController: ModalController) {
+  constructor(public db: DbService, private modalController: ModalController, private cdr: ChangeDetectorRef) {
     effect(() => {
       if (this.db.tenant() && !this.loadDone) {
         this.loadDone = true;
         this.load();
       }
     });
+  }
+
+  ngOnDestroy() {
+    if (this.liveInterval) { clearInterval(this.liveInterval); }
   }
 
   async load(): Promise<void> {
@@ -45,6 +49,10 @@ export class CurrentPlanCardComponent {
       this.attendance = next;
       this.plan = next?.plan ?? null;
       this.isToday = next ? dayjs(next.date).isSame(dayjs(), 'day') : false;
+      if (this.isToday) {
+        if (this.liveInterval) { clearInterval(this.liveInterval); }
+        this.liveInterval = setInterval(() => this.cdr.markForCheck(), 10000);
+      }
     } finally {
       this.loading = false;
     }
@@ -123,5 +131,19 @@ export class CurrentPlanCardComponent {
       if (now.isBefore(current)) { return i; }
     }
     return -1;
+  }
+
+  getActiveCountdown(): string {
+    const idx = this.activeFieldIndex;
+    if (idx < 0 || !this.plan?.fields || !this.plan.time || !this.attendance?.date) { return ''; }
+    const startStr = this.plan.time;
+    let t = startStr.length > 5
+      ? dayjs(startStr)
+      : dayjs(this.attendance.date).hour(Number(startStr.substring(0, 2))).minute(Number(startStr.substring(3, 5))).second(0);
+    for (let i = 0; i <= idx; i++) {
+      t = t.add(parseInt(this.plan.fields[i].time, 10) || 0, 'minutes');
+    }
+    const remaining = t.diff(dayjs(), 'minute');
+    return remaining > 0 ? `${remaining} min` : '< 1 min';
   }
 }

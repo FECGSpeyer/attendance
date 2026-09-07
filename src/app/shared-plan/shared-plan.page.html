@@ -81,7 +81,11 @@
               }
             </ion-label>
             @if (!field.id.includes('noteFld') && !isEditMode) {
-              <ion-note slot="end">{{ field.time }} min</ion-note>
+              @if (liveMode && i === activeFieldIndex) {
+                <ion-badge slot="end" color="primary">{{ getActiveCountdown() }}</ion-badge>
+              } @else {
+                <ion-note slot="end">{{ field.time }} min</ion-note>
+              }
             }
             @if (isEditMode) {
               <ion-button slot="end" fill="clear" color="danger" (click)="$event.stopPropagation(); removeField(i)">

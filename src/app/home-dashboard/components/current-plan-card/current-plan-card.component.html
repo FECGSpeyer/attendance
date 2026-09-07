@@ -43,7 +43,9 @@
                 <span class="conductor"> · {{ field.conductor }}</span>
               }
             </ion-label>
-            <ion-badge slot="end" color="medium">{{ fieldStartTimes()[i] }}</ion-badge>
+            <ion-badge slot="end" [color]="isLive && i === activeFieldIndex ? 'primary' : 'medium'">
+              {{ isLive && i === activeFieldIndex ? getActiveCountdown() : fieldStartTimes()[i] }}
+            </ion-badge>
           </ion-item>
         }
       </ion-list>
