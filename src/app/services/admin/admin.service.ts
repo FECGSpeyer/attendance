@@ -81,13 +81,13 @@ export class AdminService {
       .select('role')
       .eq('tenantId', tenantId)
       .eq('userId', appId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       throw new Error('Fehler beim Laden der Rolle');
     }
 
-    return data?.role;
+    return data?.role ?? Role.NONE;
   }
 
   async getTenantUserById(id: string, tenantId: number): Promise<TenantUser> {

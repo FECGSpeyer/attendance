@@ -1347,13 +1347,13 @@ export class DbService {
       .select('role')
       .eq('tenantId', this.tenant().id)
       .eq('userId', appId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       throw new Error('Fehler beim Laden der Rolle');
     }
 
-    return data?.role;
+    return data?.role ?? Role.NONE;
   }
 
   async getPlayerByAppId(showToast: boolean = true): Promise<Player> {

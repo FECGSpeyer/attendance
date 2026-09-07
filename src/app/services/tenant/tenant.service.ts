@@ -157,13 +157,13 @@ export class TenantService {
       .select('role')
       .eq('userId', appId)
       .eq('tenantId', tenantId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       throw new Error('Fehler beim Laden der Rolle');
     }
 
-    return data.role as Role;
+    return (data?.role ?? Role.NONE) as Role;
   }
 
   // Viewers
