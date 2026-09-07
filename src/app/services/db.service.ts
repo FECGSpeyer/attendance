@@ -2093,50 +2093,41 @@ export class DbService {
   async updateShiftAssignmentsForPerson(person: Person) {
     const attData: PersonAttendance[] = await this.getPersonAttendances(person.id);
     const shift = this.shifts().find((s: ShiftPlan) => s.id === person.shift_id);
-    if (shift) {
-      for (const att of attData) {
-        if (dayjs(att.attendance.date).isBefore(dayjs(), 'day')) {
-          continue;
-        }
 
-        const type = this.attendanceTypes().find((type: AttendanceType) => type.id === att.attendance.type_id);
-        if (!type) {
-          continue;
-        }
-        const result = Utils.getStatusByShift(
+    // Phase 1: Reset all future shift-excused entries to default (always, before re-applying).
+    // Also mutates the local attData so Phase 2 sees the reset status.
+    for (const att of attData) {
+      if (dayjs(att.attendance.date).isBefore(dayjs(), 'day')) { continue; }
+      if (!Utils.isWorkExcused(att.notes) || att.status !== AttendanceStatus.Excused) { continue; }
+      const type = this.attendanceTypes().find((t: AttendanceType) => t.id === att.attendance.type_id);
+      if (!type) { continue; }
+      await this.updatePersonAttendance(att.id, { status: type.default_status, notes: '' });
+      att.status = type.default_status;
+      att.notes = '';
+    }
+
+    // Phase 2: Apply new shift if present.
+    if (!shift) { return; }
+    for (const att of attData) {
+      if (dayjs(att.attendance.date).isBefore(dayjs(), 'day')) { continue; }
+      const type = this.attendanceTypes().find((t: AttendanceType) => t.id === att.attendance.type_id);
+      if (!type) { continue; }
+      let result: { status: AttendanceStatus; note: string };
+      try {
+        result = Utils.getStatusByShift(
           shift,
           att.attendance?.date,
           att.attendance?.start_time ?? type.start_time,
           att.attendance?.end_time ?? type.end_time,
           type.default_status,
           person.shift_start,
-          person.shift_name
+          person.shift_name,
         );
-
-        if (result.status === AttendanceStatus.Excused && att.status === type.default_status) {
-          await this.updatePersonAttendance(att.id, {
-            status: result.status,
-            notes: result.note,
-          });
-        }
+      } catch {
+        continue; // shift_name not found in new plan — skip rather than abort the loop
       }
-    } else {
-      for (const att of attData) {
-        if (dayjs(att.attendance.date).isBefore(dayjs(), 'day')) {
-          continue;
-        }
-
-        if (att.notes?.includes('Schichtbedingt')) {
-          const type = this.attendanceTypes().find((type: AttendanceType) => type.id === att.attendance.type_id);
-          if (!type) {
-            continue;
-          }
-
-          await this.updatePersonAttendance(att.id, {
-            status: type.default_status,
-            notes: '',
-          });
-        }
+      if (result.status === AttendanceStatus.Excused && att.status === type.default_status) {
+        await this.updatePersonAttendance(att.id, { status: result.status, notes: result.note });
       }
     }
   }
