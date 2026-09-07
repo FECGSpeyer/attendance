@@ -51,7 +51,7 @@ export class CurrentPlanCardComponent implements OnDestroy {
       this.isToday = next ? dayjs(next.date).isSame(dayjs(), 'day') : false;
       if (this.isToday) {
         if (this.liveInterval) { clearInterval(this.liveInterval); }
-        this.liveInterval = setInterval(() => this.cdr.markForCheck(), 10000);
+        this.liveInterval = setInterval(() => this.cdr.markForCheck(), 1000);
       }
     } finally {
       this.loading = false;
@@ -143,9 +143,10 @@ export class CurrentPlanCardComponent implements OnDestroy {
     for (let i = 0; i <= idx; i++) {
       t = t.add(parseInt(this.plan.fields[i].time, 10) || 0, 'minutes');
     }
-    const remaining = Math.max(0, t.diff(dayjs(), 'minute'));
-    const h = Math.floor(remaining / 60);
-    const m = remaining % 60;
-    return `${h}:${String(m).padStart(2, '0')}`;
+    const remaining = Math.max(0, t.diff(dayjs(), 'second'));
+    const h = Math.floor(remaining / 3600);
+    const m = Math.floor((remaining % 3600) / 60);
+    const s = remaining % 60;
+    return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
 }

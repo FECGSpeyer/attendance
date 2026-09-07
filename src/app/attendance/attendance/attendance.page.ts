@@ -780,7 +780,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     this.planLiveMode = !this.planLiveMode;
     if (this.planLiveMode) {
       this.updatePlanActiveIndex();
-      this.planLiveInterval = setInterval(() => this.updatePlanActiveIndex(), 10000);
+      this.planLiveInterval = setInterval(() => this.updatePlanActiveIndex(), 1000);
     } else {
       this.stopPlanLive();
     }
@@ -832,10 +832,11 @@ export class AttendancePage implements OnInit, OnDestroy {
     for (let i = 0; i <= this.planActiveFieldIndex; i++) {
       t = t.add(Number(plan.fields[i].time) || 0, 'minute');
     }
-    const remaining = Math.max(0, t.diff(dayjs(), 'minute'));
-    const h = Math.floor(remaining / 60);
-    const m = remaining % 60;
-    return `${h}:${String(m).padStart(2, '0')}`;
+    const remaining = Math.max(0, t.diff(dayjs(), 'second'));
+    const h = Math.floor(remaining / 3600);
+    const m = Math.floor((remaining % 3600) / 60);
+    const s = remaining % 60;
+    return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
 
   calculateTime(field: FieldSelection, index: number) {

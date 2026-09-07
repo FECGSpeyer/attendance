@@ -251,10 +251,11 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
     for (let i = 0; i <= entry.activeFieldIndex; i++) {
       t = t.add(Number(entry.fields[i].time) || 0, 'minute');
     }
-    const remaining = Math.max(0, t.diff(dayjs(), 'minute'));
-    const h = Math.floor(remaining / 60);
-    const m = remaining % 60;
-    return `${h}:${String(m).padStart(2, '0')}`;
+    const remaining = Math.max(0, t.diff(dayjs(), 'second'));
+    const h = Math.floor(remaining / 3600);
+    const m = Math.floor((remaining % 3600) / 60);
+    const s = remaining % 60;
+    return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
 
   isLiveNow(entry: PlanEntry): boolean {
@@ -273,7 +274,7 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
     entry.liveMode = !entry.liveMode;
     if (entry.liveMode) {
       this.updateActiveIndex(entry);
-      entry.liveInterval = setInterval(() => this.updateActiveIndex(entry), 10000);
+      entry.liveInterval = setInterval(() => this.updateActiveIndex(entry), 1000);
     } else {
       this.stopLive(entry);
     }

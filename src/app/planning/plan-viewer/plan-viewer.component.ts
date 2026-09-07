@@ -64,7 +64,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
     this.liveMode = !this.liveMode;
     if (this.liveMode) {
       this.updateActiveIndex();
-      this.liveInterval = setInterval(() => this.updateActiveIndex(), 10000);
+      this.liveInterval = setInterval(() => this.updateActiveIndex(), 1000);
     } else {
       this.stopLive();
     }
@@ -131,10 +131,11 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
     for (let i = 0; i <= this.activeFieldIndex; i++) {
       t = t.add(Number(this.plan.fields[i].time) || 0, 'minute');
     }
-    const remaining = Math.max(0, t.diff(dayjs(), 'minute'));
-    const h = Math.floor(remaining / 60);
-    const m = remaining % 60;
-    return `${h}:${String(m).padStart(2, '0')}`;
+    const remaining = Math.max(0, t.diff(dayjs(), 'second'));
+    const h = Math.floor(remaining / 3600);
+    const m = Math.floor((remaining % 3600) / 60);
+    const s = remaining % 60;
+    return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
 
   getEndTime(): string {
