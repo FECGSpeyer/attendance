@@ -3412,6 +3412,8 @@ export class DbService {
 
   async deleteShift(id: string): Promise<void> {
     this.checkDemoRestriction();
+    const affected = (await this.getPlayers(true)).filter((p: Person) => p.shift_id === id);
+    await Promise.all(affected.map((p: Person) => this.updateShiftAssignmentsForPerson({ ...p, shift_id: null })));
     await this.shiftSvc.deleteShift(id);
     await this.loadShifts();
   }
