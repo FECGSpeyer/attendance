@@ -54,7 +54,8 @@ export class MemberChangesCardComponent {
         .map(p => ({ player: p, firstName: p.firstName, lastName: p.lastName, date: p.left!, type: 'left' as const }));
 
       this.changes = [...joined, ...left]
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 5);
     } finally {
       this.loading = false;
     }
