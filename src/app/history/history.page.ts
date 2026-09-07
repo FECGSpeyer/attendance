@@ -123,8 +123,9 @@ export class HistoryPage implements OnInit {
       dateModal.dismiss();
     }
 
-    this.historyEntry.date = String(value);
-    this.dateString = this.formatDate(String(value));
+    const isoString = dayjs(String(value)).startOf('day').utc(true).toISOString();
+    this.historyEntry.date = isoString;
+    this.dateString = this.formatDate(isoString);
   }
 
   onManualDateInput(event: any): void {
