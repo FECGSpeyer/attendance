@@ -31,8 +31,8 @@
           <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
         </ion-item>
 
-        @for (field of plan.fields.slice(0, 3); track field.id; let i = $index) {
-          <ion-item [lines]="i < 2 && plan.fields.length > 1 ? 'inset' : 'none'">
+        @for (field of plan.fields; track field.id; let i = $index) {
+          <ion-item [lines]="i < plan.fields.length - 1 ? 'inset' : 'none'">
             <ion-note slot="start" class="field-index">{{ i + 1 }}</ion-note>
             <ion-label class="ion-text-wrap">
               <span>{{ field.name }}</span>
@@ -40,16 +40,11 @@
                 <span class="conductor"> · {{ field.conductor }}</span>
               }
             </ion-label>
-            @if (!field.id?.includes('noteFld')) {
+            @if (field.currentTime) {
+              <ion-note slot="end">{{ field.currentTime }}</ion-note>
+            } @else if (!field.id?.includes('noteFld')) {
               <ion-note slot="end">{{ field.time }}'</ion-note>
             }
-          </ion-item>
-        }
-        @if (plan.fields.length > 3) {
-          <ion-item lines="none">
-            <ion-label color="medium">
-              <p>+ {{ plan.fields.length - 3 }} weitere Positionen</p>
-            </ion-label>
           </ion-item>
         }
       </ion-list>
