@@ -68,10 +68,21 @@ export class BirthdaysCardComponent {
         })
         .filter(e => e.daysOffset >= -WINDOW && e.daysOffset <= WINDOW)
 .sort((a, b) => {
-  if (a.daysOffset >= 0 && b.daysOffset < 0) return -1;
-  if (a.daysOffset < 0 && b.daysOffset >= 0) return 1;
+  // Heute immer zuerst
+  if (a.daysOffset === 0) return -1;
+  if (b.daysOffset === 0) return 1;
 
-  return a.daysOffset - b.daysOffset;
+  // Zukünftige vor vergangenen
+  if (a.daysOffset > 0 && b.daysOffset < 0) return -1;
+  if (a.daysOffset < 0 && b.daysOffset > 0) return 1;
+
+  // Beide zukünftig: aufsteigend
+  if (a.daysOffset > 0 && b.daysOffset > 0) {
+    return a.daysOffset - b.daysOffset;
+  }
+
+  // Beide vergangen: jüngster zuerst
+  return b.daysOffset - a.daysOffset;
 });
     } finally {
       this.loading = false;
