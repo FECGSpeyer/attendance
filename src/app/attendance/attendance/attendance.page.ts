@@ -2,7 +2,7 @@ import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, effect } fr
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ConnectionStatus, Network } from '@capacitor/network';
 import { Browser } from '@capacitor/browser';
-import { AlertController, ActionSheetController, IonItemSliding, ModalController, isPlatform, LoadingController } from '@ionic/angular/lazy';
+import { AlertController, ActionSheetController, IonItemSliding, IonModal, ModalController, isPlatform, LoadingController } from '@ionic/angular/lazy';
 import { Storage } from '@ionic/storage-angular';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { format } from 'date-fns';
@@ -30,6 +30,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   @Input() isModal = false;
   public attendanceId!: number;
   @ViewChild('chooser') chooser: ElementRef;
+  @ViewChild('legendModal') legendModal: IonModal;
   public players: PersonAttendance[] = [];
   public conductors: Person[] = [];
   public excused: Set<string> = new Set();
@@ -1563,6 +1564,10 @@ export class AttendancePage implements OnInit, OnDestroy {
     });
 
     await modal.present();
+  }
+
+  async showLegend(): Promise<void> {
+    await this.legendModal.present();
   }
 
   async sendAdHocReminder(playerAppId?: string): Promise<void> {
