@@ -2401,7 +2401,7 @@ export class DbService {
       .eq('tenantId', tenantId ?? this.tenant().id)
       .gt('date', dayjs().startOf('day').toISOString())
       .order('date', {
-        ascending: false,
+        ascending: true,
       });
 
     return data as any;

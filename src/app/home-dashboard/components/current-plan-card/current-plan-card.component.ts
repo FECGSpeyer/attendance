@@ -69,6 +69,12 @@ export class CurrentPlanCardComponent {
     await modal.present();
   }
 
+  get typeName(): string {
+    if (!this.attendance) { return ''; }
+    const attType = this.db.attendanceTypes().find(t => t.id === this.attendance!.type_id);
+    return attType?.name ?? this.attendance.typeInfo ?? this.attendance.type ?? '';
+  }
+
   get dateLabel(): string {
     if (this.isToday) { return 'Heute'; }
     return dayjs(this.attendance?.date).locale('de').format('dddd, DD.MM.YYYY');

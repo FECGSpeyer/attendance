@@ -12,7 +12,7 @@
       <ion-icon name="list-outline"></ion-icon>
       <div>
         <div class="card-title">Aktueller Ablaufplan</div>
-        <div class="card-subtitle">{{ attendance?.typeInfo ?? attendance?.type }}</div>
+        <div class="card-subtitle">{{ typeName }}</div>
       </div>
       @if (isToday) {
         <ion-badge color="danger" class="live-badge">Live</ion-badge>
