@@ -251,8 +251,10 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
     for (let i = 0; i <= entry.activeFieldIndex; i++) {
       t = t.add(Number(entry.fields[i].time) || 0, 'minute');
     }
-    const remaining = t.diff(dayjs(), 'minute');
-    return remaining > 0 ? `${remaining} min` : '< 1 min';
+    const remaining = Math.max(0, t.diff(dayjs(), 'minute'));
+    const h = Math.floor(remaining / 60);
+    const m = remaining % 60;
+    return `${h}:${String(m).padStart(2, '0')}`;
   }
 
   isLiveNow(entry: PlanEntry): boolean {

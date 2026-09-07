@@ -143,7 +143,9 @@ export class CurrentPlanCardComponent implements OnDestroy {
     for (let i = 0; i <= idx; i++) {
       t = t.add(parseInt(this.plan.fields[i].time, 10) || 0, 'minutes');
     }
-    const remaining = t.diff(dayjs(), 'minute');
-    return remaining > 0 ? `${remaining} min` : '< 1 min';
+    const remaining = Math.max(0, t.diff(dayjs(), 'minute'));
+    const h = Math.floor(remaining / 60);
+    const m = remaining % 60;
+    return `${h}:${String(m).padStart(2, '0')}`;
   }
 }
