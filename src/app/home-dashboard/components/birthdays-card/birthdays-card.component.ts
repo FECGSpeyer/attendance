@@ -50,11 +50,11 @@ export class BirthdaysCardComponent {
       this.entries = players
         .filter(p => p.birthday && p.correctBirthday)
         .map(p => {
-          const bday = dayjs(p.birthday);
-          const thisYear = bday.year(today.year());
+          const bday = dayjs(p.birthday).startOf('day');
+          const thisYear = bday.year(today.year()).startOf('day');
           let diff = thisYear.diff(today, 'day');
           if (diff < -WINDOW) {
-            const nextYear = bday.year(today.year() + 1);
+            const nextYear = bday.year(today.year() + 1).startOf('day');
             diff = nextYear.diff(today, 'day');
           }
           return {
