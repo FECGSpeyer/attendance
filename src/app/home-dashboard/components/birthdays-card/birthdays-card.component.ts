@@ -67,7 +67,15 @@ export class BirthdaysCardComponent {
           };
         })
         .filter(e => e.daysOffset >= -WINDOW && e.daysOffset <= WINDOW)
-        .sort((a, b) => Math.abs(a.daysOffset) - Math.abs(b.daysOffset));
+.sort((a, b) => {
+  if (a.daysOffset === 0) return -1;
+  if (b.daysOffset === 0) return 1;
+
+  if (a.daysOffset > 0 && b.daysOffset < 0) return -1;
+  if (a.daysOffset < 0 && b.daysOffset > 0) return 1;
+
+  return a.daysOffset - b.daysOffset;
+});
     } finally {
       this.loading = false;
     }
