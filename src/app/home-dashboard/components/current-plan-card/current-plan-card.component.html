@@ -1,0 +1,58 @@
+@if (loading) {
+  <ion-card class="dashboard-card">
+    <ion-card-content class="card-body">
+      <div class="loading-center">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    </ion-card-content>
+  </ion-card>
+} @else if (plan) {
+  <ion-card class="dashboard-card" button (click)="openPlan()">
+    <div class="card-header-strip strip-plan">
+      <ion-icon name="list-outline"></ion-icon>
+      <div>
+        <div class="card-title">Aktueller Ablaufplan</div>
+        <div class="card-subtitle">{{ attendance?.typeInfo ?? attendance?.type }}</div>
+      </div>
+      @if (isToday) {
+        <ion-badge color="danger" class="live-badge">Live</ion-badge>
+      }
+    </div>
+    <ion-card-content class="card-body">
+      <ion-list lines="none" class="card-list">
+        <ion-item lines="full">
+          <div class="avatar-circle avatar-next" slot="start">
+            <ion-icon name="calendar-outline"></ion-icon>
+          </div>
+          <ion-label>
+            <h3>{{ dateLabel }}</h3>
+            <p>{{ plan.time }} – {{ plan.end }} Uhr · {{ plan.fields.length }} Positionen</p>
+          </ion-label>
+          <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+        </ion-item>
+
+        @for (field of plan.fields.slice(0, 3); track field.id; let i = $index) {
+          <ion-item [lines]="i < 2 && plan.fields.length > 1 ? 'inset' : 'none'">
+            <ion-note slot="start" class="field-index">{{ i + 1 }}</ion-note>
+            <ion-label class="ion-text-wrap">
+              <span>{{ field.name }}</span>
+              @if (field.conductor) {
+                <span class="conductor"> · {{ field.conductor }}</span>
+              }
+            </ion-label>
+            @if (!field.id?.includes('noteFld')) {
+              <ion-note slot="end">{{ field.time }}'</ion-note>
+            }
+          </ion-item>
+        }
+        @if (plan.fields.length > 3) {
+          <ion-item lines="none">
+            <ion-label color="medium">
+              <p>+ {{ plan.fields.length - 3 }} weitere Positionen</p>
+            </ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+}

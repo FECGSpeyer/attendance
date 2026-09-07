@@ -9,6 +9,7 @@ const CARD_LABELS: Record<DashboardCardId, string> = {
   'absences': 'Abwesenheiten & Pausierungen',
   'critical-persons': 'Problemfälle',
   'current-songs': 'Aktuelle Werke',
+  'current-plan': 'Aktueller Ablaufplan',
 };
 
 @Component({

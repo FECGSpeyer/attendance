@@ -70,6 +70,9 @@
     @if (card.id === 'current-songs') {
       <app-current-songs-card></app-current-songs-card>
     }
+    @if (card.id === 'current-plan') {
+      <app-current-plan-card></app-current-plan-card>
+    }
   }
 
   @if (visibleCards.length === 0) {

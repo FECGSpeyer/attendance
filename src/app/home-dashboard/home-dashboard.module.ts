@@ -11,6 +11,8 @@ import { MemberChangesCardComponent } from './components/member-changes-card/mem
 import { AbsencesCardComponent } from './components/absences-card/absences-card.component';
 import { CriticalPersonsCardComponent } from './components/critical-persons-card/critical-persons-card.component';
 import { CurrentSongsCardComponent } from './components/current-songs-card/current-songs-card.component';
+import { CurrentPlanCardComponent } from './components/current-plan-card/current-plan-card.component';
+import { PlanViewerComponent } from '../planning/plan-viewer/plan-viewer.component';
 import { PersonPageModule } from '../people/person/person.module';
 import { AttendancePageModule } from '../attendance/attendance/attendance.module';
 import { NotificationBellComponent } from '../shared/notification-bell/notification-bell.component';
@@ -24,6 +26,7 @@ import { NotificationBellComponent } from '../shared/notification-bell/notificat
     PersonPageModule,
     AttendancePageModule,
     NotificationBellComponent,
+    PlanViewerComponent,
   ],
   declarations: [
     HomeDashboardPage,
@@ -33,6 +36,7 @@ import { NotificationBellComponent } from '../shared/notification-bell/notificat
     AbsencesCardComponent,
     CriticalPersonsCardComponent,
     CurrentSongsCardComponent,
+    CurrentPlanCardComponent,
   ]
 })
 export class HomeDashboardPageModule {}

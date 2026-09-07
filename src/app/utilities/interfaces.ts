@@ -104,7 +104,7 @@ export interface TenantRolePermission {
   player_planned_absence: boolean;
 }
 
-export type DashboardCardId = 'birthdays' | 'next-event' | 'member-changes' | 'absences' | 'critical-persons' | 'current-songs';
+export type DashboardCardId = 'birthdays' | 'next-event' | 'member-changes' | 'absences' | 'critical-persons' | 'current-songs' | 'current-plan';
 
 export interface DashboardCardConfig {
   id: DashboardCardId;
@@ -118,6 +118,7 @@ export const DEFAULT_DASHBOARD_CARDS: DashboardCardConfig[] = [
   { id: 'absences', visible: true },
   { id: 'critical-persons', visible: true },
   { id: 'current-songs', visible: true },
+  { id: 'current-plan', visible: true },
 ];
 
 export interface PlayerAbsence {

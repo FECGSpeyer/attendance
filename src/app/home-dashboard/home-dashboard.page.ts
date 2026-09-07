@@ -10,6 +10,7 @@ import { MemberChangesCardComponent } from './components/member-changes-card/mem
 import { AbsencesCardComponent } from './components/absences-card/absences-card.component';
 import { CriticalPersonsCardComponent } from './components/critical-persons-card/critical-persons-card.component';
 import { CurrentSongsCardComponent } from './components/current-songs-card/current-songs-card.component';
+import { CurrentPlanCardComponent } from './components/current-plan-card/current-plan-card.component';
 
 @Component({
   selector: 'app-home-dashboard',
@@ -26,6 +27,7 @@ export class HomeDashboardPage {
   @ViewChildren(AbsencesCardComponent) absencesCards!: QueryList<AbsencesCardComponent>;
   @ViewChildren(CriticalPersonsCardComponent) criticalPersonsCards!: QueryList<CriticalPersonsCardComponent>;
   @ViewChildren(CurrentSongsCardComponent) currentSongsCards!: QueryList<CurrentSongsCardComponent>;
+  @ViewChildren(CurrentPlanCardComponent) currentPlanCards!: QueryList<CurrentPlanCardComponent>;
 
   get isIos(): boolean {
     return this.platform.is('ios');
@@ -51,6 +53,7 @@ export class HomeDashboardPage {
       ...this.absencesCards.map(c => c.load()),
       ...this.criticalPersonsCards.map(c => c.load()),
       ...this.currentSongsCards.map(c => c.load()),
+      ...this.currentPlanCards.map(c => c.load()),
     ];
     await Promise.all(reloads);
   }
