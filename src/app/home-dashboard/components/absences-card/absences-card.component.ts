@@ -72,6 +72,8 @@ export class AbsencesCardComponent {
         .flatMap(p =>
           p.history
             .filter((h: PlayerHistoryEntry) => h.type === PlayerHistoryType.PAUSED && dayjs(h.date).isAfter(cutoff))
+            .sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .slice(0, 1)
             .map((h: PlayerHistoryEntry) => ({
               player: p,
               firstName: p.firstName,
