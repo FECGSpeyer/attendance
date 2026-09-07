@@ -26,7 +26,7 @@
           </div>
           <ion-label>
             <h3>{{ dateLabel }}</h3>
-            <p>{{ plan.time }} – {{ plan.end }} Uhr · {{ plan.fields.length }} Positionen</p>
+            <p>{{ formatTime(plan.time) }} – {{ formatTime(plan.end) }} Uhr · {{ plan.fields.length }} Positionen</p>
           </ion-label>
           <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
         </ion-item>

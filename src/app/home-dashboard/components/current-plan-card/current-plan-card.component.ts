@@ -69,14 +69,20 @@ export class CurrentPlanCardComponent {
     await modal.present();
   }
 
+  formatTime(value: string): string {
+    if (!value) { return ''; }
+    return dayjs(value).isValid() && value.length > 5 ? dayjs(value).format('HH:mm') : value;
+  }
+
   get isLive(): boolean {
     if (!this.isToday || !this.attendance) { return false; }
     const startStr = this.attendance.start_time ?? this.plan?.time;
     const endStr = this.attendance.end_time ?? this.plan?.end;
     if (!startStr || !endStr) { return false; }
+    const toHHmm = (v: string) => v.length > 5 ? dayjs(v).format('HH:mm') : v;
     const base = dayjs(this.attendance.date);
-    const [sh, sm] = startStr.split(':').map(Number);
-    const [eh, em] = endStr.split(':').map(Number);
+    const [sh, sm] = toHHmm(startStr).split(':').map(Number);
+    const [eh, em] = toHHmm(endStr).split(':').map(Number);
     const start = base.hour(sh).minute(sm).second(0);
     const end = base.hour(eh).minute(em).second(0);
     const now = dayjs();
