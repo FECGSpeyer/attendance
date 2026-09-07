@@ -51,29 +51,31 @@
     </ion-header>
   }
 
-  @for (card of visibleCards; track card.id) {
-    @if (card.id === 'birthdays') {
-      <app-birthdays-card></app-birthdays-card>
+  <div class="cards-grid">
+    @for (card of visibleCards; track card.id) {
+      @if (card.id === 'birthdays') {
+        <app-birthdays-card></app-birthdays-card>
+      }
+      @if (card.id === 'next-event') {
+        <app-next-event-card></app-next-event-card>
+      }
+      @if (card.id === 'member-changes') {
+        <app-member-changes-card></app-member-changes-card>
+      }
+      @if (card.id === 'absences') {
+        <app-absences-card></app-absences-card>
+      }
+      @if (card.id === 'critical-persons') {
+        <app-critical-persons-card></app-critical-persons-card>
+      }
+      @if (card.id === 'current-songs') {
+        <app-current-songs-card></app-current-songs-card>
+      }
+      @if (card.id === 'current-plan') {
+        <app-current-plan-card></app-current-plan-card>
+      }
     }
-    @if (card.id === 'next-event') {
-      <app-next-event-card></app-next-event-card>
-    }
-    @if (card.id === 'member-changes') {
-      <app-member-changes-card></app-member-changes-card>
-    }
-    @if (card.id === 'absences') {
-      <app-absences-card></app-absences-card>
-    }
-    @if (card.id === 'critical-persons') {
-      <app-critical-persons-card></app-critical-persons-card>
-    }
-    @if (card.id === 'current-songs') {
-      <app-current-songs-card></app-current-songs-card>
-    }
-    @if (card.id === 'current-plan') {
-      <app-current-plan-card></app-current-plan-card>
-    }
-  }
+  </div>
 
   @if (visibleCards.length === 0) {
     <div class="empty-state">
