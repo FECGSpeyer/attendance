@@ -40,11 +40,7 @@
                 <span class="conductor"> · {{ field.conductor }}</span>
               }
             </ion-label>
-            @if (field.currentTime) {
-              <ion-note slot="end">{{ field.currentTime }}</ion-note>
-            } @else if (!field.id?.includes('noteFld')) {
-              <ion-note slot="end">{{ field.time }}'</ion-note>
-            }
+            <ion-note slot="end">{{ fieldStartTimes()[i] }}</ion-note>
           </ion-item>
         }
       </ion-list>

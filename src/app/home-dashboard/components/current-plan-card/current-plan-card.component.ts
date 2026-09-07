@@ -74,6 +74,22 @@ export class CurrentPlanCardComponent {
     return dayjs(value).isValid() && value.length > 5 ? dayjs(value).format('HH:mm') : value;
   }
 
+  formatTime(value: string): string {
+    if (!value) { return ''; }
+    return dayjs(value).isValid() && value.length > 5 ? dayjs(value).format('HH:mm') : value;
+  }
+
+  fieldStartTimes(): string[] {
+    if (!this.plan?.fields?.length || !this.plan.time) { return []; }
+    const startStr = this.plan.time;
+    let current = startStr.length > 5 ? dayjs(startStr) : dayjs().hour(Number(startStr.substring(0, 2))).minute(Number(startStr.substring(3, 5))).second(0);
+    return this.plan.fields.map(field => {
+      const label = current.format('HH:mm');
+      current = current.add(parseInt(field.time, 10) || 0, 'minutes');
+      return label;
+    });
+  }
+
   get isLive(): boolean {
     if (!this.isToday || !this.attendance) { return false; }
     const startStr = this.attendance.start_time ?? this.plan?.time;
