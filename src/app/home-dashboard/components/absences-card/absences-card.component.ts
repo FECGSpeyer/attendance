@@ -68,7 +68,7 @@ export class AbsencesCardComponent {
         });
 
       const pauseEntries: AbsenceEntry[] = players
-        .filter(p => p.history?.length)
+        .filter(p => p.history?.length && !p.left)
         .flatMap(p =>
           p.history
             .filter((h: PlayerHistoryEntry) => h.type === PlayerHistoryType.PAUSED && dayjs(h.date).isAfter(cutoff))
