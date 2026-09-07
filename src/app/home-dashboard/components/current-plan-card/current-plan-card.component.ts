@@ -74,11 +74,6 @@ export class CurrentPlanCardComponent {
     return dayjs(value).isValid() && value.length > 5 ? dayjs(value).format('HH:mm') : value;
   }
 
-  formatTime(value: string): string {
-    if (!value) { return ''; }
-    return dayjs(value).isValid() && value.length > 5 ? dayjs(value).format('HH:mm') : value;
-  }
-
   fieldStartTimes(): string[] {
     if (!this.plan?.fields?.length || !this.plan.time) { return []; }
     const startStr = this.plan.time;
