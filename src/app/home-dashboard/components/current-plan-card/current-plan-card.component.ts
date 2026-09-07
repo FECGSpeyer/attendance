@@ -69,6 +69,20 @@ export class CurrentPlanCardComponent {
     await modal.present();
   }
 
+  get isLive(): boolean {
+    if (!this.isToday || !this.attendance) { return false; }
+    const startStr = this.attendance.start_time ?? this.plan?.time;
+    const endStr = this.attendance.end_time ?? this.plan?.end;
+    if (!startStr || !endStr) { return false; }
+    const base = dayjs(this.attendance.date);
+    const [sh, sm] = startStr.split(':').map(Number);
+    const [eh, em] = endStr.split(':').map(Number);
+    const start = base.hour(sh).minute(sm).second(0);
+    const end = base.hour(eh).minute(em).second(0);
+    const now = dayjs();
+    return now.isAfter(start) && now.isBefore(end);
+  }
+
   get typeName(): string {
     if (!this.attendance) { return ''; }
     const attType = this.db.attendanceTypes().find(t => t.id === this.attendance!.type_id);
