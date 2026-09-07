@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { GroupCategory, History, Group, Person, Song, Tenant, SongCategory, SongFile } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
 import { AlertController, IonModal, ItemReorderEventDetail } from '@ionic/angular/lazy';
@@ -15,9 +15,11 @@ import { Capacitor } from '@capacitor/core';
     styleUrls: ['./songs.page.scss'],
     standalone: false
 })
-export class SongsPage implements OnInit {
+export class SongsPage implements OnInit, OnDestroy {
   public songs: Song[] = [];
   public songsFiltered: Song[] = [];
+  private loaded = false;
+  private loadedTenantId: number | undefined;
   searchTerm = '';
   public isAdmin = false;
   public showSongsTab = false;
@@ -92,7 +94,19 @@ export class SongsPage implements OnInit {
     this.buildGroupsWithFiles();
     this.showSongsTab = this.db.getShowSongsTab();
 
+    this.loaded = true;
+    this.loadedTenantId = this.tenantData?.id ?? this.db.tenant().id;
     this.subscribeToUpdates();
+  }
+
+  async ionViewWillEnter() {
+    if (!this.loaded || this.tenantData) { return; }
+    const currentTenantId = this.db.tenant().id;
+    if (currentTenantId !== this.loadedTenantId) {
+      this.loadedTenantId = currentTenantId;
+      await this.getSongs();
+      this.buildGroupsWithFiles();
+    }
   }
 
   async ngOnDestroy() {
