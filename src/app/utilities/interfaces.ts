@@ -509,6 +509,7 @@ export interface AttendanceType {
   checklist?: ChecklistItem[];
   planning_title: string;
   planning_prefix_instance_name?: boolean;
+  is_default_org_plan?: boolean;
 }
 
 export interface ShiftPlan {

@@ -394,6 +394,7 @@ export class AttListPage implements OnInit {
         start_time: type.start_time,
         end_time: type.end_time,
         duration_days: this.allDayDuration,
+        is_org_plan: type.is_default_org_plan ?? false,
         checklist,
       });
 
