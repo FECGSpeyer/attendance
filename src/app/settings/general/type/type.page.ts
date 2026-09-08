@@ -199,7 +199,7 @@ export class TypePage implements OnInit {
     try {
       this.type = await this.db.addAttendanceType(this.type);
       Utils.showToast('Anwesenheitstyp erfolgreich erstellt', 'success');
-      this.dismiss();
+      await this.modalController.dismiss();
     } catch (error) {
       Utils.showToast('Fehler beim Erstellen des Anwesenheitstyps', 'danger');
     }
