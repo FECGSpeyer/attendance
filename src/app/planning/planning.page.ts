@@ -71,7 +71,7 @@ export class PlanningPage implements OnInit {
       const att = this.attendances.find((att: Attendance) => att.id === this.attendanceId);
       this.notes = att?.notes || '';
       this.sharePlan = att?.share_plan || false;
-      this.isOrgPlan = att?.is_org_plan || false;
+      this.isOrgPlan = this.resolveOrgPlan(att);
       this.planTitle = att?.plan?.title ?? this.getDefaultPlanTitle(att);
       if (att?.plan) {
         this.end = att.plan.end;
@@ -88,7 +88,7 @@ export class PlanningPage implements OnInit {
       this.attendance = upcomingAttendances[0].id;
       this.notes = upcomingAttendances[0].notes;
       this.sharePlan = upcomingAttendances[0].share_plan || false;
-      this.isOrgPlan = upcomingAttendances[0].is_org_plan || false;
+      this.isOrgPlan = this.resolveOrgPlan(upcomingAttendances[0]);
       this.planTitle = upcomingAttendances[0].plan?.title ?? this.getDefaultPlanTitle(upcomingAttendances[0]);
       if (upcomingAttendances[0].plan) {
         this.end = upcomingAttendances[0].plan.end;
@@ -202,6 +202,13 @@ export class PlanningPage implements OnInit {
     this.db.sendPlanPerTelegram(blob, `${planningTitle.replace('(', '').replace(')', '')}_${name}${sideBySide ? '_2x' : ''}`, asImage);
   }
 
+  private resolveOrgPlan(attendance: Attendance | undefined): boolean {
+    if (!attendance) { return false; }
+    if (attendance.plan) { return attendance.is_org_plan || false; }
+    const attType = this.db.attendanceTypes().find((t: AttendanceType) => t.id === attendance.type_id);
+    return attType?.is_default_org_plan ?? false;
+  }
+
   onAttChange() {
     const attendance: Attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
 
@@ -209,7 +216,7 @@ export class PlanningPage implements OnInit {
 
     this.notes = attendance.notes;
     this.sharePlan = attendance.share_plan || false;
-    this.isOrgPlan = attendance.is_org_plan || false;
+    this.isOrgPlan = this.resolveOrgPlan(attendance);
     this.planTitle = attendance.plan?.title ?? this.getDefaultPlanTitle(attendance);
     if (attendance.plan) {
       this.end = attendance.plan.end;
