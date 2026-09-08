@@ -44,7 +44,8 @@ export class SongService {
       .from('songs')
       .select('*')
       .eq('tenantId', tenantId)
-      .order('number', { ascending: true });
+      .order('number', { ascending: true })
+      .limit(3000);
 
     if (data) { void this.storage.set(cacheKey, data); }
     return data as any;
