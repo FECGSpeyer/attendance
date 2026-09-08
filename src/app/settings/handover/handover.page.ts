@@ -133,4 +133,8 @@ export class HandoverPage implements OnInit {
 
   // TrackBy function for filtered persons list
   trackByPersonId = (_: number, item: Player): number => item.id;
+
+  goBack(): void {
+    this.navCtrl.navigateBack('/tabs/settings');
+  }
 }

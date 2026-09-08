@@ -106,6 +106,7 @@ export class SongsPage implements OnInit, OnDestroy {
       this.loadedTenantId = currentTenantId;
       await this.getSongs();
       this.buildGroupsWithFiles();
+      this.subscribeToUpdates();
     }
   }
 
@@ -115,12 +116,13 @@ export class SongsPage implements OnInit, OnDestroy {
 
   subscribeToUpdates() {
     this.sub?.unsubscribe();
+    const effectiveTenantId = this.db.effectiveSongTenantId();
     this.sub = this.db.getSupabase()
-      .channel('att-changes').on(
+      .channel(`songs-changes-${effectiveTenantId}`).on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'songs' },
         (payload: RealtimePostgresChangesPayload<Song>) => {
-          if ((payload.new as Song)?.tenantId === (this.tenantData?.id ?? this.db.tenant().id) || (payload.old as Song)?.id) {
+          if ((payload.new as Song)?.tenantId === effectiveTenantId || (payload.old as Song)?.id) {
             this.getSongs();
           }
         })

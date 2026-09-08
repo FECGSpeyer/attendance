@@ -51,6 +51,7 @@ export interface Tenant {
   region?: string;
   role?: Role;
   song_sharing_id?: string;
+  song_source_tenant_id?: number | null;
   additional_fields?: ExtraField[];
   perc?: string;
   percColor?: string;

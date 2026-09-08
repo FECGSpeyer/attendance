@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AlertController } from '@ionic/angular/lazy';
+import { AlertController, NavController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 import { Utils } from 'src/app/utilities/Utils';
@@ -19,6 +19,7 @@ export class DeleteAccountPage {
   constructor(
     public db: DbService,
     private alertController: AlertController,
+    private navController: NavController,
     private tracking: TrackingService,
   ) {}
 
@@ -66,5 +67,9 @@ export class DeleteAccountPage {
       ]
     });
     await alert.present();
+  }
+
+  goBack(): void {
+    this.navController.navigateBack('/tabs/settings');
   }
 }

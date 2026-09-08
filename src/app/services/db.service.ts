@@ -149,7 +149,7 @@ export class DbService {
 
   async uploadSongFile(songId: number, file: File, instrumentId: number | null, note?: string): Promise<SongFile> {
     this.checkDemoRestriction();
-    const tenantId = this.tenant().id;
+    const tenantId = this.effectiveSongTenantId();
     // Generate a unique fileId (timestamp + random)
     const fileId = this.encodeFilename(file.name);
     const filePath = `songs/${tenantId}/${songId}/${fileId}`;
@@ -174,7 +174,7 @@ export class DbService {
       created_at: new Date().toISOString(),
     };
     // Update the song.files array
-    const song = await this.getSong(songId);
+    const song = await this.getSong(songId, this.effectiveSongTenantId());
     const files = song.files ? [...song.files, songFile] : [songFile];
     const filesJson = files.map(f => ({
       storageName: f.storageName,
@@ -196,7 +196,7 @@ export class DbService {
   }
 
   async downloadSongFile(fileName: string, songId: number): Promise<Blob> {
-    const tenantId = this.tenant().id;
+    const tenantId = this.effectiveSongTenantId();
     const filePath = `songs/${tenantId}/${songId}/${fileName}`;
 
     const { data, error } = await supabase.storage
@@ -256,7 +256,7 @@ export class DbService {
     instrumentMapping: { [key: number]: number | null },
     onProgress?: (current: number, total: number) => void
   ): Promise<Song> {
-    const sourceTenantId = this.tenant().id;
+    const sourceTenantId = this.effectiveSongTenantId();
 
     // 1. Create new song in target tenant (without files, category = null)
     const newSong: Song = {
@@ -342,7 +342,7 @@ export class DbService {
 
   async deleteSongFile(songId: number, file: SongFile): Promise<SongFile> {
     this.checkDemoRestriction();
-    const song = await this.getSong(songId);
+    const song = await this.getSong(songId, this.effectiveSongTenantId());
     const files = song.files ? song.files.filter(f => f.url !== file.url) : [];
     const filesJson = files.map(f => ({
       fileName: f.fileName,
@@ -352,7 +352,7 @@ export class DbService {
       note: f.note,
     }));
 
-    const filePath = `${this.tenant().id}/${songId}/${file.fileName}`;
+    const filePath = `${this.effectiveSongTenantId()}/${songId}/${file.storageName ?? file.fileName}`;
     const { error } = await supabase.storage
       .from('songs')
       .remove([filePath]);
@@ -451,7 +451,7 @@ export class DbService {
       this.groupSvc.getGroups(nextTenantId),
       this.attTypeSvc.getAttendanceTypes(nextTenantId),
       this.orgSvc.getOrganisationFromTenant(nextTenantId),
-      this.songCategorySvc.getSongCategories(nextTenantId),
+      this.songCategorySvc.getSongCategories(nextTenant?.song_source_tenant_id ?? nextTenantId),
       this.shiftSvc.loadShifts(nextTenantId),
       needsChurches ? this.churchSvc.getChurches() : Promise.resolve(undefined as Church[] | undefined),
       this.rolePermissionSvc.getPermissions(nextTenantId),
@@ -2308,9 +2308,9 @@ export class DbService {
     return this.groups().find((inst: Group) => inst.maingroup);
   }
 
-  async addGroup(name: string, maingroup: boolean = false, tenantId?: number): Promise<Group[]> {
+  async addGroup(name: string, maingroup: boolean = false, tenantId?: number, category?: number | null): Promise<Group[]> {
     this.checkDemoRestriction();
-    const data = await this.groupSvc.addGroup(name, tenantId || this.tenant().id, maingroup);
+    const data = await this.groupSvc.addGroup(name, tenantId || this.tenant().id, maingroup, category);
     if (this.tenant() && this.tenant().id) {
       this.groups.set(await this.getGroups());
     }
@@ -2579,8 +2579,12 @@ export class DbService {
     return this.teacherSvc.updateTeacher(teacher, id);
   }
 
+  effectiveSongTenantId(): number {
+    return this.tenant()?.song_source_tenant_id ?? this.tenant().id;
+  }
+
   async getSongs(tenantId?: number): Promise<Song[]> {
-    return this.songSvc.getSongs(tenantId ?? this.tenant().id);
+    return this.songSvc.getSongs(tenantId ?? this.effectiveSongTenantId());
   }
 
   async getSong(id: number, tenantId?: number): Promise<Song> {
@@ -2589,12 +2593,12 @@ export class DbService {
 
   async addSong(song: Song): Promise<Song> {
     this.checkDemoRestriction();
-    return this.songSvc.addSong(song, this.tenant().id);
+    return this.songSvc.addSong(song, this.effectiveSongTenantId());
   }
 
   async removeSong(song: Song): Promise<void> {
     this.checkDemoRestriction();
-    return this.songSvc.removeSong(song, this.tenant().id);
+    return this.songSvc.removeSong(song, this.effectiveSongTenantId());
   }
 
   async editSong(id: number, song: Song): Promise<Song[]> {
@@ -2603,14 +2607,14 @@ export class DbService {
   }
 
   async getSongCategories(): Promise<SongCategory[]> {
-    const data = await this.songCategorySvc.getSongCategories(this.tenant().id);
+    const data = await this.songCategorySvc.getSongCategories(this.effectiveSongTenantId());
     this.songCategories.set(data);
     return data;
   }
 
   async addSongCategory(category: Partial<SongCategory>) {
     this.checkDemoRestriction();
-    await this.songCategorySvc.addSongCategory(category, this.tenant().id);
+    await this.songCategorySvc.addSongCategory(category, this.effectiveSongTenantId());
     await this.getSongCategories();
   }
 

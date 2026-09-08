@@ -127,7 +127,7 @@
       <ion-fab-button id="add-instrument-button">
         <ion-icon name="add"></ion-icon>
       </ion-fab-button>
-      <ion-modal #modal trigger="add-instrument-button" handle-behavior="none" [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8">
+      <ion-modal #modal trigger="add-instrument-button" handle-behavior="none" [breakpoints]="[0, 0.8]" [initialBreakpoint]="0.8" (willPresent)="newGroupCategory = null">
         <ng-template>
           <ion-content>
             <ion-header>
@@ -139,6 +139,16 @@
               <ion-label position="stacked">Gruppe</ion-label>
               <ion-input autocapitalize="words" placeholder="z.B. Mädchen, Posaune, Alt 1, etc." #input></ion-input>
             </ion-item>
+            @if (categories?.length > 0) {
+              <ion-item>
+                <ion-select label="Kategorie" labelPlacement="stacked" [(ngModel)]="newGroupCategory">
+                  <ion-select-option [value]="null">Keine</ion-select-option>
+                  @for (cat of categories; track cat.id) {
+                    <ion-select-option [value]="cat.id">{{ cat.name }}</ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+            }
             <ion-button expand="block" (click)="addInstrument(input.value, modal)" expand="full">Hinzufügen</ion-button>
           </ion-content>
         </ng-template>

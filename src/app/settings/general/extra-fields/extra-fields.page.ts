@@ -372,6 +372,10 @@ export class ExtraFieldsPage implements OnInit {
   }
 
   navigateBack() {
-    this.navController.back();
+    this.navController.navigateBack('/tabs/settings/general');
+  }
+
+  goBack(): void {
+    this.navController.navigateBack('/tabs/settings/general');
   }
 }

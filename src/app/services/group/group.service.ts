@@ -30,7 +30,7 @@ export class GroupService {
     return groups.find((inst: Group) => inst.maingroup);
   }
 
-  async addGroup(name: string, tenantId: number, maingroup: boolean = false): Promise<Group[]> {
+  async addGroup(name: string, tenantId: number, maingroup: boolean = false, category?: number | null): Promise<Group[]> {
     const { data } = await supabase
       .from('instruments')
       .insert({
@@ -39,6 +39,7 @@ export class GroupService {
         clefs: ['g'],
         tenantId,
         maingroup,
+        ...(category != null ? { category } : {}),
       })
       .select();
 

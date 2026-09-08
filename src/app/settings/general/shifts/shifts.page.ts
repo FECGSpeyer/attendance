@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonModal } from '@ionic/angular/lazy';
+import { IonModal, NavController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { ShiftPlan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -17,10 +17,15 @@ export class ShiftsPage implements OnInit {
 
   constructor(
     public db: DbService,
-    private router: Router
+    private router: Router,
+    private navController: NavController,
   ) { }
 
   ngOnInit() {
+  }
+
+  goBack(): void {
+    this.navController.navigateBack('/tabs/settings/general');
   }
 
   async createShift(modal: IonModal) {

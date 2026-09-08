@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController } from '@ionic/angular/lazy';
+import { AlertController, NavController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { ShiftInstance, ShiftPlan, Tenant } from 'src/app/utilities/interfaces';
@@ -24,6 +24,7 @@ export class ShiftPage implements OnInit {
     private router: Router,
     public db: DbService,
     private alertController: AlertController,
+    private navController: NavController,
   ) { }
 
   async ngOnInit() {
@@ -302,4 +303,8 @@ export class ShiftPage implements OnInit {
   }
 
   trackByShiftIndex = (index: number, _: any): number => index;
+
+  goBack(): void {
+    this.navController.navigateBack('/tabs/settings/general/shifts');
+  }
 }

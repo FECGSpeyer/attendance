@@ -860,4 +860,8 @@ export class FilesPage implements OnInit {
 
     await alert.present();
   }
+
+  goBack(): void {
+    this.navCtrl.navigateBack('/tabs/settings');
+  }
 }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IonRouterOutlet, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
+import { IonRouterOutlet, ItemReorderEventDetail, ModalController, NavController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { TypePage } from 'src/app/settings/general/type/type.page';
 import { AttendanceType } from 'src/app/utilities/interfaces';
@@ -18,9 +18,14 @@ export class TypesPage implements OnInit {
     public db: DbService,
     private modalController: ModalController,
     private routerOutlet: IonRouterOutlet,
+    private navController: NavController,
   ) { }
 
   ngOnInit() { }
+
+  goBack(): void {
+    this.navController.navigateBack('/tabs/settings/general');
+  }
 
   async saveOrder() {
     const loading = await Utils.getLoadingElement(9999, 'Speichere Reihenfolge...');

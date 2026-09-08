@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { Role } from 'src/app/utilities/constants';
-import { Organisation } from 'src/app/utilities/interfaces';
+import { Organisation, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { LinkPersonsPage } from '../settings/general/link-persons/link-persons.page';
 
@@ -15,6 +15,8 @@ import { LinkPersonsPage } from '../settings/general/link-persons/link-persons.p
 export class OrgSettingsPage implements OnInit {
   public isSuperAdmin = false;
   public isAdmin = false;
+  public linkedTenants: Tenant[] = [];
+  public selectedSongSourceTenantId: number | null = null;
 
   constructor(
     public db: DbService,
@@ -22,9 +24,16 @@ export class OrgSettingsPage implements OnInit {
     private modalController: ModalController,
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.isSuperAdmin = this.db.tenantUser().role === Role.ADMIN;
     this.isAdmin = [Role.ADMIN, Role.RESPONSIBLE].includes(this.db.tenantUser().role);
+    if (this.db.organisation()) {
+      try {
+        const all = await this.db.getLinkedTenants();
+        this.linkedTenants = all.filter(t => t.id !== this.db.tenant().id);
+      } catch { }
+    }
+    this.selectedSongSourceTenantId = this.db.tenant().song_source_tenant_id ?? null;
   }
 
   async openOrganisationAlert() {
@@ -177,5 +186,39 @@ export class OrgSettingsPage implements OnInit {
       handleBehavior: 'none',
     });
     await modal.present();
+  }
+
+  async saveSongSync(newSourceId: number | null): Promise<void> {
+    const currentSource = this.db.tenant().song_source_tenant_id;
+    if (currentSource && !newSourceId) {
+      const confirmed = await this.confirmDeactivation();
+      if (!confirmed) {
+        this.selectedSongSourceTenantId = currentSource;
+        return;
+      }
+    }
+    const loading = await Utils.getLoadingElement(999999, 'Einstellungen werden gespeichert...');
+    await loading.present();
+    try {
+      await this.db.updateTenantData({ song_source_tenant_id: newSourceId ?? null });
+      this.selectedSongSourceTenantId = newSourceId;
+      Utils.showToast('Werk-Synchronisierung gespeichert.', 'success');
+    } catch { }
+    finally { await loading.dismiss(); }
+  }
+
+  private async confirmDeactivation(): Promise<boolean> {
+    return new Promise(async (resolve) => {
+      const alert = await this.alertController.create({
+        header: 'Synchronisierung deaktivieren?',
+        message: 'Die Werke dieser Instanz sind danach leer, bis eigene Werke angelegt werden. '
+          + 'Historieneinträge auf Werke der Quellinstanz können nicht mehr aufgelöst werden.',
+        buttons: [
+          { text: 'Abbrechen', role: 'cancel', handler: () => resolve(false) },
+          { text: 'Deaktivieren', role: 'destructive', handler: () => resolve(true) },
+        ],
+      });
+      await alert.present();
+    });
   }
 }

@@ -148,4 +148,8 @@ export class HandoverDetailPage implements OnInit {
   }
 
   trackByPersonId = (_: number, item: Player): number => item.id;
+
+  goBack(): void {
+    this.navCtrl.navigateBack('/tabs/settings/handover');
+  }
 }

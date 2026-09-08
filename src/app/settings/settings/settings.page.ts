@@ -366,7 +366,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  async onTenantChange(tenantId: number, modal: IonModal): Promise<void> {
+  async onTenantChange(tenantId: number, modal?: IonModal): Promise<void> {
     if (this.db.tenant().id === tenantId) {
       return;
     }

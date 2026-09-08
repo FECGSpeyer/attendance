@@ -107,6 +107,34 @@
   </ion-list>
   }
 
+  <!-- Werk-Synchronisierung -->
+  @if (isSuperAdmin && linkedTenants.length > 0) {
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Werk-Synchronisierung</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item>
+        <ion-icon name="sync-outline" slot="start"></ion-icon>
+        <ion-label class="ion-text-wrap">
+          Werke einer anderen Instanz verwenden. Alle Änderungen werden dort gespeichert.
+        </ion-label>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-label>Quellinstanz</ion-label>
+        <ion-select
+          [(ngModel)]="selectedSongSourceTenantId"
+          (ngModelChange)="saveSongSync($event)"
+          interface="action-sheet"
+          slot="end">
+          <ion-select-option [value]="null">Keine (eigene Werke)</ion-select-option>
+          @for (t of linkedTenants; track t.id) {
+            <ion-select-option [value]="t.id">{{ t.shortName }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+  }
+
   }
 
 </ion-content>

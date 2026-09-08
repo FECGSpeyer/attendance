@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { NavController } from '@ionic/angular/lazy';
 import { DbService } from '../../../services/db.service';
 import { ImageService } from '../../../services/image/image.service';
 import { Utils } from '../../../utilities/Utils';
@@ -12,6 +13,7 @@ import { Utils } from '../../../utilities/Utils';
 export class BrandingPage implements OnInit {
   public db = inject(DbService);
   private imageSvc = inject(ImageService);
+  private navController = inject(NavController);
 
   public logoUrl = '';
   public brandingText = '';
@@ -80,5 +82,9 @@ export class BrandingPage implements OnInit {
     } finally {
       loading.dismiss();
     }
+  }
+
+  goBack(): void {
+    this.navController.navigateBack('/tabs/settings/org-settings');
   }
 }

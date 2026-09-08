@@ -119,4 +119,8 @@ export class VoiceLeaderPage implements OnInit {
     await this.loadGroupMembers();
     event.target.complete();
   }
+
+  goBack(): void {
+    this.navCtrl.navigateBack('/tabs/settings');
+  }
 }

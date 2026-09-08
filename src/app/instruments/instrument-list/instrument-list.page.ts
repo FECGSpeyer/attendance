@@ -21,6 +21,7 @@ export class InstrumentListPage implements OnInit {
   public categories: GroupCategory[];
   public isReordering = false;
   public isCategoryReordering = false;
+  public newGroupCategory: number | null = null;
 
   constructor(
     private modalController: ModalController,
@@ -173,7 +174,8 @@ export class InstrumentListPage implements OnInit {
 
   async addInstrument(value: string | number, modal: any) {
     if (value) {
-      await this.db.addGroup(String(value));
+      await this.db.addGroup(String(value), false, undefined, this.newGroupCategory);
+      this.newGroupCategory = null;
     } else {
       Utils.showToast('Bitte gib einem Namen an', 'danger');
       return;

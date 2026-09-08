@@ -1,7 +1,9 @@
 <ion-header translucent="true">
   <ion-toolbar color="light">
     <ion-buttons slot="start">
-      <ion-back-button text="" defaultHref="tabs/settings/handover"></ion-back-button>
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
     </ion-buttons>
     <ion-title>Personenübergabe</ion-title>
   </ion-toolbar>
