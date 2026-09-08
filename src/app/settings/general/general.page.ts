@@ -206,7 +206,7 @@ export class GeneralPage implements OnInit {
       const shouldLeave = await this.confirmUnsavedChanges();
       if (!shouldLeave) {return;}
     }
-    this.navController.back();
+    this.navController.navigateBack('/tabs/settings');
   }
 
   /**
