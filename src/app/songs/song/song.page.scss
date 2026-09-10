@@ -1,0 +1,51 @@
+.drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 16px;
+  margin: 8px 0;
+  border: 2px dashed var(--ion-color-medium);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  ion-icon {
+    font-size: 36px;
+    color: var(--ion-color-medium);
+    transition: color 0.15s;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ion-color-medium);
+    text-align: center;
+  }
+
+  &--active {
+    border-color: var(--ion-color-primary);
+    background: var(--ion-color-primary-tint, rgba(var(--ion-color-primary-rgb), 0.08));
+
+    ion-icon,
+    p {
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+.files-drop-area {
+  border-radius: 12px;
+  transition: outline 0.15s, background 0.15s;
+
+  &--active {
+    outline: 2px dashed var(--ion-color-primary);
+    background: rgba(var(--ion-color-primary-rgb), 0.05);
+  }
+}
+
+ion-badge[color="sibelius"] {
+  background: #7c3aed;
+  color: #fff;
+}

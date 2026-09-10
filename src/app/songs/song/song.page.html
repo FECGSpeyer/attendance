@@ -187,6 +187,11 @@
         <ion-icon name="download-outline"></ion-icon>
       </ion-button>
       } @else if (song.files && song.files.length > 0) {
+      @if (!readOnly) {
+      <ion-button (click)="isFilesModalOpen = true" fill="clear" size="small">
+        <ion-icon name="cloud-upload-outline"></ion-icon>
+      </ion-button>
+      }
       <ion-button id="files-button" fill="clear" size="small">
         <ion-icon name="ellipsis-horizontal"></ion-icon>
       </ion-button>
@@ -203,10 +208,6 @@
               <ion-icon name="download-outline" slot="start"></ion-icon>
               Alle Dateien herunterladen
             </ion-item>
-            <ion-item button (click)="filesPopover.dismiss(); isFilesModalOpen = true">
-              <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
-              Dateien hochladen
-            </ion-item>
             <ion-item button (click)="deleteAllFiles(filesPopover)">
               <ion-icon name="trash-outline" slot="start"></ion-icon>
               Alle Dateien löschen
@@ -219,7 +220,7 @@
         <ion-icon name="cloud-upload-outline"></ion-icon>
       </ion-button>
       }
-      <ion-modal [isOpen]="isFilesModalOpen" (ionModalDidDismiss)="isFilesModalOpen = false" #fileUploadModal
+      <ion-modal [isOpen]="isFilesModalOpen" (ionModalDidDismiss)="isFilesModalOpen = false; selectedFileInfos = []" #fileUploadModal
         handle-behavior="none" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
         <ng-template>
           <ion-header>
@@ -233,33 +234,51 @@
             </ion-toolbar>
           </ion-header>
           <ion-content color="light">
-            <ion-card color="warning">
-              <ion-card-content>
-                <p><strong>Wichtige Infos:</strong>
-                  <br>- Die Besetzung wird nach dem Hochladen automatisch anhand der ausgewählten Instrumente
-                  aktualisiert.
-                  <br>- Füge den Instrumenten Synonyme hinzu (<a
-                    href="/tabs/settings/instruments">Gruppeneinstellungen</a>), um die automatische Zuordnung der
-                  Dateien zu verbessern.
-                  <br>- Beim Hochladen mehrerer Dateien kann es je nach Dateigröße und Internetverbindung einige Zeit
-                  dauern, bis alle Dateien vollständig hochgeladen sind. Bitte schließen Sie das Fenster nicht, bis der
-                  Upload abgeschlossen ist.
-                </p>
-              </ion-card-content>
-            </ion-card>
+            <ion-accordion-group>
+              <ion-accordion value="info">
+                <ion-item slot="header" color="warning" lines="none">
+                  <ion-icon name="information-circle-outline" slot="start"></ion-icon>
+                  <ion-label>Wichtige Infos</ion-label>
+                </ion-item>
+                <div slot="content" class="ion-padding" style="background: var(--ion-color-warning-tint);">
+                  <p style="margin: 0; font-size: 14px;">
+                    - Die Besetzung wird nach dem Hochladen automatisch anhand der ausgewählten Instrumente aktualisiert.
+                    <br>- Füge den Instrumenten Synonyme hinzu (<a href="/tabs/settings/instruments">Gruppeneinstellungen</a>), um die automatische Zuordnung der Dateien zu verbessern.
+                    <br>- Beim Hochladen mehrerer Dateien kann es je nach Dateigröße und Internetverbindung einige Zeit dauern, bis alle Dateien vollständig hochgeladen sind. Bitte schließen Sie das Fenster nicht, bis der Upload abgeschlossen ist.
+                  </p>
+                </div>
+              </ion-accordion>
+            </ion-accordion-group>
 
             <ion-list [inset]="true">
               <input type="file" #fileInput (change)="onFilesSelected($event)" multiple style="display:none;" />
-              <ion-button expand="block" (click)="fileInput.click()">
-                <ion-icon name="attach-outline" slot="start"></ion-icon>
-                Dateien auswählen
-              </ion-button>
+              <div class="drop-zone" [class.drop-zone--active]="isDragging"
+                (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)"
+                (click)="fileInput.click()">
+                <ion-icon name="cloud-upload-outline"></ion-icon>
+                <p>Dateien hierher ziehen oder tippen zum Auswählen</p>
+              </div>
 
               @if (selectedFileInfos?.length) {
               <ion-item-group>
                 @for (fileInfo of selectedFileInfos; track trackByFileInfo(i, fileInfo); let i = $index) {
                 <ion-item-sliding #sliderFile>
                   <ion-item>
+                    @if (fileInfo.conflictingFiles?.length) {
+                    <ion-icon name="warning-outline" color="warning" slot="start"
+                      [id]="'conflict-btn-' + i" style="cursor:pointer; font-size: 20px;"></ion-icon>
+                    @if (fileInfo.conflictingFiles.length === 1) {
+                    <ion-popover [trigger]="'conflict-btn-' + i" triggerAction="click">
+                      <ng-template>
+                        <ion-list>
+                          <ion-item lines="none">
+                            <ion-label class="ion-text-wrap" style="font-size: 13px;">Ersetzt: {{ fileInfo.conflictingFiles[0].fileName }}</ion-label>
+                          </ion-item>
+                        </ion-list>
+                      </ng-template>
+                    </ion-popover>
+                    }
+                    }
                     <ion-label>
                       <h2>{{ fileInfo.file.name }}</h2>
                     </ion-label>
@@ -282,6 +301,18 @@
                     </ion-item-option>
                   </ion-item-options>
                 </ion-item-sliding>
+                @if (fileInfo.conflictingFiles?.length > 1) {
+                @for (conflict of fileInfo.conflictingFiles; track conflict.url) {
+                <ion-item>
+                  <ion-checkbox slot="start"
+                    [checked]="fileInfo.toReplace?.has(conflict.url)"
+                    (ionChange)="toggleModalConflict(i, conflict.url)">
+                  </ion-checkbox>
+                  <ion-label class="ion-text-wrap">{{ conflict.fileName }}</ion-label>
+                  <ion-badge slot="end" [color]="getBadgeColor(conflict.instrumentId, conflict.note)">{{ getInstrumentName(conflict.instrumentId, conflict.note) }}</ion-badge>
+                </ion-item>
+                }
+                }
                 }
               </ion-item-group>
               }
@@ -289,32 +320,112 @@
               <br>
 
               @if (selectedFileInfos?.length) {
-              <ion-button (click)="uploadFiles($event, fileUploadModal)" expand="block">Hochladen</ion-button>
+              <ion-button (click)="uploadFiles($event, fileUploadModal, false)" expand="block">Ersetzen & Hinzufügen</ion-button>
+              <ion-button (click)="uploadFiles($event, fileUploadModal, true)" expand="block" fill="outline">Ohne Ersetzen hinzufügen</ion-button>
               }
             </ion-list>
           </ion-content>
         </ng-template>
       </ion-modal>
     </ion-list-header>
-    <ion-item-group>
-      @if (song.files && song.files.length > 0) {
-      @for (file of song.files; track file; let i = $index) {
-      <ion-item detail="false" (click)="openFileActionSheet(file)" button>
-        <ion-label>
-          {{ file.fileName }}
-        </ion-label>
-        <ion-badge
-          [color]="getInstrumentName(file.instrumentId, file.note) === 'Sonstige' ? 'medium' : file.instrumentId === 1 ? 'primary' : 'secondary'"
-          slot="end">{{
-          getInstrumentName(file.instrumentId, file.note) }}</ion-badge>
-      </ion-item>
-      }
-      } @else {
-      <ion-item>
-        <ion-label>Keine Dateien vorhanden.</ion-label>
-      </ion-item>
-      }
-    </ion-item-group>
+    <div class="files-drop-area" [class.files-drop-area--active]="!readOnly && isPageDragging"
+      (dragenter)="onPageDragEnter($event)" (dragover)="onPageDragOver($event)"
+      (dragleave)="onPageDragLeave($event)" (drop)="onPageDrop($event)">
+      <ion-item-group>
+        @if (song.files && song.files.length > 0) {
+        @for (file of sortedFiles; track file; let i = $index) {
+        <ion-item detail="false" (click)="openFileActionSheet(file)" button>
+          <ion-label>
+            {{ file.fileName }}
+          </ion-label>
+          <ion-badge
+            [color]="getBadgeColor(file.instrumentId, file.note)"
+            slot="end">{{
+            getInstrumentName(file.instrumentId, file.note) }}</ion-badge>
+        </ion-item>
+        }
+        } @else {
+        <ion-item>
+          <ion-label>Keine Dateien vorhanden.</ion-label>
+        </ion-item>
+        }
+      </ion-item-group>
+    </div>
+
+    <ion-modal [isOpen]="isSingleFileModalOpen" (ionModalDidDismiss)="onSingleFileModalDismiss()" #singleFileModal
+      handle-behavior="none" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Datei hochladen</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="cancelSingleFile(); singleFileModal.dismiss()">
+                <ion-icon name="close"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content color="light">
+          <ion-list [inset]="true">
+            @if (selectedFileInfos?.length) {
+            <ion-item>
+              <ion-icon name="document-outline" slot="start"></ion-icon>
+              <ion-label>{{ selectedFileInfos[0].file.name }}</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>Kategorie</ion-label>
+              <ion-select slot="end" placeholder="Instrument"
+                (ionChange)="onSingleFileInstrumentChange($event.detail.value)"
+                [value]="selectedFileInfos[0].instrumentId">
+                <ion-select-option [value]="null">{{ selectedFileInfos[0].note ? selectedFileInfos[0].note + ' (Sonstige)' : 'Sonstige (Freitext möglich)' }}</ion-select-option>
+                <ion-select-option [value]="1">Aufnahme</ion-select-option>
+                <ion-select-option [value]="2">Liedtext</ion-select-option>
+                @for (instrument of instruments; track instrument) {
+                <ion-select-option [value]="instrument.id">{{ instrument.name }}</ion-select-option>
+                }
+              </ion-select>
+            </ion-item>
+            @if (singleFileConflicts.length === 1) {
+            <ion-item color="warning">
+              <ion-icon name="warning-outline" slot="start"></ion-icon>
+              <ion-label class="ion-text-wrap">Ersetzt: {{ singleFileConflicts[0].fileName }}</ion-label>
+            </ion-item>
+            } @else if (singleFileConflicts.length > 1) {
+            <ion-item color="warning">
+              <ion-icon name="warning-outline" slot="start"></ion-icon>
+              <ion-label class="ion-text-wrap">Welche Dateien sollen ersetzt werden?</ion-label>
+            </ion-item>
+            @for (conflict of singleFileConflicts; track conflict.url) {
+            <ion-item>
+              <ion-checkbox slot="start"
+                [checked]="singleFileConflictsToReplace.has(conflict.url)"
+                (ionChange)="toggleConflictToReplace(conflict.url)">
+              </ion-checkbox>
+              <ion-label class="ion-text-wrap">{{ conflict.fileName }}</ion-label>
+              <ion-badge slot="end" [color]="getBadgeColor(conflict.instrumentId, conflict.note)">{{ getInstrumentName(conflict.instrumentId, conflict.note) }}</ion-badge>
+            </ion-item>
+            }
+            }
+            }
+          </ion-list>
+        </ion-content>
+        <ion-footer>
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <ion-button (click)="cancelSingleFile(); singleFileModal.dismiss()">Abbrechen</ion-button>
+            </ion-buttons>
+            <ion-buttons slot="end">
+              @if (singleFileConflicts.length) {
+              <ion-button (click)="isSingleFileModalOpen = false; isFilesModalOpen = true">Hinzufügen</ion-button>
+              <ion-button color="danger" (click)="performDirectUpload(true); singleFileModal.dismiss()">Ersetzen</ion-button>
+              } @else {
+              <ion-button (click)="performDirectUpload(false); singleFileModal.dismiss()">Hochladen</ion-button>
+              }
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-footer>
+      </ng-template>
+    </ion-modal>
 
     <br>
 

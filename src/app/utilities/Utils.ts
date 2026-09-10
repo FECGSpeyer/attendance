@@ -1169,6 +1169,8 @@ export class Utils {
         return [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER].includes(role);
       case '/tabs/parents':
         return [Role.PARENT].includes(role);
+      case '/tabs/songs-tab':
+        return role !== Role.APPLICANT && role !== Role.PARENT;
       default:
         if (url.includes('/tabs/settings/songs/')) {
           return true;
@@ -1182,6 +1184,8 @@ export class Utils {
           // this branch, TabsPage's url-check effect kicks the user back to
           // their home page on a hard reload of the detail URL.
           return [Role.ADMIN, Role.HELPER, Role.VOICE_LEADER_HELPER, Role.VIEWER, Role.RESPONSIBLE].includes(role);
+        } else if (url.startsWith('/tabs/songs-tab/')) {
+          return role !== Role.APPLICANT && role !== Role.PARENT;
         }
 
 

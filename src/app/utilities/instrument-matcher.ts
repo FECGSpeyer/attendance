@@ -389,6 +389,16 @@ export function detectSpecialFileType(filename: string, mimeType: string): { ins
     return { instrumentId: 1 }; // "Aufnahme"
   }
 
+  // Word documents and plain text → Liedtext
+  const lowerFilename = filename.toLowerCase();
+  if (lowerFilename.endsWith('.doc') || lowerFilename.endsWith('.docx') ||
+      lowerFilename.endsWith('.txt') ||
+      mimeType === 'application/msword' ||
+      mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      mimeType === 'text/plain') {
+    return { instrumentId: 2 }; // "Liedtext"
+  }
+
   // Sibelius files
   if (filename.toLowerCase().includes('.sib')) {
     return { instrumentId: null, note: 'Sibelius' };

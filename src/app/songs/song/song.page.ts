@@ -29,8 +29,17 @@ export class SongPage implements OnInit {
     file: File;
     instrumentId: number | null;
     note?: string;
+    conflictingFiles?: SongFile[];
+    toReplace?: Set<string>;
   }[] = [];
   public isFilesModalOpen = false;
+  public isDragging = false;
+  public isPageDragging = false;
+  public isSingleFileModalOpen = false;
+  public singleFileConflict: SongFile | null = null;
+  public singleFileConflicts: SongFile[] = [];
+  public singleFileConflictsToReplace: Set<string> = new Set();
+  private pageDragCounter = 0;
   public readOnly = true;
   public tenant?: Tenant;
   public sharing_id?: string;
@@ -158,8 +167,29 @@ export class SongPage implements OnInit {
   onFilesSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files) {return;}
-    for (let i = 0; i < input.files.length; i++) {
-      const file = input.files[i];
+    this.addFiles(input.files);
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging = true;
+  }
+
+  onDragLeave() {
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging = false;
+    if (event.dataTransfer?.files) {
+      this.addFiles(event.dataTransfer.files);
+    }
+  }
+
+  private addFiles(files: FileList) {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
       if (file.size > 20 * 1024 * 1024) {
         Utils.showToast(`Die Datei ${file.name} überschreitet die maximale Größe von 20MB.`, 'danger', 5000);
         continue;
@@ -168,13 +198,11 @@ export class SongPage implements OnInit {
       let mappedId: number | null = null;
       let note: string | undefined;
 
-      // Try to match instrument using advanced matching (translations, abbreviations, Roman numerals)
       if (this.instruments?.length) {
         const match = matchInstrument(file.name, this.instruments);
         if (match) {mappedId = match.id!;}
       }
 
-      // If no instrument match, check for special file types
       if (!mappedId) {
         const specialType = detectSpecialFileType(file.name, file.type);
         if (specialType) {
@@ -183,8 +211,127 @@ export class SongPage implements OnInit {
         }
       }
 
-      this.selectedFileInfos.push({ file, instrumentId: mappedId, note });
+      const conflicts = this.findConflictingFiles(mappedId, note);
+      const toReplace = new Set(conflicts.filter(f => f.fileName === file.name).map(f => f.url));
+      if (toReplace.size === 0) { conflicts.forEach(f => toReplace.add(f.url)); }
+      this.selectedFileInfos.push({ file, instrumentId: mappedId, note, conflictingFiles: conflicts, toReplace });
     }
+  }
+
+  // --- Page-level drag & drop ---
+
+  onPageDragEnter(event: DragEvent) {
+    event.preventDefault();
+    this.pageDragCounter++;
+    this.isPageDragging = true;
+  }
+
+  onPageDragOver(event: DragEvent) {
+    event.preventDefault();
+  }
+
+  onPageDragLeave(_event?: DragEvent) {
+    if (--this.pageDragCounter === 0) {
+      this.isPageDragging = false;
+    }
+  }
+
+  onPageDrop(event: DragEvent) {
+    event.preventDefault();
+    this.pageDragCounter = 0;
+    this.isPageDragging = false;
+    if (!this.readOnly && event.dataTransfer?.files?.length) {
+      this.handlePageDrop(event.dataTransfer.files);
+    }
+  }
+
+  private handlePageDrop(files: FileList) {
+    this.selectedFileInfos = [];
+    this.addFiles(files);
+    if (files.length > 1) {
+      this.isFilesModalOpen = true;
+    } else {
+      this.refreshSingleFileConflicts();
+      this.isSingleFileModalOpen = true;
+    }
+  }
+
+  private findConflictingFiles(instrumentId: number | null, note?: string): SongFile[] {
+    if (!this.song?.files?.length) { return []; }
+    if (instrumentId != null) {
+      return this.song.files.filter(f => f.instrumentId === instrumentId);
+    }
+    return this.song.files.filter(f => f.instrumentId == null && (f.note || '') === (note || ''));
+  }
+
+  private refreshSingleFileConflicts() {
+    if (!this.selectedFileInfos.length) { return; }
+    const info = this.selectedFileInfos[0];
+    this.singleFileConflicts = this.findConflictingFiles(info.instrumentId, info.note);
+    this.singleFileConflict = this.singleFileConflicts[0] ?? null;
+    // Pre-check files whose name matches the dropped file
+    this.singleFileConflictsToReplace = new Set(
+      this.singleFileConflicts
+        .filter(f => f.fileName === info.file.name)
+        .map(f => f.url)
+    );
+    // If no name match, pre-check all conflicts
+    if (this.singleFileConflictsToReplace.size === 0) {
+      this.singleFileConflictsToReplace = new Set(this.singleFileConflicts.map(f => f.url));
+    }
+  }
+
+  onSingleFileInstrumentChange(instrumentId: number | null) {
+    if (!this.selectedFileInfos.length) { return; }
+    this.selectedFileInfos[0] = { ...this.selectedFileInfos[0], instrumentId };
+    this.refreshSingleFileConflicts();
+  }
+
+  toggleConflictToReplace(url: string) {
+    if (this.singleFileConflictsToReplace.has(url)) {
+      this.singleFileConflictsToReplace.delete(url);
+    } else {
+      this.singleFileConflictsToReplace.add(url);
+    }
+    this.singleFileConflictsToReplace = new Set(this.singleFileConflictsToReplace);
+  }
+
+  toggleModalConflict(index: number, url: string) {
+    const info = this.selectedFileInfos[index];
+    if (!info?.toReplace) { return; }
+    if (info.toReplace.has(url)) { info.toReplace.delete(url); } else { info.toReplace.add(url); }
+    info.toReplace = new Set(info.toReplace);
+  }
+
+  cancelSingleFile() {
+    this.selectedFileInfos = [];
+    this.singleFileConflict = null;
+    this.singleFileConflicts = [];
+    this.singleFileConflictsToReplace = new Set();
+  }
+
+  onSingleFileModalDismiss() {
+    this.isSingleFileModalOpen = false;
+  }
+
+  async performDirectUpload(replaceExisting: boolean) {
+    if (!this.selectedFileInfos.length) { return; }
+    const info = this.selectedFileInfos[0];
+    const loading = await Utils.getLoadingElement(999999, 'Datei wird hochgeladen...');
+    await loading.present();
+    if (replaceExisting) {
+      for (const conflict of this.singleFileConflicts.filter(f => this.singleFileConflictsToReplace.has(f.url))) {
+        await this.db.deleteSongFile(this.song.id, conflict);
+      }
+    }
+    await this.db.uploadSongFile(this.song.id, info.file, info.instrumentId, info.note);
+    this.song = await this.db.getSong(this.song.id);
+    this.syncInstrumentIdsFromFiles();
+    this.selectedFileInfos = [];
+    this.singleFileConflict = null;
+    this.singleFileConflicts = [];
+    this.singleFileConflictsToReplace = new Set();
+    await loading.dismiss();
   }
 
   trackByFileInfo(index: number, fileInfo: any): string {
@@ -207,11 +354,16 @@ export class SongPage implements OnInit {
           {
             text: 'Speichern',
             handler: async (data) => {
-              // Replace the entire object to trigger change detection in ion-select
+              const newNote = data.note ?? '';
+              const conflicts = this.findConflictingFiles(null, newNote);
+              const toReplace = new Set(conflicts.filter(f => f.fileName === this.selectedFileInfos[index].file.name).map(f => f.url));
+              if (toReplace.size === 0) { conflicts.forEach(f => toReplace.add(f.url)); }
               this.selectedFileInfos[index] = {
                 ...this.selectedFileInfos[index],
-                note: data.note ?? '',
-                instrumentId: null
+                note: newNote,
+                instrumentId: null,
+                conflictingFiles: conflicts,
+                toReplace,
               };
               this.selectedFileInfos = [...this.selectedFileInfos];
               this.cdr.detectChanges();
@@ -222,11 +374,14 @@ export class SongPage implements OnInit {
       await alert.present();
       this.focusAlertInput(alert);
     } else {
-      this.selectedFileInfos[index].instrumentId = instrumentId;
+      const conflicts = this.findConflictingFiles(instrumentId, this.selectedFileInfos[index].note);
+      const toReplace = new Set(conflicts.filter(f => f.fileName === this.selectedFileInfos[index].file.name).map(f => f.url));
+      if (toReplace.size === 0) { conflicts.forEach(f => toReplace.add(f.url)); }
+      this.selectedFileInfos[index] = { ...this.selectedFileInfos[index], instrumentId, conflictingFiles: conflicts, toReplace };
     }
   }
 
-  async uploadFiles(event: Event, fileUploadModal: IonModal) {
+  async uploadFiles(event: Event, fileUploadModal: IonModal, skipReplace = false) {
     event.preventDefault();
     if (!this.selectedFileInfos.length) {
       return;
@@ -251,21 +406,26 @@ export class SongPage implements OnInit {
           {
             text: 'Trotzdem hochladen',
             handler: async () => {
-              await this.performUpload(fileUploadModal);
+              await this.performUpload(fileUploadModal, skipReplace);
             }
           }
         ]
       });
       await alert.present();
     } else {
-      await this.performUpload(fileUploadModal);
+      await this.performUpload(fileUploadModal, skipReplace);
     }
   }
 
-  private async performUpload(fileUploadModal: IonModal) {
+  private async performUpload(fileUploadModal: IonModal, skipReplace = false) {
     const loading = await Utils.getLoadingElement(999999, 'Dateien werden hochgeladen...');
     await loading.present();
     for (const info of this.selectedFileInfos) {
+      if (!skipReplace && info.toReplace?.size) {
+        for (const conflict of (info.conflictingFiles ?? []).filter(f => info.toReplace.has(f.url))) {
+          await this.db.deleteSongFile(this.song.id, conflict);
+        }
+      }
       await this.db.uploadSongFile(this.song.id, info.file, info.instrumentId, info.note);
     }
 
@@ -281,9 +441,43 @@ export class SongPage implements OnInit {
     if (!id) {return note ?? 'Sonstige';}
     if (id === 1) {return 'Aufnahme';}
     if (id === 2) {return 'Liedtext';}
-
     const inst = this.instruments.find(i => i.id === id);
     return inst ? inst.name : 'Unbekannt';
+  }
+
+  private fileSortKey(file: SongFile): string {
+    const id = file.instrumentId ?? null;
+    if (id === 1) { return '0'; }                              // Aufnahme
+    if (id === null && file.note === 'Partitur') { return '1'; }
+    if (id === null && file.note === 'Sibelius') { return '2'; }
+    if (id === 2) { return '3'; }                              // Liedtext
+    if (id === null && file.note === 'Chor') { return '4'; }
+    if (id === null && file.note === 'Klavierauszug') { return '5'; }
+    if (id === null) { return '6'; }                           // Sonstige (other notes)
+    const idx = this.instruments.findIndex(g => g.id === id);
+    return '7_' + String(idx === -1 ? 9999 : idx).padStart(6, '0');
+  }
+
+  get sortedFiles(): SongFile[] {
+    if (!this.song?.files) { return []; }
+    return [...this.song.files].sort((a, b) =>
+      this.fileSortKey(a).localeCompare(this.fileSortKey(b))
+    );
+  }
+
+  getBadgeColor(instrumentId: number | null | undefined, note?: string): string {
+    const id = instrumentId ?? null;
+    if (id === 1) { return 'primary'; }       // Aufnahme
+    if (id === 2) { return 'warning'; }       // Liedtext
+    if (id != null) { return 'secondary'; }    // instrument group
+    // note-based special categories
+    switch (note) {
+      case 'Sibelius':      return 'sibelius';
+      case 'Klavierauszug': return 'success';
+      case 'Partitur':      return 'success';
+      case 'Chor':          return 'tertiary';
+      default:              return 'medium';
+    }
   }
 
   openFile(file: SongFile) {
