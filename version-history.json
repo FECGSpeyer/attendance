@@ -1,18 +1,6 @@
     {
       "versions": [
         {
-          "version": "4.9.0",
-          "date": "10.9.2026",
-          "changes": [
-            "📂 Dateien: Drag & Drop direkt auf der Werkseite.",
-            "📂 Dateien: Einzelner Drop öffnet Smart-Upload mit Kategorie & Ersetzen-Option.",
-            "📂 Dateien: Mehrfach-Upload mit Ersetzen-Option pro Datei.",
-            "📂 Dateien: Sortierung nach Kategorie.",
-            "📂 Dateien: Farbige Kategorie-Badges (Aufnahme, Liedtext, Sibelius, Partitur, Chor, Klavierauszug).",
-            "📂 Dateien: .doc, .docx und .txt werden automatisch als Liedtext erkannt."
-          ]
-        },
-        {
           "version": "4.8.0",
           "date": "10.9.2026",
           "changes": [
