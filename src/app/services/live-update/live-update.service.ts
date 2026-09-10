@@ -143,7 +143,7 @@ export class LiveUpdateService {
 
     const newVersion = this.bundleVersion(manifest.bundleId);
     const currentVersion = isOtaActive ? this.bundleVersion(current.bundleId) : nativeVersion;
-    if (this.isMajorOrMinorUpdate(currentVersion, newVersion)) {
+    if (true || this.isMajorOrMinorUpdate(currentVersion, newVersion)) {
       await this.promptReload(newVersion);
     }
   }
