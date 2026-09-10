@@ -454,8 +454,9 @@ export class SongPage implements OnInit {
     if (id === null && file.note === 'Chor') { return '4'; }
     if (id === null && file.note === 'Klavierauszug') { return '5'; }
     if (id === null) { return '6'; }                           // Sonstige (other notes)
-    const idx = this.instruments.findIndex(g => g.id === id);
-    return '7_' + String(idx === -1 ? 9999 : idx).padStart(6, '0');
+    const inst = this.instruments.find(g => g.id === id);
+    const order = inst?.sort_order ?? 9999;
+    return '7_' + String(order).padStart(6, '0');
   }
 
   get sortedFiles(): SongFile[] {
