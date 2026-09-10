@@ -217,7 +217,7 @@ export class PersonPage implements OnInit, AfterViewInit {
         }
 
         for (const field of this.db.tenant().additional_fields) {
-          this.player.additional_fields[field.id] = this.player.additional_fields[field.id] ?? this.getFieldTypeDefaultValue(field.type, field.options);
+          this.player.additional_fields[field.id] = this.player.additional_fields[field.id] ?? this.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options);
         }
       }
     }
