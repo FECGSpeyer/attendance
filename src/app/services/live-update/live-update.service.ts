@@ -5,6 +5,9 @@ import { App as CapApp } from '@capacitor/app';
 import { LiveUpdate } from '@capawesome/capacitor-live-update';
 import { supabase } from '../base/supabase';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const versionHistory: { versions: { version: string; date: string; changes: string[] }[] } = require('../../../../version-history.json');
+
 /**
  * Self-hosted OTA updates via @capawesome/capacitor-live-update.
  *
@@ -141,7 +144,7 @@ export class LiveUpdateService {
     const newVersion = this.bundleVersion(manifest.bundleId);
     const currentVersion = isOtaActive ? this.bundleVersion(current.bundleId) : nativeVersion;
     if (this.isMajorOrMinorUpdate(currentVersion, newVersion)) {
-      await this.promptReload();
+      await this.promptReload(newVersion);
     }
   }
 
@@ -195,10 +198,16 @@ export class LiveUpdateService {
     return (n[0] ?? 0) > (c[0] ?? 0) || (n[0] ?? 0) === (c[0] ?? 0) && (n[1] ?? 0) > (c[1] ?? 0);
   }
 
-  private async promptReload(): Promise<void> {
+  private async promptReload(newVersion: string): Promise<void> {
+    const entry = versionHistory.versions.find(v => v.version === newVersion);
+    const changeList = entry?.changes.map(c => `• ${c}`).join('<br>') ?? '';
+    const message = changeList
+      ? `<b>Version ${newVersion}</b><br><br>${changeList}<br><br>Die Aktualisierung dauert nur einen kurzen Moment und du kannst danach direkt weiterarbeiten.`
+      : `Version ${newVersion} ist verfügbar. Die Aktualisierung dauert nur einen kurzen Moment und du kannst danach direkt weiterarbeiten.`;
+
     const alert = await this.alertController.create({
       header: 'Update verfügbar',
-      message: 'Eine neue Version ist verfügbar. Die Aktualisierung dauert nur einen kurzen Moment und du kannst danach direkt weiterarbeiten. Jetzt aktualisieren?',
+      message,
       buttons: [
         // "Später" keeps the update staged; updateAvailable stays true so the
         // login and settings pages can offer a manual "Aktualisieren" button.
