@@ -211,6 +211,21 @@
       </ng-template>
     </ion-popover>
   </div>
+  @if (!loaded) {
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-skeleton-text [animated]="true" style="width: 80px"></ion-skeleton-text>
+      </ion-list-header>
+      @for (n of [1,2,3,4,5,6,7,8,9,10]; track n) {
+        <ion-item>
+          <ion-label>
+            <h2><ion-skeleton-text [animated]="true" style="width: 65%"></ion-skeleton-text></h2>
+            <h3><ion-skeleton-text [animated]="true" style="width: 40%"></ion-skeleton-text></h3>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  } @else {
   <ion-list [inset]="true">
     @if (selectedCategory === '' && selectedCategories.length === 0) {
       <ion-item-group>
@@ -381,6 +396,7 @@
       }
     </ion-item-group>
   </ion-list>
+  }
 
   @if (isAdmin) {
     <ion-fab vertical="bottom" horizontal="end" slot="fixed">

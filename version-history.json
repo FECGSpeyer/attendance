@@ -1,6 +1,14 @@
     {
       "versions": [
         {
+          "version": "4.8.1",
+          "date": "13.9.2026",
+          "changes": [
+            "⚡ Werke: Ladezeit deutlich reduziert (parallele Abfragen).",
+            "⏳ Werke: Skeleton-Ladeanimation beim ersten Laden."
+          ]
+        },
+        {
           "version": "4.8.0",
           "date": "10.9.2026",
           "changes": [

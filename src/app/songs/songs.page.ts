@@ -18,7 +18,7 @@ import { Capacitor } from '@capacitor/core';
 export class SongsPage implements OnInit, OnDestroy {
   public songs: Song[] = [];
   public songsFiltered: Song[] = [];
-  private loaded = false;
+  public loaded = false;
   private loadedTenantId: number | undefined;
   searchTerm = '';
   public isAdmin = false;
@@ -80,15 +80,28 @@ export class SongsPage implements OnInit, OnDestroy {
     }
 
     this.tenantType = (this.tenantData ?? this.db.tenant()).type;
-    this.sortOpt = await this.storage.get(`sortOptSongs${this.tenantData?.id ?? this.db.tenant().id}`) || 'numberAsc';
-    this.viewOpts = JSON.parse(await this.storage.get(`viewOptsSongs${this.tenantData?.id ?? this.db.tenant().id}`) || JSON.stringify(['withChoir', 'withSolo', 'missingInstruments', 'link', 'lastSung']));
-    this.inclChoir = await this.storage.get(`inclChoirSongs${this.tenantData?.id ?? this.db.tenant().id}`) === 'true';
-    this.inclSolo = await this.storage.get(`inclSoloSongs${this.tenantData?.id ?? this.db.tenant().id}`) === 'true';
-    this.instrumentsToFilter = JSON.parse(await this.storage.get(`instrumentsToFilterSongs${this.tenantData?.id ?? this.db.tenant().id}`) || '[]');
-    this.selectedCategories = JSON.parse(await this.storage.get(`selectedCategoriesSongs${this.tenantData?.id ?? this.db.tenant().id}`) || '[]');
-    this.selectedCategory = await this.storage.get(`selectedCategorySongs${this.tenantData?.id ?? this.db.tenant().id}`) || '';
-    this.filterOpts = JSON.parse(await this.storage.get(`filterOptsSongs${this.tenantData?.id ?? this.db.tenant().id}`) || '{}');
-    this.currentSongs = await this.db.getCurrentSongs(this.tenantData?.id ?? this.db.tenant().id);
+    const tid = this.tenantData?.id ?? this.db.tenant().id;
+    const [sortOpt, viewOptsRaw, inclChoirRaw, inclSoloRaw, instrumentsRaw, categoriesRaw, categoryRaw, filterOptsRaw, currentSongs] =
+      await Promise.all([
+        this.storage.get(`sortOptSongs${tid}`),
+        this.storage.get(`viewOptsSongs${tid}`),
+        this.storage.get(`inclChoirSongs${tid}`),
+        this.storage.get(`inclSoloSongs${tid}`),
+        this.storage.get(`instrumentsToFilterSongs${tid}`),
+        this.storage.get(`selectedCategoriesSongs${tid}`),
+        this.storage.get(`selectedCategorySongs${tid}`),
+        this.storage.get(`filterOptsSongs${tid}`),
+        this.db.getCurrentSongs(tid),
+      ]);
+    this.sortOpt = sortOpt || 'numberAsc';
+    this.viewOpts = JSON.parse(viewOptsRaw || JSON.stringify(['withChoir', 'withSolo', 'missingInstruments', 'link', 'lastSung']));
+    this.inclChoir = inclChoirRaw === 'true';
+    this.inclSolo = inclSoloRaw === 'true';
+    this.instrumentsToFilter = JSON.parse(instrumentsRaw || '[]');
+    this.selectedCategories = JSON.parse(categoriesRaw || '[]');
+    this.selectedCategory = categoryRaw || '';
+    this.filterOpts = JSON.parse(filterOptsRaw || '{}');
+    this.currentSongs = currentSongs;
 
     await this.getSongs();
     this.buildGroupsWithFiles();
@@ -103,9 +116,11 @@ export class SongsPage implements OnInit, OnDestroy {
     if (!this.loaded || this.tenantData) { return; }
     const currentTenantId = this.db.tenant().id;
     if (currentTenantId !== this.loadedTenantId) {
+      this.loaded = false;
       this.loadedTenantId = currentTenantId;
       await this.getSongs();
       this.buildGroupsWithFiles();
+      this.loaded = true;
       this.subscribeToUpdates();
     }
   }
@@ -132,15 +147,20 @@ export class SongsPage implements OnInit, OnDestroy {
   async getSongs(): Promise<void> {
     this.isOrchestra = (this.tenantData ?? this.db.tenant()).type === 'orchestra';
     this.isAdmin = this.db.tenantUser()?.role === Role.ADMIN || this.db.tenantUser()?.role === Role.RESPONSIBLE;
-    const history: History[] = await this.db.getHistory(this.tenantData?.id);
     const groups = this.tenantData ? await this.db.getGroups(this.tenantData.id) : this.db.groups();
-    const conductors: Person[] = await this.db.getConductors(true, this.tenantData?.id, groups.find((g: Group) => g.maingroup)?.id);
-    this.groupCategories = await this.db.getGroupCategories(this.tenantData?.id);
+    const mainGroupId = groups.find((g: Group) => g.maingroup)?.id;
+    const [history, conductors, groupCategories, rawSongs] = await Promise.all([
+      this.db.getHistory(this.tenantData?.id),
+      this.db.getConductors(true, this.tenantData?.id, mainGroupId),
+      this.db.getGroupCategories(this.tenantData?.id),
+      this.db.getSongs(this.tenantData?.id),
+    ]);
+    this.groupCategories = groupCategories;
     if (this.isOrchestra) {
       this.instruments = groups.filter((instrument: Group) => instrument.maingroup !== true);
       this.selectedInstruments = groups.map((instrument: Group) => instrument.id);
     }
-    this.songs = (await this.db.getSongs(this.tenantData?.id)).map((song: Song): Song => {
+    this.songs = rawSongs.map((song: Song): Song => {
       const hisEntry: History | undefined = history.find((his: History): boolean => his.songId === song.id);
       const lastSung: string | undefined = hisEntry?.date;
       const conductor: Person | undefined = hisEntry ? conductors.find((con: Person) => con.id === hisEntry.person_id) : undefined;
