@@ -57,12 +57,13 @@ export class BirthdaysCardComponent {
             const nextYear = bday.year(today.year() + 1).startOf('day');
             diff = nextYear.diff(today, 'day');
           }
+          const age = Utils.calculateAge(new Date(p.birthday));
           return {
             player: p,
             firstName: p.firstName,
             lastName: p.lastName,
             birthday: p.birthday,
-            age: Utils.calculateAge(new Date(p.birthday)),
+            age: diff > 0 ? age + 1 : age,
             daysOffset: diff,
           };
         })
