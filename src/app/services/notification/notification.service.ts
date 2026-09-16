@@ -38,7 +38,7 @@ export class NotificationService {
 
       await supabase
         .from('notifications')
-        .insert(newData);
+        .insert(newData as any);
 
       return newData;
     }
@@ -49,7 +49,7 @@ export class NotificationService {
   async updateNotificationConfig(config: NotificationConfig): Promise<void> {
     const { error } = await supabase
       .from('notifications')
-      .update(config)
+      .update(config as any)
       .eq('id', config.id);
 
     if (error) {
