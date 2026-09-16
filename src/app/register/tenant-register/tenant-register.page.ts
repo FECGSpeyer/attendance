@@ -3,8 +3,9 @@ import { Router } from '@angular/router';
 import { ActionSheetController, AlertController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
+import { ProfileService } from 'src/app/services/profile/profile.service';
 import { DEFAULT_IMAGE, FieldType, Role } from 'src/app/utilities/constants';
-import { Church, Group, Tenant } from 'src/app/utilities/interfaces';
+import { Church, Group, Tenant, TenantUser } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -45,6 +46,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     private router: Router,
     private alertController: AlertController,
     private actionSheetController: ActionSheetController,
+    private profileSvc: ProfileService,
   ) { }
 
   async ngOnInit() {
@@ -57,7 +59,11 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     }
 
     if (this.db.user) {
-      await this.checkExistent();
+      const tenantUsers = await this.db.getTenantsByUserId();
+      const alreadyRegistered = await this.checkExistent(tenantUsers);
+      if (!alreadyRegistered) {
+        await this.prefillFromProfile(tenantUsers);
+      }
     }
 
     for (const fieldName of this.tenantData.registration_fields || []) {
@@ -82,18 +88,34 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     this.selectedGroupId = this.groups.length > 0 ? this.groups[0].id : null;
   }
 
-  async checkExistent() {
+  async checkExistent(tenantUsers?: TenantUser[]): Promise<boolean> {
     const loading = await Utils.getLoadingElement();
     await loading.present();
-    const tenantUsers = await this.db.getTenantsByUserId();
-    const tenant = tenantUsers.find(t => t.tenantId === this.tenantData.id);
+    const users = tenantUsers ?? await this.db.getTenantsByUserId();
+    const tenant = users.find(t => t.tenantId === this.tenantData.id);
     if (tenant) {
       Utils.showToast('Sie sind bereits in dieser Instanz registriert.', 'warning', 5000);
       this.router.navigate(['/login']);
       await loading.dismiss();
-      return;
+      return true;
     }
     await loading.dismiss();
+    return false;
+  }
+
+  private async prefillFromProfile(tenantUsers?: TenantUser[]) {
+    try {
+      const users = tenantUsers ?? await this.db.getTenantsByUserId();
+      if (!users?.length) { return; }
+      const player = await this.profileSvc.getFirstPlayerProfile(this.db.user.id);
+      if (!player) { return; }
+      if (player.firstName) { this.firstName = player.firstName; }
+      if (player.lastName) { this.lastName = player.lastName; }
+      if (player.phone) { this.phone = player.phone; }
+      if (player.birthday && this.tenantData?.registration_fields?.includes('birthDate')) {
+        this.birthDate = player.birthday;
+      }
+    } catch (_) { }
   }
 
   ngOnDestroy() {
@@ -163,7 +185,11 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
       // Signed in now: if already a member of this tenant, checkExistent redirects
       // to /login; otherwise db.user is set, the account block collapses to the
       // "angemeldet als" state, and the user completes the profile + taps Registrieren.
-      await this.checkExistent();
+      const tenantUsers = await this.db.getTenantsByUserId();
+      const alreadyRegistered = await this.checkExistent(tenantUsers);
+      if (!alreadyRegistered) {
+        await this.prefillFromProfile(tenantUsers);
+      }
     } finally {
       await loading.dismiss();
     }
@@ -213,7 +239,11 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
           handler: async (data) => {
             try {
               await this.db.login(data.email, data.password, true);
-              await this.checkExistent();
+              const tenantUsers = await this.db.getTenantsByUserId();
+              const alreadyRegistered = await this.checkExistent(tenantUsers);
+              if (!alreadyRegistered) {
+                await this.prefillFromProfile(tenantUsers);
+              }
               return true;
             } catch (error) {
               return false;
@@ -247,8 +277,8 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
         additional_fields.bfecg_church = churchId;
       }
 
-      // Normalize email
       const normalizedEmail = (this.db.user?.email ?? this.email).toLowerCase().trim();
+      const normalizedPhone = this.phone.replace(/\s+/g, '');
 
       const hasBirthDateField = Boolean(this.tenantData?.registration_fields?.includes('birthDate'));
 
@@ -258,7 +288,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
         email: normalizedEmail,
         pending: !Boolean(this.tenantData?.auto_approve_registrations),
         birthday: this.birthDate,
-        phone: this.phone,
+        phone: normalizedPhone,
         img: this.profilePicture, // Will be handled by addPlayer if it's a data URL
         additional_fields,
         instrument: this.selectedGroupId,
@@ -346,7 +376,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     }
 
     if (this.tenantData.registration_fields?.includes('phone')) {
-      if (!Utils.validatePhoneNumber(this.phone)) {
+      if (!Utils.validatePhoneNumber(this.phone.replace(/\s+/g, ''))) {
         Utils.showToast('Bitte geben Sie eine gültige Telefonnummer an.', 'danger');
         return false;
       }

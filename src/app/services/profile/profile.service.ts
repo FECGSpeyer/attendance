@@ -26,6 +26,23 @@ export class ProfileService {
     } as any;
   }
 
+  async getFirstPlayerProfile(userId: string): Promise<Player | null> {
+    const { data, error } = await supabase
+      .from('player')
+      .select('*')
+      .eq('appId', userId)
+      .limit(1);
+
+    if (error || !data?.length) {
+      return null;
+    }
+
+    return {
+      ...data[0],
+      history: data[0].history as any,
+    } as any;
+  }
+
   async getPlayerByAppId(tenantId: number, userId: string, showToast: boolean = true): Promise<Player> {
     const { data: player, error } = await supabase
       .from('player')
