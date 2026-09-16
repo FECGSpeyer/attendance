@@ -495,16 +495,11 @@
   <!-- Anmeldefelder modal (2+ fields) -->
   <ion-modal [isOpen]="isRegFieldsModalOpen" handle-behavior="none"
     [breakpoints]="[0, 0.85, 1]" [initialBreakpoint]="0.85"
-    (ionModalDidDismiss)="isRegFieldsModalOpen = false; pendingSigninAttendance = null">
+    [backdropDismiss]="false">
     <ng-template>
       <ion-header>
         <ion-toolbar>
           <ion-title>Anmeldung</ion-title>
-          <ion-buttons slot="end">
-            <ion-button (click)="isRegFieldsModalOpen = false; pendingSigninAttendance = null">
-              <ion-icon slot="icon-only" name="close"></ion-icon>
-            </ion-button>
-          </ion-buttons>
         </ion-toolbar>
       </ion-header>
       <ion-content color="light">

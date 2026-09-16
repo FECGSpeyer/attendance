@@ -528,9 +528,9 @@ export class SignoutPage implements OnInit {
 
     const alert = await this.alertController.create({
       header: field.label,
+      backdropDismiss: false,
       inputs,
       buttons: [
-        { text: 'Abbrechen', role: 'cancel', handler: () => { this.pendingSigninAttendance = null; } },
         {
           text: 'Anmelden',
           handler: (data) => {
