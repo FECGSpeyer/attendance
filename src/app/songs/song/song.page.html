@@ -296,7 +296,8 @@
                   </ion-item>
                   @if (fileInfo.instrumentId === null) {
                   <ion-item>
-                    <ion-input placeholder="Freitext eingeben..."
+                    <ion-label position="stacked">Freitext</ion-label>
+                    <ion-input placeholder="Kategorie eingeben..."
                       [value]="fileInfo.note"
                       (ionInput)="updateFileNote(i, $event.detail.value)">
                     </ion-input>
@@ -397,8 +398,11 @@
               }
             </ion-radio-group>
             @if (selectedFileInfos[0].instrumentId === null) {
+            <ion-item-divider>
+              <ion-label>Freitext</ion-label>
+            </ion-item-divider>
             <ion-item>
-              <ion-input placeholder="Freitext eingeben..."
+              <ion-input placeholder="Kategorie eingeben..."
                 [value]="selectedFileInfos[0].note"
                 (ionInput)="onSingleFileNoteChange($event.detail.value)">
               </ion-input>
@@ -558,8 +562,11 @@
           }
         </ion-radio-group>
         @if (categoryModalInstrumentId === 'null') {
+        <ion-item-divider>
+          <ion-label>Freitext</ion-label>
+        </ion-item-divider>
         <ion-item>
-          <ion-input placeholder="Freitext eingeben..."
+          <ion-input placeholder="Kategorie eingeben..."
             [(ngModel)]="categoryModalNote"
             clearInput="true">
           </ion-input>
