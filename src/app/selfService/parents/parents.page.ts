@@ -302,6 +302,11 @@ export class ParentsPage implements OnInit {
       }
     }
 
+    const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === attendance.type_id);
+    if (attType && !attType.available_statuses.includes(AttendanceStatus.Late)) {
+      buttons = buttons.filter((btn) => btn.text !== 'Verspätung eintragen');
+    }
+
     // Add plan viewing option if share_plan is true
     if (attendance.share_plan && attendance.plan) {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');

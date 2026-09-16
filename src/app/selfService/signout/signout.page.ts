@@ -413,9 +413,11 @@ export class SignoutPage implements OnInit {
 
     if (attendance.text === 'X' || !canSignin) {
       buttons = buttons.filter((btn) => btn.text !== 'Anmelden' && btn.text !== 'Abmeldung zurücknehmen' && btn.text !== 'Anmelden mit Notiz');
-    } else if (attType && !attType.available_statuses.includes(AttendanceStatus.Excused)) {
+    }
+    if (attType && !attType.available_statuses.includes(AttendanceStatus.Excused)) {
       buttons = buttons.filter((btn) => btn.text !== 'Abmelden');
-    } else if (attType && !attType.available_statuses.includes(AttendanceStatus.Late)) {
+    }
+    if (attType && !attType.available_statuses.includes(AttendanceStatus.Late)) {
       buttons = buttons.filter((btn) => btn.text !== 'Verspätung eintragen');
     }
 

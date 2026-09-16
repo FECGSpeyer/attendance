@@ -1229,6 +1229,13 @@
       "changes": [
         "🔧 Fix: Alle Termine (Nicht-Mitglied-Ansicht) werden korrekt angezeigt."
       ]
+    },
+    {
+      "version": "4.8.6",
+      "date": "16.9.2026",
+      "changes": [
+        "🔧 Fix: \"Verspätung eintragen\" wird ausgeblendet, wenn der Anwesenheitstyp keine Verspätungen erlaubt."
+      ]
     }
   ]
 }
