@@ -23,6 +23,7 @@ export class SongPage implements OnInit {
   private audioPlayer = inject(AudioPlayerService);
   public song: Song;
   public isOrchestra = false;
+  public isChoir = false;
   public isStandaloneTab = false;
   public instruments: Group[] = [];
   public selectedFileInfos: {
@@ -43,6 +44,12 @@ export class SongPage implements OnInit {
   public readOnly = true;
   public tenant?: Tenant;
   public sharing_id?: string;
+
+  // Category modal (edit existing file)
+  public isCategoryModalOpen = false;
+  public categoryModalFile: SongFile | null = null;
+  public categoryModalInstrumentId: number | null | 'chor' = null;
+  public categoryModalNote = '';
 
   // Copy to other instance
   public isCopyModalOpen = false;
@@ -107,8 +114,10 @@ export class SongPage implements OnInit {
       this.sharing_id = window.location.pathname.split('/')[1];
       this.tenant = await this.db.getTenantBySongSharingId(this.sharing_id);
       this.isOrchestra = this.tenant?.type === 'orchestra';
+      this.isChoir = this.tenant?.type === 'choir';
     } else {
       this.isOrchestra = this.db.tenant()?.type === 'orchestra';
+      this.isChoir = this.db.tenant()?.type === 'choir';
       this.readOnly = this.db.tenantUser()?.role !== Role.RESPONSIBLE && this.db.tenantUser()?.role !== Role.ADMIN;
     }
 
@@ -211,6 +220,10 @@ export class SongPage implements OnInit {
         }
       }
 
+      if (!mappedId && !note && this.isChoir && file.type === 'application/pdf') {
+        note = 'Chor';
+      }
+
       const conflicts = this.findConflictingFiles(mappedId, note);
       const toReplace = new Set(conflicts.filter(f => f.fileName === file.name).map(f => f.url));
       if (toReplace.size === 0) { conflicts.forEach(f => toReplace.add(f.url)); }
@@ -281,10 +294,21 @@ export class SongPage implements OnInit {
     }
   }
 
-  onSingleFileInstrumentChange(instrumentId: number | null) {
+  onSingleFileInstrumentChange(value: number | null | 'chor') {
     if (!this.selectedFileInfos.length) { return; }
-    this.selectedFileInfos[0] = { ...this.selectedFileInfos[0], instrumentId };
+    const isChor = value === 'chor';
+    const instrumentId = isChor ? null : (value as number | null);
+    const note = isChor ? 'Chor' : (instrumentId === null ? this.selectedFileInfos[0].note : undefined);
+    this.selectedFileInfos[0] = { ...this.selectedFileInfos[0], instrumentId, note };
     this.refreshSingleFileConflicts();
+  }
+
+  onSingleFileNoteChange(note: string) {
+    if (!this.selectedFileInfos.length) { return; }
+    this.selectedFileInfos[0] = { ...this.selectedFileInfos[0], note };
+    this.refreshSingleFileConflicts();
+    this.cdr.detectChanges();
+  }
   }
 
   toggleConflictToReplace(url: string) {
@@ -338,47 +362,36 @@ export class SongPage implements OnInit {
     return `${index}-${fileInfo.note || ''}-${fileInfo.instrumentId}`;
   }
 
-  async changeFileInstrument(index: number, instrumentId: number | null, note?: string) {
-    if (!instrumentId) {
-      const alert = await this.alertController.create({
-        header: 'Sonstige Kategorie eingeben',
-        inputs: [
-          {
-            name: 'note',
-            type: 'text',
-            placeholder: 'Beliebige Kategorie eingeben...',
-            value: note || ''
-          }
-        ],
-        buttons: [
-          {
-            text: 'Speichern',
-            handler: async (data) => {
-              const newNote = data.note ?? '';
-              const conflicts = this.findConflictingFiles(null, newNote);
-              const toReplace = new Set(conflicts.filter(f => f.fileName === this.selectedFileInfos[index].file.name).map(f => f.url));
-              if (toReplace.size === 0) { conflicts.forEach(f => toReplace.add(f.url)); }
-              this.selectedFileInfos[index] = {
-                ...this.selectedFileInfos[index],
-                note: newNote,
-                instrumentId: null,
-                conflictingFiles: conflicts,
-                toReplace,
-              };
-              this.selectedFileInfos = [...this.selectedFileInfos];
-              this.cdr.detectChanges();
-            }
-          }
-        ]
-      });
-      await alert.present();
-      this.focusAlertInput(alert);
-    } else {
-      const conflicts = this.findConflictingFiles(instrumentId, this.selectedFileInfos[index].note);
-      const toReplace = new Set(conflicts.filter(f => f.fileName === this.selectedFileInfos[index].file.name).map(f => f.url));
-      if (toReplace.size === 0) { conflicts.forEach(f => toReplace.add(f.url)); }
-      this.selectedFileInfos[index] = { ...this.selectedFileInfos[index], instrumentId, conflictingFiles: conflicts, toReplace };
-    }
+  getFileSelectValue(fileInfo: { instrumentId: number | null; note?: string }): number | null | 'chor' {
+    if (fileInfo.instrumentId === null && fileInfo.note === 'Chor') { return 'chor'; }
+    return fileInfo.instrumentId;
+  }
+
+  changeFileInstrument(index: number, value: number | null | 'chor', note?: string) {
+    const isChor = value === 'chor';
+    const instrumentId = isChor ? null : (value as number | null);
+    const resolvedNote = isChor ? 'Chor' : (instrumentId === null ? (note || '') : this.selectedFileInfos[index].note);
+    const conflicts = this.findConflictingFiles(instrumentId, resolvedNote);
+    const toReplace = new Set(conflicts.filter(f => f.fileName === this.selectedFileInfos[index].file.name).map(f => f.url));
+    if (toReplace.size === 0) { conflicts.forEach(f => toReplace.add(f.url)); }
+    this.selectedFileInfos[index] = {
+      ...this.selectedFileInfos[index],
+      instrumentId,
+      note: resolvedNote,
+      conflictingFiles: conflicts,
+      toReplace,
+    };
+    this.selectedFileInfos = [...this.selectedFileInfos];
+    this.cdr.detectChanges();
+  }
+
+  updateFileNote(index: number, note: string) {
+    const conflicts = this.findConflictingFiles(null, note);
+    const toReplace = new Set(conflicts.filter(f => f.fileName === this.selectedFileInfos[index].file.name).map(f => f.url));
+    if (toReplace.size === 0) { conflicts.forEach(f => toReplace.add(f.url)); }
+    this.selectedFileInfos[index] = { ...this.selectedFileInfos[index], note, conflictingFiles: conflicts, toReplace };
+    this.selectedFileInfos = [...this.selectedFileInfos];
+    this.cdr.detectChanges();
   }
 
   async uploadFiles(event: Event, fileUploadModal: IonModal, skipReplace = false) {
@@ -516,76 +529,24 @@ export class SongPage implements OnInit {
     await alert.present();
   }
 
-  async changeCategory(file: SongFile) {
-    const alert = await this.alertController.create({
-      header: 'Kategorie ändern',
-      inputs: [{
-        name: 'instrument',
-        type: 'radio' as const,
-        label: 'Sonstige (Freitext möglich)',
-        value: null,
-        checked: file.instrumentId === null
-      }, {
-        name: 'instrument',
-        type: 'radio' as const,
-        label: 'Aufnahme',
-        value: 1,
-        checked: file.instrumentId === 1
-      }, {
-        name: 'instrument',
-        type: 'radio' as const,
-        label: 'Liedtext',
-        value: 2,
-        checked: file.instrumentId === 2
-      }].concat(this.instruments.map(inst => ({
-        name: 'instrument',
-        type: 'radio' as const,
-        label: inst.name,
-        value: inst.id,
-        checked: file.instrumentId === inst.id
-      }))),
-      buttons: [
-        {
-          text: 'Abbrechen',
-          role: 'cancel'
-        },
-        {
-          text: 'Speichern',
-          handler: async (data) => {
-            if (!data) {
-              await this.showNoteInputAlert(file);
-            } else {
-              await this.saveFileChange(file, data);
-            }
-          }
-        }
-      ]
-    });
-    await alert.present();
+  changeCategory(file: SongFile) {
+    this.categoryModalFile = file;
+    if (file.instrumentId === null && file.note === 'Chor' && this.isChoir) {
+      this.categoryModalInstrumentId = 'chor';
+    } else {
+      this.categoryModalInstrumentId = file.instrumentId ?? null;
+    }
+    this.categoryModalNote = file.note || '';
+    this.isCategoryModalOpen = true;
   }
 
-  async showNoteInputAlert(file: SongFile) {
-    const alert = await this.alertController.create({
-      header: 'Sonstige Kategorie eingeben',
-      inputs: [
-        {
-          name: 'note',
-          type: 'text',
-          placeholder: 'Beliebige Kategorie eingeben...',
-          value: file.note || ''
-        }
-      ],
-      buttons: [
-        {
-          text: 'Speichern',
-          handler: async (data) => {
-            await this.saveFileChange(file, null, data.note ?? '');
-          }
-        }
-      ]
-    });
-    await alert.present();
-    this.focusAlertInput(alert);
+  async saveCategoryModal() {
+    if (!this.categoryModalFile) { return; }
+    const isChor = this.categoryModalInstrumentId === 'chor';
+    const instrumentId = isChor ? null : (this.categoryModalInstrumentId as number | null);
+    const note = instrumentId === null ? (isChor ? 'Chor' : this.categoryModalNote) : undefined;
+    await this.saveFileChange(this.categoryModalFile, instrumentId, note);
+    this.isCategoryModalOpen = false;
   }
 
   private focusAlertInput(alert: HTMLIonAlertElement): void {

@@ -1,6 +1,15 @@
     {
       "versions": [
         {
+          "version": "4.8.3",
+          "date": "16.9.2026",
+          "changes": [
+            "🎵 Werke: Kategorie-Auswahl beim Datei-Upload verbessert (kein doppelter Dialog mehr).",
+            "🎵 Werke: Freitext-Kategorie direkt im Upload-Dialog eingeben.",
+            "🎵 Werke: Chor-Tenants erhalten automatisch Kategorie \"Chor\" für PDFs."
+          ]
+        },
+        {
           "version": "4.8.2",
           "date": "16.9.2026",
           "changes": [
