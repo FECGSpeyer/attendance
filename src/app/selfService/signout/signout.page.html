@@ -303,7 +303,7 @@
       </ion-item>
       <div slot="content">
         <ion-list>
-          @for (att of actualAttendances; track att.id) {
+          @for (att of actualAttendances; track att.attendance_id) {
           <ion-item button (click)="presentActionSheetForChoice(att)"
             [class.not-member]="showAllAttendances && !att.isMember">
             <ion-label>

@@ -1222,6 +1222,13 @@
         "✅ Anmeldefelder beim Anmelden in der Self-Service-Ansicht abfragen.",
         "🔧 Fix: Auto-Genehmigung bei Registrierung fügt Person korrekt zu zukünftigen Anwesenheiten hinzu."
       ]
+    },
+    {
+      "version": "4.8.5",
+      "date": "16.9.2026",
+      "changes": [
+        "🔧 Fix: Alle Termine (Nicht-Mitglied-Ansicht) werden korrekt angezeigt."
+      ]
     }
   ]
 }
