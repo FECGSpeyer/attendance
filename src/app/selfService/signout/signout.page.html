@@ -491,5 +491,68 @@
       </ion-content>
     </ng-template>
   </ion-modal>
+
+  <!-- Anmeldefelder modal (2+ fields) -->
+  <ion-modal [isOpen]="isRegFieldsModalOpen" handle-behavior="none"
+    [breakpoints]="[0, 0.85, 1]" [initialBreakpoint]="0.85"
+    (ionModalDidDismiss)="isRegFieldsModalOpen = false; pendingSigninAttendance = null">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Anmeldung</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="isRegFieldsModalOpen = false; pendingSigninAttendance = null">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content color="light">
+        @if (pendingSigninAttendance) {
+          <ion-list [inset]="true">
+            @for (field of getRegistrationFields(pendingSigninAttendance); track field.id) {
+              @if (field.type === 'text') {
+                <ion-item>
+                  <ion-input [label]="field.label" labelPlacement="stacked"
+                    [(ngModel)]="regFieldAnswers[field.id]" placeholder="..."></ion-input>
+                </ion-item>
+              } @else if (field.type === 'boolean') {
+                <ion-item>
+                  <ion-label>{{ field.label }}</ion-label>
+                  <ion-toggle slot="end" [(ngModel)]="regFieldAnswers[field.id]"></ion-toggle>
+                </ion-item>
+              } @else if (field.type === 'select') {
+                <ion-item>
+                  <ion-select [label]="field.label" labelPlacement="stacked"
+                    [(ngModel)]="regFieldAnswers[field.id]">
+                    @for (opt of field.options; track opt) {
+                      <ion-select-option [value]="opt">{{ opt }}</ion-select-option>
+                    }
+                  </ion-select>
+                </ion-item>
+              } @else if (field.type === 'multi_select') {
+                <ion-item lines="none">
+                  <ion-label position="stacked">{{ field.label }}</ion-label>
+                </ion-item>
+                @for (opt of field.options; track opt) {
+                  <ion-item button detail="false" (click)="toggleMultiSelectOption(field.id, opt)">
+                    <ion-checkbox slot="start" [checked]="regFieldAnswers[field.id]?.includes(opt)"
+                      style="pointer-events:none"></ion-checkbox>
+                    <ion-label>{{ opt }}</ion-label>
+                  </ion-item>
+                }
+              }
+            }
+          </ion-list>
+          <div class="ion-padding">
+            <ion-button expand="block" (click)="confirmRegistrationAnswers(regFieldAnswers)">
+              <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+              Anmelden
+            </ion-button>
+          </div>
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>
 }

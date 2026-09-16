@@ -229,6 +229,15 @@ export interface ChecklistItem {
   dueDate?: string;
 }
 
+export type RegistrationFieldType = 'text' | 'boolean' | 'select' | 'multi_select';
+
+export interface RegistrationField {
+  id: string;
+  label: string;
+  type: RegistrationFieldType;
+  options?: string[];
+}
+
 export interface Player extends Person {
   instrument: number;
   groupName?: string;
@@ -372,6 +381,7 @@ export interface PersonAttendance {
   changed_by?: string;
   changed_at?: string;
   isMember?: boolean;
+  registration_answers?: { [fieldId: string]: any };
 }
 
 export interface Song {
@@ -508,6 +518,7 @@ export interface AttendanceType {
     option: string | boolean;
   };
   checklist?: ChecklistItem[];
+  registration_fields?: RegistrationField[];
   planning_title: string;
   planning_prefix_instance_name?: boolean;
   is_default_org_plan?: boolean;

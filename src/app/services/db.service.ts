@@ -1612,9 +1612,12 @@ export class DbService {
   async addPlayerToAttendancesByDate(player: Player, tenantId?: number) {
     const attData: Attendance[] = await this.getAttendancesByDate(player.joined, tenantId);
     let attendanceTypes: AttendanceType[] = this.attendanceTypes();
+    let tenantAdditionalFields = this.tenant()?.additional_fields;
 
     if (tenantId) {
       attendanceTypes = await this.getAttendanceTypes(tenantId);
+      const tenantData = await this.tenantSvc.getTenantById(tenantId);
+      tenantAdditionalFields = tenantData?.additional_fields;
     }
 
     if (attData?.length) {
@@ -1636,8 +1639,8 @@ export class DbService {
         })
         .filter((att: Attendance) => {
           const attType = attendanceTypes.find((type: AttendanceType) => type.id === att.type_id);
-          if (attType.additional_fields_filter?.key && attType.additional_fields_filter?.option != null && this.tenant().additional_fields?.find(field => field.id === attType.additional_fields_filter.key)) {
-            const defaultValue = this.tenant().additional_fields.find(field => field.id === attType.additional_fields_filter.key)?.defaultValue;
+          if (attType.additional_fields_filter?.key && attType.additional_fields_filter?.option != null && tenantAdditionalFields?.find(field => field.id === attType.additional_fields_filter.key)) {
+            const defaultValue = tenantAdditionalFields.find(field => field.id === attType.additional_fields_filter.key)?.defaultValue;
             const additionalField = player.additional_fields[attType.additional_fields_filter.key] ?? defaultValue;
             return additionalField === attType.additional_fields_filter.option;
           }
@@ -2478,7 +2481,7 @@ export class DbService {
   async getAllUpcomingAttendancesForSignout(playerId: number): Promise<PersonAttendance[]> {
     const { data: allAtts } = await supabase
       .from('attendance')
-      .select('id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan, description, attachment_url, attachment_name, attType:type_id(id, highlight, include_in_average, name, color)')
+      .select('id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan, description, attachment_url, attachment_name, attType:type_id(id, highlight, include_in_average, name, color, registration_fields)')
       .eq('tenantId', this.tenant().id)
       .gt('date', dayjs().startOf('day').toISOString())
       .order('date', { ascending: true }) as any;
@@ -2487,7 +2490,7 @@ export class DbService {
 
     const { data: playerPAs } = await supabase
       .from('person_attendances')
-      .select('id, attendance_id, status, notes')
+      .select('id, attendance_id, status, notes, registration_answers')
       .eq('person_id', playerId)
       .in('attendance_id', allAtts.map((a: any) => a.id)) as any;
 

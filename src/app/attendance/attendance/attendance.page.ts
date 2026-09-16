@@ -12,7 +12,7 @@ import { StatusInfoComponent } from './status-info/status-info.component';
 import { AdHocReminderModalComponent, AdHocReminderResult } from './ad-hoc-reminder-modal/ad-hoc-reminder-modal.component';
 import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode, CHECKLIST_DEADLINE_OPTIONS, DEFAULT_ABSENCE_REASONS } from 'src/app/utilities/constants';
-import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem } from 'src/app/utilities/interfaces';
+import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem, RegistrationField } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
@@ -1859,5 +1859,18 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   async navigateToSong(songId: number): Promise<void> {
     await this.router.navigate([`/tabs/settings/songs/`, songId]);
+  }
+
+  getRegistrationAnswerSummary(player: PersonAttendance): string {
+    const answers = (player as any).registration_answers;
+    const fields = (this.type as any)?.registration_fields as RegistrationField[] ?? [];
+    if (!answers || !fields.length) { return ''; }
+    return fields.map(f => {
+      const val = answers[f.id];
+      if (val === undefined || val === null) { return null; }
+      if (f.type === 'boolean') { return `${f.label}: ${val ? 'Ja' : 'Nein'}`; }
+      if (f.type === 'multi_select' && Array.isArray(val)) { return `${f.label}: ${val.join(', ') || '–'}`; }
+      return `${f.label}: ${val}`;
+    }).filter(Boolean).join(' · ');
   }
 }

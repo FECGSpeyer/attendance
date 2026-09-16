@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, CHECKLIST_DEADLINE_OPTIONS } from 'src/app/utilities/constants';
-import { AttendanceType, ChecklistItem, FieldSelection, Plan } from 'src/app/utilities/interfaces';
+import { AttendanceType, ChecklistItem, FieldSelection, Plan, RegistrationField, RegistrationFieldType } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -539,6 +539,58 @@ export class TypePage implements OnInit {
     } else {
       return `${Math.floor(hours / 24)} Tage vorher`;
     }
+  }
+
+  // ========== ANMELDEFELDER METHODS ==========
+
+  public newRegField: Partial<RegistrationField> = {};
+  public newRegFieldOptionsText = '';
+
+  addRegistrationField(): void {
+    if (!this.newRegField.label?.trim()) {
+      Utils.showToast('Bitte eine Feldbezeichnung eingeben', 'warning');
+      return;
+    }
+    if (!this.newRegField.type) {
+      Utils.showToast('Bitte einen Feldtyp auswählen', 'warning');
+      return;
+    }
+    if (this.newRegField.type === 'select' || this.newRegField.type === 'multi_select') {
+      const opts = this.newRegFieldOptionsText.split(',').map(o => o.trim()).filter(Boolean);
+      if (opts.length < 2) {
+        Utils.showToast('Bitte mindestens 2 Optionen angeben', 'warning');
+        return;
+      }
+      this.newRegField.options = opts;
+    }
+    if (!this.type.registration_fields) {
+      this.type.registration_fields = [];
+    }
+    this.type.registration_fields.push({
+      id: crypto.randomUUID(),
+      label: this.newRegField.label.trim(),
+      type: this.newRegField.type as RegistrationFieldType,
+      options: this.newRegField.options,
+    });
+    this.newRegField = {};
+    this.newRegFieldOptionsText = '';
+  }
+
+  removeRegistrationField(index: number, slider: any): void {
+    slider.close();
+    if (this.type.registration_fields) {
+      this.type.registration_fields.splice(index, 1);
+    }
+  }
+
+  getRegFieldTypeLabel(type: RegistrationFieldType): string {
+    const labels: Record<RegistrationFieldType, string> = {
+      text: 'Text',
+      boolean: 'Ja / Nein',
+      select: 'Einzelauswahl',
+      multi_select: 'Mehrfachauswahl',
+    };
+    return labels[type] ?? type;
   }
 
   // ========== CHECKLIST METHODS ==========

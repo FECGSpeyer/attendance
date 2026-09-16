@@ -11,7 +11,7 @@ import { PushService } from 'src/app/services/push/push.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
 import { TelegramService } from 'src/app/services/telegram/telegram.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT, PlayerHistoryType, Role } from 'src/app/utilities/constants';
-import { Attendance, PersonAttendance, Player, PlayerAbsence, PlayerHistoryEntry, Song, Tenant, History, SongFile, AttendanceType, Plan } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, Player, PlayerAbsence, PlayerHistoryEntry, Song, Tenant, History, SongFile, AttendanceType, Plan, RegistrationField } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
@@ -58,6 +58,9 @@ export class SignoutPage implements OnInit {
   public playerAbsences: PlayerAbsence[] = [];
   public showAllAttendances = false;
   public showAllAttendancesInfoText = '';
+  public isRegFieldsModalOpen = false;
+  public pendingSigninAttendance: PersonAttendance | null = null;
+  public regFieldAnswers: { [fieldId: string]: any } = {};
 
   constructor(
     public db: DbService,
@@ -331,7 +334,7 @@ export class SignoutPage implements OnInit {
     let buttons = [
       {
         text: isExcused ? 'Abmeldung zurücknehmen' : 'Anmelden',
-        handler: () => this.signin(attendance),
+        handler: () => this.handleSigninWithFields(attendance),
       },
       {
         text: 'Anmelden mit Notiz',
@@ -465,6 +468,98 @@ export class SignoutPage implements OnInit {
     });
 
     await actionSheet.present();
+  }
+
+  // ========== ANMELDEFELDER SIGN-IN GATE ==========
+
+  getRegistrationFields(attendance: PersonAttendance): RegistrationField[] {
+    return (attendance?.attendance as any)?.attType?.registration_fields ?? [];
+  }
+
+  async handleSigninWithFields(attendance: PersonAttendance): Promise<void> {
+    const fields = this.getRegistrationFields(attendance);
+    if (!fields.length) {
+      await this.signin(attendance);
+      return;
+    }
+    this.regFieldAnswers = {};
+    for (const field of fields) {
+      const existing = (attendance.registration_answers ?? {})[field.id];
+      this.regFieldAnswers[field.id] = existing !== undefined ? existing
+        : field.type === 'boolean' ? false
+        : field.type === 'multi_select' ? []
+        : '';
+    }
+    this.pendingSigninAttendance = attendance;
+    if (fields.length === 1) {
+      await this.showSingleFieldAlert(fields[0]);
+    } else {
+      this.isRegFieldsModalOpen = true;
+    }
+  }
+
+  async showSingleFieldAlert(field: RegistrationField): Promise<void> {
+    let inputs: any[];
+    if (field.type === 'text') {
+      inputs = [{
+        type: 'text',
+        name: 'answer',
+        placeholder: '...',
+        value: this.regFieldAnswers[field.id] ?? '',
+      }];
+    } else if (field.type === 'boolean') {
+      inputs = [
+        { type: 'radio', name: 'answer', label: 'Ja', value: true, checked: this.regFieldAnswers[field.id] === true },
+        { type: 'radio', name: 'answer', label: 'Nein', value: false, checked: this.regFieldAnswers[field.id] === false },
+      ];
+    } else {
+      inputs = (field.options ?? []).map(opt => ({
+        type: field.type === 'multi_select' ? 'checkbox' : 'radio',
+        name: 'answer',
+        label: opt,
+        value: opt,
+        checked: field.type === 'multi_select'
+          ? (this.regFieldAnswers[field.id] as string[] ?? []).includes(opt)
+          : this.regFieldAnswers[field.id] === opt,
+      }));
+    }
+
+    const alert = await this.alertController.create({
+      header: field.label,
+      inputs,
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel', handler: () => { this.pendingSigninAttendance = null; } },
+        {
+          text: 'Anmelden',
+          handler: (data) => {
+            const answer = field.type === 'multi_select' ? (Array.isArray(data) ? data : []) : data?.answer ?? data;
+            this.confirmRegistrationAnswers({ [field.id]: answer });
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  async confirmRegistrationAnswers(answers: { [fieldId: string]: any }): Promise<void> {
+    const fields = this.getRegistrationFields(this.pendingSigninAttendance);
+    for (const field of fields) {
+      if (field.type === 'text' && !answers[field.id]?.toString().trim()) {
+        Utils.showToast(`Bitte "${field.label}" ausfüllen`, 'warning');
+        return;
+      }
+    }
+    await this.db.updatePersonAttendance(this.pendingSigninAttendance.id, { registration_answers: answers } as any);
+    const att = this.pendingSigninAttendance;
+    this.pendingSigninAttendance = null;
+    this.isRegFieldsModalOpen = false;
+    await this.signin(att);
+  }
+
+  toggleMultiSelectOption(fieldId: string, option: string): void {
+    const arr: string[] = this.regFieldAnswers[fieldId] ?? [];
+    const idx = arr.indexOf(option);
+    this.regFieldAnswers[fieldId] = idx >= 0 ? arr.filter(o => o !== option) : [...arr, option];
   }
 
   hasPastAttendances(attendances: PersonAttendance[]): boolean {

@@ -592,6 +592,9 @@
             @if (isHelper && !canViewNotes && player.notes) {
             <h3>Notiz hinzugefügt</h3>
             }
+            @if (getRegistrationAnswerSummary(player)) {
+            <p style="font-size: 0.78rem; color: var(--ion-color-medium);">{{ getRegistrationAnswerSummary(player) }}</p>
+            }
           </ion-label>
           <ion-select interface="popover" (ionChange)="onAttStaticChange(player, $event)" [value]="player.status"
             slot="end">
@@ -629,6 +632,9 @@
             }
             @if (isHelper && !canViewNotes && player.notes) {
             <h3>Notiz hinzugefügt</h3>
+            }
+            @if (getRegistrationAnswerSummary(player)) {
+            <p style="font-size: 0.78rem; color: var(--ion-color-medium);">{{ getRegistrationAnswerSummary(player) }}</p>
             }
           </ion-label>
           <ion-badge [color]="player.status === 0 ? 'medium' :

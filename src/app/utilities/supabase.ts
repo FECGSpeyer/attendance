@@ -152,6 +152,7 @@ export type Database = {
           start_time: string | null
           tenant_id: number | null
           visible: boolean
+          registration_fields: Json | null
         }
         Insert: {
           additional_fields_filter?: Json | null
@@ -179,6 +180,7 @@ export type Database = {
           start_time?: string | null
           tenant_id?: number | null
           visible?: boolean
+          registration_fields?: Json | null
         }
         Update: {
           additional_fields_filter?: Json | null
@@ -206,6 +208,7 @@ export type Database = {
           start_time?: string | null
           tenant_id?: number | null
           visible?: boolean
+          registration_fields?: Json | null
         }
         Relationships: [
           {
@@ -673,6 +676,7 @@ export type Database = {
           notes: string | null
           person_id: number
           status: number
+          registration_answers: Json | null
         }
         Insert: {
           attendance_id: number
@@ -682,6 +686,7 @@ export type Database = {
           notes?: string | null
           person_id: number
           status: number
+          registration_answers?: Json | null
         }
         Update: {
           attendance_id?: number
@@ -691,6 +696,7 @@ export type Database = {
           notes?: string | null
           person_id?: number
           status?: number
+          registration_answers?: Json | null
         }
         Relationships: [
           {
