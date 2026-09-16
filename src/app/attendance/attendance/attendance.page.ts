@@ -1684,7 +1684,7 @@ export class AttendancePage implements OnInit, OnDestroy {
         }
 
         // Check additional fields filter
-        if (attType?.additional_fields_filter?.key && attType?.additional_fields_filter?.option && this.db.tenant().additional_fields?.find(field => field.id === attType.additional_fields_filter.key)) {
+        if (attType?.additional_fields_filter?.key && attType?.additional_fields_filter?.option != null && this.db.tenant().additional_fields?.find(field => field.id === attType.additional_fields_filter.key)) {
           const defaultValue = this.db.tenant().additional_fields.find(field => field.id === attType.additional_fields_filter.key)?.defaultValue;
           const additionalField = person.additional_fields?.[attType.additional_fields_filter.key] ?? defaultValue;
           return additionalField === attType.additional_fields_filter.option;

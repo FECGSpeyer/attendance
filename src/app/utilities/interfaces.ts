@@ -505,7 +505,7 @@ export interface AttendanceType {
   reminders: number[];
   additional_fields_filter?: {
     key: string;
-    option: string;
+    option: string | boolean;
   };
   checklist?: ChecklistItem[];
   planning_title: string;

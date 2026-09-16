@@ -1636,7 +1636,7 @@ export class DbService {
         })
         .filter((att: Attendance) => {
           const attType = attendanceTypes.find((type: AttendanceType) => type.id === att.type_id);
-          if (attType.additional_fields_filter?.key && attType.additional_fields_filter?.option && this.tenant().additional_fields?.find(field => field.id === attType.additional_fields_filter.key)) {
+          if (attType.additional_fields_filter?.key && attType.additional_fields_filter?.option != null && this.tenant().additional_fields?.find(field => field.id === attType.additional_fields_filter.key)) {
             const defaultValue = this.tenant().additional_fields.find(field => field.id === attType.additional_fields_filter.key)?.defaultValue;
             const additionalField = player.additional_fields[attType.additional_fields_filter.key] ?? defaultValue;
             return additionalField === attType.additional_fields_filter.option;
@@ -1682,7 +1682,7 @@ export class DbService {
         })
         .filter((att: Attendance) => {
           const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
-          if (attType.additional_fields_filter?.key && attType.additional_fields_filter?.option && this.tenant().additional_fields?.find(field => field.id === attType.additional_fields_filter.key)) {
+          if (attType.additional_fields_filter?.key && attType.additional_fields_filter?.option != null && this.tenant().additional_fields?.find(field => field.id === attType.additional_fields_filter.key)) {
             const defaultValue = this.tenant().additional_fields.find(field => field.id === attType.additional_fields_filter.key)?.defaultValue;
             const additionalField = person.additional_fields[attType.additional_fields_filter.key] ?? defaultValue;
             return additionalField === attType.additional_fields_filter.option;
@@ -1785,7 +1785,7 @@ export class DbService {
     const filteredTypes = this.attendanceTypes().filter(
       (type: AttendanceType) =>
         (type.relevant_groups?.length > 0) ||
-        (type.additional_fields_filter?.key && type.additional_fields_filter?.option)
+        (type.additional_fields_filter?.key && type.additional_fields_filter?.option != null)
     );
 
     if (filteredTypes.length === 0) {
@@ -1867,7 +1867,7 @@ export class DbService {
     }
 
     const filterKey = attType.additional_fields_filter?.key;
-    if (filterKey && attType.additional_fields_filter?.option) {
+    if (filterKey && attType.additional_fields_filter?.option != null) {
       const fieldDef = this.tenant().additional_fields?.find(f => f.id === filterKey);
       if (fieldDef) {
         const playerValue = player.additional_fields?.[filterKey] ?? fieldDef.defaultValue;
@@ -1886,7 +1886,7 @@ export class DbService {
   ): Promise<void> {
     // Get all attendance types that have additional_fields_filter
     const typesWithFilter = this.attendanceTypes().filter(
-      (type: AttendanceType) => type.additional_fields_filter?.key && type.additional_fields_filter?.option
+      (type: AttendanceType) => type.additional_fields_filter?.key && type.additional_fields_filter?.option != null
     );
 
     if (typesWithFilter.length === 0) {

@@ -1,6 +1,13 @@
     {
       "versions": [
         {
+          "version": "4.8.2",
+          "date": "16.9.2026",
+          "changes": [
+            "🔍 Anwesenheitstyp-Filter: Ja/Nein-Felder als Filterkriterium nutzbar."
+          ]
+        },
+        {
           "version": "4.8.1",
           "date": "13.9.2026",
           "changes": [

@@ -445,15 +445,19 @@ export class TypePage implements OnInit {
   }
 
   areSelectFieldsAvailable(): boolean {
-    return Boolean(this.db.tenant().additional_fields?.length && this.db.tenant().additional_fields.find(field => field.type ===
-      'select'));
+    return Boolean(this.db.tenant().additional_fields?.length && this.db.tenant().additional_fields.find(field => field.type === 'select' || field.type === 'boolean'));
+  }
+
+  selectedFieldType(): string | undefined {
+    return this.db.tenant().additional_fields?.find(f => f.id === this.additionalFieldFilter)?.type;
   }
 
   onAdditionalFieldFilterChanged() {
     if (this.additionalFieldFilter) {
+      const field = this.db.tenant().additional_fields.find(f => f.id === this.additionalFieldFilter);
       this.type.additional_fields_filter = {
         key: this.additionalFieldFilter,
-        option: this.db.tenant().additional_fields.find(field => field.id === this.additionalFieldFilter)?.options?.[0]
+        option: field?.type === 'boolean' ? true : field?.options?.[0]
       };
     } else {
       this.type.additional_fields_filter = null;

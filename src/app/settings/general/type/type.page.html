@@ -366,7 +366,7 @@
           [(ngModel)]="additionalFieldFilter" multiple="false">
           <ion-select-option [value]="null">Kein Filter</ion-select-option>
           @for (field of db.tenant().additional_fields; track field) {
-            @if (field.type === "select") {
+            @if (field.type === "select" || field.type === "boolean") {
               <ion-select-option [value]="field.id">
                 {{ field.name }}
               </ion-select-option>
@@ -374,20 +374,29 @@
           }
         </ion-select>
       </ion-item>
-      @if (additionalFieldFilter && type.additional_fields_filter?.option) {
-        <ion-item>
-          <ion-select [(ngModel)]="type.additional_fields_filter.option" label="Option">
-            @for (field of db.tenant().additional_fields; track field) {
-              @if (field.type === "select" && field.id === additionalFieldFilter) {
-                @for (option of field.options; track option) {
-                  <ion-select-option [value]="option">
-                    {{ option }}
-                  </ion-select-option>
+      @if (additionalFieldFilter) {
+        @if (selectedFieldType() === 'boolean') {
+          <ion-item>
+            <ion-select [(ngModel)]="type.additional_fields_filter.option" label="Wert">
+              <ion-select-option [value]="true">Ja</ion-select-option>
+              <ion-select-option [value]="false">Nein</ion-select-option>
+            </ion-select>
+          </ion-item>
+        } @else if (type.additional_fields_filter?.option !== undefined) {
+          <ion-item>
+            <ion-select [(ngModel)]="type.additional_fields_filter.option" label="Option">
+              @for (field of db.tenant().additional_fields; track field) {
+                @if (field.type === "select" && field.id === additionalFieldFilter) {
+                  @for (option of field.options; track option) {
+                    <ion-select-option [value]="option">
+                      {{ option }}
+                    </ion-select-option>
+                  }
                 }
               }
-            }
-          </ion-select>
-        </ion-item>
+            </ion-select>
+          </ion-item>
+        }
       }
     }
   </ion-item-group>
