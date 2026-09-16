@@ -61,7 +61,7 @@ export class CrossTenantService {
   ): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, description, attachment_url, attachment_name)')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, description, attachment_url, attachment_name, tenantId)')
       .eq('person_id', personId)
       .gt('attendance.date', startDate) as any;
 
@@ -69,7 +69,7 @@ export class CrossTenantService {
 
     const attendanceTypes = this.crossTenantAttendanceTypes.get(tenantId) || [];
 
-    return data.filter((a) => Boolean(a.attendance)).map((att): PersonAttendance => {
+    return data.filter((a) => Boolean(a.attendance) && a.attendance.tenantId === tenantId).map((att): PersonAttendance => {
       const attText = Utils.getAttText(att);
       const attType = attendanceTypes.find((type: AttendanceType) => type.id === att.attendance.type_id);
       let title = '';
