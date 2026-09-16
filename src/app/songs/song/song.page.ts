@@ -48,7 +48,7 @@ export class SongPage implements OnInit {
   // Category modal (edit existing file)
   public isCategoryModalOpen = false;
   public categoryModalFile: SongFile | null = null;
-  public categoryModalInstrumentId: number | null | 'chor' = null;
+  public categoryModalInstrumentId: string = '';
   public categoryModalNote = '';
 
   // Copy to other instance
@@ -294,11 +294,12 @@ export class SongPage implements OnInit {
     }
   }
 
-  onSingleFileInstrumentChange(value: number | null | 'chor') {
+  onSingleFileInstrumentChange(value: string) {
     if (!this.selectedFileInfos.length) { return; }
     const isChor = value === 'chor';
-    const instrumentId = isChor ? null : (value as number | null);
-    const note = isChor ? 'Chor' : (instrumentId === null ? this.selectedFileInfos[0].note : undefined);
+    const isNull = value === 'null' || isChor;
+    const instrumentId = isNull ? null : parseInt(value, 10);
+    const note = isChor ? 'Chor' : (isNull ? this.selectedFileInfos[0].note : undefined);
     this.selectedFileInfos[0] = { ...this.selectedFileInfos[0], instrumentId, note };
     this.refreshSingleFileConflicts();
   }
@@ -308,7 +309,6 @@ export class SongPage implements OnInit {
     this.selectedFileInfos[0] = { ...this.selectedFileInfos[0], note };
     this.refreshSingleFileConflicts();
     this.cdr.detectChanges();
-  }
   }
 
   toggleConflictToReplace(url: string) {
@@ -362,15 +362,15 @@ export class SongPage implements OnInit {
     return `${index}-${fileInfo.note || ''}-${fileInfo.instrumentId}`;
   }
 
-  getFileSelectValue(fileInfo: { instrumentId: number | null; note?: string }): number | null | 'chor' {
-    if (fileInfo.instrumentId === null && fileInfo.note === 'Chor') { return 'chor'; }
-    return fileInfo.instrumentId;
+  getFileSelectValue(fileInfo: { instrumentId: number | null; note?: string }): string {
+    if (fileInfo.instrumentId === null) { return 'null'; }
+    return String(fileInfo.instrumentId);
   }
 
-  changeFileInstrument(index: number, value: number | null | 'chor', note?: string) {
-    const isChor = value === 'chor';
-    const instrumentId = isChor ? null : (value as number | null);
-    const resolvedNote = isChor ? 'Chor' : (instrumentId === null ? (note || '') : this.selectedFileInfos[index].note);
+  changeFileInstrument(index: number, value: string, note?: string) {
+    const isNull = value === 'null';
+    const instrumentId = isNull ? null : parseInt(value, 10);
+    const resolvedNote = isNull ? (note || '') : undefined;
     const conflicts = this.findConflictingFiles(instrumentId, resolvedNote);
     const toReplace = new Set(conflicts.filter(f => f.fileName === this.selectedFileInfos[index].file.name).map(f => f.url));
     if (toReplace.size === 0) { conflicts.forEach(f => toReplace.add(f.url)); }
@@ -531,20 +531,16 @@ export class SongPage implements OnInit {
 
   changeCategory(file: SongFile) {
     this.categoryModalFile = file;
-    if (file.instrumentId === null && file.note === 'Chor' && this.isChoir) {
-      this.categoryModalInstrumentId = 'chor';
-    } else {
-      this.categoryModalInstrumentId = file.instrumentId ?? null;
-    }
-    this.categoryModalNote = file.note || '';
+    this.categoryModalInstrumentId = file.instrumentId === null ? 'null' : String(file.instrumentId);
+    this.categoryModalNote = file.note || (file.instrumentId === null && this.isChoir ? 'Chor' : '');
     this.isCategoryModalOpen = true;
   }
 
   async saveCategoryModal() {
     if (!this.categoryModalFile) { return; }
-    const isChor = this.categoryModalInstrumentId === 'chor';
-    const instrumentId = isChor ? null : (this.categoryModalInstrumentId as number | null);
-    const note = instrumentId === null ? (isChor ? 'Chor' : this.categoryModalNote) : undefined;
+    const isNull = this.categoryModalInstrumentId === 'null';
+    const instrumentId = isNull ? null : parseInt(this.categoryModalInstrumentId, 10);
+    const note = isNull ? this.categoryModalNote : undefined;
     await this.saveFileChange(this.categoryModalFile, instrumentId, note);
     this.isCategoryModalOpen = false;
   }

@@ -285,19 +285,16 @@
                     <ion-select slot="end" placeholder="Instrument"
                       (ionChange)="changeFileInstrument(i, $event.detail.value, fileInfo.note)"
                       [value]="getFileSelectValue(fileInfo)">
-                      @if (isChoir) {
-                      <ion-select-option value="chor">Chor</ion-select-option>
-                      }
-                      <ion-select-option [value]="null">Sonstige (Freitext)</ion-select-option>
-                      <ion-select-option [value]="1">Aufnahme</ion-select-option>
-                      <ion-select-option [value]="2">Liedtext</ion-select-option>
+                      <ion-select-option value="null">Sonstige (Freitext)</ion-select-option>
+                      <ion-select-option value="1">Aufnahme</ion-select-option>
+                      <ion-select-option value="2">Liedtext</ion-select-option>
                       @for (instrument of instruments; track instrument) {
-                      <ion-select-option [value]="instrument.id">{{
+                      <ion-select-option [value]="instrument.id.toString()">{{
                         instrument.name }}</ion-select-option>
                       }
                     </ion-select>
                   </ion-item>
-                  @if (fileInfo.instrumentId === null && fileInfo.note !== 'Chor') {
+                  @if (fileInfo.instrumentId === null) {
                   <ion-item>
                     <ion-input placeholder="Freitext eingeben..."
                       [value]="fileInfo.note"
@@ -384,27 +381,22 @@
             </ion-item>
             <ion-radio-group [value]="getFileSelectValue(selectedFileInfos[0])"
               (ionChange)="onSingleFileInstrumentChange($event.detail.value)">
-              @if (isChoir) {
               <ion-item>
-                <ion-radio value="chor">Chor</ion-radio>
-              </ion-item>
-              }
-              <ion-item>
-                <ion-radio [value]="null">Sonstige (Freitext)</ion-radio>
+                <ion-radio value="null">Sonstige (Freitext)</ion-radio>
               </ion-item>
               <ion-item>
-                <ion-radio [value]="1">Aufnahme</ion-radio>
+                <ion-radio value="1">Aufnahme</ion-radio>
               </ion-item>
               <ion-item>
-                <ion-radio [value]="2">Liedtext</ion-radio>
+                <ion-radio value="2">Liedtext</ion-radio>
               </ion-item>
               @for (instrument of instruments; track instrument) {
               <ion-item>
-                <ion-radio [value]="instrument.id">{{ instrument.name }}</ion-radio>
+                <ion-radio [value]="instrument.id.toString()">{{ instrument.name }}</ion-radio>
               </ion-item>
               }
             </ion-radio-group>
-            @if (selectedFileInfos[0].instrumentId === null && selectedFileInfos[0].note !== 'Chor') {
+            @if (selectedFileInfos[0].instrumentId === null) {
             <ion-item>
               <ion-input placeholder="Freitext eingeben..."
                 [value]="selectedFileInfos[0].note"
@@ -550,27 +542,22 @@
     <ion-content>
       <ion-list>
         <ion-radio-group [(ngModel)]="categoryModalInstrumentId">
-          @if (isChoir) {
           <ion-item>
-            <ion-radio value="chor">Chor</ion-radio>
-          </ion-item>
-          }
-          <ion-item>
-            <ion-radio [value]="null">Sonstige (Freitext)</ion-radio>
+            <ion-radio value="null">Sonstige (Freitext)</ion-radio>
           </ion-item>
           <ion-item>
-            <ion-radio [value]="1">Aufnahme</ion-radio>
+            <ion-radio value="1">Aufnahme</ion-radio>
           </ion-item>
           <ion-item>
-            <ion-radio [value]="2">Liedtext</ion-radio>
+            <ion-radio value="2">Liedtext</ion-radio>
           </ion-item>
           @for (instrument of instruments; track instrument) {
           <ion-item>
-            <ion-radio [value]="instrument.id">{{ instrument.name }}</ion-radio>
+            <ion-radio [value]="instrument.id.toString()">{{ instrument.name }}</ion-radio>
           </ion-item>
           }
         </ion-radio-group>
-        @if (categoryModalInstrumentId === null) {
+        @if (categoryModalInstrumentId === 'null') {
         <ion-item>
           <ion-input placeholder="Freitext eingeben..."
             [(ngModel)]="categoryModalNote"
