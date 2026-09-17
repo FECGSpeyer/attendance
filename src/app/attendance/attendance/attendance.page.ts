@@ -86,6 +86,9 @@ export class AttendancePage implements OnInit, OnDestroy {
   // empty (and the helperGroupId filter isn't responsible). Surfaces an inline
   // "Neu laden" banner so the user can recover without dismissing the modal.
   public personsLoadFailed = false;
+  public isRegFieldsModalOpen = false;
+  public regFieldAnswers: { [fieldId: string]: any } = {};
+  public regFieldsPlayer: PersonAttendance | null = null;
   public statusFilter: Set<number> = new Set();
 
   get filteredPlayers(): PersonAttendance[] {
@@ -1247,6 +1250,77 @@ export class AttendancePage implements OnInit, OnDestroy {
     await alert.present();
   }
 
+  openRegFieldsEditor(player: PersonAttendance): void {
+    const fields: RegistrationField[] = (this.type as any)?.registration_fields ?? [];
+    this.regFieldAnswers = {};
+    for (const field of fields) {
+      const existing = (player.registration_answers ?? {} as any)[field.id];
+      this.regFieldAnswers[field.id] = existing !== undefined ? existing
+        : field.type === 'boolean' ? false
+        : field.type === 'multi_select' ? []
+        : '';
+    }
+    this.regFieldsPlayer = player;
+    if (fields.length === 1) {
+      this.showRegFieldAlert(fields[0], player);
+    } else {
+      this.isRegFieldsModalOpen = true;
+    }
+  }
+
+  async showRegFieldAlert(field: RegistrationField, player: PersonAttendance): Promise<void> {
+    let inputs: any[];
+    if (field.type === 'text') {
+      inputs = [{ type: 'text', name: 'answer', placeholder: '...', value: this.regFieldAnswers[field.id] ?? '' }];
+    } else if (field.type === 'boolean') {
+      inputs = [
+        { type: 'radio', name: 'answer', label: 'Ja', value: true, checked: this.regFieldAnswers[field.id] === true },
+        { type: 'radio', name: 'answer', label: 'Nein', value: false, checked: this.regFieldAnswers[field.id] === false },
+      ];
+    } else {
+      inputs = (field.options ?? []).map(opt => ({
+        type: field.type === 'multi_select' ? 'checkbox' : 'radio',
+        name: 'answer',
+        label: opt,
+        value: opt,
+        checked: field.type === 'multi_select'
+          ? (this.regFieldAnswers[field.id] as string[] ?? []).includes(opt)
+          : this.regFieldAnswers[field.id] === opt,
+      }));
+    }
+    const alert = await this.alertController.create({
+      header: field.label,
+      inputs,
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Speichern',
+          handler: (data) => {
+            const answer = field.type === 'multi_select' ? (Array.isArray(data) ? data : []) : data?.answer ?? data;
+            this.saveRegFieldAnswers({ [field.id]: answer }, player);
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  async saveRegFieldAnswers(answers: { [fieldId: string]: any }, player?: PersonAttendance): Promise<void> {
+    const target = player ?? this.regFieldsPlayer;
+    if (!target) { return; }
+    const merged = { ...(target.registration_answers ?? {} as any), ...answers };
+    await this.db.updatePersonAttendance(target.id, { registration_answers: merged } as any);
+    target.registration_answers = merged as any;
+    this.isRegFieldsModalOpen = false;
+    this.regFieldsPlayer = null;
+  }
+
+  toggleRegFieldMultiSelect(fieldId: string, option: string): void {
+    const arr: string[] = this.regFieldAnswers[fieldId] ?? [];
+    const idx = arr.indexOf(option);
+    this.regFieldAnswers[fieldId] = idx >= 0 ? arr.filter(o => o !== option) : [...arr, option];
+  }
+
   async openMoreSheet(player: PersonAttendance, slider: IonItemSliding) {
     slider.close();
 
@@ -1275,6 +1349,15 @@ export class AttendancePage implements OnInit, OnDestroy {
           this.db.updatePersonAttendance(player.id, { status: AttendanceStatus.LateExcused })
             .finally(() => this.inFlightWrites.delete(player.id));
         },
+      });
+    }
+
+    const regFields: RegistrationField[] = (this.type as any)?.registration_fields ?? [];
+    if (regFields.length) {
+      buttons.push({
+        text: 'Anmeldefelder bearbeiten',
+        icon: 'create-outline',
+        handler: () => this.openRegFieldsEditor(player),
       });
     }
 
