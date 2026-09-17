@@ -312,7 +312,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
         joined: dayjs().startOf('day').utc(true).toISOString(),
         notes: this.notes ?? '',
         self_register: true
-      }, true, Role.APPLICANT, this.tenantData.id, this.password, this.tenantData.longName);
+      }, true, this.tenantData.auto_approve_registrations ? Role.PLAYER : Role.APPLICANT, this.tenantData.id, this.password, this.tenantData.longName);
 
       // A brand-new account only needs email confirmation when it was created
       // with a password. OTP registration already verified the email and signed
