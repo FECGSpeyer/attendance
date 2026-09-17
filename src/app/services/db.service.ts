@@ -1562,6 +1562,48 @@ export class DbService {
       player.appId = appId;
     }
 
+    // If the user already has a player row (e.g. previously left), reactivate it
+    // instead of inserting a duplicate. This covers the case where the tenantUsers
+    // entry was cleaned up but the player row still exists with left != null.
+    const effectiveTenantId = tenantId ?? this.tenant().id;
+    if (player.appId) {
+      const { data: existing } = await supabase
+        .from('player')
+        .select('id')
+        .eq('appId', player.appId)
+        .eq('tenantId', effectiveTenantId)
+        .limit(1)
+        .maybeSingle();
+
+      if (existing?.id) {
+        const reactivateFields = pickPersonFields({
+          ...player,
+          tenantId: effectiveTenantId,
+          history: player.history as any,
+        }) as any;
+        delete reactivateFields.id;
+        reactivateFields.left = null;
+
+        const { data: updated, error: updateError } = await supabase
+          .from('player')
+          .update(reactivateFields)
+          .eq('id', existing.id)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('addPlayer reactivate error', updateError);
+          throw new Error(updateError.message);
+        }
+
+        if (!player.pending) {
+          await this.addPlayerToAttendancesByDate(updated as unknown as Player, tenantId);
+        }
+
+        return { userId: updated.id, created };
+      }
+    }
+
     // Check if img is a data URL and convert it to a File for upload
     let imageToUpload: File | null = null;
     if (player.img && player.img.startsWith('data:image/')) {
@@ -1587,7 +1629,7 @@ export class DbService {
       .from('player')
       .insert(pickPersonFields({
         ...player,
-        tenantId: tenantId ?? this.tenant().id,
+        tenantId: effectiveTenantId,
         id: Utils.getId(),
         history: player.history as any
       }) as any)
