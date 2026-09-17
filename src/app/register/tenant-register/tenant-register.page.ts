@@ -50,6 +50,8 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
   ) { }
 
   async ngOnInit() {
+    await this.db.waitForSession();
+
     const pathParts = window.location.pathname.split('/');
     const registerId = pathParts[pathParts.length - 1];
     this.tenantData = await this.db.getTenantByRegisterId(registerId);

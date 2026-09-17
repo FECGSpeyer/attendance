@@ -381,6 +381,15 @@ export class DbService {
     await this.initPromise;
   }
 
+  /** Waits for the Supabase session to be restored and sets db.user, without
+   *  loading tenant context. Safe to call on public/unauthenticated pages. */
+  async waitForSession(): Promise<void> {
+    const user = await this.authSvc.checkToken();
+    if (user) {
+      this.user = user;
+    }
+  }
+
   private async doCheckToken(showSelector: boolean) {
     const user = await this.authSvc.checkToken();
 
