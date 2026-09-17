@@ -1586,6 +1586,7 @@ export class DbService {
       .single();
 
     if (error) {
+      console.error('addPlayer insert error', error);
       throw new Error(error.message);
     }
 
