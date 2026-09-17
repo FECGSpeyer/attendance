@@ -1343,7 +1343,7 @@ export class DbService {
   }
 
   getCurrentAttDate() {
-    return this.tenant()?.seasonStart || dayjs('2023-01-01').toISOString();
+    return this.tenant().seasonStart || dayjs('2023-01-01').toISOString();
   }
 
   setCurrentAttDate(date: string) {
@@ -3532,11 +3532,14 @@ export class DbService {
    * Gets person attendances for a specific person in a specific tenant
    */
   async getPersonAttendancesForTenant(personId: number, tenantId: number): Promise<PersonAttendance[]> {
+    const tenantData = await this.tenantSvc.getTenantById(tenantId);
+    const seasonStart = tenantData?.seasonStart || dayjs('2023-01-01').toISOString();
+
     const { data } = await supabase
       .from('person_attendances')
       .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, description, attachment_url, attachment_name, tenantId)')
       .eq('person_id', personId)
-      .gt('attendance.date', this.getCurrentAttDate()) as any;
+      .gt('attendance.date', seasonStart) as any;
 
     if (!data) {return [];}
 
