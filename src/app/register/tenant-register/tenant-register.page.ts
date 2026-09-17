@@ -338,7 +338,14 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     }
 
     await loading.dismiss();
-    this.router.navigate(['/login']);
+
+    if (!isNew && this.db.user) {
+      // Existing account added to a new tenant — switch directly into that tenant.
+      await this.db.routeAfterAuth(undefined, this.tenantData.id);
+    } else {
+      this.router.navigate(['/login']);
+    }
+
     const alert = await this.alertController.create({
       header: 'Registrierung erfolgreich',
       message: this.tenantData.auto_approve_registrations ?

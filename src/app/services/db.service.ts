@@ -1214,8 +1214,8 @@ export class DbService {
    * (which establishes a session via verifyOtp without going through login()).
    * A freshly-confirmed user with no tenantUser is sent to /register.
    */
-  async routeAfterAuth(loading?: HTMLIonLoadingElement) {
-    await this.setTenant(undefined, true, loading);
+  async routeAfterAuth(loading?: HTMLIonLoadingElement, tenantId?: number) {
+    await this.setTenant(tenantId, !tenantId, loading);
     if (this.tenantUser()) {
       const role = this.tenantUser().role;
       const useDashboard =
