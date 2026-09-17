@@ -1343,7 +1343,7 @@ export class DbService {
   }
 
   getCurrentAttDate() {
-    return this.tenant().seasonStart || dayjs('2023-01-01').toISOString();
+    return this.tenant()?.seasonStart || dayjs('2023-01-01').toISOString();
   }
 
   setCurrentAttDate(date: string) {
