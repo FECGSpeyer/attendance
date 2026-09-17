@@ -151,7 +151,6 @@ export class AppComponent {
         this.tracking.track(TrackingEvent.Login);
         this.pushService.promptAndEnable();
         this.showNativeAppAd();
-        this.checkIcalMigrationWarning();
       }
       if (event === 'SIGNED_OUT') {
         this.pushService.removeToken();
@@ -212,27 +211,6 @@ export class AppComponent {
           }
         }
       ]
-    });
-    await alert.present();
-  }
-
-  async checkIcalMigrationWarning() {
-    if (this.icalMigrationWarningShown) return;
-    if (localStorage.getItem('ical_migration_warned')) return;
-    this.icalMigrationWarningShown = true;
-
-    const alert = await this.alertController.create({
-      header: '⚠️ Kalender-Link aktualisiert',
-      message: 'Der Kalender-Link für Attendix-Termine hat sich geändert. Der alte Link funktioniert noch bis Ende 2026. Falls du die Termine in deiner Kalender-App abonniert hast, ersetze den Link durch den neuen unter Einstellungen → Kalender abonnieren.',
-      buttons: [
-        {
-          text: 'Nicht mehr anzeigen',
-          handler: () => {
-            localStorage.setItem('ical_migration_warned', 'true');
-          },
-        },
-        { text: 'OK', role: 'cancel' },
-      ],
     });
     await alert.present();
   }
