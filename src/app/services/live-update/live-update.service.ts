@@ -1,12 +1,9 @@
 import { Injectable, signal } from '@angular/core';
-import { AlertController } from '@ionic/angular/lazy';
+import { Router } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import { LiveUpdate } from '@capawesome/capacitor-live-update';
 import { supabase } from '../base/supabase';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const versionHistory: { versions: { version: string; date: string; changes: string[] }[] } = require('../../../../version-history.json');
 
 /**
  * Self-hosted OTA updates via @capawesome/capacitor-live-update.
@@ -18,8 +15,8 @@ const versionHistory: { versions: { version: string; date: string; changes: stri
  *   3. GET manifest.json from the public Supabase Storage bucket. The
  *      manifest is a single JSON file we overwrite each time we ship an OTA.
  *   4. If manifest.bundleId !== current bundle AND manifest.minNativeVersion
- *      is satisfied, downloadBundle() + setNextBundle().
- *   5. Ask the user whether to apply now (same UX as the SwUpdate flow on web).
+ *      is satisfied, downloadBundle() + setNextBundle() + reload immediately
+ *      if still on /login or /register, otherwise activates on next cold start.
  *
  * The manifest is intentionally tiny so this is one fast request on launch.
  * Schema (stored at `ota-bundles/manifest.json` in Supabase Storage):
@@ -56,7 +53,7 @@ export class LiveUpdateService {
    * True once an update has been downloaded/installed and is ready to apply.
    * Set for both the native OTA flow (bundle staged via setNextBundle) and the
    * web SwUpdate flow (new service worker installed). Pages read this to show a
-   * manual "update now" button after the user tapped "Später" on the prompt.
+   * manual "update now" button as a fallback.
    */
   readonly updateAvailable = signal(false);
 
@@ -66,7 +63,7 @@ export class LiveUpdateService {
    */
   private applyFn: (() => void | Promise<void>) | null = null;
 
-  constructor(private alertController: AlertController) {}
+  constructor(private router: Router) {}
 
   /**
    * Called once from AppComponent. No-op on web — the SwUpdate flow there
@@ -141,10 +138,11 @@ export class LiveUpdateService {
       }
     });
 
-    const newVersion = this.bundleVersion(manifest.bundleId);
-    const currentVersion = isOtaActive ? this.bundleVersion(current.bundleId) : nativeVersion;
-    if (this.isMajorOrMinorUpdate(currentVersion, newVersion)) {
-      await this.promptReload(newVersion);
+    // Reload immediately only when the user is still on a pre-workflow page.
+    // Otherwise the bundle is already staged and will activate on the next cold start.
+    const url = this.router.url;
+    if (url === '/login' || url.startsWith('/login?') || url.startsWith('/register')) {
+      await this.applyUpdate();
     }
   }
 
@@ -189,38 +187,6 @@ export class LiveUpdateService {
   /** True when `current` is >= `min` (equal is fine). */
   private satisfiesMin(current: string, min: string): boolean {
     return this.compareVersions(current, min) >= 0;
-  }
-
-  /** True when the new version bumps major or minor relative to current. */
-  private isMajorOrMinorUpdate(current: string, next: string): boolean {
-    const c = current.split('.').map(s => parseInt(s, 10) || 0);
-    const n = next.split('.').map(s => parseInt(s, 10) || 0);
-    return (n[0] ?? 0) > (c[0] ?? 0) || (n[0] ?? 0) === (c[0] ?? 0) && (n[1] ?? 0) > (c[1] ?? 0);
-  }
-
-  private async promptReload(newVersion: string): Promise<void> {
-    const entry = versionHistory.versions.find(v => v.version === newVersion);
-    const changeList = entry?.changes.map(c => `• ${c}`).join('<br>') ?? '';
-    const message = changeList
-      ? `<b>Version ${newVersion}</b><br><br>${changeList}<br><br>Die Aktualisierung dauert nur einen kurzen Moment und du kannst danach direkt weiterarbeiten.`
-      : `Version ${newVersion} ist verfügbar. Die Aktualisierung dauert nur einen kurzen Moment und du kannst danach direkt weiterarbeiten.`;
-
-    const alert = await this.alertController.create({
-      header: 'Update verfügbar',
-      message,
-      buttons: [
-        // "Später" keeps the update staged; updateAvailable stays true so the
-        // login and settings pages can offer a manual "Aktualisieren" button.
-        { text: 'Später', role: 'cancel' },
-        {
-          text: 'Aktualisieren',
-          handler: async () => {
-            await this.applyUpdate();
-          },
-        },
-      ],
-    });
-    await alert.present();
   }
 
   /**

@@ -1,6 +1,6 @@
 {
   "name": "attendix",
-  "version": "4.8.9",
+  "version": "4.8.10",
   "author": "Matthias Eckstaedt",
   "homepage": "https://attendix.de/",
   "engines": {
@@ -56,7 +56,8 @@
     "@ionic/core": "^9.0.0",
     "@ionic/storage-angular": "^4.0.0",
     "@microsoft/teams-js": "^2.54.0",
-    "@rdlabo/ionic-theme-ios26": "^9.2.0",
+    "@rdlabo/ionic-theme-ios26": "^9.3.0",
+    "@rdlabo/ionic-theme-ios27": "^1.0.0",
     "@supabase/supabase-js": "^2.55.0",
     "axios": "^1.2.2",
     "chart.js": "^4.5.1",

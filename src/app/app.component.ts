@@ -167,14 +167,11 @@ export class AppComponent {
   checkForUpdates() {
     if (Capacitor.isNativePlatform()) return;
     if (this.swUpdate.isEnabled) {
-      // Listen for version ready events
       this.swUpdate.versionUpdates
         .pipe(filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
-        .subscribe(() => {
-          // No version info available from SwUpdate — always patch-level unknown.
-          // Just stage the update silently; the button on login/settings lets the
-          // user apply it when convenient.
-          this.liveUpdate.markAvailable(() => document.location.reload());
+        .subscribe(async () => {
+          await this.swUpdate.activateUpdate();
+          document.location.reload();
         });
 
       // Check for updates every 30 seconds

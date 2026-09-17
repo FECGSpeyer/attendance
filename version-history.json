@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.8.10",
+      "date": "17.9.2026",
+      "changes": [
+        "🔄 Updates werden nun automatisch im Hintergrund installiert, ohne den aktuellen Arbeitsablauf zu unterbrechen."
+      ]
+    },
+    {
       "version": "4.8.9",
       "date": "17.9.2026",
       "changes": [
