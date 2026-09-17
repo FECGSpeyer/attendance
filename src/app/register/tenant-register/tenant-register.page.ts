@@ -214,6 +214,14 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     this.resendCooldown = 0;
   }
 
+  goHome() {
+    if (this.db.user && this.db.tenantUser()) {
+      this.router.navigate([Utils.getUrl(this.db.tenantUser().role)]);
+    } else {
+      this.router.navigate(['/login']);
+    }
+  }
+
   async login() {
     const alert = await this.alertController.create({
       header: 'Anmelden',
