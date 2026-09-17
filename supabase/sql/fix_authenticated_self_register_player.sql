@@ -8,5 +8,5 @@ CREATE POLICY "authenticated_insert_own_player_registration"
     "tenantId" IN (
       SELECT id FROM tenants WHERE register_id IS NOT NULL
     )
-    AND "appId" = auth.uid()::text
+    AND "appId" = auth.uid()
   );
