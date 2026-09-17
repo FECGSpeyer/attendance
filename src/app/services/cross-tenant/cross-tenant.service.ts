@@ -43,15 +43,15 @@ export class CrossTenantService {
   async getPersonIdForTenant(tenantId: number, userId: string): Promise<number | null> {
     const { data, error } = await supabase
       .from('player')
-      .select('id')
+      .select('id, pending, left')
       .eq('tenantId', tenantId)
-      .eq('appId', userId)
-      .single();
+      .eq('appId', userId);
 
-    if (error || !data) {
+    if (error || !data?.length) {
       return null;
     }
-    return data.id;
+    const row = data.find(p => !p.pending && !p.left) ?? data[0];
+    return row.id;
   }
 
   async getPersonAttendancesForTenant(
@@ -237,17 +237,18 @@ export class CrossTenantService {
   async getPersonIdFromTenant(userId: string, tenantId: number): Promise<{ id: number } | null> {
     const { data, error } = await supabase
       .from('player')
-      .select('id')
+      .select('id, left')
       .eq('appId', userId)
       .eq('tenantId', tenantId)
-      .is('pending', false)
-      .single();
+      .is('pending', false);
 
     if (error) {
       console.error(error);
     }
 
-    return data;
+    if (!data?.length) {return null;}
+    const row = data.find(p => !p.left) ?? data[0];
+    return { id: row.id };
   }
 
   async getPossiblePersonsByName(

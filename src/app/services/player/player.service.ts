@@ -21,8 +21,7 @@ export class PlayerService {
       .from('player')
       .select('*')
       .eq('appId', appId)
-      .eq('tenantId', tenantId)
-      .single();
+      .eq('tenantId', tenantId);
 
     if (error) {
       if (showToast) {
@@ -31,9 +30,20 @@ export class PlayerService {
       throw error;
     }
 
+    if (!data?.length) {
+      const notFound: any = { code: 'PGRST116', message: 'No rows found' };
+      if (showToast) {
+        Utils.showToast('Fehler beim Laden des Benutzers', 'danger');
+      }
+      throw notFound;
+    }
+
+    // Prefer the active (non-pending, non-left) record when duplicates exist
+    const row = data.find(p => !p.pending && !p.left) ?? data[0];
+
     return {
-      ...data,
-      history: data.history as any,
+      ...row,
+      history: row.history as any,
     } as any;
   }
 
