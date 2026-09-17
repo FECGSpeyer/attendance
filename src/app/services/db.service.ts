@@ -1635,10 +1635,12 @@ export class DbService {
           }
 
           const attType = attendanceTypes.find((type: AttendanceType) => type.id === att.type_id);
+          if (!attType) { return false; }
           return attType.relevant_groups.length === 0 || attType.relevant_groups.includes(player.instrument);
         })
         .filter((att: Attendance) => {
           const attType = attendanceTypes.find((type: AttendanceType) => type.id === att.type_id);
+          if (!attType) { return false; }
           if (attType.additional_fields_filter?.key && attType.additional_fields_filter?.option != null && tenantAdditionalFields?.find(field => field.id === attType.additional_fields_filter.key)) {
             const defaultValue = tenantAdditionalFields.find(field => field.id === attType.additional_fields_filter.key)?.defaultValue;
             const additionalField = player.additional_fields[attType.additional_fields_filter.key] ?? defaultValue;

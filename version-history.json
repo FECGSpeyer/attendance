@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.8.9",
+      "date": "17.9.2026",
+      "changes": [
+        "🔧 Fix: Registrierung via Einladungslink schlug fehl, obwohl der Account erstellt wurde — RLS-Richtlinie für authentifizierte Selbstregistrierung ergänzt."
+      ]
+    },
+    {
       "version": "4.8.3",
       "date": "16.9.2026",
       "changes": [
