@@ -505,6 +505,23 @@
     </ion-item-group>
     }
 
+    <!-- Protocol Section -->
+    @if (type?.enable_protocol) {
+    <ion-item-group>
+      <ion-accordion-group>
+        <ion-accordion value="protocol">
+          <ion-item slot="header">
+            <ion-icon name="document-text-outline" slot="start" [color]="hasProtocol ? 'success' : ''"></ion-icon>
+            <ion-label>Protokoll</ion-label>
+          </ion-item>
+          <div slot="content">
+            <app-protocol [attendanceId]="attendance.id" [inline]="true"></app-protocol>
+          </div>
+        </ion-accordion>
+      </ion-accordion-group>
+    </ion-item-group>
+    }
+
     <ion-item-group>
       <ion-accordion-group>
         <ion-accordion value="plan">
@@ -518,6 +535,16 @@
               <ion-badge slot="end">{{ attendance.plan.time }} Uhr</ion-badge>
             </ion-item>
             @for (field of attendance.plan.fields; track field; let i = $index) {
+            @if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID) {
+            <ion-item color="light">
+              <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
+              <ion-label color="secondary">
+                <h2>{{ field.name }}</h2>
+                <h3>Tagesordnungspunkte dieses Termins</h3>
+              </ion-label>
+              <ion-badge slot="end" color="secondary">dynamisch</ion-badge>
+            </ion-item>
+            } @else {
             <ion-item [class.active-slot]="planLiveMode && i === planActiveFieldIndex"
                       [class.done-slot]="planLiveMode && i < planActiveFieldIndex">
               <ion-label>
@@ -533,6 +560,7 @@
                 <ion-badge slot="end">{{ field.time }} min</ion-badge>
               }
             </ion-item>
+            }
             }
             <ion-item lines="none">
               <ion-label>Ende</ion-label>

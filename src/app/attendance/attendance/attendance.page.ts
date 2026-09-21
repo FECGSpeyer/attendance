@@ -8,11 +8,12 @@ import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supab
 import { format } from 'date-fns';
 import dayjs from 'dayjs';
 import { PlanningPage } from 'src/app/planning/planning.page';
+import { ProtocolPage } from 'src/app/protocols/protocol/protocol.page';
 import { StatusInfoComponent } from './status-info/status-info.component';
 import { AdHocReminderModalComponent, AdHocReminderResult } from './ad-hoc-reminder-modal/ad-hoc-reminder-modal.component';
 import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode, CHECKLIST_DEADLINE_OPTIONS, DEFAULT_ABSENCE_REASONS } from 'src/app/utilities/constants';
-import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem, RegistrationField } from 'src/app/utilities/interfaces';
+import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem, RegistrationField, AGENDA_ITEMS_PLACEHOLDER_ID } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
@@ -30,6 +31,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   @Input() isModal = false;
   public attendanceId!: number;
   @ViewChild('chooser') chooser: ElementRef;
+  readonly AGENDA_ITEMS_PLACEHOLDER_ID = AGENDA_ITEMS_PLACEHOLDER_ID;
   @ViewChild('legendModal') legendModal: IonModal;
   public players: PersonAttendance[] = [];
   public conductors: Person[] = [];
@@ -68,6 +70,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   public minDeadlineDate: string = new Date().toISOString();
   public isDeadlineReadonly = false;
   public type: AttendanceType;
+  public hasProtocol = false;
   public attendanceViewMode: AttendanceViewMode = AttendanceViewMode.CLICK;
   public AttendanceViewMode = AttendanceViewMode;
   public showAvatars = false;
@@ -357,6 +360,10 @@ export class AttendancePage implements OnInit, OnDestroy {
       this.selectedSongs = this.attendance.songs || [];
       this.type = await this.resolveAttendanceType();
       this.manageSongs = this.type?.manage_songs || false;
+      if (this.type?.enable_protocol) {
+        const protocol = await this.db.getProtocolForAttendance(this.attendance.id);
+        this.hasProtocol = !!protocol;
+      }
       this.hasDeadline = !!this.attendance.deadline;
       if (this.hasDeadline) {
         const startHour = this.type?.start_time ? Number(this.type.start_time.substring(0, 2)) : 19;
@@ -929,6 +936,18 @@ export class AttendancePage implements OnInit, OnDestroy {
     });
 
     await modal.present();
+  }
+
+  async openProtocol() {
+    const modal = await this.modalController.create({
+      component: ProtocolPage,
+      componentProps: { attendanceId: this.attendance.id },
+    });
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
+    if (data?.protocolId) {
+      this.hasProtocol = true;
+    }
   }
 
   async onInfoChanged() {

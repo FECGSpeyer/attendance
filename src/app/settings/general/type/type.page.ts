@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, CHECKLIST_DEADLINE_OPTIONS } from 'src/app/utilities/constants';
-import { AttendanceType, ChecklistItem, FieldSelection, Plan, RegistrationField, RegistrationFieldType } from 'src/app/utilities/interfaces';
+import { AttendanceType, ChecklistItem, FieldSelection, Plan, RegistrationField, RegistrationFieldType, AGENDA_ITEMS_PLACEHOLDER_ID } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -18,6 +18,7 @@ export class TypePage implements OnInit {
   @Input() isNew: boolean;
   public type: AttendanceType;
   public isGeneral = false;
+  readonly AGENDA_ITEMS_PLACEHOLDER_ID = AGENDA_ITEMS_PLACEHOLDER_ID;
   public attendanceStatuses = [
     AttendanceStatus.Neutral,
     AttendanceStatus.Present,
@@ -322,6 +323,24 @@ export class TypePage implements OnInit {
       id: `song-placeholder-${numberOfSongs + 1}`,
       name: `Werk Platzhalter ${numberOfSongs + 1}`,
       time: '20',
+    });
+
+    this.calculateEnd();
+  }
+
+  addAgendaItemsPlaceholder(popover: IonPopover) {
+    popover.dismiss();
+
+    const alreadyExists = this.type.default_plan.fields.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID);
+    if (alreadyExists) {
+      Utils.showToast('Ein Tagesordnungs-Platzhalter ist bereits vorhanden', 'warning');
+      return;
+    }
+
+    this.type.default_plan.fields.push({
+      id: AGENDA_ITEMS_PLACEHOLDER_ID,
+      name: '[Tagesordnungspunkte]',
+      time: '30',
     });
 
     this.calculateEnd();

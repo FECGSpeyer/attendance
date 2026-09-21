@@ -1,0 +1,65 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="/tabs/settings/team-organization"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Tagesordnungspunkte</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (isLoading) {
+    <ion-list>
+      @for (i of [1,2,3]; track i) {
+        <ion-item>
+          <ion-label>
+            <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 40%"></ion-skeleton-text>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  } @else if (agendaItems.length === 0) {
+    <div class="ion-text-center ion-padding-top">
+      <ion-icon name="list-circle-outline" style="font-size: 48px; color: var(--ion-color-medium)"></ion-icon>
+      <p style="color: var(--ion-color-medium)">Keine Tagesordnungspunkte</p>
+    </div>
+  } @else {
+    <ion-list>
+      @for (item of agendaItems; track trackById($index, item)) {
+        <ion-item-sliding #slider>
+          <ion-item [routerLink]="['/tabs/settings/agenda-items', item.id]" detail="false" button>
+            <ion-label>
+              <h2>{{ item.title }}</h2>
+              @if (item.responsible_person) {
+                <h3>{{ item.responsible_person.firstName }} {{ item.responsible_person.lastName }}</h3>
+              }
+              @if (item.due_date) {
+                <p>Fällig: {{ item.due_date | date:'dd.MM.yyyy' }}</p>
+              }
+            </ion-label>
+            <div slot="end" class="badges">
+              <ion-badge [color]="getStatusColor(item.status)">{{ getStatusLabel(item.status) }}</ion-badge>
+              <ion-badge [color]="getPriorityColor(item.priority)" style="margin-left: 4px">{{ getPriorityLabel(item.priority) }}</ion-badge>
+            </div>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="danger" (click)="removeItem(item.id, slider)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      }
+    </ion-list>
+  }
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="addItem()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

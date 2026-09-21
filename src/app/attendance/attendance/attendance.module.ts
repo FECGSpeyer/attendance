@@ -10,6 +10,7 @@ import { AttendancePageRoutingModule } from './attendance-routing.module';
 import { AttendancePage } from './attendance.page';
 import { StatusInfoComponent } from './status-info/status-info.component';
 import { AdHocReminderModalComponent } from './ad-hoc-reminder-modal/ad-hoc-reminder-modal.component';
+import { ProtocolPageModule } from 'src/app/protocols/protocol/protocol.module';
 
 @NgModule({
   imports: [
@@ -18,6 +19,7 @@ import { AdHocReminderModalComponent } from './ad-hoc-reminder-modal/ad-hoc-remi
     IonicModule,
     AttendancePageRoutingModule,
     QuillModule.forRoot(),
+    ProtocolPageModule,
   ],
   declarations: [AttendancePage, StatusInfoComponent, AdHocReminderModalComponent],
   exports: [AttendancePage],

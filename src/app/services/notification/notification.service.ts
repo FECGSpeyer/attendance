@@ -32,6 +32,7 @@ export class NotificationService {
         criticals: true,
         reminders: true,
         checklist: true,
+        tasks: true,
         push_enabled: false,
         push_and_telegram: false,
       };

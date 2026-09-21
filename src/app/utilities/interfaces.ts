@@ -149,6 +149,7 @@ export interface NotificationConfig {
   checklist: boolean;
   push_enabled?: boolean;
   push_and_telegram?: boolean;
+  tasks?: boolean;
 }
 
 export interface UserNotification {
@@ -522,6 +523,7 @@ export interface AttendanceType {
   planning_title: string;
   planning_prefix_instance_name?: boolean;
   is_default_org_plan?: boolean;
+  enable_protocol?: boolean;
 }
 
 export interface ShiftPlan {
@@ -588,4 +590,66 @@ export interface CrossTenantPersonAttendance extends PersonAttendance {
   tenantName: string;
   tenantColor: string;
   attendanceType?: AttendanceType;
+}
+
+// ============================================================
+// Team Organization
+// ============================================================
+
+export const AGENDA_ITEMS_PLACEHOLDER_ID = 'agenda-items-placeholder';
+
+export type AgendaItemStatus = 'open' | 'completed' | 'postponed';
+export type AgendaItemPriority = 'low' | 'medium' | 'high';
+export type TaskStatus = 'open' | 'in_progress' | 'completed';
+
+export interface AgendaItem {
+  id?: string;
+  created_at?: string;
+  tenant_id: number;
+  title: string;
+  description?: string;
+  status: AgendaItemStatus;
+  priority: AgendaItemPriority;
+  responsible_person_id?: number | null;
+  due_date?: string | null;
+  created_by?: string;
+  responsible_person?: Pick<Person, 'id' | 'firstName' | 'lastName'>;
+  linked_attendances?: AgendaItemAttendance[];
+}
+
+export interface AgendaItemAttendance {
+  id?: string;
+  agenda_item_id: string;
+  attendance_id: number;
+  created_at?: string;
+  attendance?: Pick<Attendance, 'id' | 'date' | 'typeInfo' | 'type_id'>;
+}
+
+export interface Protocol {
+  id?: string;
+  attendance_id: number;
+  content: { [fieldId: string]: Record<string, unknown> };
+  created_at?: string;
+  created_by?: string;
+  updated_at?: string;
+  tenant_id: number;
+}
+
+export interface Task {
+  id?: string;
+  created_at?: string;
+  updated_at?: string;
+  tenant_id: number;
+  title: string;
+  description?: string;
+  responsible_person_id?: number | null;
+  priority: AgendaItemPriority;
+  due_date?: string | null;
+  status: TaskStatus;
+  agenda_item_id?: string | null;
+  protocol_id?: string | null;
+  attendance_id?: number | null;
+  reminder_sent?: boolean;
+  created_by?: string;
+  responsible_person?: Pick<Person, 'id' | 'firstName' | 'lastName'>;
 }

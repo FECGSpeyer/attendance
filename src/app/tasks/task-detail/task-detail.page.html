@@ -1,0 +1,93 @@
+<ion-header translucent="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="/tabs/settings/tasks"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ isNew ? 'Neue Aufgabe' : task?.title }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" fill="clear">
+        <ion-icon slot="icon-only" name="save-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (task) {
+    @if (isOverdue()) {
+      <ion-note color="danger" style="display: block; padding: 8px 16px; margin-bottom: 8px">
+        <ion-icon name="warning-outline"></ion-icon> Diese Aufgabe ist überfällig
+      </ion-note>
+    }
+
+    <ion-list>
+      <ion-item>
+        <ion-input label="Titel" labelPlacement="stacked" [(ngModel)]="task.title" placeholder="Aufgabe"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-select label="Status" [(ngModel)]="task.status">
+          @for (opt of statusOptions; track opt.value) {
+            <ion-select-option [value]="opt.value">{{ opt.label }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-select label="Priorität" [(ngModel)]="task.priority">
+          @for (opt of priorityOptions; track opt.value) {
+            <ion-select-option [value]="opt.value">{{ opt.label }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-select label="Verantwortlich" [(ngModel)]="task.responsible_person_id">
+          <ion-select-option [value]="null">– Niemand –</ion-select-option>
+          @for (person of conductors; track person.id) {
+            <ion-select-option [value]="person.id">{{ person.firstName }} {{ person.lastName }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Fälligkeitsdatum</ion-label>
+        <ion-datetime-button datetime="task-due-date-picker"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime id="task-due-date-picker" presentation="date" [(ngModel)]="task.due_date" locale="de-DE">
+              <ion-buttons slot="buttons">
+                <ion-button color="danger" (click)="task.due_date = null">Löschen</ion-button>
+              </ion-buttons>
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+    </ion-list>
+
+    <ion-item-divider>
+      <ion-label>Beschreibung</ion-label>
+    </ion-item-divider>
+    <quill-editor class="task-editor" placeholder="Beschreibung eingeben..." [(ngModel)]="task.description"></quill-editor>
+
+    @if (!isNew && (task.agenda_item_id || task.protocol_id || task.attendance_id)) {
+      <ion-item-divider style="margin-top: 24px">
+        <ion-label>Verknüpfungen</ion-label>
+      </ion-item-divider>
+      <ion-list>
+        @if (task.agenda_item_id) {
+          <ion-item [routerLink]="['/tabs/settings/agenda-items', task.agenda_item_id]" detail button>
+            <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
+            <ion-label>Tagesordnungspunkt</ion-label>
+          </ion-item>
+        }
+        @if (task.attendance_id) {
+          <ion-item [routerLink]="['/tabs/attendance', task.attendance_id]" detail button>
+            <ion-icon name="calendar-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>Zugehöriger Termin</ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    }
+  }
+</ion-content>

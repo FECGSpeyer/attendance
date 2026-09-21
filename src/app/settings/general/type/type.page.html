@@ -145,6 +145,12 @@
         helperText="Wenn diese Option aktiviert ist, wird dieser Typ beim Anwesenheitsdurchschnitt berücksichtigt."
       [(ngModel)]="type.include_in_average">Für Ø berücksichtigen</ion-toggle>
     </ion-item>
+
+    <ion-item>
+      <ion-toggle
+        helperText="Aktiviert Protokoll, Tagesordnungspunkte und Aufgaben für Termine dieses Typs."
+      [(ngModel)]="type.enable_protocol">Teamorganisation aktivieren</ion-toggle>
+    </ion-item>
       </ion-item-group>
     </ion-list>
 
@@ -422,6 +428,12 @@
               <ion-label>Werk Platzhalter</ion-label>
             </ion-item>
           }
+          @if (type.enable_protocol) {
+            <ion-item (click)="addAgendaItemsPlaceholder(addFieldPopover)" lines="none">
+              <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
+              <ion-label>Tagesordnung Platzhalter</ion-label>
+            </ion-item>
+          }
         </ng-template>
       </ion-popover>
     </ion-list-header>
@@ -466,18 +478,27 @@
         @for (field of type.default_plan.fields; track field; let i = $index) {
           <ion-item-sliding #slider>
             <ion-item [class.note-item]="field.id.includes('noteFld')" [lines]="field.id.includes('noteFld') ? 'none' : 'full'">
-              <ion-label (click)="changeField(field)" [class.note-field]="field.id.includes('noteFld')">
-                <h2>{{ field.name }}</h2>
+              @if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID) {
+                <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
+                <ion-label>
+                  <h2>{{ field.name }}</h2>
+                  <h3>Tagesordnungspunkte des Termins</h3>
+                </ion-label>
+                <ion-badge slot="end" color="secondary">dynamisch</ion-badge>
+              } @else {
+                <ion-label (click)="changeField(field)" [class.note-field]="field.id.includes('noteFld')">
+                  <h2>{{ field.name }}</h2>
+                  @if (!field.id.includes('noteFld')) {
+                    <h3>{{ calculateTime(field, i) }}</h3>
+                  }
+                  @if (field.info && !field.id.includes('noteFld')) {
+                    <p class="field-info">{{ field.info }}</p>
+                  }
+                </ion-label>
                 @if (!field.id.includes('noteFld')) {
-                  <h3>{{ calculateTime(field, i) }}</h3>
+                  <ion-input autocapitalize="words" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
+                  placeholder="min" type="number" slot="end"></ion-input>
                 }
-                @if (field.info && !field.id.includes('noteFld')) {
-                  <p class="field-info">{{ field.info }}</p>
-                }
-              </ion-label>
-              @if (!field.id.includes('noteFld')) {
-                <ion-input autocapitalize="words" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
-                placeholder="min" type="number" slot="end"></ion-input>
               }
               <ion-reorder slot="end"></ion-reorder>
             </ion-item>

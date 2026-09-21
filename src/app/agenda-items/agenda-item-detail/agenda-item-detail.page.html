@@ -1,0 +1,114 @@
+<ion-header translucent="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="/tabs/settings/agenda-items"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ isNew ? 'Neuer Punkt' : item?.title }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" fill="clear">
+        <ion-icon slot="icon-only" name="save-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (item) {
+    <ion-list>
+      <ion-item>
+        <ion-input label="Titel" labelPlacement="stacked" [(ngModel)]="item.title" placeholder="Tagesordnungspunkt"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-select label="Status" [(ngModel)]="item.status">
+          @for (opt of statusOptions; track opt.value) {
+            <ion-select-option [value]="opt.value">{{ opt.label }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-select label="Priorität" [(ngModel)]="item.priority">
+          @for (opt of priorityOptions; track opt.value) {
+            <ion-select-option [value]="opt.value">{{ opt.label }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-select label="Verantwortlich" [(ngModel)]="item.responsible_person_id">
+          <ion-select-option [value]="null">– Niemand –</ion-select-option>
+          @for (person of conductors; track person.id) {
+            <ion-select-option [value]="person.id">{{ person.firstName }} {{ person.lastName }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Fälligkeitsdatum</ion-label>
+        <ion-datetime-button datetime="due-date-picker"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime id="due-date-picker" presentation="date" [(ngModel)]="item.due_date" locale="de-DE">
+              <ion-buttons slot="buttons">
+                <ion-button color="danger" (click)="item.due_date = null">Löschen</ion-button>
+              </ion-buttons>
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+    </ion-list>
+
+    <ion-item-divider>
+      <ion-label>Beschreibung</ion-label>
+    </ion-item-divider>
+    <quill-editor class="agenda-item-editor" placeholder="Beschreibung eingeben..." [(ngModel)]="item.description"></quill-editor>
+
+    @if (!isNew) {
+      <ion-item-divider style="margin-top: 24px">
+        <ion-label>Verknüpfte Termine ({{ linkedAttendances.length }})</ion-label>
+      </ion-item-divider>
+      @if (linkedAttendances.length === 0) {
+        <ion-item>
+          <ion-label color="medium">Noch mit keinem Termin verknüpft</ion-label>
+        </ion-item>
+      } @else {
+        <ion-list>
+          @for (link of linkedAttendances; track link.id) {
+            <ion-item>
+              <ion-label>
+                <h3>{{ link.attendance?.date | date:'dd.MM.yyyy' }}</h3>
+                <p>{{ link.attendance?.typeInfo }}</p>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      }
+
+      <ion-item-divider style="margin-top: 16px">
+        <ion-label>Aufgaben ({{ tasks.length }})</ion-label>
+      </ion-item-divider>
+      @if (tasks.length === 0) {
+        <ion-item>
+          <ion-label color="medium">Keine Aufgaben verknüpft</ion-label>
+        </ion-item>
+      } @else {
+        <ion-list>
+          @for (task of tasks; track task.id) {
+            <ion-item [routerLink]="['/tabs/settings/tasks', task.id]" detail="false" button>
+              <ion-label>
+                <h3>{{ task.title }}</h3>
+                @if (task.due_date) {
+                  <p>Fällig: {{ task.due_date | date:'dd.MM.yyyy' }}</p>
+                }
+              </ion-label>
+              <ion-badge slot="end" [color]="task.status === 'completed' ? 'success' : task.status === 'in_progress' ? 'warning' : 'primary'">
+                {{ getTaskStatusLabel(task.status) }}
+              </ion-badge>
+            </ion-item>
+          }
+        </ion-list>
+      }
+    }
+  }
+</ion-content>

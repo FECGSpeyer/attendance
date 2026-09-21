@@ -75,6 +75,26 @@ const routes: Routes = [
         loadChildren: () => import('./../meetings/meeting/meeting.module').then(m => m.MeetingPageModule),
       },
       {
+        path: 'settings/agenda-items',
+        loadChildren: () => import('./../agenda-items/agenda-item-list/agenda-item-list.module').then(m => m.AgendaItemListPageModule),
+      },
+      {
+        path: 'settings/agenda-items/:id',
+        loadChildren: () => import('./../agenda-items/agenda-item-detail/agenda-item-detail.module').then(m => m.AgendaItemDetailPageModule),
+      },
+      {
+        path: 'settings/tasks',
+        loadChildren: () => import('./../tasks/task-list/task-list.module').then(m => m.TaskListPageModule),
+      },
+      {
+        path: 'settings/tasks/:id',
+        loadChildren: () => import('./../tasks/task-detail/task-detail.module').then(m => m.TaskDetailPageModule),
+      },
+      {
+        path: 'settings/team-organization',
+        loadChildren: () => import('./../team-organization/team-organization.module').then(m => m.TeamOrganizationPageModule),
+      },
+      {
         path: 'settings/notifications',
         loadChildren: () => import('./../notifications/notifications.module').then(m => m.NotificationsPageModule)
       },

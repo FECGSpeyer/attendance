@@ -5,7 +5,7 @@ import { SupabaseClient, User } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SUPER_DEVELOPER_EMAIL, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence, DashboardCardConfig, DEFAULT_DASHBOARD_CARDS } from '../utilities/interfaces';
+import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence, DashboardCardConfig, DEFAULT_DASHBOARD_CARDS, AgendaItem, AgendaItemAttendance, Protocol, Task } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
@@ -22,6 +22,9 @@ import { TenantService } from './tenant/tenant.service';
 import { GroupService } from './group/group.service';
 import { HistoryService } from './history/history.service';
 import { MeetingService } from './meeting/meeting.service';
+import { AgendaItemService } from './agenda-item/agenda-item.service';
+import { ProtocolService } from './protocol/protocol.service';
+import { TaskService } from './task/task.service';
 import { NotificationService } from './notification/notification.service';
 import { ImageService } from './image/image.service';
 import { ShiftService } from './shift/shift.service';
@@ -77,6 +80,9 @@ export class DbService {
   public readonly groupSvc = inject(GroupService);
   public readonly historySvc = inject(HistoryService);
   public readonly meetingSvc = inject(MeetingService);
+  public readonly agendaItemSvc = inject(AgendaItemService);
+  public readonly protocolSvc = inject(ProtocolService);
+  public readonly taskSvc = inject(TaskService);
   public readonly notificationSvc = inject(NotificationService);
   public readonly imageSvc = inject(ImageService);
   public readonly shiftSvc = inject(ShiftService);
@@ -2709,6 +2715,102 @@ export class DbService {
   async removeMeeting(id: number): Promise<void> {
     this.checkDemoRestriction();
     return this.meetingSvc.removeMeeting(id);
+  }
+
+  // ── Agenda Items ──
+
+  async getAgendaItems(): Promise<AgendaItem[]> {
+    return this.agendaItemSvc.getAgendaItems(this.tenant().id);
+  }
+
+  async getAgendaItem(id: string): Promise<AgendaItem> {
+    return this.agendaItemSvc.getAgendaItem(id);
+  }
+
+  async getAgendaItemsForAttendance(attendanceId: number): Promise<AgendaItem[]> {
+    return this.agendaItemSvc.getAgendaItemsForAttendance(attendanceId);
+  }
+
+  async addAgendaItem(item: Omit<AgendaItem, 'id'>): Promise<AgendaItem> {
+    this.checkDemoRestriction();
+    return this.agendaItemSvc.addAgendaItem({ ...item, tenant_id: this.tenant().id });
+  }
+
+  async updateAgendaItem(id: string, updates: Partial<AgendaItem>): Promise<AgendaItem> {
+    this.checkDemoRestriction();
+    return this.agendaItemSvc.updateAgendaItem(id, updates);
+  }
+
+  async deleteAgendaItem(id: string): Promise<void> {
+    this.checkDemoRestriction();
+    return this.agendaItemSvc.deleteAgendaItem(id);
+  }
+
+  async linkAgendaItemToAttendance(agendaItemId: string, attendanceId: number): Promise<void> {
+    this.checkDemoRestriction();
+    return this.agendaItemSvc.linkToAttendance(agendaItemId, attendanceId);
+  }
+
+  async unlinkAgendaItemFromAttendance(agendaItemId: string, attendanceId: number): Promise<void> {
+    this.checkDemoRestriction();
+    return this.agendaItemSvc.unlinkFromAttendance(agendaItemId, attendanceId);
+  }
+
+  async getLinkedAttendancesForAgendaItem(agendaItemId: string): Promise<AgendaItemAttendance[]> {
+    return this.agendaItemSvc.getLinkedAttendances(agendaItemId);
+  }
+
+  // ── Protocols ─────────────────────────────────────────────
+
+  async getProtocolForAttendance(attendanceId: number): Promise<Protocol | null> {
+    return this.protocolSvc.getProtocolForAttendance(attendanceId);
+  }
+
+  async getProtocols(): Promise<Protocol[]> {
+    return this.protocolSvc.getProtocols(this.tenant().id);
+  }
+
+  async upsertProtocol(protocol: Omit<Protocol, 'id'>): Promise<Protocol> {
+    this.checkDemoRestriction();
+    return this.protocolSvc.upsertProtocol({ ...protocol, tenant_id: this.tenant().id });
+  }
+
+  async deleteProtocol(id: string): Promise<void> {
+    this.checkDemoRestriction();
+    return this.protocolSvc.deleteProtocol(id);
+  }
+
+  // ── Tasks ─────────────────────────────────────────────────
+
+  async getTasks(): Promise<Task[]> {
+    return this.taskSvc.getTasks(this.tenant().id);
+  }
+
+  async getTask(id: string): Promise<Task> {
+    return this.taskSvc.getTask(id);
+  }
+
+  async getTasksForProtocol(protocolId: string): Promise<Task[]> {
+    return this.taskSvc.getTasksForProtocol(protocolId);
+  }
+
+  async getTasksForAgendaItem(agendaItemId: string): Promise<Task[]> {
+    return this.taskSvc.getTasksForAgendaItem(agendaItemId);
+  }
+
+  async addTask(task: Omit<Task, 'id'>): Promise<Task> {
+    this.checkDemoRestriction();
+    return this.taskSvc.addTask({ ...task, tenant_id: this.tenant().id });
+  }
+
+  async updateTask(id: string, updates: Partial<Task>): Promise<Task> {
+    this.checkDemoRestriction();
+    return this.taskSvc.updateTask(id, updates);
+  }
+
+  async deleteTask(id: string): Promise<void> {
+    this.checkDemoRestriction();
+    return this.taskSvc.deleteTask(id);
   }
 
   async signout(attIds: string[], reason: string, isLateExcused: boolean, isParents: boolean = false, isSelf: boolean = false): Promise<void> {
