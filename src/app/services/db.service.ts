@@ -3284,27 +3284,40 @@ export class DbService {
    */
   async personExistsInTenant(person: Player, targetTenantId: number): Promise<boolean> {
     const email = (person.email ?? '').trim();
-    if (!email) {
-      return false;
+
+    if (email) {
+      const { data, error } = await supabase
+        .from('player')
+        .select('id')
+        .eq('tenantId', targetTenantId)
+        .ilike('email', email)
+        .limit(1);
+      if (error) { throw error; }
+      if ((data?.length ?? 0) > 0) { return true; }
     }
 
-    const { data, error } = await supabase
+    // Fallback: match by first+last name when no email is set
+    const firstName = (person.firstName ?? '').trim();
+    const lastName = (person.lastName ?? '').trim();
+    if (!firstName && !lastName) { return false; }
+
+    const { data: nameData, error: nameError } = await supabase
       .from('player')
       .select('id')
       .eq('tenantId', targetTenantId)
-      .ilike('email', email)
+      .ilike('firstName', firstName)
+      .ilike('lastName', lastName)
       .limit(1);
-
-    if (error) {
-      throw error;
-    }
-
-    return (data?.length ?? 0) > 0;
+    if (nameError) { throw nameError; }
+    return (nameData?.length ?? 0) > 0;
   }
 
   async handoverPerson(person: Player, targetTenant: Tenant, groupId: number, stayInInstance: boolean = false, mainGroup: number | null): Promise<void> {
     if (await this.personExistsInTenant(person, targetTenant.id)) {
-      throw new Error(`In der Zielinstanz existiert bereits eine Person mit der E-Mail-Adresse "${person.email}".`);
+      const identifier = person.email
+        ? `der E-Mail-Adresse "${person.email}"`
+        : `dem Namen "${person.firstName} ${person.lastName}"`;
+      throw new Error(`In der Zielinstanz existiert bereits eine Person mit ${identifier}.`);
     }
 
     const newPerson: Player = {

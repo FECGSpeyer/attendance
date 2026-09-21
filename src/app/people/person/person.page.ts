@@ -1385,7 +1385,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     if (await this.db.personExistsInTenant(this.player, targetTenant.id)) {
       const blockAlert = await this.alertController.create({
         header: this.copy ? 'Kopieren nicht möglich' : 'Übertragen nicht möglich',
-        message: `In der Instanz "${targetTenant.longName}" existiert bereits eine Person mit der E-Mail-Adresse "${this.player.email}".`,
+        message: `In der Instanz "${targetTenant.longName}" existiert bereits eine Person mit ${this.player.email ? `der E-Mail-Adresse "${this.player.email}"` : `dem Namen "${this.player.firstName} ${this.player.lastName}"`}.`,
         buttons: ['Ok'],
       });
       await blockAlert.present();

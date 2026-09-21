@@ -1,7 +1,7 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { GroupCategory, History, Group, Person, Song, Tenant, SongCategory, SongFile } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
-import { AlertController, IonModal, ItemReorderEventDetail } from '@ionic/angular/lazy';
+import { AlertController, IonModal, IonPopover, ItemReorderEventDetail } from '@ionic/angular/lazy';
 import { Utils } from '../utilities/Utils';
 import { FieldType, Role } from '../utilities/constants';
 import { Storage } from '@ionic/storage-angular';
@@ -16,6 +16,7 @@ import { Capacitor } from '@capacitor/core';
     standalone: false
 })
 export class SongsPage implements OnInit, OnDestroy {
+  @ViewChild('categoriesModal') categoriesModal: IonModal;
   public songs: Song[] = [];
   public songsFiltered: Song[] = [];
   public loaded = false;
@@ -191,7 +192,8 @@ export class SongsPage implements OnInit, OnDestroy {
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  async toggleSongsTab(): Promise<void> {
+  async toggleSongsTab(popover?: IonPopover): Promise<void> {
+    await popover?.dismiss();
     this.showSongsTab = !this.showSongsTab;
     await this.db.setShowSongsTab(this.showSongsTab);
   }
@@ -538,7 +540,13 @@ export class SongsPage implements OnInit, OnDestroy {
     return `https://attendix.de/${this.tenantData?.song_sharing_id ?? this.db.tenant().song_sharing_id}`;
   }
 
-  copyShareLink() {
+  async openCategoriesModal(popover: IonPopover): Promise<void> {
+    await popover.dismiss();
+    await this.categoriesModal.present();
+  }
+
+  copyShareLink(popover?: IonPopover) {
+    popover?.dismiss();
     navigator?.clipboard.writeText(this.getSongSharingLink());
     Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
   }
