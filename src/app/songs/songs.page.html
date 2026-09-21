@@ -11,10 +11,10 @@
       <ion-title>Werke ({{ songs?.length }})</ion-title>
     }
     <ion-buttons slot="end">
-      <ion-button id="songs-menu-button" fill="clear">
+      <ion-button fill="clear" (click)="songsMenuPopover.present($event)">
         <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
       </ion-button>
-      <ion-popover #songsMenuPopover trigger="songs-menu-button" triggerAction="click">
+      <ion-popover #songsMenuPopover>
         <ng-template>
           <ion-list>
             <ion-item button (click)="openCategoriesModal(songsMenuPopover)">
