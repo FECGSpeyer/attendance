@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "4.8.11",
+      "date": "21.9.2026",
+      "changes": [
+        "🔒 DSGVO: Datenschutzerklärung muss beim ersten Login akzeptiert werden.",
+        "🔒 DSGVO: Zustimmung wird nun dauerhaft gespeichert.",
+        "✅ Datenschutz-Checkbox auf der Registrierungsseite hinzugefügt."
+      ]
+    },
+    {
       "version": "4.8.10",
       "date": "17.9.2026",
       "changes": [
