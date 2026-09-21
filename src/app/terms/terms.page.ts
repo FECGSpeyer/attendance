@@ -37,6 +37,13 @@ export class TermsPage implements OnInit {
       Utils.showToast('Bitte akzeptiere die Nutzungsbedingungen und Datenschutzerklärung.', 'danger');
       return;
     }
+    const { error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError) {
+      await supabase.auth.signOut();
+      this.router.navigateByUrl('/login');
+      Utils.showToast('Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.', 'warning', 4000);
+      return;
+    }
     const now = new Date().toISOString();
     const { error } = await supabase.auth.updateUser({ data: { terms_accepted_at: now } });
     if (error) {
