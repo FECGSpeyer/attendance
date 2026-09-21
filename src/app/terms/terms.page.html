@@ -1,0 +1,44 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="light">
+    <ion-title>Nutzungsbedingungen</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" [fullscreen]="true" class="ion-padding">
+  <ion-header collapse="condense">
+    <ion-toolbar color="light">
+      <ion-title size="large">Nutzungsbedingungen</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  @if (isAdminCreated) {
+    <ion-card color="warning" class="info-card">
+      <ion-card-content>
+        <p>Dein Konto wurde von einem Administrator erstellt. Um fortzufahren, akzeptiere bitte die folgenden Nutzungsbedingungen und die Datenschutzerklärung.</p>
+      </ion-card-content>
+    </ion-card>
+  }
+
+  <div class="legal-wrapper">
+    <app-legal-content></app-legal-content>
+  </div>
+
+  <ion-list [inset]="true">
+    <ion-item lines="none" class="privacy-item">
+      <ion-checkbox
+        slot="start"
+        [(ngModel)]="privacyAccepted"
+        name="privacyAccepted"
+        aria-label="Nutzungsbedingungen und Datenschutzerklärung akzeptieren">
+      </ion-checkbox>
+      <ion-label class="ion-text-wrap">
+        Ich akzeptiere die Nutzungsbedingungen und habe die Datenschutzerklärung gelesen.
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-button expand="block" [disabled]="!privacyAccepted" (click)="accept()" class="accept-button">
+    <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+    Akzeptieren und fortfahren
+  </ion-button>
+</ion-content>

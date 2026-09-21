@@ -28,6 +28,10 @@ const routes: Routes = [
     loadChildren: () => import('./legal/legal.module').then(m => m.LegalPageModule)
   },
   {
+    path: 'terms',
+    loadChildren: () => import('./terms/terms.module').then(m => m.TermsPageModule)
+  },
+  {
     // Public share link: auto-redirects to the App Store / Play Store based on
     // the user agent. Must be registered before the :songSharingId wildcard
     // below or it would be treated as a song-sharing id.

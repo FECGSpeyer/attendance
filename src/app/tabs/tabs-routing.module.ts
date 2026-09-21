@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../services/auth.guard';
+import { TermsGuard } from '../services/terms.guard';
 import { SuperDeveloperGuard } from '../services/super-developer.guard';
 import { TabsPage } from './tabs.page';
 
@@ -8,7 +9,7 @@ const routes: Routes = [
   {
     path: '',
     component: TabsPage,
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, TermsGuard],
     children: [
       {
         path: 'signout',

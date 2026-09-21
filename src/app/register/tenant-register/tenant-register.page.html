@@ -75,6 +75,19 @@
                 </ion-item>
               }
             }
+            <ion-item lines="none" class="privacy-item">
+              <ion-checkbox
+                slot="start"
+                [(ngModel)]="privacyAccepted"
+                name="privacyAccepted"
+                aria-label="Nutzungsbedingungen und Datenschutzerklärung akzeptieren">
+              </ion-checkbox>
+              <ion-label class="ion-text-wrap privacy-label">
+                Ich akzeptiere die Nutzungsbedingungen und habe die
+                <a href="#" (click)="openPrivacy($event)">Datenschutzerklärung</a>
+                gelesen.
+              </ion-label>
+            </ion-item>
           </ion-item-group>
         } @else {
           <ion-item-group>

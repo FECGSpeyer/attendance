@@ -112,6 +112,7 @@ export class AuthService {
       email, password,
       options: {
         emailRedirectTo: `https://attendix.de/login`,
+        data: { terms_accepted_at: new Date().toISOString() },
       }
     });
 

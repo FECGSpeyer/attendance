@@ -1106,7 +1106,7 @@ export class DbService {
         // 6-digit code instead of the confirmation link (which dead-ends the code
         // flow: the app is waiting on code entry). Only new-user creation sends
         // "Confirm signup"; existing users get the separate "Magic Link" template.
-        data: allowCreate ? { signup_method: 'otp' } : undefined,
+        data: allowCreate ? { signup_method: 'otp', terms_accepted_at: new Date().toISOString() } : undefined,
       },
     });
 
@@ -1232,6 +1232,7 @@ export class DbService {
       email, password,
       options: {
         emailRedirectTo: `https://attendix.de/login`,
+        data: { terms_accepted_at: new Date().toISOString() },
       }
     });
 
