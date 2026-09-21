@@ -14,7 +14,6 @@ import { supabase } from 'src/app/services/base/supabase';
 })
 export class TermsPage implements OnInit {
   privacyAccepted = false;
-  isAdminCreated = false;
 
   constructor(public db: DbService, private router: Router, private modalController: ModalController) {}
 
@@ -24,7 +23,6 @@ export class TermsPage implements OnInit {
       this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser()?.role));
       return;
     }
-    this.isAdminCreated = !!this.db.user && !!this.db.tenantUser();
   }
 
   async openPrivacy(event: Event) {

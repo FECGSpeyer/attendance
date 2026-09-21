@@ -5,20 +5,11 @@
 </ion-header>
 
 <ion-content color="light" [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar color="light">
-      <ion-title size="large">Datenschutz & Nutzung</ion-title>
-    </ion-toolbar>
-  </ion-header>
 
   <div class="hero">
     <ion-icon name="shield-checkmark-outline" class="hero-icon" color="primary"></ion-icon>
     <h2>Kurz bevor es losgeht</h2>
-    @if (isAdminCreated) {
-      <p>Dein Konto wurde von einem Administrator für dich erstellt. Bevor du die App nutzen kannst, benötigen wir deine Zustimmung zu unseren Nutzungsbedingungen und der Datenschutzerklärung.</p>
-    } @else {
-      <p>Wir haben unsere Nutzungsbedingungen und Datenschutzerklärung aktualisiert. Um Attendix weiterhin zu nutzen, bitten wir dich, diesen einmalig zuzustimmen.</p>
-    }
+    <p>Um Attendix nutzen zu können, benötigen wir einmalig deine Zustimmung zu unseren Nutzungsbedingungen und der Datenschutzerklärung.</p>
   </div>
 
   <ion-list [inset]="true" class="info-list">
