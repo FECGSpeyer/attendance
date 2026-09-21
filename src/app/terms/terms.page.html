@@ -1,30 +1,51 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="light">
-    <ion-title>Nutzungsbedingungen</ion-title>
+    <ion-title>Datenschutz & Nutzung</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="light" [fullscreen]="true" class="ion-padding">
+<ion-content color="light" [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar color="light">
-      <ion-title size="large">Nutzungsbedingungen</ion-title>
+      <ion-title size="large">Datenschutz & Nutzung</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  @if (isAdminCreated) {
-    <ion-card color="warning" class="info-card">
-      <ion-card-content>
-        <p>Dein Konto wurde von einem Administrator erstellt. Um fortzufahren, akzeptiere bitte die folgenden Nutzungsbedingungen und die Datenschutzerklärung.</p>
-      </ion-card-content>
-    </ion-card>
-  }
-
-  <div class="legal-wrapper">
-    <app-legal-content></app-legal-content>
+  <div class="hero">
+    <ion-icon name="shield-checkmark-outline" class="hero-icon" color="primary"></ion-icon>
+    <h2>Kurz bevor es losgeht</h2>
+    @if (isAdminCreated) {
+      <p>Dein Konto wurde von einem Administrator für dich erstellt. Bevor du die App nutzen kannst, benötigen wir deine Zustimmung zu unseren Nutzungsbedingungen und der Datenschutzerklärung.</p>
+    } @else {
+      <p>Wir haben unsere Nutzungsbedingungen und Datenschutzerklärung aktualisiert. Um Attendix weiterhin zu nutzen, bitten wir dich, diesen einmalig zuzustimmen.</p>
+    }
   </div>
 
-  <ion-list [inset]="true">
-    <ion-item lines="none" class="privacy-item">
+  <ion-list [inset]="true" class="info-list">
+    <ion-item lines="full">
+      <ion-icon name="lock-closed-outline" slot="start" color="primary"></ion-icon>
+      <ion-label class="ion-text-wrap">
+        <h3>Deine Daten sind sicher</h3>
+        <p>Wir speichern nur die Daten, die für den Betrieb der App notwendig sind, und geben sie nicht an Dritte weiter.</p>
+      </ion-label>
+    </ion-item>
+    <ion-item lines="full">
+      <ion-icon name="people-outline" slot="start" color="primary"></ion-icon>
+      <ion-label class="ion-text-wrap">
+        <h3>Wofür werden deine Daten genutzt?</h3>
+        <p>Ausschließlich zur Verwaltung deiner Anwesenheit und zur Kommunikation innerhalb deiner Gruppe oder deines Chores.</p>
+      </ion-label>
+    </ion-item>
+    <ion-item lines="none" button detail="true" (click)="openPrivacy($event)">
+      <ion-icon name="document-text-outline" slot="start" color="primary"></ion-icon>
+      <ion-label>
+        <h3>Datenschutzerklärung & Impressum lesen</h3>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-list [inset]="true" class="accept-list">
+    <ion-item lines="none">
       <ion-checkbox
         slot="start"
         [(ngModel)]="privacyAccepted"
@@ -32,13 +53,17 @@
         aria-label="Nutzungsbedingungen und Datenschutzerklärung akzeptieren">
       </ion-checkbox>
       <ion-label class="ion-text-wrap">
-        Ich akzeptiere die Nutzungsbedingungen und habe die Datenschutzerklärung gelesen.
+        Ich akzeptiere die Nutzungsbedingungen und habe die
+        <a href="#" (click)="openPrivacy($event)">Datenschutzerklärung</a>
+        gelesen.
       </ion-label>
     </ion-item>
   </ion-list>
 
-  <ion-button expand="block" [disabled]="!privacyAccepted" (click)="accept()" class="accept-button">
-    <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-    Akzeptieren und fortfahren
-  </ion-button>
+  <div class="button-row">
+    <ion-button expand="block" [disabled]="!privacyAccepted" (click)="accept()">
+      <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+      Akzeptieren und fortfahren
+    </ion-button>
+  </div>
 </ion-content>

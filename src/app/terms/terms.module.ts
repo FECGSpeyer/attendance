@@ -6,7 +6,7 @@ import { IonicModule } from '@ionic/angular/lazy';
 
 import { TermsPageRoutingModule } from './terms-routing.module';
 import { TermsPage } from './terms.page';
-import { LegalContentComponent } from '../login/legal-modal/legal-content.component';
+import { LegalModalComponent } from '../login/legal-modal/legal-modal.component';
 
 @NgModule({
   imports: [
@@ -14,7 +14,7 @@ import { LegalContentComponent } from '../login/legal-modal/legal-content.compon
     FormsModule,
     IonicModule,
     TermsPageRoutingModule,
-    LegalContentComponent
+    LegalModalComponent
   ],
   declarations: [TermsPage]
 })

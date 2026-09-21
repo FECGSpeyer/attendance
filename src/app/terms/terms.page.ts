@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { ModalController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
+import { LegalModalComponent } from 'src/app/login/legal-modal/legal-modal.component';
 import { Utils } from 'src/app/utilities/Utils';
 import { supabase } from 'src/app/services/base/supabase';
 
@@ -14,17 +16,22 @@ export class TermsPage implements OnInit {
   privacyAccepted = false;
   isAdminCreated = false;
 
-  constructor(public db: DbService, private router: Router) {}
+  constructor(public db: DbService, private router: Router, private modalController: ModalController) {}
 
   async ngOnInit() {
     await this.db.checkToken();
-    // If user already has terms_accepted_at they shouldn't be here — route away.
     if (this.db.user?.user_metadata?.['terms_accepted_at']) {
       this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser()?.role));
       return;
     }
-    // Detect admin-created: user exists and has a tenant but was never self-registered.
     this.isAdminCreated = !!this.db.user && !!this.db.tenantUser();
+  }
+
+  async openPrivacy(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const modal = await this.modalController.create({ component: LegalModalComponent });
+    await modal.present();
   }
 
   async accept() {
