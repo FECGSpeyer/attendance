@@ -17,8 +17,9 @@ import { RegisterModalComponent } from './register-modal/register-modal.componen
     FormsModule,
     IonicModule,
     LoginPageRoutingModule,
-    LegalContentComponent
+    LegalContentComponent,
+    LegalModalComponent
   ],
-  declarations: [LoginPage, LegalModalComponent, RegisterModalComponent]
+  declarations: [LoginPage, RegisterModalComponent]
 })
 export class LoginPageModule {}
