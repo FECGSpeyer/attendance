@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { ActionSheetController, AlertController, ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
+import { supabase } from 'src/app/services/base/supabase';
 import { ProfileService } from 'src/app/services/profile/profile.service';
 import { DEFAULT_IMAGE, FieldType, Role } from 'src/app/utilities/constants';
 import { Church, Group, Tenant, TenantUser } from 'src/app/utilities/interfaces';
@@ -196,6 +197,13 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
       const ok = await this.db.verifyEmailOtp(email, this.otpCode, true);
       if (!ok) {
         return;
+      }
+      // Stamp terms acceptance on the live session — the checkbox was already
+      // accepted before requestCode() was allowed to proceed.
+      const now = new Date().toISOString();
+      await supabase.auth.updateUser({ data: { terms_accepted_at: now } });
+      if (this.db.user?.user_metadata) {
+        this.db.user.user_metadata['terms_accepted_at'] = now;
       }
       await loading.dismiss();
       // Signed in now: if already a member of this tenant, checkExistent redirects
