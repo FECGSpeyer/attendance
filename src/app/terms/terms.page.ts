@@ -19,6 +19,10 @@ export class TermsPage implements OnInit {
 
   async ngOnInit() {
     await this.db.checkToken();
+    if (!this.db.user) {
+      this.router.navigateByUrl('/login');
+      return;
+    }
     if (this.db.user?.user_metadata?.['terms_accepted_at']) {
       this.router.navigateByUrl(Utils.getUrl(this.db.tenantUser()?.role));
       return;
