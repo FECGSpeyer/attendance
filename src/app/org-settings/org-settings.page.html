@@ -63,6 +63,31 @@
     </ion-item-group>
   </ion-list>
 
+  <!-- Instanzen -->
+  @if (linkedTenants.length > 0) {
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Instanzen</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item lines="none">
+        <ion-icon name="layers-outline" slot="start"></ion-icon>
+        <ion-label>
+          <h2>{{ db.tenant().shortName }}</h2>
+          <p>Diese Instanz</p>
+        </ion-label>
+      </ion-item>
+      @for (tenant of linkedTenants; track tenant.id) {
+      <ion-item>
+        <ion-icon name="layers-outline" slot="start" color="medium"></ion-icon>
+        <ion-label>
+          <h2>{{ tenant.shortName }}</h2>
+          <p>{{ tenant.longName }}</p>
+        </ion-label>
+      </ion-item>
+      }
+    </ion-item-group>
+  </ion-list>
+  }
+
   <!-- Branding & Pläne -->
   <ion-list [inset]="true">
     <ion-list-header><ion-label>Darstellung & Pläne</ion-label></ion-list-header>
