@@ -21,7 +21,7 @@
               <ion-icon name="library-outline" slot="start"></ion-icon>
               Werk-Kategorien
             </ion-item>
-            @if (tenantData?.song_sharing_id ?? db.tenant()?.song_sharing_id) {
+            @if (hasSongSharing) {
               <ion-item button (click)="copyShareLink(songsMenuPopover)">
                 <ion-icon name="link-outline" slot="start"></ion-icon>
                 Link kopieren

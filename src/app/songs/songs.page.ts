@@ -17,6 +17,7 @@ import { Capacitor } from '@capacitor/core';
 })
 export class SongsPage implements OnInit, OnDestroy {
   @ViewChild('categoriesModal') categoriesModal: IonModal;
+  public hasSongSharing = false;
   public songs: Song[] = [];
   public songsFiltered: Song[] = [];
   public loaded = false;
@@ -107,6 +108,7 @@ export class SongsPage implements OnInit, OnDestroy {
     await this.getSongs();
     this.buildGroupsWithFiles();
     this.showSongsTab = this.db.getShowSongsTab();
+    this.hasSongSharing = !!(this.tenantData?.song_sharing_id ?? this.db.tenant()?.song_sharing_id);
 
     this.loaded = true;
     this.loadedTenantId = this.tenantData?.id ?? this.db.tenant().id;
@@ -116,6 +118,7 @@ export class SongsPage implements OnInit, OnDestroy {
   async ionViewWillEnter() {
     if (!this.loaded || this.tenantData) { return; }
     const currentTenantId = this.db.tenant().id;
+    this.hasSongSharing = !!this.db.tenant()?.song_sharing_id;
     if (currentTenantId !== this.loadedTenantId) {
       this.loaded = false;
       this.loadedTenantId = currentTenantId;
