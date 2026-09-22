@@ -270,7 +270,7 @@
             @if (type?.place_enabled) {
               <ion-item lines="none">
                 <ion-label position="stacked">Ort</ion-label>
-                <ion-input [(ngModel)]="attendance.place" (ionBlur)="onPlaceChanged()" placeholder="Adresse oder Ortsname"></ion-input>
+                <ion-textarea [(ngModel)]="attendance.place" (ionBlur)="onPlaceChanged()" placeholder="Adresse oder Ortsname" rows="2"></ion-textarea>
               </ion-item>
               @if (attendance.place) {
                 <ion-item button detail="false" (click)="openNavigation()">

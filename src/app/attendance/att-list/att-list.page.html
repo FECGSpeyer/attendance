@@ -321,7 +321,7 @@
               @if (isPlaceEnabled()) {
                 <ion-item>
                   <ion-label position="stacked">Ort (für Navigation)</ion-label>
-                  <ion-input autocapitalize="sentences" [(ngModel)]="place" placeholder="z. B. Gemeindehaus, Musterstr. 1, 12345 Berlin"></ion-input>
+                  <ion-textarea autocapitalize="sentences" [(ngModel)]="place" placeholder="z. B. Gemeindehaus, Musterstr. 1, 12345 Berlin" rows="2"></ion-textarea>
                 </ion-item>
               }
             </ion-item-group>
