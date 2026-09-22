@@ -55,10 +55,10 @@
   <div class="flex" [style.display]="isReordering ? 'none' : ''">
     <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" placeholder="Person suchen...">
     </ion-searchbar>
-    <ion-button id="filter-trigger" fill="none">
+    <ion-button fill="none" (click)="filterPopover.present($event)">
       <ion-icon slot="icon-only" [color]="filterOpt === 'all' ? '' : 'primary'" size="medium" name="options"></ion-icon>
     </ion-button>
-    <ion-popover #filterPopover trigger="filter-trigger" triggerAction="click">
+    <ion-popover #filterPopover>
       <ng-template>
         <ion-list>
           <ion-item lines="none">
