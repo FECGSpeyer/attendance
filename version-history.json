@@ -4,7 +4,7 @@
       "version": "4.8.13",
       "date": "22.9.2026",
       "changes": [
-        "📥 Werke aus Excel/CSV importieren: Als Administrator können jetzt mehrere Werke auf einmal aus einer Excel- (.xlsx/.xls) oder CSV-Datei importiert werden (Menü → „Werke importieren"). Spalten werden automatisch zugeordnet, eine Vorlage steht zum Download bereit. In der Vorschau sind alle Werke mit Hinweisen und Duplikaten sichtbar. Kategorien werden per Namen zugeordnet, Zusatzfelder werden unterstützt."
+        "📥 Werke aus Excel/CSV importieren: Als Administrator können jetzt mehrere Werke auf einmal aus einer Excel- (.xlsx/.xls) oder CSV-Datei importiert werden (Menü → 'Werke importieren'). Spalten werden automatisch zugeordnet, eine Vorlage steht zum Download bereit. In der Vorschau sind alle Werke mit Hinweisen und Duplikaten sichtbar. Kategorien werden per Namen zugeordnet, Zusatzfelder werden unterstützt."
       ]
     },
     {
