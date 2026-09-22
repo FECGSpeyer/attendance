@@ -259,8 +259,7 @@
             [class.not-member]="showAllAttendances && !currentAttendance.isMember">
             <ion-label>
               <h2>{{ getReadableDate(currentAttendance.date, currentAttendance.typeId) }}</h2>
-              <h3 [style.fontWeight]="currentAttendance.highlight ? 'bold' : 'normal'">{{ currentAttendance.title }}
-              </h3>
+              <h3 [style.fontWeight]="currentAttendance.highlight ? 'bold' : 'normal'">{{ currentAttendance.title }} @if (currentAttendance.attendance?.place) {<ion-icon name="navigate-outline" style="vertical-align: middle;"></ion-icon>}</h3>
               @if (showAllAttendances && !currentAttendance.isMember) {
                 <p class="all-attendances-info-text">{{ showAllAttendancesInfoText }}</p>
               }
@@ -280,9 +279,6 @@
                 }
                 Infos verfügbar
               </ion-note>
-              }
-              @if (currentAttendance.attendance?.place) {
-              <ion-note [style.fontSize]="'.8rem'" color="primary"><ion-icon name="navigate-outline" style="vertical-align: middle;"></ion-icon> {{ currentAttendance.attendance.place }}</ion-note>
               }
               @if (hasPlan(currentAttendance)) {
               <ion-note [style.fontSize]="'.8rem'" color="primary"><ion-icon name="document-text-outline"
@@ -311,7 +307,7 @@
             [class.not-member]="showAllAttendances && !att.isMember">
             <ion-label>
               <h2>{{ getReadableDate(att.date, att.typeId) }}</h2>
-              <h3 [style.fontWeight]="att.highlight ? 'bold' : 'normal'">{{ att.title }}</h3>
+              <h3 [style.fontWeight]="att.highlight ? 'bold' : 'normal'">{{ att.title }} @if (att.attendance?.place) {<ion-icon name="navigate-outline" style="vertical-align: middle;"></ion-icon> {{ att.attendance.place }} }</h3>
               @if (showAllAttendances && !att.isMember) {
                 <p class="all-attendances-info-text">{{ showAllAttendancesInfoText }}</p>
               }
@@ -331,9 +327,6 @@
                 }
                 Infos verfügbar
               </ion-note>
-              }
-              @if (att.attendance?.place) {
-              <ion-note [style.fontSize]="'.8rem'" color="primary"><ion-icon name="navigate-outline" style="vertical-align: middle;"></ion-icon> {{ att.attendance.place }}</ion-note>
               }
               @if (hasPlan(att)) {
               <ion-note [style.fontSize]="'.8rem'" color="primary"><ion-icon name="document-text-outline"
