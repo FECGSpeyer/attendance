@@ -1478,6 +1478,14 @@ export class Utils {
     return type.planning_title || typeInfo || type.name || 'Probenplan';
   }
 
+  static getNavigationUrl(place: string): string {
+    const encoded = encodeURIComponent(place);
+    if (Capacitor.getPlatform() === 'ios') {
+      return `maps://?q=${encoded}`;
+    }
+    return `https://www.google.com/maps/search/?api=1&query=${encoded}`;
+  }
+
   static async openFileNative(urlOrBlob: string | Blob, fileName?: string): Promise<void> {
     if (!Capacitor.isNativePlatform()) {
       if (typeof urlOrBlob === 'string') {

@@ -211,6 +211,11 @@
                 </ion-note>
               </ion-item>
             }
+            @if (currentAttendance.place) {
+              <ion-item lines="none">
+                <ion-note color="primary" style="font-size: .8rem;"><ion-icon name="navigate-outline" style="vertical-align: middle;"></ion-icon> {{ currentAttendance.place }}</ion-note>
+              </ion-item>
+            }
             @if (kids.length !== 1) {
               <ion-item button (click)="openActionSheet(currentAttendance, true)">
                 <ion-label>
@@ -272,6 +277,11 @@
                     }
                     Infos verfügbar
                   </ion-note>
+                </ion-item>
+              }
+              @if (att.place) {
+                <ion-item lines="none">
+                  <ion-note color="primary" style="font-size: .8rem;"><ion-icon name="navigate-outline" style="vertical-align: middle;"></ion-icon> {{ att.place }}</ion-note>
                 </ion-item>
               }
               @if (kids.length !== 1) {

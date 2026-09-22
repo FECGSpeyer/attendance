@@ -145,6 +145,12 @@
         helperText="Wenn diese Option aktiviert ist, wird dieser Typ beim Anwesenheitsdurchschnitt berücksichtigt."
       [(ngModel)]="type.include_in_average">Für Ø berücksichtigen</ion-toggle>
     </ion-item>
+
+        <ion-item>
+          <ion-toggle
+            helperText="Wenn aktiviert, kann bei Terminen dieses Typs ein Ort hinterlegt werden. Dieser wird dann als Navigationslink in Google Maps oder Apple Maps angezeigt."
+          [(ngModel)]="type.place_enabled">Ort / Navigation aktivieren</ion-toggle>
+        </ion-item>
       </ion-item-group>
     </ion-list>
 

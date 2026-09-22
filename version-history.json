@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.8.14",
+      "date": "22.9.2026",
+      "changes": [
+        "📍 Ort / Navigation: Bei Termintypen kann jetzt eine Ortsfunktion aktiviert werden. Wenn aktiv, kann bei jedem Termin eine Adresse oder ein Ortsname hinterlegt werden. Dieser wird auf der Anmeldungsseite, der Elternseite und in der Termindetailansicht als Navigationslink angezeigt (Google Maps / Apple Maps). Der Ort wird außerdem im Kalender-Abo als LOCATION-Eigenschaft übertragen."
+      ]
+    },
+    {
       "version": "4.8.13",
       "date": "22.9.2026",
       "changes": [

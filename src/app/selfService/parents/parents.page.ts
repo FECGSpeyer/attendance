@@ -141,6 +141,7 @@ export class ParentsPage implements OnInit {
           description: pa.attendance?.description,
           attachment_url: pa.attendance?.attachment_url,
           attachment_name: pa.attendance?.attachment_name,
+          place: pa.attendance?.place,
         } as unknown as Attendance);
       }
     }
@@ -332,6 +333,15 @@ export class ParentsPage implements OnInit {
       buttons.splice(cancelIndex, 0, {
         text: 'Anhang öffnen',
         handler: () => this.openAttachment(attendance),
+      });
+    }
+
+    if (attendance.place) {
+      const cancelBtn = buttons.find(btn => btn.role === 'destructive');
+      const cancelIndex = buttons.indexOf(cancelBtn);
+      buttons.splice(cancelIndex, 0, {
+        text: 'Navigation öffnen',
+        handler: () => Browser.open({ url: Utils.getNavigationUrl(attendance.place) }),
       });
     }
 

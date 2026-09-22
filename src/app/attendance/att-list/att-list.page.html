@@ -318,6 +318,12 @@
                 <ion-textarea autocapitalize="words" helperText="Dieser Text wird anstelle des Typs angezeigt."
                 [(ngModel)]="typeInfo"></ion-textarea>
               </ion-item>
+              @if (isPlaceEnabled()) {
+                <ion-item>
+                  <ion-label position="stacked">Ort (für Navigation)</ion-label>
+                  <ion-input autocapitalize="sentences" [(ngModel)]="place" placeholder="z. B. Gemeindehaus, Musterstr. 1, 12345 Berlin"></ion-input>
+                </ion-item>
+              }
             </ion-item-group>
             @if (showSongsSelection()) {
               <ion-list-header>

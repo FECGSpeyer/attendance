@@ -304,6 +304,19 @@
             (onBlur)="onDescriptionChanged()" [styles]="{ minHeight: '200px' }" style="width: 100%;"
             [modules]="{ toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }], ['link']] }"></quill-editor>
 
+          @if (type?.place_enabled) {
+            <ion-item lines="none" style="margin-top: 16px;">
+              <ion-label position="stacked">Ort</ion-label>
+              <ion-input [(ngModel)]="attendance.place" (ionBlur)="onPlaceChanged()" placeholder="Adresse oder Ortsname"></ion-input>
+            </ion-item>
+            @if (attendance.place) {
+              <ion-item button detail="false" (click)="openNavigation()" style="margin-top: 4px;">
+                <ion-icon slot="start" name="navigate-outline" color="primary"></ion-icon>
+                <ion-label color="primary">Navigation öffnen</ion-label>
+              </ion-item>
+            }
+          }
+
           <ion-item lines="none" style="margin-top: 16px;">
             <ion-label>Anhang</ion-label>
             @if (!attendance.attachment_url) {

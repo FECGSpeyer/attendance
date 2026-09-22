@@ -281,6 +281,9 @@
                 Infos verfügbar
               </ion-note>
               }
+              @if (currentAttendance.attendance?.place) {
+              <ion-note [style.fontSize]="'.8rem'" color="primary"><ion-icon name="navigate-outline" style="vertical-align: middle;"></ion-icon> {{ currentAttendance.attendance.place }}</ion-note>
+              }
               @if (hasPlan(currentAttendance)) {
               <ion-note [style.fontSize]="'.8rem'" color="primary"><ion-icon name="document-text-outline"
                   style="vertical-align: middle;"></ion-icon> Ablaufplan verfügbar</ion-note>
@@ -328,6 +331,9 @@
                 }
                 Infos verfügbar
               </ion-note>
+              }
+              @if (att.attendance?.place) {
+              <ion-note [style.fontSize]="'.8rem'" color="primary"><ion-icon name="navigate-outline" style="vertical-align: middle;"></ion-icon> {{ att.attendance.place }}</ion-note>
               }
               @if (hasPlan(att)) {
               <ion-note [style.fontSize]="'.8rem'" color="primary"><ion-icon name="document-text-outline"

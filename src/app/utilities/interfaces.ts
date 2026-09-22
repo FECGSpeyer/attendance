@@ -329,6 +329,7 @@ export interface Attendance {
   description?: string;
   attachment_url?: string;
   attachment_name?: string;
+  place?: string;
 }
 
 export interface Plan {
@@ -522,6 +523,7 @@ export interface AttendanceType {
   planning_title: string;
   planning_prefix_instance_name?: boolean;
   is_default_org_plan?: boolean;
+  place_enabled?: boolean;
 }
 
 export interface ShiftPlan {
