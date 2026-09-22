@@ -1,13 +1,14 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { GroupCategory, History, Group, Person, Song, Tenant, SongCategory, SongFile } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
-import { AlertController, IonModal, IonPopover, ItemReorderEventDetail } from '@ionic/angular/lazy';
+import { AlertController, IonModal, IonPopover, IonRouterOutlet, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
 import { Utils } from '../utilities/Utils';
 import { FieldType, Role } from '../utilities/constants';
 import { Storage } from '@ionic/storage-angular';
 import { Router } from '@angular/router';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { Capacitor } from '@capacitor/core';
+import { SongImportPage } from './import/import.page';
 
 @Component({
     selector: 'app-songs',
@@ -17,6 +18,7 @@ import { Capacitor } from '@capacitor/core';
 })
 export class SongsPage implements OnInit, OnDestroy {
   @ViewChild('categoriesModal') categoriesModal: IonModal;
+  @ViewChild(IonRouterOutlet) routerOutlet: IonRouterOutlet;
   public hasSongSharing = false;
   public songs: Song[] = [];
   public songsFiltered: Song[] = [];
@@ -63,6 +65,7 @@ export class SongsPage implements OnInit, OnDestroy {
     private storage: Storage,
     private router: Router,
     private alertController: AlertController,
+    private modalController: ModalController,
   ) { }
 
   // TrackBy function for main songs list
@@ -319,6 +322,20 @@ export class SongsPage implements OnInit, OnDestroy {
     window.setTimeout(() => {
       event.target.complete();
     }, 700);
+  }
+
+  async openImportModal(popover?: IonPopover) {
+    await popover?.dismiss();
+    const modal = await this.modalController.create({
+      component: SongImportPage,
+      presentingElement: this.routerOutlet?.nativeEl,
+      backdropDismiss: false,
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data?.imported) {
+      await this.getSongs();
+    }
   }
 
   async addSong(modal: IonModal, number: any, name: any, link: any, prefix: any) {

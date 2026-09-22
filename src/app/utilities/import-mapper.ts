@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { ExtraField, Group, Player } from './interfaces';
+import { ExtraField, Group, Player, Song, SongCategory } from './interfaces';
 import { DEFAULT_IMAGE, FieldType } from './constants';
 
 dayjs.extend(utc);
@@ -188,7 +188,7 @@ export function resolveGroupId(name: any, groups: Group[], mainGroupId?: number)
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Coerce a raw cell value to the type expected by an additional field. */
-function coerceExtraValue(field: ExtraField, raw: any): any {
+export function coerceExtraValue(field: ExtraField, raw: any): any {
   const str = (raw ?? '').toString().trim();
   switch (field.type) {
     case FieldType.BOOLEAN:
@@ -326,7 +326,7 @@ export function mapRow(row: Record<string, any>, mapping: ColumnMapping, ctx: Ma
 }
 
 /** Whether a raw row is entirely empty (all cells blank). */
-function isEmptyRow(row: Record<string, any>): boolean {
+export function isEmptyRow(row: Record<string, any>): boolean {
   return Object.values(row).every((v) => (v ?? '').toString().trim() === '');
 }
 
@@ -378,4 +378,232 @@ export function detectDuplicates(mapped: MappedRow[], existingEmails: Set<string
 /** Headers for the downloadable import template. */
 export function buildImportTemplateHeaders(additionalFields: ExtraField[]): string[] {
   return [...PARSED_HEADERS, ...(additionalFields ?? []).map((f) => f.name)];
+}
+
+// ─── Song import ────────────────────────────────────────────────────────────
+
+export const SONG_PARSED_HEADERS = [
+  'Nummer',
+  'Präfix',
+  'Name',
+  'Chor & Orchester',
+  'Mit Solo',
+  'Link',
+  'Schwierigkeit',
+  'Kategorien',
+] as const;
+
+export type SongFieldKey =
+  | 'Nummer'
+  | 'Präfix'
+  | 'Name'
+  | 'Chor & Orchester'
+  | 'Mit Solo'
+  | 'Link'
+  | 'Schwierigkeit'
+  | 'Kategorien'
+  | string; // `extra_<fieldId>`
+
+export type SongColumnMapping = Record<string, SongFieldKey | null>;
+
+export interface SongMapContext {
+  songCategories: SongCategory[];
+  additionalFields: ExtraField[]; // from tenant?.song_additional_fields
+}
+
+export interface MappedSongRow {
+  song: Partial<Song>;
+  rowIndex: number;
+  errors: string[];
+  warnings: string[];
+  isDuplicate?: boolean;
+  /** `${prefix ?? ''}${number}` — the unique dedup key, matching addSong's check. */
+  compositeKey: string;
+}
+
+export function autoMapSongHeaders(fileHeaders: string[], ctx: SongMapContext): SongColumnMapping {
+  const mapping: SongColumnMapping = {};
+
+  const standardByNorm = new Map<string, SongFieldKey>();
+  for (const h of SONG_PARSED_HEADERS) {
+    standardByNorm.set(norm(h), h);
+  }
+  standardByNorm.set('number', 'Nummer');
+  standardByNorm.set('nr', 'Nummer');
+  standardByNorm.set('no', 'Nummer');
+  standardByNorm.set('prefix', 'Präfix');
+  standardByNorm.set('prafix', 'Präfix');
+  standardByNorm.set('name', 'Name');
+  standardByNorm.set('titel', 'Name');
+  standardByNorm.set('title', 'Name');
+  standardByNorm.set('chor', 'Chor & Orchester');
+  standardByNorm.set('orchester', 'Chor & Orchester');
+  standardByNorm.set('choir', 'Chor & Orchester');
+  standardByNorm.set('solo', 'Mit Solo');
+  standardByNorm.set('link', 'Link');
+  standardByNorm.set('url', 'Link');
+  standardByNorm.set('difficulty', 'Schwierigkeit');
+  standardByNorm.set('schwierigkeit', 'Schwierigkeit');
+  standardByNorm.set('categories', 'Kategorien');
+  standardByNorm.set('category', 'Kategorien');
+  standardByNorm.set('kategorien', 'Kategorien');
+  standardByNorm.set('kategorie', 'Kategorien');
+
+  const extraByNorm = new Map<string, SongFieldKey>();
+  for (const field of ctx.additionalFields ?? []) {
+    extraByNorm.set(norm(field.name), `${EXTRA_PREFIX}${field.id}`);
+  }
+
+  for (const header of fileHeaders) {
+    const n = norm(header);
+    mapping[header] = standardByNorm.get(n) ?? extraByNorm.get(n) ?? null;
+  }
+
+  return mapping;
+}
+
+export function mappingSongHasRequired(mapping: SongColumnMapping): boolean {
+  const targets = Object.values(mapping);
+  return targets.includes('Nummer') && targets.includes('Name');
+}
+
+const HTTP_URL_RE = /^https?:\/\/.+/i;
+
+export function mapSongRow(
+  row: Record<string, any>,
+  mapping: SongColumnMapping,
+  ctx: SongMapContext,
+  rowIndex: number,
+): MappedSongRow {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  const getSong = (target: SongFieldKey): any => {
+    const col = Object.keys(mapping).find((c) => mapping[c] === target);
+    return col === undefined ? '' : row[col];
+  };
+
+  // --- Nummer ---
+  const rawNumber = getSong('Nummer');
+  const numberStr = (rawNumber ?? '').toString().trim();
+  const number = numberStr === '' ? NaN : Number(numberStr);
+  if (isNaN(number) || numberStr === '') {
+    errors.push('Nummer ist erforderlich und muss eine Zahl sein');
+  }
+
+  // --- Präfix ---
+  const prefix = (getSong('Präfix') ?? '').toString().trim() || undefined;
+
+  // --- Name ---
+  const name = (getSong('Name') ?? '').toString().trim();
+  if (!name) {
+    errors.push('Name ist erforderlich');
+  }
+
+  // --- Boolean flags ---
+  const parseBool = (raw: any): boolean =>
+    ['ja', 'yes', 'true', '1', 'x', 'wahr'].includes((raw ?? '').toString().trim().toLowerCase());
+
+  const withChoir = parseBool(getSong('Chor & Orchester'));
+  const withSolo = parseBool(getSong('Mit Solo'));
+
+  // --- Link ---
+  const link = (getSong('Link') ?? '').toString().trim() || undefined;
+  if (link && !HTTP_URL_RE.test(link)) {
+    warnings.push(`Link "${link}" sieht ungültig aus`);
+  }
+
+  // --- Schwierigkeit ---
+  const rawDiff = (getSong('Schwierigkeit') ?? '').toString().trim();
+  let difficulty: number | undefined;
+  if (rawDiff !== '') {
+    const d = parseInt(rawDiff, 10);
+    if ([1, 2, 3].includes(d)) {
+      difficulty = d;
+    } else {
+      warnings.push(`Schwierigkeit "${rawDiff}" muss 1, 2 oder 3 sein`);
+    }
+  }
+
+  // --- Kategorien ---
+  const rawCats = (getSong('Kategorien') ?? '').toString().trim();
+  const category_ids: string[] = [];
+  if (rawCats) {
+    for (const token of rawCats.split(',')) {
+      const t = token.trim();
+      if (!t) continue;
+      const match = (ctx.songCategories ?? []).find((c) => norm(c.name) === norm(t));
+      if (match?.id) {
+        category_ids.push(match.id);
+      } else {
+        warnings.push(`Kategorie "${t}" nicht gefunden`);
+      }
+    }
+  }
+
+  // --- Additional fields ---
+  const additional_fields: { [key: string]: any } = {};
+  for (const field of ctx.additionalFields ?? []) {
+    const col = Object.keys(mapping).find((c) => mapping[c] === `${EXTRA_PREFIX}${field.id}`);
+    if (col !== undefined) {
+      additional_fields[field.id] = coerceExtraValue(field, row[col]);
+    }
+  }
+
+  const compositeKey = `${prefix ?? ''}${isNaN(number) ? '' : number}`;
+
+  const song: Partial<Song> = {
+    ...(isNaN(number) ? {} : { number }),
+    ...(prefix !== undefined ? { prefix } : {}),
+    name,
+    withChoir,
+    withSolo,
+    ...(link !== undefined ? { link } : {}),
+    ...(difficulty !== undefined ? { difficulty } : {}),
+    ...(category_ids.length ? { category_ids } : {}),
+    ...(Object.keys(additional_fields).length ? { additional_fields } : {}),
+  };
+
+  return { song, rowIndex, errors, warnings, compositeKey };
+}
+
+export function mapSongRows(
+  rows: Record<string, any>[],
+  mapping: SongColumnMapping,
+  ctx: SongMapContext,
+): MappedSongRow[] {
+  const result: MappedSongRow[] = [];
+  const seenKeys = new Set<string>();
+
+  rows.forEach((row, index) => {
+    if (isEmptyRow(row)) return;
+    const mapped = mapSongRow(row, mapping, ctx, index);
+    if (mapped.compositeKey && mapped.errors.length === 0) {
+      if (seenKeys.has(mapped.compositeKey)) {
+        mapped.warnings.push('Doppelte Nummer in der Datei');
+        mapped.isDuplicate = true;
+      } else {
+        seenKeys.add(mapped.compositeKey);
+      }
+    }
+    result.push(mapped);
+  });
+
+  return result;
+}
+
+export function detectSongDuplicates(mapped: MappedSongRow[], existingKeys: Set<string>): MappedSongRow[] {
+  for (const row of mapped) {
+    if (row.compositeKey && existingKeys.has(row.compositeKey)) {
+      row.isDuplicate = true;
+      if (!row.warnings.includes('Liednummer existiert bereits in dieser Instanz')) {
+        row.warnings.push('Liednummer existiert bereits in dieser Instanz');
+      }
+    }
+  }
+  return mapped;
+}
+
+export function buildSongImportTemplateHeaders(additionalFields: ExtraField[]): string[] {
+  return [...SONG_PARSED_HEADERS, ...(additionalFields ?? []).map((f) => f.name)];
 }

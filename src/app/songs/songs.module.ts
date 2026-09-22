@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular/lazy';
 
 import { SongsPageRoutingModule } from './songs-routing.module';
+import { SongImportPageModule } from './import/import.module';
 
 import { SongsPage } from './songs.page';
 
@@ -13,7 +14,8 @@ import { SongsPage } from './songs.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    SongsPageRoutingModule
+    SongsPageRoutingModule,
+    SongImportPageModule,
   ],
   declarations: [SongsPage]
 })

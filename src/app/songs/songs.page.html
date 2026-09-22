@@ -32,6 +32,12 @@
                 <ion-icon [name]="showSongsTab ? 'bookmark' : 'bookmark-outline'" slot="start"></ion-icon>
                 {{ showSongsTab ? 'Tab ausblenden' : 'Als Tab anzeigen' }}
               </ion-item>
+              @if (isAdmin) {
+                <ion-item button detail="false" lines="none" (click)="openImportModal(songsMenuPopover)">
+                  <ion-icon slot="start" name="cloud-upload-outline" size="small"></ion-icon>
+                  <ion-label>Werke importieren</ion-label>
+                </ion-item>
+              }
             }
           </ion-list>
         </ng-template>

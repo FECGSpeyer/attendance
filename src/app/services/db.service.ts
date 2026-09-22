@@ -3281,6 +3281,70 @@ export class DbService {
   }
 
   /**
+   * Return composite song-number keys (`${prefix ?? ''}${number}`) already in
+   * the tenant's songs table, for duplicate detection during import. Paginated
+   * to defeat the PostgREST 1000-row default read cap on large tenants.
+   */
+  async getExistingNumbers(tenantId?: number): Promise<Set<string>> {
+    const id = tenantId ?? this.effectiveSongTenantId();
+    const keys = new Set<string>();
+    const pageSize = 1000;
+    let from = 0;
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const { data, error } = await supabase
+        .from('songs')
+        .select('number, prefix')
+        .eq('tenantId', id)
+        .range(from, from + pageSize - 1);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      for (const row of data ?? []) {
+        keys.add(`${row.prefix ?? ''}${row.number}`);
+      }
+
+      if (!data || data.length < pageSize) {
+        break;
+      }
+      from += pageSize;
+    }
+
+    return keys;
+  }
+
+  /**
+   * Import a batch of songs into the current tenant. Each song is inserted via
+   * `addSong`. Failures are collected per-row rather than aborting the whole import.
+   */
+  async importSongs(
+    songs: Partial<Song>[],
+    opts: { onProgress?: (done: number, total: number) => void } = {},
+  ): Promise<{ imported: Song[]; failed: { song: Partial<Song>; reason: string }[] }> {
+    this.checkDemoRestriction();
+    const imported: Song[] = [];
+    const failed: { song: Partial<Song>; reason: string }[] = [];
+    const total = songs.length;
+    let done = 0;
+
+    for (const song of songs) {
+      try {
+        imported.push(await this.addSong(song as Song));
+      } catch (error) {
+        failed.push({ song, reason: error?.message ?? 'Unbekannter Fehler' });
+      } finally {
+        done++;
+        opts.onProgress?.(done, total);
+      }
+    }
+
+    return { imported, failed };
+  }
+
+  /**
    */
   async personExistsInTenant(person: Player, targetTenantId: number): Promise<boolean> {
     const email = (person.email ?? '').trim();
