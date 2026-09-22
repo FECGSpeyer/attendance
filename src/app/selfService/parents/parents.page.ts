@@ -341,7 +341,7 @@ export class ParentsPage implements OnInit {
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
         text: 'Navigation öffnen',
-        handler: () => Browser.open({ url: Utils.getNavigationUrl(attendance.place) }),
+        handler: () => Utils.openNavigation(attendance.place),
       });
     }
 

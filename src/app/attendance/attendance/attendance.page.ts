@@ -716,7 +716,7 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   openNavigation() {
     if (this.attendance.place) {
-      Browser.open({ url: Utils.getNavigationUrl(this.attendance.place) });
+      Utils.openNavigation(this.attendance.place);
     }
   }
 

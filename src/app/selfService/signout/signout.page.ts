@@ -326,9 +326,7 @@ export class SignoutPage implements OnInit {
       } else if (attendance.attendance?.attachment_url) {
         this.openAttachment(attendance.attendance);
       } else if (attendance.attendance?.place) {
-        Browser.open({ url: Utils.getNavigationUrl(attendance.attendance.place) });
-      } else {
-        Utils.showToast('Für diesen Termin sind keine weiteren Informationen verfügbar.', 'warning', 3000);
+        Utils.openNavigation(attendance.attendance.place);
       }
       return;
     }
@@ -466,7 +464,7 @@ export class SignoutPage implements OnInit {
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
         text: 'Navigation öffnen',
-        handler: () => Browser.open({ url: Utils.getNavigationUrl(attendance.attendance.place) }),
+        handler: () => Utils.openNavigation(attendance.attendance.place),
       });
     }
 

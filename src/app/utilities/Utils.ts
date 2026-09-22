@@ -1486,6 +1486,15 @@ export class Utils {
     return `https://www.google.com/maps/search/?api=1&query=${encoded}`;
   }
 
+  static openNavigation(place: string): void {
+    const url = Utils.getNavigationUrl(place);
+    if (Capacitor.isNativePlatform()) {
+      window.open(url, '_system');
+    } else {
+      window.open(url, '_blank');
+    }
+  }
+
   static async openFileNative(urlOrBlob: string | Blob, fileName?: string): Promise<void> {
     if (!Capacitor.isNativePlatform()) {
       if (typeof urlOrBlob === 'string') {
