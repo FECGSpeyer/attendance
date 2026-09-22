@@ -1486,6 +1486,13 @@ export class Utils {
     return `https://www.google.com/maps/search/?api=1&query=${encoded}`;
   }
 
+  private static isIosBrowser(): boolean {
+    const platform = navigator.platform || '';
+    const userAgent = navigator.userAgent || '';
+
+    return /iPad|iPhone|iPod/.test(userAgent) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
   static async openNavigation(place: string): Promise<void> {
     const open = (url: string) => {
       if (Capacitor.isNativePlatform()) {
@@ -1495,12 +1502,12 @@ export class Utils {
       }
     };
 
-    if (Capacitor.getPlatform() === 'ios') {
+    if (Capacitor.getPlatform() === 'ios' || (!Capacitor.isNativePlatform() && Utils.isIosBrowser())) {
       const { ActionSheetController } = await import('@ionic/angular/lazy');
       const sheet = await new ActionSheetController().create({
         buttons: [
           {
-            text: 'Apple Maps',
+            text: 'Apple Karten',
             handler: () => open(Utils.getNavigationUrl(place, 'apple')),
           },
           {
