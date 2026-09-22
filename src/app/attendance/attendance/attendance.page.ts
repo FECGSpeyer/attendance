@@ -714,9 +714,9 @@ export class AttendancePage implements OnInit, OnDestroy {
     }, this.attendance.id);
   }
 
-  openNavigation() {
+  async openNavigation() {
     if (this.attendance.place) {
-      Utils.openNavigation(this.attendance.place);
+      await Utils.openNavigation(this.attendance.place);
     }
   }
 

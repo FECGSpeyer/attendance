@@ -326,7 +326,7 @@ export class SignoutPage implements OnInit {
       } else if (attendance.attendance?.attachment_url) {
         this.openAttachment(attendance.attendance);
       } else if (attendance.attendance?.place) {
-        Utils.openNavigation(attendance.attendance.place);
+        await Utils.openNavigation(attendance.attendance.place);
       }
       return;
     }

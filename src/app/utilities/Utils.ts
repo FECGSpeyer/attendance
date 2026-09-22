@@ -1478,20 +1478,41 @@ export class Utils {
     return type.planning_title || typeInfo || type.name || 'Probenplan';
   }
 
-  static getNavigationUrl(place: string): string {
+  static getNavigationUrl(place: string, app: 'apple' | 'google' = 'google'): string {
     const encoded = encodeURIComponent(place);
-    if (Capacitor.getPlatform() === 'ios') {
+    if (app === 'apple') {
       return `maps://?q=${encoded}`;
     }
     return `https://www.google.com/maps/search/?api=1&query=${encoded}`;
   }
 
-  static openNavigation(place: string): void {
-    const url = Utils.getNavigationUrl(place);
-    if (Capacitor.isNativePlatform()) {
-      window.open(url, '_system');
+  static async openNavigation(place: string): Promise<void> {
+    const open = (url: string) => {
+      if (Capacitor.isNativePlatform()) {
+        window.open(url, '_system');
+      } else {
+        window.open(url, '_blank');
+      }
+    };
+
+    if (Capacitor.getPlatform() === 'ios') {
+      const { ActionSheetController } = await import('@ionic/angular/lazy');
+      const sheet = await new ActionSheetController().create({
+        buttons: [
+          {
+            text: 'Apple Maps',
+            handler: () => open(Utils.getNavigationUrl(place, 'apple')),
+          },
+          {
+            text: 'Google Maps',
+            handler: () => open(Utils.getNavigationUrl(place, 'google')),
+          },
+          { text: 'Abbrechen', role: 'cancel' },
+        ],
+      });
+      await sheet.present();
     } else {
-      window.open(url, '_blank');
+      open(Utils.getNavigationUrl(place, 'google'));
     }
   }
 
