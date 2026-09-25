@@ -59,6 +59,9 @@ export class SongsPage implements OnInit, OnDestroy {
   public fieldTypes = FieldType;
   private sub: RealtimeChannel;
   public tenantType: string;
+  // Populated from a direct fetch for public share links (db.songCategories()
+  // is only ever populated for a logged-in session via setTenant()).
+  public categories: SongCategory[] = [];
 
   constructor(
     public db: DbService,
@@ -156,13 +159,17 @@ export class SongsPage implements OnInit, OnDestroy {
     this.isAdmin = this.db.tenantUser()?.role === Role.ADMIN || this.db.tenantUser()?.role === Role.RESPONSIBLE;
     const groups = this.tenantData ? await this.db.getGroups(this.tenantData.id) : this.db.groups();
     const mainGroupId = groups.find((g: Group) => g.maingroup)?.id;
-    const [history, conductors, groupCategories, rawSongs] = await Promise.all([
+    const [history, conductors, groupCategories, rawSongs, categories] = await Promise.all([
       this.db.getHistory(this.tenantData?.id),
       this.db.getConductors(true, this.tenantData?.id, mainGroupId),
       this.db.getGroupCategories(this.tenantData?.id),
       this.db.getSongs(this.tenantData?.id),
+      this.tenantData
+        ? this.db.songCategorySvc.getSongCategories(this.tenantData.id)
+        : Promise.resolve(this.db.songCategories()),
     ]);
     this.groupCategories = groupCategories;
+    this.categories = categories;
     if (this.isOrchestra) {
       this.instruments = groups.filter((instrument: Group) => instrument.maingroup !== true);
       this.selectedInstruments = groups.map((instrument: Group) => instrument.id);
