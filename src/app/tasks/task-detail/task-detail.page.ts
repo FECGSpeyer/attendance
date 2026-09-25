@@ -65,15 +65,21 @@ export class TaskDetailPage implements OnInit {
     }
     const loading = await Utils.getLoadingElement();
     await loading.present();
-    if (this.isNew) {
-      const created = await this.db.addTask(this.task);
-      this.taskId = created.id;
-      this.isNew = false;
-      this.task = created;
-    } else {
-      this.task = await this.db.updateTask(this.taskId, this.task);
+    try {
+      if (this.isNew) {
+        const created = await this.db.addTask(this.task);
+        this.taskId = created.id;
+        this.isNew = false;
+        this.task = created;
+      } else {
+        this.task = await this.db.updateTask(this.taskId, this.task);
+      }
+      Utils.showToast('Gespeichert');
+    } catch (error) {
+      console.error('Task save error:', error);
+      Utils.showToast('Aufgabe konnte nicht gespeichert werden', 'danger');
+    } finally {
+      await loading.dismiss();
     }
-    await loading.dismiss();
-    Utils.showToast('Gespeichert');
   }
 }

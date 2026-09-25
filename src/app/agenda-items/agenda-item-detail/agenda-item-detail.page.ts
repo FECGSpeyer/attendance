@@ -73,16 +73,22 @@ export class AgendaItemDetailPage implements OnInit {
     }
     const loading = await Utils.getLoadingElement();
     await loading.present();
-    if (this.isNew) {
-      const created = await this.db.addAgendaItem(this.item);
-      this.itemId = created.id;
-      this.isNew = false;
-      this.item = created;
-    } else {
-      this.item = await this.db.updateAgendaItem(this.itemId, this.item);
+    try {
+      if (this.isNew) {
+        const created = await this.db.addAgendaItem(this.item);
+        this.itemId = created.id;
+        this.isNew = false;
+        this.item = created;
+      } else {
+        this.item = await this.db.updateAgendaItem(this.itemId, this.item);
+      }
+      Utils.showToast('Gespeichert');
+    } catch (error) {
+      console.error('Agenda item save error:', error);
+      Utils.showToast('Tagesordnungspunkt konnte nicht gespeichert werden', 'danger');
+    } finally {
+      await loading.dismiss();
     }
-    await loading.dismiss();
-    Utils.showToast('Gespeichert');
   }
 
   getStatusColor(status: AgendaItemStatus): string {

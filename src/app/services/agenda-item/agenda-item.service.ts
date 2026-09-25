@@ -4,6 +4,13 @@ import { AgendaItem, AgendaItemAttendance } from '../../utilities/interfaces';
 
 const db = supabase as any;
 
+type AgendaItemWrite = Omit<AgendaItem, 'id' | 'created_at' | 'responsible_person' | 'linked_attendances'>;
+
+function toAgendaItemWrite(item: Partial<AgendaItem>): Partial<AgendaItemWrite> {
+  const { id, created_at, responsible_person, linked_attendances, ...write } = item;
+  return write;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -39,23 +46,25 @@ export class AgendaItemService {
   }
 
   async addAgendaItem(item: Omit<AgendaItem, 'id'>): Promise<AgendaItem> {
-    const { data } = await db
+    const { data, error } = await db
       .from('agenda_items')
-      .insert(item)
+      .insert(toAgendaItemWrite(item))
       .select()
       .single();
 
+    if (error) throw error;
     return data;
   }
 
   async updateAgendaItem(id: string, updates: Partial<AgendaItem>): Promise<AgendaItem> {
-    const { data } = await db
+    const { data, error } = await db
       .from('agenda_items')
-      .update(updates)
+      .update(toAgendaItemWrite(updates))
       .eq('id', id)
       .select()
       .single();
 
+    if (error) throw error;
     return data;
   }
 

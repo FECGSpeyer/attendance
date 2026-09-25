@@ -49,7 +49,7 @@
         <ion-datetime-button datetime="due-date-picker"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime id="due-date-picker" presentation="date" [(ngModel)]="item.due_date" locale="de-DE">
+            <ion-datetime id="due-date-picker" presentation="date" [(ngModel)]="item.due_date" locale="de-DE" [showDefaultButtons]="true">
               <ion-buttons slot="buttons">
                 <ion-button color="danger" (click)="item.due_date = null">Löschen</ion-button>
               </ion-buttons>
@@ -62,7 +62,8 @@
     <ion-item-divider>
       <ion-label>Beschreibung</ion-label>
     </ion-item-divider>
-    <quill-editor class="agenda-item-editor" placeholder="Beschreibung eingeben..." [(ngModel)]="item.description"></quill-editor>
+    <quill-editor class="agenda-item-editor" placeholder="Beschreibung eingeben..." [(ngModel)]="item.description"
+      [modules]="{ toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }], ['link']] }"></quill-editor>
 
     @if (!isNew) {
       <ion-item-divider style="margin-top: 24px">

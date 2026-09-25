@@ -4,6 +4,13 @@ import { Task } from '../../utilities/interfaces';
 
 const db = supabase as any;
 
+type TaskWrite = Omit<Task, 'id' | 'created_at' | 'updated_at' | 'responsible_person'>;
+
+function toTaskWrite(task: Partial<Task>): Partial<TaskWrite> {
+  const { id, created_at, updated_at, responsible_person, ...write } = task;
+  return write;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -50,23 +57,25 @@ export class TaskService {
   }
 
   async addTask(task: Omit<Task, 'id'>): Promise<Task> {
-    const { data } = await db
+    const { data, error } = await db
       .from('tasks')
-      .insert(task)
+      .insert(toTaskWrite(task))
       .select()
       .single();
 
+    if (error) throw error;
     return data;
   }
 
   async updateTask(id: string, updates: Partial<Task>): Promise<Task> {
-    const { data } = await db
+    const { data, error } = await db
       .from('tasks')
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update({ ...toTaskWrite(updates), updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();
 
+    if (error) throw error;
     return data;
   }
 
