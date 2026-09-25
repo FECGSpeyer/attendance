@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.9.0",
+      "date": "25.9.2026",
+      "changes": [
+        "❓ Neu: Hilfe-Center in den Einstellungen mit durchsuchbaren Anleitungen und einem Glossar zu allen wichtigen Begriffen."
+      ]
+    },
+    {
       "version": "4.8.21",
       "date": "25.9.2026",
       "changes": [

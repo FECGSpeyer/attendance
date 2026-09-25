@@ -1,0 +1,18 @@
+<ion-header translucent="true">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-button (click)="navigateBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ article?.title ?? 'Hilfe' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" [fullscreen]="true" class="ion-padding">
+  @if (article) {
+    <div (click)="onBodyClick($event)" [innerHTML]="bodyHtml"></div>
+  } @else {
+    <p>Dieser Artikel wurde nicht gefunden.</p>
+  }
+</ion-content>

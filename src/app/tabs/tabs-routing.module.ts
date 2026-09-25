@@ -124,6 +124,18 @@ const routes: Routes = [
         loadChildren: () => import('./../settings/delete-account/delete-account.module').then(m => m.DeleteAccountPageModule)
       },
       {
+        path: 'settings/help',
+        loadChildren: () => import('./../settings/help/help.module').then(m => m.HelpPageModule)
+      },
+      {
+        path: 'settings/help/article/:id',
+        loadChildren: () => import('./../settings/help/article/help-article.module').then(m => m.HelpArticlePageModule)
+      },
+      {
+        path: 'settings/help/glossary',
+        loadChildren: () => import('./../settings/help/glossary/help-glossary.module').then(m => m.HelpGlossaryPageModule)
+      },
+      {
         path: 'org-plans',
         loadChildren: () => import('./../org-plans/org-plans.module').then(m => m.OrgPlansPageModule)
       },

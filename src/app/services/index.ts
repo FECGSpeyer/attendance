@@ -34,6 +34,7 @@ export { SignInOutService } from './sign-in-out/sign-in-out.service';
 export { SongCategoryService } from './song-category/song-category.service';
 export { FilesService } from './files/files.service';
 export { RolePermissionService } from './role-permission/role-permission.service';
+export { HelpContentService } from './help/help-content.service';
 
 // Main facade service (backwards compatibility)
 export { DbService } from './db.service';

@@ -1,0 +1,5 @@
+:host ::ng-deep .glossary-term {
+  color: var(--ion-color-primary);
+  text-decoration: underline dotted;
+  cursor: pointer;
+}

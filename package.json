@@ -1,6 +1,6 @@
 {
   "name": "attendix",
-  "version": "4.8.21",
+  "version": "4.9.0",
   "author": "Matthias Eckstaedt",
   "homepage": "https://attendix.de/",
   "engines": {
@@ -63,9 +63,11 @@
     "date-fns": "^2.28.0",
     "dayjs": "^1.10.7",
     "firebase": "^11.10.0",
+    "fuse.js": "^7.5.0",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.23",
     "jszip": "^3.10.1",
+    "marked": "^18.0.14",
     "ng2-charts": "^8.0.0",
     "ngx-quill": "^30.0.1",
     "open-holiday-js": "^1.0.3",
