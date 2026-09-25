@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.8.19",
+      "date": "25.9.2026",
+      "changes": [
+        "📋 Zusatzfelder für Personen und Werke können in den jeweiligen Listen jetzt wahlweise als Chip oder unter dem Namen angezeigt werden."
+      ]
+    },
+    {
       "version": "4.8.18",
       "date": "25.9.2026",
       "changes": [

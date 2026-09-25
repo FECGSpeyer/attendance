@@ -365,6 +365,17 @@
                 date:'dd.MM.yyyy' }} | {{ song.conductor  }}
               </h3>
             }
+            @for (field of db.tenant()?.song_additional_fields; track field.id) {
+              @if (viewOpts.includes(field.id) && field.displayMode === 'underneath' && song.additional_fields?.[field.id] !== undefined && song.additional_fields?.[field.id] !== '' && song.additional_fields?.[field.id] !== false && song.additional_fields?.[field.id] !== null) {
+                <h3>
+                  @if (field.type === fieldTypes.BOOLEAN) {
+                    {{ field.name }}
+                  } @else {
+                    {{ field.name }}: {{ song.additional_fields[field.id] }}
+                  }
+                </h3>
+              }
+            }
           </ion-label>
           @if (song.withSolo && viewOpts.includes('withSolo')) {
             <ion-badge color="success" slot="end">
@@ -400,7 +411,7 @@
             </ion-badge>
           }
           @for (field of db.tenant()?.song_additional_fields; track field.id) {
-            @if (viewOpts.includes(field.id) && song.additional_fields?.[field.id] !== undefined && song.additional_fields?.[field.id] !== '' && song.additional_fields?.[field.id] !== false && song.additional_fields?.[field.id] !== null) {
+            @if (viewOpts.includes(field.id) && field.displayMode !== 'underneath' && song.additional_fields?.[field.id] !== undefined && song.additional_fields?.[field.id] !== '' && song.additional_fields?.[field.id] !== false && song.additional_fields?.[field.id] !== null) {
               <ion-badge slot="end" color="dark">
                 @if (field.type === fieldTypes.BOOLEAN) {
                   {{ field.name }}

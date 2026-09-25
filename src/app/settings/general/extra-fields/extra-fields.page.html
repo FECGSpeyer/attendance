@@ -55,6 +55,12 @@
                   <ion-input autocapitalize="words" labelPlacement="stacked" label="Name" [(ngModel)]="newExtraField.name"></ion-input>
                 </ion-item>
                 <ion-item>
+                  <ion-select label="Anzeige in Listen" [(ngModel)]="newExtraField.displayMode">
+                    <ion-select-option value="chip">Als Chip</ion-select-option>
+                    <ion-select-option value="underneath">Unter dem Namen</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ion-item>
                   <ion-toggle helperText="Aktivieren, damit Mitglieder dieses Feld in ihren Stammdaten sehen können."
                     [(ngModel)]="newExtraField.visibleToPlayers">Für Mitglieder sichtbar</ion-toggle>
                 </ion-item>
@@ -137,6 +143,12 @@
                     <ion-input autocapitalize="words" labelPlacement="stacked" label="Name" [(ngModel)]="editingExtraField.name"></ion-input>
                   </ion-item>
                   <ion-item>
+                    <ion-select label="Anzeige in Listen" [(ngModel)]="editingExtraField.displayMode">
+                      <ion-select-option value="chip">Als Chip</ion-select-option>
+                      <ion-select-option value="underneath">Unter dem Namen</ion-select-option>
+                    </ion-select>
+                  </ion-item>
+                  <ion-item>
                     <ion-toggle helperText="Aktivieren, damit Mitglieder dieses Feld in ihren Stammdaten sehen können."
                       [(ngModel)]="editingExtraField.visibleToPlayers">Für Mitglieder sichtbar</ion-toggle>
                   </ion-item>
@@ -208,6 +220,7 @@
             @if (field.id !== 'bfecg_church') {
               <h3>Typ: {{ getFieldTypeName(field.type) }}</h3>
             }
+            <h3>Anzeige: {{ field.displayMode === 'underneath' ? 'Unter dem Namen' : 'Als Chip' }}</h3>
             @if (field.visibleToPlayers) {
               <h3><ion-icon name="eye-outline" style="vertical-align: middle; margin-right: 2px;"></ion-icon> Für Mitglieder sichtbar{{ field.editableByPlayers ? ' (bearbeitbar)' : '' }}</h3>
             }
@@ -252,6 +265,12 @@
                 </ion-item>
                 <ion-item>
                   <ion-input autocapitalize="words" labelPlacement="stacked" label="Name" [(ngModel)]="newSongExtraField.name"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-select label="Anzeige in Listen" [(ngModel)]="newSongExtraField.displayMode">
+                    <ion-select-option value="chip">Als Chip</ion-select-option>
+                    <ion-select-option value="underneath">Unter dem Namen</ion-select-option>
+                  </ion-select>
                 </ion-item>
               </ion-item-group>
               @if (newSongExtraField.type === fieldTypes.SELECT) {
@@ -325,6 +344,12 @@
                   <ion-item>
                     <ion-input autocapitalize="words" labelPlacement="stacked" label="Name" [(ngModel)]="editingSongExtraField.name"></ion-input>
                   </ion-item>
+                  <ion-item>
+                    <ion-select label="Anzeige in Listen" [(ngModel)]="editingSongExtraField.displayMode">
+                      <ion-select-option value="chip">Als Chip</ion-select-option>
+                      <ion-select-option value="underneath">Unter dem Namen</ion-select-option>
+                    </ion-select>
+                  </ion-item>
                 </ion-item-group>
                 @if (editingSongExtraField.type === fieldTypes.SELECT) {
                   <ion-list-header>
@@ -380,6 +405,7 @@
           <ion-label>
             <h2>{{ field.name }}</h2>
             <h3>Typ: {{ getFieldTypeName(field.type) }}</h3>
+            <h3>Anzeige: {{ field.displayMode === 'underneath' ? 'Unter dem Namen' : 'Als Chip' }}</h3>
           </ion-label>
           <ion-button fill="clear" color="primary" size="small" (click)="openEditExtraField(i, 'song')">
             <ion-icon name="pencil-outline"></ion-icon>

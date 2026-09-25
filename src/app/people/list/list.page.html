@@ -256,6 +256,21 @@
                     @if (showNotes && player.notes) {
                       <p style="white-space: pre-line;">{{ player.notes }}</p>
                     }
+                    @if (db.tenant().additional_fields?.length) {
+                      @for (field of db.tenant().additional_fields; track field.id) {
+                        @if (viewOpts.includes(field.id) && field.displayMode === 'underneath' && player.additional_fields[field.id]) {
+                          <h3>
+                            @if (field.type === "boolean") {
+                              {{ field.name }}
+                            } @else if (field.type === "bfecg_church") {
+                              {{ field.name }}: {{ getChurchName(player.additional_fields[field.id]) }}
+                            } @else {
+                              {{ field.name }}: {{ player.additional_fields[field.id] }}
+                            }
+                          </h3>
+                        }
+                      }
+                    }
                   </ion-label>
                   @if (((showPaused && !player.paused) || !showPaused) && showLeader && player.isLeader) {
                     <ion-badge color="secondary" slot="end">Stimmführer</ion-badge>
@@ -274,7 +289,7 @@
                   }
                   @if (db.tenant().additional_fields?.length) {
                     @for (field of db.tenant().additional_fields; track field.id) {
-                      @if (viewOpts.includes(field.id)) {
+                      @if (viewOpts.includes(field.id) && field.displayMode !== 'underneath') {
                         @if (player.additional_fields[field.id]) {
                           @if (field.type === "boolean") {
                             <ion-badge [color]="'success'" slot="end">{{ field.name }}</ion-badge>
@@ -347,6 +362,21 @@
                   @if (showNotes && player.notes) {
                     <p style="white-space: pre-line;">{{ player.notes }}</p>
                   }
+                  @if (db.tenant().additional_fields?.length) {
+                    @for (field of db.tenant().additional_fields; track field.id) {
+                      @if (viewOpts.includes(field.id) && field.displayMode === 'underneath' && player.additional_fields[field.id]) {
+                        <h3>
+                          @if (field.type === "boolean") {
+                            {{ field.name }}
+                          } @else if (field.type === "bfecg_church") {
+                            {{ field.name }}: {{ getChurchName(player.additional_fields[field.id]) }}
+                          } @else {
+                            {{ field.name }}: {{ player.additional_fields[field.id] }}
+                          }
+                        </h3>
+                      }
+                    }
+                  }
                 </ion-label>
                 @if (((showPaused && !player.paused) || !showPaused) && showLeader && player.isLeader) {
                   <ion-badge color="secondary" slot="end">Stimmführer</ion-badge>
@@ -365,7 +395,7 @@
                 }
                 @if (db.tenant().additional_fields?.length) {
                   @for (field of db.tenant().additional_fields; track field.id) {
-                    @if (viewOpts.includes(field.id)) {
+                    @if (viewOpts.includes(field.id) && field.displayMode !== 'underneath') {
                       @if (player.additional_fields[field.id]) {
                         @if (field.type === "boolean") {
                           <ion-badge [color]="'success'" slot="end">{{ field.name }}</ion-badge>

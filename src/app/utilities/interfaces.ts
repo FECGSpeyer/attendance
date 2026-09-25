@@ -78,6 +78,7 @@ export interface ExtraField {
   options?: string[];
   visibleToPlayers?: boolean;
   editableByPlayers?: boolean;
+  displayMode?: 'chip' | 'underneath';
 }
 
 export interface TenantUser {
