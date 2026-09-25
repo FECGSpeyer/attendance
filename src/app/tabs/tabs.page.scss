@@ -4,3 +4,13 @@ ion-tab-bar.ios:not(.ios26-disabled):has(:nth-child(5)) {
   width: calc(100% - (18px + var(--ion-safe-area-left, 0px)) - (18px + var(--ion-safe-area-left, 0px)) - 60px - 12px);
   max-width: 474px;
 }
+
+// The selected-tab background pill uses overflow:visible so it can grow
+// outside the button bounds. On the first tab button this causes the pill
+// to bleed left past the tab bar's rounded corner. Clip only the left
+// paint overflow on the first button's native part to stop the bleed.
+ion-tab-bar.ios:not(.ios26-disabled) {
+  > ion-tab-button:first-of-type::part(native) {
+    overflow-x: clip;
+  }
+}
