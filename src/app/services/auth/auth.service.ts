@@ -162,6 +162,7 @@ export class AuthService {
   async logout(): Promise<void> {
     await supabase.auth.signOut();
     this.user = undefined;
+    localStorage.removeItem('currentTenantId');
     this.router.navigateByUrl('/login');
   }
 

@@ -415,7 +415,14 @@ export class DbService {
     }
 
     this.tenants.set(await this.getTenants());
-    const storedTenantId: string | null = tenantId || this.user.user_metadata?.currentTenantId;
+    // `user_metadata.currentTenantId` is the canonical, cross-device source of
+    // truth. localStorage is a same-device cache that wins when the two
+    // disagree, because updateUser() below is fire-and-forget and can fail
+    // silently, stranding a stale value in metadata forever otherwise. Every
+    // call re-attempts the metadata write when it's out of sync with the
+    // local value, so a transient failure self-heals instead of persisting.
+    const localTenantId = localStorage.getItem('currentTenantId');
+    const storedTenantId: string | null = tenantId || localTenantId || this.user.user_metadata?.currentTenantId;
     const wantSelection: boolean = (this.user.user_metadata?.wantInstanceSelection || false) && showSelector;
     // Pick the next tenant into a local variable. We deliberately do NOT flip
     // the `tenant` signal yet — see the atomic update at the end of this
@@ -440,11 +447,24 @@ export class DbService {
 
     if (this.user.user_metadata?.currentTenantId !== nextTenant?.id) {
       this.user.user_metadata.currentTenantId = nextTenant?.id;
+      if (nextTenant?.id) {
+        localStorage.setItem('currentTenantId', String(nextTenant.id));
+      }
+      // updateUser() resolves normally with `{ error }` on business-logic
+      // failures (e.g. rate limiting) — it does not reject the promise, so
+      // the error must be checked explicitly or it's silently lost and the
+      // cross-device metadata is left stale.
       supabase.auth.updateUser({
         data: {
           currentTenantId: nextTenant?.id,
           wantInstanceSelection: this.user.user_metadata?.wantInstanceSelection || false,
         }
+      }).then(({ error }) => {
+        if (error) {
+          console.warn('setTenant: updateUser rejected currentTenantId sync (local fallback still applies)', error);
+        }
+      }).catch((error) => {
+        console.warn('setTenant: updateUser failed to persist currentTenantId remotely (local fallback still applies)', error);
       });
     }
 

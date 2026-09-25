@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.8.17",
+      "date": "25.9.2026",
+      "changes": [
+        "🐛 Behoben: Nach einem Neuladen wurde manchmal die falsche Instanz geöffnet, weil eine fehlgeschlagene Synchronisierung der zuletzt gewählten Instanz unbemerkt blieb. Die zuletzt gewählte Instanz wird nun zuverlässig auf diesem Gerät gemerkt und automatisch mit dem Konto synchronisiert."
+      ]
+    },
+    {
       "version": "4.8.16",
       "date": "25.9.2026",
       "changes": [
