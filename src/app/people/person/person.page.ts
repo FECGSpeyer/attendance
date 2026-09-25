@@ -781,6 +781,8 @@ export class PersonPage implements OnInit, AfterViewInit {
    * Adopts data from a matched cross-tenant person into the form.
    */
   applyMatchedPerson(value: Player): void {
+    this.player.firstName = value.firstName;
+    this.player.lastName = value.lastName;
     this.player.email = value.email;
     if (value.correctBirthday) {
       this.player.birthday = value.birthday;

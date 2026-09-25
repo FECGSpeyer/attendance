@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.8.16",
+      "date": "25.9.2026",
+      "changes": [
+        "🐛 Beim Übernehmen von Stammdaten einer vorgeschlagenen Person aus einer anderen Instanz werden Vor- und Nachname nun korrekt mit übernommen.",
+        "🐛 Dashboard-Karte 'Abwesenheiten & Pausierungen' zeigt jetzt alle aktuell pausierten Personen an, unabhängig davon, wann die Pausierung erfolgt ist."
+      ]
+    },
+    {
       "version": "4.8.15",
       "date": "25.9.2026",
       "changes": [
