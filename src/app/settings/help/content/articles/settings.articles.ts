@@ -23,6 +23,19 @@ export const SETTINGS_ARTICLES: HelpArticle[] = [
     body: `Unter "Benachrichtigungen" aktivierst du Push-, Telegram- oder E-Mail-Benachrichtigungen für dich persönlich, z. B. für Geburtstage, neue An-/Abmeldungen oder [[Kritische Person|kritische Personen]]. Die Telegram-Anbindung erfolgt über den @attendix_bot.`,
   },
   {
+    id: 'settings-switch-instance',
+    title: 'Instanz wechseln, favorisieren oder löschen',
+    categoryId: 'settings',
+    keywords: ['instanz wechseln', 'instanz löschen', 'verein löschen', 'favorit', 'swipe', 'wischen'],
+    body: `Über "Einstellungen → Instanz wechseln" siehst du alle [[Instanz|Instanzen]], mit denen dein Konto verknüpft ist.
+
+Wische auf einem Instanz-Eintrag nach links, um zwei Aktionen einzublenden:
+- **Stern**: Instanz als Favorit markieren (wird beim Öffnen der App bevorzugt ausgewählt).
+- **Papierkorb**: Instanz endgültig löschen.
+
+Das Löschen ist nur als [[Administrator]] möglich und muss durch Eingabe des vollständigen Instanznamens bestätigt werden, da es nicht rückgängig gemacht werden kann.`,
+  },
+  {
     id: 'settings-feedback',
     title: 'Feedback senden',
     categoryId: 'settings',
