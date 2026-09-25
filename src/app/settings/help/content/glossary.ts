@@ -123,6 +123,11 @@ export const GLOSSARY: GlossaryTerm[] = [
     definition: 'Organisiert Mitglieder nach Instrument oder Stimme (z. B. "Klarinette", "Sopran"). Gruppen können zu Kategorien zusammengefasst werden und bestimmen u. a., welche Notenteile einer Person zugeordnet werden.',
   },
   {
+    id: 'hauptgruppe',
+    term: 'Hauptgruppe',
+    definition: 'Eine besondere [[Gruppe]] für Personen mit Leitungsfunktion (z. B. Dirigenten, Chorleiter, Vorstand), die bei der Ersteinrichtung einer Instanz automatisch angelegt wird. Sie kann nicht gelöscht werden, ihre Mitglieder erhalten automatisch erweiterte Rechte (Rolle [[Verantwortlicher]]) und sie erscheint nicht in Notenteil- oder Instrumentenlisten.',
+  },
+  {
     id: 'werk',
     term: 'Werk',
     aliases: ['Stück', 'Song', 'Titel'],

@@ -39,6 +39,20 @@ export const OTHER_FEATURES_ARTICLES: HelpArticle[] = [
     body: `Hier verwaltest du die [[Gruppe|Gruppen]]/Stimmen des Vereins, ihre Kategorien und die Reihenfolge, in der sie angezeigt werden.`,
   },
   {
+    id: 'other-main-group',
+    title: 'Wofür ist die Hauptgruppe?',
+    categoryId: 'other',
+    keywords: ['hauptgruppe', 'leitungsgruppe', 'vorstand', 'dirigenten gruppe'],
+    body: `Jede Instanz hat eine [[Hauptgruppe]] — eine besondere [[Gruppe]] für Personen mit Leitungsfunktion (z. B. Dirigenten, Chorleiter, Vorstand), die bereits bei der Ersteinrichtung angelegt wird.
+
+Besonderheiten:
+- Sie kann nicht gelöscht werden.
+- Mitglieder dieser Gruppe erhalten automatisch die [[Rolle]] [[Verantwortlicher]] mit erweiterten Rechten.
+- Sie taucht nicht in den Instrumentenlisten für [[Werk|Werke]] oder Notenteile auf, da sie keine eigene Stimme repräsentiert.
+
+Weitere Gruppen (z. B. Sopran, Geigen) legst du zusätzlich unter "Instrumente/Gruppen" an.`,
+  },
+  {
     id: 'other-teachers',
     title: 'Lehrer',
     categoryId: 'other',
