@@ -130,6 +130,14 @@
               <ion-label color="medium">Gesamt</ion-label>
               <ion-note slot="end" class="note-value">{{ nextTotal }}</ion-note>
             </ion-item>
+
+            <ion-item lines="none">
+              <div class="avatar-circle avatar-stat" slot="start">
+                <ion-icon name="stats-chart-outline"></ion-icon>
+              </div>
+              <ion-label color="medium">Durchschnitt</ion-label>
+              <ion-note slot="end" class="note-value">{{ nextPerc }}%</ion-note>
+            </ion-item>
           }
         }
 

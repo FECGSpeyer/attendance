@@ -23,6 +23,7 @@ export class NextEventCardComponent {
   public lastPresent = 0;
   public lastExcused = 0;
   public lastTotal = 0;
+  public nextPerc = 0;
 
   public nextTotal = 0;
   public nextPresent = 0;
@@ -82,6 +83,7 @@ export class NextEventCardComponent {
 
       if (this.nextEvent?.persons) {
         const persons = this.nextEvent.persons;
+        this.nextPerc = Utils.getPercentage(persons, this.db.tenant()?.shift_excused_as_present);
         this.nextTotal = persons.length;
         this.nextPresent = persons.filter(p =>
           p.status === AttendanceStatus.Present || p.status === AttendanceStatus.Late

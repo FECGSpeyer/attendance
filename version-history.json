@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.8.20",
+      "date": "25.9.2026",
+      "changes": [
+        "🐛 Dashboard: Der Durchschnitt beim aktuellen Termin zeigt jetzt korrekt die aktuelle Anwesenheitsquote an."
+      ]
+    },
+    {
       "version": "4.8.19",
       "date": "25.9.2026",
       "changes": [
