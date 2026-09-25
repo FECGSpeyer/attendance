@@ -68,22 +68,22 @@ export class AbsencesCardComponent {
         });
 
       const pauseEntries: AbsenceEntry[] = players
-        .filter(p => p.history?.length && !p.left)
-        .flatMap(p =>
-          p.history
-            .filter((h: PlayerHistoryEntry) => h.type === PlayerHistoryType.PAUSED && dayjs(h.date).isAfter(cutoff))
-            .sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .slice(0, 1)
-            .map((h: PlayerHistoryEntry) => ({
-              player: p,
-              firstName: p.firstName,
-              lastName: p.lastName,
-              fromDate: h.date,
-              untilDate: p.paused_until ?? '',
-              reason: h.text ?? 'Pausiert',
-              type: 'pause' as const,
-            }))
-        );
+        .filter(p => p.paused && !p.left)
+        .map(p => {
+          const lastPaused = (p.history ?? [])
+            .filter((h: PlayerHistoryEntry) => h.type === PlayerHistoryType.PAUSED)
+            .sort((a: PlayerHistoryEntry, b: PlayerHistoryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+
+          return {
+            player: p,
+            firstName: p.firstName,
+            lastName: p.lastName,
+            fromDate: lastPaused?.date ?? p.paused_until ?? '',
+            untilDate: p.paused_until ?? '',
+            reason: lastPaused?.text ?? 'Pausiert',
+            type: 'pause' as const,
+          };
+        });
 
       this.entries = [...absenceEntries, ...pauseEntries]
         .sort((a, b) => new Date(b.fromDate).getTime() - new Date(a.fromDate).getTime());

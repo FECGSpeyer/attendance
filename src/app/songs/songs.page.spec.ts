@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { AlertController } from '@ionic/angular/lazy';
+import { AlertController, ModalController } from '@ionic/angular/lazy';
 import { Storage } from '@ionic/storage-angular';
 import { Router } from '@angular/router';
 
 import { SongsPage } from './songs.page';
 import { DbService } from 'src/app/services/db.service';
 import { createDbServiceMock } from '../../testing/mocks/db-service.mock';
-import { createAlertControllerMock } from '../../testing/mocks/ionic.mock';
+import { createAlertControllerMock, createModalControllerMock } from '../../testing/mocks/ionic.mock';
 
 describe('SongsPage', () => {
   let component: SongsPage;
@@ -34,6 +34,7 @@ describe('SongsPage', () => {
       providers: [
         { provide: DbService, useValue: dbServiceMock },
         { provide: AlertController, useValue: createAlertControllerMock() },
+          { provide: ModalController, useValue: createModalControllerMock() },
         { provide: Storage, useValue: mockStorage },
         { provide: Router, useValue: mockRouter },
       ],

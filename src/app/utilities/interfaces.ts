@@ -78,6 +78,7 @@ export interface ExtraField {
   options?: string[];
   visibleToPlayers?: boolean;
   editableByPlayers?: boolean;
+  displayMode?: 'chip' | 'underneath';
 }
 
 export interface TenantUser {
@@ -330,6 +331,7 @@ export interface Attendance {
   description?: string;
   attachment_url?: string;
   attachment_name?: string;
+  place?: string;
 }
 
 export interface Plan {
@@ -524,6 +526,7 @@ export interface AttendanceType {
   planning_prefix_instance_name?: boolean;
   is_default_org_plan?: boolean;
   enable_protocol?: boolean;
+  place_enabled?: boolean;
 }
 
 export interface ShiftPlan {

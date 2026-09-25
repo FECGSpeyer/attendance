@@ -43,6 +43,9 @@
               "src/theme/variables.scss"
             ],
             "scripts": [],
+            "stylePreprocessorOptions": {
+              "includePaths": ["node_modules"]
+            },
             "extractLicenses": false,
             "sourceMap": true,
             "optimization": false,

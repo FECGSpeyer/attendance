@@ -1133,6 +1133,8 @@ export class Utils {
       case '/tabs/settings':
       case '/tabs/settings/songs':
       case '/tabs/settings/register':
+      case '/tabs/settings/help':
+      case '/tabs/settings/help/glossary':
         return true;
       case '/tabs/members':
         return [Role.HELPER, Role.PLAYER, Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER, Role.NONE].includes(role);
@@ -1186,6 +1188,8 @@ export class Utils {
           return [Role.ADMIN, Role.HELPER, Role.VOICE_LEADER_HELPER, Role.VIEWER, Role.RESPONSIBLE].includes(role);
         } else if (url.startsWith('/tabs/songs-tab/')) {
           return role !== Role.APPLICANT && role !== Role.PARENT;
+        } else if (url.startsWith('/tabs/settings/help/article/')) {
+          return true;
         }
 
 
@@ -1476,6 +1480,51 @@ export class Utils {
     }
 
     return type.planning_title || typeInfo || type.name || 'Probenplan';
+  }
+
+  static getNavigationUrl(place: string, app: 'apple' | 'google' = 'google'): string {
+    const encoded = encodeURIComponent(place);
+    if (app === 'apple') {
+      return `maps://?q=${encoded}`;
+    }
+    return `https://www.google.com/maps/search/?api=1&query=${encoded}`;
+  }
+
+  private static isIosBrowser(): boolean {
+    const platform = navigator.platform || '';
+    const userAgent = navigator.userAgent || '';
+
+    return /iPad|iPhone|iPod/.test(userAgent) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  static async openNavigation(place: string): Promise<void> {
+    const open = (url: string) => {
+      if (Capacitor.isNativePlatform()) {
+        window.open(url, '_system');
+      } else {
+        window.open(url, '_blank');
+      }
+    };
+
+    if (Capacitor.getPlatform() === 'ios' || (!Capacitor.isNativePlatform() && Utils.isIosBrowser())) {
+      const { ActionSheetController } = await import('@ionic/angular/lazy');
+      const sheet = await new ActionSheetController().create({
+        buttons: [
+          {
+            text: 'Apple Karten',
+            handler: () => open(Utils.getNavigationUrl(place, 'apple')),
+          },
+          {
+            text: 'Google Maps',
+            handler: () => open(Utils.getNavigationUrl(place, 'google')),
+          },
+          { text: 'Abbrechen', role: 'cancel' },
+        ],
+      });
+      await sheet.present();
+    } else {
+      open(Utils.getNavigationUrl(place, 'google'));
+    }
   }
 
   static async openFileNative(urlOrBlob: string | Blob, fileName?: string): Promise<void> {

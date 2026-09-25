@@ -715,6 +715,18 @@ export class AttendancePage implements OnInit, OnDestroy {
     }, this.attendance.id);
   }
 
+  async onPlaceChanged() {
+    await this.db.updateAttendance({
+      place: this.attendance.place || null,
+    }, this.attendance.id);
+  }
+
+  async openNavigation() {
+    if (this.attendance.place) {
+      await Utils.openNavigation(this.attendance.place);
+    }
+  }
+
   async onAttachmentSelect(evt: any) {
     const file: File = evt.target.files[0];
     if (!file) return;

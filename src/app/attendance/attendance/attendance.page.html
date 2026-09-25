@@ -267,6 +267,18 @@
             </ion-item>
             }
 
+            @if (type?.place_enabled) {
+              <ion-item lines="none">
+                <ion-label position="stacked">Ort</ion-label>
+                <ion-textarea [(ngModel)]="attendance.place" (ionBlur)="onPlaceChanged()" placeholder="Adresse oder Ortsname" rows="2"></ion-textarea>
+              </ion-item>
+              @if (attendance.place) {
+                <ion-item button detail="false" (click)="openNavigation()">
+                  <ion-label color="primary">Navigation öffnen</ion-label>
+                </ion-item>
+              }
+            }
+
             <ion-item button (click)="descriptionModal.present()" detail="false">
               <ion-label color="primary">Beschreibung & Anhang bearbeiten</ion-label>
             </ion-item>

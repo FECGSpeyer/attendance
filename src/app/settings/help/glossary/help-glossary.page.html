@@ -1,0 +1,34 @@
+<ion-header translucent="true">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-button (click)="navigateBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Glossar</ion-title>
+  </ion-toolbar>
+  <ion-toolbar color="light">
+    <ion-searchbar [value]="searchTerm" (ionInput)="search($event)" debounce="150"
+      placeholder="Begriff suchen..."></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" [fullscreen]="true">
+  <ion-list [inset]="true">
+    @if (!filteredTerms.length) {
+      <ion-item lines="none">
+        <ion-label class="ion-text-wrap">Keine Begriffe gefunden.</ion-label>
+      </ion-item>
+    }
+    <ion-accordion-group [multiple]="true">
+      @for (term of filteredTerms; track term.id) {
+        <ion-accordion [value]="term.id">
+          <ion-item slot="header">
+            <ion-label>{{ term.term }}</ion-label>
+          </ion-item>
+          <div slot="content" class="ion-padding" [innerHTML]="definitionHtml(term)"></div>
+        </ion-accordion>
+      }
+    </ion-accordion-group>
+  </ion-list>
+</ion-content>

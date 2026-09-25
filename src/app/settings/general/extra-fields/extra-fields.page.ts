@@ -47,7 +47,7 @@ export class ExtraFieldsPage implements OnInit {
   }
 
   private emptyField(): ExtraField {
-    return { id: '', name: '', type: FieldType.TEXT, defaultValue: false, options: [], visibleToPlayers: false, editableByPlayers: false };
+    return { id: '', name: '', type: FieldType.TEXT, defaultValue: false, options: [], visibleToPlayers: false, editableByPlayers: false, displayMode: 'chip' };
   }
 
   getFieldTypeName(type: FieldType): string {

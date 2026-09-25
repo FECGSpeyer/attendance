@@ -37,6 +37,7 @@ export class AttListPage implements OnInit {
   public isGeneral = false;
   public notes: string;
   public typeInfo: string;
+  public place: string = '';
   public perc = 0;
   private sub: RealtimeChannel;
   private persSub: RealtimeChannel;
@@ -396,6 +397,7 @@ export class AttListPage implements OnInit {
         duration_days: this.allDayDuration,
         is_org_plan: type.is_default_org_plan ?? false,
         checklist,
+        place: this.place || null,
       });
 
       for (const player of allPersons) {
@@ -466,6 +468,7 @@ export class AttListPage implements OnInit {
     this.type = 'uebung';
     this.dates = [new Date().toISOString()];
     this.typeInfo = '';
+    this.place = '';
     this.dateString = format(new Date(), 'dd.MM.yyyy');
     this.selectedSongs = [];
     this.historyEntries = [];
@@ -479,6 +482,11 @@ export class AttListPage implements OnInit {
   isAllDay(): boolean {
     const attType = this.db.attendanceTypes().find(type => type.id === this.type_id);
     return attType?.all_day || false;
+  }
+
+  isPlaceEnabled(): boolean {
+    const attType = this.db.attendanceTypes().find(type => type.id === this.type_id);
+    return attType?.place_enabled || false;
   }
 
   formatDate(value: string): string {

@@ -11,10 +11,38 @@
       <ion-title>Werke ({{ songs?.length }})</ion-title>
     }
     <ion-buttons slot="end">
-      <ion-button id="song-categories-button" fill="clear">
-        <ion-icon slot="icon-only" name="library-outline"></ion-icon>
+      <ion-button fill="clear" (click)="songsMenuPopover.present($event)">
+        <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
       </ion-button>
-      <ion-modal trigger="song-categories-button" handle-behavior="none" [breakpoints]="[0, 0.6, 1]" [initialBreakpoint]="0.6">
+      <ion-popover #songsMenuPopover>
+        <ng-template>
+          <ion-list>
+            <ion-item button (click)="openCategoriesModal(songsMenuPopover)">
+              <ion-icon name="library-outline" slot="start"></ion-icon>
+              Werk-Kategorien
+            </ion-item>
+            @if (hasSongSharing) {
+              <ion-item button (click)="copyShareLink(songsMenuPopover)">
+                <ion-icon name="link-outline" slot="start"></ion-icon>
+                Link kopieren
+              </ion-item>
+            }
+            @if (!tenantData) {
+              <ion-item button (click)="toggleSongsTab(songsMenuPopover)">
+                <ion-icon [name]="showSongsTab ? 'bookmark' : 'bookmark-outline'" slot="start"></ion-icon>
+                {{ showSongsTab ? 'Tab ausblenden' : 'Als Tab anzeigen' }}
+              </ion-item>
+              @if (isAdmin) {
+                <ion-item button detail="false" lines="none" (click)="openImportModal(songsMenuPopover)">
+                  <ion-icon slot="start" name="cloud-upload-outline" size="small"></ion-icon>
+                  <ion-label>Werke importieren</ion-label>
+                </ion-item>
+              }
+            }
+          </ion-list>
+        </ng-template>
+      </ion-popover>
+      <ion-modal #categoriesModal handle-behavior="none" [breakpoints]="[0, 0.6, 1]" [initialBreakpoint]="0.6">
         <ng-template>
           <ion-header>
             <ion-toolbar>
@@ -54,16 +82,6 @@
           </ion-content>
         </ng-template>
       </ion-modal>
-      @if (tenantData?.song_sharing_id ?? db.tenant()?.song_sharing_id) {
-        <ion-button (click)="copyShareLink()">
-          <ion-icon slot="icon-only" name="link-outline"></ion-icon>
-        </ion-button>
-      }
-      @if (!tenantData) {
-        <ion-button fill="clear" (click)="toggleSongsTab()">
-          <ion-icon slot="icon-only" [name]="showSongsTab ? 'bookmark' : 'bookmark-outline'"></ion-icon>
-        </ion-button>
-      }
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -82,12 +100,12 @@
     </ion-toolbar>
   </ion-header>
 
-  @if (db.songCategories().length > 0) {
+  @if (categories.length > 0) {
     <ion-segment [scrollable]="true" mode="md" [(ngModel)]="selectedCategory" (ionChange)="onCategoryChanged()">
       <ion-segment-button value="">
         <ion-label>Alle</ion-label>
       </ion-segment-button>
-      @for (category of db.songCategories(); track category.id) {
+      @for (category of categories; track category.id) {
         <ion-segment-button [value]="category.id">
           <ion-label>{{ category.name }}</ion-label>
         </ion-segment-button>
@@ -137,12 +155,12 @@
             <ion-toggle [(ngModel)]="inclSolo" (ionChange)="onFilterChanged()">Solo</ion-toggle>
           </ion-item>
 
-          @if (db.songCategories().length > 0) {
+          @if (categories.length > 0) {
             <ion-item lines="none">
               <ion-icon slot="start" name="pricetag-outline" size="small"></ion-icon>
               <ion-select slot="end" (ionChange)="onFilterChanged()" multiple="true"
                 [(ngModel)]="selectedCategories">
-                @for (category of db.songCategories(); track category.id) {
+                @for (category of categories; track category.id) {
                   <ion-select-option [value]="category.id">{{ category.name }}</ion-select-option>
                 }
               </ion-select>
@@ -347,6 +365,17 @@
                 date:'dd.MM.yyyy' }} | {{ song.conductor  }}
               </h3>
             }
+            @for (field of db.tenant()?.song_additional_fields; track field.id) {
+              @if (viewOpts.includes(field.id) && field.displayMode === 'underneath' && song.additional_fields?.[field.id] !== undefined && song.additional_fields?.[field.id] !== '' && song.additional_fields?.[field.id] !== false && song.additional_fields?.[field.id] !== null) {
+                <h3>
+                  @if (field.type === fieldTypes.BOOLEAN) {
+                    {{ field.name }}
+                  } @else {
+                    {{ field.name }}: {{ song.additional_fields[field.id] }}
+                  }
+                </h3>
+              }
+            }
           </ion-label>
           @if (song.withSolo && viewOpts.includes('withSolo')) {
             <ion-badge color="success" slot="end">
@@ -382,7 +411,7 @@
             </ion-badge>
           }
           @for (field of db.tenant()?.song_additional_fields; track field.id) {
-            @if (viewOpts.includes(field.id) && song.additional_fields?.[field.id] !== undefined && song.additional_fields?.[field.id] !== '' && song.additional_fields?.[field.id] !== false && song.additional_fields?.[field.id] !== null) {
+            @if (viewOpts.includes(field.id) && field.displayMode !== 'underneath' && song.additional_fields?.[field.id] !== undefined && song.additional_fields?.[field.id] !== '' && song.additional_fields?.[field.id] !== false && song.additional_fields?.[field.id] !== null) {
               <ion-badge slot="end" color="dark">
                 @if (field.type === fieldTypes.BOOLEAN) {
                   {{ field.name }}

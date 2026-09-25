@@ -8,6 +8,10 @@ const routes: Routes = [
     path: '',
     component: SongsPage
   },
+  {
+    path: 'import',
+    loadChildren: () => import('./import/import.module').then(m => m.SongImportPageModule),
+  },
 ];
 
 @NgModule({

@@ -9,7 +9,7 @@ import { IonicModule, IonicRouteStrategy, isPlatform } from '@ionic/angular/lazy
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { popoverEnterAnimation, popoverLeaveAnimation } from '@rdlabo/ionic-theme-ios26';
+import { popoverEnterAnimation, popoverLeaveAnimation } from '@rdlabo/ionic-theme-ios27';
 import { AuthService } from './services/auth/auth.service';
 import { TeamsService, isInIframe } from './services/teams/teams.service';
 

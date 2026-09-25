@@ -325,8 +325,8 @@ export class SignoutPage implements OnInit {
         await this.openPlanViewer(attendance);
       } else if (attendance.attendance?.attachment_url) {
         this.openAttachment(attendance.attendance);
-      } else {
-        Utils.showToast('Für diesen Termin sind keine weiteren Informationen verfügbar.', 'warning', 3000);
+      } else if (attendance.attendance?.place) {
+        await Utils.openNavigation(attendance.attendance.place);
       }
       return;
     }
@@ -456,6 +456,15 @@ export class SignoutPage implements OnInit {
       buttons.splice(cancelIndex, 0, {
         text: 'Anhang öffnen',
         handler: () => this.openAttachment(attendance.attendance),
+      });
+    }
+
+    if (attendance.attendance?.place) {
+      const cancelBtn = buttons.find(btn => btn.role === 'destructive');
+      const cancelIndex = buttons.indexOf(cancelBtn);
+      buttons.splice(cancelIndex, 0, {
+        text: 'Navigation öffnen',
+        handler: () => Utils.openNavigation(attendance.attendance.place),
       });
     }
 

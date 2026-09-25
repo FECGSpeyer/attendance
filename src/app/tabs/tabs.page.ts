@@ -1,7 +1,7 @@
 import { Component, effect } from '@angular/core';
 import { DbService } from '../services/db.service';
 import { Role } from '../utilities/constants';
-import { registeredEffect, registerTabBarEffect } from '@rdlabo/ionic-theme-ios26';
+import { registeredEffect, registerTabBarEffect } from '@rdlabo/ionic-theme-ios27';
 import { Utils } from 'src/app/utilities/Utils';
 import { Router } from '@angular/router';
 

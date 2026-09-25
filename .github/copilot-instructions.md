@@ -57,6 +57,12 @@ Guard pattern: `AuthGuard` protects tabs, role checks happen in components via `
 
 ## Key Conventions
 
+### Help Documentation
+
+- The in-app Help Center (`src/app/settings/help/`) is authored in-repo (German), not fetched from a CMS, so it stays in sync with code.
+- When adding or changing a user-facing feature, add/update the matching article (and glossary terms, via `[[Begriff]]` links) under `src/app/settings/help/content/`.
+- This mirrors how `version-history.json` is updated per release — do both when a feature ships.
+
 ### Page Structure
 
 - Pages use Ionic lifecycle (`ngOnInit` async, rarely `ionViewWillEnter`)

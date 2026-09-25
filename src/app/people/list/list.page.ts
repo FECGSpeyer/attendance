@@ -395,7 +395,7 @@ export class ListPage implements OnInit, OnDestroy {
   onFilterDismissed() {
     if (
       this.prevFilterValue === this.filterOpt &&
-      (this.filterOpt === 'otherInstance' || (this.db.tenant().additional_fields?.find(field => (field.type === 'select' || field.type === 'number') && this.filterOpt === field.id)))) {
+      (this.filterOpt === 'otherInstance' || (this.db.tenant().additional_fields?.find(field => (field.type === 'select' || field.type === 'number' || field.type === 'boolean') && this.filterOpt === field.id)))) {
       this.onFilterChanged();
     }
   }
@@ -512,6 +512,61 @@ export class ListPage implements OnInit, OnDestroy {
       });
       await alert.present();
       return;
+    } else if (this.db.tenant().additional_fields?.find(field => field.type === 'boolean' && this.filterOpt === field.id)) {
+      const extraField = this.db.tenant().additional_fields.find(field => field.type === 'boolean' && this.filterOpt === field.id);
+      const option = await this.storage.get(`filterOptAdd${this.db.tenant().id}`);
+
+      if (implicit) {
+        if (option !== null && option !== '') {
+          const filterValue = option === 'true';
+          this.playersFiltered = Utils.getModifiedPlayersForList(
+            this.players.filter((player: Player) => {
+              const val = player.additional_fields?.[this.filterOpt] ?? Utils.getFieldTypeDefaultValue(extraField.type, extraField.defaultValue, extraField.options, this.db.churches());
+              return val === filterValue;
+            }),
+            this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup,
+            this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
+          await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
+        }
+        return;
+      }
+
+      const alert = await this.alertController.create({
+        header: extraField.name,
+        inputs: [
+          { type: 'radio', label: 'Ja', value: 'true', checked: option !== 'false' },
+          { type: 'radio', label: 'Nein', value: 'false', checked: option === 'false' },
+        ],
+        buttons: [
+          {
+            text: 'Abbrechen',
+            role: 'destructive',
+            handler: () => { this.filterOpt = 'all'; this.onFilterChanged(); }
+          },
+          {
+            text: 'Filtern',
+            handler: async (value: string) => {
+              if (!value) {
+                this.filterOpt = 'all';
+                this.onFilterChanged();
+                return;
+              }
+              const filterValue = value === 'true';
+              this.playersFiltered = Utils.getModifiedPlayersForList(
+                this.players.filter((player: Player) => {
+                  const val = player.additional_fields?.[this.filterOpt] ?? Utils.getFieldTypeDefaultValue(extraField.type, extraField.defaultValue, extraField.options, this.db.churches());
+                  return val === filterValue;
+                }),
+                this.db.groups(), this.attendances, this.db.attendanceTypes(), this.mainGroup,
+                this.db.tenant().additional_fields, this.db.churches(), this.db.tenant()?.shift_excused_as_present);
+              await this.storage.set(`filterOpt${this.db.tenant().id}`, this.filterOpt);
+              await this.storage.set(`filterOptAdd${this.db.tenant().id}`, value);
+            }
+          }
+        ]
+      });
+      await alert.present();
+      return;
     } else if (this.db.tenant().additional_fields?.find(field => (field.type === 'select' || field.type === 'bfecg_church') && this.filterOpt === field.id)) {
       const extraField = this.db.tenant().additional_fields?.find(field => (field.type === 'select' || field.type === 'bfecg_church') && this.filterOpt === field.id);
       const option = await this.storage.get(`filterOptAdd${this.db.tenant().id}`);
@@ -594,10 +649,7 @@ export class ListPage implements OnInit, OnDestroy {
       if (this.db.tenant().additional_fields) {
         for (const field of this.db.tenant().additional_fields) {
           if (field.type === 'boolean' && this.filterOpt === field.id) {
-            if (player.additional_fields?.[field.id] === undefined || player.additional_fields?.[field.id] === null) {
-              player.additional_fields[field.id] = Utils.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options, this.db.churches());
-            }
-            return player.additional_fields ? player.additional_fields[field.id] === true : false;
+            return true; // handled above via dialog
           }
         }
       }

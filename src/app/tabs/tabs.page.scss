@@ -4,3 +4,12 @@ ion-tab-bar.ios:not(.ios26-disabled):has(:nth-child(5)) {
   width: calc(100% - (18px + var(--ion-safe-area-left, 0px)) - (18px + var(--ion-safe-area-left, 0px)) - 60px - 12px);
   max-width: 474px;
 }
+
+// The ios27 theme overlaps tab buttons via a negative margin-inline-start.
+// With fewer visible tabs the overlap causes the selected-pill to be covered
+// by the adjacent button. Cancel the negative margin entirely.
+@supports (overflow-anchor: auto) {
+  ion-tab-bar.ios:not(.ios-theme-disabled, .ios26-disabled) > ion-tab-button:not(.ion-cloned-element) ~ ion-tab-button:not(.ion-cloned-element) {
+    margin-inline-start: 0;
+  }
+}

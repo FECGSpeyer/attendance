@@ -3,6 +3,7 @@ import { ModalController } from '@ionic/angular/lazy';
 import { Utils } from '../../utilities/Utils';
 import { DbService } from '../../services/db.service';
 import { LegalModalComponent } from '../legal-modal/legal-modal.component';
+import { supabase } from '../../services/base/supabase';
 
 @Component({
   selector: 'app-register-modal',
@@ -132,6 +133,12 @@ export class RegisterModalComponent implements OnDestroy {
       const ok = await this.db.verifyEmailOtp(this.email.toLowerCase().trim(), this.otpCode, true);
       if (!ok) {
         return;
+      }
+      // Stamp terms acceptance — checkbox was accepted before requestCode() proceeded.
+      const now = new Date().toISOString();
+      await supabase.auth.updateUser({ data: { terms_accepted_at: now } });
+      if (this.db.user?.user_metadata) {
+        this.db.user.user_metadata['terms_accepted_at'] = now;
       }
       await this.modalController.dismiss({ success: true, signedIn: true });
     } finally {

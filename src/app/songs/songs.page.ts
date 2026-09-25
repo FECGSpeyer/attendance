@@ -1,13 +1,14 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { GroupCategory, History, Group, Person, Song, Tenant, SongCategory, SongFile } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
-import { AlertController, IonModal, ItemReorderEventDetail } from '@ionic/angular/lazy';
+import { AlertController, IonModal, IonPopover, IonRouterOutlet, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
 import { Utils } from '../utilities/Utils';
 import { FieldType, Role } from '../utilities/constants';
 import { Storage } from '@ionic/storage-angular';
 import { Router } from '@angular/router';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { Capacitor } from '@capacitor/core';
+import { SongImportPage } from './import/import.page';
 
 @Component({
     selector: 'app-songs',
@@ -16,6 +17,9 @@ import { Capacitor } from '@capacitor/core';
     standalone: false
 })
 export class SongsPage implements OnInit, OnDestroy {
+  @ViewChild('categoriesModal') categoriesModal: IonModal;
+  @ViewChild(IonRouterOutlet) routerOutlet: IonRouterOutlet;
+  public hasSongSharing = false;
   public songs: Song[] = [];
   public songsFiltered: Song[] = [];
   public loaded = false;
@@ -55,12 +59,16 @@ export class SongsPage implements OnInit, OnDestroy {
   public fieldTypes = FieldType;
   private sub: RealtimeChannel;
   public tenantType: string;
+  // Populated from a direct fetch for public share links (db.songCategories()
+  // is only ever populated for a logged-in session via setTenant()).
+  public categories: SongCategory[] = [];
 
   constructor(
     public db: DbService,
     private storage: Storage,
     private router: Router,
     private alertController: AlertController,
+    private modalController: ModalController,
   ) { }
 
   // TrackBy function for main songs list
@@ -106,6 +114,7 @@ export class SongsPage implements OnInit, OnDestroy {
     await this.getSongs();
     this.buildGroupsWithFiles();
     this.showSongsTab = this.db.getShowSongsTab();
+    this.hasSongSharing = !!(this.tenantData?.song_sharing_id ?? this.db.tenant()?.song_sharing_id);
 
     this.loaded = true;
     this.loadedTenantId = this.tenantData?.id ?? this.db.tenant().id;
@@ -115,6 +124,7 @@ export class SongsPage implements OnInit, OnDestroy {
   async ionViewWillEnter() {
     if (!this.loaded || this.tenantData) { return; }
     const currentTenantId = this.db.tenant().id;
+    this.hasSongSharing = !!this.db.tenant()?.song_sharing_id;
     if (currentTenantId !== this.loadedTenantId) {
       this.loaded = false;
       this.loadedTenantId = currentTenantId;
@@ -149,13 +159,17 @@ export class SongsPage implements OnInit, OnDestroy {
     this.isAdmin = this.db.tenantUser()?.role === Role.ADMIN || this.db.tenantUser()?.role === Role.RESPONSIBLE;
     const groups = this.tenantData ? await this.db.getGroups(this.tenantData.id) : this.db.groups();
     const mainGroupId = groups.find((g: Group) => g.maingroup)?.id;
-    const [history, conductors, groupCategories, rawSongs] = await Promise.all([
+    const [history, conductors, groupCategories, rawSongs, categories] = await Promise.all([
       this.db.getHistory(this.tenantData?.id),
       this.db.getConductors(true, this.tenantData?.id, mainGroupId),
       this.db.getGroupCategories(this.tenantData?.id),
       this.db.getSongs(this.tenantData?.id),
+      this.tenantData
+        ? this.db.songCategorySvc.getSongCategories(this.tenantData.id)
+        : Promise.resolve(this.db.songCategories()),
     ]);
     this.groupCategories = groupCategories;
+    this.categories = categories;
     if (this.isOrchestra) {
       this.instruments = groups.filter((instrument: Group) => instrument.maingroup !== true);
       this.selectedInstruments = groups.map((instrument: Group) => instrument.id);
@@ -191,7 +205,8 @@ export class SongsPage implements OnInit, OnDestroy {
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  async toggleSongsTab(): Promise<void> {
+  async toggleSongsTab(popover?: IonPopover): Promise<void> {
+    await popover?.dismiss();
     this.showSongsTab = !this.showSongsTab;
     await this.db.setShowSongsTab(this.showSongsTab);
   }
@@ -314,6 +329,20 @@ export class SongsPage implements OnInit, OnDestroy {
     window.setTimeout(() => {
       event.target.complete();
     }, 700);
+  }
+
+  async openImportModal(popover?: IonPopover) {
+    await popover?.dismiss();
+    const modal = await this.modalController.create({
+      component: SongImportPage,
+      presentingElement: this.routerOutlet?.nativeEl,
+      backdropDismiss: false,
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data?.imported) {
+      await this.getSongs();
+    }
   }
 
   async addSong(modal: IonModal, number: any, name: any, link: any, prefix: any) {
@@ -538,7 +567,13 @@ export class SongsPage implements OnInit, OnDestroy {
     return `https://attendix.de/${this.tenantData?.song_sharing_id ?? this.db.tenant().song_sharing_id}`;
   }
 
-  copyShareLink() {
+  async openCategoriesModal(popover: IonPopover): Promise<void> {
+    await popover.dismiss();
+    await this.categoriesModal.present();
+  }
+
+  copyShareLink(popover?: IonPopover) {
+    popover?.dismiss();
     navigator?.clipboard.writeText(this.getSongSharingLink());
     Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
   }

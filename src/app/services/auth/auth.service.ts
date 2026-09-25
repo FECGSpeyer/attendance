@@ -112,6 +112,7 @@ export class AuthService {
       email, password,
       options: {
         emailRedirectTo: `https://attendix.de/login`,
+        data: { terms_accepted_at: new Date().toISOString() },
       }
     });
 
@@ -161,6 +162,7 @@ export class AuthService {
   async logout(): Promise<void> {
     await supabase.auth.signOut();
     this.user = undefined;
+    localStorage.removeItem('currentTenantId');
     this.router.navigateByUrl('/login');
   }
 

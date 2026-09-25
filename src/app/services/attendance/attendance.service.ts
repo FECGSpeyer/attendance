@@ -78,6 +78,45 @@ export class AttendanceService {
     }
   }
 
+  /**
+   * Re-points `person_attendances` rows from `fromId` to `toId` (used when
+   * merging a pending duplicate into an existing person). Where both ids
+   * already have a row for the same attendance, the `toId` row is kept as-is
+   * and the `fromId` row is discarded — the existing person's data wins.
+   */
+  async reassignPersonAttendances(fromId: number, toId: number): Promise<void> {
+    const { data: fromRows, error: fromError } = await supabase
+      .from('person_attendances')
+      .select('id, attendance_id')
+      .eq('person_id', fromId);
+    if (fromError) {
+      throw new Error('Fehler beim Laden der Person-Anwesenheiten');
+    }
+    if (!fromRows?.length) {return;}
+
+    const { data: toRows, error: toError } = await supabase
+      .from('person_attendances')
+      .select('attendance_id')
+      .eq('person_id', toId);
+    if (toError) {
+      throw new Error('Fehler beim Laden der Person-Anwesenheiten');
+    }
+    const toAttendanceIds = new Set((toRows ?? []).map(r => r.attendance_id));
+
+    const conflictingIds = fromRows.filter(r => toAttendanceIds.has(r.attendance_id)).map(r => r.id);
+    const movableIds = fromRows.filter(r => !toAttendanceIds.has(r.attendance_id)).map(r => r.id);
+
+    if (conflictingIds.length) {
+      const { error } = await supabase.from('person_attendances').delete().in('id', conflictingIds);
+      if (error) {throw new Error('Fehler beim Bereinigen der Person-Anwesenheiten');}
+    }
+
+    if (movableIds.length) {
+      const { error } = await supabase.from('person_attendances').update({ person_id: toId }).in('id', movableIds);
+      if (error) {throw new Error('Fehler beim Übertragen der Person-Anwesenheiten');}
+    }
+  }
+
   async getAttendance(
     tenantId: number,
     currentAttDate: string,

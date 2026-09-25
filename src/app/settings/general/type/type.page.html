@@ -1,22 +1,22 @@
 ﻿<ion-header translucent="true">
   <ion-toolbar color="light">
     @if (!isNew) {
-      <ion-buttons slot="start">
-        <ion-button (click)="navigateBack()">
-          <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
-        </ion-button>
-      </ion-buttons>
+    <ion-buttons slot="start">
+      <ion-button (click)="navigateBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     }
     <ion-buttons slot="end">
       @if (!isNew) {
-        <ion-button color="danger" (click)="deleteType()">
-          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-        </ion-button>
+      <ion-button color="danger" (click)="deleteType()">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
       }
       @if (isNew) {
-        <ion-button (click)="dismiss()">
-          <ion-icon slot="icon-only" name="close-outline"></ion-icon>
-        </ion-button>
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
       }
     </ion-buttons>
   </ion-toolbar>
@@ -24,79 +24,79 @@
 
 <ion-content color="light" [fullscreen]="true">
   @if (type) {
-    <ion-list [inset]="true">
-      <ion-item-group>
-        <ion-item>
-          <ion-label position="stacked">Name</ion-label>
-          <ion-input autocapitalize="words" [(ngModel)]="type.name"></ion-input>
-        </ion-item>
-      </ion-item-group>
-    </ion-list>
+  <ion-list [inset]="true">
+    <ion-item-group>
+      <ion-item>
+        <ion-label position="stacked">Name</ion-label>
+        <ion-input autocapitalize="words" [(ngModel)]="type.name"></ion-input>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
 
-    <ion-list [inset]="true">
-      <ion-list-header><ion-label>Optionen</ion-label></ion-list-header>
-      <ion-item-group>
-        <ion-item>
-          <ion-toggle
-            helperText="Wenn du diese Option deaktivierst, wird der Anwesenheitstyp beim Anlegen einer Anwesenheit nicht mehr als Option angezeigt."
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Optionen</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item>
+        <ion-toggle
+          helperText="Wenn du diese Option deaktivierst, wird der Anwesenheitstyp beim Anlegen einer Anwesenheit nicht mehr als Option angezeigt."
           [(ngModel)]="type.visible">Aktiv</ion-toggle>
-        </ion-item>
+      </ion-item>
 
-        <ion-item>
-          <ion-label position="stacked">Verfügbare Anwesenheitsstatus</ion-label>
-          <ion-select (ionChange)="onAvailableStatusesChanged()" [(ngModel)]="type.available_statuses" multiple="true">
-            @for (status of attendanceStatuses; track status) {
-              <ion-select-option [disabled]="status === 1" [value]="status">
-                {{ getAttendanceStatusDescription(status) }}
-              </ion-select-option>
-            }
-          </ion-select>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Verfügbare Anwesenheitsstatus</ion-label>
+        <ion-select (ionChange)="onAvailableStatusesChanged()" [(ngModel)]="type.available_statuses" multiple="true">
+          @for (status of attendanceStatuses; track status) {
+          <ion-select-option [disabled]="status === 1" [value]="status">
+            {{ getAttendanceStatusDescription(status) }}
+          </ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
 
-        <ion-item>
-          <ion-label position="stacked">Standard Anwesenheitsstatus</ion-label>
-          <ion-select [(ngModel)]="type.default_status">
-            @for (status of attendanceStatuses; track status) {
-              @if (type.available_statuses.includes(status)) {
-                <ion-select-option [value]="status">
-                  {{ getAttendanceStatusDescription(status) }}
-                </ion-select-option>
-              }
-            }
-          </ion-select>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Standard Anwesenheitsstatus</ion-label>
+        <ion-select [(ngModel)]="type.default_status">
+          @for (status of attendanceStatuses; track status) {
+          @if (type.available_statuses.includes(status)) {
+          <ion-select-option [value]="status">
+            {{ getAttendanceStatusDescription(status) }}
+          </ion-select-option>
+          }
+          }
+        </ion-select>
+      </ion-item>
 
-        @if (!isGeneral) {
-          <ion-item>
-            <ion-toggle
-              helperText="Wenn du diese Option aktivierst, dann kannst du beim Anlegen einer Anwesenheit von diesem Typ, Werke hinzufügen, die für die kommenden Proben relevant sind und automatisch im Probenplan berücksichtigt werden."
-            [(ngModel)]="type.manage_songs">Werke verwalten</ion-toggle>
-          </ion-item>
-        }
+      @if (!isGeneral) {
+      <ion-item>
+        <ion-toggle
+          helperText="Wenn du diese Option aktivierst, dann kannst du beim Anlegen einer Anwesenheit von diesem Typ, Werke hinzufügen, die für die kommenden Proben relevant sind und automatisch im Probenplan berücksichtigt werden."
+          [(ngModel)]="type.manage_songs">Werke verwalten</ion-toggle>
+      </ion-item>
+      }
 
-        <ion-item>
-          <ion-toggle label="Ganztägig"
-            helperText="Wenn du diese Option aktivierst, wird bei einer Anwesenheit von diesem Typ keine Uhrzeit festgelegt aber eine Dauer angegeben."
+      <ion-item>
+        <ion-toggle label="Ganztägig"
+          helperText="Wenn du diese Option aktivierst, wird bei einer Anwesenheit von diesem Typ keine Uhrzeit festgelegt aber eine Dauer angegeben."
           [(ngModel)]="type.all_day">Ganztägig</ion-toggle>
-        </ion-item>
+      </ion-item>
 
-        @if (type.all_day) {
-          <ion-item>
-            <ion-label position="stacked">Standarddauer (in Tagen)</ion-label>
-            <ion-input autocapitalize="words" type="number" [(ngModel)]="type.duration_days"></ion-input>
-          </ion-item>
-        }
+      @if (type.all_day) {
+      <ion-item>
+        <ion-label position="stacked">Standarddauer (in Tagen)</ion-label>
+        <ion-input autocapitalize="words" type="number" [(ngModel)]="type.duration_days"></ion-input>
+      </ion-item>
+      }
 
-        @if (!type.all_day) {
-          <ion-item>
-            <ion-label>
-              <h2>Beginn</h2>
-              <h3>Die Zeiten können nachträglich individuell in jeder Anwesenheit angepasst werden</h3>
-            </ion-label>
-            <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
-            <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime [(ngModel)]="type.start_time" presentation="time" locale="de-DE"
+      @if (!type.all_day) {
+      <ion-item>
+        <ion-label>
+          <h2>Beginn</h2>
+          <h3>Die Zeiten können nachträglich individuell in jeder Anwesenheit angepasst werden</h3>
+        </ion-label>
+        <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime [(ngModel)]="type.start_time" presentation="time" locale="de-DE"
               minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestart" [formatOptions]="{
                       time: {
                         hour: '2-digit',
@@ -104,17 +104,17 @@
                         hour12: false
                       }
                     }"></ion-datetime>
-            </ng-template>
-          </ion-modal>
-        </ion-item>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
       }
       @if (!type.all_day) {
-        <ion-item>
-          <ion-label>Ende</ion-label>
-          <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
-          <ion-modal [keepContentsMounted]="true">
-            <ng-template>
-              <ion-datetime [(ngModel)]="type.end_time" presentation="time" locale="de-DE"
+      <ion-item>
+        <ion-label>Ende</ion-label>
+        <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime [(ngModel)]="type.end_time" presentation="time" locale="de-DE"
               minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimeend" [formatOptions]="{
                       time: {
                         hour: '2-digit',
@@ -126,137 +126,143 @@
           </ng-template>
         </ion-modal>
       </ion-item>
-    }
+      }
 
-    <ion-item>
-      <ion-toggle label="Name verbergen"
-        helperText="Wenn du diese Option aktivierst, wird der Name dieses Anwesenheitstyps in der Liste verborgen. Nur die Zusatzinfo (falls vorhanden) wird angezeigt."
-      [(ngModel)]="type.hide_name">Name verbergen</ion-toggle>
-    </ion-item>
+      <ion-item>
+        <ion-toggle label="Name verbergen"
+          helperText="Wenn du diese Option aktivierst, wird der Name dieses Anwesenheitstyps in der Liste verborgen. Nur die Zusatzinfo (falls vorhanden) wird angezeigt."
+          [(ngModel)]="type.hide_name">Name verbergen</ion-toggle>
+      </ion-item>
 
-    <ion-item>
-      <ion-toggle label="Hervorheben"
-        helperText="Wenn du diese Option aktivierst, wird dieser Anwesenheitstyp in der Liste als Fett dargestellt."
-      [(ngModel)]="type.highlight">Hervorheben</ion-toggle>
-    </ion-item>
+      <ion-item>
+        <ion-toggle label="Hervorheben"
+          helperText="Wenn du diese Option aktivierst, wird dieser Anwesenheitstyp in der Liste als Fett dargestellt."
+          [(ngModel)]="type.highlight">Hervorheben</ion-toggle>
+      </ion-item>
 
-    <ion-item>
-      <ion-toggle label="Für Ø berücksichtigen"
-        helperText="Wenn diese Option aktiviert ist, wird dieser Typ beim Anwesenheitsdurchschnitt berücksichtigt."
-      [(ngModel)]="type.include_in_average">Für Ø berücksichtigen</ion-toggle>
-    </ion-item>
+      <ion-item>
+        <ion-toggle label="Für Ø berücksichtigen"
+          helperText="Wenn diese Option aktiviert ist, wird dieser Typ beim Anwesenheitsdurchschnitt berücksichtigt."
+          [(ngModel)]="type.include_in_average">Für Ø berücksichtigen</ion-toggle>
+      </ion-item>
 
-    <ion-item>
-      <ion-toggle
-        helperText="Aktiviert Protokoll, Tagesordnungspunkte und Aufgaben für Termine dieses Typs."
-      [(ngModel)]="type.enable_protocol">Teamorganisation aktivieren</ion-toggle>
-    </ion-item>
-      </ion-item-group>
-    </ion-list>
+      <ion-item>
+        <ion-toggle helperText="Aktiviert Protokoll, Tagesordnungspunkte und Aufgaben für Termine dieses Typs."
+          [(ngModel)]="type.enable_protocol">Teamorganisation aktivieren</ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-toggle
+          helperText="Wenn aktiviert, kann bei Terminen dieses Typs ein Ort hinterlegt werden. Dieser wird dann als Navigationslink in Google Maps oder Apple Karten angezeigt."
+          [(ngModel)]="type.place_enabled">Ort / Navigation aktivieren</ion-toggle>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
 
-    <ion-list [inset]="true">
-      <ion-list-header><ion-label>Terminerinnerungen</ion-label></ion-list-header>
-      <ion-item-group>
-        <ion-item>
-          <ion-toggle label="Terminerinnerung"
-            helperText="Wenn diese Option aktiviert ist, Erinnerungen angelegt wurden und die Benachrichtigungen aktiviert sind, erhalten Personen eine Terminerinnerung."
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Terminerinnerungen</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item>
+        <ion-toggle label="Terminerinnerung"
+          helperText="Wenn diese Option aktiviert ist, Erinnerungen angelegt wurden und die Benachrichtigungen aktiviert sind, erhalten Personen eine Terminerinnerung."
           [(ngModel)]="type.notification">Terminerinnerung</ion-toggle>
-        </ion-item>
+      </ion-item>
 
-        <!-- Reminder Configuration Button -->
-        @if (type.notification) {
-          <ion-item button detail="true" id="reminders-modal-trigger">
-            <ion-label>
-              <h2>Erinnerungen konfigurieren</h2>
-              @if (type.reminders && type.reminders.length > 0) {
-                <p>{{ type.reminders.length }} Erinnerung(en) aktiv</p>
-              } @else {
-                <p>Keine Erinnerungen konfiguriert</p>
-              }
-            </ion-label>
-            @if (type.reminders && type.reminders.length > 0) {
-              <ion-badge slot="end" color="primary">{{ type.reminders.length }}/3</ion-badge>
-            }
-          </ion-item>
+      <!-- Reminder Configuration Button -->
+      @if (type.notification) {
+      <ion-item button detail="true" id="reminders-modal-trigger">
+        <ion-label>
+          <h2>Erinnerungen konfigurieren</h2>
+          @if (type.reminders && type.reminders.length > 0) {
+          <p>{{ type.reminders.length }} Erinnerung(en) aktiv</p>
+          } @else {
+          <p>Keine Erinnerungen konfiguriert</p>
+          }
+        </ion-label>
+        @if (type.reminders && type.reminders.length > 0) {
+        <ion-badge slot="end" color="primary">{{ type.reminders.length }}/3</ion-badge>
+        }
+      </ion-item>
 
-    <!-- Reminders Configuration Modal -->
-    <ion-modal trigger="reminders-modal-trigger" handle-behavior="none" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
-      <ng-template>
-        <ion-header>
-          <ion-toolbar>
-            <ion-title>Erinnerungen</ion-title>
-            <ion-buttons slot="end">
-              <ion-button (click)="closeRemindersModal()">
-                <ion-icon slot="icon-only" name="checkmark"></ion-icon>
-              </ion-button>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content color="light">
-          <!-- Info Card -->
-          <ion-list [inset]="true" class="info-list">
-            <ion-list-header>
-              <ion-label>So funktionieren Erinnerungen</ion-label>
-            </ion-list-header>
-            <ion-item-group>
-              <ion-item lines="none">
-                <ion-icon slot="start" name="time-outline" color="primary"></ion-icon>
-                <ion-label class="ion-text-wrap">
-                  <p>Erinnerungen werden <strong>alle 5 Minuten</strong> geprüft und versendet.</p>
-                </ion-label>
-              </ion-item>
-              <ion-item lines="none">
-                <ion-icon slot="start" name="calculator-outline" color="primary"></ion-icon>
-                <ion-label class="ion-text-wrap">
-                  <p>Die Erinnerung wird versendet, sobald die <strong>verbleibende Zeit</strong> dem konfigurierten Wert entspricht.</p>
-                </ion-label>
-              </ion-item>
-              <ion-item lines="none">
-                <ion-icon slot="start" name="notifications-outline" color="primary"></ion-icon>
-                <ion-label class="ion-text-wrap">
-                  <p>Maximal <strong>3 Erinnerungen</strong> pro Termintyp möglich.</p>
-                </ion-label>
-              </ion-item>
-            </ion-item-group>
-          </ion-list>
+      <!-- Reminders Configuration Modal -->
+      <ion-modal trigger="reminders-modal-trigger" handle-behavior="none" [breakpoints]="[0, 1]"
+        [initialBreakpoint]="1">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar>
+              <ion-title>Erinnerungen</ion-title>
+              <ion-buttons slot="end">
+                <ion-button (click)="closeRemindersModal()">
+                  <ion-icon slot="icon-only" name="checkmark"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content color="light">
+            <!-- Info Card -->
+            <ion-list [inset]="true" class="info-list">
+              <ion-list-header>
+                <ion-label>So funktionieren Erinnerungen</ion-label>
+              </ion-list-header>
+              <ion-item-group>
+                <ion-item lines="none">
+                  <ion-icon slot="start" name="time-outline" color="primary"></ion-icon>
+                  <ion-label class="ion-text-wrap">
+                    <p>Erinnerungen werden <strong>alle 5 Minuten</strong> geprüft und versendet.</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-icon slot="start" name="calculator-outline" color="primary"></ion-icon>
+                  <ion-label class="ion-text-wrap">
+                    <p>Die Erinnerung wird versendet, sobald die <strong>verbleibende Zeit</strong> dem konfigurierten
+                      Wert entspricht.</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-icon slot="start" name="notifications-outline" color="primary"></ion-icon>
+                  <ion-label class="ion-text-wrap">
+                    <p>Maximal <strong>3 Erinnerungen</strong> pro Termintyp möglich.</p>
+                  </ion-label>
+                </ion-item>
+              </ion-item-group>
+            </ion-list>
 
-          <!-- Active Reminders -->
-          <ion-list [inset]="true">
-            <ion-list-header>
-              <ion-label>Aktive Erinnerungen</ion-label>
-              <ion-badge color="medium">{{ type.reminders?.length || 0 }}/3</ion-badge>
-            </ion-list-header>
-            <ion-item-group>
-              @if (type.reminders && type.reminders.length > 0) {
+            <!-- Active Reminders -->
+            <ion-list [inset]="true">
+              <ion-list-header>
+                <ion-label>Aktive Erinnerungen</ion-label>
+                <ion-badge color="medium">{{ type.reminders?.length || 0 }}/3</ion-badge>
+              </ion-list-header>
+              <ion-item-group>
+                @if (type.reminders && type.reminders.length > 0) {
                 @for (reminder of type.reminders; track $index) {
-                  <ion-item-sliding #reminderSlider>
-                    <ion-item>
-                      <ion-icon slot="start" name="alarm-outline" color="primary"></ion-icon>
-                      <ion-label>
-                        <h2>{{ getFormattedReminder(reminder) }}</h2>
-                        <p>{{ reminder }} Stunde(n) vor Terminbeginn</p>
-                      </ion-label>
-                    </ion-item>
-                    <ion-item-options side="end">
-                      <ion-item-option color="danger" (click)="removeReminder($index); reminderSlider.close()">
-                        <ion-icon size="small" slot="icon-only" name="trash-outline"></ion-icon>
-                      </ion-item-option>
-                    </ion-item-options>
-                  </ion-item-sliding>
+                <ion-item-sliding #reminderSlider>
+                  <ion-item>
+                    <ion-icon slot="start" name="alarm-outline" color="primary"></ion-icon>
+                    <ion-label>
+                      <h2>{{ getFormattedReminder(reminder) }}</h2>
+                      <p>{{ reminder }} Stunde(n) vor Terminbeginn</p>
+                    </ion-label>
+                  </ion-item>
+                  <ion-item-options side="end">
+                    <ion-item-option color="danger" (click)="removeReminder($index); reminderSlider.close()">
+                      <ion-icon size="small" slot="icon-only" name="trash-outline"></ion-icon>
+                    </ion-item-option>
+                  </ion-item-options>
+                </ion-item-sliding>
                 }
-              } @else {
+                } @else {
                 <ion-item lines="none">
                   <ion-label class="ion-text-center" color="medium">
                     <ion-icon name="notifications-off-outline" style="font-size: 2rem;"></ion-icon>
                     <p>Noch keine Erinnerungen konfiguriert</p>
                   </ion-label>
                 </ion-item>
-              }
-            </ion-item-group>
-          </ion-list>
+                }
+              </ion-item-group>
+            </ion-list>
 
-          <!-- Add Reminder Section -->
-          @if (canAddReminder()) {
+            <!-- Add Reminder Section -->
+            @if (canAddReminder()) {
             <ion-list [inset]="true">
               <ion-list-header>
                 <ion-label>Schnellauswahl</ion-label>
@@ -264,13 +270,11 @@
               <ion-item-group>
                 <div class="reminder-chips">
                   @for (predefined of predefinedReminders; track predefined) {
-                    <ion-chip
-                      [color]="type.reminders?.includes(predefined) ? 'medium' : 'primary'"
-                      [disabled]="type.reminders?.includes(predefined)"
-                      (click)="addReminder(predefined)">
-                      <ion-icon name="add-circle-outline"></ion-icon>
-                      <ion-label>{{ getFormattedReminder(predefined) }}</ion-label>
-                    </ion-chip>
+                  <ion-chip [color]="type.reminders?.includes(predefined) ? 'medium' : 'primary'"
+                    [disabled]="type.reminders?.includes(predefined)" (click)="addReminder(predefined)">
+                    <ion-icon name="add-circle-outline"></ion-icon>
+                    <ion-label>{{ getFormattedReminder(predefined) }}</ion-label>
+                  </ion-chip>
                   }
                 </div>
               </ion-item-group>
@@ -282,22 +286,13 @@
               </ion-list-header>
               <ion-item-group>
                 <ion-item lines="none" class="custom-reminder-item">
-                  <ion-input autocapitalize="words"
-                    type="number"
-                    label="Stunden vor Termin"
-                    labelPlacement="stacked"
-                    min="0"
-                    max="168"
-                    [(ngModel)]="customReminderHours"
-                    placeholder="z.B. 12 für 12 Stunden vorher"
+                  <ion-input autocapitalize="words" type="number" label="Stunden vor Termin" labelPlacement="stacked"
+                    min="0" max="168" [(ngModel)]="customReminderHours" placeholder="z.B. 12 für 12 Stunden vorher"
                     helperText="Gültige Werte: 0-168 Stunden (max. 1 Woche vorher)">
                   </ion-input>
                 </ion-item>
                 <ion-item lines="none">
-                  <ion-button
-                    expand="block"
-                    fill="solid"
-                    color="primary"
+                  <ion-button expand="block" fill="solid" color="primary"
                     [disabled]="!customReminderHours && customReminderHours !== 0"
                     (click)="addReminder(customReminderHours); customReminderHours = null">
                     <ion-icon slot="start" name="add-circle-outline"></ion-icon>
@@ -306,109 +301,108 @@
                 </ion-item>
               </ion-item-group>
             </ion-list>
-          } @else {
+            } @else {
             <ion-card color="warning">
               <ion-card-content>
                 <ion-icon name="warning-outline"></ion-icon>
                 Maximum von 3 Erinnerungen erreicht. Entferne eine bestehende Erinnerung, um eine neue hinzuzufügen.
               </ion-card-content>
             </ion-card>
-          }
-        </ion-content>
-      </ng-template>
-    </ion-modal>
-  }
-      </ion-item-group>
-    </ion-list>
+            }
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+      }
+    </ion-item-group>
+  </ion-list>
 
-    <ion-list [inset]="true">
-      <ion-list-header><ion-label>Darstellung</ion-label></ion-list-header>
-      <ion-item-group>
-        <ion-item id="color-btn" button detail="false">
-          <ion-label>
-            <h2>Farbe</h2>
-            <h3>Die Farbe ist nur für den Kalender relevant (beim Anlegen einer Anwesenheit).</h3>
-          </ion-label>
-    <ion-icon slot="end" name="ellipse" [color]="type.color"></ion-icon>
-  </ion-item>
-  <ion-popover #colorPopover trigger="color-btn" triggerAction="click">
-    <ng-template>
-      <ion-grid>
-        <ion-row>
-          @for (color of colors; track color) {
-            <ion-col [style.paddingTop]="'.5rem'" [style.borderRadius]="'1rem'"
-              [style.backgroundColor]="type.color === color ? 'var(--ion-color-medium)' : ''"
-              [style.textAlign]="'center'" (click)="type.color = color; colorPopover.dismiss()" size="4"
-              >
-              <ion-icon [style.fontSize]="'1.5rem'" name="ellipse" [color]="color"></ion-icon>
-            </ion-col>
-          }
-        </ion-row>
-      </ion-grid>
-    </ng-template>
-  </ion-popover>
-</ion-item-group>
-</ion-list>
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Darstellung</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item id="color-btn" button detail="false">
+        <ion-label>
+          <h2>Farbe</h2>
+          <h3>Die Farbe ist nur für den Kalender relevant (beim Anlegen einer Anwesenheit).</h3>
+        </ion-label>
+        <ion-icon slot="end" name="ellipse" [color]="type.color"></ion-icon>
+      </ion-item>
+      <ion-popover #colorPopover trigger="color-btn" triggerAction="click">
+        <ng-template>
+          <ion-grid>
+            <ion-row>
+              @for (color of colors; track color) {
+              <ion-col [style.paddingTop]="'.5rem'" [style.borderRadius]="'1rem'"
+                [style.backgroundColor]="type.color === color ? 'var(--ion-color-medium)' : ''"
+                [style.textAlign]="'center'" (click)="type.color = color; colorPopover.dismiss()" size="4">
+                <ion-icon [style.fontSize]="'1.5rem'" name="ellipse" [color]="color"></ion-icon>
+              </ion-col>
+              }
+            </ion-row>
+          </ion-grid>
+        </ng-template>
+      </ion-popover>
+    </ion-item-group>
+  </ion-list>
 
-<ion-list [inset]="true">
-  <ion-list-header><ion-label>Filter</ion-label></ion-list-header>
-  <ion-item-group>
-    <ion-item>
-      <ion-select label="Relevante Gruppen"
-        helperText="Nur die relevanten Gruppen werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt. Wenn keine Gruppe ausgewählt ist, werden alle Gruppen berücksichtigt."
-        [(ngModel)]="type.relevant_groups" multiple="true">
-        @for (group of db.groups(); track group) {
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>Filter</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item>
+        <ion-select label="Relevante Gruppen"
+          helperText="Nur die relevanten Gruppen werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt. Wenn keine Gruppe ausgewählt ist, werden alle Gruppen berücksichtigt."
+          [(ngModel)]="type.relevant_groups" multiple="true">
+          @for (group of db.groups(); track group) {
           <ion-select-option [value]="group.id">
             {{ group.name }}
           </ion-select-option>
-        }
-      </ion-select>
-    </ion-item>
+          }
+        </ion-select>
+      </ion-item>
 
-    @if (areSelectFieldsAvailable()) {
+      @if (areSelectFieldsAvailable()) {
       <ion-item>
         <ion-select label="Zusatzfeld-Filter" (ionChange)="onAdditionalFieldFilterChanged()"
           helperText="Nur Personen mit dem ausgewählten Zusatzfeld-Wert werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt."
           [(ngModel)]="additionalFieldFilter" multiple="false">
           <ion-select-option [value]="null">Kein Filter</ion-select-option>
           @for (field of db.tenant().additional_fields; track field) {
-            @if (field.type === "select" || field.type === "boolean") {
-              <ion-select-option [value]="field.id">
-                {{ field.name }}
-              </ion-select-option>
-            }
+          @if (field.type === "select" || field.type === "boolean") {
+          <ion-select-option [value]="field.id">
+            {{ field.name }}
+          </ion-select-option>
+          }
           }
         </ion-select>
       </ion-item>
       @if (additionalFieldFilter) {
-        @if (selectedFieldType() === 'boolean') {
-          <ion-item>
-            <ion-select [(ngModel)]="type.additional_fields_filter.option" label="Wert">
-              <ion-select-option [value]="true">Ja</ion-select-option>
-              <ion-select-option [value]="false">Nein</ion-select-option>
-            </ion-select>
-          </ion-item>
-        } @else if (type.additional_fields_filter?.option !== undefined) {
-          <ion-item>
-            <ion-select [(ngModel)]="type.additional_fields_filter.option" label="Option">
-              @for (field of db.tenant().additional_fields; track field) {
-                @if (field.type === "select" && field.id === additionalFieldFilter) {
-                  @for (option of field.options; track option) {
-                    <ion-select-option [value]="option">
-                      {{ option }}
-                    </ion-select-option>
-                  }
-                }
-              }
-            </ion-select>
-          </ion-item>
-        }
+      @if (selectedFieldType() === 'boolean') {
+      <ion-item>
+        <ion-select [(ngModel)]="type.additional_fields_filter.option" label="Wert">
+          <ion-select-option [value]="true">Ja</ion-select-option>
+          <ion-select-option [value]="false">Nein</ion-select-option>
+        </ion-select>
+      </ion-item>
+      } @else if (type.additional_fields_filter?.option !== undefined) {
+      <ion-item>
+        <ion-select [(ngModel)]="type.additional_fields_filter.option" label="Option">
+          @for (field of db.tenant().additional_fields; track field) {
+          @if (field.type === "select" && field.id === additionalFieldFilter) {
+          @for (option of field.options; track option) {
+          <ion-select-option [value]="option">
+            {{ option }}
+          </ion-select-option>
+          }
+          }
+          }
+        </ion-select>
+      </ion-item>
       }
-    }
-  </ion-item-group>
-</ion-list>
+      }
+      }
+    </ion-item-group>
+  </ion-list>
 
-@if (type.default_plan?.fields) {
+  @if (type.default_plan?.fields) {
   <ion-list [inset]="true">
     <ion-list-header>
       <ion-label>Ablaufplan</ion-label>
@@ -424,15 +418,15 @@
             <ion-label>Notizfeld hinzufügen</ion-label>
           </ion-item>
           @if (!isGeneral) {
-            <ion-item (click)="addSongPlaceholder(addFieldPopover)" lines="none">
-              <ion-label>Werk Platzhalter</ion-label>
-            </ion-item>
+          <ion-item (click)="addSongPlaceholder(addFieldPopover)" lines="none">
+            <ion-label>Werk Platzhalter</ion-label>
+          </ion-item>
           }
           @if (type.enable_protocol) {
-            <ion-item (click)="addAgendaItemsPlaceholder(addFieldPopover)" lines="none">
-              <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
-              <ion-label>Tagesordnung Platzhalter</ion-label>
-            </ion-item>
+          <ion-item (click)="addAgendaItemsPlaceholder(addFieldPopover)" lines="none">
+            <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
+            <ion-label>Tagesordnung Platzhalter</ion-label>
+          </ion-item>
           }
         </ng-template>
       </ion-popover>
@@ -440,65 +434,71 @@
     <ion-item-group>
       <ion-item>
         <ion-label position="stacked">Ablaufplan Überschrift</ion-label>
-        <ion-input autocapitalize="words" helperText="Dieser Titel wird beim Exportieren eines Ablaufplans angezeigt. Falls eine Typ-Info vorhanden ist, wird diese in Klammern dahinter angezeigt. (z.B. Probenplan (Kantateprobe))" [(ngModel)]="type.planning_title"></ion-input>
+        <ion-input autocapitalize="words"
+          helperText="Dieser Titel wird beim Exportieren eines Ablaufplans angezeigt. Falls eine Typ-Info vorhanden ist, wird diese in Klammern dahinter angezeigt. (z.B. Probenplan (Kantateprobe))"
+          [(ngModel)]="type.planning_title"></ion-input>
       </ion-item>
       @if (!isGeneral) {
-        <ion-item>
-          <ion-toggle helperText="Falls aktiviert, wird der Instanz-Name vor jedem Werk im Ablaufplan angezeigt." [(ngModel)]="type.planning_prefix_instance_name">Instanz-Name vor Werken</ion-toggle>
-        </ion-item>
+      <ion-item>
+        <ion-toggle helperText="Falls aktiviert, wird der Instanz-Name vor jedem Werk im Ablaufplan angezeigt."
+          [(ngModel)]="type.planning_prefix_instance_name">Instanz-Name vor Werken</ion-toggle>
+      </ion-item>
       }
       @if (db.organisation()) {
-        <ion-item>
-          <ion-toggle [(ngModel)]="type.is_default_org_plan">Ablaufplan ist standardmäßig ein Organisationsplan</ion-toggle>
-        </ion-item>
+      <ion-item>
+        <ion-toggle [(ngModel)]="type.is_default_org_plan">Ablaufplan ist standardmäßig ein
+          Organisationsplan</ion-toggle>
+      </ion-item>
       }
       <ion-item>
         <ion-label>
           <h2>Start</h2>
           @if (type.all_day) {
-            <h3>Startzeit für den Ablaufplan bei ganztägigen Terminen</h3>
+          <h3>Startzeit für den Ablaufplan bei ganztägigen Terminen</h3>
           }
         </ion-label>
         <ion-datetime-button datetime="datetimestartplan"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime locale="de-DE" [disabled]="!type.all_day" (ionChange)="calculateEnd()" [(ngModel)]="type.start_time"
-              presentation="time" id="datetimestartplan" minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" [formatOptions]="{
+            <ion-datetime locale="de-DE" [disabled]="!type.all_day" (ionChange)="calculateEnd()"
+              [(ngModel)]="type.start_time" presentation="time" id="datetimestartplan"
+              minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" [formatOptions]="{
                       time: {
                         hour: '2-digit',
                         minute: '2-digit',
                         hour12: false
                       }
                     }"></ion-datetime>
-        </ng-template>
-      </ion-modal>
-    </ion-item>
-    <ion-list>
-      <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
-        @for (field of type.default_plan.fields; track field; let i = $index) {
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+      <ion-list>
+        <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
+          @for (field of type.default_plan.fields; track field; let i = $index) {
           <ion-item-sliding #slider>
-            <ion-item [class.note-item]="field.id.includes('noteFld')" [lines]="field.id.includes('noteFld') ? 'none' : 'full'">
+            <ion-item [class.note-item]="field.id.includes('noteFld')"
+              [lines]="field.id.includes('noteFld') ? 'none' : 'full'">
               @if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID) {
-                <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
-                <ion-label>
-                  <h2>{{ field.name }}</h2>
-                  <h3>Tagesordnungspunkte des Termins</h3>
-                </ion-label>
-                <ion-badge slot="end" color="secondary">dynamisch</ion-badge>
+              <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
+              <ion-label>
+                <h2>{{ field.name }}</h2>
+                <h3>Tagesordnungspunkte des Termins</h3>
+              </ion-label>
+              <ion-badge slot="end" color="secondary">dynamisch</ion-badge>
               } @else {
-                <ion-label (click)="changeField(field)" [class.note-field]="field.id.includes('noteFld')">
-                  <h2>{{ field.name }}</h2>
-                  @if (!field.id.includes('noteFld')) {
-                    <h3>{{ calculateTime(field, i) }}</h3>
-                  }
-                  @if (field.info && !field.id.includes('noteFld')) {
-                    <p class="field-info">{{ field.info }}</p>
-                  }
-                </ion-label>
+              <ion-label (click)="changeField(field)" [class.note-field]="field.id.includes('noteFld')">
+                <h2>{{ field.name }}</h2>
                 @if (!field.id.includes('noteFld')) {
-                  <ion-input autocapitalize="words" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
-                  placeholder="min" type="number" slot="end"></ion-input>
+                <h3>{{ calculateTime(field, i) }}</h3>
                 }
+                @if (field.info && !field.id.includes('noteFld')) {
+                <p class="field-info">{{ field.info }}</p>
+                }
+              </ion-label>
+              @if (!field.id.includes('noteFld')) {
+              <ion-input autocapitalize="words" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()"
+                [(ngModel)]="field.time" placeholder="min" type="number" slot="end"></ion-input>
+              }
               }
               <ion-reorder slot="end"></ion-reorder>
             </ion-item>
@@ -508,10 +508,10 @@
               </ion-item-option>
             </ion-item-options>
           </ion-item-sliding>
-        }
-      </ion-reorder-group>
-    </ion-list>
-    @if (end) {
+          }
+        </ion-reorder-group>
+      </ion-list>
+      @if (end) {
       <ion-item class="marginBottom">
         <ion-label>Ende</ion-label>
         <ion-datetime-button datetime="datetimeendplan"></ion-datetime-button>
@@ -525,16 +525,16 @@
                         hour12: false
                       }
                     }">
-          </ion-datetime>
-        </ng-template>
-      </ion-modal>
-    </ion-item>
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+      }
+    </ion-item-group>
+  </ion-list>
   }
-</ion-item-group>
-</ion-list>
-}
 
-@if (type.checklist) {
+  @if (type.checklist) {
   <ion-list [inset]="true">
     <ion-list-header>
       <ion-label>Checkliste</ion-label>
@@ -542,78 +542,62 @@
     </ion-list-header>
     <ion-item-group>
       @if (type.checklist && type.checklist.length > 0) {
-        <ion-reorder-group disabled="false" (ionItemReorder)="handleChecklistReorder($any($event))">
-          @for (item of type.checklist; track item.id; let i = $index) {
-            <ion-item-sliding #checklistSlider>
-              <ion-item>
-                <ion-label (click)="editChecklistItem(item, checklistSlider)">
-                  <h2>{{ item.text }}</h2>
-                  <p>{{ getChecklistDeadlineText(item.deadlineHours) }}</p>
-                </ion-label>
-                <ion-reorder slot="end"></ion-reorder>
-              </ion-item>
-              <ion-item-options side="end">
-                <ion-item-option color="danger" (click)="removeChecklistItem(i, checklistSlider)">
-                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-                </ion-item-option>
-              </ion-item-options>
-            </ion-item-sliding>
-          }
-        </ion-reorder-group>
+      <ion-reorder-group disabled="false" (ionItemReorder)="handleChecklistReorder($any($event))">
+        @for (item of type.checklist; track item.id; let i = $index) {
+        <ion-item-sliding #checklistSlider>
+          <ion-item>
+            <ion-label (click)="editChecklistItem(item, checklistSlider)">
+              <h2>{{ item.text }}</h2>
+              <p>{{ getChecklistDeadlineText(item.deadlineHours) }}</p>
+            </ion-label>
+            <ion-reorder slot="end"></ion-reorder>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="danger" (click)="removeChecklistItem(i, checklistSlider)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+        }
+      </ion-reorder-group>
       } @else {
-        <ion-item lines="none">
-          <ion-label class="ion-text-center" color="medium">
-            <ion-icon name="checkbox-outline" style="font-size: 2rem;"></ion-icon>
-            <p>Noch keine To-Dos angelegt</p>
-          </ion-label>
-        </ion-item>
+      <ion-item lines="none">
+        <ion-label class="ion-text-center" color="medium">
+          <ion-icon name="checkbox-outline" style="font-size: 2rem;"></ion-icon>
+          <p>Noch keine To-Dos angelegt</p>
+        </ion-label>
+      </ion-item>
       }
 
       <!-- Add new checklist item -->
       <ion-item lines="none">
-        <ion-input autocapitalize="words"
-          [(ngModel)]="newChecklistText"
-          label="Neues To-Do"
-          labelPlacement="stacked"
+        <ion-input autocapitalize="words" [(ngModel)]="newChecklistText" label="Neues To-Do" labelPlacement="stacked"
           placeholder="To-Do Text eingeben...">
         </ion-input>
       </ion-item>
 
       <!-- Deadline selection - compact mobile-friendly design -->
       <ion-item>
-        <ion-select
-          [(ngModel)]="newChecklistDeadline"
-          label="Deadline"
-          labelPlacement="stacked"
-          interface="action-sheet"
-          placeholder="Keine Deadline">
+        <ion-select [(ngModel)]="newChecklistDeadline" label="Deadline" labelPlacement="stacked"
+          interface="action-sheet" placeholder="Keine Deadline">
           <ion-select-option [value]="null">Keine Deadline</ion-select-option>
           @for (option of checklistDeadlineOptions; track option.hours) {
-            <ion-select-option [value]="option.hours">{{ option.label }}</ion-select-option>
+          <ion-select-option [value]="option.hours">{{ option.label }}</ion-select-option>
           }
           <ion-select-option [value]="-1">Benutzerdefiniert...</ion-select-option>
         </ion-select>
       </ion-item>
 
       @if (newChecklistDeadline === -1 || (newChecklistDeadline !== null && !isPresetDeadline(newChecklistDeadline))) {
-        <ion-item>
-          <ion-input autocapitalize="words"
-            type="number"
-            [(ngModel)]="customChecklistDeadline"
-            label="Stunden vor Termin"
-            labelPlacement="stacked"
-            min="1"
-            placeholder="z.B. 12">
-          </ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-input autocapitalize="words" type="number" [(ngModel)]="customChecklistDeadline" label="Stunden vor Termin"
+          labelPlacement="stacked" min="1" placeholder="z.B. 12">
+        </ion-input>
+      </ion-item>
       }
 
       <ion-item lines="none">
-        <ion-button
-          expand="block"
-          fill="solid"
-          color="primary"
-          [disabled]="!newChecklistText?.trim()"
+        <ion-button expand="block" fill="solid" color="primary" [disabled]="!newChecklistText?.trim()"
           (click)="addChecklistItem()">
           <ion-icon slot="start" name="add-circle-outline"></ion-icon>
           To-Do hinzufügen
@@ -621,39 +605,38 @@
       </ion-item>
     </ion-item-group>
   </ion-list>
-}
+  }
 
-<!-- Toggle to enable/disable checklist -->
-<ion-list [inset]="true">
-  <ion-item-group>
-    <ion-item>
-      <ion-toggle
-        [(ngModel)]="type.checklist"
-        [ngModelOptions]="{standalone: true}"
-        (ionChange)="type.checklist = $event.detail.checked ? [] : null"
-        [checked]="type.checklist !== null && type.checklist !== undefined"
-        helperText="Aktiviere die Checkliste, um To-Dos für diesen Anwesenheitstyp zu definieren. Diese werden automatisch bei neuen Terminen übernommen.">
-        Checkliste aktivieren
-      </ion-toggle>
-    </ion-item>
-  </ion-item-group>
-</ion-list>
+  <!-- Toggle to enable/disable checklist -->
+  <ion-list [inset]="true">
+    <ion-item-group>
+      <ion-item>
+        <ion-toggle [(ngModel)]="type.checklist" [ngModelOptions]="{standalone: true}"
+          (ionChange)="type.checklist = $event.detail.checked ? [] : null"
+          [checked]="type.checklist !== null && type.checklist !== undefined"
+          helperText="Aktiviere die Checkliste, um To-Dos für diesen Anwesenheitstyp zu definieren. Diese werden automatisch bei neuen Terminen übernommen.">
+          Checkliste aktivieren
+        </ion-toggle>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
 
-<!-- Anmeldefelder -->
-<ion-list [inset]="true">
-  <ion-list-header>
-    <ion-label>Anmeldefelder</ion-label>
-    @if (type.registration_fields?.length) {
+  <!-- Anmeldefelder -->
+  <ion-list [inset]="true">
+    <ion-list-header>
+      <ion-label>Anmeldefelder</ion-label>
+      @if (type.registration_fields?.length) {
       <ion-badge color="medium">{{ type.registration_fields.length }}</ion-badge>
-    }
-  </ion-list-header>
-  <ion-item-group>
-    @for (field of type.registration_fields; track field.id; let i = $index) {
+      }
+    </ion-list-header>
+    <ion-item-group>
+      @for (field of type.registration_fields; track field.id; let i = $index) {
       <ion-item-sliding #regSlider>
         <ion-item>
           <ion-label>
             <h2>{{ field.label }}</h2>
-            <p>{{ getRegFieldTypeLabel(field.type) }}{{ field.options?.length ? ' · ' + field.options.join(', ') : '' }}</p>
+            <p>{{ getRegFieldTypeLabel(field.type) }}{{ field.options?.length ? ' · ' + field.options.join(', ') : '' }}
+            </p>
           </ion-label>
         </ion-item>
         <ion-item-options side="end">
@@ -662,54 +645,53 @@
           </ion-item-option>
         </ion-item-options>
       </ion-item-sliding>
-    }
-    @if (!type.registration_fields?.length) {
+      }
+      @if (!type.registration_fields?.length) {
       <ion-item lines="none">
         <ion-label class="ion-text-center" color="medium">
           <p>Keine Anmeldefelder konfiguriert</p>
         </ion-label>
       </ion-item>
-    }
-    <ion-item>
-      <ion-input label="Feldbezeichnung" labelPlacement="stacked"
-        [(ngModel)]="newRegField.label" placeholder="z.B. Instrument mitbringen?"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-select label="Typ" labelPlacement="stacked" [(ngModel)]="newRegField.type">
-        <ion-select-option value="text">Text</ion-select-option>
-        <ion-select-option value="boolean">Ja / Nein</ion-select-option>
-        <ion-select-option value="select">Einzelauswahl</ion-select-option>
-        <ion-select-option value="multi_select">Mehrfachauswahl</ion-select-option>
-      </ion-select>
-    </ion-item>
-    @if (newRegField.type === 'select' || newRegField.type === 'multi_select') {
+      }
       <ion-item>
-        <ion-input label="Optionen (kommagetrennt)" labelPlacement="stacked"
-          [(ngModel)]="newRegFieldOptionsText" placeholder="Option A, Option B, Option C"></ion-input>
+        <ion-input label="Feldbezeichnung" labelPlacement="stacked" [(ngModel)]="newRegField.label"
+          placeholder="z.B. Instrument mitbringen?"></ion-input>
       </ion-item>
-    }
-    <ion-item lines="none">
-      <ion-button expand="block" fill="solid" color="primary"
-        [disabled]="!newRegField.label?.trim() || !newRegField.type"
-        (click)="addRegistrationField()">
-        <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-        Feld hinzufügen
-      </ion-button>
-    </ion-item>
-  </ion-item-group>
-</ion-list>
+      <ion-item>
+        <ion-select label="Typ" labelPlacement="stacked" [(ngModel)]="newRegField.type">
+          <ion-select-option value="text">Text</ion-select-option>
+          <ion-select-option value="boolean">Ja / Nein</ion-select-option>
+          <ion-select-option value="select">Einzelauswahl</ion-select-option>
+          <ion-select-option value="multi_select">Mehrfachauswahl</ion-select-option>
+        </ion-select>
+      </ion-item>
+      @if (newRegField.type === 'select' || newRegField.type === 'multi_select') {
+      <ion-item>
+        <ion-input label="Optionen (kommagetrennt)" labelPlacement="stacked" [(ngModel)]="newRegFieldOptionsText"
+          placeholder="Option A, Option B, Option C"></ion-input>
+      </ion-item>
+      }
+      <ion-item lines="none">
+        <ion-button expand="block" fill="solid" color="primary"
+          [disabled]="!newRegField.label?.trim() || !newRegField.type" (click)="addRegistrationField()">
+          <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+          Feld hinzufügen
+        </ion-button>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
 
-<ion-fab vertical="bottom" horizontal="end" slot="fixed">
-  @if (!isNew) {
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    @if (!isNew) {
     <ion-fab-button (click)="save()">
       <ion-icon name="save-outline"></ion-icon>
     </ion-fab-button>
-  }
-  @if (isNew) {
+    }
+    @if (isNew) {
     <ion-fab-button (click)="createType()">
       <ion-icon name="add-outline"></ion-icon>
     </ion-fab-button>
+    }
+  </ion-fab>
   }
-</ion-fab>
-}
 </ion-content>

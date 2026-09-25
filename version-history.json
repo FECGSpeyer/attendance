@@ -1,6 +1,109 @@
 {
   "versions": [
     {
+      "version": "4.9.2",
+      "date": "25.9.2026",
+      "changes": [
+        "🐛 Hilfe-Center: Glossar-Popover ist jetzt breiter, scrollbar bei langen Texten und linksbündig; Hilfe-Seiten bleiben nach einem Neuladen für alle Rollen erreichbar."
+      ]
+    },
+    {
+      "version": "4.9.1",
+      "date": "25.9.2026",
+      "changes": [
+        "🎨 Update: iOS 27 Liquid Glass Theme aktiviert (iOS 26 als Fallback für ältere Geräte)."
+      ]
+    },
+    {
+      "version": "4.9.0",
+      "date": "25.9.2026",
+      "changes": [
+        "❓ Neu: Hilfe-Center in den Einstellungen mit durchsuchbaren Anleitungen und einem Glossar zu allen wichtigen Begriffen."
+      ]
+    },
+    {
+      "version": "4.8.21",
+      "date": "25.9.2026",
+      "changes": [
+        "🧱 Dashboard: Karten werden auf größeren Bildschirmen jetzt platzsparend ohne Lücken zwischen unterschiedlich hohen Karten angeordnet."
+      ]
+    },
+    {
+      "version": "4.8.20",
+      "date": "25.9.2026",
+      "changes": [
+        "🐛 Dashboard: Der Durchschnitt beim aktuellen Termin zeigt jetzt korrekt die aktuelle Anwesenheitsquote an."
+      ]
+    },
+    {
+      "version": "4.8.19",
+      "date": "25.9.2026",
+      "changes": [
+        "📋 Zusatzfelder für Personen und Werke können in den jeweiligen Listen jetzt wahlweise als Chip oder unter dem Namen angezeigt werden."
+      ]
+    },
+    {
+      "version": "4.8.18",
+      "date": "25.9.2026",
+      "changes": [
+        "🐛 Auf der öffentlichen Werke-Freigabeseite werden Kategorien jetzt korrekt angezeigt, inklusive der Segment-Buttons und des Kategorie-Filters."
+      ]
+    },
+    {
+      "version": "4.8.17",
+      "date": "25.9.2026",
+      "changes": [
+        "🐛 Behoben: Nach einem Neuladen wurde manchmal die falsche Instanz geöffnet, weil eine fehlgeschlagene Synchronisierung der zuletzt gewählten Instanz unbemerkt blieb. Die zuletzt gewählte Instanz wird nun zuverlässig auf diesem Gerät gemerkt und automatisch mit dem Konto synchronisiert."
+      ]
+    },
+    {
+      "version": "4.8.16",
+      "date": "25.9.2026",
+      "changes": [
+        "🐛 Beim Übernehmen von Stammdaten einer vorgeschlagenen Person aus einer anderen Instanz werden Vor- und Nachname nun korrekt mit übernommen.",
+        "🐛 Dashboard-Karte 'Abwesenheiten & Pausierungen' zeigt jetzt alle aktuell pausierten Personen an, unabhängig davon, wann die Pausierung erfolgt ist."
+      ]
+    },
+    {
+      "version": "4.8.15",
+      "date": "25.9.2026",
+      "changes": [
+        "🔀 Bei der Genehmigung neuer Registrierungen wird nun automatisch geprüft, ob in der Instanz bereits eine ähnliche Person ohne Account existiert. Admins können die Registrierung direkt mit dieser Person zusammenführen, wobei die bisherigen Anwesenheitsdaten erhalten bleiben und der neue Account übernommen wird."
+      ]
+    },
+    {
+      "version": "4.8.14",
+      "date": "22.9.2026",
+      "changes": [
+        "📍 Ort / Navigation: Bei Termintypen kann jetzt eine Ortsfunktion aktiviert werden. Wenn aktiv, kann bei jedem Termin eine Adresse oder ein Ortsname hinterlegt werden. Dieser wird auf der Anmeldungsseite, der Elternseite und in der Termindetailansicht als Navigationslink angezeigt (Google Maps / Apple Maps). Der Ort wird außerdem im Kalender-Abo als LOCATION-Eigenschaft übertragen."
+      ]
+    },
+    {
+      "version": "4.8.13",
+      "date": "22.9.2026",
+      "changes": [
+        "📥 Werke aus Excel/CSV importieren: Als Administrator können jetzt mehrere Werke auf einmal aus einer Excel- (.xlsx/.xls) oder CSV-Datei importiert werden (Menü → 'Werke importieren'). Spalten werden automatisch zugeordnet, eine Vorlage steht zum Download bereit. In der Vorschau sind alle Werke mit Hinweisen und Duplikaten sichtbar. Kategorien werden per Namen zugeordnet, Zusatzfelder werden unterstützt."
+      ]
+    },
+    {
+      "version": "4.8.12",
+      "date": "21.9.2026",
+      "changes": [
+        "🐛 Personen ohne E-Mail werden beim Übertrag in andere Instanz nicht mehr doppelt angelegt.",
+        "🔍 Boolean-Zusatzfelder können jetzt nach 'Ja' und 'Nein' gefiltert werden.",
+        "📋 Buttons auf der Werke-Seite in einem Menü zusammengefasst."
+      ]
+    },
+    {
+      "version": "4.8.11",
+      "date": "21.9.2026",
+      "changes": [
+        "🔒 DSGVO: Datenschutzerklärung muss beim ersten Login akzeptiert werden.",
+        "🔒 DSGVO: Zustimmung wird nun dauerhaft gespeichert.",
+        "✅ Datenschutz-Checkbox auf der Registrierungsseite hinzugefügt."
+      ]
+    },
+    {
       "version": "4.8.10",
       "date": "17.9.2026",
       "changes": [

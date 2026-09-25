@@ -1,0 +1,83 @@
+<ion-header translucent="true">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-button (click)="navigateBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Hilfe</ion-title>
+  </ion-toolbar>
+  <ion-toolbar color="light">
+    <ion-searchbar [value]="searchTerm" (ionInput)="search($event)" debounce="150"
+      placeholder="Frage oder Stichwort suchen..."></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" [fullscreen]="true">
+
+  @if (searchResults) {
+    <ion-list [inset]="true">
+      @if (!searchResults.articles.length && !searchResults.glossaryTerms.length) {
+        <ion-item lines="none">
+          <ion-label class="ion-text-wrap">Keine Treffer für "{{ searchTerm }}".</ion-label>
+        </ion-item>
+      }
+
+      @for (article of searchResults.articles; track article.id) {
+        <ion-item button detail="true" (click)="openArticle(article.id)">
+          <ion-icon name="document-text-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h2>{{ article.title }}</h2>
+            <p class="result-category">Artikel</p>
+          </ion-label>
+        </ion-item>
+      }
+
+      @for (term of searchResults.glossaryTerms; track term.id) {
+        <ion-item button detail="true" (click)="openGlossary()">
+          <ion-icon name="book-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h2>{{ term.term }}</h2>
+            <p class="result-category">Glossar</p>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  } @else {
+
+    <ion-list [inset]="true">
+      <ion-list-header><ion-label>Nachschlagen</ion-label></ion-list-header>
+      <ion-item-group>
+        <ion-item lines="none" button detail="true" (click)="openGlossary()">
+            <ion-icon name="book-outline" slot="start"></ion-icon>
+            <ion-label>Glossar</ion-label>
+        </ion-item>
+      </ion-item-group>
+    </ion-list>
+
+    <ion-list [inset]="true">
+      <ion-list-header><ion-label>Themen</ion-label></ion-list-header>
+      <ion-accordion-group>
+        @for (category of categories; track category.id) {
+          <ion-accordion [value]="category.id">
+            <ion-item slot="header">
+              <ion-icon [name]="category.icon" slot="start"></ion-icon>
+              <ion-label>{{ category.label }}</ion-label>
+            </ion-item>
+            <div slot="content">
+              <ion-list>
+                @for (article of articlesByCategory.get(category.id); track article.id) {
+                  <ion-item button detail="true" (click)="openArticle(article.id)">
+                    <ion-label class="ion-text-wrap">{{ article.title }}</ion-label>
+                  </ion-item>
+                }
+              </ion-list>
+            </div>
+          </ion-accordion>
+        }
+      </ion-accordion-group>
+    </ion-list>
+
+  }
+
+</ion-content>

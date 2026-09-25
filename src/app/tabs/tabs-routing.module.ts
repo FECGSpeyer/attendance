@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../services/auth.guard';
+import { TermsGuard } from '../services/terms.guard';
 import { SuperDeveloperGuard } from '../services/super-developer.guard';
 import { TabsPage } from './tabs.page';
 
@@ -8,7 +9,7 @@ const routes: Routes = [
   {
     path: '',
     component: TabsPage,
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, TermsGuard],
     children: [
       {
         path: 'signout',
@@ -141,6 +142,18 @@ const routes: Routes = [
       {
         path: 'settings/delete-account',
         loadChildren: () => import('./../settings/delete-account/delete-account.module').then(m => m.DeleteAccountPageModule)
+      },
+      {
+        path: 'settings/help',
+        loadChildren: () => import('./../settings/help/help.module').then(m => m.HelpPageModule)
+      },
+      {
+        path: 'settings/help/article/:id',
+        loadChildren: () => import('./../settings/help/article/help-article.module').then(m => m.HelpArticlePageModule)
+      },
+      {
+        path: 'settings/help/glossary',
+        loadChildren: () => import('./../settings/help/glossary/help-glossary.module').then(m => m.HelpGlossaryPageModule)
       },
       {
         path: 'org-plans',

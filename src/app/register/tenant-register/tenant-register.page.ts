@@ -1,12 +1,14 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActionSheetController, AlertController } from '@ionic/angular/lazy';
+import { ActionSheetController, AlertController, ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
+import { supabase } from 'src/app/services/base/supabase';
 import { ProfileService } from 'src/app/services/profile/profile.service';
 import { DEFAULT_IMAGE, FieldType, Role } from 'src/app/utilities/constants';
 import { Church, Group, Tenant, TenantUser } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { LegalModalComponent } from 'src/app/login/legal-modal/legal-modal.component';
 
 @Component({
     selector: 'app-tenant-register',
@@ -40,6 +42,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
   public otpCode = '';
   public resendCooldown = 0;
   private cooldownTimer: any = null;
+  public privacyAccepted = false;
 
   constructor(
     public db: DbService,
@@ -47,6 +50,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     private alertController: AlertController,
     private actionSheetController: ActionSheetController,
     private profileSvc: ProfileService,
+    private modalController: ModalController,
   ) { }
 
   async ngOnInit() {
@@ -124,6 +128,13 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     this.clearCooldown();
   }
 
+  async openPrivacy(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const modal = await this.modalController.create({ component: LegalModalComponent });
+    await modal.present();
+  }
+
   enterOtpMode() {
     this.otpMode = true;
     this.otpSent = false;
@@ -150,6 +161,10 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     const email = this.email?.toLowerCase().trim();
     if (!Utils.validateEmail(email)) {
       Utils.showToast('Bitte eine gültige E-Mail Adresse eingeben.', 'danger');
+      return;
+    }
+    if (!this.privacyAccepted) {
+      Utils.showToast('Bitte akzeptiere die Nutzungsbedingungen und Datenschutzerklärung.', 'danger');
       return;
     }
     const loading = await Utils.getLoadingElement();
@@ -182,6 +197,13 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
       const ok = await this.db.verifyEmailOtp(email, this.otpCode, true);
       if (!ok) {
         return;
+      }
+      // Stamp terms acceptance on the live session — the checkbox was already
+      // accepted before requestCode() was allowed to proceed.
+      const now = new Date().toISOString();
+      await supabase.auth.updateUser({ data: { terms_accepted_at: now } });
+      if (this.db.user?.user_metadata) {
+        this.db.user.user_metadata['terms_accepted_at'] = now;
       }
       await loading.dismiss();
       // Signed in now: if already a member of this tenant, checkExistent redirects
@@ -361,7 +383,10 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
 
   validate(): boolean {
     if (!this.db.user) {
-      if (!Utils.validateEmail(this.email)) {
+      if (!this.privacyAccepted) {
+        Utils.showToast('Bitte akzeptiere die Nutzungsbedingungen und Datenschutzerklärung.', 'danger');
+        return false;
+      } else if (!Utils.validateEmail(this.email)) {
         Utils.showToast('Bitte eine gültige E-Mail Adresse eingeben.', 'danger');
         return false;
       } else if (this.password.length < 6) {

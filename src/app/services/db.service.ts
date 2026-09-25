@@ -421,7 +421,14 @@ export class DbService {
     }
 
     this.tenants.set(await this.getTenants());
-    const storedTenantId: string | null = tenantId || this.user.user_metadata?.currentTenantId;
+    // `user_metadata.currentTenantId` is the canonical, cross-device source of
+    // truth. localStorage is a same-device cache that wins when the two
+    // disagree, because updateUser() below is fire-and-forget and can fail
+    // silently, stranding a stale value in metadata forever otherwise. Every
+    // call re-attempts the metadata write when it's out of sync with the
+    // local value, so a transient failure self-heals instead of persisting.
+    const localTenantId = localStorage.getItem('currentTenantId');
+    const storedTenantId: string | null = tenantId || localTenantId || this.user.user_metadata?.currentTenantId;
     const wantSelection: boolean = (this.user.user_metadata?.wantInstanceSelection || false) && showSelector;
     // Pick the next tenant into a local variable. We deliberately do NOT flip
     // the `tenant` signal yet — see the atomic update at the end of this
@@ -446,11 +453,24 @@ export class DbService {
 
     if (this.user.user_metadata?.currentTenantId !== nextTenant?.id) {
       this.user.user_metadata.currentTenantId = nextTenant?.id;
+      if (nextTenant?.id) {
+        localStorage.setItem('currentTenantId', String(nextTenant.id));
+      }
+      // updateUser() resolves normally with `{ error }` on business-logic
+      // failures (e.g. rate limiting) — it does not reject the promise, so
+      // the error must be checked explicitly or it's silently lost and the
+      // cross-device metadata is left stale.
       supabase.auth.updateUser({
         data: {
           currentTenantId: nextTenant?.id,
           wantInstanceSelection: this.user.user_metadata?.wantInstanceSelection || false,
         }
+      }).then(({ error }) => {
+        if (error) {
+          console.warn('setTenant: updateUser rejected currentTenantId sync (local fallback still applies)', error);
+        }
+      }).catch((error) => {
+        console.warn('setTenant: updateUser failed to persist currentTenantId remotely (local fallback still applies)', error);
       });
     }
 
@@ -1112,7 +1132,7 @@ export class DbService {
         // 6-digit code instead of the confirmation link (which dead-ends the code
         // flow: the app is waiting on code entry). Only new-user creation sends
         // "Confirm signup"; existing users get the separate "Magic Link" template.
-        data: allowCreate ? { signup_method: 'otp' } : undefined,
+        data: allowCreate ? { signup_method: 'otp', terms_accepted_at: new Date().toISOString() } : undefined,
       },
     });
 
@@ -1238,6 +1258,7 @@ export class DbService {
       email, password,
       options: {
         emailRedirectTo: `https://attendix.de/login`,
+        data: { terms_accepted_at: new Date().toISOString() },
       }
     });
 
@@ -2507,7 +2528,7 @@ export class DbService {
   async getPersonAttendances(id: number, all: boolean = false): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan, description, attachment_url, attachment_name, attType:type_id(id, highlight, include_in_average, name, color, registration_fields))')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan, description, attachment_url, attachment_name, place, attType:type_id(id, highlight, include_in_average, name, color, registration_fields))')
       .eq('person_id', id)
       .gt('attendance.date', all ? dayjs('2020-01-01').toISOString() : this.getCurrentAttDate()) as any;
 
@@ -2541,7 +2562,7 @@ export class DbService {
   async getAllUpcomingAttendancesForSignout(playerId: number): Promise<PersonAttendance[]> {
     const { data: allAtts } = await supabase
       .from('attendance')
-      .select('id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan, description, attachment_url, attachment_name, attType:type_id(id, highlight, include_in_average, name, color, registration_fields)')
+      .select('id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan, description, attachment_url, attachment_name, place, attType:type_id(id, highlight, include_in_average, name, color, registration_fields)')
       .eq('tenantId', this.tenant().id)
       .gt('date', dayjs().startOf('day').toISOString())
       .order('date', { ascending: true }) as any;
@@ -3128,6 +3149,53 @@ export class DbService {
     return this.crossTenantSvc.getPossiblePersonsByEmail(email, linkedTenants);
   }
 
+  async getPossibleDuplicatesInTenant(firstName: string, lastName: string, excludeId: number): Promise<RankedMatch<Player>[]> {
+    return this.playerSvc.getPossibleDuplicatesInTenant(this.tenant().id, firstName, lastName, excludeId);
+  }
+
+  /**
+   * Merges a pending self-registered applicant into an already-existing,
+   * account-less player: reassigns attendance/absence history onto the
+   * existing player (existing wins on conflicts), adopts the applicant's
+   * account, then removes the now-redundant pending row.
+   */
+  async mergePendingPlayerIntoExisting(pending: Player, target: Player): Promise<void> {
+    await this.attendanceSvc.reassignPersonAttendances(pending.id, target.id);
+    await this.playerSvc.reassignPlayerAbsences(pending.id, target.id);
+
+    const history: PlayerHistoryEntry[] = [
+      ...(target.history ?? []),
+      {
+        date: new Date().toISOString(),
+        text: `Zusammengeführt mit Registrierung von ${pending.firstName} ${pending.lastName} (genehmigt von ${this.tenantUser().email})`,
+        type: PlayerHistoryType.APPROVED,
+      },
+    ];
+
+    await this.updatePlayer({
+      ...target,
+      appId: pending.appId,
+      email: target.email ?? pending.email,
+      self_register: true,
+      history,
+      pending: false,
+    });
+    await this.updateTenantUser({ role: Role.PLAYER }, pending.appId);
+    // Notification/backfill are best-effort — the merge itself (data + account) already
+    // succeeded above, so a flaky email API or attendance backfill must not block cleanup.
+    try {
+      await this.informUserAboutApproval(target.email, target.firstName, Role.PLAYER);
+    } catch (error) {
+      console.warn('mergePendingPlayerIntoExisting: informUserAboutApproval failed (non-blocking)', error);
+    }
+    try {
+      await this.addPlayerToAttendancesByDate(target);
+    } catch (error) {
+      console.warn('mergePendingPlayerIntoExisting: addPlayerToAttendancesByDate failed (non-blocking)', error);
+    }
+    await this.playerSvc.removePlayer(pending);
+  }
+
   async getLinkedTenants(): Promise<Tenant[]> {
     const { data: tenantGroupTenants, error: tenantGroupTenantsError } = await supabase
       .from('tenant_group_tenants')
@@ -3382,30 +3450,107 @@ export class DbService {
   }
 
   /**
+   * Return composite song-number keys (`${prefix ?? ''}${number}`) already in
+   * the tenant's songs table, for duplicate detection during import. Paginated
+   * to defeat the PostgREST 1000-row default read cap on large tenants.
+   */
+  async getExistingNumbers(tenantId?: number): Promise<Set<string>> {
+    const id = tenantId ?? this.effectiveSongTenantId();
+    const keys = new Set<string>();
+    const pageSize = 1000;
+    let from = 0;
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const { data, error } = await supabase
+        .from('songs')
+        .select('number, prefix')
+        .eq('tenantId', id)
+        .range(from, from + pageSize - 1);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      for (const row of data ?? []) {
+        keys.add(`${row.prefix ?? ''}${row.number}`);
+      }
+
+      if (!data || data.length < pageSize) {
+        break;
+      }
+      from += pageSize;
+    }
+
+    return keys;
+  }
+
+  /**
+   * Import a batch of songs into the current tenant. Each song is inserted via
+   * `addSong`. Failures are collected per-row rather than aborting the whole import.
+   */
+  async importSongs(
+    songs: Partial<Song>[],
+    opts: { onProgress?: (done: number, total: number) => void } = {},
+  ): Promise<{ imported: Song[]; failed: { song: Partial<Song>; reason: string }[] }> {
+    this.checkDemoRestriction();
+    const imported: Song[] = [];
+    const failed: { song: Partial<Song>; reason: string }[] = [];
+    const total = songs.length;
+    let done = 0;
+
+    for (const song of songs) {
+      try {
+        imported.push(await this.addSong(song as Song));
+      } catch (error) {
+        failed.push({ song, reason: error?.message ?? 'Unbekannter Fehler' });
+      } finally {
+        done++;
+        opts.onProgress?.(done, total);
+      }
+    }
+
+    return { imported, failed };
+  }
+
+  /**
    */
   async personExistsInTenant(person: Player, targetTenantId: number): Promise<boolean> {
     const email = (person.email ?? '').trim();
-    if (!email) {
-      return false;
+
+    if (email) {
+      const { data, error } = await supabase
+        .from('player')
+        .select('id')
+        .eq('tenantId', targetTenantId)
+        .ilike('email', email)
+        .limit(1);
+      if (error) { throw error; }
+      if ((data?.length ?? 0) > 0) { return true; }
     }
 
-    const { data, error } = await supabase
+    // Fallback: match by first+last name when no email is set
+    const firstName = (person.firstName ?? '').trim();
+    const lastName = (person.lastName ?? '').trim();
+    if (!firstName && !lastName) { return false; }
+
+    const { data: nameData, error: nameError } = await supabase
       .from('player')
       .select('id')
       .eq('tenantId', targetTenantId)
-      .ilike('email', email)
+      .ilike('firstName', firstName)
+      .ilike('lastName', lastName)
       .limit(1);
-
-    if (error) {
-      throw error;
-    }
-
-    return (data?.length ?? 0) > 0;
+    if (nameError) { throw nameError; }
+    return (nameData?.length ?? 0) > 0;
   }
 
   async handoverPerson(person: Player, targetTenant: Tenant, groupId: number, stayInInstance: boolean = false, mainGroup: number | null): Promise<void> {
     if (await this.personExistsInTenant(person, targetTenant.id)) {
-      throw new Error(`In der Zielinstanz existiert bereits eine Person mit der E-Mail-Adresse "${person.email}".`);
+      const identifier = person.email
+        ? `der E-Mail-Adresse "${person.email}"`
+        : `dem Namen "${person.firstName} ${person.lastName}"`;
+      throw new Error(`In der Zielinstanz existiert bereits eine Person mit ${identifier}.`);
     }
 
     const newPerson: Player = {
