@@ -5,12 +5,11 @@ ion-tab-bar.ios:not(.ios26-disabled):has(:nth-child(5)) {
   max-width: 474px;
 }
 
-// The selected-tab background pill uses overflow:visible so it can grow
-// outside the button bounds. On the first tab button this causes the pill
-// to bleed left past the tab bar's rounded corner. Clip only the left
-// paint overflow on the first button's native part to stop the bleed.
-ion-tab-bar.ios:not(.ios26-disabled) {
-  > ion-tab-button:first-of-type::part(native) {
-    overflow-x: clip;
+// The ios27 theme overlaps tab buttons via a negative margin-inline-start.
+// With fewer visible tabs the overlap causes the selected-pill to be covered
+// by the adjacent button. Cancel the negative margin entirely.
+@supports (overflow-anchor: auto) {
+  ion-tab-bar.ios:not(.ios-theme-disabled, .ios26-disabled) > ion-tab-button:not(.ion-cloned-element) ~ ion-tab-button:not(.ion-cloned-element) {
+    margin-inline-start: 0;
   }
 }
