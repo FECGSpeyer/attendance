@@ -25,6 +25,13 @@ Welche Stufen im Zyklus vorkommen, lässt sich pro Termin-Typ in den Einstellung
     body: `Zu jedem Termin kannst du eine [[Checkliste]] mit Aufgaben hinterlegen, z. B. "Noten mitbringen" oder "Raum reservieren". Jeder Punkt kann optional eine Frist relativ zum Termin bekommen (1 Stunde, 1 Tag, 2 Tage oder 1 Woche vorher), damit rechtzeitig erinnert wird.`,
   },
   {
+    id: 'att-checklist-deadlines',
+    title: 'Fristen bei der Checkliste erkennen',
+    categoryId: 'attendance',
+    keywords: ['überfällig', 'frist abgelaufen', 'checkliste rot', 'warnung'],
+    body: `Hat ein Punkt der [[Checkliste]] eine Frist, zeigt Attendix im Termin sowohl die genaue Uhrzeit als auch eine relative Angabe (z. B. "in 3 Stunden") an. Ist die Frist überschritten und der Punkt noch nicht erledigt, wird er farblich hervorgehoben (Gelb = bald fällig, Rot = überfällig), damit nichts vergessen wird.`,
+  },
+  {
     id: 'att-songs-plan',
     title: 'Werke zu einem Termin hinzufügen',
     categoryId: 'attendance',

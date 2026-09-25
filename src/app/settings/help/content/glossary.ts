@@ -93,10 +93,22 @@ export const GLOSSARY: GlossaryTerm[] = [
     definition: 'Der zeitliche Ablauf einer Probe oder Aufführung: eine Liste von Programmpunkten (Werke, Ansprachen, Pausen) mit Dauer, Uhrzeit und zuständiger Leitung. Kann für einen Termin erstellt, als PDF exportiert oder per Link geteilt werden.',
   },
   {
-    id: 'arbeitseinsatz',
-    term: 'Arbeitseinsatz',
-    aliases: ['Schicht', 'Shift'],
-    definition: 'Ein Termin-Typ für Einsätze abseits von Proben/Aufführungen, z. B. Auf-/Abbau oder andere Vereinsarbeit, bei dem statt "Anwesend/Abwesend" oft Zeitfenster oder Schichten erfasst werden.',
+    id: 'schichtplan',
+    term: 'Schichtplan',
+    aliases: ['Schicht'],
+    definition: 'Ein wiederkehrender Zeitplan aus Arbeits- und Freiblöcken (z. B. für Schichtarbeiter), der einer Person zugewiesen wird. Fällt ein Termin in ihre Arbeitszeit, wird die Person dafür automatisch entschuldigt.',
+  },
+  {
+    id: 'treffen',
+    term: 'Treffen',
+    aliases: ['Meeting', 'Besprechung'],
+    definition: 'Ein Eintrag für eine Besprechung der Leitung oder des Teams (Datum, Teilnehmende, Notizen) — getrennt von normalen Proben-/Aufführungsterminen.',
+  },
+  {
+    id: 'uebergabe',
+    term: 'Übergabe',
+    aliases: ['Handover'],
+    definition: 'Verschiebt eine Person von einer Instanz in eine andere Instanz derselben [[Organisation]], inklusive Zuordnung zu einer passenden [[Gruppe]] in der Ziel-Instanz.',
   },
   {
     id: 'stammdaten',

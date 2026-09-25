@@ -65,6 +65,15 @@
     --border-radius: 8px;
 }
 
+.help-glossary-popover {
+    --width: min(90vw, 420px);
+    --max-height: 70vh;
+
+    &::part(content) {
+        overflow-y: auto;
+    }
+}
+
 ion-badge {
     margin-left: .25rem;
 }

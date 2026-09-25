@@ -46,6 +46,7 @@ export class HelpArticlePage implements OnInit {
       componentProps: { term },
       event,
       translucent: true,
+      cssClass: 'help-glossary-popover',
     });
     await popover.present();
   }

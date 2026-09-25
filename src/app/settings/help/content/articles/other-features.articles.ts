@@ -73,4 +73,32 @@ export const OTHER_FEATURES_ARTICLES: HelpArticle[] = [
     keywords: ['login', 'account erstellen', 'einladungslink'],
     body: `Neue Personen können sich über einen von der Instanz bereitgestellten Registrierungslink selbst anmelden und erscheinen danach als [[Bewerber]], bis ein Administrator die Anmeldung bestätigt.`,
   },
+  {
+    id: 'other-meetings',
+    title: 'Treffen',
+    categoryId: 'other',
+    keywords: ['besprechung', 'sitzung', 'teamtreffen'],
+    body: `Ein [[Treffen]] ist ein eigener Eintrag für Besprechungen der Leitung oder des Teams — getrennt von normalen Proben-/Aufführungsterminen. Erfasst werden Datum, Teilnehmende und Notizen zum Gesprächsinhalt, damit nachvollziehbar bleibt, wann worüber gesprochen wurde.`,
+  },
+  {
+    id: 'other-shifts',
+    title: 'Schichtpläne',
+    categoryId: 'other',
+    keywords: ['schicht', 'arbeitsplan', 'rotierender dienst', 'automatisch entschuldigen'],
+    body: `Für Mitglieder, die im Schichtdienst arbeiten (z. B. im Rettungsdienst oder in der Pflege), lassen sich unter "Einstellungen → Allgemein → Schichten" [[Schichtplan|Schichtpläne]] anlegen: wiederkehrende Arbeits-/Frei-Zeitblöcke mit Start, Dauer und Wiederholungsanzahl. Wird einer Person ein Schichtplan zugewiesen, entschuldigt Attendix sie automatisch für alle anstehenden Termine, die in ihre Arbeitszeit fallen — ohne dass sie sich manuell abmelden muss.`,
+  },
+  {
+    id: 'other-handover',
+    title: 'Personen übergeben',
+    categoryId: 'other',
+    keywords: ['übergabe', 'mitglied transferieren', 'zwischen instanzen verschieben'],
+    body: `Die [[Übergabe]] verschiebt einzelne Personen von deiner Instanz in eine andere Instanz derselben [[Organisation]] — z. B. wenn jemand von einem Vor- in den Hauptchor wechselt. Du wählst die Personen und die Ziel-Instanz aus, ordnest ihre bisherige [[Gruppe]] einer passenden Gruppe in der Ziel-Instanz zu und entscheidest, ob die Person auch in der Ursprungsinstanz bestehen bleiben soll.`,
+  },
+  {
+    id: 'other-teams',
+    title: 'Microsoft Teams Integration',
+    categoryId: 'other',
+    keywords: ['teams tab', 'microsoft teams', 'kanal'],
+    body: `Attendix kann als Tab in einem Microsoft-Teams-Kanal eingebunden werden. Beim Hinzufügen des Tabs wählt die einrichtende Person die gewünschte Instanz aus; danach zeigt der Tab die Daten dieser Instanz direkt im Teams-Kanal an.`,
+  },
 ];

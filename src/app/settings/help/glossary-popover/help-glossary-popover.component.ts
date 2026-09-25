@@ -7,11 +7,12 @@ import { renderGlossaryDefinitionHtml } from '../help-markdown.util';
 @Component({
   selector: 'app-help-glossary-popover',
   templateUrl: './help-glossary-popover.component.html',
+  styleUrls: ['./help-glossary-popover.component.scss'],
   standalone: true,
   imports: [CommonModule, IonicModule]
 })
 export class HelpGlossaryPopoverComponent {
-  @Input() term: GlossaryTerm;
+  @Input() term!: GlossaryTerm;
 
   get definitionHtml(): string {
     return renderGlossaryDefinitionHtml(this.term.definition);

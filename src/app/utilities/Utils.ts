@@ -1133,6 +1133,8 @@ export class Utils {
       case '/tabs/settings':
       case '/tabs/settings/songs':
       case '/tabs/settings/register':
+      case '/tabs/settings/help':
+      case '/tabs/settings/help/glossary':
         return true;
       case '/tabs/members':
         return [Role.HELPER, Role.PLAYER, Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER, Role.NONE].includes(role);
@@ -1186,6 +1188,8 @@ export class Utils {
           return [Role.ADMIN, Role.HELPER, Role.VOICE_LEADER_HELPER, Role.VIEWER, Role.RESPONSIBLE].includes(role);
         } else if (url.startsWith('/tabs/songs-tab/')) {
           return role !== Role.APPLICANT && role !== Role.PARENT;
+        } else if (url.startsWith('/tabs/settings/help/article/')) {
+          return true;
         }
 
 
