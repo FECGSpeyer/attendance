@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.9.1",
+      "date": "25.9.2026",
+      "changes": [
+        "🎨 Update: iOS 27 Liquid Glass Theme aktiviert (iOS 26 als Fallback für ältere Geräte)."
+      ]
+    },
+    {
       "version": "4.9.0",
       "date": "25.9.2026",
       "changes": [

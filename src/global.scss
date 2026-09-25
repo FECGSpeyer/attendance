@@ -1,14 +1,20 @@
-@import '@rdlabo/ionic-theme-ios26/dist/css/default-variables.css';
-@import '@rdlabo/ionic-theme-ios26/dist/css/ionic-theme-ios26.css';
-@import '@rdlabo/ionic-theme-ios26/dist/css/ionic-theme-ios26-dark-system.css';
+@use 'sass:meta';
 
-/**
- * This file is to eliminate the impact of class name changes for iOS26.
- * For example, `ion-buttons ion-button[fill=default]` is not normally implemented, but may be required for iOS26.
- * This file is to eliminate such effects.
- */
-@import '@rdlabo/ionic-theme-ios26/dist/css/md-remove-ios-class-effect.css';
-@import '@rdlabo/ionic-theme-ios26/dist/css/md-ion-list-inset.css';
+@supports (overflow-anchor: auto) {
+  @include meta.load-css('@rdlabo/ionic-theme-ios27/src/styles/default-variables');
+  @include meta.load-css('@rdlabo/ionic-theme-ios27/src/styles/ionic-theme-ios27');
+  @include meta.load-css('@rdlabo/ionic-theme-ios27/src/styles/ionic-theme-ios27-dark-system');
+  @include meta.load-css('@rdlabo/ionic-theme-ios27/src/styles/md-remove-ios-class-effect');
+  @include meta.load-css('@rdlabo/ionic-theme-ios27/src/styles/md-ion-list-inset');
+}
+
+@supports (text-wrap: pretty) and (not (overflow-anchor: auto)) {
+  @include meta.load-css('@rdlabo/ionic-theme-ios26/dist/css/default-variables.css');
+  @include meta.load-css('@rdlabo/ionic-theme-ios26/dist/css/ionic-theme-ios26.css');
+  @include meta.load-css('@rdlabo/ionic-theme-ios26/dist/css/ionic-theme-ios26-dark-system.css');
+  @include meta.load-css('@rdlabo/ionic-theme-ios26/dist/css/md-remove-ios-class-effect.css');
+  @include meta.load-css('@rdlabo/ionic-theme-ios26/dist/css/md-ion-list-inset.css');
+}
 
 /*
  * App Global CSS
