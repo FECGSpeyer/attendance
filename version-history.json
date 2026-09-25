@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.8.21",
+      "date": "25.9.2026",
+      "changes": [
+        "🧱 Dashboard: Karten werden auf größeren Bildschirmen jetzt platzsparend ohne Lücken zwischen unterschiedlich hohen Karten angeordnet."
+      ]
+    },
+    {
       "version": "4.8.20",
       "date": "25.9.2026",
       "changes": [

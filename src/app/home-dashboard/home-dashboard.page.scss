@@ -1,15 +1,19 @@
 .cards-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  align-items: start;
+  column-count: 1;
+
+  > * {
+    display: inline-block;
+    width: 100%;
+    break-inside: avoid;
+  }
 
   @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
+    column-count: 2;
     padding: 0 8px;
   }
 
   @media (min-width: 1200px) {
-    grid-template-columns: repeat(3, 1fr);
+    column-count: 3;
   }
 }
 
