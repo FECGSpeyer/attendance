@@ -3027,6 +3027,53 @@ export class DbService {
     return this.crossTenantSvc.getPossiblePersonsByEmail(email, linkedTenants);
   }
 
+  async getPossibleDuplicatesInTenant(firstName: string, lastName: string, excludeId: number): Promise<RankedMatch<Player>[]> {
+    return this.playerSvc.getPossibleDuplicatesInTenant(this.tenant().id, firstName, lastName, excludeId);
+  }
+
+  /**
+   * Merges a pending self-registered applicant into an already-existing,
+   * account-less player: reassigns attendance/absence history onto the
+   * existing player (existing wins on conflicts), adopts the applicant's
+   * account, then removes the now-redundant pending row.
+   */
+  async mergePendingPlayerIntoExisting(pending: Player, target: Player): Promise<void> {
+    await this.attendanceSvc.reassignPersonAttendances(pending.id, target.id);
+    await this.playerSvc.reassignPlayerAbsences(pending.id, target.id);
+
+    const history: PlayerHistoryEntry[] = [
+      ...(target.history ?? []),
+      {
+        date: new Date().toISOString(),
+        text: `Zusammengeführt mit Registrierung von ${pending.firstName} ${pending.lastName} (genehmigt von ${this.tenantUser().email})`,
+        type: PlayerHistoryType.APPROVED,
+      },
+    ];
+
+    await this.updatePlayer({
+      ...target,
+      appId: pending.appId,
+      email: target.email ?? pending.email,
+      self_register: true,
+      history,
+      pending: false,
+    });
+    await this.updateTenantUser({ role: Role.PLAYER }, pending.appId);
+    // Notification/backfill are best-effort — the merge itself (data + account) already
+    // succeeded above, so a flaky email API or attendance backfill must not block cleanup.
+    try {
+      await this.informUserAboutApproval(target.email, target.firstName, Role.PLAYER);
+    } catch (error) {
+      console.warn('mergePendingPlayerIntoExisting: informUserAboutApproval failed (non-blocking)', error);
+    }
+    try {
+      await this.addPlayerToAttendancesByDate(target);
+    } catch (error) {
+      console.warn('mergePendingPlayerIntoExisting: addPlayerToAttendancesByDate failed (non-blocking)', error);
+    }
+    await this.playerSvc.removePlayer(pending);
+  }
+
   async getLinkedTenants(): Promise<Tenant[]> {
     const { data: tenantGroupTenants, error: tenantGroupTenantsError } = await supabase
       .from('tenant_group_tenants')

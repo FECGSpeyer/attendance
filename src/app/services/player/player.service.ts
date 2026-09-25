@@ -6,6 +6,7 @@ import { Utils } from '../../utilities/Utils';
 import { supabase } from '../base/supabase';
 import { pickPersonFields } from '../../utilities/db-helpers';
 import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
+import { RankedMatch, rankCandidates } from '../../utilities/person-matcher';
 
 @Injectable({
   providedIn: 'root'
@@ -191,6 +192,73 @@ export class PlayerService {
       ...player,
       history: player.history as any,
     })).filter((p: any) => p.email?.length);
+  }
+
+  /**
+   * Finds same-tenant, non-pending, account-less players with a similar
+   * name — used to suggest merging a newly self-registered applicant into
+   * an already-existing record instead of creating a duplicate.
+   */
+  async getPossibleDuplicatesInTenant(
+    tenantId: number,
+    firstName: string,
+    lastName: string,
+    excludeId: number,
+  ): Promise<RankedMatch<Player>[]> {
+    const safeFirst = this.sanitizeOrToken(firstName);
+    const safeLast = this.sanitizeOrToken(lastName);
+    if (!safeFirst && !safeLast) {return [];}
+
+    const orParts: string[] = [];
+    if (safeFirst.length >= 1) {orParts.push(`firstName.ilike.${safeFirst}%`);}
+    if (safeLast.length >= 1) {orParts.push(`lastName.ilike.${safeLast}%`);}
+
+    const { data, error } = await supabase
+      .from('player')
+      // Alias the join so it doesn't clobber the numeric `instrument` FK.
+      .select('*, instrumentGroup:instrument(name)')
+      .eq('tenantId', tenantId)
+      .is('pending', false)
+      .is('appId', null)
+      .neq('id', excludeId)
+      .or(orParts.join(','))
+      .limit(500);
+
+    if (error) {
+      Utils.showToast('Fehler beim Laden der Personen', 'danger');
+      throw error;
+    }
+
+    return rankCandidates(
+      { firstName, lastName },
+      (data ?? []) as unknown as Player[],
+      { threshold: 0.65 },
+    );
+  }
+
+  /**
+   * Strip characters that have meaning in Supabase's `.or()` parser
+   * (`,*%():`) and cap length so user input cannot break the filter.
+   */
+  private sanitizeOrToken(input: string): string {
+    return (input ?? '')
+      .replace(/[,*%():]+/g, '')
+      .trim()
+      .slice(0, 50);
+  }
+
+  /** Re-points `player_absences.person_id` from `fromId` to `toId` (merge helper). */
+  async reassignPlayerAbsences(fromId: number, toId: number): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db: any = supabase;
+    const { error } = await db
+      .from('player_absences')
+      .update({ person_id: toId })
+      .eq('person_id', fromId);
+
+    if (error) {
+      throw new Error('Fehler beim Übertragen der Abwesenheiten');
+    }
   }
 
   async getConductors(tenantId: number, mainGroupId: number, all: boolean = false): Promise<Person[]> {

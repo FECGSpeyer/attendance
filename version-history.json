@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.8.15",
+      "date": "25.9.2026",
+      "changes": [
+        "🔀 Bei der Genehmigung neuer Registrierungen wird nun automatisch geprüft, ob in der Instanz bereits eine ähnliche Person ohne Account existiert. Admins können die Registrierung direkt mit dieser Person zusammenführen, wobei die bisherigen Anwesenheitsdaten erhalten bleiben und der neue Account übernommen wird."
+      ]
+    },
+    {
       "version": "4.8.14",
       "date": "22.9.2026",
       "changes": [

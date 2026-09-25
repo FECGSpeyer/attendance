@@ -127,6 +127,8 @@ export class PersonPage implements OnInit, AfterViewInit {
   private dismissedFor: string | null = null;
   /** Avoid re-firing the email-blur lookup for the same value. */
   private lastEmailLookup = '';
+  /** Same-tenant, account-less players who might be the same person as this pending applicant. */
+  public duplicateCandidates: WritableSignal<RankedMatch<Player>[]> = signal([]);
 
   constructor(
     public db: DbService,
@@ -205,6 +207,10 @@ export class PersonPage implements OnInit, AfterViewInit {
         this.role = Role.PLAYER;
       }
       await this.getHistoryInfo();
+
+      if (this.approveMode) {
+        void this.loadDuplicateCandidates();
+      }
     } else {
       this.player = { ...this.newPlayer };
       this.player.tenantId = this.db.tenant().id;
@@ -255,8 +261,9 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async getAttendanceFromOtherTenant(tenant: Tenant): Promise<number> {
-    const personId = (await this.db.getPersonIdFromTenant(this.player.appId, tenant.id)).id;
-    const personAttendances = await this.db.getPersonAttendances(personId);
+    const person = await this.db.getPersonIdFromTenant(this.player.appId, tenant.id);
+    if (!person) {return 1000;}
+    const personAttendances = await this.db.getPersonAttendances(person.id);
     const tillNow = personAttendances.filter((att: PersonAttendance) => dayjs((att as any).date).isBefore(dayjs()));
 
     return tillNow.length ? tillNow.filter((att: PersonAttendance) => att.attended).length / tillNow.length * 100 : 1000;
@@ -833,6 +840,55 @@ export class PersonPage implements OnInit, AfterViewInit {
           text: 'Ja',
           handler: (value: Player) => {
             this.applyMatchedPerson(value ?? matches[0]);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  /** Looks up same-tenant, account-less players similar to this pending applicant. */
+  async loadDuplicateCandidates(): Promise<void> {
+    try {
+      const matches = await this.db.getPossibleDuplicatesInTenant(this.player.firstName, this.player.lastName, this.player.id);
+      this.duplicateCandidates.set(matches);
+    } catch {
+      // Silent — toast already raised by the service.
+    }
+  }
+
+  /**
+   * Merges this pending applicant into an existing, account-less person:
+   * their attendance history stays, the applicant's account is adopted.
+   */
+  async confirmMerge(candidate: Player): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Personen zusammenführen',
+      message: `${this.player.firstName} ${this.player.lastName} wird mit der bestehenden Person `
+        + `${candidate.firstName} ${candidate.lastName} zusammengeführt. Deren Anwesenheitsdaten bleiben erhalten, `
+        + `der neu registrierte Account wird ${candidate.firstName} ${candidate.lastName} zugeordnet. `
+        + 'Dies kann nicht rückgängig gemacht werden.',
+      buttons: [
+        { text: 'Abbrechen', role: 'destructive' },
+        {
+          text: 'Zusammenführen',
+          handler: async () => {
+            // No auto-dismiss timeout — merge involves several sequential DB calls plus an email
+            // webhook and can outlast a fixed duration, which would otherwise falsely trip the catch.
+            const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(0, 'Die Personen werden zusammengeführt...');
+            loading.present();
+            try {
+              await this.db.mergePendingPlayerIntoExisting(this.player, candidate);
+              await loading.dismiss();
+              this.hasChanges = false;
+              await this.dismiss({ approved: true });
+              Utils.showToast('Die Personen wurden erfolgreich zusammengeführt', 'success');
+            } catch (error) {
+              await loading.dismiss().catch(() => {});
+              console.error('confirmMerge failed', error);
+              Utils.showToast('Fehler beim Zusammenführen der Personen', 'danger');
+            }
           }
         }
       ]
