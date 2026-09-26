@@ -372,7 +372,7 @@ export class Utils {
     const toast: HTMLIonToastElement = await new ToastController().create({
       message: text,
       color,
-      position: 'bottom',
+      position: 'top',
       duration,
     });
 
