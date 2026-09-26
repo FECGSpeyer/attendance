@@ -112,7 +112,7 @@ export class TypePage implements OnInit {
       }
     }
 
-    this.additionalFieldFilter = this.db.tenant().additional_fields.find(field => field.id === this.type.additional_fields_filter?.key) ? this.type.additional_fields_filter?.key ?? null : null;
+    this.additionalFieldFilter = this.db.getPersonExtraFields().find(field => field.id === this.type.additional_fields_filter?.key) ? this.type.additional_fields_filter?.key ?? null : null;
 
     // Store original state for change detection
     this.originalType = JSON.stringify(this.type);
@@ -445,16 +445,16 @@ export class TypePage implements OnInit {
   }
 
   areSelectFieldsAvailable(): boolean {
-    return Boolean(this.db.tenant().additional_fields?.length && this.db.tenant().additional_fields.find(field => field.type === 'select' || field.type === 'boolean'));
+    return Boolean(this.db.getPersonExtraFields().length && this.db.getPersonExtraFields().find(field => field.type === 'select' || field.type === 'boolean'));
   }
 
   selectedFieldType(): string | undefined {
-    return this.db.tenant().additional_fields?.find(f => f.id === this.additionalFieldFilter)?.type;
+    return this.db.getPersonExtraFields().find(f => f.id === this.additionalFieldFilter)?.type;
   }
 
   onAdditionalFieldFilterChanged() {
     if (this.additionalFieldFilter) {
-      const field = this.db.tenant().additional_fields.find(f => f.id === this.additionalFieldFilter);
+      const field = this.db.getPersonExtraFields().find(f => f.id === this.additionalFieldFilter);
       this.type.additional_fields_filter = {
         key: this.additionalFieldFilter,
         option: field?.type === 'boolean' ? true : field?.options?.[0]

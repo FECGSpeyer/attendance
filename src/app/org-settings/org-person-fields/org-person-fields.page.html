@@ -1,0 +1,241 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Personen-Zusatzfelder</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" fill="clear" [disabled]="isSaving || !isSuperAdmin">
+        <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar color="light">
+      <ion-title size="large">Personen-Zusatzfelder</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-list [inset]="true">
+    <ion-item lines="none">
+      <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
+      <ion-label class="ion-text-wrap">
+        <p>Diese Felder und ihre Werte gelten für dieselbe Person gemeinsam in allen Instanzen der Organisation.</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-list [inset]="true">
+    <ion-list-header>
+      <ion-label>Zusätzliche Felder für Personen</ion-label>
+      <ion-button id="addOrgFieldBtn" fill="clear" size="small" [disabled]="!isSuperAdmin">
+        <ion-icon name="add-outline"></ion-icon>
+      </ion-button>
+
+      <ion-modal trigger="addOrgFieldBtn" #addOrgFieldModal initialBreakpoint="1" handle-behavior="none" [breakpoints]="[0, 1]">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar><ion-title>Neues Feld hinzufügen</ion-title></ion-toolbar>
+          </ion-header>
+          <ion-content color="light">
+            <ion-list [inset]="true">
+              <ion-item-group>
+                <ion-item>
+                  <ion-select label="Typ" [(ngModel)]="newField.type" (ionChange)="onNewFieldTypeChanged()">
+                    <ion-select-option [value]="fieldTypes.TEXT">Text</ion-select-option>
+                    <ion-select-option [value]="fieldTypes.TEXTAREA">Textbereich</ion-select-option>
+                    <ion-select-option [value]="fieldTypes.NUMBER">Zahl</ion-select-option>
+                    <ion-select-option [value]="fieldTypes.DATE">Datum</ion-select-option>
+                    <ion-select-option [value]="fieldTypes.BOOLEAN">Ja/Nein</ion-select-option>
+                    <ion-select-option [value]="fieldTypes.SELECT">Auswahl</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ion-item>
+                  <ion-input autocapitalize="words" labelPlacement="stacked" label="Name" [(ngModel)]="newField.name"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-select label="Anzeige in Listen" [(ngModel)]="newField.displayMode">
+                    <ion-select-option value="chip">Als Chip</ion-select-option>
+                    <ion-select-option value="underneath">Unter dem Namen</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ion-item>
+                  <ion-toggle helperText="Aktivieren, damit Mitglieder dieses Feld in ihren Stammdaten sehen können."
+                    [(ngModel)]="newField.visibleToPlayers">Für Mitglieder sichtbar</ion-toggle>
+                </ion-item>
+                @if (newField.visibleToPlayers) {
+                  <ion-item>
+                    <ion-toggle helperText="Aktivieren, damit Mitglieder den Wert selbst ändern können."
+                      [(ngModel)]="newField.editableByPlayers">Von Mitgliedern bearbeitbar</ion-toggle>
+                  </ion-item>
+                }
+              </ion-item-group>
+
+              @if (newField.type === fieldTypes.SELECT) {
+                <ion-list-header>
+                  <ion-label>Optionen</ion-label>
+                  <ion-button fill="clear" size="small" (click)="addNewOption()">
+                    <ion-icon name="add-outline"></ion-icon>
+                  </ion-button>
+                </ion-list-header>
+                <ion-item-group>
+                  @if (!newField.options?.length) {
+                    <ion-item><ion-label>Keine Optionen ausgewählt</ion-label></ion-item>
+                  } @else {
+                    @for (option of newField.options; track $index; let index = $index) {
+                      <ion-item>
+                        <ion-input autocapitalize="words" [helperText]="index === 0 ? 'Erste Option ist der Standardwert' : undefined"
+                          placeholder="Wert eingeben..." [value]="option"
+                          (ionInput)="updateNewOption(index, $any($event.target).value ?? '')"></ion-input>
+                        <ion-button slot="end" fill="clear" (click)="removeNewOption(index)">
+                          <ion-icon color="danger" name="trash-outline"></ion-icon>
+                        </ion-button>
+                      </ion-item>
+                    }
+                  }
+                </ion-item-group>
+              } @else {
+                <ion-item-group>
+                  <ion-item>
+                    @if (newField.type === fieldTypes.BOOLEAN) {
+                      <ion-label>Standardwert</ion-label>
+                      <ion-toggle slot="end" [(ngModel)]="newField.defaultValue"></ion-toggle>
+                    } @else {
+                      <ion-input autocapitalize="words" labelPlacement="stacked" label="Standardwert (optional)"
+                        [type]="newField.type === fieldTypes.NUMBER ? 'number' : newField.type === fieldTypes.DATE ? 'date' : 'text'"
+                        [(ngModel)]="newField.defaultValue"></ion-input>
+                    }
+                  </ion-item>
+                </ion-item-group>
+              }
+
+              <ion-item-group>
+                <ion-item button detail="false" (click)="addField(addOrgFieldModal)">
+                  <ion-label color="primary">Feld hinzufügen</ion-label>
+                </ion-item>
+              </ion-item-group>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+
+      <ion-modal [isOpen]="isEditModalOpen" (ionModalDidDismiss)="closeEditFieldModal()"
+        initialBreakpoint="1" handle-behavior="none" [breakpoints]="[0, 1]">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar>
+              <ion-title>Feld bearbeiten</ion-title>
+              <ion-buttons slot="end">
+                <ion-button (click)="closeEditFieldModal()"><ion-icon name="close"></ion-icon></ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content color="light">
+            @if (editingField) {
+              <ion-list [inset]="true">
+                <ion-item-group>
+                  <ion-item>
+                    <ion-label>Typ</ion-label>
+                    <ion-note slot="end">{{ getFieldTypeName(editingField.type) }}</ion-note>
+                  </ion-item>
+                  <ion-item>
+                    <ion-input autocapitalize="words" labelPlacement="stacked" label="Name" [(ngModel)]="editingField.name"></ion-input>
+                  </ion-item>
+                  <ion-item>
+                    <ion-select label="Anzeige in Listen" [(ngModel)]="editingField.displayMode">
+                      <ion-select-option value="chip">Als Chip</ion-select-option>
+                      <ion-select-option value="underneath">Unter dem Namen</ion-select-option>
+                    </ion-select>
+                  </ion-item>
+                  <ion-item>
+                    <ion-toggle helperText="Aktivieren, damit Mitglieder dieses Feld in ihren Stammdaten sehen können."
+                      [(ngModel)]="editingField.visibleToPlayers">Für Mitglieder sichtbar</ion-toggle>
+                  </ion-item>
+                  @if (editingField.visibleToPlayers) {
+                    <ion-item>
+                      <ion-toggle helperText="Aktivieren, damit Mitglieder den Wert selbst ändern können."
+                        [(ngModel)]="editingField.editableByPlayers">Von Mitgliedern bearbeitbar</ion-toggle>
+                    </ion-item>
+                  }
+                </ion-item-group>
+
+                @if (editingField.type === fieldTypes.SELECT) {
+                  <ion-list-header>
+                    <ion-label>Optionen</ion-label>
+                    <ion-button fill="clear" size="small" (click)="addEditOption()">
+                      <ion-icon name="add-outline"></ion-icon>
+                    </ion-button>
+                  </ion-list-header>
+                  <ion-item-group>
+                    @if (!editingField.options?.length) {
+                      <ion-item><ion-label>Keine Optionen</ion-label></ion-item>
+                    } @else {
+                      @for (option of editingField.options; track $index; let index = $index) {
+                        <ion-item>
+                          <ion-input autocapitalize="words" [helperText]="index === 0 ? 'Erste Option ist der Standardwert' : undefined"
+                            placeholder="Wert eingeben..." [value]="option"
+                            (ionInput)="updateEditOption(index, $any($event.target).value ?? '')"></ion-input>
+                          <ion-button slot="end" fill="clear" (click)="removeEditOption(index)">
+                            <ion-icon color="danger" name="trash-outline"></ion-icon>
+                          </ion-button>
+                        </ion-item>
+                      }
+                    }
+                  </ion-item-group>
+                } @else {
+                  <ion-item-group>
+                    <ion-item>
+                      @if (editingField.type === fieldTypes.BOOLEAN) {
+                        <ion-label>Standardwert</ion-label>
+                        <ion-toggle slot="end" [(ngModel)]="editingField.defaultValue"></ion-toggle>
+                      } @else {
+                        <ion-input autocapitalize="words" labelPlacement="stacked" label="Standardwert"
+                          [type]="editingField.type === fieldTypes.NUMBER ? 'number' : editingField.type === fieldTypes.DATE ? 'date' : 'text'"
+                          [(ngModel)]="editingField.defaultValue"></ion-input>
+                      }
+                    </ion-item>
+                  </ion-item-group>
+                }
+
+                <ion-item-group>
+                  <ion-item button detail="false" (click)="closeEditFieldModal(true)">
+                    <ion-label color="primary">Änderungen übernehmen</ion-label>
+                  </ion-item>
+                </ion-item-group>
+              </ion-list>
+            }
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ion-list-header>
+
+    <ion-item-group>
+      @if (fields.length === 0) {
+        <ion-item><ion-label>Es wurden noch keine organisationsweiten Zusatzfelder hinzugefügt.</ion-label></ion-item>
+      }
+      @for (field of fields; track field.id; let index = $index) {
+        <ion-item>
+          <ion-label>
+            <h2>{{ field.name }}</h2>
+            <h3>Typ: {{ getFieldTypeName(field.type) }}</h3>
+            <h3>Anzeige: {{ field.displayMode === 'underneath' ? 'Unter dem Namen' : 'Als Chip' }}</h3>
+            @if (field.visibleToPlayers) {
+              <h3><ion-icon name="eye-outline"></ion-icon> Für Mitglieder sichtbar{{ field.editableByPlayers ? ' (bearbeitbar)' : '' }}</h3>
+            }
+          </ion-label>
+          <ion-button fill="clear" color="primary" size="small" (click)="openEditField(index)" [disabled]="!isSuperAdmin">
+            <ion-icon name="pencil-outline"></ion-icon>
+          </ion-button>
+          <ion-button fill="clear" color="danger" size="small" (click)="removeField(index)" [disabled]="!isSuperAdmin">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      }
+    </ion-item-group>
+  </ion-list>
+</ion-content>

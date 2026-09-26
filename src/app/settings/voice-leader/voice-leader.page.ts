@@ -30,7 +30,7 @@ export class VoiceLeaderPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     // Check if "einteilung" additional field exists
-    this.einteilungField = this.db.tenant().additional_fields?.find(
+    this.einteilungField = this.db.getPersonExtraFields().find(
       (field: ExtraField) => field.id === 'einteilung'
     );
     await this.loadGroupMembers();

@@ -1211,18 +1211,59 @@ export type Database = {
           },
         ]
       }
+      tenant_group_person_fields: {
+        Row: {
+          created_at: string
+          field_id: string
+          id: number
+          person_key: string
+          tenant_group: number
+          updated_at: string
+          value: Json | null
+        }
+        Insert: {
+          created_at?: string
+          field_id: string
+          id?: number
+          person_key: string
+          tenant_group: number
+          updated_at?: string
+          value?: Json | null
+        }
+        Update: {
+          created_at?: string
+          field_id?: string
+          id?: number
+          person_key?: string
+          tenant_group?: number
+          updated_at?: string
+          value?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_group_person_fields_tenant_group_fkey"
+            columns: ["tenant_group"]
+            isOneToOne: false
+            referencedRelation: "tenant_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_groups: {
         Row: {
+          additional_fields: Json[] | null
           created_at: string
           id: number
           name: string | null
         }
         Insert: {
+          additional_fields?: Json[] | null
           created_at?: string
           id?: number
           name?: string | null
         }
         Update: {
+          additional_fields?: Json[] | null
           created_at?: string
           id?: number
           name?: string | null

@@ -55,7 +55,7 @@ export class BulkEditPage implements OnInit {
       { key: 'phone', label: 'Telefon', type: 'standard' },
     ];
 
-    const extraFields = this.db.tenant()?.additional_fields || [];
+    const extraFields = this.db.getPersonExtraFields();
     for (const field of extraFields) {
       this.fieldOptions.push({
         key: `extra_${field.id}`,
@@ -186,9 +186,11 @@ export class BulkEditPage implements OnInit {
           // Extra field: merge into existing additional_fields
           const oldAdditionalFields = player.additional_fields || {};
           const merged = { ...oldAdditionalFields, [this.selectedField.extraField.id]: edited };
-          updates.push(
-            this.db.playerSvc.updatePlayerAdditionalFields(player.id, merged)
-          );
+          const isSharedField = !!this.db.getOrganisationPersonKey(player)
+            && this.db.organisation()?.additional_fields?.some(field => field.id === this.selectedField.extraField.id);
+          updates.push(isSharedField
+            ? this.db.updateSharedPersonFieldValues(player, { [this.selectedField.extraField.id]: edited })
+            : this.db.playerSvc.updatePlayerAdditionalFields(player.id, merged));
 
           // An additional field can be used as an attendance-type filter, so
           // re-sync upcoming attendances for it as well.

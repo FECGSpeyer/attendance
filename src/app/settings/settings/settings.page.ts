@@ -128,7 +128,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.db.getViewers(),
       this.parentsEnabled ? this.db.getParents() : Promise.resolve([]),
       this.db.getAdmins(),
-      this.db.tenant()?.additional_fields?.some(f => f.type === FieldType.BFECG_CHURCH) ? this.db.getChurches() : Promise.resolve([]),
+      this.db.getPersonExtraFields().some(f => f.type === FieldType.BFECG_CHURCH) ? this.db.getChurches() : Promise.resolve([]),
       this.db.getPlayersWithoutAccount(),
       this.db.getUserRolesForTenants(this.db.tenantUser().userId),
       this.db.getPlayerProfile()
@@ -141,7 +141,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       [],
       this.db.attendanceTypes(),
       this.db.getMainGroup()?.id,
-      this.db.tenant().additional_fields,
+      this.db.getPersonExtraFields(),
       this.db.churches()
     );
     this.leftConductors = allConductors.filter((con: Person) => Boolean(con.left));
@@ -154,6 +154,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.oldUserData = oldUserData;
 
     if (this.oldUserData) {
+      await this.db.hydrateSharedPersonFieldValues([this.oldUserData]);
       this.userData = { ...this.oldUserData };
       if (!this.userData.additional_fields) {
         this.userData.additional_fields = {};
@@ -286,7 +287,7 @@ export class SettingsPage implements OnInit, OnDestroy {
         [],
         this.db.attendanceTypes(),
         this.db.getMainGroup()?.id,
-        this.db.tenant().additional_fields,
+        this.db.getPersonExtraFields(),
         this.db.churches()
       );
     }
@@ -686,11 +687,11 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   hasChurches(): boolean {
-    return this.db.churches()?.length && this.db.tenant()?.additional_fields?.find((f => f.type === FieldType.BFECG_CHURCH)) !== undefined;
+    return this.db.churches()?.length && this.db.getPersonExtraFields().find((f => f.type === FieldType.BFECG_CHURCH)) !== undefined;
   }
 
   getVisibleExtraFields() {
-    return this.db.tenant()?.additional_fields?.filter(f => f.visibleToPlayers) || [];
+    return this.db.getPersonExtraFields().filter(f => f.visibleToPlayers);
   }
 
   getRoleName(): string {
@@ -908,12 +909,23 @@ export class SettingsPage implements OnInit, OnDestroy {
 
     const editableFields = this.getVisibleExtraFields().filter(f => f.editableByPlayers);
     let additionalFields = this.oldUserData.additional_fields || {};
+    const sharedValues: Record<string, any> = {};
+    const organisationFieldIds = new Set(
+      (this.db.organisation()?.additional_fields ?? []).map(field => field.id)
+    );
     if (editableFields.length && this.userData.additional_fields) {
       additionalFields = { ...additionalFields };
       for (const field of editableFields) {
-        additionalFields[field.id] = this.userData.additional_fields[field.id];
+        if (organisationFieldIds.has(field.id)) {
+          sharedValues[field.id] = this.userData.additional_fields[field.id];
+          delete additionalFields[field.id];
+        } else {
+          additionalFields[field.id] = this.userData.additional_fields[field.id];
+        }
       }
     }
+
+    await this.db.updateSharedPersonFieldValues(this.userData, sharedValues);
 
     await this.db.updateProfile({
       firstName: this.userData.firstName,

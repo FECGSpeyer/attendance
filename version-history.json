@@ -4,6 +4,7 @@
       "version": "4.9.2",
       "date": "25.9.2026",
       "changes": [
+        "❓ Neu: Personen-Zusatzfelder können organisationsweit konfiguriert werden; ihre Werte werden für Personen mit gemeinsamem Konto oder organisationsweiter Verknüpfung instanzübergreifend synchron gehalten.",
         "🐛 Hilfe-Center: Glossar-Popover ist jetzt breiter, scrollbar bei langen Texten und linksbündig; Hilfe-Seiten bleiben nach einem Neuladen für alle Rollen erreichbar."
       ]
     },

@@ -60,10 +60,12 @@ Du kannst mehrere Regeln anlegen und festlegen, ob bereits eine erfüllte Regel 
     id: 'settings-extra-fields',
     title: 'Zusatzfelder anlegen',
     categoryId: 'settings',
-    keywords: ['zusatzfeld erstellen', 'eigenes feld', 'custom field'],
+    keywords: ['zusatzfeld erstellen', 'eigenes feld', 'custom field', 'organisationsweit', 'gemeinsame personendaten'],
     body: `Unter "Einstellungen → Allgemein → Zusatzfelder" erstellst du eigene [[Zusatzfeld|Zusatzfelder]] für Personen oder für [[Werk|Werke]] — getrennt konfigurierbar.
 
-Verfügbare Feldtypen: Text, mehrzeiliger Text, Zahl, Datum, Ja/Nein sowie Auswahl (mit selbst definierten Optionen). Zu jedem Feld kannst du einen Standardwert setzen und festlegen, ob [[Mitglied|Mitglieder]] es sehen bzw. selbst bearbeiten dürfen.`,
+Verfügbare Feldtypen: Text, mehrzeiliger Text, Zahl, Datum, Ja/Nein sowie Auswahl (mit selbst definierten Optionen). Zu jedem Feld kannst du einen Standardwert setzen und festlegen, ob [[Mitglied|Mitglieder]] es sehen bzw. selbst bearbeiten dürfen.
+
+Diese Felder gelten nur für die aktuelle [[Instanz]]. Gehört die Instanz zu einer [[Organisation]], können [[Administrator|Administratoren]] unter "Einstellungen → Organisation → Personen-Zusatzfelder" zusätzlich organisationsweite Personenfelder anlegen. Deren Werte sind in allen Instanzen der Organisation gleich, sobald die Person über ihr Attendix-Konto oder über "Personen verknüpfen" eindeutig zugeordnet ist. Änderungen in einer Instanz sind dadurch auch in den anderen Instanzen sichtbar.`,
   },
   {
     id: 'settings-registration-link',

@@ -1,12 +1,108 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
-import { Organisation, Tenant, Player, Attendance } from '../../utilities/interfaces';
+import { ExtraField, Organisation, OrganisationPersonFieldValue, Tenant, Player, Attendance } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrganisationService {
+
+  async updateOrgExtraFields(orgId: number, fields: ExtraField[]): Promise<Organisation> {
+    const { data, error } = await supabase
+      .from('tenant_groups')
+      .update({ additional_fields: fields as any })
+      .eq('id', orgId)
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast('Fehler beim Speichern der Organisations-Zusatzfelder', 'danger');
+      throw error;
+    }
+
+    return data as unknown as Organisation;
+  }
+
+  async getPersonFieldValues(orgId: number, personKey: string): Promise<Record<string, any>> {
+    const { data, error } = await supabase
+      .from('tenant_group_person_fields' as any)
+      .select('field_id, value')
+      .eq('tenant_group', orgId)
+      .eq('person_key', personKey);
+
+    if (error) {
+      Utils.showToast('Fehler beim Laden der gemeinsamen Zusatzfelder', 'danger');
+      throw error;
+    }
+
+    return Object.fromEntries((data as unknown as Pick<OrganisationPersonFieldValue, 'field_id' | 'value'>[])
+      .map(entry => [entry.field_id, entry.value]));
+  }
+
+  async getPersonFieldValuesForPeople(
+    orgId: number,
+    personKeys: string[],
+  ): Promise<Map<string, Record<string, any>>> {
+    if (!personKeys.length) { return new Map(); }
+
+    const { data, error } = await supabase
+      .from('tenant_group_person_fields' as any)
+      .select('person_key, field_id, value')
+      .eq('tenant_group', orgId)
+      .in('person_key', personKeys);
+
+    if (error) {
+      Utils.showToast('Fehler beim Laden der gemeinsamen Zusatzfelder', 'danger');
+      throw error;
+    }
+
+    const values = new Map<string, Record<string, any>>();
+    for (const entry of data as unknown as Array<Pick<OrganisationPersonFieldValue, 'person_key' | 'field_id' | 'value'>>) {
+      const personValues = values.get(entry.person_key) ?? {};
+      personValues[entry.field_id] = entry.value;
+      values.set(entry.person_key, personValues);
+    }
+    return values;
+  }
+
+  async updatePersonFieldValues(
+    orgId: number,
+    personKey: string,
+    values: Record<string, any>,
+  ): Promise<void> {
+    const rows = Object.entries(values).map(([field_id, value]) => ({
+      tenant_group: orgId,
+      person_key: personKey,
+      field_id,
+      value,
+    }));
+
+    if (!rows.length) { return; }
+
+    const { error } = await supabase
+      .from('tenant_group_person_fields' as any)
+      .upsert(rows, { onConflict: 'tenant_group,person_key,field_id' });
+
+    if (error) {
+      Utils.showToast('Fehler beim Speichern der gemeinsamen Zusatzfelder', 'danger');
+      throw error;
+    }
+  }
+
+  async deletePersonFieldValues(orgId: number, fieldIds: string[]): Promise<void> {
+    if (!fieldIds.length) { return; }
+    const { error } = await supabase
+      .from('tenant_group_person_fields')
+      .delete()
+      .eq('tenant_group', orgId)
+      .in('field_id', fieldIds);
+
+    if (error) {
+      Utils.showToast('Fehler beim Löschen der gemeinsamen Zusatzfeldwerte', 'danger');
+      throw error;
+    }
+  }
 
   async createOrganisation(name: string): Promise<Organisation> {
     const { data, error } = await supabase
@@ -20,7 +116,7 @@ export class OrganisationService {
       throw error;
     }
 
-    return data;
+    return data as unknown as Organisation;
   }
 
   async linkTenantToOrganisation(tenantId: number, organisation: Organisation): Promise<void> {
@@ -83,7 +179,7 @@ export class OrganisationService {
       throw error;
     }
 
-    return data.tenant_group_data;
+    return data.tenant_group_data as unknown as Organisation;
   }
 
   async getInstancesOfOrganisation(orgId: number): Promise<Tenant[]> {
@@ -144,7 +240,7 @@ export class OrganisationService {
     const uniqueOrgs = Array.from(new Set(data.map(d => d.tenant_group_data.id)))
       .map(id => data.find(d => d.tenant_group_data.id === id).tenant_group_data);
 
-    return uniqueOrgs;
+    return uniqueOrgs as unknown as Organisation[];
   }
 
   async getTenantsFromOrganisation(tenantId: number): Promise<Tenant[]> {

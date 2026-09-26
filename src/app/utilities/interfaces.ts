@@ -491,6 +491,17 @@ export interface Organisation {
   public_plan_key?: string;
   logo_url?: string;
   branding_text?: string;
+  additional_fields?: ExtraField[];
+}
+
+export interface OrganisationPersonFieldValue {
+  id?: number;
+  created_at?: string;
+  updated_at?: string;
+  tenant_group: number;
+  person_key: string;
+  field_id: string;
+  value: any;
 }
 
 export interface AttendanceType {

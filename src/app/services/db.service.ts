@@ -5,13 +5,14 @@ import { SupabaseClient, User } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SUPER_DEVELOPER_EMAIL, SupabaseTable } from '../utilities/constants';
-import { Attendance, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence, DashboardCardConfig, DEFAULT_DASHBOARD_CARDS } from '../utilities/interfaces';
+import { Attendance, ExtraField, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence, DashboardCardConfig, DEFAULT_DASHBOARD_CARDS } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
 import { supabase, attendanceSelect } from './base/supabase';
 import { pickPersonFields, pickTenantUserFields, sanitizeImg } from '../utilities/db-helpers';
 import { RankedMatch } from '../utilities/person-matcher';
+import { getOrganisationPersonKey } from '../utilities/organisation-person-key';
 
 // Import new modular services
 import { AuthService } from './auth/auth.service';
@@ -592,6 +593,70 @@ export class DbService {
     if (!org?.id) { return; }
     const data = await this.orgSvc.updateOrgBranding(org.id, updates);
     this.organisation.set({ ...org, ...data });
+  }
+
+  async updateOrgExtraFields(fields: ExtraField[]): Promise<void> {
+    this.checkDemoRestriction();
+    const org = this.organisation();
+    if (!org?.id) { return; }
+    const data = await this.orgSvc.updateOrgExtraFields(org.id, fields);
+    this.organisation.set({ ...org, ...data });
+  }
+
+  getPersonExtraFields(): ExtraField[] {
+    const organisationFields = this.organisation()?.additional_fields ?? [];
+    const organisationIds = new Set(organisationFields.map(field => field.id));
+    const tenantFields = this.tenant()?.additional_fields ?? [];
+    return [
+      ...organisationFields,
+      ...tenantFields.filter(field => !organisationIds.has(field.id)),
+    ];
+  }
+
+  getOrganisationPersonKey(person: Pick<Person, 'global_person_id' | 'appId'>): string | null {
+    return getOrganisationPersonKey(person);
+  }
+
+  async getSharedPersonFieldValues(person: Pick<Person, 'global_person_id' | 'appId'>): Promise<Record<string, any>> {
+    const orgId = this.organisation()?.id;
+    const personKey = getOrganisationPersonKey(person);
+    if (!orgId || !personKey) { return {}; }
+    return this.orgSvc.getPersonFieldValues(orgId, personKey);
+  }
+
+  async hydrateSharedPersonFieldValues(
+    players: Array<Pick<Person, 'global_person_id' | 'appId' | 'additional_fields'>>,
+  ): Promise<void> {
+    const orgId = this.organisation()?.id;
+    if (!orgId) { return; }
+    const personKeys = players
+      .map(player => getOrganisationPersonKey(player))
+      .filter((key): key is string => !!key);
+    const valuesByPerson = await this.orgSvc.getPersonFieldValuesForPeople(orgId, [...new Set(personKeys)]);
+    for (const player of players) {
+      const personKey = getOrganisationPersonKey(player);
+      if (!personKey) { continue; }
+      const sharedValues = valuesByPerson.get(personKey);
+      if (sharedValues) {
+        player.additional_fields = { ...(player.additional_fields ?? {}), ...sharedValues };
+      }
+    }
+  }
+
+  async updateSharedPersonFieldValues(
+    person: Pick<Person, 'global_person_id' | 'appId'>,
+    values: Record<string, any>,
+  ): Promise<void> {
+    const orgId = this.organisation()?.id;
+    const personKey = getOrganisationPersonKey(person);
+    if (!orgId || !personKey) { return; }
+    await this.orgSvc.updatePersonFieldValues(orgId, personKey, values);
+  }
+
+  async deleteSharedPersonFieldValues(fieldIds: string[]): Promise<void> {
+    const orgId = this.organisation()?.id;
+    if (!orgId) { return; }
+    await this.orgSvc.deletePersonFieldValues(orgId, fieldIds);
   }
 
   /** Returns the org branding source if the tenant belongs to an org with
@@ -2290,7 +2355,15 @@ export class DbService {
 
   async setGlobalPersonId(playerIds: number[], globalPersonId: string): Promise<void> {
     this.checkDemoRestriction();
-    return this.playerSvc.setGlobalPersonId(playerIds, globalPersonId);
+    await this.playerSvc.setGlobalPersonId(playerIds, globalPersonId);
+    const organisationId = this.organisation()?.id;
+    if (organisationId) {
+      const defaultValues = Object.fromEntries(
+        (this.organisation()?.additional_fields ?? [])
+          .map(field => [field.id, field.defaultValue])
+      );
+      await this.updateSharedPersonFieldValues({ global_person_id: globalPersonId }, defaultValues);
+    }
   }
 
   async removePlayer(player: Person): Promise<void> {

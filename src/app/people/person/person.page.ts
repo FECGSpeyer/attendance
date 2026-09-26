@@ -173,9 +173,14 @@ export class PersonPage implements OnInit, AfterViewInit {
       if (!this.existingPlayer.additional_fields) {
         this.existingPlayer.additional_fields = {};
       }
-      if (this.db.tenant()?.additional_fields?.length) {
-        for (const field of this.db.tenant()?.additional_fields ?? []) {
+      const personFields = this.db.getPersonExtraFields();
+      const sharedValues = await this.db.getSharedPersonFieldValues(this.existingPlayer);
+      if (personFields.length) {
+        for (const field of personFields) {
           this.existingPlayer.additional_fields[field.id] = this.existingPlayer.additional_fields[field.id] ?? this.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options);
+          if (Object.prototype.hasOwnProperty.call(sharedValues, field.id)) {
+            this.existingPlayer.additional_fields[field.id] = sharedValues[field.id];
+          }
         }
       }
 
@@ -217,12 +222,13 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.player.instrument = this.db.groups()[0].id;
       this.role = Role.PLAYER;
 
-      if (this.db.tenant().additional_fields?.length) {
+      const personFields = this.db.getPersonExtraFields();
+      if (personFields.length) {
         if (!this.player.additional_fields) {
           this.player.additional_fields = {};
         }
 
-        for (const field of this.db.tenant().additional_fields) {
+        for (const field of personFields) {
           this.player.additional_fields[field.id] = this.player.additional_fields[field.id] ?? this.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options);
         }
       }
@@ -661,8 +667,24 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     try {
+      const organisationFieldIds = new Set(
+        (this.db.organisation()?.additional_fields ?? []).map(field => field.id)
+      );
+      const sharedValues: Record<string, any> = {};
+      const localAdditionalFields = { ...(this.player.additional_fields ?? {}) };
+      if (this.db.getOrganisationPersonKey(this.player)) {
+        for (const fieldId of organisationFieldIds) {
+          if (Object.prototype.hasOwnProperty.call(localAdditionalFields, fieldId)) {
+            sharedValues[fieldId] = localAdditionalFields[fieldId];
+            delete localAdditionalFields[fieldId];
+          }
+        }
+        await this.db.updateSharedPersonFieldValues(this.player, sharedValues);
+      }
+
       await this.db.updatePlayer({
         ...this.player,
+        additional_fields: localAdditionalFields,
         isCritical: this.solved ? false : this.player.isCritical,
         lastSolve: this.solved ? new Date().toISOString() : this.player.lastSolve,
       }, false, createAccount, this.role, this.existingPlayer.shift_id !== this.player.shift_id);

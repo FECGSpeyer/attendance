@@ -36,7 +36,7 @@ export class MembersPage implements OnInit {
     this.currentTenantId = this.db.tenant()?.id;
 
     // Check if "einteilung" additional field exists
-    this.einteilungField = this.db.tenant().additional_fields?.find(
+    this.einteilungField = this.db.getPersonExtraFields().find(
       (field: ExtraField) => field.id === 'einteilung'
     );
 
@@ -62,7 +62,7 @@ export class MembersPage implements OnInit {
         [],
         this.db.attendanceTypes(),
         undefined,
-        this.db.tenant().additional_fields
+        this.db.getPersonExtraFields()
       );
 
       this.applyFilters();

@@ -70,8 +70,12 @@ Weitere Gruppen (z. B. Sopran, Geigen) legst du zusätzlich unter "Instrumente/G
     id: 'other-org-settings',
     title: 'Organisationseinstellungen',
     categoryId: 'other',
-    keywords: ['organisation verknüpfen', 'werke teilen'],
-    body: `Hier verknüpfst du deine Instanz mit einer [[Organisation]] und legst z. B. fest, aus welcher Instanz die gemeinsame Werke-Bibliothek stammt.`,
+    keywords: ['organisation verknüpfen', 'werke teilen', 'personen zusatzfelder', 'gemeinsame personendaten'],
+    body: `Hier verknüpfst du deine Instanz mit einer [[Organisation]] und legst z. B. fest, aus welcher Instanz die gemeinsame Werke-Bibliothek stammt.
+
+Unter "Personen-Zusatzfelder" können [[Administrator|Administratoren]] Felder anlegen, die in allen Instanzen der Organisation zur Verfügung stehen. Die Werte werden organisationsweit pro Person gespeichert. Attendix erkennt dieselbe Person entweder über ihr gemeinsames Attendix-Konto oder über die Funktion "Personen verknüpfen". Wird ein Wert in einer Instanz geändert, erscheint er daher auch in allen anderen Instanzen, denen dieselbe Person zugeordnet ist.
+
+Instanzspezifische [[Zusatzfeld|Zusatzfelder]] bleiben daneben bestehen und gelten weiterhin nur in der jeweiligen Instanz. Personen ohne Konto und ohne organisationsweite Verknüpfung können keinen gemeinsamen Wert zwischen Instanzen erhalten.`,
   },
   {
     id: 'other-shared-plan',

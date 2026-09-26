@@ -56,7 +56,7 @@ export class ImportPage {
     return {
       groups: this.db.groups(),
       mainGroupId: this.db.getMainGroup()?.id,
-      additionalFields: this.db.tenant()?.additional_fields ?? [],
+      additionalFields: this.db.getPersonExtraFields(),
     };
   }
 
@@ -259,7 +259,7 @@ export class ImportPage {
   }
 
   async downloadTemplate() {
-    const additionalFields: ExtraField[] = this.db.tenant()?.additional_fields ?? [];
+    const additionalFields: ExtraField[] = this.db.getPersonExtraFields();
     const headers = buildImportTemplateHeaders(additionalFields);
     const example = ['Anna', 'Müller', '15.03.1990', this.db.groups()?.[0]?.name ?? '', 'anna@example.com', '0170 1234567', '01.01.2024', ''];
     // Pad the example row to match any additional-field columns.

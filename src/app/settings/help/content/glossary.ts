@@ -146,12 +146,12 @@ export const GLOSSARY: GlossaryTerm[] = [
   {
     id: 'organisation',
     term: 'Organisation',
-    definition: 'Verbindet mehrere Instanzen (z. B. mehrere Chöre eines Dachvereins) miteinander, damit organisationsweite Ablaufpläne und eine gemeinsame Werke-Bibliothek genutzt werden können.',
+    definition: 'Verbindet mehrere Instanzen (z. B. mehrere Chöre eines Dachvereins) miteinander, damit organisationsweite Ablaufpläne, eine gemeinsame Werke-Bibliothek und gemeinsame Personen-Zusatzfelder genutzt werden können.',
   },
   {
     id: 'zusatzfeld',
     term: 'Zusatzfeld',
     aliases: ['Extra-Feld'],
-    definition: 'Ein von der Instanz frei definierbares zusätzliches Datenfeld (Text, Zahl, Datum, Ja/Nein, Auswahl) für Personen oder Werke, z. B. für vereinsspezifische Informationen.',
+    definition: 'Ein frei definierbares zusätzliches Datenfeld (Text, Zahl, Datum, Ja/Nein, Auswahl) für Personen oder Werke. Personenfelder können nur für eine Instanz oder organisationsweit angelegt werden; organisationsweite Werte werden für dieselbe Person in allen verbundenen Instanzen gemeinsam verwendet.',
   },
 ];

@@ -42,7 +42,7 @@ export class HandoverPage implements OnInit {
       [],
       this.db.attendanceTypes(),
       this.mainGroupId,
-      this.db.tenant().additional_fields,
+      this.db.getPersonExtraFields(),
       this.db.churches()
     );
     this.onMainGroupChanged();

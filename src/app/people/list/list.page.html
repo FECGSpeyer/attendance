@@ -87,8 +87,8 @@
                 <ion-select-option value="otherInstance">Mitglied anderer
                 Instanz</ion-select-option>
               }
-              @if (db.tenant().additional_fields?.length) {
-                @for (field of db.tenant().additional_fields; track field.id) {
+              @if (db.getPersonExtraFields().length) {
+                @for (field of db.getPersonExtraFields(); track field.id) {
                   @if (field.type === "boolean" || field.type === "select" || field.type === "number") {
                     <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>
                   } @else if (field.type === "bfecg_church") {
@@ -148,8 +148,8 @@
               @if (isVoS) {
                 <ion-select-option value="examinee">Prüfling</ion-select-option>
               }
-              @if (db.tenant().additional_fields?.length) {
-                @for (field of db.tenant().additional_fields; track field.id) {
+              @if (db.getPersonExtraFields().length) {
+                @for (field of db.getPersonExtraFields(); track field.id) {
                   @if (field.type === "boolean" || field.type === "text" || field.type === "select" || field.type === "bfecg_church" || field.type === "number") {
                     <ion-select-option [value]="field.id">{{ field.name }}</ion-select-option>
                   }
@@ -256,8 +256,8 @@
                     @if (showNotes && player.notes) {
                       <p style="white-space: pre-line;">{{ player.notes }}</p>
                     }
-                    @if (db.tenant().additional_fields?.length) {
-                      @for (field of db.tenant().additional_fields; track field.id) {
+                    @if (db.getPersonExtraFields().length) {
+                      @for (field of db.getPersonExtraFields(); track field.id) {
                         @if (viewOpts.includes(field.id) && field.displayMode === 'underneath' && player.additional_fields[field.id]) {
                           <h3>
                             @if (field.type === "boolean") {
@@ -287,8 +287,8 @@
                   @if (showExaminee && player.examinee) {
                     <ion-badge color="dark" slot="end">Prüfling</ion-badge>
                   }
-                  @if (db.tenant().additional_fields?.length) {
-                    @for (field of db.tenant().additional_fields; track field.id) {
+                  @if (db.getPersonExtraFields().length) {
+                    @for (field of db.getPersonExtraFields(); track field.id) {
                       @if (viewOpts.includes(field.id) && field.displayMode !== 'underneath') {
                         @if (player.additional_fields[field.id]) {
                           @if (field.type === "boolean") {
@@ -362,8 +362,8 @@
                   @if (showNotes && player.notes) {
                     <p style="white-space: pre-line;">{{ player.notes }}</p>
                   }
-                  @if (db.tenant().additional_fields?.length) {
-                    @for (field of db.tenant().additional_fields; track field.id) {
+                  @if (db.getPersonExtraFields().length) {
+                    @for (field of db.getPersonExtraFields(); track field.id) {
                       @if (viewOpts.includes(field.id) && field.displayMode === 'underneath' && player.additional_fields[field.id]) {
                         <h3>
                           @if (field.type === "boolean") {
@@ -393,8 +393,8 @@
                 @if (showExaminee && player.examinee) {
                   <ion-badge color="dark" slot="end">Prüfling</ion-badge>
                 }
-                @if (db.tenant().additional_fields?.length) {
-                  @for (field of db.tenant().additional_fields; track field.id) {
+                @if (db.getPersonExtraFields().length) {
+                  @for (field of db.getPersonExtraFields(); track field.id) {
                     @if (viewOpts.includes(field.id) && field.displayMode !== 'underneath') {
                       @if (player.additional_fields[field.id]) {
                         @if (field.type === "boolean") {

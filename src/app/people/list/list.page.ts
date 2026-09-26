@@ -183,6 +183,7 @@ export class ListPage implements OnInit, OnDestroy {
 
   async getPlayers(): Promise<void> {
     this.players = await this.db.getPlayers();
+    await this.db.hydrateSharedPersonFieldValues(this.players);
     this.attendances = await this.db.getAttendance();
     this.players = Utils.getModifiedPlayersForList(
       this.players,
@@ -190,7 +191,7 @@ export class ListPage implements OnInit, OnDestroy {
       this.attendances,
       this.db.attendanceTypes(),
       this.mainGroup,
-      this.db.tenant().additional_fields,
+      this.db.getPersonExtraFields(),
       this.db.churches(),
       this.db.tenant()?.shift_excused_as_present,
     );
