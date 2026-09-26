@@ -112,7 +112,7 @@
           helperText="Der Name wird in der App angezeigt"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-input autocapitalize="words" label="Kürzel" labelPlacement="stacked" [placeholder]="shortNamePlaceholder"
+        <ion-input autocapitalize="words" label="Instanz-Kürzel" labelPlacement="stacked" [placeholder]="shortNamePlaceholder"
           [(ngModel)]="tenant.shortName"
           helperText="Wird für kompakte Darstellungen verwendet"></ion-input>
       </ion-item>
@@ -180,7 +180,7 @@
             <li>Name der Instanz fehlt</li>
             }
             @if (!tenant.shortName) {
-            <li>Kürzel fehlt</li>
+            <li>Instanz-Kürzel fehlt</li>
             }
             @if (!mainGroupName) {
             <li>Name der Hauptgruppe fehlt</li>
