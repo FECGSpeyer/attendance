@@ -4,6 +4,7 @@ import { DbService } from 'src/app/services/db.service';
 import { AlertController, IonModal, IonPopover, IonRouterOutlet, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
 import { Utils } from '../utilities/Utils';
 import { FieldType, Role } from '../utilities/constants';
+import dayjs from 'dayjs';
 import { Storage } from '@ionic/storage-angular';
 import { Router } from '@angular/router';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
@@ -343,6 +344,100 @@ export class SongsPage implements OnInit, OnDestroy {
     if (data?.imported) {
       await this.getSongs();
     }
+  }
+
+  async exportSongsPdf(popover?: IonPopover): Promise<void> {
+    await popover?.dismiss();
+    const { jsPDF } = await import('jspdf');
+    await import('jspdf-autotable');
+
+    const shortName = this.tenantData?.shortName ?? this.db.tenant()?.shortName ?? '';
+    const date = dayjs().format('DD.MM.YYYY');
+    const branding = await Utils.buildTenantBranding(this.db.getBrandingSource());
+    const headerOpts = {
+      title: `${shortName} Werkverzeichnis`,
+      subtitle: `Stand: ${date}`,
+    };
+
+    const additionalFields = this.db.tenant()?.song_additional_fields ?? [];
+    const visibleExtraFields = additionalFields.filter(f => this.viewOpts.includes(f.id));
+
+    const head: string[] = ['Nr.', 'Name'];
+    if (this.viewOpts.includes('lastSung') && !this.tenantData) {
+      head.push(this.tenantType === 'orchestra' ? 'Zuletzt gespielt' : 'Zuletzt gesungen');
+    }
+    if (this.viewOpts.includes('difficulty')) { head.push('Schwierigkeit'); }
+    if (this.viewOpts.includes('withChoir')) { head.push('Chor/Orch.'); }
+    if (this.viewOpts.includes('withSolo')) { head.push('Solo'); }
+    for (const f of visibleExtraFields) { head.push(f.name); }
+
+    const difficultyLabel = (d?: number) => d === 1 ? '1 - Leicht' : d === 2 ? '2 - Mittel' : d === 3 ? '3 - Schwer' : '';
+
+    const body = this.songsFiltered.map(song => {
+      const row: string[] = [
+        `${song.prefix ?? ''}${song.number}`,
+        song.name,
+      ];
+      if (this.viewOpts.includes('lastSung') && !this.tenantData) {
+        row.push(song.lastSung ? dayjs(song.lastSung).format('DD.MM.YYYY') : '');
+      }
+      if (this.viewOpts.includes('difficulty')) { row.push(difficultyLabel(song.difficulty)); }
+      if (this.viewOpts.includes('withChoir')) { row.push(song.withChoir ? 'Ja' : ''); }
+      if (this.viewOpts.includes('withSolo')) { row.push(song.withSolo ? 'Ja' : ''); }
+      for (const f of visibleExtraFields) {
+        const val = song.additional_fields?.[f.id];
+        row.push(val === true ? 'Ja' : val === false ? 'Nein' : (val ?? '').toString());
+      }
+      return row;
+    });
+
+    const buildTable = (doc: any, styles: any, headStyles: any) => {
+      const contentTop = Utils.addBrandingHeader(doc, branding, headerOpts);
+      (doc as any).autoTable({
+        head: [head],
+        body,
+        margin: { top: contentTop, bottom: 14 },
+        theme: 'grid',
+        styles,
+        headStyles,
+        didDrawPage: () => { Utils.addBrandingHeader(doc, branding, headerOpts); },
+      });
+    };
+
+    const defaultStyles = { font: Utils.EXPORT_FONT, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 }, minCellHeight: 7 };
+    const defaultHeadStyles = { halign: 'center', fillColor: [0, 82, 56] };
+
+    const probe = new jsPDF({ compress: true });
+    await Utils.registerExportFont(probe);
+    buildTable(probe, defaultStyles, defaultHeadStyles);
+    const pages = probe.getNumberOfPages();
+
+    let styles: any = defaultStyles;
+    let headStyles: any = defaultHeadStyles;
+    if (pages > 1) {
+      styles = { ...defaultStyles, cellPadding: { top: 1.5, bottom: 1.5, left: 2, right: 2 } };
+      const probe2 = new jsPDF({ compress: true });
+      await Utils.registerExportFont(probe2);
+      buildTable(probe2, styles, headStyles);
+      if (probe2.getNumberOfPages() > 1) {
+        styles = { ...styles, fontSize: 8 };
+        headStyles = { ...headStyles, fontSize: 8 };
+        const probe3 = new jsPDF({ compress: true });
+        await Utils.registerExportFont(probe3);
+        buildTable(probe3, styles, headStyles);
+        if (probe3.getNumberOfPages() > 1) {
+          styles = { ...styles, cellPadding: { top: 0.5, bottom: 0.5, left: 1, right: 1 }, fontSize: 6 };
+          headStyles = { ...headStyles, fontSize: 6 };
+        }
+      }
+    }
+
+    const doc = new jsPDF({ compress: true });
+    await Utils.registerExportFont(doc);
+    buildTable(doc, styles, headStyles);
+
+    const fileName = `${shortName}_Werkverzeichnis_${date.replace(/\./g, '-')}.pdf`;
+    await Utils.downloadFileNative(doc.output('blob'), fileName);
   }
 
   async addSong(modal: IonModal, number: any, name: any, link: any, prefix: any) {

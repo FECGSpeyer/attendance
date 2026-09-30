@@ -39,6 +39,10 @@
                 </ion-item>
               }
             }
+            <ion-item button detail="false" lines="none" (click)="exportSongsPdf(songsMenuPopover)">
+              <ion-icon slot="start" name="document-text-outline" size="small"></ion-icon>
+              <ion-label>Werkverzeichnis als PDF</ion-label>
+            </ion-item>
           </ion-list>
         </ng-template>
       </ion-popover>

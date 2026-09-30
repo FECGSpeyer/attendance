@@ -22,4 +22,11 @@ export const SONGS_ARTICLES: HelpArticle[] = [
     keywords: ['massenimport', 'liste importieren', 'csv'],
     body: `Größere Werkelisten lassen sich per Import einspielen. Attendix versucht dabei, Instrumente/Stimmen anhand von Dateinamen automatisch den passenden [[Gruppe|Gruppen]] zuzuordnen.`,
   },
+  {
+    id: 'songs-export-pdf',
+    title: 'Werkverzeichnis als PDF exportieren',
+    categoryId: 'songs',
+    keywords: ['pdf export', 'werkverzeichnis drucken', 'liste exportieren', 'pdf'],
+    body: `Über das Menü (drei Punkte oben rechts) kannst du das aktuelle Werkverzeichnis als PDF exportieren. Die aktuell gefilterte und sortierte Liste wird exportiert – inklusive aller sichtbaren Spalten wie Schwierigkeitsgrad, Zuletzt gesungen und benutzerdefinierte Felder.`,
+  },
 ];

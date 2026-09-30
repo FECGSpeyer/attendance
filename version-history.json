@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.9.3",
+      "date": "30.9.2026",
+      "changes": [
+        "✨ Neu: Werkverzeichnis als PDF exportieren – die aktuelle (gefilterte & sortierte) Werkeliste lässt sich über das Menü als PDF herunterladen."
+      ]
+    },
+    {
       "version": "4.9.2",
       "date": "25.9.2026",
       "changes": [
