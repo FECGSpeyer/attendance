@@ -397,15 +397,17 @@ export class SongsPage implements OnInit, OnDestroy {
         head: [head],
         body,
         margin: { top: contentTop, bottom: 14 },
-        theme: 'grid',
+        theme: 'plain',
         styles,
         headStyles,
+        bodyStyles: { fillColor: false },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
         didDrawPage: () => { Utils.addBrandingHeader(doc, branding, headerOpts); },
       });
     };
 
-    const defaultStyles = { font: Utils.EXPORT_FONT, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 }, minCellHeight: 7 };
-    const defaultHeadStyles = { halign: 'center', fillColor: [0, 82, 56] };
+    const defaultStyles = { font: Utils.EXPORT_FONT, fontSize: 11, cellPadding: 3.5, textColor: [30, 30, 30], lineColor: [180, 180, 180], lineWidth: 0 };
+    const defaultHeadStyles = { fillColor: false, textColor: [50, 50, 50], fontStyle: 'bold', lineWidth: { bottom: 0.5 }, lineColor: [100, 100, 100] };
 
     const probe = new jsPDF({ compress: true });
     await Utils.registerExportFont(probe);
@@ -415,19 +417,17 @@ export class SongsPage implements OnInit, OnDestroy {
     let styles: any = defaultStyles;
     let headStyles: any = defaultHeadStyles;
     if (pages > 1) {
-      styles = { ...defaultStyles, cellPadding: { top: 1.5, bottom: 1.5, left: 2, right: 2 } };
+      styles = { ...defaultStyles, cellPadding: 2 };
       const probe2 = new jsPDF({ compress: true });
       await Utils.registerExportFont(probe2);
       buildTable(probe2, styles, headStyles);
       if (probe2.getNumberOfPages() > 1) {
-        styles = { ...styles, fontSize: 8 };
-        headStyles = { ...headStyles, fontSize: 8 };
+        styles = { ...styles, fontSize: 9 };
         const probe3 = new jsPDF({ compress: true });
         await Utils.registerExportFont(probe3);
         buildTable(probe3, styles, headStyles);
         if (probe3.getNumberOfPages() > 1) {
-          styles = { ...styles, cellPadding: { top: 0.5, bottom: 0.5, left: 1, right: 1 }, fontSize: 6 };
-          headStyles = { ...headStyles, fontSize: 6 };
+          styles = { ...styles, fontSize: 8, cellPadding: 1.5 };
         }
       }
     }

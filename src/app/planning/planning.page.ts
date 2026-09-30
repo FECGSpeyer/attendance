@@ -650,6 +650,7 @@ export class PlanningPage implements OnInit {
     const { jsPDF } = await import('jspdf');
     await import('jspdf-autotable');
     const doc = new jsPDF({ compress: true });
+    await Utils.registerExportFont(doc);
     const branding = this.includeBranding
       ? await Utils.buildTenantBranding(this.db.getBrandingSource())
       : undefined;
@@ -662,11 +663,11 @@ export class PlanningPage implements OnInit {
       head: [['Minuten', ...this.planGroups]],
       body: data,
       margin: { top: contentTop, bottom: 14 },
-      theme: 'grid',
-      headStyles: {
-        halign: 'center',
-        fillColor: [0, 82, 56]
-      },
+      theme: 'plain',
+      styles: { font: Utils.EXPORT_FONT, fontSize: 11, cellPadding: 3.5, textColor: [30, 30, 30], lineColor: [180, 180, 180], lineWidth: 0 },
+      headStyles: { fillColor: false, textColor: [50, 50, 50], fontStyle: 'bold', lineWidth: { bottom: 0.5 }, lineColor: [100, 100, 100] },
+      bodyStyles: { fillColor: false },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
       didDrawPage: () => {
         Utils.addBrandingHeader(doc, branding, headerOpts);
       }
