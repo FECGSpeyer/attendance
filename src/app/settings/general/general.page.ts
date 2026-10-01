@@ -276,6 +276,10 @@ export class GeneralPage implements OnInit {
     return this.db.groups().some(g => !g.maingroup);
   }
 
+  get noSelectableGroups(): boolean {
+    return !this.hasSelectableGroups();
+  }
+
   async saveGeneralSettings() {
     if (!this.longName?.trim()) {
       Utils.showToast('Der Gruppenname darf nicht leer sein.', 'danger');
