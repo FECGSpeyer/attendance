@@ -43,6 +43,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
   public resendCooldown = 0;
   private cooldownTimer: any = null;
   public privacyAccepted = false;
+  public noGroupsAvailable = false;
 
   constructor(
     public db: DbService,
@@ -92,6 +93,9 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
 
     this.groups = (await this.db.getGroups(this.tenantData.id)).filter(g => g.maingroup !== true);
     this.selectedGroupId = this.groups.length > 0 ? this.groups[0].id : null;
+    if (this.groups.length === 0) {
+      this.noGroupsAvailable = true;
+    }
   }
 
   async checkExistent(tenantUsers?: TenantUser[]): Promise<boolean> {
@@ -382,6 +386,11 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
   }
 
   validate(): boolean {
+    if (this.noGroupsAvailable) {
+      Utils.showToast('Registrierung nicht möglich: Es sind keine Gruppen verfügbar.', 'danger');
+      return false;
+    }
+
     if (!this.db.user) {
       if (!this.privacyAccepted) {
         Utils.showToast('Bitte akzeptiere die Nutzungsbedingungen und Datenschutzerklärung.', 'danger');

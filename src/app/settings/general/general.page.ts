@@ -272,6 +272,10 @@ export class GeneralPage implements OnInit {
     }
   }
 
+  private hasSelectableGroups(): boolean {
+    return this.db.groups().some(g => !g.maingroup);
+  }
+
   async saveGeneralSettings() {
     if (!this.longName?.trim()) {
       Utils.showToast('Der Gruppenname darf nicht leer sein.', 'danger');
@@ -285,6 +289,11 @@ export class GeneralPage implements OnInit {
     let song_sharing_id = this.songSharingEnabled ? this.db.tenant().song_sharing_id : null;
     if (this.songSharingEnabled && !this.db.tenant().song_sharing_id) {
       song_sharing_id = crypto.randomUUID();
+    }
+
+    if (this.registerAllowed && !this.hasSelectableGroups()) {
+      Utils.showToast('Registrierung kann nicht aktiviert werden: Bitte lege zuerst mindestens eine Gruppe an.', 'danger');
+      return;
     }
 
     let register_id = this.registerAllowed ? this.db.tenant().register_id : null;

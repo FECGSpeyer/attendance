@@ -149,6 +149,14 @@
           helperText="Aktivieren, um neuen Personen die Registrierung in dieser Instanz zu erlauben. Der Link wird automatisch generiert und kann nach dem Speichern kopiert werden."
         [(ngModel)]="registerAllowed">Registrierung erlauben</ion-toggle>
       </ion-item>
+      @if (registerAllowed && !db.groups().some(g => !g.maingroup)) {
+        <ion-item lines="none" color="warning">
+          <ion-icon slot="start" name="warning-outline"></ion-icon>
+          <ion-label class="ion-text-wrap">
+            Es sind noch keine Gruppen vorhanden. Bitte lege zuerst mindestens eine Gruppe an, bevor du die Registrierung aktivierst.
+          </ion-label>
+        </ion-item>
+      }
       @if (db.tenant().register_id && registerAllowed) {
         <ion-item (click)="copyRegisterLink()" button detail="false">
           <ion-label color="primary">Link kopieren</ion-label>

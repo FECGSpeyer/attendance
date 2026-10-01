@@ -138,13 +138,22 @@
 
         <ion-list-header><ion-label>Weitere Informationen</ion-label></ion-list-header>
         <ion-item-group>
-          <ion-item>
-            <ion-select [label]="(tenantData.type === 'choir' && tenantData.id !== 194) ? 'Stimme' : tenantData.type === 'orchestra' ? 'Instrument' : 'Gruppe'" [(ngModel)]="selectedGroupId" #select>
-              @for (group of groups; track group) {
-                <ion-select-option [value]="group.id">{{ group.name }}</ion-select-option>
-              }
-            </ion-select>
-          </ion-item>
+          @if (noGroupsAvailable) {
+            <ion-item lines="none" color="warning">
+              <ion-icon slot="start" name="warning-outline"></ion-icon>
+              <ion-label class="ion-text-wrap">
+                Registrierung aktuell nicht möglich: Der Administrator hat noch keine Gruppen angelegt. Bitte versuche es später erneut.
+              </ion-label>
+            </ion-item>
+          } @else {
+            <ion-item>
+              <ion-select [label]="(tenantData.type === 'choir' && tenantData.id !== 194) ? 'Stimme' : tenantData.type === 'orchestra' ? 'Instrument' : 'Gruppe'" [(ngModel)]="selectedGroupId" #select>
+                @for (group of groups; track group) {
+                  <ion-select-option [value]="group.id">{{ group.name }}</ion-select-option>
+                }
+              </ion-select>
+            </ion-item>
+          }
           @for (field of additionalFields; track field.name) {
             <ion-item>
               @if (field.type === 'text') {
@@ -222,7 +231,7 @@
       }
 
       <ion-item-group>
-        <ion-item color="primary" (click)="register()" button detail="false">
+        <ion-item color="primary" (click)="register()" button detail="false" [disabled]="noGroupsAvailable">
           <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
           <ion-label>Registrierung abschließen</ion-label>
         </ion-item>

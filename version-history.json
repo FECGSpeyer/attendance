@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.9.4",
+      "date": "1.10.2026",
+      "changes": [
+        "🐛 Fix: Selbstregistrierung blockiert jetzt korrekt, wenn keine Gruppen vorhanden sind – Admins können die Registrierung erst aktivieren, wenn mindestens eine Gruppe angelegt wurde."
+      ]
+    },
+    {
       "version": "4.9.3",
       "date": "30.9.2026",
       "changes": [
