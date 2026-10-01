@@ -53,11 +53,13 @@
               id="agenda-due-date-picker"
               presentation="date"
               locale="de-DE"
-              [(ngModel)]="item.due_date"
-              [showDefaultButtons]="true">
+              [value]="item.due_date ?? undefined"
+              (ionChange)="item.due_date = $any($event.detail.value)?.split('T')[0] ?? null"
+              [showDefaultButtons]="true"
+              doneText="OK"
+              cancelText="Abbrechen">
               <ion-buttons slot="buttons">
                 <ion-button color="danger" (click)="item.due_date = null">Löschen</ion-button>
-                <ion-button (click)="item.due_date = item.due_date">OK</ion-button>
               </ion-buttons>
             </ion-datetime>
           </ng-template>

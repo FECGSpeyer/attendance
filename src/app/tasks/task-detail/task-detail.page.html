@@ -59,11 +59,13 @@
               id="task-due-date-picker"
               presentation="date"
               locale="de-DE"
-              [(ngModel)]="task.due_date"
-              [showDefaultButtons]="true">
+              [value]="task.due_date ?? undefined"
+              (ionChange)="task.due_date = $any($event.detail.value)?.split('T')[0] ?? null"
+              [showDefaultButtons]="true"
+              doneText="OK"
+              cancelText="Abbrechen">
               <ion-buttons slot="buttons">
                 <ion-button color="danger" (click)="task.due_date = null">Löschen</ion-button>
-                <ion-button (click)="task.due_date = task.due_date">OK</ion-button>
               </ion-buttons>
             </ion-datetime>
           </ng-template>
