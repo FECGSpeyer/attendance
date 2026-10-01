@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "4.10.0",
+      "date": "1.10.2026",
+      "changes": [
+        "📋 Teamorganisation: Tagesordnungspunkte, Aufgaben und Protokolle für Teamtreffen und Proben.",
+        "✅ Aufgaben mit Fälligkeitsdatum, Priorität und Verantwortlichen – inkl. automatischer Erinnerungen (2 Tage vorher).",
+        "📝 Protokoll-Editor (Tiptap) pro Termin – strukturiert nach Ablaufplan-Feldern, mit eingebetteten Aufgaben- und Tagesordnungs-Referenzen.",
+        "🔔 Aufgaben-Erinnerungen in den Benachrichtigungseinstellungen abschaltbar."
+      ]
+    },
+    {
       "version": "4.9.6",
       "date": "1.10.2026",
       "changes": [

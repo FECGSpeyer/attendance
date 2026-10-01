@@ -59,11 +59,12 @@
       </ion-item>
     </ion-list>
 
-    <ion-item-divider>
-      <ion-label>Beschreibung</ion-label>
-    </ion-item-divider>
-    <quill-editor class="agenda-item-editor" placeholder="Beschreibung eingeben..." [(ngModel)]="item.description"
-      [modules]="{ toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }], ['link']] }"></quill-editor>
+    <ion-list>
+      <ion-item>
+        <ion-textarea label="Beschreibung" labelPlacement="stacked" [(ngModel)]="item.description"
+          placeholder="Beschreibung eingeben…" [autoGrow]="true" rows="4"></ion-textarea>
+      </ion-item>
+    </ion-list>
 
     @if (!isNew) {
       <ion-item-divider style="margin-top: 24px">

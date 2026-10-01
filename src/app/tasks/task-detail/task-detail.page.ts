@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { DbService } from 'src/app/services/db.service';
 import { AgendaItemPriority, Person, Task, TaskStatus } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -29,14 +30,13 @@ export class TaskDetailPage implements OnInit {
     { value: 'low', label: 'Niedrig' },
   ];
 
-  constructor(private db: DbService) {
+  constructor(private db: DbService, private route: ActivatedRoute) {
     const now = new Date();
     this.today = now.toISOString().split('T')[0];
   }
 
   async ngOnInit() {
-    const segments = window.location.pathname.split('/');
-    this.taskId = segments[segments.length - 1];
+    this.taskId = this.route.snapshot.params['id'];
     this.isNew = this.taskId === 'new';
 
     const allConductors = await this.db.getConductors(true);

@@ -614,7 +614,7 @@ export interface CrossTenantPersonAttendance extends PersonAttendance {
 
 export const AGENDA_ITEMS_PLACEHOLDER_ID = 'agenda-items-placeholder';
 
-export type AgendaItemStatus = 'open' | 'completed' | 'postponed';
+export type AgendaItemStatus = 'open' | 'in_progress' | 'completed' | 'postponed';
 export type AgendaItemPriority = 'low' | 'medium' | 'high';
 export type TaskStatus = 'open' | 'in_progress' | 'completed';
 
@@ -649,6 +649,7 @@ export interface Protocol {
   created_by?: string;
   updated_at?: string;
   tenant_id: number;
+  attendance?: Pick<Attendance, 'id' | 'date' | 'typeInfo'>;
 }
 
 export interface Task {

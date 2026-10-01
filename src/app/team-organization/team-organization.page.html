@@ -131,8 +131,8 @@
           <ion-item [routerLink]="['/tabs/attendance', protocol.attendance_id]" detail button>
             <ion-icon name="document-text-outline" slot="start" color="primary"></ion-icon>
             <ion-label>
-              <h2>Protokoll</h2>
-              <h3>Termin #{{ protocol.attendance_id }}</h3>
+              <h2>{{ protocol.attendance?.typeInfo ?? 'Protokoll' }}</h2>
+              <h3>{{ protocol.attendance?.date ? (protocol.attendance.date | date:'dd.MM.yyyy') : ('Termin #' + protocol.attendance_id) }}</h3>
               @if (protocol.updated_at) {
                 <p>Aktualisiert: {{ protocol.updated_at | date:'dd.MM.yyyy' }}</p>
               }

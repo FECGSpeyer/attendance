@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { DbService } from 'src/app/services/db.service';
 import { AgendaItem, AgendaItemAttendance, AgendaItemPriority, AgendaItemStatus, Person, Task } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -20,7 +21,7 @@ export class AgendaItemDetailPage implements OnInit {
 
   readonly statusOptions: { value: AgendaItemStatus; label: string }[] = [
     { value: 'open', label: 'Offen' },
-    { value: 'in_progress' as any, label: 'In Bearbeitung' },
+    { value: 'in_progress', label: 'In Bearbeitung' },
     { value: 'postponed', label: 'Verschoben' },
     { value: 'completed', label: 'Erledigt' },
   ];
@@ -31,11 +32,10 @@ export class AgendaItemDetailPage implements OnInit {
     { value: 'low', label: 'Niedrig' },
   ];
 
-  constructor(private db: DbService) {}
+  constructor(private db: DbService, private route: ActivatedRoute) {}
 
   async ngOnInit() {
-    const segments = window.location.pathname.split('/');
-    this.itemId = segments[segments.length - 1];
+    this.itemId = this.route.snapshot.params['id'];
     this.isNew = this.itemId === 'new';
 
     const [conductors] = await Promise.all([
@@ -94,7 +94,8 @@ export class AgendaItemDetailPage implements OnInit {
   getStatusColor(status: AgendaItemStatus): string {
     switch (status) {
       case 'completed': return 'success';
-      case 'postponed': return 'warning';
+      case 'in_progress': return 'warning';
+      case 'postponed': return 'medium';
       default: return 'primary';
     }
   }

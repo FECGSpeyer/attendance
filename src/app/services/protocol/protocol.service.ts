@@ -22,7 +22,7 @@ export class ProtocolService {
   async getProtocols(tenantId: number): Promise<Protocol[]> {
     const { data } = await db
       .from('protocols')
-      .select('*')
+      .select('*, attendance:attendance(id, date, typeInfo)')
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false });
 

@@ -97,7 +97,8 @@ export class AgendaItemListPage implements OnInit {
   getStatusColor(status: AgendaItemStatus): string {
     switch (status) {
       case 'completed': return 'success';
-      case 'postponed': return 'warning';
+      case 'in_progress': return 'warning';
+      case 'postponed': return 'medium';
       default: return 'primary';
     }
   }
@@ -105,6 +106,7 @@ export class AgendaItemListPage implements OnInit {
   getStatusLabel(status: AgendaItemStatus): string {
     switch (status) {
       case 'completed': return 'Erledigt';
+      case 'in_progress': return 'In Bearbeitung';
       case 'postponed': return 'Verschoben';
       default: return 'Offen';
     }

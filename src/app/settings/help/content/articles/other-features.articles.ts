@@ -119,4 +119,11 @@ Instanzspezifische [[Zusatzfeld|Zusatzfelder]] bleiben daneben bestehen und gelt
     keywords: ['teams tab', 'microsoft teams', 'kanal'],
     body: `Attendix kann als Tab in einem Microsoft-Teams-Kanal eingebunden werden. Beim Hinzufügen des Tabs wählt die einrichtende Person die gewünschte Instanz aus; danach zeigt der Tab die Daten dieser Instanz direkt im Teams-Kanal an.`,
   },
+  {
+    id: 'other-team-organization',
+    title: 'Teamorganisation',
+    categoryId: 'other',
+    keywords: ['protokoll', 'aufgaben', 'tagesordnung', 'tagesordnungspunkt', 'tasks', 'agenda', 'teamorganisation', 'besprechung'],
+    body: `Die [[Teamorganisation]] bündelt drei Werkzeuge für die Arbeit im Leitungsteam:\n\n**Protokolle** – Wird bei einem Termintyp das Protokoll aktiviert (Einstellungen → Termintypen → "Teamorganisation aktivieren"), erscheint beim Öffnen des Termins ein Protokoll-Bereich mit einem Abschnitt pro Ablaufplan-Feld. Inhalte werden automatisch gespeichert. Im Protokoll lassen sich [[Tagesordnungspunkt|Tagesordnungspunkte]] verknüpfen und [[Aufgabe|Aufgaben]] direkt anlegen.\n\n**Aufgaben** – Eigenständige Aktionspunkte mit Titel, Status (Offen / In Bearbeitung / Erledigt), Priorität, Fälligkeitsdatum und Verantwortlichem. Aufgaben können aus einem Protokoll heraus erstellt oder unter Einstellungen → Teamorganisation → Aufgaben verwaltet werden. Die verantwortliche Person erhält automatisch eine Erinnerung 2 Tage vor Fälligkeit.\n\n**Tagesordnung** – Wiederkehrende oder geplante Gesprächspunkte, die terminübergreifend verfolgt werden. Sie können einem oder mehreren Terminen zugeordnet und im Protokoll als erledigt markiert werden.\n\nDie Übersichtsseite unter Einstellungen → Teamorganisation zeigt die offensten Aufgaben, Tagesordnungspunkte und zuletzt bearbeiteten Protokolle.`,
+  },
 ];
