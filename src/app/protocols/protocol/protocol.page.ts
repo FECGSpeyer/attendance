@@ -47,6 +47,10 @@ export class ProtocolPage implements OnInit {
   public slashMenuForFieldId: string | null = null;
 
   readonly AGENDA_ITEMS_PLACEHOLDER_ID = AGENDA_ITEMS_PLACEHOLDER_ID;
+
+  get hasAgendaPlaceholder(): boolean {
+    return this.planFieldsWithPlaceholder.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID);
+  }
   private saveDebounceTimers = new Map<string, any>();
 
   constructor(

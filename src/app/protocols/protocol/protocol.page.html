@@ -20,7 +20,7 @@
   } @else {
 
     <!-- If the plan has no agenda-items placeholder, show the agenda section at the top -->
-    @if (!planFieldsWithPlaceholder.length || !planFieldsWithPlaceholder.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID)) {
+    @if (!planFieldsWithPlaceholder.length || !hasAgendaPlaceholder) {
       <ng-container *ngTemplateOutlet="agendaSection"></ng-container>
     }
 

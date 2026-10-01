@@ -54,6 +54,10 @@ export class PlanningPage implements OnInit {
     return this.db.attendanceTypes().find(t => t.id === att.type_id)?.enable_protocol ?? false;
   }
 
+  get hasAgendaPlaceholder(): boolean {
+    return this.selectedFields.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID);
+  }
+
   constructor(
     private modalController: ModalController,
     public db: DbService,
@@ -368,13 +372,12 @@ export class PlanningPage implements OnInit {
   }
 
   addCurrentSongs(popover: IonPopover) {
-
+    const songsToAdd: string[] = [];
     for (const historyItem of this.history) {
       if (!this.selectedFields.find((field: FieldSelection) => Number(field.id) === historyItem.songId)) {
         songsToAdd.push(String(historyItem.songId));
       }
     }
-
     this.onSongsChange(songsToAdd);
   }
 

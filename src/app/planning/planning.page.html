@@ -108,7 +108,7 @@
               <ion-label>Werk hinzufügen</ion-label>
             </ion-item>
           }
-          @if (currentAttTypeHasProtocol && !selectedFields.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID)) {
+          @if (currentAttTypeHasProtocol && !hasAgendaPlaceholder) {
             <ion-item (click)="addAgendaItemsPlaceholder(addPopover)" lines="none">
               <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
               <ion-label>Tagesordnung einfügen</ion-label>
