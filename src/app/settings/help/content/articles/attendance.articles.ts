@@ -42,7 +42,25 @@ Welche Stufen im Zyklus vorkommen, lässt sich pro Termin-Typ in den Einstellung
     id: 'att-reminder',
     title: 'Erinnerung an Mitglieder senden',
     categoryId: 'attendance',
-    keywords: ['erinnerung', 'reminder', 'benachrichtigung senden', 'email'],
-    body: `Für einen Termin kannst du eine Ad-hoc-Erinnerung an Mitglieder senden (z. B. per E-Mail), die sich noch nicht zurückgemeldet haben. Das ist besonders hilfreich kurz vor der Anmeldefrist, wenn viele Status noch auf "Neutral" stehen.`,
+    keywords: ['erinnerung', 'reminder', 'benachrichtigung senden', 'email', 'neutral', 'ohne status'],
+    body: `Für einen Termin kannst du eine Ad-hoc-Erinnerung an Mitglieder senden (z. B. per E-Mail und Push-Benachrichtigung). Öffne dazu im Termin das Menü (⋮) und tippe auf "Erinnerung versenden".
+
+Im Dialog kannst du Betreff und Nachricht frei anpassen. Wenn noch Personen ohne Status ("Neutral") vorhanden sind, erscheint zusätzlich die Option **"Nur Personen ohne Status"**: Damit wird die Erinnerung ausschließlich an jene Personen gesendet, die sich noch nicht zurückgemeldet haben.`,
+  },
+  {
+    id: 'att-options-menu',
+    title: 'Optionen und Ansicht im Termin',
+    categoryId: 'attendance',
+    keywords: ['menü', 'optionen', 'ansicht', 'filter', 'sortierung', 'bilder', 'anmeldefelder', 'status filter', 'zusatzfelder'],
+    body: `Das Menü (⋮) oben rechts im Termin enthält mehrere Unterbereiche:
+
+**Status-Filter** – Blendet nur Personen mit bestimmten Statuswerten ein (z. B. nur Abwesende). Aktive Filter werden durch einen farbigen Zähler am Menü-Button angezeigt.
+
+**Sortierung** – Sortiert die Personenliste nach einem [[Zusatzfeld]] (Personen- oder Anmeldefelder), jeweils auf- oder absteigend (↑ / ↓). Ohne aktive Sortierung gilt die Standard-Gruppen-Reihenfolge. Der sortierte Feldwert und die Gruppe werden als Zusatzinfo unter dem Namen eingeblendet.
+
+**Ansicht** – Steuert, was im Termin sichtbar ist:
+- *Bilder anzeigen* – Zeigt Profilbilder neben den Namen an.
+- *Anmeldefelder anzeigen* – Blendet die Antworten auf [[Anmeldefelder]] unter den Namen ein oder aus (nur sichtbar, wenn der Termin-Typ Anmeldefelder hat).
+- *Explizite Statusauswahl* – Wechselt in einen Modus, bei dem jede Person ein Dropdown zur Statusauswahl zeigt, statt beim Antippen den Status weiterzuschalten.`,
   },
 ];

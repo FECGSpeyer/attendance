@@ -4,6 +4,7 @@ import { ModalController } from '@ionic/angular/lazy';
 export interface AdHocReminderResult {
   title: string;
   message: string;
+  neutralOnly: boolean;
 }
 
 @Component({
@@ -16,9 +17,11 @@ export class AdHocReminderModalComponent implements OnInit {
   @Input() defaultTitle = '';
   @Input() defaultMessage = '';
   @Input() attendanceLink = '';
+  @Input() hasNeutralPersons = false;
 
   title = '';
   message = '';
+  neutralOnly = false;
 
   constructor(private modalController: ModalController) {}
 
@@ -32,6 +35,6 @@ export class AdHocReminderModalComponent implements OnInit {
   }
 
   send(): void {
-    void this.modalController.dismiss({ title: this.title, message: this.message } as AdHocReminderResult, 'send');
+    void this.modalController.dismiss({ title: this.title, message: this.message, neutralOnly: this.neutralOnly } as AdHocReminderResult, 'send');
   }
 }

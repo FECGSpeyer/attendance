@@ -71,6 +71,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   public attendanceViewMode: AttendanceViewMode = AttendanceViewMode.CLICK;
   public AttendanceViewMode = AttendanceViewMode;
   public showAvatars = false;
+  public showRegFields = true;
   private helperGroupId: number | null = null;
   public isAddPersonModalOpen = false;
   public availablePersons: (Person & { groupName?: string })[] = [];
@@ -90,12 +91,27 @@ export class AttendancePage implements OnInit, OnDestroy {
   public regFieldAnswers: { [fieldId: string]: any } = {};
   public regFieldsPlayer: PersonAttendance | null = null;
   public statusFilter: Set<number> = new Set();
+  public extraFieldSortId: string | null = null;
+  public extraFieldSortLevel: 'person' | 'registration' | null = null;
+  public extraFieldSortDir: 'asc' | 'desc' = 'asc';
 
   get filteredPlayers(): PersonAttendance[] {
     const list = this.statusFilter.size === 0
       ? this.players
       : this.players.filter(p => this.statusFilter.has(p.status));
-    return this.recalculateGroupHeaders(list);
+
+    if (!this.extraFieldSortId) {
+      return this.recalculateGroupHeaders(list);
+    }
+
+    return [...list]
+      .sort((a, b) => {
+        const av = this.resolveExtraFieldSortKey(a);
+        const bv = this.resolveExtraFieldSortKey(b);
+        const cmp = av.localeCompare(bv, undefined, { numeric: true });
+        return this.extraFieldSortDir === 'asc' ? cmp : -cmp;
+      })
+      .map(p => ({ ...p, firstOfInstrument: false, instrumentLength: 0 }));
   }
 
   private applyPlayerStatus(id: string, status: number): void {
@@ -116,6 +132,10 @@ export class AttendancePage implements OnInit, OnDestroy {
       if (isFirst) seenGroups.add(g);
       return { ...p, firstOfInstrument: isFirst, instrumentLength: groupCounts.get(g) || 0 };
     });
+  }
+
+  get hasRegFields(): boolean {
+    return !!((this.type as any)?.registration_fields as RegistrationField[] | undefined)?.length;
   }
 
   get isFilterActive(): boolean {
@@ -352,6 +372,15 @@ export class AttendancePage implements OnInit, OnDestroy {
       this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendanceId);
       this.attendanceViewMode = await this.storage.get('attendanceViewMode') || AttendanceViewMode.CLICK;
       this.showAvatars = (await this.storage.get('attendanceShowAvatars')) ?? false;
+      this.showRegFields = (await this.storage.get('attendanceShowRegFields')) ?? true;
+      const savedSortField = await this.storage.get(`attSortField${this.attendanceId}`);
+      const savedSortLevel = await this.storage.get(`attSortLevel${this.attendanceId}`);
+      const savedSortDir = await this.storage.get(`attSortDir${this.attendanceId}`);
+      if (savedSortField) {
+        this.extraFieldSortId = savedSortField;
+        this.extraFieldSortLevel = savedSortLevel || null;
+        this.extraFieldSortDir = savedSortDir === 'desc' ? 'desc' : 'asc';
+      }
 
       void this.listenOnNetworkChanges();
       this.selectedSongs = this.attendance.songs || [];
@@ -1449,6 +1478,11 @@ export class AttendancePage implements OnInit, OnDestroy {
     await this.storage.set('attendanceShowAvatars', this.showAvatars);
   }
 
+  async toggleShowRegFields() {
+    this.showRegFields = !this.showRegFields;
+    await this.storage.set('attendanceShowRegFields', this.showRegFields);
+  }
+
   // ========== CHECKLIST METHODS ==========
 
   /**
@@ -1698,12 +1732,17 @@ export class AttendancePage implements OnInit, OnDestroy {
       : `${typeName} am ${dateStr}${timeStr}${infoStr}`;
     const attendanceLink = `https://attendix.de/open-attendance?id=${this.attendance.id}&tenantId=${this.attendance.tenantId}`;
 
+    const neutralAppIds = this.players
+      .filter(p => p.status === AttendanceStatus.Neutral && p.person?.appId)
+      .map(p => p.person.appId as string);
+
     const modal = await this.modalController.create({
       component: AdHocReminderModalComponent,
       componentProps: {
         defaultTitle,
         defaultMessage,
         attendanceLink,
+        hasNeutralPersons: neutralAppIds.length > 0,
       },
       breakpoints: [0, 0.75, 1],
       initialBreakpoint: 0.75,
@@ -1731,6 +1770,7 @@ export class AttendancePage implements OnInit, OnDestroy {
           title: data.title || undefined,
           message: data.message || undefined,
           playerAppId: playerAppId || undefined,
+          playerAppIds: (data.neutralOnly && !playerAppId) ? neutralAppIds : undefined,
         },
       });
       if (error) {
@@ -1954,6 +1994,91 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   async navigateToSong(songId: number): Promise<void> {
     await this.router.navigate([`/tabs/settings/songs/`, songId]);
+  }
+
+  getSortableExtraFields(): Array<{ id: string; name: string; level: 'person' | 'registration'; fieldType?: string }> {
+    const personFields = this.db.getPersonExtraFields()
+      .filter(f => f.type !== 'textarea')
+      .map(f => ({ id: f.id, name: f.name, level: 'person' as const, fieldType: f.type as string }));
+    const regFields = ((this.type as any)?.registration_fields as RegistrationField[] ?? [])
+      .map(f => ({ id: f.id, name: f.label, level: 'registration' as const, fieldType: f.type as string }));
+    return [...personFields, ...regFields];
+  }
+
+  getActiveExtraSortLabel(): string {
+    const name = this.getSortableExtraFields().find(f => f.id === this.extraFieldSortId)?.name ?? '';
+    return name ? `${name} ${this.extraFieldSortDir === 'asc' ? '↑' : '↓'}` : '';
+  }
+
+  private getExtraFieldValue(player: PersonAttendance, fieldId: string, level: 'person' | 'registration'): any {
+    if (level === 'person') { return (player.person?.additional_fields ?? {})[fieldId]; }
+    return ((player as any).registration_answers ?? {})[fieldId];
+  }
+
+  getActiveExtraSortValue(player: PersonAttendance): string {
+    if (!this.extraFieldSortId) { return ''; }
+    const raw = this.getExtraFieldValue(player, this.extraFieldSortId, this.extraFieldSortLevel);
+    if (raw === null || raw === undefined || raw === '') { return '–'; }
+    if (typeof raw === 'boolean') { return raw ? 'Ja' : 'Nein'; }
+    if (Array.isArray(raw)) { return raw.join(', '); }
+    const field = this.getSortableExtraFields().find(f => f.id === this.extraFieldSortId);
+    if (field?.fieldType === 'bfecg_church') {
+      return this.db.churches()?.find(c => c.id === raw)?.name ?? String(raw);
+    }
+    return String(raw);
+  }
+
+  private resolveExtraFieldSortKey(player: PersonAttendance): string {
+    const raw = this.getExtraFieldValue(player, this.extraFieldSortId, this.extraFieldSortLevel);
+    if (raw === null || raw === undefined) { return ''; }
+    const field = this.getSortableExtraFields().find(f => f.id === this.extraFieldSortId);
+    if (field?.fieldType === 'bfecg_church') {
+      return this.db.churches()?.find(c => c.id === raw)?.name ?? String(raw);
+    }
+    return String(raw);
+  }
+
+  async openSortPicker(): Promise<void> {
+    const fields = this.getSortableExtraFields();
+    const currentValue = this.extraFieldSortId
+      ? `${this.extraFieldSortId}__${this.extraFieldSortDir}`
+      : '__default__';
+    const alert = await this.alertController.create({
+      header: 'Sortierung',
+      inputs: [
+        { type: 'radio', label: 'Standard (Gruppe)', value: '__default__', checked: currentValue === '__default__' },
+        ...fields.flatMap(f => [
+          { type: 'radio' as const, label: `${f.name} ↑`, value: `${f.id}__asc`, checked: currentValue === `${f.id}__asc` },
+          { type: 'radio' as const, label: `${f.name} ↓`, value: `${f.id}__desc`, checked: currentValue === `${f.id}__desc` },
+        ]),
+      ],
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'OK',
+          handler: (value: string) => {
+            if (value === '__default__' || !value) {
+              this.extraFieldSortId = null;
+              this.extraFieldSortLevel = null;
+              this.extraFieldSortDir = 'asc';
+              void this.storage.set(`attSortField${this.attendanceId}`, '');
+              void this.storage.set(`attSortLevel${this.attendanceId}`, '');
+              void this.storage.set(`attSortDir${this.attendanceId}`, '');
+            } else {
+              const [fieldId, dir] = value.split('__');
+              const found = fields.find(f => f.id === fieldId);
+              this.extraFieldSortId = fieldId;
+              this.extraFieldSortLevel = found?.level ?? null;
+              this.extraFieldSortDir = dir === 'desc' ? 'desc' : 'asc';
+              void this.storage.set(`attSortField${this.attendanceId}`, fieldId);
+              void this.storage.set(`attSortLevel${this.attendanceId}`, found?.level ?? '');
+              void this.storage.set(`attSortDir${this.attendanceId}`, this.extraFieldSortDir);
+            }
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   getRegistrationAnswerSummary(player: PersonAttendance): string {

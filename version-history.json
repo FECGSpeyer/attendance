@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "4.9.5",
+      "date": "1.10.2026",
+      "changes": [
+        "🔍 Anwesenheitsliste nach Zusatzfeldern (Personen- und Anmeldefelder) sortierbar – auf- und absteigend.",
+        "⚙️ Filter, Sortierung und Ansichts-Optionen im Termin in übersichtliche Untermenüs zusammengefasst.",
+        "👁️ Anmeldefelder in der Anwesenheitsliste ein-/ausblendbar.",
+        "🔔 Erinnerung gezielt nur an Personen ohne Status (Neutral) sendbar."
+      ]
+    },
+    {
       "version": "4.9.4",
       "date": "1.10.2026",
       "changes": [

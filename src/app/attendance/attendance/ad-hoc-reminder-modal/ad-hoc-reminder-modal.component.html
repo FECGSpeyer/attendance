@@ -35,6 +35,16 @@
         placeholder="Nachrichtentext">
       </ion-textarea>
     </ion-item>
+    @if (hasNeutralPersons) {
+    <ion-item>
+      <ion-toggle [(ngModel)]="neutralOnly" justify="space-between">
+        <ion-label>
+          Nur Personen ohne Status
+          <p>Sendet nur an Personen, die noch keine Rückmeldung gegeben haben</p>
+        </ion-label>
+      </ion-toggle>
+    </ion-item>
+    }
   </ion-list>
 
   @if (attendanceLink) {

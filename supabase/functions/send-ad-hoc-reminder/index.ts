@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { attendanceId, tenantId, title, message, playerAppId } = await req.json();
+    const { attendanceId, tenantId, title, message, playerAppId, playerAppIds } = await req.json();
 
     if (!attendanceId || !tenantId) {
       return new Response(JSON.stringify({ error: 'Missing attendanceId or tenantId' }), {
@@ -127,6 +127,9 @@ Deno.serve(async (req) => {
     // If targeting a single player, restrict to that one user only.
     if (playerAppId) {
       userIds = userIds.filter(id => id === playerAppId);
+    } else if (playerAppIds && playerAppIds.length > 0) {
+      const allowSet = new Set<string>(playerAppIds);
+      userIds = userIds.filter(id => allowSet.has(id));
     }
 
     // Fetch notification configs
@@ -273,6 +276,7 @@ Deno.serve(async (req) => {
           if (!person) continue;
           if (person.left) continue; // skip archived people
           if (playerAppId && person.appId !== playerAppId) continue;
+          if (playerAppIds && playerAppIds.length > 0 && !playerAppIds.includes(person.appId)) continue;
           const email = (person.email || '').trim();
           if (!email) continue;
           if (mainGroupId !== null && person.instrument === mainGroupId) continue;

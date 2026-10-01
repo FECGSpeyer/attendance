@@ -26,104 +26,138 @@
     </div>
     }
     <ion-buttons slot="end">
-      <ion-button id="attendance-filter-trigger">
-        <ion-icon slot="icon-only" [color]="isFilterActive ? 'primary' : ''" name="filter"></ion-icon>
+      <ion-button id="attendance-options-trigger">
+        <ion-icon slot="icon-only" [color]="isFilterActive ? 'primary' : ''" name="ellipsis-vertical"></ion-icon>
         @if (isFilterActive) {
         <ion-badge color="primary" class="filter-badge">{{ statusFilter.size }}</ion-badge>
         }
       </ion-button>
-      <ion-popover trigger="attendance-filter-trigger" triggerAction="click" [dismissOnSelect]="false">
+      <ion-popover trigger="attendance-options-trigger" triggerAction="click" [dismissOnSelect]="false" #optionsPopover>
         <ng-template>
           <ion-list lines="none">
-            @if (type?.available_statuses.includes(0)) {
-            <ion-item button detail="false" (click)="toggleStatusFilter(0)">
-              <ion-checkbox slot="start" [checked]="statusFilter.has(0)" style="pointer-events: none;"></ion-checkbox>
-              <ion-label>Neutral</ion-label>
+            <ion-item button detail="true" id="attendance-filter-trigger">
+              <ion-icon slot="start" [color]="isFilterActive ? 'primary' : ''" name="filter"></ion-icon>
+              <ion-label [color]="isFilterActive ? 'primary' : ''">
+                Status-Filter
+                @if (isFilterActive) {
+                <p>{{ statusFilter.size }} aktiv</p>
+                }
+              </ion-label>
+            </ion-item>
+            <ion-popover trigger="attendance-filter-trigger" triggerAction="click" [dismissOnSelect]="false" side="start">
+              <ng-template>
+                <ion-list lines="none">
+                  @if (type?.available_statuses.includes(0)) {
+                  <ion-item button detail="false" (click)="toggleStatusFilter(0)">
+                    <ion-checkbox slot="start" [checked]="statusFilter.has(0)" style="pointer-events: none;"></ion-checkbox>
+                    <ion-label>Neutral</ion-label>
+                  </ion-item>
+                  }
+                  @if (type?.available_statuses.includes(1)) {
+                  <ion-item button detail="false" (click)="toggleStatusFilter(1)">
+                    <ion-checkbox slot="start" [checked]="statusFilter.has(1)" style="pointer-events: none;"></ion-checkbox>
+                    <ion-label>Anwesend</ion-label>
+                  </ion-item>
+                  }
+                  @if (type?.available_statuses.includes(2)) {
+                  <ion-item button detail="false" (click)="toggleStatusFilter(2)">
+                    <ion-checkbox slot="start" [checked]="statusFilter.has(2)" style="pointer-events: none;"></ion-checkbox>
+                    <ion-label>Entschuldigt</ion-label>
+                  </ion-item>
+                  }
+                  @if (type?.available_statuses.includes(3)) {
+                  <ion-item button detail="false" (click)="toggleStatusFilter(3)">
+                    <ion-checkbox slot="start" [checked]="statusFilter.has(3)" style="pointer-events: none;"></ion-checkbox>
+                    <ion-label>Verspätet</ion-label>
+                  </ion-item>
+                  }
+                  @if (type?.available_statuses.includes(3)) {
+                  <ion-item button detail="false" (click)="toggleStatusFilter(5)">
+                    <ion-checkbox slot="start" [checked]="statusFilter.has(5)" style="pointer-events: none;"></ion-checkbox>
+                    <ion-label>Verspätet entschuldigt</ion-label>
+                  </ion-item>
+                  }
+                  @if (type?.available_statuses.includes(4)) {
+                  <ion-item button detail="false" (click)="toggleStatusFilter(4)">
+                    <ion-checkbox slot="start" [checked]="statusFilter.has(4)" style="pointer-events: none;"></ion-checkbox>
+                    <ion-label>Abwesend</ion-label>
+                  </ion-item>
+                  }
+                  @if (isFilterActive) {
+                  <ion-item button detail="false" (click)="clearStatusFilter()">
+                    <ion-icon slot="start" name="close-circle-outline" color="danger"></ion-icon>
+                    <ion-label color="danger">Filter löschen</ion-label>
+                  </ion-item>
+                  }
+                </ion-list>
+              </ng-template>
+            </ion-popover>
+            @if (getSortableExtraFields().length > 0) {
+            <ion-item button detail="false" (click)="openSortPicker(); optionsPopover.dismiss()">
+              <ion-icon slot="start" [name]="extraFieldSortId ? 'swap-vertical' : 'swap-vertical-outline'"></ion-icon>
+              <ion-label>
+                Sortierung
+                @if (extraFieldSortId) {
+                <p>{{ getActiveExtraSortLabel() }}</p>
+                }
+              </ion-label>
             </ion-item>
             }
-            @if (type?.available_statuses.includes(1)) {
-            <ion-item button detail="false" (click)="toggleStatusFilter(1)">
-              <ion-checkbox slot="start" [checked]="statusFilter.has(1)" style="pointer-events: none;"></ion-checkbox>
-              <ion-label>Anwesend</ion-label>
+            <ion-item button detail="true" id="attendance-view-trigger">
+              <ion-icon slot="start" name="eye-outline"></ion-icon>
+              <ion-label>Ansicht</ion-label>
             </ion-item>
-            }
-            @if (type?.available_statuses.includes(2)) {
-            <ion-item button detail="false" (click)="toggleStatusFilter(2)">
-              <ion-checkbox slot="start" [checked]="statusFilter.has(2)" style="pointer-events: none;"></ion-checkbox>
-              <ion-label>Entschuldigt</ion-label>
-            </ion-item>
-            }
-            @if (type?.available_statuses.includes(3)) {
-            <ion-item button detail="false" (click)="toggleStatusFilter(3)">
-              <ion-checkbox slot="start" [checked]="statusFilter.has(3)" style="pointer-events: none;"></ion-checkbox>
-              <ion-label>Verspätet</ion-label>
-            </ion-item>
-            }
-            @if (type?.available_statuses.includes(3)) {
-            <ion-item button detail="false" (click)="toggleStatusFilter(5)">
-              <ion-checkbox slot="start" [checked]="statusFilter.has(5)" style="pointer-events: none;"></ion-checkbox>
-              <ion-label>Verspätet entschuldigt</ion-label>
-            </ion-item>
-            }
-            @if (type?.available_statuses.includes(4)) {
-            <ion-item button detail="false" (click)="toggleStatusFilter(4)">
-              <ion-checkbox slot="start" [checked]="statusFilter.has(4)" style="pointer-events: none;"></ion-checkbox>
-              <ion-label>Abwesend</ion-label>
-            </ion-item>
-            }
-            @if (isFilterActive) {
-            <ion-item button detail="false" (click)="clearStatusFilter()">
-              <ion-icon slot="start" name="close-circle-outline" color="danger"></ion-icon>
-              <ion-label color="danger">Filter löschen</ion-label>
-            </ion-item>
-            }
-          </ion-list>
-        </ng-template>
-      </ion-popover>
-      <ion-button id="attendance-options-trigger">
-        <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
-      </ion-button>
-      <ion-popover trigger="attendance-options-trigger" triggerAction="click" dismissOnSelect="true">
-        <ng-template>
-          <ion-list lines="none">
-            <ion-item button detail="false" (click)="switchMode()">
-              <ion-icon slot="start"
-                [name]="attendanceViewMode === AttendanceViewMode.CLICK ? 'list-outline' : 'hand-left-outline'"></ion-icon>
-              <ion-label>{{ attendanceViewMode === AttendanceViewMode.CLICK ? 'Auswahl-Modus' : 'Klick-Modus'
-                }}</ion-label>
-            </ion-item>
-            <ion-item button detail="false" (click)="toggleShowAvatars()">
-              <ion-icon slot="start" [name]="showAvatars ? 'person-circle' : 'person-circle-outline'"></ion-icon>
-              <ion-label>{{ showAvatars ? 'Bilder ausblenden' : 'Bilder anzeigen' }}</ion-label>
-            </ion-item>
+            <ion-popover trigger="attendance-view-trigger" triggerAction="click" [dismissOnSelect]="false" side="start">
+              <ng-template>
+                <ion-list lines="none">
+                  <ion-item button detail="false" (click)="toggleShowAvatars()">
+                    <ion-checkbox slot="start" [checked]="showAvatars" style="pointer-events: none;"></ion-checkbox>
+                    <ion-label>Bilder anzeigen</ion-label>
+                  </ion-item>
+                  @if (hasRegFields) {
+                  <ion-item button detail="false" (click)="toggleShowRegFields()">
+                    <ion-checkbox slot="start" [checked]="showRegFields" style="pointer-events: none;"></ion-checkbox>
+                    <ion-label>Anmeldefelder anzeigen</ion-label>
+                  </ion-item>
+                  }
+                  <ion-item button detail="false" (click)="switchMode()">
+                    <ion-checkbox slot="start" [checked]="attendanceViewMode === AttendanceViewMode.SELECT" style="pointer-events: none;"></ion-checkbox>
+                    <ion-label>
+                      Explizite Statusauswahl
+                      <p>Status über Dropdown statt Antippen wählen</p>
+                    </ion-label>
+                  </ion-item>
+                </ion-list>
+              </ng-template>
+            </ion-popover>
             @if (!isHelper) {
-            <ion-item button detail="false" (click)="openAddPersonModal()">
+            <ion-item button detail="false" (click)="openAddPersonModal(); optionsPopover.dismiss()">
               <ion-icon slot="start" name="person-add-outline"></ion-icon>
               <ion-label>Person hinzufügen</ion-label>
             </ion-item>
             }
             @if (!isHelper && (!attendance?.checklist || attendance?.checklist?.length === 0)) {
-            <ion-item button detail="false" (click)="addChecklistItem()">
+            <ion-item button detail="false" (click)="addChecklistItem(); optionsPopover.dismiss()">
               <ion-icon slot="start" name="checkbox-outline"></ion-icon>
               <ion-label>Checkliste starten</ion-label>
             </ion-item>
             }
             @if (!isHelper && canRestoreChecklist()) {
-            <ion-item button detail="false" (click)="restoreChecklist()">
+            <ion-item button detail="false" (click)="restoreChecklist(); optionsPopover.dismiss()">
               <ion-icon slot="start" name="refresh-outline"></ion-icon>
               <ion-label>Checkliste zurücksetzen</ion-label>
             </ion-item>
             }
-            <ion-item button detail="false" (click)="showStatusInfo()">
+            <ion-item button detail="false" (click)="showStatusInfo(); optionsPopover.dismiss()">
               <ion-icon slot="start" name="stats-chart-outline"></ion-icon>
               <ion-label>Status-Übersicht</ion-label>
             </ion-item>
-            <ion-item button detail="false" (click)="showLegend()">
+            <ion-item button detail="false" (click)="showLegend(); optionsPopover.dismiss()">
               <ion-icon slot="start" name="information-circle-outline"></ion-icon>
               <ion-label>Legende</ion-label>
             </ion-item>
             @if (!isHelper) {
-            <ion-item button detail="false" (click)="sendAdHocReminder()">
+            <ion-item button detail="false" (click)="sendAdHocReminder(); optionsPopover.dismiss()">
               <ion-icon slot="start" name="notifications-outline"></ion-icon>
               <ion-label>Erinnerung versenden</ion-label>
             </ion-item>
@@ -604,8 +638,11 @@
             @if (isHelper && !canViewNotes && player.notes) {
             <h3>Notiz hinzugefügt</h3>
             }
-            @if (getRegistrationAnswerSummary(player)) {
+            @if (showRegFields && getRegistrationAnswerSummary(player)) {
             <p style="font-size: 0.78rem; color: var(--ion-color-medium);">{{ getRegistrationAnswerSummary(player) }}</p>
+            }
+            @if (extraFieldSortId) {
+            <p style="font-size: 0.78rem; color: var(--ion-color-medium);">{{ getActiveExtraSortValue(player) }} · {{ player.groupName }}</p>
             }
           </ion-label>
           <ion-select interface="popover" (ionChange)="onAttStaticChange(player, $event)" [value]="player.status"
@@ -645,8 +682,11 @@
             @if (isHelper && !canViewNotes && player.notes) {
             <h3>Notiz hinzugefügt</h3>
             }
-            @if (getRegistrationAnswerSummary(player)) {
+            @if (showRegFields && getRegistrationAnswerSummary(player)) {
             <p style="font-size: 0.78rem; color: var(--ion-color-medium);">{{ getRegistrationAnswerSummary(player) }}</p>
+            }
+            @if (extraFieldSortId) {
+            <p style="font-size: 0.78rem; color: var(--ion-color-medium);">{{ getActiveExtraSortValue(player) }} · {{ player.groupName }}</p>
             }
           </ion-label>
           <ion-badge [color]="player.status === 0 ? 'medium' :
