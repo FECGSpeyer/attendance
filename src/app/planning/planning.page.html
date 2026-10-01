@@ -108,6 +108,12 @@
               <ion-label>Werk hinzufügen</ion-label>
             </ion-item>
           }
+          @if (currentAttTypeHasProtocol && !selectedFields.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID)) {
+            <ion-item (click)="addAgendaItemsPlaceholder(addPopover)" lines="none">
+              <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
+              <ion-label>Tagesordnung einfügen</ion-label>
+            </ion-item>
+          }
           @if (availableTemplates.length || orgDefaultFields.length) {
             <ion-item-divider></ion-item-divider>
             @if (availableTemplates.length) {
@@ -206,25 +212,37 @@
       <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
         @for (field of selectedFields; track trackByFieldId(i, field); let i = $index) {
           <ion-item-sliding #slider>
-            <ion-item [class.note-item]="field.id.includes('noteFld')" [lines]="field.id.includes('noteFld') ? 'none' : 'full'">
-              <ion-label (click)="changeField(field)" [class.note-field]="field.id.includes('noteFld')">
-                <h2>{{ field.name }}</h2>
-                @if (field.songId && !isGeneral) {
-                  <h3 class="danger">{{ getMissingGroups(field.songId) }}</h3>
-                }
-                @if (!field.id.includes('noteFld')) {
+            @if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID) {
+              <ion-item>
+                <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
+                <ion-label>
+                  <h2>Tagesordnungspunkte</h2>
                   <h3>{{ calculateTime(field, i) }}</h3>
+                </ion-label>
+                <ion-badge slot="end" color="secondary">dynamisch</ion-badge>
+                <ion-reorder slot="end"></ion-reorder>
+              </ion-item>
+            } @else {
+              <ion-item [class.note-item]="field.id.includes('noteFld')" [lines]="field.id.includes('noteFld') ? 'none' : 'full'">
+                <ion-label (click)="changeField(field)" [class.note-field]="field.id.includes('noteFld')">
+                  <h2>{{ field.name }}</h2>
+                  @if (field.songId && !isGeneral) {
+                    <h3 class="danger">{{ getMissingGroups(field.songId) }}</h3>
+                  }
+                  @if (!field.id.includes('noteFld')) {
+                    <h3>{{ calculateTime(field, i) }}</h3>
+                  }
+                  @if (field.info && !field.id.includes('noteFld')) {
+                    <p class="field-info">{{ field.info }}</p>
+                  }
+                </ion-label>
+                @if (!field.id.includes('noteFld')) {
+                  <ion-input autocapitalize="words" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
+                  placeholder="min" type="number" slot="end"></ion-input>
                 }
-                @if (field.info && !field.id.includes('noteFld')) {
-                  <p class="field-info">{{ field.info }}</p>
-                }
-              </ion-label>
-              @if (!field.id.includes('noteFld')) {
-                <ion-input autocapitalize="words" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
-                placeholder="min" type="number" slot="end"></ion-input>
-              }
-              <ion-reorder slot="end"></ion-reorder>
-            </ion-item>
+                <ion-reorder slot="end"></ion-reorder>
+              </ion-item>
+            }
             <ion-item-options (ionSwipe)="removeField(i, slider)">
               <ion-item-option expandable color="danger" (click)="removeField(i, slider)">
                 <ion-icon name="trash"></ion-icon>

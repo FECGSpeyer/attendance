@@ -36,6 +36,10 @@ const routes: Routes = [
         loadChildren: () => import('./../attendance/attendance/attendance.module').then(m => m.AttendancePageModule),
       },
       {
+        path: 'attendance/:attendanceId/protocol',
+        loadChildren: () => import('./../protocols/protocol/protocol.module').then(m => m.ProtocolPageModule),
+      },
+      {
         path: 'songs-tab',
         loadChildren: () => import('./../songs/songs.module').then(m => m.SongsPageModule),
       },

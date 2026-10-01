@@ -7,6 +7,7 @@ import { Attendance, FieldSelection, GroupCategory, History, Group, Person, Plan
 // jsPDF is lazy-loaded for better initial bundle size
 import { Utils } from '../utilities/Utils';
 import { DefaultAttendanceType } from 'src/app/utilities/constants';
+import { AGENDA_ITEMS_PLACEHOLDER_ID } from '../utilities/interfaces';
 
 @Component({
   selector: 'app-planning',
@@ -44,6 +45,14 @@ export class PlanningPage implements OnInit {
   public songSearchTerm = '';
   public filteredSongs: Song[] = [];
   public isSongSelectorOpen = false;
+
+  readonly AGENDA_ITEMS_PLACEHOLDER_ID = AGENDA_ITEMS_PLACEHOLDER_ID;
+
+  get currentAttTypeHasProtocol(): boolean {
+    const att = this.attendances.find(a => a.id === this.attendance);
+    if (!att) return false;
+    return this.db.attendanceTypes().find(t => t.id === att.type_id)?.enable_protocol ?? false;
+  }
 
   constructor(
     private modalController: ModalController,
@@ -344,9 +353,21 @@ export class PlanningPage implements OnInit {
     await alert.present();
   }
 
-  addCurrentSongs(popover: IonPopover) {
+  addAgendaItemsPlaceholder(popover: IonPopover) {
     popover?.dismiss();
-    const songsToAdd: string[] = [];
+    if (this.selectedFields.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID)) {
+      Utils.showToast('Ein Tagesordnungs-Platzhalter ist bereits vorhanden', 'warning');
+      return;
+    }
+    this.selectedFields.push({
+      id: AGENDA_ITEMS_PLACEHOLDER_ID,
+      name: '[Tagesordnungspunkte]',
+      time: '0',
+    });
+    this.calculateEnd();
+  }
+
+  addCurrentSongs(popover: IonPopover) {
 
     for (const historyItem of this.history) {
       if (!this.selectedFields.find((field: FieldSelection) => Number(field.id) === historyItem.songId)) {

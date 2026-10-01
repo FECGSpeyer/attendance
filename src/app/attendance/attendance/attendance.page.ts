@@ -8,7 +8,6 @@ import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supab
 import { format } from 'date-fns';
 import dayjs from 'dayjs';
 import { PlanningPage } from 'src/app/planning/planning.page';
-import { ProtocolPage } from 'src/app/protocols/protocol/protocol.page';
 import { StatusInfoComponent } from './status-info/status-info.component';
 import { AdHocReminderModalComponent, AdHocReminderResult } from './ad-hoc-reminder-modal/ad-hoc-reminder-modal.component';
 import { DbService } from 'src/app/services/db.service';
@@ -977,18 +976,6 @@ export class AttendancePage implements OnInit, OnDestroy {
     });
 
     await modal.present();
-  }
-
-  async openProtocol() {
-    const modal = await this.modalController.create({
-      component: ProtocolPage,
-      componentProps: { attendanceId: this.attendance.id },
-    });
-    await modal.present();
-    const { data } = await modal.onDidDismiss();
-    if (data?.protocolId) {
-      this.hasProtocol = true;
-    }
   }
 
   async onInfoChanged() {

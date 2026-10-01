@@ -3,7 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { ProtocolPage } from './protocol.page';
 
 const routes: Routes = [
-  { path: '', component: ProtocolPage }
+  { path: ':attendanceId', component: ProtocolPage }
 ];
 
 @NgModule({

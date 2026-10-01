@@ -1,10 +1,7 @@
-@if (!inline) {
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="dismiss()" fill="clear">
-        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
-      </ion-button>
+      <ion-back-button text="" [defaultHref]="'/tabs/attendance/' + attendanceId"></ion-back-button>
     </ion-buttons>
     <ion-title>Protokoll</ion-title>
     @if (isSaving) {
@@ -14,73 +11,43 @@
     }
   </ion-toolbar>
 </ion-header>
-}
 
-<ng-template #protocolContent>
+<ion-content class="ion-padding">
   @if (isLoading) {
     <div class="ion-text-center ion-padding">
       <ion-spinner></ion-spinner>
     </div>
   } @else {
-    <!-- Linked Agenda Items section -->
-    <ion-item-divider>
-      <ion-label>Tagesordnungspunkte</ion-label>
-      <ion-buttons slot="end">
-        @if (isSaving) {
-          <ion-spinner name="dots" style="margin-right: 8px; width: 16px; height: 16px;"></ion-spinner>
-        }
-        <ion-button fill="clear" size="small" (click)="addAgendaItem()" title="Neu erstellen">
-          <ion-icon slot="icon-only" name="add-circle-outline" color="primary"></ion-icon>
-        </ion-button>
-        <ion-button fill="clear" size="small" (click)="linkAgendaItemToProtocol()" title="Bestehenden verknüpfen">
-          <ion-icon slot="icon-only" name="link-outline" color="secondary"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    </ion-item-divider>
-    @if (linkedAgendaItems.length === 0) {
-      <p class="ion-padding-horizontal" style="color: var(--ion-color-medium); font-size: 0.9em">
-        Keine verknüpften Tagesordnungspunkte. Neu erstellen (+) oder bestehenden verknüpfen (🔗).
-      </p>
-    } @else {
-      <ion-list>
-        @for (item of linkedAgendaItems; track item.id) {
-          <ion-item>
-            <ion-checkbox
-              [checked]="item.status === 'completed'"
-              (ionChange)="toggleAgendaItemStatus(item)"
-              slot="start">
-            </ion-checkbox>
-            <ion-label [style.text-decoration]="item.status === 'completed' ? 'line-through' : ''">
-              {{ item.title }}
-            </ion-label>
-            <ion-badge slot="end" [color]="item.priority === 'high' ? 'danger' : item.priority === 'low' ? 'medium' : 'warning'">
-              {{ item.priority === 'high' ? 'Hoch' : item.priority === 'low' ? 'Niedrig' : 'Mittel' }}
-            </ion-badge>
-          </ion-item>
-        }
-      </ion-list>
+
+    <!-- If the plan has no agenda-items placeholder, show the agenda section at the top -->
+    @if (!planFieldsWithPlaceholder.length || !planFieldsWithPlaceholder.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID)) {
+      <ng-container *ngTemplateOutlet="agendaSection"></ng-container>
     }
 
-    <!-- One Tiptap editor section per plan field -->
-    @for (field of planFields; track field.id) {
-      <ion-item-divider style="margin-top: 16px">
-        <ion-label>{{ field.name }}</ion-label>
-        <ion-buttons slot="end">
-          <ion-button fill="clear" size="small" (click)="linkAgendaItem(field.id)" title="Tagesordnungspunkt verknüpfen">
-            <ion-icon slot="icon-only" name="list-circle-outline" color="secondary"></ion-icon>
-          </ion-button>
-          <ion-button fill="clear" size="small" (click)="createTaskInline(field.id)" title="Aufgabe erstellen">
-            <ion-icon slot="icon-only" name="checkmark-circle-outline" color="primary"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-item-divider>
-      <div class="editor-wrapper">
-        <app-tiptap-editor
-          [content]="getSectionContent(field.id)"
-          [editable]="true"
-          (contentChange)="onSectionChange(field.id, $event)">
-        </app-tiptap-editor>
-      </div>
+    <!-- Plan field sections — inline agenda items at the placeholder position -->
+    @for (field of planFieldsWithPlaceholder; track field.id) {
+      @if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID) {
+        <ng-container *ngTemplateOutlet="agendaSection"></ng-container>
+      } @else {
+        <ion-item-divider [style.margin-top]="'16px'">
+          <ion-label>{{ field.name }}</ion-label>
+          <ion-buttons slot="end">
+            <ion-button fill="clear" size="small" (click)="linkAgendaItem(field.id)" title="Tagesordnungspunkt verknüpfen">
+              <ion-icon slot="icon-only" name="list-circle-outline" color="secondary"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" size="small" (click)="createTaskInline(field.id)" title="Aufgabe erstellen">
+              <ion-icon slot="icon-only" name="checkmark-circle-outline" color="primary"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item-divider>
+        <div class="editor-wrapper">
+          <app-tiptap-editor
+            [content]="getSectionContent(field.id)"
+            [editable]="true"
+            (contentChange)="onSectionChange(field.id, $event)">
+          </app-tiptap-editor>
+        </div>
+      }
     }
 
     <!-- General notes always visible -->
@@ -122,14 +89,59 @@
       </ion-list>
     }
   }
-</ng-template>
+</ion-content>
 
-@if (!inline) {
-  <ion-content class="ion-padding">
-    <ng-container *ngTemplateOutlet="protocolContent"></ng-container>
-  </ion-content>
-} @else {
-  <div class="ion-padding-horizontal ion-padding-bottom">
-    <ng-container *ngTemplateOutlet="protocolContent"></ng-container>
-  </div>
-}
+<!-- Agenda items section template — rendered at placeholder position or top -->
+<ng-template #agendaSection>
+  <ion-item-divider style="margin-top: 16px">
+    <ion-label>Tagesordnungspunkte</ion-label>
+    <ion-buttons slot="end">
+      @if (isSaving) {
+        <ion-spinner name="dots" style="margin-right: 8px; width: 16px; height: 16px;"></ion-spinner>
+      }
+      <ion-button fill="clear" size="small" (click)="addAgendaItem()" title="Neu erstellen">
+        <ion-icon slot="icon-only" name="add-circle-outline" color="primary"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" size="small" (click)="linkAgendaItemToProtocol()" title="Bestehenden verknüpfen">
+        <ion-icon slot="icon-only" name="link-outline" color="secondary"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-item-divider>
+  @if (linkedAgendaItems.length === 0) {
+    <p class="ion-padding-horizontal" style="color: var(--ion-color-medium); font-size: 0.9em">
+      Keine verknüpften Tagesordnungspunkte. Neu erstellen (+) oder bestehenden verknüpfen (🔗).
+    </p>
+  } @else {
+    <ion-accordion-group [multiple]="true">
+      @for (item of linkedAgendaItems; track item.id) {
+        <ion-accordion [value]="item.id">
+          <ion-item slot="header">
+            <ion-checkbox
+              [checked]="item.status === 'completed'"
+              (ionChange)="toggleAgendaItemStatus(item); $event.stopPropagation()"
+              (click)="$event.stopPropagation()"
+              slot="start">
+            </ion-checkbox>
+            <ion-label [style.text-decoration]="item.status === 'completed' ? 'line-through' : ''">
+              {{ item.title }}
+            </ion-label>
+            <ion-badge slot="end" [color]="item.priority === 'high' ? 'danger' : item.priority === 'low' ? 'medium' : 'warning'">
+              {{ item.priority === 'high' ? 'Hoch' : item.priority === 'low' ? 'Niedrig' : 'Mittel' }}
+            </ion-badge>
+            <ion-button slot="end" fill="clear" size="small" color="medium"
+              (click)="unlinkAgendaItem(item); $event.stopPropagation()">
+              <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+          <div slot="content" class="editor-wrapper agenda-editor">
+            <app-tiptap-editor
+              [content]="getSectionContent('__agenda__' + item.id)"
+              [editable]="true"
+              (contentChange)="onSectionChange('__agenda__' + item.id, $event)">
+            </app-tiptap-editor>
+          </div>
+        </ion-accordion>
+      }
+    </ion-accordion-group>
+  }
+</ng-template>

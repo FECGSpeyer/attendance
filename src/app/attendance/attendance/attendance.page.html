@@ -554,17 +554,10 @@
     <!-- Protocol Section -->
     @if (type?.enable_protocol) {
     <ion-item-group>
-      <ion-accordion-group>
-        <ion-accordion value="protocol">
-          <ion-item slot="header">
-            <ion-icon name="document-text-outline" slot="start" [color]="hasProtocol ? 'success' : ''"></ion-icon>
-            <ion-label>Protokoll</ion-label>
-          </ion-item>
-          <div slot="content">
-            <app-protocol [attendanceId]="attendance.id" [inline]="true"></app-protocol>
-          </div>
-        </ion-accordion>
-      </ion-accordion-group>
+      <ion-item [routerLink]="['/tabs/attendance', attendance.id, 'protocol']" detail button>
+        <ion-icon name="document-text-outline" slot="start" [color]="hasProtocol ? 'success' : ''"></ion-icon>
+        <ion-label>Protokoll</ion-label>
+      </ion-item>
     </ion-item-group>
     }
 

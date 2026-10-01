@@ -1,11 +1,11 @@
 import {
   Component,
-  Input,
   OnInit,
   QueryList,
   ViewChildren,
 } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular/lazy';
+import { ActivatedRoute } from '@angular/router';
+import { AlertController } from '@ionic/angular/lazy';
 import { JSONContent } from '@tiptap/core';
 import { TiptapEditorComponent } from 'src/app/shared/tiptap-editor/tiptap-editor.component';
 import { DbService } from 'src/app/services/db.service';
@@ -30,10 +30,9 @@ import { Utils } from 'src/app/utilities/Utils';
   standalone: false,
 })
 export class ProtocolPage implements OnInit {
-  @Input() attendanceId: number;
-  @Input() inline = false;
   @ViewChildren(TiptapEditorComponent) editors: QueryList<TiptapEditorComponent>;
 
+  public attendanceId: number;
   public attendance: Attendance;
   public protocol: Protocol;
   public agendaItems: AgendaItem[] = [];
@@ -41,6 +40,7 @@ export class ProtocolPage implements OnInit {
   public tasks: Task[] = [];
   public players: Person[] = [];
   public planFields: FieldSelection[] = [];
+  public planFieldsWithPlaceholder: FieldSelection[] = [];
   public isSaving = false;
   public isLoading = true;
   public showSlashMenu = false;
@@ -51,11 +51,13 @@ export class ProtocolPage implements OnInit {
 
   constructor(
     private db: DbService,
-    private modalController: ModalController,
+    private route: ActivatedRoute,
     private alertController: AlertController,
   ) {}
 
   async ngOnInit() {
+    this.attendanceId = +this.route.snapshot.params['attendanceId'];
+
     const [attendance, protocol, agendaItems, allPlayers] = await Promise.all([
       this.db.getAttendanceById(this.attendanceId),
       this.db.getProtocolForAttendance(this.attendanceId),
@@ -70,6 +72,7 @@ export class ProtocolPage implements OnInit {
     this.planFields = (attendance.plan?.fields ?? []).filter(
       (f: FieldSelection) => f.id !== AGENDA_ITEMS_PLACEHOLDER_ID
     );
+    this.planFieldsWithPlaceholder = attendance.plan?.fields ?? [];
 
     this.protocol = protocol ?? {
       attendance_id: this.attendanceId,
@@ -130,7 +133,6 @@ export class ProtocolPage implements OnInit {
               attendance_id: this.attendanceId,
             });
             this.tasks = [...this.tasks, task];
-            // Insert task ref node into the relevant section editor
             const editorIndex = this.planFields.findIndex(f => f.id === fieldId);
             const editor = this.editors.toArray()[editorIndex];
             editor?.insertTaskRef({ id: task.id, title: task.title, status: task.status });
@@ -244,7 +246,13 @@ export class ProtocolPage implements OnInit {
     item.status = newStatus;
   }
 
-  dismiss() {
-    this.modalController.dismiss({ protocolId: this.protocol?.id });
+  async unlinkAgendaItem(item: AgendaItem) {
+    await this.db.unlinkAgendaItemFromAttendance(item.id, this.attendanceId);
+    this.linkedAgendaItems = this.linkedAgendaItems.filter(a => a.id !== item.id);
+    // remove the editor content for this item from the protocol
+    if (this.protocol.content?.['__agenda__' + item.id]) {
+      delete this.protocol.content['__agenda__' + item.id];
+      await this.persistProtocol();
+    }
   }
 }
