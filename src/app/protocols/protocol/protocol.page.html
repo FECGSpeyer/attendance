@@ -1,0 +1,135 @@
+@if (!inline) {
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()" fill="clear">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Protokoll</ion-title>
+    @if (isSaving) {
+      <ion-buttons slot="end">
+        <ion-spinner name="dots" style="margin-right: 12px"></ion-spinner>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+}
+
+<ng-template #protocolContent>
+  @if (isLoading) {
+    <div class="ion-text-center ion-padding">
+      <ion-spinner></ion-spinner>
+    </div>
+  } @else {
+    <!-- Linked Agenda Items section -->
+    <ion-item-divider>
+      <ion-label>Tagesordnungspunkte</ion-label>
+      <ion-buttons slot="end">
+        @if (isSaving) {
+          <ion-spinner name="dots" style="margin-right: 8px; width: 16px; height: 16px;"></ion-spinner>
+        }
+        <ion-button fill="clear" size="small" (click)="addAgendaItem()" title="Neu erstellen">
+          <ion-icon slot="icon-only" name="add-circle-outline" color="primary"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="linkAgendaItemToProtocol()" title="Bestehenden verknüpfen">
+          <ion-icon slot="icon-only" name="link-outline" color="secondary"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-item-divider>
+    @if (linkedAgendaItems.length === 0) {
+      <p class="ion-padding-horizontal" style="color: var(--ion-color-medium); font-size: 0.9em">
+        Keine verknüpften Tagesordnungspunkte. Neu erstellen (+) oder bestehenden verknüpfen (🔗).
+      </p>
+    } @else {
+      <ion-list>
+        @for (item of linkedAgendaItems; track item.id) {
+          <ion-item>
+            <ion-checkbox
+              [checked]="item.status === 'completed'"
+              (ionChange)="toggleAgendaItemStatus(item)"
+              slot="start">
+            </ion-checkbox>
+            <ion-label [style.text-decoration]="item.status === 'completed' ? 'line-through' : ''">
+              {{ item.title }}
+            </ion-label>
+            <ion-badge slot="end" [color]="item.priority === 'high' ? 'danger' : item.priority === 'low' ? 'medium' : 'warning'">
+              {{ item.priority === 'high' ? 'Hoch' : item.priority === 'low' ? 'Niedrig' : 'Mittel' }}
+            </ion-badge>
+          </ion-item>
+        }
+      </ion-list>
+    }
+
+    <!-- One Tiptap editor section per plan field -->
+    @for (field of planFields; track field.id) {
+      <ion-item-divider style="margin-top: 16px">
+        <ion-label>{{ field.name }}</ion-label>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" size="small" (click)="linkAgendaItem(field.id)" title="Tagesordnungspunkt verknüpfen">
+            <ion-icon slot="icon-only" name="list-circle-outline" color="secondary"></ion-icon>
+          </ion-button>
+          <ion-button fill="clear" size="small" (click)="createTaskInline(field.id)" title="Aufgabe erstellen">
+            <ion-icon slot="icon-only" name="checkmark-circle-outline" color="primary"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-item-divider>
+      <div class="editor-wrapper">
+        <app-tiptap-editor
+          [content]="getSectionContent(field.id)"
+          [editable]="true"
+          (contentChange)="onSectionChange(field.id, $event)">
+        </app-tiptap-editor>
+      </div>
+    }
+
+    <!-- General notes always visible -->
+    <ion-item-divider style="margin-top: 16px">
+      <ion-label>Allgemeine Notizen</ion-label>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" size="small" (click)="createTaskInline('__general__')" title="Aufgabe erstellen">
+          <ion-icon slot="icon-only" name="checkmark-circle-outline" color="primary"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-item-divider>
+    <div class="editor-wrapper">
+      <app-tiptap-editor
+        [content]="getSectionContent('__general__')"
+        [editable]="true"
+        (contentChange)="onSectionChange('__general__', $event)">
+      </app-tiptap-editor>
+    </div>
+
+    <!-- Tasks created in this protocol -->
+    @if (tasks.length > 0) {
+      <ion-item-divider style="margin-top: 16px">
+        <ion-label>Aufgaben aus diesem Protokoll ({{ tasks.length }})</ion-label>
+      </ion-item-divider>
+      <ion-list>
+        @for (task of tasks; track task.id) {
+          <ion-item [routerLink]="['/tabs/settings/tasks', task.id]" detail button>
+            <ion-label>
+              <h3>{{ task.title }}</h3>
+              @if (task.due_date) {
+                <p>Fällig: {{ task.due_date | date:'dd.MM.yyyy' }}</p>
+              }
+            </ion-label>
+            <ion-badge slot="end" [color]="task.status === 'completed' ? 'success' : task.status === 'in_progress' ? 'warning' : 'primary'">
+              {{ task.status === 'completed' ? 'Erledigt' : task.status === 'in_progress' ? 'In Bearbeitung' : 'Offen' }}
+            </ion-badge>
+          </ion-item>
+        }
+      </ion-list>
+    }
+  }
+</ng-template>
+
+@if (!inline) {
+  <ion-content class="ion-padding">
+    <ng-container *ngTemplateOutlet="protocolContent"></ng-container>
+  </ion-content>
+} @else {
+  <div class="ion-padding-horizontal ion-padding-bottom">
+    <ng-container *ngTemplateOutlet="protocolContent"></ng-container>
+  </div>
+}

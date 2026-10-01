@@ -1,0 +1,85 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="/tabs/settings/team-organization"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Aufgaben</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="activeSegment" (ionChange)="onSegmentChange($event)">
+      <ion-segment-button value="open">
+        <ion-label>Offen</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="in_progress">
+        <ion-label>In Bearbeitung</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="completed">
+        <ion-label>Erledigt</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="all">
+        <ion-label>Alle</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (isLoading) {
+    <ion-list>
+      @for (i of [1,2,3]; track i) {
+        <ion-item>
+          <ion-label>
+            <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 35%"></ion-skeleton-text>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  } @else if (filteredTasks.length === 0) {
+    <div class="ion-text-center ion-padding-top">
+      <ion-icon name="checkmark-circle-outline" style="font-size: 48px; color: var(--ion-color-medium)"></ion-icon>
+      <p style="color: var(--ion-color-medium)">Keine Aufgaben</p>
+    </div>
+  } @else {
+    <ion-list>
+      @for (task of filteredTasks; track trackById($index, task)) {
+        <ion-item-sliding #slider>
+          <ion-item [routerLink]="['/tabs/settings/tasks', task.id]" detail="false" button>
+            <ion-label [color]="isOverdue(task) ? 'danger' : ''">
+              <h2>{{ task.title }}</h2>
+              @if (task.responsible_person) {
+                <h3>{{ task.responsible_person.firstName }} {{ task.responsible_person.lastName }}</h3>
+              }
+              @if (task.due_date) {
+                <p [style.color]="isOverdue(task) ? 'var(--ion-color-danger)' : ''">
+                  {{ isOverdue(task) ? '⚠ Überfällig' : 'Fällig' }}: {{ task.due_date | date:'dd.MM.yyyy' }}
+                </p>
+              }
+            </ion-label>
+            <div slot="end" class="badges">
+              <ion-badge [color]="getStatusColor(task.status)">{{ getStatusLabel(task.status) }}</ion-badge>
+              <ion-badge [color]="getPriorityColor(task.priority)" style="margin-left: 4px">
+                {{ task.priority === 'high' ? 'Hoch' : task.priority === 'low' ? 'Niedrig' : 'Mittel' }}
+              </ion-badge>
+            </div>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="danger" (click)="removeTask(task.id, slider)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      }
+    </ion-list>
+  }
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="addTask()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

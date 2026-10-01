@@ -1,0 +1,145 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="/tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Teamorganisation</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="activeSegment" (ionChange)="onSegmentChange($event)">
+      <ion-segment-button value="tasks">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+        <ion-label>Aufgaben</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="agenda">
+        <ion-icon name="list-circle-outline"></ion-icon>
+        <ion-label>Tagesordnung</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="protocols">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <ion-label>Protokolle</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- TASKS -->
+  @if (activeSegment === 'tasks') {
+    @if (isLoading) {
+      <ion-list>
+        @for (i of [1,2,3]; track i) {
+          <ion-item>
+            <ion-label><ion-skeleton-text animated style="width: 55%"></ion-skeleton-text></ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    } @else if (tasks.length === 0) {
+      <div class="ion-text-center ion-padding-top">
+        <ion-icon name="checkmark-done-outline" style="font-size: 48px; color: var(--ion-color-medium)"></ion-icon>
+        <p style="color: var(--ion-color-medium)">Keine offenen Aufgaben</p>
+        <ion-button fill="clear" routerLink="/tabs/settings/tasks">Alle Aufgaben</ion-button>
+      </div>
+    } @else {
+      <ion-list>
+        @for (task of tasks; track task.id) {
+          <ion-item [routerLink]="['/tabs/settings/tasks', task.id]" detail="false" button>
+            <ion-label [color]="isOverdue(task) ? 'danger' : ''">
+              <h2>{{ task.title }}</h2>
+              @if (task.responsible_person) {
+                <h3>{{ task.responsible_person.firstName }} {{ task.responsible_person.lastName }}</h3>
+              }
+              @if (task.due_date) {
+                <p>{{ isOverdue(task) ? '⚠ Überfällig' : 'Fällig' }}: {{ task.due_date | date:'dd.MM.yyyy' }}</p>
+              }
+            </ion-label>
+            <ion-badge slot="end" [color]="getPriorityColor(task.priority)">
+              {{ task.priority === 'high' ? 'Hoch' : task.priority === 'low' ? 'Niedrig' : 'Mittel' }}
+            </ion-badge>
+          </ion-item>
+        }
+      </ion-list>
+      <div class="ion-text-center ion-padding">
+        <ion-button fill="clear" routerLink="/tabs/settings/tasks">Alle anzeigen</ion-button>
+      </div>
+    }
+  }
+
+  <!-- AGENDA ITEMS -->
+  @if (activeSegment === 'agenda') {
+    @if (isLoading) {
+      <ion-list>
+        @for (i of [1,2,3]; track i) {
+          <ion-item>
+            <ion-label><ion-skeleton-text animated style="width: 55%"></ion-skeleton-text></ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    } @else if (agendaItems.length === 0) {
+      <div class="ion-text-center ion-padding-top">
+        <ion-icon name="list-circle-outline" style="font-size: 48px; color: var(--ion-color-medium)"></ion-icon>
+        <p style="color: var(--ion-color-medium)">Keine offenen Tagesordnungspunkte</p>
+        <ion-button fill="clear" routerLink="/tabs/settings/agenda-items">Alle Tagesordnungspunkte</ion-button>
+      </div>
+    } @else {
+      <ion-list>
+        @for (item of agendaItems; track item.id) {
+          <ion-item [routerLink]="['/tabs/settings/agenda-items', item.id]" detail="false" button>
+            <ion-label>
+              <h2>{{ item.title }}</h2>
+              @if (item.responsible_person) {
+                <h3>{{ item.responsible_person.firstName }} {{ item.responsible_person.lastName }}</h3>
+              }
+              @if (item.due_date) {
+                <p>Fällig: {{ item.due_date | date:'dd.MM.yyyy' }}</p>
+              }
+            </ion-label>
+            <ion-badge slot="end" [color]="getPriorityColor(item.priority)">
+              {{ item.priority === 'high' ? 'Hoch' : item.priority === 'low' ? 'Niedrig' : 'Mittel' }}
+            </ion-badge>
+          </ion-item>
+        }
+      </ion-list>
+      <div class="ion-text-center ion-padding">
+        <ion-button fill="clear" routerLink="/tabs/settings/agenda-items">Alle anzeigen</ion-button>
+      </div>
+    }
+  }
+
+  <!-- PROTOCOLS -->
+  @if (activeSegment === 'protocols') {
+    @if (isLoading) {
+      <ion-list>
+        @for (i of [1,2,3]; track i) {
+          <ion-item>
+            <ion-label><ion-skeleton-text animated style="width: 55%"></ion-skeleton-text></ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    } @else if (protocols.length === 0) {
+      <div class="ion-text-center ion-padding-top">
+        <ion-icon name="document-text-outline" style="font-size: 48px; color: var(--ion-color-medium)"></ion-icon>
+        <p style="color: var(--ion-color-medium)">Noch keine Protokolle</p>
+      </div>
+    } @else {
+      <ion-list>
+        @for (protocol of protocols; track protocol.id) {
+          <ion-item [routerLink]="['/tabs/attendance', protocol.attendance_id]" detail button>
+            <ion-icon name="document-text-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h2>Protokoll</h2>
+              <h3>Termin #{{ protocol.attendance_id }}</h3>
+              @if (protocol.updated_at) {
+                <p>Aktualisiert: {{ protocol.updated_at | date:'dd.MM.yyyy' }}</p>
+              }
+            </ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    }
+  }
+</ion-content>
