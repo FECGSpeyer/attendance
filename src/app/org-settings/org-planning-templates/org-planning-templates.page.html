@@ -1,0 +1,204 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="/tabs/settings/org-settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Planvorlagen & Felder</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar color="light">
+      <ion-title size="large">Planvorlagen & Felder</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- ── Standardfelder ──────────────────────────────────────────────── -->
+  <ion-list [inset]="true">
+    <ion-list-header>
+      <ion-label>Standardfelder</ion-label>
+      <ion-button fill="clear" size="small" (click)="addDefaultField()">
+        <ion-icon name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-list-header>
+
+    <ion-reorder-group [disabled]="false" (ionItemReorder)="handleDefaultFieldReorder($any($event))">
+      @if (defaultFields.length === 0) {
+      <ion-item>
+        <ion-label color="medium">Noch keine Standardfelder definiert</ion-label>
+      </ion-item>
+      }
+      @for (field of defaultFields; track field.id; let i = $index) {
+      <ion-item-sliding #slider>
+        <ion-item>
+          <ion-label (click)="changeDefaultField(field, slider)">
+            <h2>{{ field.name }}</h2>
+            @if (field.conductor) {
+            <h3>{{ field.conductor }}</h3>
+            }
+          </ion-label>
+          <ion-input style="width: 3rem;" type="number" slot="end" placeholder="min" [(ngModel)]="field.time"
+            (ionBlur)="saveDefaultFields()">
+          </ion-input>
+          <ion-reorder slot="end"></ion-reorder>
+        </ion-item>
+        <ion-item-options (ionSwipe)="removeDefaultField(i, slider)">
+          <ion-item-option expandable color="danger" (click)="removeDefaultField(i, slider)">
+            <ion-icon name="trash"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+      }
+    </ion-reorder-group>
+  </ion-list>
+
+  <ion-list [inset]="true">
+    <ion-item lines="none">
+      <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
+      <ion-label class="ion-text-wrap">
+        <p>Standardfelder erscheinen im Planungs-Menü als schnell hinzufügbare Felder für alle Instanzen der
+          Organisation.</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <!-- ── Vorlagen ────────────────────────────────────────────────────── -->
+  <ion-list [inset]="true">
+    <ion-list-header>
+      <ion-label>Vorlagen</ion-label>
+      <ion-button fill="clear" size="small" (click)="addTemplate()">
+        <ion-icon name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-list-header>
+
+    <ion-item-group>
+      @if (templates.length === 0) {
+      <ion-item>
+        <ion-label color="medium">Noch keine Vorlagen definiert</ion-label>
+      </ion-item>
+      }
+      @for (tpl of templates; track trackByIndex(i); let i = $index) {
+      <!-- Template header row -->
+      <ion-item-sliding #tplSlider>
+        <ion-item button (click)="toggleTemplate(i)">
+          <ion-label>
+            <h2>{{ tpl.title }}</h2>
+            <p>{{ tpl.fields.length }} {{ tpl.fields.length === 1 ? 'Feld' : 'Felder' }}{{ templateDuration(tpl) ? ' · ' + templateDuration(tpl) : '' }}</p>
+          </ion-label>
+          <ion-icon slot="end" [name]="selectedTemplateIndex === i ? 'chevron-up' : 'chevron-down'" color="medium">
+          </ion-icon>
+        </ion-item>
+        <ion-item-options side="end">
+          <ion-item-option (click)="renameTemplate(tpl, tplSlider)">
+            <ion-icon name="pencil-outline" slot="icon-only"></ion-icon>
+          </ion-item-option>
+          <ion-item-option color="danger" (click)="removeTemplate(i, tplSlider)">
+            <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+
+      <!-- Expanded template editor -->
+      @if (selectedTemplateIndex === i) {
+      <!-- Start time -->
+      <ion-item>
+        <ion-label>Startzeit</ion-label>
+        <ion-datetime-button slot="end" [datetime]="'dt-tpl-' + i"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime [id]="'dt-tpl-' + i" presentation="time" locale="de-DE" [(ngModel)]="tpl.time"
+              (ionChange)="onStartTimeChange(tpl, i)">
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+
+      <!-- Field list -->
+      <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorder($any($event), tpl, i)">
+        @for (field of tpl.fields; track field.id; let fi = $index) {
+        <ion-item-sliding #fldSlider>
+          <ion-item [class.note-item]="field.id?.includes('noteFld')"
+            [lines]="field.id?.includes('noteFld') ? 'none' : 'full'">
+            <ion-label (click)="changeField(field, tpl, i)" [class.note-field]="field.id?.includes('noteFld')">
+              @if (field.id?.startsWith('song-placeholder-')) {
+              <h2><em>{{ field.name }}</em></h2>
+              } @else {
+              <h2>{{ field.name }}</h2>
+              @if (!field.id?.includes('noteFld') && calculateTime(field, fi, tpl)) {
+              <h3>{{ calculateTime(field, fi, tpl) }}</h3>
+              }
+              }
+            </ion-label>
+            @if (!field.id?.includes('noteFld')) {
+            <ion-input style="width: 3rem;" type="number" slot="end" placeholder="min" [(ngModel)]="field.time"
+              (ionBlur)="updateTemplateEndPublic(tpl, i); saveTemplates()">
+            </ion-input>
+            }
+            <ion-reorder slot="end"></ion-reorder>
+          </ion-item>
+          <ion-item-options (ionSwipe)="removeField(fi, tpl, i, fldSlider)">
+            <ion-item-option expandable color="danger" (click)="removeField(fi, tpl, i, fldSlider)">
+              <ion-icon name="trash"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+        }
+      </ion-reorder-group>
+
+      <!-- Add field button -->
+      <ion-item>
+        <ion-button [id]="'add-tpl-' + i" fill="clear" size="small">
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          Feld hinzufügen
+        </ion-button>
+        <ion-popover [trigger]="'add-tpl-' + i" triggerAction="click" #addTplPopover>
+          <ng-template>
+            <ion-item button (click)="addExtraField(tpl, i, addTplPopover)">
+              <ion-label>Feld hinzufügen</ion-label>
+            </ion-item>
+            <ion-item button (click)="addNoteField(tpl, i, addTplPopover)">
+              <ion-label>Notizfeld hinzufügen</ion-label>
+            </ion-item>
+            @if (!isGeneral) {
+            <ion-item button (click)="addSongPlaceholder(tpl, i, addTplPopover)">
+              <ion-label>Werk-Platzhalter</ion-label>
+            </ion-item>
+            }
+            @if (defaultFields.length) {
+            <ion-item-divider></ion-item-divider>
+            <ion-item lines="none">
+              <ion-label><small><b>Standardfelder</b></small></ion-label>
+            </ion-item>
+            @for (f of defaultFields; track f.id) {
+            <ion-item button (click)="addOrgDefaultField(f, tpl, i, addTplPopover)">
+              <ion-label>{{ f.name }} <ion-note>{{ f.time }} min</ion-note></ion-label>
+            </ion-item>
+            }
+            }
+          </ng-template>
+        </ion-popover>
+      </ion-item>
+
+      @if (templateEnds[i]) {
+      <ion-item lines="none">
+        <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
+        <ion-label color="medium">Ende ca. {{ templateEnds[i] | date:'HH:mm' }}</ion-label>
+      </ion-item>
+      }
+      }
+      }
+    </ion-item-group>
+  </ion-list>
+
+  <ion-list [inset]="true">
+    <ion-item lines="none">
+      <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
+      <ion-label class="ion-text-wrap">
+        <p>Vorlagen können beim Planen mit einem Tippen auf das Programm angewendet werden und ersetzen dabei den
+          aktuellen Ablauf.</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+</ion-content>

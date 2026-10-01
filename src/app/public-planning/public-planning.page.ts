@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
-import { FieldSelection, SharedPlan } from '../utilities/interfaces';
+import { FieldSelection, History, Plan, SharedPlan, Song } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 import {
   PUBLIC_PLANNING_TEMPLATES,
@@ -39,6 +39,12 @@ export class PublicPlanningPage implements OnInit {
   public isOrgPlan = false;
   public fromOrgPlans = false;
   public orgPlansBackHref = '/tabs/settings';
+  public isGeneral = false;
+  public songs: Song[] = [];
+  public filteredSongs: Song[] = [];
+  public history: History[] = [];
+  public isSongSelectorOpen = false;
+  public songSearchTerm = '';
 
   private currentPlanId: string | null = null;
   private currentEditKey: string | null = null;
@@ -75,12 +81,37 @@ export class PublicPlanningPage implements OnInit {
       this.applyTemplate(this.templates[0]);
     }
     this.calculateEnd();
+
+    if (this.isLoggedIn) {
+      this.isGeneral = this.db.tenant().type === 'general';
+      this.songs = await this.db.getSongs();
+      this.filteredSongs = [...this.songs];
+      this.history = await this.db.getUpcomingHistory();
+      // Re-resolve any placeholder fields that were applied before songs/history loaded
+      this.selectedFields = this.resolvePublicTemplateFields(this.selectedFields);
+      this.calculateEnd();
+    }
   }
 
   // ---- template handling ----
   onTemplateChange() {
+    if (this.selectedTemplateId?.startsWith('org:')) {
+      const idx = Number(this.selectedTemplateId.slice(4));
+      const tpl = this.orgTemplates[idx];
+      if (!tpl) { return; }
+      this.confirmReplace(() => {
+        this.selectedFields = this.resolvePlaceholderFields(tpl.fields);
+        if (tpl.title) { this.planTitle = tpl.title; }
+        if (tpl.time) {
+          const base = dayjs(tpl.time).isValid() ? dayjs(tpl.time) : null;
+          if (base) { this.time = dayjs(this.date).hour(base.hour()).minute(base.minute()).format('YYYY-MM-DDTHH:mm'); }
+        }
+        this.calculateEnd();
+      });
+      return;
+    }
     const tpl = this.templates.find(t => t.id === this.selectedTemplateId);
-    if (!tpl) {return;}
+    if (!tpl) { return; }
     this.confirmReplace(() => this.applyTemplate(tpl));
   }
 
@@ -90,8 +121,125 @@ export class PublicPlanningPage implements OnInit {
       const [h, m] = tpl.startTime.split(':').map(Number);
       this.time = dayjs(this.date).hour(h).minute(m).format('YYYY-MM-DDTHH:mm');
     }
-    this.selectedFields = cloneTemplateFields(tpl);
+    this.selectedFields = this.resolvePublicTemplateFields(cloneTemplateFields(tpl));
     this.calculateEnd();
+  }
+
+  private resolvePublicTemplateFields(fields: FieldSelection[]): FieldSelection[] {
+    const PLACEHOLDER = /^(Chor\/Orchester|Werk\s+\d+)/i;
+    const songsAdded = new Set<string>();
+    return fields.map(field => {
+      if (!PLACEHOLDER.test(field.name)) { return field; }
+      const his = this.history.find(h => !songsAdded.has(String(h.songId)));
+      if (!his) { return field; }
+      songsAdded.add(String(his.songId));
+      const song: Song = this.songs.find(s => s.id === his.songId);
+      if (!song) { return field; }
+      return {
+        ...field,
+        id: String(song.id),
+        name: `${song.number}. ${song.name}`,
+        conductor: his.conductorName || field.conductor || '',
+        songId: song.id,
+      };
+    });
+  }
+
+  get orgTemplates(): Plan[] {
+    return this.db.organisation?.()?.planning_templates ?? [];
+  }
+
+  get orgDefaultFields(): FieldSelection[] {
+    return this.db.organisation?.()?.default_fields ?? [];
+  }
+
+  addOrgField(field: FieldSelection, popover: IonPopover) {
+    popover.dismiss();
+    this.selectedFields.push({ ...field });
+    this.calculateEnd();
+  }
+
+  // ---- song operations ----
+  private resolvePlaceholderFields(fields: FieldSelection[]): FieldSelection[] {
+    const songsAdded = new Set<string>();
+    const result: FieldSelection[] = [];
+    for (const field of fields) {
+      if (field.id?.startsWith('song-placeholder-')) {
+        const his = this.history.find(h => !songsAdded.has(String(h.songId)));
+        if (his) {
+          songsAdded.add(String(his.songId));
+          const song: Song = this.songs.find(s => s.id === his.songId);
+          if (song) {
+            result.push({
+              ...field,
+              id: String(song.id),
+              name: `${song.number}. ${song.name}`,
+              conductor: his.conductorName || '',
+              songId: song.id,
+            });
+          }
+        }
+        continue;
+      }
+      result.push({ ...field });
+    }
+    return result;
+  }
+
+  addCurrentSongs(popover: IonPopover) {
+    popover.dismiss();
+    for (const his of this.history) {
+      if (!this.selectedFields.find(f => Number(f.id) === his.songId)) {
+        const song: Song = this.songs.find(s => s.id === his.songId);
+        if (!song) { continue; }
+        this.selectedFields.push({
+          id: String(song.id),
+          name: `${song.number}. ${song.name}`,
+          time: '20',
+          conductor: his.conductorName || '',
+          songId: song.id,
+        });
+      }
+    }
+    this.calculateEnd();
+  }
+
+  openSongSelector(popover: IonPopover) {
+    popover.dismiss();
+    this.isSongSelectorOpen = true;
+  }
+
+  closeSongSelector() {
+    this.isSongSelectorOpen = false;
+  }
+
+  selectSong(songId: number) {
+    const song: Song = this.songs.find(s => s.id === songId);
+    if (!song) { return; }
+    const conductor = this.history?.find(h => h.songId === song.id)?.conductorName;
+    this.selectedFields.push({
+      id: String(song.id),
+      name: `${song.number}. ${song.name}`,
+      time: '20',
+      conductor: conductor || '',
+      songId: song.id,
+    });
+    this.calculateEnd();
+    this.isSongSelectorOpen = false;
+  }
+
+  onSongSearch(event: any) {
+    const term = event.target.value?.toLowerCase() ?? '';
+    this.songSearchTerm = term;
+    if (!term) { this.filteredSongs = [...this.songs]; return; }
+    this.filteredSongs = this.songs.filter(s =>
+      s.name?.toLowerCase().includes(term) || String(s.number).includes(term) || s.composer?.toLowerCase().includes(term)
+    );
+  }
+
+  resetSongSearch() {
+    this.songSearchTerm = '';
+    this.filteredSongs = [...this.songs];
   }
 
   private async confirmReplace(onConfirm: () => void) {

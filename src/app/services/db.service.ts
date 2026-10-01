@@ -5,7 +5,7 @@ import { SupabaseClient, User } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SUPER_DEVELOPER_EMAIL, SupabaseTable } from '../utilities/constants';
-import { Attendance, ExtraField, History, Group, Meeting, Person, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence, DashboardCardConfig, DEFAULT_DASHBOARD_CARDS } from '../utilities/interfaces';
+import { Attendance, ExtraField, FieldSelection, History, Group, Meeting, Person, Plan, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence, DashboardCardConfig, DEFAULT_DASHBOARD_CARDS } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
@@ -600,6 +600,22 @@ export class DbService {
     const org = this.organisation();
     if (!org?.id) { return; }
     const data = await this.orgSvc.updateOrgExtraFields(org.id, fields);
+    this.organisation.set({ ...org, ...data });
+  }
+
+  async updateOrgPlanningTemplates(templates: Plan[]): Promise<void> {
+    this.checkDemoRestriction();
+    const org = this.organisation();
+    if (!org?.id) { return; }
+    const data = await this.orgSvc.updateOrgPlanningTemplates(org.id, templates);
+    this.organisation.set({ ...org, ...data });
+  }
+
+  async updateOrgDefaultFields(fields: FieldSelection[]): Promise<void> {
+    this.checkDemoRestriction();
+    const org = this.organisation();
+    if (!org?.id) { return; }
+    const data = await this.orgSvc.updateOrgDefaultFields(org.id, fields);
     this.organisation.set({ ...org, ...data });
   }
 

@@ -8,6 +8,10 @@ const routes: Routes = [
     path: 'person-fields',
     loadChildren: () => import('./org-person-fields/org-person-fields.module').then(m => m.OrgPersonFieldsPageModule),
   },
+  {
+    path: 'planning-templates',
+    loadChildren: () => import('./org-planning-templates/org-planning-templates.module').then(m => m.OrgPlanningTemplatesPageModule),
+  },
 ];
 
 @NgModule({

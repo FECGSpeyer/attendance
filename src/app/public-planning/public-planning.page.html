@@ -34,7 +34,13 @@
     <ion-item>
       <ion-select label="Vorlage" [(ngModel)]="selectedTemplateId" (ionChange)="onTemplateChange()" interface="popover">
         @for (tpl of templates; track tpl.id) {
-        <ion-select-option [value]="tpl.id">{{ tpl.name }}</ion-select-option>
+          <ion-select-option [value]="tpl.id">{{ tpl.name }}</ion-select-option>
+        }
+        @if (isLoggedIn && orgTemplates.length) {
+          <ion-select-option disabled="true" value="">── Org-Vorlagen ──</ion-select-option>
+          @for (tpl of orgTemplates; track tpl.title; let i = $index) {
+            <ion-select-option [value]="'org:' + i">{{ tpl.title }} (Org)</ion-select-option>
+          }
         }
       </ion-select>
     </ion-item>
@@ -87,12 +93,74 @@
           <ion-item button (click)="addField(addPopover)">
             <ion-label>Feld hinzufügen</ion-label>
           </ion-item>
-          <ion-item button lines="none" (click)="addNoteField(addPopover)">
+          <ion-item button (click)="addNoteField(addPopover)">
             <ion-label>Notizfeld hinzufügen</ion-label>
           </ion-item>
+          @if (isLoggedIn && !isGeneral) {
+            <ion-item button (click)="addCurrentSongs(addPopover)">
+              <ion-label>Aktuelle Werke hinzufügen</ion-label>
+            </ion-item>
+            @if (songs.length) {
+              <ion-item button (click)="openSongSelector(addPopover)">
+                <ion-label>Werk hinzufügen</ion-label>
+              </ion-item>
+            }
+          }
+          @if (isLoggedIn && orgDefaultFields.length) {
+            <ion-item-divider></ion-item-divider>
+            <ion-item lines="none">
+              <ion-label><small><b>Felder</b></small></ion-label>
+            </ion-item>
+            @for (f of orgDefaultFields; track f.name) {
+              <ion-item button (click)="addOrgField(f, addPopover)">
+                <ion-label>{{ f.name }} <ion-note>{{ f.time }} min</ion-note></ion-label>
+              </ion-item>
+            }
+          }
         </ng-template>
       </ion-popover>
     </ion-list-header>
+
+    <ion-modal #songSelectModal [isOpen]="isSongSelectorOpen" (ionModalDidDismiss)="isSongSelectorOpen = false">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Werk auswählen</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="closeSongSelector()">
+                <ion-icon slot="icon-only" name="close"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+          <ion-toolbar>
+            <ion-searchbar [(ngModel)]="songSearchTerm" (ionInput)="onSongSearch($event)" (ionClear)="resetSongSearch()"
+              placeholder="Werk suchen..." [debounce]="250">
+            </ion-searchbar>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content color="light">
+          @if (filteredSongs.length === 0 && songSearchTerm) {
+            <ion-list [inset]="true">
+              <ion-item lines="none">
+                <ion-label class="ion-text-center" color="medium"><p>Keine Werke gefunden</p></ion-label>
+              </ion-item>
+            </ion-list>
+          }
+          @if (filteredSongs.length > 0) {
+            <ion-list [inset]="true">
+              @for (song of filteredSongs; track song.id) {
+                <ion-item button detail="false" (click)="selectSong(song.id)">
+                  <ion-label>
+                    <h2>{{ song.prefix }}{{ song.number }} {{ song.name }}</h2>
+                    @if (song.composer) { <p>{{ song.composer }}</p> }
+                  </ion-label>
+                </ion-item>
+              }
+            </ion-list>
+          }
+        </ion-content>
+      </ng-template>
+    </ion-modal>
 
     <ion-item-group>
       <ion-item>

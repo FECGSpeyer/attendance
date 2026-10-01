@@ -18,6 +18,19 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
     body: `Jedem Programmpunkt im [[Ablaufplan]] kann eine Leitung (Dirigent/Chorleiter) zugewiesen werden. Attendix schlägt dabei Personen aus der [[Historie]] des jeweiligen [[Werk|Werks]] vor.`,
   },
   {
+    id: 'plan-templates',
+    title: 'Planvorlagen & Standardfelder',
+    categoryId: 'planning',
+    keywords: ['vorlage', 'template', 'standardfeld', 'organisation', 'wiederverwendbar'],
+    body: `Unter **Einstellungen → Organisation → Planvorlagen & Felder** können auf Organisationsebene zwei Arten von Planungshilfen definiert werden:
+
+**Standardfelder** sind wiederverwendbare Einzelfelder (z. B. "Begrüßung 5 min") mit Name, Ausführendem und Dauer. Sie erscheinen im Planungs-Menü unter dem Abschnitt "Felder" und können mit einem Tippen dem aktuellen Ablauf hinzugefügt werden.
+
+**Vorlagen** sind vollständige Ablaufpläne mit einem Namen, optionaler Startzeit und einer beliebigen Anzahl von Feldern (inkl. Werk-Platzhaltern). Im Planungs-Menü erscheinen sie oben unter "Vorlagen" — ein Tippen ersetzt den aktuellen Ablauf vollständig durch die Vorlage.
+
+Sowohl Vorlagen als auch Standardfelder stehen allen Instanzen der Organisation zur Verfügung.`,
+  },
+  {
     id: 'plan-share',
     title: 'Ablaufplan exportieren und teilen',
     categoryId: 'planning',

@@ -1161,6 +1161,7 @@ export class Utils {
       case '/tabs/settings/org-settings/branding':
       case '/tabs/settings/org-plans':
       case '/tabs/settings/org-plans/planung':
+      case '/tabs/settings/org-settings/planning-templates':
       case '/tabs/settings/planung':
       case '/tabs/org-plans':
       case '/tabs/org-plans/planung':

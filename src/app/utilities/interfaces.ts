@@ -492,6 +492,8 @@ export interface Organisation {
   logo_url?: string;
   branding_text?: string;
   additional_fields?: ExtraField[];
+  planning_templates?: Plan[];
+  default_fields?: FieldSelection[];
 }
 
 export interface OrganisationPersonFieldValue {

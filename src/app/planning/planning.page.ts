@@ -3,7 +3,7 @@ import { ActionSheetButton, ActionSheetController, AlertController, AlertInput, 
 import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
-import { Attendance, FieldSelection, GroupCategory, History, Group, Person, Song, AttendanceType } from '../utilities/interfaces';
+import { Attendance, FieldSelection, GroupCategory, History, Group, Person, Plan, Song, AttendanceType } from '../utilities/interfaces';
 // jsPDF is lazy-loaded for better initial bundle size
 import { Utils } from '../utilities/Utils';
 import { DefaultAttendanceType } from 'src/app/utilities/constants';
@@ -65,7 +65,7 @@ export class PlanningPage implements OnInit {
     this.hasChatId = Boolean(this.db.tenantUser().telegram_chat_id);
     this.history = await this.db.getUpcomingHistory();
     this.attendances = await this.db.getAttendance();
-    const upcomingAttendances: Attendance[] = (await this.db.getUpcomingAttendances()).reverse();
+    const upcomingAttendances: Attendance[] = await this.db.getUpcomingAttendances();
     if (this.attendanceId) {
       this.attendance = this.attendanceId;
       const att = this.attendances.find((att: Attendance) => att.id === this.attendanceId);
@@ -143,6 +143,12 @@ export class PlanningPage implements OnInit {
       name: 'info',
       value: clone.info,
       placeholder: 'Info-Text (optional)...'
+    }, {
+      type: 'number',
+      label: 'Minuten',
+      name: 'time',
+      value: clone.time ? Number(clone.time) : 20,
+      placeholder: 'Minuten'
     }];
 
     if (field.id.includes('noteFld')) {
@@ -170,6 +176,7 @@ export class PlanningPage implements OnInit {
           field.name = evt.field;
           field.conductor = evt.conductor ?? '';
           field.info = evt.info?.trim() || undefined;
+          field.time = evt.time ? String(evt.time) : field.time;
           this.calculateEnd();
         }
       }]
@@ -280,6 +287,12 @@ export class PlanningPage implements OnInit {
         type: 'textarea',
         name: 'conductor',
         placeholder: 'Ausführenden eingeben...'
+      }, {
+        type: 'number',
+        label: 'Minuten',
+        name: 'time',
+        value: 20,
+        placeholder: 'Minuten'
       }],
       buttons: [{
         text: 'Abbrechen'
@@ -290,7 +303,7 @@ export class PlanningPage implements OnInit {
             id: evt.field,
             name: evt.field,
             conductor: evt.conductor ?? '',
-            time: '20',
+            time: evt.time ? String(evt.time) : '20',
           });
 
           this.calculateEnd();
@@ -770,40 +783,65 @@ export class PlanningPage implements OnInit {
 
   addDefaultFieldsFromAttendanceType(typeId: string) {
     const attType = this.db.attendanceTypes().find((at: AttendanceType) => at.id === typeId);
-    const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
 
     if (attType?.default_plan?.fields?.length) {
-      const songsAdded: Set<string> = new Set<string>();
-      this.selectedFields = [];
-
       this.time = attType.start_time;
-
-      for (const field of attType.default_plan.fields) {
-        if (field.id.startsWith('song-placeholder-')) {
-          const historyItem = this.history.find((his: History) => !songsAdded.has(String(his.songId)));
-          if (historyItem) {
-            songsAdded.add(String(historyItem.songId));
-            const song: Song = this.songs.find((song: Song) => song.id === historyItem.songId);
-            const conductor: string | undefined = this.history?.find((his: History) => his.songId === song.id)?.conductorName;
-            const prefix = attType?.planning_prefix_instance_name ? `${this.db.tenant().longName}: ` : `${song.number}. `;
-
-            this.selectedFields.push({
-              ...field,
-              id: String(song.id),
-              name: `${prefix}${song.name}`,
-              conductor: conductor || '',
-              songId: song.id,
-            });
-          }
-          continue;
-        }
-
-        this.selectedFields.push({ ...field });
-      }
+      this.selectedFields = this.resolvePlaceholderFields(attType.default_plan.fields, attType);
     } else {
       this.selectedFields = [];
     }
 
+    this.calculateEnd();
+  }
+
+  private resolvePlaceholderFields(fields: FieldSelection[], attType?: AttendanceType): FieldSelection[] {
+    const songsAdded: Set<string> = new Set<string>();
+    const result: FieldSelection[] = [];
+
+    for (const field of fields) {
+      if (field.id.startsWith('song-placeholder-')) {
+        const historyItem = this.history.find((his: History) => !songsAdded.has(String(his.songId)));
+        if (historyItem) {
+          songsAdded.add(String(historyItem.songId));
+          const song: Song = this.songs.find((song: Song) => song.id === historyItem.songId);
+          const conductor: string | undefined = this.history?.find((his: History) => his.songId === song.id)?.conductorName;
+          const prefix = attType?.planning_prefix_instance_name ? `${this.db.tenant().longName}: ` : `${song.number}. `;
+
+          result.push({
+            ...field,
+            id: String(song.id),
+            name: `${prefix}${song.name}`,
+            conductor: conductor || '',
+            songId: song.id,
+          });
+        }
+        continue;
+      }
+
+      result.push({ ...field });
+    }
+
+    return result;
+  }
+
+  get availableTemplates(): Plan[] {
+    return this.db.organisation()?.planning_templates ?? [];
+  }
+
+  get orgDefaultFields(): FieldSelection[] {
+    return this.db.organisation()?.default_fields ?? [];
+  }
+
+  applyTemplate(template: Plan, popover: IonPopover) {
+    popover.dismiss();
+    this.selectedFields = this.resolvePlaceholderFields(template.fields);
+    if (template.time) { this.time = template.time; }
+    this.calculateEnd();
+  }
+
+  addOrgField(field: FieldSelection, popover: IonPopover) {
+    popover.dismiss();
+    this.selectedFields.push({ ...field });
     this.calculateEnd();
   }
 

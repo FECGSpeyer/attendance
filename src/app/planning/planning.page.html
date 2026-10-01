@@ -104,9 +104,32 @@
             </ion-item>
           }
           @if (songs.length && !isGeneral) {
-            <ion-item lines="none" (click)="openSongSelector(); addPopover.dismiss()">
+            <ion-item (click)="openSongSelector(); addPopover.dismiss()">
               <ion-label>Werk hinzufügen</ion-label>
             </ion-item>
+          }
+          @if (availableTemplates.length || orgDefaultFields.length) {
+            <ion-item-divider></ion-item-divider>
+            @if (availableTemplates.length) {
+              <ion-item lines="none">
+                <ion-label><small><b>Vorlagen</b></small></ion-label>
+              </ion-item>
+              @for (tpl of availableTemplates; track tpl.title) {
+                <ion-item button (click)="applyTemplate(tpl, addPopover)">
+                  <ion-label>{{ tpl.title }}</ion-label>
+                </ion-item>
+              }
+            }
+            @if (orgDefaultFields.length) {
+              <ion-item lines="none">
+                <ion-label><small><b>Felder</b></small></ion-label>
+              </ion-item>
+              @for (f of orgDefaultFields; track f.name) {
+                <ion-item button (click)="addOrgField(f, addPopover)">
+                  <ion-label>{{ f.name }} <ion-note>{{ f.time }} min</ion-note></ion-label>
+                </ion-item>
+              }
+            }
           }
         </ng-template>
       </ion-popover>

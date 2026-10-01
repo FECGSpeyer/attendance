@@ -51,12 +51,28 @@ export const PUBLIC_PLANNING_TEMPLATES: PublicPlanningTemplate[] = [
     ]
   },
   {
+    id: 'gottesdienst_wednesday', name: 'Gottesdienst (Mittwoch)', startTime: '19:15', fields: [
+      { id: 'g-1', name: 'Gemeinsamer Gesang',    time: '15', conductor: 'Dirigenten' },
+      { id: 'g-2', name: 'Segensgebet',           time: '5' },
+      { id: 'g-3', name: 'Gemeinsamer Gesang',    time: '5', conductor: 'Dirigenten' },
+      { id: 'g-4', name: '1. Predigt',            time: '15' },
+      { id: 'g-5', name: 'Gebet',                 time: '5' },
+      { id: 'g-6', name: 'Chor/Orchester',               time: '5' },
+      { id: 'g-7', name: 'Gemeinsamer Gesang', time: '5', conductor: 'Dirigenten' },
+      { id: 'g-8', name: 'Programm',              time: '10' },
+      { id: 'g-9', name: 'Chor/Orchester',               time: '5' },
+      { id: 'g-12', name: 'Gemeinsamer Gesang',   time: '5', conductor: 'Dirigenten' },
+      { id: 'g-13', name: 'Abschlusspredigt mit Gebet',   time: '25' },
+      { id: 'g-14', name: 'Vermeldungen',   time: '5' },
+    ]
+  },
+  {
     id: 'chorprobe', name: 'Chorprobe', startTime: '19:30', fields: [
       { id: 'c-1', name: 'Segensgebet',         time: '10' },
       { id: 'c-2', name: 'Einsingen',         time: '10' },
-      { id: 'c-3', name: 'Werk 1 proben',     time: '22' },
-      { id: 'c-4', name: 'Werk 2 proben',     time: '22' },
-      { id: 'c-5', name: 'Werk 3 proben',     time: '22' },
+      { id: 'c-3', name: 'Werk 1',     time: '22' },
+      { id: 'c-4', name: 'Werk 2',     time: '22' },
+      { id: 'c-5', name: 'Werk 3',     time: '22' },
       { id: 'c-6', name: 'Abschluss',     time: '4' },
     ]
   },
@@ -64,9 +80,9 @@ export const PUBLIC_PLANNING_TEMPLATES: PublicPlanningTemplate[] = [
     id: 'orchesterprobe', name: 'Orchesterprobe', startTime: '19:30', fields: [
       { id: 'o-1', name: 'Segensgebet',        time: '10' },
       { id: 'o-2', name: 'Registerproben',    time: '20' },
-      { id: 'o-3', name: 'Werk 1 (Tutti)',    time: '20' },
-      { id: 'o-4', name: 'Werk 2 (Tutti)',    time: '20' },
-      { id: 'o-5', name: 'Werk 3 (Tutti)',    time: '20' },
+      { id: 'o-3', name: 'Werk 1',    time: '20' },
+      { id: 'o-4', name: 'Werk 2',    time: '20' },
+      { id: 'o-5', name: 'Werk 3',    time: '20' },
     ]
   },
   {

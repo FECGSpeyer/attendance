@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
-import { ExtraField, Organisation, OrganisationPersonFieldValue, Tenant, Player, Attendance } from '../../utilities/interfaces';
+import { ExtraField, FieldSelection, Organisation, OrganisationPersonFieldValue, Plan, Tenant, Player, Attendance } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 
 @Injectable({
@@ -340,6 +340,38 @@ export class OrganisationService {
       Utils.showToast('Fehler beim Widerrufen des öffentlichen Links', 'danger');
       throw error;
     }
+  }
+
+  async updateOrgPlanningTemplates(orgId: number, templates: Plan[]): Promise<Organisation> {
+    const { data, error } = await supabase
+      .from('tenant_groups')
+      .update({ planning_templates: templates } as any)
+      .eq('id', orgId)
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast('Fehler beim Speichern der Planvorlagen', 'danger');
+      throw error;
+    }
+
+    return data as unknown as Organisation;
+  }
+
+  async updateOrgDefaultFields(orgId: number, fields: FieldSelection[]): Promise<Organisation> {
+    const { data, error } = await supabase
+      .from('tenant_groups')
+      .update({ default_fields: fields } as any)
+      .eq('id', orgId)
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast('Fehler beim Speichern der Standardfelder', 'danger');
+      throw error;
+    }
+
+    return data as unknown as Organisation;
   }
 
   async updateOrgName(orgId: number, name: string): Promise<Organisation> {
