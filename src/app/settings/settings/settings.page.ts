@@ -690,6 +690,10 @@ export class SettingsPage implements OnInit, OnDestroy {
     return this.db.churches()?.length && this.db.getPersonExtraFields().find((f => f.type === FieldType.BFECG_CHURCH)) !== undefined;
   }
 
+  hasProtocolAttendanceType(): boolean {
+    return this.db.attendanceTypes().some(t => t.enable_protocol);
+  }
+
   getVisibleExtraFields() {
     return this.db.getPersonExtraFields().filter(f => f.visibleToPlayers);
   }
