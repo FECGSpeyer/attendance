@@ -51,17 +51,13 @@
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Fälligkeitsdatum</ion-label>
-        <ion-datetime-button datetime="task-due-date-picker"></ion-datetime-button>
-        <ion-modal [keepContentsMounted]="true">
-          <ng-template>
-            <ion-datetime id="task-due-date-picker" presentation="date" [(ngModel)]="task.due_date" locale="de-DE" [showDefaultButtons]="true">
-              <ion-buttons slot="buttons">
-                <ion-button color="danger" (click)="task.due_date = null">Löschen</ion-button>
-              </ion-buttons>
-            </ion-datetime>
-          </ng-template>
-        </ion-modal>
+        <ion-input
+          label="Fälligkeitsdatum"
+          labelPlacement="stacked"
+          type="date"
+          [(ngModel)]="task.due_date"
+          [clearInput]="true">
+        </ion-input>
       </ion-item>
     </ion-list>
 
