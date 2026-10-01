@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.9.6",
+      "date": "1.10.2026",
+      "changes": [
+        "📋 Org-Planvorlagen: Wiederverwendbare Vorlagen und Standardfelder auf Organisationsebene definierbar – verfügbar in Ablaufplanung und Ad-hoc-Planung für alle Instanzen.",
+        "🎵 Ad-hoc-Ablaufplanung: Aktuelle Werke und Werk-Auswahl jetzt verfügbar (wenn eingeloggt); Chor/Orchester- und Werk-Platzhalter werden automatisch aus der Historie befüllt."
+      ]
+    },
+    {
       "version": "4.9.5",
       "date": "1.10.2026",
       "changes": [
