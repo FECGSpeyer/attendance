@@ -555,7 +555,6 @@
     @if (type?.enable_protocol) {
     <ion-item-group>
       <ion-item [routerLink]="['/tabs/attendance', attendance.id, 'protocol']" detail button>
-        <ion-icon name="document-text-outline" slot="start" [color]="hasProtocol ? 'success' : ''"></ion-icon>
         <ion-label>Protokoll</ion-label>
       </ion-item>
     </ion-item-group>
