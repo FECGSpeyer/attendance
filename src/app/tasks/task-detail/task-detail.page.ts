@@ -58,6 +58,11 @@ export class TaskDetailPage implements OnInit {
     return this.task?.status !== 'completed' && !!this.task?.due_date && this.task.due_date < this.today;
   }
 
+  onTaskDateChange(event: CustomEvent) {
+    const raw = event.detail.value;
+    this.task.due_date = raw ? (raw as string).split('T')[0] : null;
+  }
+
   async save() {
     if (!this.task.title?.trim()) {
       Utils.showToast('Bitte einen Titel eingeben', 'warning');

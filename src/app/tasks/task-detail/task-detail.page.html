@@ -56,16 +56,16 @@
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
             <ion-datetime
+              #taskDatePicker
               id="task-due-date-picker"
               presentation="date"
               locale="de-DE"
               [value]="task.due_date ?? undefined"
-              (ionChange)="task.due_date = $any($event.detail.value)?.split('T')[0] ?? null"
-              [showDefaultButtons]="true"
-              doneText="OK"
-              cancelText="Abbrechen">
+              [showDefaultButtons]="false"
+              (ionChange)="onTaskDateChange($event)">
               <ion-buttons slot="buttons">
-                <ion-button color="danger" (click)="task.due_date = null">Löschen</ion-button>
+                <ion-button color="danger" (click)="task.due_date = null; taskDatePicker.reset()">Löschen</ion-button>
+                <ion-button (click)="taskDatePicker.confirm(true)">OK</ion-button>
               </ion-buttons>
             </ion-datetime>
           </ng-template>

@@ -50,16 +50,16 @@
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
             <ion-datetime
+              #agendaDatePicker
               id="agenda-due-date-picker"
               presentation="date"
               locale="de-DE"
               [value]="item.due_date ?? undefined"
-              (ionChange)="item.due_date = $any($event.detail.value)?.split('T')[0] ?? null"
-              [showDefaultButtons]="true"
-              doneText="OK"
-              cancelText="Abbrechen">
+              [showDefaultButtons]="false"
+              (ionChange)="onDueDateChange($event)">
               <ion-buttons slot="buttons">
-                <ion-button color="danger" (click)="item.due_date = null">Löschen</ion-button>
+                <ion-button color="danger" (click)="item.due_date = null; agendaDatePicker.reset()">Löschen</ion-button>
+                <ion-button (click)="agendaDatePicker.confirm(true)">OK</ion-button>
               </ion-buttons>
             </ion-datetime>
           </ng-template>

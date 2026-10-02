@@ -66,6 +66,11 @@ export class AgendaItemDetailPage implements OnInit {
     this.tasks = tasks;
   }
 
+  onDueDateChange(event: CustomEvent) {
+    const raw = event.detail.value;
+    this.item.due_date = raw ? (raw as string).split('T')[0] : null;
+  }
+
   async save() {
     if (!this.item.title?.trim()) {
       Utils.showToast('Bitte einen Titel eingeben', 'warning');
