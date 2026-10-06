@@ -99,6 +99,7 @@ Deno.serve(async (req) => {
     }
 
     let userIds = tenantUsers.map(tu => tu.userId);
+    console.log(`[send-ad-hoc-reminder] tenant=${tenantId} tenantUsers=${userIds.length}`);
 
     // Exclude users linked to an archived player (player.left != null) in this tenant.
     // The push/Telegram recipient path selects purely from tenantUsers/notifications,
@@ -127,9 +128,11 @@ Deno.serve(async (req) => {
     // If targeting a single player, restrict to that one user only.
     if (playerAppId) {
       userIds = userIds.filter(id => id === playerAppId);
+      console.log(`[send-ad-hoc-reminder] tenant=${tenantId} single-player target appId=${playerAppId} matched=${userIds.length}`);
     } else if (playerAppIds && playerAppIds.length > 0) {
       const allowSet = new Set<string>(playerAppIds);
       userIds = userIds.filter(id => allowSet.has(id));
+      console.log(`[send-ad-hoc-reminder] tenant=${tenantId} multi-player target requested=${playerAppIds.length} matchedTenantUsers=${userIds.length}`);
     }
 
     // Fetch notification configs
@@ -151,16 +154,24 @@ Deno.serve(async (req) => {
       console.warn(`[send-ad-hoc-reminder] tenant=${tenantId} notifications=${notifConfigs.length} approaching the 5000-row range cap`);
     }
 
-    // Filter by enabled_tenants and at least one channel
+    // Filter by enabled_tenants and at least one channel.
+    // Coerce to Number on both sides: the DB column may be bigint[], which
+    // PostgREST returns as string[], causing strict-equality mismatches.
+    const tenantIdNum = Number(tenantId);
     const eligibleConfigs = (notifConfigs as NotificationConfig[]).filter(nc => {
       const hasChannel = nc.telegram_chat_id || nc.push_enabled;
       if (!hasChannel) return false;
       if (!nc.enabled_tenants || nc.enabled_tenants.length === 0) return true;
-      return nc.enabled_tenants.includes(tenantId);
+      return nc.enabled_tenants.map(Number).includes(tenantIdNum);
     });
 
     if (eligibleConfigs.length === 0) {
-      console.log(`[send-ad-hoc-reminder] tenant=${tenantId} no eligible recipients after enabled_tenants/channel filter`);
+      const noChannel = (notifConfigs as NotificationConfig[]).filter(nc => !nc.telegram_chat_id && !nc.push_enabled).length;
+      const wrongTenant = (notifConfigs as NotificationConfig[]).filter(nc => {
+        if (!nc.enabled_tenants || nc.enabled_tenants.length === 0) return false;
+        return !nc.enabled_tenants.map(Number).includes(tenantIdNum);
+      }).length;
+      console.log(`[send-ad-hoc-reminder] tenant=${tenantId} no eligible recipients after enabled_tenants/channel filter (noChannel=${noChannel} wrongTenant=${wrongTenant} total=${(notifConfigs as NotificationConfig[]).length})`);
       return new Response(JSON.stringify({ sent: 0, message: 'No eligible recipients' }), {
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
