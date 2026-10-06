@@ -44,6 +44,9 @@ export class NotificationService {
       return newData;
     }
 
+    if (data.enabled_tenants) {
+      data.enabled_tenants = data.enabled_tenants.map(Number);
+    }
     return data;
   }
 

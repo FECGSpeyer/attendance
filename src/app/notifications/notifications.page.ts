@@ -77,7 +77,7 @@ export class NotificationsPage implements OnInit, OnDestroy {
   }
 
   toggleTenant(tenantId: number) {
-    const tenants = this.notificationConfig.enabled_tenants || [];
+    const tenants = (this.notificationConfig.enabled_tenants || []).map(Number);
     if (tenants.includes(tenantId)) {
       this.notificationConfig.enabled_tenants = tenants.filter(id => id !== tenantId);
     } else {
