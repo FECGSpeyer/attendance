@@ -264,13 +264,21 @@ Deno.serve(async (req) => {
         .single();
       const mainGroupId = mainGroup?.id ?? null;
 
-      // Fetch confirmed attendees (non-null status) joined to their player record.
-      const { data: attendees, error: attendeesError } = await supabase
+      // Fetch attendees. When targeting specific playerAppIds (neutral-only mode),
+      // include ALL persons (any status + null) for those players so they receive
+      // the email even though they haven't confirmed. Otherwise only send to
+      // confirmed attendees (non-null status) to avoid spamming non-participants.
+      let attendeesQuery = supabase
         .from('person_attendances')
         .select('person:player(id, email, appId, instrument, firstName, lastName, left)')
         .eq('attendance_id', attendanceId)
-        .not('status', 'is', null)
-        .range(0, 4999); // guard against PostgREST's 1000-row default
+        .range(0, 4999);
+
+      if (!playerAppIds || playerAppIds.length === 0) {
+        attendeesQuery = attendeesQuery.not('status', 'is', null);
+      }
+
+      const { data: attendees, error: attendeesError } = await attendeesQuery;
 
       if (attendeesError) {
         console.error(`[send-ad-hoc-reminder] error fetching attendees for email:`, attendeesError);

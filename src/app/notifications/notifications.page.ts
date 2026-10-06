@@ -76,6 +76,12 @@ export class NotificationsPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
+  isTenantEnabled(tenantId: number): boolean {
+    const tenants = this.notificationConfig.enabled_tenants;
+    if (!tenants || tenants.length === 0) return false;
+    return tenants.map(Number).includes(tenantId);
+  }
+
   toggleTenant(tenantId: number) {
     const tenants = (this.notificationConfig.enabled_tenants || []).map(Number);
     if (tenants.includes(tenantId)) {
