@@ -144,13 +144,12 @@ Deno.serve(async (req) => {
       .in('id', userIds)
       .range(0, 4999); // guard against PostgREST's 1000-row default
 
-    if (notifError || !notifConfigs || notifConfigs.length === 0) {
-      console.log(`[send-ad-hoc-reminder] tenant=${tenantId} no users with reminders enabled (notifError=${notifError?.message ?? 'none'})`);
-      return new Response(JSON.stringify({ sent: 0, message: 'No users with reminders enabled' }), {
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-      });
+    if (notifError) {
+      console.warn(`[send-ad-hoc-reminder] tenant=${tenantId} notifications query error (notifError=${notifError.message}); skipping push/Telegram`);
+    } else if (!notifConfigs || notifConfigs.length === 0) {
+      console.log(`[send-ad-hoc-reminder] tenant=${tenantId} no users with reminders enabled`);
     }
-    if (notifConfigs.length >= 4900) {
+    if (notifConfigs && notifConfigs.length >= 4900) {
       console.warn(`[send-ad-hoc-reminder] tenant=${tenantId} notifications=${notifConfigs.length} approaching the 5000-row range cap`);
     }
 
@@ -158,25 +157,26 @@ Deno.serve(async (req) => {
     // Coerce to Number on both sides: the DB column may be bigint[], which
     // PostgREST returns as string[], causing strict-equality mismatches.
     const tenantIdNum = Number(tenantId);
-    const eligibleConfigs = (notifConfigs as NotificationConfig[]).filter(nc => {
-      const hasChannel = nc.telegram_chat_id || nc.push_enabled;
-      if (!hasChannel) return false;
-      if (!nc.enabled_tenants || nc.enabled_tenants.length === 0) return true;
-      return nc.enabled_tenants.map(Number).includes(tenantIdNum);
-    });
+    const eligibleConfigs = (!notifError && notifConfigs)
+      ? (notifConfigs as NotificationConfig[]).filter(nc => {
+          const hasChannel = nc.telegram_chat_id || nc.push_enabled;
+          if (!hasChannel) return false;
+          if (!nc.enabled_tenants || nc.enabled_tenants.length === 0) return true;
+          return nc.enabled_tenants.map(Number).includes(tenantIdNum);
+        })
+      : [];
 
-    if (eligibleConfigs.length === 0) {
+    if (notifConfigs && notifConfigs.length > 0 && eligibleConfigs.length === 0) {
       const noChannel = (notifConfigs as NotificationConfig[]).filter(nc => !nc.telegram_chat_id && !nc.push_enabled).length;
       const wrongTenant = (notifConfigs as NotificationConfig[]).filter(nc => {
         if (!nc.enabled_tenants || nc.enabled_tenants.length === 0) return false;
         return !nc.enabled_tenants.map(Number).includes(tenantIdNum);
       }).length;
       console.log(`[send-ad-hoc-reminder] tenant=${tenantId} no eligible recipients after enabled_tenants/channel filter (noChannel=${noChannel} wrongTenant=${wrongTenant} total=${(notifConfigs as NotificationConfig[]).length})`);
-      return new Response(JSON.stringify({ sent: 0, message: 'No eligible recipients' }), {
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-      });
     }
-    console.log(`[send-ad-hoc-reminder] tenant=${tenantId} eligibleRecipients=${eligibleConfigs.length}`);
+    if (eligibleConfigs.length > 0) {
+      console.log(`[send-ad-hoc-reminder] tenant=${tenantId} eligibleRecipients=${eligibleConfigs.length}`);
+    }
 
     // Format date
     const dateObj = new Date(attendance.date);
