@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.10.5",
+      "date": "11.10.2026",
+      "changes": [
+        "🐛 Dateiablage: Geteilte Direktlinks bleiben nicht mehr endlos beim Laden hängen."
+      ]
+    },
+    {
       "version": "4.10.4",
       "date": "11.10.2026",
       "changes": [

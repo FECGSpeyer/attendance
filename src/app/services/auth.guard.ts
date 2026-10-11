@@ -32,6 +32,11 @@ export class AuthGuard {
       return Boolean(role);
     }
 
+    // Dateiablage (u. a. über geteilte Direktlinks, siehe OpenFilePage).
+    if (state.url === '/tabs/settings/files' || state.url.startsWith('/tabs/settings/files?')) {
+      return this.db.canAccessFiles();
+    }
+
     if (state.url === '/tabs/parents') {
       return role === Role.PARENT;
     }

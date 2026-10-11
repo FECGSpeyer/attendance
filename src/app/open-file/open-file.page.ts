@@ -28,6 +28,16 @@ export class OpenFilePage implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
+    try {
+      await this.resolveLink();
+    } catch (error) {
+      console.error('[open-file] resolve failed:', error);
+      Utils.showToast('Der Link konnte nicht geöffnet werden.', 'danger');
+      await this.router.navigateByUrl('/login');
+    }
+  }
+
+  private async resolveLink(): Promise<void> {
     const params = this.route.snapshot.queryParamMap;
     const tenantId = Number(params.get('tenantId'));
     const path = params.get('path') || '';
@@ -69,6 +79,11 @@ export class OpenFilePage implements OnInit {
       queryParams['open'] = segments[segments.length - 1];
     }
 
-    await this.router.navigate(['/tabs/settings/files'], { queryParams, replaceUrl: true });
+    const navigated = await this.router.navigate(['/tabs/settings/files'], { queryParams, replaceUrl: true });
+    if (!navigated) {
+      // Navigation abgebrochen (z. B. Guard) – nicht auf dem Spinner hängen bleiben.
+      Utils.showToast('Der Link konnte nicht geöffnet werden.', 'danger');
+      await this.db.routeAfterAuth(undefined, tenantId);
+    }
   }
 }
