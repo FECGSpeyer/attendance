@@ -192,18 +192,37 @@ export class SongsPage implements OnInit, OnDestroy {
     this.buildGroupsWithFiles();
   }
 
+  private static readonly CONDUCTOR_GROUP_ID = -1;
+
+  private isScoreFile(file: SongFile): boolean {
+    return !file.instrumentId && file.note === 'Partitur';
+  }
+
   buildGroupsWithFiles(): void {
     const groupIdsWithFiles = new Set<number>();
+    let hasScores = false;
     for (const song of this.songs) {
       for (const file of song.files || []) {
         if (file.instrumentId && file.instrumentId > 2) {
           groupIdsWithFiles.add(file.instrumentId);
+        } else if (this.isScoreFile(file)) {
+          hasScores = true;
         }
       }
     }
-    this.groupsWithFiles = this.instruments
+    const groups = this.instruments
       .filter(g => groupIdsWithFiles.has(g.id!))
       .sort((a, b) => a.name.localeCompare(b.name));
+    if (hasScores) {
+      // virtual group listing all scores (Partituren)
+      groups.unshift({
+        id: SongsPage.CONDUCTOR_GROUP_ID,
+        name: 'Dirigenten',
+        tenantId: this.tenantData?.id ?? this.db.tenant()?.id,
+        maingroup: false,
+      });
+    }
+    this.groupsWithFiles = groups;
   }
 
   async toggleSongsTab(popover?: IonPopover): Promise<void> {
@@ -360,7 +379,10 @@ export class SongsPage implements OnInit, OnDestroy {
     this.selectedGroupFiles = [];
     for (const song of this.songs) {
       for (const file of song.files || []) {
-        if (file.instrumentId === group.id) {
+        const matches = group.id === SongsPage.CONDUCTOR_GROUP_ID
+          ? this.isScoreFile(file)
+          : file.instrumentId === group.id;
+        if (matches) {
           this.selectedGroupFiles.push({ song, file });
         }
       }
