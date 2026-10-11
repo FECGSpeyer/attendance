@@ -24,6 +24,32 @@
   right: 8px;
 }
 
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.skip-btn {
+  font-size: 22px;
+  color: var(--ion-color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &.disabled {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+}
+
+.queue-position {
+  font-size: 10px;
+  color: var(--ion-color-medium);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
 .play-btn {
   font-size: 36px;
   color: var(--ion-color-primary);

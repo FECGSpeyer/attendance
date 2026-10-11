@@ -1,14 +1,37 @@
 @if (audioPlayer.currentFile()) {
   <div class="audio-player-bar">
-    <ion-icon
-      class="play-btn"
-      [name]="audioPlayer.isPlaying() ? 'pause-circle' : 'play-circle'"
-      (click)="audioPlayer.togglePlayPause()"
-    ></ion-icon>
+    <div class="controls">
+      @if (audioPlayer.hasQueue()) {
+        <ion-icon
+          class="skip-btn"
+          name="play-skip-back"
+          (click)="onPrevious()"
+        ></ion-icon>
+      }
+
+      <ion-icon
+        class="play-btn"
+        [name]="audioPlayer.isPlaying() ? 'pause-circle' : 'play-circle'"
+        (click)="audioPlayer.togglePlayPause()"
+      ></ion-icon>
+
+      @if (audioPlayer.hasQueue()) {
+        <ion-icon
+          class="skip-btn"
+          [class.disabled]="!audioPlayer.hasNext()"
+          name="play-skip-forward"
+          (click)="onNext()"
+        ></ion-icon>
+      }
+    </div>
 
     <div class="right-section">
       <div class="top-row">
         <span class="track-name">{{ audioPlayer.currentSongName() || audioPlayer.currentFile()?.fileName }}</span>
+
+        @if (audioPlayer.hasQueue()) {
+          <span class="queue-position">{{ audioPlayer.queueIndex() + 1 }}/{{ audioPlayer.queue().length }}</span>
+        }
 
         <ion-icon
           class="close-icon"

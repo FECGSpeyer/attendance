@@ -1,7 +1,7 @@
 import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonPopover, NavController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
-import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
+import { AudioPlayerService, AudioQueueItem } from 'src/app/services/audio-player/audio-player.service';
 import { FilesService, StorageEntry } from '../../services/files/files.service';
 import { Utils } from 'src/app/utilities/Utils';
 
@@ -397,9 +397,17 @@ export class FilesPage implements OnInit {
   }
 
   async playAudioEntry(entry: StorageEntry): Promise<void> {
+    const tenantId = this.db.tenant().id;
+    const audioEntries = this.filteredEntries.filter((e) => this.isAudioEntry(e));
+    const startIndex = Math.max(audioEntries.findIndex((e) => e.path === entry.path), 0);
+    const queue: AudioQueueItem[] = (audioEntries.length ? audioEntries : [entry]).map((e) => ({
+      fileName: e.name,
+      title: e.name,
+      resolveUrl: () => this.filesSvc.getSignedFileUrl(tenantId, e.path, 3600),
+    }));
+
     try {
-      const url = await this.filesSvc.getSignedFileUrl(this.db.tenant().id, entry.path, 3600);
-      this.audioPlayer.playFromUrl(url, entry.name, entry.name);
+      await this.audioPlayer.playQueue(queue, startIndex);
     } catch (error: any) {
       Utils.showToast(`Fehler beim Abspielen: ${error.message || error}`, 'danger');
     }
