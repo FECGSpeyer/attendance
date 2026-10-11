@@ -10,12 +10,14 @@
       <ion-button id="files-sort-trigger" fill="clear">
         <ion-icon slot="icon-only" name="funnel-outline"></ion-icon>
       </ion-button>
+      @if (canEditEntries) {
       <ion-button fill="clear" (click)="createFolder()">
         <ion-icon slot="icon-only" name="folder-open-outline"></ion-icon>
       </ion-button>
       <ion-button fill="clear" (click)="triggerUpload()">
         <ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
       </ion-button>
+      }
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -104,12 +106,12 @@
     }
   </div>
 
-  @if (!canDeleteEntries) {
+  @if (!canEditEntries) {
   <ion-card class="permission-hint-card" color="light">
     <ion-card-content>
       <ion-icon name="information-circle-outline" color="medium"></ion-icon>
-      <span>Dateien können angesehen, hochgeladen und bearbeitet werden. Löschen ist nur für Admins/Verantwortliche
-        erlaubt.</span>
+      <span>Dateien können angesehen und heruntergeladen werden. Hinzufügen, Bearbeiten und Löschen ist nur für
+        Admins/Verantwortliche erlaubt.</span>
     </ion-card-content>
   </ion-card>
   }
@@ -179,6 +181,7 @@
             </ion-item>
             }
             }
+            @if (canEditEntries) {
             <ion-item button (click)="handleEntryAction('rename', entry, actionPopover)">
               <ion-icon name="create-outline" slot="start"></ion-icon>
               Umbenennen
@@ -187,7 +190,6 @@
               <ion-icon name="swap-horizontal-outline" slot="start"></ion-icon>
               Verschieben
             </ion-item>
-            @if (canDeleteEntries) {
             <ion-item button (click)="handleEntryAction('delete', entry, actionPopover)">
               <ion-icon name="trash-outline" slot="start"></ion-icon>
               Löschen

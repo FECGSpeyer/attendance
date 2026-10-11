@@ -3,7 +3,6 @@ import { AlertController, IonPopover, NavController } from '@ionic/angular/lazy'
 import { DbService } from 'src/app/services/db.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
 import { FilesService, StorageEntry } from '../../services/files/files.service';
-import { Role } from 'src/app/utilities/constants';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -27,7 +26,7 @@ export class FilesPage implements OnInit {
   public imageZoomScale = 1;
   public sortBy: 'name' | 'updatedAt' | 'size' = 'name';
   public sortDirection: 'asc' | 'desc' = 'asc';
-  public canDeleteEntries = false;
+  public canEditEntries = false;
   private pinchStartDistance = 0;
   private pinchStartScale = 1;
   private lastImageTapAt = 0;
@@ -40,11 +39,9 @@ export class FilesPage implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    const role = this.db.tenantUser().role;
-    const canAccess = this.db.isBeta() && [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER, Role.VOICE_LEADER_HELPER].includes(role);
-    this.canDeleteEntries = [Role.ADMIN, Role.RESPONSIBLE].includes(role);
+    this.canEditEntries = this.db.canEditFiles();
 
-    if (!canAccess) {
+    if (!this.db.canAccessFiles()) {
       Utils.showToast('Du hast keinen Zugriff auf Dateien.', 'danger');
       this.navCtrl.back();
       return;
@@ -127,6 +124,11 @@ export class FilesPage implements OnInit {
   }
 
   triggerUpload(): void {
+    if (!this.canEditEntries) {
+      Utils.showToast('Du darfst Dateien nicht bearbeiten.', 'warning');
+      return;
+    }
+
     this.fileInput?.nativeElement.click();
   }
 
@@ -566,6 +568,11 @@ export class FilesPage implements OnInit {
     const input = evt.target as HTMLInputElement;
     const files = Array.from(input.files || []);
 
+    if (!this.canEditEntries) {
+      input.value = '';
+      return;
+    }
+
     if (!files.length) {
       return;
     }
@@ -650,6 +657,11 @@ export class FilesPage implements OnInit {
   }
 
   async createFolder(): Promise<void> {
+    if (!this.canEditEntries) {
+      Utils.showToast('Du darfst Dateien nicht bearbeiten.', 'warning');
+      return;
+    }
+
     const alert = await this.alertController.create({
       header: 'Ordner erstellen',
       inputs: [{
@@ -725,8 +737,8 @@ export class FilesPage implements OnInit {
   async handleEntryAction(action: 'open' | 'download' | 'telegram' | 'rename' | 'move' | 'delete', entry: StorageEntry, popover: IonPopover): Promise<void> {
     await popover.dismiss();
 
-    if (action === 'delete' && !this.canDeleteEntries) {
-      Utils.showToast('Du darfst Dateien nicht löschen.', 'warning');
+    if (['rename', 'move', 'delete'].includes(action) && !this.canEditEntries) {
+      Utils.showToast('Du darfst Dateien nicht bearbeiten.', 'warning');
       return;
     }
 
@@ -755,7 +767,7 @@ export class FilesPage implements OnInit {
   }
 
   async deleteEntry(entry: StorageEntry): Promise<void> {
-    if (!this.canDeleteEntries) {
+    if (!this.canEditEntries) {
       Utils.showToast('Du darfst Dateien nicht löschen.', 'warning');
       return;
     }
@@ -790,6 +802,11 @@ export class FilesPage implements OnInit {
   }
 
   async renameEntry(entry: StorageEntry): Promise<void> {
+    if (!this.canEditEntries) {
+      Utils.showToast('Du darfst Dateien nicht bearbeiten.', 'warning');
+      return;
+    }
+
     const alert = await this.alertController.create({
       header: entry.isFolder ? 'Ordner umbenennen' : 'Datei umbenennen',
       inputs: [{
@@ -828,6 +845,11 @@ export class FilesPage implements OnInit {
   }
 
   async moveEntry(entry: StorageEntry): Promise<void> {
+    if (!this.canEditEntries) {
+      Utils.showToast('Du darfst Dateien nicht bearbeiten.', 'warning');
+      return;
+    }
+
     const alert = await this.alertController.create({
       header: 'Verschieben',
       message: 'Zielordner relativ zum Tenant-Root. Leer lassen für Root.',

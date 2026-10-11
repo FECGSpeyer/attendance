@@ -531,7 +531,7 @@
         <ion-label>Werkhistorie</ion-label>
       </ion-item>
       }
-      @if (db.isBeta() && (isAdmin || isHelper)) {
+      @if (db.canAccessFiles()) {
       <ion-item routerLink="files" button lines="none">
         <ion-icon name="folder-outline" slot="start"></ion-icon>
         <ion-label>Dateiablage</ion-label>
