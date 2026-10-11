@@ -358,10 +358,6 @@ export class SongPage implements OnInit {
     await loading.dismiss();
   }
 
-  trackByFileInfo(index: number, fileInfo: any): string {
-    return `${index}-${fileInfo.note || ''}-${fileInfo.instrumentId}`;
-  }
-
   getFileSelectValue(fileInfo: { instrumentId: number | null; note?: string }): string {
     if (fileInfo.instrumentId === null) { return 'null'; }
     return String(fileInfo.instrumentId);

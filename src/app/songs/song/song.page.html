@@ -261,7 +261,7 @@
 
               @if (selectedFileInfos?.length) {
               <ion-item-group>
-                @for (fileInfo of selectedFileInfos; track trackByFileInfo(i, fileInfo); let i = $index) {
+                @for (fileInfo of selectedFileInfos; track fileInfo.file; let i = $index) {
                 <ion-item-sliding #sliderFile>
                   <ion-item>
                     @if (fileInfo.conflictingFiles?.length) {
