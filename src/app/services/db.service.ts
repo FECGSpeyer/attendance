@@ -4,7 +4,7 @@ import { AlertController, Platform } from '@ionic/angular/lazy';
 import { SupabaseClient, User } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
-import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SUPER_DEVELOPER_EMAIL, SupabaseTable } from '../utilities/constants';
+import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SUPER_DEVELOPER_EMAIL, SupabaseTable, FILES_SHARED_TENANT_IDS } from '../utilities/constants';
 import { Attendance, ExtraField, FieldSelection, History, Group, Meeting, Person, Plan, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence, DashboardCardConfig, DEFAULT_DASHBOARD_CARDS, AgendaItem, AgendaItemAttendance, Protocol, Task } from '../utilities/interfaces';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
@@ -553,6 +553,25 @@ export class DbService {
 
   isBeta() {
     return this.tenantUser()?.email?.endsWith('developer@attendix.de') || this.user?.email?.toLocaleLowerCase().endsWith('erwinfast98@gmail.com') || this.tenant()?.id === 12;
+  }
+
+  // Dateiablage: Beta-Instanzen für Admins/Verantwortliche/Helfer, freigegebene Instanzen
+  // für alle außer Bewerber. Muss mit den Storage-Policies des Buckets `files` übereinstimmen.
+  canAccessFiles(): boolean {
+    const role = this.tenantUser()?.role;
+    if (role === undefined || role === null) {
+      return false;
+    }
+
+    if (FILES_SHARED_TENANT_IDS.includes(this.tenant()?.id)) {
+      return ![Role.APPLICANT, Role.NONE].includes(role);
+    }
+
+    return this.isBeta() && [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER, Role.VOICE_LEADER_HELPER].includes(role);
+  }
+
+  canEditFiles(): boolean {
+    return [Role.ADMIN, Role.RESPONSIBLE].includes(this.tenantUser()?.role);
   }
 
   isSuperDeveloper(): boolean {
