@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.10.7",
+      "date": "11.10.2026",
+      "changes": [
+        "🐛 Dateiablage: Direktlinks lassen sich jetzt öffnen, statt mit „Der Link konnte nicht geöffnet werden“ abzubrechen."
+      ]
+    },
+    {
       "version": "4.10.6",
       "date": "11.10.2026",
       "changes": [

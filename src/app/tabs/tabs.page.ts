@@ -53,7 +53,11 @@ export class TabsPage {
       this.hasMultipleTenants = (this.db.tenants()?.length || 0) > 1;
 
       const url: string = Utils.getUrl(this.db.tenantUser().role);
-      if (this.router.url !== url && !Utils.isUrlAccessAllowed(this.router.url, this.db.tenantUser().role)) {
+      // Dateiablage: Zugriff hängt an canAccessFiles() (u. a. freigegebene
+      // Instanzen) und Direktlinks tragen Query-Params (?path=…&open=…).
+      const path = this.router.url.split('?')[0];
+      const isFilesUrl = (path === '/tabs/settings/files' && this.db.canAccessFiles()) || path === '/open-file';
+      if (this.router.url !== url && !isFilesUrl && !Utils.isUrlAccessAllowed(this.router.url, this.db.tenantUser().role)) {
         this.router.navigateByUrl(url);
       }
     });
