@@ -10,3 +10,7 @@ Nach Abschluss eines Features oder Fixes immer:
    - `ios/App/App.xcodeproj/project.pbxproj` → `MARKETING_VERSION` und `CURRENT_PROJECT_VERSION` (+1) im App-Target (nicht die Einträge mit `1.0`/`1`)
 2. **`version-history.json` aktualisieren**: neuen Eintrag oben in `versions` einfügen, Datum im Format `T.M.JJJJ` (z. B. `11.10.2026`), Änderungen auf Deutsch mit passendem Emoji am Anfang.
 3. **Direkt auf `main` committen und pushen** (kein Feature-Branch, kein Pull Request).
+
+## Prüfen vor dem Push
+
+- Keinen Prod-Build (`ng build`) ausführen – nicht nötig.
