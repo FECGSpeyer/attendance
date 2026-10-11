@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.10.4",
+      "date": "11.10.2026",
+      "changes": [
+        "🛠️ Gruppenverzeichnis ist jetzt immer erreichbar – auch ohne Werkkategorien, bei aktivem Kategoriefilter und für Chöre.",
+        "🧹 Gespeicherte Kategoriefilter von gelöschten Kategorien werden automatisch zurückgesetzt."
+      ]
+    },
+    {
       "version": "4.10.7",
       "date": "11.10.2026",
       "changes": [

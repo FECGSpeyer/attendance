@@ -249,20 +249,18 @@
     </ion-list>
   } @else {
   <ion-list [inset]="true">
-    @if (selectedCategory === '' && selectedCategories.length === 0) {
-      <ion-item-group>
-        @if (currentSongs?.length > 0) {
-          <ion-item lines="none" (click)="isCurrentSongsModalOpen = true" button>
-            <ion-label color="primary">Aktuelle Werke anzeigen</ion-label>
-          </ion-item>
-        }
-        @if (groupsWithFiles?.length > 0) {
-          <ion-item lines="none" (click)="isGroupDirectoryModalOpen = true" button>
-            <ion-label color="primary">Gruppenverzeichnis</ion-label>
-          </ion-item>
-        }
-      </ion-item-group>
-    }
+    <ion-item-group>
+      @if (currentSongs?.length > 0 && selectedCategory === '' && selectedCategories.length === 0) {
+        <ion-item lines="none" (click)="isCurrentSongsModalOpen = true" button>
+          <ion-label color="primary">Aktuelle Werke anzeigen</ion-label>
+        </ion-item>
+      }
+      @if (groupsWithFiles?.length > 0) {
+        <ion-item lines="none" (click)="isGroupDirectoryModalOpen = true" button>
+          <ion-label color="primary">Gruppenverzeichnis</ion-label>
+        </ion-item>
+      }
+    </ion-item-group>
 
     <!-- Modals outside of conditional item-group -->
     <ion-modal #currentSongsModal [isOpen]="isCurrentSongsModalOpen" (ionModalDidDismiss)="isCurrentSongsModalOpen = false"

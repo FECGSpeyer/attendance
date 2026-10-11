@@ -49,6 +49,7 @@ export class SongsPage implements OnInit, OnDestroy {
   public instrumentsToFilter: number[] = [];
   public currentSongs: { date: string; history: History[] }[] = [];
   public groupsWithFiles: Group[] = [];
+  private directoryGroups: Group[] = [];
   public selectedGroupFiles: { song: Song; file: SongFile }[] = [];
   public selectedGroupName = '';
   public isCurrentSongsModalOpen = false;
@@ -171,6 +172,14 @@ export class SongsPage implements OnInit, OnDestroy {
     ]);
     this.groupCategories = groupCategories;
     this.categories = categories;
+    this.directoryGroups = groups.filter((g: Group) => g.maingroup !== true);
+    // Drop stored category selections that no longer exist (e.g. all categories deleted),
+    // otherwise songs and the group directory stay hidden without a way to reset the filter.
+    const categoryIds = new Set(categories.map(c => c.id));
+    if (this.selectedCategory && !categoryIds.has(this.selectedCategory)) {
+      this.selectedCategory = '';
+    }
+    this.selectedCategories = this.selectedCategories.filter(id => categoryIds.has(id));
     if (this.isOrchestra) {
       this.instruments = groups.filter((instrument: Group) => instrument.maingroup !== true);
       this.selectedInstruments = groups.map((instrument: Group) => instrument.id);
@@ -210,7 +219,7 @@ export class SongsPage implements OnInit, OnDestroy {
         }
       }
     }
-    const groups = this.instruments
+    const groups = this.directoryGroups
       .filter(g => groupIdsWithFiles.has(g.id!))
       .sort((a, b) => a.name.localeCompare(b.name));
     if (hasScores) {
