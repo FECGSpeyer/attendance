@@ -106,16 +106,6 @@
     }
   </div>
 
-  @if (!canEditEntries) {
-  <ion-card class="permission-hint-card" color="light">
-    <ion-card-content>
-      <ion-icon name="information-circle-outline" color="medium"></ion-icon>
-      <span>Dateien können angesehen und heruntergeladen werden. Hinzufügen, Bearbeiten und Löschen ist nur für
-        Admins/Verantwortliche erlaubt.</span>
-    </ion-card-content>
-  </ion-card>
-  }
-
   @if (isLoading) {
   <div class="loading-spinner">
     <ion-spinner name="crescent"></ion-spinner>
