@@ -49,3 +49,32 @@ ion-badge[color="sibelius"] {
   background: #7c3aed;
   color: #fff;
 }
+
+.upload-progress {
+  padding: 16px;
+
+  &__text {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  ion-progress-bar {
+    height: 8px;
+    border-radius: 4px;
+  }
+
+  &__hint {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: var(--ion-color-medium);
+  }
+}
+
+.upload-status {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}

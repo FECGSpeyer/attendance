@@ -221,16 +221,20 @@
       </ion-button>
       }
       <ion-modal [isOpen]="isFilesModalOpen" (ionModalDidDismiss)="isFilesModalOpen = false; selectedFileInfos = []" #fileUploadModal
+        [canDismiss]="!isUploading"
         handle-behavior="none" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
         <ng-template>
           <ion-header>
             <ion-toolbar>
               <ion-title>Dateien hochladen</ion-title>
               <ion-buttons slot="end">
-                <ion-button (click)="fileUploadModal.dismiss()">
+                <ion-button (click)="fileUploadModal.dismiss()" [disabled]="isUploading">
                   <ion-icon name="close"></ion-icon>
                 </ion-button>
               </ion-buttons>
+              @if (isUploading) {
+              <ion-progress-bar [value]="uploadProgress"></ion-progress-bar>
+              }
             </ion-toolbar>
           </ion-header>
           <ion-content color="light">
@@ -252,19 +256,37 @@
 
             <ion-list [inset]="true">
               <input type="file" #fileInput (change)="onFilesSelected($event)" multiple style="display:none;" />
+              @if (isUploading) {
+              <div class="upload-progress">
+                <div class="upload-progress__text">
+                  <span>{{ uploadDoneCount }} von {{ selectedFileInfos.length }} Dateien hochgeladen</span>
+                  <span>{{ uploadProgress * 100 | number:'1.0-0' }} %</span>
+                </div>
+                <ion-progress-bar [value]="uploadProgress"></ion-progress-bar>
+                <p class="upload-progress__hint">Bitte das Fenster nicht schließen, bis der Upload abgeschlossen ist.</p>
+              </div>
+              } @else {
               <div class="drop-zone" [class.drop-zone--active]="isDragging"
                 (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)"
                 (click)="fileInput.click()">
                 <ion-icon name="cloud-upload-outline"></ion-icon>
                 <p>Dateien hierher ziehen oder tippen zum Auswählen</p>
               </div>
+              }
 
               @if (selectedFileInfos?.length) {
               <ion-item-group>
                 @for (fileInfo of selectedFileInfos; track fileInfo.file; let i = $index) {
-                <ion-item-sliding #sliderFile>
+                <ion-item-sliding #sliderFile [disabled]="isUploading">
                   <ion-item>
-                    @if (fileInfo.conflictingFiles?.length) {
+                    @if (fileInfo.uploadStatus) {
+                    @switch (fileInfo.uploadStatus) {
+                    @case ('uploading') { <ion-spinner slot="start" name="crescent" class="upload-status"></ion-spinner> }
+                    @case ('done') { <ion-icon slot="start" name="checkmark-circle" color="success" class="upload-status"></ion-icon> }
+                    @case ('error') { <ion-icon slot="start" name="alert-circle" color="danger" class="upload-status"></ion-icon> }
+                    @default { <ion-icon slot="start" name="time-outline" color="medium" class="upload-status"></ion-icon> }
+                    }
+                    } @else if (fileInfo.conflictingFiles?.length) {
                     <ion-icon name="warning-outline" color="warning" slot="start"
                       [id]="'conflict-btn-' + i" style="cursor:pointer; font-size: 20px;"></ion-icon>
                     @if (fileInfo.conflictingFiles.length === 1) {
@@ -282,7 +304,7 @@
                     <ion-label>
                       <h2>{{ fileInfo.file.name }}</h2>
                     </ion-label>
-                    <ion-select slot="end" placeholder="Instrument"
+                    <ion-select slot="end" placeholder="Instrument" [disabled]="isUploading"
                       (ionChange)="changeFileInstrument(i, $event.detail.value, fileInfo.note)"
                       [value]="getFileSelectValue(fileInfo)">
                       <ion-select-option value="null">Sonstige (Freitext)</ion-select-option>
@@ -297,7 +319,7 @@
                   @if (fileInfo.instrumentId === null) {
                   <ion-item>
                     <ion-label position="stacked">Freitext</ion-label>
-                    <ion-input placeholder="Kategorie eingeben..."
+                    <ion-input placeholder="Kategorie eingeben..." [disabled]="isUploading"
                       [value]="fileInfo.note"
                       (ionInput)="updateFileNote(i, $event.detail.value)">
                     </ion-input>
@@ -312,7 +334,7 @@
                 @if (fileInfo.conflictingFiles?.length > 1) {
                 @for (conflict of fileInfo.conflictingFiles; track conflict.url) {
                 <ion-item>
-                  <ion-checkbox slot="start"
+                  <ion-checkbox slot="start" [disabled]="isUploading"
                     [checked]="fileInfo.toReplace?.has(conflict.url)"
                     (ionChange)="toggleModalConflict(i, conflict.url)">
                   </ion-checkbox>
@@ -327,7 +349,7 @@
 
               <br>
 
-              @if (selectedFileInfos?.length) {
+              @if (selectedFileInfos?.length && !isUploading) {
               <ion-button (click)="uploadFiles($event, fileUploadModal, false)" expand="block">Ersetzen & Hinzufügen</ion-button>
               <ion-button (click)="uploadFiles($event, fileUploadModal, true)" expand="block" fill="outline">Ohne Ersetzen hinzufügen</ion-button>
               }

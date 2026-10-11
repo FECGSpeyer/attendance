@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.10.8",
+      "date": "11.10.2026",
+      "changes": [
+        "📤 Werke: Beim Hochladen mehrerer Dateien zeigt ein Fortschrittsbalken jetzt den Upload-Stand an, inklusive Status pro Datei. Fehlgeschlagene Dateien bleiben zum erneuten Hochladen im Fenster."
+      ]
+    },
+    {
       "version": "4.10.4",
       "date": "11.10.2026",
       "changes": [

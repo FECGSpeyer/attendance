@@ -32,8 +32,12 @@ export class SongPage implements OnInit {
     note?: string;
     conflictingFiles?: SongFile[];
     toReplace?: Set<string>;
+    uploadStatus?: 'pending' | 'uploading' | 'done' | 'error';
   }[] = [];
   public isFilesModalOpen = false;
+  public isUploading = false;
+  public uploadDoneCount = 0;
+  public uploadProgress = 0;
   public isDragging = false;
   public isPageDragging = false;
   public isSingleFileModalOpen = false;
@@ -427,23 +431,52 @@ export class SongPage implements OnInit {
   }
 
   private async performUpload(fileUploadModal: IonModal, skipReplace = false) {
-    const loading = await Utils.getLoadingElement(999999, 'Dateien werden hochgeladen...');
-    await loading.present();
-    for (const info of this.selectedFileInfos) {
-      if (!skipReplace && info.toReplace?.size) {
-        for (const conflict of (info.conflictingFiles ?? []).filter(f => info.toReplace.has(f.url))) {
-          await this.db.deleteSongFile(this.song.id, conflict);
+    const infos = this.selectedFileInfos;
+    const totalBytes = infos.reduce((sum, info) => sum + (info.file.size || 1), 0);
+    let doneBytes = 0;
+    this.isUploading = true;
+    this.uploadDoneCount = 0;
+    this.uploadProgress = 0;
+    infos.forEach(info => info.uploadStatus = 'pending');
+    this.cdr.detectChanges();
+
+    for (const info of infos) {
+      info.uploadStatus = 'uploading';
+      this.cdr.detectChanges();
+      try {
+        if (!skipReplace && info.toReplace?.size) {
+          for (const conflict of (info.conflictingFiles ?? []).filter(f => info.toReplace.has(f.url))) {
+            await this.db.deleteSongFile(this.song.id, conflict);
+          }
         }
+        await this.db.uploadSongFile(this.song.id, info.file, info.instrumentId, info.note);
+        info.uploadStatus = 'done';
+        this.uploadDoneCount++;
+      } catch (e) {
+        console.error(e);
+        info.uploadStatus = 'error';
       }
-      await this.db.uploadSongFile(this.song.id, info.file, info.instrumentId, info.note);
+      doneBytes += info.file.size || 1;
+      this.uploadProgress = doneBytes / totalBytes;
+      this.cdr.detectChanges();
     }
 
     this.song = await this.db.getSong(this.song.id); // Refresh file list
     this.syncInstrumentIdsFromFiles();
 
+    const failed = infos.filter(info => info.uploadStatus === 'error');
+    this.isUploading = false;
+    if (failed.length) {
+      // Keep only failed files in the modal so they can be retried
+      this.selectedFileInfos = failed.map(info => ({ ...info, uploadStatus: undefined }));
+      this.cdr.detectChanges();
+      await Utils.showToast(`${failed.length} von ${infos.length} Datei(en) konnten nicht hochgeladen werden.`, 'danger', 5000);
+      return;
+    }
+
     this.selectedFileInfos = [];
     await fileUploadModal.dismiss();
-    await loading.dismiss();
+    await Utils.showToast(`${infos.length} Datei(en) erfolgreich hochgeladen.`);
   }
 
   getInstrumentName(id: number | null, note?: string): string {
