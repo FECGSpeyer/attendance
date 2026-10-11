@@ -865,9 +865,15 @@ export class AttendancePage implements OnInit, OnDestroy {
     this.scrollToActiveSlot();
   }
 
+  private hasAutoScrolled = false;
+
   private scrollToActiveSlot() {
+    if (this.hasAutoScrolled) { return; }
     setTimeout(() => {
-      document.querySelector('.active-slot')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const el = document.querySelector('.active-slot');
+      if (!el) { return; }
+      this.hasAutoScrolled = true;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 50);
   }
 

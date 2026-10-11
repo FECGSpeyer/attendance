@@ -302,9 +302,15 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
     this.scrollToActive(entry.id);
   }
 
+  private autoScrolledEntries = new Set<string | number>();
+
   private scrollToActive(entryId: string | number) {
+    if (this.autoScrolledEntries.has(entryId)) { return; }
     setTimeout(() => {
-      document.getElementById(`active-slot-${entryId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const el = document.getElementById(`active-slot-${entryId}`);
+      if (!el) { return; }
+      this.autoScrolledEntries.add(entryId);
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 50);
   }
 

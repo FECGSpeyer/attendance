@@ -278,9 +278,15 @@ export class SharedPlanPage implements OnInit, OnDestroy {
     this.scrollToActive();
   }
 
+  private hasAutoScrolled = false;
+
   private scrollToActive() {
+    if (this.hasAutoScrolled) { return; }
     setTimeout(() => {
-      document.querySelector('.active-slot')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const el = document.querySelector('.active-slot');
+      if (!el) { return; }
+      this.hasAutoScrolled = true;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 50);
   }
 
