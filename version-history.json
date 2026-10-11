@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.10.2",
+      "date": "11.10.2026",
+      "changes": [
+        "🖨️ Gruppenverzeichnis: Die komplette Notenmappe einer Gruppe/eines Instruments kann jetzt mit einem Klick als zusammengeführtes PDF gedruckt werden."
+      ]
+    },
+    {
       "version": "4.10.1",
       "date": "11.10.2026",
       "changes": [

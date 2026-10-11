@@ -315,6 +315,13 @@
               </ion-buttons>
             }
             <ion-title>{{ selectedGroupName || 'Gruppe wählen' }}</ion-title>
+            @if (selectedGroupName && selectedGroupFiles.length) {
+              <ion-buttons slot="end">
+                <ion-button fill="clear" (click)="printGroupFolder()">
+                  <ion-icon slot="icon-only" name="print-outline"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            }
           </ion-toolbar>
         </ion-header>
         <ion-content color="light">
