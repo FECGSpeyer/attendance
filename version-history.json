@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.10.4",
+      "date": "11.10.2026",
+      "changes": [
+        "🔗 Dateiablage: Dateien und Ordner können jetzt per Direktlink geteilt werden – der Link öffnet die Datei bzw. den Ordner direkt in der App."
+      ]
+    },
+    {
       "version": "4.10.3",
       "date": "11.10.2026",
       "changes": [

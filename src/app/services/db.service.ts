@@ -50,6 +50,7 @@ import { SongCategoryService } from './song-category/song-category.service';
 import { RolePermissionService } from './role-permission/role-permission.service';
 import { UserNotificationService } from './user-notification/user-notification.service';
 import { PlayerAbsenceService } from './player-absence/player-absence.service';
+import { FilesService } from './files/files.service';
 
 @Injectable({
   providedIn: 'root'
@@ -75,6 +76,7 @@ export class DbService {
   // Injected modular services - use these for new code
   public readonly authSvc = inject(AuthService);
   public readonly playerSvc = inject(PlayerService);
+  private readonly filesSvc = inject(FilesService);
   public readonly attendanceSvc = inject(AttendanceService);
   public readonly songSvc = inject(SongService);
   public readonly tenantSvc = inject(TenantService);
@@ -1343,6 +1345,12 @@ export class DbService {
   async routeAfterAuth(loading?: HTMLIonLoadingElement, tenantId?: number) {
     await this.setTenant(tenantId, !tenantId, loading);
     if (this.tenantUser()) {
+      // Vor dem Login geöffneter Dateiablage-Link (siehe OpenFilePage).
+      const pendingFileLink = this.filesSvc.consumePendingLink();
+      if (pendingFileLink) {
+        this.router.navigateByUrl(pendingFileLink);
+        return;
+      }
       const role = this.tenantUser().role;
       const useDashboard =
         this.showDashboardTabSignal() &&

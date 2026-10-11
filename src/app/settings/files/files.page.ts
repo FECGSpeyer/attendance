@@ -1,4 +1,6 @@
-import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 import { AlertController, IonPopover, NavController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { AudioPlayerService, AudioQueueItem } from 'src/app/services/audio-player/audio-player.service';
@@ -13,6 +15,8 @@ import { Utils } from 'src/app/utilities/Utils';
 })
 export class FilesPage implements OnInit {
   private audioPlayer = inject(AudioPlayerService);
+  private route = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   public entries: StorageEntry[] = [];
@@ -47,7 +51,55 @@ export class FilesPage implements OnInit {
       return;
     }
 
+    // Direktlinks (siehe OpenFilePage) übergeben ?path=<ordner>&open=<datei>.
+    // Abonniert statt Snapshot, da die Seite beim erneuten Öffnen eines Links
+    // wiederverwendet wird.
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => this.applyLinkParams(params.get('path'), params.get('open')));
+  }
+
+  private async applyLinkParams(path: string | null, openName: string | null): Promise<void> {
+    this.currentPath = (path || '').split('/').filter(Boolean).join('/');
+    this.searchTerm = '';
     await this.loadEntries();
+
+    if (!openName) {
+      return;
+    }
+
+    const entry = this.entries.find((e) => !e.isFolder && e.name === openName);
+    if (!entry) {
+      Utils.showToast('Die verlinkte Datei wurde nicht gefunden.', 'warning');
+      return;
+    }
+
+    await this.openFolder(entry);
+  }
+
+  async shareEntry(entry?: StorageEntry): Promise<void> {
+    const path = entry ? entry.path : this.currentPath;
+    const isFolder = entry ? entry.isFolder : true;
+    const url = this.filesSvc.getShareLink(this.db.tenant().id, path, isFolder);
+    const title = entry?.name || this.pathSegments[this.pathSegments.length - 1] || 'Dateien';
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ url, title });
+        return;
+      }
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
+        return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      Utils.showToast('Link in Zwischenablage kopiert', 'success');
+    } catch {
+      Utils.showToast(`Link: ${url}`, 'medium');
+    }
   }
 
   get pathSegments(): string[] {
@@ -742,7 +794,7 @@ export class FilesPage implements OnInit {
     }
   }
 
-  async handleEntryAction(action: 'open' | 'download' | 'telegram' | 'rename' | 'move' | 'delete', entry: StorageEntry, popover: IonPopover): Promise<void> {
+  async handleEntryAction(action: 'open' | 'download' | 'share' | 'telegram' | 'rename' | 'move' | 'delete', entry: StorageEntry, popover: IonPopover): Promise<void> {
     await popover.dismiss();
 
     if (['rename', 'move', 'delete'].includes(action) && !this.canEditEntries) {
@@ -756,6 +808,9 @@ export class FilesPage implements OnInit {
         return;
       case 'download':
         await this.downloadEntry(entry);
+        return;
+      case 'share':
+        await this.shareEntry(entry);
         return;
       case 'telegram':
         await this.sendEntryPerTelegram(entry);

@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
 
+const PENDING_FILE_LINK_KEY = 'pendingFileLink';
+
 export interface StorageEntry {
   name: string;
   path: string;
@@ -114,6 +116,40 @@ export class FilesService {
 
   getUploadFileName(originalName: string): string {
     return this.sanitizeFileName(originalName);
+  }
+
+  /**
+   * Teilbarer Direktlink auf eine Datei oder einen Ordner der Dateiablage.
+   * Öffnet über Universal/App Links direkt die App, sonst die Web-App
+   * (siehe OpenFilePage).
+   */
+  getShareLink(tenantId: number, relativePath: string, isFolder: boolean): string {
+    const params = new URLSearchParams({
+      tenantId: String(tenantId),
+      path: this.normalizeRelativePath(relativePath),
+    });
+    if (isFolder) {
+      params.set('folder', '1');
+    }
+    return `https://attendix.de/open-file?${params.toString()}`;
+  }
+
+  setPendingLink(url: string): void {
+    try {
+      localStorage.setItem(PENDING_FILE_LINK_KEY, url);
+    } catch {
+      // Storage nicht verfügbar – Link geht nach dem Login verloren.
+    }
+  }
+
+  consumePendingLink(): string | null {
+    try {
+      const url = localStorage.getItem(PENDING_FILE_LINK_KEY);
+      localStorage.removeItem(PENDING_FILE_LINK_KEY);
+      return url;
+    } catch {
+      return null;
+    }
   }
 
   private tenantPrefix(tenantId: number, relativePath: string = ''): string {

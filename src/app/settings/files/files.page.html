@@ -7,6 +7,9 @@
     </ion-buttons>
     <ion-title>Dateien</ion-title>
     <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="shareEntry()">
+        <ion-icon slot="icon-only" name="share-social-outline"></ion-icon>
+      </ion-button>
       <ion-button id="files-sort-trigger" fill="clear">
         <ion-icon slot="icon-only" name="funnel-outline"></ion-icon>
       </ion-button>
@@ -164,6 +167,12 @@
               <ion-icon name="download-outline" slot="start"></ion-icon>
               Datei herunterladen
             </ion-item>
+            }
+            <ion-item button (click)="handleEntryAction('share', entry, actionPopover)">
+              <ion-icon name="link-outline" slot="start"></ion-icon>
+              Link teilen
+            </ion-item>
+            @if (!entry.isFolder) {
             @if (db.tenantUser()?.telegram_chat_id) {
             <ion-item button (click)="handleEntryAction('telegram', entry, actionPopover)">
               <ion-icon name="paper-plane-outline" slot="start"></ion-icon>

@@ -61,6 +61,12 @@ const routes: Routes = [
     loadChildren: () => import('./open-attendance/open-attendance.module').then(m => m.OpenAttendanceModule)
   },
   {
+    // Shared Dateiablage link (file or folder). Switches tenant and opens the
+    // files page. Must be registered before the :songSharingId wildcard below.
+    path: 'open-file',
+    loadChildren: () => import('./open-file/open-file.module').then(m => m.OpenFileModule)
+  },
+  {
     // Configuration page for the Attendix channel (configurable) Teams tab.
     // Loaded by Teams when adding the tab to a channel. Must be registered
     // before the :songSharingId wildcard below or it would be treated as a
