@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.10.6",
+      "date": "11.10.2026",
+      "changes": [
+        "🧹 Dateiablage: Hochladen, Ordner erstellen, Link teilen und Sortierung sind jetzt in einem Menü im Header zusammengefasst – der Titel wird nicht mehr überdeckt."
+      ]
+    },
+    {
       "version": "4.10.5",
       "date": "11.10.2026",
       "changes": [

@@ -7,46 +7,49 @@
     </ion-buttons>
     <ion-title>Dateien</ion-title>
     <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="shareEntry()">
-        <ion-icon slot="icon-only" name="share-social-outline"></ion-icon>
+      <ion-button fill="clear" (click)="filesMenuPopover.present($event)">
+        <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
       </ion-button>
-      <ion-button id="files-sort-trigger" fill="clear">
-        <ion-icon slot="icon-only" name="funnel-outline"></ion-icon>
-      </ion-button>
-      @if (canEditEntries) {
-      <ion-button fill="clear" (click)="createFolder()">
-        <ion-icon slot="icon-only" name="folder-open-outline"></ion-icon>
-      </ion-button>
-      <ion-button fill="clear" (click)="triggerUpload()">
-        <ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
-      </ion-button>
-      }
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-popover #sortPopover trigger="files-sort-trigger" triggerAction="click">
+<ion-popover #filesMenuPopover>
   <ng-template>
     <ion-list>
+      @if (canEditEntries) {
+      <ion-item button detail="false" (click)="filesMenuPopover.dismiss(); triggerUpload()">
+        <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+        Dateien hochladen
+      </ion-item>
+      <ion-item button detail="false" (click)="filesMenuPopover.dismiss(); createFolder()">
+        <ion-icon name="folder-open-outline" slot="start"></ion-icon>
+        Ordner erstellen
+      </ion-item>
+      }
+      <ion-item button detail="false" (click)="filesMenuPopover.dismiss(); shareEntry()">
+        <ion-icon name="share-social-outline" slot="start"></ion-icon>
+        {{ currentPath ? 'Link zu diesem Ordner teilen' : 'Link zur Dateiablage teilen' }}
+      </ion-item>
       <ion-item lines="none">
         <ion-label>
           <h3>Sortierung</h3>
           <p>{{ sortLabel }}</p>
         </ion-label>
       </ion-item>
-      <ion-item button (click)="setSort('name', sortPopover)">
+      <ion-item button detail="false" (click)="setSort('name', filesMenuPopover)">
         <ion-icon name="text-outline" slot="start"></ion-icon>
         Name
       </ion-item>
-      <ion-item button (click)="setSort('updatedAt', sortPopover)">
+      <ion-item button detail="false" (click)="setSort('updatedAt', filesMenuPopover)">
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
         Änderungsdatum
       </ion-item>
-      <ion-item button (click)="setSort('size', sortPopover)">
+      <ion-item button detail="false" (click)="setSort('size', filesMenuPopover)">
         <ion-icon name="resize-outline" slot="start"></ion-icon>
         Dateigröße
       </ion-item>
-      <ion-item button (click)="toggleSortDirection(sortPopover)">
+      <ion-item button detail="false" lines="none" (click)="toggleSortDirection(filesMenuPopover)">
         <ion-icon [name]="sortDirection === 'asc' ? 'arrow-up-outline' : 'arrow-down-outline'" slot="start"></ion-icon>
         {{ sortDirection === 'asc' ? 'Aufsteigend' : 'Absteigend' }}
       </ion-item>
