@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.10.1",
+      "date": "11.10.2026",
+      "changes": [
+        "🎧 Audio-Player: Vor- und Zurück-Buttons, wenn in der Dateiablage mehrere Audios im Ordner liegen.",
+        "▶️ Automatische Wiedergabe: Nach dem Ende eines Audios startet automatisch das nächste."
+      ]
+    },
+    {
       "version": "4.10.0",
       "date": "1.10.2026",
       "changes": [
