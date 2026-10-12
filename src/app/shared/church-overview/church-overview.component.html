@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Gemeinde-Übersicht</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" class="ion-padding">
+  <ion-list [inset]="true">
+    <ion-list-header>
+      <ion-label>Gesamt: {{ total }} {{ subtitle }}</ion-label>
+    </ion-list-header>
+
+    @for (item of churchCounts; track item.name) {
+    <ion-item>
+      <ion-badge slot="start" color="primary">{{ item.count }}</ion-badge>
+      <ion-label>{{ item.name }}</ion-label>
+    </ion-item>
+    }
+
+    @if (withoutChurch > 0) {
+    <ion-item>
+      <ion-badge slot="start" color="medium">{{ withoutChurch }}</ion-badge>
+      <ion-label color="medium">Ohne Gemeinde</ion-label>
+    </ion-item>
+    }
+
+    @if (total === 0) {
+    <ion-item>
+      <ion-label class="ion-text-center" color="medium">Keine Personen vorhanden</ion-label>
+    </ion-item>
+    }
+  </ion-list>
+</ion-content>

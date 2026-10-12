@@ -3,10 +3,11 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ActionSheetController, AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { Attendance, Group, Person, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
+import { Attendance, ExtraField, Group, Person, Player, PlayerHistoryEntry, Teacher, Tenant } from 'src/app/utilities/interfaces';
 import { PersonPage } from '../person/person.page';
 import { BulkEditPage } from '../bulk-edit/bulk-edit.page';
 import { ImportPage } from '../import/import.page';
+import { ChurchOverviewComponent } from 'src/app/shared/church-overview/church-overview.component';
 import { DefaultAttendanceType, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Storage } from '@ionic/storage-angular';
 import { Utils } from 'src/app/utilities/Utils';
@@ -1045,6 +1046,30 @@ export class ListPage implements OnInit, OnDestroy {
     if (data?.updated) {
       await this.getPlayers();
     }
+  }
+
+  get churchField(): ExtraField | undefined {
+    return this.db.getPersonExtraFields().find(field => field.type === 'bfecg_church');
+  }
+
+  async showChurchOverview(popover?: any) {
+    const field = this.churchField;
+    if (!field) { return; }
+    await popover?.dismiss();
+
+    const modal = await this.modalController.create({
+      component: ChurchOverviewComponent,
+      componentProps: {
+        churchIds: this.playersFiltered.map(p => (p.additional_fields ?? {})[field.id] as string | null),
+        churches: this.db.churches() ?? [],
+        subtitle: 'Personen',
+      },
+      breakpoints: [0, 0.5, 0.75, 1],
+      initialBreakpoint: 0.5,
+      handleBehavior: 'none',
+    });
+
+    await modal.present();
   }
 
   async openImportModal() {

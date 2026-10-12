@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.10.9",
+      "date": "12.10.2026",
+      "changes": [
+        "⛪ Gemeinde-Übersicht: Ist das Extrafeld „Gemeinde“ aktiv, zeigt die Personenliste (gefilterte Personen) und jede Anwesenheit (nur Anwesende inkl. Verspätete) im Menü, wie viele Personen je Gemeinde dabei sind."
+      ]
+    },
+    {
       "version": "4.10.8",
       "date": "11.10.2026",
       "changes": [

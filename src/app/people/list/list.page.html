@@ -157,6 +157,12 @@
               }
             </ion-select>
           </ion-item>
+          @if (churchField) {
+            <ion-item button detail="false" lines="none" (click)="showChurchOverview(filterPopover)">
+              <ion-icon slot="start" name="business-outline" size="small"></ion-icon>
+              <ion-label>Gemeinde-Übersicht</ion-label>
+            </ion-item>
+          }
           @if (isAdmin) {
             <ion-item button detail="false" lines="none" (click)="openBulkEditModal()">
               <ion-icon slot="start" name="pencil" size="small"></ion-icon>

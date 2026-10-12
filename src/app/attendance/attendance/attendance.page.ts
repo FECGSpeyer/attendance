@@ -9,10 +9,11 @@ import { format } from 'date-fns';
 import dayjs from 'dayjs';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { StatusInfoComponent } from './status-info/status-info.component';
+import { ChurchOverviewComponent } from 'src/app/shared/church-overview/church-overview.component';
 import { AdHocReminderModalComponent, AdHocReminderResult } from './ad-hoc-reminder-modal/ad-hoc-reminder-modal.component';
 import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode, CHECKLIST_DEADLINE_OPTIONS, DEFAULT_ABSENCE_REASONS } from 'src/app/utilities/constants';
-import { Attendance, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem, RegistrationField, AGENDA_ITEMS_PLACEHOLDER_ID } from 'src/app/utilities/interfaces';
+import { Attendance, ExtraField, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem, RegistrationField, AGENDA_ITEMS_PLACEHOLDER_ID } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
@@ -1720,6 +1721,33 @@ export class AttendancePage implements OnInit, OnDestroy {
         players: this.players,
       },
       breakpoints: [0, 0.5, 0.75],
+      initialBreakpoint: 0.5,
+      handleBehavior: 'none',
+    });
+
+    await modal.present();
+  }
+
+  get churchField(): ExtraField | undefined {
+    return this.db.getPersonExtraFields().find(field => field.type === 'bfecg_church');
+  }
+
+  async showChurchOverview(): Promise<void> {
+    const field = this.churchField;
+    if (!field) { return; }
+    const presentStatuses = [AttendanceStatus.Present, AttendanceStatus.Late, AttendanceStatus.LateExcused];
+    const churchIds = this.players
+      .filter(p => presentStatuses.includes(p.status))
+      .map(p => (p.person?.additional_fields ?? {})[field.id] as string | null);
+
+    const modal = await this.modalController.create({
+      component: ChurchOverviewComponent,
+      componentProps: {
+        churchIds,
+        churches: this.db.churches() ?? [],
+        subtitle: 'Anwesende',
+      },
+      breakpoints: [0, 0.5, 0.75, 1],
       initialBreakpoint: 0.5,
       handleBehavior: 'none',
     });
