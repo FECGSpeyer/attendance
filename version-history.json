@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.10.12",
+      "date": "12.10.2026",
+      "changes": [
+        "🐛 Verantwortliche bei Tagesordnungspunkten und Aufgaben können wieder gespeichert werden.",
+        "💾 Speichern-Button in der Detailansicht von Aufgaben und Tagesordnungspunkten jetzt unten rechts."
+      ]
+    },
+    {
       "version": "4.10.11",
       "date": "12.10.2026",
       "changes": [

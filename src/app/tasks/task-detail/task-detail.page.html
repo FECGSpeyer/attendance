@@ -10,14 +10,11 @@
           <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
         </ion-button>
       }
-      <ion-button (click)="save()" fill="clear">
-        <ion-icon slot="icon-only" name="save-outline"></ion-icon>
-      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content class="ion-padding fab-padding">
   @if (task) {
     @if (isOverdue()) {
       <ion-note color="danger" style="display: block; padding: 8px 16px; margin-bottom: 8px">
@@ -106,4 +103,10 @@
       </ion-list>
     }
   }
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="save()">
+      <ion-icon name="save-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

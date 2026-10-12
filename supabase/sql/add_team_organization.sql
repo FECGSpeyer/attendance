@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS public.agenda_items (
                          CHECK (status IN ('open', 'in_progress', 'completed', 'postponed')),
   priority             text NOT NULL DEFAULT 'medium'
                          CHECK (priority IN ('low', 'medium', 'high')),
-  responsible_person_id integer REFERENCES player(id) ON DELETE SET NULL,
+  responsible_person_id bigint REFERENCES player(id) ON DELETE SET NULL,
   due_date             date,
   created_at           timestamptz NOT NULL DEFAULT now(),
   created_by           uuid REFERENCES auth.users(id) ON DELETE SET NULL
@@ -183,7 +183,7 @@ CREATE TABLE IF NOT EXISTS public.tasks (
   tenant_id             integer NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   title                 text NOT NULL,
   description           text,
-  responsible_person_id integer REFERENCES player(id) ON DELETE SET NULL,
+  responsible_person_id bigint REFERENCES player(id) ON DELETE SET NULL,
   priority              text NOT NULL DEFAULT 'medium'
                           CHECK (priority IN ('low', 'medium', 'high')),
   due_date              date,
