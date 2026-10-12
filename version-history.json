@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.10.16",
+      "date": "12.10.2026",
+      "changes": [
+        "🐛 Dateiablage: Der letzte Eintrag wird auf iOS nicht mehr von der Tab-Leiste verdeckt."
+      ]
+    },
+    {
       "version": "4.10.15",
       "date": "12.10.2026",
       "changes": [

@@ -134,3 +134,9 @@
   object-fit: contain;
   transition: transform 0.12s ease-out;
 }
+
+// The floating iOS tab bar overlays the content, so reserve room below the
+// last entry (tab bar offset + bar height + gap).
+.files-content {
+  --padding-bottom: calc(max(10px, env(safe-area-inset-bottom, 0px) - 12px) + 68px);
+}
