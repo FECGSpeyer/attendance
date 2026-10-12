@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.10.13",
+      "date": "12.10.2026",
+      "changes": [
+        "📁 Termine können mit einem Ordner der Dateiablage verknüpft werden (z. B. für Aufnahmen).",
+        "🎧 Mitglieder springen auf der Anmeldeseite und in der Übersicht direkt vom Termin in den verknüpften Ordner."
+      ]
+    },
+    {
       "version": "4.10.12",
       "date": "12.10.2026",
       "changes": [

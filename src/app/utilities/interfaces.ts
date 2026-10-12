@@ -332,6 +332,7 @@ export interface Attendance {
   attachment_url?: string;
   attachment_name?: string;
   place?: string;
+  files_folder?: string;
 }
 
 export interface Plan {

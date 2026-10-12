@@ -1,8 +1,10 @@
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, IonModal } from '@ionic/angular/lazy';
 import { Browser } from '@capacitor/browser';
+import { Router } from '@angular/router';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
+import { FilesService } from 'src/app/services/files/files.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS } from 'src/app/utilities/constants';
 import { CrossTenantPersonAttendance, AttendanceType } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -50,6 +52,8 @@ export class OverviewPage implements OnInit {
     private actionSheetController: ActionSheetController,
     private alertController: AlertController,
     private tracking: TrackingService,
+    private router: Router,
+    private filesSvc: FilesService,
   ) {
     effect(async () => {
       if (this.db.tenants() && this.db.tenantUsers()) {
@@ -243,6 +247,15 @@ export class OverviewPage implements OnInit {
       });
     }
 
+    if (this.hasFilesFolder(attendance)) {
+      const cancelBtn = buttons.find(btn => btn.role === 'destructive');
+      const cancelIndex = buttons.indexOf(cancelBtn);
+      buttons.splice(cancelIndex, 0, {
+        text: 'Dateiablage öffnen',
+        handler: () => this.openFilesFolder(attendance),
+      });
+    }
+
     if (buttons.length <= 1) {
       Utils.showToast('Für diesen Termin sind keine Aktionen verfügbar.', 'warning', 4000);
       return;
@@ -379,6 +392,20 @@ export class OverviewPage implements OnInit {
 
   getBadgeText(att: CrossTenantPersonAttendance): string {
     return att.text === 'X' ? '✓' : att.text || '';
+  }
+
+  hasFilesFolder(attendance: CrossTenantPersonAttendance): boolean {
+    return Boolean(attendance?.attendance?.files_folder) && this.db.canAccessFiles(attendance.tenantId);
+  }
+
+  async openFilesFolder(attendance: CrossTenantPersonAttendance): Promise<void> {
+    if (!this.hasFilesFolder(attendance)) {
+      return;
+    }
+    // /open-file wechselt bei Bedarf die Instanz und öffnet den Ordner.
+    await this.router.navigate(['/open-file'], {
+      queryParams: this.filesSvc.getFolderOpenParams(attendance.tenantId, attendance.attendance.files_folder),
+    });
   }
 
   openAttachment(attendance: any) {

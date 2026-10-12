@@ -750,6 +750,31 @@ export class AttendancePage implements OnInit, OnDestroy {
     }, this.attendance.id);
   }
 
+  async onFilesFolderSelected(path: string) {
+    this.attendance.files_folder = path;
+    await this.db.updateAttendance({
+      files_folder: path,
+    }, this.attendance.id);
+  }
+
+  async removeFilesFolder() {
+    this.attendance.files_folder = null;
+    await this.db.updateAttendance({
+      files_folder: null,
+    }, this.attendance.id);
+  }
+
+  async openFilesFolder() {
+    if (this.attendance.files_folder) {
+      if (this.isModal) {
+        await this.modalController.dismiss();
+      }
+      await this.router.navigate(['/tabs/settings/files'], {
+        queryParams: { path: this.attendance.files_folder, t: String(Date.now()) },
+      });
+    }
+  }
+
   async openNavigation() {
     if (this.attendance.place) {
       await Utils.openNavigation(this.attendance.place);

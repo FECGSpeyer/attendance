@@ -553,23 +553,26 @@ export class DbService {
     });
   }
 
-  isBeta() {
-    return this.tenantUser()?.email?.endsWith('developer@attendix.de') || this.user?.email?.toLocaleLowerCase().endsWith('erwinfast98@gmail.com') || this.tenant()?.id === 12;
+  isBeta(tenantId: number = this.tenant()?.id) {
+    return this.tenantUser()?.email?.endsWith('developer@attendix.de') || this.user?.email?.toLocaleLowerCase().endsWith('erwinfast98@gmail.com') || tenantId === 12;
   }
 
   // Dateiablage: Beta-Instanzen für Admins/Verantwortliche/Helfer, freigegebene Instanzen
   // für alle außer Bewerber. Muss mit den Storage-Policies des Buckets `files` übereinstimmen.
-  canAccessFiles(): boolean {
-    const role = this.tenantUser()?.role;
+  // Ohne tenantId gilt die aktuelle Instanz, sonst die Rolle in der angegebenen Instanz.
+  canAccessFiles(tenantId: number = this.tenant()?.id): boolean {
+    const role = tenantId === this.tenant()?.id
+      ? this.tenantUser()?.role
+      : this.tenantUsers().find((tu) => tu.tenantId === tenantId)?.role;
     if (role === undefined || role === null) {
       return false;
     }
 
-    if (FILES_SHARED_TENANT_IDS.includes(this.tenant()?.id)) {
+    if (FILES_SHARED_TENANT_IDS.includes(tenantId)) {
       return ![Role.APPLICANT, Role.NONE].includes(role);
     }
 
-    return this.isBeta() && [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER, Role.VOICE_LEADER_HELPER].includes(role);
+    return this.isBeta(tenantId) && [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER, Role.VOICE_LEADER_HELPER].includes(role);
   }
 
   canEditFiles(): boolean {
@@ -2644,7 +2647,7 @@ export class DbService {
   async getPersonAttendances(id: number, all: boolean = false): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan, description, attachment_url, attachment_name, place, attType:type_id(id, highlight, include_in_average, name, color, registration_fields))')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan, description, attachment_url, attachment_name, files_folder, place, attType:type_id(id, highlight, include_in_average, name, color, registration_fields))')
       .eq('person_id', id)
       .gt('attendance.date', all ? dayjs('2020-01-01').toISOString() : this.getCurrentAttDate()) as any;
 
@@ -2678,7 +2681,7 @@ export class DbService {
   async getAllUpcomingAttendancesForSignout(playerId: number): Promise<PersonAttendance[]> {
     const { data: allAtts } = await supabase
       .from('attendance')
-      .select('id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan, description, attachment_url, attachment_name, place, attType:type_id(id, highlight, include_in_average, name, color, registration_fields)')
+      .select('id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan, description, attachment_url, attachment_name, files_folder, place, attType:type_id(id, highlight, include_in_average, name, color, registration_fields)')
       .eq('tenantId', this.tenant().id)
       .gt('date', dayjs().startOf('day').toISOString())
       .order('date', { ascending: true }) as any;
@@ -3942,7 +3945,7 @@ export class DbService {
 
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, description, attachment_url, attachment_name, tenantId)')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, description, attachment_url, attachment_name, files_folder, tenantId)')
       .eq('person_id', personId)
       .gt('attendance.date', seasonStart) as any;
 

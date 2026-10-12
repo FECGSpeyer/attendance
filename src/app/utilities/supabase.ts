@@ -29,6 +29,7 @@ export type Database = {
           duration_days: number | null
           end_time: string | null
           excused: string[]
+          files_folder: string | null
           id: number
           img: string | null
           notes: string | null
@@ -60,6 +61,7 @@ export type Database = {
           duration_days?: number | null
           end_time?: string | null
           excused?: string[]
+          files_folder?: string | null
           id?: number
           img?: string | null
           notes?: string | null
@@ -91,6 +93,7 @@ export type Database = {
           duration_days?: number | null
           end_time?: string | null
           excused?: string[]
+          files_folder?: string | null
           id?: number
           img?: string | null
           notes?: string | null

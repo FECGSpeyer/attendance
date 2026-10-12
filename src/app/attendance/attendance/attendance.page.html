@@ -323,6 +323,34 @@
               <ion-label color="primary">Beschreibung & Anhang bearbeiten</ion-label>
             </ion-item>
 
+            @if (db.canAccessFiles()) {
+            <ion-item lines="none">
+              <ion-icon name="folder-outline" slot="start" color="primary"></ion-icon>
+              <ion-label>
+                <h3>Ordner in der Dateiablage</h3>
+                <p>z. B. Aufnahmen des Termins</p>
+              </ion-label>
+              @if (!attendance.files_folder) {
+              <ion-button slot="end" fill="clear" (click)="filesFolderPicker.open()">Wählen</ion-button>
+              }
+            </ion-item>
+            @if (attendance.files_folder) {
+            <ion-item lines="none">
+              <ion-chip (click)="openFilesFolder()">
+                <ion-icon name="folder-open-outline"></ion-icon>
+                <ion-label>{{ attendance.files_folder }}</ion-label>
+              </ion-chip>
+              <ion-button slot="end" fill="clear" (click)="filesFolderPicker.open(attendance.files_folder)" aria-label="Ordner ändern">
+                <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+              <ion-button slot="end" fill="clear" color="danger" (click)="removeFilesFolder()" aria-label="Ordner entfernen">
+                <ion-icon name="close-circle-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-item>
+            }
+            <app-files-folder-picker #filesFolderPicker [tenantId]="db.tenant()?.id" (select)="onFilesFolderSelected($event)"></app-files-folder-picker>
+            }
+
             <ion-item button (click)="exportToExcel()" detail="false">
               <ion-label color="primary">Anwesenheit als Excel exportieren</ion-label>
             </ion-item>

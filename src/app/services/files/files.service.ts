@@ -134,6 +134,18 @@ export class FilesService {
     return `https://attendix.de/open-file?${params.toString()}`;
   }
 
+  /**
+   * Query-Parameter für die Route `/open-file`, um einen Ordner der
+   * Dateiablage zu öffnen (inkl. Tenant-Wechsel und Zugriffsprüfung).
+   */
+  getFolderOpenParams(tenantId: number, relativePath: string): Record<string, string> {
+    return {
+      tenantId: String(tenantId),
+      path: this.normalizeRelativePath(relativePath),
+      folder: '1',
+    };
+  }
+
   setPendingLink(url: string): void {
     try {
       localStorage.setItem(PENDING_FILE_LINK_KEY, url);

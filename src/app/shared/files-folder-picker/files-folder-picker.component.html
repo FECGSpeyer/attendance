@@ -1,0 +1,57 @@
+<ion-modal #modal handle-behavior="none" [breakpoints]="[0, 0.8, 1]" [initialBreakpoint]="0.8">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="dismiss()" aria-label="Abbrechen">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Ordner wählen</ion-title>
+      </ion-toolbar>
+      <ion-toolbar>
+        <ion-breadcrumbs [maxItems]="4" [itemsAfterCollapse]="2">
+          <ion-breadcrumb (click)="navigate('')">
+            <ion-icon name="home-outline"></ion-icon>
+          </ion-breadcrumb>
+          @for (segment of pathSegments; track $index) {
+          <ion-breadcrumb (click)="goToSegment($index)">{{ segment }}</ion-breadcrumb>
+          }
+        </ion-breadcrumbs>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-list>
+        @if (currentPath) {
+        <ion-item button detail="false" (click)="goUp()">
+          <ion-icon name="arrow-up-outline" slot="start"></ion-icon>
+          <ion-label>Übergeordneter Ordner</ion-label>
+        </ion-item>
+        }
+        @if (isLoading) {
+        <ion-item lines="none">
+          <ion-spinner name="crescent"></ion-spinner>
+        </ion-item>
+        } @else {
+        @for (folder of folders; track folder.path) {
+        <ion-item button (click)="navigate(folder.path)">
+          <ion-icon name="folder-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>{{ folder.name }}</ion-label>
+        </ion-item>
+        } @empty {
+        <ion-item lines="none">
+          <ion-label color="medium">Keine Unterordner vorhanden.</ion-label>
+        </ion-item>
+        }
+        }
+      </ion-list>
+    </ion-content>
+    <ion-footer>
+      <ion-toolbar>
+        <ion-button expand="block" class="ion-margin-horizontal" [disabled]="!currentPath || isLoading" (click)="onSelect()">
+          {{ currentPath ? 'Diesen Ordner wählen' : 'Bitte einen Ordner öffnen' }}
+        </ion-button>
+      </ion-toolbar>
+    </ion-footer>
+  </ng-template>
+</ion-modal>

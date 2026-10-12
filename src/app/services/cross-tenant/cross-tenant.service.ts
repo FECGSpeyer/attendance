@@ -61,7 +61,7 @@ export class CrossTenantService {
   ): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, description, attachment_url, attachment_name, tenantId)')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, description, attachment_url, attachment_name, files_folder, tenantId)')
       .eq('person_id', personId)
       .gt('attendance.date', startDate) as any;
 

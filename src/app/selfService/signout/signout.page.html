@@ -269,13 +269,16 @@
               @if (currentAttendance.notes) {
               <ion-note [style.fontSize]="'.8rem'" color="medium">Notiz: {{ currentAttendance.notes }}</ion-note>
               }
-              @if (currentAttendance.attendance?.description || currentAttendance.attendance?.attachment_url) {
+              @if (currentAttendance.attendance?.description || currentAttendance.attendance?.attachment_url || hasFilesFolder(currentAttendance)) {
               <ion-note [style.fontSize]="'.8rem'" color="primary">
                 @if (currentAttendance.attendance?.description) {
                   <ion-icon name="document-text-outline" style="vertical-align: middle;"></ion-icon>
                 }
                 @if (currentAttendance.attendance?.attachment_url) {
                   <ion-icon name="attach-outline" style="vertical-align: middle;"></ion-icon>
+                }
+                @if (hasFilesFolder(currentAttendance)) {
+                  <ion-icon name="folder-outline" style="vertical-align: middle;"></ion-icon>
                 }
                 Infos verfügbar
               </ion-note>
@@ -317,13 +320,16 @@
               @if (att.notes) {
               <ion-note [style.fontSize]="'.8rem'" color="medium">Notiz: {{ att.notes }}</ion-note>
               }
-              @if (att.attendance?.description || att.attendance?.attachment_url) {
+              @if (att.attendance?.description || att.attendance?.attachment_url || hasFilesFolder(att)) {
               <ion-note [style.fontSize]="'.8rem'" color="primary">
                 @if (att.attendance?.description) {
                   <ion-icon name="document-text-outline" style="vertical-align: middle;"></ion-icon>
                 }
                 @if (att.attendance?.attachment_url) {
                   <ion-icon name="attach-outline" style="vertical-align: middle;"></ion-icon>
+                }
+                @if (hasFilesFolder(att)) {
+                  <ion-icon name="folder-outline" style="vertical-align: middle;"></ion-icon>
                 }
                 Infos verfügbar
               </ion-note>
@@ -367,6 +373,11 @@
               <h2>{{ getReadableDate(att.date, att.typeId) }}</h2>
               <h3 [style.fontWeight]="att.highlight ? 'bold' : 'normal'">{{ att.title }}</h3>
             </ion-label>
+            @if (hasFilesFolder(att)) {
+            <ion-button slot="end" fill="clear" (click)="openFilesFolder(att); $event.stopPropagation()" aria-label="Dateiablage öffnen">
+              <ion-icon slot="icon-only" name="folder-open-outline"></ion-icon>
+            </ion-button>
+            }
             <ion-badge slot="end"
               [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? (att.status === 3 ? 'tertiary' : 'rosa') : att.text === 'N' ? 'medium' : 'warning'">
               {{ att.text === 'X' ? '✓' : att.text === 'L' && att.status !== 3 ? 'LE' : att.text}}

@@ -303,6 +303,19 @@ export class SignoutPage implements OnInit {
     }
   }
 
+  hasFilesFolder(attendance: PersonAttendance): boolean {
+    return Boolean(attendance?.attendance?.files_folder) && this.db.canAccessFiles();
+  }
+
+  async openFilesFolder(attendance: PersonAttendance): Promise<void> {
+    if (!this.hasFilesFolder(attendance)) {
+      return;
+    }
+    await this.router.navigate(['/tabs/settings/files'], {
+      queryParams: { path: attendance.attendance.files_folder, t: String(Date.now()) },
+    });
+  }
+
   openAttachment(attendance: any) {
     if (attendance?.attachment_url) {
       Browser.open({ url: attendance.attachment_url });
@@ -327,6 +340,8 @@ export class SignoutPage implements OnInit {
         this.openAttachment(attendance.attendance);
       } else if (attendance.attendance?.place) {
         await Utils.openNavigation(attendance.attendance.place);
+      } else if (this.hasFilesFolder(attendance)) {
+        await this.openFilesFolder(attendance);
       }
       return;
     }
@@ -465,6 +480,15 @@ export class SignoutPage implements OnInit {
       buttons.splice(cancelIndex, 0, {
         text: 'Navigation öffnen',
         handler: () => Utils.openNavigation(attendance.attendance.place),
+      });
+    }
+
+    if (this.hasFilesFolder(attendance)) {
+      const cancelBtn = buttons.find(btn => btn.role === 'destructive');
+      const cancelIndex = buttons.indexOf(cancelBtn);
+      buttons.splice(cancelIndex, 0, {
+        text: 'Dateiablage öffnen',
+        handler: () => this.openFilesFolder(attendance),
       });
     }
 
