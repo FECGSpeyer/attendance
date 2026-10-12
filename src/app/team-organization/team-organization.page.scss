@@ -1,1 +1,16 @@
-// no custom styles needed
+.badges {
+  display: flex;
+  gap: 4px;
+}
+
+ion-item.completed ion-label {
+  opacity: 0.6;
+
+  h2 {
+    text-decoration: line-through;
+  }
+}
+
+ion-list:last-of-type {
+  padding-bottom: 80px;
+}

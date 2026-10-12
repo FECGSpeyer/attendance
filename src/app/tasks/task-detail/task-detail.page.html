@@ -1,10 +1,15 @@
 <ion-header translucent="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button text="" defaultHref="/tabs/settings/tasks"></ion-back-button>
+      <ion-back-button text="" defaultHref="/tabs/settings/team-organization"></ion-back-button>
     </ion-buttons>
     <ion-title>{{ isNew ? 'Neue Aufgabe' : task?.title }}</ion-title>
     <ion-buttons slot="end">
+      @if (!isNew && task) {
+        <ion-button (click)="deleteTask()" fill="clear" color="danger">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      }
       <ion-button (click)="save()" fill="clear">
         <ion-icon slot="icon-only" name="save-outline"></ion-icon>
       </ion-button>
@@ -52,21 +57,22 @@
 
       <ion-item>
         <ion-label>Fälligkeitsdatum</ion-label>
-        <ion-datetime-button slot="end" datetime="task-due-date-picker"></ion-datetime-button>
-        <ion-modal [keepContentsMounted]="true">
+        <ion-button slot="end" fill="outline" size="small" (click)="dueDateModal.present()">
+          {{ task.due_date ? (task.due_date | date:'dd.MM.yyyy') : 'Kein Datum' }}
+        </ion-button>
+        <ion-modal #dueDateModal class="ion-datetime-button-overlay" [keepContentsMounted]="true">
           <ng-template>
             <ion-datetime
-              #taskDatePicker
-              id="task-due-date-picker"
               presentation="date"
               locale="de-DE"
-              [value]="task.due_date ?? undefined"
-              [showDefaultButtons]="false"
-              (ionChange)="onTaskDateChange($event)">
-              <ion-buttons slot="buttons">
-                <ion-button color="danger" (click)="task.due_date = null; taskDatePicker.reset()">Löschen</ion-button>
-                <ion-button (click)="taskDatePicker.confirm(true)">OK</ion-button>
-              </ion-buttons>
+              [firstDayOfWeek]="1"
+              [value]="task.due_date ?? null"
+              [showDefaultButtons]="true"
+              [showClearButton]="true"
+              doneText="OK"
+              cancelText="Abbrechen"
+              clearText="Löschen"
+              (ionChange)="onTaskDateChange($event, dueDateModal)">
             </ion-datetime>
           </ng-template>
         </ion-modal>

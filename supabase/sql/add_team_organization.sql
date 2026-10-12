@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS public.agenda_items (
   title                text NOT NULL,
   description          text,
   status               text NOT NULL DEFAULT 'open'
-                         CHECK (status IN ('open', 'completed', 'postponed')),
+                         CHECK (status IN ('open', 'in_progress', 'completed', 'postponed')),
   priority             text NOT NULL DEFAULT 'medium'
                          CHECK (priority IN ('low', 'medium', 'high')),
   responsible_person_id integer REFERENCES player(id) ON DELETE SET NULL,

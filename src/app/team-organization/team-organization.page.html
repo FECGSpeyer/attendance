@@ -38,34 +38,56 @@
           </ion-item>
         }
       </ion-list>
-    } @else if (tasks.length === 0) {
-      <div class="ion-text-center ion-padding-top">
-        <ion-icon name="checkmark-done-outline" style="font-size: 48px; color: var(--ion-color-medium)"></ion-icon>
-        <p style="color: var(--ion-color-medium)">Keine offenen Aufgaben</p>
-        <ion-button fill="clear" routerLink="/tabs/settings/tasks">Alle Aufgaben</ion-button>
-      </div>
     } @else {
-      <ion-list>
-        @for (task of tasks; track task.id) {
-          <ion-item [routerLink]="['/tabs/settings/tasks', task.id]" detail="false" button>
-            <ion-label [color]="isOverdue(task) ? 'danger' : ''">
-              <h2>{{ task.title }}</h2>
-              @if (task.responsible_person) {
-                <h3>{{ task.responsible_person.firstName }} {{ task.responsible_person.lastName }}</h3>
-              }
-              @if (task.due_date) {
-                <p>{{ isOverdue(task) ? '⚠ Überfällig' : 'Fällig' }}: {{ task.due_date | date:'dd.MM.yyyy' }}</p>
-              }
-            </ion-label>
-            <ion-badge slot="end" [color]="getPriorityColor(task.priority)">
-              {{ task.priority === 'high' ? 'Hoch' : task.priority === 'low' ? 'Niedrig' : 'Mittel' }}
-            </ion-badge>
-          </ion-item>
-        }
-      </ion-list>
-      <div class="ion-text-center ion-padding">
-        <ion-button fill="clear" routerLink="/tabs/settings/tasks">Alle anzeigen</ion-button>
-      </div>
+      @if (visibleTasks.length === 0) {
+        <div class="ion-text-center ion-padding-top">
+          <ion-icon name="checkmark-done-outline" style="font-size: 48px; color: var(--ion-color-medium)"></ion-icon>
+          <p style="color: var(--ion-color-medium)">Keine offenen Aufgaben</p>
+          <ion-button fill="clear" (click)="addTask()">
+            <ion-icon slot="start" name="add"></ion-icon>
+            Aufgabe hinzufügen
+          </ion-button>
+        </div>
+      } @else {
+        <ion-list>
+          @for (task of visibleTasks; track task.id) {
+            <ion-item-sliding #taskSlider>
+              <ion-item [routerLink]="['/tabs/settings/tasks', task.id]" detail="false" button
+                [class.completed]="task.status === 'completed'">
+                <ion-label [color]="isOverdue(task) ? 'danger' : ''">
+                  <h2>{{ task.title }}</h2>
+                  @if (task.responsible_person) {
+                    <h3>{{ task.responsible_person.firstName }} {{ task.responsible_person.lastName }}</h3>
+                  }
+                  @if (task.due_date) {
+                    <p>{{ isOverdue(task) ? '⚠ Überfällig' : 'Fällig' }}: {{ task.due_date | date:'dd.MM.yyyy' }}</p>
+                  }
+                </ion-label>
+                <div slot="end" class="badges">
+                  @if (task.status !== 'open') {
+                    <ion-badge [color]="getStatusColor(task.status)">{{ getStatusLabel(task.status) }}</ion-badge>
+                  }
+                  @if (task.status !== 'completed') {
+                    <ion-badge [color]="getPriorityColor(task.priority)">{{ getPriorityLabel(task.priority) }}</ion-badge>
+                  }
+                </div>
+              </ion-item>
+              <ion-item-options side="end">
+                <ion-item-option color="danger" (click)="removeTask(task, taskSlider)">
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+          }
+        </ion-list>
+      }
+      @if (completedTaskCount > 0) {
+        <div class="ion-text-center ion-padding">
+          <ion-button fill="clear" (click)="showCompletedTasks = !showCompletedTasks">
+            {{ showCompletedTasks ? 'Erledigte ausblenden' : 'Alle anzeigen (' + completedTaskCount + ' erledigt)' }}
+          </ion-button>
+        </div>
+      }
     }
   }
 
@@ -79,34 +101,56 @@
           </ion-item>
         }
       </ion-list>
-    } @else if (agendaItems.length === 0) {
-      <div class="ion-text-center ion-padding-top">
-        <ion-icon name="list-circle-outline" style="font-size: 48px; color: var(--ion-color-medium)"></ion-icon>
-        <p style="color: var(--ion-color-medium)">Keine offenen Tagesordnungspunkte</p>
-        <ion-button fill="clear" routerLink="/tabs/settings/agenda-items">Alle Tagesordnungspunkte</ion-button>
-      </div>
     } @else {
-      <ion-list>
-        @for (item of agendaItems; track item.id) {
-          <ion-item [routerLink]="['/tabs/settings/agenda-items', item.id]" detail="false" button>
-            <ion-label>
-              <h2>{{ item.title }}</h2>
-              @if (item.responsible_person) {
-                <h3>{{ item.responsible_person.firstName }} {{ item.responsible_person.lastName }}</h3>
-              }
-              @if (item.due_date) {
-                <p>Fällig: {{ item.due_date | date:'dd.MM.yyyy' }}</p>
-              }
-            </ion-label>
-            <ion-badge slot="end" [color]="getPriorityColor(item.priority)">
-              {{ item.priority === 'high' ? 'Hoch' : item.priority === 'low' ? 'Niedrig' : 'Mittel' }}
-            </ion-badge>
-          </ion-item>
-        }
-      </ion-list>
-      <div class="ion-text-center ion-padding">
-        <ion-button fill="clear" routerLink="/tabs/settings/agenda-items">Alle anzeigen</ion-button>
-      </div>
+      @if (visibleAgendaItems.length === 0) {
+        <div class="ion-text-center ion-padding-top">
+          <ion-icon name="list-circle-outline" style="font-size: 48px; color: var(--ion-color-medium)"></ion-icon>
+          <p style="color: var(--ion-color-medium)">Keine offenen Tagesordnungspunkte</p>
+          <ion-button fill="clear" (click)="addAgendaItem()">
+            <ion-icon slot="start" name="add"></ion-icon>
+            Tagesordnungspunkt hinzufügen
+          </ion-button>
+        </div>
+      } @else {
+        <ion-list>
+          @for (item of visibleAgendaItems; track item.id) {
+            <ion-item-sliding #agendaSlider>
+              <ion-item [routerLink]="['/tabs/settings/agenda-items', item.id]" detail="false" button
+                [class.completed]="item.status === 'completed'">
+                <ion-label [color]="isOverdue(item) ? 'danger' : ''">
+                  <h2>{{ item.title }}</h2>
+                  @if (item.responsible_person) {
+                    <h3>{{ item.responsible_person.firstName }} {{ item.responsible_person.lastName }}</h3>
+                  }
+                  @if (item.due_date) {
+                    <p>{{ isOverdue(item) ? '⚠ Überfällig' : 'Fällig' }}: {{ item.due_date | date:'dd.MM.yyyy' }}</p>
+                  }
+                </ion-label>
+                <div slot="end" class="badges">
+                  @if (item.status !== 'open') {
+                    <ion-badge [color]="getStatusColor(item.status)">{{ getStatusLabel(item.status) }}</ion-badge>
+                  }
+                  @if (item.status !== 'completed') {
+                    <ion-badge [color]="getPriorityColor(item.priority)">{{ getPriorityLabel(item.priority) }}</ion-badge>
+                  }
+                </div>
+              </ion-item>
+              <ion-item-options side="end">
+                <ion-item-option color="danger" (click)="removeAgendaItem(item, agendaSlider)">
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+          }
+        </ion-list>
+      }
+      @if (completedAgendaCount > 0) {
+        <div class="ion-text-center ion-padding">
+          <ion-button fill="clear" (click)="showCompletedAgenda = !showCompletedAgenda">
+            {{ showCompletedAgenda ? 'Erledigte ausblenden' : 'Alle anzeigen (' + completedAgendaCount + ' erledigt)' }}
+          </ion-button>
+        </div>
+      }
     }
   }
 
@@ -141,5 +185,13 @@
         }
       </ion-list>
     }
+  }
+
+  @if (activeSegment === 'tasks' || activeSegment === 'agenda') {
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab-button (click)="activeSegment === 'tasks' ? addTask() : addAgendaItem()">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
   }
 </ion-content>

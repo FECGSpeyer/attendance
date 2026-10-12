@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { AlertController, NavController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { AgendaItemPriority, Person, Task, TaskStatus } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
@@ -30,7 +31,12 @@ export class TaskDetailPage implements OnInit {
     { value: 'low', label: 'Niedrig' },
   ];
 
-  constructor(private db: DbService, private route: ActivatedRoute) {
+  constructor(
+    private db: DbService,
+    private route: ActivatedRoute,
+    private alertController: AlertController,
+    private navController: NavController,
+  ) {
     const now = new Date();
     this.today = now.toISOString().split('T')[0];
   }
@@ -58,9 +64,36 @@ export class TaskDetailPage implements OnInit {
     return this.task?.status !== 'completed' && !!this.task?.due_date && this.task.due_date < this.today;
   }
 
-  onTaskDateChange(event: CustomEvent) {
+  onTaskDateChange(event: CustomEvent, modal: { dismiss: () => Promise<boolean> }) {
     const raw = event.detail.value;
     this.task.due_date = raw ? (raw as string).split('T')[0] : null;
+    if (!raw) {
+      modal.dismiss();
+    }
+  }
+
+  async deleteTask() {
+    const alert = await this.alertController.create({
+      header: 'Aufgabe wirklich löschen?',
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Löschen',
+          role: 'destructive',
+          handler: async () => {
+            try {
+              await this.db.deleteTask(this.taskId);
+              Utils.showToast('Gelöscht');
+              this.navController.navigateBack('/tabs/settings/team-organization');
+            } catch (error) {
+              console.error('Delete error:', error);
+              Utils.showToast('Löschen fehlgeschlagen', 'danger');
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   async save() {

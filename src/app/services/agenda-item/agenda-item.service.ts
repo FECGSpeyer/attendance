@@ -49,7 +49,7 @@ export class AgendaItemService {
     const { data, error } = await db
       .from('agenda_items')
       .insert(toAgendaItemWrite(item))
-      .select()
+      .select('*, responsible_person:player!responsible_person_id(id, firstName, lastName)')
       .single();
 
     if (error) throw error;
@@ -61,7 +61,7 @@ export class AgendaItemService {
       .from('agenda_items')
       .update(toAgendaItemWrite(updates))
       .eq('id', id)
-      .select()
+      .select('*, responsible_person:player!responsible_person_id(id, firstName, lastName)')
       .single();
 
     if (error) throw error;
@@ -69,10 +69,14 @@ export class AgendaItemService {
   }
 
   async deleteAgendaItem(id: string): Promise<void> {
-    await db
+    const { data, error } = await db
       .from('agenda_items')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .select('id');
+
+    if (error) throw error;
+    if (!data?.length) throw new Error('Keine Berechtigung zum Löschen');
   }
 
   async linkToAttendance(agendaItemId: string, attendanceId: number): Promise<void> {

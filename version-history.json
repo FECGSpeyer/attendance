@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "4.10.11",
+      "date": "12.10.2026",
+      "changes": [
+        "📋 Teamorganisation: Aufgaben und Tagesordnungspunkte direkt auf einer Seite – inkl. Anlegen (jederzeit), Wischen zum Löschen und erledigten Einträgen hinter „Alle anzeigen“.",
+        "🐛 Tagesordnungspunkte mit Status „In Bearbeitung“ können wieder gespeichert werden.",
+        "📅 Fälligkeitsdatum von Aufgaben und Tagesordnungspunkten lässt sich zuverlässig setzen, ändern und löschen.",
+        "🗑️ Aufgaben und Tagesordnungspunkte können jetzt auch in der Detailansicht gelöscht werden."
+      ]
+    },
+    {
       "version": "4.10.10",
       "date": "12.10.2026",
       "changes": [

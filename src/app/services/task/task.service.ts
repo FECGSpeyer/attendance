@@ -60,7 +60,7 @@ export class TaskService {
     const { data, error } = await db
       .from('tasks')
       .insert(toTaskWrite(task))
-      .select()
+      .select('*, responsible_person:player!responsible_person_id(id, firstName, lastName)')
       .single();
 
     if (error) throw error;
@@ -72,7 +72,7 @@ export class TaskService {
       .from('tasks')
       .update({ ...toTaskWrite(updates), updated_at: new Date().toISOString() })
       .eq('id', id)
-      .select()
+      .select('*, responsible_person:player!responsible_person_id(id, firstName, lastName)')
       .single();
 
     if (error) throw error;
@@ -80,9 +80,13 @@ export class TaskService {
   }
 
   async deleteTask(id: string): Promise<void> {
-    await db
+    const { data, error } = await db
       .from('tasks')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .select('id');
+
+    if (error) throw error;
+    if (!data?.length) throw new Error('Keine Berechtigung zum Löschen');
   }
 }

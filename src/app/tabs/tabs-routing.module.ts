@@ -81,7 +81,8 @@ const routes: Routes = [
       },
       {
         path: 'settings/agenda-items',
-        loadChildren: () => import('./../agenda-items/agenda-item-list/agenda-item-list.module').then(m => m.AgendaItemListPageModule),
+        redirectTo: 'settings/team-organization',
+        pathMatch: 'full',
       },
       {
         path: 'settings/agenda-items/:id',
@@ -89,7 +90,8 @@ const routes: Routes = [
       },
       {
         path: 'settings/tasks',
-        loadChildren: () => import('./../tasks/task-list/task-list.module').then(m => m.TaskListPageModule),
+        redirectTo: 'settings/team-organization',
+        pathMatch: 'full',
       },
       {
         path: 'settings/tasks/:id',
