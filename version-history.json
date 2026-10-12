@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.10.14",
+      "date": "12.10.2026",
+      "changes": [
+        "🐛 Ordner der Dateiablage lässt sich beim Termin jetzt auswählen (direkt in der Liste oder über das Häkchen).",
+        "📁 Der Dateiablage-Ordner steht auf der Terminseite jetzt über dem Ort."
+      ]
+    },
+    {
       "version": "4.10.13",
       "date": "12.10.2026",
       "changes": [

@@ -17,7 +17,7 @@ import { Utils } from 'src/app/utilities/Utils';
 export class FilesFolderPickerComponent {
   @Input() tenantId: number;
 
-  @Output() select = new EventEmitter<string>();
+  @Output() folderSelect = new EventEmitter<string>();
 
   @ViewChild('modal') private modal: IonModal;
 
@@ -62,11 +62,11 @@ export class FilesFolderPickerComponent {
     await this.navigate(this.pathSegments.slice(0, index + 1).join('/'));
   }
 
-  onSelect(): void {
-    if (!this.currentPath) {
+  onSelect(path: string = this.currentPath): void {
+    if (!path) {
       return;
     }
-    this.select.emit(this.currentPath);
+    this.folderSelect.emit(path);
     this.modal.dismiss();
   }
 
