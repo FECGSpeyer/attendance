@@ -41,6 +41,10 @@ export const TrackingEvent = {
   // make the failure modes that bypass the persons render observable.
   AttendanceTypeUnresolved: 'attendance_type_unresolved',
   AttendanceSecondaryInitFailed: 'attendance_secondary_init_failed',
+  // iOS: Tab-Tipp ohne abgeschlossene Navigation (siehe TabsPage) und ob das
+  // direkte Nachholen geklappt hat.
+  TabNavStuck: 'tab_nav_stuck',
+  TabNavFallback: 'tab_nav_fallback',
 } as const;
 export type TrackingEvent = typeof TrackingEvent[keyof typeof TrackingEvent];
 

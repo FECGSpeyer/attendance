@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.12.13",
+      "date": "14.10.2026",
+      "changes": [
+        "🐛 iPhone: Bleibt ein Tipp auf einen Tab hängen, wechselt die App jetzt trotzdem auf den Tab."
+      ]
+    },
+    {
       "version": "4.12.12",
       "date": "13.10.2026",
       "changes": [

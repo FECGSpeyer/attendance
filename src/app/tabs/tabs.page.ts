@@ -1,8 +1,14 @@
-import { Component, effect } from '@angular/core';
+import { Component, ViewChild, effect } from '@angular/core';
+import { Location } from '@angular/common';
+import { IonTabs, NavController } from '@ionic/angular/lazy';
 import { DbService } from '../services/db.service';
 import { Role } from '../utilities/constants';
 import { Utils } from 'src/app/utilities/Utils';
-import { Router } from '@angular/router';
+import { NavigationCancel, NavigationEnd, NavigationError, NavigationSkipped, NavigationStart, Router } from '@angular/router';
+import { TrackingEvent, TrackingService } from '../services/tracking/tracking.service';
+
+// Zeit, nach der ein Tab-Tipp ohne abgeschlossene Navigation als hängend gilt.
+const TAB_NAV_TIMEOUT_MS = 800;
 
 @Component({
     selector: 'app-tabs',
@@ -21,9 +27,14 @@ export class TabsPage {
   public showDashboardTab = false;
   public hasMultipleTenants = false;
 
+  @ViewChild(IonTabs) private ionTabs?: IonTabs;
+
   constructor(
     private db: DbService,
-    private router: Router
+    private router: Router,
+    private location: Location,
+    private navCtrl: NavController,
+    private tracking: TrackingService,
   ) {
     this.initialize();
   }
@@ -61,4 +72,72 @@ export class TabsPage {
     });
   }
 
+  /**
+   * Auf iOS kam es vor, dass ein Tipp auf einen Tab zwar ankommt, die
+   * Navigation aber nie abgeschlossen wird. Läuft innerhalb kurzer Zeit keine
+   * Navigation durch, wird der Zustand protokolliert (usage_events
+   * `tab_nav_stuck`) und die Navigation direkt nachgeholt.
+   */
+  onTabButtonClick(ev: Event): void {
+    const tab = (ev as CustomEvent<{ tab?: string }>).detail?.tab;
+    if (!tab) {
+      return;
+    }
+
+    const outlet = this.ionTabs?.outlet;
+    // Erneuter Tipp auf den aktiven Tab navigiert bewusst nicht immer.
+    if (outlet?.getActiveStackId() === tab) {
+      return;
+    }
+    const lastUrl = outlet?.getLastRouteView(tab)?.url;
+    const info = {
+      tab,
+      routerUrl: this.router.url,
+      locationPath: this.location.path(),
+      activeStack: outlet?.getActiveStackId(),
+      lastUrl,
+    };
+    const events: string[] = [];
+    let ended = false;
+    const sub = this.router.events.subscribe(e => {
+      if (e instanceof NavigationStart) {
+        events.push(`start ${e.url}`);
+      } else if (e instanceof NavigationEnd) {
+        ended = true;
+        events.push(`end ${e.urlAfterRedirects}`);
+      } else if (e instanceof NavigationCancel) {
+        events.push(`cancel ${e.code} ${e.reason}`);
+      } else if (e instanceof NavigationSkipped) {
+        events.push(`skipped ${e.code} ${e.reason}`);
+      } else if (e instanceof NavigationError) {
+        events.push(`error ${e.error?.message ?? e.error}`);
+      }
+    });
+
+    setTimeout(() => {
+      sub.unsubscribe();
+      if (ended || this.router.getCurrentNavigation()) {
+        return;
+      }
+
+      const target = lastUrl || `/tabs/${tab}`;
+      this.tracking.track(TrackingEvent.TabNavStuck, { ...info, events, afterUrl: this.router.url });
+
+      let fallbackEnded = false;
+      const fallbackSub = this.router.events.subscribe(e => {
+        if (e instanceof NavigationEnd) {
+          fallbackEnded = true;
+        }
+      });
+      this.navCtrl.navigateRoot(target, {
+        animated: true,
+        animationDirection: 'back',
+        onSameUrlNavigation: 'reload',
+      }).catch(() => undefined);
+      setTimeout(() => {
+        fallbackSub.unsubscribe();
+        this.tracking.track(TrackingEvent.TabNavFallback, { tab, target, ok: fallbackEnded, afterUrl: this.router.url });
+      }, TAB_NAV_TIMEOUT_MS);
+    }, TAB_NAV_TIMEOUT_MS);
+  }
 }
