@@ -3,7 +3,8 @@ import { Routes, RouterModule } from '@angular/router';
 import { ProtocolPage } from './protocol.page';
 
 const routes: Routes = [
-  { path: ':attendanceId', component: ProtocolPage }
+  // attendanceId comes from the parent route (tabs: attendance/:attendanceId/protocol).
+  { path: '', component: ProtocolPage }
 ];
 
 @NgModule({

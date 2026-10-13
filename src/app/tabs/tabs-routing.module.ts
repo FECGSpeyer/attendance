@@ -32,12 +32,12 @@ const routes: Routes = [
         loadChildren: () => import('./../attendance/att-list/att-list.module').then(m => m.AttListPageModule),
       },
       {
-        path: 'attendance/:id',
-        loadChildren: () => import('./../attendance/attendance/attendance.module').then(m => m.AttendancePageModule),
-      },
-      {
         path: 'attendance/:attendanceId/protocol',
         loadChildren: () => import('./../protocols/protocol/protocol.module').then(m => m.ProtocolPageModule),
+      },
+      {
+        path: 'attendance/:id',
+        loadChildren: () => import('./../attendance/attendance/attendance.module').then(m => m.AttendancePageModule),
       },
       {
         path: 'songs-tab',

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.12.7",
+      "date": "13.10.2026",
+      "changes": [
+        "🐛 \"Protokoll\" im Termin öffnet jetzt wieder die Protokoll-Seite (vorher passierte beim Antippen nichts)."
+      ]
+    },
+    {
       "version": "4.12.6",
       "date": "13.10.2026",
       "changes": [
