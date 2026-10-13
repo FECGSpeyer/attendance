@@ -22,6 +22,7 @@ dependencies {
     implementation project(':capawesome-capacitor-android-edge-to-edge-support')
     implementation project(':capawesome-capacitor-badge')
     implementation project(':capawesome-capacitor-live-update')
+    implementation project(':capgo-capacitor-media-session')
     implementation project(':capgo-capacitor-printer')
 
 }

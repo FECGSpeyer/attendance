@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.11.0",
+      "date": "13.10.2026",
+      "changes": [
+        "🎧 Audio-Player: Wiedergabe läuft im Hintergrund und bei gesperrtem Bildschirm weiter, mit Titel und Steuerung (Pause, vor, zurück) auf dem Sperrbildschirm und in der Benachrichtigung (nach App-Update aus dem Store).",
+        "⏭️ Audio-Player: Der nächste Titel einer Wiedergabeliste startet schneller."
+      ]
+    },
+    {
       "version": "4.10.17",
       "date": "13.10.2026",
       "changes": [

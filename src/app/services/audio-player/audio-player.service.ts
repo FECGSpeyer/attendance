@@ -1,5 +1,6 @@
 import { computed, Injectable, signal, WritableSignal } from '@angular/core';
 import { SongFile } from 'src/app/utilities/interfaces';
+import { MediaSessionBridge } from './media-session';
 
 /** An entry of a playback queue. The URL is resolved lazily (e.g. signed storage URLs). */
 export interface AudioQueueItem {
@@ -31,6 +32,10 @@ export class AudioPlayerService {
   private _isSeeking = false;
   /** Incremented on every track change to ignore stale async URL resolutions */
   private loadToken = 0;
+  /** Lock-screen / notification controls */
+  private readonly mediaSession = new MediaSessionBridge();
+  /** Pre-resolved queue URLs, so the next track starts without a network round trip (e.g. on a locked screen) */
+  private urlCache = new Map<AudioQueueItem, { url: Promise<string>; resolvedAt: number }>();
 
   /** Audio file extensions recognised as playable */
   private static readonly AUDIO_EXTENSIONS = [
@@ -39,6 +44,9 @@ export class AudioPlayerService {
 
   /** Seconds after which "previous" restarts the current track instead of skipping back */
   private static readonly RESTART_THRESHOLD = 3;
+
+  /** Pre-resolved URLs older than this are resolved again (signed URLs expire) */
+  private static readonly URL_CACHE_TTL_MS = 30 * 60 * 1000;
 
   /**
    * Check whether a SongFile is an audio file.
@@ -92,11 +100,21 @@ export class AudioPlayerService {
   togglePlayPause(): void {
     if (!this.audio || !this.currentFile()) {return;}
     if (this.audio.paused) {
-      this.audio.play().then(() => this.isPlaying.set(true));
+      this.resume();
     } else {
-      this.audio.pause();
-      this.isPlaying.set(false);
+      this.pause();
     }
+  }
+
+  resume(): void {
+    if (!this.audio || !this.currentFile()) {return;}
+    this.audio.play().then(() => this.isPlaying.set(true)).catch(() => this.isPlaying.set(false));
+  }
+
+  pause(): void {
+    if (!this.audio) {return;}
+    this.audio.pause();
+    this.isPlaying.set(false);
   }
 
   stop(): void {
@@ -142,7 +160,7 @@ export class AudioPlayerService {
 
     let url: string;
     try {
-      url = await item.resolveUrl();
+      url = await this.resolveItemUrl(item);
     } catch (error) {
       if (token === this.loadToken) {
         this.resetPlayback();
@@ -152,6 +170,25 @@ export class AudioPlayerService {
 
     if (token !== this.loadToken) {return;}
     this.startPlayback(this.createVirtualFile(url, item.fileName), item.title);
+    this.prefetch(index + 1);
+  }
+
+  private resolveItemUrl(item: AudioQueueItem): Promise<string> {
+    const cached = this.urlCache.get(item);
+    if (cached && Date.now() - cached.resolvedAt < AudioPlayerService.URL_CACHE_TTL_MS) {
+      return cached.url;
+    }
+    const url = item.resolveUrl();
+    this.urlCache.set(item, { url, resolvedAt: Date.now() });
+    url.catch(() => this.urlCache.delete(item));
+    return url;
+  }
+
+  private prefetch(index: number): void {
+    const item = this.queue()[index];
+    if (item) {
+      this.resolveItemUrl(item).catch(() => undefined);
+    }
   }
 
   private onEnded(): void {
@@ -172,7 +209,23 @@ export class AudioPlayerService {
 
     audio.addEventListener('loadedmetadata', () => {
       this.duration.set(audio.duration ?? 0);
+      this.syncPositionState();
     });
+
+    // Also catches pauses not triggered from the UI (lock screen, headphones, phone calls)
+    audio.addEventListener('play', () => {
+      this.isPlaying.set(true);
+      this.mediaSession.setPlaybackState('playing');
+      this.syncPositionState();
+    });
+    audio.addEventListener('pause', () => {
+      this.isPlaying.set(false);
+      if (this.currentFile()) {
+        this.mediaSession.setPlaybackState('paused');
+        this.syncPositionState();
+      }
+    });
+    audio.addEventListener('seeked', () => this.syncPositionState());
 
     audio.addEventListener('timeupdate', () => {
       if (this._isSeeking || !this.currentFile()) {return;}
@@ -184,7 +237,30 @@ export class AudioPlayerService {
     audio.addEventListener('ended', () => this.onEnded());
 
     this.audio = audio;
+    this.registerMediaSessionHandlers();
     return audio;
+  }
+
+  private registerMediaSessionHandlers(): void {
+    if (!this.mediaSession.isSupported) {return;}
+    this.mediaSession.setActionHandler('play', () => this.resume());
+    this.mediaSession.setActionHandler('pause', () => this.pause());
+    this.mediaSession.setActionHandler('stop', () => this.pause());
+    this.mediaSession.setActionHandler('previoustrack', () => {
+      this.previous().catch(() => this.resetPlayback());
+    });
+    this.mediaSession.setActionHandler('nexttrack', () => {
+      this.next().catch(() => this.resetPlayback());
+    });
+    this.mediaSession.setActionHandler('seekto', seekTime => {
+      if (!this.audio?.duration || seekTime === undefined) {return;}
+      this.seek((seekTime / this.audio.duration) * 100);
+    });
+  }
+
+  private syncPositionState(): void {
+    if (!this.audio || !this.currentFile()) {return;}
+    this.mediaSession.setPositionState(this.audio.duration, this.audio.currentTime);
   }
 
   private startPlayback(file: SongFile, songName: string): void {
@@ -197,6 +273,7 @@ export class AudioPlayerService {
     this.progress.set(0);
     this.currentTime.set(0);
     this.duration.set(0);
+    this.mediaSession.setMetadata(songName || file.fileName, 'Attendix');
 
     audio.play().then(() => {
       this.isPlaying.set(true);
@@ -218,11 +295,14 @@ export class AudioPlayerService {
     this.progress.set(0);
     this.currentTime.set(0);
     this.duration.set(0);
+    this.mediaSession.setPlaybackState('none');
+    this.mediaSession.clearMetadata();
   }
 
   private clearQueue(): void {
     this.queue.set([]);
     this.queueIndex.set(-1);
+    this.urlCache.clear();
   }
 
   private createVirtualFile(url: string, fileName: string): SongFile {

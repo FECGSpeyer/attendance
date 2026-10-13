@@ -108,4 +108,78 @@ describe('AudioPlayerService queue', () => {
     expect(service.hasQueue()).toBe(false);
     expect(service.hasNext()).toBe(false);
   });
+
+  it('pre-resolves the next track URL only once', async () => {
+    const resolveB = vi.fn(() => Promise.resolve('https://example.com/b.mp3'));
+    const b: AudioQueueItem = { fileName: 'b.mp3', title: 'b', resolveUrl: resolveB };
+
+    await service.playQueue([item('a.mp3'), b], 0);
+    expect(resolveB).toHaveBeenCalledTimes(1);
+
+    await service.next();
+    expect(resolveB).toHaveBeenCalledTimes(1);
+    expect(service.currentFile()?.url).toBe('https://example.com/b.mp3');
+  });
+});
+
+describe('AudioPlayerService media session', () => {
+  let service: AudioPlayerService;
+  const originalAudio = globalThis.Audio;
+  const handlers = new Map<string, (details: any) => void>();
+  const session: any = {
+    metadata: null,
+    playbackState: 'none',
+    setActionHandler: (action: string, handler: (details: any) => void) => handlers.set(action, handler),
+    setPositionState: vi.fn(),
+  };
+
+  beforeEach(() => {
+    handlers.clear();
+    FakeAudio.instances = [];
+    (globalThis as any).Audio = FakeAudio;
+    (globalThis as any).MediaMetadata = class { constructor(init: any) { Object.assign(this, init); } };
+    Object.defineProperty(navigator, 'mediaSession', { value: session, configurable: true });
+    service = new AudioPlayerService();
+  });
+
+  afterEach(() => {
+    (globalThis as any).Audio = originalAudio;
+    delete (globalThis as any).MediaMetadata;
+    delete (navigator as any).mediaSession;
+  });
+
+  it('shows the current track and skips via lock screen controls', async () => {
+    await service.playQueue([item('a.mp3'), item('b.mp3')], 0);
+    expect(session.metadata.title).toBe('a.mp3');
+
+    handlers.get('nexttrack')!({ action: 'nexttrack' });
+    await new Promise(resolve => setTimeout(resolve));
+    expect(service.currentFile()?.fileName).toBe('b.mp3');
+    expect(session.metadata.title).toBe('b.mp3');
+
+    handlers.get('previoustrack')!({ action: 'previoustrack' });
+    await new Promise(resolve => setTimeout(resolve));
+    expect(service.currentFile()?.fileName).toBe('a.mp3');
+  });
+
+  it('pauses and resumes from the lock screen', async () => {
+    await service.playQueue([item('a.mp3')], 0);
+    const audio = FakeAudio.instances[0];
+
+    handlers.get('pause')!({ action: 'pause' });
+    expect(audio.paused).toBe(true);
+    expect(service.isPlaying()).toBe(false);
+
+    handlers.get('play')!({ action: 'play' });
+    await new Promise(resolve => setTimeout(resolve));
+    expect(audio.paused).toBe(false);
+    expect(service.isPlaying()).toBe(true);
+  });
+
+  it('clears the lock screen when stopped', async () => {
+    await service.playQueue([item('a.mp3')], 0);
+    service.stop();
+    expect(session.metadata).toBeNull();
+    expect(session.playbackState).toBe('none');
+  });
 });
