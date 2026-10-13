@@ -937,7 +937,9 @@ export class SettingsPage implements OnInit, OnDestroy {
       phone: this.userData.phone,
       birthday: this.userData.birthday,
       img: this.userData.img,
-      correctBirthday: true,
+      // Only confirm the birthday when the user actually changed it; saving
+      // other profile fields must not turn a placeholder date into a real one.
+      ...(this.userData.birthday !== this.oldUserData.birthday ? { correctBirthday: true } : {}),
       additional_fields: additionalFields,
     }, churchId);
 

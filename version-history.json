@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.12.2",
+      "date": "13.10.2026",
+      "changes": [
+        "🎂 Beim Speichern des eigenen Profils wird der Geburtstag nur noch als bestätigt markiert, wenn er wirklich geändert wurde. Dadurch tauchen keine falschen Geburtstage (z. B. das Registrierungsdatum) mehr auf.",
+        "🐛 Bei Registrierungen ohne Geburtstagsfeld wird kein Platzhalter-Datum mehr als Geburtstag gespeichert."
+      ]
+    },
+    {
       "version": "4.12.1",
       "date": "13.10.2026",
       "changes": [

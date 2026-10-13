@@ -323,7 +323,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
         lastName: this.lastName,
         email: normalizedEmail,
         pending: !Boolean(this.tenantData?.auto_approve_registrations),
-        birthday: this.birthDate,
+        birthday: hasBirthDateField ? this.birthDate : null,
         phone: normalizedPhone,
         img: this.profilePicture, // Will be handled by addPlayer if it's a data URL
         additional_fields,
