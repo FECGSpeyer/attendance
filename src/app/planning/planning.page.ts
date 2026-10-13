@@ -3,7 +3,7 @@ import { ActionSheetButton, ActionSheetController, AlertController, AlertInput, 
 import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
-import { Attendance, FieldSelection, GroupCategory, History, Group, Person, Plan, Song, AttendanceType } from '../utilities/interfaces';
+import { AgendaItem, Attendance, FieldSelection, GroupCategory, History, Group, Person, Plan, Song, AttendanceType } from '../utilities/interfaces';
 // jsPDF is lazy-loaded for better initial bundle size
 import { Utils } from '../utilities/Utils';
 import { DefaultAttendanceType } from 'src/app/utilities/constants';
@@ -47,6 +47,8 @@ export class PlanningPage implements OnInit {
   public isSongSelectorOpen = false;
 
   readonly AGENDA_ITEMS_PLACEHOLDER_ID = AGENDA_ITEMS_PLACEHOLDER_ID;
+  // Agenda items linked to the selected Termin, filling the agenda placeholder.
+  public agendaItems: AgendaItem[] = [];
 
   get currentAttTypeHasProtocol(): boolean {
     const att = this.attendances.find(a => a.id === this.attendance);
@@ -120,6 +122,11 @@ export class PlanningPage implements OnInit {
     if (this.history.length && this.selectedFields.length === 1) {
       this.onAttChange();
     }
+    void this.loadAgendaItems();
+  }
+
+  async loadAgendaItems() {
+    this.agendaItems = this.attendance ? await this.db.getAgendaItemsForAttendance(this.attendance) : [];
   }
 
   calculateTime(field: FieldSelection, index: number) {
@@ -217,6 +224,7 @@ export class PlanningPage implements OnInit {
       sideBySide,
       attendance: this.attendance,
       attendances: this.attendances,
+      agendaItems: this.attendance ? this.agendaItems : undefined,
       branding,
     }, planningTitle);
     this.db.sendPlanPerTelegram(blob, `${planningTitle.replace('(', '').replace(')', '')}_${name}${sideBySide ? '_2x' : ''}`, asImage);
@@ -230,6 +238,7 @@ export class PlanningPage implements OnInit {
   }
 
   onAttChange() {
+    void this.loadAgendaItems();
     const attendance: Attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
 
     if (!attendance) {return;}
@@ -448,6 +457,7 @@ export class PlanningPage implements OnInit {
       history: this.history,
       attendance: this.attendance,
       attendances: this.attendances,
+      agendaItems: this.attendance ? this.agendaItems : undefined,
       sideBySide,
       branding,
     }, planningTitle);

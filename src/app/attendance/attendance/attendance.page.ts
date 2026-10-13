@@ -13,7 +13,7 @@ import { ChurchOverviewComponent } from 'src/app/shared/church-overview/church-o
 import { AdHocReminderModalComponent, AdHocReminderResult } from './ad-hoc-reminder-modal/ad-hoc-reminder-modal.component';
 import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode, CHECKLIST_DEADLINE_OPTIONS, DEFAULT_ABSENCE_REASONS } from 'src/app/utilities/constants';
-import { Attendance, ExtraField, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem, RegistrationField, AGENDA_ITEMS_PLACEHOLDER_ID } from 'src/app/utilities/interfaces';
+import { AgendaItem, Attendance, ExtraField, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem, RegistrationField, AGENDA_ITEMS_PLACEHOLDER_ID } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
@@ -71,6 +71,8 @@ export class AttendancePage implements OnInit, OnDestroy {
   public isDeadlineReadonly = false;
   public type: AttendanceType;
   public hasProtocol = false;
+  // Agenda items linked to this Termin, shown in place of the plan's agenda placeholder.
+  public planAgendaItems: AgendaItem[] = [];
   public attendanceViewMode: AttendanceViewMode = AttendanceViewMode.CLICK;
   public AttendanceViewMode = AttendanceViewMode;
   public showAvatars = false;
@@ -393,6 +395,7 @@ export class AttendancePage implements OnInit, OnDestroy {
         const protocol = await this.db.getProtocolForAttendance(this.attendance.id);
         this.hasProtocol = !!protocol;
       }
+      void this.loadPlanAgendaItems();
       this.hasDeadline = !!this.attendance.deadline;
       if (this.hasDeadline) {
         const startHour = this.type?.start_time ? Number(this.type.start_time.substring(0, 2)) : 19;
@@ -966,23 +969,14 @@ export class AttendancePage implements OnInit, OnDestroy {
     return this.db.getAgendaItemsForAttendance(this.attendance.id);
   }
 
-  async exportAgenda() {
-    const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
-    const loading = await Utils.getLoadingElement();
-    await loading.present();
-    try {
-      await Utils.createAgendaExport({
-        title: type ? Utils.getPlanningTitle(type, this.attendance.typeInfo) : (this.attendance.typeInfo || 'Termin'),
-        date: this.attendance.date,
-        items: await this.db.getAgendaItemsForAttendance(this.attendance.id),
-        branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
-      });
-    } catch (error) {
-      console.error('Agenda export error:', error);
-      Utils.showToast('Tagesordnung konnte nicht exportiert werden', 'danger');
-    } finally {
-      await loading.dismiss();
-    }
+  async loadPlanAgendaItems() {
+    if (!this.attendance?.id) return;
+    this.planAgendaItems = (await this.getPlanAgendaItems()) ?? [];
+  }
+
+  // Refresh after coming back from the protocol, where items get linked.
+  ionViewWillEnter() {
+    void this.loadPlanAgendaItems();
   }
 
   async sharePlan() {
@@ -1047,6 +1041,8 @@ export class AttendancePage implements OnInit, OnDestroy {
     });
 
     await modal.present();
+    await modal.onDidDismiss();
+    void this.loadPlanAgendaItems();
   }
 
   async onInfoChanged() {

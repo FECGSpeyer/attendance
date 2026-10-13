@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.12.9",
+      "date": "13.10.2026",
+      "changes": [
+        "📋 Der Platzhalter \"Tagesordnungspunkte\" im Ablaufplan zeigt jetzt überall die dem Termin zugeordneten Punkte als TOP 1, TOP 2, …: in der Termin-Ansicht, im Plan-Editor, in der Plan-Ansicht und im PDF- und Telegram-Export.",
+        "🗑️ Separater Tagesordnungs-PDF wieder entfernt, zum Drucken dient der Ablaufplan-Export."
+      ]
+    },
+    {
       "version": "4.12.8",
       "date": "13.10.2026",
       "changes": [

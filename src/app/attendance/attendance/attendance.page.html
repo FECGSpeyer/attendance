@@ -591,10 +591,6 @@
       <ion-item (click)="openProtocol()" detail button>
         <ion-label>Protokoll</ion-label>
       </ion-item>
-      <ion-item button detail="false" (click)="exportAgenda()">
-        <ion-icon name="print-outline" slot="start" color="primary"></ion-icon>
-        <ion-label color="primary">Tagesordnung als PDF</ion-label>
-      </ion-item>
     </ion-item-group>
     }
 
@@ -612,14 +608,26 @@
             </ion-item>
             @for (field of attendance.plan.fields; track field; let i = $index) {
             @if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID) {
+            @if (planAgendaItems.length === 0) {
             <ion-item color="light">
               <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
               <ion-label color="secondary">
-                <h2>{{ field.name }}</h2>
-                <h3>Tagesordnungspunkte dieses Termins</h3>
+                <h2>Tagesordnungspunkte</h2>
+                <h3>Noch keine Punkte zugeordnet (im Protokoll hinzufügen)</h3>
               </ion-label>
-              <ion-badge slot="end" color="secondary">dynamisch</ion-badge>
             </ion-item>
+            }
+            @for (item of planAgendaItems; track item.id; let n = $index) {
+            <ion-item>
+              <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
+              <ion-label>
+                <h2>TOP {{ n + 1 }}: {{ item.title }}</h2>
+                @if (item.responsible_person) {
+                <h3>{{ item.responsible_person.firstName }} {{ item.responsible_person.lastName }}</h3>
+                }
+              </ion-label>
+            </ion-item>
+            }
             } @else {
             <ion-item [class.active-slot]="planLiveMode && i === planActiveFieldIndex"
                       [class.done-slot]="planLiveMode && i < planActiveFieldIndex">

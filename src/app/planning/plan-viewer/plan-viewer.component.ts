@@ -2,7 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController, ActionSheetController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
-import { Attendance, FieldSelection, Plan, Song } from '../../utilities/interfaces';
+import { AGENDA_ITEMS_PLACEHOLDER_ID, AgendaItem, Attendance, FieldSelection, Plan, Song } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { DbService } from '../../services/db.service';
 
@@ -22,6 +22,9 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
   @Input() defaultLive = false;
 
   public hasChatId = false;
+  readonly AGENDA_ITEMS_PLACEHOLDER_ID = AGENDA_ITEMS_PLACEHOLDER_ID;
+  // Agenda items linked to this Termin, filling the agenda placeholder.
+  public agendaItems: AgendaItem[] = [];
   public liveMode = false;
   public activeFieldIndex = -1;
   private liveInterval: any;
@@ -36,6 +39,13 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
     this.hasChatId = Boolean(this.db.tenantUser()?.telegram_chat_id);
     if (this.defaultLive || this.isLiveNow()) {
       this.toggleLive();
+    }
+    void this.loadAgendaItems();
+  }
+
+  private async loadAgendaItems() {
+    if (this.attendance?.id && this.plan?.fields?.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID)) {
+      this.agendaItems = await this.db.getAgendaItemsForAttendance(this.attendance.id);
     }
   }
 
@@ -239,6 +249,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
       fields: this.plan.fields,
       attendance: this.attendance?.id,
       attendances: this.attendance ? [this.attendance] : [],
+      agendaItems: this.agendaItems,
       sideBySide,
       branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
     }, planningTitle);
@@ -265,6 +276,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
       sideBySide,
       attendance: this.attendance?.id,
       attendances: this.attendance ? [this.attendance] : [],
+      agendaItems: this.agendaItems,
       branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
     }, planningTitle);
 

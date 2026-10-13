@@ -218,6 +218,13 @@
                 <ion-label>
                   <h2>Tagesordnungspunkte</h2>
                   <h3>{{ calculateTime(field, i) }}</h3>
+                  @if (attendance) {
+                    @for (item of agendaItems; track item.id; let n = $index) {
+                      <p>TOP {{ n + 1 }}: {{ item.title }}</p>
+                    } @empty {
+                      <p>Noch keine Punkte zugeordnet (im Protokoll hinzufügen)</p>
+                    }
+                  }
                 </ion-label>
                 <ion-badge slot="end" color="secondary">dynamisch</ion-badge>
                 <ion-reorder slot="end"></ion-reorder>
