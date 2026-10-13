@@ -588,7 +588,7 @@
     <!-- Protocol Section -->
     @if (type?.enable_protocol) {
     <ion-item-group>
-      <ion-item [routerLink]="['/tabs/attendance', attendance.id, 'protocol']" detail button>
+      <ion-item (click)="openProtocol()" detail button>
         <ion-label>Protokoll</ion-label>
       </ion-item>
       <ion-item button detail="false" (click)="exportAgenda()">

@@ -523,6 +523,15 @@ export class AttendancePage implements OnInit, OnDestroy {
    * ngOnDestroy → teardown() once Angular destroys this component, so no
    * explicit teardown is needed here.
    */
+  // When opened as a modal (e.g. from the dashboard), a plain routerLink would
+  // navigate behind the modal, so close it first.
+  async openProtocol(): Promise<void> {
+    if (this.isModal) {
+      await this.modalController.dismiss();
+    }
+    await this.router.navigate(['/tabs/attendance', this.attendance.id, 'protocol']);
+  }
+
   navigateBack(): void {
     if (this.isModal) {
       void this.modalController.dismiss();

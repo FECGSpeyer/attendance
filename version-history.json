@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.12.8",
+      "date": "13.10.2026",
+      "changes": [
+        "🐛 \"Protokoll\" öffnet sich jetzt auch, wenn der Termin über die Startseite (nächster Termin) geöffnet wurde."
+      ]
+    },
+    {
       "version": "4.12.7",
       "date": "13.10.2026",
       "changes": [
