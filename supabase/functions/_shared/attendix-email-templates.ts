@@ -96,15 +96,25 @@ function greeting(name: string): string {
 }
 
 /** New account: link to set the initial password (no password is ever mailed). */
-export function registerEmail(p: { name: string; email: string; setPasswordUrl: string }): EmailContent {
+export function registerEmail(p: {
+  name: string;
+  email: string;
+  setPasswordUrl: string;
+  tenant: string;
+  role?: string;
+}): EmailContent {
+  const instanceLine = p.role
+    ? `Instanz: <strong>${escapeHtml(p.tenant)}</strong><br />Rolle: <strong>${escapeHtml(p.role)}</strong>`
+    : `Instanz: <strong>${escapeHtml(p.tenant)}</strong>`;
   return {
     subject: 'Dein Zugang zur Attendix-App',
     html: layout({
       title: 'Attendix - Dein Zugang',
-      preheader: 'Für dich wurde ein Attendix-Account angelegt.',
+      preheader: `Du wurdest zur Instanz ${p.tenant} hinzugefügt.`,
       heading: 'Willkommen bei Attendix',
       paragraphs: [
-        `${greeting(p.name)}<br />für dich wurde ein Attendix-Account mit der E-Mail-Adresse <strong>${escapeHtml(p.email)}</strong> angelegt. Klicke auf den Button, um dein Passwort festzulegen und dich anzumelden.`,
+        `${greeting(p.name)}<br />du wurdest zu einer Attendix-Instanz hinzugefügt. Dafür wurde ein Attendix-Account mit der E-Mail-Adresse <strong>${escapeHtml(p.email)}</strong> angelegt. Klicke auf den Button, um dein Passwort festzulegen und dich anzumelden.`,
+        instanceLine,
       ],
       button: { text: 'Passwort festlegen', url: p.setPasswordUrl },
       footnote: 'Dieser Link ist aus Sicherheitsgründen nur begrenzte Zeit gültig. Ist er abgelaufen, kannst du auf der Anmeldeseite über „Passwort vergessen“ jederzeit einen neuen Link anfordern.',

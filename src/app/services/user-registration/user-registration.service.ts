@@ -59,7 +59,13 @@ export class UserRegistrationService {
     // User not found in any tenant, create new account
     try {
       const { data, error } = await supabase.functions.invoke('attendix-user', {
-        body: { action: 'register', email: normalizedEmail, name, tenantId },
+        body: {
+          action: 'register',
+          email: normalizedEmail,
+          name,
+          role: Utils.getRoleText(role),
+          tenantId,
+        },
       });
 
       if (error || !data?.user?.id) {

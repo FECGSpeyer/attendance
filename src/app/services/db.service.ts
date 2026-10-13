@@ -971,13 +971,34 @@ export class DbService {
 
       if (data?.length && data[0].id) {
         await this.addUserToTenant(data[0].id, role, email, tenantId);
+        if (!self_register) {
+          const { data: informData, error: informError } = await supabase.functions.invoke('attendix-user', {
+            body: {
+              action: 'inform',
+              email,
+              name,
+              role: Utils.getRoleText(role),
+              tenantId: tenantId || this.tenant().id,
+            },
+          });
+
+          if (informError || !informData?.mailSent) {
+            throw new Error('Fehler beim Informieren des Benutzers');
+          }
+        }
         return data[0].id;
       }
     }
 
     try {
       const { data, error } = await supabase.functions.invoke('attendix-user', {
-        body: { action: 'register', email, name, tenantId: tenantId || this.tenant().id },
+        body: {
+          action: 'register',
+          email,
+          name,
+          role: Utils.getRoleText(role),
+          tenantId: tenantId || this.tenant().id,
+        },
       });
 
       if (error || !data?.user?.id) {

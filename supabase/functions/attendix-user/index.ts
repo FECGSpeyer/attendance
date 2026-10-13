@@ -5,7 +5,7 @@
 // approveAttendixUser / rejectAttendixUser). Emails are sent via Resend.
 //
 // Actions (POST body { action, ... }):
-//   register { email, name, tenantId }       → create auth user + "set password" mail
+//   register { email, name, role?, tenantId } → create auth user + "set password" mail
 //   inform   { email, name, role, tenantId } → "added to instance" mail
 //   approve  { email, name, role, tenantId } → "registration approved" mail
 //   reject   { email, name, tenantId }       → "registration rejected" mail
@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
     const tenantName = tenant.longName as string;
 
     if (action === "register") {
-      return await register(admin, email, name);
+      return await register(admin, email, name, tenantName, role);
     }
 
     let content: EmailContent;
@@ -127,7 +127,13 @@ Deno.serve(async (req) => {
   }
 });
 
-async function register(admin: SupabaseClient, email: string, name: string): Promise<Response> {
+async function register(
+  admin: SupabaseClient,
+  email: string,
+  name: string,
+  tenantName: string,
+  role: string,
+): Promise<Response> {
   // Random password that is never shared — the user sets their own via the link.
   const { data: created, error: createErr } = await admin.auth.admin.createUser({
     email,
@@ -156,7 +162,7 @@ async function register(admin: SupabaseClient, email: string, name: string): Pro
 
   const setPasswordUrl =
     `${RESET_PASSWORD_URL}?token_hash=${encodeURIComponent(link.properties.hashed_token)}&type=recovery`;
-  const mailSent = await send(email, registerEmail({ name, email, setPasswordUrl }));
+  const mailSent = await send(email, registerEmail({ name, email, setPasswordUrl, tenant: tenantName, role: role || undefined }));
   console.log(`[attendix-user] action=register mailSent=${mailSent}`);
 
   return json({ user: { id: created.user.id }, created: true, mailSent });
