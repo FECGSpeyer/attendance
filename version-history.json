@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.12.4",
+      "date": "13.10.2026",
+      "changes": [
+        "❓ Hilfe zu Mitteilungen ausführlicher: Schreiben mit Formatierung, Empfänger, Lese-Übersicht, Löschen sowie ein neuer Artikel zum Empfangen und Lesen.",
+        "❓ Hilfe zur Ad-hoc-Erinnerung erweitert: an alle, nur an Personen ohne Status oder an eine einzelne Person, und wer sie per Push und E-Mail bekommt."
+      ]
+    },
+    {
       "version": "4.12.3",
       "date": "13.10.2026",
       "changes": [

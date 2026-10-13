@@ -12,17 +12,40 @@ export const OTHER_FEATURES_ARTICLES: HelpArticle[] = [
   },
   {
     id: 'other-messages',
-    title: 'Mitteilungen',
+    title: 'Mitteilungen schreiben und versenden',
     categoryId: 'other',
-    keywords: ['nachricht', 'rundmail', 'rundschreiben', 'info an alle', 'gelesen', 'lesebestätigung', 'newsletter'],
-    body: `Mit Mitteilungen schicken [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]] eine formatierte Nachricht an alle aktiven [[Mitglied|Mitglieder]] (inkl. [[Hauptgruppe]]) oder nur an bestimmte [[Gruppe|Gruppen]]. Du findest sie unter Einstellungen → Kommunikation → Mitteilungen.
+    keywords: ['mitteilung', 'nachricht', 'rundmail', 'rundschreiben', 'info an alle', 'gelesen', 'lesebestätigung', 'newsletter', 'broadcast', 'formatierung', 'fett', 'link einfügen'],
+    body: `Mit Mitteilungen schicken [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]] eine formatierte Nachricht an die Mitglieder ihrer Instanz, z. B. "Probe am Samstag fällt aus". Du findest sie unter Einstellungen → Kommunikation → Mitteilungen.
 
-Versand:
-- Per Push (oder Telegram), wenn die Person Benachrichtigungen und "Mitteilungen" aktiviert hat.
+**Neue Mitteilung schreiben**
+1. Tippe auf das Plus-Symbol.
+2. Gib einen Titel ein und schreibe den Text. Über die Leiste über dem Textfeld formatierst du fett, kursiv, unterstrichen und durchgestrichen, fügst Überschriften, Aufzählungen, nummerierte Listen und Links ein.
+3. Wähle die Empfänger: alle aktiven [[Mitglied|Mitglieder]] (inkl. [[Hauptgruppe]]) oder "Nur bestimmte Gruppen". Darunter siehst du, wie viele Personen die Mitteilung erhalten und über welche Wege.
+4. Tippe auf Senden und bestätige. Eine versendete Mitteilung lässt sich nicht mehr bearbeiten.
+
+**So kommt sie an**
+- Per Push (oder Telegram), wenn die Person Benachrichtigungen und den Schalter "Mitteilungen" aktiviert hat.
 - Per E-Mail an alle Personen mit hinterlegter E-Mail-Adresse.
-- Zusätzlich erscheint die Mitteilung im Benachrichtigungscenter der App.
+- Zusätzlich im Benachrichtigungscenter (Glocke) der App.
 
-Zu jeder Mitteilung siehst du pro Person, ob sie in der App gelesen wurde, ob Push und E-Mail zugestellt wurden und ob die E-Mail geöffnet wurde. "E-Mail geöffnet" ist ein Schätzwert, weil manche Mail-Apps Bilder vorab laden oder blockieren.`,
+**Wer hat gelesen?**
+Tippe in der Liste auf eine Mitteilung. Die Übersicht zeigt, wie viele Personen sie in der App gelesen haben und bei wie vielen Push und E-Mail zugestellt wurden. Darunter steht pro Person, ob sie gelesen hat, ob Push oder E-Mail angekommen sind und ob die E-Mail geöffnet wurde. "E-Mail geöffnet" ist ein Schätzwert, weil manche Mail-Apps Bilder vorab laden oder blockieren.
+
+**Löschen**
+Eine gelöschte Mitteilung verschwindet bei allen Empfängern aus der App. Bereits versendete E-Mails bleiben bestehen.
+
+Für eine Erinnerung zu einem bestimmten Termin nutze stattdessen "Erinnerung versenden" im Termin.`,
+  },
+  {
+    id: 'other-messages-receive',
+    title: 'Mitteilungen empfangen und lesen',
+    categoryId: 'other',
+    keywords: ['mitteilung', 'nachricht erhalten', 'glocke', 'benachrichtigungscenter', 'ungelesen', 'push mitteilung abschalten'],
+    body: `Schicken [[Administrator|Administratoren]] oder [[Verantwortlicher|Verantwortliche]] eine Mitteilung, bekommst du eine Push- oder Telegram-Nachricht und, falls deine E-Mail-Adresse hinterlegt ist, eine E-Mail.
+
+Tippst du auf die Push-Nachricht oder auf den Eintrag in der Glocke (Benachrichtigungscenter), öffnet sich die Mitteilung in der App und wird als gelesen markiert. Dort findest du auch frühere Mitteilungen.
+
+Push-Nachrichten für Mitteilungen schaltest du in den Benachrichtigungen über den Schalter "Mitteilungen" ein oder aus. Die E-Mail und der Eintrag in der Glocke kommen trotzdem.`,
   },
   {
     id: 'other-history',

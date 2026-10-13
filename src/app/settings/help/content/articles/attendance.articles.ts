@@ -40,12 +40,23 @@ Welche Stufen im Zyklus vorkommen, lässt sich pro Termin-Typ in den Einstellung
   },
   {
     id: 'att-reminder',
-    title: 'Erinnerung an Mitglieder senden',
+    title: 'Erinnerung an Mitglieder senden (Ad-hoc-Erinnerung)',
     categoryId: 'attendance',
-    keywords: ['erinnerung', 'reminder', 'benachrichtigung senden', 'email', 'neutral', 'ohne status'],
-    body: `Für einen Termin kannst du eine Ad-hoc-Erinnerung an Mitglieder senden (z. B. per E-Mail und Push-Benachrichtigung). Öffne dazu im Termin das Menü (⋮) und tippe auf "Erinnerung versenden".
+    keywords: ['erinnerung', 'reminder', 'ad-hoc', 'adhoc', 'benachrichtigung senden', 'email', 'push', 'neutral', 'ohne status', 'rückmeldung fehlt', 'einzelne person erinnern'],
+    body: `Zusätzlich zu den automatischen Terminerinnerungen kannst du jederzeit von Hand an einen Termin erinnern. [[Helfer]] haben diese Funktion nicht.
 
-Im Dialog kannst du Betreff und Nachricht frei anpassen. Wenn noch Personen ohne Status ("Neutral") vorhanden sind, erscheint zusätzlich die Option **"Nur Personen ohne Status"**: Damit wird die Erinnerung ausschließlich an jene Personen gesendet, die sich noch nicht zurückgemeldet haben.`,
+**An alle erinnern**
+Öffne den Termin, tippe auf das Menü (⋮) und dann auf "Erinnerung versenden". Betreff und Nachricht sind mit Termintyp, Datum und Uhrzeit vorausgefüllt und lassen sich frei anpassen. Sind noch Personen ohne Status ("Neutral") im Termin, kannst du mit **"Nur Personen ohne Status"** nur diejenigen erinnern, die sich noch nicht zurückgemeldet haben.
+
+**Eine einzelne Person erinnern**
+Wische im Termin eine Person nach links, tippe auf die drei Punkte und wähle "Erinnerung senden". Die Erinnerung geht dann nur an diese Person.
+
+**So kommt die Erinnerung an**
+- Per Push (oder Telegram) an alle mit App-Konto, die Benachrichtigungen und "Terminerinnerungen" aktiviert haben. [[Beobachter]] bekommen sie nicht.
+- Per E-Mail an Personen des Termins mit hinterlegter E-Mail-Adresse, außer an die [[Hauptgruppe]] und ausgetretene Personen. Ohne "Nur Personen ohne Status" gilt das nur für Personen, die schon einen Status haben. Die E-Mail enthält einen Link direkt zum Termin.
+- Wer per E-Mail erinnert wurde und ein App-Konto hat, sieht die Erinnerung auch in der Glocke.
+
+Für allgemeine Nachrichten ohne Terminbezug nutze stattdessen die Mitteilungen (Einstellungen → Kommunikation → Mitteilungen).`,
   },
   {
     id: 'att-options-menu',

@@ -20,7 +20,9 @@ export const SETTINGS_ARTICLES: HelpArticle[] = [
     title: 'Benachrichtigungen einrichten',
     categoryId: 'settings',
     keywords: ['push', 'telegram', 'email benachrichtigung'],
-    body: `Unter "Benachrichtigungen" aktivierst du Push-, Telegram- oder E-Mail-Benachrichtigungen für dich persönlich, z. B. für Geburtstage, neue An-/Abmeldungen oder [[Kritische Person|kritische Personen]]. Die Telegram-Anbindung erfolgt über den @attendix_bot.`,
+    body: `Unter "Benachrichtigungen" aktivierst du Push-, Telegram- oder E-Mail-Benachrichtigungen für dich persönlich, z. B. für Geburtstage, neue An-/Abmeldungen oder [[Kritische Person|kritische Personen]]. Die Telegram-Anbindung erfolgt über den @attendix_bot.
+
+Mit den einzelnen Schaltern legst du fest, wofür du Push-Nachrichten bekommst, z. B. "Mitteilungen" (Nachrichten von Admins und Verantwortlichen), "Terminerinnerungen" (automatische und manuell versendete Erinnerungen an Termine) oder "Aufgaben-Erinnerungen".`,
   },
   {
     id: 'settings-switch-instance',
