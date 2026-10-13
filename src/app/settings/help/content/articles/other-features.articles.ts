@@ -11,6 +11,20 @@ export const OTHER_FEATURES_ARTICLES: HelpArticle[] = [
     body: `Das Dashboard zeigt [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortlichen]] eine Übersicht mit Geburtstagen, dem nächsten Termin, Mitgliederänderungen, Abwesenheiten, [[Kritische Person|kritischen Personen]] und aktuellen Werken.`,
   },
   {
+    id: 'other-messages',
+    title: 'Mitteilungen',
+    categoryId: 'other',
+    keywords: ['nachricht', 'rundmail', 'rundschreiben', 'info an alle', 'gelesen', 'lesebestätigung', 'newsletter'],
+    body: `Mit Mitteilungen schicken [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]] eine formatierte Nachricht an alle aktiven [[Mitglied|Mitglieder]] (inkl. [[Hauptgruppe]]) oder nur an bestimmte [[Gruppe|Gruppen]]. Du findest sie unter Einstellungen → Kommunikation → Mitteilungen.
+
+Versand:
+- Per Push (oder Telegram), wenn die Person Benachrichtigungen und "Mitteilungen" aktiviert hat.
+- Per E-Mail an alle Personen mit hinterlegter E-Mail-Adresse.
+- Zusätzlich erscheint die Mitteilung im Benachrichtigungscenter der App.
+
+Zu jeder Mitteilung siehst du pro Person, ob sie in der App gelesen wurde, ob Push und E-Mail zugestellt wurden und ob die E-Mail geöffnet wurde. "E-Mail geöffnet" ist ein Schätzwert, weil manche Mail-Apps Bilder vorab laden oder blockieren.`,
+  },
+  {
     id: 'other-history',
     title: 'Historie',
     categoryId: 'other',

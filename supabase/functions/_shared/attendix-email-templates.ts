@@ -16,6 +16,7 @@ interface LayoutParams {
   preheader: string;
   heading: string;
   paragraphs: string[];        // already-escaped HTML
+  bodyHtml?: string;           // trusted, already-sanitized block HTML (Mitteilungen)
   button?: { text: string; url: string };
   footnote?: string;           // already-escaped HTML
 }
@@ -76,6 +77,7 @@ function layout(p: LayoutParams): string {
             <tr><td style="padding:32px 32px 8px 32px;">
               <h1 style="margin:0 0 16px 0; font-size:20px; font-weight:600; color:#2b2b2b;">${escapeHtml(p.heading)}</h1>
               ${paragraphs}
+              ${p.bodyHtml ?? ''}
               ${button}
             </td></tr>
             ${footnote}
@@ -156,6 +158,32 @@ export function rejectEmail(p: { name: string; tenant: string }): EmailContent {
         `${greeting(p.name)}<br />deine Registrierung wurde leider abgelehnt. Bitte kontaktiere den Administrator für weitere Informationen. Dein Account bei Attendix bleibt bestehen.`,
         `Instanz: <strong>${escapeHtml(p.tenant)}</strong>`,
       ],
+    }),
+  };
+}
+
+/** General message (Mitteilung) from an admin/responsible to all members. */
+export function messageEmail(p: {
+  title: string;
+  bodyHtml: string;            // from message-render.ts renderHtml(.., { email: true })
+  preview: string;
+  senderName: string;
+  tenant: string;
+  url: string;
+}): EmailContent {
+  const from = p.senderName
+    ? `Mitteilung von ${escapeHtml(p.senderName)} · ${escapeHtml(p.tenant)}`
+    : `Mitteilung · ${escapeHtml(p.tenant)}`;
+  return {
+    subject: p.title,
+    html: layout({
+      title: `Attendix - ${p.title}`,
+      preheader: p.preview,
+      heading: p.title,
+      paragraphs: [`<span style="font-size:13px; color:#8a9295;">${from}</span>`],
+      bodyHtml: p.bodyHtml,
+      button: { text: 'In der App öffnen', url: p.url },
+      footnote: `Du erhältst diese E-Mail, weil du Mitglied in „${escapeHtml(p.tenant)}“ bist.`,
     }),
   };
 }

@@ -355,6 +355,27 @@
   </ion-list>
   }
 
+  <!-- ==================== KOMMUNIKATION ==================== -->
+  @if (isAdmin) {
+  <ion-list [inset]="true" class="category-list">
+    <ion-list-header>
+      <ion-label>
+        <ion-icon name="megaphone-outline" class="header-icon"></ion-icon>
+        Kommunikation
+      </ion-label>
+    </ion-list-header>
+    <ion-item-group>
+      <ion-item routerLink="messages" button lines="none">
+        <ion-icon name="mail-outline" slot="start"></ion-icon>
+        <ion-label>
+          Mitteilungen
+          <p>Nachricht an alle senden</p>
+        </ion-label>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+  }
+
   <!-- ==================== BENUTZER & ROLLEN ==================== -->
   @if (isAdmin) {
   <ion-list [inset]="true" class="category-list">

@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, effect, inject, signal } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AlertController, IonicModule, IonItemSliding } from '@ionic/angular/lazy';
+import { Router } from '@angular/router';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
@@ -18,6 +19,7 @@ import { Utils } from 'src/app/utilities/Utils';
 export class NotificationBellComponent implements OnInit, OnDestroy {
   private db = inject(DbService);
   private push = inject(PushService);
+  private router = inject(Router);
   private alertController = inject(AlertController);
 
   unread = signal(0);
@@ -246,6 +248,13 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       await this.db.markNotificationRead(n.id);
       n.read = true;
       await this.refreshCount();
+    }
+
+    if (n.type === 'message' && n.data?.messageId) {
+      // The message page switches tenant if needed and records the read.
+      this.isOpen.set(false);
+      await this.router.navigateByUrl(`/tabs/messages/${n.data.messageId}`);
+      return;
     }
 
     const attId = n.data?.attendanceId ? Number(n.data.attendanceId) : null;

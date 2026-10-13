@@ -1,0 +1,33 @@
+.message-row {
+  h2 {
+    font-weight: 600;
+  }
+
+  .bar {
+    height: 5px;
+    margin-top: 8px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--ion-color-step-150, #e3e3e8);
+
+    span {
+      display: block;
+      height: 100%;
+      background: var(--ion-color-primary);
+    }
+  }
+
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: var(--ion-color-medium);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+ion-list:last-of-type {
+  margin-bottom: 96px;
+}

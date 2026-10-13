@@ -1,0 +1,110 @@
+.title {
+  font-weight: 600;
+}
+
+.message-card {
+  margin: 16px;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--ion-item-background, var(--ion-background-color, #fff));
+
+  h1 {
+    margin: 0 0 4px;
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  .from {
+    margin: 0 0 14px;
+    font-size: 0.8rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.message-body {
+  font-size: 1rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+
+  ::ng-deep {
+    p { margin: 0 0 10px; }
+    h2 { font-size: 1.15rem; font-weight: 700; margin: 14px 0 6px; }
+    h3 { font-size: 1.05rem; font-weight: 700; margin: 12px 0 4px; }
+    ul, ol { margin: 0 0 10px; padding-left: 1.4em; }
+    li { margin: 2px 0; }
+    a { color: var(--ion-color-primary); text-decoration: underline; }
+  }
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 0 16px;
+
+  .tile {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--ion-item-background, var(--ion-background-color, #fff));
+
+    b {
+      display: block;
+      font-size: 1.35rem;
+      line-height: 1.15;
+      font-variant-numeric: tabular-nums;
+    }
+
+    small {
+      font-size: 0.75rem;
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+.hint {
+  margin: 8px 20px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--ion-color-medium);
+}
+
+.filter {
+  margin: 12px 16px 0;
+  width: auto;
+}
+
+h3 small {
+  margin-left: 4px;
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.chip {
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  background: var(--ion-color-step-100, #f0f0f4);
+  color: var(--ion-color-step-700, #55555a);
+
+  &.ok {
+    background: rgba(var(--ion-color-success-rgb), 0.14);
+    color: var(--ion-color-success-shade);
+  }
+
+  &.bad {
+    background: rgba(var(--ion-color-danger-rgb), 0.14);
+    color: var(--ion-color-danger-shade);
+  }
+
+  &.warn {
+    background: rgba(var(--ion-color-warning-rgb), 0.18);
+    color: var(--ion-color-warning-shade);
+  }
+}

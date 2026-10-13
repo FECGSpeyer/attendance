@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Mitteilungen</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (!loading && messages.length === 0) {
+    <div class="noDataContainer">
+      <ion-icon name="megaphone-outline" size="large"></ion-icon>
+      <p>Noch keine Mitteilungen gesendet</p>
+      <ion-button fill="clear" (click)="compose()">Erste Mitteilung schreiben</ion-button>
+    </div>
+  } @else if (messages.length > 0) {
+    <ion-list-header>
+      <ion-label>Gesendet</ion-label>
+    </ion-list-header>
+    <ion-list [inset]="true">
+      @for (m of messages; track m.id) {
+        <ion-item-sliding #slider>
+          <ion-item button detail="true" (click)="open(m)">
+            <ion-label class="message-row">
+              <h2>{{ m.title }}</h2>
+              <p>{{ m.created_at | date:'dd.MM.yyyy' }}{{ m.sender_name ? ' · ' + m.sender_name : '' }} · an {{ m.recipient_count }} Personen</p>
+              <div class="bar"><span [style.width.%]="readPercent(m)"></span></div>
+              <div class="meta">
+                @if (m.status === 'sending') {
+                  <span>Versand läuft …</span>
+                } @else {
+                  <span>{{ m.read }} von {{ m.recipient_count }} gelesen</span>
+                }
+                @if (m.problems > 0) {
+                  <ion-badge color="warning">{{ m.problems }} {{ m.problems === 1 ? 'Problem' : 'Probleme' }}</ion-badge>
+                }
+              </div>
+            </ion-label>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="danger" (click)="remove(m, slider)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      }
+    </ion-list>
+  }
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="compose()" aria-label="Neue Mitteilung">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

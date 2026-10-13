@@ -277,6 +277,13 @@ export class PushService {
       await this.db.setTenant(Number(data.tenantId));
     }
 
+    // Mitteilungen: the message page marks the message (and its feed entry)
+    // read itself, keyed by messageId rather than type + attendanceId.
+    if (data.type === 'message' && data.messageId) {
+      await this.router.navigateByUrl(`/tabs/messages/${data.messageId}`);
+      return;
+    }
+
     // Opening a notification (push tap) marks the matching feed entries read in
     // the notification center. Best-effort — never block navigation on it.
     if (data.type) {

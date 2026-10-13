@@ -33,6 +33,7 @@ export class NotificationService {
         reminders: true,
         checklist: true,
         tasks: true,
+        messages: true,
         push_enabled: false,
         push_and_telegram: false,
       };

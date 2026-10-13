@@ -61,8 +61,8 @@
               </ion-item-options>
 
               <ion-item
-                [button]="!!n.data?.attendanceId"
-                [detail]="!!n.data?.attendanceId"
+                [button]="!!n.data?.attendanceId || !!n.data?.messageId"
+                [detail]="!!n.data?.attendanceId || !!n.data?.messageId"
                 (click)="onTap(n)"
                 [class.unread]="!n.read">
                 @if (!n.read) {

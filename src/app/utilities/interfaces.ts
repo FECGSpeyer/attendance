@@ -151,6 +151,7 @@ export interface NotificationConfig {
   push_enabled?: boolean;
   push_and_telegram?: boolean;
   tasks?: boolean;
+  messages?: boolean;
 }
 
 export interface UserNotification {
@@ -670,4 +671,49 @@ export interface Task {
   reminder_sent?: boolean;
   created_by?: string;
   responsible_person?: Pick<Person, 'id' | 'firstName' | 'lastName'>;
+}
+
+export interface Message {
+  id: string;
+  tenantId: number;
+  sender_id: string;
+  sender_name: string | null;
+  title: string;
+  body_json: Record<string, unknown>;
+  body_html: string;
+  body_text: string;
+  channels: string[];
+  group_ids: number[] | null;
+  recipient_count: number;
+  status: 'sending' | 'sent';
+  created_at: string;
+  sent_at: string | null;
+}
+
+export interface MessageRecipient {
+  id: string;
+  message_id: string;
+  tenantId: number;
+  player_id: number | null;
+  user_id: string | null;
+  name: string;
+  group_id: number | null;
+  email: string | null;
+  push_enabled: boolean;
+  push_sent_at: string | null;
+  telegram_sent_at: string | null;
+  push_failed: boolean;
+  email_sent_at: string | null;
+  email_delivered_at: string | null;
+  email_opened_at: string | null;
+  email_bounced_at: string | null;
+  email_failed: boolean;
+  read_at: string | null;
+}
+
+export interface MessageRecipientCounts {
+  recipients: number;
+  push: number;
+  email: number;
+  unreachable: number;
 }

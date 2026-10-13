@@ -102,6 +102,14 @@ const routes: Routes = [
         loadChildren: () => import('./../team-organization/team-organization.module').then(m => m.TeamOrganizationPageModule),
       },
       {
+        path: 'settings/messages',
+        loadChildren: () => import('./../messages/message-list/message-list.module').then(m => m.MessageListPageModule)
+      },
+      {
+        path: 'messages/:id',
+        loadChildren: () => import('./../messages/message-detail/message-detail.module').then(m => m.MessageDetailPageModule)
+      },
+      {
         path: 'settings/notifications',
         loadChildren: () => import('./../notifications/notifications.module').then(m => m.NotificationsPageModule)
       },

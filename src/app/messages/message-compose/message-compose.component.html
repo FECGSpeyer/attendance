@@ -1,0 +1,102 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">Abbrechen</ion-button>
+    </ion-buttons>
+    <ion-title>Neue Mitteilung</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <ion-list [inset]="true">
+    <ion-item>
+      <ion-input
+        label="Titel"
+        labelPlacement="stacked"
+        [(ngModel)]="title"
+        (ionInput)="onTitleChange()"
+        [maxlength]="200"
+        autocapitalize="sentences"
+        placeholder="z. B. Probe am Samstag fällt aus">
+      </ion-input>
+    </ion-item>
+  </ion-list>
+
+  <ion-list [inset]="true" class="editor-list">
+    <app-message-editor [content]="initialContent" (contentChange)="onContentChange($event)"></app-message-editor>
+  </ion-list>
+
+  <ion-list-header>
+    <ion-label>Empfänger</ion-label>
+  </ion-list-header>
+  <ion-list [inset]="true">
+    <ion-radio-group [value]="audience" (ionChange)="setAudience($any($event.detail.value))">
+      <ion-item>
+        <ion-radio value="all" justify="start" labelPlacement="end">
+          <ion-label>
+            Alle aktiven Mitglieder
+            <p>inkl. Hauptgruppe</p>
+          </ion-label>
+        </ion-radio>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-radio value="groups" justify="start" labelPlacement="end">Nur bestimmte Gruppen</ion-radio>
+      </ion-item>
+    </ion-radio-group>
+    @if (audience === 'groups') {
+      <div class="chips">
+        @for (group of groups; track group.id) {
+          <ion-chip [outline]="!selectedGroups.has(group.id!)" [color]="selectedGroups.has(group.id!) ? 'primary' : 'medium'" (click)="toggleGroup(group.id!)">
+            {{ group.name }}
+          </ion-chip>
+        }
+      </div>
+    }
+  </ion-list>
+
+  <ion-list-header>
+    <ion-label>Versand über</ion-label>
+  </ion-list-header>
+  <ion-list [inset]="true">
+    <ion-item>
+      <ion-toggle [(ngModel)]="push" (ionChange)="onChannelChange()" justify="space-between">
+        <ion-label>
+          Push / Telegram
+          @if (counts && push) {
+            <p>{{ counts.push }} Personen haben Mitteilungen aktiviert</p>
+          }
+        </ion-label>
+      </ion-toggle>
+    </ion-item>
+    <ion-item lines="none">
+      <ion-toggle [(ngModel)]="email" (ionChange)="onChannelChange()" justify="space-between">
+        <ion-label>
+          E-Mail
+          @if (counts && email) {
+            <p>{{ counts.email }} Personen haben eine E-Mail-Adresse</p>
+          }
+        </ion-label>
+      </ion-toggle>
+    </ion-item>
+  </ion-list>
+
+  <div class="summary">
+    @if (countsError) {
+      <p class="error">Die Empfänger konnten nicht geladen werden. <a (click)="loadCounts()">Erneut versuchen</a></p>
+    } @else if (!counts) {
+      <p><ion-spinner name="dots"></ion-spinner></p>
+    } @else {
+      <p><strong>{{ counts.recipients }} Personen</strong> erhalten diese Mitteilung.</p>
+      @if (counts.unreachable > 0) {
+        <p>{{ counts.unreachable }} {{ counts.unreachable === 1 ? 'Person ist' : 'Personen sind' }} über keinen Kanal erreichbar und {{ counts.unreachable === 1 ? 'sieht' : 'sehen' }} die Mitteilung nur, wenn sie die App öffnen.</p>
+      }
+    }
+  </div>
+
+  <div class="actions">
+    <ion-button expand="block" (click)="confirmSend()" [disabled]="!canSend">
+      <ion-icon slot="start" name="send-outline"></ion-icon>
+      Senden
+    </ion-button>
+  </div>
+</ion-content>

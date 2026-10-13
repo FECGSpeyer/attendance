@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "4.12.0",
+      "date": "13.10.2026",
+      "changes": [
+        "📣 Neu: Mitteilungen. Admins und Verantwortliche können unter Einstellungen → Kommunikation eine formatierte Nachricht (fett, kursiv, Listen, Links) an alle aktiven Mitglieder oder einzelne Gruppen senden, per Push/Telegram und E-Mail.",
+        "👀 Zu jeder Mitteilung siehst du, wer sie in der App gelesen hat und ob Push und E-Mail zugestellt bzw. geöffnet wurden.",
+        "🔔 Neue Einstellung „Mitteilungen“ unter Benachrichtigungen, um Push-Benachrichtigungen für Mitteilungen ein- oder auszuschalten."
+      ]
+    },
+    {
       "version": "4.11.1",
       "date": "13.10.2026",
       "changes": [

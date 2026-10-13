@@ -81,6 +81,11 @@
           label="Geburtstage">Geburtstage</ion-toggle>
       </ion-item>
       <ion-item>
+        <ion-toggle helperText="Nachrichten von Admins und Verantwortlichen deiner Instanz"
+          (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.messages"
+          label="Mitteilungen">Mitteilungen</ion-toggle>
+      </ion-item>
+      <ion-item>
           <ion-toggle (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.reminders"
           label="Terminerinnerungen">Terminerinnerungen</ion-toggle>
       </ion-item>
