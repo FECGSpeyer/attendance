@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { GroupCategory, History, Group, Person, Song, Tenant, SongCategory, SongFile } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
 import { AlertController, IonModal, IonPopover, IonRouterOutlet, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
@@ -8,8 +8,8 @@ import dayjs from 'dayjs';
 import { Storage } from '@ionic/storage-angular';
 import { Router } from '@angular/router';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { Capacitor } from '@capacitor/core';
 import { SongImportPage } from './import/import.page';
+import { PrintService } from '../services/print/print.service';
 
 @Component({
     selector: 'app-songs',
@@ -18,6 +18,7 @@ import { SongImportPage } from './import/import.page';
     standalone: false
 })
 export class SongsPage implements OnInit, OnDestroy {
+  private printService = inject(PrintService);
   @ViewChild('categoriesModal') categoriesModal: IonModal;
   @ViewChild(IonRouterOutlet) routerOutlet: IonRouterOutlet;
   public hasSongSharing = false;
@@ -277,7 +278,7 @@ export class SongsPage implements OnInit, OnDestroy {
           }
 
           const groupName = groups.find(g => g.id === groupId)?.name ?? 'Gruppe';
-          await this.mergeAndPrintFiles(filesToPrint, `Noten_${groupName}_${new Date().toISOString().slice(0, 10)}.pdf`);
+          await this.printService.printEntries(filesToPrint, `Noten_${groupName}_${new Date().toISOString().slice(0, 10)}.pdf`);
         },
       }],
     });
@@ -293,94 +294,7 @@ export class SongsPage implements OnInit, OnDestroy {
       (a.song.prefix ?? '').localeCompare(b.song.prefix ?? '') || (a.song.number ?? 0) - (b.song.number ?? 0)
     );
     const fileName = `Mappe_${this.selectedGroupName}_${new Date().toISOString().slice(0, 10)}.pdf`;
-    await this.mergeAndPrintFiles(files, fileName);
-  }
-
-  private async mergeAndPrintFiles(filesToPrint: { song: Song; file: SongFile }[], fileName: string): Promise<void> {
-    const loader = await Utils.getLoadingElement(0, 'PDFs werden zusammengeführt...');
-    await loader.present();
-    try {
-      const { PDFDocument } = await import('pdf-lib');
-      const mergedPdf = await PDFDocument.create();
-      let skipped = 0;
-
-      for (const entry of filesToPrint) {
-        try {
-          let fileBlob: Blob;
-          try {
-            fileBlob = await this.db.downloadSongFile(
-              entry.file.storageName ?? entry.file.url.split('/').pop(),
-              entry.song.id
-            );
-          } catch {
-            const res = await fetch(entry.file.url);
-            if (!res.ok) { throw new Error(res.statusText); }
-            fileBlob = await res.blob();
-          }
-          const bytes = await fileBlob.arrayBuffer();
-          const type = (entry.file.fileType || fileBlob.type || '').toLowerCase();
-          const name = (entry.file.fileName || '').toLowerCase();
-
-          if (type.includes('png') || name.endsWith('.png') || type.includes('jpeg') || type.includes('jpg') || /\.jpe?g$/.test(name)) {
-            const image = (type.includes('png') || name.endsWith('.png'))
-              ? await mergedPdf.embedPng(bytes)
-              : await mergedPdf.embedJpg(bytes);
-            // A4 page, image scaled to fit
-            const pageWidth = 595.28;
-            const pageHeight = 841.89;
-            const scale = Math.min(pageWidth / image.width, pageHeight / image.height);
-            const width = image.width * scale;
-            const height = image.height * scale;
-            const page = mergedPdf.addPage([pageWidth, pageHeight]);
-            page.drawImage(image, { x: (pageWidth - width) / 2, y: (pageHeight - height) / 2, width, height });
-          } else {
-            const pdf = await PDFDocument.load(bytes);
-            const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-            pages.forEach(page => mergedPdf.addPage(page));
-          }
-        } catch {
-          // skip individual file errors (e.g. unsupported file types)
-          skipped++;
-        }
-      }
-
-      if (!mergedPdf.getPageCount()) {
-        await loader.dismiss();
-        Utils.showToast('Keine druckbaren Noten (PDF/Bild) gefunden.', 'warning');
-        return;
-      }
-
-      const pdfBytes = await mergedPdf.save();
-
-      const arrayBuffer = pdfBytes.buffer.slice(
-        pdfBytes.byteOffset,
-        pdfBytes.byteOffset + pdfBytes.byteLength
-      ) as ArrayBuffer;
-
-      const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
-
-      await loader.dismiss();
-
-      if (skipped) {
-        Utils.showToast(`${skipped} Datei(en) konnten nicht eingebunden werden.`, 'warning');
-      }
-
-      if (Capacitor.isNativePlatform()) {
-        await Utils.downloadFileNative(blob, fileName);
-      } else {
-        const url = URL.createObjectURL(blob);
-        const win = window.open(url, '_blank');
-        if (win) {
-          win.onload = () => { win.print(); setTimeout(() => URL.revokeObjectURL(url), 60000); };
-          setTimeout(() => { try { win.print(); } catch { } setTimeout(() => URL.revokeObjectURL(url), 60000); }, 1500);
-        } else {
-          await Utils.downloadFileNative(blob, fileName);
-        }
-      }
-    } catch {
-      await loader.dismiss();
-      Utils.showToast('Fehler beim Zusammenführen der Noten.', 'danger');
-    }
+    await this.printService.printEntries(files, fileName);
   }
 
   selectGroup(group: Group): void {

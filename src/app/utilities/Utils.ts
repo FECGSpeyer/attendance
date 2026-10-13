@@ -1622,7 +1622,7 @@ export class Utils {
     await FileViewer.openDocumentFromLocalPath({ path: result.uri });
   }
 
-  private static blobToBase64(blob: Blob): Promise<string> {
+  public static blobToBase64(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => {

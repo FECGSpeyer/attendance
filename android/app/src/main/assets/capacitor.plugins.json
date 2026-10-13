@@ -50,5 +50,9 @@
 	{
 		"pkg": "@capawesome/capacitor-live-update",
 		"classpath": "io.capawesome.capacitorjs.plugins.liveupdate.LiveUpdatePlugin"
+	},
+	{
+		"pkg": "@capgo/capacitor-printer",
+		"classpath": "com.capgo.printer.PrinterPlugin"
 	}
 ]

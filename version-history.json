@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.10.17",
+      "date": "13.10.2026",
+      "changes": [
+        "🖨️ Drucken einheitlich: In der App öffnet sich der Druckdialog des Systems (nach App-Update aus dem Store), im Browser ohne Popup und ohne doppelten Dialog, mobil über das Teilen-Menü."
+      ]
+    },
+    {
       "version": "4.10.16",
       "date": "12.10.2026",
       "changes": [

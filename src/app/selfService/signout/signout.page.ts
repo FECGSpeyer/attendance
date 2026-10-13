@@ -1,11 +1,9 @@
 /* eslint-disable arrow-body-style */
 import { Component, effect, inject, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, isPlatform, ModalController } from '@ionic/angular/lazy';
-import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import dayjs from 'dayjs';
-// pdf-lib is lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
@@ -13,6 +11,7 @@ import { TelegramService } from 'src/app/services/telegram/telegram.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Attendance, PersonAttendance, Player, PlayerAbsence, PlayerHistoryEntry, Song, Tenant, History, SongFile, AttendanceType, Plan, RegistrationField } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { PrintService } from 'src/app/services/print/print.service';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
 
@@ -24,6 +23,7 @@ import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker
 })
 export class SignoutPage implements OnInit {
   private audioPlayer = inject(AudioPlayerService);
+  private printService = inject(PrintService);
   @ViewChild('signoutAccordionGroup') signoutAccordionGroup: IonAccordionGroup;
   @ViewChild('excusePicker') excusePicker: ExcuseReasonPickerComponent;
   @ViewChild('descriptionModal') descriptionModal: IonModal;
@@ -721,35 +721,10 @@ export class SignoutPage implements OnInit {
 
       buttons.push({
         text: 'Noten drucken',
-        handler: () => {
+        handler: async () => {
           const file = files[0];
           if (file) {
-            if (Capacitor.isNativePlatform()) {
-              Utils.openFileNative(file.url, file.fileName);
-            } else {
-              const printWindow = window.open(file.url, '_blank');
-              if (printWindow) {
-                let printed = false;
-                printWindow.onload = () => {
-                  if (!printed) {
-                    printed = true;
-                    printWindow.print();
-                  }
-                };
-                setTimeout(() => {
-                  if (!printed && printWindow) {
-                    printed = true;
-                    try {
-                      printWindow.print();
-                    } catch (e) {
-                      console.error('Print failed:', e);
-                    }
-                  }
-                }, 1000);
-              } else {
-                Utils.showToast('Popup wurde blockiert. Bitte erlaube Popups für diese Seite.', 'warning');
-              }
-            }
+            await this.printService.printSongFile(song, file);
           }
         },
       });
@@ -820,33 +795,8 @@ export class SignoutPage implements OnInit {
             return {
               text: file.fileName,
               role: '',
-              handler: () => {
-                if (Capacitor.isNativePlatform()) {
-                  Utils.openFileNative(file.url, file.fileName);
-                } else {
-                  const printWindow = window.open(file.url, '_blank');
-                  if (printWindow) {
-                    let printed = false;
-                    printWindow.onload = () => {
-                      if (!printed) {
-                        printed = true;
-                        printWindow.print();
-                      }
-                    };
-                    setTimeout(() => {
-                      if (!printed && printWindow) {
-                        printed = true;
-                        try {
-                          printWindow.print();
-                        } catch (e) {
-                          console.error('Print failed:', e);
-                        }
-                      }
-                    }, 1000);
-                  } else {
-                    Utils.showToast('Popup wurde blockiert. Bitte erlaube Popups für diese Seite.', 'warning');
-                  }
-                }
+              handler: async () => {
+                await this.printService.printSongFile(song, file);
               },
             };
           });
@@ -972,73 +922,7 @@ export class SignoutPage implements OnInit {
       return;
     }
 
-    try {
-      Utils.showToast('PDFs werden zusammengeführt...', 'primary');
-
-      // Lazy load pdf-lib
-      const { PDFDocument } = await import('pdf-lib');
-
-      // Create a new PDF document
-      const mergedPdf = await PDFDocument.create();
-
-      // Download and merge each PDF
-      for (const entry of filesToPrint) {
-        try {
-          const pdfBlob = await this.db.downloadSongFile(
-            entry.file.storageName ?? entry.file.url.split('/').pop(),
-            entry.song.id
-          );
-          const pdfBytes = await pdfBlob.arrayBuffer();
-          const pdf = await PDFDocument.load(pdfBytes);
-          const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-          pages.forEach(page => mergedPdf.addPage(page));
-        } catch (err) {
-          console.error(`Fehler beim Laden von ${entry.file.fileName}:`, err);
-        }
-      }
-
-      // Save and print the merged PDF
-      const mergedPdfBytes = await mergedPdf.save();
-      const blob = new Blob([mergedPdfBytes as BlobPart], { type: 'application/pdf' });
-
-      if (Capacitor.isNativePlatform()) {
-        await Utils.downloadFileNative(blob, 'aktuelle_noten.pdf');
-      } else {
-        const url = URL.createObjectURL(blob);
-        const printWindow = window.open(url, '_blank');
-        if (printWindow) {
-          let printed = false;
-          printWindow.onload = () => {
-            if (!printed) {
-              printed = true;
-              printWindow.print();
-            }
-            setTimeout(() => URL.revokeObjectURL(url), 60000);
-          };
-          setTimeout(() => {
-            if (!printed && printWindow) {
-              printed = true;
-              try {
-                printWindow.print();
-              } catch (e) {
-                console.error('Print failed:', e);
-              }
-            }
-            setTimeout(() => URL.revokeObjectURL(url), 60000);
-          }, 1500);
-        } else {
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'aktuelle_noten.pdf';
-          a.click();
-          setTimeout(() => URL.revokeObjectURL(url), 60000);
-          Utils.showToast('PDF heruntergeladen - bitte manuell drucken', 'warning');
-        }
-      }
-    } catch (err) {
-      console.error('Fehler beim Zusammenführen der PDFs:', err);
-      Utils.showToast('Fehler beim Zusammenführen der PDFs.', 'danger');
-    }
+    await this.printService.printEntries(filesToPrint, 'aktuelle_noten.pdf');
   }
 
   showDeadlineInfo(attendance: PersonAttendance): boolean {

@@ -1,7 +1,6 @@
 import { Component, inject, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, LoadingController, isPlatform } from '@ionic/angular/lazy';
-import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 // JSZip and pdf-lib are lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
@@ -11,6 +10,7 @@ import { Role } from 'src/app/utilities/constants';
 import { matchInstrument, detectSpecialFileType } from 'src/app/utilities/instrument-matcher';
 import { Group, History, Organisation, Player, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { PrintService } from 'src/app/services/print/print.service';
 
 
 @Component({
@@ -21,6 +21,7 @@ import { Utils } from 'src/app/utilities/Utils';
 })
 export class SongPage implements OnInit {
   private audioPlayer = inject(AudioPlayerService);
+  private printService = inject(PrintService);
   public song: Song;
   public isOrchestra = false;
   public isChoir = false;
@@ -677,62 +678,7 @@ export class SongPage implements OnInit {
         text: 'Datei drucken',
         icon: 'print-outline',
         handler: async () => {
-          // iOS/PWA doesn't support window.print() reliably, use Share API instead
-          if (isPlatform('ios') || isPlatform('mobileweb')) {
-            try {
-              // Fetch the PDF as blob
-              const response = await fetch(file.url);
-              const blob = await response.blob();
-              const filesArray = [new File([blob], file.fileName || 'document.pdf', { type: 'application/pdf' })];
-
-              // Check if Web Share API is available
-              if (navigator.share && navigator.canShare && navigator.canShare({ files: filesArray })) {
-                await navigator.share({
-                  files: filesArray,
-                  title: this.song.name || 'Dokument',
-                  text: 'Drucke diese Datei'
-                });
-              } else {
-                // Fallback: download the file
-                const a = document.createElement('a');
-                a.href = file.url;
-                a.download = file.fileName || 'document.pdf';
-                a.click();
-                Utils.showToast('Datei heruntergeladen - bitte aus Dateien-App drucken', 'success');
-              }
-            } catch (error) {
-              console.error('Share/download failed:', error);
-              // Final fallback: open in new tab
-              window.open(file.url, '_blank');
-              Utils.showToast('Datei geöffnet - bitte manuell drucken', 'success');
-            }
-          } else {
-            const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), this.song.id);
-            const blobUrl = URL.createObjectURL(blob);
-            const printWindow = window.open(blobUrl, '_blank');
-            if (printWindow) {
-              let printed = false;
-              printWindow.onload = () => {
-                if (!printed) {
-                  printed = true;
-                  setTimeout(() => {
-                    try { printWindow.print(); } catch (e) { console.error('Print failed:', e); }
-                    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
-                  }, 500);
-                }
-              };
-              setTimeout(() => {
-                if (!printed && printWindow) {
-                  printed = true;
-                  try { printWindow.print(); } catch (e) { console.error('Print failed:', e); }
-                  setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
-                }
-              }, 2000);
-            } else {
-              URL.revokeObjectURL(blobUrl);
-              Utils.showToast('Popup wurde blockiert. Bitte erlaube Popups für diese Seite.', 'warning');
-            }
-          }
+          await this.printService.printSongFile(this.song, file);
         }
       });
     }
@@ -1008,145 +954,19 @@ export class SongPage implements OnInit {
    * Generate merged PDF with correct copy counts
    */
   private async generatePrintPdf(groupPdfs: SongFile[], ratio: number): Promise<void> {
-    const loading = await Utils.getLoadingElement(999999, 'PDF wird erstellt...');
-    await loading.present();
+    const entries = groupPdfs.map(file => ({
+      song: this.song,
+      file,
+      copies: ratio === 0 ? 1 : Math.ceil(this.getPlayerCountByGroup(file.instrumentId) / ratio),
+    }));
 
-    try {
-      // Lazy load pdf-lib
-      const { PDFDocument } = await import('pdf-lib');
-      const mergedPdf = await PDFDocument.create();
-      let totalPages = 0;
+    const printed = await this.printService.printEntries(entries, `${this.song.name || 'song'}_print.pdf`, 'PDF wird erstellt...');
+    if (!printed) { return; }
 
-      for (const file of groupPdfs) {
-        const playerCount = this.getPlayerCountByGroup(file.instrumentId);
-
-        // Calculate copies needed
-        let copies: number;
-        if (ratio === 0) {
-          copies = 1; // 1 per group
-        } else {
-          copies = Math.ceil(playerCount / ratio);
-        }
-
-        if (copies === 0) {continue;}
-
-        loading.message = `Lade ${this.getInstrumentName(file.instrumentId)}... (${copies} Kopien)`;
-
-        // Download the PDF
-        const pdfBlob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), this.song.id);
-        const pdfBytes = await pdfBlob.arrayBuffer();
-
-        // Load the source PDF
-        const sourcePdf = await PDFDocument.load(pdfBytes);
-        const pageCount = sourcePdf.getPageCount();
-
-        // Add copies to merged PDF
-        for (let copy = 0; copy < copies; copy++) {
-          const copiedPages = await mergedPdf.copyPages(sourcePdf, Array.from({ length: pageCount }, (_, i) => i));
-          copiedPages.forEach(page => mergedPdf.addPage(page));
-          totalPages += pageCount;
-        }
-      }
-
-      if (totalPages === 0) {
-        await loading.dismiss();
-        Utils.showToast('Keine Seiten zum Drucken', 'warning');
-        return;
-      }
-
-      loading.message = 'PDF wird finalisiert...';
-
-      // Save and download/print
-      const mergedPdfBytes = await mergedPdf.save();
-      const blob = new Blob([mergedPdfBytes as BlobPart], { type: 'application/pdf' });
-      const fileName = `${this.song.name || 'song'}_print.pdf`;
-
-      if (Capacitor.isNativePlatform()) {
-        await Utils.downloadFileNative(blob, fileName);
-      } else if (isPlatform('ios') || isPlatform('mobileweb')) {
-        try {
-          const filesArray = [new File([blob], fileName, { type: 'application/pdf' })];
-
-          if (navigator.share && navigator.canShare && navigator.canShare({ files: filesArray })) {
-            await navigator.share({
-              files: filesArray,
-              title: this.song.name || 'Dokument',
-              text: 'Drucke diese Datei'
-            });
-          } else {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            a.click();
-            window.URL.revokeObjectURL(url);
-            Utils.showToast('PDF heruntergeladen - bitte aus Dateien-App drucken', 'success');
-          }
-        } catch (error) {
-          console.error('Share/download failed:', error);
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = fileName;
-          a.click();
-          window.URL.revokeObjectURL(url);
-          Utils.showToast('PDF heruntergeladen - bitte aus Dateien-App drucken', 'success');
-        }
-      } else {
-        const url = window.URL.createObjectURL(blob);
-        const printWindow = window.open(url, '_blank');
-
-        if (printWindow) {
-          let printed = false;
-
-          printWindow.onload = () => {
-            if (!printed) {
-              printed = true;
-              setTimeout(() => {
-                try {
-                  printWindow.print();
-                } catch (e) {
-                  console.error('Print failed in onload:', e);
-                }
-              }, 500);
-            }
-          };
-
-          setTimeout(() => {
-            if (!printed && printWindow) {
-              printed = true;
-              try {
-                printWindow.print();
-              } catch (e) {
-                console.error('Print failed in timeout:', e);
-              }
-            }
-          }, 2000);
-        } else {
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = fileName;
-          a.click();
-          Utils.showToast('PDF heruntergeladen - bitte manuell drucken', 'success');
-        }
-        window.URL.revokeObjectURL(url);
-      }
-
-      await loading.dismiss();
-
-      // Show summary
-      const groupSummary = groupPdfs.map(f => {
-        const count = this.getPlayerCountByGroup(f.instrumentId);
-        const copies = ratio === 0 ? 1 : Math.ceil(count / ratio);
-        return `${this.getInstrumentName(f.instrumentId)}: ${copies}x`;
-      }).join(', ');
-
-      Utils.showToast(`Druck vorbereitet: ${groupSummary}`, 'success', 5000);
-
-    } catch (error) {
-      await loading.dismiss();
-      console.error('Error generating print PDF:', error);
-      Utils.showToast('Fehler beim Erstellen des PDFs: ' + error.message, 'danger');
-    }
+    const groupSummary = entries
+      .filter(e => e.copies > 0)
+      .map(e => `${this.getInstrumentName(e.file.instrumentId)}: ${e.copies}x`)
+      .join(', ');
+    Utils.showToast(`Druck vorbereitet: ${groupSummary}`, 'success', 5000);
   }
 }
