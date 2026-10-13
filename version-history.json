@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.12.11",
+      "date": "13.10.2026",
+      "changes": [
+        "🐛 Die Tabbar auf dem iPhone reagiert wieder bei jedem Tippen, der Umweg über den Werke-Tab ist nicht mehr nötig."
+      ]
+    },
+    {
       "version": "4.12.10",
       "date": "13.10.2026",
       "changes": [

@@ -1,4 +1,4 @@
-import { Component, effect } from '@angular/core';
+import { Component, ElementRef, effect } from '@angular/core';
 import { DbService } from '../services/db.service';
 import { Role } from '../utilities/constants';
 import { registeredEffect, registerTabBarEffect } from '@rdlabo/ionic-theme-ios27';
@@ -25,7 +25,8 @@ export class TabsPage {
 
   constructor(
     private db: DbService,
-    private router: Router
+    private router: Router,
+    private el: ElementRef<HTMLElement>
   ) {
     this.initialize();
   }
@@ -64,14 +65,23 @@ export class TabsPage {
   }
 
   ionViewDidEnter() {
-    const registerGesture = registerTabBarEffect(document.querySelector<HTMLElement>('ion-tab-bar')!);
+    // Only ever one effect on this page's own tab bar: a second registration
+    // (or one on a stale tab bar from a previous TabsPage) fights over taps.
+    this.destroyGestures();
+    const tabBar = this.el.nativeElement.querySelector<HTMLElement>('ion-tab-bar');
+    const registerGesture = tabBar ? registerTabBarEffect(tabBar) : undefined;
     if (registerGesture) {
       this.registeredGestures.push(registerGesture);
     }
   }
 
   ionViewDidLeave() {
+    this.destroyGestures();
+  }
+
+  private destroyGestures() {
     this.registeredGestures.forEach((gesture) => gesture.destroy());
+    this.registeredGestures.length = 0;
   }
 
 }
