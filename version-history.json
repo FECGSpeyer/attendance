@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.12.10",
+      "date": "13.10.2026",
+      "changes": [
+        "🐛 Das Fenster \"Administratoren\" in den Einstellungen öffnet sich wieder zuverlässig beim Antippen."
+      ]
+    },
+    {
       "version": "4.12.9",
       "date": "13.10.2026",
       "changes": [

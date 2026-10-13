@@ -415,6 +415,7 @@
     </ion-item-group>
   </ion-list>
 
+  @if (!db.isDemo() && isSuperAdmin) {
   <!-- Admins Modal -->
   <ion-modal trigger="admins-button" handle-behavior="none" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
     <ng-template>
@@ -452,6 +453,7 @@
       </ion-fab>
     </ng-template>
   </ion-modal>
+  }
 
   <!-- Parents Modal -->
   @if (parentsEnabled) {
