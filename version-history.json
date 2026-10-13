@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.12.3",
+      "date": "13.10.2026",
+      "changes": [
+        "❓ Hilfe ergänzt: neue Artikel zu Dateiablage, Audio-Player (Hintergrund und Sperrbildschirm), Drucken, Gruppenverzeichnis, Gemeinde-Übersicht und zur E-Mail beim Hinzufügen einer Person."
+      ]
+    },
+    {
       "version": "4.12.2",
       "date": "13.10.2026",
       "changes": [

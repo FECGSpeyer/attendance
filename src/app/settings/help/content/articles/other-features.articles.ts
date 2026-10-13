@@ -140,4 +140,44 @@ Instanzspezifische [[Zusatzfeld|Zusatzfelder]] bleiben daneben bestehen und gelt
     keywords: ['protokoll', 'aufgaben', 'tagesordnung', 'tagesordnungspunkt', 'tasks', 'agenda', 'teamorganisation', 'besprechung'],
     body: `Die [[Teamorganisation]] bündelt drei Werkzeuge für die Arbeit im Leitungsteam:\n\n**Protokolle** – Wird bei einem Termintyp das Protokoll aktiviert (Einstellungen → Termintypen → "Teamorganisation aktivieren"), erscheint beim Öffnen des Termins ein Protokoll-Bereich mit einem Abschnitt pro Ablaufplan-Feld. Inhalte werden automatisch gespeichert. Im Protokoll lassen sich [[Tagesordnungspunkt|Tagesordnungspunkte]] verknüpfen und [[Aufgabe|Aufgaben]] direkt anlegen.\n\n**Aufgaben** – Eigenständige Aktionspunkte mit Titel, Status (Offen / In Bearbeitung / Erledigt), Priorität, Fälligkeitsdatum und Verantwortlichem. Aufgaben können aus einem Protokoll heraus erstellt oder unter Einstellungen → Teamorganisation → Aufgaben verwaltet werden. Die verantwortliche Person erhält automatisch eine Erinnerung 2 Tage vor Fälligkeit.\n\n**Tagesordnung** – Wiederkehrende oder geplante Gesprächspunkte, die terminübergreifend verfolgt werden. Sie können einem oder mehreren Terminen zugeordnet und im Protokoll als erledigt markiert werden.\n\nDie Übersichtsseite unter Einstellungen → Teamorganisation zeigt die offensten Aufgaben, Tagesordnungspunkte und zuletzt bearbeiteten Protokolle.`,
   },
+  {
+    id: 'other-files',
+    title: 'Dateiablage',
+    categoryId: 'other',
+    keywords: ['dateien', 'ordner', 'upload', 'hochladen', 'aufnahmen', 'dokumente', 'direktlink', 'link teilen', 'files'],
+    body: `In der Dateiablage legt deine Instanz gemeinsame Dateien in Ordnern ab, z. B. Aufnahmen, Dokumente oder Bilder. Du findest sie unter Einstellungen → Dateiablage. Die Funktion ist nicht in jeder Instanz freigeschaltet; [[Bewerber]] haben keinen Zugriff.
+
+- **Hochladen und Ordner anlegen** dürfen [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]]. Beides findest du im Menü (drei Punkte oben rechts).
+- **Sortieren** nach Name, Änderungsdatum oder Dateigröße, auf- oder absteigend, ebenfalls über das Menü.
+- **Link teilen:** Über "Link zu diesem Ordner teilen" bzw. das Teilen einer Datei erhältst du einen Direktlink. Wer ihn öffnet, landet nach der Anmeldung direkt in der App bei diesem Ordner bzw. dieser Datei.
+- **Ordner am Termin:** Bei einem Termin kann unter "Ordner in der Dateiablage" ein Ordner hinterlegt werden (z. B. die Aufnahmen dieses Termins). Mitglieder springen dann von ihrer Anmeldeseite und der Übersicht direkt in diesen Ordner.
+
+Audiodateien spielst du direkt im integrierten Audio-Player ab (siehe "Audio-Player").`,
+  },
+  {
+    id: 'other-audio-player',
+    title: 'Audio-Player',
+    categoryId: 'other',
+    keywords: ['audio', 'abspielen', 'aufnahme anhören', 'mp3', 'sperrbildschirm', 'hintergrund', 'weiterspielen', 'playlist', 'musik hören'],
+    body: `Tippst du in der Dateiablage auf eine Audiodatei, öffnet sich der Audio-Player am unteren Bildschirmrand.
+
+- Mit **Vor/Zurück** wechselst du zur nächsten bzw. vorherigen Audiodatei im selben Ordner. Ist ein Titel zu Ende, startet automatisch der nächste.
+- In der App läuft die Wiedergabe **im Hintergrund** weiter, auch wenn du die App verlässt oder den Bildschirm sperrst.
+- Auf dem **Sperrbildschirm**, im Kontrollzentrum (iOS) bzw. in der Benachrichtigung (Android) siehst du den aktuellen Titel und kannst Wiedergabe/Pause, Vor/Zurück und Spulen steuern.
+
+Die Hintergrundwiedergabe und Sperrbildschirm-Steuerung benötigen eine aktuelle Version der App. Im Browser hängt sie davon ab, was Browser und Gerät unterstützen.`,
+  },
+  {
+    id: 'other-print',
+    title: 'Noten und Dateien drucken',
+    categoryId: 'other',
+    keywords: ['drucken', 'ausdrucken', 'drucker', 'airprint', 'noten drucken', 'pdf drucken', 'notenmappe'],
+    body: `An mehreren Stellen gibt es ein Drucker-Symbol, z. B. bei einem [[Werk]] (Menü der Dateien), bei den aktuellen Werken, im Gruppenverzeichnis und in "Meine Anwesenheit" bei den aktuellen Werken. Alle Druckknöpfe funktionieren gleich:
+
+- **In der App (iOS/Android):** Es öffnet sich der Druckdialog des Geräts, in dem du Drucker und Seiten auswählst.
+- **Im Browser am Computer:** Es öffnet sich direkt der Druckdialog des Browsers, ohne neues Fenster oder Popup.
+- **Im Browser auf dem Handy:** Es öffnet sich das Teilen-Menü. Dort findest du "Drucken" (iOS) oder kannst die PDF speichern bzw. in einer anderen App öffnen.
+
+Werden mehrere Dateien gedruckt, fasst Attendix sie zu einer PDF zusammen.`,
+  },
 ];

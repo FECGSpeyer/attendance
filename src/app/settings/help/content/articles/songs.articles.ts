@@ -29,4 +29,13 @@ export const SONGS_ARTICLES: HelpArticle[] = [
     keywords: ['pdf export', 'werkverzeichnis drucken', 'liste exportieren', 'pdf'],
     body: `Über das Menü (drei Punkte oben rechts) kannst du das aktuelle Werkverzeichnis als PDF exportieren. Die aktuell gefilterte und sortierte Liste wird exportiert – inklusive aller sichtbaren Spalten wie Schwierigkeitsgrad, Zuletzt gesungen und benutzerdefinierte Felder.`,
   },
+  {
+    id: 'songs-group-directory',
+    title: 'Gruppenverzeichnis und Notenmappe drucken',
+    categoryId: 'songs',
+    keywords: ['gruppenverzeichnis', 'notenmappe', 'stimme', 'noten einer gruppe', 'partitur', 'dirigenten', 'drucken'],
+    body: `Über "Gruppenverzeichnis" in der Werkeliste wählst du eine [[Gruppe]] aus und siehst alle Notendateien, die für diese Gruppe hinterlegt sind. Mit dem Drucker-Symbol oben rechts druckst du die komplette Notenmappe der Gruppe auf einmal.
+
+Sind Partituren hinterlegt, gibt es zusätzlich die Gruppe "Dirigenten", die alle Partituren enthält. Das Gruppenverzeichnis ist auch verfügbar, wenn deine Instanz keine Werkkategorien verwendet.`,
+  },
 ];
