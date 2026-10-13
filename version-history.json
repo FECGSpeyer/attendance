@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.11.1",
+      "date": "13.10.2026",
+      "changes": [
+        "✉️ Account-E-Mails (Zugang, neue Instanz, Registrierung genehmigt/abgelehnt) kommen jetzt im einheitlichen Attendix-Design.",
+        "🔐 Neue Accounts erhalten statt eines Passworts per E-Mail einen sicheren Link, um ihr Passwort selbst festzulegen."
+      ]
+    },
+    {
       "version": "4.11.0",
       "date": "13.10.2026",
       "changes": [

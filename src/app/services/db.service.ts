@@ -945,20 +945,17 @@ export class DbService {
       }
       await this.addUserToTenant(userId, role, email, tenantId);
       if (!self_register) {
-        const res = await fetch(`https://staccato-server.vercel.app/api/informAttendixUser`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        const { data, error } = await supabase.functions.invoke('attendix-user', {
+          body: {
+            action: 'inform',
             email,
             name,
-            password,
             role: Utils.getRoleText(role),
-            tenant: tenantName ?? this.tenant().longName,
-          }),
+            tenantId: tenantId || this.tenant().id,
+          },
         });
-        const data = await res.json();
 
-        if (!data.mailSent) {
+        if (error || !data?.mailSent) {
           throw new Error('Fehler beim Informieren des Benutzers');
         }
       }
@@ -979,14 +976,11 @@ export class DbService {
     }
 
     try {
-      const res = await fetch(`https://staccato-server.vercel.app/api/registerAttendixUser`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name }),
+      const { data, error } = await supabase.functions.invoke('attendix-user', {
+        body: { action: 'register', email, name, tenantId: tenantId || this.tenant().id },
       });
-      const data = await res.json();
 
-      if (!data?.user?.id) {
+      if (error || !data?.user?.id) {
         throw new Error('Fehler beim Erstellen des Accounts');
       }
 
@@ -999,11 +993,11 @@ export class DbService {
   }
 
   async informUserAboutApproval(email: string, name: string, role: Role): Promise<void> {
-    return this.userRegistrationSvc.informUserAboutApproval(email, name, role, this.tenant().longName);
+    return this.userRegistrationSvc.informUserAboutApproval(email, name, role, this.tenant().id);
   }
 
   async informUserAboutReject(email: string, name: string): Promise<void> {
-    return this.userRegistrationSvc.informUserAboutReject(email, name, this.tenant().longName);
+    return this.userRegistrationSvc.informUserAboutReject(email, name, this.tenant().id);
   }
 
   async addUserToTenant(userId: string, role: Role, email: string, tenantId?: number) {
@@ -2470,14 +2464,6 @@ export class DbService {
     if (await this.getAppIdByEmail(email, this.tenant().id)) {
       return;
     }
-
-    // const res = await axios.post(`https://staccato-server.vercel.app/api/deleteUserFromAttendix`, {
-    //   id: appId,
-    // });
-
-    // if (res.status !== 200) {
-    //   throw new Error('Fehler beim Löschen des Accounts');
-    // }
   }
 
   async archivePlayer(player: Player, left: string, notes: string): Promise<void> {

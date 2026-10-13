@@ -38,20 +38,17 @@ export class UserRegistrationService {
       await this.addUserToTenant(userId, role, normalizedEmail, tenantId);
 
       if (!self_register) {
-        const res = await fetch(`https://staccato-server.vercel.app/api/informAttendixUser`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        const { data, error } = await supabase.functions.invoke('attendix-user', {
+          body: {
+            action: 'inform',
             email: normalizedEmail,
             name,
-            password,
             role: Utils.getRoleText(role),
-            tenant: tenantName,
-          }),
+            tenantId,
+          },
         });
-        const data = await res.json();
 
-        if (!data.mailSent) {
+        if (error || !data?.mailSent) {
           throw new Error('Fehler beim Informieren des Benutzers');
         }
       }
@@ -61,14 +58,11 @@ export class UserRegistrationService {
 
     // User not found in any tenant, create new account
     try {
-      const res = await fetch(`https://staccato-server.vercel.app/api/registerAttendixUser`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: normalizedEmail, name }),
+      const { data, error } = await supabase.functions.invoke('attendix-user', {
+        body: { action: 'register', email: normalizedEmail, name, tenantId },
       });
-      const data = await res.json();
 
-      if (!data?.user?.id) {
+      if (error || !data?.user?.id) {
         throw new Error('Fehler beim Erstellen des Accounts');
       }
 
@@ -80,37 +74,33 @@ export class UserRegistrationService {
     }
   }
 
-  async informUserAboutApproval(email: string, name: string, role: Role, tenantName: string): Promise<void> {
-    const res = await fetch(`https://staccato-server.vercel.app/api/approveAttendixUser`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+  async informUserAboutApproval(email: string, name: string, role: Role, tenantId: number): Promise<void> {
+    const { data, error } = await supabase.functions.invoke('attendix-user', {
+      body: {
+        action: 'approve',
         email,
         name,
         role: Utils.getRoleText(role),
-        tenant: tenantName,
-      }),
+        tenantId,
+      },
     });
-    const data = await res.json();
 
-    if (!data.mailSent) {
+    if (error || !data?.mailSent) {
       throw new Error('Fehler beim Informieren des Benutzers');
     }
   }
 
-  async informUserAboutReject(email: string, name: string, tenantName: string): Promise<void> {
-    const res = await fetch(`https://staccato-server.vercel.app/api/rejectAttendixUser`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+  async informUserAboutReject(email: string, name: string, tenantId: number): Promise<void> {
+    const { data, error } = await supabase.functions.invoke('attendix-user', {
+      body: {
+        action: 'reject',
         email,
         name,
-        tenant: tenantName,
-      }),
+        tenantId,
+      },
     });
-    const data = await res.json();
 
-    if (!data.mailSent) {
+    if (error || !data?.mailSent) {
       throw new Error('Fehler beim Informieren des Benutzers');
     }
   }
