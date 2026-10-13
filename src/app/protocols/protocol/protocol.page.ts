@@ -116,6 +116,25 @@ export class ProtocolPage implements OnInit {
     }
   }
 
+  async exportAgenda() {
+    const type = this.db.attendanceTypes().find(t => t.id === this.attendance.type_id);
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+    try {
+      await Utils.createAgendaExport({
+        title: type ? Utils.getPlanningTitle(type, this.attendance.typeInfo) : (this.attendance.typeInfo || 'Termin'),
+        date: this.attendance.date,
+        items: this.linkedAgendaItems,
+        branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
+      });
+    } catch (error) {
+      console.error('Agenda export error:', error);
+      Utils.showToast('Tagesordnung konnte nicht exportiert werden', 'danger');
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
   async createTaskInline(fieldId: string) {
     const alert = await this.alertController.create({
       header: 'Neue Aufgabe',

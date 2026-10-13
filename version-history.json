@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "4.12.5",
+      "date": "13.10.2026",
+      "changes": [
+        "🖨️ Tagesordnung als PDF: Im Termin (unter \"Protokoll\") oder im Protokoll über das Drucker-Symbol alle Tagesordnungspunkte nummeriert mit Beschreibung, Verantwortlichem und Notizspalte ausdrucken.",
+        "📋 Ablaufplan-PDF zeigt beim Platzhalter \"Tagesordnungspunkte\" jetzt die zugeordneten Punkte als TOP 1, TOP 2, …",
+        "❓ Neuer Hilfe-Artikel: Von der Tagesordnung zum Protokoll."
+      ]
+    },
+    {
       "version": "4.12.4",
       "date": "13.10.2026",
       "changes": [

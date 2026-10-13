@@ -943,8 +943,37 @@ export class AttendancePage implements OnInit, OnDestroy {
       attendance: this.attendance.id,
       attendances: await this.db.getAttendance(),
       sideBySide,
+      agendaItems: await this.getPlanAgendaItems(),
       branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
     }, Utils.getPlanningTitle(type, this.attendance.typeInfo));
+  }
+
+  // Linked agenda items to expand the plan's agenda placeholder with, or
+  // undefined when the plan has no placeholder.
+  private async getPlanAgendaItems() {
+    if (!this.attendance.plan?.fields?.some((f: FieldSelection) => f.id === AGENDA_ITEMS_PLACEHOLDER_ID)) {
+      return undefined;
+    }
+    return this.db.getAgendaItemsForAttendance(this.attendance.id);
+  }
+
+  async exportAgenda() {
+    const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+    try {
+      await Utils.createAgendaExport({
+        title: type ? Utils.getPlanningTitle(type, this.attendance.typeInfo) : (this.attendance.typeInfo || 'Termin'),
+        date: this.attendance.date,
+        items: await this.db.getAgendaItemsForAttendance(this.attendance.id),
+        branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
+      });
+    } catch (error) {
+      console.error('Agenda export error:', error);
+      Utils.showToast('Tagesordnung konnte nicht exportiert werden', 'danger');
+    } finally {
+      await loading.dismiss();
+    }
   }
 
   async sharePlan() {
@@ -992,6 +1021,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       asBlob: true,
       asImage,
       sideBySide,
+      agendaItems: await this.getPlanAgendaItems(),
       branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
     }, planningTitle);
 

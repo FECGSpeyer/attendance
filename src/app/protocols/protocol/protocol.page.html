@@ -4,11 +4,14 @@
       <ion-back-button text="" [defaultHref]="'/tabs/attendance/' + attendanceId"></ion-back-button>
     </ion-buttons>
     <ion-title>Protokoll</ion-title>
-    @if (isSaving) {
-      <ion-buttons slot="end">
+    <ion-buttons slot="end">
+      @if (isSaving) {
         <ion-spinner name="dots" style="margin-right: 12px"></ion-spinner>
-      </ion-buttons>
-    }
+      }
+      <ion-button (click)="exportAgenda()" [disabled]="isLoading" title="Tagesordnung als PDF">
+        <ion-icon slot="icon-only" name="print-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 

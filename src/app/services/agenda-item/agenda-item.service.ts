@@ -40,7 +40,8 @@ export class AgendaItemService {
     const { data } = await db
       .from('agenda_item_attendances')
       .select('agenda_item:agenda_items(*, responsible_person:player!responsible_person_id(id, firstName, lastName))')
-      .eq('attendance_id', attendanceId);
+      .eq('attendance_id', attendanceId)
+      .order('created_at', { ascending: true });
 
     return (data ?? []).map((row: any) => row.agenda_item).filter(Boolean);
   }

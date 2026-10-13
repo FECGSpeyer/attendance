@@ -3,7 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
 import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, FieldType, PlayerHistoryType, Role } from './constants';
-import { Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftPlan, Church } from './interfaces';
+import { AGENDA_ITEMS_PLACEHOLDER_ID, AgendaItem, Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftPlan, Church } from './interfaces';
 // jsPDF and xlsx are lazy-loaded for better initial bundle size. Type-only
 // import (erased at compile time) so it doesn't pull xlsx into the main bundle.
 import type { WorkBook } from 'xlsx';
@@ -678,6 +678,17 @@ export class Utils {
         data.push([
           { content: fieldName, colSpan: hasConductors ? 5 : 4 }
         ]);
+      } else if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID && Array.isArray(props.agendaItems)) {
+        // Expand the agenda placeholder into the Termin's linked agenda items.
+        props.agendaItems.forEach((item: AgendaItem, index: number) => {
+          const person = item.responsible_person
+            ? `${item.responsible_person.firstName} ${item.responsible_person.lastName}`
+            : '';
+          const name = `TOP ${index + 1}: ${item.title}`;
+          const nameCell: any = person ? { content: `${name}\n${person}`, _name: name, _info: person } : name;
+          const time = index === 0 ? `${currentTime.format('HH:mm')} Uhr` : '';
+          data.push(hasConductors ? [time, nameCell, '', ''] : [time, nameCell, '']);
+        });
       } else {
         // Field-attached info is carried on the Programmpunkt cell so it renders
         // as a second (italic) line inside the same row as its field. The custom
@@ -978,6 +989,123 @@ export class Utils {
       const fileName = `${typeText}_${date}.pdf`;
       await Utils.downloadFileNative(doc.output('blob'), fileName);
     }
+  }
+
+  /**
+   * Printable agenda ("Tagesordnung") for one Termin: a numbered list of its
+   * agenda items with description, responsible person and an empty notes
+   * column to write on during the meeting.
+   */
+  public static async createAgendaExport(props: {
+    title: string;
+    date: string;
+    items: AgendaItem[];
+    branding?: { logo?: { dataUrl: string; width: number; height: number }; text?: string };
+  }) {
+    const { default: jsPDF } = await import('jspdf');
+    await import('jspdf-autotable');
+
+    const dateText = dayjs(props.date).locale('de').format('dddd, DD.MM.YYYY');
+    const priorityLabels: Record<string, string> = { high: 'Hoch', medium: 'Mittel', low: 'Niedrig' };
+
+    const body = props.items.map((item, index) => {
+      const person = item.responsible_person
+        ? `${item.responsible_person.firstName} ${item.responsible_person.lastName}`
+        : '';
+      const meta = [
+        item.priority === 'high' ? `Priorität: ${priorityLabels.high}` : '',
+        item.status === 'completed' ? 'Erledigt' : '',
+      ].filter(Boolean).join(' · ');
+      const details = [item.description?.trim(), meta].filter(Boolean).join('\n');
+      return [
+        `${index + 1}.`,
+        { content: details ? `${item.title}\n${details}` : item.title, _title: item.title, _details: details },
+        person,
+        '',
+      ];
+    });
+
+    const doc = new jsPDF({ compress: true });
+    await Utils.registerExportFont(doc);
+    const headerOpts = { title: `Tagesordnung – ${props.title}`, subtitle: dateText };
+    const contentTop = Utils.addBrandingHeader(doc, props.branding, headerOpts);
+
+    if (!body.length) {
+      doc.setFontSize(11);
+      doc.setTextColor(120, 120, 120);
+      doc.text('Für diesen Termin sind keine Tagesordnungspunkte verknüpft.', 14, contentTop + 4);
+    } else {
+      (doc as any).autoTable({
+        head: [['Nr.', 'Tagesordnungspunkt', 'Verantwortlich', 'Notizen']],
+        body,
+        margin: { top: contentTop, bottom: 14 },
+        theme: 'grid',
+        styles: {
+          font: Utils.EXPORT_FONT,
+          fontSize: 10,
+          cellPadding: 3,
+          textColor: [30, 30, 30],
+          lineColor: [190, 190, 190],
+          lineWidth: 0.2,
+          valign: 'top',
+          minCellHeight: 22,
+        },
+        headStyles: {
+          fillColor: [240, 240, 240],
+          textColor: [50, 50, 50],
+          fontStyle: 'bold',
+          minCellHeight: 0,
+        },
+        columnStyles: {
+          0: { cellWidth: 12 },
+          2: { cellWidth: 35 },
+          3: { cellWidth: 55 },
+        },
+        // Draw the title in bold and the description/meta lines below it in
+        // gray, instead of autotable's single-style text.
+        willDrawCell: (hookData: any) => {
+          if (hookData.section === 'body' && hookData.column.index === 1) {
+            hookData.cell.text = [];
+          }
+        },
+        didDrawCell: (hookData: any) => {
+          if (hookData.section !== 'body' || hookData.column.index !== 1) {
+            return;
+          }
+          const { doc: d, cell } = hookData;
+          const raw = cell.raw;
+          const fontName = d.getFont?.()?.fontName || undefined;
+          const lineHeight = (cell.styles.fontSize / d.internal.scaleFactor) * 1.15;
+          const x = cell.x + cell.padding('left');
+          const maxWidth = cell.width - cell.padding('horizontal');
+          let y = cell.y + cell.padding('top') + lineHeight * 0.8;
+
+          d.setFontSize(cell.styles.fontSize);
+          d.setFont(fontName, 'bold');
+          d.setTextColor(30, 30, 30);
+          for (const line of d.splitTextToSize(raw._title, maxWidth)) {
+            d.text(line, x, y);
+            y += lineHeight;
+          }
+          if (raw._details) {
+            d.setFont(fontName, 'normal');
+            d.setTextColor(90, 90, 90);
+            for (const line of d.splitTextToSize(raw._details, maxWidth)) {
+              d.text(line, x, y);
+              y += lineHeight;
+            }
+          }
+          d.setFont(fontName, 'normal');
+          d.setTextColor(30, 30, 30);
+        },
+        didDrawPage: () => {
+          Utils.addBrandingHeader(doc, props.branding, headerOpts);
+        },
+      });
+    }
+
+    const fileName = `Tagesordnung_${props.title}_${dayjs(props.date).format('DD.MM.YYYY')}.pdf`;
+    await Utils.downloadFileNative(doc.output('blob'), fileName);
   }
 
   /**
