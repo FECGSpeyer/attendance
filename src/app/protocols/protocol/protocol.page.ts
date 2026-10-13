@@ -135,7 +135,11 @@ export class ProtocolPage implements OnInit {
     }
   }
 
-  async createTaskInline(fieldId: string) {
+  private getEditor(sectionId: string): TiptapEditorComponent | undefined {
+    return this.editors?.find(e => e.sectionId === sectionId);
+  }
+
+  async createTaskInline(fieldId: string, agendaItem?: AgendaItem) {
     const alert = await this.alertController.create({
       header: 'Neue Aufgabe',
       inputs: [{ name: 'title', type: 'text', placeholder: 'Titel der Aufgabe' }],
@@ -147,19 +151,30 @@ export class ProtocolPage implements OnInit {
             if (!data.title?.trim()) return;
             const loading = await Utils.getLoadingElement();
             await loading.present();
-            const task = await this.db.addTask({
-              title: data.title.trim(),
-              status: 'open' as TaskStatus,
-              priority: 'medium' as AgendaItemPriority,
-              tenant_id: this.db.tenant().id,
-              protocol_id: this.protocol.id ?? null,
-              attendance_id: this.attendanceId,
-            });
-            this.tasks = [...this.tasks, task];
-            const editorIndex = this.planFields.findIndex(f => f.id === fieldId);
-            const editor = this.editors.toArray()[editorIndex];
-            editor?.insertTaskRef({ id: task.id, title: task.title, status: task.status });
-            await loading.dismiss();
+            try {
+              // The task links to the protocol by id, so make sure it exists.
+              if (!this.protocol.id) {
+                const saved = await this.db.upsertProtocol(this.protocol);
+                this.protocol.id = saved.id;
+                this.protocol.updated_at = saved.updated_at;
+              }
+              const task = await this.db.addTask({
+                title: data.title.trim(),
+                status: 'open' as TaskStatus,
+                priority: agendaItem?.priority ?? ('medium' as AgendaItemPriority),
+                tenant_id: this.db.tenant().id,
+                protocol_id: this.protocol.id,
+                attendance_id: this.attendanceId,
+                agenda_item_id: agendaItem?.id ?? null,
+              });
+              this.tasks = [...this.tasks, task];
+              this.getEditor(fieldId)?.insertTaskRef({ id: task.id, title: task.title, status: task.status });
+            } catch (error) {
+              console.error('Task create error:', error);
+              Utils.showToast('Aufgabe konnte nicht erstellt werden', 'danger');
+            } finally {
+              await loading.dismiss();
+            }
           }
         }
       ]
@@ -251,9 +266,7 @@ export class ProtocolPage implements OnInit {
             if (!item) return;
             await this.db.linkAgendaItemToAttendance(selectedId, this.attendanceId);
             this.linkedAgendaItems = [...this.linkedAgendaItems, item];
-            const editorIndex = this.planFields.findIndex(f => f.id === fieldId);
-            const editor = this.editors.toArray()[editorIndex];
-            editor?.insertAgendaItemRef({
+            this.getEditor(fieldId)?.insertAgendaItemRef({
               id: item.id, title: item.title, status: item.status, priority: item.priority,
             });
           }

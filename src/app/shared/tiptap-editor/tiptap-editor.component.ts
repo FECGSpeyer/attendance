@@ -116,6 +116,8 @@ export class TiptapEditorComponent implements AfterViewInit, OnDestroy, OnChange
 
   @Input() content: Record<string, unknown> | null = null;
   @Input() editable = true;
+  // Optional key so a host page with several editors can find the right one.
+  @Input() sectionId?: string;
   @Output() contentChange = new EventEmitter<JSONContent>();
 
   private editor: Editor | null = null;

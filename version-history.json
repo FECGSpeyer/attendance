@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.12.6",
+      "date": "13.10.2026",
+      "changes": [
+        "✅ Aufgabe direkt am Tagesordnungspunkt erstellen: im Protokoll unter jedem aufgeklappten Punkt und auf der Detailseite des Punkts. Die Aufgabe ist mit dem Punkt verknüpft und steht in der Aufgabenliste.",
+        "🐛 Aufgaben aus einem noch ungespeicherten Protokoll werden jetzt korrekt mit dem Protokoll verknüpft, und der Aufgaben-Verweis landet im richtigen Abschnitt."
+      ]
+    },
+    {
       "version": "4.12.5",
       "date": "13.10.2026",
       "changes": [

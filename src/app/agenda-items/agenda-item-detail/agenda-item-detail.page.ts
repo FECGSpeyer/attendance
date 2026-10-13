@@ -2,7 +2,7 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AlertController, NavController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
-import { AgendaItem, AgendaItemAttendance, AgendaItemPriority, AgendaItemStatus, Person, Task } from 'src/app/utilities/interfaces';
+import { AgendaItem, AgendaItemAttendance, AgendaItemPriority, AgendaItemStatus, Person, Task, TaskStatus } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 @Component({
@@ -59,6 +59,45 @@ export class AgendaItemDetailPage implements OnInit {
     } else {
       await this.loadItem();
     }
+  }
+
+  // Reload linked tasks when coming back from a task's detail page.
+  async ionViewWillEnter() {
+    if (this.item && !this.isNew) {
+      this.tasks = await this.db.getTasksForAgendaItem(this.itemId);
+    }
+  }
+
+  async createTask() {
+    const alert = await this.alertController.create({
+      header: 'Neue Aufgabe',
+      inputs: [{ name: 'title', type: 'text', placeholder: 'Titel der Aufgabe' }],
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Erstellen',
+          handler: async (data) => {
+            if (!data.title?.trim()) return;
+            try {
+              const task = await this.db.addTask({
+                title: data.title.trim(),
+                status: 'open' as TaskStatus,
+                priority: this.item.priority,
+                tenant_id: this.db.tenant().id,
+                agenda_item_id: this.itemId,
+              });
+              this.tasks = [...this.tasks, task];
+              // Open the task so responsible person and due date can be set.
+              this.navController.navigateForward(['/tabs/settings/tasks', task.id]);
+            } catch (error) {
+              console.error('Task create error:', error);
+              Utils.showToast('Aufgabe konnte nicht erstellt werden', 'danger');
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   async loadItem() {

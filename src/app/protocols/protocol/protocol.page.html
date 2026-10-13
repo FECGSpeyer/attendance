@@ -46,6 +46,7 @@
         <div class="editor-wrapper">
           <app-tiptap-editor
             [content]="getSectionContent(field.id)"
+            [sectionId]="field.id"
             [editable]="true"
             (contentChange)="onSectionChange(field.id, $event)">
           </app-tiptap-editor>
@@ -65,6 +66,7 @@
     <div class="editor-wrapper">
       <app-tiptap-editor
         [content]="getSectionContent('__general__')"
+        sectionId="__general__"
         [editable]="true"
         (contentChange)="onSectionChange('__general__', $event)">
       </app-tiptap-editor>
@@ -139,9 +141,14 @@
           <div slot="content" class="editor-wrapper agenda-editor">
             <app-tiptap-editor
               [content]="getSectionContent('__agenda__' + item.id)"
+              [sectionId]="'__agenda__' + item.id"
               [editable]="true"
               (contentChange)="onSectionChange('__agenda__' + item.id, $event)">
             </app-tiptap-editor>
+            <ion-button fill="clear" size="small" (click)="createTaskInline('__agenda__' + item.id, item)">
+              <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+              Aufgabe erstellen
+            </ion-button>
           </div>
         </ion-accordion>
       }
