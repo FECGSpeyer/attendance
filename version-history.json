@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.12.12",
+      "date": "13.10.2026",
+      "changes": [
+        "🐛 iPhone: Die Wisch-Animation der Tabbar ist vorerst abgeschaltet, damit Tipps auf die Tabs wieder zuverlässig ankommen."
+      ]
+    },
+    {
       "version": "4.12.11",
       "date": "13.10.2026",
       "changes": [
