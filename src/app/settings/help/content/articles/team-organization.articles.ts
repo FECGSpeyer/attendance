@@ -59,7 +59,7 @@ Jedes Thema wird ein eigener [[TOP]] an der Markierung „Tagesordnung“ (ohne 
     keywords: ['protokoll', 'mitschrift', 'notizen', 'thema erledigt', 'abschließen', 'live', 'sitzung', 'besprochen', 'beschlossen', 'vertagt', 'ergebnis', 'freigeben', 'veröffentlichen', 'tablet', 'laptop', 'pdf', 'allgemeine notizen'],
     body: `Das Protokoll schreiben [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]]. Öffne den Termin und tippe in der Protokoll-Karte auf **„Sitzung starten & protokollieren“**.
 
-**Aufbau:** Das Protokoll hat genau einen Abschnitt pro Punkt des Ablaufplans, in derselben Reihenfolge. Bei jedem [[TOP]] hältst du das Ergebnis fest: **Besprochen**, **Beschlossen** oder **Vertagt**. Vertagte Themen werden beim nächsten Termin desselben Typs wieder vorgeschlagen.
+**Aufbau:** Das Protokoll hat genau einen Abschnitt pro Punkt des Ablaufplans, in derselben Reihenfolge. Bei jedem [[TOP]] hältst du das Ergebnis fest: **Besprochen**, **Beschlossen** oder **Vertagt**. Vertagte Themen werden beim nächsten Termin desselben Typs wieder vorgeschlagen. Tippe in das umrandete Feld, um Notizen zu schreiben. Zum Formatieren (fett, Überschrift, Liste) markierst du Text, dann erscheint eine kleine Leiste.
 
 **Notizen:**
 - *Zum Punkt:* direkt im jeweiligen Abschnitt.

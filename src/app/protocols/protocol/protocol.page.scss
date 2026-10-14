@@ -192,9 +192,16 @@ ion-modal {
 .editor-box {
   margin: 4px 16px 8px;
   border-radius: 12px;
-  background: var(--ion-color-step-50, #f7f7f9);
-  border: 1px solid var(--protocol-line);
+  // Clearly marked writing field, so it is obvious where to tap.
+  background: var(--ion-background-color, #fff);
+  border: 1.5px solid var(--ion-color-step-250, #c8c8cc);
   min-height: 120px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus-within:not(.readonly) {
+    border-color: var(--protocol-accent);
+    box-shadow: 0 0 0 3px rgba(59, 125, 132, 0.15);
+  }
 
   &.readonly { background: transparent; border-color: transparent; min-height: 0; }
   &.general { margin: 8px 0 0; min-height: 160px; background: var(--protocol-card); }

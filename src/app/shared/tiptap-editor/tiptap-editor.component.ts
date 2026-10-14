@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostBinding,
   Input,
   NgZone,
   OnChanges,
@@ -22,6 +23,7 @@ import Underline from '@tiptap/extension-underline';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import BubbleMenu from '@tiptap/extension-bubble-menu';
+import { Placeholder } from '@tiptap/extensions';
 import { AgendaItemNode } from './extensions/agenda-item-node';
 import { TaskRefNode, taskRefText } from './extensions/task-ref-node';
 
@@ -49,6 +51,9 @@ import { TaskRefNode, taskRefText } from './extensions/task-ref-node';
     :host { display: block; position: relative; }
 
     .tiptap-bubble-menu {
+      /* Hidden until text is selected; the bubble menu plugin shows it. */
+      visibility: hidden;
+      opacity: 0;
       display: flex;
       align-items: center;
       gap: 2px;
@@ -87,6 +92,17 @@ import { TaskRefNode, taskRefText } from './extensions/task-ref-node';
       outline: none;
       font-family: inherit;
     }
+    :host(.editable) .tiptap-host :global(.ProseMirror) {
+      cursor: text;
+    }
+    /* Empty editor: show where to write. */
+    .tiptap-host :global(.ProseMirror p.is-editor-empty:first-child::before) {
+      content: attr(data-placeholder);
+      float: left;
+      height: 0;
+      pointer-events: none;
+      color: var(--ion-color-medium);
+    }
     .tiptap-host :global(.ProseMirror h1) { font-size: 1.4em; font-weight: 700; margin: 0.5em 0 0.2em; }
     .tiptap-host :global(.ProseMirror h2) { font-size: 1.2em; font-weight: 700; margin: 0.5em 0 0.2em; }
     .tiptap-host :global(.ProseMirror h3) { font-size: 1.05em; font-weight: 700; margin: 0.5em 0 0.2em; }
@@ -118,6 +134,9 @@ export class TiptapEditorComponent implements AfterViewInit, OnDestroy, OnChange
   @Input() editable = true;
   // Optional key so a host page with several editors can find the right one.
   @Input() sectionId?: string;
+  /** Hint shown while the editor is empty and editable. */
+  @Input() placeholder = 'Tippe hier, um Notizen zu schreiben …';
+  @HostBinding('class.editable') get isEditableHost() { return this.editable; }
   /** Live task statuses (id → status) for task references in the text. */
   @Input() taskStatuses: Record<string, string> | null = null;
   private dirty = false;
@@ -151,6 +170,9 @@ export class TiptapEditorComponent implements AfterViewInit, OnDestroy, OnChange
           }),
           AgendaItemNode,
           TaskRefNode,
+          Placeholder.configure({
+            placeholder: () => (this.editable ? this.placeholder : ''),
+          }),
         ],
         onBeforeCreate: ({ editor }) => {
           editor.storage['taskRef'].statuses = this.taskStatuses ?? {};
