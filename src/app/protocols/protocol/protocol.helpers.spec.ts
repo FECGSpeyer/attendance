@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import { AGENDA_ITEMS_PLACEHOLDER_ID, FieldSelection, PROTOCOL_GENERAL_SECTION_ID } from '../../utilities/interfaces';
 import { AttendanceStatus } from '../../utilities/constants';
 import {
+  topicClosureCandidates,
   docToLines,
   docToPlainText,
   groupByMonth,
@@ -206,5 +207,35 @@ describe('protocol list', () => {
     expect(matchesSearch('', ['x'])).toBe(true);
     expect(matchesSearch('leitung 21.10', ['Leitungsteam', '21.10.2026'])).toBe(true);
     expect(matchesSearch('leitung probe', ['Leitungsteam'])).toBe(false);
+  });
+});
+
+describe('topicClosureCandidates', () => {
+  const sections = [
+    { id: 'agenda-a', name: 'A', agendaItemId: 'a' },
+    { id: 'agenda-b', name: 'B', agendaItemId: 'b' },
+    { id: 'agenda-c', name: 'C', agendaItemId: 'c' },
+    { id: 'agenda-d', name: 'D', agendaItemId: 'd' },
+    { id: 'song-1', name: 'Lied', agendaItemId: null },
+  ];
+  const items = [
+    { id: 'a', status: 'open' as const },
+    { id: 'b', status: 'open' as const },
+    { id: 'c', status: 'open' as const },
+    { id: 'd', status: 'completed' as const },
+  ];
+
+  it('offers open decided and discussed topics, pre-selecting only decided ones', () => {
+    const result = topicClosureCandidates(sections, {
+      'agenda-a': 'decided', 'agenda-b': 'discussed', 'agenda-c': 'postponed', 'agenda-d': 'decided', 'song-1': 'decided',
+    }, items);
+    expect(result).toEqual([
+      { agendaItemId: 'a', title: 'A', outcome: 'decided', close: true },
+      { agendaItemId: 'b', title: 'B', outcome: 'discussed', close: false },
+    ]);
+  });
+
+  it('returns nothing without outcomes', () => {
+    expect(topicClosureCandidates(sections, undefined, items)).toEqual([]);
   });
 });

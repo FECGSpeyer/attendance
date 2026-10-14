@@ -56,7 +56,7 @@ Jedes Thema wird ein eigener [[TOP]] an der Markierung „Tagesordnung“ (ohne 
     id: 'team-protocol',
     title: 'Protokoll schreiben und freigeben',
     categoryId: 'team',
-    keywords: ['protokoll', 'mitschrift', 'notizen', 'live', 'sitzung', 'besprochen', 'beschlossen', 'vertagt', 'ergebnis', 'freigeben', 'veröffentlichen', 'tablet', 'laptop', 'pdf', 'allgemeine notizen'],
+    keywords: ['protokoll', 'mitschrift', 'notizen', 'thema erledigt', 'abschließen', 'live', 'sitzung', 'besprochen', 'beschlossen', 'vertagt', 'ergebnis', 'freigeben', 'veröffentlichen', 'tablet', 'laptop', 'pdf', 'allgemeine notizen'],
     body: `Das Protokoll schreiben [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]]. Öffne den Termin und tippe in der Protokoll-Karte auf **„Sitzung starten & protokollieren“**.
 
 **Aufbau:** Das Protokoll hat genau einen Abschnitt pro Punkt des Ablaufplans, in derselben Reihenfolge. Bei jedem [[TOP]] hältst du das Ergebnis fest: **Besprochen**, **Beschlossen** oder **Vertagt**. Vertagte Themen werden beim nächsten Termin desselben Typs wieder vorgeschlagen.
@@ -71,7 +71,7 @@ Jedes Thema wird ein eigener [[TOP]] an der Markierung „Tagesordnung“ (ohne 
 
 **Speichern:** Alles wird automatisch gespeichert, Abschnitt für Abschnitt. Mehrere Personen können gleichzeitig in verschiedenen Abschnitten schreiben.
 
-**Freigeben:** Tippe auf **„Freigeben“**. Danach können alle im [[Personenkreis]] des Termintyps das Protokoll lesen. Anwesende und Personen mit Aufgaben aus der Sitzung werden benachrichtigt und bekommen das Protokoll auf Wunsch zusätzlich als PDF. Du kannst ein freigegebenes Protokoll weiter bearbeiten; es zeigt dann „geändert am …“.
+**Freigeben:** Tippe auf **„Freigeben“**. Danach können alle im [[Personenkreis]] des Termintyps das Protokoll lesen. Anwesende und Personen mit Aufgaben aus der Sitzung werden benachrichtigt und bekommen das Protokoll auf Wunsch zusätzlich als PDF. Im Freigabe-Fenster siehst du außerdem alle offenen Themen, die **beschlossen** oder **besprochen** wurden: Beschlossene sind schon zum Abhaken als erledigt vorausgewählt, besprochene nicht. Passe die Häkchen an, bevor du freigibst. Du kannst ein freigegebenes Protokoll weiter bearbeiten; es zeigt dann „geändert am …“.
 
 Die Anwesenden kommen aus der Anwesenheit des Termins.`,
   },

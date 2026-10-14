@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import {
   AGENDA_ITEMS_PLACEHOLDER_ID,
+  AgendaItem,
   FieldSelection,
   PROTOCOL_GENERAL_SECTION_ID,
   Protocol,
@@ -384,4 +385,34 @@ export function matchesSearch(query: string, texts: (string | undefined | null)[
   if (!words.length) return true;
   const haystack = texts.filter(Boolean).join(' ').toLowerCase();
   return words.every(w => haystack.includes(w));
+}
+
+export interface TopicClosure {
+  agendaItemId: string;
+  title: string;
+  outcome: 'decided' | 'discussed';
+  /** Mark the topic as done when publishing. */
+  close: boolean;
+}
+
+/**
+ * Open topics that were decided or discussed in this protocol. When publishing,
+ * decided ones are pre-selected to be marked as done, discussed ones are not
+ * (they often continue).
+ */
+export function topicClosureCandidates(
+  sections: { id: string; name: string; agendaItemId?: string | null }[],
+  outcomes: Record<string, ProtocolOutcome> | null | undefined,
+  items: Pick<AgendaItem, 'id' | 'status'>[],
+): TopicClosure[] {
+  const open = new Set(items.filter(i => i.status === 'open').map(i => i.id));
+  const result: TopicClosure[] = [];
+  for (const s of sections) {
+    const outcome = outcomes?.[s.id];
+    if (!s.agendaItemId || !open.has(s.agendaItemId)) continue;
+    if (outcome !== 'decided' && outcome !== 'discussed') continue;
+    if (result.some(r => r.agendaItemId === s.agendaItemId)) continue;
+    result.push({ agendaItemId: s.agendaItemId, title: s.name, outcome, close: outcome === 'decided' });
+  }
+  return result;
 }

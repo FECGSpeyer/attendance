@@ -51,6 +51,8 @@ import {
   planStartDateTime,
   publishSummary,
   taskSections,
+  TopicClosure,
+  topicClosureCandidates,
 } from './protocol.helpers';
 import { createProtocolPdf, ProtocolPdfData } from './protocol-pdf';
 
@@ -151,6 +153,8 @@ export class ProtocolPage implements OnInit, OnDestroy {
   publishOpen = false;
   sendPdf = true;
   summary: PublishSummary | null = null;
+  /** Open topics decided/discussed here, offered to be marked as done on publish. */
+  topicClosures: TopicClosure[] = [];
   publishing = false;
 
   private taskSectionMap = new Map<string, string>();
@@ -787,6 +791,20 @@ export class ProtocolPage implements OnInit, OnDestroy {
       this.tasks,
       this.present.length,
     );
+    this.topicClosures = [];
+    const agendaIds = this.sections.map(s => s.field.agendaItemId).filter((id): id is string => !!id);
+    if (agendaIds.length) {
+      try {
+        const items = await this.db.getAgendaItemsByIds(agendaIds);
+        this.topicClosures = topicClosureCandidates(
+          this.sections.map(s => ({ id: s.id, name: s.name, agendaItemId: s.field.agendaItemId })),
+          this.outcomes,
+          items,
+        );
+      } catch (error) {
+        console.error('Agenda item load error:', error);
+      }
+    }
     this.publishOpen = true;
   }
 
@@ -804,6 +822,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
       const row = await this.db.publishProtocol(this.attendanceId);
       this.mergeServerRow(row);
       this.applyRow(row);
+      await this.closeTopics();
 
       let pdfUrl: string | undefined;
       let pdfPath: string | undefined;
@@ -833,6 +852,18 @@ export class ProtocolPage implements OnInit, OnDestroy {
     } finally {
       this.publishing = false;
       await loading.dismiss();
+    }
+  }
+
+  /** Marks the selected topics as done; a failure does not stop the publish. */
+  private async closeTopics() {
+    const selected = this.topicClosures.filter(t => t.close);
+    const results = await Promise.allSettled(
+      selected.map(t => this.db.updateAgendaItem(t.agendaItemId, { status: 'completed' })),
+    );
+    if (results.some(r => r.status === 'rejected')) {
+      console.error('Topic close error:', results);
+      Utils.showToast('Nicht alle Themen konnten als erledigt markiert werden', 'warning');
     }
   }
 

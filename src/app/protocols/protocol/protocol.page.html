@@ -587,6 +587,22 @@
           }
         </ion-list>
 
+        @if (topicClosures.length) {
+          <ion-list [inset]="true">
+            <ion-list-header><ion-label>Themen als erledigt markieren</ion-label></ion-list-header>
+            @for (t of topicClosures; track t.agendaItemId) {
+              <ion-item>
+                <ion-checkbox [(ngModel)]="t.close" justify="space-between">
+                  <ion-label class="ion-text-wrap">
+                    {{ t.title }}
+                    <p>{{ OUTCOME_LABELS[t.outcome] }}</p>
+                  </ion-label>
+                </ion-checkbox>
+              </ion-item>
+            }
+          </ion-list>
+        }
+
         <ion-list [inset]="true">
           <ion-list-header><ion-label>Sichtbarkeit</ion-label></ion-list-header>
           <ion-item>
