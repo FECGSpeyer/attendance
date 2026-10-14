@@ -1,6 +1,18 @@
 {
   "versions": [
     {
+      "version": "4.13.0",
+      "date": "14.10.2026",
+      "changes": [
+        "🗂️ Neu: Teamorganisation unter Mehr → Planung – Themen sammeln, Tagesordnung im Ablaufplan, Protokoll schreiben und Aufgaben verteilen.",
+        "📝 Protokoll-Editor mit Ergebnis pro Punkt (besprochen, beschlossen, vertagt), Live-Anzeige und automatischem Speichern; auf Tablet und Laptop mit verstellbaren Spalten.",
+        "📣 Protokoll freigeben: Anwesende und Personen mit Aufgaben werden benachrichtigt, auf Wunsch mit PDF; beschlossene Themen lassen sich dabei gleich abhaken.",
+        "✅ Aufgaben mit Fälligkeit, Priorität und Erinnerungen; Mitglieder sehen ihre eigenen Aufgaben und haken sie ab.",
+        "💡 Mitglieder können Themen vorschlagen, die Leitung übernimmt oder lehnt sie ab.",
+        "📦 Die alten Besprechungen wurden als Protokolle übernommen, der Bereich „Besprechungen“ entfällt."
+      ]
+    },
+    {
       "version": "4.12.15",
       "date": "14.10.2026",
       "changes": [

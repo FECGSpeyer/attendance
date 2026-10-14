@@ -24,7 +24,7 @@ Die Teamorganisation ist nur sichtbar, wenn sie bei mindestens einem Termintyp e
     keywords: ['aktivieren', 'einschalten', 'freischalten', 'protokoll aktivieren', 'tagesordnung aktivieren', 'termintyp', 'protokoll & tagesordnung', 'nicht sichtbar', 'fehlt'],
     body: `Die Teamorganisation wird pro Termintyp eingeschaltet. Das dürfen [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]].
 
-1. Öffne **Mehr → Termintypen** und tippe auf den Typ, für den du Protokolle schreiben willst, z. B. „Vorstandssitzung“. Lege dafür gern einen eigenen Termintyp an.
+1. Öffne **Mehr → Einstellungen → Anwesenheits-Typen** und tippe auf den Typ, für den du Protokolle schreiben willst, z. B. „Vorstandssitzung“. Lege dafür gern einen eigenen Termintyp an.
 2. Schalte **„Protokoll & Tagesordnung“** ein.
 3. Lege die **relevanten Gruppen** fest. Sie bestimmen den [[Personenkreis]]: Wer in diesen Gruppen ist, kann freigegebene Protokolle lesen und Themen vorschlagen. Ohne Gruppen gehören alle Mitglieder dazu.
 4. Optional: Stelle die **Standarddauer pro Thema** ein und ob **vertagte Themen** beim Einplanen oben vorgeschlagen werden.
@@ -39,7 +39,7 @@ Sobald ein Typ eingeschaltet ist, erscheint **Mehr → Planung → Teamorganisat
     keywords: ['thema', 'themen', 'themenspeicher', 'tagesordnung', 'top', 'tagesordnungspunkt', 'agenda', 'einladung', 'einplanen', 'aufnehmen', 'vertagt', 'dauer'],
     body: `**Themen sammeln:** Unter **Mehr → Planung → Teamorganisation → Themen** legt die Leitung mit **+** neue Themen an, mit Beschreibung, Priorität, verantwortlicher Person und Dauer. Das geht auch Wochen vor der Sitzung, ein Thema gehört erst zu einem Termin, wenn du es einplanst.
 
-**Themen in den Ablaufplan aufnehmen:** Es gibt drei Wege:
+**Themen in den Ablaufplan aufnehmen:** Es gibt vier Wege:
 
 - Öffne den Termin und tippe im Ablaufplan auf **„Themen aufnehmen“**. Wähle die Themen aus und passe bei Bedarf die Dauer an. Vertagte Themen stehen oben.
 - Öffne ein Thema und tippe auf **„Einplanen“**, um es in einen der nächsten Termine zu übernehmen.
@@ -125,6 +125,6 @@ Entwürfe sind nur für die Leitung sichtbar, erst nach der Freigabe sieht der P
     keywords: ['besprechungen', 'meetings', 'alte besprechungen', 'migration', 'wo sind', 'protokolle früher', 'besprechung termin', 'termintyp besprechung'],
     body: `Früher gab es in den Einstellungen den Bereich „Besprechungen“ mit freien Notizen. Neue Sitzungen protokollierst du jetzt mit der Teamorganisation: Das Protokoll hängt am Termin und übernimmt die Tagesordnung aus dem Ablaufplan.
 
-Bereits übernommene Besprechungen findest du als Protokolle unter **Mehr → Planung → Teamorganisation → Protokolle**, ihre Notizen stehen dort unter „Allgemeine Notizen“. Jede übernommene Besprechung hängt an einem eigenen Termin vom Typ **„Besprechung“** am selben Tag. Diesen Typ haben wir in Instanzen ohne Protokoll-Typ angelegt; relevant ist dort nur die Hauptgruppe, und der Ablaufplan enthält schon den Platzhalter für die Tagesordnung. Unter **Einstellungen → Allgemein → Termin-Typen** kannst du ihn anpassen. Den alten Bereich „Besprechungen“ gibt es nicht mehr.`,
+Bereits übernommene Besprechungen findest du als Protokolle unter **Mehr → Planung → Teamorganisation → Protokolle**, ihre Notizen stehen dort unter „Allgemeine Notizen“. Jede übernommene Besprechung hängt an einem eigenen Termin vom Typ **„Besprechung“** am selben Tag. Diesen Typ haben wir in Instanzen ohne Protokoll-Typ angelegt; relevant ist dort nur die Hauptgruppe, und der Ablaufplan enthält schon den Platzhalter für die Tagesordnung. Unter **Mehr → Einstellungen → Anwesenheits-Typen** kannst du ihn anpassen. Den alten Bereich „Besprechungen“ gibt es nicht mehr.`,
   },
 ];
