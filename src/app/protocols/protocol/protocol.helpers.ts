@@ -422,15 +422,16 @@ export function topicClosureCandidates(
 export interface ColumnWidths { left: number; right: number; }
 
 export const DEFAULT_COLUMN_WIDTHS: ColumnWidths = { left: 280, right: 280 };
-export const MIN_SIDE_WIDTH = 200;
-export const MAX_SIDE_WIDTH = 560;
-export const MIN_MAIN_WIDTH = 320;
+export const MIN_SIDE_WIDTH = 160;
+/** Upper bound for stored values; the real limit is the free space on screen. */
+export const MAX_SIDE_WIDTH = 2000;
+export const MIN_MAIN_WIDTH = 280;
 /** Width of each drag handle between two columns. */
 export const RESIZER_WIDTH = 8;
 
 /**
- * Clamps one side column so it stays between MIN/MAX_SIDE_WIDTH and leaves the
- * middle column at least MIN_MAIN_WIDTH, given the other side's width.
+ * Clamps one side column to at least MIN_SIDE_WIDTH while leaving the middle
+ * column at least MIN_MAIN_WIDTH, given the other side's width.
  */
 export function clampSideWidth(width: number, otherSide: number, containerWidth: number): number {
   const room = containerWidth > 0

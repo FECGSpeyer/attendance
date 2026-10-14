@@ -280,8 +280,7 @@
 
     <div class="resizer" [class.active]="resizing === 'left'" role="separator" aria-orientation="vertical"
       aria-label="Breite der Tagesordnung anpassen" tabindex="0" [attr.aria-valuenow]="columnWidths.left" title="Ziehen, um die Breite anzupassen (Doppelklick setzt zurück)"
-      (pointerdown)="startResize('left', $event)" (pointermove)="onResize($event)"
-      (pointerup)="endResize($event)" (pointercancel)="endResize($event)"
+      (pointerdown)="startResize('left', $event)"
       (dblclick)="resetWidth('left')" (keydown)="resizeByKey('left', $event)"></div>
 
     <main class="col main" aria-label="Notizen zum Punkt">
@@ -341,8 +340,7 @@
 
     <div class="resizer" [class.active]="resizing === 'right'" role="separator" aria-orientation="vertical"
       aria-label="Breite der allgemeinen Notizen anpassen" tabindex="0" [attr.aria-valuenow]="columnWidths.right" title="Ziehen, um die Breite anzupassen (Doppelklick setzt zurück)"
-      (pointerdown)="startResize('right', $event)" (pointermove)="onResize($event)"
-      (pointerup)="endResize($event)" (pointercancel)="endResize($event)"
+      (pointerdown)="startResize('right', $event)"
       (dblclick)="resetWidth('right')" (keydown)="resizeByKey('right', $event)"></div>
 
     <aside class="col right" aria-label="Allgemeine Notizen">

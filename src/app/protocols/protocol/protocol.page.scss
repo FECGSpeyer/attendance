@@ -289,6 +289,9 @@ ion-modal {
   cursor: col-resize;
   touch-action: none;
   outline: none;
+  z-index: 1;
+  // wider grab area than the visible line
+  &::before { content: ''; position: absolute; top: 0; bottom: 0; left: -6px; right: -6px; }
   &::after {
     content: '';
     position: absolute;

@@ -1,6 +1,7 @@
 import {
   Component,
   HostListener,
+  NgZone,
   OnDestroy,
   OnInit,
   QueryList,
@@ -152,7 +153,6 @@ export class ProtocolPage implements OnInit, OnDestroy {
   /** Side column widths of the wide layout, adjustable via the drag handles. */
   columnWidths: ColumnWidths = { ...DEFAULT_COLUMN_WIDTHS };
   resizing: 'left' | 'right' | null = null;
-  private resizeStart = { x: 0, width: 0, container: 0 };
 
   savingCount = 0;
   lastSavedAt: Date | null = null;
@@ -180,6 +180,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private alertController: AlertController,
     private modalController: ModalController,
+    private zone: NgZone,
   ) {}
 
   // ── Lifecycle ────────────────────────────────────────────
@@ -495,31 +496,48 @@ export class ProtocolPage implements OnInit, OnDestroy {
     return `${this.columnWidths.left}px 8px minmax(0, 1fr) 8px ${this.columnWidths.right}px`;
   }
 
+  /**
+   * Dragging runs outside Angular and writes the grid template directly, so the
+   * columns follow the pointer on every frame; state is synced on release.
+   */
   startResize(side: 'left' | 'right', event: PointerEvent) {
     if (event.button !== 0) return;
     event.preventDefault();
     const handle = event.currentTarget as HTMLElement;
-    handle.setPointerCapture?.(event.pointerId);
+    const grid = handle.parentElement;
+    if (!grid) return;
     this.resizing = side;
-    this.resizeStart = {
-      x: event.clientX,
-      width: this.columnWidths[side],
-      container: handle.parentElement?.clientWidth ?? 0,
+    const startX = event.clientX;
+    const startWidth = this.columnWidths[side];
+    let frame = 0;
+    let lastX = startX;
+
+    const apply = () => {
+      frame = 0;
+      const delta = lastX - startX;
+      this.setWidth(side, startWidth + (side === 'left' ? delta : -delta), grid.clientWidth);
+      grid.style.gridTemplateColumns = this.gridColumns;
     };
-  }
-
-  onResize(event: PointerEvent) {
-    const side = this.resizing;
-    if (!side) return;
-    const delta = event.clientX - this.resizeStart.x;
-    this.setWidth(side, this.resizeStart.width + (side === 'left' ? delta : -delta), this.resizeStart.container);
-  }
-
-  endResize(event: PointerEvent) {
-    if (!this.resizing) return;
-    (event.currentTarget as HTMLElement).releasePointerCapture?.(event.pointerId);
-    this.resizing = null;
-    this.storeWidths();
+    const move = (e: PointerEvent) => {
+      lastX = e.clientX;
+      if (!frame) frame = requestAnimationFrame(apply);
+    };
+    const stop = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', stop);
+      window.removeEventListener('pointercancel', stop);
+      if (frame) cancelAnimationFrame(frame);
+      apply();
+      this.zone.run(() => {
+        this.resizing = null;
+        this.storeWidths();
+      });
+    };
+    this.zone.runOutsideAngular(() => {
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', stop);
+      window.addEventListener('pointercancel', stop);
+    });
   }
 
   /** Arrow keys move the focused handle; Home/double-click resets. */

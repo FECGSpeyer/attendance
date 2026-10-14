@@ -245,12 +245,12 @@ describe('topicClosureCandidates', () => {
 
 describe('column widths', () => {
   it('keeps side columns within bounds and leaves room for the middle', () => {
-    expect(clampSideWidth(100, 280, 1400)).toBe(200);
-    expect(clampSideWidth(900, 280, 1400)).toBe(560);
-    // 1000 - 280 - 320 - 16 = 384
-    expect(clampSideWidth(500, 280, 1000)).toBe(384);
+    expect(clampSideWidth(100, 280, 1400)).toBe(160);
+    // 1400 - 280 - 280 - 16 = 824
+    expect(clampSideWidth(900, 280, 1400)).toBe(824);
+    expect(clampSideWidth(600, 280, 1400)).toBe(600);
     // never below the minimum, even on a tight screen
-    expect(clampSideWidth(300, 400, 900)).toBe(200);
+    expect(clampSideWidth(300, 600, 900)).toBe(160);
   });
 
   it('parses stored widths with fallbacks', () => {
