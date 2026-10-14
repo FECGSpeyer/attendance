@@ -33,23 +33,12 @@
             </ion-item>
 
             @for (field of plan.fields; track field.id; let i = $index) {
-            @if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID) {
-              @for (item of agendaItems; track item.id; let n = $index) {
-              <ion-item>
-                <ion-label>
-                  <h2>TOP {{ n + 1 }}: {{ item.title }}</h2>
-                  @if (item.responsible_person) {
-                  <p>{{ item.responsible_person.firstName }} {{ item.responsible_person.lastName }}</p>
-                  }
-                </ion-label>
-              </ion-item>
-              }
-            } @else {
+            @if (field.id !== AGENDA_ITEMS_PLACEHOLDER_ID) {
             <ion-item
               [class.active-slot]="liveMode && i === activeFieldIndex"
               [class.done-slot]="liveMode && i < activeFieldIndex">
                 <ion-label>
-                    <h2>{{ field.name }}</h2>
+                    <h2>{{ fieldName(field) }}</h2>
                     @if (isInstrumentMissing(field)) {
                     <p class="ion-text-wrap" style="color: var(--ion-color-danger);">Keine Noten für dein Instrument</p>
                     }

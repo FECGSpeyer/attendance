@@ -585,12 +585,64 @@
     </ion-item-group>
     }
 
-    <!-- Protocol Section -->
+    <!-- Protocol card (Protokoll & Tagesordnung) -->
     @if (type?.enable_protocol) {
     <ion-item-group>
-      <ion-item (click)="openProtocol()" detail button>
-        <ion-label>Protokoll</ion-label>
+      <ion-item lines="none" class="protocol-card">
+        <ion-icon name="document-text-outline" slot="start" color="primary"></ion-icon>
+        <ion-label class="ion-text-wrap">
+          <h2>Protokoll</h2>
+          @if (!protocol) {
+          <p>Noch nicht begonnen</p>
+          } @else if (protocol.status === 'published') {
+          <p>
+            Freigegeben am {{ protocol.published_at | date:'dd.MM.yyyy' }}
+            @if (protocolEditedAfterPublish) {
+            · geändert am {{ protocol.updated_at | date:'dd.MM.yyyy' }}
+            }
+          </p>
+          } @else {
+          <p>Entwurf · zuletzt bearbeitet {{ (protocol.updated_at || protocol.created_at) | date:'dd.MM.yyyy, HH:mm' }} Uhr</p>
+          }
+        </ion-label>
+        @if (protocol) {
+        <ion-badge slot="end" [color]="protocol.status === 'published' ? 'success' : 'medium'">
+          {{ protocol.status === 'published' ? 'Freigegeben' : 'Entwurf' }}
+        </ion-badge>
+        }
       </ion-item>
+      @if (isTeamLeader) {
+      <ion-item button detail="false" (click)="openProtocol()">
+        <ion-icon [name]="protocol ? 'create-outline' : 'play-circle-outline'" slot="start" color="primary"></ion-icon>
+        <ion-label color="primary">{{ protocol ? 'Protokoll öffnen' : 'Sitzung starten & protokollieren' }}</ion-label>
+      </ion-item>
+      } @else if (protocol?.status === 'published') {
+      <ion-item button detail="false" (click)="openProtocol()">
+        <ion-icon name="reader-outline" slot="start" color="primary"></ion-icon>
+        <ion-label color="primary">Protokoll lesen</ion-label>
+      </ion-item>
+      }
+      @if (attendanceTasks.length) {
+      <ion-item-divider>
+        <ion-label>Aufgaben aus diesem Termin</ion-label>
+      </ion-item-divider>
+      @for (task of attendanceTasks; track task.id) {
+      <ion-item button (click)="openTask(task)">
+        <ion-icon slot="start" [name]="task.status === 'completed' ? 'checkmark-circle' : 'ellipse-outline'"
+          [color]="task.status === 'completed' ? 'success' : 'medium'"></ion-icon>
+        <ion-label class="ion-text-wrap">
+          <h3 [class.text-strikethrough]="task.status === 'completed'">{{ task.title }}</h3>
+          <p>
+            {{ task.responsible_person ? task.responsible_person.firstName + ' ' + task.responsible_person.lastName : 'Niemand zugewiesen' }}
+            @if (task.due_date && task.status !== 'completed') {
+            · fällig {{ task.due_date | date:'dd.MM.' }}
+            }
+          </p>
+        </ion-label>
+        <ion-note slot="end">{{ taskStatusLabel(task) }}</ion-note>
+      </ion-item>
+      }
+      }
     </ion-item-group>
     }
 
@@ -598,7 +650,7 @@
       <ion-accordion-group>
         <ion-accordion value="plan">
           <ion-item slot="header">
-            <ion-label>Ablaufplan</ion-label>
+            <ion-label>{{ type?.enable_protocol ? 'Ablaufplan & Tagesordnung' : 'Ablaufplan' }}</ion-label>
           </ion-item>
           @if (attendance.plan) {
           <div slot="content">
@@ -607,32 +659,17 @@
               <ion-badge slot="end">{{ attendance.plan.time }} Uhr</ion-badge>
             </ion-item>
             @for (field of attendance.plan.fields; track field; let i = $index) {
-            @if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID) {
-            @if (planAgendaItems.length === 0) {
-            <ion-item color="light">
-              <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
-              <ion-label color="secondary">
-                <h2>Tagesordnungspunkte</h2>
-                <h3>Noch keine Punkte zugeordnet (im Protokoll hinzufügen)</h3>
-              </ion-label>
-            </ion-item>
-            }
-            @for (item of planAgendaItems; track item.id; let n = $index) {
-            <ion-item>
-              <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
-              <ion-label>
-                <h2>TOP {{ n + 1 }}: {{ item.title }}</h2>
-                @if (item.responsible_person) {
-                <h3>{{ item.responsible_person.firstName }} {{ item.responsible_person.lastName }}</h3>
-                }
-              </ion-label>
-            </ion-item>
-            }
-            } @else {
+            @if (field.id !== AGENDA_ITEMS_PLACEHOLDER_ID) {
             <ion-item [class.active-slot]="planLiveMode && i === planActiveFieldIndex"
-                      [class.done-slot]="planLiveMode && i < planActiveFieldIndex">
-              <ion-label>
-                <h2>{{ field.name }}</h2>
+                      [class.done-slot]="planLiveMode && i < planActiveFieldIndex"
+                      [button]="!!field.agendaItemId && isTeamLeader"
+                      [detail]="false"
+                      (click)="openPlanField(field)">
+              @if (field.agendaItemId) {
+              <ion-icon name="list-circle-outline" slot="start" color="primary"></ion-icon>
+              }
+              <ion-label class="ion-text-wrap">
+                <h2>{{ fieldName(field) }}</h2>
                 @if (field.songId && !isGeneral) {
                 <h3 class="danger">{{ getMissingGroups(field.songId) }}</h3>
                 }
@@ -650,6 +687,12 @@
               <ion-label>Ende</ion-label>
               <ion-badge slot="end">{{ attendance.plan.end | date:'HH:mm' }} Uhr</ion-badge>
             </ion-item>
+            @if (type?.enable_protocol && isTeamLeader) {
+            <ion-item button (click)="openAgendaPicker()" detail="false">
+              <ion-icon name="add-circle-outline" slot="start" color="primary"></ion-icon>
+              <ion-label color="primary">Themen aufnehmen</ion-label>
+            </ion-item>
+            }
             <ion-item button (click)="editPlan()" detail="false">
               <ion-label color="primary">Ablaufplan bearbeiten</ion-label>
             </ion-item>
@@ -661,6 +704,12 @@
           }
           @if (!attendance.plan) {
           <div slot="content">
+            @if (type?.enable_protocol && isTeamLeader) {
+            <ion-item button (click)="openAgendaPicker()" detail="false">
+              <ion-icon name="add-circle-outline" slot="start" color="primary"></ion-icon>
+              <ion-label color="primary">Themen aufnehmen</ion-label>
+            </ion-item>
+            }
             <ion-item button (click)="editPlan()" detail="false">
               <ion-label color="primary">Ablaufplan erstellen</ion-label>
             </ion-item>

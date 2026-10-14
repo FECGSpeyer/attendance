@@ -1,0 +1,99 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()" aria-label="Schließen">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Themen aufnehmen</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar [(ngModel)]="search" placeholder="Thema suchen oder neu anlegen" [debounce]="0"></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  @if (loading) {
+    <div class="ion-text-center ion-padding">
+      <ion-spinner></ion-spinner>
+    </div>
+  } @else {
+    @if (canCreateFromSearch) {
+      <ion-list [inset]="true">
+        <ion-item button detail="false" (click)="createFromSearch()" lines="none">
+          <ion-icon name="add-circle-outline" slot="start" color="primary"></ion-icon>
+          <ion-label color="primary" class="ion-text-wrap">„{{ search.trim() }}“ als neues Thema anlegen</ion-label>
+        </ion-item>
+      </ion-list>
+    }
+
+    @if (visiblePostponed.length) {
+      <ion-list [inset]="true">
+        <ion-list-header>
+          <ion-label>Vertagt aus letzter Sitzung</ion-label>
+        </ion-list-header>
+        @for (row of visiblePostponed; track row.item.id; let last = $last) {
+          <ng-container *ngTemplateOutlet="rowTpl; context: { $implicit: row, last }"></ng-container>
+        }
+      </ion-list>
+    }
+
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-label>Themenspeicher</ion-label>
+      </ion-list-header>
+      @for (row of visibleOthers; track row.item.id; let last = $last) {
+        <ng-container *ngTemplateOutlet="rowTpl; context: { $implicit: row, last }"></ng-container>
+      } @empty {
+        <ion-item lines="none">
+          <ion-label color="medium" class="ion-text-wrap">
+            {{ search.trim() ? 'Kein passendes Thema gefunden.' : 'Keine offenen Themen. Lege oben ein neues an.' }}
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  }
+
+  <ng-template #rowTpl let-row let-last="last">
+    <ion-item [lines]="last ? 'none' : 'full'" button detail="false" [disabled]="row.inPlan" (click)="toggle(row)">
+      <ion-icon slot="start" [name]="row.selected ? 'checkmark-circle' : 'ellipse-outline'" [color]="row.selected ? 'primary' : 'medium'"
+        role="checkbox" [attr.aria-checked]="row.selected"></ion-icon>
+      <ion-label class="ion-text-wrap">
+        <h2>{{ row.item.title }}</h2>
+        <p>
+          @if (row.postponedOn !== undefined) {
+            <ion-badge color="warning" class="postponed-badge">Vertagt{{ row.postponedOn ? ' ' + (row.postponedOn | date:'dd.MM.') : '' }}</ion-badge>
+          }
+          {{ subtitle(row) }}
+        </p>
+      </ion-label>
+      @if (row.selected && !row.inPlan) {
+        <div slot="end" class="stepper" (click)="$event.stopPropagation()">
+          <ion-button fill="clear" size="small" (click)="changeDuration(row, -5, $event)" aria-label="Kürzer">−</ion-button>
+          <span>{{ row.duration }} min</span>
+          <ion-button fill="clear" size="small" (click)="changeDuration(row, 5, $event)" aria-label="Länger">+</ion-button>
+        </div>
+      } @else {
+        <ion-note slot="end">{{ row.duration }} min</ion-note>
+      }
+    </ion-item>
+  </ng-template>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <div class="footer-content">
+      <p class="insert-hint">{{ insertHint }}</p>
+      <ion-button expand="block" [disabled]="!newSelections.length || saving" (click)="confirm()">
+        @if (saving) {
+          <ion-spinner name="crescent" slot="start"></ion-spinner>
+        }
+        @if (newSelections.length) {
+          {{ newSelections.length === 1 ? '1 Thema' : newSelections.length + ' Themen' }} aufnehmen · {{ totalMinutes }} min
+        } @else {
+          Themen auswählen
+        }
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

@@ -1,1 +1,242 @@
-<p class="ion-padding">TODO</p>
+@if (loading) {
+  <ion-list [inset]="true">
+    @for (i of [1, 2, 3]; track i) {
+      <ion-item>
+        <ion-label>
+          <h2><ion-skeleton-text [animated]="true" style="width: 70%"></ion-skeleton-text></h2>
+          <p><ion-skeleton-text [animated]="true" style="width: 40%"></ion-skeleton-text></p>
+        </ion-label>
+      </ion-item>
+    }
+  </ion-list>
+} @else if (isLeader) {
+  <!-- Neue Vorschläge -->
+  @if (pending.length) {
+    <ion-list [inset]="true" class="proposal-banner">
+      <ion-item lines="none" button detail="false" (click)="isReviewOpen = true">
+        <ion-icon name="bulb-outline" slot="start" color="warning"></ion-icon>
+        <ion-label>
+          <h2>{{ pending.length === 1 ? '1 neuer Vorschlag' : pending.length + ' neue Vorschläge' }}</h2>
+          <p>Von Mitgliedern eingereicht</p>
+        </ion-label>
+        <ion-button slot="end" size="small" (click)="isReviewOpen = true; $event.stopPropagation()">Prüfen</ion-button>
+      </ion-item>
+    </ion-list>
+  }
+
+  <!-- Nächster Termin -->
+  @if (nextAttendance) {
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-label>Nächster Termin</ion-label>
+      </ion-list-header>
+      <ion-item button detail="true" (click)="openNextAttendance()">
+        <ion-icon name="calendar-outline" slot="start" color="primary"></ion-icon>
+        <ion-label>
+          <h2>{{ nextTitle }}</h2>
+        </ion-label>
+        @if (nextTopMinutes) {
+          <ion-note slot="end">{{ nextTopMinutes }} min</ion-note>
+        }
+      </ion-item>
+      @for (top of nextTops; track top.id) {
+        <ion-item button detail="false" (click)="openTopic(top.agendaItemId)">
+          <ion-label class="ion-text-wrap">
+            <h3>TOP {{ topNumber(top) }} · {{ top.name }}</h3>
+            @if (top.conductor) {
+              <p>{{ top.conductor }}</p>
+            }
+          </ion-label>
+          <ion-note slot="end">{{ top.time }} min</ion-note>
+        </ion-item>
+      } @empty {
+        <ion-item>
+          <ion-label color="medium" class="ion-text-wrap">Noch keine Themen auf der Tagesordnung.</ion-label>
+        </ion-item>
+      }
+      <ion-item button detail="false" lines="none" (click)="openPicker()">
+        <ion-icon name="add-circle-outline" slot="start" color="primary"></ion-icon>
+        <ion-label color="primary">Themen aufnehmen</ion-label>
+      </ion-item>
+    </ion-list>
+  }
+
+  <!-- Themenspeicher -->
+  <ion-list [inset]="true">
+    <ion-list-header>
+      <ion-label>Themenspeicher</ion-label>
+      <ion-note class="header-note">{{ openTopics.length }} offen</ion-note>
+    </ion-list-header>
+    @for (item of openTopics; track item.id) {
+      <ion-item button detail="false" (click)="openTopic(item.id)">
+        <ion-label class="ion-text-wrap">
+          <h2>{{ item.title }}</h2>
+          <p>
+            @if (postponed.has(item.id)) {
+              <ion-badge color="warning" class="inline-badge">vertagt</ion-badge>
+            }
+            @if (isInNextPlan(item)) {
+              <ion-badge color="primary" class="inline-badge">eingeplant</ion-badge>
+            }
+            {{ topicSubtitle(item) }}
+          </p>
+        </ion-label>
+        <ion-badge slot="end" [color]="priorityColors[item.priority]">{{ priorityLabels[item.priority] }}</ion-badge>
+      </ion-item>
+    } @empty {
+      <ion-item lines="none">
+        <ion-label color="medium" class="ion-text-wrap">Keine offenen Themen. Lege mit + ein neues an.</ion-label>
+      </ion-item>
+    }
+  </ion-list>
+
+  @if (doneTopics.length) {
+    <ion-list [inset]="true">
+      <ion-item [lines]="showDone ? 'full' : 'none'">
+        <ion-toggle [(ngModel)]="showDone">Erledigte anzeigen ({{ doneTopics.length }})</ion-toggle>
+      </ion-item>
+      @if (showDone) {
+        @for (item of doneTopics; track item.id; let last = $last) {
+          <ion-item button detail="false" [lines]="last ? 'none' : 'full'" (click)="openTopic(item.id)" class="is-done">
+            <ion-label class="ion-text-wrap">
+              <h2>{{ item.title }}</h2>
+              <p>{{ item.status === 'dropped' ? 'Verworfen' : 'Erledigt' }}{{ item.responsible_person ? ' · ' + personName(item.responsible_person) : '' }}</p>
+            </ion-label>
+          </ion-item>
+        }
+      }
+    </ion-list>
+  }
+
+  <div class="topic-fab-spacer"></div>
+  <ion-fab class="topic-fab" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="addTopic()" aria-label="Thema anlegen">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <!-- Sheet: Vorschläge prüfen -->
+  <ion-modal [isOpen]="isReviewOpen" (didDismiss)="isReviewOpen = false" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="isReviewOpen = false" aria-label="Schließen">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title>Vorschläge</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content color="light">
+        <p class="sheet-hint">Übernommene Vorschläge landen im Themenspeicher. Wer vorgeschlagen hat, wird über deine Entscheidung informiert.</p>
+        @for (item of pending; track item.id) {
+          <ion-list [inset]="true">
+            <ion-item lines="none">
+              <ion-avatar slot="start" class="initials">{{ initials(item.proposer) || '?' }}</ion-avatar>
+              <ion-label>
+                <h3>{{ personName(item.proposer) || 'Mitglied' }}</h3>
+                <p>{{ relativeDay(item.created_at) }}</p>
+              </ion-label>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-label class="ion-text-wrap">
+                <h2 class="proposal-title">{{ item.title }}</h2>
+                @if (item.description) {
+                  <p class="proposal-description">{{ item.description }}</p>
+                }
+              </ion-label>
+            </ion-item>
+            <div class="proposal-actions">
+              <ion-button fill="outline" color="medium" [disabled]="isDeciding(item)" (click)="reject(item)">Ablehnen</ion-button>
+              <ion-button [disabled]="isDeciding(item)" (click)="accept(item)">Übernehmen</ion-button>
+            </div>
+          </ion-list>
+        } @empty {
+          <p class="sheet-hint">Alle Vorschläge sind entschieden.</p>
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+} @else if (inCircle) {
+  <!-- Mitglieder: Thema vorschlagen + Meine Vorschläge -->
+  <ion-list [inset]="true">
+    <ion-item lines="none">
+      <ion-label class="ion-text-wrap">
+        <h2>Thema vorschlagen</h2>
+        <p>Du hast ein Anliegen für die nächste Sitzung? Die Leitung entscheidet, ob es auf die Tagesordnung kommt.</p>
+      </ion-label>
+    </ion-item>
+    <div class="ion-padding-horizontal ion-padding-bottom">
+      <ion-button expand="block" (click)="openSuggest()">
+        <ion-icon name="bulb-outline" slot="start"></ion-icon>
+        Thema vorschlagen
+      </ion-button>
+    </div>
+  </ion-list>
+
+  <ion-list [inset]="true">
+    <ion-list-header>
+      <ion-label>Meine Vorschläge</ion-label>
+    </ion-list-header>
+    @for (item of items; track item.id) {
+      <ion-item>
+        <ion-label class="ion-text-wrap">
+          <h2>{{ item.title }}</h2>
+          <p>
+            @if (item.proposal_status === 'accepted') {
+              Von der Leitung übernommen
+            } @else {
+              Eingereicht am {{ item.created_at | date:'dd.MM.yyyy' }}
+            }
+          </p>
+          @if (item.proposal_status === 'rejected' && item.decision_note) {
+            <p class="decision-note">„{{ item.decision_note }}“</p>
+          }
+        </ion-label>
+        <ion-badge slot="end" [color]="suggestionStatus(item).color">{{ suggestionStatus(item).label }}</ion-badge>
+      </ion-item>
+    } @empty {
+      <ion-item lines="none">
+        <ion-label color="medium" class="ion-text-wrap">Du hast noch nichts vorgeschlagen.</ion-label>
+      </ion-item>
+    }
+  </ion-list>
+
+  <!-- Sheet: Vorschlag schreiben -->
+  <ion-modal [isOpen]="isSuggestOpen" (didDismiss)="isSuggestOpen = false" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="isSuggestOpen = false">Abbrechen</ion-button>
+          </ion-buttons>
+          <ion-title>Thema vorschlagen</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content color="light">
+        <p class="sheet-hint">Du hast ein Anliegen für die nächste Sitzung? Die Leitung entscheidet, ob es auf die Tagesordnung kommt.</p>
+        <ion-list [inset]="true">
+          <ion-item>
+            <ion-input label="Titel" labelPlacement="stacked" [(ngModel)]="suggestTitle"
+              placeholder="z. B. Neue Notenpulte" autocapitalize="sentences"></ion-input>
+          </ion-item>
+          <ion-item lines="none">
+            <ion-textarea label="Beschreibung" labelPlacement="stacked" [(ngModel)]="suggestDescription"
+              placeholder="Worum geht es? (optional)" [autoGrow]="true" rows="4" autocapitalize="sentences"></ion-textarea>
+          </ion-item>
+        </ion-list>
+        <div class="ion-padding-horizontal">
+          <ion-button expand="block" [disabled]="!suggestTitle.trim() || sending" (click)="sendSuggestion()">
+            Vorschlag senden
+          </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+} @else {
+  <div class="topic-empty">
+    <ion-icon name="chatbubbles-outline"></ion-icon>
+    <p>Themen und Tagesordnungen plant die Leitung. Du gehörst zu keiner Gruppe mit Protokoll &amp; Tagesordnung.</p>
+  </div>
+}

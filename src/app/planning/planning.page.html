@@ -108,9 +108,15 @@
               <ion-label>Werk hinzufügen</ion-label>
             </ion-item>
           }
+          @if (canAddTopics) {
+            <ion-item (click)="addPopover.dismiss(); openAgendaPicker()">
+              <ion-icon name="list-circle-outline" slot="start" color="primary"></ion-icon>
+              <ion-label>Themen aufnehmen</ion-label>
+            </ion-item>
+          }
           @if (currentAttTypeHasProtocol && !hasAgendaPlaceholder) {
             <ion-item (click)="addAgendaItemsPlaceholder(addPopover)" lines="none">
-              <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
+              <ion-icon name="git-commit-outline" slot="start" color="medium"></ion-icon>
               <ion-label>Tagesordnung einfügen</ion-label>
             </ion-item>
           }
@@ -213,26 +219,20 @@
         @for (field of selectedFields; track trackByFieldId(i, field); let i = $index) {
           <ion-item-sliding #slider>
             @if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID) {
-              <ion-item>
-                <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
-                <ion-label>
-                  <h2>Tagesordnungspunkte</h2>
-                  <h3>{{ calculateTime(field, i) }}</h3>
-                  @if (attendance) {
-                    @for (item of agendaItems; track item.id; let n = $index) {
-                      <p>TOP {{ n + 1 }}: {{ item.title }}</p>
-                    } @empty {
-                      <p>Noch keine Punkte zugeordnet (im Protokoll hinzufügen)</p>
-                    }
-                  }
+              <ion-item class="agenda-marker" lines="full">
+                <ion-icon name="git-commit-outline" slot="start" color="medium"></ion-icon>
+                <ion-label color="medium">
+                  <p>Einfügeposition Tagesordnung</p>
                 </ion-label>
-                <ion-badge slot="end" color="secondary">dynamisch</ion-badge>
+                @if (canAddTopics) {
+                  <ion-button slot="end" fill="clear" size="small" (click)="openAgendaPicker()">Themen aufnehmen</ion-button>
+                }
                 <ion-reorder slot="end"></ion-reorder>
               </ion-item>
             } @else {
               <ion-item [class.note-item]="field.id.includes('noteFld')" [lines]="field.id.includes('noteFld') ? 'none' : 'full'">
                 <ion-label (click)="changeField(field)" [class.note-field]="field.id.includes('noteFld')">
-                  <h2>{{ field.name }}</h2>
+                  <h2>{{ fieldName(field) }}</h2>
                   @if (field.songId && !isGeneral) {
                     <h3 class="danger">{{ getMissingGroups(field.songId) }}</h3>
                   }

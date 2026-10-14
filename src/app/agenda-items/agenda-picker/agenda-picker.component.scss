@@ -1,0 +1,36 @@
+.stepper {
+  display: flex;
+  align-items: center;
+  background: var(--ion-color-light);
+  border-radius: 999px;
+
+  ion-button {
+    --padding-start: 10px;
+    --padding-end: 10px;
+    margin: 0;
+    font-size: 18px;
+  }
+
+  span {
+    min-width: 48px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+.postponed-badge {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.footer-content {
+  padding: 4px 16px 8px;
+}
+
+.insert-hint {
+  margin: 4px 0 8px;
+  font-size: 13px;
+  text-align: center;
+  color: var(--ion-color-medium);
+}

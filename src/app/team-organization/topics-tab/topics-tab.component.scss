@@ -1,0 +1,84 @@
+:host {
+  display: block;
+}
+
+.header-note {
+  margin-inline-end: 16px;
+  font-size: 0.85rem;
+}
+
+.inline-badge {
+  margin-inline-end: 4px;
+  vertical-align: middle;
+}
+
+ion-item.is-done h2 {
+  text-decoration: line-through;
+  color: var(--ion-color-medium);
+}
+
+.sheet-hint {
+  margin: 16px 20px 0;
+  font-size: 13px;
+  color: var(--ion-color-medium);
+}
+
+.initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--ion-color-primary-shade);
+}
+
+.proposal-title {
+  font-weight: 600;
+}
+
+.proposal-description {
+  white-space: pre-wrap;
+}
+
+.proposal-actions {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px 12px;
+
+  ion-button {
+    flex: 1;
+    margin: 0;
+  }
+}
+
+.decision-note {
+  font-style: italic;
+}
+
+.topic-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 32px 16px;
+  text-align: center;
+  color: var(--ion-color-medium);
+
+  > ion-icon {
+    font-size: 48px;
+  }
+}
+
+// The tab lives inside the page's ion-content, so the FAB cannot use slot="fixed".
+// .ion-page uses `contain: layout`, which makes position: fixed relative to the page.
+.topic-fab {
+  position: fixed;
+  right: calc(16px + var(--ion-safe-area-right, 0px));
+  bottom: calc(16px + var(--ion-safe-area-bottom, 0px));
+}
+
+.topic-fab-spacer {
+  height: 88px;
+}

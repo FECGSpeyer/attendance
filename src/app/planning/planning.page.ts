@@ -3,11 +3,13 @@ import { ActionSheetButton, ActionSheetController, AlertController, AlertInput, 
 import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
-import { AgendaItem, Attendance, FieldSelection, GroupCategory, History, Group, Person, Plan, Song, AttendanceType } from '../utilities/interfaces';
+import { Attendance, FieldSelection, GroupCategory, History, Group, Person, Plan, Song, AttendanceType } from '../utilities/interfaces';
 // jsPDF is lazy-loaded for better initial bundle size
 import { Utils } from '../utilities/Utils';
 import { DefaultAttendanceType } from 'src/app/utilities/constants';
 import { AGENDA_ITEMS_PLACEHOLDER_ID } from '../utilities/interfaces';
+import { fieldDisplayName, topNumbers } from '../team-organization/team-org.utils';
+import { AgendaPickerComponent } from '../agenda-items/agenda-picker/agenda-picker.component';
 
 @Component({
   selector: 'app-planning',
@@ -47,8 +49,41 @@ export class PlanningPage implements OnInit {
   public isSongSelectorOpen = false;
 
   readonly AGENDA_ITEMS_PLACEHOLDER_ID = AGENDA_ITEMS_PLACEHOLDER_ID;
-  // Agenda items linked to the selected Termin, filling the agenda placeholder.
-  public agendaItems: AgendaItem[] = [];
+
+  /** "TOP n · Titel" for agenda fields, plain name otherwise. */
+  fieldName(field: FieldSelection): string {
+    return fieldDisplayName(field, topNumbers(this.selectedFields));
+  }
+
+  get canAddTopics(): boolean {
+    return !!this.attendance && this.currentAttTypeHasProtocol && this.db.isTeamLeader();
+  }
+
+  /** Opens "Themen aufnehmen" for the selected Termin and takes over the saved plan. */
+  async openAgendaPicker() {
+    const att = this.attendances.find(a => a.id === this.attendance);
+    if (!att) return;
+    // Persist what's on screen first, so the picker inserts into the current plan.
+    if (this.validate(false)) {
+      await this.updateAttendance();
+    }
+    const type = this.db.attendanceTypes().find((t: AttendanceType) => t.id === att.type_id);
+    const modal = await this.modalController.create({
+      component: AgendaPickerComponent,
+      componentProps: {
+        attendance: { ...att, plan: this.selectedFields.length ? { time: this.time, end: this.end, fields: this.selectedFields, title: this.planTitle?.trim() || undefined } : att.plan },
+        type,
+      },
+    });
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss();
+    if (role === 'saved' && data?.plan) {
+      att.plan = data.plan;
+      this.time = data.plan.time;
+      this.end = data.plan.end;
+      this.selectedFields = data.plan.fields.map((f: FieldSelection) => ({ ...f }));
+    }
+  }
 
   get currentAttTypeHasProtocol(): boolean {
     const att = this.attendances.find(a => a.id === this.attendance);
@@ -93,7 +128,9 @@ export class PlanningPage implements OnInit {
         this.time = att.plan.time;
         this.selectedFields = att.plan.fields.map((field: FieldSelection) => ({
             ...field,
-            conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || '')
+            conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || ''),
+            // The agenda marker takes no time (older plans stored 30 min on it).
+            ...(field.id === AGENDA_ITEMS_PLACEHOLDER_ID ? { time: '0' } : {}),
           }));
       } else {
         const isPractice = att?.type === 'uebung';
@@ -110,7 +147,9 @@ export class PlanningPage implements OnInit {
         this.time = upcomingAttendances[0].plan.time;
         this.selectedFields = upcomingAttendances[0].plan.fields.map((field: FieldSelection) => ({
             ...field,
-            conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || '')
+            conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || ''),
+            // The agenda marker takes no time (older plans stored 30 min on it).
+            ...(field.id === AGENDA_ITEMS_PLACEHOLDER_ID ? { time: '0' } : {}),
           }));
       } else {
         const upcomingAtt = upcomingAttendances[0];
@@ -122,11 +161,6 @@ export class PlanningPage implements OnInit {
     if (this.history.length && this.selectedFields.length === 1) {
       this.onAttChange();
     }
-    void this.loadAgendaItems();
-  }
-
-  async loadAgendaItems() {
-    this.agendaItems = this.attendance ? await this.db.getAgendaItemsForAttendance(this.attendance) : [];
   }
 
   calculateTime(field: FieldSelection, index: number) {
@@ -224,7 +258,6 @@ export class PlanningPage implements OnInit {
       sideBySide,
       attendance: this.attendance,
       attendances: this.attendances,
-      agendaItems: this.attendance ? this.agendaItems : undefined,
       branding,
     }, planningTitle);
     this.db.sendPlanPerTelegram(blob, `${planningTitle.replace('(', '').replace(')', '')}_${name}${sideBySide ? '_2x' : ''}`, asImage);
@@ -238,7 +271,6 @@ export class PlanningPage implements OnInit {
   }
 
   onAttChange() {
-    void this.loadAgendaItems();
     const attendance: Attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
 
     if (!attendance) {return;}
@@ -252,7 +284,8 @@ export class PlanningPage implements OnInit {
       this.time = attendance.plan.time;
       this.selectedFields = attendance.plan.fields.map((field: FieldSelection) => ({
           ...field,
-          conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || '')
+          conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || ''),
+          ...(field.id === AGENDA_ITEMS_PLACEHOLDER_ID ? { time: '0' } : {}),
         }));
     } else if (this.history.length) {
       this.addDefaultFieldsFromAttendanceType(attendance.type_id);
@@ -374,7 +407,7 @@ export class PlanningPage implements OnInit {
     }
     this.selectedFields.push({
       id: AGENDA_ITEMS_PLACEHOLDER_ID,
-      name: '[Tagesordnungspunkte]',
+      name: 'Tagesordnung',
       time: '0',
     });
     this.calculateEnd();
@@ -457,7 +490,6 @@ export class PlanningPage implements OnInit {
       history: this.history,
       attendance: this.attendance,
       attendances: this.attendances,
-      agendaItems: this.attendance ? this.agendaItems : undefined,
       sideBySide,
       branding,
     }, planningTitle);
@@ -852,7 +884,7 @@ export class PlanningPage implements OnInit {
         continue;
       }
 
-      result.push({ ...field });
+      result.push(field.id === AGENDA_ITEMS_PLACEHOLDER_ID ? { ...field, time: '0' } : { ...field });
     }
 
     return result;

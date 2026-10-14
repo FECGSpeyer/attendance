@@ -13,7 +13,9 @@ import { ChurchOverviewComponent } from 'src/app/shared/church-overview/church-o
 import { AdHocReminderModalComponent, AdHocReminderResult } from './ad-hoc-reminder-modal/ad-hoc-reminder-modal.component';
 import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode, CHECKLIST_DEADLINE_OPTIONS, DEFAULT_ABSENCE_REASONS } from 'src/app/utilities/constants';
-import { AgendaItem, Attendance, ExtraField, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem, RegistrationField, AGENDA_ITEMS_PLACEHOLDER_ID } from 'src/app/utilities/interfaces';
+import { Attendance, ExtraField, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem, RegistrationField, AGENDA_ITEMS_PLACEHOLDER_ID, Protocol, Task } from 'src/app/utilities/interfaces';
+import { AgendaPickerComponent } from 'src/app/agenda-items/agenda-picker/agenda-picker.component';
+import { fieldDisplayName, isEditedAfterPublish, topNumbers } from 'src/app/team-organization/team-org.utils';
 import { Utils } from 'src/app/utilities/Utils';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
@@ -71,8 +73,10 @@ export class AttendancePage implements OnInit, OnDestroy {
   public isDeadlineReadonly = false;
   public type: AttendanceType;
   public hasProtocol = false;
-  // Agenda items linked to this Termin, shown in place of the plan's agenda placeholder.
-  public planAgendaItems: AgendaItem[] = [];
+  public protocol: Protocol | null = null;
+  // Tasks created in this Termin's protocol ("Aufgaben aus diesem Termin").
+  public attendanceTasks: Task[] = [];
+  private planNumbersCache?: { fields: FieldSelection[]; numbers: Map<string, number> };
   public attendanceViewMode: AttendanceViewMode = AttendanceViewMode.CLICK;
   public AttendanceViewMode = AttendanceViewMode;
   public showAvatars = false;
@@ -391,11 +395,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       this.selectedSongs = this.attendance.songs || [];
       this.type = await this.resolveAttendanceType();
       this.manageSongs = this.type?.manage_songs || false;
-      if (this.type?.enable_protocol) {
-        const protocol = await this.db.getProtocolForAttendance(this.attendance.id);
-        this.hasProtocol = !!protocol;
-      }
-      void this.loadPlanAgendaItems();
+      void this.loadTeamOrg();
       this.hasDeadline = !!this.attendance.deadline;
       if (this.hasDeadline) {
         const startHour = this.type?.start_time ? Number(this.type.start_time.substring(0, 2)) : 19;
@@ -955,28 +955,95 @@ export class AttendancePage implements OnInit, OnDestroy {
       attendance: this.attendance.id,
       attendances: await this.db.getAttendance(),
       sideBySide,
-      agendaItems: await this.getPlanAgendaItems(),
       branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
     }, Utils.getPlanningTitle(type, this.attendance.typeInfo));
   }
 
-  // Linked agenda items to expand the plan's agenda placeholder with, or
-  // undefined when the plan has no placeholder.
-  private async getPlanAgendaItems() {
-    if (!this.attendance.plan?.fields?.some((f: FieldSelection) => f.id === AGENDA_ITEMS_PLACEHOLDER_ID)) {
-      return undefined;
+  // ── Teamorganisation: TOPs, protocol card, tasks ─────────
+
+  get isTeamLeader(): boolean {
+    return this.db.isTeamLeader();
+  }
+
+  /** TOP numbers of the plan, recomputed only when the fields array changes. */
+  get planNumbers(): Map<string, number> {
+    const fields = this.attendance?.plan?.fields ?? [];
+    if (this.planNumbersCache?.fields !== fields) {
+      this.planNumbersCache = { fields, numbers: topNumbers(fields) };
     }
-    return this.db.getAgendaItemsForAttendance(this.attendance.id);
+    return this.planNumbersCache.numbers;
   }
 
-  async loadPlanAgendaItems() {
-    if (!this.attendance?.id) return;
-    this.planAgendaItems = (await this.getPlanAgendaItems()) ?? [];
+  fieldName(field: FieldSelection): string {
+    return fieldDisplayName(field, this.planNumbers);
   }
 
-  // Refresh after coming back from the protocol, where items get linked.
+  get protocolEditedAfterPublish(): boolean {
+    return isEditedAfterPublish(this.protocol);
+  }
+
+  async loadTeamOrg() {
+    if (!this.attendance?.id || !this.type?.enable_protocol) {
+      this.protocol = null;
+      this.hasProtocol = false;
+      this.attendanceTasks = [];
+      return;
+    }
+    try {
+      const [protocol, tasks] = await Promise.all([
+        this.db.getProtocolForAttendance(this.attendance.id),
+        this.db.getTasksForAttendance(this.attendance.id),
+      ]);
+      this.protocol = protocol;
+      this.hasProtocol = !!protocol;
+      this.attendanceTasks = tasks ?? [];
+    } catch (e) {
+      console.warn('[attendance] team-org data failed to load:', e);
+    }
+  }
+
+  // Refresh after coming back from the protocol or a task.
   ionViewWillEnter() {
-    void this.loadPlanAgendaItems();
+    void this.loadTeamOrg();
+  }
+
+  async openAgendaPicker() {
+    const modal = await this.modalController.create({
+      component: AgendaPickerComponent,
+      componentProps: { attendance: this.attendance, type: this.type },
+    });
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss();
+    if (role === 'saved' && data?.plan) {
+      this.attendance = { ...this.attendance, plan: data.plan };
+    }
+  }
+
+  // When opened as a modal (e.g. from the dashboard), a plain routerLink would
+  // navigate behind the modal, so close it first.
+  async navigateFromPage(commands: any[]): Promise<void> {
+    if (this.isModal) {
+      await this.modalController.dismiss();
+    }
+    await this.router.navigate(commands);
+  }
+
+  openPlanField(field: FieldSelection) {
+    if (field.agendaItemId && this.isTeamLeader) {
+      void this.navigateFromPage(['/tabs/settings/agenda-items', field.agendaItemId]);
+    }
+  }
+
+  openTask(task: Task) {
+    void this.navigateFromPage(['/tabs/settings/tasks', task.id]);
+  }
+
+  taskStatusLabel(task: Task): string {
+    switch (task.status) {
+      case 'completed': return 'Erledigt';
+      case 'in_progress': return 'In Arbeit';
+      default: return 'Offen';
+    }
   }
 
   async sharePlan() {
@@ -1024,7 +1091,6 @@ export class AttendancePage implements OnInit, OnDestroy {
       asBlob: true,
       asImage,
       sideBySide,
-      agendaItems: await this.getPlanAgendaItems(),
       branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
     }, planningTitle);
 
@@ -1041,8 +1107,6 @@ export class AttendancePage implements OnInit, OnDestroy {
     });
 
     await modal.present();
-    await modal.onDidDismiss();
-    void this.loadPlanAgendaItems();
   }
 
   async onInfoChanged() {

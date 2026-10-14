@@ -147,9 +147,35 @@
       </ion-item>
 
       <ion-item>
-        <ion-toggle helperText="Aktiviert Protokoll, Tagesordnungspunkte und Aufgaben für Termine dieses Typs."
-          [(ngModel)]="type.enable_protocol">Teamorganisation aktivieren</ion-toggle>
+        <ion-toggle
+          helperText="Termine dieses Typs bekommen eine Tagesordnung im Ablaufplan und ein Protokoll. Wer dazugehört, regeln die relevanten Gruppen."
+          [(ngModel)]="type.enable_protocol" (ionChange)="onProtocolToggle()">Protokoll &amp; Tagesordnung</ion-toggle>
       </ion-item>
+      @if (!isNew) {
+      <ion-item button detail="false" (click)="openTeamHelp()" lines="full">
+        <ion-icon name="help-circle-outline" slot="start" color="primary"></ion-icon>
+        <ion-label color="primary">Mehr erfahren</ion-label>
+      </ion-item>
+      }
+      @if (type.enable_protocol) {
+      <ion-item>
+        <ion-input type="number" min="1" label="Standarddauer pro Thema (Min.)" labelPlacement="start"
+          class="ion-text-end" [(ngModel)]="type.agenda_default_duration" placeholder="10"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-toggle helperText="Beim nächsten Termin dieses Typs stehen vertagte Themen beim Aufnehmen ganz oben."
+          [ngModel]="type.suggest_postponed !== false"
+          (ngModelChange)="type.suggest_postponed = $event">Vertagte Themen vorschlagen</ion-toggle>
+      </ion-item>
+      <ion-item lines="full">
+        <ion-label class="ion-text-wrap">
+          <p>Der Platzhalter „Tagesordnung“ im Standard-Ablaufplan legt fest, wo Themen eingefügt werden. Ohne Platzhalter landen sie am Ende.</p>
+        </ion-label>
+        @if (!hasAgendaMarker) {
+        <ion-button slot="end" fill="clear" size="small" (click)="addAgendaItemsPlaceholder()">Platzhalter einfügen</ion-button>
+        }
+      </ion-item>
+      }
       <ion-item>
         <ion-toggle
           helperText="Wenn aktiviert, kann bei Terminen dieses Typs ein Ort hinterlegt werden. Dieser wird dann als Navigationslink in Google Maps oder Apple Karten angezeigt."
@@ -424,7 +450,7 @@
           }
           @if (type.enable_protocol) {
           <ion-item (click)="addAgendaItemsPlaceholder(addFieldPopover)" lines="none">
-            <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
+            <ion-icon name="git-commit-outline" slot="start" color="medium"></ion-icon>
             <ion-label>Tagesordnung Platzhalter</ion-label>
           </ion-item>
           }
@@ -479,12 +505,11 @@
             <ion-item [class.note-item]="field.id.includes('noteFld')"
               [lines]="field.id.includes('noteFld') ? 'none' : 'full'">
               @if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID) {
-              <ion-icon name="list-circle-outline" slot="start" color="secondary"></ion-icon>
+              <ion-icon name="git-commit-outline" slot="start" color="medium"></ion-icon>
               <ion-label>
-                <h2>{{ field.name }}</h2>
-                <h3>Tagesordnungspunkte des Termins</h3>
+                <h2>Tagesordnung</h2>
+                <h3>Hier werden Themen eingefügt</h3>
               </ion-label>
-              <ion-badge slot="end" color="secondary">dynamisch</ion-badge>
               } @else {
               <ion-label (click)="changeField(field)" [class.note-field]="field.id.includes('noteFld')">
                 <h2>{{ field.name }}</h2>

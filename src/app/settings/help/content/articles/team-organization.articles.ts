@@ -43,6 +43,7 @@ Sobald ein Typ eingeschaltet ist, erscheint **Mehr → Team**, für die Leitung 
 
 - Öffne den Termin und tippe im Ablaufplan auf **„Themen aufnehmen“**. Wähle die Themen aus und passe bei Bedarf die Dauer an. Vertagte Themen stehen oben.
 - Öffne ein Thema und tippe auf **„Einplanen“**, um es in einen der nächsten Termine zu übernehmen.
+- Im Reiter **Themen** der Teamorganisation tippst du beim nächsten Termin auf **„Themen aufnehmen“**.
 - Während der Sitzung fügst du im Protokoll mit **„+ Punkt“** spontan ein neues Thema hinzu.
 
 Jedes Thema wird ein eigener [[TOP]] an der Markierung „Tagesordnung“ (ohne Markierung am Ende des Plans). Die Uhrzeiten der folgenden Punkte verschieben sich um seine Dauer.

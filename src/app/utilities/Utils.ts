@@ -3,10 +3,11 @@ import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
 import { AttendanceStatus, DEFAULT_IMAGE, DefaultAttendanceType, FieldType, PlayerHistoryType, Role } from './constants';
-import { AGENDA_ITEMS_PLACEHOLDER_ID, AgendaItem, Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftPlan, Church } from './interfaces';
+import { AGENDA_ITEMS_PLACEHOLDER_ID, Attendance, FieldSelection, GroupCategory, Group, PersonAttendance, Player, AttendanceType, ExtraField, ShiftPlan, Church } from './interfaces';
 // jsPDF and xlsx are lazy-loaded for better initial bundle size. Type-only
 // import (erased at compile time) so it doesn't pull xlsx into the main bundle.
 import type { WorkBook } from 'xlsx';
+import { fieldDisplayName, topNumbers } from '../team-organization/team-org.utils';
 
 export class Utils {
   public static getId(): number {
@@ -671,24 +672,20 @@ export class Utils {
 
     let currentTime = startingTime;
 
+    // `props.agendaItems` is accepted for older callers but no longer used:
+    // topics are regular plan fields (TOP n) now.
+    const numbers = topNumbers(props.fields);
+
     for (const field of props.fields) {
-      const fieldName = field.name;
+      const fieldName = fieldDisplayName(field, numbers);
 
       if (field.id.includes('noteFld')) {
         data.push([
           { content: fieldName, colSpan: hasConductors ? 5 : 4 }
         ]);
-      } else if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID && Array.isArray(props.agendaItems)) {
-        // Expand the agenda placeholder into the Termin's linked agenda items.
-        props.agendaItems.forEach((item: AgendaItem, index: number) => {
-          const person = item.responsible_person
-            ? `${item.responsible_person.firstName} ${item.responsible_person.lastName}`
-            : '';
-          const name = `TOP ${index + 1}: ${item.title}`;
-          const nameCell: any = person ? { content: `${name}\n${person}`, _name: name, _info: person } : name;
-          const time = index === 0 ? `${currentTime.format('HH:mm')} Uhr` : '';
-          data.push(hasConductors ? [time, nameCell, '', ''] : [time, nameCell, '']);
-        });
+      } else if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID) {
+        // The agenda marker only sets where topics get inserted; it's no row.
+        continue;
       } else {
         // Field-attached info is carried on the Programmpunkt cell so it renders
         // as a second (italic) line inside the same row as its field. The custom

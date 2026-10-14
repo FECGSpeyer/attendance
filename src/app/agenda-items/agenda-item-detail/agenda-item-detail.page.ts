@@ -1,9 +1,25 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AlertController, NavController } from '@ionic/angular/lazy';
+import { Location } from '@angular/common';
+import { ActionSheetButton, ActionSheetController, AlertController, ModalController, NavController } from '@ionic/angular/lazy';
+import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { AgendaItem, AgendaItemAttendance, AgendaItemPriority, AgendaItemStatus, Person, Task, TaskStatus } from 'src/app/utilities/interfaces';
+import {
+  AgendaItem,
+  AgendaItemHistoryEntry,
+  AgendaItemPriority,
+  AgendaItemStatus,
+  Attendance,
+  Player,
+  Task,
+} from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { agendaFieldId, OUTCOME_LABELS, personName } from 'src/app/team-organization/team-org.utils';
+import { openTaskForm } from 'src/app/tasks/task-form/task-form.component';
+import { addTopicsToAttendance, defaultTopicDuration, upcomingProtocolAttendances } from '../agenda-plan.helpers';
+
+/** How many upcoming Termine "Einplanen" offers. */
+const PLAN_CHOICES = 6;
 
 @Component({
   selector: 'app-agenda-item-detail',
@@ -14,17 +30,17 @@ import { Utils } from 'src/app/utilities/Utils';
 })
 export class AgendaItemDetailPage implements OnInit {
   public item: AgendaItem;
-  public linkedAttendances: AgendaItemAttendance[] = [];
+  public history: AgendaItemHistoryEntry[] = [];
   public tasks: Task[] = [];
-  public conductors: Person[] = [];
+  public persons: Player[] = [];
   public isNew = false;
+  public loading = true;
   private itemId: string;
 
   readonly statusOptions: { value: AgendaItemStatus; label: string }[] = [
     { value: 'open', label: 'Offen' },
-    { value: 'in_progress', label: 'In Bearbeitung' },
-    { value: 'postponed', label: 'Verschoben' },
     { value: 'completed', label: 'Erledigt' },
+    { value: 'dropped', label: 'Verworfen' },
   ];
 
   readonly priorityOptions: { value: AgendaItemPriority; label: string }[] = [
@@ -33,21 +49,56 @@ export class AgendaItemDetailPage implements OnInit {
     { value: 'low', label: 'Niedrig' },
   ];
 
+  readonly outcomeLabels = OUTCOME_LABELS;
+
   constructor(
-    private db: DbService,
+    public db: DbService,
     private route: ActivatedRoute,
     private alertController: AlertController,
+    private actionSheetController: ActionSheetController,
+    private modalController: ModalController,
     private navController: NavController,
+    private location: Location,
   ) {}
+
+  get isLeader(): boolean {
+    return this.db.isTeamLeader();
+  }
+
+  get statusLabel(): string {
+    return this.statusOptions.find(o => o.value === this.item?.status)?.label ?? '';
+  }
+
+  get priorityLabel(): string {
+    return this.priorityOptions.find(o => o.value === this.item?.priority)?.label ?? '';
+  }
+
+  get responsibleName(): string {
+    return personName(this.item?.responsible_person) || personName(this.persons.find(p => p.id === this.item?.responsible_person_id));
+  }
+
+  get proposerName(): string {
+    return personName(this.item?.proposer);
+  }
+
+  get completedTaskCount(): number {
+    return this.tasks.filter(t => t.status === 'completed').length;
+  }
 
   async ngOnInit() {
     this.itemId = this.route.snapshot.params['id'];
     this.isNew = this.itemId === 'new';
 
-    const [conductors] = await Promise.all([
-      this.db.getConductors(true),
-    ]);
-    this.conductors = conductors.filter((c: Person) => !c.left);
+    if (this.isLeader) {
+      try {
+        const players = await this.db.getPlayers(true);
+        this.persons = players
+          .filter(p => !p.left && !p.pending)
+          .sort((a, b) => personName(a).localeCompare(personName(b), 'de'));
+      } catch {
+        this.persons = [];
+      }
+    }
 
     if (this.isNew) {
       this.item = {
@@ -55,73 +106,128 @@ export class AgendaItemDetailPage implements OnInit {
         title: '',
         status: 'open',
         priority: 'medium',
+        responsible_person_id: null,
+        default_duration: null,
       };
+      this.loading = false;
     } else {
       await this.loadItem();
     }
   }
 
-  // Reload linked tasks when coming back from a task's detail page.
+  // Reload linked tasks and history when coming back from a task or protocol.
   async ionViewWillEnter() {
     if (this.item && !this.isNew) {
-      this.tasks = await this.db.getTasksForAgendaItem(this.itemId);
+      await this.loadRelated();
     }
   }
 
-  async createTask() {
-    const alert = await this.alertController.create({
-      header: 'Neue Aufgabe',
-      inputs: [{ name: 'title', type: 'text', placeholder: 'Titel der Aufgabe' }],
-      buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        {
-          text: 'Erstellen',
-          handler: async (data) => {
-            if (!data.title?.trim()) return;
-            try {
-              const task = await this.db.addTask({
-                title: data.title.trim(),
-                status: 'open' as TaskStatus,
-                priority: this.item.priority,
-                tenant_id: this.db.tenant().id,
-                agenda_item_id: this.itemId,
-              });
-              this.tasks = [...this.tasks, task];
-              // Open the task so responsible person and due date can be set.
-              this.navController.navigateForward(['/tabs/settings/tasks', task.id]);
-            } catch (error) {
-              console.error('Task create error:', error);
-              Utils.showToast('Aufgabe konnte nicht erstellt werden', 'danger');
-            }
-          }
-        }
-      ]
-    });
-    await alert.present();
+  async loadItem() {
+    this.loading = true;
+    try {
+      this.item = await this.db.getAgendaItem(this.itemId);
+      await this.loadRelated();
+    } finally {
+      this.loading = false;
+    }
   }
 
-  async loadItem() {
-    const [item, linked, tasks] = await Promise.all([
-      this.db.getAgendaItem(this.itemId),
-      this.db.getLinkedAttendancesForAgendaItem(this.itemId),
-      this.db.getTasksForAgendaItem(this.itemId),
+  private async loadRelated() {
+    const [history, tasks] = await Promise.all([
+      this.db.getAgendaItemHistory(this.itemId).catch(() => [] as AgendaItemHistoryEntry[]),
+      this.db.getTasksForAgendaItem(this.itemId).catch(() => [] as Task[]),
     ]);
-    this.item = item;
-    this.linkedAttendances = linked;
+    this.history = [...history].sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf());
     this.tasks = tasks;
   }
 
-  onDueDateChange(event: CustomEvent, modal: { dismiss: () => Promise<boolean> }) {
-    const raw = event.detail.value;
-    this.item.due_date = raw ? (raw as string).split('T')[0] : null;
-    if (!raw) {
-      modal.dismiss();
+  historyTypeName(entry: AgendaItemHistoryEntry): string {
+    const type = this.db.attendanceTypes().find(t => t.id === entry.type_id);
+    return (type ? Utils.getTypeTitle(type, entry.type_info ?? '') : entry.type_info) || type?.name || 'Termin';
+  }
+
+  historyStatus(entry: AgendaItemHistoryEntry): { label: string; color: string } {
+    if (entry.outcome) {
+      const color = entry.outcome === 'postponed' ? 'warning' : entry.outcome === 'decided' ? 'success' : 'medium';
+      return { label: this.outcomeLabels[entry.outcome], color };
+    }
+    if (dayjs(entry.date).isAfter(dayjs().startOf('day')) || dayjs(entry.date).isSame(dayjs(), 'day')) {
+      return { label: 'Geplant', color: 'primary' };
+    }
+    return { label: 'Ohne Ergebnis', color: 'medium' };
+  }
+
+  openHistory(entry: AgendaItemHistoryEntry) {
+    this.navController.navigateForward(['/tabs/attendance', entry.attendance_id, 'protocol']);
+  }
+
+  openTask(task: Task) {
+    this.navController.navigateForward(['/tabs/settings/tasks', task.id]);
+  }
+
+  taskSubtitle(task: Task): string {
+    const who = personName(task.responsible_person) || 'Niemand zugewiesen';
+    if (task.status === 'completed') {
+      return task.completed_at ? `${who} · erledigt ${dayjs(task.completed_at).format('DD.MM.')}` : `${who} · erledigt`;
+    }
+    return task.due_date ? `${who} · fällig ${dayjs(task.due_date).format('DD.MM.')}` : who;
+  }
+
+  async createTask() {
+    const task = await openTaskForm(this.modalController, {
+      agendaItemId: this.itemId,
+      contextLabel: this.item.title,
+      presetPersonId: this.item.responsible_person_id ?? null,
+    });
+    if (task) {
+      this.tasks = [...this.tasks, task];
+    }
+  }
+
+  /** "Einplanen": puts the topic as TOP into one of the next Termine with protocol. */
+  async planIntoAttendance() {
+    if (!this.item?.id) return;
+    let upcoming: Attendance[] = [];
+    try {
+      upcoming = upcomingProtocolAttendances(await this.db.getUpcomingAttendances(), this.db.attendanceTypes()).slice(0, PLAN_CHOICES);
+    } catch (e) {
+      console.error('upcoming attendances failed', e);
+    }
+    if (!upcoming.length) {
+      Utils.showToast('Kein kommender Termin mit Protokoll & Tagesordnung gefunden', 'warning');
+      return;
+    }
+    const fieldId = agendaFieldId(this.item.id);
+    const buttons: ActionSheetButton[] = upcoming.map(att => {
+      const type = this.db.attendanceTypes().find(t => t.id === att.type_id);
+      const already = !!att.plan?.fields?.some(f => f.id === fieldId);
+      return {
+        text: `${dayjs(att.date).locale('de').format('dd, DD.MM.')} · ${(type ? Utils.getTypeTitle(type, att.typeInfo) : att.typeInfo) || type?.name || 'Termin'}${already ? ' (bereits eingeplant)' : ''}`,
+        disabled: already,
+        handler: () => { void this.insertInto(att); },
+      } as ActionSheetButton;
+    });
+    buttons.push({ text: 'Abbrechen', role: 'cancel' });
+    const sheet = await this.actionSheetController.create({ header: 'In welchen Termin einplanen?', buttons });
+    await sheet.present();
+  }
+
+  private async insertInto(att: Attendance) {
+    const type = this.db.attendanceTypes().find(t => t.id === att.type_id);
+    try {
+      await addTopicsToAttendance(this.db, att, type, [{ item: this.item, duration: defaultTopicDuration(this.item, type) }]);
+      Utils.showToast(`Eingeplant für ${dayjs(att.date).format('DD.MM.')}`, 'success');
+      await this.loadRelated();
+    } catch (e) {
+      console.error('plan topic failed', e);
+      Utils.showToast('Thema konnte nicht eingeplant werden', 'danger');
     }
   }
 
   async deleteItem() {
     const alert = await this.alertController.create({
-      header: 'Tagesordnungspunkt wirklich löschen?',
+      header: 'Thema wirklich löschen?',
+      message: 'Es verschwindet aus dem Themenspeicher. Bereits geplante Ablaufpläne und Protokolle bleiben unverändert.',
       buttons: [
         { text: 'Abbrechen', role: 'cancel' },
         {
@@ -131,7 +237,7 @@ export class AgendaItemDetailPage implements OnInit {
             try {
               await this.db.deleteAgendaItem(this.itemId);
               Utils.showToast('Gelöscht');
-              this.navController.navigateBack('/tabs/settings/team-organization');
+              this.navController.navigateBack('/tabs/settings/team-organization?tab=topics');
             } catch (error) {
               console.error('Delete error:', error);
               Utils.showToast('Löschen fehlgeschlagen', 'danger');
@@ -148,32 +254,34 @@ export class AgendaItemDetailPage implements OnInit {
       Utils.showToast('Bitte einen Titel eingeben', 'warning');
       return;
     }
+    const duration = Number(this.item.default_duration);
+    const changes: Partial<AgendaItem> = {
+      title: this.item.title.trim(),
+      description: this.item.description?.trim() || null,
+      status: this.item.status,
+      priority: this.item.priority,
+      responsible_person_id: this.item.responsible_person_id ?? null,
+      default_duration: duration > 0 ? Math.round(duration) : null,
+    };
     const loading = await Utils.getLoadingElement();
     await loading.present();
     try {
       if (this.isNew) {
-        const created = await this.db.addAgendaItem(this.item);
+        const created = await this.db.addAgendaItem({ ...changes, tenant_id: this.db.tenant().id } as AgendaItem);
         this.itemId = created.id;
         this.isNew = false;
         this.item = created;
+        // Keep the URL in sync so a reload/back works with the real id.
+        this.location.replaceState(`/tabs/settings/agenda-items/${created.id}`);
       } else {
-        this.item = await this.db.updateAgendaItem(this.itemId, this.item);
+        this.item = await this.db.updateAgendaItem(this.itemId, changes);
       }
       Utils.showToast('Gespeichert');
     } catch (error) {
       console.error('Agenda item save error:', error);
-      Utils.showToast('Tagesordnungspunkt konnte nicht gespeichert werden', 'danger');
+      Utils.showToast('Thema konnte nicht gespeichert werden', 'danger');
     } finally {
       await loading.dismiss();
-    }
-  }
-
-  getStatusColor(status: AgendaItemStatus): string {
-    switch (status) {
-      case 'completed': return 'success';
-      case 'in_progress': return 'warning';
-      case 'postponed': return 'medium';
-      default: return 'primary';
     }
   }
 
@@ -185,11 +293,11 @@ export class AgendaItemDetailPage implements OnInit {
     }
   }
 
-  getTaskStatusLabel(status: string): string {
+  getStatusColor(status: AgendaItemStatus): string {
     switch (status) {
-      case 'completed': return 'Erledigt';
-      case 'in_progress': return 'In Bearbeitung';
-      default: return 'Offen';
+      case 'completed': return 'success';
+      case 'dropped': return 'medium';
+      default: return 'primary';
     }
   }
 }

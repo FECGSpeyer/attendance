@@ -1,8 +1,30 @@
-.agenda-item-editor {
-  min-height: 150px;
-  display: block;
-}
+app-agenda-item-detail {
+  ion-content.fab-padding {
+    --padding-bottom: 96px;
+  }
 
-ion-content.fab-padding {
-  --padding-bottom: 96px;
+  .topic-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .badge-gap {
+    margin-left: 6px;
+  }
+
+  .description {
+    white-space: pre-wrap;
+  }
+
+  .list-header-note {
+    margin-right: 16px;
+    font-size: 13px;
+    text-transform: none;
+  }
+
+  h3.done {
+    text-decoration: line-through;
+    color: var(--ion-color-medium);
+  }
 }

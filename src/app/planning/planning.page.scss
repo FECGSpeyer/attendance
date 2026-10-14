@@ -59,3 +59,12 @@ ion-col {
         --background: #1c1c1c;
     }
 }
+// Agenda marker: only an insert position for topics, takes no time.
+.agenda-marker {
+    --min-height: 36px;
+
+    ion-label {
+        margin-top: 4px;
+        margin-bottom: 4px;
+    }
+}

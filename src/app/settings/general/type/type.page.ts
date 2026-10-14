@@ -110,6 +110,10 @@ export class TypePage implements OnInit {
 
       if (!this.type.default_plan?.fields) {
         this.type.default_plan = { ...this.defaultPlan };
+      } else {
+        // The agenda marker takes no time (older plans stored 30 min on it).
+        this.type.default_plan.fields = this.type.default_plan.fields.map(f =>
+          f.id === AGENDA_ITEMS_PLACEHOLDER_ID ? { ...f, time: '0' } : f);
       }
     }
 
@@ -207,6 +211,13 @@ export class TypePage implements OnInit {
   }
 
   validate(): boolean {
+    // ion-input delivers strings; the column is an integer (NOT NULL, default 10).
+    const duration = Math.round(Number(this.type.agenda_default_duration));
+    if (duration > 0) {
+      this.type.agenda_default_duration = duration;
+    } else {
+      delete this.type.agenda_default_duration;
+    }
     if (!this.type.name || this.type.name.trim().length === 0) {
       Utils.showToast('Bitte einen Namen für den Anwesenheitstyp eingeben.', 'danger');
       return false;
@@ -328,8 +339,23 @@ export class TypePage implements OnInit {
     this.calculateEnd();
   }
 
-  addAgendaItemsPlaceholder(popover: IonPopover) {
-    popover.dismiss();
+  get hasAgendaMarker(): boolean {
+    return !!this.type?.default_plan?.fields?.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID);
+  }
+
+  /** Fills the defaults of the agenda settings the first time the feature is switched on. */
+  onProtocolToggle() {
+    if (!this.type.enable_protocol) return;
+    if (!this.type.agenda_default_duration) this.type.agenda_default_duration = 10;
+    if (this.type.suggest_postponed === undefined || this.type.suggest_postponed === null) this.type.suggest_postponed = true;
+  }
+
+  openTeamHelp() {
+    this.navController.navigateForward('/tabs/settings/help/article/team-activate');
+  }
+
+  addAgendaItemsPlaceholder(popover?: IonPopover) {
+    popover?.dismiss();
 
     const alreadyExists = this.type.default_plan.fields.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID);
     if (alreadyExists) {
@@ -339,8 +365,8 @@ export class TypePage implements OnInit {
 
     this.type.default_plan.fields.push({
       id: AGENDA_ITEMS_PLACEHOLDER_ID,
-      name: '[Tagesordnungspunkte]',
-      time: '30',
+      name: 'Tagesordnung',
+      time: '0',
     });
 
     this.calculateEnd();
