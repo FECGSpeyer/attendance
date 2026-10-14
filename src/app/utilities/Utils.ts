@@ -1161,7 +1161,6 @@ export class Utils {
       case '/tabs/settings/general/types':
       case '/tabs/settings/general/branding':
       case '/tabs/settings/instruments':
-      case '/tabs/settings/meetings':
       case '/tabs/settings/handover':
       case '/tabs/settings/handover/detail':
       case '/tabs/settings/role-permissions':
@@ -1185,8 +1184,6 @@ export class Utils {
       default:
         if (url.includes('/tabs/settings/songs/')) {
           return true;
-        } else if (url.includes('/tabs/settings/meetings/')) {
-          return [Role.ADMIN, Role.RESPONSIBLE].includes(role);
         } else if (url.includes('/tabs/settings/general/types/')) {
           return [Role.ADMIN, Role.RESPONSIBLE].includes(role);
         } else if (url.startsWith('/tabs/attendance/') || url.startsWith('/tabs/attendance?')) {

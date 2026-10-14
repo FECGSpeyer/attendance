@@ -99,12 +99,6 @@ export const GLOSSARY: GlossaryTerm[] = [
     definition: 'Ein wiederkehrender Zeitplan aus Arbeits- und Freiblöcken (z. B. für Schichtarbeiter), der einer Person zugewiesen wird. Fällt ein Termin in ihre Arbeitszeit, wird die Person dafür automatisch entschuldigt.',
   },
   {
-    id: 'treffen',
-    term: 'Treffen',
-    aliases: ['Meeting', 'Besprechung'],
-    definition: 'Ein Eintrag für eine Besprechung der Leitung oder des Teams (Datum, Teilnehmende, Notizen) — getrennt von normalen Proben-/Aufführungsterminen.',
-  },
-  {
     id: 'uebergabe',
     term: 'Übergabe',
     aliases: ['Handover'],
@@ -157,7 +151,7 @@ export const GLOSSARY: GlossaryTerm[] = [
   {
     id: 'teamorganisation',
     term: 'Teamorganisation',
-    definition: 'Werkzeuge für Sitzungen von Vorstand oder Leitungsteam: [[Themenspeicher]], Tagesordnung im [[Ablaufplan]], Protokoll und Aufgaben. Sichtbar, sobald bei mindestens einem Termintyp „Protokoll & Tagesordnung“ eingeschaltet ist; zu finden unter Mehr → Team.',
+    definition: 'Werkzeuge für Sitzungen von Vorstand oder Leitungsteam: [[Themenspeicher]], Tagesordnung im [[Ablaufplan]], Protokoll und Aufgaben. Sichtbar, sobald bei mindestens einem Termintyp „Protokoll & Tagesordnung“ eingeschaltet ist; zu finden unter Mehr → Planung.',
   },
   {
     id: 'top',

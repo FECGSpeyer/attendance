@@ -93,9 +93,6 @@ export const createDbServiceMock = (options: DbServiceMockOptions = {}) => {
             getSongs: vi.fn().mockResolvedValue([]),
             getSong: vi.fn().mockResolvedValue(null),
         },
-        meetingSvc: {
-            getMeetings: vi.fn().mockResolvedValue([]),
-        },
         historySvc: {
             getHistory: vi.fn().mockResolvedValue([]),
         },
@@ -130,7 +127,6 @@ export const createDbServiceMock = (options: DbServiceMockOptions = {}) => {
         getAttendances: vi.fn().mockResolvedValue([]),
         getGroups: vi.fn().mockResolvedValue(defaultGroups),
         getSongs: vi.fn().mockResolvedValue([]),
-        getMeetings: vi.fn().mockResolvedValue([]),
         getTeachers: vi.fn().mockResolvedValue([]),
         getHistory: vi.fn().mockResolvedValue([]),
         getConductors: vi.fn().mockResolvedValue([]),

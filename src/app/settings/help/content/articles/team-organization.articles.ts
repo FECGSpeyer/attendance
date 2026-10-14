@@ -15,7 +15,7 @@ Sie besteht aus vier Teilen, die alle am **Termin** hängen:
 - **Protokoll:** Während der Sitzung schreibst du zu jedem Punkt des Ablaufplans mit und hältst das Ergebnis fest. Nach der [[Protokoll freigeben|Freigabe]] können alle im [[Personenkreis]] es lesen.
 - **Aufgaben:** Was bis wann zu tun ist, legst du direkt im Protokoll an. Jede Person sieht ihre Aufgaben selbst und hakt sie ab.
 
-Die Teamorganisation ist nur sichtbar, wenn sie bei mindestens einem Termintyp eingeschaltet ist (siehe „Teamorganisation einschalten“). Du findest sie dann unter **Mehr → Team**.`,
+Die Teamorganisation ist nur sichtbar, wenn sie bei mindestens einem Termintyp eingeschaltet ist (siehe „Teamorganisation einschalten“). Du findest sie dann unter **Mehr → Planung → Teamorganisation**.`,
   },
   {
     id: 'team-activate',
@@ -30,14 +30,14 @@ Die Teamorganisation ist nur sichtbar, wenn sie bei mindestens einem Termintyp e
 4. Optional: Stelle die **Standarddauer pro Thema** ein und ob **vertagte Themen** beim Einplanen oben vorgeschlagen werden.
 5. Füge im Standard-Ablaufplan des Typs die Markierung **„Tagesordnung“** an der Stelle ein, an der neue Themen landen sollen.
 
-Sobald ein Typ eingeschaltet ist, erscheint **Mehr → Team**, für die Leitung die Karte „Meine Aufgaben“ auf dem Dashboard und bei Terminen dieses Typs die Protokoll-Karte. Schaltest du es bei allen Typen wieder aus, verschwindet die Teamorganisation; die Daten bleiben erhalten.`,
+Sobald ein Typ eingeschaltet ist, erscheint **Mehr → Planung → Teamorganisation**, für die Leitung die Karte „Meine Aufgaben“ auf dem Dashboard und bei Terminen dieses Typs die Protokoll-Karte. Schaltest du es bei allen Typen wieder aus, verschwindet die Teamorganisation; die Daten bleiben erhalten.`,
   },
   {
     id: 'team-prepare',
     title: 'Themen sammeln und eine Sitzung vorbereiten',
     categoryId: 'team',
     keywords: ['thema', 'themen', 'themenspeicher', 'tagesordnung', 'top', 'tagesordnungspunkt', 'agenda', 'einladung', 'einplanen', 'aufnehmen', 'vertagt', 'dauer'],
-    body: `**Themen sammeln:** Unter **Mehr → Team → Teamorganisation → Themen** legt die Leitung mit **+** neue Themen an, mit Beschreibung, Priorität, verantwortlicher Person und Dauer. Das geht auch Wochen vor der Sitzung, ein Thema gehört erst zu einem Termin, wenn du es einplanst.
+    body: `**Themen sammeln:** Unter **Mehr → Planung → Teamorganisation → Themen** legt die Leitung mit **+** neue Themen an, mit Beschreibung, Priorität, verantwortlicher Person und Dauer. Das geht auch Wochen vor der Sitzung, ein Thema gehört erst zu einem Termin, wenn du es einplanst.
 
 **Themen in den Ablaufplan aufnehmen:** Es gibt drei Wege:
 
@@ -80,13 +80,13 @@ Die Anwesenden kommen aus der Anwesenheit des Termins.`,
     title: 'Aufgaben verteilen und erledigen',
     categoryId: 'team',
     keywords: ['aufgabe', 'aufgaben', 'to-do', 'todo', 'zuweisen', 'verantwortlich', 'fällig', 'fälligkeit', 'erinnerung', 'überfällig', 'abhaken', 'erledigt', 'meine aufgaben'],
-    body: `**Aufgaben anlegen** darf die Leitung: im Protokoll mit **„Aufgabe“** bei einem Punkt, in einem Thema oder unter **Mehr → Team → Teamorganisation → Aufgaben** mit **+**. Eine Aufgabe kann jeder aktiven Person der Instanz zugewiesen werden, mit Fälligkeit und Priorität (Pfeil nach unten = niedrig, Strich = mittel, Pfeil nach oben = hoch).
+    body: `**Aufgaben anlegen** darf die Leitung: im Protokoll mit **„Aufgabe“** bei einem Punkt, in einem Thema oder unter **Mehr → Planung → Teamorganisation → Aufgaben** mit **+**. Eine Aufgabe kann jeder aktiven Person der Instanz zugewiesen werden, mit Fälligkeit und Priorität (Pfeil nach unten = niedrig, Strich = mittel, Pfeil nach oben = hoch).
 
 **Benachrichtigungen:** Die verantwortliche Person bekommt eine Nachricht, wenn ihr eine Aufgabe zugewiesen wird, eine Erinnerung zwei Tage vor Fälligkeit und einmalig eine Nachricht, wenn die Aufgabe überfällig ist. Abschalten kannst du das in den Benachrichtigungs-Einstellungen unter „Aufgaben“.
 
 **Eigene Aufgaben sehen:**
 - *Leitung:* Karte **„Meine Aufgaben“** auf dem Dashboard.
-- *Mitglieder:* Block **„Meine Aufgaben“** oben auf „Meine Termine“ und unter **Mehr → Team → Meine Aufgaben**.
+- *Mitglieder:* Block **„Meine Aufgaben“** oben auf „Meine Termine“ und unter **Mehr → Planung → Meine Aufgaben**.
 
 **Erledigen:** Tippe auf den Kreis vor der Aufgabe. Mitglieder können bei ihren Aufgaben nur den Status ändern, Titel, Fälligkeit und Person ändert die Leitung.
 
@@ -99,7 +99,7 @@ Die Anwesenden kommen aus der Anwesenheit des Termins.`,
     keywords: ['vorschlag', 'vorschlagen', 'thema vorschlagen', 'idee', 'anliegen', 'einreichen', 'mitglied'],
     body: `Alle im [[Personenkreis]] eines Termintyps mit „Protokoll & Tagesordnung“ können Themen vorschlagen, [[Elternteil|Eltern]] und [[Bewerber]] nicht.
 
-1. Öffne **Mehr → Team → Thema vorschlagen**.
+1. Öffne **Mehr → Planung → Thema vorschlagen**.
 2. Gib einen Titel und optional eine kurze Beschreibung ein und sende den Vorschlag ab.
 
 Die Leitung sieht neue Vorschläge in der Teamorganisation unter **Themen** und kann sie übernehmen oder ablehnen, auf Wunsch mit einer kurzen Begründung. Du bekommst eine Nachricht, wie entschieden wurde, und siehst den Stand („Wartet“, „Übernommen“, „Abgelehnt“) jederzeit in deiner Liste. Übernommene Vorschläge landen im [[Themenspeicher]].`,
@@ -123,8 +123,8 @@ Entwürfe sind nur für die Leitung sichtbar, erst nach der Freigabe sieht der P
     title: 'Besprechungen und Protokolle',
     categoryId: 'team',
     keywords: ['besprechungen', 'meetings', 'alte besprechungen', 'migration', 'wo sind', 'protokolle früher', 'besprechung termin', 'termintyp besprechung'],
-    body: `Früher gab es unter Mehr den Bereich „Besprechungen“ mit freien Notizen. Neue Sitzungen protokollierst du jetzt mit der Teamorganisation: Das Protokoll hängt am Termin und übernimmt die Tagesordnung aus dem Ablaufplan.
+    body: `Früher gab es in den Einstellungen den Bereich „Besprechungen“ mit freien Notizen. Neue Sitzungen protokollierst du jetzt mit der Teamorganisation: Das Protokoll hängt am Termin und übernimmt die Tagesordnung aus dem Ablaufplan.
 
-Bereits übernommene Besprechungen findest du als Protokolle unter **Mehr → Team → Teamorganisation → Protokolle**, ihre Notizen stehen dort unter „Allgemeine Notizen“. Jede übernommene Besprechung hängt an einem eigenen Termin vom Typ **„Besprechung“** am selben Tag. Diesen Typ haben wir in Instanzen ohne Protokoll-Typ angelegt; relevant ist dort nur die Hauptgruppe, und der Ablaufplan enthält schon den Platzhalter für die Tagesordnung. Unter **Einstellungen → Allgemein → Termin-Typen** kannst du ihn anpassen. Der alte Bereich „Besprechungen“ bleibt vorerst bestehen.`,
+Bereits übernommene Besprechungen findest du als Protokolle unter **Mehr → Planung → Teamorganisation → Protokolle**, ihre Notizen stehen dort unter „Allgemeine Notizen“. Jede übernommene Besprechung hängt an einem eigenen Termin vom Typ **„Besprechung“** am selben Tag. Diesen Typ haben wir in Instanzen ohne Protokoll-Typ angelegt; relevant ist dort nur die Hauptgruppe, und der Ablaufplan enthält schon den Platzhalter für die Tagesordnung. Unter **Einstellungen → Allgemein → Termin-Typen** kannst du ihn anpassen. Den alten Bereich „Besprechungen“ gibt es nicht mehr.`,
   },
 ];

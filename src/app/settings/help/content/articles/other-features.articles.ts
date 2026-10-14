@@ -129,13 +129,6 @@ Instanzspezifische [[Zusatzfeld|Zusatzfelder]] bleiben daneben bestehen und gelt
     body: `Neue Personen können sich über einen von der Instanz bereitgestellten Registrierungslink selbst anmelden und erscheinen danach als [[Bewerber]], bis ein Administrator die Anmeldung bestätigt.`,
   },
   {
-    id: 'other-meetings',
-    title: 'Treffen',
-    categoryId: 'other',
-    keywords: ['besprechung', 'sitzung', 'teamtreffen'],
-    body: `Ein [[Treffen]] ist ein eigener Eintrag für Besprechungen der Leitung oder des Teams — getrennt von normalen Proben-/Aufführungsterminen. Erfasst werden Datum, Teilnehmende und Notizen zum Gesprächsinhalt, damit nachvollziehbar bleibt, wann worüber gesprochen wurde.`,
-  },
-  {
     id: 'other-shifts',
     title: 'Schichtpläne',
     categoryId: 'other',

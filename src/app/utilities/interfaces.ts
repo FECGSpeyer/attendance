@@ -456,14 +456,6 @@ export interface Teacher {
   legacyId?: number;
 }
 
-export interface Meeting {
-  id?: number;
-  created_at?: string;
-  date: string;
-  attendees: number[];
-  notes: string;
-}
-
 export interface FieldSelection {
   id: string;
   name: string;

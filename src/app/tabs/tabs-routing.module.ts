@@ -72,12 +72,10 @@ const routes: Routes = [
         loadChildren: () => import('./../settings/files/files.module').then(m => m.FilesPageModule),
       },
       {
+        // Former "Besprechungen" area, replaced by the team organization.
         path: 'settings/meetings',
-        loadChildren: () => import('./../meetings/meeting-list/meeting-list.module').then(m => m.MeetingListPageModule),
-      },
-      {
-        path: 'settings/meetings/:id',
-        loadChildren: () => import('./../meetings/meeting/meeting.module').then(m => m.MeetingPageModule),
+        redirectTo: 'settings/team-organization',
+        pathMatch: 'prefix',
       },
       {
         path: 'settings/agenda-items',

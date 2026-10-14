@@ -9,7 +9,6 @@ export { SongService } from './song/song.service';
 export { TenantService } from './tenant/tenant.service';
 export { HistoryService } from './history/history.service';
 export { GroupService } from './group/group.service';
-export { MeetingService } from './meeting/meeting.service';
 export { NotificationService } from './notification/notification.service';
 export { ImageService } from './image/image.service';
 export { ShiftService } from './shift/shift.service';

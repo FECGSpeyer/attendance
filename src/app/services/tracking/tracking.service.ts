@@ -12,7 +12,6 @@ export const TrackingEvent = {
   ParentSignOut: 'parent_signout',
   PushReceived: 'push_received',
   PushOpened: 'push_opened',
-  MeetingCreated: 'meeting_created',
   SongShared: 'song_shared',
   ReportExported: 'report_exported',
   HandoverCreated: 'handover_created',

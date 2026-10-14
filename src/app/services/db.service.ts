@@ -5,7 +5,7 @@ import { SupabaseClient, User } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SUPER_DEVELOPER_EMAIL, SupabaseTable, FILES_SHARED_TENANT_IDS } from '../utilities/constants';
-import { Attendance, ExtraField, FieldSelection, History, Group, Meeting, Person, Plan, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence, DashboardCardConfig, DEFAULT_DASHBOARD_CARDS, AgendaItem, AgendaItemHistoryEntry, Protocol, ProtocolOutcome, Task } from '../utilities/interfaces';
+import { Attendance, ExtraField, FieldSelection, History, Group, Person, Plan, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence, DashboardCardConfig, DEFAULT_DASHBOARD_CARDS, AgendaItem, AgendaItemHistoryEntry, Protocol, ProtocolOutcome, Task } from '../utilities/interfaces';
 import { isInAnyCircle, isTeamLeaderRole, isTeamOrgEnabled } from '../team-organization/team-org.utils';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
@@ -23,7 +23,6 @@ import { SongService } from './song/song.service';
 import { TenantService } from './tenant/tenant.service';
 import { GroupService } from './group/group.service';
 import { HistoryService } from './history/history.service';
-import { MeetingService } from './meeting/meeting.service';
 import { AgendaItemService } from './agenda-item/agenda-item.service';
 import { ProtocolService } from './protocol/protocol.service';
 import { TaskService } from './task/task.service';
@@ -94,7 +93,6 @@ export class DbService {
   public readonly tenantSvc = inject(TenantService);
   public readonly groupSvc = inject(GroupService);
   public readonly historySvc = inject(HistoryService);
-  public readonly meetingSvc = inject(MeetingService);
   public readonly agendaItemSvc = inject(AgendaItemService);
   public readonly protocolSvc = inject(ProtocolService);
   public readonly taskSvc = inject(TaskService);
@@ -2851,29 +2849,6 @@ export class DbService {
     this.checkDemoRestriction();
     await this.songCategorySvc.removeSongCategory(id);
     await this.getSongCategories();
-  }
-
-  async getMeetings(): Promise<Meeting[]> {
-    return this.meetingSvc.getMeetings(this.tenant().id);
-  }
-
-  async getMeeting(id: number): Promise<Meeting> {
-    return this.meetingSvc.getMeeting(id, this.tenant().id);
-  }
-
-  async addMeeting(meeting: Meeting): Promise<Meeting[]> {
-    this.checkDemoRestriction();
-    return this.meetingSvc.addMeeting(meeting, this.tenant().id);
-  }
-
-  async editMeeting(id: number, meeting: Meeting): Promise<Meeting[]> {
-    this.checkDemoRestriction();
-    return this.meetingSvc.editMeeting(id, meeting);
-  }
-
-  async removeMeeting(id: number): Promise<void> {
-    this.checkDemoRestriction();
-    return this.meetingSvc.removeMeeting(id);
   }
 
   // ── Agenda Items ──
