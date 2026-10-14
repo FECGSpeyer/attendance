@@ -1,154 +1,631 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button text="" [defaultHref]="'/tabs/attendance/' + attendanceId"></ion-back-button>
+      <ion-back-button text="" [defaultHref]="backHref"></ion-back-button>
     </ion-buttons>
-    <ion-title>Protokoll</ion-title>
+    <ion-title>
+      <div class="title-stack">
+        <span>Protokoll</span>
+        @if (attendance && !notAvailable) {
+          <small>{{ title }} · {{ shortDate }} · {{ isPublished ? 'Freigegeben' : 'Entwurf' }}</small>
+        }
+      </div>
+    </ion-title>
     <ion-buttons slot="end">
-      @if (isSaving) {
-        <ion-spinner name="dots" style="margin-right: 12px"></ion-spinner>
+      @if (attendance && !notAvailable && !loadFailed) {
+        <ion-button (click)="sharePdf()" aria-label="Als PDF teilen" title="Als PDF teilen">
+          <ion-icon slot="icon-only" name="share-outline"></ion-icon>
+        </ion-button>
       }
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content color="light" [scrollY]="!(isLeader && isWide && attendance && !notAvailable)" [class.wide-content]="isLeader && isWide">
   @if (isLoading) {
-    <div class="ion-text-center ion-padding">
-      <ion-spinner></ion-spinner>
+    <div class="center-state"><ion-spinner></ion-spinner></div>
+  } @else if (notAvailable) {
+    <div class="center-state">
+      <ion-icon name="lock-closed-outline"></ion-icon>
+      <h2>Dieses Protokoll ist noch nicht freigegeben.</h2>
+      <p>Sobald die Leitung es freigibt, kannst du es hier lesen.</p>
     </div>
+  } @else if (loadFailed || !attendance) {
+    <div class="center-state">
+      <ion-icon name="cloud-offline-outline"></ion-icon>
+      <h2>Protokoll konnte nicht geladen werden.</h2>
+      <ion-button fill="outline" (click)="load()">Erneut versuchen</ion-button>
+    </div>
+  } @else if (isLeader && isWide) {
+    <ng-container *ngTemplateOutlet="wideLayout"></ng-container>
+  } @else if (isLeader) {
+    <ng-container *ngTemplateOutlet="phoneLayout"></ng-container>
   } @else {
+    <ng-container *ngTemplateOutlet="readLayout"></ng-container>
+  }
+</ion-content>
 
-    <!-- If the plan has no agenda-items placeholder, show the agenda section at the top -->
-    @if (!planFieldsWithPlaceholder.length || !hasAgendaPlaceholder) {
-      <ng-container *ngTemplateOutlet="agendaSection"></ng-container>
+@if (isLeader && !isWide && attendance && !notAvailable && !isLoading && !loadFailed) {
+  <ion-footer class="protocol-footer">
+    <ion-toolbar>
+      <div class="footer-inner">
+        <div class="save-state">
+          @if (savingCount > 0) { <ion-spinner name="dots"></ion-spinner> }
+          {{ saveLabel }}
+        </div>
+        <div class="footer-buttons">
+          <ion-button fill="outline" (click)="openNotes()">
+            <ion-icon slot="start" name="document-text-outline"></ion-icon>
+            Notizen
+            @if (hasNotes(GENERAL)) { <span class="notes-dot" aria-label="Enthält Notizen"></span> }
+          </ion-button>
+          <ion-button (click)="openPublish()" class="publish-button">
+            {{ isPublished ? 'Erneut freigeben' : 'Freigeben' }}
+          </ion-button>
+        </div>
+      </div>
+    </ion-toolbar>
+  </ion-footer>
+}
+
+<!-- ───────────── Shared bits ───────────── -->
+
+<ng-template #attendeeRow>
+  <button class="attendee-row" type="button" (click)="attendeesOpen = true">
+    <div class="avatars" aria-hidden="true">
+      @for (a of avatarPreview.list; track a.id) {
+        <span class="ini" [style.background]="a.color">{{ a.initials }}</span>
+      }
+      @if (avatarPreview.more) { <span class="ini more">+{{ avatarPreview.more }}</span> }
+    </div>
+    <div class="grow">
+      <div class="t">{{ present.length }} anwesend</div>
+      <div class="s">
+        @if (excused.length) { {{ excused.length }} entschuldigt · }aus der Anwesenheit
+      </div>
+    </div>
+    <ion-icon name="chevron-forward" class="chev"></ion-icon>
+  </button>
+</ng-template>
+
+<ng-template #liveBar>
+  @if (live) {
+    <div class="live-bar" role="status">
+      <span class="live-dot"></span>
+      <div class="grow">{{ liveLabel }}</div>
+      @if (hasNext) {
+        <ion-button size="small" fill="clear" (click)="nextSection()">Nächster Punkt</ion-button>
+      }
+    </div>
+  }
+</ng-template>
+
+<ng-template #outcomeSeg let-s>
+  <div class="outcome-seg" role="radiogroup" aria-label="Ergebnis">
+    @for (o of OUTCOMES; track o.value) {
+      <button type="button" role="radio" [attr.aria-checked]="outcomes[s.id] === o.value"
+        [class.on]="outcomes[s.id] === o.value" [class]="'o-' + o.value" (click)="setOutcome(s.id, o.value)">
+        {{ o.label }}
+      </button>
+    }
+  </div>
+</ng-template>
+
+<ng-template #taskList let-list>
+  @if (list.length) {
+    <div class="task-list">
+      @for (task of list; track task.id) {
+        <a class="task-row" [routerLink]="['/tabs/settings/tasks', task.id]">
+          <ion-icon [name]="task.status === 'completed' ? 'checkmark-circle' : 'ellipse-outline'"
+            [color]="task.status === 'completed' ? 'success' : 'medium'"></ion-icon>
+          <div class="grow">
+            <div class="task-title" [class.done]="task.status === 'completed'">{{ task.title }}</div>
+            @if (taskLine(task)) { <div class="s">{{ taskLine(task) }}</div> }
+          </div>
+        </a>
+      }
+    </div>
+  }
+</ng-template>
+
+<ng-template #leftoverList>
+  @if (leftovers.length) {
+    <div class="group-label">Weitere Notizen</div>
+    <p class="hint-text">Notizen zu Punkten, die nicht mehr im Ablaufplan stehen.</p>
+    @for (l of leftovers; track l.key) {
+      <div class="card">
+        <div class="card-head static">
+          <div class="grow"><div class="t">{{ l.title }}</div></div>
+        </div>
+        <div class="editor-box readonly">
+          <app-tiptap-editor [content]="l.doc" [editable]="false"></app-tiptap-editor>
+        </div>
+      </div>
+    }
+  }
+</ng-template>
+
+<!-- ───────────── Phone (B1) ───────────── -->
+
+<ng-template #phoneLayout>
+  <div class="phone">
+    <div class="card"><ng-container *ngTemplateOutlet="attendeeRow"></ng-container></div>
+    <ng-container *ngTemplateOutlet="liveBar"></ng-container>
+    @if (isPublished) {
+      <div class="published-note"><ion-icon name="checkmark-circle" color="success"></ion-icon>{{ statusLine }}</div>
     }
 
-    <!-- Plan field sections — inline agenda items at the placeholder position -->
-    @for (field of planFieldsWithPlaceholder; track field.id) {
-      @if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID) {
-        <ng-container *ngTemplateOutlet="agendaSection"></ng-container>
-      } @else {
-        <ion-item-divider [style.margin-top]="'16px'">
-          <ion-label>{{ field.name }}</ion-label>
-          <ion-buttons slot="end">
-            <ion-button fill="clear" size="small" (click)="linkAgendaItem(field.id)" title="Tagesordnungspunkt verknüpfen">
-              <ion-icon slot="icon-only" name="list-circle-outline" color="secondary"></ion-icon>
+    @if (!sections.length) {
+      <div class="empty-card card">
+        <p>Der Ablaufplan ist noch leer. Füge einen Punkt hinzu oder schreib in die Notizen.</p>
+      </div>
+    }
+
+    @for (s of sections; track s.id) {
+      <div class="card section-card" [id]="'protocol-section-' + s.id"
+        [class.active]="activeId === s.id" [class.live]="live?.fieldId === s.id">
+        <button type="button" class="card-head" (click)="toggleSection(s.id)" [attr.aria-expanded]="activeId === s.id">
+          @if (activeId !== s.id && hasNotes(s.id) && !outcomes[s.id]) {
+            <ion-icon name="checkmark-circle-outline" color="success" class="noted"></ion-icon>
+          }
+          <div class="grow">
+            @if (s.isTop) {
+              <div class="kicker">TOP {{ s.topNumber }}@if (s.start) { · {{ s.start }} }</div>
+              <div class="t">{{ s.name }}</div>
+              @if (s.conductor) { <div class="s">{{ s.conductor }}</div> }
+            } @else {
+              <div class="t">@if (s.start) { {{ s.start }} · }{{ s.name }}</div>
+            }
+            @if (activeId !== s.id && hasNotes(s.id)) {
+              <div class="s preview">{{ preview(s.id) }}</div>
+            }
+          </div>
+          @if (activeId !== s.id && outcomes[s.id]) {
+            <ion-badge [color]="outcomeColor(outcomes[s.id])">{{ OUTCOME_LABELS[outcomes[s.id]] }}</ion-badge>
+          }
+          @if (s.duration) { <span class="dur">{{ s.duration }} min</span> }
+          <ion-icon class="chev" [name]="activeId === s.id ? 'chevron-up' : 'chevron-down'"></ion-icon>
+        </button>
+
+        @if (activeId === s.id) {
+          @if (s.isTop) {
+            <ng-container *ngTemplateOutlet="outcomeSeg; context: { $implicit: s }"></ng-container>
+          }
+          <div class="editor-box" [attr.data-editor-section]="s.id">
+            <app-tiptap-editor
+              [content]="editorContent[s.id] ?? null"
+              [sectionId]="s.id"
+              [editable]="true"
+              (contentChange)="onSectionChange(s.id, $event)">
+            </app-tiptap-editor>
+          </div>
+          <ng-container *ngTemplateOutlet="taskList; context: { $implicit: tasksFor(s.id) }"></ng-container>
+          <div class="card-actions">
+            <ion-button fill="clear" size="small" (click)="createTask(s.id)">
+              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+              Aufgabe
             </ion-button>
-            <ion-button fill="clear" size="small" (click)="createTaskInline(field.id)" title="Aufgabe erstellen">
-              <ion-icon slot="icon-only" name="checkmark-circle-outline" color="primary"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-item-divider>
-        <div class="editor-wrapper">
+          </div>
+        } @else if (tasksFor(s.id).length) {
+          <div class="collapsed-tasks s">{{ tasksFor(s.id).length }} {{ tasksFor(s.id).length === 1 ? 'Aufgabe' : 'Aufgaben' }}</div>
+        }
+      </div>
+    }
+
+    <ion-button fill="clear" expand="block" class="add-point" (click)="addSpontaneousTopic()">
+      <ion-icon slot="start" name="add-outline"></ion-icon>
+      Punkt
+    </ion-button>
+
+    @if (unassignedTasks.length) {
+      <div class="group-label">Weitere Aufgaben dieser Sitzung</div>
+      <div class="card"><ng-container *ngTemplateOutlet="taskList; context: { $implicit: unassignedTasks }"></ng-container></div>
+    }
+
+    <ng-container *ngTemplateOutlet="leftoverList"></ng-container>
+  </div>
+</ng-template>
+
+<!-- ───────────── Tablet / laptop (B4) ───────────── -->
+
+<ng-template #wideLayout>
+  <div class="wide">
+    <aside class="col left" aria-label="Tagesordnung">
+      <div class="side-head">
+        <div class="side-title">{{ title }}</div>
+        <div class="s">{{ dateLabel }}@if (timeRange) { · {{ timeRange }} }</div>
+        <div class="s status" [class.published]="isPublished">{{ statusLine }}</div>
+      </div>
+
+      <ng-container *ngTemplateOutlet="liveBar"></ng-container>
+
+      <div class="group-label">Ablaufplan</div>
+      <div class="card agenda-list">
+        @for (s of sections; track s.id) {
+          <button type="button" class="agenda-item" [class.sel]="activeId === s.id" [class.live]="live?.fieldId === s.id"
+            (click)="activate(s.id, true)">
+            <span class="tm">{{ s.start }}</span>
+            <div class="grow">
+              <div class="t">{{ s.title }}</div>
+              @if (s.conductor || s.duration) {
+                <div class="s">{{ s.conductor }}@if (s.conductor && s.duration) { · }@if (s.duration) { {{ s.duration }} min }</div>
+              }
+            </div>
+            <span class="dot"
+              [class.filled]="hasNotes(s.id) || outcomes[s.id]"
+              [class]="outcomes[s.id] ? 'dot-' + outcomes[s.id] : ''"
+              [attr.aria-label]="outcomes[s.id] ? OUTCOME_LABELS[outcomes[s.id]] : (hasNotes(s.id) ? 'Notiert' : 'Offen')"></span>
+          </button>
+        }
+        @for (l of leftovers; track l.key) {
+          <button type="button" class="agenda-item leftover" [class.sel]="activeId === l.key" (click)="activate(l.key)">
+            <span class="tm"><ion-icon name="archive-outline"></ion-icon></span>
+            <div class="grow"><div class="t">{{ l.title }}</div><div class="s">Weitere Notizen</div></div>
+          </button>
+        }
+        <button type="button" class="agenda-item add" (click)="addSpontaneousTopic()">
+          <span class="tm"><ion-icon name="add-outline"></ion-icon></span>
+          <div class="grow"><div class="t">Punkt</div></div>
+        </button>
+      </div>
+
+      <div class="group-label">Anwesend</div>
+      <div class="card"><ng-container *ngTemplateOutlet="attendeeRow"></ng-container></div>
+
+      <ion-button expand="block" class="publish-button side-publish" (click)="openPublish()">
+        {{ isPublished ? 'Erneut freigeben' : 'Protokoll freigeben' }}
+      </ion-button>
+    </aside>
+
+    <main class="col main" aria-label="Notizen zum Punkt">
+      @for (s of (activeSection ? [activeSection] : []); track s.id) {
+        <div class="main-head">
+          <div class="kicker">
+            @if (s.topNumber) { TOP {{ s.topNumber }} · }{{ s.start }}@if (s.duration) { · {{ s.duration }} min }
+          </div>
+          <h1>{{ s.name }}</h1>
+          <div class="main-meta">
+            @if (s.isTop) {
+              <ng-container *ngTemplateOutlet="outcomeSeg; context: { $implicit: s }"></ng-container>
+            }
+            @if (s.conductor) { <span class="s">Verantwortlich: {{ s.conductor }}</span> }
+          </div>
+        </div>
+        <div class="main-editor editor-box" [attr.data-editor-section]="s.id">
           <app-tiptap-editor
-            [content]="getSectionContent(field.id)"
-            [sectionId]="field.id"
+            [content]="editorContent[s.id] ?? null"
+            [sectionId]="s.id"
             [editable]="true"
-            (contentChange)="onSectionChange(field.id, $event)">
+            (contentChange)="onSectionChange(s.id, $event)">
           </app-tiptap-editor>
+          <ng-container *ngTemplateOutlet="taskList; context: { $implicit: tasksFor(s.id) }"></ng-container>
+        </div>
+        <div class="main-foot">
+          <ion-button fill="outline" size="small" (click)="createTask(s.id)">
+            <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+            Aufgabe
+          </ion-button>
+          <span class="shortcut"><span class="kbd">⌘/Strg ↓</span> Nächster Punkt</span>
+          <span class="save-state">
+            @if (savingCount > 0) { <ion-spinner name="dots"></ion-spinner> }
+            {{ saveLabel }}
+          </span>
+        </div>
+      } @empty {
+        @if (activeLeftover; as l) {
+          <div class="main-head">
+            <div class="kicker">Weitere Notizen</div>
+            <h1>{{ l.title }}</h1>
+            <div class="s">Dieser Punkt steht nicht mehr im Ablaufplan. Die Notizen bleiben erhalten.</div>
+          </div>
+          <div class="main-editor editor-box readonly">
+            <app-tiptap-editor [content]="l.doc" [editable]="false"></app-tiptap-editor>
+          </div>
+        } @else {
+          <div class="center-state">
+            <ion-icon name="list-outline"></ion-icon>
+            <h2>{{ sections.length ? 'Wähle links einen Punkt aus.' : 'Der Ablaufplan ist noch leer.' }}</h2>
+            <ion-button fill="outline" (click)="addSpontaneousTopic()">Punkt hinzufügen</ion-button>
+          </div>
+        }
+      }
+    </main>
+
+    <aside class="col right" aria-label="Allgemeine Notizen">
+      <div class="right-head">
+        <div class="side-title">Allgemeine Notizen</div>
+        <ion-button fill="clear" size="small" (click)="createTask(GENERAL)" aria-label="Aufgabe zu den allgemeinen Notizen">
+          <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+        </ion-button>
+      </div>
+      <div class="s">Immer sichtbar, unabhängig vom Punkt</div>
+      <div class="editor-box general" [attr.data-editor-section]="GENERAL">
+        <app-tiptap-editor
+          [content]="editorContent[GENERAL] ?? null"
+          [sectionId]="GENERAL"
+          [editable]="true"
+          (contentChange)="onSectionChange(GENERAL, $event)">
+        </app-tiptap-editor>
+      </div>
+
+      <div class="group-label">Aufgaben dieser Sitzung · {{ tasks.length }}</div>
+      @if (tasks.length) {
+        <div class="card task-list">
+          @for (task of tasks; track task.id) {
+            <a class="task-row" [routerLink]="['/tabs/settings/tasks', task.id]">
+              <ion-icon [name]="task.status === 'completed' ? 'checkmark-circle' : 'ellipse-outline'"
+                [color]="task.status === 'completed' ? 'success' : 'medium'"></ion-icon>
+              <div class="grow">
+                <div class="task-title" [class.done]="task.status === 'completed'">{{ task.title }}</div>
+                <div class="s">
+                  {{ sectionLabelOfTask(task) }}@if (sectionLabelOfTask(task) && task.responsible_person) { · }{{ task.responsible_person?.firstName }}
+                </div>
+              </div>
+            </a>
+          }
+        </div>
+      } @else {
+        <p class="hint-text">Noch keine Aufgaben. Lege sie direkt bei einem Punkt an.</p>
+      }
+    </aside>
+  </div>
+</ng-template>
+
+<!-- ───────────── Read mode (C3) ───────────── -->
+
+<ng-template #readLayout>
+  <div class="read">
+    <div class="read-head">
+      <h1>{{ title }}</h1>
+      <div class="s">{{ dateLabel }}@if (timeRange) { · {{ timeRange }} Uhr }</div>
+      @if (isPublished) {
+        <div class="published-note"><ion-icon name="checkmark-circle" color="success"></ion-icon>{{ statusLine }}</div>
+      }
+    </div>
+
+    @if (present.length || excused.length) {
+      <div class="card padded">
+        <div class="card-label">Anwesend ({{ present.length }})</div>
+        <div class="chips">
+          @for (a of present; track a.id) { <span class="chip">{{ a.name }}</span> }
+        </div>
+        @if (excused.length) {
+          <div class="card-label spaced">Entschuldigt ({{ excused.length }})</div>
+          <div class="chips">
+            @for (a of excused; track a.id) { <span class="chip muted">{{ a.name }}</span> }
+          </div>
+        }
+      </div>
+    }
+
+    @for (s of sections; track s.id) {
+      @if (s.isTop || hasNotes(s.id) || outcomes[s.id] || tasksFor(s.id).length) {
+        <div class="card padded">
+          @if (s.topNumber) { <div class="kicker">TOP {{ s.topNumber }}</div> }
+          <div class="read-title">
+            <span>{{ s.name }}</span>
+            @if (outcomes[s.id]) {
+              <ion-badge [color]="outcomeColor(outcomes[s.id])">{{ OUTCOME_LABELS[outcomes[s.id]] }}</ion-badge>
+            }
+          </div>
+          @if (hasNotes(s.id)) {
+            <div class="read-content">
+              <app-tiptap-editor [content]="docs[s.id]" [editable]="false"></app-tiptap-editor>
+            </div>
+          } @else if (!tasksFor(s.id).length) {
+            <div class="s">Keine Notizen</div>
+          }
+          <ng-container *ngTemplateOutlet="taskList; context: { $implicit: tasksFor(s.id) }"></ng-container>
         </div>
       }
     }
 
-    <!-- General notes always visible -->
-    <ion-item-divider style="margin-top: 16px">
-      <ion-label>Allgemeine Notizen</ion-label>
-      <ion-buttons slot="end">
-        <ion-button fill="clear" size="small" (click)="createTaskInline('__general__')" title="Aufgabe erstellen">
-          <ion-icon slot="icon-only" name="checkmark-circle-outline" color="primary"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    </ion-item-divider>
-    <div class="editor-wrapper">
-      <app-tiptap-editor
-        [content]="getSectionContent('__general__')"
-        sectionId="__general__"
-        [editable]="true"
-        (contentChange)="onSectionChange('__general__', $event)">
-      </app-tiptap-editor>
-    </div>
+    <ng-container *ngTemplateOutlet="leftoverList"></ng-container>
 
-    <!-- Tasks created in this protocol -->
-    @if (tasks.length > 0) {
-      <ion-item-divider style="margin-top: 16px">
-        <ion-label>Aufgaben aus diesem Protokoll ({{ tasks.length }})</ion-label>
-      </ion-item-divider>
-      <ion-list>
-        @for (task of tasks; track task.id) {
-          <ion-item [routerLink]="['/tabs/settings/tasks', task.id]" detail button>
-            <ion-label>
-              <h3>{{ task.title }}</h3>
-              @if (task.due_date) {
-                <p>Fällig: {{ task.due_date | date:'dd.MM.yyyy' }}</p>
-              }
-            </ion-label>
-            <ion-badge slot="end" [color]="task.status === 'completed' ? 'success' : task.status === 'in_progress' ? 'warning' : 'primary'">
-              {{ task.status === 'completed' ? 'Erledigt' : task.status === 'in_progress' ? 'In Bearbeitung' : 'Offen' }}
-            </ion-badge>
+    @if (hasNotes(GENERAL) || unassignedTasks.length) {
+      <div class="card padded">
+        <div class="read-title"><span>Allgemeine Notizen</span></div>
+        @if (hasNotes(GENERAL)) {
+          <div class="read-content">
+            <app-tiptap-editor [content]="docs[GENERAL]" [editable]="false"></app-tiptap-editor>
+          </div>
+        }
+        <ng-container *ngTemplateOutlet="taskList; context: { $implicit: unassignedTasks }"></ng-container>
+      </div>
+    }
+
+    <ion-button expand="block" fill="outline" class="share-button" (click)="sharePdf()">
+      <ion-icon slot="start" name="share-outline"></ion-icon>
+      Als PDF teilen
+    </ion-button>
+  </div>
+</ng-template>
+
+<!-- ───────────── Sheets ───────────── -->
+
+<ion-modal [isOpen]="attendeesOpen" (didDismiss)="attendeesOpen = false" [initialBreakpoint]="0.6" [breakpoints]="[0, 0.6, 1]">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Teilnehmende</ion-title>
+        <ion-buttons slot="end"><ion-button (click)="attendeesOpen = false">Fertig</ion-button></ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content color="light">
+      <ion-list [inset]="true">
+        <ion-list-header><ion-label>Anwesend ({{ present.length }})</ion-label></ion-list-header>
+        @for (a of present; track a.id) {
+          <ion-item>
+            <span slot="start" class="ini list-ini" [style.background]="a.color">{{ a.initials }}</span>
+            <ion-label>{{ a.name }}</ion-label>
           </ion-item>
+        } @empty {
+          <ion-item><ion-label color="medium">Niemand als anwesend eingetragen</ion-label></ion-item>
         }
       </ion-list>
-    }
-  }
-</ion-content>
+      @if (excused.length) {
+        <ion-list [inset]="true">
+          <ion-list-header><ion-label>Entschuldigt ({{ excused.length }})</ion-label></ion-list-header>
+          @for (a of excused; track a.id) {
+            <ion-item>
+              <span slot="start" class="ini list-ini muted">{{ a.initials }}</span>
+              <ion-label>
+                {{ a.name }}
+                @if (a.notes) { <p>{{ a.notes }}</p> }
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      }
+      @if (others.length) {
+        <ion-list [inset]="true">
+          <ion-list-header><ion-label>Nicht da / offen ({{ others.length }})</ion-label></ion-list-header>
+          @for (a of others; track a.id) {
+            <ion-item><ion-label color="medium">{{ a.name }}</ion-label></ion-item>
+          }
+        </ion-list>
+      }
+      <p class="hint-text ion-padding-horizontal">Die Liste kommt aus der Anwesenheit des Termins.</p>
+    </ion-content>
+  </ng-template>
+</ion-modal>
 
-<!-- Agenda items section template — rendered at placeholder position or top -->
-<ng-template #agendaSection>
-  <ion-item-divider style="margin-top: 16px">
-    <ion-label>Tagesordnungspunkte</ion-label>
-    <ion-buttons slot="end">
-      @if (isSaving) {
-        <ion-spinner name="dots" style="margin-right: 8px; width: 16px; height: 16px;"></ion-spinner>
-      }
-      <ion-button fill="clear" size="small" (click)="addAgendaItem()" title="Neu erstellen">
-        <ion-icon slot="icon-only" name="add-circle-outline" color="primary"></ion-icon>
+<ion-modal [isOpen]="notesOpen" (willDismiss)="closeNotes()" [initialBreakpoint]="0.75" [breakpoints]="[0, 0.75, 1]">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Allgemeine Notizen</ion-title>
+        <ion-buttons slot="end"><ion-button (click)="closeNotes()">Fertig</ion-button></ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content color="light" class="ion-padding">
+      <p class="hint-text">Gilt für die ganze Sitzung, unabhängig vom Punkt.</p>
+      <div class="editor-box general" [attr.data-editor-section]="GENERAL">
+        <app-tiptap-editor
+          [content]="editorContent[GENERAL] ?? null"
+          [sectionId]="GENERAL"
+          [editable]="true"
+          (contentChange)="onSectionChange(GENERAL, $event)">
+        </app-tiptap-editor>
+      </div>
+      <ng-container *ngTemplateOutlet="taskList; context: { $implicit: tasksFor(GENERAL) }"></ng-container>
+      <ion-button fill="clear" size="small" (click)="createTask(GENERAL)">
+        <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+        Aufgabe
       </ion-button>
-      <ion-button fill="clear" size="small" (click)="linkAgendaItemToProtocol()" title="Bestehenden verknüpfen">
-        <ion-icon slot="icon-only" name="link-outline" color="secondary"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-item-divider>
-  @if (linkedAgendaItems.length === 0) {
-    <p class="ion-padding-horizontal" style="color: var(--ion-color-medium); font-size: 0.9em">
-      Keine verknüpften Tagesordnungspunkte. Neu erstellen (+) oder bestehenden verknüpfen (🔗).
-    </p>
-  } @else {
-    <ion-accordion-group [multiple]="true">
-      @for (item of linkedAgendaItems; track item.id) {
-        <ion-accordion [value]="item.id">
-          <ion-item slot="header">
-            <ion-checkbox
-              [checked]="item.status === 'completed'"
-              (ionChange)="toggleAgendaItemStatus(item); $event.stopPropagation()"
-              (click)="$event.stopPropagation()"
-              slot="start">
-            </ion-checkbox>
-            <ion-label [style.text-decoration]="item.status === 'completed' ? 'line-through' : ''">
-              {{ item.title }}
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<ion-modal [isOpen]="publishOpen" (didDismiss)="publishOpen = false" [initialBreakpoint]="1" [breakpoints]="[0, 1]">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start"><ion-button (click)="publishOpen = false">Abbrechen</ion-button></ion-buttons>
+        <ion-title>Protokoll freigeben</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content color="light">
+      @if (summary; as sum) {
+        <ion-list [inset]="true">
+          <ion-list-header><ion-label>Zusammenfassung</ion-label></ion-list-header>
+          @if (sum.decided.length) {
+            <ion-item>
+              <ion-icon slot="start" name="checkmark-circle" color="success"></ion-icon>
+              <ion-label class="ion-text-wrap">
+                <h3>{{ sum.decided.length }} {{ sum.decided.length === 1 ? 'Thema' : 'Themen' }} beschlossen</h3>
+                <p>{{ sum.decided.join(', ') }}</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (sum.discussed.length) {
+            <ion-item>
+              <ion-icon slot="start" name="chatbubbles-outline" color="primary"></ion-icon>
+              <ion-label class="ion-text-wrap">
+                <h3>{{ sum.discussed.length }} {{ sum.discussed.length === 1 ? 'Thema' : 'Themen' }} besprochen</h3>
+                <p>{{ sum.discussed.join(', ') }}</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (sum.postponed.length) {
+            <ion-item>
+              <ion-icon slot="start" name="time-outline" color="warning"></ion-icon>
+              <ion-label class="ion-text-wrap">
+                <h3>{{ sum.postponed.length }} {{ sum.postponed.length === 1 ? 'Thema' : 'Themen' }} vertagt</h3>
+                <p>{{ sum.postponed.join(', ') }}@if (type?.suggest_postponed) { · wird beim nächsten Termin vorgeschlagen }</p>
+              </ion-label>
+            </ion-item>
+          }
+          <ion-item>
+            <ion-icon slot="start" name="checkbox-outline" color="medium"></ion-icon>
+            <ion-label class="ion-text-wrap">
+              <h3>{{ sum.taskCount }} {{ sum.taskCount === 1 ? 'Aufgabe' : 'Aufgaben' }}</h3>
+              @if (sum.taskOwners.length) { <p>für {{ joinNames(sum.taskOwners) }}</p> }
             </ion-label>
-            <ion-badge slot="end" [color]="item.priority === 'high' ? 'danger' : item.priority === 'low' ? 'medium' : 'warning'">
-              {{ item.priority === 'high' ? 'Hoch' : item.priority === 'low' ? 'Niedrig' : 'Mittel' }}
-            </ion-badge>
-            <ion-button slot="end" fill="clear" size="small" color="medium"
-              (click)="unlinkAgendaItem(item); $event.stopPropagation()">
-              <ion-icon slot="icon-only" name="close-outline"></ion-icon>
-            </ion-button>
           </ion-item>
-          <div slot="content" class="editor-wrapper agenda-editor">
-            <app-tiptap-editor
-              [content]="getSectionContent('__agenda__' + item.id)"
-              [sectionId]="'__agenda__' + item.id"
-              [editable]="true"
-              (contentChange)="onSectionChange('__agenda__' + item.id, $event)">
-            </app-tiptap-editor>
-            <ion-button fill="clear" size="small" (click)="createTaskInline('__agenda__' + item.id, item)">
-              <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-              Aufgabe erstellen
-            </ion-button>
-          </div>
-        </ion-accordion>
+          @if (sum.withoutOutcome.length) {
+            <ion-item>
+              <ion-icon slot="start" name="help-circle-outline" color="medium"></ion-icon>
+              <ion-label class="ion-text-wrap">
+                <h3>Ohne Ergebnis: {{ sum.withoutOutcome.length }}</h3>
+                <p>{{ sum.withoutOutcome.join(', ') }}</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (sum.withoutNotes.length) {
+            <ion-item>
+              <ion-icon slot="start" name="alert-circle-outline" color="warning"></ion-icon>
+              <ion-label class="ion-text-wrap">
+                <h3>Noch ohne Notizen: {{ sum.withoutNotes.length }}</h3>
+                <p>{{ sum.withoutNotes.join(', ') }}</p>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+
+        <ion-list [inset]="true">
+          <ion-list-header><ion-label>Sichtbarkeit</ion-label></ion-list-header>
+          <ion-item>
+            <ion-icon slot="start" name="eye-outline" color="medium"></ion-icon>
+            <ion-label class="ion-text-wrap">
+              <h3>Lesen dürfen</h3>
+              <p>
+                @if (type?.relevant_groups?.length) { die Gruppen aus dem Termintyp „{{ type?.name }}“ }
+                @else { alle Mitglieder (Termintyp „{{ type?.name }}“ hat keine Gruppen) }
+              </p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon slot="start" name="notifications-outline" color="medium"></ion-icon>
+            <ion-label class="ion-text-wrap">
+              <h3>Benachrichtigt werden</h3>
+              <p>{{ sum.recipientCount }} Anwesende@if (sum.taskOwners.length) { · {{ sum.taskOwners.length }} {{ sum.taskOwners.length === 1 ? 'Person' : 'Personen' }} mit Aufgaben }</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-toggle [(ngModel)]="sendPdf">
+              <ion-label class="ion-text-wrap">
+                Protokoll als PDF mitschicken
+                <p>Per Telegram als Dokument</p>
+              </ion-label>
+            </ion-toggle>
+          </ion-item>
+        </ion-list>
+
+        <p class="hint-text ion-padding-horizontal">
+          Die Leitung kann das Protokoll auch nach der Freigabe noch bearbeiten. Änderungen werden mit Datum angezeigt.
+        </p>
+
+        <div class="ion-padding">
+          <ion-button expand="block" class="publish-button" [disabled]="publishing" (click)="publish()">
+            <ion-icon slot="start" name="paper-plane-outline"></ion-icon>
+            {{ isPublished ? 'Erneut freigeben & benachrichtigen' : 'Freigeben & benachrichtigen' }}
+          </ion-button>
+          <ion-button expand="block" fill="clear" (click)="publishOpen = false">
+            {{ isPublished ? 'Abbrechen' : 'Als Entwurf lassen' }}
+          </ion-button>
+        </div>
       }
-    </ion-accordion-group>
-  }
-</ng-template>
+    </ion-content>
+  </ng-template>
+</ion-modal>

@@ -1,0 +1,30 @@
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 56px 24px;
+  color: var(--ion-color-medium);
+
+  ion-icon { font-size: 44px; margin-bottom: 12px; }
+  h2 { font-size: 17px; font-weight: 600; color: var(--ion-text-color); margin: 0 0 6px; }
+  p { margin: 0; max-width: 340px; }
+}
+
+.date-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(67, 142, 150, 0.12);
+  color: #3b7d84;
+  line-height: 1;
+
+  .day { font-size: 17px; font-weight: 700; }
+  .weekday { font-size: 11px; font-weight: 600; margin-top: 2px; }
+}
+
+.published { font-size: 12px; }

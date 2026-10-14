@@ -1,27 +1,94 @@
 import {
   Component,
+  HostListener,
+  OnDestroy,
   OnInit,
   QueryList,
   ViewChildren,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AlertController } from '@ionic/angular/lazy';
+import { AlertController, ModalController } from '@ionic/angular/lazy';
 import { JSONContent } from '@tiptap/core';
+import dayjs from 'dayjs';
+import 'dayjs/locale/de';
 import { TiptapEditorComponent } from 'src/app/shared/tiptap-editor/tiptap-editor.component';
 import { DbService } from 'src/app/services/db.service';
 import {
   AgendaItem,
-  AgendaItemPriority,
-  AgendaItemStatus,
   Attendance,
+  AttendanceType,
   FieldSelection,
-  Person,
+  PersonAttendance,
+  PROTOCOL_GENERAL_SECTION_ID,
   Protocol,
+  ProtocolOutcome,
   Task,
-  TaskStatus,
-  AGENDA_ITEMS_PLACEHOLDER_ID,
 } from 'src/app/utilities/interfaces';
+import { AttendanceStatus } from 'src/app/utilities/constants';
 import { Utils } from 'src/app/utilities/Utils';
+import {
+  OUTCOME_LABELS,
+  buildAgendaField,
+  fieldDisplayName,
+  fieldStartTimes,
+  insertAgendaFields,
+  isEditedAfterPublish,
+  protocolSections,
+  topNumbers,
+} from 'src/app/team-organization/team-org.utils';
+import { openTaskForm } from 'src/app/tasks/task-form/task-form.component';
+import {
+  LiveSection,
+  PublishSummary,
+  docToPlainText,
+  initials,
+  isDocEmpty,
+  isPresentStatus,
+  joinNames,
+  leftoverSections,
+  liveSection,
+  nextSectionId,
+  planStartDateTime,
+  publishSummary,
+  taskSections,
+} from './protocol.helpers';
+import { createProtocolPdf, ProtocolPdfData } from './protocol-pdf';
+
+type Doc = Record<string, unknown>;
+
+/** One protocol section = one field of the Ablaufplan. */
+export interface SectionView {
+  id: string;
+  field: FieldSelection;
+  /** "TOP 1 · Konzertplanung" or the plain field name. */
+  title: string;
+  name: string;
+  topNumber?: number;
+  isTop: boolean;
+  start?: string;
+  duration: number;
+  conductor?: string;
+}
+
+interface Attendee {
+  id: string;
+  name: string;
+  initials: string;
+  color: string;
+  status: AttendanceStatus;
+  notes?: string;
+}
+
+interface LeftoverView {
+  key: string;
+  title: string;
+  doc: Doc;
+}
+
+const AVATAR_COLORS = ['#3b7d84', '#7b5ea7', '#c0703a', '#2f7d4f', '#a6475f', '#4a6fa5', '#8a7a2f'];
+/** Width from which the three-column layout (agenda · notes · general notes) is used. */
+const WIDE_QUERY = '(min-width: 900px)';
+const SAVE_DEBOUNCE_MS = 800;
 
 @Component({
   selector: 'app-protocol',
@@ -29,90 +96,512 @@ import { Utils } from 'src/app/utilities/Utils';
   styleUrls: ['./protocol.page.scss'],
   standalone: false,
 })
-export class ProtocolPage implements OnInit {
+export class ProtocolPage implements OnInit, OnDestroy {
   @ViewChildren(TiptapEditorComponent) editors: QueryList<TiptapEditorComponent>;
 
-  public attendanceId: number;
-  public attendance: Attendance;
-  public protocol: Protocol;
-  public agendaItems: AgendaItem[] = [];
-  public linkedAgendaItems: AgendaItem[] = [];
-  public tasks: Task[] = [];
-  public players: Person[] = [];
-  public planFields: FieldSelection[] = [];
-  public planFieldsWithPlaceholder: FieldSelection[] = [];
-  public isSaving = false;
-  public isLoading = true;
-  public showSlashMenu = false;
-  public slashMenuForFieldId: string | null = null;
+  readonly GENERAL = PROTOCOL_GENERAL_SECTION_ID;
+  readonly OUTCOMES: { value: ProtocolOutcome; label: string }[] =
+    (['discussed', 'decided', 'postponed'] as ProtocolOutcome[]).map(value => ({ value, label: OUTCOME_LABELS[value] }));
+  readonly OUTCOME_LABELS = OUTCOME_LABELS;
 
-  readonly AGENDA_ITEMS_PLACEHOLDER_ID = AGENDA_ITEMS_PLACEHOLDER_ID;
+  attendanceId: number;
+  attendance: Attendance | null = null;
+  type: AttendanceType | undefined;
+  protocol: Protocol | null = null;
+  tasks: Task[] = [];
 
-  get hasAgendaPlaceholder(): boolean {
-    return this.planFieldsWithPlaceholder.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID);
-  }
-  private saveDebounceTimers = new Map<string, any>();
+  isLeader = false;
+  isLoading = true;
+  loadFailed = false;
+  /** Member opened a protocol that RLS does not return (not published / not in the circle). */
+  notAvailable = false;
+
+  sections: SectionView[] = [];
+  leftovers: LeftoverView[] = [];
+  /** Latest doc per section (updated on every change, used for previews, summary and PDF). */
+  docs: { [fieldId: string]: Doc } = {};
+  /**
+   * Content bound to the editors. Only set when an editor is (re)created, so a
+   * running editor never gets its own (older) content pushed back while typing.
+   */
+  editorContent: { [fieldId: string]: Doc | null } = {};
+  outcomes: { [fieldId: string]: ProtocolOutcome } = {};
+
+  present: Attendee[] = [];
+  excused: Attendee[] = [];
+  others: Attendee[] = [];
+
+  /** Selected section (wide layout) / expanded card (phone). */
+  activeId: string | null = null;
+  live: LiveSection | null = null;
+  isWide = false;
+
+  savingCount = 0;
+  lastSavedAt: Date | null = null;
+
+  attendeesOpen = false;
+  notesOpen = false;
+  publishOpen = false;
+  sendPdf = true;
+  summary: PublishSummary | null = null;
+  publishing = false;
+
+  private taskSectionMap = new Map<string, string>();
+  private saveTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  private pendingDocs = new Map<string, Doc>();
+  private liveTimer: ReturnType<typeof setInterval> | null = null;
+  private mediaQuery: MediaQueryList | null = null;
+  private mediaListener = (e: MediaQueryListEvent) => this.onLayoutChange(e.matches);
+  private isActivePage = false;
+  private lastErrorToast = 0;
 
   constructor(
     private db: DbService,
     private route: ActivatedRoute,
     private alertController: AlertController,
+    private modalController: ModalController,
   ) {}
 
+  // ── Lifecycle ────────────────────────────────────────────
+
   async ngOnInit() {
-    this.attendanceId = +this.route.snapshot.params['attendanceId'];
-
-    const [attendance, protocol, agendaItems, allPlayers] = await Promise.all([
-      this.db.getAttendanceById(this.attendanceId),
-      this.db.getProtocolForAttendance(this.attendanceId),
-      this.db.getAgendaItemsForAttendance(this.attendanceId),
-      this.db.getConductors(true),
-    ]);
-
-    this.attendance = attendance;
-    this.agendaItems = await this.db.getAgendaItems();
-    this.linkedAgendaItems = agendaItems;
-    this.players = allPlayers.filter((p: Person) => !p.left);
-    this.planFields = (attendance.plan?.fields ?? []).filter(
-      (f: FieldSelection) => f.id !== AGENDA_ITEMS_PLACEHOLDER_ID
-    );
-    this.planFieldsWithPlaceholder = attendance.plan?.fields ?? [];
-
-    this.protocol = protocol ?? {
-      attendance_id: this.attendanceId,
-      tenant_id: this.db.tenant().id,
-      content: {},
-    };
-
-    if (protocol) {
-      this.tasks = await this.db.getTasksForProtocol(protocol.id);
+    this.attendanceId = Number(this.route.snapshot.params['attendanceId'] ?? this.route.snapshot.paramMap.get('attendanceId'));
+    this.isLeader = this.db.isTeamLeader();
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      this.mediaQuery = window.matchMedia(WIDE_QUERY);
+      this.isWide = this.mediaQuery.matches;
+      this.mediaQuery.addEventListener?.('change', this.mediaListener);
     }
-    this.isLoading = false;
+    await this.load();
   }
 
-  getSectionContent(fieldId: string): Record<string, unknown> | null {
-    return (this.protocol?.content?.[fieldId] as Record<string, unknown>) ?? null;
+  ionViewDidEnter() {
+    this.isActivePage = true;
   }
+
+  async ionViewWillLeave() {
+    this.isActivePage = false;
+    await this.flushAll();
+  }
+
+  ngOnDestroy() {
+    this.stopLiveTimer();
+    this.mediaQuery?.removeEventListener?.('change', this.mediaListener);
+    // Last chance: send what is still waiting in the debounce.
+    void this.flushAll();
+  }
+
+  get backHref(): string {
+    return this.isLeader ? `/tabs/attendance/${this.attendanceId}` : '/tabs/settings/team-organization?tab=protocols';
+  }
+
+  async load() {
+    this.isLoading = true;
+    this.loadFailed = false;
+    try {
+      const [attendance, protocol, tasks] = await Promise.all([
+        this.db.getAttendanceById(this.attendanceId),
+        this.db.getProtocolForAttendance(this.attendanceId),
+        this.db.getTasksForAttendance(this.attendanceId).catch(() => [] as Task[]),
+      ]);
+      this.attendance = attendance;
+      this.type = this.db.attendanceTypes().find(t => t.id === attendance?.type_id);
+      this.protocol = protocol;
+      this.tasks = tasks ?? [];
+
+      if (!this.isLeader && !protocol) {
+        this.notAvailable = true;
+        return;
+      }
+
+      this.docs = { ...((protocol?.content ?? {}) as { [k: string]: Doc }) };
+      this.outcomes = { ...(protocol?.outcomes ?? {}) };
+      this.buildSections();
+      this.buildAttendees();
+      await this.buildLeftovers();
+      this.editorContent = { ...this.docs };
+
+      this.updateLive();
+      this.activeId = this.live?.fieldId ?? this.sections[0]?.id ?? null;
+      this.startLiveTimer();
+    } catch (error) {
+      console.error('Protocol load error:', error);
+      this.loadFailed = true;
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private buildSections() {
+    const fields = protocolSections(this.attendance?.plan?.fields);
+    const numbers = topNumbers(fields);
+    const times = fieldStartTimes(this.planStart, fields);
+    this.sections = fields.map(field => ({
+      id: field.id,
+      field,
+      title: fieldDisplayName(field, numbers),
+      name: field.name,
+      topNumber: numbers.get(field.id),
+      isTop: !!field.agendaItemId,
+      start: times.get(field.id),
+      duration: parseInt(field.time, 10) || 0,
+      conductor: field.conductor,
+    }));
+    this.refreshTaskSections();
+  }
+
+  private refreshTaskSections() {
+    this.taskSectionMap = taskSections(this.docs, this.tasks, this.sections.map(s => s.field));
+  }
+
+  private buildAttendees() {
+    const persons: PersonAttendance[] = this.attendance?.persons ?? [];
+    const toAttendee = (p: PersonAttendance, i: number): Attendee => {
+      const firstName = p.person?.firstName ?? p.firstName ?? '';
+      const lastName = p.person?.lastName ?? p.lastName ?? '';
+      return {
+        id: String(p.id ?? p.person_id),
+        name: `${firstName} ${lastName}`.trim() || 'Unbekannt',
+        initials: initials(firstName, lastName),
+        color: AVATAR_COLORS[(p.person_id ?? i) % AVATAR_COLORS.length],
+        status: p.status,
+        notes: p.notes,
+      };
+    };
+    const all = persons.map(toAttendee).sort((a, b) => a.name.localeCompare(b.name));
+    this.present = all.filter(a => isPresentStatus(a.status));
+    this.excused = all.filter(a => a.status === AttendanceStatus.Excused);
+    this.others = all.filter(a => !isPresentStatus(a.status) && a.status !== AttendanceStatus.Excused);
+  }
+
+  private async buildLeftovers() {
+    const leftovers = leftoverSections(this.docs, this.sections.map(s => s.id));
+    const agendaIds = leftovers.map(l => l.agendaItemId).filter((id): id is string => !!id);
+    let items: AgendaItem[] = [];
+    if (agendaIds.length) {
+      try {
+        items = await this.db.getAgendaItemsByIds(agendaIds);
+      } catch {
+        items = [];
+      }
+    }
+    this.leftovers = leftovers.map(l => ({
+      key: l.key,
+      doc: l.doc,
+      title: l.agendaItemId
+        ? (items.find(i => i.id === l.agendaItemId)?.title ?? 'Tagesordnungspunkt')
+        : 'Früherer Programmpunkt',
+    }));
+  }
+
+  // ── Display helpers ──────────────────────────────────────
+
+  /** Plan start: plan time, otherwise the start time of the Termin. */
+  get planStart(): string | undefined {
+    return this.attendance?.plan?.time || this.attendance?.start_time || this.type?.start_time || undefined;
+  }
+
+  get title(): string {
+    return this.attendance?.typeInfo || this.type?.name || 'Protokoll';
+  }
+
+  get dateLabel(): string {
+    if (!this.attendance?.date) return '';
+    return dayjs(this.attendance.date).locale('de').format('dd, DD.MM.YYYY');
+  }
+
+  get shortDate(): string {
+    return this.attendance?.date ? dayjs(this.attendance.date).format('DD.MM.') : '';
+  }
+
+  get timeRange(): string {
+    const start = planStartDateTime(this.attendance?.date, this.planStart);
+    if (!start) return '';
+    const total = this.sections.reduce((sum, s) => sum + s.duration, 0);
+    return total ? `${start.format('HH:mm')}–${start.add(total, 'minute').format('HH:mm')}` : start.format('HH:mm');
+  }
+
+  get isPublished(): boolean {
+    return this.protocol?.status === 'published';
+  }
+
+  get statusLine(): string {
+    if (!this.isPublished) return 'Entwurf';
+    const published = this.protocol?.published_at ? dayjs(this.protocol.published_at).format('DD.MM.YYYY') : '';
+    let line = `Freigegeben am ${published}`;
+    if (isEditedAfterPublish(this.protocol)) {
+      line += ` · geändert am ${dayjs(this.protocol!.updated_at).format('DD.MM.YYYY')}`;
+    }
+    return line;
+  }
+
+  get saveLabel(): string {
+    if (this.savingCount > 0) return 'Speichert …';
+    if (this.lastSavedAt) return `Automatisch gespeichert · ${dayjs(this.lastSavedAt).format('HH:mm')}`;
+    return this.isPublished ? 'Änderungen werden automatisch gespeichert' : 'Wird automatisch gespeichert';
+  }
+
+  get activeSection(): SectionView | undefined {
+    return this.sections.find(s => s.id === this.activeId);
+  }
+
+  get activeLeftover(): LeftoverView | undefined {
+    return this.leftovers.find(l => l.key === this.activeId);
+  }
+
+  get liveSectionView(): SectionView | undefined {
+    return this.live ? this.sections.find(s => s.id === this.live!.fieldId) : undefined;
+  }
+
+  get liveLabel(): string {
+    const s = this.liveSectionView;
+    if (!s || !this.live) return '';
+    const name = s.topNumber ? `TOP ${s.topNumber}` : s.name;
+    return `Läuft: ${name} · noch ${this.live.remainingMinutes} min`;
+  }
+
+  get hasNext(): boolean {
+    return !!nextSectionId(this.sections, this.activeId);
+  }
+
+  /** Avatars in the attendee row: up to four initials plus "+n". */
+  get avatarPreview(): { list: Attendee[]; more: number } {
+    return { list: this.present.slice(0, 4), more: Math.max(0, this.present.length - 4) };
+  }
+
+  hasNotes(id: string): boolean {
+    return !isDocEmpty(this.docs[id]);
+  }
+
+  preview(id: string): string {
+    return docToPlainText(this.docs[id], 140);
+  }
+
+  sectionMeta(s: SectionView): string {
+    return [s.start, s.duration ? `${s.duration} min` : '', s.conductor].filter(Boolean).join(' · ');
+  }
+
+  tasksFor(sectionId: string): Task[] {
+    return this.tasks.filter(t => t.id && this.taskSectionMap.get(t.id) === sectionId);
+  }
+
+  /** Tasks of this Termin that belong to no section in the plan. */
+  get unassignedTasks(): Task[] {
+    const ids = new Set(this.sections.map(s => s.id));
+    return this.tasks.filter(t => !t.id || !ids.has(this.taskSectionMap.get(t.id) ?? ''));
+  }
+
+  sectionLabelOfTask(task: Task): string {
+    const id = task.id ? this.taskSectionMap.get(task.id) : undefined;
+    const s = this.sections.find(x => x.id === id);
+    if (s) return s.topNumber ? `TOP ${s.topNumber}` : s.name;
+    return id === PROTOCOL_GENERAL_SECTION_ID ? 'Allgemein' : '';
+  }
+
+  taskLine(task: Task): string {
+    const parts: string[] = [];
+    if (task.responsible_person) parts.push(`${task.responsible_person.firstName} ${task.responsible_person.lastName}`.trim());
+    if (task.due_date) parts.push(`fällig ${dayjs(task.due_date).format('DD.MM.')}`);
+    return parts.join(' · ');
+  }
+
+  outcomeColor(outcome: ProtocolOutcome | undefined): string {
+    switch (outcome) {
+      case 'decided': return 'success';
+      case 'postponed': return 'warning';
+      case 'discussed': return 'primary';
+      default: return 'medium';
+    }
+  }
+
+  trackById(_: number, s: { id: string }) {
+    return s.id;
+  }
+
+  // ── Layout / navigation ──────────────────────────────────
+
+  private onLayoutChange(wide: boolean) {
+    // Editors are recreated in the other layout: send pending text first and
+    // hand the new editors the latest content.
+    this.captureEditors();
+    this.editorContent = { ...this.docs };
+    this.isWide = wide;
+    if (wide) this.notesOpen = false;
+  }
+
+  /** Phone: expand/collapse a card. Wide: select the section. */
+  toggleSection(id: string) {
+    if (this.activeId === id) {
+      if (this.isWide) return;
+      this.captureEditor(id);
+      this.activeId = null;
+      return;
+    }
+    this.activate(id);
+  }
+
+  activate(id: string, focus = false) {
+    if (this.activeId) this.captureEditor(this.activeId);
+    this.editorContent = { ...this.editorContent, [id]: this.docs[id] ?? null };
+    this.activeId = id;
+    setTimeout(() => {
+      const el = document.getElementById(`protocol-section-${id}`);
+      if (!this.isWide) el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (focus) {
+        (document.querySelector(`[data-editor-section="${id}"] .ProseMirror`) as HTMLElement | null)?.focus();
+      }
+    }, 80);
+  }
+
+  nextSection() {
+    const next = nextSectionId(this.sections, this.activeId);
+    if (next) this.activate(next, true);
+  }
+
+  previousSection() {
+    const i = this.sections.findIndex(s => s.id === this.activeId);
+    if (i > 0) this.activate(this.sections[i - 1].id, true);
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent) {
+    if (!this.isActivePage || !this.isWide || !this.isLeader) return;
+    if (!(event.metaKey || event.ctrlKey)) return;
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.nextSection();
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.previousSection();
+    }
+  }
+
+  // ── Live mode ────────────────────────────────────────────
+
+  private updateLive() {
+    const start = planStartDateTime(this.attendance?.date, this.planStart);
+    this.live = liveSection(this.sections.map(s => s.field), start, new Date());
+  }
+
+  private startLiveTimer() {
+    this.stopLiveTimer();
+    if (!this.isLeader || !this.attendance?.date || !dayjs(this.attendance.date).isSame(dayjs(), 'day')) return;
+    this.liveTimer = setInterval(() => this.updateLive(), 20000);
+  }
+
+  private stopLiveTimer() {
+    if (this.liveTimer) clearInterval(this.liveTimer);
+    this.liveTimer = null;
+  }
+
+  // ── Saving ───────────────────────────────────────────────
 
   onSectionChange(fieldId: string, content: JSONContent) {
-    if (!this.protocol.content) this.protocol.content = {};
-    this.protocol.content[fieldId] = content as Record<string, unknown>;
-    clearTimeout(this.saveDebounceTimers.get(fieldId));
-    const timer = setTimeout(() => this.persistProtocol(), 800);
-    this.saveDebounceTimers.set(fieldId, timer);
+    const doc = content as Doc;
+    this.docs = { ...this.docs, [fieldId]: doc };
+    this.queueSave(fieldId, doc);
+    this.refreshTaskSections();
   }
 
-  async persistProtocol() {
-    if (this.isSaving) return;
-    this.isSaving = true;
+  private queueSave(fieldId: string, doc: Doc) {
+    this.pendingDocs.set(fieldId, doc);
+    const timer = this.saveTimers.get(fieldId);
+    if (timer) clearTimeout(timer);
+    this.saveTimers.set(fieldId, setTimeout(() => void this.flushSection(fieldId), SAVE_DEBOUNCE_MS));
+  }
+
+  private async flushSection(fieldId: string) {
+    const timer = this.saveTimers.get(fieldId);
+    if (timer) clearTimeout(timer);
+    this.saveTimers.delete(fieldId);
+    const doc = this.pendingDocs.get(fieldId);
+    if (!doc) return;
+    this.pendingDocs.delete(fieldId);
+    this.savingCount++;
     try {
-      const saved = await this.db.upsertProtocol(this.protocol);
-      this.protocol.id = saved.id;
-      this.protocol.updated_at = saved.updated_at;
-    } catch (e) {
-      console.error('Protocol save error:', e);
+      const row = await this.db.saveProtocolSection(this.attendanceId, fieldId, { doc });
+      this.applyRow(row);
+      this.lastSavedAt = new Date();
+    } catch (error) {
+      console.error('Protocol save error:', error);
+      // Keep the text for the next attempt unless newer text is already waiting.
+      if (!this.pendingDocs.has(fieldId)) this.pendingDocs.set(fieldId, doc);
+      this.showSaveError();
     } finally {
-      this.isSaving = false;
+      this.savingCount--;
+    }
+  }
+
+  private showSaveError() {
+    if (Date.now() - this.lastErrorToast < 10000) return;
+    this.lastErrorToast = Date.now();
+    Utils.showToast('Notizen konnten nicht gespeichert werden. Prüfe deine Verbindung.', 'danger');
+  }
+
+  /** Takes over the meta data of the saved row; local notes and results stay as they are. */
+  private applyRow(row: Protocol | null | undefined) {
+    if (!row) return;
+    this.protocol = {
+      ...(this.protocol ?? row),
+      id: row.id,
+      status: row.status,
+      published_at: row.published_at,
+      published_by: row.published_by,
+      updated_at: row.updated_at,
+      content: this.docs,
+      outcomes: this.outcomes,
+    };
+  }
+
+  /** Reads the editor's current doc (bypassing its own debounce) into the save queue. */
+  private captureEditor(fieldId: string) {
+    const editor = this.getEditor(fieldId);
+    if (!editor || !this.isLeader) return;
+    let json: Doc | null = null;
+    try {
+      json = editor.getJSON() as Doc | null;
+    } catch {
+      json = null; // editor already destroyed
+    }
+    if (!json) return;
+    if (JSON.stringify(json) !== JSON.stringify(this.docs[fieldId] ?? null)) {
+      this.docs = { ...this.docs, [fieldId]: json };
+      this.queueSave(fieldId, json);
+    }
+  }
+
+  private captureEditors() {
+    this.editors?.forEach(e => e.sectionId && this.captureEditor(e.sectionId));
+  }
+
+  /** Saves everything that is still waiting, right now. */
+  async flushAll() {
+    if (!this.isLeader) return;
+    this.captureEditors();
+    await Promise.all([...this.pendingDocs.keys()].map(id => this.flushSection(id)));
+  }
+
+  async setOutcome(fieldId: string, outcome: ProtocolOutcome) {
+    const previous = this.outcomes[fieldId];
+    const next = previous === outcome ? null : outcome;
+    const outcomes = { ...this.outcomes };
+    if (next) outcomes[fieldId] = next;
+    else delete outcomes[fieldId];
+    this.outcomes = outcomes;
+    this.savingCount++;
+    try {
+      const row = await this.db.saveProtocolSection(this.attendanceId, fieldId, { outcome: next });
+      this.applyRow(row);
+      this.lastSavedAt = new Date();
+    } catch (error) {
+      console.error('Outcome save error:', error);
+      const reverted = { ...this.outcomes };
+      if (previous) reverted[fieldId] = previous;
+      else delete reverted[fieldId];
+      this.outcomes = reverted;
+      Utils.showToast('Ergebnis konnte nicht gespeichert werden', 'danger');
+    } finally {
+      this.savingCount--;
     }
   }
 
@@ -120,156 +609,251 @@ export class ProtocolPage implements OnInit {
     return this.editors?.find(e => e.sectionId === sectionId);
   }
 
-  async createTaskInline(fieldId: string, agendaItem?: AgendaItem) {
+  /** Tasks need the protocol id; saving an empty change creates the protocol row. */
+  private async ensureProtocol(): Promise<string | null> {
+    if (this.protocol?.id) return this.protocol.id;
+    const row = await this.db.saveProtocolSection(this.attendanceId, PROTOCOL_GENERAL_SECTION_ID, {});
+    this.applyRow(row);
+    return row?.id ?? null;
+  }
+
+  // ── Tasks ────────────────────────────────────────────────
+
+  async createTask(sectionId: string) {
+    const section = this.sections.find(s => s.id === sectionId);
+    let protocolId: string | null = null;
+    try {
+      protocolId = await this.ensureProtocol();
+    } catch (error) {
+      console.error('Protocol create error:', error);
+      Utils.showToast('Protokoll konnte nicht angelegt werden', 'danger');
+      return;
+    }
+    const task = await openTaskForm(this.modalController, {
+      attendanceId: this.attendanceId,
+      protocolId,
+      agendaItemId: section?.field.agendaItemId ?? null,
+      contextLabel: section ? section.title : 'Allgemeine Notizen',
+    });
+    if (!task?.id) return;
+
+    this.getEditor(sectionId)?.insertTaskRef({ id: task.id, title: task.title, status: task.status });
+    this.tasks = [...this.tasks.filter(t => t.id !== task.id), task];
+    this.taskSectionMap.set(task.id, sectionId);
+    // Reload to get the joined person; the section mapping above stays until the editor change arrives.
+    try {
+      const tasks = await this.db.getTasksForAttendance(this.attendanceId);
+      if (tasks?.length) this.tasks = tasks;
+    } catch {
+      // keep the local list
+    }
+    // The editor emits the new doc with its own debounce; capture it now so the reference is saved.
+    setTimeout(() => {
+      this.captureEditor(sectionId);
+      this.refreshTaskSections();
+      this.taskSectionMap.set(task.id!, sectionId);
+    }, 50);
+  }
+
+  // ── Spontaneous topic ────────────────────────────────────
+
+  async addSpontaneousTopic() {
+    const defaultDuration = this.type?.agenda_default_duration || 10;
     const alert = await this.alertController.create({
-      header: 'Neue Aufgabe',
-      inputs: [{ name: 'title', type: 'text', placeholder: 'Titel der Aufgabe' }],
+      header: 'Spontaner Punkt',
+      message: 'Wird als neues Thema angelegt und im Ablaufplan ergänzt.',
+      inputs: [
+        { name: 'title', type: 'text', placeholder: 'Titel' },
+        { name: 'duration', type: 'number', placeholder: 'Dauer in Minuten', value: defaultDuration, min: 1 },
+      ],
       buttons: [
         { text: 'Abbrechen', role: 'cancel' },
         {
-          text: 'Erstellen',
-          handler: async (data) => {
-            if (!data.title?.trim()) return;
-            const loading = await Utils.getLoadingElement();
-            await loading.present();
-            try {
-              // The task links to the protocol by id, so make sure it exists.
-              if (!this.protocol.id) {
-                const saved = await this.db.upsertProtocol(this.protocol);
-                this.protocol.id = saved.id;
-                this.protocol.updated_at = saved.updated_at;
-              }
-              const task = await this.db.addTask({
-                title: data.title.trim(),
-                status: 'open' as TaskStatus,
-                priority: agendaItem?.priority ?? ('medium' as AgendaItemPriority),
-                tenant_id: this.db.tenant().id,
-                protocol_id: this.protocol.id,
-                attendance_id: this.attendanceId,
-                agenda_item_id: agendaItem?.id ?? null,
-              });
-              this.tasks = [...this.tasks, task];
-              this.getEditor(fieldId)?.insertTaskRef({ id: task.id, title: task.title, status: task.status });
-            } catch (error) {
-              console.error('Task create error:', error);
-              Utils.showToast('Aufgabe konnte nicht erstellt werden', 'danger');
-            } finally {
-              await loading.dismiss();
+          text: 'Hinzufügen',
+          handler: (data: { title?: string; duration?: string }) => {
+            const title = data.title?.trim();
+            if (!title) {
+              Utils.showToast('Bitte einen Titel eingeben', 'warning');
+              return false;
             }
-          }
-        }
-      ]
+            const duration = Math.max(1, parseInt(data.duration ?? '', 10) || defaultDuration);
+            void this.insertSpontaneousTopic(title, duration);
+            return true;
+          },
+        },
+      ],
     });
     await alert.present();
   }
 
-  async addAgendaItem() {
-    const alert = await this.alertController.create({
-      header: 'Tagesordnungspunkt erstellen',
-      inputs: [{ name: 'title', type: 'text', placeholder: 'Titel' }],
-      buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        {
-          text: 'Erstellen',
-          handler: async (data) => {
-            if (!data.title?.trim()) return;
-            const loading = await Utils.getLoadingElement();
-            await loading.present();
-            const item = await this.db.addAgendaItem({
-              title: data.title.trim(),
-              status: 'open' as AgendaItemStatus,
-              priority: 'medium' as AgendaItemPriority,
-              tenant_id: this.db.tenant().id,
-            });
-            await this.db.linkAgendaItemToAttendance(item.id, this.attendanceId);
-            this.linkedAgendaItems = [...this.linkedAgendaItems, item];
-            this.agendaItems = [...this.agendaItems, item];
-            await loading.dismiss();
-          }
-        }
-      ]
-    });
-    await alert.present();
+  private async insertSpontaneousTopic(title: string, duration: number) {
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+    try {
+      const item = await this.db.addAgendaItem({
+        title,
+        status: 'open',
+        priority: 'medium',
+        tenant_id: this.db.tenant().id,
+        default_duration: duration,
+      });
+      // Use the latest plan so changes made elsewhere in the meantime are kept.
+      let current = this.attendance!;
+      try {
+        current = await this.db.getAttendanceById(this.attendanceId);
+      } catch {
+        // fall back to the loaded plan
+      }
+      const plan = current.plan ?? this.attendance?.plan ?? {
+        time: this.planStart ?? dayjs().format('HH:mm'),
+        end: current.end_time ?? '',
+        fields: [],
+      };
+      const field = buildAgendaField(item, duration);
+      const fields = insertAgendaFields(plan.fields ?? [], [field]);
+      const updated = await this.db.updateAttendance({ plan: { ...plan, fields } }, this.attendanceId);
+      this.attendance = { ...this.attendance!, plan: updated?.plan ?? { ...plan, fields } };
+      this.captureEditors();
+      this.buildSections();
+      this.updateLive();
+      this.activate(field.id, true);
+    } catch (error) {
+      console.error('Spontaneous topic error:', error);
+      Utils.showToast('Punkt konnte nicht hinzugefügt werden', 'danger');
+    } finally {
+      await loading.dismiss();
+    }
   }
 
-  async linkAgendaItemToProtocol() {
-    const unlinkedItems = this.agendaItems.filter(
-      a => a.status !== 'completed' && !this.linkedAgendaItems.find(l => l.id === a.id)
+  // ── Notes sheet (phone) ──────────────────────────────────
+
+  openNotes() {
+    this.editorContent = { ...this.editorContent, [PROTOCOL_GENERAL_SECTION_ID]: this.docs[PROTOCOL_GENERAL_SECTION_ID] ?? null };
+    this.notesOpen = true;
+  }
+
+  closeNotes() {
+    this.captureEditor(PROTOCOL_GENERAL_SECTION_ID);
+    this.notesOpen = false;
+  }
+
+  // ── Publish ──────────────────────────────────────────────
+
+  async openPublish() {
+    await this.flushAll();
+    this.summary = publishSummary(
+      this.sections.map(s => ({ id: s.id, name: s.name, isTop: s.isTop })),
+      { content: this.docs, outcomes: this.outcomes },
+      this.tasks,
+      this.present.length,
     );
-    if (unlinkedItems.length === 0) {
-      Utils.showToast('Keine weiteren offenen Tagesordnungspunkte vorhanden', 'warning');
-      return;
-    }
-    const alert = await this.alertController.create({
-      header: 'Tagesordnungspunkt verknüpfen',
-      inputs: unlinkedItems.map(item => ({
-        type: 'radio' as const,
-        label: item.title,
-        value: item.id,
-      })),
-      buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        {
-          text: 'Verknüpfen',
-          handler: async (selectedId: string) => {
-            if (!selectedId) return;
-            const item = this.agendaItems.find(a => a.id === selectedId);
-            if (!item) return;
-            await this.db.linkAgendaItemToAttendance(selectedId, this.attendanceId);
-            this.linkedAgendaItems = [...this.linkedAgendaItems, item];
-          }
+    this.publishOpen = true;
+  }
+
+  joinNames(names: string[]): string {
+    return joinNames(names);
+  }
+
+  async publish() {
+    if (this.publishing) return;
+    this.publishing = true;
+    const loading = await Utils.getLoadingElement(99999);
+    await loading.present();
+    try {
+      await this.flushAll();
+      const row = await this.db.publishProtocol(this.attendanceId);
+      this.applyRow(row);
+
+      let pdfUrl: string | undefined;
+      let pdfPath: string | undefined;
+      if (this.sendPdf) {
+        try {
+          const blob = await createProtocolPdf(await this.buildPdfData());
+          const upload = await this.db.protocolSvc.uploadPdf(this.attendanceId, blob);
+          pdfUrl = upload.url;
+          pdfPath = upload.path;
+        } catch (error) {
+          console.error('Protocol PDF error:', error);
+          Utils.showToast('PDF konnte nicht erstellt werden, die Benachrichtigung geht ohne PDF raus', 'warning');
         }
-      ]
-    });
-    await alert.present();
-  }
+      }
 
-  async linkAgendaItem(fieldId: string) {
-    const openItems = this.agendaItems.filter(a => a.status !== 'completed');
-    if (openItems.length === 0) {
-      Utils.showToast('Keine offenen Tagesordnungspunkte vorhanden', 'warning');
-      return;
+      await this.db.notifyTeam({ type: 'protocol_published', attendanceId: this.attendanceId, ...(pdfUrl ? { pdfUrl } : {}) });
+      if (pdfPath) {
+        const path = pdfPath;
+        // The edge function fetches the file right away; remove it afterwards.
+        setTimeout(() => void this.db.protocolSvc.removePdf(path).catch(() => undefined), 60000);
+      }
+      this.publishOpen = false;
+      Utils.showToast('Protokoll freigegeben', 'success');
+    } catch (error) {
+      console.error('Publish error:', error);
+      Utils.showToast('Protokoll konnte nicht freigegeben werden', 'danger');
+    } finally {
+      this.publishing = false;
+      await loading.dismiss();
     }
-    const alert = await this.alertController.create({
-      header: 'Tagesordnungspunkt verknüpfen',
-      inputs: openItems.map(item => ({
-        type: 'radio' as const,
-        label: item.title,
-        value: item.id,
-      })),
-      buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        {
-          text: 'Verknüpfen',
-          handler: async (selectedId: string) => {
-            if (!selectedId) return;
-            const item = this.agendaItems.find(a => a.id === selectedId);
-            if (!item) return;
-            await this.db.linkAgendaItemToAttendance(selectedId, this.attendanceId);
-            this.linkedAgendaItems = [...this.linkedAgendaItems, item];
-            this.getEditor(fieldId)?.insertAgendaItemRef({
-              id: item.id, title: item.title, status: item.status, priority: item.priority,
-            });
-          }
-        }
-      ]
+  }
+
+  // ── PDF ──────────────────────────────────────────────────
+
+  private async buildPdfData(): Promise<ProtocolPdfData> {
+    let branding: ProtocolPdfData['branding'];
+    try {
+      branding = await Utils.buildTenantBranding(this.db.getBrandingSource());
+    } catch {
+      branding = undefined;
+    }
+    const taskText = (t: Task) => {
+      const parts = [t.title];
+      if (t.responsible_person) parts.push(`${t.responsible_person.firstName} ${t.responsible_person.lastName}`.trim());
+      if (t.due_date) parts.push(`fällig ${dayjs(t.due_date).format('DD.MM.YYYY')}`);
+      if (t.status === 'completed') parts.push('erledigt');
+      return parts.join(' · ');
+    };
+    const sections = this.sections.map(s => ({
+      title: s.title,
+      meta: this.sectionMeta(s),
+      outcome: this.outcomes[s.id] ? OUTCOME_LABELS[this.outcomes[s.id]] : undefined,
+      doc: this.docs[s.id] ?? null,
+      tasks: this.tasksFor(s.id).map(taskText),
+    }));
+    for (const l of this.leftovers) {
+      sections.push({ title: `Weitere Notizen · ${l.title}`, meta: '', outcome: undefined, doc: l.doc, tasks: this.tasksFor(l.key).map(taskText) });
+    }
+    const general = this.tasksFor(PROTOCOL_GENERAL_SECTION_ID);
+    const leftoverKeys = new Set(this.leftovers.map(l => l.key));
+    const other = this.tasks.filter(t => {
+      const id = t.id ? this.taskSectionMap.get(t.id) : undefined;
+      return !id || (!this.sections.some(s => s.id === id) && !leftoverKeys.has(id));
     });
-    await alert.present();
+    return {
+      title: `Protokoll · ${this.title}`,
+      subtitle: [this.dateLabel, this.timeRange ? `${this.timeRange} Uhr` : ''].filter(Boolean).join(' · '),
+      status: this.statusLine,
+      present: this.present.map(a => a.name),
+      excused: this.excused.map(a => a.name),
+      sections,
+      generalNotes: this.docs[PROTOCOL_GENERAL_SECTION_ID] ?? null,
+      otherTasks: [...new Set([...general, ...other])].map(taskText),
+      branding,
+    };
   }
 
-  async toggleAgendaItemStatus(item: AgendaItem) {
-    const newStatus: AgendaItemStatus = item.status === 'completed' ? 'open' : 'completed';
-    await this.db.updateAgendaItem(item.id, { status: newStatus });
-    item.status = newStatus;
-  }
-
-  async unlinkAgendaItem(item: AgendaItem) {
-    await this.db.unlinkAgendaItemFromAttendance(item.id, this.attendanceId);
-    this.linkedAgendaItems = this.linkedAgendaItems.filter(a => a.id !== item.id);
-    // remove the editor content for this item from the protocol
-    if (this.protocol.content?.['__agenda__' + item.id]) {
-      delete this.protocol.content['__agenda__' + item.id];
-      await this.persistProtocol();
+  async sharePdf() {
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+    try {
+      await this.flushAll();
+      const blob = await createProtocolPdf(await this.buildPdfData());
+      const date = this.attendance?.date ? dayjs(this.attendance.date).format('YYYY-MM-DD') : '';
+      const name = `Protokoll ${this.title} ${date}`.trim().replace(/[\\/:*?"<>|]+/g, '-');
+      await loading.dismiss();
+      await Utils.downloadFileNative(blob, `${name}.pdf`);
+    } catch (error) {
+      console.error('Protocol PDF error:', error);
+      await loading.dismiss();
+      Utils.showToast('PDF konnte nicht erstellt werden', 'danger');
     }
   }
 }

@@ -1,1 +1,57 @@
-<p class="ion-padding">TODO</p>
+@if (rows.length || search) {
+  <ion-searchbar
+    [(ngModel)]="search"
+    (ionInput)="applyFilter()"
+    placeholder="Termin oder Datum suchen"
+    [debounce]="150">
+  </ion-searchbar>
+}
+
+@if (isLoading) {
+  <div class="state"><ion-spinner></ion-spinner></div>
+} @else if (!rows.length) {
+  <div class="state">
+    <ion-icon name="document-text-outline"></ion-icon>
+    @if (isLeader) {
+      <h2>Noch keine Protokolle</h2>
+      <p>Ein Protokoll schreibst du direkt im Termin: Öffne den Termin und tippe auf „Protokoll“.</p>
+    } @else {
+      <h2>Noch keine Protokolle freigegeben</h2>
+      <p>Sobald die Leitung ein Protokoll freigibt, findest du es hier.</p>
+    }
+  </div>
+} @else if (!groups.length) {
+  <div class="state">
+    <ion-icon name="search-outline"></ion-icon>
+    <h2>Keine Treffer</h2>
+    <p>Kein Protokoll passt zu „{{ search }}“.</p>
+  </div>
+} @else {
+  @for (group of groups; track group.key) {
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-label>{{ group.label }}</ion-label>
+      </ion-list-header>
+      @for (row of group.items; track row.protocol.id ?? row.attendanceId) {
+        <ion-item button detail [routerLink]="['/tabs/attendance', row.attendanceId, 'protocol']">
+          <div slot="start" class="date-badge" aria-hidden="true">
+            <span class="day">{{ row.day }}</span>
+            <span class="weekday">{{ row.weekday }}</span>
+          </div>
+          <ion-label>
+            <h3>{{ row.title }}</h3>
+            <p>
+              {{ row.dateText }}@if (row.subtitle) { · {{ row.subtitle }} }
+            </p>
+            @if (publishedText(row)) { <p class="published">{{ publishedText(row) }}</p> }
+          </ion-label>
+          @if (row.isDraft) {
+            <ion-badge slot="end" color="warning">Entwurf</ion-badge>
+          } @else if (isLeader) {
+            <ion-badge slot="end" color="success">Freigegeben</ion-badge>
+          }
+        </ion-item>
+      }
+    </ion-list>
+  }
+}

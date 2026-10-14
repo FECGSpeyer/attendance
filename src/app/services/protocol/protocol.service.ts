@@ -66,4 +66,23 @@ export class ProtocolService {
 
     if (error) throw error;
   }
+
+  /**
+   * Uploads a protocol PDF to the public `attendances` bucket (same place the
+   * Telegram plan export uses), so the notification can attach it. Returns the
+   * public URL and the storage path for removing it afterwards.
+   */
+  async uploadPdf(attendanceId: number, blob: Blob): Promise<{ url: string; path: string }> {
+    const path = `protocols/${attendanceId}_${Date.now()}.pdf`;
+    const { error } = await db.storage
+      .from('attendances')
+      .upload(path, blob, { upsert: true, contentType: 'application/pdf' });
+    if (error) throw error;
+    const { data } = db.storage.from('attendances').getPublicUrl(path);
+    return { url: data.publicUrl, path };
+  }
+
+  async removePdf(path: string): Promise<void> {
+    await db.storage.from('attendances').remove([path]);
+  }
 }
