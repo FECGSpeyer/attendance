@@ -86,32 +86,38 @@ import { TaskRefNode, taskRefText } from './extensions/task-ref-node';
       margin: 0 2px;
     }
 
-    .tiptap-host :global(.ProseMirror) {
+    .tiptap-host ::ng-deep .ProseMirror {
       min-height: 120px;
       padding: 8px;
       outline: none;
       font-family: inherit;
+      /* Tiptap's default 'break-spaces' makes Safari split words mid-word;
+         wrap at spaces and only break a word longer than the whole line. */
+      white-space: pre-wrap;
+      word-break: normal;
+      overflow-wrap: break-word;
+      hyphens: manual;
     }
-    :host(.editable) .tiptap-host :global(.ProseMirror) {
+    :host(.editable) .tiptap-host ::ng-deep .ProseMirror {
       cursor: text;
     }
     /* Empty editor: show where to write. */
-    .tiptap-host :global(.ProseMirror p.is-editor-empty:first-child::before) {
+    .tiptap-host ::ng-deep .ProseMirror p.is-editor-empty:first-child::before {
       content: attr(data-placeholder);
       float: left;
       height: 0;
       pointer-events: none;
       color: var(--ion-color-medium);
     }
-    .tiptap-host :global(.ProseMirror h1) { font-size: 1.4em; font-weight: 700; margin: 0.5em 0 0.2em; }
-    .tiptap-host :global(.ProseMirror h2) { font-size: 1.2em; font-weight: 700; margin: 0.5em 0 0.2em; }
-    .tiptap-host :global(.ProseMirror h3) { font-size: 1.05em; font-weight: 700; margin: 0.5em 0 0.2em; }
-    .tiptap-host :global(.ProseMirror ul)  { padding-left: 1.4em; list-style: disc; }
-    .tiptap-host :global(.ProseMirror ol)  { padding-left: 1.4em; list-style: decimal; }
-    .tiptap-host :global(.ProseMirror li)  { margin: 2px 0; }
+    .tiptap-host ::ng-deep .ProseMirror h1 { font-size: 1.4em; font-weight: 700; margin: 0.5em 0 0.2em; }
+    .tiptap-host ::ng-deep .ProseMirror h2 { font-size: 1.2em; font-weight: 700; margin: 0.5em 0 0.2em; }
+    .tiptap-host ::ng-deep .ProseMirror h3 { font-size: 1.05em; font-weight: 700; margin: 0.5em 0 0.2em; }
+    .tiptap-host ::ng-deep .ProseMirror ul  { padding-left: 1.4em; list-style: disc; }
+    .tiptap-host ::ng-deep .ProseMirror ol  { padding-left: 1.4em; list-style: decimal; }
+    .tiptap-host ::ng-deep .ProseMirror li  { margin: 2px 0; }
 
-    .tiptap-host :global(.agenda-item-ref-node),
-    .tiptap-host :global(.task-ref-node) {
+    .tiptap-host ::ng-deep .agenda-item-ref-node,
+    .tiptap-host ::ng-deep .task-ref-node {
       background: var(--ion-color-light);
       border-left: 3px solid var(--ion-color-secondary);
       border-radius: 4px;
@@ -121,7 +127,7 @@ import { TaskRefNode, taskRefText } from './extensions/task-ref-node';
       cursor: default;
       user-select: none;
     }
-    .tiptap-host :global(.task-ref-node) {
+    .tiptap-host ::ng-deep .task-ref-node {
       border-left-color: var(--ion-color-primary);
     }
   `]

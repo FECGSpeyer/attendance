@@ -458,6 +458,6 @@ ion-modal {
 
 /* Read-only editors don't need the editing min-height. */
 .read-content, .editor-box.readonly {
-  ::ng-deep .ProseMirror { min-height: 0 !important; padding: 4px 8px; }
+  ::ng-deep .tiptap-host .ProseMirror { min-height: 0 !important; padding: 4px 8px; }
 }
-.main-editor ::ng-deep .ProseMirror { min-height: 280px; padding: 12px 14px; }
+.main-editor ::ng-deep .tiptap-host .ProseMirror { min-height: 280px; padding: 12px 14px; }
