@@ -230,7 +230,7 @@
 <!-- ───────────── Tablet / laptop (B4) ───────────── -->
 
 <ng-template #wideLayout>
-  <div class="wide">
+  <div class="wide" [style.grid-template-columns]="gridColumns" [class.resizing]="resizing">
     <aside class="col left" aria-label="Tagesordnung">
       <div class="side-head">
         <div class="side-title">{{ title }}</div>
@@ -277,6 +277,12 @@
         {{ isPublished ? 'Erneut freigeben' : 'Protokoll freigeben' }}
       </ion-button>
     </aside>
+
+    <div class="resizer" [class.active]="resizing === 'left'" role="separator" aria-orientation="vertical"
+      aria-label="Breite der Tagesordnung anpassen" tabindex="0" [attr.aria-valuenow]="columnWidths.left" title="Ziehen, um die Breite anzupassen (Doppelklick setzt zurück)"
+      (pointerdown)="startResize('left', $event)" (pointermove)="onResize($event)"
+      (pointerup)="endResize($event)" (pointercancel)="endResize($event)"
+      (dblclick)="resetWidth('left')" (keydown)="resizeByKey('left', $event)"></div>
 
     <main class="col main" aria-label="Notizen zum Punkt">
       @for (s of (activeSection ? [activeSection] : []); track s.id) {
@@ -332,6 +338,12 @@
         }
       }
     </main>
+
+    <div class="resizer" [class.active]="resizing === 'right'" role="separator" aria-orientation="vertical"
+      aria-label="Breite der allgemeinen Notizen anpassen" tabindex="0" [attr.aria-valuenow]="columnWidths.right" title="Ziehen, um die Breite anzupassen (Doppelklick setzt zurück)"
+      (pointerdown)="startResize('right', $event)" (pointermove)="onResize($event)"
+      (pointerup)="endResize($event)" (pointercancel)="endResize($event)"
+      (dblclick)="resetWidth('right')" (keydown)="resizeByKey('right', $event)"></div>
 
     <aside class="col right" aria-label="Allgemeine Notizen">
       <div class="right-head">

@@ -280,8 +280,28 @@ ion-modal {
 /* ── Tablet / laptop ── */
 .wide {
   display: grid;
-  grid-template-columns: minmax(260px, 300px) minmax(0, 1fr) minmax(240px, 300px);
+  grid-template-columns: 280px 8px minmax(0, 1fr) 8px 280px;
   height: 100%;
+  &.resizing { cursor: col-resize; user-select: none; }
+}
+.resizer {
+  position: relative;
+  cursor: col-resize;
+  touch-action: none;
+  outline: none;
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; left: 50%;
+    width: 1px;
+    transform: translateX(-50%);
+    background: var(--protocol-line);
+    transition: width .15s, background .15s;
+  }
+  &:hover::after, &:focus-visible::after, &.active::after {
+    width: 3px;
+    background: var(--protocol-accent);
+  }
 }
 .col {
   overflow-y: auto;
@@ -289,8 +309,7 @@ ion-modal {
   padding: 16px 0;
 }
 .left, .right { border-color: var(--protocol-line); border-style: solid; border-width: 0; }
-.left { border-right-width: 1px; }
-.right { border-left-width: 1px; padding: 16px; }
+.right { padding: 16px; }
 
 .side-head { padding: 0 16px 12px; }
 .side-title { font-size: 17px; font-weight: 700; }

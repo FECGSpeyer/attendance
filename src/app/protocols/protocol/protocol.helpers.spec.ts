@@ -19,6 +19,9 @@ import {
   publishSummary,
   taskRefIds,
   taskSections,
+  clampSideWidth,
+  parseColumnWidths,
+  DEFAULT_COLUMN_WIDTHS,
 } from './protocol.helpers';
 
 const p = (text: string) => ({ type: 'paragraph', content: [{ type: 'text', text }] });
@@ -237,5 +240,23 @@ describe('topicClosureCandidates', () => {
 
   it('returns nothing without outcomes', () => {
     expect(topicClosureCandidates(sections, undefined, items)).toEqual([]);
+  });
+});
+
+describe('column widths', () => {
+  it('keeps side columns within bounds and leaves room for the middle', () => {
+    expect(clampSideWidth(100, 280, 1400)).toBe(200);
+    expect(clampSideWidth(900, 280, 1400)).toBe(560);
+    // 1000 - 280 - 320 - 16 = 384
+    expect(clampSideWidth(500, 280, 1000)).toBe(384);
+    // never below the minimum, even on a tight screen
+    expect(clampSideWidth(300, 400, 900)).toBe(200);
+  });
+
+  it('parses stored widths with fallbacks', () => {
+    expect(parseColumnWidths('{"left":320,"right":240}')).toEqual({ left: 320, right: 240 });
+    expect(parseColumnWidths('{"left":5,"right":"x"}')).toEqual(DEFAULT_COLUMN_WIDTHS);
+    expect(parseColumnWidths('nope')).toEqual(DEFAULT_COLUMN_WIDTHS);
+    expect(parseColumnWidths(null)).toEqual(DEFAULT_COLUMN_WIDTHS);
   });
 });

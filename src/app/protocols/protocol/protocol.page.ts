@@ -53,6 +53,10 @@ import {
   taskSections,
   TopicClosure,
   topicClosureCandidates,
+  ColumnWidths,
+  clampSideWidth,
+  DEFAULT_COLUMN_WIDTHS,
+  parseColumnWidths,
 } from './protocol.helpers';
 import { createProtocolPdf, ProtocolPdfData } from './protocol-pdf';
 
@@ -90,6 +94,7 @@ interface LeftoverView {
 const AVATAR_COLORS = ['#3b7d84', '#7b5ea7', '#c0703a', '#2f7d4f', '#a6475f', '#4a6fa5', '#8a7a2f'];
 /** Width from which the three-column layout (agenda · notes · general notes) is used. */
 const WIDE_QUERY = '(min-width: 900px)';
+const COLUMN_WIDTHS_KEY = 'protocolColumnWidths';
 const SAVE_DEBOUNCE_MS = 800;
 
 @Component({
@@ -144,6 +149,10 @@ export class ProtocolPage implements OnInit, OnDestroy {
   activeId: string | null = null;
   live: LiveSection | null = null;
   isWide = false;
+  /** Side column widths of the wide layout, adjustable via the drag handles. */
+  columnWidths: ColumnWidths = { ...DEFAULT_COLUMN_WIDTHS };
+  resizing: 'left' | 'right' | null = null;
+  private resizeStart = { x: 0, width: 0, container: 0 };
 
   savingCount = 0;
   lastSavedAt: Date | null = null;
@@ -183,6 +192,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
       this.isWide = this.mediaQuery.matches;
       this.mediaQuery.addEventListener?.('change', this.mediaListener);
     }
+    this.columnWidths = parseColumnWidths(this.readStoredWidths());
     await this.load();
   }
 
@@ -477,6 +487,72 @@ export class ProtocolPage implements OnInit, OnDestroy {
   previousSection() {
     const i = this.sections.findIndex(s => s.id === this.activeId);
     if (i > 0) this.activate(this.sections[i - 1].id, true);
+  }
+
+  // ── Resizable columns (wide layout) ──────────────────────
+
+  get gridColumns(): string {
+    return `${this.columnWidths.left}px 8px minmax(0, 1fr) 8px ${this.columnWidths.right}px`;
+  }
+
+  startResize(side: 'left' | 'right', event: PointerEvent) {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    const handle = event.currentTarget as HTMLElement;
+    handle.setPointerCapture?.(event.pointerId);
+    this.resizing = side;
+    this.resizeStart = {
+      x: event.clientX,
+      width: this.columnWidths[side],
+      container: handle.parentElement?.clientWidth ?? 0,
+    };
+  }
+
+  onResize(event: PointerEvent) {
+    const side = this.resizing;
+    if (!side) return;
+    const delta = event.clientX - this.resizeStart.x;
+    this.setWidth(side, this.resizeStart.width + (side === 'left' ? delta : -delta), this.resizeStart.container);
+  }
+
+  endResize(event: PointerEvent) {
+    if (!this.resizing) return;
+    (event.currentTarget as HTMLElement).releasePointerCapture?.(event.pointerId);
+    this.resizing = null;
+    this.storeWidths();
+  }
+
+  /** Arrow keys move the focused handle; Home/double-click resets. */
+  resizeByKey(side: 'left' | 'right', event: KeyboardEvent) {
+    const container = (event.currentTarget as HTMLElement).parentElement?.clientWidth ?? 0;
+    const step = event.shiftKey ? 48 : 16;
+    const grow = side === 'left' ? 'ArrowRight' : 'ArrowLeft';
+    const shrink = side === 'left' ? 'ArrowLeft' : 'ArrowRight';
+    if (event.key === grow) this.setWidth(side, this.columnWidths[side] + step, container);
+    else if (event.key === shrink) this.setWidth(side, this.columnWidths[side] - step, container);
+    else if (event.key === 'Home') this.resetWidth(side);
+    else return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.storeWidths();
+  }
+
+  resetWidth(side: 'left' | 'right') {
+    this.columnWidths = { ...this.columnWidths, [side]: DEFAULT_COLUMN_WIDTHS[side] };
+    this.storeWidths();
+  }
+
+  private setWidth(side: 'left' | 'right', width: number, container: number) {
+    const other = side === 'left' ? this.columnWidths.right : this.columnWidths.left;
+    this.columnWidths = { ...this.columnWidths, [side]: clampSideWidth(width, other, container) };
+  }
+
+  private readStoredWidths(): string | null {
+    try { return localStorage.getItem(COLUMN_WIDTHS_KEY); } catch { return null; }
+  }
+
+  private storeWidths() {
+    try { localStorage.setItem(COLUMN_WIDTHS_KEY, JSON.stringify(this.columnWidths)); } catch { /* ignore */ }
   }
 
   @HostListener('document:keydown', ['$event'])

@@ -416,3 +416,40 @@ export function topicClosureCandidates(
   }
   return result;
 }
+
+// ── Resizable columns (wide layout) ─────────────────────────
+
+export interface ColumnWidths { left: number; right: number; }
+
+export const DEFAULT_COLUMN_WIDTHS: ColumnWidths = { left: 280, right: 280 };
+export const MIN_SIDE_WIDTH = 200;
+export const MAX_SIDE_WIDTH = 560;
+export const MIN_MAIN_WIDTH = 320;
+/** Width of each drag handle between two columns. */
+export const RESIZER_WIDTH = 8;
+
+/**
+ * Clamps one side column so it stays between MIN/MAX_SIDE_WIDTH and leaves the
+ * middle column at least MIN_MAIN_WIDTH, given the other side's width.
+ */
+export function clampSideWidth(width: number, otherSide: number, containerWidth: number): number {
+  const room = containerWidth > 0
+    ? containerWidth - otherSide - MIN_MAIN_WIDTH - 2 * RESIZER_WIDTH
+    : MAX_SIDE_WIDTH;
+  const max = Math.max(MIN_SIDE_WIDTH, Math.min(MAX_SIDE_WIDTH, room));
+  return Math.round(Math.min(max, Math.max(MIN_SIDE_WIDTH, width)));
+}
+
+/** Parses stored widths, falling back to the defaults for anything invalid. */
+export function parseColumnWidths(raw: string | null | undefined): ColumnWidths {
+  try {
+    const v = raw ? JSON.parse(raw) : null;
+    const ok = (n: unknown) => typeof n === 'number' && isFinite(n) && n >= MIN_SIDE_WIDTH && n <= MAX_SIDE_WIDTH;
+    return {
+      left: ok(v?.left) ? v.left : DEFAULT_COLUMN_WIDTHS.left,
+      right: ok(v?.right) ? v.right : DEFAULT_COLUMN_WIDTHS.right,
+    };
+  } catch {
+    return { ...DEFAULT_COLUMN_WIDTHS };
+  }
+}

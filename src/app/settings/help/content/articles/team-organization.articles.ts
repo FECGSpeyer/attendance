@@ -56,7 +56,7 @@ Jedes Thema wird ein eigener [[TOP]] an der Markierung „Tagesordnung“ (ohne 
     id: 'team-protocol',
     title: 'Protokoll schreiben und freigeben',
     categoryId: 'team',
-    keywords: ['protokoll', 'mitschrift', 'notizen', 'thema erledigt', 'abschließen', 'live', 'sitzung', 'besprochen', 'beschlossen', 'vertagt', 'ergebnis', 'freigeben', 'veröffentlichen', 'tablet', 'laptop', 'pdf', 'allgemeine notizen'],
+    keywords: ['protokoll', 'mitschrift', 'notizen', 'thema erledigt', 'abschließen', 'live', 'sitzung', 'besprochen', 'beschlossen', 'vertagt', 'ergebnis', 'freigeben', 'veröffentlichen', 'tablet', 'laptop', 'pdf', 'allgemeine notizen', 'spaltenbreite', 'spalten', 'breite anpassen'],
     body: `Das Protokoll schreiben [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]]. Öffne den Termin und tippe in der Protokoll-Karte auf **„Sitzung starten & protokollieren“**.
 
 **Aufbau:** Das Protokoll hat genau einen Abschnitt pro Punkt des Ablaufplans, in derselben Reihenfolge. Bei jedem [[TOP]] hältst du das Ergebnis fest: **Besprochen**, **Beschlossen** oder **Vertagt**. Vertagte Themen werden beim nächsten Termin desselben Typs wieder vorgeschlagen. Tippe in das umrandete Feld, um Notizen zu schreiben. Zum Formatieren (fett, Überschrift, Liste) markierst du Text, dann erscheint eine kleine Leiste.
@@ -65,7 +65,7 @@ Jedes Thema wird ein eigener [[TOP]] an der Markierung „Tagesordnung“ (ohne 
 - *Zum Punkt:* direkt im jeweiligen Abschnitt.
 - *Allgemein* (z. B. „Paul kommt später“): auf dem Handy über den Button **„Notizen“** unten, auf Tablet und Laptop in der rechten Spalte, die immer sichtbar ist.
 
-**Tablet und Laptop:** Ab einer gewissen Breite siehst du links die Tagesordnung, in der Mitte den gewählten Punkt und rechts die allgemeinen Notizen. Mit **Strg/⌘ + ↓** springst du zum nächsten Punkt.
+**Tablet und Laptop:** Ab einer gewissen Breite siehst du links die Tagesordnung, in der Mitte den gewählten Punkt und rechts die allgemeinen Notizen. Die Breite der linken und rechten Spalte kannst du anpassen: Zieh die Trennlinie zwischen zwei Spalten mit der Maus oder dem Finger. Ein Doppelklick auf die Linie setzt die Breite zurück. Die App merkt sich deine Einstellung auf diesem Gerät. Mit **Strg/⌘ + ↓** springst du zum nächsten Punkt.
 
 **Live:** Läuft die Sitzung gerade, zeigt das Protokoll an, welcher Punkt laut Ablaufplan dran ist und wie viel Zeit noch bleibt.
 
@@ -122,9 +122,9 @@ Entwürfe sind nur für die Leitung sichtbar, erst nach der Freigabe sieht der P
     id: 'team-meetings-migration',
     title: 'Besprechungen und Protokolle',
     categoryId: 'team',
-    keywords: ['besprechungen', 'meetings', 'alte besprechungen', 'migration', 'wo sind', 'protokolle früher'],
+    keywords: ['besprechungen', 'meetings', 'alte besprechungen', 'migration', 'wo sind', 'protokolle früher', 'besprechung termin', 'termintyp besprechung'],
     body: `Früher gab es unter Mehr den Bereich „Besprechungen“ mit freien Notizen. Neue Sitzungen protokollierst du jetzt mit der Teamorganisation: Das Protokoll hängt am Termin und übernimmt die Tagesordnung aus dem Ablaufplan.
 
-Bereits übernommene Besprechungen findest du als Protokolle unter **Mehr → Team → Teamorganisation → Protokolle**, ihre Notizen stehen dort unter „Allgemeine Notizen“. Der alte Bereich „Besprechungen“ bleibt vorerst bestehen.`,
+Bereits übernommene Besprechungen findest du als Protokolle unter **Mehr → Team → Teamorganisation → Protokolle**, ihre Notizen stehen dort unter „Allgemeine Notizen“. Jede übernommene Besprechung hängt an einem eigenen Termin vom Typ **„Besprechung“** am selben Tag. Diesen Typ haben wir in Instanzen ohne Protokoll-Typ angelegt; relevant ist dort nur die Hauptgruppe, und der Ablaufplan enthält schon den Platzhalter für die Tagesordnung. Unter **Einstellungen → Allgemein → Termin-Typen** kannst du ihn anpassen. Der alte Bereich „Besprechungen“ bleibt vorerst bestehen.`,
   },
 ];
