@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.13.3",
+      "date": "14.10.2026",
+      "changes": [
+        "🧹 Die App räumt alte Update-Dateien jetzt automatisch auf und belegt dadurch deutlich weniger Speicher auf dem Handy."
+      ]
+    },
+    {
       "version": "4.13.2",
       "date": "14.10.2026",
       "changes": [

@@ -83,8 +83,35 @@ export class LiveUpdateService {
       console.warn('[LiveUpdate] ready() failed', e);
     }
 
-    // Fetch + apply runs in the background; don't block app startup.
-    this.checkForUpdate().catch(err => console.warn('[LiveUpdate] check failed', err));
+    // Cleanup + fetch + apply run in the background; don't block app startup.
+    // Cleanup runs first so it never races a bundle that is being downloaded.
+    this.deleteUnusedBundles()
+      .catch(err => console.warn('[LiveUpdate] cleanup failed', err))
+      .then(() => this.checkForUpdate())
+      .catch(err => console.warn('[LiveUpdate] check failed', err));
+  }
+
+  /**
+   * Delete every downloaded bundle except the active and the staged one.
+   * The plugin keeps all bundles on disk by default (autoDeleteBundles is off
+   * on older native shells), so without this every OTA release (~30 MB
+   * unpacked) piles up and the app grew to several GB on frequent updaters.
+   */
+  private async deleteUnusedBundles(): Promise<void> {
+    const [{ bundleIds }, current, next] = await Promise.all([
+      LiveUpdate.getBundles(),
+      LiveUpdate.getCurrentBundle(),
+      LiveUpdate.getNextBundle(),
+    ]);
+    const keep = new Set([current?.bundleId, next?.bundleId].filter(Boolean));
+    for (const bundleId of bundleIds) {
+      if (keep.has(bundleId)) continue;
+      try {
+        await LiveUpdate.deleteBundle({ bundleId });
+      } catch (e) {
+        console.warn(`[LiveUpdate] deleting bundle ${bundleId} failed`, e);
+      }
+    }
   }
 
   private async checkForUpdate(): Promise<void> {
