@@ -9,6 +9,15 @@ export const SELF_SERVICE_ARTICLES: HelpArticle[] = [
     body: `Unter "Meine Anwesenheit" siehst du deine anstehenden und vergangenen Termine und kannst deinen eigenen [[Anwesenheitsstatus]] setzen. Meldest du dich ab, wählst du optional einen [[Ausfallgrund]] aus.`,
   },
   {
+    id: 'self-registration-fields',
+    title: 'Anmeldefelder ausfüllen und ändern',
+    categoryId: 'self-service',
+    keywords: ['anmeldefelder', 'zusatzfelder', 'fragen bei anmeldung', 'antworten ändern', 'anmeldung bearbeiten', 'notiz', 'anmelden mit notiz'],
+    body: `Hat ein Termin [[Anmeldefelder]] (z. B. "Bringst du einen Kuchen mit?"), fragt Attendix sie ab, sobald du dich unter "Meine Anwesenheit" anmeldest – egal ob über "Anmelden" oder "Anmelden mit Notiz". Bei "Anmelden mit Notiz" gibst du zuerst deine Notiz ein und füllst danach die Anmeldefelder aus.
+
+Bist du schon angemeldet, tippst du auf den Termin und wählst "Anmeldefelder anpassen". Deine bisherigen Antworten sind vorausgefüllt; mit "Speichern" übernimmst du die Änderungen, deine Anmeldung bleibt bestehen. Das geht, solange die Anmeldefrist des Termins nicht abgelaufen ist.`,
+  },
+  {
     id: 'self-pause',
     title: 'Geplante Abwesenheit hinterlegen',
     categoryId: 'self-service',
