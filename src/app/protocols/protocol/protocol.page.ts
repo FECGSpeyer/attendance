@@ -321,6 +321,11 @@ export class ProtocolPage implements OnInit, OnDestroy {
     return total ? `${start.format('HH:mm')}–${start.add(total, 'minute').format('HH:mm')}` : start.format('HH:mm');
   }
 
+  /** Phone layout for leaders: save state and publish button sit in a footer. */
+  get showFooter(): boolean {
+    return this.isLeader && !this.isWide && !!this.attendance && !this.notAvailable && !this.isLoading && !this.loadFailed;
+  }
+
   get isPublished(): boolean {
     return this.protocol?.status === 'published';
   }

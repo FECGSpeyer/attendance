@@ -14,7 +14,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="light" [class.fab-padding]="isLeader">
+<ion-content color="light" class="tabbar-safe" [class.fab-padding]="isLeader">
   @if (loading) {
     <div class="ion-text-center ion-padding">
       <ion-spinner></ion-spinner>

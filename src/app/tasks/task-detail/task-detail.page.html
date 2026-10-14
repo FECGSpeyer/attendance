@@ -17,7 +17,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="light">
+<ion-content color="light" [class.tabbar-safe]="!task || task.status === 'completed'">
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
@@ -130,7 +130,7 @@
 </ion-content>
 
 @if (task && task.status !== 'completed') {
-  <ion-footer class="ion-no-border">
+  <ion-footer class="ion-no-border tabbar-safe">
     <ion-toolbar color="light" class="task-footer">
       <ion-button expand="block" shape="round" (click)="setStatus('completed')" [disabled]="savingStatus">
         <ion-icon slot="start" name="checkmark"></ion-icon>

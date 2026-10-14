@@ -301,3 +301,16 @@ ion-select-popover ion-list {
 .avatar-pause    { background: #fb8c00; }
 .avatar-critical { background: #d32f2f; }
 .avatar-songs    { background: #7b1fa2; }
+
+// ── Floating iOS tab bar ──────────────────────────────────────────────────────
+// The iOS tab bar floats over the bottom of every page inside the tabs. The
+// theme only reserves room for fullscreen content without a footer, so pages
+// with controls at the very bottom add .tabbar-safe to their ion-content or
+// ion-footer (tab bar offset + bar height + gap).
+ion-tabs ion-content.ios.tabbar-safe {
+  --padding-bottom: calc(max(10px, env(safe-area-inset-bottom, 0px) - 12px) + 68px);
+}
+
+ion-tabs ion-footer.ios.tabbar-safe {
+  padding-bottom: calc(max(10px, env(safe-area-inset-bottom, 0px) - 12px) + 68px);
+}

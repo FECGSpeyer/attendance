@@ -21,7 +21,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="light" [scrollY]="!(isLeader && isWide && attendance && !notAvailable)" [class.wide-content]="isLeader && isWide">
+<ion-content color="light" [scrollY]="!(isLeader && isWide && attendance && !notAvailable)" [class.wide-content]="isLeader && isWide" [class.tabbar-safe]="!showFooter">
   @if (isLoading) {
     <div class="center-state"><ion-spinner></ion-spinner></div>
   } @else if (notAvailable) {
@@ -45,8 +45,8 @@
   }
 </ion-content>
 
-@if (isLeader && !isWide && attendance && !notAvailable && !isLoading && !loadFailed) {
-  <ion-footer class="protocol-footer">
+@if (showFooter) {
+  <ion-footer class="protocol-footer tabbar-safe">
     <ion-toolbar>
       <div class="footer-inner">
         <div class="save-state">
