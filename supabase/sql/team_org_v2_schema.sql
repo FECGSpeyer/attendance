@@ -3,7 +3,7 @@
 -- Tagesordnung im Ablaufplan, Protokolle mit Freigabe, Aufgaben
 -- für alle Personen, Themenvorschläge von Mitgliedern.
 --
--- Einmalig im Supabase SQL Editor ausführen (idempotent).
+-- Im Supabase SQL Editor ausführen. Erneutes Ausführen ist unschädlich.
 -- Die alte Teamorganisation wurde in Prod nicht genutzt, deshalb gibt
 -- es keine Datenmigration von agenda_item_attendances.
 -- `meetings` bleibt unverändert.
@@ -32,8 +32,33 @@ ALTER TABLE public.agenda_items DROP CONSTRAINT IF EXISTS agenda_items_proposal_
 ALTER TABLE public.agenda_items ADD CONSTRAINT agenda_items_proposal_status_check
   CHECK (proposal_status IS NULL OR proposal_status IN ('pending', 'accepted', 'rejected'));
 
+-- Einmalige Datenübernahme nur beim ersten Lauf (wenn die Spalten neu
+-- angelegt werden). Ein erneuter Lauf veröffentlicht keine Entwürfe und
+-- ändert keine Erinnerungs-Markierungen.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'protocols' AND column_name = 'status'
+  ) THEN
+    ALTER TABLE public.protocols ADD COLUMN status text NOT NULL DEFAULT 'draft';
+    -- Bestehende (aus den Besprechungen migrierte) Protokolle gelten als freigegeben.
+    ALTER TABLE public.protocols ADD COLUMN IF NOT EXISTS published_at timestamptz;
+    UPDATE public.protocols SET status = 'published', published_at = updated_at;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'tasks' AND column_name = 'overdue_reminder_sent'
+  ) THEN
+    ALTER TABLE public.tasks ADD COLUMN overdue_reminder_sent boolean NOT NULL DEFAULT false;
+    -- Bereits überfällige Aufgaben nicht nachträglich anmahnen.
+    UPDATE public.tasks SET overdue_reminder_sent = true
+      WHERE due_date < current_date AND status <> 'completed';
+  END IF;
+END $$;
+
 ALTER TABLE public.protocols
-  ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'draft',
   ADD COLUMN IF NOT EXISTS published_at timestamptz,
   ADD COLUMN IF NOT EXISTS published_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS outcomes jsonb NOT NULL DEFAULT '{}';
@@ -42,19 +67,10 @@ ALTER TABLE public.protocols DROP CONSTRAINT IF EXISTS protocols_status_check;
 ALTER TABLE public.protocols ADD CONSTRAINT protocols_status_check
   CHECK (status IN ('draft', 'published'));
 
--- Bestehende (aus den Besprechungen migrierte) Protokolle gelten als freigegeben.
-UPDATE public.protocols
-  SET status = 'published', published_at = COALESCE(published_at, updated_at)
-  WHERE status = 'draft' AND published_at IS NULL;
-
 ALTER TABLE public.tasks
-  ADD COLUMN IF NOT EXISTS completed_at timestamptz,
-  ADD COLUMN IF NOT EXISTS overdue_reminder_sent boolean NOT NULL DEFAULT false;
+  ADD COLUMN IF NOT EXISTS completed_at timestamptz;
 
 UPDATE public.tasks SET completed_at = updated_at WHERE status = 'completed' AND completed_at IS NULL;
--- Bereits überfällige Aufgaben nicht nachträglich anmahnen.
-UPDATE public.tasks SET overdue_reminder_sent = true
-  WHERE due_date < current_date AND status <> 'completed' AND NOT overdue_reminder_sent;
 
 -- ------------------------------------------------------------
 -- 2. Hilfsfunktionen (SECURITY DEFINER, damit RLS-Policies sie
@@ -230,7 +246,9 @@ AS $$
   SELECT a.id, a.date, a.type_id, a."typeInfo", f->>'id', pr.outcomes->>(f->>'id'), pr.status
   FROM public.agenda_items ai
   JOIN attendance a ON a."tenantId" = ai.tenant_id
-  CROSS JOIN LATERAL jsonb_array_elements(COALESCE(a.plan->'fields', '[]'::jsonb)) f
+  CROSS JOIN LATERAL jsonb_array_elements(
+    CASE WHEN jsonb_typeof(a.plan->'fields') = 'array' THEN a.plan->'fields' ELSE '[]'::jsonb END
+  ) f
   LEFT JOIN public.protocols pr ON pr.attendance_id = a.id
   WHERE ai.id = p_agenda_item_id
     AND public.is_tenant_leader(ai.tenant_id)

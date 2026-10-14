@@ -118,6 +118,7 @@ export class TiptapEditorComponent implements AfterViewInit, OnDestroy, OnChange
   @Input() editable = true;
   // Optional key so a host page with several editors can find the right one.
   @Input() sectionId?: string;
+  private dirty = false;
   @Output() contentChange = new EventEmitter<JSONContent>();
 
   private editor: Editor | null = null;
@@ -152,8 +153,10 @@ export class TiptapEditorComponent implements AfterViewInit, OnDestroy, OnChange
         content: (this.content as JSONContent) ?? { type: 'doc', content: [] },
         editable: this.editable,
         onUpdate: ({ editor }) => {
+          this.dirty = true;
           clearTimeout(this.debounceTimer);
           this.debounceTimer = setTimeout(() => {
+            this.dirty = false;
             const json = editor.getJSON();
             this.zone.run(() => this.contentChange.emit(json));
           }, 600);
@@ -206,6 +209,19 @@ export class TiptapEditorComponent implements AfterViewInit, OnDestroy, OnChange
 
   getJSON(): JSONContent | null {
     return this.editor?.getJSON() ?? null;
+  }
+
+  /** True while a user change has not been emitted via contentChange yet. */
+  get hasPendingChange(): boolean {
+    return this.dirty;
+  }
+
+  /** Returns the pending change (if any) right away and cancels the debounced emit. */
+  takePendingChange(): JSONContent | null {
+    if (!this.dirty || !this.editor) return null;
+    clearTimeout(this.debounceTimer);
+    this.dirty = false;
+    return this.editor.getJSON();
   }
 
   ngOnDestroy() {

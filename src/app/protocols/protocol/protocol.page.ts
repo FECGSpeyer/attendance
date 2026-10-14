@@ -538,6 +538,26 @@ export class ProtocolPage implements OnInit, OnDestroy {
     Utils.showToast('Notizen konnten nicht gespeichert werden. Prüfe deine Verbindung.', 'danger');
   }
 
+  /**
+   * Takes over notes and results others saved in the meantime, for every
+   * section without an unsaved local change (used before summary, PDF and publish).
+   */
+  private mergeServerRow(row: Protocol | null | undefined) {
+    if (!row) return;
+    const docs = { ...this.docs };
+    const changed: Record<string, Doc | null> = {};
+    for (const [id, doc] of Object.entries(row.content ?? {})) {
+      if (this.pendingDocs.has(id) || this.getEditor(id)?.hasPendingChange) continue;
+      if (JSON.stringify(doc) !== JSON.stringify(docs[id] ?? null)) {
+        docs[id] = doc as Doc;
+        changed[id] = doc as Doc;
+      }
+    }
+    this.docs = docs;
+    if (Object.keys(changed).length) this.editorContent = { ...this.editorContent, ...changed };
+    this.outcomes = { ...(row.outcomes ?? {}) };
+  }
+
   /** Takes over the meta data of the saved row; local notes and results stay as they are. */
   private applyRow(row: Protocol | null | undefined) {
     if (!row) return;
@@ -553,21 +573,23 @@ export class ProtocolPage implements OnInit, OnDestroy {
     };
   }
 
-  /** Reads the editor's current doc (bypassing its own debounce) into the save queue. */
+  /**
+   * Takes a change the user made but the editor hasn't emitted yet (its own
+   * debounce) into the save queue. Editors that were only shown are never
+   * saved, so opening a protocol can't overwrite someone else's notes.
+   */
   private captureEditor(fieldId: string) {
     const editor = this.getEditor(fieldId);
     if (!editor || !this.isLeader) return;
     let json: Doc | null = null;
     try {
-      json = editor.getJSON() as Doc | null;
+      json = editor.takePendingChange() as Doc | null;
     } catch {
       json = null; // editor already destroyed
     }
     if (!json) return;
-    if (JSON.stringify(json) !== JSON.stringify(this.docs[fieldId] ?? null)) {
-      this.docs = { ...this.docs, [fieldId]: json };
-      this.queueSave(fieldId, json);
-    }
+    this.docs = { ...this.docs, [fieldId]: json };
+    this.queueSave(fieldId, json);
   }
 
   private captureEditors() {
@@ -741,6 +763,12 @@ export class ProtocolPage implements OnInit, OnDestroy {
 
   async openPublish() {
     await this.flushAll();
+    // Other leaders may have written in other sections meanwhile.
+    try {
+      this.mergeServerRow(await this.db.getProtocolForAttendance(this.attendanceId));
+    } catch (error) {
+      console.error('Protocol reload error:', error);
+    }
     this.summary = publishSummary(
       this.sections.map(s => ({ id: s.id, name: s.name, isTop: s.isTop })),
       { content: this.docs, outcomes: this.outcomes },
@@ -762,6 +790,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
     try {
       await this.flushAll();
       const row = await this.db.publishProtocol(this.attendanceId);
+      this.mergeServerRow(row);
       this.applyRow(row);
 
       let pdfUrl: string | undefined;

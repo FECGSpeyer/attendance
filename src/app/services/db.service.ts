@@ -80,7 +80,9 @@ export class DbService {
   public readonly teamPerson: WritableSignal<Player | null> = signal(null);
   /** Leadership, or a person in the circle of at least one protocol-enabled attendance type. */
   public readonly inTeamCircle: Signal<boolean> = computed(() =>
-    this.teamOrgEnabled() && isInAnyCircle(this.attendanceTypes(), this.tenantUser()?.role, this.teamPerson()?.instrument));
+    this.teamOrgEnabled() && (this.isTeamLeader()
+      || (!!this.teamPerson() && !this.teamPerson()?.left
+        && isInAnyCircle(this.attendanceTypes(), this.tenantUser()?.role, this.teamPerson()?.instrument))));
   private teamPersonTenantId: number | null = null;
 
   // Injected modular services - use these for new code

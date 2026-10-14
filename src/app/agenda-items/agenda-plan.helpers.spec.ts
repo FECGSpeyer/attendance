@@ -134,4 +134,12 @@ describe('addTopicsToAttendance', () => {
     expect(updateAttendance).toHaveBeenCalledWith({ plan }, 7);
     expect(plan.fields[0].agendaItemId).toBe('1');
   });
+
+  it('re-reads the plan so changes made elsewhere are kept', async () => {
+    const updateAttendance = vi.fn(async (att: any) => ({ plan: att.plan }));
+    const getAttendanceById = vi.fn(async () => ({ plan: { time: '19:00', end: '', fields: [{ id: 'x', name: 'Neu', time: '5' }] } }) as any);
+    const plan = await addTopicsToAttendance({ updateAttendance, getAttendanceById }, { id: 7, plan: { time: '19:00', end: '', fields: [] } }, null,
+      [{ item: { id: 't1', tenant_id: 1, title: 'Thema', status: 'open', priority: 'medium' }, duration: 10 }]);
+    expect(plan.fields.map((f: any) => f.id)).toEqual(['x', 'agenda-t1']);
+  });
 });

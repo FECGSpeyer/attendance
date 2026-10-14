@@ -38,6 +38,7 @@ const ROLE_RESPONSIBLE = 5;
 // AttendanceStatus (src/app/utilities/constants.ts): Present = 1, Late = 3
 const STATUS_PRESENT = 1;
 const STATUS_LATE = 3;
+const STATUS_LATE_EXCUSED = 5;
 const APP_URL = 'https://attendix.de';
 const PUSH_CONCURRENCY = 8;
 
@@ -132,6 +133,10 @@ Deno.serve(async (req) => {
     if (prepared instanceof Response) return prepared;
 
     const result = await deliver(admin, tenantId, callerId, prepared.personIds, prepared.notice);
+    // The protocol PDF only lives in the public bucket for the delivery.
+    if (type === 'protocol_published') {
+      await removeProtocolPdf(admin, body?.pdfUrl);
+    }
     console.log(`[team-notify] type=${type} tenant=${tenantId} recipients=${result.recipients} delivered=${result.delivered}`);
     return json({ success: true, ...result });
   } catch (e) {
@@ -198,7 +203,7 @@ async function prepareProtocolPublished(admin: SupabaseClient, tenantId: number,
     admin.from('person_attendances')
       .select('person_id')
       .eq('attendance_id', attendanceId)
-      .in('status', [STATUS_PRESENT, STATUS_LATE])
+      .in('status', [STATUS_PRESENT, STATUS_LATE, STATUS_LATE_EXCUSED])
       .range(0, 4999),
     admin.from('tasks')
       .select('responsible_person_id')
@@ -433,4 +438,16 @@ function json(body: unknown, status = 200): Response {
     status,
     headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
   });
+}
+
+/** Deletes an uploaded protocol PDF (attendances/protocols/…) after it was sent. Best effort. */
+async function removeProtocolPdf(admin: SupabaseClient, pdfUrl: unknown) {
+  if (!isAllowedPdfUrl(pdfUrl)) return;
+  const marker = '/storage/v1/object/public/attendances/';
+  const index = pdfUrl.indexOf(marker);
+  if (index === -1) return;
+  const path = decodeURIComponent(pdfUrl.slice(index + marker.length).split('?')[0]);
+  if (!path.startsWith('protocols/')) return;
+  const { error } = await admin.storage.from('attendances').remove([path]);
+  if (error) console.error('[team-notify] could not remove protocol pdf:', error);
 }

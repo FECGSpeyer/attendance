@@ -105,14 +105,29 @@ export function upcomingProtocolAttendances(
     .sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf());
 }
 
-/** Saves the selected topics into the Termin's plan and returns the new plan. */
+/**
+ * Saves the selected topics into the Termin's plan and returns the new plan.
+ * The plan is re-read first so changes made elsewhere in the meantime are kept.
+ */
 export async function addTopicsToAttendance(
-  db: { updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance> },
+  db: {
+    updateAttendance(att: Partial<Attendance>, id: number): Promise<Attendance>;
+    getAttendanceById?(id: number): Promise<Attendance>;
+  },
   attendance: Pick<Attendance, 'id' | 'plan' | 'start_time'>,
   type: Pick<AttendanceType, 'default_plan' | 'start_time'> | null | undefined,
   selections: TopicSelection[],
 ): Promise<Plan> {
-  const plan = planWithTopics(attendance, type, selections);
+  let current: Pick<Attendance, 'id' | 'plan' | 'start_time'> = attendance;
+  if (db.getAttendanceById) {
+    try {
+      const fresh = await db.getAttendanceById(attendance.id);
+      if (fresh) current = { id: attendance.id, plan: fresh.plan, start_time: fresh.start_time };
+    } catch {
+      current = attendance;
+    }
+  }
+  const plan = planWithTopics(current, type, selections);
   const result = await db.updateAttendance({ plan }, attendance.id);
   return result?.plan ?? plan;
 }
