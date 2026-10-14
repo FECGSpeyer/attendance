@@ -147,9 +147,13 @@ CREATE OR REPLACE FUNCTION public.can_read_protocol(p_attendance_id bigint)
 RETURNS boolean
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
 AS $$
+  -- Only types with protocols enabled: protocols on other types (e.g. old
+  -- meetings migrated onto a rehearsal) stay visible to leadership only.
   SELECT EXISTS (
     SELECT 1 FROM attendance a
+    JOIN attendance_types t ON t.id = a.type_id
     WHERE a.id = p_attendance_id
+      AND t.enable_protocol
       AND public.in_protocol_circle(a.type_id)
   );
 $$;
