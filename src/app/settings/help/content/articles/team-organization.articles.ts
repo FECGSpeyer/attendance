@@ -80,7 +80,7 @@ Die Anwesenden kommen aus der Anwesenheit des Termins.`,
     title: 'Aufgaben verteilen und erledigen',
     categoryId: 'team',
     keywords: ['aufgabe', 'aufgaben', 'to-do', 'todo', 'zuweisen', 'verantwortlich', 'fällig', 'fälligkeit', 'erinnerung', 'überfällig', 'abhaken', 'erledigt', 'meine aufgaben'],
-    body: `**Aufgaben anlegen** darf die Leitung: im Protokoll mit **„Aufgabe“** bei einem Punkt, in einem Thema oder unter **Mehr → Team → Teamorganisation → Aufgaben** mit **+**. Eine Aufgabe kann jeder aktiven Person der Instanz zugewiesen werden, mit Fälligkeit und Priorität.
+    body: `**Aufgaben anlegen** darf die Leitung: im Protokoll mit **„Aufgabe“** bei einem Punkt, in einem Thema oder unter **Mehr → Team → Teamorganisation → Aufgaben** mit **+**. Eine Aufgabe kann jeder aktiven Person der Instanz zugewiesen werden, mit Fälligkeit und Priorität (Pfeil nach unten = niedrig, Strich = mittel, Pfeil nach oben = hoch).
 
 **Benachrichtigungen:** Die verantwortliche Person bekommt eine Nachricht, wenn ihr eine Aufgabe zugewiesen wird, eine Erinnerung zwei Tage vor Fälligkeit und einmalig eine Nachricht, wenn die Aufgabe überfällig ist. Abschalten kannst du das in den Benachrichtigungs-Einstellungen unter „Aufgaben“.
 

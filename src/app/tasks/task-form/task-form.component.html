@@ -72,8 +72,8 @@
       <ion-label>Priorität</ion-label>
       <ion-segment slot="end" class="task-form-priority" [value]="priority" (ionChange)="priority = $any($event.detail.value)">
         @for (p of priorities; track p.value) {
-          <ion-segment-button [value]="p.value">
-            <ion-label>{{ p.label }}</ion-label>
+          <ion-segment-button [value]="p.value" [attr.aria-label]="p.label" [title]="p.label">
+            <ion-icon [name]="p.icon"></ion-icon>
           </ion-segment-button>
         }
       </ion-segment>

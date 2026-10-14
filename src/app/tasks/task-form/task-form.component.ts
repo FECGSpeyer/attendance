@@ -66,8 +66,11 @@ export class TaskFormComponent implements OnInit {
   isPersonPickerOpen = false;
   saving = false;
 
-  readonly priorities: { value: AgendaItemPriority; label: string }[] = (['low', 'medium', 'high'] as AgendaItemPriority[])
-    .map(value => ({ value, label: TASK_PRIORITY_LABELS[value] }));
+  readonly priorities: { value: AgendaItemPriority; label: string; icon: string }[] = [
+    { value: 'low', label: TASK_PRIORITY_LABELS.low, icon: 'arrow-down-outline' },
+    { value: 'medium', label: TASK_PRIORITY_LABELS.medium, icon: 'remove-outline' },
+    { value: 'high', label: TASK_PRIORITY_LABELS.high, icon: 'arrow-up-outline' },
+  ];
   readonly formatLongDate = formatLongDate;
 
   constructor(
