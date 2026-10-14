@@ -28,6 +28,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   segment = signal<'current' | 'all'>('current');
 
   private sub: RealtimeChannel | null = null;
+  private readonly instanceId = Math.random().toString(36).slice(2, 10);
 
   constructor() {
     // Re-subscribe and refresh whenever the active tenant changes. setTenant()
@@ -48,14 +49,18 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   private subscribe(): void {
     // Tear down any prior subscription before resubscribing so tenant changes
     // / repeated mounts don't accumulate channels on the same topic.
-    this.sub?.unsubscribe();
+    this.removeChannel();
 
     const userId = this.db.user?.id;
     const tenantId = this.db.tenant()?.id;
     if (!userId || !tenantId) return;
 
     this.sub = this.db.getSupabase()
-      .channel(`user-notif-${userId}`)
+      // Eigenes Topic je Glocke: supabase-js gibt für ein bereits bekanntes
+      // Topic den vorhandenen (schon abonnierten) Kanal zurück, und .on()
+      // darauf wirft. Da mehrere Seiten eine Glocke haben, brach sonst die
+      // Navigation zur zweiten Seite ab (iOS-Tabbar „reagiert nicht“).
+      .channel(`user-notif-${userId}-${this.instanceId}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'user_notifications', filter: `user_id=eq.${userId}` },
@@ -274,7 +279,16 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     await this.push.navigateToAttendance(attId);
   }
 
-  async ngOnDestroy(): Promise<void> {
-    await this.sub?.unsubscribe();
+  ngOnDestroy(): void {
+    this.removeChannel();
+  }
+
+  // removeChannel (statt nur unsubscribe) nimmt den Kanal auch aus dem Client,
+  // damit dasselbe Topic beim nächsten subscribe() neu angelegt wird.
+  private removeChannel(): void {
+    if (this.sub) {
+      void this.db.getSupabase().removeChannel(this.sub);
+      this.sub = null;
+    }
   }
 }

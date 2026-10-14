@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.12.14",
+      "date": "14.10.2026",
+      "changes": [
+        "🐛 Tabs wechseln wieder sofort und der richtige Tab ist markiert. Ursache war die Benachrichtigungs-Glocke, die beim Öffnen einer zweiten Seite mit Glocke einen Fehler auslöste."
+      ]
+    },
+    {
       "version": "4.12.13",
       "date": "14.10.2026",
       "changes": [
