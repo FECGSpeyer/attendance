@@ -16,6 +16,7 @@ import { PlanViewerComponent } from '../planning/plan-viewer/plan-viewer.compone
 import { PersonPageModule } from '../people/person/person.module';
 import { AttendancePageModule } from '../attendance/attendance/attendance.module';
 import { NotificationBellComponent } from '../shared/notification-bell/notification-bell.component';
+import { MyTasksComponent } from '../tasks/my-tasks/my-tasks.component';
 
 @NgModule({
   imports: [
@@ -27,6 +28,7 @@ import { NotificationBellComponent } from '../shared/notification-bell/notificat
     AttendancePageModule,
     NotificationBellComponent,
     PlanViewerComponent,
+    MyTasksComponent,
   ],
   declarations: [
     HomeDashboardPage,

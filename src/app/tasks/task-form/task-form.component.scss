@@ -1,0 +1,53 @@
+.task-form-context {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 20px 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ion-color-primary-shade);
+}
+
+.task-form-person {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ion-text-color);
+
+  &.is-empty {
+    color: var(--ion-color-medium);
+  }
+}
+
+.task-initials {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--ion-color-primary-shade);
+}
+
+.task-form-priority {
+  width: 210px;
+  max-width: 60%;
+}
+
+.task-form-footer {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+
+  ion-button {
+    --background: var(--ion-color-primary-shade);
+    --color: #fff;
+    height: 50px;
+    font-weight: 600;
+  }
+}

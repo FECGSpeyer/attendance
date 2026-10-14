@@ -11,6 +11,7 @@ import { AbsencesCardComponent } from './components/absences-card/absences-card.
 import { CriticalPersonsCardComponent } from './components/critical-persons-card/critical-persons-card.component';
 import { CurrentSongsCardComponent } from './components/current-songs-card/current-songs-card.component';
 import { CurrentPlanCardComponent } from './components/current-plan-card/current-plan-card.component';
+import { MyTasksComponent } from '../tasks/my-tasks/my-tasks.component';
 
 @Component({
   selector: 'app-home-dashboard',
@@ -28,6 +29,8 @@ export class HomeDashboardPage {
   @ViewChildren(CriticalPersonsCardComponent) criticalPersonsCards!: QueryList<CriticalPersonsCardComponent>;
   @ViewChildren(CurrentSongsCardComponent) currentSongsCards!: QueryList<CurrentSongsCardComponent>;
   @ViewChildren(CurrentPlanCardComponent) currentPlanCards!: QueryList<CurrentPlanCardComponent>;
+  @ViewChildren(MyTasksComponent) myTasksCards!: QueryList<MyTasksComponent>;
+  private entered = false;
 
   get isIos(): boolean {
     return this.platform.is('ios');
@@ -43,6 +46,11 @@ export class HomeDashboardPage {
 
   ionViewWillEnter() {
     this.cards = this.db.getDashboardCardConfig();
+    // Tasks change often (e.g. completed on the detail page), so refresh them when coming back.
+    if (this.entered) {
+      this.myTasksCards?.forEach(c => void c.load());
+    }
+    this.entered = true;
   }
 
   async refreshAllCards() {
@@ -54,12 +62,13 @@ export class HomeDashboardPage {
       ...this.criticalPersonsCards.map(c => c.load()),
       ...this.currentSongsCards.map(c => c.load()),
       ...this.currentPlanCards.map(c => c.load()),
+      ...this.myTasksCards.map(c => c.load()),
     ];
     await Promise.all(reloads);
   }
 
   get visibleCards(): DashboardCardConfig[] {
-    return this.cards.filter(c => c.visible);
+    return this.cards.filter(c => c.visible && (c.id !== 'my-tasks' || this.db.teamOrgEnabled()));
   }
 
   async onTenantChange(tenantId: number): Promise<void> {

@@ -4,7 +4,7 @@ import { Task } from '../../utilities/interfaces';
 
 const db = supabase as any;
 
-const TASK_SELECT = '*, responsible_person:player!responsible_person_id(id, firstName, lastName), agenda_item:agenda_items!agenda_item_id(id, title), attendance:attendance!attendance_id(id, date, typeInfo)';
+const TASK_SELECT = '*, responsible_person:player!responsible_person_id(id, firstName, lastName), agenda_item:agenda_items!agenda_item_id(id, title), attendance:attendance!attendance_id(id, date, typeInfo, type_id)';
 
 type TaskWrite = Omit<Task, 'id' | 'created_at' | 'updated_at' | 'responsible_person' | 'agenda_item' | 'attendance' | 'completed_at'>;
 

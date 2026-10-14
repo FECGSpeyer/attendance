@@ -52,6 +52,9 @@ ALTER TABLE public.tasks
   ADD COLUMN IF NOT EXISTS overdue_reminder_sent boolean NOT NULL DEFAULT false;
 
 UPDATE public.tasks SET completed_at = updated_at WHERE status = 'completed' AND completed_at IS NULL;
+-- Bereits überfällige Aufgaben nicht nachträglich anmahnen.
+UPDATE public.tasks SET overdue_reminder_sent = true
+  WHERE due_date < current_date AND status <> 'completed' AND NOT overdue_reminder_sent;
 
 -- ------------------------------------------------------------
 -- 2. Hilfsfunktionen (SECURITY DEFINER, damit RLS-Policies sie

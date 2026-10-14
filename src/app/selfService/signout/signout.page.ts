@@ -14,6 +14,7 @@ import { Utils } from 'src/app/utilities/Utils';
 import { PrintService } from 'src/app/services/print/print.service';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
+import { MyTasksComponent } from 'src/app/tasks/my-tasks/my-tasks.component';
 
 @Component({
   selector: 'app-signout',
@@ -27,6 +28,8 @@ export class SignoutPage implements OnInit {
   @ViewChild('signoutAccordionGroup') signoutAccordionGroup: IonAccordionGroup;
   @ViewChild('excusePicker') excusePicker: ExcuseReasonPickerComponent;
   @ViewChild('descriptionModal') descriptionModal: IonModal;
+  @ViewChild(MyTasksComponent) myTasks?: MyTasksComponent;
+  private viewEntered = false;
   public selectedDescription: string = '';
   public player: Player;
   public attendances: Attendance[] = [];
@@ -621,8 +624,16 @@ export class SignoutPage implements OnInit {
     return Utils.getReadableDate(date, this.db.attendanceTypes().find(type => type.id === type_id));
   }
 
+  ionViewWillEnter() {
+    // Tasks may have been completed on the detail page meanwhile.
+    if (this.viewEntered) {
+      void this.myTasks?.load();
+    }
+    this.viewEntered = true;
+  }
+
   async handleRefresh(event) {
-    await this.getAttendances();
+    await Promise.all([this.getAttendances(), this.myTasks?.load()]);
 
     event.target.complete();
   }

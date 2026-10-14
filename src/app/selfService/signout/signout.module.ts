@@ -11,6 +11,7 @@ import { SignoutPage } from './signout.page';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { NotificationBellComponent } from 'src/app/shared/notification-bell/notification-bell.component';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
+import { MyTasksComponent } from 'src/app/tasks/my-tasks/my-tasks.component';
 
 @NgModule({
   imports: [
@@ -21,6 +22,7 @@ import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker
     PlanViewerComponent,
     NotificationBellComponent,
     ExcuseReasonPickerComponent,
+    MyTasksComponent,
     QuillModule.forRoot(),
   ],
   declarations: [SignoutPage]

@@ -28,7 +28,7 @@
       <ion-label>Karten</ion-label>
     </ion-list-header>
     <ion-reorder-group [disabled]="!isReordering" (ionItemReorder)="handleReorder($event)">
-      @for (card of cards; track card.id) {
+      @for (card of shownCards; track card.id) {
         <ion-item>
           <ion-reorder slot="start"></ion-reorder>
           <ion-label>{{ cardLabels[card.id] }}</ion-label>

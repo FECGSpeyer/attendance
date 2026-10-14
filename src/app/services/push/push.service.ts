@@ -304,6 +304,15 @@ export class PushService {
     }
 
     switch (data.type) {
+      case 'task':
+        await this.router.navigateByUrl(data.taskId ? `/tabs/settings/tasks/${data.taskId}` : '/tabs/settings/team-organization?tab=tasks');
+        break;
+      case 'protocol':
+        await this.router.navigateByUrl(data.attendanceId ? `/tabs/attendance/${data.attendanceId}/protocol` : '/tabs/settings/team-organization?tab=protocols');
+        break;
+      case 'proposal':
+        await this.router.navigateByUrl('/tabs/settings/team-organization?tab=topics');
+        break;
       case 'attendance':
       case 'reminder':
       case 'checklist':

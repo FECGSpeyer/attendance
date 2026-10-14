@@ -1,0 +1,38 @@
+@if (visible) {
+  <ion-card class="dashboard-card my-tasks-card">
+    <div class="card-header-strip strip-tasks">
+      <ion-icon name="checkbox-outline"></ion-icon>
+      <div>
+        <div class="card-title">Meine Aufgaben</div>
+        <div class="card-subtitle">{{ subtitle }}</div>
+      </div>
+    </div>
+    <ion-card-content class="card-body">
+      <ion-list lines="full" class="card-list">
+        @for (task of shownTasks; track task.id) {
+          <ion-item button detail="false" [routerLink]="['/tabs/settings/tasks', task.id]">
+            <ion-button slot="start" fill="clear" class="task-check" (click)="complete(task, $event)"
+              aria-label="Als erledigt markieren">
+              <ion-icon slot="icon-only" name="ellipse-outline" color="medium"></ion-icon>
+            </ion-button>
+            <ion-label class="ion-text-wrap">
+              <h3>{{ task.title }}</h3>
+              <p [class.is-overdue]="isOverdue(task)">{{ dueLabel(task) }}</p>
+            </ion-label>
+            @if (task.status === 'in_progress') {
+              <ion-badge slot="end" color="warning">In Arbeit</ion-badge>
+            }
+          </ion-item>
+        }
+        @if (openTasks.length > limit || db.isTeamLeader()) {
+          <ion-item button detail="true" lines="none" [routerLink]="['/tabs/settings/team-organization']"
+            [queryParams]="{ tab: 'tasks' }">
+            <ion-label color="primary">
+              {{ openTasks.length > limit ? 'Alle anzeigen (' + openTasks.length + ')' : 'Alle Aufgaben' }}
+            </ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+}

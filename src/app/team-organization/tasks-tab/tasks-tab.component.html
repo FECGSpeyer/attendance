@@ -1,1 +1,94 @@
-<p class="ion-padding">TODO</p>
+@if (isLeader && tasks.length) {
+  <div class="task-chips" role="toolbar" aria-label="Filter">
+    <ion-chip [class.is-active]="filter === 'all'" (click)="setFilter('all')">
+      <ion-label>Alle · {{ allOpenCount }}</ion-label>
+    </ion-chip>
+    @if (myPersonId) {
+      <ion-chip [class.is-active]="filter === 'mine'" (click)="setFilter('mine')">
+        <ion-label>Meine · {{ myOpenCount }}</ion-label>
+      </ion-chip>
+    }
+    @for (chip of chips; track chip.personId) {
+      @if (chip.personId !== myPersonId) {
+        <ion-chip [class.is-active]="filter === chip.personId" (click)="setFilter(chip.personId)" [title]="chip.name">
+          <ion-label>{{ chip.label }} · {{ chip.openCount }}</ion-label>
+        </ion-chip>
+      }
+    }
+  </div>
+}
+
+@if (loading) {
+  <ion-list [inset]="true">
+    @for (i of [1, 2, 3]; track i) {
+      <ion-item>
+        <ion-label>
+          <h2><ion-skeleton-text [animated]="true" style="width: 70%"></ion-skeleton-text></h2>
+          <p><ion-skeleton-text [animated]="true" style="width: 40%"></ion-skeleton-text></p>
+        </ion-label>
+      </ion-item>
+    }
+  </ion-list>
+} @else {
+  @for (group of groups; track group.key) {
+    <ion-list [inset]="true" class="task-group">
+      <ion-list-header [class.is-overdue]="group.key === 'overdue'">
+        <ion-label>{{ group.label }}</ion-label>
+        <ion-note>{{ group.tasks.length }}</ion-note>
+      </ion-list-header>
+      @for (task of group.tasks; track task.id) {
+        <ion-item button detail="false" [routerLink]="['/tabs/settings/tasks', task.id]"
+          [class.is-done]="task.status === 'completed'">
+          <ion-button slot="start" fill="clear" class="task-check" (click)="toggle(task, $event)"
+            [attr.aria-label]="task.status === 'completed' ? 'Wieder öffnen' : 'Als erledigt markieren'">
+            <ion-icon slot="icon-only" [name]="task.status === 'completed' ? 'checkmark-circle' : 'ellipse-outline'"
+              [color]="task.status === 'completed' ? 'success' : 'medium'"></ion-icon>
+          </ion-button>
+          <ion-label class="ion-text-wrap">
+            <h2>{{ task.title }}</h2>
+            <p [class.is-overdue]="isOverdue(task)">{{ subtitle(task) }}</p>
+          </ion-label>
+          @if (task.status === 'in_progress') {
+            <ion-badge slot="end" color="warning">{{ statusLabels.in_progress }}</ion-badge>
+          }
+          @if (task.status !== 'completed' && task.priority === 'high') {
+            <ion-badge slot="end" color="danger">{{ priorityLabels.high }}</ion-badge>
+          }
+        </ion-item>
+      }
+    </ion-list>
+  } @empty {
+    <div class="task-empty">
+      <ion-icon name="checkmark-done-circle-outline"></ion-icon>
+      <p>{{ emptyText }}</p>
+      @if (isLeader && !tasks.length) {
+        <ion-button fill="clear" (click)="addTask()">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Aufgabe anlegen
+        </ion-button>
+      }
+    </div>
+  }
+
+  @if (archivedCount > 0 || includeArchived) {
+    <ion-list [inset]="true">
+      <ion-item>
+        <ion-toggle [(ngModel)]="includeArchived" (ionChange)="onArchivedToggle()">
+          <ion-label>
+            Ältere erledigte anzeigen
+            <p>Erledigte Aufgaben verschwinden nach 30 Tagen aus der Liste.</p>
+          </ion-label>
+        </ion-toggle>
+      </ion-item>
+    </ion-list>
+  }
+}
+
+@if (isLeader) {
+  <div class="task-fab-spacer"></div>
+  <ion-fab class="task-fab" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="addTask()" aria-label="Aufgabe anlegen">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+}

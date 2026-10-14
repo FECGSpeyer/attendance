@@ -262,6 +262,17 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Teamorganisation entries (tasks, protocols, suggestions) carry their own route.
+    if (n.data?.route) {
+      const routeTenant = n.data?.tenantId ? Number(n.data.tenantId) : null;
+      if (routeTenant && routeTenant !== this.db.tenant()?.id) {
+        await this.db.setTenant(routeTenant);
+      }
+      this.isOpen.set(false);
+      await this.router.navigateByUrl(n.data.route);
+      return;
+    }
+
     const attId = n.data?.attendanceId ? Number(n.data.attendanceId) : null;
     if (!attId) {
       // Nothing to open (criticals / birthday) — just close.

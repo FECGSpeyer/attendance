@@ -1,0 +1,143 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="close()" aria-label="Schließen">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ isEdit ? 'Aufgabe bearbeiten' : 'Neue Aufgabe' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  @if (contextLabel) {
+    <div class="task-form-context">
+      <ion-icon name="link-outline"></ion-icon>
+      <span>{{ contextLabel }}</span>
+    </div>
+  }
+
+  <ion-list [inset]="true">
+    <ion-item>
+      <ion-input aria-label="Titel" placeholder="Was ist zu tun?" [(ngModel)]="title" [clearInput]="true"
+        autocapitalize="sentences"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-textarea aria-label="Beschreibung" placeholder="Beschreibung (optional)" [(ngModel)]="description"
+        [autoGrow]="true" rows="3" autocapitalize="sentences"></ion-textarea>
+    </ion-item>
+  </ion-list>
+
+  <ion-list [inset]="true">
+    <ion-list-header>
+      <ion-label>Wer &amp; bis wann</ion-label>
+    </ion-list-header>
+
+    <ion-item button detail="true" (click)="isPersonPickerOpen = true">
+      <ion-label>Verantwortlich</ion-label>
+      <ion-note slot="end" class="task-form-person" [class.is-empty]="!personId">
+        @if (personId) {
+          <span class="task-initials">{{ initials(selectedPerson ?? task?.responsible_person) }}</span>
+          {{ selectedPersonName }}
+        } @else {
+          Niemand
+        }
+      </ion-note>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Fällig am</ion-label>
+      <ion-button slot="end" fill="outline" size="small" (click)="dueDateModal.present()">
+        {{ dueDate ? formatLongDate(dueDate) : 'Kein Datum' }}
+      </ion-button>
+      <ion-modal #dueDateModal class="ion-datetime-button-overlay" [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime
+            presentation="date"
+            locale="de-DE"
+            [firstDayOfWeek]="1"
+            [value]="dueDate"
+            [showDefaultButtons]="true"
+            [showClearButton]="true"
+            doneText="OK"
+            cancelText="Abbrechen"
+            clearText="Löschen"
+            (ionChange)="onDueDateChange($event)">
+          </ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Priorität</ion-label>
+      <ion-segment slot="end" class="task-form-priority" [value]="priority" (ionChange)="priority = $any($event.detail.value)">
+        @for (p of priorities; track p.value) {
+          <ion-segment-button [value]="p.value">
+            <ion-label>{{ p.label }}</ion-label>
+          </ion-segment-button>
+        }
+      </ion-segment>
+    </ion-item>
+
+    @if (showNotifyToggle) {
+      <ion-item>
+        <ion-toggle [(ngModel)]="notify">
+          <ion-label>
+            {{ selectedPerson?.firstName || 'Person' }} benachrichtigen
+            <p>Sofort per Push oder Telegram</p>
+          </ion-label>
+        </ion-toggle>
+      </ion-item>
+    }
+  </ion-list>
+
+  <ion-modal [isOpen]="isPersonPickerOpen" (didDismiss)="isPersonPickerOpen = false"
+    [initialBreakpoint]="0.75" [breakpoints]="[0, 0.75, 1]">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Verantwortlich</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="isPersonPickerOpen = false">Fertig</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+        <ion-toolbar>
+          <ion-searchbar placeholder="Person suchen" [(ngModel)]="personSearch" [debounce]="100"></ion-searchbar>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-list>
+          @if (!personSearch) {
+            <ion-item button detail="false" (click)="selectPerson(null)">
+              <ion-label color="medium">Niemand</ion-label>
+              @if (!personId) {
+                <ion-icon slot="end" name="checkmark" color="primary"></ion-icon>
+              }
+            </ion-item>
+          }
+          @for (p of filteredPersons; track p.id) {
+            <ion-item button detail="false" (click)="selectPerson(p.id!)">
+              <span slot="start" class="task-initials">{{ initials(p) }}</span>
+              <ion-label>{{ p.firstName }} {{ p.lastName }}</ion-label>
+              @if (p.id === personId) {
+                <ion-icon slot="end" name="checkmark" color="primary"></ion-icon>
+              }
+            </ion-item>
+          } @empty {
+            <ion-item lines="none">
+              <ion-label color="medium">Keine Person gefunden</ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar color="light" class="task-form-footer">
+    <ion-button expand="block" shape="round" (click)="save()" [disabled]="saving || !title.trim()">
+      {{ isEdit ? 'Speichern' : 'Aufgabe anlegen' }}
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

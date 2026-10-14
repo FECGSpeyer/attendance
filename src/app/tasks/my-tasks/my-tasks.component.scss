@@ -1,0 +1,21 @@
+:host {
+  display: block;
+}
+
+.strip-tasks {
+  background: linear-gradient(135deg, #438e96, #2b6168);
+}
+
+.task-check {
+  margin: 0 4px 0 -8px;
+  --padding-start: 4px;
+  --padding-end: 4px;
+
+  ion-icon {
+    font-size: 24px;
+  }
+}
+
+ion-label p.is-overdue {
+  color: var(--ion-color-danger);
+}

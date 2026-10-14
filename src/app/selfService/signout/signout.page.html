@@ -207,6 +207,10 @@
   </div>
   }
 
+  @if (db.teamOrgEnabled()) {
+  <app-my-tasks></app-my-tasks>
+  }
+
   @if (canPlannedAbsence && playerAbsences.length) {
   <ion-list [inset]="true">
     <ion-list-header>

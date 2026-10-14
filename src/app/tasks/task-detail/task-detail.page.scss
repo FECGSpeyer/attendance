@@ -1,8 +1,67 @@
-.task-editor {
-  min-height: 150px;
-  display: block;
+.task-hero {
+  padding: 8px 20px 12px;
+
+  h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1.15;
+
+    &.is-done {
+      text-decoration: line-through;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  p {
+    margin: 8px 0 0;
+    color: var(--ion-color-medium);
+  }
 }
 
-ion-content.fab-padding {
-  --padding-bottom: 96px;
+.task-status {
+  padding: 4px 16px;
+}
+
+.task-description {
+  margin-top: 4px;
+  white-space: pre-wrap;
+  line-height: 1.4;
+  color: var(--ion-text-color);
+}
+
+.task-hint {
+  display: block;
+  padding: 0 20px 24px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.task-loading,
+.task-missing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 32px;
+  text-align: center;
+  color: var(--ion-color-medium);
+
+  > ion-icon {
+    font-size: 48px;
+  }
+}
+
+.task-footer {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+
+  ion-button {
+    // Success green with white text (#00815E has enough contrast).
+    --background: #00815e;
+    --color: #fff;
+    height: 50px;
+    font-weight: 600;
+  }
 }

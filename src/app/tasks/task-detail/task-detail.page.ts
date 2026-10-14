@@ -1,80 +1,138 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AlertController, NavController } from '@ionic/angular/lazy';
+import { AlertController, ModalController, NavController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
-import { AgendaItemPriority, Person, Task, TaskStatus } from 'src/app/utilities/interfaces';
+import { Task, TaskStatus } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { isTaskOverdue, personName } from 'src/app/team-organization/team-org.utils';
+import {
+  formatLongDate,
+  localToday,
+  TASK_PRIORITY_COLORS,
+  TASK_PRIORITY_LABELS,
+  TASK_STATUS_LABELS,
+} from 'src/app/team-organization/tasks-tab/tasks-tab.utils';
+import { openTaskForm } from '../task-form/task-form.component';
 
+/**
+ * Aufgabe (C2). Leadership edits everything (via the task form) and can
+ * delete; the responsible person only changes the status.
+ */
 @Component({
   selector: 'app-task-detail',
   templateUrl: './task-detail.page.html',
   styleUrls: ['./task-detail.page.scss'],
   standalone: false,
-  encapsulation: ViewEncapsulation.None
 })
 export class TaskDetailPage implements OnInit {
-  public task: Task;
-  public conductors: Person[] = [];
-  public isNew = false;
+  public task: Task | null = null;
+  public loading = true;
+  public savingStatus = false;
+  public today = localToday();
+
+  readonly statusOptions: { value: TaskStatus; label: string }[] = (['open', 'in_progress', 'completed'] as TaskStatus[])
+    .map(value => ({ value, label: TASK_STATUS_LABELS[value] }));
+  readonly priorityLabels = TASK_PRIORITY_LABELS;
+  readonly priorityColors = TASK_PRIORITY_COLORS;
+  readonly formatLongDate = formatLongDate;
+
   private taskId: string;
-  private today: string;
-
-  readonly statusOptions: { value: TaskStatus; label: string }[] = [
-    { value: 'open', label: 'Offen' },
-    { value: 'in_progress', label: 'In Bearbeitung' },
-    { value: 'completed', label: 'Erledigt' },
-  ];
-
-  readonly priorityOptions: { value: AgendaItemPriority; label: string }[] = [
-    { value: 'high', label: 'Hoch' },
-    { value: 'medium', label: 'Mittel' },
-    { value: 'low', label: 'Niedrig' },
-  ];
 
   constructor(
-    private db: DbService,
+    public db: DbService,
     private route: ActivatedRoute,
     private alertController: AlertController,
+    private modalController: ModalController,
     private navController: NavController,
-  ) {
-    const now = new Date();
-    this.today = now.toISOString().split('T')[0];
+  ) {}
+
+  get isLeader(): boolean {
+    return this.db.isTeamLeader();
+  }
+
+  get backHref(): string {
+    return this.isLeader ? '/tabs/settings/team-organization' : '/tabs/signout';
+  }
+
+  get isMine(): boolean {
+    const me = this.db.teamPerson();
+    return !!me && this.task?.responsible_person_id === me.id;
+  }
+
+  get isOverdue(): boolean {
+    return !!this.task && isTaskOverdue(this.task, this.today);
+  }
+
+  get assigneeText(): string {
+    if (!this.task) return '';
+    if (this.isMine) return 'Dir zugewiesen';
+    const name = personName(this.task.responsible_person);
+    return name ? `Zugewiesen an ${name}` : 'Noch niemandem zugewiesen';
+  }
+
+  /** "Protokoll · Probe · Di, 21.10.2026" for the source link. */
+  get attendanceLabel(): string {
+    const att = this.task?.attendance as (Task['attendance'] & { type_id?: string }) | null | undefined;
+    if (!att) return '';
+    const typeName = att.typeInfo || this.db.attendanceTypes()?.find(t => t.id === att.type_id)?.name || 'Termin';
+    return `${typeName} vom ${formatLongDate(att.date)}`;
+  }
+
+  get hasSource(): boolean {
+    return !!this.task && (!!this.task.attendance_id || !!this.task.agenda_item_id);
   }
 
   async ngOnInit() {
     this.taskId = this.route.snapshot.params['id'];
-    this.isNew = this.taskId === 'new';
+    await this.db.loadTeamPerson();
+    await this.load();
+  }
 
-    const allConductors = await this.db.getConductors(true);
-    this.conductors = allConductors.filter((c: Person) => !c.left);
-
-    if (this.isNew) {
-      this.task = {
-        tenant_id: this.db.tenant().id,
-        title: '',
-        status: 'open',
-        priority: 'medium',
-      };
-    } else {
-      this.task = await this.db.getTask(this.taskId);
+  async load() {
+    this.loading = true;
+    this.today = localToday();
+    try {
+      this.task = (await this.db.getTask(this.taskId)) ?? null;
+    } catch (error) {
+      console.error('Task load error:', error);
+      this.task = null;
+    } finally {
+      this.loading = false;
     }
   }
 
-  isOverdue(): boolean {
-    return this.task?.status !== 'completed' && !!this.task?.due_date && this.task.due_date < this.today;
+  async handleRefresh(event: any) {
+    await this.load();
+    event.target.complete();
   }
 
-  onTaskDateChange(event: CustomEvent, modal: { dismiss: () => Promise<boolean> }) {
-    const raw = event.detail.value;
-    this.task.due_date = raw ? (raw as string).split('T')[0] : null;
-    if (!raw) {
-      modal.dismiss();
+  async setStatus(status: TaskStatus) {
+    if (!this.task?.id || this.task.status === status || this.savingStatus) return;
+    const previous = this.task.status;
+    this.task.status = status;
+    this.savingStatus = true;
+    try {
+      this.task = await this.db.updateTask(this.task.id, { status });
+      if (status === 'completed') Utils.showToast('Erledigt – danke!');
+    } catch (error) {
+      console.error('Task status error:', error);
+      if (this.task) this.task.status = previous;
+      Utils.showToast('Status konnte nicht geändert werden', 'danger');
+    } finally {
+      this.savingStatus = false;
     }
+  }
+
+  async edit() {
+    if (!this.task || !this.isLeader) return;
+    const updated = await openTaskForm(this.modalController, { task: this.task });
+    if (updated) this.task = updated;
   }
 
   async deleteTask() {
     const alert = await this.alertController.create({
-      header: 'Aufgabe wirklich löschen?',
+      header: 'Aufgabe löschen?',
+      message: 'Die Aufgabe wird endgültig entfernt.',
       buttons: [
         { text: 'Abbrechen', role: 'cancel' },
         {
@@ -83,41 +141,16 @@ export class TaskDetailPage implements OnInit {
           handler: async () => {
             try {
               await this.db.deleteTask(this.taskId);
-              Utils.showToast('Gelöscht');
+              Utils.showToast('Aufgabe gelöscht');
               this.navController.navigateBack('/tabs/settings/team-organization');
             } catch (error) {
               console.error('Delete error:', error);
               Utils.showToast('Löschen fehlgeschlagen', 'danger');
             }
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
     await alert.present();
-  }
-
-  async save() {
-    if (!this.task.title?.trim()) {
-      Utils.showToast('Bitte einen Titel eingeben', 'warning');
-      return;
-    }
-    const loading = await Utils.getLoadingElement();
-    await loading.present();
-    try {
-      if (this.isNew) {
-        const created = await this.db.addTask(this.task);
-        this.taskId = created.id;
-        this.isNew = false;
-        this.task = created;
-      } else {
-        this.task = await this.db.updateTask(this.taskId, this.task);
-      }
-      Utils.showToast('Gespeichert');
-    } catch (error) {
-      console.error('Task save error:', error);
-      Utils.showToast('Aufgabe konnte nicht gespeichert werden', 'danger');
-    } finally {
-      await loading.dismiss();
-    }
   }
 }

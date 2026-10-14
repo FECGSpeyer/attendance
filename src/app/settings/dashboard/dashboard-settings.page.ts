@@ -10,6 +10,7 @@ const CARD_LABELS: Record<DashboardCardId, string> = {
   'critical-persons': 'Problemfälle',
   'current-songs': 'Aktuelle Werke',
   'current-plan': 'Aktueller Ablaufplan',
+  'my-tasks': 'Meine Aufgaben',
 };
 
 @Component({
@@ -31,6 +32,11 @@ export class DashboardSettingsPage implements OnInit {
     this.cards = this.db.getDashboardCardConfig();
   }
 
+  /** Cards that can be configured: "Meine Aufgaben" only exists with Teamorganisation. */
+  get shownCards(): DashboardCardConfig[] {
+    return this.cards.filter(c => c.id !== 'my-tasks' || this.db.teamOrgEnabled());
+  }
+
   async onTabToggle() {
     await this.db.setShowDashboardTab(this.showDashboardTab);
   }
@@ -48,9 +54,12 @@ export class DashboardSettingsPage implements OnInit {
     const to = event.detail.to;
     event.detail.complete(true);
     if (from === to) return;
-    const [moved] = this.cards.splice(from, 1);
-    this.cards.splice(to, 0, moved);
-    this.cards = [...this.cards];
+    // Indices refer to the shown cards; hidden cards keep their place at the end.
+    const shown = [...this.shownCards];
+    const hidden = this.cards.filter(c => !shown.includes(c));
+    const [moved] = shown.splice(from, 1);
+    shown.splice(to, 0, moved);
+    this.cards = [...shown, ...hidden];
     this.db.setDashboardCardConfig(this.cards);
   }
 }
