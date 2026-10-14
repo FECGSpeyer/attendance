@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.13.1",
+      "date": "14.10.2026",
+      "changes": [
+        "📝 Anmelden mit Notiz fragt jetzt auch die Anmeldefelder des Termins ab.",
+        "✏️ Neu: Angemeldete können ihre Anmeldefelder unter „Meine Anwesenheit“ nachträglich anpassen."
+      ]
+    },
+    {
       "version": "4.13.0",
       "date": "14.10.2026",
       "changes": [

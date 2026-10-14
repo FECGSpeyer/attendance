@@ -64,6 +64,8 @@ export class SignoutPage implements OnInit {
   public isRegFieldsModalOpen = false;
   public pendingSigninAttendance: PersonAttendance | null = null;
   public regFieldAnswers: { [fieldId: string]: any } = {};
+  public regFieldsMode: 'signin' | 'edit' = 'signin';
+  private pendingSigninNote = '';
 
   constructor(
     public db: DbService,
@@ -213,7 +215,7 @@ export class SignoutPage implements OnInit {
           text: 'Anmelden',
           handler: (data) => {
             note = data.note;
-            this.signin(attendance, note);
+            this.handleSigninWithFields(attendance, note);
           },
         },
       ],
@@ -373,6 +375,10 @@ export class SignoutPage implements OnInit {
         },
       },
       {
+        text: 'Anmeldefelder anpassen',
+        handler: () => this.handleSigninWithFields(attendance, '', 'edit'),
+      },
+      {
         text: 'Notiz anpassen',
         handler: async () => {
           let note = attendance.notes || '';
@@ -441,6 +447,11 @@ export class SignoutPage implements OnInit {
 
     if (attendance.text !== 'X') {
       buttons = buttons.filter((btn) => btn.text !== 'Notiz anpassen');
+    }
+
+    const isSignedIn = attendance.status === AttendanceStatus.Present || attendance.status === AttendanceStatus.Late;
+    if (!isSignedIn || !canSignin || !this.getRegistrationFields(attendance).length) {
+      buttons = buttons.filter((btn) => btn.text !== 'Anmeldefelder anpassen');
     }
 
     if (isExcused) {
@@ -514,12 +525,16 @@ export class SignoutPage implements OnInit {
     return (attendance?.attendance as any)?.attType?.registration_fields ?? [];
   }
 
-  async handleSigninWithFields(attendance: PersonAttendance): Promise<void> {
+  async handleSigninWithFields(attendance: PersonAttendance, note: string = '', mode: 'signin' | 'edit' = 'signin'): Promise<void> {
     const fields = this.getRegistrationFields(attendance);
     if (!fields.length) {
-      await this.signin(attendance);
+      if (mode === 'signin') {
+        await this.signin(attendance, note);
+      }
       return;
     }
+    this.regFieldsMode = mode;
+    this.pendingSigninNote = note;
     this.regFieldAnswers = {};
     for (const field of fields) {
       const existing = (attendance.registration_answers ?? {})[field.id];
@@ -562,13 +577,19 @@ export class SignoutPage implements OnInit {
       }));
     }
 
+    const isEdit = this.regFieldsMode === 'edit';
     const alert = await this.alertController.create({
       header: field.label,
-      backdropDismiss: false,
+      backdropDismiss: isEdit,
       inputs,
       buttons: [
+        ...(isEdit ? [{
+          text: 'Abbrechen',
+          role: 'cancel',
+          handler: () => { this.pendingSigninAttendance = null; },
+        }] : []),
         {
-          text: 'Anmelden',
+          text: isEdit ? 'Speichern' : 'Anmelden',
           handler: (data) => {
             const answer = field.type === 'multi_select' ? (Array.isArray(data) ? data : []) : data?.answer ?? data;
             this.confirmRegistrationAnswers({ [field.id]: answer });
@@ -589,9 +610,23 @@ export class SignoutPage implements OnInit {
     }
     await this.db.updatePersonAttendance(this.pendingSigninAttendance.id, { registration_answers: answers } as any);
     const att = this.pendingSigninAttendance;
+    const note = this.pendingSigninNote;
     this.pendingSigninAttendance = null;
+    this.pendingSigninNote = '';
     this.isRegFieldsModalOpen = false;
-    await this.signin(att);
+    if (this.regFieldsMode === 'edit') {
+      att.registration_answers = answers;
+      Utils.showToast('Anmeldefelder gespeichert.', 'success', 4000);
+      await this.getAttendances();
+      return;
+    }
+    await this.signin(att, note);
+  }
+
+  cancelRegFieldsEdit(): void {
+    this.pendingSigninAttendance = null;
+    this.pendingSigninNote = '';
+    this.isRegFieldsModalOpen = false;
   }
 
   toggleMultiSelectOption(fieldId: string, option: string): void {

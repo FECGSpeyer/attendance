@@ -513,7 +513,12 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>Anmeldung</ion-title>
+          <ion-title>{{ regFieldsMode === 'edit' ? 'Anmeldefelder' : 'Anmeldung' }}</ion-title>
+          @if (regFieldsMode === 'edit') {
+            <ion-buttons slot="end">
+              <ion-button (click)="cancelRegFieldsEdit()">Abbrechen</ion-button>
+            </ion-buttons>
+          }
         </ion-toolbar>
       </ion-header>
       <ion-content color="light">
@@ -556,7 +561,7 @@
           <div class="ion-padding">
             <ion-button expand="block" (click)="confirmRegistrationAnswers(regFieldAnswers)">
               <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-              Anmelden
+              {{ regFieldsMode === 'edit' ? 'Speichern' : 'Anmelden' }}
             </ion-button>
           </div>
         }

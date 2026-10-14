@@ -5,8 +5,12 @@ export const SELF_SERVICE_ARTICLES: HelpArticle[] = [
     id: 'self-signout',
     title: 'Mich selbst an- oder abmelden',
     categoryId: 'self-service',
-    keywords: ['abmelden', 'anmelden', 'meine termine', 'signout'],
-    body: `Unter "Meine Anwesenheit" siehst du deine anstehenden und vergangenen Termine und kannst deinen eigenen [[Anwesenheitsstatus]] setzen. Meldest du dich ab, wählst du optional einen [[Ausfallgrund]] aus.`,
+    keywords: ['abmelden', 'anmelden', 'meine termine', 'signout', 'anmeldefelder', 'notiz', 'antworten ändern', 'anmeldung bearbeiten'],
+    body: `Unter "Meine Anwesenheit" siehst du deine anstehenden und vergangenen Termine und kannst deinen eigenen [[Anwesenheitsstatus]] setzen. Meldest du dich ab, wählst du optional einen [[Ausfallgrund]] aus.
+
+Hat ein Termin Anmeldefelder (z. B. „Essen mit?“), fragt die App sie beim Anmelden ab – auch wenn du „Anmelden mit Notiz“ wählst: Erst gibst du deine Notiz ein, danach füllst du die Anmeldefelder aus.
+
+Bist du schon angemeldet, tippst du den Termin an und wählst „Anmeldefelder anpassen“, um deine Antworten nachträglich zu ändern. Das geht, solange die Anmeldefrist des Termins nicht abgelaufen ist.`,
   },
   {
     id: 'self-pause',
