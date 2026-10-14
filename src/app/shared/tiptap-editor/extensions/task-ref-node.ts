@@ -1,11 +1,29 @@
 import { Node, mergeAttributes } from '@tiptap/core';
 
-export const TaskRefNode = Node.create({
+const STATUS_LABELS: Record<string, string> = {
+  open: 'Offen',
+  in_progress: 'In Arbeit',
+  completed: 'Erledigt',
+};
+
+/** Text of a task reference; `status` is the live status when known. */
+export function taskRefText(title: string, status: string | undefined): string {
+  const label = STATUS_LABELS[status ?? ''] ?? status ?? '';
+  return label ? `${status === 'completed' ? '✅' : '📋'} ${title} · ${label}` : `📋 ${title}`;
+}
+
+export const TaskRefNode = Node.create<Record<string, never>, { statuses: Record<string, string> }>({
   name: 'taskRef',
   group: 'block',
   atom: true,
   selectable: true,
   draggable: false,
+
+  addStorage() {
+    // Live task statuses (id → status), set by the host page. The `status`
+    // attribute is only the status at the time the task was inserted.
+    return { statuses: {} };
+  },
 
   addAttributes() {
     return {
@@ -23,6 +41,20 @@ export const TaskRefNode = Node.create({
     return ['div', mergeAttributes(HTMLAttributes, {
       'data-type': 'task-ref',
       class: 'task-ref-node',
-    }), `✅ ${HTMLAttributes['title']} · ${HTMLAttributes['status']}`];
+    }), taskRefText(HTMLAttributes['title'], HTMLAttributes['status'])];
+  },
+
+  addNodeView() {
+    return ({ node }) => {
+      const dom = document.createElement('div');
+      dom.className = 'task-ref-node';
+      dom.dataset['type'] = 'task-ref';
+      dom.dataset['taskId'] = node.attrs['id'] ?? '';
+      dom.dataset['title'] = node.attrs['title'] ?? '';
+      dom.dataset['status'] = node.attrs['status'] ?? '';
+      const live = node.attrs['id'] ? this.storage.statuses[node.attrs['id']] : undefined;
+      dom.textContent = taskRefText(node.attrs['title'], live ?? node.attrs['status']);
+      return { dom };
+    };
   },
 });

@@ -1,4 +1,6 @@
-:host {
+// ion-modal: inline modals are moved out of the host element, so they need the variables too.
+:host,
+ion-modal {
   --protocol-card: var(--ion-item-background, #fff);
   --protocol-muted: var(--ion-color-medium);
   --protocol-line: var(--ion-color-step-150, rgba(0, 0, 0, 0.08));

@@ -138,7 +138,7 @@
           <div class="grow"><div class="t">{{ l.title }}</div></div>
         </div>
         <div class="editor-box readonly">
-          <app-tiptap-editor [content]="l.doc" [editable]="false"></app-tiptap-editor>
+          <app-tiptap-editor [content]="l.doc" [editable]="false" [taskStatuses]="taskStatuses"></app-tiptap-editor>
         </div>
       </div>
     }
@@ -195,6 +195,7 @@
             <app-tiptap-editor
               [content]="editorContent[s.id] ?? null"
               [sectionId]="s.id"
+              [taskStatuses]="taskStatuses"
               [editable]="true"
               (contentChange)="onSectionChange(s.id, $event)">
             </app-tiptap-editor>
@@ -295,6 +296,7 @@
           <app-tiptap-editor
             [content]="editorContent[s.id] ?? null"
             [sectionId]="s.id"
+              [taskStatuses]="taskStatuses"
             [editable]="true"
             (contentChange)="onSectionChange(s.id, $event)">
           </app-tiptap-editor>
@@ -319,7 +321,7 @@
             <div class="s">Dieser Punkt steht nicht mehr im Ablaufplan. Die Notizen bleiben erhalten.</div>
           </div>
           <div class="main-editor editor-box readonly">
-            <app-tiptap-editor [content]="l.doc" [editable]="false"></app-tiptap-editor>
+            <app-tiptap-editor [content]="l.doc" [editable]="false" [taskStatuses]="taskStatuses"></app-tiptap-editor>
           </div>
         } @else {
           <div class="center-state">
@@ -343,6 +345,7 @@
         <app-tiptap-editor
           [content]="editorContent[GENERAL] ?? null"
           [sectionId]="GENERAL"
+          [taskStatuses]="taskStatuses"
           [editable]="true"
           (contentChange)="onSectionChange(GENERAL, $event)">
         </app-tiptap-editor>
@@ -410,7 +413,7 @@
           </div>
           @if (hasNotes(s.id)) {
             <div class="read-content">
-              <app-tiptap-editor [content]="docs[s.id]" [editable]="false"></app-tiptap-editor>
+              <app-tiptap-editor [content]="docs[s.id]" [editable]="false" [taskStatuses]="taskStatuses"></app-tiptap-editor>
             </div>
           } @else if (!tasksFor(s.id).length) {
             <div class="s">Keine Notizen</div>
@@ -427,7 +430,7 @@
         <div class="read-title"><span>Allgemeine Notizen</span></div>
         @if (hasNotes(GENERAL)) {
           <div class="read-content">
-            <app-tiptap-editor [content]="docs[GENERAL]" [editable]="false"></app-tiptap-editor>
+            <app-tiptap-editor [content]="docs[GENERAL]" [editable]="false" [taskStatuses]="taskStatuses"></app-tiptap-editor>
           </div>
         }
         <ng-container *ngTemplateOutlet="taskList; context: { $implicit: unassignedTasks }"></ng-container>
@@ -504,6 +507,7 @@
         <app-tiptap-editor
           [content]="editorContent[GENERAL] ?? null"
           [sectionId]="GENERAL"
+          [taskStatuses]="taskStatuses"
           [editable]="true"
           (contentChange)="onSectionChange(GENERAL, $event)">
         </app-tiptap-editor>

@@ -108,7 +108,14 @@ export class ProtocolPage implements OnInit, OnDestroy {
   attendance: Attendance | null = null;
   type: AttendanceType | undefined;
   protocol: Protocol | null = null;
-  tasks: Task[] = [];
+  private _tasks: Task[] = [];
+  /** Current status per task id, so task references in the text show it live. */
+  taskStatuses: Record<string, string> = {};
+  get tasks(): Task[] { return this._tasks; }
+  set tasks(tasks: Task[]) {
+    this._tasks = tasks;
+    this.taskStatuses = Object.fromEntries(tasks.filter(t => t.id).map(t => [t.id!, t.status]));
+  }
 
   isLeader = false;
   isLoading = true;

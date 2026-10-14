@@ -23,7 +23,7 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import BubbleMenu from '@tiptap/extension-bubble-menu';
 import { AgendaItemNode } from './extensions/agenda-item-node';
-import { TaskRefNode } from './extensions/task-ref-node';
+import { TaskRefNode, taskRefText } from './extensions/task-ref-node';
 
 @Component({
   selector: 'app-tiptap-editor',
@@ -118,6 +118,8 @@ export class TiptapEditorComponent implements AfterViewInit, OnDestroy, OnChange
   @Input() editable = true;
   // Optional key so a host page with several editors can find the right one.
   @Input() sectionId?: string;
+  /** Live task statuses (id → status) for task references in the text. */
+  @Input() taskStatuses: Record<string, string> | null = null;
   private dirty = false;
   @Output() contentChange = new EventEmitter<JSONContent>();
 
@@ -150,6 +152,9 @@ export class TiptapEditorComponent implements AfterViewInit, OnDestroy, OnChange
           AgendaItemNode,
           TaskRefNode,
         ],
+        onBeforeCreate: ({ editor }) => {
+          editor.storage['taskRef'].statuses = this.taskStatuses ?? {};
+        },
         content: (this.content as JSONContent) ?? { type: 'doc', content: [] },
         editable: this.editable,
         onUpdate: ({ editor }) => {
@@ -197,6 +202,19 @@ export class TiptapEditorComponent implements AfterViewInit, OnDestroy, OnChange
     if (changes['editable'] && this.editor) {
       this.editor.setEditable(this.editable);
     }
+    if (changes['taskStatuses'] && this.editor) {
+      this.refreshTaskRefs();
+    }
+  }
+
+  /** Shows the current status on every task reference without touching the document. */
+  private refreshTaskRefs() {
+    const statuses = this.taskStatuses ?? {};
+    this.editor!.storage['taskRef'].statuses = statuses;
+    this.editorHost.nativeElement.querySelectorAll<HTMLElement>('.task-ref-node[data-task-id]').forEach(el => {
+      const id = el.dataset['taskId'];
+      el.textContent = taskRefText(el.dataset['title'] ?? '', (id && statuses[id]) || el.dataset['status']);
+    });
   }
 
   insertAgendaItemRef(attrs: { id: string; title: string; status: string; priority: string }) {
