@@ -44,7 +44,7 @@ BEGIN
     ALTER TABLE public.protocols ADD COLUMN status text NOT NULL DEFAULT 'draft';
     -- Bestehende (aus den Besprechungen migrierte) Protokolle gelten als freigegeben.
     ALTER TABLE public.protocols ADD COLUMN IF NOT EXISTS published_at timestamptz;
-    UPDATE public.protocols SET status = 'published', published_at = updated_at;
+    UPDATE public.protocols SET status = 'published', published_at = updated_at WHERE status = 'draft';
   END IF;
 
   IF NOT EXISTS (
