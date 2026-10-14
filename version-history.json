@@ -1,31 +1,17 @@
 {
   "versions": [
     {
+      "version": "4.12.15",
+      "date": "14.10.2026",
+      "changes": [
+        "✨ iPhone: Die Wisch-Animation der Tabbar ist wieder da."
+      ]
+    },
+    {
       "version": "4.12.14",
       "date": "14.10.2026",
       "changes": [
         "🐛 Tabs wechseln wieder sofort und der richtige Tab ist markiert. Ursache war die Benachrichtigungs-Glocke, die beim Öffnen einer zweiten Seite mit Glocke einen Fehler auslöste."
-      ]
-    },
-    {
-      "version": "4.12.13",
-      "date": "14.10.2026",
-      "changes": [
-        "🐛 iPhone: Bleibt ein Tipp auf einen Tab hängen, wechselt die App jetzt trotzdem auf den Tab."
-      ]
-    },
-    {
-      "version": "4.12.12",
-      "date": "13.10.2026",
-      "changes": [
-        "🐛 iPhone: Die Wisch-Animation der Tabbar ist vorerst abgeschaltet, damit Tipps auf die Tabs wieder zuverlässig ankommen."
-      ]
-    },
-    {
-      "version": "4.12.11",
-      "date": "13.10.2026",
-      "changes": [
-        "🐛 Die Tabbar auf dem iPhone reagiert wieder bei jedem Tippen, der Umweg über den Werke-Tab ist nicht mehr nötig."
       ]
     },
     {
