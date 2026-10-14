@@ -1,6 +1,6 @@
 // supabase/functions/send-task-reminders/index.ts
 // Deploy: supabase functions deploy send-task-reminders
-// Cron-Trigger in Supabase Dashboard: */5 * * * * (every 5 minutes)
+// Cron: pg_cron job "send-task-reminders-job", daily 0 6 * * * (UTC)
 //
 // Sends two one-time reminders to the responsible person of a task:
 //  - 2 days before the due date (reminder_sent)
