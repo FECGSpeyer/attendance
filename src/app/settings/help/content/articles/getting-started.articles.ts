@@ -8,7 +8,9 @@ export const GETTING_STARTED_ARTICLES: HelpArticle[] = [
     keywords: ['start', 'einstieg', 'überblick', 'app'],
     body: `Attendix hilft Orchestern, Chören und ähnlichen Gruppen dabei, Anwesenheiten zu erfassen, [[Werk|Werke]] zu verwalten, Proben und Aufführungen zu planen und den Überblick über die Mitglieder zu behalten.
 
-Die App funktioniert im Browser am Laptop genauso wie als App auf dem Smartphone. Was du siehst und darfst, hängt von deiner [[Rolle]] in der aktuellen [[Instanz]] ab.`,
+Die App funktioniert im Browser am Laptop genauso wie als App auf dem Smartphone. Was du siehst und darfst, hängt von deiner [[Rolle]] in der aktuellen [[Instanz]] ab.
+
+Für Vorstand oder Leitungsteam gibt es die [[Teamorganisation]]: Tagesordnung im Ablaufplan, Protokoll und Aufgaben, alles direkt am Termin (siehe „Was ist die Teamorganisation?“).`,
   },
   {
     id: 'gs-navigation',

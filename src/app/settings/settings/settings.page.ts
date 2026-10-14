@@ -35,6 +35,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   public parents: Parent[] = [];
   public admins: Admin[] = [];
   public isAdmin = false;
+  public hasOwnTasks = false;
   public isSuperAdmin = false;
   public isHelper = false;
   public isPlayer = false;
@@ -108,6 +109,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.isVoiceLeader = [Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER].includes(this.db.tenantUser().role);
     this.maintainTeachers = this.db.tenant().maintainTeachers;
     this.parentsEnabled = this.db.tenant().parents || false;
+    void this.loadTeamAccess();
 
     // Parallel fetch all independent data for faster loading
     const [
@@ -690,8 +692,16 @@ export class SettingsPage implements OnInit, OnDestroy {
     return this.db.churches()?.length && this.db.getPersonExtraFields().find((f => f.type === FieldType.BFECG_CHURCH)) !== undefined;
   }
 
-  hasProtocolAttendanceType(): boolean {
-    return this.db.attendanceTypes().some(t => t.enable_protocol);
+  /** Members outside every circle still get "Meine Aufgaben" when tasks are assigned to them. */
+  private async loadTeamAccess(): Promise<void> {
+    if (!this.db.teamOrgEnabled()) {
+      this.hasOwnTasks = false;
+      return;
+    }
+    await this.db.loadTeamPerson();
+    if (!this.db.isTeamLeader() && !this.db.inTeamCircle()) {
+      this.hasOwnTasks = (await this.db.getMyTasks()).length > 0;
+    }
   }
 
   getVisibleExtraFields() {

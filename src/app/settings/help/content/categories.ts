@@ -8,5 +8,6 @@ export const HELP_CATEGORIES: HelpCategory[] = [
   { id: 'songs', label: 'Werke', icon: 'musical-notes-outline', order: 5 },
   { id: 'self-service', label: 'Meine Anwesenheit', icon: 'person-circle-outline', order: 6 },
   { id: 'settings', label: 'Einstellungen', icon: 'settings-outline', order: 7 },
-  { id: 'other', label: 'Weitere Funktionen', icon: 'ellipsis-horizontal-circle-outline', order: 8 },
+  { id: 'team', label: 'Teamorganisation', icon: 'people-circle-outline', order: 8 },
+  { id: 'other', label: 'Weitere Funktionen', icon: 'ellipsis-horizontal-circle-outline', order: 9 },
 ];

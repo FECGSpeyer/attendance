@@ -106,7 +106,7 @@ export interface TenantRolePermission {
   player_planned_absence: boolean;
 }
 
-export type DashboardCardId = 'birthdays' | 'next-event' | 'member-changes' | 'absences' | 'critical-persons' | 'current-songs' | 'current-plan';
+export type DashboardCardId = 'birthdays' | 'next-event' | 'member-changes' | 'absences' | 'critical-persons' | 'current-songs' | 'current-plan' | 'my-tasks';
 
 export interface DashboardCardConfig {
   id: DashboardCardId;
@@ -121,6 +121,7 @@ export const DEFAULT_DASHBOARD_CARDS: DashboardCardConfig[] = [
   { id: 'critical-persons', visible: true },
   { id: 'current-songs', visible: true },
   { id: 'current-plan', visible: true },
+  { id: 'my-tasks', visible: true },
 ];
 
 export interface PlayerAbsence {
@@ -471,6 +472,8 @@ export interface FieldSelection {
   currentTime?: string;
   songId?: number;
   info?: string;
+  /** Set when this plan field is an agenda item (TOP) of the team organisation. */
+  agendaItemId?: string;
 }
 
 export interface GroupCategory {
@@ -541,6 +544,8 @@ export interface AttendanceType {
   planning_prefix_instance_name?: boolean;
   is_default_org_plan?: boolean;
   enable_protocol?: boolean;
+  agenda_default_duration?: number;
+  suggest_postponed?: boolean;
   place_enabled?: boolean;
 }
 
@@ -615,10 +620,14 @@ export interface CrossTenantPersonAttendance extends PersonAttendance {
 // ============================================================
 
 export const AGENDA_ITEMS_PLACEHOLDER_ID = 'agenda-items-placeholder';
+export const PROTOCOL_GENERAL_SECTION_ID = '__general__';
 
-export type AgendaItemStatus = 'open' | 'in_progress' | 'completed' | 'postponed';
+export type AgendaItemStatus = 'open' | 'completed' | 'dropped';
 export type AgendaItemPriority = 'low' | 'medium' | 'high';
+export type AgendaItemProposalStatus = 'pending' | 'accepted' | 'rejected';
 export type TaskStatus = 'open' | 'in_progress' | 'completed';
+export type ProtocolStatus = 'draft' | 'published';
+export type ProtocolOutcome = 'discussed' | 'decided' | 'postponed';
 
 export interface AgendaItem {
   id?: string;
@@ -629,29 +638,42 @@ export interface AgendaItem {
   status: AgendaItemStatus;
   priority: AgendaItemPriority;
   responsible_person_id?: number | null;
-  due_date?: string | null;
+  default_duration?: number | null;
+  /** Person who suggested the topic; null when the leadership created it. */
+  proposed_by?: number | null;
+  proposal_status?: AgendaItemProposalStatus | null;
+  decision_note?: string | null;
   created_by?: string;
   responsible_person?: Pick<Person, 'id' | 'firstName' | 'lastName'>;
-  linked_attendances?: AgendaItemAttendance[];
+  proposer?: Pick<Person, 'id' | 'firstName' | 'lastName'>;
 }
 
-export interface AgendaItemAttendance {
-  id?: string;
-  agenda_item_id: string;
+/** One appearance of a topic in a plan (result of get_agenda_item_history). */
+export interface AgendaItemHistoryEntry {
   attendance_id: number;
-  created_at?: string;
-  attendance?: Pick<Attendance, 'id' | 'date' | 'typeInfo' | 'type_id'>;
+  date: string;
+  type_id: string;
+  type_info: string | null;
+  field_id: string;
+  outcome: ProtocolOutcome | null;
+  protocol_status: ProtocolStatus | null;
 }
 
 export interface Protocol {
   id?: string;
   attendance_id: number;
+  /** Tiptap document per plan field id, plus PROTOCOL_GENERAL_SECTION_ID for general notes. */
   content: { [fieldId: string]: Record<string, unknown> };
+  /** Result per plan field id (TOP). */
+  outcomes?: { [fieldId: string]: ProtocolOutcome };
+  status?: ProtocolStatus;
+  published_at?: string | null;
+  published_by?: string | null;
   created_at?: string;
   created_by?: string;
   updated_at?: string;
   tenant_id: number;
-  attendance?: Pick<Attendance, 'id' | 'date' | 'typeInfo'>;
+  attendance?: Pick<Attendance, 'id' | 'date' | 'typeInfo' | 'type_id'>;
 }
 
 export interface Task {
@@ -669,8 +691,12 @@ export interface Task {
   protocol_id?: string | null;
   attendance_id?: number | null;
   reminder_sent?: boolean;
+  overdue_reminder_sent?: boolean;
+  completed_at?: string | null;
   created_by?: string;
   responsible_person?: Pick<Person, 'id' | 'firstName' | 'lastName'>;
+  agenda_item?: Pick<AgendaItem, 'id' | 'title'> | null;
+  attendance?: Pick<Attendance, 'id' | 'date' | 'typeInfo'> | null;
 }
 
 export interface Message {

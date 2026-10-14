@@ -6,6 +6,7 @@ import { SONGS_ARTICLES } from './articles/songs.articles';
 import { SELF_SERVICE_ARTICLES } from './articles/self-service.articles';
 import { SETTINGS_ARTICLES } from './articles/settings.articles';
 import { OTHER_FEATURES_ARTICLES } from './articles/other-features.articles';
+import { TEAM_ORGANIZATION_ARTICLES } from './articles/team-organization.articles';
 
 export * from './types';
 export { HELP_CATEGORIES } from './categories';
@@ -19,5 +20,6 @@ export const HELP_ARTICLES = [
   ...SONGS_ARTICLES,
   ...SELF_SERVICE_ARTICLES,
   ...SETTINGS_ARTICLES,
+  ...TEAM_ORGANIZATION_ARTICLES,
   ...OTHER_FEATURES_ARTICLES,
 ];

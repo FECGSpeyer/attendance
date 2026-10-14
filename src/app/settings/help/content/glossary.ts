@@ -154,4 +154,31 @@ export const GLOSSARY: GlossaryTerm[] = [
     aliases: ['Extra-Feld'],
     definition: 'Ein frei definierbares zusätzliches Datenfeld (Text, Zahl, Datum, Ja/Nein, Auswahl) für Personen oder Werke. Personenfelder können nur für eine Instanz oder organisationsweit angelegt werden; organisationsweite Werte werden für dieselbe Person in allen verbundenen Instanzen gemeinsam verwendet.',
   },
+  {
+    id: 'teamorganisation',
+    term: 'Teamorganisation',
+    definition: 'Werkzeuge für Sitzungen von Vorstand oder Leitungsteam: [[Themenspeicher]], Tagesordnung im [[Ablaufplan]], Protokoll und Aufgaben. Sichtbar, sobald bei mindestens einem Termintyp „Protokoll & Tagesordnung“ eingeschaltet ist; zu finden unter Mehr → Team.',
+  },
+  {
+    id: 'top',
+    term: 'TOP',
+    aliases: ['Tagesordnungspunkt', 'Tagesordnungspunkte'],
+    definition: 'Tagesordnungspunkt: ein Thema aus dem [[Themenspeicher]], das als eigener Punkt mit Uhrzeit, Dauer und Verantwortlichem im [[Ablaufplan]] eines Termins steht. Im Protokoll hält die Leitung zu jedem TOP das Ergebnis fest (besprochen, beschlossen, vertagt).',
+  },
+  {
+    id: 'themenspeicher',
+    term: 'Themenspeicher',
+    definition: 'Liste der offenen Themen in der [[Teamorganisation]], die noch besprochen werden sollen. Die Leitung legt Themen an oder übernimmt Vorschläge von Mitgliedern und plant sie als [[TOP]] in einen Termin ein.',
+  },
+  {
+    id: 'protokoll-freigeben',
+    term: 'Protokoll freigeben',
+    aliases: ['Freigabe', 'freigegeben'],
+    definition: 'Macht ein Protokoll für den [[Personenkreis]] des Termintyps lesbar und benachrichtigt Anwesende und Personen mit Aufgaben aus der Sitzung. Vorher ist es ein Entwurf, den nur die Leitung sieht.',
+  },
+  {
+    id: 'personenkreis',
+    term: 'Personenkreis',
+    definition: 'Alle Personen in den relevanten Gruppen eines Termintyps mit „Protokoll & Tagesordnung“ (ohne Gruppen: alle Mitglieder), außer Eltern und Bewerbern. Sie lesen freigegebene Protokolle und dürfen Themen vorschlagen.',
+  },
 ];

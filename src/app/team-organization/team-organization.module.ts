@@ -4,6 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular/lazy';
 import { TeamOrganizationPageRoutingModule } from './team-organization-routing.module';
 import { TeamOrganizationPage } from './team-organization.page';
+import { TeamTasksTabComponent } from './tasks-tab/tasks-tab.component';
+import { TeamTopicsTabComponent } from './topics-tab/topics-tab.component';
+import { TeamProtocolsTabComponent } from './protocols-tab/protocols-tab.component';
 
 @NgModule({
   imports: [
@@ -11,6 +14,9 @@ import { TeamOrganizationPage } from './team-organization.page';
     FormsModule,
     IonicModule,
     TeamOrganizationPageRoutingModule,
+    TeamTasksTabComponent,
+    TeamTopicsTabComponent,
+    TeamProtocolsTabComponent,
   ],
   declarations: [TeamOrganizationPage]
 })

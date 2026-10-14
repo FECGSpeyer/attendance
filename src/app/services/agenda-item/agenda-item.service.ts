@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
-import { AgendaItem, AgendaItemAttendance } from '../../utilities/interfaces';
+import { AgendaItem, AgendaItemHistoryEntry } from '../../utilities/interfaces';
 
 const db = supabase as any;
 
-type AgendaItemWrite = Omit<AgendaItem, 'id' | 'created_at' | 'responsible_person' | 'linked_attendances'>;
+const AGENDA_ITEM_SELECT = '*, responsible_person:player!responsible_person_id(id, firstName, lastName), proposer:player!proposed_by(id, firstName, lastName)';
+
+type AgendaItemWrite = Omit<AgendaItem, 'id' | 'created_at' | 'responsible_person' | 'proposer'>;
 
 function toAgendaItemWrite(item: Partial<AgendaItem>): Partial<AgendaItemWrite> {
-  const { id, created_at, responsible_person, linked_attendances, ...write } = item;
+  const { id, created_at, responsible_person, proposer, ...write } = item;
   return write;
 }
 
@@ -16,10 +18,11 @@ function toAgendaItemWrite(item: Partial<AgendaItem>): Partial<AgendaItemWrite> 
 })
 export class AgendaItemService {
 
+  /** Leadership: all topics. Members: only their own suggestions (RLS). */
   async getAgendaItems(tenantId: number): Promise<AgendaItem[]> {
     const { data } = await db
       .from('agenda_items')
-      .select('*, responsible_person:player!responsible_person_id(id, firstName, lastName)')
+      .select(AGENDA_ITEM_SELECT)
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false });
 
@@ -29,32 +32,47 @@ export class AgendaItemService {
   async getAgendaItem(id: string): Promise<AgendaItem> {
     const { data } = await db
       .from('agenda_items')
-      .select('*, responsible_person:player!responsible_person_id(id, firstName, lastName)')
+      .select(AGENDA_ITEM_SELECT)
       .eq('id', id)
       .single();
 
     return data;
   }
 
-  async getAgendaItemsForAttendance(attendanceId: number): Promise<AgendaItem[]> {
+  async getAgendaItemsByIds(ids: string[]): Promise<AgendaItem[]> {
+    if (!ids.length) return [];
     const { data } = await db
-      .from('agenda_item_attendances')
-      .select('agenda_item:agenda_items(*, responsible_person:player!responsible_person_id(id, firstName, lastName))')
-      .eq('attendance_id', attendanceId)
-      .order('created_at', { ascending: true });
+      .from('agenda_items')
+      .select(AGENDA_ITEM_SELECT)
+      .in('id', ids);
 
-    return (data ?? []).map((row: any) => row.agenda_item).filter(Boolean);
+    return data ?? [];
   }
 
   async addAgendaItem(item: Omit<AgendaItem, 'id'>): Promise<AgendaItem> {
     const { data, error } = await db
       .from('agenda_items')
       .insert(toAgendaItemWrite(item))
-      .select('*, responsible_person:player!responsible_person_id(id, firstName, lastName)')
+      .select(AGENDA_ITEM_SELECT)
       .single();
 
     if (error) throw error;
     return data;
+  }
+
+  /** A member suggests a topic; it waits for the leadership's decision. */
+  async proposeAgendaItem(item: Pick<AgendaItem, 'tenant_id' | 'title' | 'description' | 'proposed_by'>): Promise<void> {
+    // Members can't read the row back before it is theirs via RLS, so no select here.
+    const { error } = await db
+      .from('agenda_items')
+      .insert({
+        ...item,
+        status: 'open',
+        priority: 'medium',
+        proposal_status: 'pending',
+      });
+
+    if (error) throw error;
   }
 
   async updateAgendaItem(id: string, updates: Partial<AgendaItem>): Promise<AgendaItem> {
@@ -62,7 +80,7 @@ export class AgendaItemService {
       .from('agenda_items')
       .update(toAgendaItemWrite(updates))
       .eq('id', id)
-      .select('*, responsible_person:player!responsible_person_id(id, firstName, lastName)')
+      .select(AGENDA_ITEM_SELECT)
       .single();
 
     if (error) throw error;
@@ -80,26 +98,9 @@ export class AgendaItemService {
     if (!data?.length) throw new Error('Keine Berechtigung zum Löschen');
   }
 
-  async linkToAttendance(agendaItemId: string, attendanceId: number): Promise<void> {
-    await db
-      .from('agenda_item_attendances')
-      .insert({ agenda_item_id: agendaItemId, attendance_id: attendanceId });
-  }
-
-  async unlinkFromAttendance(agendaItemId: string, attendanceId: number): Promise<void> {
-    await db
-      .from('agenda_item_attendances')
-      .delete()
-      .match({ agenda_item_id: agendaItemId, attendance_id: attendanceId });
-  }
-
-  async getLinkedAttendances(agendaItemId: string): Promise<AgendaItemAttendance[]> {
-    const { data } = await db
-      .from('agenda_item_attendances')
-      .select('*, attendance:attendance!attendance_id(id, date, typeInfo, type_id)')
-      .eq('agenda_item_id', agendaItemId)
-      .order('created_at', { ascending: false });
-
+  async getHistory(agendaItemId: string): Promise<AgendaItemHistoryEntry[]> {
+    const { data, error } = await db.rpc('get_agenda_item_history', { p_agenda_item_id: agendaItemId });
+    if (error) throw error;
     return data ?? [];
   }
 }

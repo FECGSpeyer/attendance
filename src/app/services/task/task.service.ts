@@ -4,10 +4,12 @@ import { Task } from '../../utilities/interfaces';
 
 const db = supabase as any;
 
-type TaskWrite = Omit<Task, 'id' | 'created_at' | 'updated_at' | 'responsible_person'>;
+const TASK_SELECT = '*, responsible_person:player!responsible_person_id(id, firstName, lastName), agenda_item:agenda_items!agenda_item_id(id, title), attendance:attendance!attendance_id(id, date, typeInfo)';
+
+type TaskWrite = Omit<Task, 'id' | 'created_at' | 'updated_at' | 'responsible_person' | 'agenda_item' | 'attendance' | 'completed_at'>;
 
 function toTaskWrite(task: Partial<Task>): Partial<TaskWrite> {
-  const { id, created_at, updated_at, responsible_person, ...write } = task;
+  const { id, created_at, updated_at, responsible_person, agenda_item, attendance, completed_at, ...write } = task;
   return write;
 }
 
@@ -19,9 +21,32 @@ export class TaskService {
   async getTasks(tenantId: number): Promise<Task[]> {
     const { data } = await db
       .from('tasks')
-      .select('*, responsible_person:player!responsible_person_id(id, firstName, lastName)')
+      .select(TASK_SELECT)
       .eq('tenant_id', tenantId)
       .order('due_date', { ascending: true, nullsFirst: false });
+
+    return data ?? [];
+  }
+
+  /** Tasks assigned to one person (members only get these via RLS anyway). */
+  async getTasksForPerson(tenantId: number, personIds: number[]): Promise<Task[]> {
+    if (!personIds.length) return [];
+    const { data } = await db
+      .from('tasks')
+      .select(TASK_SELECT)
+      .eq('tenant_id', tenantId)
+      .in('responsible_person_id', personIds)
+      .order('due_date', { ascending: true, nullsFirst: false });
+
+    return data ?? [];
+  }
+
+  async getTasksForAttendance(attendanceId: number): Promise<Task[]> {
+    const { data } = await db
+      .from('tasks')
+      .select(TASK_SELECT)
+      .eq('attendance_id', attendanceId)
+      .order('created_at', { ascending: true });
 
     return data ?? [];
   }
@@ -29,7 +54,7 @@ export class TaskService {
   async getTask(id: string): Promise<Task> {
     const { data } = await db
       .from('tasks')
-      .select('*, responsible_person:player!responsible_person_id(id, firstName, lastName)')
+      .select(TASK_SELECT)
       .eq('id', id)
       .single();
 
@@ -39,7 +64,7 @@ export class TaskService {
   async getTasksForProtocol(protocolId: string): Promise<Task[]> {
     const { data } = await db
       .from('tasks')
-      .select('*, responsible_person:player!responsible_person_id(id, firstName, lastName)')
+      .select(TASK_SELECT)
       .eq('protocol_id', protocolId)
       .order('created_at', { ascending: true });
 
@@ -49,7 +74,7 @@ export class TaskService {
   async getTasksForAgendaItem(agendaItemId: string): Promise<Task[]> {
     const { data } = await db
       .from('tasks')
-      .select('*, responsible_person:player!responsible_person_id(id, firstName, lastName)')
+      .select(TASK_SELECT)
       .eq('agenda_item_id', agendaItemId)
       .order('created_at', { ascending: true });
 
@@ -60,7 +85,7 @@ export class TaskService {
     const { data, error } = await db
       .from('tasks')
       .insert(toTaskWrite(task))
-      .select('*, responsible_person:player!responsible_person_id(id, firstName, lastName)')
+      .select(TASK_SELECT)
       .single();
 
     if (error) throw error;
@@ -72,7 +97,7 @@ export class TaskService {
       .from('tasks')
       .update({ ...toTaskWrite(updates), updated_at: new Date().toISOString() })
       .eq('id', id)
-      .select('*, responsible_person:player!responsible_person_id(id, firstName, lastName)')
+      .select(TASK_SELECT)
       .single();
 
     if (error) throw error;

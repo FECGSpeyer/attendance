@@ -1,11 +1,12 @@
-import { Injectable, WritableSignal, inject, signal } from '@angular/core';
+import { Injectable, Signal, WritableSignal, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, Platform } from '@ionic/angular/lazy';
 import { SupabaseClient, User } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
 import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SUPER_DEVELOPER_EMAIL, SupabaseTable, FILES_SHARED_TENANT_IDS } from '../utilities/constants';
-import { Attendance, ExtraField, FieldSelection, History, Group, Meeting, Person, Plan, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence, DashboardCardConfig, DEFAULT_DASHBOARD_CARDS, AgendaItem, AgendaItemAttendance, Protocol, Task } from '../utilities/interfaces';
+import { Attendance, ExtraField, FieldSelection, History, Group, Meeting, Person, Plan, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence, DashboardCardConfig, DEFAULT_DASHBOARD_CARDS, AgendaItem, AgendaItemHistoryEntry, Protocol, ProtocolOutcome, Task } from '../utilities/interfaces';
+import { isInAnyCircle, isTeamLeaderRole, isTeamOrgEnabled } from '../team-organization/team-org.utils';
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
@@ -72,6 +73,15 @@ export class DbService {
   public showSongsTabSignal: WritableSignal<boolean>;
   public showOrgPlansTabSignal: WritableSignal<boolean>;
   public showDashboardTabSignal: WritableSignal<boolean>;
+  /** Teamorganisation: visible only when at least one attendance type has it enabled. */
+  public readonly teamOrgEnabled: Signal<boolean> = computed(() => isTeamOrgEnabled(this.attendanceTypes()));
+  public readonly isTeamLeader: Signal<boolean> = computed(() => isTeamLeaderRole(this.tenantUser()?.role));
+  /** The signed-in person (player row) of the current tenant, loaded on demand by loadTeamPerson(). */
+  public readonly teamPerson: WritableSignal<Player | null> = signal(null);
+  /** Leadership, or a person in the circle of at least one protocol-enabled attendance type. */
+  public readonly inTeamCircle: Signal<boolean> = computed(() =>
+    this.teamOrgEnabled() && isInAnyCircle(this.attendanceTypes(), this.tenantUser()?.role, this.teamPerson()?.instrument));
+  private teamPersonTenantId: number | null = null;
 
   // Injected modular services - use these for new code
   public readonly authSvc = inject(AuthService);
@@ -2874,13 +2884,26 @@ export class DbService {
     return this.agendaItemSvc.getAgendaItem(id);
   }
 
-  async getAgendaItemsForAttendance(attendanceId: number): Promise<AgendaItem[]> {
-    return this.agendaItemSvc.getAgendaItemsForAttendance(attendanceId);
+  async getAgendaItemsByIds(ids: string[]): Promise<AgendaItem[]> {
+    return this.agendaItemSvc.getAgendaItemsByIds(ids);
   }
 
   async addAgendaItem(item: Omit<AgendaItem, 'id'>): Promise<AgendaItem> {
     this.checkDemoRestriction();
     return this.agendaItemSvc.addAgendaItem({ ...item, tenant_id: this.tenant().id });
+  }
+
+  /** A member suggests a topic for the leadership. */
+  async proposeAgendaItem(title: string, description?: string): Promise<void> {
+    this.checkDemoRestriction();
+    const person = await this.loadTeamPerson();
+    if (!person) throw new Error('Keine Person gefunden');
+    return this.agendaItemSvc.proposeAgendaItem({
+      tenant_id: this.tenant().id,
+      title,
+      description,
+      proposed_by: person.id,
+    });
   }
 
   async updateAgendaItem(id: string, updates: Partial<AgendaItem>): Promise<AgendaItem> {
@@ -2893,18 +2916,8 @@ export class DbService {
     return this.agendaItemSvc.deleteAgendaItem(id);
   }
 
-  async linkAgendaItemToAttendance(agendaItemId: string, attendanceId: number): Promise<void> {
-    this.checkDemoRestriction();
-    return this.agendaItemSvc.linkToAttendance(agendaItemId, attendanceId);
-  }
-
-  async unlinkAgendaItemFromAttendance(agendaItemId: string, attendanceId: number): Promise<void> {
-    this.checkDemoRestriction();
-    return this.agendaItemSvc.unlinkFromAttendance(agendaItemId, attendanceId);
-  }
-
-  async getLinkedAttendancesForAgendaItem(agendaItemId: string): Promise<AgendaItemAttendance[]> {
-    return this.agendaItemSvc.getLinkedAttendances(agendaItemId);
+  async getAgendaItemHistory(agendaItemId: string): Promise<AgendaItemHistoryEntry[]> {
+    return this.agendaItemSvc.getHistory(agendaItemId);
   }
 
   // ── Protocols ─────────────────────────────────────────────
@@ -2913,18 +2926,58 @@ export class DbService {
     return this.protocolSvc.getProtocolForAttendance(attendanceId);
   }
 
+  /** Leadership: all protocols. Members: published protocols of their circle (RLS). */
   async getProtocols(): Promise<Protocol[]> {
     return this.protocolSvc.getProtocols(this.tenant().id);
   }
 
-  async upsertProtocol(protocol: Omit<Protocol, 'id'>): Promise<Protocol> {
+  async saveProtocolSection(attendanceId: number, fieldId: string, changes: { doc?: Record<string, unknown>; outcome?: ProtocolOutcome | null }): Promise<Protocol> {
     this.checkDemoRestriction();
-    return this.protocolSvc.upsertProtocol({ ...protocol, tenant_id: this.tenant().id });
+    return this.protocolSvc.saveSection(attendanceId, fieldId, changes);
+  }
+
+  async publishProtocol(attendanceId: number): Promise<Protocol> {
+    this.checkDemoRestriction();
+    return this.protocolSvc.publish(attendanceId);
   }
 
   async deleteProtocol(id: string): Promise<void> {
     this.checkDemoRestriction();
     return this.protocolSvc.deleteProtocol(id);
+  }
+
+  // ── Teamorganisation: current person ───────────────────────
+
+  /** Loads (and caches per tenant) the signed-in person, needed for "my tasks" and the circle check. */
+  async loadTeamPerson(force = false): Promise<Player | null> {
+    const tenantId = this.tenant()?.id;
+    if (!tenantId || !this.user) return null;
+    if (!force && this.teamPersonTenantId === tenantId) return this.teamPerson();
+    let person: Player | null = null;
+    try {
+      person = await this.getPlayerByAppId(false);
+    } catch {
+      person = null;
+    }
+    this.teamPersonTenantId = tenantId;
+    this.teamPerson.set(person ?? null);
+    return person ?? null;
+  }
+
+  async getMyTasks(): Promise<Task[]> {
+    const person = await this.loadTeamPerson();
+    if (!person) return [];
+    return this.taskSvc.getTasksForPerson(this.tenant().id, [person.id]);
+  }
+
+  /** Sends a team notification (assignment, published protocol, decided suggestion). Never throws. */
+  async notifyTeam(body: Record<string, unknown>): Promise<void> {
+    try {
+      const { error } = await supabase.functions.invoke('team-notify', { body: { ...body, tenantId: this.tenant().id } });
+      if (error) console.error('team-notify error', error);
+    } catch (e) {
+      console.error('team-notify error', e);
+    }
   }
 
   // ── Tasks ─────────────────────────────────────────────────
@@ -2943,6 +2996,10 @@ export class DbService {
 
   async getTasksForAgendaItem(agendaItemId: string): Promise<Task[]> {
     return this.taskSvc.getTasksForAgendaItem(agendaItemId);
+  }
+
+  async getTasksForAttendance(attendanceId: number): Promise<Task[]> {
+    return this.taskSvc.getTasksForAttendance(attendanceId);
   }
 
   async addTask(task: Omit<Task, 'id'>): Promise<Task> {
