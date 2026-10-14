@@ -31,3 +31,42 @@
 ion-list:last-of-type {
   margin-bottom: 96px;
 }
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70%;
+  padding: 48px 32px;
+  text-align: center;
+
+  .empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 88px;
+    height: 88px;
+    margin-bottom: 20px;
+    border-radius: 50%;
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+
+    ion-icon {
+      font-size: 42px;
+      color: var(--ion-color-primary);
+    }
+  }
+
+  h2 {
+    margin: 0 0 8px;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  p {
+    max-width: 320px;
+    margin: 0 0 24px;
+    line-height: 1.4;
+    color: var(--ion-color-medium);
+  }
+}

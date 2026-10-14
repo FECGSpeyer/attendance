@@ -13,10 +13,16 @@
   </ion-refresher>
 
   @if (!loading && messages.length === 0) {
-    <div class="noDataContainer">
-      <ion-icon name="megaphone-outline" size="large"></ion-icon>
-      <p>Noch keine Mitteilungen gesendet</p>
-      <ion-button fill="clear" (click)="compose()">Erste Mitteilung schreiben</ion-button>
+    <div class="empty-state">
+      <div class="empty-icon">
+        <ion-icon name="megaphone-outline"></ion-icon>
+      </div>
+      <h2>Noch keine Mitteilungen</h2>
+      <p>Informiere deine Gruppe mit einer Mitteilung und sieh direkt, wer sie schon gelesen hat.</p>
+      <ion-button shape="round" (click)="compose()">
+        <ion-icon slot="start" name="create-outline"></ion-icon>
+        Erste Mitteilung schreiben
+      </ion-button>
     </div>
   } @else if (messages.length > 0) {
     <ion-list-header>

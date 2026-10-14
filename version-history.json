@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.13.2",
+      "date": "14.10.2026",
+      "changes": [
+        "📣 Die leere Mitteilungen-Seite sieht jetzt aufgeräumter aus und erklärt kurz, wofür Mitteilungen da sind."
+      ]
+    },
+    {
       "version": "4.13.1",
       "date": "14.10.2026",
       "changes": [
