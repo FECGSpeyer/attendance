@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.13.6",
+      "date": "17.10.2026",
+      "changes": [
+        "📱 Die Tabbar auf iOS passt sich wieder an die Zahl der Tabs an. Wer nur wenige Tabs hat, sieht jetzt eine kompakte Leiste statt einer breiten mit viel Leerraum."
+      ]
+    },
+    {
       "version": "4.13.5",
       "date": "17.10.2026",
       "changes": [
