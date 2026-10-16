@@ -11,6 +11,7 @@ import { AttendancePage } from './attendance.page';
 import { StatusInfoComponent } from './status-info/status-info.component';
 import { AdHocReminderModalComponent } from './ad-hoc-reminder-modal/ad-hoc-reminder-modal.component';
 import { FilesFolderPickerComponent } from 'src/app/shared/files-folder-picker/files-folder-picker.component';
+import { PlanChipsComponent } from 'src/app/planning/plan-chips/plan-chips.component';
 
 @NgModule({
   imports: [
@@ -20,6 +21,7 @@ import { FilesFolderPickerComponent } from 'src/app/shared/files-folder-picker/f
     AttendancePageRoutingModule,
     QuillModule.forRoot(),
     FilesFolderPickerComponent,
+    PlanChipsComponent,
   ],
   declarations: [AttendancePage, StatusInfoComponent, AdHocReminderModalComponent],
   exports: [AttendancePage],

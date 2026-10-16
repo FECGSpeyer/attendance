@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
 import { Attendance, FieldSelection, History, Person, Song } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
+import { allPlans } from '../utilities/plan-days';
 
 interface GroupedHistory { date: string; parts: History[] };
 
@@ -97,7 +98,8 @@ export class HistoryPage implements OnInit {
     }
 
     if (dayjs(att.date).isBefore(date) && dayjs(att.date).isAfter(dayjs(date).subtract(4, 'months'))) {
-      return Boolean(att.plan?.fields.find((field: FieldSelection) => field.id === String(songId)));
+      // Every plan of the Termin counts (e.g. one per day).
+      return allPlans(att).some(plan => plan.fields?.some((field: FieldSelection) => field.id === String(songId)));
     }
 
     return false;

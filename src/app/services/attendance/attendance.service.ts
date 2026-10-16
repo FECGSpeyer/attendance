@@ -436,7 +436,7 @@ export class AttendanceService {
   ): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, plan, share_plan)')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, duration_days, plan, extra_plans, share_plan)')
       .eq('person_id', personId)
       .gt('attendance.date', all ? dayjs('2020-01-01').toISOString() : currentAttDate) as any;
 

@@ -33,6 +33,9 @@
   }
 
   @if (!loading && !notFound) {
+    @if (planLabels.length) {
+      <app-plan-chips [labels]="planLabels" [selected]="planIndex" [todayIndex]="todayIndex" (selectedChange)="selectPlan($event)"></app-plan-chips>
+    }
     <ion-list [inset]="true">
       <ion-list-header>
         <ion-label (click)="editTitle()" [style.cursor]="isEditMode ? 'pointer' : ''">

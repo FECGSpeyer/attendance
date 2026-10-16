@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.13.5",
+      "date": "17.10.2026",
+      "changes": [
+        "🗓️ Termine können jetzt mehrere Ablaufpläne haben, z. B. einen pro Tag bei Freizeiten. Im Plan-Editor unter + → \"Weiteren Ablaufplan anlegen\". Mitglieder sehen automatisch den Plan von heute, und beim Teilen gibt es alle Tage in einer PDF."
+      ]
+    },
+    {
       "version": "4.13.4",
       "date": "16.10.2026",
       "changes": [

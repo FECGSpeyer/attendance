@@ -654,11 +654,14 @@
           </ion-item>
           @if (attendance.plan) {
           <div slot="content">
+            @if (planLabels.length) {
+            <app-plan-chips [labels]="planLabels" [selected]="planIndex" [todayIndex]="todayPlanChip" (selectedChange)="selectPlan($event)"></app-plan-chips>
+            }
             <ion-item lines="none">
               <ion-label>Start</ion-label>
-              <ion-badge slot="end">{{ attendance.plan.time }} Uhr</ion-badge>
+              <ion-badge slot="end">{{ shownPlan.time }} Uhr</ion-badge>
             </ion-item>
-            @for (field of attendance.plan.fields; track field; let i = $index) {
+            @for (field of shownPlan.fields; track field; let i = $index) {
             @if (field.id !== AGENDA_ITEMS_PLACEHOLDER_ID) {
             <ion-item [class.active-slot]="planLiveMode && i === planActiveFieldIndex"
                       [class.done-slot]="planLiveMode && i < planActiveFieldIndex"
@@ -685,9 +688,9 @@
             }
             <ion-item lines="none">
               <ion-label>Ende</ion-label>
-              <ion-badge slot="end">{{ attendance.plan.end | date:'HH:mm' }} Uhr</ion-badge>
+              <ion-badge slot="end">{{ shownPlan.end | date:'HH:mm' }} Uhr</ion-badge>
             </ion-item>
-            @if (type?.enable_protocol && isTeamLeader) {
+            @if (type?.enable_protocol && isTeamLeader && planIndex === 0) {
             <ion-item button (click)="openAgendaPicker()" detail="false">
               <ion-icon name="add-circle-outline" slot="start" color="primary"></ion-icon>
               <ion-label color="primary">Themen aufnehmen</ion-label>

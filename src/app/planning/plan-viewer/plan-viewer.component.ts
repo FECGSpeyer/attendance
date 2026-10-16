@@ -6,13 +6,16 @@ import { AGENDA_ITEMS_PLACEHOLDER_ID, Attendance, FieldSelection, Plan, Song } f
 import { Utils } from '../../utilities/Utils';
 import { DbService } from '../../services/db.service';
 import { fieldDisplayName, topNumbers } from '../../team-organization/team-org.utils';
+import { allPlans, planDate, planLabel, todayPlanIndex } from '../../utilities/plan-days';
+import { PlanChipsComponent } from '../plan-chips/plan-chips.component';
+import { openPlanShareSheet } from '../plan-share-sheet/plan-share-sheet.component';
 
 @Component({
   selector: 'app-plan-viewer',
   templateUrl: './plan-viewer.component.html',
   styleUrls: ['./plan-viewer.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, PlanChipsComponent]
 })
 export class PlanViewerComponent implements OnInit, OnDestroy {
   @Input() attendance: Partial<Attendance>;
@@ -27,6 +30,10 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
   public liveMode = false;
   public activeFieldIndex = -1;
   private liveInterval: any;
+  /** Several plans of one Termin (e.g. one per day): chip labels, empty with a single plan. */
+  public planLabels: string[] = [];
+  public planIndex = 0;
+  public todayIndex = -1;
 
   constructor(
     private modalController: ModalController,
@@ -36,6 +43,13 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.hasChatId = Boolean(this.db.tenantUser()?.telegram_chat_id);
+    const plans = allPlans(this.attendance);
+    if (plans.length > 1 && (!this.plan || this.plan === this.attendance.plan)) {
+      this.planLabels = plans.map((_, i) => planLabel(this.attendance, i, plans));
+      this.planIndex = todayPlanIndex(this.attendance);
+      this.todayIndex = planDate(this.attendance, this.planIndex, plans).isSame(dayjs(), 'day') ? this.planIndex : -1;
+      this.plan = plans[this.planIndex];
+    }
     if (this.defaultLive || this.isLiveNow()) {
       this.toggleLive();
     }
@@ -54,14 +68,29 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
     this.modalController.dismiss();
   }
 
+  /** Date of the shown plan (Termin date plus its day). */
+  currentDate(): dayjs.Dayjs {
+    return this.planLabels.length ? planDate(this.attendance, this.planIndex) : dayjs(this.attendance?.date);
+  }
+
+  selectPlan(index: number) {
+    this.stopLive();
+    this.hasAutoScrolled = false;
+    this.planIndex = index;
+    this.plan = allPlans(this.attendance)[index];
+    if (this.isLiveNow()) {
+      this.toggleLive();
+    }
+  }
+
   isLiveNow(): boolean {
     if (!this.attendance?.date || !this.plan?.time || !this.plan?.fields?.length) { return false; }
     const now = dayjs();
-    if (!now.isSame(dayjs(this.attendance.date), 'day')) { return false; }
+    if (!now.isSame(this.currentDate(), 'day')) { return false; }
     const timeBase = dayjs(this.plan.time).isValid()
       ? dayjs(this.plan.time)
       : dayjs().hour(Number(this.plan.time.substring(0, 2))).minute(Number(this.plan.time.substring(3, 5)));
-    const start = dayjs(this.attendance.date).hour(timeBase.hour()).minute(timeBase.minute()).second(0);
+    const start = this.currentDate().hour(timeBase.hour()).minute(timeBase.minute()).second(0);
     const totalMinutes = this.plan.fields.reduce((s, f) => s + (Number(f.time) || 0), 0);
     const end = start.add(totalMinutes, 'minute');
     return now.isAfter(start.subtract(5, 'minute')) && now.isBefore(end.add(15, 'minute'));
@@ -92,7 +121,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
     const timeBase = dayjs(this.plan.time).isValid()
       ? dayjs(this.plan.time)
       : dayjs().hour(Number(this.plan.time.substring(0, 2))).minute(Number(this.plan.time.substring(3, 5)));
-    let t = dayjs(this.attendance.date).hour(timeBase.hour()).minute(timeBase.minute()).second(0);
+    let t = this.currentDate().hour(timeBase.hour()).minute(timeBase.minute()).second(0);
     for (let i = 0; i < this.plan.fields.length; i++) {
       t = t.add(Number(this.plan.fields[i].time) || 0, 'minute');
       if (now.isBefore(t)) {
@@ -140,7 +169,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
     const timeBase = dayjs(this.plan.time).isValid()
       ? dayjs(this.plan.time)
       : dayjs().hour(Number(this.plan.time.substring(0, 2))).minute(Number(this.plan.time.substring(3, 5)));
-    let t = dayjs(this.attendance.date).hour(timeBase.hour()).minute(timeBase.minute()).second(0);
+    let t = this.currentDate().hour(timeBase.hour()).minute(timeBase.minute()).second(0);
     for (let i = 0; i <= this.activeFieldIndex; i++) {
       t = t.add(Number(this.plan.fields[i].time) || 0, 'minute');
     }
@@ -175,7 +204,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
 
   getDateFormatted(): string {
     if (!this.attendance?.date) {return '';}
-    return dayjs(this.attendance.date).format('DD.MM.YYYY');
+    return this.currentDate().format('DD.MM.YYYY');
   }
 
   isInstrumentMissing(field: FieldSelection): boolean {
@@ -192,6 +221,32 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
   }
 
   async showExportOptions() {
+    if (this.planLabels.length) {
+      const choice = await openPlanShareSheet(this.modalController, {
+        currentLabel: this.planLabels[this.planIndex],
+        planCount: this.planLabels.length,
+        hasChatId: this.hasChatId,
+      });
+      if (!choice) { return; }
+      const indexes = choice.scope === 'all' ? this.planLabels.map((_, i) => i) : [this.planIndex];
+      const sideBySide = choice.action === 'pdf2x' || choice.action === 'telegram2x';
+      const asBlob = choice.action.startsWith('telegram');
+      const asImage = choice.action === 'telegramImage';
+      const { blob, name } = await Utils.exportAttendancePlans({
+        attendance: this.attendance,
+        type: this.db.attendanceTypes().find(type => type.id === this.attendance.type_id),
+        indexes,
+        sideBySide,
+        asBlob,
+        asImage,
+        branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
+      });
+      if (asBlob && blob) {
+        this.db.sendPlanPerTelegram(blob, name, asImage);
+        Utils.showToast('Plan wird per Telegram gesendet...', 'success');
+      }
+      return;
+    }
     const buttons: any[] = [
       {
         text: 'PDF exportieren',
@@ -260,7 +315,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
     const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
     const planningTitle = this.plan?.title?.trim() || Utils.getPlanningTitle(type, this.attendance.typeInfo);
     const name = this.attendance?.date
-      ? dayjs(this.attendance.date).format('DD_MM_YYYY')
+      ? this.currentDate().format('DD_MM_YYYY')
       : dayjs().format('DD_MM_YYYY');
 
     const blob = await Utils.createPlanExport({

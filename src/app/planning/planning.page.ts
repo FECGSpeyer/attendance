@@ -10,6 +10,7 @@ import { DefaultAttendanceType } from 'src/app/utilities/constants';
 import { AGENDA_ITEMS_PLACEHOLDER_ID } from '../utilities/interfaces';
 import { fieldDisplayName, topNumbers } from '../team-organization/team-org.utils';
 import { AgendaPickerComponent } from '../agenda-items/agenda-picker/agenda-picker.component';
+import { allPlans, dayOptions, isMultiDay, nextFreeDay, planDay, planLabel, planSubtitle, splitPlans } from '../utilities/plan-days';
 
 @Component({
   selector: 'app-planning',
@@ -19,6 +20,8 @@ import { AgendaPickerComponent } from '../agenda-items/agenda-picker/agenda-pick
 })
 export class PlanningPage implements OnInit {
   @Input() attendanceId?: number;
+  /** Plan to open first when the Termin has several (e.g. the day shown on the Terminseite). */
+  @Input() initialPlanIndex = 0;
   public type = 'pdf';
   public songs: Song[] = [];
   public history: History[] = [];
@@ -47,6 +50,8 @@ export class PlanningPage implements OnInit {
   public songSearchTerm = '';
   public filteredSongs: Song[] = [];
   public isSongSelectorOpen = false;
+  /** Which of the Termin's Ablaufpläne is open (0 = attendance.plan). */
+  public planIndex = 0;
 
   readonly AGENDA_ITEMS_PLACEHOLDER_ID = AGENDA_ITEMS_PLACEHOLDER_ID;
 
@@ -56,7 +61,8 @@ export class PlanningPage implements OnInit {
   }
 
   get canAddTopics(): boolean {
-    return !!this.attendance && this.currentAttTypeHasProtocol && this.db.isTeamLeader();
+    // Topics (TOPs) only live in the first plan.
+    return !!this.attendance && this.planIndex === 0 && this.currentAttTypeHasProtocol && this.db.isTeamLeader();
   }
 
   /** Opens "Themen aufnehmen" for the selected Termin and takes over the saved plan. */
@@ -95,6 +101,23 @@ export class PlanningPage implements OnInit {
     return this.selectedFields.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID);
   }
 
+  private get currentAtt(): Attendance | undefined {
+    return this.attendances.find((att: Attendance) => att.id === this.attendance);
+  }
+
+  private planLabelsCache: string[] = [];
+
+  /** Chip labels; only shown once a Termin has more than one plan. Cached so change detection sees a stable array. */
+  get planLabels(): string[] {
+    const att = this.currentAtt;
+    const plans = allPlans(att);
+    const next = plans.map((_, i) => planLabel(att, i, plans));
+    if (next.join('|') !== this.planLabelsCache.join('|')) {
+      this.planLabelsCache = next;
+    }
+    return this.planLabelsCache;
+  }
+
   constructor(
     private modalController: ModalController,
     public db: DbService,
@@ -116,6 +139,7 @@ export class PlanningPage implements OnInit {
     this.history = await this.db.getUpcomingHistory();
     this.attendances = await this.db.getAttendance();
     const upcomingAttendances: Attendance[] = await this.db.getUpcomingAttendances();
+    this.planIndex = 0;
     if (this.attendanceId) {
       this.attendance = this.attendanceId;
       const att = this.attendances.find((att: Attendance) => att.id === this.attendanceId);
@@ -160,6 +184,13 @@ export class PlanningPage implements OnInit {
 
     if (this.history.length && this.selectedFields.length === 1) {
       this.onAttChange();
+    }
+
+    const initialAtt = this.currentAtt;
+    const initialPlan = this.attendanceId && this.initialPlanIndex > 0 ? allPlans(initialAtt)[this.initialPlanIndex] : undefined;
+    if (initialAtt && initialPlan) {
+      this.planIndex = this.initialPlanIndex;
+      this.loadPlan(initialAtt, initialPlan);
     }
   }
 
@@ -259,6 +290,7 @@ export class PlanningPage implements OnInit {
       attendance: this.attendance,
       attendances: this.attendances,
       branding,
+      dateLabel: this.currentPlanSubtitle(),
     }, planningTitle);
     this.db.sendPlanPerTelegram(blob, `${planningTitle.replace('(', '').replace(')', '')}_${name}${sideBySide ? '_2x' : ''}`, asImage);
   }
@@ -275,6 +307,7 @@ export class PlanningPage implements OnInit {
 
     if (!attendance) {return;}
 
+    this.planIndex = 0;
     this.notes = attendance.notes;
     this.sharePlan = attendance.share_plan || false;
     this.isOrgPlan = this.resolveOrgPlan(attendance);
@@ -492,7 +525,32 @@ export class PlanningPage implements OnInit {
       attendances: this.attendances,
       sideBySide,
       branding,
+      dateLabel: this.currentPlanSubtitle(),
     }, planningTitle);
+  }
+
+  /** PDF subtitle for the open plan when the Termin has several; undefined keeps the default date. */
+  private currentPlanSubtitle(): string | undefined {
+    const att = this.currentAtt;
+    return att && allPlans(att).length > 1 ? planSubtitle(att, this.planIndex) : undefined;
+  }
+
+  /** One PDF with a page per plan. */
+  async exportAllPlans() {
+    const att = this.currentAtt;
+    if (!att) { return; }
+    if (this.validate(false)) {
+      await this.updateAttendance();
+    }
+    const branding = this.includeBranding
+      ? await Utils.buildTenantBranding(this.db.getBrandingSource())
+      : undefined;
+    await Utils.exportAttendancePlans({
+      attendance: att,
+      type: this.db.attendanceTypes().find((t: AttendanceType) => t.id === att.type_id),
+      indexes: allPlans(att).map((_, i) => i),
+      branding,
+    });
   }
 
   validate(showToast: boolean = true): boolean {
@@ -604,6 +662,12 @@ export class PlanningPage implements OnInit {
         text: 'PDF exportieren',
         handler: () => this.export()
       });
+      if (this.planLabels.length > 1) {
+        buttons.push({
+          text: 'PDF exportieren (alle Pläne)',
+          handler: () => this.exportAllPlans()
+        });
+      }
       buttons.push({
         text: 'PDF exportieren (2x A5)',
         handler: () => this.export(true)
@@ -812,19 +876,252 @@ export class PlanningPage implements OnInit {
         return;
       }
 
-      const result = await this.db.updateAttendance({
-        plan: {
-          time: this.time,
-          fields: this.selectedFields,
-          end: this.end,
-          title: this.planTitle?.trim() || undefined,
-        }
-      }, this.attendance);
-
       const att = this.attendances.find((att: Attendance) => att.id === this.attendance);
+      const plans = allPlans(att);
+      const current: Plan = {
+        ...(plans[this.planIndex] ?? {}),
+        time: this.time,
+        fields: this.selectedFields,
+        end: this.end,
+        title: this.planTitle?.trim() || undefined,
+      };
 
+      if (plans.length < 2) {
+        // Single plan: only touch `plan`, exactly as before.
+        const result = await this.db.updateAttendance({ plan: current }, this.attendance);
+        att.plan = result.plan;
+        return;
+      }
+
+      plans[this.planIndex] = { ...current, time: this.toHHmm(this.time) };
+      const result = await this.db.updateAttendance(splitPlans(plans) as Partial<Attendance>, this.attendance);
       att.plan = result.plan;
+      att.extra_plans = result.extra_plans;
     }
+  }
+
+  // ---- several Ablaufpläne per Termin (see plan-days.ts) ----
+
+  /** Saves the open plan (when valid) before switching or changing plans. */
+  private async saveOpenPlan() {
+    if (this.validate(false)) {
+      await this.updateAttendance();
+    }
+  }
+
+  /** Plans store their start as "HH:mm" (the editor works with ISO strings). */
+  private toHHmm(time: string): string {
+    return time && dayjs(time).isValid() ? dayjs(time).format('HH:mm') : time;
+  }
+
+  private loadPlan(att: Attendance, plan: Plan | undefined) {
+    this.planTitle = plan?.title ?? this.getDefaultPlanTitle(att);
+    this.time = plan?.time || this.time;
+    this.end = plan?.end || this.time;
+    this.selectedFields = (plan?.fields ?? []).map((field: FieldSelection) => ({
+      ...field,
+      conductor: field.conductor || (this.history?.find((his: History) => his.songId === Number(field.id))?.conductorName || ''),
+      ...(field.id === AGENDA_ITEMS_PLACEHOLDER_ID ? { time: '0' } : {}),
+    }));
+  }
+
+  /** Writes each plan's day explicitly so reordering or deleting doesn't shift days. */
+  private withDays(att: Attendance, plans: Plan[]): Plan[] {
+    if (!isMultiDay(att)) { return plans.map(p => ({ ...p })); }
+    return plans.map((p, i) => ({ ...p, day: planDay(att, plans, i) }));
+  }
+
+  private async savePlans(att: Attendance, plans: Plan[]) {
+    const result = await this.db.updateAttendance(splitPlans(plans) as Partial<Attendance>, att.id);
+    att.plan = result.plan;
+    att.extra_plans = result.extra_plans;
+  }
+
+  async selectPlan(index: number) {
+    const att = this.currentAtt;
+    if (!att || index === this.planIndex) { return; }
+    await this.saveOpenPlan();
+    this.planIndex = index;
+    this.loadPlan(att, allPlans(att)[index]);
+  }
+
+  async addPlan(popover?: IonPopover) {
+    popover?.dismiss();
+    const att = this.currentAtt;
+    if (!att) {
+      Utils.showToast('Bitte wähle zuerst einen Termin aus.', 'warning');
+      return;
+    }
+    if (!this.validate(false)) {
+      Utils.showToast('Lege zuerst einen Ablauf für diesen Plan an.', 'warning');
+      return;
+    }
+    await this.updateAttendance();
+
+    const alert = await this.alertController.create({
+      header: 'Weiteren Ablaufplan anlegen',
+      message: 'Soll der neue Plan den aktuellen Ablauf übernehmen oder leer starten?',
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        { text: 'Leer', handler: () => { void this.createAdditionalPlan(false); } },
+        { text: 'Kopie', handler: () => { void this.createAdditionalPlan(true); } },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async createAdditionalPlan(copy: boolean) {
+    const att = this.currentAtt;
+    if (!att) { return; }
+    const plans = this.withDays(att, allPlans(att));
+    const type = this.db.attendanceTypes().find((t: AttendanceType) => t.id === att.type_id);
+    const time = this.toHHmm(copy ? this.time : (type?.start_time || att.start_time || this.time));
+    const newPlan: Plan = {
+      id: crypto.randomUUID(),
+      day: nextFreeDay(att, plans),
+      time,
+      end: copy ? this.end : dayjs().hour(Number(time.substring(0, 2))).minute(Number(time.substring(3, 5))).format('YYYY-MM-DDTHH:mm'),
+      // Topics (TOPs) stay in the first plan.
+      fields: copy
+        ? this.selectedFields
+          .filter(f => !f.agendaItemId && f.id !== AGENDA_ITEMS_PLACEHOLDER_ID)
+          .map(f => ({ ...f }))
+        : [],
+      title: copy ? (this.planTitle?.trim() || undefined) : undefined,
+    };
+    plans.push(newPlan);
+    await this.savePlans(att, plans);
+    this.planIndex = plans.length - 1;
+    this.loadPlan(att, newPlan);
+    if (copy) {
+      this.calculateEnd();
+    }
+  }
+
+  async showPlanOptions() {
+    const att = this.currentAtt;
+    if (!att) { return; }
+    const plans = allPlans(att);
+    const index = this.planIndex;
+    const buttons: ActionSheetButton[] = [
+      { text: 'Umbenennen', handler: () => { void this.renamePlan(); } },
+    ];
+    if (dayOptions(att).length) {
+      buttons.push({ text: 'Anderem Tag zuordnen', handler: () => { void this.assignPlanDay(); } });
+    }
+    if (index > 0) {
+      buttons.push({ text: 'Nach links verschieben', handler: () => { void this.movePlan(-1); } });
+    }
+    if (index < plans.length - 1) {
+      buttons.push({ text: 'Nach rechts verschieben', handler: () => { void this.movePlan(1); } });
+    }
+    buttons.push({ text: 'Plan löschen', role: 'destructive', handler: () => { void this.deletePlan(); } });
+    buttons.push({ text: 'Abbrechen', role: 'cancel' });
+
+    const sheet = await this.actionSheetController.create({
+      header: `Plan „${planLabel(att, index, plans)}“`,
+      subHeader: `${index + 1} von ${plans.length}`,
+      buttons,
+    });
+    await sheet.present();
+  }
+
+  private async renamePlan() {
+    const att = this.currentAtt;
+    if (!att) { return; }
+    await this.saveOpenPlan();
+    const plans = allPlans(att);
+    const index = this.planIndex;
+    const auto = planLabel(att, index, plans.map(p => ({ ...p, label: undefined })));
+    const alert = await this.alertController.create({
+      header: 'Plan umbenennen',
+      message: 'Leer lassen für den automatischen Namen.',
+      inputs: [{ type: 'text', name: 'label', value: plans[index]?.label ?? '', placeholder: auto }],
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Speichern',
+          handler: async (evt: any) => {
+            const updated = this.withDays(att, allPlans(att));
+            updated[index] = { ...updated[index], label: evt.label?.trim() || undefined };
+            await this.savePlans(att, updated);
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async assignPlanDay() {
+    const att = this.currentAtt;
+    if (!att) { return; }
+    await this.saveOpenPlan();
+    const plans = this.withDays(att, allPlans(att));
+    const index = this.planIndex;
+    const alert = await this.alertController.create({
+      header: 'Tag zuordnen',
+      inputs: dayOptions(att).map(o => ({
+        type: 'radio' as const,
+        label: o.label,
+        value: o.day,
+        checked: plans[index]?.day === o.day,
+      })),
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Speichern',
+          handler: async (day: number) => {
+            if (day === undefined || day === null) { return; }
+            const moved = { ...plans[index], day };
+            plans[index] = moved;
+            // Keep chips in day order.
+            plans.sort((a, b) => (a.day ?? 0) - (b.day ?? 0));
+            await this.savePlans(att, plans);
+            this.planIndex = plans.indexOf(moved);
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async movePlan(direction: -1 | 1) {
+    const att = this.currentAtt;
+    if (!att) { return; }
+    await this.saveOpenPlan();
+    const plans = this.withDays(att, allPlans(att));
+    const from = this.planIndex;
+    const to = from + direction;
+    if (to < 0 || to >= plans.length) { return; }
+    [plans[from], plans[to]] = [plans[to], plans[from]];
+    await this.savePlans(att, plans);
+    this.planIndex = to;
+  }
+
+  private async deletePlan() {
+    const att = this.currentAtt;
+    if (!att) { return; }
+    const plans = allPlans(att);
+    const index = this.planIndex;
+    const alert = await this.alertController.create({
+      header: 'Plan löschen?',
+      message: `Der Plan „${planLabel(att, index, plans)}“ wird gelöscht.`,
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Löschen',
+          role: 'destructive',
+          handler: async () => {
+            const remaining = this.withDays(att, allPlans(att));
+            remaining.splice(index, 1);
+            await this.savePlans(att, remaining);
+            this.planIndex = Math.min(index, remaining.length - 1);
+            this.loadPlan(att, remaining[this.planIndex]);
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   async resetPlan() {

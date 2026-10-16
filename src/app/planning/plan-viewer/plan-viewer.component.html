@@ -20,6 +20,9 @@
 </ion-header>
 
 <ion-content color="light" fullscreen="true">
+    @if (planLabels.length) {
+    <app-plan-chips [labels]="planLabels" [selected]="planIndex" [todayIndex]="todayIndex" (selectedChange)="selectPlan($event)"></app-plan-chips>
+    }
     @if (plan?.fields?.length) {
     <ion-list [inset]="true">
         <ion-list-header>

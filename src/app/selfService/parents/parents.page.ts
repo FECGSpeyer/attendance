@@ -137,6 +137,8 @@ export class ParentsPage implements OnInit {
           title: pa.title,
           type: pa.attendance?.type,
           plan: pa.attendance?.plan,
+          extra_plans: pa.attendance?.extra_plans,
+          duration_days: pa.attendance?.duration_days,
           share_plan: pa.attendance?.share_plan,
           description: pa.attendance?.description,
           attachment_url: pa.attendance?.attachment_url,

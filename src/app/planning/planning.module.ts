@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular/lazy';
 import { PlanningPageRoutingModule } from './planning-routing.module';
 
 import { PlanningPage } from './planning.page';
+import { PlanChipsComponent } from './plan-chips/plan-chips.component';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    PlanningPageRoutingModule
+    PlanningPageRoutingModule,
+    PlanChipsComponent,
   ],
   declarations: [PlanningPage]
 })

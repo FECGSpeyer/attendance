@@ -316,6 +316,8 @@ export interface Attendance {
   playerNotes?: { [prop: number]: string };
   img?: string;
   plan?: Plan;
+  /** Further plans of the same Termin (e.g. one per day). `plan` stays the first one. */
+  extra_plans?: Plan[] | null;
   share_plan?: boolean;
   share_key?: string;
   share_edit_key?: string;
@@ -342,6 +344,12 @@ export interface Plan {
   time: string;
   fields: FieldSelection[];
   title?: string;
+  /** Stable id of an additional plan (see Attendance.extra_plans). */
+  id?: string;
+  /** Custom name shown on the plan chip; derived from day/index when empty. */
+  label?: string;
+  /** Day within a multi-day Termin, 0 = first day. */
+  day?: number;
 }
 
 export interface SharedPlan {

@@ -8,6 +8,7 @@ import { AGENDA_ITEMS_PLACEHOLDER_ID, Attendance, FieldSelection, GroupCategory,
 // import (erased at compile time) so it doesn't pull xlsx into the main bundle.
 import type { WorkBook } from 'xlsx';
 import { fieldDisplayName, topNumbers } from '../team-organization/team-org.utils';
+import { allPlans, planDate, planSubtitle } from './plan-days';
 
 export class Utils {
   public static getId(): number {
@@ -665,7 +666,8 @@ export class Utils {
     await import('jspdf-autotable');
 
     const startingTime: dayjs.Dayjs = dayjs(props.time).isValid() ? dayjs(props.time) : dayjs().hour(Number(props.time.substring(0, 2))).minute(Number(props.time.substring(3, 5)));
-    const date: string = props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).locale('de').format('dddd, DD.MM.YYYY') : startingTime.locale('de').format('dddd, DD.MM.YYYY');
+    // `dateLabel` lets callers set the subtitle (e.g. the day of a multi-day Termin).
+    const date: string = props.dateLabel ? props.dateLabel : props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).locale('de').format('dddd, DD.MM.YYYY') : startingTime.locale('de').format('dddd, DD.MM.YYYY');
     const hasConductors = Boolean(props.fields.find((field: FieldSelection) => field.conductor));
 
     const data: any[] = [];
@@ -986,6 +988,77 @@ export class Utils {
       const fileName = `${typeText}_${date}.pdf`;
       await Utils.downloadFileNative(doc.output('blob'), fileName);
     }
+  }
+
+  /**
+   * Export several Ablaufpläne into one PDF, one page (or more) per plan. Each
+   * plan is rendered by createPlanExport and the PDFs are merged with pdf-lib.
+   */
+  public static async createMultiPlanExport(
+    plans: { props: any; title: string }[],
+    opts: { asBlob?: boolean; fileName: string },
+  ): Promise<Blob | void> {
+    const { PDFDocument } = await import('pdf-lib');
+    const merged = await PDFDocument.create();
+    for (const plan of plans) {
+      const blob = await Utils.createPlanExport({ ...plan.props, asBlob: true, asImage: false }, plan.title) as Blob;
+      const source = await PDFDocument.load(await blob.arrayBuffer());
+      const pages = await merged.copyPages(source, source.getPageIndices());
+      pages.forEach(page => merged.addPage(page));
+    }
+    const out = new Blob([(await merged.save()) as BlobPart], { type: 'application/pdf' });
+    if (opts.asBlob) {
+      return out;
+    }
+    await Utils.downloadFileNative(out, opts.fileName);
+  }
+
+  /**
+   * Export the Ablaufpläne of a Termin at the given indexes (see plan-days.ts).
+   * One plan → the normal export (PDF, 2x A5 or image); several → one PDF with
+   * a page per plan. Returns the blob (when `asBlob`) and a file name stem for
+   * Telegram.
+   */
+  public static async exportAttendancePlans(opts: {
+    attendance: Partial<Attendance>;
+    type?: AttendanceType;
+    indexes: number[];
+    sideBySide?: boolean;
+    asBlob?: boolean;
+    asImage?: boolean;
+    branding?: any;
+  }): Promise<{ blob?: Blob; name: string }> {
+    const att = opts.attendance;
+    const plans = allPlans(att);
+    const indexes = opts.indexes.filter(i => plans[i]?.fields?.length);
+    if (!indexes.length) {
+      Utils.showToast('Kein Plan verfügbar', 'warning');
+      return { name: '' };
+    }
+    const titleOf = (i: number): string => plans[i].title?.trim()
+      || (opts.type ? Utils.getPlanningTitle(opts.type, att.typeInfo) : (att.typeInfo || 'Ablaufplan'));
+    const build = (i: number) => ({
+      props: {
+        time: plans[i].time,
+        end: plans[i].end,
+        fields: plans[i].fields,
+        sideBySide: opts.sideBySide,
+        branding: opts.branding,
+        dateLabel: planSubtitle(att, i, plans),
+      },
+      title: titleOf(i),
+    });
+    const first = indexes[0];
+    const name = `${titleOf(first).replace('(', '').replace(')', '')}_${planDate(att, first, plans).format('DD_MM_YYYY')}`
+      + `${indexes.length > 1 ? '_alle' : ''}${opts.sideBySide ? '_2x' : ''}`;
+
+    if (indexes.length === 1) {
+      const plan = build(first);
+      const blob = await Utils.createPlanExport({ ...plan.props, asBlob: opts.asBlob, asImage: opts.asImage }, plan.title);
+      return { blob: blob || undefined, name };
+    }
+    const blob = await Utils.createMultiPlanExport(indexes.map(build), { asBlob: opts.asBlob, fileName: `${name}.pdf` });
+    return { blob: blob || undefined, name };
   }
 
   /**

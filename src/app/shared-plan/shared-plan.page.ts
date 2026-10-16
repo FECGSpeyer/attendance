@@ -4,7 +4,8 @@ import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supab
 import { AlertController, ActionSheetController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
-import { FieldSelection, SharedPlan } from '../utilities/interfaces';
+import { Attendance, FieldSelection, Plan, SharedPlan } from '../utilities/interfaces';
+import { allPlans, planDate, planLabel, splitPlans, todayPlanIndex } from '../utilities/plan-days';
 import { Utils } from '../utilities/Utils';
 import { PUBLIC_BRANDINGS } from '../public-planning/public-planning-templates';
 import { getSupabase } from '../services/base/supabase';
@@ -24,6 +25,11 @@ export class SharedPlanPage implements OnInit, OnDestroy {
   public attendanceId: number | null = null;
   public attendanceDate: string | null = null;
   public attendancePlanTitle: string | null = null;
+  /** The Termin's plans when it has several (e.g. one per day). */
+  private attData: Partial<Attendance> | null = null;
+  public planLabels: string[] = [];
+  public planIndex = 0;
+  public todayIndex = -1;
 
   // Shared plan mode (?key only)
   public sharedPlan: SharedPlan | null = null;
@@ -79,7 +85,7 @@ export class SharedPlanPage implements OnInit, OnDestroy {
   private async loadAttendancePlan(id: number, key: string, editKey: string | null) {
     const { data } = await getSupabase()
       .from('attendance')
-      .select('id, date, plan, type_id, typeInfo, share_key, share_edit_key')
+      .select('id, date, duration_days, plan, extra_plans, type_id, typeInfo, share_key, share_edit_key')
       .eq('id', id)
       .eq('share_key', key)
       .single();
@@ -91,17 +97,38 @@ export class SharedPlanPage implements OnInit, OnDestroy {
 
     this.attendanceId = data.id;
     this.attendanceDate = data.date;
-    const plan: any = data.plan;
-    this.planTitle = plan.title || (data as any).typeInfo || '';
-    this.date = data.date;
-    this.time = plan.time || '';
-    this.end = plan.end || '';
-    this.fields = plan.fields || [];
+    this.attData = data as unknown as Partial<Attendance>;
+    const plans = allPlans(this.attData);
+    if (plans.length > 1) {
+      this.planLabels = plans.map((_, i) => planLabel(this.attData, i, plans));
+      this.planIndex = todayPlanIndex(this.attData);
+      this.todayIndex = planDate(this.attData, this.planIndex, plans).isSame(dayjs(), 'day') ? this.planIndex : -1;
+    }
+    this.applyAttendancePlan();
 
     if (editKey && editKey === (data as any).share_edit_key) {
       this.isEditMode = true;
       this.subscribeAttendanceRealtime(id);
     }
+  }
+
+  /** Shows the selected plan of the Termin (the first one when there's just one). */
+  private applyAttendancePlan() {
+    if (!this.attData) { return; }
+    const plans = allPlans(this.attData);
+    const plan: any = plans[this.planIndex] ?? this.attData.plan;
+    this.planTitle = plan.title || (this.attData as any).typeInfo || '';
+    this.date = this.planIndex > 0 ? planDate(this.attData, this.planIndex, plans).format('YYYY-MM-DD') : this.attData.date;
+    this.time = plan.time || '';
+    this.end = plan.end || '';
+    this.fields = plan.fields || [];
+  }
+
+  selectPlan(index: number) {
+    this.stopLive();
+    this.planIndex = index;
+    this.applyAttendancePlan();
+    if (this.isLiveNow()) { this.toggleLive(); }
   }
 
   private async loadSharedPlan(key: string, editKey: string | null) {
@@ -138,11 +165,12 @@ export class SharedPlanPage implements OnInit, OnDestroy {
         { event: 'UPDATE', schema: 'public', table: 'attendance', filter: `id=eq.${id}` },
         (payload: RealtimePostgresChangesPayload<any>) => {
           const plan = payload.new?.plan;
-          if (plan) {
-            this.time = plan.time || this.time;
-            this.end = plan.end || this.end;
-            this.fields = plan.fields || this.fields;
-            this.planTitle = plan.title || this.planTitle;
+          if (plan && this.attData) {
+            this.attData = { ...this.attData, plan, extra_plans: payload.new?.extra_plans ?? null };
+            const plans = allPlans(this.attData);
+            this.planLabels = plans.length > 1 ? plans.map((_, i) => planLabel(this.attData, i, plans)) : [];
+            this.planIndex = Math.min(this.planIndex, plans.length - 1);
+            this.applyAttendancePlan();
             if (this.liveMode) { this.updateActiveIndex(); }
           }
         })
@@ -436,9 +464,13 @@ export class SharedPlanPage implements OnInit, OnDestroy {
   private async saveEdits() {
     try {
       if (this.attendanceId) {
-        await getSupabase().from('attendance').update({
-          plan: { time: this.time, end: this.end, fields: this.fields, title: this.planTitle || undefined }
-        } as any).eq('id', this.attendanceId);
+        const plans = allPlans(this.attData);
+        const edited: Plan = { ...(plans[this.planIndex] ?? {}), time: this.time, end: this.end, fields: this.fields, title: this.planTitle || undefined };
+        const update = plans.length > 1
+          ? splitPlans(plans.map((p, i) => i === this.planIndex ? edited : p))
+          : { plan: edited };
+        await getSupabase().from('attendance').update(update as any).eq('id', this.attendanceId);
+        this.attData = { ...this.attData, ...update };
       } else if (this.sharedPlan) {
         await getSupabase().from('shared_plans').update({
           fields: this.fields as any,
@@ -468,7 +500,10 @@ export class SharedPlanPage implements OnInit, OnDestroy {
       ? await this.buildBranding()
       : undefined;
     await Utils.createPlanExport(
-      { time: this.time, end: this.end, fields: this.fields, sideBySide, branding },
+      {
+        time: this.time, end: this.end, fields: this.fields, sideBySide, branding,
+        dateLabel: this.planLabels.length ? `${dayjs(this.date).locale('de').format('dddd, DD.MM.YYYY')} · ${this.planLabels[this.planIndex]}` : undefined,
+      },
       this.planTitle || 'Ablaufplan',
     );
   }

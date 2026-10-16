@@ -13,7 +13,7 @@ import { ChurchOverviewComponent } from 'src/app/shared/church-overview/church-o
 import { AdHocReminderModalComponent, AdHocReminderResult } from './ad-hoc-reminder-modal/ad-hoc-reminder-modal.component';
 import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType, AttendanceStatus, Role, ATTENDANCE_STATUS_MAPPING, AttendanceViewMode, CHECKLIST_DEADLINE_OPTIONS, DEFAULT_ABSENCE_REASONS } from 'src/app/utilities/constants';
-import { Attendance, ExtraField, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem, RegistrationField, AGENDA_ITEMS_PLACEHOLDER_ID, Protocol, Task } from 'src/app/utilities/interfaces';
+import { Attendance, ExtraField, FieldSelection, Person, PersonAttendance, Song, History, Group, GroupCategory, AttendanceType, ChecklistItem, RegistrationField, AGENDA_ITEMS_PLACEHOLDER_ID, Protocol, Task, Plan } from 'src/app/utilities/interfaces';
 import { AgendaPickerComponent } from 'src/app/agenda-items/agenda-picker/agenda-picker.component';
 import { fieldDisplayName, isEditedAfterPublish, topNumbers } from 'src/app/team-organization/team-org.utils';
 import { Utils } from 'src/app/utilities/Utils';
@@ -22,6 +22,8 @@ import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 import { OfflineQueueService } from 'src/app/services/offline-queue/offline-queue.service';
+import { allPlans, planDate, planLabel, todayPlanIndex } from 'src/app/utilities/plan-days';
+import { openPlanShareSheet } from 'src/app/planning/plan-share-sheet/plan-share-sheet.component';
 
 @Component({
     selector: 'app-attendance',
@@ -91,6 +93,8 @@ export class AttendancePage implements OnInit, OnDestroy {
   public filteredSongs: Song[] = [];
   public planLiveMode = false;
   public planActiveFieldIndex = -1;
+  /** Plan picked via the chips; null = today's plan (or the first). */
+  private selectedPlanIndex: number | null = null;
   private planLiveInterval: any;
   // True when fetchAttendance succeeded but `attendance.persons` came back
   // empty (and the helperGroupId filter isn't responsible). Surfaces an inline
@@ -851,11 +855,56 @@ export class AttendancePage implements OnInit, OnDestroy {
     }
   }
 
+  // ---- several Ablaufpläne per Termin (see plan-days.ts) ----
+
+  get planIndex(): number {
+    const count = allPlans(this.attendance).length;
+    const index = this.selectedPlanIndex ?? todayPlanIndex(this.attendance);
+    return Math.min(index, Math.max(count - 1, 0));
+  }
+
+  /** The plan shown in the Ablaufplan accordion. */
+  get shownPlan(): Plan | undefined {
+    return allPlans(this.attendance)[this.planIndex] ?? this.attendance?.plan;
+  }
+
+  shownPlanDate(): dayjs.Dayjs {
+    return planDate(this.attendance, this.planIndex);
+  }
+
+  private planLabelsCache: string[] = [];
+
+  /** Chip labels (empty with a single plan); cached so change detection sees a stable array. */
+  get planLabels(): string[] {
+    const plans = allPlans(this.attendance);
+    const next = plans.length > 1 ? plans.map((_, i) => planLabel(this.attendance, i, plans)) : [];
+    if (next.join('|') !== this.planLabelsCache.join('|')) {
+      this.planLabelsCache = next;
+    }
+    return this.planLabelsCache;
+  }
+
+  get todayPlanChip(): number {
+    const index = todayPlanIndex(this.attendance);
+    return planDate(this.attendance, index).isSame(dayjs(), 'day') ? index : -1;
+  }
+
+  selectPlan(index: number) {
+    this.selectedPlanIndex = index;
+    this.hasAutoScrolled = false;
+    if (this.planLiveMode) {
+      this.stopPlanLive();
+    }
+    if (this.isPlanLiveNow()) {
+      this.togglePlanLive();
+    }
+  }
+
   isPlanLiveNow(): boolean {
-    const plan = this.attendance?.plan;
+    const plan = this.shownPlan;
     if (!plan?.time || !plan?.fields?.length || !this.attendance?.date) { return false; }
     const now = dayjs();
-    const start = dayjs(this.attendance.date)
+    const start = this.shownPlanDate()
       .hour(Number(plan.time.substring(0, 2)))
       .minute(Number(plan.time.substring(3, 5)))
       .second(0);
@@ -881,13 +930,13 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   updatePlanActiveIndex() {
-    const plan = this.attendance?.plan;
+    const plan = this.shownPlan;
     if (!plan?.fields?.length || !plan.time || !this.attendance?.date) {
       this.planActiveFieldIndex = -1;
       return;
     }
     const now = dayjs();
-    let t = dayjs(this.attendance.date)
+    let t = this.shownPlanDate()
       .hour(Number(plan.time.substring(0, 2)))
       .minute(Number(plan.time.substring(3, 5)))
       .second(0);
@@ -917,9 +966,9 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   getPlanActiveCountdown(): string {
     if (!this.planLiveMode || this.planActiveFieldIndex < 0) { return ''; }
-    const plan = this.attendance?.plan;
+    const plan = this.shownPlan;
     if (!plan?.fields?.length || !plan.time || !this.attendance?.date) { return ''; }
-    let t = dayjs(this.attendance.date)
+    let t = this.shownPlanDate()
       .hour(Number(plan.time.substring(0, 2)))
       .minute(Number(plan.time.substring(3, 5)))
       .second(0);
@@ -940,15 +989,25 @@ export class AttendancePage implements OnInit, OnDestroy {
     let currentIndex = 0;
 
     while (currentIndex !== index) {
-      minutesToAdd += Number(this.attendance.plan.fields[currentIndex].time);
+      minutesToAdd += Number(this.shownPlan.fields[currentIndex].time);
       currentIndex++;
     }
 
-    const time: dayjs.Dayjs = dayjs().hour(Number(this.attendance.plan.time.substring(0, 2))).minute(Number(this.attendance.plan.time.substring(3, 5)));
+    const time: dayjs.Dayjs = dayjs().hour(Number(this.shownPlan.time.substring(0, 2))).minute(Number(this.shownPlan.time.substring(3, 5)));
     return `${time.add(minutesToAdd, 'minute').format('HH:mm')} ${field.conductor ? `| ${field.conductor}` : ''}`;
   }
 
-  async exportPlan(sideBySide: boolean = false) {
+  async exportPlan(sideBySide: boolean = false, all: boolean = false) {
+    if (all || this.planLabels.length) {
+      await Utils.exportAttendancePlans({
+        attendance: this.attendance,
+        type: this.db.attendanceTypes().find(type => type.id === this.attendance.type_id),
+        indexes: all ? allPlans(this.attendance).map((_, i) => i) : [this.planIndex],
+        sideBySide,
+        branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
+      });
+      return;
+    }
     const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
     await Utils.createPlanExport({
       ...this.attendance.plan,
@@ -967,7 +1026,7 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   /** TOP numbers of the plan, recomputed only when the fields array changes. */
   get planNumbers(): Map<string, number> {
-    const fields = this.attendance?.plan?.fields ?? [];
+    const fields = this.shownPlan?.fields ?? [];
     if (this.planNumbersCache?.fields !== fields) {
       this.planNumbersCache = { fields, numbers: topNumbers(fields) };
     }
@@ -1047,6 +1106,24 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   async sharePlan() {
+    const labels = this.planLabels;
+    if (labels.length) {
+      const choice = await openPlanShareSheet(this.modalController, {
+        currentLabel: labels[this.planIndex],
+        planCount: labels.length,
+        hasChatId: Boolean(this.db.tenantUser()?.telegram_chat_id),
+      });
+      if (!choice) { return; }
+      const all = choice.scope === 'all';
+      switch (choice.action) {
+        case 'pdf': return this.exportPlan(false, all);
+        case 'pdf2x': return this.exportPlan(true, all);
+        case 'telegram': return this.send(false, false, all);
+        case 'telegram2x': return this.send(false, true, all);
+        case 'telegramImage': return this.send(true);
+      }
+      return;
+    }
     const sheet = await this.actionSheetController.create({
       header: 'Ablaufplan teilen',
       buttons: [
@@ -1081,7 +1158,22 @@ export class AttendancePage implements OnInit, OnDestroy {
     await sheet.present();
   }
 
-  async send(asImage: boolean = false, sideBySide: boolean = false) {
+  async send(asImage: boolean = false, sideBySide: boolean = false, all: boolean = false) {
+    if (all || this.planLabels.length) {
+      const { blob, name } = await Utils.exportAttendancePlans({
+        attendance: this.attendance,
+        type: this.db.attendanceTypes().find(type => type.id === this.attendance.type_id),
+        indexes: all ? allPlans(this.attendance).map((_, i) => i) : [this.planIndex],
+        sideBySide,
+        asBlob: true,
+        asImage: asImage && !all,
+        branding: await Utils.buildTenantBranding(this.db.getBrandingSource()),
+      });
+      if (blob) {
+        this.db.sendPlanPerTelegram(blob, name, asImage && !all);
+      }
+      return;
+    }
     const type = this.db.attendanceTypes().find(type => type.id === this.attendance.type_id);
     const planningTitle = Utils.getPlanningTitle(type, this.attendance.typeInfo);
     const blob = await Utils.createPlanExport({
@@ -1103,6 +1195,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       cssClass: 'planningModal',
       componentProps: {
         attendanceId: this.attendance.id,
+        initialPlanIndex: this.planIndex,
       },
     });
 

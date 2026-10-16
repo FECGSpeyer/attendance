@@ -114,7 +114,7 @@
               <ion-label>Themen aufnehmen</ion-label>
             </ion-item>
           }
-          @if (currentAttTypeHasProtocol && !hasAgendaPlaceholder) {
+          @if (currentAttTypeHasProtocol && !hasAgendaPlaceholder && planIndex === 0) {
             <ion-item (click)="addAgendaItemsPlaceholder(addPopover)" lines="none">
               <ion-icon name="git-commit-outline" slot="start" color="medium"></ion-icon>
               <ion-label>Tagesordnung einfügen</ion-label>
@@ -143,9 +143,24 @@
               }
             }
           }
+          @if (attendance) {
+            <ion-item-divider></ion-item-divider>
+            <ion-item button lines="none" (click)="addPlan(addPopover)">
+              <ion-icon name="copy-outline" slot="start" color="medium"></ion-icon>
+              <ion-label color="medium">Weiteren Ablaufplan anlegen</ion-label>
+            </ion-item>
+          }
         </ng-template>
       </ion-popover>
     </ion-list-header>
+
+    @if (planLabels.length > 1) {
+      <app-plan-chips [labels]="planLabels" [selected]="planIndex" (selectedChange)="selectPlan($event)">
+        <ion-button fill="clear" size="small" color="medium" (click)="showPlanOptions()" aria-label="Plan-Optionen">
+          <ion-icon slot="icon-only" name="ellipsis-horizontal"></ion-icon>
+        </ion-button>
+      </app-plan-chips>
+    }
 
     <ion-modal #songSelectModal [isOpen]="isSongSelectorOpen" (ionModalDidDismiss)="isSongSelectorOpen = false">
       <ng-template>

@@ -5,6 +5,7 @@ import { PlanViewerComponent } from '../../../planning/plan-viewer/plan-viewer.c
 import { DbService } from '../../../services/db.service';
 import { Attendance, Plan } from '../../../utilities/interfaces';
 import { Role } from '../../../utilities/constants';
+import { allPlans, planDate, todayPlanIndex } from '../../../utilities/plan-days';
 
 @Component({
   selector: 'app-current-plan-card',
@@ -19,6 +20,9 @@ export class CurrentPlanCardComponent implements OnDestroy {
   public isToday = false;
   private loadDone = false;
   private liveInterval: any;
+  /** Date of the shown plan; differs from the Termin date for later days of a multi-day Termin. */
+  private planDay: dayjs.Dayjs | null = null;
+  private multiPlan = false;
 
   constructor(public db: DbService, private modalController: ModalController, private cdr: ChangeDetectorRef) {
     effect(() => {
@@ -47,8 +51,12 @@ export class CurrentPlanCardComponent implements OnDestroy {
       ) ?? null;
 
       this.attendance = next;
-      this.plan = next?.plan ?? null;
-      this.isToday = next ? dayjs(next.date).isSame(dayjs(), 'day') : false;
+      // Termine with several plans (e.g. one per day) show today's plan.
+      const planIndex = todayPlanIndex(next);
+      this.multiPlan = allPlans(next).length > 1;
+      this.plan = allPlans(next)[planIndex] ?? next?.plan ?? null;
+      this.planDay = next ? planDate(next, planIndex) : null;
+      this.isToday = this.planDay ? this.planDay.isSame(dayjs(), 'day') : false;
       if (this.isToday) {
         if (this.liveInterval) { clearInterval(this.liveInterval); }
         this.liveInterval = setInterval(() => this.cdr.markForCheck(), 1000);
@@ -69,7 +77,7 @@ export class CurrentPlanCardComponent implements OnDestroy {
       component: PlanViewerComponent,
       componentProps: {
         attendance: this.attendance,
-        plan: this.plan,
+        plan: this.attendance.plan,
         isPractice,
         songs: [],
       },
@@ -95,11 +103,11 @@ export class CurrentPlanCardComponent implements OnDestroy {
 
   get isLive(): boolean {
     if (!this.isToday || !this.attendance) { return false; }
-    const startStr = this.attendance.start_time ?? this.plan?.time;
-    const endStr = this.attendance.end_time ?? this.plan?.end;
+    const startStr = this.multiPlan ? this.plan?.time : (this.attendance.start_time ?? this.plan?.time);
+    const endStr = this.multiPlan ? this.plan?.end : (this.attendance.end_time ?? this.plan?.end);
     if (!startStr || !endStr) { return false; }
     const toHHmm = (v: string) => v.length > 5 ? dayjs(v).format('HH:mm') : v;
-    const base = dayjs(this.attendance.date);
+    const base = this.planDay ?? dayjs(this.attendance.date);
     const [sh, sm] = toHHmm(startStr).split(':').map(Number);
     const [eh, em] = toHHmm(endStr).split(':').map(Number);
     const start = base.hour(sh).minute(sm).second(0);
@@ -116,7 +124,7 @@ export class CurrentPlanCardComponent implements OnDestroy {
 
   get dateLabel(): string {
     if (this.isToday) { return 'Heute'; }
-    return dayjs(this.attendance?.date).locale('de').format('dddd, DD.MM.YYYY');
+    return (this.planDay ?? dayjs(this.attendance?.date)).locale('de').format('dddd, DD.MM.YYYY');
   }
 
   get activeFieldIndex(): number {
@@ -124,7 +132,7 @@ export class CurrentPlanCardComponent implements OnDestroy {
     const startStr = this.plan.time;
     let current = startStr.length > 5
       ? dayjs(startStr)
-      : dayjs(this.attendance!.date).hour(Number(startStr.substring(0, 2))).minute(Number(startStr.substring(3, 5))).second(0);
+      : (this.planDay ?? dayjs(this.attendance!.date)).hour(Number(startStr.substring(0, 2))).minute(Number(startStr.substring(3, 5))).second(0);
     const now = dayjs();
     for (let i = 0; i < this.plan.fields.length; i++) {
       current = current.add(parseInt(this.plan.fields[i].time, 10) || 0, 'minutes');
@@ -139,7 +147,7 @@ export class CurrentPlanCardComponent implements OnDestroy {
     const startStr = this.plan.time;
     let t = startStr.length > 5
       ? dayjs(startStr)
-      : dayjs(this.attendance.date).hour(Number(startStr.substring(0, 2))).minute(Number(startStr.substring(3, 5))).second(0);
+      : (this.planDay ?? dayjs(this.attendance.date)).hour(Number(startStr.substring(0, 2))).minute(Number(startStr.substring(3, 5))).second(0);
     for (let i = 0; i <= idx; i++) {
       t = t.add(parseInt(this.plan.fields[i].time, 10) || 0, 'minutes');
     }
