@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.13.4",
+      "date": "16.10.2026",
+      "changes": [
+        "📚 Große Werkelisten werden jetzt vollständig geladen und bauen sich beim Scrollen flüssig auf. Die Suche findet Werke auch über Präfix und Nummer, z. B. \"LB12\"."
+      ]
+    },
+    {
       "version": "4.13.3",
       "date": "14.10.2026",
       "changes": [
