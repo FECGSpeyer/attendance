@@ -12,8 +12,8 @@ export const SONGS_ARTICLES: HelpArticle[] = [
     id: 'songs-filter',
     title: 'Werke suchen und filtern',
     categoryId: 'songs',
-    keywords: ['suche', 'filter', 'schwierigkeit', 'zuletzt gespielt'],
-    body: `Die Werkeliste kann per Suchfeld (Titel/Nummer) sowie nach Instrument, Schwierigkeitsgrad oder Datum des letzten Auftritts gefiltert werden. So findest du schnell z. B. alle Stücke, die lange nicht mehr gespielt wurden.`,
+    keywords: ['suche', 'filter', 'schwierigkeit', 'zuletzt gespielt', 'präfix', 'liedbuch', 'nachladen', 'scrollen'],
+    body: `Die Werkeliste kann per Suchfeld (Titel, Nummer oder Präfix mit Nummer, z. B. "LB12") sowie nach Instrument, Schwierigkeitsgrad oder Datum des letzten Auftritts gefiltert werden. So findest du schnell z. B. alle Stücke, die lange nicht mehr gespielt wurden. Bei großen Listen zeigt Attendix zuerst die ersten 100 Werke und lädt beim Herunterscrollen automatisch weitere nach.`,
   },
   {
     id: 'songs-import',

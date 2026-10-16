@@ -77,6 +77,15 @@ export class SongsPage implements OnInit, OnDestroy {
   // TrackBy function for main songs list
   trackBySongId = (_index: number, song: Song): number => song.id;
 
+  // Render the list in chunks: thousands of ion-items at once make the page sluggish.
+  private static readonly DISPLAY_CHUNK = 100;
+  public displayLimit = SongsPage.DISPLAY_CHUNK;
+
+  loadMoreSongs(event: any): void {
+    this.displayLimit += SongsPage.DISPLAY_CHUNK;
+    event.target.complete();
+  }
+
   async ngOnInit() {
     const pathParts = window.location.pathname.split('/');
     const lastSegment = pathParts[pathParts.length - 1];
@@ -524,7 +533,7 @@ export class SongsPage implements OnInit, OnDestroy {
         if (this.searchTerm) {
           if (entry.name.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1 ||
             entry.conductor?.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1 ||
-            String(entry.number).toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1) {
+            `${entry.prefix ?? ''}${entry.number}`.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1) {
             return true;
           }
           return false;
@@ -615,6 +624,8 @@ export class SongsPage implements OnInit, OnDestroy {
         return new Date(b.lastSung).getTime() - new Date(a.lastSung).getTime();
       });
     }
+    // sort() mutates in place; a new reference lets the pure slice pipe pick up the new order
+    this.songsFiltered = [...this.songsFiltered];
   }
 
   filterChoirSolo(song: Song): boolean {
@@ -645,6 +656,7 @@ export class SongsPage implements OnInit, OnDestroy {
 
   initializeItems(): void {
     this.songsFiltered = this.songs;
+    this.displayLimit = SongsPage.DISPLAY_CHUNK;
   }
 
   onTextAreaFocus(evt: any) {

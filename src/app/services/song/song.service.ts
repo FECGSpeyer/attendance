@@ -40,15 +40,28 @@ export class SongService {
       return (cached ?? []) as Song[];
     }
 
-    const { data } = await supabase
-      .from('songs')
-      .select('*')
-      .eq('tenantId', tenantId)
-      .order('number', { ascending: true })
-      .limit(3000);
+    // PostgREST caps each response, so load in pages until a short page arrives.
+    const pageSize = 1000;
+    const songs: Song[] = [];
+    for (let from = 0; ; from += pageSize) {
+      const { data, error } = await supabase
+        .from('songs')
+        .select('*')
+        .eq('tenantId', tenantId)
+        .order('number', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, from + pageSize - 1);
 
-    if (data) { void this.storage.set(cacheKey, data); }
-    return data as any;
+      if (error || !data) {
+        if (!songs.length) { return data as any; }
+        break;
+      }
+      songs.push(...(data as any));
+      if (data.length < pageSize) { break; }
+    }
+
+    void this.storage.set(cacheKey, songs);
+    return songs;
   }
 
   async getSong(id: number, tenantId: number): Promise<Song> {

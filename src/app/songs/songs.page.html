@@ -118,7 +118,7 @@
   }
 
   <div class="flex">
-    <ion-searchbar (ionInput)="search($event)" placeholder="Werk suchen..."></ion-searchbar>
+    <ion-searchbar [debounce]="250" (ionInput)="search($event)" placeholder="Werk suchen..."></ion-searchbar>
     <ion-button id="filter-trigger-songs" fill="none">
       <ion-icon size="medium" name="options"></ion-icon>
     </ion-button>
@@ -358,7 +358,7 @@
       <ion-label>Werke ({{ songsFiltered.length }})</ion-label>
     </ion-list-header>
     <ion-item-group>
-      @for (song of songsFiltered; track trackBySongId($index, song)) {
+      @for (song of songsFiltered | slice:0:displayLimit; track trackBySongId($index, song)) {
         <ion-item detail="false" [routerLink]="tenantData ? [song.id] : isStandaloneTab ? ['/tabs/songs-tab', song.id] : ['/tabs/settings/songs', song.id]"
           >
           <ion-label>
@@ -433,6 +433,9 @@
         </ion-item>
       }
     </ion-item-group>
+    <ion-infinite-scroll [disabled]="displayLimit >= songsFiltered.length" (ionInfinite)="loadMoreSongs($event)">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
   </ion-list>
   }
 
