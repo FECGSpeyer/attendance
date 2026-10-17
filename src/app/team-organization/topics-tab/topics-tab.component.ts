@@ -2,13 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { AlertController, IonicModule, ModalController, NavController } from '@ionic/angular/lazy';
+import { ActionSheetButton, ActionSheetController, AlertController, IonicModule, ModalController, NavController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { AgendaItem, AgendaItemPriority, Attendance, AttendanceType, FieldSelection } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { AgendaPickerComponent } from 'src/app/agenda-items/agenda-picker/agenda-picker.component';
-import { upcomingProtocolAttendances } from 'src/app/agenda-items/agenda-plan.helpers';
+import { addTopicsToAttendance, upcomingProtocolAttendances } from 'src/app/agenda-items/agenda-plan.helpers';
+import { createAttendanceForType, personsForAttendanceType } from 'src/app/utilities/attendance-create';
 import { personName, postponedAgendaItemIds, sortTopicsForPlanning, topNumbers } from '../team-org.utils';
 import {
   initials,
@@ -22,7 +23,7 @@ import {
 
 /**
  * Tab "Themen" of the Teamorganisation. Leadership: suggestions to review,
- * the next Termin's agenda and the Themenspeicher. Members: their own
+ * the agenda of the next (or a chosen) Termin and the Themenspeicher. Members: their own
  * suggestions and the form to suggest a topic.
  */
 @Component({
@@ -42,6 +43,11 @@ export class TeamTopicsTabComponent implements OnInit {
   showDone = false;
 
   nextAttendance: Attendance | null = null;
+  /** Upcoming Termine with protocol, soonest first; the leadership can switch between them. */
+  upcomingAttendances: Attendance[] = [];
+  /** Termin chosen via "Ändern"; null = the soonest one. */
+  private chosenAttendanceId: number | null = null;
+  creatingAttendance = false;
   nextType: AttendanceType | null = null;
   nextTops: FieldSelection[] = [];
   nextTopMinutes = 0;
@@ -64,6 +70,7 @@ export class TeamTopicsTabComponent implements OnInit {
   constructor(
     public db: DbService,
     private alertController: AlertController,
+    private actionSheetController: ActionSheetController,
     private modalController: ModalController,
     private navController: NavController,
   ) {}
@@ -113,8 +120,10 @@ export class TeamTopicsTabComponent implements OnInit {
     this.doneTopics = buckets.done;
     if (!this.pending.length) this.isReviewOpen = false;
 
-    const next = upcomingProtocolAttendances(upcoming, this.db.attendanceTypes())[0] ?? null;
-    this.setNextAttendance(next);
+    this.upcomingAttendances = upcomingProtocolAttendances(upcoming, this.db.attendanceTypes());
+    const chosen = this.upcomingAttendances.find(a => a.id === this.chosenAttendanceId);
+    if (!chosen) this.chosenAttendanceId = null;
+    this.setNextAttendance(chosen ?? this.upcomingAttendances[0] ?? null);
   }
 
   private setNextAttendance(att: Attendance | null) {
@@ -131,9 +140,140 @@ export class TeamTopicsTabComponent implements OnInit {
   }
 
   get nextTitle(): string {
-    if (!this.nextAttendance) return '';
-    const type = (this.nextType ? Utils.getTypeTitle(this.nextType, this.nextAttendance.typeInfo) : this.nextAttendance.typeInfo) || this.nextType?.name || 'Termin';
-    return `${type} · ${dayjs(this.nextAttendance.date).locale('de').format('dd, DD.MM.')}`;
+    return this.nextAttendance ? this.attendanceTitle(this.nextAttendance) : '';
+  }
+
+  /** "Nächster Termin" or "Gewählter Termin" when the leadership switched to a later one. */
+  get nextHeader(): string {
+    return this.nextAttendance && this.nextAttendance.id !== this.upcomingAttendances[0]?.id ? 'Gewählter Termin' : 'Nächster Termin';
+  }
+
+  private attendanceTitle(att: Attendance): string {
+    const type = this.db.attendanceTypes().find(t => t.id === att.type_id);
+    const name = (type ? Utils.getTypeTitle(type, att.typeInfo) : att.typeInfo) || type?.name || 'Termin';
+    return `${name} · ${dayjs(att.date).locale('de').format('dd, DD.MM.')}`;
+  }
+
+  /** Protocol-enabled types a Termin can be created for ad hoc. */
+  private protocolTypes(): AttendanceType[] {
+    return this.db.attendanceTypes()
+      .filter(t => t.enable_protocol && t.visible !== false)
+      .sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+  }
+
+  /** "Ändern": pick another upcoming Termin or create a new one. */
+  async changeAttendance() {
+    const buttons: ActionSheetButton[] = this.upcomingAttendances.slice(0, 8).map(att => ({
+      text: this.attendanceTitle(att) + (att.id === this.nextAttendance?.id ? ' ✓' : ''),
+      handler: () => { this.chooseAttendance(att); },
+    }));
+    buttons.push({ text: 'Neuen Termin anlegen', icon: 'add-circle-outline', handler: () => { void this.createAttendance(); } });
+    buttons.push({ text: 'Abbrechen', role: 'cancel' });
+    const sheet = await this.actionSheetController.create({ header: 'Für welchen Termin planen?', buttons });
+    await sheet.present();
+  }
+
+  private chooseAttendance(att: Attendance) {
+    this.chosenAttendanceId = att.id;
+    this.setNextAttendance(att);
+  }
+
+  /** Creates a Termin of a protocol-enabled type ad hoc and selects it. */
+  async createAttendance() {
+    if (this.creatingAttendance) return;
+    const types = this.protocolTypes();
+    if (!types.length) {
+      Utils.showToast('Kein Termintyp mit Protokoll & Tagesordnung vorhanden', 'warning');
+      return;
+    }
+    const type = types.length === 1 ? types[0] : await this.pickType(types);
+    if (!type) return;
+    const date = await this.pickDate(type);
+    if (!date) return;
+
+    this.creatingAttendance = true;
+    const loading = await Utils.getLoadingElement();
+    await loading.present();
+    try {
+      const [persons, absences] = await Promise.all([
+        personsForAttendanceType(this.db, type),
+        this.db.getPlayerAbsencesForTenant().catch(() => []),
+      ]);
+      const id = await createAttendanceForType(this.db, type, { date }, persons, absences);
+      const created = await this.db.getAttendanceById(id);
+      this.chosenAttendanceId = id;
+      Utils.showToast(`Termin am ${dayjs(date).format('DD.MM.')} angelegt`, 'success');
+      await this.loadLeader();
+      if (this.nextAttendance?.id !== id && created) this.chooseAttendance(created);
+    } catch (error) {
+      console.error('Ad hoc attendance error:', error);
+      Utils.showToast('Termin konnte nicht angelegt werden', 'danger');
+    } finally {
+      await loading.dismiss();
+      this.creatingAttendance = false;
+    }
+  }
+
+  private async pickType(types: AttendanceType[]): Promise<AttendanceType | null> {
+    const alert = await this.alertController.create({
+      header: 'Welcher Termintyp?',
+      inputs: types.map((t, i) => ({ type: 'radio' as const, label: t.name, value: t.id, checked: i === 0 })),
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        { text: 'Weiter', role: 'confirm' },
+      ],
+    });
+    await alert.present();
+    const { role, data } = await alert.onDidDismiss();
+    if (role !== 'confirm') return null;
+    return types.find(t => t.id === data?.values) ?? null;
+  }
+
+  private async pickDate(type: AttendanceType): Promise<string | null> {
+    const alert = await this.alertController.create({
+      header: `${type.name} anlegen`,
+      message: 'An welchem Tag findet der Termin statt?',
+      inputs: [{ name: 'date', type: 'date', value: dayjs().format('YYYY-MM-DD'), min: dayjs().format('YYYY-MM-DD') }],
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        { text: 'Anlegen', role: 'confirm' },
+      ],
+    });
+    await alert.present();
+    const { role, data } = await alert.onDidDismiss();
+    const value: string = data?.values?.date ?? '';
+    if (role !== 'confirm' || !value) return null;
+    if (dayjs(value).isBefore(dayjs(), 'day')) {
+      Utils.showToast('Bitte ein Datum ab heute wählen', 'warning');
+      return null;
+    }
+    return dayjs(value).toISOString();
+  }
+
+  /** Tap on a TOP: open the topic or take it off this Termin (it stays in the Themenspeicher). */
+  async topAction(top: FieldSelection) {
+    const sheet = await this.actionSheetController.create({
+      header: top.name,
+      buttons: [
+        { text: 'Thema öffnen', handler: () => { this.openTopic(top.agendaItemId); } },
+        { text: 'Aus diesem Termin entfernen', role: 'destructive', handler: () => { void this.removeTop(top); } },
+        { text: 'Abbrechen', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+  }
+
+  private async removeTop(top: FieldSelection) {
+    if (!this.nextAttendance || !top.agendaItemId) return;
+    try {
+      const plan = await addTopicsToAttendance(this.db, this.nextAttendance, this.nextType, [], [top.agendaItemId]);
+      this.setNextAttendance({ ...this.nextAttendance, plan });
+      this.upcomingAttendances = this.upcomingAttendances.map(a => a.id === this.nextAttendance?.id ? { ...a, plan } : a);
+      Utils.showToast('Aus dem Termin entfernt, bleibt im Themenspeicher');
+    } catch (error) {
+      console.error('Remove TOP error:', error);
+      Utils.showToast('Thema konnte nicht entfernt werden', 'danger');
+    }
   }
 
   topicSubtitle(item: AgendaItem): string {
@@ -170,7 +310,9 @@ export class TeamTopicsTabComponent implements OnInit {
     await modal.present();
     const { data, role } = await modal.onWillDismiss();
     if (role === 'saved' && data?.plan) {
+      const id = this.nextAttendance.id;
       this.setNextAttendance({ ...this.nextAttendance, plan: data.plan });
+      this.upcomingAttendances = this.upcomingAttendances.map(a => a.id === id ? { ...a, plan: data.plan } : a);
     }
   }
 

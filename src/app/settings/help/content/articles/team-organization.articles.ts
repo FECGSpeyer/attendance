@@ -36,17 +36,19 @@ Sobald ein Typ eingeschaltet ist, erscheint **Mehr → Planung → Teamorganisat
     id: 'team-prepare',
     title: 'Themen sammeln und eine Sitzung vorbereiten',
     categoryId: 'team',
-    keywords: ['thema', 'themen', 'themenspeicher', 'tagesordnung', 'top', 'tagesordnungspunkt', 'agenda', 'einladung', 'einplanen', 'aufnehmen', 'vertagt', 'dauer'],
+    keywords: ['thema', 'themen', 'themenspeicher', 'tagesordnung', 'top', 'tagesordnungspunkt', 'agenda', 'einladung', 'einplanen', 'aufnehmen', 'vertagt', 'dauer', 'entfernen', 'herausnehmen', 'termin ändern', 'termin wechseln', 'termin anlegen', 'ad hoc', 'sitzung anlegen'],
     body: `**Themen sammeln:** Unter **Mehr → Planung → Teamorganisation → Themen** legt die Leitung mit **+** neue Themen an, mit Beschreibung, Priorität, verantwortlicher Person und Dauer. Das geht auch Wochen vor der Sitzung, ein Thema gehört erst zu einem Termin, wenn du es einplanst.
 
 **Themen in den Ablaufplan aufnehmen:** Es gibt vier Wege:
 
 - Öffne den Termin und tippe im Ablaufplan auf **„Themen aufnehmen“**. Wähle die Themen aus und passe bei Bedarf die Dauer an. Vertagte Themen stehen oben.
 - Öffne ein Thema und tippe auf **„Einplanen“**, um es in einen der nächsten Termine zu übernehmen.
-- Im Reiter **Themen** der Teamorganisation tippst du beim nächsten Termin auf **„Themen aufnehmen“**.
+- Im Reiter **Themen** der Teamorganisation tippst du beim nächsten Termin auf **„Themen aufnehmen“**. Mit **„Ändern“** wählst du stattdessen einen späteren Termin. Steht noch keiner an, legst du dort mit **„Termin anlegen“** (oder „Ändern → Neuen Termin anlegen“) ad hoc einen an: Typ wählen (bei mehreren Typen mit Protokoll), Datum wählen, fertig. Der Termin wird wie gewohnt für alle Personen des Typs angelegt.
 - Während der Sitzung fügst du im Protokoll mit **„+ Punkt“** spontan ein neues Thema hinzu.
 
 Jedes Thema wird ein eigener [[TOP]] an der Markierung „Tagesordnung“ (ohne Markierung am Ende des Plans). Die Uhrzeiten der folgenden Punkte verschieben sich um seine Dauer.
+
+**Thema wieder aus einem Termin nehmen:** Hat sich etwas geändert, tippe im Reiter **Themen** beim Termin auf den TOP und dann auf **„Aus diesem Termin entfernen“**. Oder öffne **„Themen aufnehmen“** und entferne den Haken bei einem Thema, das schon im Ablaufplan steht. Das Thema bleibt im Themenspeicher und lässt sich später wieder einplanen. Der Papierkorb in der Detailansicht eines Themas löscht es dagegen komplett.
 
 **Einladung verschicken:** Teile den Ablaufplan wie gewohnt als PDF oder per Telegram. Die Themen erscheinen dort als „TOP 1, TOP 2, …“ mit Uhrzeit und Verantwortlichem.
 

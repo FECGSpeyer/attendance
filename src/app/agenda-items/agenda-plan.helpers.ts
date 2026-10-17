@@ -66,17 +66,21 @@ export function initialPlan(
 /**
  * Returns the plan with the selected topics inserted as TOP fields (at the
  * marker, otherwise at the end) and the end time recalculated. Topics already
- * in the plan are skipped.
+ * in the plan are skipped. TOPs of `removeIds` are taken out of the plan; the
+ * topics themselves stay in the Themenspeicher.
  */
 export function planWithTopics(
   attendance: Pick<Attendance, 'plan' | 'start_time'>,
   type: Pick<AttendanceType, 'default_plan' | 'start_time'> | null | undefined,
   selections: TopicSelection[],
+  removeIds: string[] = [],
 ): Plan {
   const base: Plan = attendance.plan?.fields
     ? { ...attendance.plan, fields: [...attendance.plan.fields] }
     : initialPlan(attendance, type);
-  const fields = insertAgendaFields(base.fields, selections.map(s => buildAgendaField(s.item, s.duration)));
+  const remove = new Set(removeIds);
+  const kept = base.fields.filter(f => !f.agendaItemId || !remove.has(f.agendaItemId));
+  const fields = insertAgendaFields(kept, selections.map(s => buildAgendaField(s.item, s.duration)));
   return { ...base, fields, end: computePlanEnd(base.time, fields) };
 }
 
@@ -106,8 +110,9 @@ export function upcomingProtocolAttendances(
 }
 
 /**
- * Saves the selected topics into the Termin's plan and returns the new plan.
- * The plan is re-read first so changes made elsewhere in the meantime are kept.
+ * Saves the selected topics into the Termin's plan (and removes the TOPs of
+ * `removeIds`) and returns the new plan. The plan is re-read first so changes
+ * made elsewhere in the meantime are kept.
  */
 export async function addTopicsToAttendance(
   db: {
@@ -117,6 +122,7 @@ export async function addTopicsToAttendance(
   attendance: Pick<Attendance, 'id' | 'plan' | 'start_time'>,
   type: Pick<AttendanceType, 'default_plan' | 'start_time'> | null | undefined,
   selections: TopicSelection[],
+  removeIds: string[] = [],
 ): Promise<Plan> {
   let current: Pick<Attendance, 'id' | 'plan' | 'start_time'> = attendance;
   if (db.getAttendanceById) {
@@ -127,7 +133,7 @@ export async function addTopicsToAttendance(
       current = attendance;
     }
   }
-  const plan = planWithTopics(current, type, selections);
+  const plan = planWithTopics(current, type, selections, removeIds);
   const result = await db.updateAttendance({ plan }, attendance.id);
   return result?.plan ?? plan;
 }

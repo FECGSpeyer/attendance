@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.13.8",
+      "date": "17.10.2026",
+      "changes": [
+        "📅 Teamorganisation: Im Reiter Themen kannst du mit „Ändern“ einen anderen anstehenden Termin wählen. Steht keiner an, legst du direkt dort einen Termin vom passenden Typ an.",
+        "🗂️ Themen lassen sich wieder aus einem Termin herausnehmen, ohne sie zu löschen: Tippe auf den TOP und wähle „Aus diesem Termin entfernen“ oder entferne den Haken unter „Themen aufnehmen“. Das Thema bleibt im Themenspeicher."
+      ]
+    },
+    {
       "version": "4.13.7",
       "date": "17.10.2026",
       "changes": [

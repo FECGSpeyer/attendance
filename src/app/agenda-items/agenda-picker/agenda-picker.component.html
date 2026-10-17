@@ -55,7 +55,7 @@
   }
 
   <ng-template #rowTpl let-row let-last="last">
-    <ion-item [lines]="last ? 'none' : 'full'" button detail="false" [disabled]="row.inPlan" (click)="toggle(row)">
+    <ion-item [lines]="last ? 'none' : 'full'" button detail="false" (click)="toggle(row)">
       <ion-icon slot="start" [name]="row.selected ? 'checkmark-circle' : 'ellipse-outline'" [color]="row.selected ? 'primary' : 'medium'"
         role="checkbox" [attr.aria-checked]="row.selected"></ion-icon>
       <ion-label class="ion-text-wrap">
@@ -84,15 +84,11 @@
   <ion-toolbar>
     <div class="footer-content">
       <p class="insert-hint">{{ insertHint }}</p>
-      <ion-button expand="block" [disabled]="!newSelections.length || saving" (click)="confirm()">
+      <ion-button expand="block" [disabled]="!hasChanges || saving" (click)="confirm()">
         @if (saving) {
           <ion-spinner name="crescent" slot="start"></ion-spinner>
         }
-        @if (newSelections.length) {
-          {{ newSelections.length === 1 ? '1 Thema' : newSelections.length + ' Themen' }} aufnehmen · {{ totalMinutes }} min
-        } @else {
-          Themen auswählen
-        }
+        {{ confirmLabel }}
       </ion-button>
     </div>
   </ion-toolbar>

@@ -227,7 +227,7 @@ export class AgendaItemDetailPage implements OnInit {
   async deleteItem() {
     const alert = await this.alertController.create({
       header: 'Thema wirklich löschen?',
-      message: 'Es verschwindet aus dem Themenspeicher. Bereits geplante Ablaufpläne und Protokolle bleiben unverändert.',
+      message: 'Es verschwindet aus dem Themenspeicher. Bereits geplante Ablaufpläne und Protokolle bleiben unverändert. Soll es nur aus einem Termin raus, entferne es dort über „Themen aufnehmen“ oder in der Teamorganisation.',
       buttons: [
         { text: 'Abbrechen', role: 'cancel' },
         {

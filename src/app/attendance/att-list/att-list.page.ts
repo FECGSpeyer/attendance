@@ -9,9 +9,10 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/de';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
-import { Attendance, PersonAttendance, Player, PlayerAbsence, Song, History, Person, ChecklistItem } from 'src/app/utilities/interfaces';
+import { Attendance, PlayerAbsence, Song, History, Person } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
-import { AttendanceStatus, DefaultAttendanceType, Role } from 'src/app/utilities/constants';
+import { createAttendanceForType, personsForAttendanceType } from 'src/app/utilities/attendance-create';
+import { DefaultAttendanceType, Role } from 'src/app/utilities/constants';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 @Component({
@@ -325,8 +326,6 @@ export class AttListPage implements OnInit {
     const loading = await Utils.getLoadingElement();
     await loading.present();
 
-    let persons: PersonAttendance[] = [];
-    let allPersons: Person[];
     let tenantAbsences: PlayerAbsence[] = [];
 
     try {
@@ -334,27 +333,6 @@ export class AttListPage implements OnInit {
     } catch {
       // non-fatal — proceed without absence check
     }
-
-    const attType = this.db.attendanceTypes().find(type => type.id === this.type_id);
-    allPersons = (await this.db.getPlayers()).filter((player: Player) => {
-      if (player.paused) {
-        return false;
-      }
-      if (attType.relevant_groups.length === 0) {
-        return true;
-      }
-      return attType.relevant_groups.includes(player.instrument);
-    });
-
-    if (attType.additional_fields_filter?.key && attType.additional_fields_filter?.option != null && this.db.getPersonExtraFields().find(field => field.id === attType.additional_fields_filter.key)) {
-      allPersons = allPersons.filter((player: Player) => {
-        const defaultValue = this.db.getPersonExtraFields().find(field => field.id === attType.additional_fields_filter.key)?.defaultValue;
-        const additionalField = player.additional_fields[attType.additional_fields_filter.key] ?? defaultValue;
-        return additionalField === attType.additional_fields_filter.option;
-      });
-    }
-
-    const status = attType.default_status;
 
     const type = this.db.attendanceTypes().find(type => type.id === this.type_id);
 
@@ -364,83 +342,17 @@ export class AttListPage implements OnInit {
       return;
     }
 
+    const allPersons = await personsForAttendanceType(this.db, type);
+
     for (const date of this.dates) {
-      // Normalize date to noon (12:00) to avoid timezone issues between 22:00-02:00
-      const normalizedDate = dayjs(date).hour(12).minute(0).second(0).millisecond(0).toISOString();
-
-      // Prepare checklist with calculated due dates
-      let checklist: ChecklistItem[] | undefined;
-      if (type.checklist && type.checklist.length > 0) {
-        const eventDateTime = type.start_time
-          ? dayjs(normalizedDate).hour(Number(type.start_time.substring(0, 2))).minute(Number(type.start_time.substring(3, 5)))
-          : dayjs(normalizedDate).hour(19).minute(0);
-
-        checklist = type.checklist.map((item: ChecklistItem) => ({
-          id: crypto.randomUUID(),
-          text: item.text,
-          deadlineHours: item.deadlineHours,
-          completed: false,
-          dueDate: item.deadlineHours !== null
-            ? eventDateTime.subtract(item.deadlineHours, 'hour').toISOString()
-            : null,
-        }));
-      }
-
-      const attendance_id: number = await this.db.addAttendance({
-        date: normalizedDate,
-        type_id: this.type_id,
+      const attendance_id = await createAttendanceForType(this.db, type, {
+        date,
         notes: this.notes,
-        save_in_history: true,
         typeInfo: this.typeInfo,
-        start_time: type.start_time,
-        end_time: type.end_time,
-        duration_days: this.allDayDuration,
-        is_org_plan: type.is_default_org_plan ?? false,
-        checklist,
+        durationDays: this.allDayDuration,
         place: this.place || null,
-      });
+      }, allPersons, tenantAbsences);
 
-      for (const player of allPersons) {
-        let playerStatus = status;
-        let notes = '';
-        if (player.shift_id && !type.all_day) {
-          const shift = this.db.shifts().find(s => s.id === player.shift_id);
-
-          const result = Utils.getStatusByShift(
-            shift,
-            date,
-            type.start_time || '19:00',
-            type.end_time || '21:00',
-            status,
-            player.shift_start,
-            player.shift_name,
-          );
-
-          playerStatus = result.status;
-          notes = result.note;
-        }
-
-        const dateDay = dayjs(normalizedDate);
-        const absence = tenantAbsences.find(a =>
-          a.person_id === player.id &&
-          !dateDay.isBefore(dayjs(a.from_date), 'day') &&
-          !dateDay.isAfter(dayjs(a.until_date), 'day')
-        );
-        if (absence) {
-          playerStatus = AttendanceStatus.Excused;
-          notes = absence.reason;
-        }
-
-        persons.push({
-          attendance_id,
-          person_id: player.id,
-          status: playerStatus,
-          notes,
-        });
-      }
-
-      await this.db.addPersonAttendances(persons);
-      persons = [];
       if (this.historyEntries.length) {
         await this.db.addSongsToHistory(this.historyEntries.map((entry: History) => ({
             ...entry,

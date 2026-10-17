@@ -13,14 +13,15 @@ interface PickerRow {
   item: AgendaItem;
   selected: boolean;
   duration: number;
-  /** Already in this Termin's plan: shown checked and disabled. */
+  /** Already in this Termin's plan: shown checked; unchecking removes it from the plan (not from the Themenspeicher). */
   inPlan: boolean;
   postponedOn?: string;
 }
 
 /**
  * "Themen aufnehmen": picks open topics (and creates new ones inline) and
- * inserts them as TOPs into a Termin's Ablaufplan. Dismisses with
+ * inserts them as TOPs into a Termin's Ablaufplan. Unchecking a TOP that is
+ * already planned takes it out of the plan again. Dismisses with
  * `{ data: { plan }, role: 'saved' }` after saving.
  */
 @Component({
@@ -100,6 +101,24 @@ export class AgendaPickerComponent implements OnInit {
     return [...this.postponedRows, ...this.otherRows].filter(r => r.selected && !r.inPlan);
   }
 
+  /** TOPs in the plan that were unchecked: they leave the plan, the topic stays. */
+  get removals(): PickerRow[] {
+    return [...this.postponedRows, ...this.otherRows].filter(r => r.inPlan && !r.selected);
+  }
+
+  get hasChanges(): boolean {
+    return this.newSelections.length > 0 || this.removals.length > 0;
+  }
+
+  get confirmLabel(): string {
+    const added = this.newSelections.length;
+    const removed = this.removals.length;
+    const parts: string[] = [];
+    if (added) parts.push(`${added === 1 ? '1 Thema' : added + ' Themen'} aufnehmen · ${this.totalMinutes} min`);
+    if (removed) parts.push(`${removed === 1 ? '1 Thema' : removed + ' Themen'} entfernen`);
+    return parts.length ? parts.join(' · ') : 'Themen auswählen';
+  }
+
   get totalMinutes(): number {
     return this.newSelections.reduce((s, r) => s + r.duration, 0);
   }
@@ -107,14 +126,19 @@ export class AgendaPickerComponent implements OnInit {
   get insertHint(): string {
     const after = insertAfterName(this.attendance?.plan?.fields);
     const where = after ? `Wird nach „${after}“ eingefügt` : 'Wird am Anfang eingefügt';
-    if (!this.newSelections.length) return where;
+    if (!this.hasChanges) return where;
     const plan = this.previewPlan();
     const end = dayjs(plan.end).isValid() ? dayjs(plan.end).format('HH:mm') : '';
     return end ? `${where} · Ende neu ${end}` : where;
   }
 
   private previewPlan(): Plan {
-    return planWithTopics(this.attendance, this.type, this.newSelections.map(r => ({ item: r.item, duration: r.duration })));
+    return planWithTopics(
+      this.attendance,
+      this.type,
+      this.newSelections.map(r => ({ item: r.item, duration: r.duration })),
+      this.removals.map(r => r.item.id),
+    );
   }
 
   subtitle(row: PickerRow): string {
@@ -122,12 +146,11 @@ export class AgendaPickerComponent implements OnInit {
     const responsible = personName(row.item.responsible_person);
     if (responsible) parts.push(responsible);
     parts.push(this.priorityLabels[row.item.priority] ?? '');
-    if (row.inPlan) parts.push('bereits im Ablaufplan');
+    if (row.inPlan) parts.push(row.selected ? 'bereits im Ablaufplan' : 'wird aus dem Ablaufplan entfernt');
     return parts.filter(Boolean).join(' · ');
   }
 
   toggle(row: PickerRow) {
-    if (row.inPlan) return;
     row.selected = !row.selected;
   }
 
@@ -154,17 +177,24 @@ export class AgendaPickerComponent implements OnInit {
     }
   }
 
+  private savedText(added: number, removed: number): string {
+    if (!removed) return added === 1 ? 'Thema aufgenommen' : `${added} Themen aufgenommen`;
+    if (!added) return removed === 1 ? 'Thema aus dem Ablaufplan entfernt' : `${removed} Themen aus dem Ablaufplan entfernt`;
+    return 'Tagesordnung aktualisiert';
+  }
+
   dismiss() {
     this.modalController.dismiss(null, 'cancel');
   }
 
   async confirm() {
     const selections = this.newSelections.map(r => ({ item: r.item, duration: r.duration }));
-    if (!selections.length || this.saving) return;
+    const removeIds = this.removals.map(r => r.item.id);
+    if ((!selections.length && !removeIds.length) || this.saving) return;
     this.saving = true;
     try {
-      const plan = await addTopicsToAttendance(this.db, this.attendance, this.type, selections);
-      Utils.showToast(selections.length === 1 ? 'Thema aufgenommen' : `${selections.length} Themen aufgenommen`, 'success');
+      const plan = await addTopicsToAttendance(this.db, this.attendance, this.type, selections, removeIds);
+      Utils.showToast(this.savedText(selections.length, removeIds.length), 'success');
       await this.modalController.dismiss({ plan }, 'saved');
     } catch (e) {
       console.error('agenda picker save failed', e);

@@ -88,6 +88,18 @@ describe('planWithTopics', () => {
     expect(plan.end.slice(-5)).toBe('19:15');
   });
 
+  it('removes TOPs without touching other fields', () => {
+    const att = { plan: { time: '19:00', end: '', fields: [
+      { id: 'w', name: 'Begrüßung', time: '5' },
+      { id: 'agenda-1', name: 'Thema 1', time: '10', agendaItemId: '1' },
+      { id: 'agenda-2', name: 'Thema 2', time: '20', agendaItemId: '2' },
+      marker,
+    ] } };
+    const plan = planWithTopics(att, null, [{ item: topic('3'), duration: 5 }], ['1']);
+    expect(plan.fields.map(f => f.id)).toEqual(['w', 'agenda-2', 'agenda-3', AGENDA_ITEMS_PLACEHOLDER_ID]);
+    expect(plan.end.slice(-5)).toBe('19:30');
+  });
+
   it('builds a plan from the type when the Termin has none', () => {
     const type = { start_time: '20:00', default_plan: { time: '', end: '', fields: [marker] } };
     const plan = planWithTopics({}, type, [{ item: topic('1'), duration: 15 }]);
