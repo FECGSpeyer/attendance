@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.13.14",
+      "date": "17.10.2026",
+      "changes": [
+        "🎂 Geburtstage im Dashboard neu gestaltet: Datum als Kalenderblatt, deutsche Monatsnamen, Wochentag und \"wird 17\" statt umbrechender Altersangabe. Heutige Geburtstage sind hervorgehoben, vergangene stehen getrennt unter \"Zuletzt\"."
+      ]
+    },
+    {
       "version": "4.13.13",
       "date": "17.10.2026",
       "changes": [

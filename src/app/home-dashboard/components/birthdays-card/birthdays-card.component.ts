@@ -1,5 +1,6 @@
 import { Component, OnInit, effect } from '@angular/core';
 import dayjs from 'dayjs';
+import 'dayjs/locale/de';
 import { ModalController } from '@ionic/angular/lazy';
 import { DbService } from '../../../services/db.service';
 import { Player } from '../../../utilities/interfaces';
@@ -14,6 +15,9 @@ interface BirthdayEntry {
   birthday: string;
   age: number;
   daysOffset: number;
+  day: string;
+  month: string;
+  weekday: string;
 }
 
 @Component({
@@ -24,6 +28,8 @@ interface BirthdayEntry {
 })
 export class BirthdaysCardComponent {
   public entries: BirthdayEntry[] = [];
+  public upcoming: BirthdayEntry[] = [];
+  public past: BirthdayEntry[] = [];
   public loading = true;
   private loadDone = false;
 
@@ -58,6 +64,7 @@ export class BirthdaysCardComponent {
             diff = nextYear.diff(today, 'day');
           }
           const age = Utils.calculateAge(new Date(p.birthday));
+          const date = today.add(diff, 'day').locale('de');
           return {
             player: p,
             firstName: p.firstName,
@@ -65,26 +72,20 @@ export class BirthdaysCardComponent {
             birthday: p.birthday,
             age: diff > 0 ? age + 1 : age,
             daysOffset: diff,
+            day: date.format('D'),
+            month: date.format('MMM').replace('.', ''),
+            weekday: date.format('dddd'),
           };
         })
         .filter(e => e.daysOffset >= -WINDOW && e.daysOffset <= WINDOW)
-.sort((a, b) => {
-  // Heute immer zuerst
-  if (a.daysOffset === 0) return -1;
-  if (b.daysOffset === 0) return 1;
-
-  // Zukünftige vor vergangenen
-  if (a.daysOffset > 0 && b.daysOffset < 0) return -1;
-  if (a.daysOffset < 0 && b.daysOffset > 0) return 1;
-
-  // Beide zukünftig: aufsteigend
-  if (a.daysOffset > 0 && b.daysOffset > 0) {
-    return a.daysOffset - b.daysOffset;
-  }
-
-  // Beide vergangen: jüngster zuerst
-  return b.daysOffset - a.daysOffset;
-});
+        .sort((a, b) => {
+          // Heute und Kommende aufsteigend vor Vergangenen (jüngster zuerst)
+          const aPast = a.daysOffset < 0, bPast = b.daysOffset < 0;
+          if (aPast !== bPast) return aPast ? 1 : -1;
+          return aPast ? b.daysOffset - a.daysOffset : a.daysOffset - b.daysOffset;
+        });
+      this.upcoming = this.entries.filter(e => e.daysOffset >= 0);
+      this.past = this.entries.filter(e => e.daysOffset < 0);
     } finally {
       this.loading = false;
     }
@@ -109,9 +110,9 @@ export class BirthdaysCardComponent {
     return `in ${offset} Tagen`;
   }
 
-  offsetColor(offset: number): string {
-    if (offset === 0) return 'success';
-    if (offset > 0) return 'primary';
-    return 'medium';
+  ageText(entry: BirthdayEntry): string {
+    if (entry.daysOffset === 0) return `wird heute ${entry.age}`;
+    if (entry.daysOffset > 0) return `wird ${entry.age}`;
+    return `ist ${entry.age} geworden`;
   }
 }
