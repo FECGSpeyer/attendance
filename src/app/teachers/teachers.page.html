@@ -50,11 +50,11 @@
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Kontakt</ion-label>
-          <ion-input autocapitalize="words" #number></ion-input>
+          <ion-input autocapitalize="sentences" #number></ion-input>
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>
-          <ion-textarea autocapitalize="words" #notes></ion-textarea>
+          <ion-textarea autocapitalize="sentences" #notes></ion-textarea>
         </ion-item>
         <ion-button (click)="addTeacher(input.value, select.value, notes.value, number.value, private.value, modal)" expand="full">Hinzufügen</ion-button>
       </ion-content>

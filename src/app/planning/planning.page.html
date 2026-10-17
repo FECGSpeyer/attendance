@@ -34,7 +34,7 @@
       @if (attendance && notes) {
         <ion-item lines="none">
           <ion-label position="stacked">Anwesenheitsnotizen</ion-label>
-          <ion-textarea autocapitalize="words" autoGrow="true" disabled="true">{{ notes }}</ion-textarea>
+          <ion-textarea autocapitalize="sentences" autoGrow="true" disabled="true">{{ notes }}</ion-textarea>
         </ion-item>
       }
       @if (attendance) {
@@ -51,7 +51,7 @@
           </ion-item>
         }
         <ion-item lines="none">
-          <ion-input autocapitalize="words"
+          <ion-input autocapitalize="sentences"
             label="Ablaufplan Überschrift"
             labelPlacement="stacked"
             [(ngModel)]="planTitle"
@@ -259,7 +259,7 @@
                   }
                 </ion-label>
                 @if (!field.id.includes('noteFld')) {
-                  <ion-input autocapitalize="words" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
+                  <ion-input autocapitalize="sentences" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
                   placeholder="min" type="number" slot="end"></ion-input>
                 }
                 <ion-reorder slot="end"></ion-reorder>
@@ -321,7 +321,7 @@
         @for (group of planGroups; track trackByIndex($index); let last = $last) {
           <ion-item [lines]="last ? 'none' : ''">
             <ion-icon name="people-outline" slot="start" color="medium"></ion-icon>
-            <ion-input autocapitalize="words" [(ngModel)]="planGroups[$index]" placeholder="Gruppenname"></ion-input>
+            <ion-input autocapitalize="sentences" [(ngModel)]="planGroups[$index]" placeholder="Gruppenname"></ion-input>
             @if (planGroups.length > 2) {
               <ion-button slot="end" fill="clear" color="danger" (click)="removePlanGroup($index)">
                 <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
@@ -357,7 +357,7 @@
       <ion-list [inset]="true">
         <ion-item lines="none">
           <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
-          <ion-input autocapitalize="words" label="Zeit in Minuten" value="60" #input type="number"></ion-input>
+          <ion-input autocapitalize="sentences" label="Zeit in Minuten" value="60" #input type="number"></ion-input>
         </ion-item>
       </ion-list>
 

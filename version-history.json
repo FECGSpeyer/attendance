@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.13.11",
+      "date": "17.10.2026",
+      "changes": [
+        "🔤 Bei Texteingaben wird jetzt nur noch der Satzanfang großgeschrieben, nicht mehr jedes Wort. Bei Namen bleibt jedes Wort groß, E-Mail und Passwort starten klein."
+      ]
+    },
+    {
       "version": "4.13.10",
       "date": "17.10.2026",
       "changes": [

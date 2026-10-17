@@ -56,7 +56,7 @@
                   </ion-select>
                 </ion-item>
                 <ion-item>
-                  <ion-input autocapitalize="words" labelPlacement="stacked" label="Name" [(ngModel)]="newField.name"></ion-input>
+                  <ion-input autocapitalize="sentences" labelPlacement="stacked" label="Name" [(ngModel)]="newField.name"></ion-input>
                 </ion-item>
                 <ion-item>
                   <ion-select label="Anzeige in Listen" [(ngModel)]="newField.displayMode">
@@ -89,7 +89,7 @@
                   } @else {
                     @for (option of newField.options; track $index; let index = $index) {
                       <ion-item>
-                        <ion-input autocapitalize="words" [helperText]="index === 0 ? 'Erste Option ist der Standardwert' : undefined"
+                        <ion-input autocapitalize="sentences" [helperText]="index === 0 ? 'Erste Option ist der Standardwert' : undefined"
                           placeholder="Wert eingeben..." [value]="option"
                           (ionInput)="updateNewOption(index, $any($event.target).value ?? '')"></ion-input>
                         <ion-button slot="end" fill="clear" (click)="removeNewOption(index)">
@@ -106,7 +106,7 @@
                       <ion-label>Standardwert</ion-label>
                       <ion-toggle slot="end" [(ngModel)]="newField.defaultValue"></ion-toggle>
                     } @else {
-                      <ion-input autocapitalize="words" labelPlacement="stacked" label="Standardwert (optional)"
+                      <ion-input autocapitalize="sentences" labelPlacement="stacked" label="Standardwert (optional)"
                         [type]="newField.type === fieldTypes.NUMBER ? 'number' : newField.type === fieldTypes.DATE ? 'date' : 'text'"
                         [(ngModel)]="newField.defaultValue"></ion-input>
                     }
@@ -144,7 +144,7 @@
                     <ion-note slot="end">{{ getFieldTypeName(editingField.type) }}</ion-note>
                   </ion-item>
                   <ion-item>
-                    <ion-input autocapitalize="words" labelPlacement="stacked" label="Name" [(ngModel)]="editingField.name"></ion-input>
+                    <ion-input autocapitalize="sentences" labelPlacement="stacked" label="Name" [(ngModel)]="editingField.name"></ion-input>
                   </ion-item>
                   <ion-item>
                     <ion-select label="Anzeige in Listen" [(ngModel)]="editingField.displayMode">
@@ -177,7 +177,7 @@
                     } @else {
                       @for (option of editingField.options; track $index; let index = $index) {
                         <ion-item>
-                          <ion-input autocapitalize="words" [helperText]="index === 0 ? 'Erste Option ist der Standardwert' : undefined"
+                          <ion-input autocapitalize="sentences" [helperText]="index === 0 ? 'Erste Option ist der Standardwert' : undefined"
                             placeholder="Wert eingeben..." [value]="option"
                             (ionInput)="updateEditOption(index, $any($event.target).value ?? '')"></ion-input>
                           <ion-button slot="end" fill="clear" (click)="removeEditOption(index)">
@@ -194,7 +194,7 @@
                         <ion-label>Standardwert</ion-label>
                         <ion-toggle slot="end" [(ngModel)]="editingField.defaultValue"></ion-toggle>
                       } @else {
-                        <ion-input autocapitalize="words" labelPlacement="stacked" label="Standardwert"
+                        <ion-input autocapitalize="sentences" labelPlacement="stacked" label="Standardwert"
                           [type]="editingField.type === fieldTypes.NUMBER ? 'number' : editingField.type === fieldTypes.DATE ? 'date' : 'text'"
                           [(ngModel)]="editingField.defaultValue"></ion-input>
                       }

@@ -511,11 +511,11 @@
       <ion-content class="ion-padding">
         <ion-item>
           <ion-label position="stacked">Austrittsdatum</ion-label>
-          <ion-input autocapitalize="words" type="date" [(ngModel)]="archiveDate"></ion-input>
+          <ion-input autocapitalize="sentences" type="date" [(ngModel)]="archiveDate"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Notiz</ion-label>
-          <ion-textarea autocapitalize="words" [(ngModel)]="archiveNote"></ion-textarea>
+          <ion-textarea autocapitalize="sentences" [(ngModel)]="archiveNote"></ion-textarea>
         </ion-item>
         <ion-fab vertical="bottom" horizontal="end" slot="fixed">
           <ion-fab-button (click)="archivePlayer()">
@@ -542,7 +542,7 @@
         <ion-list>
           <ion-item>
             <ion-label position="stacked">Grund *</ion-label>
-            <ion-textarea autocapitalize="words" [(ngModel)]="pauseReason" placeholder="Bitte gib einen Grund an..." [autoGrow]="true"></ion-textarea>
+            <ion-textarea autocapitalize="sentences" [(ngModel)]="pauseReason" placeholder="Bitte gib einen Grund an..." [autoGrow]="true"></ion-textarea>
           </ion-item>
         </ion-list>
 
