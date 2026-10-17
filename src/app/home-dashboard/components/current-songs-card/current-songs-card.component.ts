@@ -2,6 +2,8 @@ import { Component, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { DbService } from '../../../services/db.service';
 import { History } from '../../../utilities/interfaces';
+import dayjs from 'dayjs';
+import { relativeDays } from '../shared/dashboard-date';
 
 interface SongEntry {
   songId: number;
@@ -10,6 +12,8 @@ interface SongEntry {
   prefix?: string;
   conductorName?: string;
   dateLabel: string;
+  date?: string;
+  typeLabel?: string;
 }
 
 @Component({
@@ -51,6 +55,8 @@ export class CurrentSongsCardComponent {
             prefix: song.prefix,
             conductorName: (h as any).conductorName || undefined,
             dateLabel: group.date,
+            date: (h as any).attendance_id?.date ?? (h as any).date,
+            typeLabel: group.date.split(' | ')[1],
           });
         }
       }
@@ -64,8 +70,15 @@ export class CurrentSongsCardComponent {
     void this.router.navigate(['/tabs/songs-tab', songId]);
   }
 
-  songLabel(entry: SongEntry): string {
-    const num = entry.prefix ? `${entry.prefix} ${entry.number}` : `${entry.number}`;
-    return `${num} · ${entry.name}`;
+  relativeDays = relativeDays;
+
+  numberLabel(entry: SongEntry): string {
+    return entry.prefix ? `${entry.prefix}${entry.number}` : `${entry.number}`;
+  }
+
+  songSubtitle(entry: SongEntry): string {
+    const parts = [entry.conductorName, entry.typeLabel].filter(Boolean);
+    if (parts.length) return parts.join(' · ');
+    return entry.date ? dayjs(entry.date).locale('de').format('dddd, DD.MM.') : entry.dateLabel;
   }
 }

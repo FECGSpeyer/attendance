@@ -275,6 +275,127 @@ ion-select-popover ion-list {
   }
 }
 
+// Kalenderblatt / Icon-Kachel für Dashboard-Zeilen (Farbe über --tile / --tile-bg)
+.date-tile,
+.icon-tile {
+  --tile: #8e8e93;
+  --tile-bg: rgba(142, 142, 147, 0.14);
+  width: 42px;
+  height: 44px;
+  margin-inline-start: 4px;
+  margin-inline-end: 12px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+  background: var(--tile-bg);
+  color: var(--tile);
+
+  ion-icon {
+    font-size: 20px;
+  }
+
+  .tile-main {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  .tile-main.tile-small {
+    font-size: 0.82rem;
+  }
+
+  .tile-sub {
+    margin-top: 3px;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  &.tile-solid {
+    background: linear-gradient(135deg, var(--tile-from, var(--tile)), var(--tile-to, var(--tile)));
+    color: #fff;
+  }
+}
+
+.tile-pink   { --tile: #c2185b; --tile-from: #e91e8c; --tile-to: #c2185b; --tile-bg: rgba(233, 30, 140, 0.1); }
+.tile-blue   { --tile: #1a3fc7; --tile-from: #3a6bff; --tile-to: #1a3fc7; --tile-bg: rgba(58, 107, 255, 0.11); }
+.tile-teal   { --tile: #006064; --tile-from: #00838f; --tile-to: #006064; --tile-bg: rgba(0, 131, 143, 0.11); }
+.tile-green  { --tile: #2e7d32; --tile-from: #43a047; --tile-to: #2e7d32; --tile-bg: rgba(67, 160, 71, 0.13); }
+.tile-red    { --tile: #c62828; --tile-from: #e53935; --tile-to: #c62828; --tile-bg: rgba(229, 57, 53, 0.11); }
+.tile-orange { --tile: #e65100; --tile-from: #f57c00; --tile-to: #e65100; --tile-bg: rgba(245, 124, 0, 0.12); }
+.tile-purple { --tile: #6a1b9a; --tile-from: #8e24aa; --tile-to: #6a1b9a; --tile-bg: rgba(123, 31, 162, 0.11); }
+.tile-muted  { --tile: var(--ion-color-medium); --tile-bg: rgba(142, 142, 147, 0.14); }
+
+@media (prefers-color-scheme: dark) {
+  .tile-pink   { --tile: #f48fb1; --tile-bg: rgba(233, 30, 140, 0.22); }
+  .tile-blue   { --tile: #8fa8ff; --tile-bg: rgba(58, 107, 255, 0.24); }
+  .tile-teal   { --tile: #4dd0e1; --tile-bg: rgba(0, 131, 143, 0.26); }
+  .tile-green  { --tile: #81c784; --tile-bg: rgba(67, 160, 71, 0.24); }
+  .tile-red    { --tile: #ef9a9a; --tile-bg: rgba(229, 57, 53, 0.24); }
+  .tile-orange { --tile: #ffb74d; --tile-bg: rgba(245, 124, 0, 0.24); }
+  .tile-purple { --tile: #ce93d8; --tile-bg: rgba(123, 31, 162, 0.28); }
+  .tile-muted  { --tile-bg: rgba(142, 142, 147, 0.22); }
+}
+
+// Dezente Zusatzinfo rechts in einer Zeile (statt kräftiger Badges)
+.row-meta {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ion-color-medium);
+  white-space: nowrap;
+  margin-inline-start: 8px;
+}
+
+// Getönte Pille für Status (Farbe über tile-*-Klasse)
+.soft-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-inline-start: 8px;
+  background: var(--tile-bg, rgba(142, 142, 147, 0.14));
+  color: var(--tile, var(--ion-color-medium));
+
+  &.chip-solid {
+    background: linear-gradient(135deg, var(--tile-from, var(--tile)), var(--tile-to, var(--tile)));
+    color: #fff;
+  }
+
+  ion-icon {
+    font-size: 13px;
+  }
+}
+
+.dashboard-card .card-list ion-item.dash-row {
+  --min-height: 60px;
+
+  h3 {
+    font-weight: 600;
+  }
+
+  p {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &.row-highlight {
+    --background: var(--tile-bg, rgba(233, 30, 140, 0.06));
+  }
+
+  &.row-dim h3 {
+    color: var(--ion-color-medium-shade);
+  }
+}
+
 .avatar-circle {
   width: 34px;
   height: 34px;

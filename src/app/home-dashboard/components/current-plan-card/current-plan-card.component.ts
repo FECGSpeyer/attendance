@@ -6,6 +6,7 @@ import { DbService } from '../../../services/db.service';
 import { Attendance, Plan } from '../../../utilities/interfaces';
 import { Role } from '../../../utilities/constants';
 import { allPlans, planDate, todayPlanIndex } from '../../../utilities/plan-days';
+import { tileDay, tileMonth } from '../shared/dashboard-date';
 
 @Component({
   selector: 'app-current-plan-card',
@@ -120,6 +121,13 @@ export class CurrentPlanCardComponent implements OnDestroy {
     if (!this.attendance) { return ''; }
     const attType = this.db.attendanceTypes().find(t => t.id === this.attendance!.type_id);
     return attType?.name ?? this.attendance.typeInfo ?? this.attendance.type ?? '';
+  }
+
+  tileDay = tileDay;
+  tileMonth = tileMonth;
+
+  get planDayValue(): dayjs.Dayjs {
+    return this.planDay ?? dayjs(this.attendance?.date);
   }
 
   get dateLabel(): string {

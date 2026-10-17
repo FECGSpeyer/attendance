@@ -5,6 +5,7 @@ import { DbService } from '../../../services/db.service';
 import { Player } from '../../../utilities/interfaces';
 import { PersonPage } from '../../../people/person/person.page';
 import { Role } from '../../../utilities/constants';
+import { tileDay, tileMonth, relativeDays } from '../shared/dashboard-date';
 
 interface MemberChange {
   player: Player;
@@ -71,4 +72,8 @@ export class MemberChangesCardComponent {
     });
     await modal.present();
   }
+
+  tileDay = tileDay;
+  tileMonth = tileMonth;
+  relativeDays = relativeDays;
 }

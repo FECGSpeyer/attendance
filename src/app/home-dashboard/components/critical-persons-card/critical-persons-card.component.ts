@@ -7,6 +7,7 @@ import { PersonPage } from '../../../people/person/person.page';
 import { PlayerHistoryType, Role } from '../../../utilities/constants';
 import { Utils } from '../../../utilities/Utils';
 
+
 @Component({
   selector: 'app-critical-persons-card',
   templateUrl: './critical-persons-card.component.html',
@@ -46,7 +47,7 @@ export class CriticalPersonsCardComponent {
 
   getCriticalSince(player: Player): string | null {
     const entry = player.history?.slice().reverse().find(h => h.type === PlayerHistoryType.CRITICAL_PERSON);
-    return entry ? dayjs(entry.date).format('DD.MM.YYYY') : null;
+    return entry ? dayjs(entry.date).format('DD.MM.YY') : null;
   }
 
   async openPerson(player: Player) {
@@ -58,5 +59,9 @@ export class CriticalPersonsCardComponent {
       backdropDismiss: false,
     });
     await modal.present();
+  }
+
+  initials(player: Player): string {
+    return `${player.firstName?.[0] ?? ''}${player.lastName?.[0] ?? ''}`.toUpperCase();
   }
 }

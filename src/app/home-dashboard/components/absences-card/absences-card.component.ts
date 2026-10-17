@@ -5,6 +5,7 @@ import { DbService } from '../../../services/db.service';
 import { Player, PlayerAbsence, PlayerHistoryEntry } from '../../../utilities/interfaces';
 import { PlayerHistoryType, Role } from '../../../utilities/constants';
 import { PersonPage } from '../../../people/person/person.page';
+import { tileDay, tileMonth, shortDate } from '../shared/dashboard-date';
 
 interface AbsenceEntry {
   player: Player;
@@ -104,10 +105,19 @@ export class AbsencesCardComponent {
     await modal.present();
   }
 
-  formatDateRange(from: string, until: string): string {
-    const f = dayjs(from).format('DD.MM.YY');
-    if (!until) return `ab ${f}`;
-    const u = dayjs(until).format('DD.MM.YY');
-    return `${f} – ${u}`;
+  tileDay = tileDay;
+  tileMonth = tileMonth;
+
+  subtitle(e: AbsenceEntry): string {
+    const reason = e.reason && e.reason !== 'Pausiert' ? e.reason : '';
+    let range: string;
+    if (e.type === 'pause') {
+      range = e.untilDate ? `bis ${shortDate(e.untilDate)}` : 'pausiert';
+    } else {
+      range = e.untilDate && e.untilDate !== e.fromDate
+        ? `${shortDate(e.fromDate)} – ${shortDate(e.untilDate)}`
+        : shortDate(e.fromDate);
+    }
+    return reason ? `${range} · ${reason}` : range;
   }
 }

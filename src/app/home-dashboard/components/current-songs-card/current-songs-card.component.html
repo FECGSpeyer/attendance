@@ -19,17 +19,17 @@
     } @else {
       <ion-list lines="full" class="card-list">
         @for (entry of entries; track entry.songId) {
-          <ion-item button detail="true" (click)="openSong(entry.songId)">
-            <div class="avatar-circle avatar-songs" slot="start">
-              <ion-icon name="musical-note-outline"></ion-icon>
+          <ion-item button [detail]="false" class="dash-row" (click)="openSong(entry.songId)">
+            <div class="icon-tile tile-purple" slot="start">
+              <span class="tile-main" [class.tile-small]="numberLabel(entry).length > 3">{{ numberLabel(entry) }}</span>
             </div>
             <ion-label>
-              <h3>{{ songLabel(entry) }}</h3>
-              @if (entry.conductorName) {
-                <p>{{ entry.conductorName }}</p>
-              }
-              <p>{{ entry.dateLabel }}</p>
+              <h3>{{ entry.name }}</h3>
+              <p>{{ songSubtitle(entry) }}</p>
             </ion-label>
+            @if (entry.date) {
+              <span slot="end" class="row-meta">{{ relativeDays(entry.date) }}</span>
+            }
           </ion-item>
         }
       </ion-list>

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.13.15",
+      "date": "17.10.2026",
+      "changes": [
+        "🎨 Alle Dashboard-Karten im neuen Look: Kalenderblätter statt runder Icons, dezente Status-Pillen statt kräftiger Badges. Termine zeigen Anwesend, Abgemeldet und Offen jetzt als übersichtliche Kacheln mit Fortschrittsbalken; Werke zeigen ihre Nummer, Problemfälle die Initialen."
+      ]
+    },
+    {
       "version": "4.13.14",
       "date": "17.10.2026",
       "changes": [
