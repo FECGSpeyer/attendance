@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.13.7",
+      "date": "17.10.2026",
+      "changes": [
+        "🔧 Die Priorität einer Aufgabe lässt sich jetzt auch am Computer wieder einstellen. Statt der Pfeil-Symbole wählst du sie jetzt als Text aus: Niedrig, Mittel oder Hoch."
+      ]
+    },
+    {
       "version": "4.13.6",
       "date": "17.10.2026",
       "changes": [

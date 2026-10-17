@@ -66,10 +66,10 @@ export class TaskFormComponent implements OnInit {
   isPersonPickerOpen = false;
   saving = false;
 
-  readonly priorities: { value: AgendaItemPriority; label: string; icon: string }[] = [
-    { value: 'low', label: TASK_PRIORITY_LABELS.low, icon: 'arrow-down-outline' },
-    { value: 'medium', label: TASK_PRIORITY_LABELS.medium, icon: 'remove-outline' },
-    { value: 'high', label: TASK_PRIORITY_LABELS.high, icon: 'arrow-up-outline' },
+  readonly priorities: { value: AgendaItemPriority; label: string }[] = [
+    { value: 'low', label: TASK_PRIORITY_LABELS.low },
+    { value: 'medium', label: TASK_PRIORITY_LABELS.medium },
+    { value: 'high', label: TASK_PRIORITY_LABELS.high },
   ];
   readonly formatLongDate = formatLongDate;
 
