@@ -27,9 +27,6 @@
               <h3>{{ person.firstName }} {{ person.lastName }}</h3>
               <p>{{ getReasonText(person) || 'Problemfall' }}</p>
             </ion-label>
-            @if (getCriticalSince(person)) {
-              <span slot="end" class="row-meta">seit {{ getCriticalSince(person) }}</span>
-            }
           </ion-item>
         }
       </ion-list>

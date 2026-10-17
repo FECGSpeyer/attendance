@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.13.16",
+      "date": "17.10.2026",
+      "changes": [
+        "✏️ Dashboard-Karten: Die Infozeile unter dem Namen ist jetzt kleiner als der Name, und bei den Problemfällen entfällt das ungenaue \"seit\"-Datum."
+      ]
+    },
+    {
       "version": "4.13.15",
       "date": "17.10.2026",
       "changes": [

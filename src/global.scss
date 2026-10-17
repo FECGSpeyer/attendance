@@ -377,11 +377,16 @@ ion-select-popover ion-list {
 .dashboard-card .card-list ion-item.dash-row {
   --min-height: 60px;
 
-  h3 {
+  ion-label h3 {
+    font-size: 1rem;
     font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 2px;
   }
 
-  p {
+  ion-label p {
+    font-size: 0.82rem;
+    line-height: 1.3;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
