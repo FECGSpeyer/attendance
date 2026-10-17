@@ -18,6 +18,20 @@ Welche Stufen im Zyklus vorkommen, lässt sich pro Termin-Typ in den Einstellung
     body: `Beim Setzen des Status "Entschuldigt" oder "Verspätet" kannst du einen [[Ausfallgrund]] bzw. [[Verspätungsgrund]] aus einer vordefinierten Liste auswählen (z. B. "Krankheitsbedingt", "Urlaubsbedingt"). Diese Liste kann pro Instanz in den Einstellungen angepasst werden.`,
   },
   {
+    id: 'att-change-date',
+    title: 'Termin auf einen anderen Tag verschieben',
+    categoryId: 'attendance',
+    keywords: ['datum ändern', 'verschieben', 'verlegen', 'anderer tag', 'termin verschieben', 'datum', 'status zurücksetzen'],
+    body: `Öffne den Termin, klappe **Allgemein** auf und tippe auf **Datum**. Wähle den neuen Tag und bestätige. Für einen Termin mit Tagesordnung geht das auch in der Teamorganisation im Reiter **Themen** über **Ändern → Datum dieses Termins ändern**.
+
+Haben schon Personen einen anderen Status als den Standardstatus des Typs, fragt Attendix nach: **Zurücksetzen** setzt alle wieder auf den Standardstatus, **Behalten** lässt die bisherigen Rückmeldungen stehen.
+
+Beim Verschieben passiert außerdem:
+- Anmeldefrist und Fristen der [[Checkliste]] wandern um dieselbe Zahl an Tagen mit.
+- Die Werke des Termins bekommen in der [[Historie]] das neue Datum.
+- Schichten werden für den neuen Tag neu geprüft, und eingetragene Abwesenheiten am neuen Tag entschuldigen die betroffenen Personen.`,
+  },
+  {
     id: 'att-checklist',
     title: 'Checkliste für einen Termin',
     categoryId: 'attendance',

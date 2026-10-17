@@ -10,6 +10,7 @@ import { Utils } from 'src/app/utilities/Utils';
 import { AgendaPickerComponent } from 'src/app/agenda-items/agenda-picker/agenda-picker.component';
 import { addTopicsToAttendance, upcomingProtocolAttendances } from 'src/app/agenda-items/agenda-plan.helpers';
 import { createAttendanceForType, personsForAttendanceType } from 'src/app/utilities/attendance-create';
+import { promptAttendanceDateChange } from 'src/app/utilities/attendance-date-dialog';
 import { personName, postponedAgendaItemIds, sortTopicsForPlanning, topNumbers } from '../team-org.utils';
 import {
   initials,
@@ -167,10 +168,22 @@ export class TeamTopicsTabComponent implements OnInit {
       text: this.attendanceTitle(att) + (att.id === this.nextAttendance?.id ? ' ✓' : ''),
       handler: () => { this.chooseAttendance(att); },
     }));
+    if (this.nextAttendance) {
+      buttons.push({ text: 'Datum dieses Termins ändern', icon: 'calendar-outline', handler: () => { void this.changeDate(); } });
+    }
     buttons.push({ text: 'Neuen Termin anlegen', icon: 'add-circle-outline', handler: () => { void this.createAttendance(); } });
     buttons.push({ text: 'Abbrechen', role: 'cancel' });
     const sheet = await this.actionSheetController.create({ header: 'Für welchen Termin planen?', buttons });
     await sheet.present();
+  }
+
+  /** Moves the shown Termin to another day; it stays selected. */
+  async changeDate() {
+    if (!this.nextAttendance) return;
+    const updated = await promptAttendanceDateChange(this.alertController, this.db, this.nextAttendance);
+    if (!updated) return;
+    this.chosenAttendanceId = updated.id;
+    await this.loadLeader();
   }
 
   private chooseAttendance(att: Attendance) {

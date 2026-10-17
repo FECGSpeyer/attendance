@@ -226,6 +226,10 @@
               <ion-label>Typ</ion-label>
               <ion-badge slot="end">{{ getTypeName(attendance.type_id) }}</ion-badge>
             </ion-item>
+            <ion-item lines="none" button detail="false" (click)="changeDate()">
+              <ion-label>Datum</ion-label>
+              <ion-note slot="end" color="primary">{{ attendance.date | date:'dd.MM.yyyy' }}</ion-note>
+            </ion-item>
             <ion-item lines="none">
               <ion-label position="stacked">Info-Text</ion-label>
               <ion-input autocapitalize="words" (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.typeInfo"></ion-input>

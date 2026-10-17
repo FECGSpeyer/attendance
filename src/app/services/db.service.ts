@@ -2758,6 +2758,19 @@ export class DbService {
     return this.historySvc.getHistory(tenantId ?? this.tenant().id);
   }
 
+  /** Song history entries carry their own date; keep it in sync when a Termin moves. */
+  async updateHistoryDatesForAttendance(attendance_id: number, date: string): Promise<void> {
+    this.checkDemoRestriction();
+    const { error } = await supabase
+      .from('history')
+      .update({ date })
+      .eq('tenantId', this.tenant().id)
+      .eq('attendance_id', attendance_id);
+    if (error) {
+      throw new Error('Fehler beim Aktualisieren des Song-Verlaufs');
+    }
+  }
+
   async getHistoryByAttendanceId(attendance_id: number): Promise<History[]> {
     return this.historySvc.getHistoryByAttendanceId(attendance_id, this.tenant().id);
   }

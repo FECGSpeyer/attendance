@@ -43,7 +43,7 @@ Sobald ein Typ eingeschaltet ist, erscheint **Mehr → Planung → Teamorganisat
 
 - Öffne den Termin und tippe im Ablaufplan auf **„Themen aufnehmen“**. Wähle die Themen aus und passe bei Bedarf die Dauer an. Vertagte Themen stehen oben.
 - Öffne ein Thema und tippe auf **„Einplanen“**, um es in einen der nächsten Termine zu übernehmen.
-- Im Reiter **Themen** der Teamorganisation tippst du beim nächsten Termin auf **„Themen aufnehmen“**. Mit **„Ändern“** wählst du stattdessen einen späteren Termin. Steht noch keiner an, legst du dort mit **„Termin anlegen“** (oder „Ändern → Neuen Termin anlegen“) ad hoc einen an: Typ wählen (bei mehreren Typen mit Protokoll), Datum wählen, fertig. Der Termin wird wie gewohnt für alle Personen des Typs angelegt.
+- Im Reiter **Themen** der Teamorganisation tippst du beim nächsten Termin auf **„Themen aufnehmen“**. Mit **„Ändern“** wählst du stattdessen einen späteren Termin oder verschiebst den Termin auf einen anderen Tag. Steht noch keiner an, legst du dort mit **„Termin anlegen“** (oder „Ändern → Neuen Termin anlegen“) ad hoc einen an: Typ wählen (bei mehreren Typen mit Protokoll), Datum wählen, fertig. Der Termin wird wie gewohnt für alle Personen des Typs angelegt.
 - Während der Sitzung fügst du im Protokoll mit **„+ Punkt“** spontan ein neues Thema hinzu.
 
 Jedes Thema wird ein eigener [[TOP]] an der Markierung „Tagesordnung“ (ohne Markierung am Ende des Plans). Die Uhrzeiten der folgenden Punkte verschieben sich um seine Dauer.

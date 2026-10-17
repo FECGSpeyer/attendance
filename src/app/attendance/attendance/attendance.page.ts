@@ -17,6 +17,7 @@ import { Attendance, ExtraField, FieldSelection, Person, PersonAttendance, Song,
 import { AgendaPickerComponent } from 'src/app/agenda-items/agenda-picker/agenda-picker.component';
 import { fieldDisplayName, isEditedAfterPublish, topNumbers } from 'src/app/team-organization/team-org.utils';
 import { Utils } from 'src/app/utilities/Utils';
+import { promptAttendanceDateChange } from 'src/app/utilities/attendance-date-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
@@ -1200,6 +1201,20 @@ export class AttendancePage implements OnInit, OnDestroy {
     });
 
     await modal.present();
+  }
+
+  /** "Datum": moves the Termin to another day (asks whether to reset statuses). */
+  async changeDate() {
+    const updated = await promptAttendanceDateChange(this.alertController, this.db, this.attendance);
+    if (updated) {
+      this.attendance = updated;
+      this.initializeAttObjects();
+      if (this.attendance.deadline) {
+        const startHour = this.type?.start_time ? Number(this.type.start_time.substring(0, 2)) : 19;
+        const startMin = this.type?.start_time ? Number(this.type.start_time.substring(3, 5)) : 30;
+        this.maxDeadlineDate = dayjs(this.attendance.date).hour(startHour).minute(startMin).toISOString();
+      }
+    }
   }
 
   async onInfoChanged() {

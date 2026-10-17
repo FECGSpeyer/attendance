@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.13.9",
+      "date": "17.10.2026",
+      "changes": [
+        "📆 Termine lassen sich auf einen anderen Tag verschieben: im Termin unter Allgemein → Datum oder in der Teamorganisation über „Ändern“. Haben schon Personen einen Status, fragt die App, ob alle auf den Standardstatus zurückgesetzt werden sollen. Fristen der Checkliste und die Anmeldefrist wandern mit."
+      ]
+    },
+    {
       "version": "4.13.8",
       "date": "17.10.2026",
       "changes": [

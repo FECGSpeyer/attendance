@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { AttendanceStatus } from './constants';
-import { AttendanceType, ChecklistItem, PersonAttendance, Player, PlayerAbsence } from './interfaces';
+import { Attendance, AttendanceType, ChecklistItem, PersonAttendance, Player, PlayerAbsence } from './interfaces';
 import { Utils } from './Utils';
 import type { DbService } from '../services/db.service';
 
@@ -117,4 +117,69 @@ export async function createAttendanceForType(
 
   await db.addPersonAttendances(personAttendances);
   return attendance_id;
+}
+
+/** True when at least one person of the Termin has a status other than the type's default. */
+export function hasNonDefaultStatus(att: Pick<Attendance, 'persons'>, type: Pick<AttendanceType, 'default_status'> | null | undefined): boolean {
+  if (!type) return false;
+  return (att.persons ?? []).some(pa => pa.status !== type.default_status);
+}
+
+/** Moves an ISO date (or keeps null) by whole days. */
+function shiftDays(value: string | null | undefined, days: number): string | null | undefined {
+  if (!value || !days) return value;
+  const d = dayjs(value);
+  return d.isValid() ? d.add(days, 'day').toISOString() : value;
+}
+
+/**
+ * Moves a Termin to another day: deadline and checklist due dates move along,
+ * song history gets the new date, shifts are re-evaluated and absences on the
+ * new day excuse persons still on the default status. With `resetStatuses`
+ * everybody is set back to the default status first.
+ */
+export async function changeAttendanceDate(
+  db: DbService,
+  att: Attendance,
+  newDate: string,
+  resetStatuses: boolean,
+): Promise<Attendance> {
+  const type = db.attendanceTypes().find(t => t.id === att.type_id);
+  const normalizedDate = dayjs(newDate).hour(12).minute(0).second(0).millisecond(0).toISOString();
+  const days = dayjs(normalizedDate).startOf('day').diff(dayjs(att.date).startOf('day'), 'day');
+
+  const checklist = att.checklist?.map(item => ({ ...item, dueDate: shiftDays(item.dueDate, days) ?? null }));
+  await db.updateAttendance({
+    date: normalizedDate,
+    deadline: shiftDays(att.deadline, days) ?? undefined,
+    ...(checklist ? { checklist } : {}),
+  }, att.id);
+  await db.updateHistoryDatesForAttendance(att.id, normalizedDate);
+
+  if (type) {
+    const fresh = await db.getAttendanceById(att.id);
+    let absences: PlayerAbsence[] = [];
+    try {
+      absences = await db.getPlayerAbsencesForTenant();
+    } catch {
+      // non-fatal — proceed without absence check
+    }
+    const day = dayjs(normalizedDate);
+    for (const pa of fresh.persons ?? []) {
+      const absence = absences.find(a =>
+        a.person_id === pa.person_id &&
+        !day.isBefore(dayjs(a.from_date), 'day') &&
+        !day.isAfter(dayjs(a.until_date), 'day')
+      );
+      const isDefault = resetStatuses || pa.status === type.default_status;
+      if (absence && isDefault) {
+        await db.updatePersonAttendance(pa.id, { status: AttendanceStatus.Excused, notes: absence.reason });
+      } else if (resetStatuses && (pa.status !== type.default_status || pa.notes)) {
+        await db.updatePersonAttendance(pa.id, { status: type.default_status, notes: '' });
+      }
+    }
+    await db.updateShiftAssignmentsForAttendance(att.id);
+  }
+
+  return db.getAttendanceById(att.id);
 }
