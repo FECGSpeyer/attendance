@@ -218,6 +218,7 @@
       @if (fields.length === 0) {
         <ion-item><ion-label>Es wurden noch keine organisationsweiten Zusatzfelder hinzugefügt.</ion-label></ion-item>
       }
+      <ion-reorder-group [disabled]="!isSuperAdmin || fields.length < 2" (ionItemReorder)="handleReorder($any($event))">
       @for (field of fields; track field.id; let index = $index) {
         <ion-item>
           <ion-label>
@@ -234,8 +235,12 @@
           <ion-button fill="clear" color="danger" size="small" (click)="removeField(index)" [disabled]="!isSuperAdmin">
             <ion-icon name="trash-outline"></ion-icon>
           </ion-button>
+          @if (isSuperAdmin) {
+            <ion-reorder slot="end"></ion-reorder>
+          }
         </ion-item>
       }
+      </ion-reorder-group>
     </ion-item-group>
   </ion-list>
 </ion-content>

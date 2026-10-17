@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.13.12",
+      "date": "17.10.2026",
+      "changes": [
+        "↕️ Die Reihenfolge der Zusatzfelder lässt sich jetzt per Drag-and-drop ändern. Chips und Texte in Listen und Detailansichten erscheinen in genau dieser Reihenfolge."
+      ]
+    },
+    {
       "version": "4.13.11",
       "date": "17.10.2026",
       "changes": [

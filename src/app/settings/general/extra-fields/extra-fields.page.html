@@ -213,6 +213,7 @@
           <ion-label>Es wurden noch keine zusätzlichen Felder hinzugefügt.</ion-label>
         </ion-item>
       }
+      <ion-reorder-group [disabled]="extraFields.length < 2" (ionItemReorder)="handleReorder($any($event), 'person')">
       @for (field of extraFields; track field; let i = $index) {
         <ion-item>
           <ion-label>
@@ -231,8 +232,10 @@
           <ion-button fill="clear" color="danger" size="small" (click)="removeExtraField(i, 'person')">
             <ion-icon name="trash-outline"></ion-icon>
           </ion-button>
+          <ion-reorder slot="end"></ion-reorder>
         </ion-item>
       }
+      </ion-reorder-group>
     </ion-item-group>
   </ion-list>
 
@@ -400,6 +403,7 @@
           <ion-label>Es wurden noch keine zusätzlichen Felder hinzugefügt.</ion-label>
         </ion-item>
       }
+      <ion-reorder-group [disabled]="songExtraFields.length < 2" (ionItemReorder)="handleReorder($any($event), 'song')">
       @for (field of songExtraFields; track field; let i = $index) {
         <ion-item>
           <ion-label>
@@ -413,8 +417,10 @@
           <ion-button fill="clear" color="danger" size="small" (click)="removeExtraField(i, 'song')">
             <ion-icon name="trash-outline"></ion-icon>
           </ion-button>
+          <ion-reorder slot="end"></ion-reorder>
         </ion-item>
       }
+      </ion-reorder-group>
     </ion-item-group>
   </ion-list>
 
