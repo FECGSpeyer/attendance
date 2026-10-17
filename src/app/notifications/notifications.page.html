@@ -48,6 +48,15 @@
           label="Push-Benachrichtigungen">Push-Benachrichtigungen</ion-toggle>
       </ion-item>
       }
+      @if (hasLiveActivity) {
+      <ion-item lines="none">
+        <ion-toggle [checked]="notificationConfig.live_activity !== false" (ionChange)="toggleLiveActivity($event.detail.checked)"
+          label="Laufender Ablaufplan"
+          helperText="Zeigt den aktuellen Punkt eines laufenden Ablaufplans auf dem Sperrbildschirm{{ isIos ? ' und in der Dynamic Island' : '' }}.">
+          Laufender Ablaufplan
+        </ion-toggle>
+      </ion-item>
+      }
       @if (notificationConfig.push_enabled && notificationConfig.telegram_chat_id) {
       <ion-item lines="none">
         <ion-toggle

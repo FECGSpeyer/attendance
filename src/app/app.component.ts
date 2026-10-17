@@ -14,6 +14,7 @@ import { TrackingEvent, TrackingService } from './services/tracking/tracking.ser
 import { LiveUpdateService } from './services/live-update/live-update.service';
 import { TeamsService } from './services/teams/teams.service';
 import { OfflineQueueService } from './services/offline-queue/offline-queue.service';
+import { LiveActivityService } from './services/live-activity/live-activity.service';
 
 @Component({
     selector: 'app-root',
@@ -41,6 +42,8 @@ export class AppComponent {
     private liveUpdate: LiveUpdateService,
     private teams: TeamsService,
     private offlineQueue: OfflineQueueService,
+    // Created here so it starts with the app; it watches the tenant itself.
+    private liveActivity: LiveActivityService,
   ) {
     this.initializeApp();
     this.titleService.setTitle('Attendix');
@@ -219,6 +222,10 @@ export class AppComponent {
     App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
       this.zone.run(async () => {
         const url = new URL(event.url);
+
+        if (await this.liveActivity.openFromUrl(url)) {
+          return;
+        }
 
         const handled = await this.handleAuthUrl(url);
         if (handled) {

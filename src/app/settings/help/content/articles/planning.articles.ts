@@ -28,6 +28,23 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
 **Teilen und PDF:** Beim Teilen wählst du oben, ob nur der gerade gezeigte Plan oder alle Pläne exportiert werden. "Alle" ergibt eine PDF mit einer Seite pro Plan.`,
   },
   {
+    id: 'plan-live-activity',
+    title: 'Laufender Ablaufplan auf dem Sperrbildschirm',
+    categoryId: 'planning',
+    keywords: ['live activity', 'dynamic island', 'sperrbildschirm', 'lockscreen', 'live update', 'countdown', 'restzeit', 'aktueller punkt', 'benachrichtigung', 'iphone', 'android'],
+    body: `Läuft gerade ein [[Ablaufplan]], zeigt die Attendix-App den aktuellen Programmpunkt mit Restzeit und die nächsten Punkte auf deinem Sperrbildschirm. Auf dem iPhone erscheint er außerdem in der Dynamic Island, auf Android als laufende Benachrichtigung mit Countdown.
+
+**Wann:** Die Anzeige startet automatisch 15 Minuten vor dem ersten Punkt, springt von selbst zum nächsten Punkt und verschwindet 15 Minuten nach dem Ende. Wird der Plan während des Termins geändert, ist die Anzeige spätestens nach einer Minute aktuell. Überzieht ein Punkt, läuft die Zeit in Orange weiter, bis der nächste Punkt beginnt.
+
+**Wer:** Alle, die den Ablaufplan sehen dürfen: Admins und Verantwortliche immer, alle anderen, wenn der Plan für Mitglieder freigegeben ist. Wer sich vom Termin abgemeldet hat, bekommt keine Anzeige.
+
+**Mehrere Pläne:** Bei Terminen mit mehreren Plänen (z. B. pro Tag einer Freizeit) erscheint jeweils der Plan, der gerade läuft.
+
+**Antippen** öffnet den Ablaufplan in der App im Live-Modus.
+
+**Abschalten:** Unter Einstellungen → Benachrichtigungen → **Laufender Ablaufplan**. Auf dem iPhone braucht der automatische Start iOS 17.2 oder neuer; bei älteren Versionen erscheint die Anzeige, sobald du die App während des Termins öffnest. Die Funktion gibt es nur in der App aus dem App Store bzw. Play Store, nicht im Browser.`,
+  },
+  {
     id: 'plan-conductor',
     title: 'Leitung/Dirigent zuordnen',
     categoryId: 'planning',

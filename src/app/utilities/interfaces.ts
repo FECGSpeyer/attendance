@@ -153,6 +153,8 @@ export interface NotificationConfig {
   push_and_telegram?: boolean;
   tasks?: boolean;
   messages?: boolean;
+  /** Laufender Ablaufplan als Live Activity / Live-Benachrichtigung; null counts as on. */
+  live_activity?: boolean | null;
 }
 
 export interface UserNotification {
