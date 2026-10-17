@@ -1,0 +1,55 @@
+<div class="viewer" [class.chrome-hidden]="!chromeVisible()">
+  <div class="backdrop" [style.opacity]="backdropOpacity()"></div>
+
+  <div class="stage" #stage
+    (pointerdown)="onPointerDown($event)"
+    (pointermove)="onPointerMove($event)"
+    (pointerup)="onPointerUp($event)"
+    (pointercancel)="onPointerUp($event)"
+    (wheel)="onWheel($event)">
+    <img #image [src]="src" [alt]="title || 'Bild'" draggable="false"
+      [class.hidden]="loading() || failed()"
+      (load)="onImageLoad()" (error)="onImageError()" />
+
+    @if (loading()) {
+    <ion-spinner name="crescent" class="spinner"></ion-spinner>
+    }
+    @if (failed()) {
+    <div class="error">
+      <ion-icon name="image-outline"></ion-icon>
+      <span>Bild konnte nicht geladen werden</span>
+    </div>
+    }
+  </div>
+
+  <header class="top-bar">
+    <span class="title">{{ title }}</span>
+    <button type="button" class="glass-btn round" (click)="close()" aria-label="Schließen">
+      <ion-icon name="close"></ion-icon>
+    </button>
+  </header>
+
+  @if (showHint()) {
+  <div class="hint">
+    <ion-icon name="hand-left-outline"></ion-icon>
+    Doppeltippen oder mit zwei Fingern zoomen
+  </div>
+  }
+
+  <footer class="bottom-bar">
+    <div class="zoom-pill glass">
+      <button type="button" (click)="zoomOut()" [disabled]="zoomPercent() <= 100" aria-label="Verkleinern">
+        <ion-icon name="remove"></ion-icon>
+      </button>
+      <button type="button" class="zoom-value" (click)="resetZoom()" aria-label="Zoom zurücksetzen">
+        {{ zoomPercent() }}&nbsp;%
+      </button>
+      <button type="button" (click)="zoomIn()" [disabled]="zoomPercent() >= 500" aria-label="Vergrößern">
+        <ion-icon name="add"></ion-icon>
+      </button>
+    </div>
+    <div class="actions">
+      <ng-content select="[viewerActions]"></ng-content>
+    </div>
+  </footer>
+</div>

@@ -1,3 +1,4 @@
+import { ImageViewerComponent } from 'src/app/shared/image-viewer/image-viewer.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,7 +14,8 @@ import { PersonPage } from './person.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    PersonPageRoutingModule
+    PersonPageRoutingModule,
+    ImageViewerComponent
   ],
   declarations: [PersonPage]
 })

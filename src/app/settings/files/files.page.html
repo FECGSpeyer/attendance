@@ -206,27 +206,10 @@
   }
   }
 
-  <ion-modal [isOpen]="isImagePreviewOpen" (ionModalDidDismiss)="closeImagePreview()">
+  <ion-modal class="image-viewer-modal" [isOpen]="isImagePreviewOpen" (ionModalDidDismiss)="closeImagePreview()">
     <ng-template>
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>{{ selectedImageName || 'Bildvorschau' }}</ion-title>
-          <ion-buttons slot="end">
-            <ion-button (click)="closeImagePreview()">
-              <ion-icon name="close-outline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content color="dark" class="image-preview-content">
-        @if (selectedImageUrl) {
-        <div class="preview-image-container" (dblclick)="onPreviewDblClick()" (touchstart)="onPreviewTouchStart($event)"
-          (touchmove)="onPreviewTouchMove($event)" (touchend)="onPreviewTouchEnd($event)">
-          <img [src]="selectedImageUrl" [alt]="selectedImageName" class="preview-image"
-            [style.transform]="'scale(' + imageZoomScale + ')'" />
-        </div>
-        }
-      </ion-content>
+      <app-image-viewer [src]="selectedImageUrl" [title]="selectedImageName || 'Bildvorschau'"
+        (closed)="closeImagePreview()"></app-image-viewer>
     </ng-template>
   </ion-modal>
 </ion-content>

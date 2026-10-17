@@ -314,3 +314,14 @@ ion-tabs ion-content.ios.tabbar-safe {
 ion-tabs ion-footer.ios.tabbar-safe {
   padding-bottom: calc(max(10px, env(safe-area-inset-bottom, 0px) - 12px) + 68px);
 }
+
+// Fullscreen image viewer (app-image-viewer): edge-to-edge, transparent so
+// the swipe-down-to-close gesture can fade the page back in.
+ion-modal.image-viewer-modal {
+  --width: 100%;
+  --height: 100%;
+  --border-radius: 0;
+  --background: transparent;
+  --box-shadow: none;
+  --backdrop-opacity: 0;
+}

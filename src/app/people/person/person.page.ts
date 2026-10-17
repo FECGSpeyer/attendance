@@ -24,7 +24,6 @@ export class PersonPage implements OnInit, AfterViewInit {
   @ViewChild('select') select: IonSelect;
   @ViewChild('content') content: IonContent;
   @ViewChild('chooser') chooser: ElementRef;
-  @ViewChild('passPreviewImage') passPreviewImage: ElementRef<HTMLImageElement>;
 
   public newPlayer: Player = {
     firstName: '',
@@ -107,17 +106,6 @@ export class PersonPage implements OnInit, AfterViewInit {
   public shift: ShiftPlan = null;
   public isImageViewerOpen = false;
   public editingName = false;
-  public passImageZoomScale = 1;
-  public passImageOffsetX = 0;
-  public passImageOffsetY = 0;
-  private passPinchStartDistance = 0;
-  private passPinchStartScale = 1;
-  private lastPassImageTapAt = 0;
-  private passPanStartX = 0;
-  private passPanStartY = 0;
-  private passPanStartOffsetX = 0;
-  private passPanStartOffsetY = 0;
-  private isPanning = false;
 
   /** Live cross-tenant suggestions while the user types a name. */
   public nameSuggestions: WritableSignal<RankedMatch<Player>[]> = signal([]);
@@ -1077,137 +1065,14 @@ export class PersonPage implements OnInit, AfterViewInit {
     await alert.present();
   }
 
-  private getTouchDistance(event: TouchEvent): number {
-    if (event.touches.length < 2) {
-      return 0;
-    }
-
-    const dx = event.touches[0].clientX - event.touches[1].clientX;
-    const dy = event.touches[0].clientY - event.touches[1].clientY;
-    return Math.hypot(dx, dy);
-  }
-
-  private clampScale(value: number): number {
-    return Math.min(5, Math.max(1, value));
-  }
-
-  /** Keep the panned image within sensible bounds for the current zoom. */
-  private clampOffset(): void {
-    if (this.passImageZoomScale <= 1) {
-      this.passImageOffsetX = 0;
-      this.passImageOffsetY = 0;
-      return;
-    }
-
-    // Bound the pan so an edge of the (scaled) image can't be dragged past the
-    // centre of the viewport. Base the limit on the rendered image size when
-    // available, otherwise fall back to the window dimensions.
-    const el = this.passPreviewImage?.nativeElement;
-    const baseW = el?.clientWidth || window.innerWidth;
-    const baseH = el?.clientHeight || window.innerHeight;
-    const limitX = (baseW * this.passImageZoomScale - baseW) / 2;
-    const limitY = (baseH * this.passImageZoomScale - baseH) / 2;
-
-    this.passImageOffsetX = Math.min(limitX, Math.max(-limitX, this.passImageOffsetX));
-    this.passImageOffsetY = Math.min(limitY, Math.max(-limitY, this.passImageOffsetY));
-  }
-
-  resetPassImageZoom(): void {
-    this.passImageZoomScale = 1;
-    this.passImageOffsetX = 0;
-    this.passImageOffsetY = 0;
-    this.passPinchStartDistance = 0;
-    this.passPinchStartScale = 1;
-    this.lastPassImageTapAt = 0;
-    this.isPanning = false;
-  }
-
   openPassImageViewer(): void {
-    this.resetPassImageZoom();
     this.isImageViewerOpen = true;
   }
 
   closePassImageViewer(): void {
     this.isImageViewerOpen = false;
-    this.resetPassImageZoom();
   }
 
-  onPassImageDblClick(): void {
-    this.passImageZoomScale = this.passImageZoomScale > 1 ? 1 : 2.5;
-    this.passImageOffsetX = 0;
-    this.passImageOffsetY = 0;
-  }
-
-  onPassImageWheel(event: WheelEvent): void {
-    event.preventDefault();
-    const delta = -event.deltaY * 0.002;
-    this.passImageZoomScale = this.clampScale(this.passImageZoomScale + delta);
-    this.clampOffset();
-  }
-
-  onPassImageTouchStart(event: TouchEvent): void {
-    if (event.touches.length === 2) {
-      this.passPinchStartDistance = this.getTouchDistance(event);
-      this.passPinchStartScale = this.passImageZoomScale;
-      this.isPanning = false;
-      return;
-    }
-
-    if (event.touches.length === 1) {
-      const now = Date.now();
-      if (now - this.lastPassImageTapAt < 300) {
-        // Double-tap toggles zoom.
-        this.passImageZoomScale = this.passImageZoomScale > 1 ? 1 : 2.5;
-        this.passImageOffsetX = 0;
-        this.passImageOffsetY = 0;
-        this.lastPassImageTapAt = 0;
-        this.isPanning = false;
-        return;
-      }
-      this.lastPassImageTapAt = now;
-
-      // Begin a single-finger pan when already zoomed in.
-      if (this.passImageZoomScale > 1) {
-        this.isPanning = true;
-        this.passPanStartX = event.touches[0].clientX;
-        this.passPanStartY = event.touches[0].clientY;
-        this.passPanStartOffsetX = this.passImageOffsetX;
-        this.passPanStartOffsetY = this.passImageOffsetY;
-      }
-    }
-  }
-
-  onPassImageTouchMove(event: TouchEvent): void {
-    if (event.touches.length === 2 && this.passPinchStartDistance) {
-      event.preventDefault();
-      const currentDistance = this.getTouchDistance(event);
-      if (!currentDistance) {
-        return;
-      }
-      const nextScale = this.passPinchStartScale * (currentDistance / this.passPinchStartDistance);
-      this.passImageZoomScale = this.clampScale(nextScale);
-      this.clampOffset();
-      return;
-    }
-
-    if (event.touches.length === 1 && this.isPanning && this.passImageZoomScale > 1) {
-      event.preventDefault();
-      this.passImageOffsetX = this.passPanStartOffsetX + (event.touches[0].clientX - this.passPanStartX);
-      this.passImageOffsetY = this.passPanStartOffsetY + (event.touches[0].clientY - this.passPanStartY);
-      this.clampOffset();
-    }
-  }
-
-  onPassImageTouchEnd(event: TouchEvent): void {
-    if (event.touches.length < 2) {
-      this.passPinchStartDistance = 0;
-      this.passPinchStartScale = this.passImageZoomScale;
-    }
-    if (event.touches.length === 0) {
-      this.isPanning = false;
-      this.clampOffset();
-    }
-  }
 
   async onImageSelect(evt: any) {
     const loading = await Utils.getLoadingElement();

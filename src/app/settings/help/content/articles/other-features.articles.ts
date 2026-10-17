@@ -161,7 +161,23 @@ Instanzspezifische [[Zusatzfeld|Zusatzfelder]] bleiben daneben bestehen und gelt
 - **Link teilen:** Über "Link zu diesem Ordner teilen" bzw. das Teilen einer Datei erhältst du einen Direktlink. Wer ihn öffnet, landet nach der Anmeldung direkt in der App bei diesem Ordner bzw. dieser Datei.
 - **Ordner am Termin:** Bei einem Termin kann unter "Ordner in der Dateiablage" ein Ordner hinterlegt werden (z. B. die Aufnahmen dieses Termins). Mitglieder springen dann von ihrer Anmeldeseite und der Übersicht direkt in diesen Ordner.
 
-Audiodateien spielst du direkt im integrierten Audio-Player ab (siehe "Audio-Player").`,
+Audiodateien spielst du direkt im integrierten Audio-Player ab (siehe "Audio-Player"), Bilder öffnen sich in der Vollbildansicht (siehe "Bilder ansehen und zoomen").`,
+  },
+  {
+    id: 'other-image-viewer',
+    title: 'Bilder ansehen und zoomen',
+    categoryId: 'other',
+    keywords: ['bild', 'foto', 'passbild', 'profilbild', 'zoom', 'zoomen', 'vergrößern', 'heranzoomen', 'vollbild', 'bildvorschau', 'pinch', 'doppeltippen'],
+    body: `Bilder aus der Dateiablage und Passbilder (in deinem Profil unter Einstellungen oder auf der Seite einer Person) öffnen sich in einer Vollbildansicht.
+
+- **Zoomen:** Zieh das Bild mit zwei Fingern auseinander. Gezoomt wird genau an der Stelle zwischen deinen Fingern. Am Computer zoomst du mit dem Mausrad oder per Trackpad.
+- **Doppeltippen** (am Computer Doppelklick) vergrößert genau die angetippte Stelle. Nochmal doppeltippen bringt das ganze Bild zurück.
+- **Verschieben:** Ist das Bild vergrößert, ziehst du es mit einem Finger hin und her.
+- **Zoom-Leiste:** Unten findest du − und +. Tippst du auf die Prozentzahl, siehst du wieder das ganze Bild.
+- **Schließen:** Wisch das Bild nach unten oder oben weg (geht, solange es nicht vergrößert ist), oder tippe oben rechts auf das X. Am Computer geht auch die Esc-Taste.
+- **Einmal tippen** blendet Titel und Leisten aus, damit du das Bild ohne Ablenkung siehst. Nochmal tippen holt sie zurück.
+
+Darfst du die Person bearbeiten, findest du beim Passbild unten außerdem "Ersetzen" und "Entfernen".`,
   },
   {
     id: 'other-audio-player',

@@ -111,30 +111,6 @@
   object-fit: cover;
 }
 
-.image-preview-content {
-  --background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.preview-image-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  touch-action: none;
-}
-
-.preview-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transition: transform 0.12s ease-out;
-}
-
 // The floating iOS tab bar overlays the content, so reserve room below the
 // last entry (tab bar offset + bar height + gap).
 .files-content {

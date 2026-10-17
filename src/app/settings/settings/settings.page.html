@@ -268,31 +268,10 @@
   }
 
   @if (userData?.img && userData.img !== 'https://ionicframework.com/docs/img/demos/avatar.svg') {
-  <ion-modal [isOpen]="isImageViewerOpen" (ionModalDidDismiss)="closePassImageViewer()">
+  <ion-modal class="image-viewer-modal" [isOpen]="isImageViewerOpen" (ionModalDidDismiss)="closePassImageViewer()">
     <ng-template>
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Passbild</ion-title>
-          <ion-buttons slot="end">
-            <ion-button (click)="closePassImageViewer()">
-              <ion-icon slot="icon-only" name="close-outline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content color="dark" class="pass-preview-content">
-        <div class="pass-preview-container"
-          (dblclick)="onPassImageDblClick()"
-          (touchstart)="onPassImageTouchStart($event)"
-          (touchmove)="onPassImageTouchMove($event)"
-          (touchend)="onPassImageTouchEnd($event)">
-          <img [src]="userData.img.replace('?quality=20', '')"
-            alt="Passbild"
-            class="pass-preview-image"
-            (error)="$event.target.src='assets/icon/avatar-placeholder.svg'"
-            [style.transform]="'scale(' + passImageZoomScale + ')'" />
-        </div>
-      </ion-content>
+      <app-image-viewer [src]="userData.img.replace('?quality=20', '')" title="Passbild"
+        fallbackSrc="assets/icon/avatar-placeholder.svg" (closed)="closePassImageViewer()"></app-image-viewer>
     </ng-template>
   </ion-modal>
   }

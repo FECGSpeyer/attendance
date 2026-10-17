@@ -125,55 +125,6 @@ ion-modal.dateModal ion-datetime {
   }
 }
 
-.pass-preview-content {
-  --background: #000;
-}
-
-.pass-preview-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  touch-action: none;
-  cursor: zoom-in;
-}
-
-.pass-preview-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  transform-origin: center center;
-  transition: transform 0.15s ease-out;
-  will-change: transform;
-  user-select: none;
-  -webkit-user-drag: none;
-
-  &.zoomed {
-    cursor: grab;
-    // No transition while panning so dragging feels immediate.
-    transition: transform 0.05s linear;
-  }
-}
-
-// The footer buttons (Ersetzen / Entfernen) live in an ion-buttons in the
-// toolbar's default slot, inside .toolbar-content (flex:1; min-width:0). The
-// ion-buttons must span that width AND allow its buttons to shrink, otherwise
-// the labelled buttons overflow past the right screen edge on narrow phones.
-.pass-preview-actions {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-
-  ion-button {
-    flex: 1 1 0;
-    min-width: 0;
-    --padding-start: 4px;
-    --padding-end: 4px;
-  }
-}
-
 ion-header.ios:not(.ios26-disabled) ion-buttons, ion-footer.ios:not(.ios26-disabled) ion-buttons {
   margin: 0 !important;
 }

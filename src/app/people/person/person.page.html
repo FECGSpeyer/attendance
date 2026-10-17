@@ -44,50 +44,23 @@
       }
     </div>
     }
-    <ion-modal #imageViewer (ionModalDidDismiss)="closePassImageViewer()" [isOpen]="isImageViewerOpen">
+    <ion-modal class="image-viewer-modal" (ionModalDidDismiss)="closePassImageViewer()" [isOpen]="isImageViewerOpen">
       <ng-template>
-        <ion-header>
-          <ion-toolbar color="dark">
-            <ion-title>Passbild</ion-title>
-            <ion-buttons slot="end">
-              <ion-button (click)="closePassImageViewer()">
-                <ion-icon slot="icon-only" name="close"></ion-icon>
-              </ion-button>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content color="dark" class="pass-preview-content">
-          <div class="pass-preview-container"
-            (dblclick)="onPassImageDblClick()"
-            (wheel)="onPassImageWheel($event)"
-            (touchstart)="onPassImageTouchStart($event)"
-            (touchmove)="onPassImageTouchMove($event)"
-            (touchend)="onPassImageTouchEnd($event)">
-            <img [src]="player.img.replace('?quality=20', '')"
-              #passPreviewImage
-              alt="Passbild"
-              class="pass-preview-image"
-              [class.zoomed]="passImageZoomScale > 1"
-              (error)="$event.target.src='assets/icon/avatar-placeholder.svg'"
-              [style.transform]="'translate(' + passImageOffsetX + 'px, ' + passImageOffsetY + 'px) scale(' + passImageZoomScale + ')'" />
+        <app-image-viewer [src]="player.img.replace('?quality=20', '')" title="Passbild"
+          fallbackSrc="assets/icon/avatar-placeholder.svg" (closed)="closePassImageViewer()">
+          @if (!readOnly) {
+          <div viewerActions>
+            <button type="button" class="viewer-action" (click)="replaceImgFromViewer()">
+              <ion-icon name="camera-outline"></ion-icon>
+              Ersetzen
+            </button>
+            <button type="button" class="viewer-action danger" (click)="removeImgFromViewer()">
+              <ion-icon name="trash-outline"></ion-icon>
+              Entfernen
+            </button>
           </div>
-        </ion-content>
-        @if (!readOnly) {
-        <ion-footer>
-          <ion-toolbar color="dark">
-            <ion-buttons class="pass-preview-actions">
-              <ion-button (click)="replaceImgFromViewer()">
-                <ion-icon slot="start" name="camera-outline"></ion-icon>
-                Ersetzen
-              </ion-button>
-              <ion-button color="danger" (click)="removeImgFromViewer()">
-                <ion-icon slot="start" name="trash-outline"></ion-icon>
-                Entfernen
-              </ion-button>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-footer>
-        }
+          }
+        </app-image-viewer>
       </ng-template>
     </ion-modal>
   </div>
