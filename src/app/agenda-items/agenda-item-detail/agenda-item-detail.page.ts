@@ -17,6 +17,7 @@ import { Utils } from 'src/app/utilities/Utils';
 import { agendaFieldId, OUTCOME_LABELS, personName } from 'src/app/team-organization/team-org.utils';
 import { openTaskForm } from 'src/app/tasks/task-form/task-form.component';
 import { addTopicsToAttendance, defaultTopicDuration, upcomingProtocolAttendances } from '../agenda-plan.helpers';
+import { promptCreateProtocolAttendance } from 'src/app/utilities/attendance-date-dialog';
 
 /** How many upcoming Termine "Einplanen" offers. */
 const PLAN_CHOICES = 6;
@@ -193,10 +194,6 @@ export class AgendaItemDetailPage implements OnInit {
     } catch (e) {
       console.error('upcoming attendances failed', e);
     }
-    if (!upcoming.length) {
-      Utils.showToast('Kein kommender Termin mit Protokoll & Tagesordnung gefunden', 'warning');
-      return;
-    }
     const fieldId = agendaFieldId(this.item.id);
     const buttons: ActionSheetButton[] = upcoming.map(att => {
       const type = this.db.attendanceTypes().find(t => t.id === att.type_id);
@@ -207,9 +204,19 @@ export class AgendaItemDetailPage implements OnInit {
         handler: () => { void this.insertInto(att); },
       } as ActionSheetButton;
     });
+    buttons.push({ text: 'Neuen Termin anlegen', icon: 'add-circle-outline', handler: () => { void this.planIntoNewAttendance(); } });
     buttons.push({ text: 'Abbrechen', role: 'cancel' });
-    const sheet = await this.actionSheetController.create({ header: 'In welchen Termin einplanen?', buttons });
+    const sheet = await this.actionSheetController.create({
+      header: upcoming.length ? 'In welchen Termin einplanen?' : 'Noch kein Termin mit Tagesordnung geplant',
+      buttons,
+    });
     await sheet.present();
+  }
+
+  /** Creates a Termin ad hoc and plans the topic into it right away. */
+  private async planIntoNewAttendance() {
+    const created = await promptCreateProtocolAttendance(this.alertController, this.db);
+    if (created) await this.insertInto(created);
   }
 
   private async insertInto(att: Attendance) {
