@@ -135,6 +135,7 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
+    @available(iOS 16.2, *)
     private func decodeState(_ call: CAPPluginCall) -> PlanActivityAttributes.ContentState? {
         guard let raw = call.getObject("state"),
               let data = try? JSONSerialization.data(withJSONObject: raw) else { return nil }

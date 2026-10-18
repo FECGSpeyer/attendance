@@ -28,6 +28,25 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
 **Teilen und PDF:** Beim Teilen wählst du oben, ob nur der gerade gezeigte Plan oder alle Pläne exportiert werden. "Alle" ergibt eine PDF mit einer Seite pro Plan.`,
   },
   {
+    id: 'plan-blocks',
+    title: 'Programmblöcke mit Unterpunkten',
+    categoryId: 'planning',
+    keywords: ['programmblock', 'block', 'unterpunkt', 'unterpunkte', 'gruppe', 'programm', 'verschachtelt', 'einrücken', 'jugendchor', 'kinderprogramm', 'blockvorlage'],
+    body: `Manche Programmpunkte bestehen aus mehreren Teilen, zum Beispiel "Programm Jugendchor" mit Liedern und einem Gedicht. Dafür gibt es **Programmblöcke**.
+
+**Block anlegen:** Tippe im Ablaufplan-Editor beim Ablauf auf **+** und dann auf **Programmblock hinzufügen**. Gib einen Namen und optional eine Ausführung ein. Danach legst du gleich den ersten Unterpunkt an. Weitere Unterpunkte fügst du über **Unterpunkt hinzufügen** am Ende des Blocks hinzu.
+
+**Zeiten:** Die Dauer des Blocks ergibt sich automatisch aus seinen Unterpunkten. Der erste Unterpunkt beginnt mit dem Block, danach geht der Ablauf ganz normal weiter.
+
+**Sortieren:** Ziehst du den Block am Griff, wandern alle Unterpunkte mit. Einen normalen Programmpunkt ziehst du zwischen zwei Unterpunkte, damit er zum Block gehört. Ziehst du einen Unterpunkt aus dem Block heraus, wird er wieder ein normaler Punkt. Alternativ wischst du einen Punkt nach links und tippst auf **Einrücken** oder **Ausrücken**. Mit dem Pfeil links klappst du einen Block ein oder aus.
+
+**Block bearbeiten:** Tippe auf den Blocknamen. Dort kannst du den Block bearbeiten, ihn **auflösen** (die Unterpunkte bleiben als normale Punkte erhalten) oder komplett löschen.
+
+**Blockvorlagen:** Admins können einen Block über **Als Vorlage speichern** sichern. Gespeicherte Blöcke erscheinen im **+**-Menü unter "Programmblöcke" und werden mit einem Tippen an das Ende des Ablaufs angehängt. Über das Papierkorb-Symbol daneben löschen Admins eine Vorlage wieder.
+
+**Was Mitglieder sehen:** Auf der Terminseite, in der Planansicht, auf der Dashboard-Karte und im PDF erscheinen die Unterpunkte eingerückt unter ihrem Block. Im Live-Modus ist der laufende Unterpunkt markiert, und der Block bleibt hervorgehoben, solange einer seiner Unterpunkte läuft.`,
+  },
+  {
     id: 'plan-live-activity',
     title: 'Laufender Ablaufplan auf dem Sperrbildschirm',
     categoryId: 'planning',

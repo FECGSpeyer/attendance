@@ -668,6 +668,8 @@
             @for (field of shownPlan.fields; track field; let i = $index) {
             @if (field.id !== AGENDA_ITEMS_PLACEHOLDER_ID) {
             <ion-item [class.active-slot]="planLiveMode && i === planActiveFieldIndex"
+                      [class.plan-group-head]="field.isGroup"
+                      [class.plan-group-child]="!!field.groupId"
                       [class.done-slot]="planLiveMode && i < planActiveFieldIndex"
                       [button]="!!field.agendaItemId && isTeamLeader"
                       [detail]="false"
@@ -685,7 +687,7 @@
               @if (planLiveMode && i === planActiveFieldIndex) {
                 <ion-badge slot="end" color="primary">{{ getPlanActiveCountdown() }}</ion-badge>
               } @else {
-                <ion-badge slot="end">{{ field.time }} min</ion-badge>
+                <ion-badge slot="end">{{ field | planMinutes: shownPlan.fields }} min</ion-badge>
               }
             </ion-item>
             }

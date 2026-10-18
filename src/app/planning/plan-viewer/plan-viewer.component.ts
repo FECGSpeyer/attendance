@@ -8,6 +8,7 @@ import { DbService } from '../../services/db.service';
 import { fieldDisplayName, topNumbers } from '../../team-organization/team-org.utils';
 import { allPlans, planDate, planLabel, todayPlanIndex } from '../../utilities/plan-days';
 import { PlanChipsComponent } from '../plan-chips/plan-chips.component';
+import { groupDuration, isGroupHead } from '../../utilities/plan-groups';
 import { openPlanShareSheet } from '../plan-share-sheet/plan-share-sheet.component';
 
 @Component({
@@ -123,6 +124,8 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
       : dayjs().hour(Number(this.plan.time.substring(0, 2))).minute(Number(this.plan.time.substring(3, 5)));
     let t = this.currentDate().hour(timeBase.hour()).minute(timeBase.minute()).second(0);
     for (let i = 0; i < this.plan.fields.length; i++) {
+      // A Programmblock head takes no time; its Unterpunkte become active instead.
+      if (isGroupHead(this.plan.fields[i])) { continue; }
       t = t.add(Number(this.plan.fields[i].time) || 0, 'minute');
       if (now.isBefore(t)) {
         this.activeFieldIndex = i;
@@ -144,6 +147,26 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
       this.hasAutoScrolled = true;
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 50);
+  }
+
+  readonly isGroupHead = isGroupHead;
+
+  groupMinutes(head: FieldSelection): number {
+    return groupDuration(this.plan?.fields ?? [], head.id);
+  }
+
+  /** Block head whose Unterpunkt is running right now. */
+  isActiveGroup(head: FieldSelection): boolean {
+    const active = this.plan?.fields?.[this.activeFieldIndex];
+    return this.liveMode && !!active && active.groupId === head.id;
+  }
+
+  /** "10:37 – 10:55" for a block head. */
+  groupRange(head: FieldSelection, index: number): string {
+    const start = this.calculateTime({ ...head, conductor: '' }, index).trim();
+    if (!start) { return ''; }
+    const [h, m] = start.split(':').map(Number);
+    return `${start} – ${dayjs().hour(h).minute(m).add(this.groupMinutes(head), 'minute').format('HH:mm')}`;
   }
 
   calculateTime(field: FieldSelection, index: number): string {

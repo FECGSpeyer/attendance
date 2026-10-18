@@ -34,6 +34,8 @@ export class AudioPlayerService {
   private loadToken = 0;
   /** Lock-screen / notification controls */
   private readonly mediaSession = new MediaSessionBridge();
+  /** Cover for the lock screen (the tenant's branding logo); set by the app, the Attendix logo otherwise */
+  public coverUrl: () => string | undefined = () => undefined;
   /** Pre-resolved queue URLs, so the next track starts without a network round trip (e.g. on a locked screen) */
   private urlCache = new Map<AudioQueueItem, { url: Promise<string>; resolvedAt: number }>();
 
@@ -273,7 +275,8 @@ export class AudioPlayerService {
     this.progress.set(0);
     this.currentTime.set(0);
     this.duration.set(0);
-    this.mediaSession.setMetadata(songName || file.fileName, 'Attendix');
+    this.mediaSession.setMetadata(songName || file.fileName, 'Attendix', this.coverUrl());
+    this.mediaSession.setTrackSkipping(this.hasQueue());
 
     audio.play().then(() => {
       this.isPlaying.set(true);

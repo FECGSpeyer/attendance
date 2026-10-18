@@ -23,3 +23,43 @@ ion-item p {
     color: var(--ion-color-primary);
   }
 }
+
+.field-info {
+  font-style: italic;
+  white-space: pre-wrap;
+}
+
+// Programmblöcke: tinted head, indented Unterpunkte with a line on the left.
+.group-head {
+  --background: rgba(var(--ion-color-primary-rgb), 0.08);
+
+  h2 {
+    font-weight: 700;
+  }
+
+  .group-duration {
+    font-weight: 600;
+    color: var(--ion-color-primary-shade);
+  }
+}
+
+.group-child {
+  --background: rgba(var(--ion-color-primary-rgb), 0.04);
+  --padding-start: 34px;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: rgba(var(--ion-color-primary-rgb), 0.45);
+    z-index: 1;
+  }
+}
+
+.active-group {
+  border-left: 3px solid var(--ion-color-primary);
+}

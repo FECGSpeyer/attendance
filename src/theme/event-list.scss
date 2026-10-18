@@ -1,0 +1,420 @@
+// Card layout of the Terminlisten (Termine, Signout, Parents).
+// Pills and dots take their color from Ionic's `.ion-color-*` classes,
+// so `class="ev-pill ion-color-success"` works for every theme color.
+
+.ev-section {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 22px 20px 0;
+
+  h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  .ev-section__count {
+    font-size: 0.95rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.ev-month {
+  padding: 14px 20px 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ion-color-medium);
+}
+
+ion-list.ev-list {
+  margin-top: 6px;
+  margin-bottom: 0;
+
+  ion-item {
+    --min-height: 64px;
+  }
+
+  ion-label h2 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  ion-label p {
+    margin-top: 2px;
+  }
+}
+
+.ev-tile {
+  width: 46px;
+  height: 50px;
+  margin: 7px 12px 7px 0;
+  border-radius: 12px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--ion-color-primary-rgb), 0.13);
+  color: var(--ion-color-primary-shade);
+
+  .ev-tile__wd {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .ev-tile__day {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  &.ev-tile--hl {
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+  }
+
+  &.ev-tile--past {
+    opacity: 0.7;
+  }
+}
+
+.ev-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  background: rgba(var(--ion-color-base-rgb), 0.2);
+  color: var(--ion-text-color, #000);
+}
+
+.ev-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.ev-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(var(--ion-color-primary-rgb), 0.13);
+  color: var(--ion-color-primary-shade);
+
+  &.ev-chip--danger {
+    background: rgba(var(--ion-color-danger-rgb), 0.15);
+    color: var(--ion-color-danger-shade);
+  }
+}
+
+.ev-today {
+  margin: 8px 16px 0;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--ion-card-background, var(--ion-item-background, #fff));
+  border: 2px solid var(--ion-color-primary);
+  cursor: pointer;
+
+  &.ev-today--static {
+    cursor: default;
+  }
+
+  &.ev-today--filled {
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+    border: 0;
+
+    .ev-today__meta { color: inherit; opacity: 0.9; }
+  }
+
+  .ev-today__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+
+    > div:not(.ev-tile) {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .ev-pill {
+      flex-shrink: 0;
+    }
+  }
+
+  .ev-tile {
+    width: 54px;
+    height: 58px;
+    margin: 0;
+    border-radius: 14px;
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+
+    .ev-tile__day { font-size: 1.5rem; }
+  }
+
+  &.ev-today--filled .ev-tile {
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  .ev-today__title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.25;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  .ev-today__place {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 0.875rem;
+    color: var(--ion-color-medium);
+
+    ion-icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+  }
+
+  &.ev-today--filled .ev-today__place {
+    color: inherit;
+    opacity: 0.9;
+  }
+
+  .ev-today__stats .ev-today__stat-strong {
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .ev-today__meta {
+    font-size: 0.875rem;
+    color: var(--ion-color-medium);
+    margin-top: 2px;
+  }
+
+  .ev-today__perc {
+    margin-left: auto;
+    text-align: right;
+    font-size: 1.6rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ev-today__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+
+    span {
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      background: rgba(255, 255, 255, 0.18);
+    }
+  }
+
+  .ev-today__ctas {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+
+    .ev-today__cta {
+      flex: 1 1 0;
+      min-width: 0;
+      margin-top: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 0;
+      font: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .ev-today__cta--secondary {
+      background: rgba(255, 255, 255, 0.18);
+      color: var(--ion-color-primary-contrast);
+    }
+  }
+
+  .ev-today__cta {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    background: var(--ion-color-primary-contrast);
+    color: var(--ion-color-primary-shade);
+  }
+
+  .ev-today__actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+
+    ion-button {
+      flex: 1;
+      margin: 0;
+      --border-radius: 12px;
+      min-height: 44px;
+    }
+
+    ion-button.ev-more {
+      flex: 0 0 48px;
+    }
+  }
+
+  .ev-today__rows {
+    margin-top: 12px;
+    border-top: 1px solid var(--ion-color-step-150, #e5e5ea);
+  }
+
+  .ev-today__row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--ion-color-step-150, #e5e5ea);
+    cursor: pointer;
+
+    &:last-child { border-bottom: 0; }
+  }
+}
+
+.ev-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+
+  .ev-summary__main {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .ev-summary__value {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .ev-summary__label {
+    font-size: 0.875rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.ev-dots {
+  display: flex;
+  gap: 4px;
+  padding: 0 16px 14px;
+
+  span {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--ion-color-base);
+  }
+}
+
+.ev-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(var(--ion-color-base-rgb), 0.2);
+  color: var(--ion-text-color, #000);
+}
+
+.ev-kids {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 16px 12px;
+}
+
+.ev-kid {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 3px 12px 3px 3px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: rgba(var(--ion-color-base-rgb), 0.2);
+  color: var(--ion-text-color, #000);
+  cursor: pointer;
+
+  .ev-avatar {
+    width: 30px;
+    height: 30px;
+    background: var(--ion-card-background, var(--ion-item-background, #fff));
+  }
+}
+
+.ev-more-link {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+  cursor: pointer;
+}
+
+button.ev-chip {
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+ion-list.ev-list--card {
+  .ev-kids {
+    padding-top: 2px;
+  }
+}
+
+.ev-today__row ion-label {
+  flex: 1;
+  margin: 0;
+
+  h2 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+}
+
+.ev-today .ev-more-link {
+  padding: 10px 0 0;
+}

@@ -89,6 +89,8 @@
                   <ion-item
                     [id]="entry.liveMode && fi === entry.activeFieldIndex ? 'active-slot-' + entry.id : null"
                     [class.active-slot]="entry.liveMode && fi === entry.activeFieldIndex"
+                    [class.plan-group-head]="field.isGroup"
+                    [class.plan-group-child]="!!field.groupId"
                     [class.done-slot]="entry.liveMode && fi < entry.activeFieldIndex">
                     <ion-label [class.note-field]="field.id.includes('noteFld')">
                       <h2>{{ field.name }}</h2>
@@ -103,7 +105,7 @@
                       @if (entry.liveMode && fi === entry.activeFieldIndex) {
                         <ion-badge slot="end" color="primary">{{ getActiveCountdown(entry) }}</ion-badge>
                       } @else {
-                        <ion-badge slot="end">{{ field.time }} min</ion-badge>
+                        <ion-badge slot="end">{{ field | planMinutes: entry.fields }} min</ion-badge>
                       }
                     }
                   </ion-item>
@@ -164,7 +166,7 @@
                     <ion-badge slot="end">{{ getStartTime(entry) }} Uhr</ion-badge>
                   </ion-item>
                   @for (field of entry.fields; track trackByField($index, field); let fi = $index) {
-                    <ion-item class="done-slot">
+                    <ion-item class="done-slot" [class.plan-group-head]="field.isGroup" [class.plan-group-child]="!!field.groupId">
                       <ion-label [class.note-field]="field.id.includes('noteFld')">
                         <h2>{{ field.name }}</h2>
                         @if (!field.id.includes('noteFld')) {
@@ -172,7 +174,7 @@
                         }
                       </ion-label>
                       @if (!field.id.includes('noteFld')) {
-                        <ion-badge slot="end">{{ field.time }} min</ion-badge>
+                        <ion-badge slot="end">{{ field | planMinutes: entry.fields }} min</ion-badge>
                       }
                     </ion-item>
                   }

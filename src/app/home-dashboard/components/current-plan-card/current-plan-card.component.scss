@@ -28,3 +28,13 @@
     color: var(--ion-color-medium-shade);
   }
 }
+
+// Programmblöcke: bold head, indented Unterpunkte.
+.field-group ion-label {
+  font-weight: 700;
+}
+
+.field-child .field-index {
+  margin-inline-start: 26px;
+  font-size: 0.85em;
+}

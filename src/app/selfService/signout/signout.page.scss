@@ -18,92 +18,91 @@
     }
 }
 
-.hero-card {
-    margin: 12px 16px 8px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
-    padding: 20px 20px 16px;
-    color: #fff;
-    box-shadow: 0 4px 16px rgba(var(--ion-color-primary-rgb), 0.35);
+.greet {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px 0;
 
-    .hero-content {
+    .greet__avatar {
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 700;
+    }
+
+    p {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 10px;
+        margin: 2px 0 0;
+        font-size: 0.875rem;
+        color: var(--ion-color-medium);
+    }
+
+    .greet__perc {
+        font-weight: 600;
+        color: var(--ion-color-shade);
+    }
+
+    .greet__paused {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        color: var(--ion-color-warning-shade);
+        font-weight: 600;
+    }
+}
+
+.greet-tiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 14px 16px 0;
+}
+
+.greet-tile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 60px;
+    padding: 12px;
+    border: 0;
+    border-radius: 14px;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    background: var(--ion-card-background, var(--ion-item-background, #fff));
+    cursor: pointer;
+
+    .greet-tile__icon {
+        width: 34px;
+        height: 34px;
+        flex-shrink: 0;
+        border-radius: 10px;
         display: flex;
         align-items: center;
-        gap: 14px;
-        margin-bottom: 14px;
+        justify-content: center;
+        font-size: 1.1rem;
+        background: rgba(var(--ion-color-primary-rgb), 0.13);
+        color: var(--ion-color-primary-shade);
     }
 
-    .hero-avatar {
-        width: 56px;
-        height: 56px;
-        flex-shrink: 0;
-        border: 2px solid rgba(255, 255, 255, 0.5);
+    .greet-tile__title {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
     }
 
-    .hero-text {
-        h1 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin: 0 0 4px;
-            color: #fff;
-        }
-
-        .paused-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.8rem;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 2px 10px;
-            margin: 0;
-            color: #fff;
-
-            ion-icon {
-                font-size: 0.9rem;
-            }
-        }
-    }
-
-    .hero-stats {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 14px;
-
-        .stat-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.82rem;
-            font-weight: 600;
-            border-radius: 20px;
-            padding: 4px 12px;
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-
-            ion-icon {
-                font-size: 1rem;
-            }
-
-            &.stat-good { background: rgba(var(--ion-color-success-rgb), 0.35); }
-            &.stat-warn { background: rgba(var(--ion-color-warning-rgb), 0.4); }
-            &.stat-bad  { background: rgba(var(--ion-color-danger-rgb), 0.35); }
-            &.stat-late { background: rgba(var(--ion-color-tertiary-rgb), 0.35); }
-        }
-    }
-
-    .hero-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-
-        .hero-btn {
-            --color: #fff;
-            --border-color: rgba(255, 255, 255, 0.6);
-            --background-hover: rgba(255, 255, 255, 0.15);
-            font-size: 0.85rem;
-        }
+    .greet-tile__sub {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--ion-color-medium);
     }
 }
 
@@ -143,4 +142,8 @@
 
         ion-icon { font-size: 1rem; }
     }
+}
+
+.ev-today__status {
+    margin-top: 6px;
 }

@@ -186,9 +186,8 @@
 
   @if (loaded && todaysBirthdays.length) {
     <div class="birthday-banner">
-      <div class="birthday-banner__glow"></div>
       <div class="birthday-banner__header">
-        <span class="birthday-banner__emoji" aria-hidden="true">🎉</span>
+        <span class="birthday-banner__icon" aria-hidden="true"><ion-icon name="gift-outline"></ion-icon></span>
         <div class="birthday-banner__title">
           @if (todaysBirthdays.length === 1) {
             Geburtstag heute
@@ -210,7 +209,7 @@
             <span class="birthday-banner__name">
               {{ player.firstName }} {{ player.lastName }}
             </span>
-            <span class="birthday-banner__age">{{ getBirthdayAge(player) }}</span>
+            <span class="birthday-banner__age">{{ getBirthdayAge(player) }} Jahre</span>
           </button>
         }
       </div>

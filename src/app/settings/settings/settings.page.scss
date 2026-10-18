@@ -64,64 +64,64 @@ ion-card-subtitle {
 .hero-card {
     margin: 12px 16px 8px;
     border-radius: 16px;
-    background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
-    padding: 20px 20px 16px;
-    color: #fff;
-    box-shadow: 0 4px 16px rgba(var(--ion-color-primary-rgb), 0.35);
+    background: var(--ion-item-background, #fff);
+    padding: 16px;
 
     .hero-content {
         display: flex;
         align-items: center;
         gap: 14px;
-        margin-bottom: 10px;
     }
 
     .hero-avatar {
-        width: 56px;
-        height: 56px;
+        width: 52px;
+        height: 52px;
         flex-shrink: 0;
-        border: 2px solid rgba(255, 255, 255, 0.5);
     }
 
     .hero-text {
         flex: 1;
+        min-width: 0;
 
         h1 {
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             font-weight: 700;
-            margin: 0 0 3px;
-            color: #fff;
+            margin: 0 0 2px;
         }
 
         .hero-role {
-            font-size: 0.82rem;
-            opacity: 0.85;
+            font-size: 0.85rem;
+            color: var(--ion-color-medium);
             margin: 0;
         }
     }
 
     .hero-chevron {
         font-size: 1.1rem;
-        opacity: 0.7;
+        color: var(--ion-color-medium);
         flex-shrink: 0;
     }
 
     .hero-stats {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 6px;
+        margin-top: 12px;
 
         .stat-chip {
             display: inline-flex;
             align-items: center;
             gap: 5px;
             font-size: 0.8rem;
-            border-radius: 20px;
-            padding: 3px 10px;
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
+            border-radius: 8px;
+            padding: 4px 8px;
+            background: rgba(var(--ion-color-primary-rgb), 0.1);
 
-            ion-icon { font-size: 0.9rem; }
+            ion-icon {
+                font-size: 0.9rem;
+                flex-shrink: 0;
+                color: var(--ion-color-primary-shade);
+            }
         }
     }
 }

@@ -19,3 +19,14 @@ ion-card {
 .attPage .noDataContainer {
   height: 90%;
 }
+ion-item.ev-today-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --background: transparent;
+
+  // ion-item does not stretch its content, so the card would shrink to fit
+  .ev-today {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
