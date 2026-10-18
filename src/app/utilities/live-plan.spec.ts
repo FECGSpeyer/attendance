@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Plan } from './interfaces';
-import { buildSchedule, liveSchedule, liveStateAt, liveTitle, livePlanKey, zonedTimeToUtc } from './live-plan';
+import { buildSchedule, iosLiveState, liveSchedule, liveStateAt, liveTitle, livePlanKey, zonedTimeToUtc } from './live-plan';
 
 const TZ = 'Europe/Berlin';
 const at = (iso: string) => Date.parse(iso);
@@ -64,5 +64,17 @@ describe('live-plan', () => {
     expect(livePlanKey(att.extra_plans[0])).toBe('p2');
     expect(liveTitle(att, 'Freizeit', 1)).toMatch(/^Freizeit · So 18\.10\.$/);
     expect(liveTitle({ date: '2026-10-17', plan }, 'Gottesdienst', 0)).toBe('Gottesdienst');
+  });
+
+  it('shows a countdown to the start instead of the first item before the plan starts on iOS', () => {
+    const s = buildSchedule({ date: '2026-10-17', planTime: '10:00', fields: [fields[1], fields[2]], timezone: TZ });
+    const before = iosLiveState(liveStateAt(s, at('2026-10-17T07:50:00Z'))!);
+    expect(before.title).toBe('Beginnt in');
+    expect(before.subtitle).toBe('');
+    expect(before.next.map(n => n.name)).toEqual(['Lied · Chor', 'Predigt']);
+    expect(before.next[0].at).toBe(at('2026-10-17T08:00:00Z') / 1000);
+
+    const running = liveStateAt(s, at('2026-10-17T08:05:00Z'))!;
+    expect(iosLiveState(running)).toBe(running);
   });
 });

@@ -8,7 +8,7 @@ import { DbService } from '../db.service';
 import { Role } from '../../utilities/constants';
 import { Attendance } from '../../utilities/interfaces';
 import { allPlans } from '../../utilities/plan-days';
-import { liveSchedule, liveStateAt, liveStateKey, liveTitle, livePlanKey, LivePlanState } from '../../utilities/live-plan';
+import { iosLiveState, liveSchedule, liveStateAt, liveStateKey, liveTitle, livePlanKey, LivePlanState } from '../../utilities/live-plan';
 import { LiveActivity, LiveActivityTarget } from './live-activity.plugin';
 
 /** How often the open app re-checks running plans (the widget counts down on its own). */
@@ -118,17 +118,18 @@ export class LiveActivityService {
       const key = (t: LiveActivityTarget) => `${t.attendanceId}:${t.planKey}`;
       const wanted = new Set(candidates.map(key));
 
+      const shown = (state: LivePlanState) => Capacitor.getPlatform() === 'ios' ? iosLiveState(state) : state;
       for (const c of candidates) {
         const k = key(c);
         const stateKey = liveStateKey(c.state);
         const running = activities.some(a => key(a) === k);
         if (running && this.lastKeys.get(k) === stateKey) { continue; }
         if (c.state.phase === 'ended') {
-          if (running) { await LiveActivity.end({ attendanceId: c.attendanceId, planKey: c.planKey, state: c.state }); }
+          if (running) { await LiveActivity.end({ attendanceId: c.attendanceId, planKey: c.planKey, state: shown(c.state) }); }
         } else if (running) {
-          await LiveActivity.update({ attendanceId: c.attendanceId, planKey: c.planKey, state: c.state });
+          await LiveActivity.update({ attendanceId: c.attendanceId, planKey: c.planKey, state: shown(c.state) });
         } else {
-          await LiveActivity.start(c);
+          await LiveActivity.start({ ...c, state: shown(c.state) });
         }
         this.lastKeys.set(k, stateKey);
       }

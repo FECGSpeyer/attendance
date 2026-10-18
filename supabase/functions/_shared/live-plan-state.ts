@@ -188,6 +188,23 @@ export function liveStateAt(schedule: LivePlanItem[], now: number): LivePlanStat
   };
 }
 
+/**
+ * State as the iOS widget gets it. The widget shows a countdown next to the
+ * title; before the start that read like the remaining time of the first item.
+ * So the title becomes "Beginnt in" and the first item moves into the list.
+ * Done in the data so it reaches installed widgets without a new build.
+ */
+export function iosLiveState(state: LivePlanState): LivePlanState {
+  if (state.phase !== 'before') { return state; }
+  const first = state.subtitle ? `${state.title} · ${state.subtitle}` : state.title;
+  return {
+    ...state,
+    title: 'Beginnt in',
+    subtitle: '',
+    next: [{ name: first, at: state.startsAt }, ...state.next],
+  };
+}
+
 /** Stable fingerprint of a state, to send an update only when something visible changed. */
 export function liveStateKey(state: LivePlanState | null): string {
   return state ? JSON.stringify(state) : 'none';

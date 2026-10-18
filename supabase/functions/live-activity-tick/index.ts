@@ -15,6 +15,7 @@ import {
   buildSchedule,
   liveStateAt,
   liveStateKey,
+  iosLiveState,
   LIVE_TAIL_MINUTES,
   LivePlanState,
 } from '../_shared/live-plan-state.ts'
@@ -123,8 +124,9 @@ function iosMessage(
   liveActivityToken: string,
   event: 'start' | 'update' | 'end',
   plan: LivePlan,
-  state: LivePlanState,
+  liveState: LivePlanState,
 ): unknown {
+  const state = iosLiveState(liveState);
   const nowSec = Math.floor(Date.now() / 1000);
   const aps: Record<string, unknown> = {
     timestamp: nowSec,
