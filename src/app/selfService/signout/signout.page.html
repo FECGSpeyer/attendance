@@ -285,10 +285,10 @@
         <div>
           <div class="ev-today__title" lang="de">{{ getEventTitle(currentAttendance) }}</div>
           <div class="ev-today__meta">{{ getEventMeta(currentAttendance, true, false) }}</div>
+          @if (isOwnAttendance(currentAttendance)) {
+            <span class="ev-pill ev-today__status" [ngClass]="'ion-color-' + statusColorOf(currentAttendance)">{{ statusLabelOf(currentAttendance) }}</span>
+          }
         </div>
-        @if (isOwnAttendance(currentAttendance)) {
-          <span class="ev-pill ev-today__status" [ngClass]="'ion-color-' + statusColorOf(currentAttendance)">{{ statusLabelOf(currentAttendance) }}</span>
-        }
       </div>
       @if (currentAttendance.attendance?.place) {
         <div class="ev-today__place"><ion-icon name="location-outline"></ion-icon><span>{{ currentAttendance.attendance?.place }}</span></div>

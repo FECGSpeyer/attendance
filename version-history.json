@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.6",
+      "date": "18.10.2026",
+      "changes": [
+        "📐 Meine Anwesenheit: Dein Status steht in der Karte des heutigen bzw. nächsten Termins jetzt unter Datum und Uhrzeit, damit lange Titel die volle Breite haben."
+      ]
+    },
+    {
       "version": "4.14.5",
       "date": "18.10.2026",
       "changes": [
