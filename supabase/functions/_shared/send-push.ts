@@ -18,7 +18,7 @@ interface DeviceToken {
 
 let cachedAccessToken: { token: string; expiresAt: number } | null = null;
 
-async function getAccessToken(): Promise<string> {
+export async function getAccessToken(): Promise<string> {
   if (cachedAccessToken && Date.now() < cachedAccessToken.expiresAt - 60000) {
     return cachedAccessToken.token;
   }

@@ -179,6 +179,8 @@ export class PushService {
     FirebaseMessaging.addListener('notificationReceived', (event) => {
       this.zone.run(() => {
         const n = event.notification;
+        // Live plan updates are silent data pushes handled natively, never an alert.
+        if ((n.data as Record<string, any>)?.['type'] === 'live_plan') { return; }
         this.tracking.track(TrackingEvent.PushReceived);
         this.showForegroundAlert({
           title: n.title || '',

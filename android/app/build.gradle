@@ -45,6 +45,8 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+    // LivePlanMessagingService (Ablaufplan Live Update) extends the Firebase Messaging plugin's service.
+    implementation "com.google.firebase:firebase-messaging:${project.hasProperty('firebaseMessagingVersion') ? rootProject.ext.firebaseMessagingVersion : '25.0.1'}"
 }
 
 apply from: 'capacitor.build.gradle'

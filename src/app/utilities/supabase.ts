@@ -546,6 +546,39 @@ export type Database = {
         }
         Relationships: []
       }
+      live_activity_tokens: {
+        Row: {
+          attendance_id: number
+          id: string
+          kind: string
+          plan_key: string
+          platform: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attendance_id?: number
+          id?: string
+          kind: string
+          plan_key?: string
+          platform?: string
+          token: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          attendance_id?: number
+          id?: string
+          kind?: string
+          plan_key?: string
+          platform?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       meetings: {
         Row: {
           attendees: number[] | null
@@ -583,6 +616,7 @@ export type Database = {
       }
       notifications: {
         Row: {
+          live_activity: boolean | null
           birthdays: boolean
           checklist: boolean | null
           created_at: string
@@ -599,6 +633,7 @@ export type Database = {
           updates: boolean | null
         }
         Insert: {
+          live_activity?: boolean | null
           birthdays?: boolean
           checklist?: boolean | null
           created_at?: string
@@ -615,6 +650,7 @@ export type Database = {
           updates?: boolean | null
         }
         Update: {
+          live_activity?: boolean | null
           birthdays?: boolean
           checklist?: boolean | null
           created_at?: string

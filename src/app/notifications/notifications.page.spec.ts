@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { AlertController } from '@ionic/angular/lazy';
+import { AlertController, ModalController } from '@ionic/angular/lazy';
 
 import { NotificationsPage } from './notifications.page';
 import { DbService } from '../services/db.service';
 import { createDbServiceMock } from '../../testing/mocks/db-service.mock';
-import { createAlertControllerMock } from '../../testing/mocks/ionic.mock';
+import { createAlertControllerMock, createModalControllerMock } from '../../testing/mocks/ionic.mock';
 
 describe('NotificationsPage', () => {
   let component: NotificationsPage;
@@ -18,6 +18,7 @@ describe('NotificationsPage', () => {
       providers: [
         { provide: DbService, useValue: createDbServiceMock() },
         { provide: AlertController, useValue: createAlertControllerMock() },
+        { provide: ModalController, useValue: createModalControllerMock() },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();

@@ -5,6 +5,7 @@ import { Browser } from '@capacitor/browser';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
+import { LiveActivityService } from 'src/app/services/live-activity/live-activity.service';
 import { Role } from 'src/app/utilities/constants';
 import { NotificationConfig } from 'src/app/utilities/interfaces';
 
@@ -18,14 +19,20 @@ export class NotificationsPage implements OnInit, OnDestroy {
   public notificationConfig: NotificationConfig;
   public isAdmin: boolean;
   public isNative: boolean;
+  public isIos: boolean;
+  /** Only app builds that contain the native Live Activity plugin show the toggle. */
+  public hasLiveActivity: boolean;
   private sub: RealtimeChannel;
 
   constructor(
     public db: DbService,
     private alertController: AlertController,
     private pushService: PushService,
+    private liveActivity: LiveActivityService,
   ) {
     this.isNative = Capacitor.isNativePlatform();
+    this.isIos = Capacitor.getPlatform() === 'ios';
+    this.hasLiveActivity = LiveActivityService.hasNativePlugin();
   }
 
   async ngOnInit() {
@@ -90,6 +97,12 @@ export class NotificationsPage implements OnInit, OnDestroy {
       this.notificationConfig.enabled_tenants = [...tenants, tenantId];
     }
     this.updateNotificationConfig();
+  }
+
+  async toggleLiveActivity(enabled: boolean) {
+    this.notificationConfig.live_activity = enabled;
+    await this.db.updateNotificationConfig(this.notificationConfig);
+    await this.liveActivity.setEnabled(enabled);
   }
 
   async togglePush() {
