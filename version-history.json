@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.12",
+      "date": "18.10.2026",
+      "changes": [
+        "🎵 Audio-Player: Neuer Anlauf für das Cover auf dem iPhone (Branding-Logo bzw. Attendix-Logo auf Sperrbildschirm und im Kontrollzentrum)."
+      ]
+    },
+    {
       "version": "4.14.11",
       "date": "18.10.2026",
       "changes": [

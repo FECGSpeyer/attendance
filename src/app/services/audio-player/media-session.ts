@@ -9,20 +9,23 @@ type Artwork = { src: string; sizes?: string; type?: string }[];
 
 /** The app icon; the file is PNG data despite its .webp name. 256 px is plenty for the lock screen. */
 const LOGO_URL = 'assets/icons/icon-256.webp';
+/** The same icon from the web app, for iOS, where WebKit gets a plain https cover (see webArtwork). */
+const LOGO_WEB_URL = 'https://attendix.de/assets/icons/icon-256.webp';
 
 /**
  * Lock-screen / notification controls for the audio player.
  *
- * Android and iOS use the native @capgo/capacitor-media-session plugin
- * (Android: foreground service + media notification, iOS: Now Playing info
- * set directly, so the cover works there too). App shells built before the
- * plugin was added don't have it, so we check `isPluginAvailable` and fall
- * back to the browser Media Session API, which the web also uses.
+ * Android uses the native @capgo/capacitor-media-session plugin (foreground
+ * service + media notification). App shells built before the plugin was added
+ * don't have it, so we check `isPluginAvailable` and fall back to the browser
+ * Media Session API — the same API that iOS (WKWebView) and the web use.
+ * iOS can't use the plugin: WebKit owns Now Playing for the <audio> element
+ * and overwrites whatever the plugin sets (tested on a device, 4.14.11).
  * All calls are best-effort and never throw.
  */
 export class MediaSessionBridge {
   private readonly useNativePlugin =
-    ['android', 'ios'].includes(Capacitor.getPlatform()) && Capacitor.isPluginAvailable('MediaSession');
+    Capacitor.getPlatform() === 'android' && Capacitor.isPluginAvailable('MediaSession');
 
   constructor() {
     if (this.useNativePlugin) {
@@ -91,14 +94,16 @@ export class MediaSessionBridge {
   }
 
   /**
-   * Browsers load the cover themselves. Not in an iOS app without the native
-   * plugin: on iOS 27 the lock screen drops the whole Now Playing panel as soon
-   * as WKWebView passes any artwork (data or asset URL, seen in the simulator).
+   * Browsers load the cover themselves. The iOS app gets the logo from the web
+   * app over https: in the iOS 27 simulator the lock screen dropped the whole
+   * Now Playing panel for data and app-asset URLs.
    */
   private static webArtwork(coverUrl?: string): Artwork | undefined {
-    if (Capacitor.getPlatform() === 'ios') { return undefined; }
     if (coverUrl) {
       return [{ src: coverUrl }];
+    }
+    if (Capacitor.getPlatform() === 'ios') {
+      return [{ src: LOGO_WEB_URL, sizes: '256x256', type: 'image/png' }];
     }
     try {
       return [{ src: new URL(LOGO_URL, document.baseURI).href, sizes: '256x256', type: 'image/png' }];
@@ -108,8 +113,8 @@ export class MediaSessionBridge {
   }
 
   /**
-   * The cover as a data URL for the native plugin, which can't load blob: URLs
-   * or the WebView's local origin from native code.
+   * The cover as a data URL for the Android plugin, which can't load blob: URLs
+   * or the WebView's https://localhost origin from native code.
    */
   private static loadArtwork(src: string): Promise<Artwork | undefined> {
     const cache = MediaSessionBridge.artworkCache;
@@ -136,8 +141,8 @@ export class MediaSessionBridge {
   }
 
   /**
-   * Branding logos come in any shape and may be transparent. Lock screen and
-   * notification crop covers to a square, so the logo is centered on a white square.
+   * Branding logos come in any shape and may be transparent. The notification
+   * crops covers to a square, so the logo is centered on a white square.
    */
   private static async squareArtwork(blob: Blob): Promise<Artwork> {
     const objectUrl = URL.createObjectURL(blob);
