@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.16",
+      "date": "18.10.2026",
+      "changes": [
+        "🎵 Audio-Player: Die Steuerung auf dem Sperrbildschirm des iPhones ist wieder da (Stand von 4.14.12, mit Spulen und Cover)."
+      ]
+    },
+    {
       "version": "4.14.15",
       "date": "18.10.2026",
       "changes": [
