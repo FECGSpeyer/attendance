@@ -1,6 +1,7 @@
 import { Component, effect } from '@angular/core';
 import { ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
+import { attendanceHasEnded } from '../../../utilities/plan-days';
 import 'dayjs/locale/de';
 import { AttendancePage } from '../../../attendance/attendance/attendance.page';
 import { DbService } from '../../../services/db.service';
@@ -59,12 +60,11 @@ export class NextEventCardComponent {
     this.loading = true;
     try {
       const all: Attendance[] = await this.db.getAttendance(false, true);
-      const now = dayjs().startOf('day');
       const past = all
-        .filter(a => dayjs(a.date).isBefore(now))
+        .filter(a => attendanceHasEnded(a))
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       const upcoming = all
-        .filter(a => !dayjs(a.date).isBefore(now))
+        .filter(a => !attendanceHasEnded(a))
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       this.lastEvent = past[0] ?? null;

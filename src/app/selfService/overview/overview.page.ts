@@ -3,6 +3,7 @@ import { ActionSheetController, AlertController, IonModal } from '@ionic/angular
 import { Browser } from '@capacitor/browser';
 import { Router } from '@angular/router';
 import dayjs from 'dayjs';
+import { attendanceHasEnded, attendanceIsRunning } from '../../utilities/plan-days';
 import { DbService } from 'src/app/services/db.service';
 import { FilesService } from 'src/app/services/files/files.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS } from 'src/app/utilities/constants';
@@ -82,15 +83,13 @@ export class OverviewPage implements OnInit {
   }
 
   processAttendances() {
-    const now = dayjs().startOf('day');
-
     // Split into upcoming and past
     this.upcomingAttendances = this.attendances
-      .filter(att => !dayjs(att.date).isBefore(now))
+      .filter(att => !attendanceHasEnded(att))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     this.pastAttendances = this.attendances
-      .filter(att => dayjs(att.date).isBefore(now))
+      .filter(att => attendanceHasEnded(att))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     // Set current attendance (next upcoming)
@@ -351,7 +350,7 @@ export class OverviewPage implements OnInit {
   }
 
   attHasPassed(att: CrossTenantPersonAttendance): boolean {
-    return dayjs(att.date).isBefore(dayjs(), 'day');
+    return attendanceHasEnded(att);
   }
 
   attIsInFuture(att: CrossTenantPersonAttendance): boolean {
@@ -359,7 +358,7 @@ export class OverviewPage implements OnInit {
   }
 
   isAttToday(att: CrossTenantPersonAttendance): boolean {
-    return dayjs(att.date).isSame(dayjs(), 'day');
+    return attendanceIsRunning(att);
   }
 
   getReadableDate(date: string, attType?: AttendanceType): string {

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.13.17",
+      "date": "18.10.2026",
+      "changes": [
+        "🐛 Mehrtägige Termine (z. B. Freizeiten) bleiben bis zu ihrem letzten Tag der aktuelle Termin und rutschen erst danach zu den vergangenen Terminen."
+      ]
+    },
+    {
       "version": "4.13.16",
       "date": "17.10.2026",
       "changes": [
