@@ -201,10 +201,13 @@
           <span class="ev-tile__day">{{ day(currentAttendance.date) }}</span>
         </div>
         <div>
-          <div class="ev-today__title">{{ getEventTitle(currentAttendance) }}</div>
-          <div class="ev-today__meta">{{ getEventMeta(currentAttendance, true) }}</div>
+          <div class="ev-today__title" lang="de">{{ getEventTitle(currentAttendance) }}</div>
+          <div class="ev-today__meta">{{ getEventMeta(currentAttendance, true, false) }}</div>
         </div>
       </div>
+      @if (currentAttendance.place) {
+        <div class="ev-today__place"><ion-icon name="location-outline"></ion-icon><span>{{ currentAttendance.place }}</span></div>
+      }
       <ng-container *ngTemplateOutlet="eventChips; context: { $implicit: currentAttendance }"></ng-container>
       <div class="ev-today__rows">
         @for (pa of kidsByAttendance[currentAttendance.id] ?? []; track pa.id) {

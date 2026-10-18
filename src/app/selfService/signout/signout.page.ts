@@ -681,13 +681,13 @@ export class SignoutPage implements OnInit {
   }
 
   /** Time and place; multi-day Termine (and the current card) also show the date. */
-  getEventMeta(att: PersonAttendance, withDate = false): string {
+  getEventMeta(att: PersonAttendance, withDate = false, withPlace = true): string {
     const attType = this.db.attendanceTypes().find(type => type.id === att.typeId);
     const showDate = withDate || isMultiDay(att.attendance) || (attType?.all_day && (attType.duration_days ?? 1) > 1);
     return eventMeta(
       showDate ? this.getReadableDate(att.date, att.typeId) : '',
       eventTimeRange(att.attendance?.start_time ?? attType?.start_time, att.attendance?.end_time ?? attType?.end_time),
-      att.attendance?.place,
+      withPlace ? att.attendance?.place : '',
     );
   }
 

@@ -138,7 +138,7 @@ ion-list.ev-list {
 
   .ev-today__head {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 14px;
 
     > div:not(.ev-tile) {
@@ -167,8 +167,35 @@ ion-list.ev-list {
   }
 
   .ev-today__title {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 700;
+    line-height: 1.25;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  .ev-today__place {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 0.875rem;
+    color: var(--ion-color-medium);
+
+    ion-icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+  }
+
+  &.ev-today--filled .ev-today__place {
+    color: inherit;
+    opacity: 0.9;
+  }
+
+  .ev-today__stats .ev-today__stat-strong {
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.3);
   }
 
   .ev-today__meta {
@@ -205,20 +232,22 @@ ion-list.ev-list {
     margin-top: 14px;
 
     .ev-today__cta {
-      flex: 1;
+      flex: 1 1 0;
+      min-width: 0;
       margin-top: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       border: 0;
       font: inherit;
+      font-size: 0.95rem;
       font-weight: 600;
+      white-space: nowrap;
       cursor: pointer;
     }
 
     .ev-today__cta--secondary {
-      flex: 0 0 auto;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 12px 14px;
       background: rgba(255, 255, 255, 0.18);
       color: var(--ion-color-primary-contrast);
     }

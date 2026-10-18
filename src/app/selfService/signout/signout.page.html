@@ -283,13 +283,16 @@
           <span class="ev-tile__day">{{ day(currentAttendance.date) }}</span>
         </div>
         <div>
-          <div class="ev-today__title">{{ getEventTitle(currentAttendance) }}</div>
-          <div class="ev-today__meta">{{ getEventMeta(currentAttendance, true) }}</div>
+          <div class="ev-today__title" lang="de">{{ getEventTitle(currentAttendance) }}</div>
+          <div class="ev-today__meta">{{ getEventMeta(currentAttendance, true, false) }}</div>
         </div>
         @if (isOwnAttendance(currentAttendance)) {
           <span class="ev-pill ev-today__status" [ngClass]="'ion-color-' + statusColorOf(currentAttendance)">{{ statusLabelOf(currentAttendance) }}</span>
         }
       </div>
+      @if (currentAttendance.attendance?.place) {
+        <div class="ev-today__place"><ion-icon name="location-outline"></ion-icon><span>{{ currentAttendance.attendance?.place }}</span></div>
+      }
       @if (showAllAttendances && !currentAttendance.isMember) {
         <p class="all-attendances-info-text">{{ showAllAttendancesInfoText }}</p>
       }

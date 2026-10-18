@@ -93,13 +93,16 @@
                 <span class="ev-tile__day">{{ day(currentAttendance.date) }}</span>
               </div>
               <div>
-                <div class="ev-today__title">{{ getEventTitle(currentAttendance) }}</div>
-                <div class="ev-today__meta">{{ getEventMeta(currentAttendance, true) }}</div>
+                <div class="ev-today__title" lang="de">{{ getEventTitle(currentAttendance) }}</div>
+                <div class="ev-today__meta">{{ getEventMeta(currentAttendance, true, false) }}</div>
               </div>
-              <div class="ev-today__perc">{{ currentAttendance.percentage || 0 }}%</div>
             </div>
+            @if (currentAttendance.place) {
+              <div class="ev-today__place"><ion-icon name="location-outline"></ion-icon><span>{{ currentAttendance.place }}</span></div>
+            }
             @if (getStatusCounts(currentAttendance); as counts) {
               <div class="ev-today__stats">
+                <span class="ev-today__stat-strong">{{ currentAttendance.percentage || 0 }} %</span>
                 <span>{{ counts.present }} anwesend</span>
                 @if (counts.excused) {
                   <span>{{ counts.excused }} entschuldigt</span>
@@ -110,10 +113,14 @@
               </div>
             }
             <div class="ev-today__ctas">
-              <button class="ev-today__cta" (click)="$event.stopPropagation(); openAttendance(currentAttendance)">Anwesenheit erfassen</button>
+              <button class="ev-today__cta" (click)="$event.stopPropagation(); openAttendance(currentAttendance)">
+                <ion-icon name="checkbox-outline"></ion-icon>
+                {{ hasPlan(currentAttendance) ? 'Anwesenheit' : 'Anwesenheit erfassen' }}
+              </button>
               @if (hasPlan(currentAttendance)) {
                 <button class="ev-today__cta ev-today__cta--secondary" (click)="$event.stopPropagation(); openPlanViewer(currentAttendance)">
-                  <ion-icon name="document-text-outline"></ion-icon> Ablaufplan
+                  <ion-icon name="document-text-outline"></ion-icon>
+                  Ablaufplan
                 </button>
               }
             </div>
