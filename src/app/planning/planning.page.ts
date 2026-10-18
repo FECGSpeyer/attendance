@@ -510,6 +510,7 @@ export class PlanningPage implements OnInit {
       inputs: [
         { type: 'textarea', name: 'field', placeholder: 'Name, z. B. Programm Jugendchor' },
         { type: 'textarea', name: 'conductor', placeholder: 'Ausführung (optional)' },
+        { type: 'textarea', name: 'info', placeholder: 'Info-Text (optional)' },
       ],
       buttons: [
         { text: 'Abbrechen' },
@@ -520,7 +521,7 @@ export class PlanningPage implements OnInit {
               alert.message = 'Bitte einen Namen eingeben.';
               return false;
             }
-            const head = newGroupHead(evt.field.trim(), evt.conductor?.trim());
+            const head = newGroupHead(evt.field.trim(), evt.conductor?.trim(), evt.info?.trim());
             this.selectedFields.push(head);
             this.calculateEnd();
             void this.addSubItem(head);
@@ -708,6 +709,10 @@ export class PlanningPage implements OnInit {
         name: 'conductor',
         placeholder: 'Ausführenden eingeben...'
       }, {
+        type: 'textarea',
+        name: 'info',
+        placeholder: 'Info-Text (optional)'
+      }, {
         type: 'number',
         label: 'Minuten',
         name: 'time',
@@ -723,6 +728,7 @@ export class PlanningPage implements OnInit {
             id: evt.field,
             name: evt.field,
             conductor: evt.conductor ?? '',
+            info: evt.info?.trim() || undefined,
             time: evt.time ? String(evt.time) : '20',
           });
 

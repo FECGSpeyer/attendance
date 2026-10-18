@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.18",
+      "date": "18.10.2026",
+      "changes": [
+        "📝 Ablaufpläne: Beim Hinzufügen eines Feldes oder Programmblocks kannst du direkt einen Info-Text eingeben, auch in Planvorlagen und geteilten Plänen."
+      ]
+    },
+    {
       "version": "4.14.17",
       "date": "18.10.2026",
       "changes": [

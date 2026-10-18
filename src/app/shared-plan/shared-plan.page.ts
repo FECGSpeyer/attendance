@@ -349,6 +349,7 @@ export class SharedPlanPage implements OnInit, OnDestroy {
       inputs: [
         { type: 'textarea', name: 'field', placeholder: 'Programmpunkt eingeben...' },
         { type: 'textarea', name: 'conductor', placeholder: 'Ausführender (optional)' },
+        { type: 'textarea', name: 'info', placeholder: 'Info-Text (optional)' },
       ],
       buttons: [
         { text: 'Abbrechen', role: 'cancel' },
@@ -360,6 +361,7 @@ export class SharedPlanPage implements OnInit, OnDestroy {
               id: `${evt.field.trim()}-${Date.now()}`,
               name: evt.field.trim(),
               conductor: evt.conductor?.trim() ?? '',
+              info: evt.info?.trim() || undefined,
               time: '20',
             });
             this.saveEdits();

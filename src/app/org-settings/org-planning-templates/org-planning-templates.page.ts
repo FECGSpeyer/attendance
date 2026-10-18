@@ -44,6 +44,10 @@ export class OrgPlanningTemplatesPage implements OnInit {
         name: 'conductor',
         placeholder: 'Ausführender (optional)...',
       }, {
+        type: 'textarea',
+        name: 'info',
+        placeholder: 'Info-Text (optional)',
+      }, {
         type: 'number',
         label: 'Minuten',
         name: 'time',
@@ -62,6 +66,7 @@ export class OrgPlanningTemplatesPage implements OnInit {
             id: crypto.randomUUID(),
             name: evt.name.trim(),
             conductor: evt.conductor?.trim() || '',
+            info: evt.info?.trim() || undefined,
             time: evt.time ? String(evt.time) : '20',
           });
           await this.saveDefaultFields();
@@ -228,6 +233,10 @@ export class OrgPlanningTemplatesPage implements OnInit {
         name: 'conductor',
         placeholder: 'Ausführenden eingeben...',
       }, {
+        type: 'textarea',
+        name: 'info',
+        placeholder: 'Info-Text (optional)',
+      }, {
         type: 'number',
         label: 'Minuten',
         name: 'time',
@@ -242,6 +251,7 @@ export class OrgPlanningTemplatesPage implements OnInit {
             id: evt.field || crypto.randomUUID(),
             name: evt.field || '',
             conductor: evt.conductor ?? '',
+            info: evt.info?.trim() || undefined,
             time: evt.time ? String(evt.time) : '20',
           });
           this.updateTemplateEnd(tpl, index);

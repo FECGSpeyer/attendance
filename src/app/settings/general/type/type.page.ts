@@ -305,6 +305,10 @@ export class TypePage implements OnInit {
         type: 'textarea',
         name: 'field',
         placeholder: 'Freitext eingeben...'
+      }, {
+        type: 'textarea',
+        name: 'info',
+        placeholder: 'Info-Text (optional)'
       }],
       buttons: [{
         text: 'Abbrechen'
@@ -314,6 +318,7 @@ export class TypePage implements OnInit {
           this.type.default_plan.fields.push({
             id: evt.field,
             name: evt.field,
+            info: evt.info?.trim() || undefined,
             time: '20',
           });
 

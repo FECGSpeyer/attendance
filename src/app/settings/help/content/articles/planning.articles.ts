@@ -5,8 +5,10 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
     id: 'plan-create',
     title: 'Ablaufplan erstellen',
     categoryId: 'planning',
-    keywords: ['plan anlegen', 'programm erstellen', 'ablauf'],
+    keywords: ['plan anlegen', 'programm erstellen', 'ablauf', 'feld hinzufügen', 'programmpunkt', 'info-text', 'infotext', 'notiz', 'beschreibung'],
     body: `Unter "Planung" wählst du einen Termin aus und erstellst einen [[Ablaufplan]]: eine Abfolge von Programmpunkten (Werke, Ansprachen, Pausen) mit jeweiliger Dauer und Startzeit. Die Endzeit wird automatisch anhand der Dauer aller Punkte berechnet.
+
+**Punkt hinzufügen:** Tippe beim Ablauf auf **+** und dann auf **Feld hinzufügen**. Neben Name, Ausführung und Dauer kannst du gleich einen optionalen **Info-Text** eingeben, zum Beispiel einen Liedtitel oder einen Hinweis. Der Info-Text erscheint klein unter dem Programmpunkt. Später änderst du ihn, indem du auf den Punkt tippst.
 
 Über "Zurücksetzen" kannst du jederzeit zu den hinterlegten Standard-Programmpunkten des Termin-Typs zurückkehren — bereits vorgenommene Änderungen gehen dabei verloren.`,
   },

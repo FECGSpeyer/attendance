@@ -277,6 +277,7 @@ export class PublicPlanningPage implements OnInit {
       inputs: [
         { type: 'textarea', name: 'field',     placeholder: 'Programmpunkt eingeben...' },
         { type: 'textarea', name: 'conductor', placeholder: 'Ausführender (optional)' },
+        { type: 'textarea', name: 'info',      placeholder: 'Info-Text (optional)' },
       ],
       buttons: [
         { text: 'Abbrechen', role: 'cancel' },
@@ -291,6 +292,7 @@ export class PublicPlanningPage implements OnInit {
               id: `${evt.field}-${Date.now()}`,
               name: evt.field,
               conductor: evt.conductor ?? '',
+              info: evt.info?.trim() || undefined,
               time: '20',
             });
             this.calculateEnd();
