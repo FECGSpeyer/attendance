@@ -49,8 +49,8 @@
               </ion-list-header>
               <ion-item-group>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-success">Dabei</span>
-                  <ion-label>Dabei / Anwesend</ion-label>
+                  <span slot="start" class="ev-pill ion-color-success">Zugesagt</span>
+                  <ion-label>Zugesagt / Anwesend</ion-label>
                 </ion-item>
                 <ion-item lines="none">
                   <span slot="start" class="ev-pill ion-color-warning">Entschuldigt</span>
@@ -61,12 +61,12 @@
                   <ion-label>Abwesend</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-tertiary">Später</span>
-                  <ion-label>Später / Verspätet</ion-label>
+                  <span slot="start" class="ev-pill ion-color-tertiary">Verspätet</span>
+                  <ion-label>Verspätet anwesend</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-rosa">Kommt später (entschuldigt)</span>
-                  <ion-label>Kommt später (entschuldigt)</ion-label>
+                  <span slot="start" class="ev-pill ion-color-rosa">Verspätung gemeldet</span>
+                  <ion-label>Verspätung gemeldet (entschuldigt)</ion-label>
                 </ion-item>
                 <ion-item lines="none">
                   <span slot="start" class="ev-pill ion-color-medium">Neutral</span>
@@ -297,10 +297,10 @@
       @if (quickActions(currentAttendance); as qa) {
         <div class="ev-today__actions">
           <ion-button [fill]="qa.present ? 'solid' : 'outline'" [color]="qa.present ? 'success' : 'primary'" [disabled]="!qa.canSignin"
-            (click)="$event.stopPropagation(); handleSigninWithFields(currentAttendance)">Dabei</ion-button>
+            (click)="$event.stopPropagation(); handleSigninWithFields(currentAttendance)">Zusagen</ion-button>
           @if (qa.allowLate) {
             <ion-button [fill]="qa.late ? 'solid' : 'outline'" [color]="qa.late ? 'rosa' : 'primary'" [disabled]="qa.blocked"
-              (click)="$event.stopPropagation(); quickSignout(currentAttendance, true)">Später</ion-button>
+              (click)="$event.stopPropagation(); quickSignout(currentAttendance, true)">Verspätung</ion-button>
           }
           @if (qa.allowExcuse) {
             <ion-button [fill]="qa.excused ? 'solid' : 'outline'" [color]="qa.excused ? 'warning' : 'primary'" [disabled]="qa.blocked"

@@ -339,7 +339,7 @@ export class SignoutPage implements OnInit {
   }
 
   /**
-   * @param hideQuickActions on the current card Dabei / Später / Absagen already
+   * @param hideQuickActions on the current card Zusagen / Verspätung / Absagen already
    * sit as buttons, so the sheet then only offers what is not shown there.
    */
   async presentActionSheetForChoice(attendance: PersonAttendance, hideQuickActions = false) {

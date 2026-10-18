@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.3",
+      "date": "18.10.2026",
+      "changes": [
+        "✏️ Meine Anwesenheit: Die Buttons heißen jetzt \"Zusagen\", \"Verspätung\" und \"Absagen\". Der Status zeigt entsprechend \"Zugesagt\" bzw. \"Verspätung gemeldet\"."
+      ]
+    },
+    {
       "version": "4.14.2",
       "date": "18.10.2026",
       "changes": [

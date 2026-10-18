@@ -72,13 +72,13 @@ export function statusColor(status: AttendanceStatus): string {
   }
 }
 
-/** Readable status for the pill; upcoming Termine read as a plan ("Dabei"), past ones as a result. */
+/** Readable status for the pill; upcoming Termine read as a plan ("Zugesagt"), past ones as a result. */
 export function statusLabel(status: AttendanceStatus, past = false): string {
   switch (status) {
-    case AttendanceStatus.Present: return past ? 'Anwesend' : 'Dabei';
+    case AttendanceStatus.Present: return past ? 'Anwesend' : 'Zugesagt';
     case AttendanceStatus.Absent: return 'Abwesend';
-    case AttendanceStatus.Late: return past ? 'Verspätet' : 'Später';
-    case AttendanceStatus.LateExcused: return past ? 'Verspätet entsch.' : 'Kommt später';
+    case AttendanceStatus.Late: return 'Verspätet';
+    case AttendanceStatus.LateExcused: return past ? 'Verspätet entsch.' : 'Verspätung gemeldet';
     case AttendanceStatus.Neutral: return 'Neutral';
     default: return 'Entschuldigt';
   }
