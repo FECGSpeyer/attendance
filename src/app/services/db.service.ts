@@ -2615,16 +2615,21 @@ export class DbService {
     });
   }
 
-  async getUpcomingAttendances(tenantId?: number): Promise<Attendance[]> {
+  /** `includeRunning` also returns mehrtägige Termine that started earlier and are still running. */
+  async getUpcomingAttendances(tenantId?: number, includeRunning = false): Promise<Attendance[]> {
+    const from = includeRunning ? dayjs().startOf('day').subtract(31, 'day') : dayjs().startOf('day');
     const { data } = await supabase
       .from('attendance')
       .select('*')
       .eq('tenantId', tenantId ?? this.tenant().id)
-      .gt('date', dayjs().startOf('day').toISOString())
+      .gt('date', from.toISOString())
       .order('date', {
         ascending: true,
       });
 
+    if (includeRunning) {
+      return ((data as any) ?? []).filter((att: Attendance) => !attendanceHasEnded(att));
+    }
     return data as any;
   }
 

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.13.18",
+      "date": "18.10.2026",
+      "changes": [
+        "🐛 Die Dashboard-Karte \"Aktueller Ablaufplan\" zeigt bei mehrtägigen Terminen auch an den Folgetagen den Ablaufplan des jeweiligen Tages."
+      ]
+    },
+    {
       "version": "4.13.17",
       "date": "18.10.2026",
       "changes": [

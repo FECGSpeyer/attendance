@@ -42,12 +42,12 @@ export class CurrentPlanCardComponent implements OnDestroy {
     this.loadDone = false;
     this.loading = true;
     try {
-      const upcoming = await this.db.getUpcomingAttendances();
+      const upcoming = await this.db.getUpcomingAttendances(undefined, true);
       const role = this.db.tenantUser()?.role;
       const isAdmin = [Role.ADMIN, Role.RESPONSIBLE].includes(role);
 
       const next = upcoming.find(a =>
-        (a.plan?.fields?.length ?? 0) > 0 &&
+        allPlans(a).some(p => (p?.fields?.length ?? 0) > 0) &&
         (isAdmin || a.share_plan)
       ) ?? null;
 
