@@ -133,6 +133,18 @@ export class AttendancePage implements OnInit, OnDestroy {
     if (idx >= 0) { this.players[idx] = { ...this.players[idx], status }; }
   }
 
+  /** Shows a new note right away instead of waiting for the realtime echo. */
+  private async savePlayerNotes(id: string, notes: string): Promise<void> {
+    const idx = this.players.findIndex(p => p.id === id);
+    if (idx >= 0) { this.players[idx] = { ...this.players[idx], notes }; }
+    this.inFlightWrites.add(id);
+    try {
+      await this.db.updatePersonAttendance(id, { notes });
+    } finally {
+      this.inFlightWrites.delete(id);
+    }
+  }
+
   private recalculateGroupHeaders(players: PersonAttendance[]): PersonAttendance[] {
     const seenGroups = new Set<string>();
     const groupCounts = new Map<string, number>();
@@ -666,7 +678,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     const buttons: any[] = presetReasons.map(reason => ({
       text: reason,
       handler: async (): Promise<void> => {
-        await this.db.updatePersonAttendance(player.id, { notes: reason });
+        await this.savePlayerNotes(player.id, reason);
       },
     }));
 
@@ -682,7 +694,7 @@ export class AttendancePage implements OnInit, OnDestroy {
         text: 'Notiz löschen',
         role: 'destructive',
         handler: async (): Promise<void> => {
-          await this.db.updatePersonAttendance(player.id, { notes: '' });
+          await this.savePlayerNotes(player.id, '');
         },
       });
     }
@@ -717,7 +729,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       }, {
         text: 'Speichern',
         handler: async (evt: { note: string }): Promise<void> => {
-          await this.db.updatePersonAttendance(player.id, { notes: evt.note });
+          await this.savePlayerNotes(player.id, evt.note);
         },
       }],
     });

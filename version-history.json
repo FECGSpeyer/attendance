@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "4.14.9",
+      "date": "18.10.2026",
+      "changes": [
+        "📐 Termine: Die Karte des heutigen bzw. nächsten Termins nutzt wieder die volle Breite.",
+        "🗓️ Terminlisten: Bei Terminen ohne Namen steht das Datum nicht mehr doppelt in Titel und Unterzeile.",
+        "📝 Anwesenheit: Eine Notiz bzw. ein Grund erscheint sofort bei der Person, ohne den Termin neu öffnen zu müssen."
+      ]
+    },
+    {
       "version": "4.14.8",
       "date": "18.10.2026",
       "changes": [
