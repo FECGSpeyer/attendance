@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular/lazy';
 import { SharedPlanPageRoutingModule } from './shared-plan-routing.module';
 import { SharedPlanPage } from './shared-plan.page';
 import { PlanChipsComponent } from '../planning/plan-chips/plan-chips.component';
+import { PlanMinutesPipe } from '../planning/plan-minutes.pipe';
 
 @NgModule({
   imports: [
@@ -13,6 +14,7 @@ import { PlanChipsComponent } from '../planning/plan-chips/plan-chips.component'
     IonicModule,
     SharedPlanPageRoutingModule,
     PlanChipsComponent,
+    PlanMinutesPipe,
   ],
   declarations: [SharedPlanPage]
 })

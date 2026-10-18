@@ -95,6 +95,10 @@
           <ion-item (click)="addExtraField(addPopover)">
             <ion-label>Feld hinzufügen</ion-label>
           </ion-item>
+          <ion-item (click)="addGroup(addPopover)">
+            <ion-icon name="albums-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>Programmblock hinzufügen</ion-label>
+          </ion-item>
           <ion-item (click)="addNoteField(addPopover)">
             <ion-label>Notizfeld hinzufügen</ion-label>
           </ion-item>
@@ -119,6 +123,23 @@
               <ion-icon name="git-commit-outline" slot="start" color="medium"></ion-icon>
               <ion-label>Tagesordnung einfügen</ion-label>
             </ion-item>
+          }
+          @if (blockTemplates.length) {
+            <ion-item-divider></ion-item-divider>
+            <ion-item lines="none">
+              <ion-label><small><b>Programmblöcke</b></small></ion-label>
+            </ion-item>
+            @for (tpl of blockTemplates; track tpl.id) {
+              <ion-item button detail="false" (click)="insertBlockTemplate(tpl, addPopover)">
+                <ion-label>{{ tpl.name }} <ion-note>{{ templateMinutes(tpl) }} min</ion-note></ion-label>
+                @if (isAdmin) {
+                  <ion-button slot="end" fill="clear" color="medium" size="small" aria-label="Vorlage löschen"
+                    (click)="$event.stopPropagation(); deleteBlockTemplate(tpl, addPopover)">
+                    <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                  </ion-button>
+                }
+              </ion-item>
+            }
           }
           @if (availableTemplates.length || orgDefaultFields.length) {
             <ion-item-divider></ion-item-divider>
@@ -231,7 +252,15 @@
 
     <ion-list>
       <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
-        @for (field of selectedFields; track trackByFieldId(i, field); let i = $index) {
+        @for (row of rows; track row.key) {
+          @if (row.addFor) {
+            <ion-item class="group-child group-add" lines="full" button detail="false" (click)="addSubItem(row.addFor)">
+              <ion-icon name="add" slot="start" color="primary"></ion-icon>
+              <ion-label color="primary">Unterpunkt hinzufügen</ion-label>
+            </ion-item>
+          } @else {
+          @let field = row.field;
+          @let i = row.index;
           <ion-item-sliding #slider>
             @if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID) {
               <ion-item class="agenda-marker" lines="full">
@@ -244,8 +273,26 @@
                 }
                 <ion-reorder slot="end"></ion-reorder>
               </ion-item>
+            } @else if (field.isGroup) {
+              <ion-item class="group-head" lines="full">
+                <ion-button slot="start" fill="clear" size="small" class="group-toggle"
+                  [attr.aria-label]="isCollapsed(field) ? 'Block aufklappen' : 'Block einklappen'"
+                  (click)="toggleGroup(field)">
+                  <ion-icon slot="icon-only" [name]="isCollapsed(field) ? 'chevron-forward' : 'chevron-down'"></ion-icon>
+                </ion-button>
+                <ion-label (click)="showGroupOptions(field)">
+                  <h2>{{ field.name }}</h2>
+                  <h3>{{ groupRange(field, i) }}{{ field.conductor ? ' | ' + field.conductor : '' }}</h3>
+                  @if (field.info) {
+                    <p class="field-info">{{ field.info }}</p>
+                  }
+                </ion-label>
+                <ion-badge slot="end" class="group-duration">{{ groupMinutes(field) }} min</ion-badge>
+                <ion-reorder slot="end"></ion-reorder>
+              </ion-item>
             } @else {
-              <ion-item [class.note-item]="field.id.includes('noteFld')" [lines]="field.id.includes('noteFld') ? 'none' : 'full'">
+              <ion-item [class.note-item]="field.id.includes('noteFld')" [class.group-child]="!!field.groupId"
+                [lines]="field.id.includes('noteFld') ? 'none' : 'full'">
                 <ion-label (click)="changeField(field)" [class.note-field]="field.id.includes('noteFld')">
                   <h2>{{ fieldName(field) }}</h2>
                   @if (field.songId && !isGeneral) {
@@ -266,11 +313,17 @@
               </ion-item>
             }
             <ion-item-options (ionSwipe)="removeField(i, slider)">
+              @if (canIndent(i)) {
+                <ion-item-option color="medium" (click)="toggleIndent(i, slider)">
+                  {{ field.groupId ? 'Ausrücken' : 'Einrücken' }}
+                </ion-item-option>
+              }
               <ion-item-option expandable color="danger" (click)="removeField(i, slider)">
                 <ion-icon name="trash"></ion-icon>
               </ion-item-option>
             </ion-item-options>
           </ion-item-sliding>
+          }
         }
       </ion-reorder-group>
     </ion-list>

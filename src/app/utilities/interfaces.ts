@@ -68,6 +68,7 @@ export interface Tenant {
   song_additional_fields?: ExtraField[];
   absence_reasons?: string[];
   late_reasons?: string[];
+  plan_block_templates?: PlanBlockTemplate[];
 }
 
 export interface ExtraField {
@@ -474,6 +475,17 @@ export interface FieldSelection {
   info?: string;
   /** Set when this plan field is an agenda item (TOP) of the team organisation. */
   agendaItemId?: string;
+  /** Head of a Programmblock: stores 0 min, its duration is the sum of its Unterpunkte. */
+  isGroup?: boolean;
+  /** Id of the Programmblock head this Unterpunkt belongs to (see plan-groups.ts). */
+  groupId?: string;
+}
+
+/** Saved Programmblock (head first, then its Unterpunkte) to insert into any plan. */
+export interface PlanBlockTemplate {
+  id: string;
+  name: string;
+  fields: FieldSelection[];
 }
 
 export interface GroupCategory {

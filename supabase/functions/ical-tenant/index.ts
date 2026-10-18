@@ -83,17 +83,22 @@ function buildPlanDescription(plan: any): string {
   let totalMinutes = startH * 60 + startM;
 
   for (const f of fields) {
-    const dur = Number(f.time) || 0;
+    // A Programmblock head takes no time itself; it shows the sum of its Unterpunkte.
+    const dur = f.isGroup ? 0 : (Number(f.time) || 0);
+    const shownDur = f.isGroup
+      ? fields.filter((c: any) => c.groupId === f.id).reduce((sum: number, c: any) => sum + (Number(c.time) || 0), 0)
+      : dur;
     const hh = pad(Math.floor(totalMinutes / 60) % 24);
     const mm = pad(totalMinutes % 60);
     const isNote = String(f.id).startsWith('noteFld');
+    const indent = f.groupId ? '  – ' : '';
 
     if (isNote) {
-      lines.push(escapeIcal(f.name));
+      lines.push(escapeIcal(`${indent}${f.name}`));
     } else {
-      let entry = `${hh}:${mm} | ${f.name}`;
+      let entry = `${indent}${hh}:${mm} | ${f.name}`;
       if (f.conductor) entry += ` (${f.conductor})`;
-      entry += ` – ${dur} min`;
+      entry += ` – ${shownDur} min`;
       lines.push(escapeIcal(entry));
     }
     totalMinutes += dur;

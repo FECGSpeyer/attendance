@@ -17,6 +17,8 @@ interface FieldSelection {
   time: string;
   conductor?: string;
   info?: string;
+  isGroup?: boolean;
+  groupId?: string;
 }
 
 interface PlanEntry {
@@ -120,9 +122,14 @@ function buildDescription(fields: FieldSelection[], startTime: string, date: str
   const lines: string[] = [];
   let cumulativeMins = 0;
   for (const f of fields) {
-    const dur = Number(f.time) || 0;
+    // A Programmblock head takes no time itself; it shows the sum of its Unterpunkte.
+    const dur = f.isGroup ? 0 : (Number(f.time) || 0);
+    const shownDur = f.isGroup
+      ? fields.filter(c => c.groupId === f.id).reduce((sum, c) => sum + (Number(c.time) || 0), 0)
+      : dur;
+    const indent = f.groupId ? '  \u2013 ' : '';
     if (f.id.includes('noteFld')) {
-      lines.push(escapeIcal(f.name));
+      lines.push(escapeIcal(`${indent}${f.name}`));
     } else {
       const slotStart = parseLocalDateTime(date, startTime);
       let timeStr = '';
@@ -136,7 +143,7 @@ function buildDescription(fields: FieldSelection[], startTime: string, date: str
         timeStr = berlinFormatter.format(slotDate) + ' Uhr | ';
       }
       const conductorStr = f.conductor ? ` (${f.conductor})` : '';
-      lines.push(escapeIcal(`${timeStr}${f.name}${conductorStr} \u2013 ${dur} min`));
+      lines.push(escapeIcal(`${indent}${timeStr}${f.name}${conductorStr} \u2013 ${shownDur} min`));
       if (f.info) lines.push(escapeIcal(`  ${f.info}`));
     }
     cumulativeMins += dur;

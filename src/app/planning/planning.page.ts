@@ -3,14 +3,25 @@ import { ActionSheetButton, ActionSheetController, AlertController, AlertInput, 
 import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
-import { Attendance, FieldSelection, GroupCategory, History, Group, Person, Plan, Song, AttendanceType } from '../utilities/interfaces';
+import { Attendance, FieldSelection, GroupCategory, History, Group, Person, Plan, Song, AttendanceType, PlanBlockTemplate } from '../utilities/interfaces';
 // jsPDF is lazy-loaded for better initial bundle size
 import { Utils } from '../utilities/Utils';
-import { DefaultAttendanceType } from 'src/app/utilities/constants';
+import { DefaultAttendanceType, Role } from 'src/app/utilities/constants';
 import { AGENDA_ITEMS_PLACEHOLDER_ID } from '../utilities/interfaces';
 import { fieldDisplayName, topNumbers } from '../team-organization/team-org.utils';
 import { AgendaPickerComponent } from '../agenda-items/agenda-picker/agenda-picker.component';
 import { allPlans, dayOptions, isMultiDay, nextFreeDay, planDay, planLabel, planSubtitle, splitPlans } from '../utilities/plan-days';
+import { blockTemplateFrom, childrenOf, cloneBlock, groupDuration, isGroupHead, lastIndexOfGroup, moveRow, newGroupHead, normalizeGroups } from '../utilities/plan-groups';
+
+/** A row of the editor list: a field, or the "Unterpunkt hinzufügen" row closing an open block. */
+interface PlanRow {
+  key: string;
+  field?: FieldSelection;
+  /** Index of `field` in selectedFields. */
+  index: number;
+  /** Set on the add row of a block. */
+  addFor?: FieldSelection;
+}
 
 @Component({
   selector: 'app-planning',
@@ -54,6 +65,81 @@ export class PlanningPage implements OnInit {
   public planIndex = 0;
 
   readonly AGENDA_ITEMS_PLACEHOLDER_ID = AGENDA_ITEMS_PLACEHOLDER_ID;
+
+  /** Programmblöcke folded in the editor (UI state only). */
+  private collapsedGroups = new Set<string>();
+  private rowsCache: PlanRow[] = [];
+  private rowsKey = '';
+
+  /** Rows shown in the editor; Unterpunkte of folded blocks are hidden. Cached for stable change detection. */
+  get rows(): PlanRow[] {
+    const fields = this.selectedFields;
+    const key = fields.map(f => `${f.id}|${f.groupId ?? ''}|${f.isGroup ? 1 : 0}`).join(';') + '#' + [...this.collapsedGroups].join(';');
+    if (key === this.rowsKey && this.rowsCache.length) { return this.rowsCache; }
+    const rows: PlanRow[] = [];
+    const seen = new Map<string, number>();
+    const rowKey = (id: string) => {
+      const n = (seen.get(id) ?? 0) + 1;
+      seen.set(id, n);
+      return n > 1 ? `${id}#${n}` : id;
+    };
+    fields.forEach((field, index) => {
+      if (field.groupId && this.collapsedGroups.has(field.groupId)) { return; }
+      rows.push({ key: rowKey(field.id), field, index });
+      const closesBlock = isGroupHead(field) ? !fields[index + 1]?.groupId : (!!field.groupId && fields[index + 1]?.groupId !== field.groupId);
+      const head = isGroupHead(field) ? field : fields.find(f => f.id === field.groupId);
+      if (closesBlock && head && !this.collapsedGroups.has(head.id)) {
+        rows.push({ key: `add-${head.id}`, index: -1, addFor: head });
+      }
+    });
+    this.rowsKey = key;
+    this.rowsCache = rows;
+    return rows;
+  }
+
+  get isAdmin(): boolean {
+    return this.db.tenantUser()?.role === Role.ADMIN;
+  }
+
+  get blockTemplates(): PlanBlockTemplate[] {
+    return this.db.tenant()?.plan_block_templates ?? [];
+  }
+
+  isCollapsed(head: FieldSelection): boolean {
+    return this.collapsedGroups.has(head.id);
+  }
+
+  toggleGroup(head: FieldSelection) {
+    if (this.collapsedGroups.has(head.id)) {
+      this.collapsedGroups.delete(head.id);
+    } else {
+      this.collapsedGroups.add(head.id);
+    }
+  }
+
+  groupMinutes(head: FieldSelection): number {
+    return groupDuration(this.selectedFields, head.id);
+  }
+
+  templateMinutes(tpl: PlanBlockTemplate): number {
+    const head = tpl.fields.find(isGroupHead);
+    return head ? groupDuration(tpl.fields, head.id) : 0;
+  }
+
+  /** "10:37 – 10:55" for a block head. */
+  groupRange(head: FieldSelection, index: number): string {
+    const start = this.startOf(index);
+    return `${start.format('HH:mm')} – ${start.add(this.groupMinutes(head), 'minute').format('HH:mm')}`;
+  }
+
+  private startOf(index: number): dayjs.Dayjs {
+    let minutes = 0;
+    for (let i = 0; i < index; i++) {
+      minutes += Number(this.selectedFields[i].time) || 0;
+    }
+    const time: dayjs.Dayjs = dayjs(this.time).isValid() ? dayjs(this.time) : dayjs().hour(Number(this.time.substring(0, 2))).minute(Number(this.time.substring(3, 5)));
+    return time.add(minutes, 'minute');
+  }
 
   /** "TOP n · Titel" for agenda fields, plain name otherwise. */
   fieldName(field: FieldSelection): string {
@@ -352,15 +438,261 @@ export class PlanningPage implements OnInit {
   }
 
   handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
-    ev.detail.complete(this.selectedFields);
+    const { from, to } = ev.detail;
+    // The list is rebuilt from selectedFields, so Ionic must not move the DOM itself.
+    ev.detail.complete(false);
 
+    const rows = [...this.rows];
+    const [moved] = rows.splice(from, 1);
+    rows.splice(to, 0, moved);
+    if (!moved?.field) { return; }
+
+    // Dropped right above a block's add row: it belongs into that block; right below it: it doesn't.
+    const pos = rows.indexOf(moved);
+    let join: string | null | undefined;
+    if (!isGroupHead(moved.field)) {
+      if (rows[pos + 1]?.addFor) { join = rows[pos + 1].addFor.id; }
+      else if (rows[pos - 1]?.addFor) { join = null; }
+    }
+
+    const fieldRows = this.rows.filter(r => r.field);
+    const visible = fieldRows.map(r => r.index);
+    const fromField = fieldRows.indexOf(moved);
+    const toField = rows.filter(r => r.field).indexOf(moved);
+    this.selectedFields = moveRow(this.selectedFields, visible, fromField, toField, join);
     this.calculateEnd();
   }
 
-  removeField(index: number, slider: IonItemSliding) {
-    this.selectedFields.splice(index, 1);
+  async removeField(index: number, slider: IonItemSliding) {
     slider.close();
+    const field = this.selectedFields[index];
+    if (isGroupHead(field)) {
+      await this.confirmDeleteGroup(field);
+      return;
+    }
+    this.selectedFields.splice(index, 1);
     this.calculateEnd();
+  }
+
+  // ---- Programmblöcke (see plan-groups.ts) ----
+
+  /** Indenting needs a block right above; any Unterpunkt can be moved out. */
+  canIndent(index: number): boolean {
+    const field = this.selectedFields[index];
+    if (!field || isGroupHead(field) || field.id === AGENDA_ITEMS_PLACEHOLDER_ID) { return false; }
+    if (field.groupId) { return true; }
+    const prev = this.selectedFields[index - 1];
+    return !!prev && (isGroupHead(prev) || !!prev.groupId);
+  }
+
+  toggleIndent(index: number, slider: IonItemSliding) {
+    slider.close();
+    const field = this.selectedFields[index];
+    if (field.groupId) {
+      // Move it out below the block.
+      const groupId = field.groupId;
+      this.selectedFields.splice(index, 1);
+      delete field.groupId;
+      this.selectedFields.splice(lastIndexOfGroup(this.selectedFields, groupId) + 1, 0, field);
+    } else {
+      const prev = this.selectedFields[index - 1];
+      field.groupId = isGroupHead(prev) ? prev.id : prev.groupId;
+      this.collapsedGroups.delete(field.groupId);
+    }
+    this.calculateEnd();
+  }
+
+  async addGroup(popover: IonPopover) {
+    popover?.dismiss();
+    const alert = await this.alertController.create({
+      header: 'Programmblock hinzufügen',
+      message: 'Die Dauer ergibt sich aus den Unterpunkten.',
+      inputs: [
+        { type: 'textarea', name: 'field', placeholder: 'Name, z. B. Programm Jugendchor' },
+        { type: 'textarea', name: 'conductor', placeholder: 'Ausführung (optional)' },
+      ],
+      buttons: [
+        { text: 'Abbrechen' },
+        {
+          text: 'Anlegen',
+          handler: (evt: any) => {
+            if (!evt.field?.trim()) {
+              alert.message = 'Bitte einen Namen eingeben.';
+              return false;
+            }
+            const head = newGroupHead(evt.field.trim(), evt.conductor?.trim());
+            this.selectedFields.push(head);
+            this.calculateEnd();
+            void this.addSubItem(head);
+            return true;
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  async addSubItem(head: FieldSelection) {
+    const alert = await this.alertController.create({
+      header: 'Unterpunkt hinzufügen',
+      subHeader: head.name,
+      inputs: [
+        { type: 'textarea', name: 'field', placeholder: 'Programmpunkt, z. B. Gruppenlied' },
+        { type: 'textarea', name: 'conductor', placeholder: 'Ausführenden eingeben...' },
+        { type: 'textarea', name: 'info', placeholder: 'Info-Text (optional), z. B. Liedtitel' },
+        { type: 'number', label: 'Minuten', name: 'time', value: 5, placeholder: 'Minuten' },
+      ],
+      buttons: [
+        { text: 'Abbrechen' },
+        {
+          text: 'Hinzufügen',
+          handler: (evt: any) => {
+            if (!evt.field?.trim()) {
+              alert.message = 'Bitte einen Programmpunkt eingeben.';
+              return false;
+            }
+            const at = lastIndexOfGroup(this.selectedFields, head.id) + 1;
+            this.selectedFields.splice(at, 0, {
+              id: `fld-${crypto.randomUUID()}`,
+              name: evt.field.trim(),
+              conductor: evt.conductor ?? '',
+              info: evt.info?.trim() || undefined,
+              time: evt.time ? String(evt.time) : '5',
+              groupId: head.id,
+            });
+            this.collapsedGroups.delete(head.id);
+            this.calculateEnd();
+            return true;
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  async showGroupOptions(head: FieldSelection) {
+    const buttons: ActionSheetButton[] = [
+      { text: 'Block bearbeiten', handler: () => { void this.editGroup(head); } },
+      { text: 'Unterpunkt hinzufügen', handler: () => { void this.addSubItem(head); } },
+    ];
+    if (this.isAdmin && childrenOf(this.selectedFields, head.id).length) {
+      const exists = this.blockTemplates.some(t => t.name === head.name);
+      buttons.push({ text: exists ? 'Vorlage aktualisieren' : 'Als Vorlage speichern', handler: () => { void this.saveBlockTemplate(head); } });
+    }
+    buttons.push(
+      { text: 'Block auflösen', handler: () => { this.dissolveGroup(head); } },
+      { text: 'Block mit Unterpunkten löschen', role: 'destructive', handler: () => { void this.confirmDeleteGroup(head); } },
+      { text: 'Abbrechen', role: 'cancel' },
+    );
+    const sheet = await this.actionSheetController.create({
+      header: head.name,
+      subHeader: `${childrenOf(this.selectedFields, head.id).length} Unterpunkte · ${this.groupMinutes(head)} min`,
+      buttons,
+    });
+    await sheet.present();
+  }
+
+  private async editGroup(head: FieldSelection) {
+    const alert = await this.alertController.create({
+      header: 'Block bearbeiten',
+      inputs: [
+        { type: 'textarea', label: 'Name', name: 'field', value: head.name, placeholder: 'Name' },
+        { type: 'textarea', label: 'Ausführung', name: 'conductor', value: head.conductor, placeholder: 'Ausführung (optional)' },
+        { type: 'textarea', label: 'Info', name: 'info', value: head.info, placeholder: 'Info-Text (optional)' },
+      ],
+      buttons: [
+        { text: 'Abbrechen' },
+        {
+          text: 'Speichern',
+          handler: (evt: any) => {
+            if (!evt.field?.trim()) {
+              alert.message = 'Bitte einen Namen eingeben.';
+              return false;
+            }
+            head.name = evt.field.trim();
+            head.conductor = evt.conductor ?? '';
+            head.info = evt.info?.trim() || undefined;
+            this.calculateEnd();
+            return true;
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  /** Removes the head; its Unterpunkte stay as normal fields. */
+  dissolveGroup(head: FieldSelection) {
+    this.selectedFields = this.selectedFields
+      .filter(f => f.id !== head.id)
+      .map(f => {
+        if (f.groupId === head.id) { delete f.groupId; }
+        return f;
+      });
+    this.collapsedGroups.delete(head.id);
+    this.calculateEnd();
+  }
+
+  private async confirmDeleteGroup(head: FieldSelection) {
+    const count = childrenOf(this.selectedFields, head.id).length;
+    if (!count) {
+      this.selectedFields = this.selectedFields.filter(f => f.id !== head.id);
+      this.calculateEnd();
+      return;
+    }
+    const alert = await this.alertController.create({
+      header: 'Block löschen?',
+      message: `„${head.name}“ hat ${count} Unterpunkte.`,
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        { text: 'Nur Block auflösen', handler: () => { this.dissolveGroup(head); } },
+        {
+          text: 'Alles löschen',
+          role: 'destructive',
+          handler: () => {
+            this.selectedFields = this.selectedFields.filter(f => f.id !== head.id && f.groupId !== head.id);
+            this.calculateEnd();
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async saveBlockTemplate(head: FieldSelection) {
+    const template = blockTemplateFrom(this.selectedFields, head.id);
+    const others = this.blockTemplates.filter(t => t.name !== template.name);
+    try {
+      await this.db.updateTenantData({ plan_block_templates: [...others, template] });
+      Utils.showToast(`„${template.name}“ als Vorlage gespeichert`, 'success');
+    } catch {
+      Utils.showToast('Die Vorlage konnte nicht gespeichert werden.', 'danger');
+    }
+  }
+
+  insertBlockTemplate(template: PlanBlockTemplate, popover: IonPopover) {
+    popover?.dismiss();
+    this.selectedFields.push(...cloneBlock(template.fields));
+    this.calculateEnd();
+  }
+
+  async deleteBlockTemplate(template: PlanBlockTemplate, popover: IonPopover) {
+    popover?.dismiss();
+    const alert = await this.alertController.create({
+      header: 'Vorlage löschen?',
+      message: `Die Vorlage „${template.name}“ wird gelöscht. Bestehende Pläne bleiben unverändert.`,
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Löschen',
+          role: 'destructive',
+          handler: async () => {
+            await this.db.updateTenantData({ plan_block_templates: this.blockTemplates.filter(t => t.id !== template.id) });
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   async addExtraField(popover: IonPopover) {
@@ -485,13 +817,14 @@ export class PlanningPage implements OnInit {
   }
 
   calculateEnd(): void {
+    normalizeGroups(this.selectedFields);
     let currentTime = dayjs(this.time);
     if (!currentTime.isValid()) {
       currentTime = dayjs().hour(Number(this.time.substring(0, 2))).minute(Number(this.time.substring(3, 5)));
     }
 
     for (const field of this.selectedFields) {
-      currentTime = currentTime.add(parseInt(field.time), 'minutes');
+      currentTime = currentTime.add(parseInt(field.time) || 0, 'minutes');
     }
 
     this.end = currentTime.format('YYYY-MM-DDTHH:mm');
