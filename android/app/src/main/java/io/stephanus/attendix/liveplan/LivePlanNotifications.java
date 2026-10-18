@@ -95,8 +95,8 @@ public final class LivePlanNotifications {
         switch (phase) {
             case "before":
                 builder
-                    .setContentTitle("Startet um " + clock(state.optDouble("planStart")))
-                    .setContentText("Zuerst: " + state.optString("title"))
+                    .setContentTitle("Ablauf beginnt um " + clock(state.optDouble("planStart")))
+                    .setContentText("Als Erstes: " + state.optString("title"))
                     .setOngoing(true)
                     .setUsesChronometer(true)
                     .setChronometerCountDown(true)

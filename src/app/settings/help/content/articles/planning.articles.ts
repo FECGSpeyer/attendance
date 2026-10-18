@@ -34,7 +34,7 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
     keywords: ['live activity', 'dynamic island', 'sperrbildschirm', 'lockscreen', 'live update', 'countdown', 'restzeit', 'aktueller punkt', 'benachrichtigung', 'iphone', 'android'],
     body: `Läuft gerade ein [[Ablaufplan]], zeigt die Attendix-App den aktuellen Programmpunkt mit Restzeit und die nächsten Punkte auf deinem Sperrbildschirm. Auf dem iPhone erscheint er außerdem in der Dynamic Island, auf Android als laufende Benachrichtigung mit Countdown.
 
-**Wann:** Die Anzeige startet automatisch 15 Minuten vor dem ersten Punkt, springt von selbst zum nächsten Punkt und verschwindet 15 Minuten nach dem Ende. Wird der Plan während des Termins geändert, ist die Anzeige spätestens nach einer Minute aktuell. Überzieht ein Punkt, läuft die Zeit in Orange weiter, bis der nächste Punkt beginnt.
+**Wann:** Die Anzeige startet automatisch 15 Minuten vor dem ersten Punkt. Bis zum Beginn zeigt sie einen Countdown bis zum Start und die ersten Programmpunkte mit Uhrzeit. Danach springt sie von selbst zum nächsten Punkt und verschwindet 15 Minuten nach dem Ende. Wird der Plan während des Termins geändert, ist die Anzeige spätestens nach einer Minute aktuell. Überzieht ein Punkt, läuft die Zeit in Orange weiter, bis der nächste Punkt beginnt.
 
 **Wer:** Alle, die den Ablaufplan sehen dürfen: Admins und Verantwortliche immer, alle anderen, wenn der Plan für Mitglieder freigegeben ist. Wer sich vom Termin abgemeldet hat, bekommt keine Anzeige.
 

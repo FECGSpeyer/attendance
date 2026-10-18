@@ -39,9 +39,15 @@ struct PlanLiveActivity: Widget {
                         .font(.caption2.weight(.semibold))
                 }
             } compactTrailing: {
-                CountdownText(state: context.state, isStale: context.isStale)
-                    .font(.caption.monospacedDigit().weight(.semibold))
-                    .frame(maxWidth: 52)
+                Group {
+                    if context.state.phase == "before" {
+                        Text(clock(context.state.planStartDate))
+                    } else {
+                        CountdownText(state: context.state, isStale: context.isStale)
+                    }
+                }
+                .font(.caption.monospacedDigit().weight(.semibold))
+                .frame(maxWidth: 52)
             } minimal: {
                 ProgressRing(state: context.state)
                     .frame(width: 20, height: 20)
@@ -149,6 +155,54 @@ struct ItemProgressBar: View {
     }
 }
 
+/// Before the first item: a countdown to the plan start, clearly apart from
+/// the items, so it doesn't read as the remaining time of the first item.
+@available(iOS 16.1, *)
+struct BeforeStartView: View {
+    let state: PlanActivityAttributes.ContentState
+    let limit: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .lastTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Noch nicht gestartet")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("Beginnt in")
+                        .font(.headline)
+                }
+                Spacer(minLength: 4)
+                Text(state.planStartDate, style: .timer)
+                    .multilineTextAlignment(.trailing)
+                    .font(.title2.monospacedDigit().weight(.semibold))
+                    .frame(maxWidth: 110, alignment: .trailing)
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                ItemRow(name: state.subtitle.isEmpty ? state.title : "\(state.title) · \(state.subtitle)", at: state.planStartDate)
+                ForEach(Array(state.next.prefix(limit - 1).enumerated()), id: \.offset) { entry in
+                    ItemRow(name: entry.element.name, at: Date(timeIntervalSince1970: entry.element.at))
+                }
+            }
+        }
+    }
+}
+
+@available(iOS 16.1, *)
+struct ItemRow: View {
+    let name: String
+    let at: Date
+
+    var body: some View {
+        HStack {
+            Text(name).lineLimit(1)
+            Spacer()
+            Text(clock(at)).monospacedDigit().foregroundStyle(.secondary)
+        }
+        .font(.subheadline)
+    }
+}
+
 @available(iOS 16.1, *)
 struct CurrentItemView: View {
     let state: PlanActivityAttributes.ContentState
@@ -234,10 +288,14 @@ struct LockScreenView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            CurrentItemView(state: context.state, isStale: context.isStale)
-            ItemProgressBar(state: context.state, isStale: context.isStale)
-            if context.state.phase != "ended" {
-                NextItemsView(state: context.state, limit: 2)
+            if context.state.phase == "before" {
+                BeforeStartView(state: context.state, limit: 3)
+            } else {
+                CurrentItemView(state: context.state, isStale: context.isStale)
+                ItemProgressBar(state: context.state, isStale: context.isStale)
+                if context.state.phase != "ended" {
+                    NextItemsView(state: context.state, limit: 2)
+                }
             }
         }
         .padding(16)
@@ -252,10 +310,14 @@ struct ExpandedIslandView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            CurrentItemView(state: state, isStale: isStale)
-            ItemProgressBar(state: state, isStale: isStale)
-            if state.phase != "ended" {
-                NextItemsView(state: state, limit: 1)
+            if state.phase == "before" {
+                BeforeStartView(state: state, limit: 2)
+            } else {
+                CurrentItemView(state: state, isStale: isStale)
+                ItemProgressBar(state: state, isStale: isStale)
+                if state.phase != "ended" {
+                    NextItemsView(state: state, limit: 1)
+                }
             }
         }
     }
