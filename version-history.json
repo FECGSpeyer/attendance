@@ -4,7 +4,9 @@
       "version": "4.14.0",
       "date": "18.10.2026",
       "changes": [
-        "🧩 Programmblöcke im Ablaufplan: Fasse Programmpunkte wie \"Programm Jugendchor\" mit Unterpunkten zusammen. Die Dauer rechnet sich automatisch aus den Unterpunkten, Blöcke lassen sich ein- und ausklappen, als Ganzes verschieben und als Vorlage speichern. Planansicht, Live-Modus, Dashboard und PDF zeigen die Unterpunkte eingerückt."
+        "🧩 Programmblöcke im Ablaufplan: Fasse Programmpunkte wie \"Programm Jugendchor\" mit Unterpunkten zusammen. Die Dauer rechnet sich automatisch aus den Unterpunkten, Blöcke lassen sich ein- und ausklappen, als Ganzes verschieben und als Vorlage speichern. Planansicht, Live-Modus, Dashboard und PDF zeigen die Unterpunkte eingerückt.",
+        "🗂️ Neues Layout für die Terminlisten: Termine, Meine Anwesenheit und die Eltern-Ansicht zeigen Termine als Karten mit Datumskachel, Uhrzeit und Ort, nach Monaten gruppiert. Der Termin von heute steht oben in einer eigenen Karte, bei vergangenen Terminen siehst du die letzten drei und kannst den Rest aufklappen.",
+        "✋ Meine Anwesenheit: Am aktuellen Termin meldest du dich direkt mit Dabei, Später oder Absagen an oder ab. Die Begrüßung ist schlanker, Aktuelle Werke und Abwesenheit melden sind eigene Kacheln."
       ]
     },
     {
