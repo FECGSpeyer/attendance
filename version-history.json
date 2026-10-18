@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.15",
+      "date": "18.10.2026",
+      "changes": [
+        "⏱️ Laufender Ablaufplan: Vor dem Start zeigt die Live-Anzeige jetzt klar einen Countdown bis zum Beginn und darunter die ersten Programmpunkte mit Uhrzeit, statt die Zeit neben dem ersten Punkt laufen zu lassen."
+      ]
+    },
+    {
       "version": "4.14.14",
       "date": "18.10.2026",
       "changes": [
