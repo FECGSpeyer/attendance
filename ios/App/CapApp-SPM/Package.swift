@@ -11,7 +11,7 @@ let package = Package(
             targets: ["CapApp-SPM"])
     ],
     dependencies: [
-        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.3.4"),
+        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.5.3"),
         .package(name: "CapacitorFirebaseMessaging", path: "../../../node_modules/@capacitor-firebase/messaging"),
         .package(name: "CapacitorApp", path: "../../../node_modules/@capacitor/app"),
         .package(name: "CapacitorBrowser", path: "../../../node_modules/@capacitor/browser"),
@@ -25,7 +25,8 @@ let package = Package(
         .package(name: "CapawesomeCapacitorBadge", path: "../../../node_modules/@capawesome/capacitor-badge"),
         .package(name: "CapawesomeCapacitorLiveUpdate", path: "../../../node_modules/@capawesome/capacitor-live-update"),
         .package(name: "CapgoCapacitorMediaSession", path: "../../../node_modules/@capgo/capacitor-media-session"),
-        .package(name: "CapgoCapacitorPrinter", path: "../../../node_modules/@capgo/capacitor-printer")
+        .package(name: "CapgoCapacitorPrinter", path: "../../../node_modules/@capgo/capacitor-printer"),
+        .package(name: "RdlaboIonicThemeIos27", path: "../../../node_modules/@rdlabo/ionic-theme-ios27")
     ],
     targets: [
         .target(
@@ -46,7 +47,8 @@ let package = Package(
                 .product(name: "CapawesomeCapacitorBadge", package: "CapawesomeCapacitorBadge"),
                 .product(name: "CapawesomeCapacitorLiveUpdate", package: "CapawesomeCapacitorLiveUpdate"),
                 .product(name: "CapgoCapacitorMediaSession", package: "CapgoCapacitorMediaSession"),
-                .product(name: "CapgoCapacitorPrinter", package: "CapgoCapacitorPrinter")
+                .product(name: "CapgoCapacitorPrinter", package: "CapgoCapacitorPrinter"),
+                .product(name: "RdlaboIonicThemeIos27", package: "RdlaboIonicThemeIos27")
             ]
         )
     ]

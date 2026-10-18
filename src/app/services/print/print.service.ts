@@ -110,7 +110,7 @@ export class PrintService {
     // The file is not deleted afterwards because Android resolves before the
     // print service has read it; the cache dir is cleaned by the OS.
     const { uri } = await Filesystem.writeFile({
-      path: fileName.replace(/[\\/:*?"<>|]/g, '_'),
+      path: PrintService.toCacheFileName(fileName),
       data: await Utils.blobToBase64(blob),
       directory: Directory.Cache,
     });
@@ -178,6 +178,24 @@ export class PrintService {
       if (!res.ok) { throw new Error(res.statusText); }
       return res.blob();
     }
+  }
+
+  /**
+   * ASCII-only name for the temp file handed to the native printer. Filesystem
+   * returns a percent-encoded URI, and the iOS printer turns it back into a path
+   * without decoding it, so spaces or umlauts ("Einsam und allein - Flöte.pdf")
+   * end in "file not found" and the viewer fallback instead of the print dialog.
+   * The readable name is still passed to the printer as the job name.
+   */
+  static toCacheFileName(fileName: string): string {
+    const base = fileName
+      .replace(/\.pdf$/i, '')
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/ß/g, 'ss')
+      .replace(/[^A-Za-z0-9-]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+    return `${base || 'noten'}.pdf`;
   }
 
   private static isMobileWeb(): boolean {

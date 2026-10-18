@@ -176,6 +176,12 @@ describe('AudioPlayerService media session', () => {
     expect(service.isPlaying()).toBe(true);
   });
 
+  it('shows the Attendix logo as cover', async () => {
+    await service.playQueue([item('a.mp3')], 0);
+    expect(session.metadata.title).toBe('a.mp3');
+    expect(session.metadata.artwork?.[0].src).toMatch(/\/assets\/icons\/icon-256\.webp$/);
+  });
+
   it('clears the lock screen when stopped', async () => {
     await service.playQueue([item('a.mp3')], 0);
     service.stop();

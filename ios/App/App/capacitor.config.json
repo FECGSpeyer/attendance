@@ -33,6 +33,7 @@
 		"BadgePlugin",
 		"LiveUpdatePlugin",
 		"MediaSessionPlugin",
-		"PrinterPlugin"
+		"PrinterPlugin",
+		"IonicNativeUIShellPlugin"
 	]
 }

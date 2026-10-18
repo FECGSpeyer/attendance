@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "4.14.8",
+      "date": "18.10.2026",
+      "changes": [
+        "📍 Laufender Ablaufplan auf dem Sperrbildschirm: Auf dem iPhone zeigt eine Live Activity (auch in der Dynamic Island) den aktuellen Programmpunkt mit Restzeit und was als Nächstes kommt, auf Android eine laufende Benachrichtigung mit Countdown. Abschalten kannst du sie unter Einstellungen → Benachrichtigungen.",
+        "🖨️ Drucken auf dem iPhone öffnet wieder den Druckdialog, auch wenn Werk- oder Dateiname Leerzeichen oder Umlaute enthalten.",
+        "🎵 Audio-Player: Auf Android und im Browser erscheint in der Wiedergabe-Steuerung jetzt das Attendix-Logo als Cover.",
+        "📱 iOS: Anpassung an iOS 27, damit die App mit dem neuen iOS-SDK startet."
+      ]
+    },
+    {
       "version": "4.14.7",
       "date": "18.10.2026",
       "changes": [
