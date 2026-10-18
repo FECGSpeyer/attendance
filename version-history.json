@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.14.1",
+      "date": "18.10.2026",
+      "changes": [
+        "📄 Termine: Hat ein Termin einen Ablaufplan, öffnest du ihn direkt aus der Heute-Karte oder über das Symbol in der Liste.",
+        "✨ Meine Anwesenheit: \"Weitere Optionen\" zeigt nur noch, was nicht schon als Button auf der Karte steht. Lange Titel schieben den Status nicht mehr aus der Karte, und die Buttons sind besser lesbar."
+      ]
+    },
+    {
       "version": "4.14.0",
       "date": "18.10.2026",
       "changes": [

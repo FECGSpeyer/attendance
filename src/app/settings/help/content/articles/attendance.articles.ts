@@ -5,8 +5,8 @@ export const ATTENDANCE_ARTICLES: HelpArticle[] = [
     id: 'att-list-layout',
     title: 'Die Terminübersicht lesen',
     categoryId: 'attendance',
-    keywords: ['terminliste', 'termine übersicht', 'anstehende termine', 'vergangene termine', 'nächster termin', 'prozent', 'durchschnitt', 'monat'],
-    body: `Unter "Termine" siehst du als Dirigent oder Helfer oben den Termin von heute (oder den nächsten Termin) als große Karte, mit erwarteter Anwesenheit und wie viele Personen anwesend, entschuldigt oder abwesend sind. Tippe auf die Karte, um die Anwesenheit zu erfassen.
+    keywords: ['terminliste', 'termine übersicht', 'ablaufplan öffnen', 'anstehende termine', 'vergangene termine', 'nächster termin', 'prozent', 'durchschnitt', 'monat'],
+    body: `Unter "Termine" siehst du als Dirigent oder Helfer oben den Termin von heute (oder den nächsten Termin) als große Karte, mit erwarteter Anwesenheit und wie viele Personen anwesend, entschuldigt oder abwesend sind. Tippe auf die Karte, um die Anwesenheit zu erfassen. Hat der Termin einen Ablaufplan, öffnest du ihn über „Ablaufplan“ direkt in der Karte; läuft der Termin gerade, startet der Plan im Live-Modus. In der Liste der anstehenden Termine führt das Plan-Symbol ebenfalls direkt zum Ablaufplan.
 
 Darunter folgen die anstehenden Termine, nach Monaten gruppiert. Links steht das Datum, hervorgehobene Termin-Typen haben eine farbige Datumskachel. Rechts siehst du die Anwesenheit in Prozent: grün ab 75 %, gelb ab 50 %, sonst rot.
 

@@ -11,7 +11,8 @@ import { EventMonthGroup, PAST_PREVIEW_COUNT, eventDay, eventMeta, eventTimeRang
 import 'dayjs/locale/de';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
-import { Attendance, PlayerAbsence, Song, History, Person } from 'src/app/utilities/interfaces';
+import { Attendance, PlayerAbsence, Song, History, Person, Plan } from 'src/app/utilities/interfaces';
+import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { Utils } from 'src/app/utilities/Utils';
 import { createAttendanceForType, personsForAttendanceType } from 'src/app/utilities/attendance-create';
 import { AttendanceStatus, DefaultAttendanceType, Role } from 'src/app/utilities/constants';
@@ -553,6 +554,26 @@ export class AttListPage implements OnInit {
       eventTimeRange(att.start_time ?? attType?.start_time, att.end_time ?? attType?.end_time),
       att.place,
     );
+  }
+
+  hasPlan(att: Attendance): boolean {
+    return (att.plan?.fields?.length ?? 0) > 0;
+  }
+
+  /** Opens the Ablaufplan read-only; a Termin running today starts in live mode. */
+  async openPlanViewer(att: Attendance): Promise<void> {
+    const attType = this.db.attendanceTypes().find(type => type.id === att.type_id);
+    const modal = await this.modalController.create({
+      component: PlanViewerComponent,
+      componentProps: {
+        attendance: att,
+        plan: att.plan as Plan,
+        isPractice: attType?.name?.toLowerCase().includes('probe') || attType?.name?.toLowerCase().includes('übung') || att.type === 'uebung',
+        songs: this.songs,
+        defaultLive: attendanceIsRunning(att),
+      },
+    });
+    await modal.present();
   }
 
   getStatusCounts(att: Attendance): { present: number; excused: number; absent: number } {

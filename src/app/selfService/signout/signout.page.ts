@@ -338,7 +338,11 @@ export class SignoutPage implements OnInit {
     this.descriptionModal.present();
   }
 
-  async presentActionSheetForChoice(attendance: PersonAttendance) {
+  /**
+   * @param hideQuickActions on the current card Dabei / Später / Absagen already
+   * sit as buttons, so the sheet then only offers what is not shown there.
+   */
+  async presentActionSheetForChoice(attendance: PersonAttendance, hideQuickActions = false) {
     const isExcused = attendance.status === AttendanceStatus.Excused || attendance.status === AttendanceStatus.LateExcused;
 
     // Read-only for non-participants in show-all mode
@@ -456,6 +460,16 @@ export class SignoutPage implements OnInit {
       buttons = buttons.filter((btn) => btn.text !== 'Anmelden mit Notiz' && btn.text !== 'Abmelden' && btn.text !== 'Verspätung eintragen');
     } else if (attendance.text === 'A') {
       buttons = buttons.filter((btn) => btn.text !== 'Abmelden' && btn.text !== 'Verspätung eintragen');
+    }
+
+    if (hideQuickActions) {
+      const qa = this.quickActions(attendance);
+      if (qa) {
+        const shown = ['Anmelden', 'Abmeldung zurücknehmen'];
+        if (qa.allowExcuse) { shown.push('Abmelden'); }
+        if (qa.allowLate) { shown.push('Verspätung eintragen'); }
+        buttons = buttons.filter((btn) => !shown.includes(btn.text));
+      }
     }
 
     // Add plan viewing option if share_plan is true

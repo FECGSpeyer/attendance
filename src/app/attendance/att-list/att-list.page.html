@@ -109,7 +109,14 @@
                 }
               </div>
             }
-            <div class="ev-today__cta">Anwesenheit erfassen</div>
+            <div class="ev-today__ctas">
+              <button class="ev-today__cta" (click)="$event.stopPropagation(); openAttendance(currentAttendance)">Anwesenheit erfassen</button>
+              @if (hasPlan(currentAttendance)) {
+                <button class="ev-today__cta ev-today__cta--secondary" (click)="$event.stopPropagation(); openPlanViewer(currentAttendance)">
+                  <ion-icon name="document-text-outline"></ion-icon> Ablaufplan
+                </button>
+              }
+            </div>
           </div>
         </ion-item>
         <ion-item-options side="end" (ionSwipe)="remove(currentAttendance.id, slider)">
@@ -141,6 +148,11 @@
                     <p>{{ meta }}</p>
                   }
                 </ion-label>
+                @if (hasPlan(att)) {
+                  <ion-button slot="end" fill="clear" (click)="$event.stopPropagation(); openPlanViewer(att)" aria-label="Ablaufplan anzeigen">
+                    <ion-icon slot="icon-only" name="document-text-outline"></ion-icon>
+                  </ion-button>
+                }
                 <span slot="end" class="ev-pill" [ngClass]="'ion-color-' + percColor(att.percentage || 0)">{{ att.percentage || 0 }}%</span>
               </ion-item>
               @if (isConductor) {

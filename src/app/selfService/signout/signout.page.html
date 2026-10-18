@@ -276,7 +276,7 @@
   @if (currentAttendance) {
     <div class="ev-month">{{ isAttToday(currentAttendance) ? 'Heute' : 'Nächster Termin' }}</div>
     <div class="ev-today" [class.not-member]="showAllAttendances && !currentAttendance.isMember"
-      (click)="presentActionSheetForChoice(currentAttendance)">
+      (click)="presentActionSheetForChoice(currentAttendance, true)">
       <div class="ev-today__head">
         <div class="ev-tile">
           <span class="ev-tile__wd">{{ weekday(currentAttendance.date) }}</span>
@@ -296,18 +296,18 @@
       <ng-container *ngTemplateOutlet="eventChips; context: { $implicit: currentAttendance }"></ng-container>
       @if (quickActions(currentAttendance); as qa) {
         <div class="ev-today__actions">
-          <ion-button [fill]="qa.present ? 'solid' : 'outline'" color="success" [disabled]="!qa.canSignin"
+          <ion-button [fill]="qa.present ? 'solid' : 'outline'" [color]="qa.present ? 'success' : 'primary'" [disabled]="!qa.canSignin"
             (click)="$event.stopPropagation(); handleSigninWithFields(currentAttendance)">Dabei</ion-button>
           @if (qa.allowLate) {
-            <ion-button [fill]="qa.late ? 'solid' : 'outline'" color="tertiary" [disabled]="qa.blocked"
+            <ion-button [fill]="qa.late ? 'solid' : 'outline'" [color]="qa.late ? 'rosa' : 'primary'" [disabled]="qa.blocked"
               (click)="$event.stopPropagation(); quickSignout(currentAttendance, true)">Später</ion-button>
           }
           @if (qa.allowExcuse) {
-            <ion-button [fill]="qa.excused ? 'solid' : 'outline'" color="warning" [disabled]="qa.blocked"
+            <ion-button [fill]="qa.excused ? 'solid' : 'outline'" [color]="qa.excused ? 'warning' : 'primary'" [disabled]="qa.blocked"
               (click)="$event.stopPropagation(); quickSignout(currentAttendance, false)">Absagen</ion-button>
           }
         </div>
-        <button class="ev-more-link" (click)="$event.stopPropagation(); presentActionSheetForChoice(currentAttendance)">Weitere Optionen</button>
+        <button class="ev-more-link" (click)="$event.stopPropagation(); presentActionSheetForChoice(currentAttendance, true)">Weitere Optionen</button>
       }
     </div>
   }
@@ -353,7 +353,7 @@
     </div>
     <ion-list [inset]="true" class="ev-list">
       <div class="ev-summary">
-        <span><span class="ev-summary__value">{{ perc }}%</span> <span class="ev-summary__label">Anwesenheit</span></span>
+        <span class="ev-summary__main"><span class="ev-summary__value">{{ perc }}%</span><span class="ev-summary__label">Anwesenheit</span></span>
         @if (lateCount) {
           <span class="ev-summary__label">{{ lateCount }}× zu spät</span>
         }
