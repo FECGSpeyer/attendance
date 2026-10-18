@@ -12,6 +12,7 @@ import { StatusInfoComponent } from './status-info/status-info.component';
 import { AdHocReminderModalComponent } from './ad-hoc-reminder-modal/ad-hoc-reminder-modal.component';
 import { FilesFolderPickerComponent } from 'src/app/shared/files-folder-picker/files-folder-picker.component';
 import { PlanChipsComponent } from 'src/app/planning/plan-chips/plan-chips.component';
+import { PlanMinutesPipe } from 'src/app/planning/plan-minutes.pipe';
 
 @NgModule({
   imports: [
@@ -22,6 +23,7 @@ import { PlanChipsComponent } from 'src/app/planning/plan-chips/plan-chips.compo
     QuillModule.forRoot(),
     FilesFolderPickerComponent,
     PlanChipsComponent,
+    PlanMinutesPipe,
   ],
   declarations: [AttendancePage, StatusInfoComponent, AdHocReminderModalComponent],
   exports: [AttendancePage],

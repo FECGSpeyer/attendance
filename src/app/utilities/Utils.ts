@@ -9,6 +9,7 @@ import { AGENDA_ITEMS_PLACEHOLDER_ID, Attendance, FieldSelection, GroupCategory,
 import type { WorkBook } from 'xlsx';
 import { fieldDisplayName, topNumbers } from '../team-organization/team-org.utils';
 import { allPlans, planDate, planSubtitle } from './plan-days';
+import { fieldMinutes, groupDuration, isGroupHead } from './plan-groups';
 
 export class Utils {
   public static getId(): number {
@@ -693,26 +694,31 @@ export class Utils {
         // as a second (italic) line inside the same row as its field. The custom
         // `_info` marker is picked up by the draw hooks below; autotable ignores it.
         const info = field.info || '';
-        const nameCell: any = info
-          ? { content: `${fieldName}\n${info}`, _name: fieldName, _info: info }
+        // Programmblock heads (`_group`) and their Unterpunkte (`_child`) are
+        // styled in the hooks below; a head takes no time itself.
+        const isHead = isGroupHead(field);
+        const isChild = !!field.groupId;
+        const nameCell: any = info || isHead || isChild
+          ? { content: info ? `${fieldName}\n${info}` : fieldName, _name: fieldName, _info: info, _group: isHead, _child: isChild }
           : fieldName;
+        const minutes = isHead ? groupDuration(props.fields, field.id) : field.time;
 
         if (hasConductors) {
           data.push([
             `${currentTime.format('HH:mm')} Uhr`,
             nameCell,
             field.conductor || '',
-            `${field.time} min`,
+            `${minutes} min`,
           ]);
         } else {
           data.push([
             `${currentTime.format('HH:mm')} Uhr`,
             nameCell,
-            `${field.time} min`,
+            `${minutes} min`,
           ]);
         }
 
-        currentTime = currentTime.add(parseInt(field.time), 'minutes');
+        currentTime = currentTime.add(fieldMinutes(field), 'minutes');
       }
     }
 
@@ -753,6 +759,24 @@ export class Utils {
         hookData.cell.styles.fontStyle = 'italic';
         hookData.cell.styles.fillColor = [235, 235, 235];
         hookData.cell.styles.textColor = [80, 80, 80];
+        return;
+      }
+      if (hookData.section !== 'body') { return; }
+      const name = raw?.[1];
+      if (name?._group) {
+        // Programmblock head: tinted, bold row.
+        hookData.cell.styles.fillColor = [232, 238, 247];
+        hookData.cell.styles.fontStyle = 'bold';
+      } else if (name?._child) {
+        // Unterpunkt: Programmpunkt indented, time a bit lighter.
+        if (hookData.column.index === 1) {
+          const pad = hookData.cell.styles.cellPadding;
+          const base = typeof pad === 'number' ? pad : 3;
+          hookData.cell.styles.cellPadding = { top: base, bottom: base, right: base, left: base + 5 };
+        }
+        if (hookData.column.index === 0) {
+          hookData.cell.styles.textColor = [90, 90, 90];
+        }
       }
     };
 
@@ -801,8 +825,8 @@ export class Utils {
       const lineHeightFactor = 1.15;
       const lineHeight = fontSize * lineHeightFactor;
 
-      // Name is on raw._name for info cells, otherwise the raw cell string.
-      const nameText: string = raw?._info ? raw._name : (typeof raw === 'string' ? raw : String(raw ?? ''));
+      // Name is on raw._name for info and Programmblock cells, otherwise the raw cell string.
+      const nameText: string = raw?._name !== undefined ? raw._name : (typeof raw === 'string' ? raw : String(raw ?? ''));
       const infoText: string = raw?._info || '';
 
       const x = cell.x + cell.padding('left');
@@ -818,12 +842,24 @@ export class Utils {
       y += fontSize * (2 - lineHeightFactor);
       y -= (totalLines / 2) * lineHeight;
 
+      if (raw?._child) {
+        // Line on the left ties the Unterpunkte to their block.
+        doc.setDrawColor(159, 179, 212);
+        doc.setLineWidth(0.5);
+        doc.line(cell.x + 2, cell.y, cell.x + 2, cell.y + cell.height);
+      }
+
       doc.setTextColor(30, 30, 30);
-      doc.setFont(cellFont, 'normal');
+      doc.setFont(cellFont, raw?._group ? 'bold' : 'normal');
       for (const line of nameLines) {
-        drawMediumText(doc, line, x, y);
+        if (raw?._group) {
+          doc.text(line, x, y);
+        } else {
+          drawMediumText(doc, line, x, y);
+        }
         y += lineHeight;
       }
+      doc.setFont(cellFont, 'normal');
 
       if (infoLines.length) {
         doc.setTextColor(80, 80, 80);

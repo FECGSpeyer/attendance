@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.0",
+      "date": "18.10.2026",
+      "changes": [
+        "🧩 Programmblöcke im Ablaufplan: Fasse Programmpunkte wie \"Programm Jugendchor\" mit Unterpunkten zusammen. Die Dauer rechnet sich automatisch aus den Unterpunkten, Blöcke lassen sich ein- und ausklappen, als Ganzes verschieben und als Vorlage speichern. Planansicht, Live-Modus, Dashboard und PDF zeigen die Unterpunkte eingerückt."
+      ]
+    },
+    {
       "version": "4.13.18",
       "date": "18.10.2026",
       "changes": [

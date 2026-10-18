@@ -7,6 +7,7 @@ import 'dayjs/locale/de';
 import { Attendance, FieldSelection, Plan, SharedPlan } from '../utilities/interfaces';
 import { allPlans, planDate, planLabel, splitPlans, todayPlanIndex } from '../utilities/plan-days';
 import { Utils } from '../utilities/Utils';
+import { normalizeGroups } from '../utilities/plan-groups';
 import { PUBLIC_BRANDINGS } from '../public-planning/public-planning-templates';
 import { getSupabase } from '../services/base/supabase';
 
@@ -397,6 +398,7 @@ export class SharedPlanPage implements OnInit, OnDestroy {
 
   handleReorder(ev: CustomEvent<any>) {
     ev.detail.complete(this.fields);
+    normalizeGroups(this.fields);
     this.saveEdits();
   }
 

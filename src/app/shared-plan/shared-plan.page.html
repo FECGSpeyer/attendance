@@ -71,6 +71,8 @@
           <ion-item
             [class.active-slot]="liveMode && i === activeFieldIndex"
             [class.done-slot]="liveMode && i < activeFieldIndex"
+            [class.plan-group-head]="field.isGroup"
+            [class.plan-group-child]="!!field.groupId"
             [button]="isEditMode"
             (click)="editField(field)"
             [detail]="false">
@@ -87,7 +89,7 @@
               @if (liveMode && i === activeFieldIndex) {
                 <ion-badge slot="end" color="primary">{{ getActiveCountdown() }}</ion-badge>
               } @else {
-                <ion-note slot="end">{{ field.time }} min</ion-note>
+                <ion-note slot="end">{{ field | planMinutes: fields }} min</ion-note>
               }
             }
             @if (isEditMode) {

@@ -8,6 +8,7 @@ import { Role } from '../../../utilities/constants';
 import { allPlans, planDate, todayPlanIndex } from '../../../utilities/plan-days';
 import { tileDay, tileMonth } from '../shared/dashboard-date';
 
+import { fieldNumbers, isGroupHead } from '../../../utilities/plan-groups';
 @Component({
   selector: 'app-current-plan-card',
   templateUrl: './current-plan-card.component.html',
@@ -102,6 +103,18 @@ export class CurrentPlanCardComponent implements OnDestroy {
     });
   }
 
+  readonly isGroupHead = isGroupHead;
+
+  /** "1", "2", "2.1" … so Unterpunkte read as part of their block. */
+  get rowNumbers(): string[] {
+    return fieldNumbers(this.plan?.fields ?? []);
+  }
+
+  /** Positions without block heads (a head only groups its Unterpunkte). */
+  get positionCount(): number {
+    return (this.plan?.fields ?? []).filter(f => !isGroupHead(f)).length;
+  }
+
   get isLive(): boolean {
     if (!this.isToday || !this.attendance) { return false; }
     const startStr = this.multiPlan ? this.plan?.time : (this.attendance.start_time ?? this.plan?.time);
@@ -143,6 +156,8 @@ export class CurrentPlanCardComponent implements OnDestroy {
       : (this.planDay ?? dayjs(this.attendance!.date)).hour(Number(startStr.substring(0, 2))).minute(Number(startStr.substring(3, 5))).second(0);
     const now = dayjs();
     for (let i = 0; i < this.plan.fields.length; i++) {
+      // A Programmblock head takes no time; its Unterpunkte become active instead.
+      if (isGroupHead(this.plan.fields[i])) { continue; }
       current = current.add(parseInt(this.plan.fields[i].time, 10) || 0, 'minutes');
       if (now.isBefore(current)) { return i; }
     }

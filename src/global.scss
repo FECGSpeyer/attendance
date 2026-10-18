@@ -452,5 +452,31 @@ ion-modal.image-viewer-modal {
   --backdrop-opacity: 0;
 }
 
+// Programmblöcke in read-only plan lists (Terminseite, geteilte und öffentliche Pläne).
+ion-item.plan-group-head {
+  --background: rgba(var(--ion-color-primary-rgb), 0.08);
+
+  h2 {
+    font-weight: 700;
+  }
+}
+
+ion-item.plan-group-child {
+  --background: rgba(var(--ion-color-primary-rgb), 0.04);
+  --padding-start: 34px;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: rgba(var(--ion-color-primary-rgb), 0.45);
+    z-index: 1;
+  }
+}
+
 // Card layout of the Terminlisten
 @import "theme/event-list";

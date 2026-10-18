@@ -27,7 +27,7 @@
           </div>
           <ion-label>
             <h3>{{ dateLabel }}</h3>
-            <p>{{ formatTime(plan.time) }} – {{ formatTime(plan.end) }} Uhr · {{ plan.fields.length }} Positionen</p>
+            <p>{{ formatTime(plan.time) }} – {{ formatTime(plan.end) }} Uhr · {{ positionCount }} Positionen</p>
           </ion-label>
           <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
         </ion-item>
@@ -36,8 +36,10 @@
           <ion-item
             [lines]="i < plan.fields.length - 1 ? 'inset' : 'none'"
             [class.field-past]="isLive && i < activeFieldIndex"
-            [class.field-active]="isLive && i === activeFieldIndex">
-            <ion-note slot="start" class="field-index">{{ i + 1 }}</ion-note>
+            [class.field-active]="isLive && i === activeFieldIndex"
+            [class.field-group]="isGroupHead(field)"
+            [class.field-child]="!!field.groupId">
+            <ion-note slot="start" class="field-index">{{ rowNumbers[i] }}</ion-note>
             <ion-label class="ion-text-wrap">
               <span>{{ field.name }}</span>
               @if (field.conductor) {
