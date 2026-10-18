@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.4",
+      "date": "18.10.2026",
+      "changes": [
+        "🪪 Unter \"Mehr\" ist deine Profilkarte jetzt schlichter: helle Karte wie die Menüpunkte darunter, Geburtstag, Telefon und Zusatzfelder als dezente Markierungen."
+      ]
+    },
+    {
       "version": "4.14.3",
       "date": "18.10.2026",
       "changes": [
