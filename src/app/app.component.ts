@@ -15,6 +15,7 @@ import { LiveUpdateService } from './services/live-update/live-update.service';
 import { TeamsService } from './services/teams/teams.service';
 import { OfflineQueueService } from './services/offline-queue/offline-queue.service';
 import { LiveActivityService } from './services/live-activity/live-activity.service';
+import { AudioPlayerService } from './services/audio-player/audio-player.service';
 
 @Component({
     selector: 'app-root',
@@ -44,7 +45,9 @@ export class AppComponent {
     private offlineQueue: OfflineQueueService,
     // Created here so it starts with the app; it watches the tenant itself.
     private liveActivity: LiveActivityService,
+    audioPlayer: AudioPlayerService,
   ) {
+    audioPlayer.coverUrl = () => this.db.getBrandingSource().logo_url || undefined;
     this.initializeApp();
     this.titleService.setTitle('Attendix');
     this.listenToAuthChanges();

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.10",
+      "date": "18.10.2026",
+      "changes": [
+        "🎵 Audio-Player: Hat deine Gruppe oder Organisation ein Logo im Branding hinterlegt, erscheint es auf Android und im Browser als Cover in der Wiedergabe-Steuerung, sonst weiterhin das Attendix-Logo."
+      ]
+    },
+    {
       "version": "4.14.9",
       "date": "18.10.2026",
       "changes": [

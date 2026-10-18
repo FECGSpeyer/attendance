@@ -5,7 +5,7 @@ import { Utils } from 'src/app/utilities/Utils';
 export type MediaSessionActionName = 'play' | 'pause' | 'previoustrack' | 'nexttrack' | 'seekto' | 'stop';
 export type MediaSessionPlayback = 'none' | 'paused' | 'playing';
 
-type Artwork = { src: string; sizes: string; type: string }[];
+type Artwork = { src: string; sizes?: string; type?: string }[];
 
 /** The app icon; the file is PNG data despite its .webp name. 256 px is plenty for the lock screen. */
 const LOGO_URL = 'assets/icons/icon-256.webp';
@@ -26,7 +26,7 @@ export class MediaSessionBridge {
   constructor() {
     if (this.useNativePlugin) {
       // Preload so the first track already gets the cover in one metadata update.
-      MediaSessionBridge.loadLogoArtwork();
+      MediaSessionBridge.loadArtwork(LOGO_URL);
     }
   }
 
@@ -46,26 +46,33 @@ export class MediaSessionBridge {
     this.run(() => this.webSession?.setActionHandler(action, details => handler(details?.seekTime ?? undefined)));
   }
 
-  /** Loaded once and shared by all players. */
-  private static logoArtwork: Promise<Artwork | undefined> | undefined;
-  private static logoArtworkLoaded: Artwork | undefined;
-  /** Bumped on every metadata change so a late logo load can't overwrite a newer track. */
+  /** Loaded once per image and shared by all players. */
+  private static artworkCache = new Map<string, Promise<Artwork | undefined>>();
+  private static artworkLoaded = new Map<string, Artwork>();
+  /** Bumped on every metadata change so a late cover load can't overwrite a newer track. */
   private metadataVersion = 0;
 
-  /** Shows the track with the Attendix logo as cover (there is no per-track artwork). */
-  setMetadata(title: string, artist: string): void {
+  /**
+   * Shows the track with a cover: the tenant's branding logo when given,
+   * otherwise the Attendix logo (there is no per-track artwork).
+   */
+  setMetadata(title: string, artist: string, coverUrl?: string): void {
     const version = ++this.metadataVersion;
     if (!this.useNativePlugin) {
-      this.applyMetadata(title, artist, MediaSessionBridge.webLogoArtwork());
+      this.applyMetadata(title, artist, MediaSessionBridge.webArtwork(coverUrl));
       return;
     }
-    this.applyMetadata(title, artist, MediaSessionBridge.logoArtworkLoaded);
-    if (!MediaSessionBridge.logoArtworkLoaded) {
-      MediaSessionBridge.loadLogoArtwork().then(artwork => {
-        if (artwork && version === this.metadataVersion) {
-          this.applyMetadata(title, artist, artwork);
-        }
-      });
+    const src = coverUrl || LOGO_URL;
+    const loaded = MediaSessionBridge.artworkLoaded;
+    this.applyMetadata(title, artist, loaded.get(src) ?? loaded.get(LOGO_URL));
+    if (!loaded.has(src)) {
+      MediaSessionBridge.loadArtwork(src)
+        .then(artwork => artwork ?? (src !== LOGO_URL ? MediaSessionBridge.loadArtwork(LOGO_URL) : undefined))
+        .then(artwork => {
+          if (artwork && version === this.metadataVersion) {
+            this.applyMetadata(title, artist, artwork);
+          }
+        });
     }
   }
 
@@ -83,12 +90,15 @@ export class MediaSessionBridge {
   }
 
   /**
-   * Browsers load the cover themselves from the app's own assets. Not in the iOS
-   * app: on iOS 27 the lock screen drops the whole Now Playing panel as soon as
-   * WKWebView passes any artwork (data or asset URL, seen in the simulator).
+   * Browsers load the cover themselves. Not in the iOS app: on iOS 27 the lock
+   * screen drops the whole Now Playing panel as soon as WKWebView passes any
+   * artwork (data or asset URL, seen in the simulator).
    */
-  private static webLogoArtwork(): Artwork | undefined {
+  private static webArtwork(coverUrl?: string): Artwork | undefined {
     if (Capacitor.getPlatform() === 'ios') { return undefined; }
+    if (coverUrl) {
+      return [{ src: coverUrl }];
+    }
     try {
       return [{ src: new URL(LOGO_URL, document.baseURI).href, sizes: '256x256', type: 'image/png' }];
     } catch {
@@ -97,24 +107,65 @@ export class MediaSessionBridge {
   }
 
   /**
-   * The logo as a data URL for the Android plugin, which can't load blob: URLs
+   * The cover as a data URL for the Android plugin, which can't load blob: URLs
    * or the WebView's https://localhost origin from native code.
    */
-  private static loadLogoArtwork(): Promise<Artwork | undefined> {
-    MediaSessionBridge.logoArtwork ??= fetch(LOGO_URL)
-      .then(res => (res.ok ? res.blob() : Promise.reject(new Error(res.statusText))))
-      .then(blob => Utils.blobToBase64(blob))
-      .then(base64 => {
-        const artwork = [{ src: `data:image/png;base64,${base64}`, sizes: '256x256', type: 'image/png' }];
-        MediaSessionBridge.logoArtworkLoaded = artwork;
-        return artwork;
-      })
-      .catch(() => {
-        // Retry on the next track instead of caching the failure.
-        MediaSessionBridge.logoArtwork = undefined;
-        return undefined;
+  private static loadArtwork(src: string): Promise<Artwork | undefined> {
+    const cache = MediaSessionBridge.artworkCache;
+    if (!cache.has(src)) {
+      cache.set(src, fetch(src)
+        .then(res => (res.ok ? res.blob() : Promise.reject(new Error(res.statusText))))
+        .then(blob => (src === LOGO_URL ? MediaSessionBridge.blobArtwork(blob) : MediaSessionBridge.squareArtwork(blob)))
+        .then(artwork => {
+          MediaSessionBridge.artworkLoaded.set(src, artwork);
+          return artwork;
+        })
+        .catch(() => {
+          // Retry on the next track instead of caching the failure.
+          cache.delete(src);
+          return undefined;
+        }));
+    }
+    return cache.get(src);
+  }
+
+  private static async blobArtwork(blob: Blob): Promise<Artwork> {
+    const base64 = await Utils.blobToBase64(blob);
+    return [{ src: `data:${blob.type || 'image/png'};base64,${base64}`, sizes: '256x256', type: blob.type || 'image/png' }];
+  }
+
+  /**
+   * Branding logos come in any shape and may be transparent. The notification
+   * crops covers to a square, so the logo is centered on a white square.
+   */
+  private static async squareArtwork(blob: Blob): Promise<Artwork> {
+    const objectUrl = URL.createObjectURL(blob);
+    try {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error('Failed to decode cover'));
+        image.src = objectUrl;
       });
-    return MediaSessionBridge.logoArtwork;
+      const size = 512;
+      const inner = size * 0.84;
+      const scale = Math.min(inner / img.naturalWidth, inner / img.naturalHeight);
+      const width = img.naturalWidth * scale;
+      const height = img.naturalHeight * scale;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      if (!ctx || !width || !height) {
+        return MediaSessionBridge.blobArtwork(blob);
+      }
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(img, (size - width) / 2, (size - height) / 2, width, height);
+      return [{ src: canvas.toDataURL('image/png'), sizes: `${size}x${size}`, type: 'image/png' }];
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
   }
 
   clearMetadata(): void {
