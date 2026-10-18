@@ -34,4 +34,15 @@ Bist du schon angemeldet, tippst du den Termin an und wählst „Anmeldefelder a
 
 Jeder Termin ist eine Karte, in der deine Kinder mit ihrem Status stehen. Tippe auf ein Kind, um nur seinen Status zu ändern, oder auf „Alle“, um alle Kinder auf einmal an- oder abzumelden. Der Termin von heute (oder der nächste) steht oben in einer eigenen Karte. Bei vergangenen Terminen siehst du den Status jedes Kindes direkt in der Zeile.`,
   },
+  {
+    id: 'self-overview',
+    title: 'Alle meine Termine über mehrere Instanzen',
+    categoryId: 'self-service',
+    keywords: ['übersicht', 'alle termine', 'instanzen', 'chronologisch', 'nach instanz', 'mehrere gruppen', 'gesamtübersicht'],
+    body: `Bist du in mehreren Instanzen Mitglied, findest du unter "Übersicht" alle deine Termine aus allen Instanzen an einem Ort. Oben steht deine Anwesenheitsquote über alle Instanzen.
+
+In der Ansicht „Chronologisch“ steht der nächste Termin in einer eigenen Karte. Dort meldest du dich direkt mit „Zusagen“, „Verspätung“ oder „Absagen“ an oder ab, weitere Aktionen findest du unter „Weitere Optionen“. Darunter folgen die anstehenden Termine nach Monaten gruppiert und die vergangenen Termine (die letzten drei, der Rest über „Alle anzeigen“). Ein farbiger Punkt mit Namen zeigt, zu welcher Instanz ein Termin gehört.
+
+In der Ansicht „Nach Instanz“ siehst du die Termine je Instanz. Tippe einen anstehenden Termin an, um deinen [[Anwesenheitsstatus]] zu ändern. Markierungen wie „Infos“, „Anhang“, „Dateien“ oder „Route“ öffnen die Beschreibung, den Anhang, die Dateiablage oder die Navigation direkt.`,
+  },
 ];

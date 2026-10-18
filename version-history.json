@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.21",
+      "date": "18.10.2026",
+      "changes": [
+        "🗂️ Übersicht: Die Liste aller Termine über mehrere Instanzen nutzt jetzt auch das neue Karten-Layout mit Karte für den nächsten Termin, Direkt-Buttons, Monatsgruppen und farbigem Instanz-Punkt."
+      ]
+    },
+    {
       "version": "4.14.20",
       "date": "18.10.2026",
       "changes": [

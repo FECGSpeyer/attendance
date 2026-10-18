@@ -3,7 +3,8 @@ import { ActionSheetController, AlertController, IonModal } from '@ionic/angular
 import { Browser } from '@capacitor/browser';
 import { Router } from '@angular/router';
 import dayjs from 'dayjs';
-import { attendanceHasEnded, attendanceIsRunning } from '../../utilities/plan-days';
+import { attendanceHasEnded, attendanceIsRunning, isMultiDay } from '../../utilities/plan-days';
+import { EventMonthGroup, PAST_PREVIEW_COUNT, eventDay, eventMeta, eventTimeRange, eventWeekday, groupByMonth, statusColor, statusLabel } from '../../utilities/event-list';
 import { DbService } from 'src/app/services/db.service';
 import { FilesService } from 'src/app/services/files/files.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS } from 'src/app/utilities/constants';
@@ -42,6 +43,10 @@ export class OverviewPage implements OnInit {
   public groupingMode: GroupingMode = 'chronological';
   public selAttIds: string[] = [];
   public selectedAttendance: CrossTenantPersonAttendance | null = null;
+
+  public showAllPast = false;
+  public readonly pastPreviewCount = PAST_PREVIEW_COUNT;
+  private upcomingGroupsCache: { src: CrossTenantPersonAttendance[]; groups: EventMonthGroup<CrossTenantPersonAttendance>[] };
 
   public perc = 0;
   public lateCount = 0;
@@ -159,7 +164,11 @@ export class OverviewPage implements OnInit {
     this.groupingMode = event.detail.value;
   }
 
-  async presentActionSheetForChoice(attendance: CrossTenantPersonAttendance) {
+  /**
+   * @param hideQuickActions on the current card Zusagen / Verspätung / Absagen and the
+   * info chips are buttons already, so the sheet leaves them out
+   */
+  async presentActionSheetForChoice(attendance: CrossTenantPersonAttendance, hideQuickActions = false) {
     this.selectedAttendance = attendance;
 
     let buttons = [
@@ -202,15 +211,7 @@ export class OverviewPage implements OnInit {
 
     const attType = attendance.attendanceType;
 
-    let canSignin = true;
-    if (attendance.attendance?.deadline) {
-      const deadline = dayjs(attendance.attendance.deadline);
-      const localDeadline = deadline.subtract(dayjs().utcOffset(), 'minute');
-      const now = dayjs();
-      if (now.isAfter(localDeadline)) {
-        canSignin = false;
-      }
-    }
+    const canSignin = this.isSigninOpen(attendance);
 
     if (attendance.text === 'X' || !canSignin) {
       buttons = buttons.filter(btn => btn.text !== 'Anmelden' && btn.text !== 'Anmelden mit Notiz');
@@ -228,7 +229,15 @@ export class OverviewPage implements OnInit {
       buttons = buttons.filter(btn => btn.text !== 'Abmelden' && btn.text !== 'Verspätung eintragen');
     }
 
-    if (attendance.attendance?.description) {
+    if (hideQuickActions) {
+      const qa = this.quickActions(attendance);
+      const shown = ['Anmelden'];
+      if (qa.allowExcuse) { shown.push('Abmelden'); }
+      if (qa.allowLate) { shown.push('Verspätung eintragen'); }
+      buttons = buttons.filter(btn => !shown.includes(btn.text));
+    }
+
+    if (attendance.attendance?.description && !hideQuickActions) {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
@@ -237,7 +246,7 @@ export class OverviewPage implements OnInit {
       });
     }
 
-    if (attendance.attendance?.attachment_url) {
+    if (attendance.attendance?.attachment_url && !hideQuickActions) {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
@@ -246,7 +255,7 @@ export class OverviewPage implements OnInit {
       });
     }
 
-    if (this.hasFilesFolder(attendance)) {
+    if (this.hasFilesFolder(attendance) && !hideQuickActions) {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
@@ -416,5 +425,81 @@ export class OverviewPage implements OnInit {
   openDescription(attendance: CrossTenantPersonAttendance) {
     this.selectedDescription = attendance.attendance?.description || '';
     this.descriptionModal.present();
+  }
+  get upcomingGroups(): EventMonthGroup<CrossTenantPersonAttendance>[] {
+    if (this.upcomingGroupsCache?.src !== this.upcomingAttendances) {
+      this.upcomingGroupsCache = { src: this.upcomingAttendances, groups: groupByMonth(this.upcomingAttendances, att => att.date) };
+    }
+    return this.upcomingGroupsCache.groups;
+  }
+
+  get pastPreview(): CrossTenantPersonAttendance[] {
+    return this.showAllPast ? this.pastAttendances : this.pastAttendances.slice(0, PAST_PREVIEW_COUNT);
+  }
+
+  weekday(date: string): string {
+    return eventWeekday(date);
+  }
+
+  day(date: string): string {
+    return eventDay(date);
+  }
+
+  getEventTitle(att: CrossTenantPersonAttendance): string {
+    return att.title || this.getReadableDate(att.date, att.attendanceType);
+  }
+
+  /** Time line; past, multi-day and the current Termin also show the date unless it is the title. */
+  getEventMeta(att: CrossTenantPersonAttendance, withDate = false): string {
+    const attType = att.attendanceType;
+    const showDate = withDate || isMultiDay(att.attendance) || (attType?.all_day && (attType.duration_days ?? 1) > 1);
+    const date = this.getReadableDate(att.date, attType);
+    return eventMeta(
+      showDate && date !== this.getEventTitle(att) ? date : '',
+      eventTimeRange(att.attendance?.start_time ?? attType?.start_time, att.attendance?.end_time ?? attType?.end_time),
+    );
+  }
+
+  statusColorOf(att: CrossTenantPersonAttendance): string {
+    return statusColor(att.status);
+  }
+
+  statusLabelOf(att: CrossTenantPersonAttendance, past = false): string {
+    return statusLabel(att.status, past);
+  }
+
+  isSigninOpen(attendance: CrossTenantPersonAttendance): boolean {
+    if (!attendance.attendance?.deadline) {
+      return true;
+    }
+    const localDeadline = dayjs(attendance.attendance.deadline).subtract(dayjs().utcOffset(), 'minute');
+    return !dayjs().isAfter(localDeadline);
+  }
+
+  /** Direct buttons on the current card; follows the same rules as the action sheet. */
+  quickActions(att: CrossTenantPersonAttendance) {
+    const attType = att.attendanceType;
+    const isExcused = att.status === AttendanceStatus.Excused || att.status === AttendanceStatus.LateExcused;
+    return {
+      present: att.text === 'X',
+      canSignin: att.text !== 'X' && this.isSigninOpen(att),
+      late: att.status === AttendanceStatus.LateExcused,
+      excused: att.status === AttendanceStatus.Excused,
+      blocked: isExcused || att.text === 'A',
+      allowLate: !attType || attType.available_statuses.includes(AttendanceStatus.Late),
+      allowExcuse: !attType || attType.available_statuses.includes(AttendanceStatus.Excused),
+    };
+  }
+
+  quickSignout(att: CrossTenantPersonAttendance, isLate: boolean): void {
+    this.selectedAttendance = att;
+    this.selAttIds = [att.id!];
+    this.excusePicker.open(isLate, this.isAttToday(att));
+  }
+
+  openRoute(attendance: CrossTenantPersonAttendance) {
+    if (attendance.attendance?.place) {
+      Utils.openNavigation(attendance.attendance.place);
+    }
   }
 }
