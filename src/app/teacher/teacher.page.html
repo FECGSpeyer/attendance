@@ -26,11 +26,11 @@
   </ion-item>
   <ion-item>
     <ion-label position="stacked">Kontakt</ion-label>
-    <ion-input autocapitalize="words" [(ngModel)]="editedTeacher.number"></ion-input>
+    <ion-input autocapitalize="sentences" [(ngModel)]="editedTeacher.number"></ion-input>
   </ion-item>
   <ion-item>
     <ion-label position="stacked">Notizen</ion-label>
-    <ion-textarea autocapitalize="words" [(ngModel)]="editedTeacher.notes"></ion-textarea>
+    <ion-textarea autocapitalize="sentences" [(ngModel)]="editedTeacher.notes"></ion-textarea>
   </ion-item>
   @if (playersFromTeacher?.length) {
     <ion-accordion-group value="players">

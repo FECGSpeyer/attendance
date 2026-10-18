@@ -19,22 +19,24 @@
     } @else {
       <ion-list lines="full" class="card-list">
         @for (e of entries; track e.fromDate + e.firstName) {
-          <ion-item button detail="true" (click)="openPerson(e.player)">
-            <div class="avatar-circle" [class]="e.type === 'pause' ? 'avatar-pause' : 'avatar-absent'" slot="start">
-              <ion-icon [name]="e.type === 'pause' ? 'pause-circle-outline' : 'calendar-clear-outline'"></ion-icon>
-            </div>
-            <ion-label class="ion-text-wrap">
+          <ion-item button [detail]="false" class="dash-row" (click)="openPerson(e.player)">
+            @if (e.fromDate) {
+              <div class="date-tile" slot="start" [class]="e.type === 'pause' ? 'tile-muted' : 'tile-orange'">
+                <span class="tile-main">{{ tileDay(e.fromDate) }}</span>
+                <span class="tile-sub">{{ tileMonth(e.fromDate) }}</span>
+              </div>
+            } @else {
+              <div class="icon-tile tile-muted" slot="start">
+                <ion-icon name="pause"></ion-icon>
+              </div>
+            }
+            <ion-label>
               <h3>{{ e.firstName }} {{ e.lastName }}</h3>
-              @if (e.type === 'absence') {
-                <p>{{ formatDateRange(e.fromDate, e.untilDate) }}</p>
-              }
-              @if (e.reason) {
-                <p class="reason-text">{{ e.reason }}</p>
-              }
+              <p>{{ subtitle(e) }}</p>
             </ion-label>
-            <ion-badge slot="end" [color]="e.type === 'pause' ? 'warning' : 'medium'">
+            <span slot="end" class="soft-chip" [class]="e.type === 'pause' ? 'tile-muted' : 'tile-orange'">
               {{ e.type === 'pause' ? 'Pause' : 'Abwesend' }}
-            </ion-badge>
+            </span>
           </ion-item>
         }
       </ion-list>

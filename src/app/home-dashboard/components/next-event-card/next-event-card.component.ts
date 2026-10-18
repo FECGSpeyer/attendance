@@ -1,12 +1,14 @@
 import { Component, effect } from '@angular/core';
 import { ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
+import { attendanceHasEnded } from '../../../utilities/plan-days';
 import 'dayjs/locale/de';
 import { AttendancePage } from '../../../attendance/attendance/attendance.page';
 import { DbService } from '../../../services/db.service';
 import { Attendance, PersonAttendance } from '../../../utilities/interfaces';
 import { Utils } from '../../../utilities/Utils';
 import { AttendanceStatus, Role } from '../../../utilities/constants';
+import { tileDay, tileMonth, relativeDays } from '../shared/dashboard-date';
 
 @Component({
   selector: 'app-next-event-card',
@@ -58,12 +60,11 @@ export class NextEventCardComponent {
     this.loading = true;
     try {
       const all: Attendance[] = await this.db.getAttendance(false, true);
-      const now = dayjs().startOf('day');
       const past = all
-        .filter(a => dayjs(a.date).isBefore(now))
+        .filter(a => attendanceHasEnded(a))
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       const upcoming = all
-        .filter(a => !dayjs(a.date).isBefore(now))
+        .filter(a => !attendanceHasEnded(a))
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       this.lastEvent = past[0] ?? null;
@@ -120,10 +121,18 @@ export class NextEventCardComponent {
     return dayjs(date).locale('de').format(format);
   }
 
-  percColor(perc: number): string {
-    if (perc >= 75) return 'success';
-    if (perc >= 50) return 'warning';
-    return 'danger';
+  tileDay = tileDay;
+  tileMonth = tileMonth;
+  relativeDays = relativeDays;
+
+  isToday(date: string): boolean {
+    return dayjs(date).isSame(dayjs(), 'day');
+  }
+
+  percTile(perc: number): string {
+    if (perc >= 75) return 'tile-green';
+    if (perc >= 50) return 'tile-orange';
+    return 'tile-red';
   }
 
   statusLabel(status: AttendanceStatus): string {

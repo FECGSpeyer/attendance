@@ -23,6 +23,29 @@ export function isMultiDay(att: PlanSource | null | undefined): boolean {
   return (Number(att?.duration_days) || 1) > 1;
 }
 
+/** Termin or Anwesenheit of a person (duration then lives in `attendance`). */
+export type DurationSource = {
+  date?: string;
+  duration_days?: number;
+  attendance?: { duration_days?: number } | null;
+};
+
+/** Last day of a Termin; multi-day Termine end `duration_days - 1` days after their start. */
+export function attendanceEndDate(att: DurationSource): dayjs.Dayjs {
+  const days = Number(att?.duration_days ?? att?.attendance?.duration_days) || 1;
+  return dayjs(att?.date).add(Math.max(days, 1) - 1, 'day');
+}
+
+/** A Termin is past only once its last day is over, so a running Freizeit stays current. */
+export function attendanceHasEnded(att: DurationSource, ref: dayjs.ConfigType = dayjs()): boolean {
+  return attendanceEndDate(att).isBefore(dayjs(ref), 'day');
+}
+
+/** Termin starts today or is still running today. */
+export function attendanceIsRunning(att: DurationSource, ref: dayjs.ConfigType = dayjs()): boolean {
+  return !dayjs(att?.date).isAfter(dayjs(ref), 'day') && !attendanceHasEnded(att, ref);
+}
+
 /** Day (0-based) a plan belongs to; the first plan of a multi-day Termin defaults to day 0. */
 export function planDay(att: PlanSource, plans: Plan[], index: number): number | undefined {
   const plan = plans[index];

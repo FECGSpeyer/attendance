@@ -170,7 +170,7 @@
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Handynummer</ion-label>
-              <ion-input autocapitalize="words" [(ngModel)]="userData.phone" type="tel"></ion-input>
+              <ion-input autocapitalize="sentences" [(ngModel)]="userData.phone" type="tel"></ion-input>
             </ion-item>
             <ion-item>
               <ion-label>Geburtsdatum</ion-label>
@@ -242,9 +242,9 @@
                         </ng-template>
                       </ion-modal>
                     } @else if (field.type === fieldTypes.NUMBER) {
-                      <ion-input autocapitalize="words" type="number" labelPlacement="stacked" [label]="field.name" [(ngModel)]="userData.additional_fields[field.id]"></ion-input>
+                      <ion-input autocapitalize="sentences" type="number" labelPlacement="stacked" [label]="field.name" [(ngModel)]="userData.additional_fields[field.id]"></ion-input>
                     } @else {
-                      <ion-input autocapitalize="words" labelPlacement="stacked" [label]="field.name" [(ngModel)]="userData.additional_fields[field.id]"></ion-input>
+                      <ion-input autocapitalize="sentences" labelPlacement="stacked" [label]="field.name" [(ngModel)]="userData.additional_fields[field.id]"></ion-input>
                     }
                   } @else {
                     <ion-label>
@@ -268,31 +268,10 @@
   }
 
   @if (userData?.img && userData.img !== 'https://ionicframework.com/docs/img/demos/avatar.svg') {
-  <ion-modal [isOpen]="isImageViewerOpen" (ionModalDidDismiss)="closePassImageViewer()">
+  <ion-modal class="image-viewer-modal" [isOpen]="isImageViewerOpen" (ionModalDidDismiss)="closePassImageViewer()">
     <ng-template>
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Passbild</ion-title>
-          <ion-buttons slot="end">
-            <ion-button (click)="closePassImageViewer()">
-              <ion-icon slot="icon-only" name="close-outline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content color="dark" class="pass-preview-content">
-        <div class="pass-preview-container"
-          (dblclick)="onPassImageDblClick()"
-          (touchstart)="onPassImageTouchStart($event)"
-          (touchmove)="onPassImageTouchMove($event)"
-          (touchend)="onPassImageTouchEnd($event)">
-          <img [src]="userData.img.replace('?quality=20', '')"
-            alt="Passbild"
-            class="pass-preview-image"
-            (error)="$event.target.src='assets/icon/avatar-placeholder.svg'"
-            [style.transform]="'scale(' + passImageZoomScale + ')'" />
-        </div>
-      </ion-content>
+      <app-image-viewer [src]="userData.img.replace('?quality=20', '')" title="Passbild"
+        fallbackSrc="assets/icon/avatar-placeholder.svg" (closed)="closePassImageViewer()"></app-image-viewer>
     </ng-template>
   </ion-modal>
   }
@@ -813,12 +792,12 @@
               <ion-item-group>
                 <ion-item>
                   <ion-label position="stacked">Deine Frage</ion-label>
-                  <ion-textarea autocapitalize="words" placeholder="Deine Frage eingeben..." [(ngModel)]="helpQuestion"
+                  <ion-textarea autocapitalize="sentences" placeholder="Deine Frage eingeben..." [(ngModel)]="helpQuestion"
                     rows="6"></ion-textarea>
                 </ion-item>
                 <ion-item>
                   <ion-label position="stacked">Deine Handynummer (optional)</ion-label>
-                  <ion-input autocapitalize="words" helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel"
+                  <ion-input autocapitalize="sentences" helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel"
                     placeholder="Handynummer eingeben..." [(ngModel)]="feedbackPhone"></ion-input>
                 </ion-item>
               </ion-item-group>
@@ -839,7 +818,7 @@
                 </ion-item>
                 <ion-item>
                   <ion-label position="stacked">Dein Feedback</ion-label>
-                  <ion-textarea autocapitalize="words" placeholder="Dein Feedback eingeben..." [(ngModel)]="feedbackText"
+                  <ion-textarea autocapitalize="sentences" placeholder="Dein Feedback eingeben..." [(ngModel)]="feedbackText"
                     rows="6"></ion-textarea>
                 </ion-item>
                 <ion-item>
@@ -848,7 +827,7 @@
                 @if (!anonymous) {
                 <ion-item>
                   <ion-label position="stacked">Deine Handynummer (optional)</ion-label>
-                  <ion-input autocapitalize="words" helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel"
+                  <ion-input autocapitalize="sentences" helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel"
                     placeholder="Handynummer eingeben..." [(ngModel)]="feedbackPhone"></ion-input>
                 </ion-item>
                 }

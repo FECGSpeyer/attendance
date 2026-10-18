@@ -19,18 +19,13 @@
     } @else {
       <ion-list lines="full" class="card-list">
         @for (person of criticalPersons; track person.id) {
-          <ion-item button detail="true" (click)="openPerson(person)">
-            <div class="avatar-circle avatar-critical" slot="start">
-              <ion-icon name="person-outline"></ion-icon>
+          <ion-item button [detail]="false" class="dash-row" (click)="openPerson(person)">
+            <div class="icon-tile tile-red" slot="start">
+              <span class="tile-main tile-small">{{ initials(person) }}</span>
             </div>
             <ion-label>
               <h3>{{ person.firstName }} {{ person.lastName }}</h3>
-              @if (getReasonText(person)) {
-                <p>{{ getReasonText(person) }}</p>
-              }
-              @if (getCriticalSince(person)) {
-                <p>seit {{ getCriticalSince(person) }}</p>
-              }
+              <p>{{ getReasonText(person) || 'Problemfall' }}</p>
             </ion-label>
           </ion-item>
         }

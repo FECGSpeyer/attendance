@@ -27,13 +27,9 @@ export class FilesPage implements OnInit {
   public isImagePreviewOpen = false;
   public selectedImageUrl = '';
   public selectedImageName = '';
-  public imageZoomScale = 1;
   public sortBy: 'name' | 'updatedAt' | 'size' = 'name';
   public sortDirection: 'asc' | 'desc' = 'asc';
   public canEditEntries = false;
-  private pinchStartDistance = 0;
-  private pinchStartScale = 1;
-  private lastImageTapAt = 0;
 
   constructor(
     public db: DbService,
@@ -510,7 +506,6 @@ export class FilesPage implements OnInit {
     }
 
     this.selectedImageUrl = url;
-    this.resetImageZoom();
     this.isImagePreviewOpen = true;
   }
 
@@ -518,73 +513,8 @@ export class FilesPage implements OnInit {
     this.isImagePreviewOpen = false;
     this.selectedImageUrl = '';
     this.selectedImageName = '';
-    this.resetImageZoom();
   }
 
-  private getTouchDistance(event: TouchEvent): number {
-    if (event.touches.length < 2) {
-      return 0;
-    }
-
-    const dx = event.touches[0].clientX - event.touches[1].clientX;
-    const dy = event.touches[0].clientY - event.touches[1].clientY;
-    return Math.hypot(dx, dy);
-  }
-
-  private clampScale(value: number): number {
-    return Math.min(4, Math.max(1, value));
-  }
-
-  resetImageZoom(): void {
-    this.imageZoomScale = 1;
-    this.pinchStartDistance = 0;
-    this.pinchStartScale = 1;
-    this.lastImageTapAt = 0;
-  }
-
-  onPreviewDblClick(): void {
-    this.imageZoomScale = this.imageZoomScale > 1 ? 1 : 2;
-  }
-
-  onPreviewTouchStart(event: TouchEvent): void {
-    if (event.touches.length === 2) {
-      this.pinchStartDistance = this.getTouchDistance(event);
-      this.pinchStartScale = this.imageZoomScale;
-      return;
-    }
-
-    if (event.touches.length === 1) {
-      const now = Date.now();
-      if (now - this.lastImageTapAt < 300) {
-        this.imageZoomScale = this.imageZoomScale > 1 ? 1 : 2;
-        this.lastImageTapAt = 0;
-      } else {
-        this.lastImageTapAt = now;
-      }
-    }
-  }
-
-  onPreviewTouchMove(event: TouchEvent): void {
-    if (event.touches.length !== 2 || !this.pinchStartDistance) {
-      return;
-    }
-
-    event.preventDefault();
-    const currentDistance = this.getTouchDistance(event);
-    if (!currentDistance) {
-      return;
-    }
-
-    const nextScale = this.pinchStartScale * (currentDistance / this.pinchStartDistance);
-    this.imageZoomScale = this.clampScale(nextScale);
-  }
-
-  onPreviewTouchEnd(event: TouchEvent): void {
-    if (event.touches.length < 2) {
-      this.pinchStartDistance = 0;
-      this.pinchStartScale = this.imageZoomScale;
-    }
-  }
 
   private async askDuplicateHandling(duplicateNames: string[]): Promise<'overwrite' | 'skip' | 'cancel'> {
     const previewNames = duplicateNames.slice(0, 5).join(', ');

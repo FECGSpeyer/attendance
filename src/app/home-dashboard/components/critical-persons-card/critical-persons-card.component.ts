@@ -1,11 +1,11 @@
 import { Component, effect } from '@angular/core';
-import dayjs from 'dayjs';
 import { ModalController } from '@ionic/angular/lazy';
 import { DbService } from '../../../services/db.service';
 import { Player } from '../../../utilities/interfaces';
 import { PersonPage } from '../../../people/person/person.page';
-import { PlayerHistoryType, Role } from '../../../utilities/constants';
+import { Role } from '../../../utilities/constants';
 import { Utils } from '../../../utilities/Utils';
+
 
 @Component({
   selector: 'app-critical-persons-card',
@@ -44,11 +44,6 @@ export class CriticalPersonsCardComponent {
     return '';
   }
 
-  getCriticalSince(player: Player): string | null {
-    const entry = player.history?.slice().reverse().find(h => h.type === PlayerHistoryType.CRITICAL_PERSON);
-    return entry ? dayjs(entry.date).format('DD.MM.YYYY') : null;
-  }
-
   async openPerson(player: Player) {
     const isAdmin = [Role.ADMIN, Role.RESPONSIBLE].includes(this.db.tenantUser()?.role);
     const modal = await this.modalController.create({
@@ -58,5 +53,9 @@ export class CriticalPersonsCardComponent {
       backdropDismiss: false,
     });
     await modal.present();
+  }
+
+  initials(player: Player): string {
+    return `${player.firstName?.[0] ?? ''}${player.lastName?.[0] ?? ''}`.toUpperCase();
   }
 }

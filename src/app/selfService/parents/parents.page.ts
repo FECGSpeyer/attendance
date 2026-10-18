@@ -3,6 +3,7 @@ import { ActionSheetController, IonModal, ModalController } from '@ionic/angular
 import { Browser } from '@capacitor/browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import dayjs from 'dayjs';
+import { attendanceHasEnded, attendanceIsRunning } from '../../utilities/plan-days';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
 import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
@@ -159,17 +160,14 @@ export class ParentsPage implements OnInit {
   }
 
   organizeAttendances() {
-    const today = dayjs().startOf('day');
-
     const current: Attendance[] = [];
     const upcoming: Attendance[] = [];
     const past: Attendance[] = [];
 
     for (const att of this.attendances) {
-      const attDate = dayjs(att.date);
-      if (attDate.isSame(today, 'day')) {
+      if (attendanceIsRunning(att)) {
         current.push(att);
-      } else if (attDate.isAfter(today)) {
+      } else if (!attendanceHasEnded(att)) {
         upcoming.push(att);
       } else {
         past.push(att);
@@ -210,7 +208,7 @@ export class ParentsPage implements OnInit {
 
     for (const kid of this.kids) {
       const kidAttendances = this.personAttendances.filter(
-        pa => pa.person_id === kid.id && dayjs(pa.date).isBefore(dayjs().startOf('day'))
+        pa => pa.person_id === kid.id && attendanceHasEnded(pa)
       );
 
       if (kidAttendances.length === 0) {

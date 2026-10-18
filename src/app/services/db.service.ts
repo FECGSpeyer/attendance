@@ -10,6 +10,7 @@ import { isInAnyCircle, isTeamLeaderRole, isTeamOrgEnabled } from '../team-organ
 import { SongFile } from '../utilities/interfaces';
 import { Database } from '../utilities/supabase';
 import { Utils } from '../utilities/Utils';
+import { attendanceHasEnded } from '../utilities/plan-days';
 import { supabase, attendanceSelect } from './base/supabase';
 import { pickPersonFields, pickTenantUserFields, sanitizeImg } from '../utilities/db-helpers';
 import { RankedMatch } from '../utilities/person-matcher';
@@ -2614,16 +2615,21 @@ export class DbService {
     });
   }
 
-  async getUpcomingAttendances(tenantId?: number): Promise<Attendance[]> {
+  /** `includeRunning` also returns mehrtägige Termine that started earlier and are still running. */
+  async getUpcomingAttendances(tenantId?: number, includeRunning = false): Promise<Attendance[]> {
+    const from = includeRunning ? dayjs().startOf('day').subtract(31, 'day') : dayjs().startOf('day');
     const { data } = await supabase
       .from('attendance')
       .select('*')
       .eq('tenantId', tenantId ?? this.tenant().id)
-      .gt('date', dayjs().startOf('day').toISOString())
+      .gt('date', from.toISOString())
       .order('date', {
         ascending: true,
       });
 
+    if (includeRunning) {
+      return ((data as any) ?? []).filter((att: Attendance) => !attendanceHasEnded(att));
+    }
     return data as any;
   }
 
@@ -2700,20 +2706,22 @@ export class DbService {
       .from('attendance')
       .select('id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, duration_days, plan, extra_plans, share_plan, description, attachment_url, attachment_name, files_folder, place, attType:type_id(id, highlight, include_in_average, name, color, registration_fields)')
       .eq('tenantId', this.tenant().id)
-      .gt('date', dayjs().startOf('day').toISOString())
+      // Look back a bit so mehrtägige Termine that started earlier and are still running stay included.
+      .gt('date', dayjs().startOf('day').subtract(31, 'day').toISOString())
       .order('date', { ascending: true }) as any;
 
-    if (!allAtts?.length) { return []; }
+    const runningAtts = (allAtts ?? []).filter((att: any) => !attendanceHasEnded(att));
+    if (!runningAtts.length) { return []; }
 
     const { data: playerPAs } = await supabase
       .from('person_attendances')
       .select('id, attendance_id, status, notes, registration_answers')
       .eq('person_id', playerId)
-      .in('attendance_id', allAtts.map((a: any) => a.id)) as any;
+      .in('attendance_id', runningAtts.map((a: any) => a.id)) as any;
 
     const paMap = new Map<number, any>((playerPAs ?? []).map((pa: any) => [pa.attendance_id, pa]));
 
-    return allAtts.map((att: any): PersonAttendance => {
+    return runningAtts.map((att: any): PersonAttendance => {
       const attType = att.attType ?? this.attendanceTypes().find((t: AttendanceType) => t.id === att.type_id);
       const title = attType ? Utils.getTypeTitle(attType, att.typeInfo) : '';
       const playerPa = paMap.get(att.id);
@@ -3999,7 +4007,7 @@ export class DbService {
 
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, description, attachment_url, attachment_name, files_folder, tenantId)')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, duration_days, description, attachment_url, attachment_name, files_folder, tenantId)')
       .eq('person_id', personId)
       .gt('attendance.date', seasonStart) as any;
 

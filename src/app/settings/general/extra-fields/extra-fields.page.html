@@ -52,7 +52,7 @@
                   </ion-select>
                 </ion-item>
                 <ion-item>
-                  <ion-input autocapitalize="words" labelPlacement="stacked" label="Name" [(ngModel)]="newExtraField.name"></ion-input>
+                  <ion-input autocapitalize="sentences" labelPlacement="stacked" label="Name" [(ngModel)]="newExtraField.name"></ion-input>
                 </ion-item>
                 <ion-item>
                   <ion-select label="Anzeige in Listen" [(ngModel)]="newExtraField.displayMode">
@@ -84,7 +84,7 @@
                   } @else {
                     @for (option of newExtraField.options; track option; let i = $index) {
                       <ion-item>
-                        <ion-input autocapitalize="words" [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined"
+                        <ion-input autocapitalize="sentences" [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined"
                           placeholder="Wert eingeben..." [value]="option" (ionChange)="onExtraOptionChanged($event, i, 'person')"></ion-input>
                         <ion-button slot="end" (click)="newExtraField.options.splice(i, 1)" fill="clear">
                           <ion-icon color="danger" name="trash-outline"></ion-icon>
@@ -101,7 +101,7 @@
                       <ion-label>Standardwert</ion-label>
                       <ion-toggle slot="end" [(ngModel)]="newExtraField.defaultValue"></ion-toggle>
                     } @else {
-                      <ion-input autocapitalize="words" [type]="newExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
+                      <ion-input autocapitalize="sentences" [type]="newExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
                         labelPlacement="stacked" label="Standardwert (optional)" [(ngModel)]="newExtraField.defaultValue"></ion-input>
                     }
                   </ion-item>
@@ -140,7 +140,7 @@
                     <ion-note slot="end">{{ getFieldTypeName(editingExtraField.type) }}</ion-note>
                   </ion-item>
                   <ion-item>
-                    <ion-input autocapitalize="words" labelPlacement="stacked" label="Name" [(ngModel)]="editingExtraField.name"></ion-input>
+                    <ion-input autocapitalize="sentences" labelPlacement="stacked" label="Name" [(ngModel)]="editingExtraField.name"></ion-input>
                   </ion-item>
                   <ion-item>
                     <ion-select label="Anzeige in Listen" [(ngModel)]="editingExtraField.displayMode">
@@ -172,7 +172,7 @@
                     } @else {
                       @for (option of editingExtraField.options; track option; let i = $index) {
                         <ion-item>
-                          <ion-input autocapitalize="words" [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined"
+                          <ion-input autocapitalize="sentences" [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined"
                             placeholder="Wert eingeben..." [value]="option" (ionChange)="onEditExtraOptionChanged($event, i, 'person')"></ion-input>
                           <ion-button slot="end" (click)="removeEditExtraOption(i, 'person')" fill="clear">
                             <ion-icon color="danger" name="trash-outline"></ion-icon>
@@ -189,7 +189,7 @@
                         <ion-label>Standardwert</ion-label>
                         <ion-toggle slot="end" [(ngModel)]="editingExtraField.defaultValue"></ion-toggle>
                       } @else {
-                        <ion-input autocapitalize="words" [type]="editingExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
+                        <ion-input autocapitalize="sentences" [type]="editingExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
                           labelPlacement="stacked" label="Standardwert" [(ngModel)]="editingExtraField.defaultValue"></ion-input>
                       }
                     </ion-item>
@@ -213,6 +213,7 @@
           <ion-label>Es wurden noch keine zusätzlichen Felder hinzugefügt.</ion-label>
         </ion-item>
       }
+      <ion-reorder-group [disabled]="extraFields.length < 2" (ionItemReorder)="handleReorder($any($event), 'person')">
       @for (field of extraFields; track field; let i = $index) {
         <ion-item>
           <ion-label>
@@ -231,8 +232,10 @@
           <ion-button fill="clear" color="danger" size="small" (click)="removeExtraField(i, 'person')">
             <ion-icon name="trash-outline"></ion-icon>
           </ion-button>
+          <ion-reorder slot="end"></ion-reorder>
         </ion-item>
       }
+      </ion-reorder-group>
     </ion-item-group>
   </ion-list>
 
@@ -264,7 +267,7 @@
                   </ion-select>
                 </ion-item>
                 <ion-item>
-                  <ion-input autocapitalize="words" labelPlacement="stacked" label="Name" [(ngModel)]="newSongExtraField.name"></ion-input>
+                  <ion-input autocapitalize="sentences" labelPlacement="stacked" label="Name" [(ngModel)]="newSongExtraField.name"></ion-input>
                 </ion-item>
                 <ion-item>
                   <ion-select label="Anzeige in Listen" [(ngModel)]="newSongExtraField.displayMode">
@@ -286,7 +289,7 @@
                   } @else {
                     @for (option of newSongExtraField.options; track option; let i = $index) {
                       <ion-item>
-                        <ion-input autocapitalize="words" [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined"
+                        <ion-input autocapitalize="sentences" [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined"
                           placeholder="Wert eingeben..." [value]="option" (ionChange)="onExtraOptionChanged($event, i, 'song')"></ion-input>
                         <ion-button slot="end" (click)="newSongExtraField.options.splice(i, 1)" fill="clear">
                           <ion-icon color="danger" name="trash-outline"></ion-icon>
@@ -303,7 +306,7 @@
                       <ion-label>Standardwert</ion-label>
                       <ion-toggle slot="end" [(ngModel)]="newSongExtraField.defaultValue"></ion-toggle>
                     } @else {
-                      <ion-input autocapitalize="words" [type]="newSongExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
+                      <ion-input autocapitalize="sentences" [type]="newSongExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
                         labelPlacement="stacked" label="Standardwert (optional)" [(ngModel)]="newSongExtraField.defaultValue"></ion-input>
                     }
                   </ion-item>
@@ -342,7 +345,7 @@
                     <ion-note slot="end">{{ getFieldTypeName(editingSongExtraField.type) }}</ion-note>
                   </ion-item>
                   <ion-item>
-                    <ion-input autocapitalize="words" labelPlacement="stacked" label="Name" [(ngModel)]="editingSongExtraField.name"></ion-input>
+                    <ion-input autocapitalize="sentences" labelPlacement="stacked" label="Name" [(ngModel)]="editingSongExtraField.name"></ion-input>
                   </ion-item>
                   <ion-item>
                     <ion-select label="Anzeige in Listen" [(ngModel)]="editingSongExtraField.displayMode">
@@ -364,7 +367,7 @@
                     } @else {
                       @for (option of editingSongExtraField.options; track option; let i = $index) {
                         <ion-item>
-                          <ion-input autocapitalize="words" [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined"
+                          <ion-input autocapitalize="sentences" [helperText]="i === 0 ? 'Erste Option ist der Standardwert' : undefined"
                             placeholder="Wert eingeben..." [value]="option" (ionChange)="onEditExtraOptionChanged($event, i, 'song')"></ion-input>
                           <ion-button slot="end" (click)="removeEditExtraOption(i, 'song')" fill="clear">
                             <ion-icon color="danger" name="trash-outline"></ion-icon>
@@ -381,7 +384,7 @@
                         <ion-label>Standardwert</ion-label>
                         <ion-toggle slot="end" [(ngModel)]="editingSongExtraField.defaultValue"></ion-toggle>
                       } @else {
-                        <ion-input autocapitalize="words" [type]="editingSongExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
+                        <ion-input autocapitalize="sentences" [type]="editingSongExtraField.type === fieldTypes.NUMBER ? 'number' : 'text'"
                           labelPlacement="stacked" label="Standardwert" [(ngModel)]="editingSongExtraField.defaultValue"></ion-input>
                       }
                     </ion-item>
@@ -400,6 +403,7 @@
           <ion-label>Es wurden noch keine zusätzlichen Felder hinzugefügt.</ion-label>
         </ion-item>
       }
+      <ion-reorder-group [disabled]="songExtraFields.length < 2" (ionItemReorder)="handleReorder($any($event), 'song')">
       @for (field of songExtraFields; track field; let i = $index) {
         <ion-item>
           <ion-label>
@@ -413,8 +417,10 @@
           <ion-button fill="clear" color="danger" size="small" (click)="removeExtraField(i, 'song')">
             <ion-icon name="trash-outline"></ion-icon>
           </ion-button>
+          <ion-reorder slot="end"></ion-reorder>
         </ion-item>
       }
+      </ion-reorder-group>
     </ion-item-group>
   </ion-list>
 

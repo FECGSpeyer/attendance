@@ -3,7 +3,7 @@
     <ion-icon name="gift-outline"></ion-icon>
     <div>
       <div class="card-title">Geburtstage</div>
-      <div class="card-subtitle">±14 Tage</div>
+      <div class="card-subtitle">Letzte und nächste 14 Tage</div>
     </div>
   </div>
   <ion-card-content class="card-body">
@@ -18,21 +18,35 @@
       </div>
     } @else {
       <ion-list lines="full" class="card-list">
-        @for (entry of entries; track entry.birthday + entry.firstName) {
-          <ion-item button detail="true" (click)="openPerson(entry.player)">
-            <div class="avatar-circle avatar-birthday" slot="start">
-              <ion-icon name="gift-outline"></ion-icon>
-            </div>
-            <ion-label>
-              <h3>{{ entry.firstName }} {{ entry.lastName }}</h3>
-              <p>{{ entry.birthday | date:'dd. MMMM':'UTC' }} · {{ entry.age }} Jahre</p>
-            </ion-label>
-            <ion-badge slot="end" [color]="offsetColor(entry.daysOffset)">
-              {{ formatDaysOffset(entry.daysOffset) }}
-            </ion-badge>
-          </ion-item>
+        @for (entry of upcoming; track entry.birthday + entry.firstName) {
+          <ng-container *ngTemplateOutlet="row; context: { $implicit: entry }"></ng-container>
+        }
+        @if (past.length) {
+          <ion-item-divider>Zuletzt</ion-item-divider>
+          @for (entry of past; track entry.birthday + entry.firstName) {
+            <ng-container *ngTemplateOutlet="row; context: { $implicit: entry }"></ng-container>
+          }
         }
       </ion-list>
     }
   </ion-card-content>
 </ion-card>
+
+<ng-template #row let-entry>
+  <ion-item button [detail]="false" (click)="openPerson(entry.player)"
+    class="dash-row" [class.row-highlight]="entry.daysOffset === 0" [class.row-dim]="entry.daysOffset < 0">
+    <div class="date-tile" slot="start" [class]="entry.daysOffset < 0 ? 'tile-muted' : 'tile-pink'" [class.tile-solid]="entry.daysOffset === 0">
+      <span class="tile-main">{{ entry.day }}</span>
+      <span class="tile-sub">{{ entry.month }}</span>
+    </div>
+    <ion-label>
+      <h3>{{ entry.firstName }} {{ entry.lastName }}</h3>
+      <p>{{ entry.weekday }} · {{ ageText(entry) }}</p>
+    </ion-label>
+    @if (entry.daysOffset === 0) {
+      <span slot="end" class="soft-chip chip-solid tile-pink"><ion-icon name="sparkles"></ion-icon>Heute</span>
+    } @else {
+      <span slot="end" class="row-meta">{{ formatDaysOffset(entry.daysOffset) }}</span>
+    }
+  </ion-item>
+</ng-template>

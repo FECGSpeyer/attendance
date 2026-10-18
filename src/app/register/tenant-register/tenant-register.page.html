@@ -131,7 +131,7 @@
           @if (tenantData.registration_fields?.includes('phone')) {
             <ion-item>
               <ion-label position="stacked">Handynummer</ion-label>
-              <ion-input autocapitalize="words" [(ngModel)]="phone" type="tel" autocomplete="tel"></ion-input>
+              <ion-input autocapitalize="sentences" [(ngModel)]="phone" type="tel" autocomplete="tel"></ion-input>
             </ion-item>
           }
         </ion-item-group>
@@ -158,10 +158,10 @@
             <ion-item>
               @if (field.type === 'text') {
                 <ion-label position="stacked">{{ field.name }}</ion-label>
-                <ion-input autocapitalize="words" [(ngModel)]="field.value" type="text"></ion-input>
+                <ion-input autocapitalize="sentences" [(ngModel)]="field.value" type="text"></ion-input>
               } @else if (field.type === 'number') {
                 <ion-label position="stacked">{{ field.name }}</ion-label>
-                <ion-input autocapitalize="words" [(ngModel)]="field.value" type="number"></ion-input>
+                <ion-input autocapitalize="sentences" [(ngModel)]="field.value" type="number"></ion-input>
               } @else if (field.type === 'select') {
                 <ion-select [label]="field.name" [(ngModel)]="field.value">
                   @for (option of field.options; track option) {
@@ -225,7 +225,7 @@
           }
           <ion-item>
             <ion-label position="stacked">Bemerkungen (optional)</ion-label>
-            <ion-textarea autocapitalize="words" [(ngModel)]="notes"></ion-textarea>
+            <ion-textarea autocapitalize="sentences" [(ngModel)]="notes"></ion-textarea>
           </ion-item>
         </ion-item-group>
       }

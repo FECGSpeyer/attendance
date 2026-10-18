@@ -1,6 +1,69 @@
 {
   "versions": [
     {
+      "version": "4.13.18",
+      "date": "18.10.2026",
+      "changes": [
+        "🐛 Die Dashboard-Karte \"Aktueller Ablaufplan\" zeigt bei mehrtägigen Terminen auch an den Folgetagen den Ablaufplan des jeweiligen Tages."
+      ]
+    },
+    {
+      "version": "4.13.17",
+      "date": "18.10.2026",
+      "changes": [
+        "🐛 Mehrtägige Termine (z. B. Freizeiten) bleiben bis zu ihrem letzten Tag der aktuelle Termin und rutschen erst danach zu den vergangenen Terminen."
+      ]
+    },
+    {
+      "version": "4.13.16",
+      "date": "17.10.2026",
+      "changes": [
+        "✏️ Dashboard-Karten: Die Infozeile unter dem Namen ist jetzt kleiner als der Name, und bei den Problemfällen entfällt das ungenaue \"seit\"-Datum."
+      ]
+    },
+    {
+      "version": "4.13.15",
+      "date": "17.10.2026",
+      "changes": [
+        "🎨 Alle Dashboard-Karten im neuen Look: Kalenderblätter statt runder Icons, dezente Status-Pillen statt kräftiger Badges. Termine zeigen Anwesend, Abgemeldet und Offen jetzt als übersichtliche Kacheln mit Fortschrittsbalken; Werke zeigen ihre Nummer, Problemfälle die Initialen."
+      ]
+    },
+    {
+      "version": "4.13.14",
+      "date": "17.10.2026",
+      "changes": [
+        "🎂 Geburtstage im Dashboard neu gestaltet: Datum als Kalenderblatt, deutsche Monatsnamen, Wochentag und \"wird 17\" statt umbrechender Altersangabe. Heutige Geburtstage sind hervorgehoben, vergangene stehen getrennt unter \"Zuletzt\"."
+      ]
+    },
+    {
+      "version": "4.13.13",
+      "date": "17.10.2026",
+      "changes": [
+        "🔍 Neue Bildansicht: Zoomen mit zwei Fingern genau dort, wo du hinzeigst, Doppeltippen vergrößert die angetippte Stelle, vergrößerte Bilder lassen sich flüssig verschieben und zum Schließen einfach wegwischen. Dazu ein neues, schlichtes Vollbild-Design mit Zoom-Leiste."
+      ]
+    },
+    {
+      "version": "4.13.12",
+      "date": "17.10.2026",
+      "changes": [
+        "↕️ Die Reihenfolge der Zusatzfelder lässt sich jetzt per Drag-and-drop ändern. Chips und Texte in Listen und Detailansichten erscheinen in genau dieser Reihenfolge."
+      ]
+    },
+    {
+      "version": "4.13.11",
+      "date": "17.10.2026",
+      "changes": [
+        "🔤 Bei Texteingaben wird jetzt nur noch der Satzanfang großgeschrieben, nicht mehr jedes Wort. Bei Namen bleibt jedes Wort groß, E-Mail und Passwort starten klein."
+      ]
+    },
+    {
+      "version": "4.13.10",
+      "date": "17.10.2026",
+      "changes": [
+        "📌 Beim „Einplanen“ eines Themas kannst du jetzt auch direkt einen neuen Termin anlegen. Das Thema landet gleich in dessen Tagesordnung."
+      ]
+    },
+    {
       "version": "4.13.9",
       "date": "17.10.2026",
       "changes": [

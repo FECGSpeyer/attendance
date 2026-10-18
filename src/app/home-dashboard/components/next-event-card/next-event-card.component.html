@@ -20,71 +20,68 @@
             <ion-label>Nächster Termin</ion-label>
           </ion-item-divider>
 
-          <ion-item [button]="canOpenAttendance" [detail]="canOpenAttendance" (click)="canOpenAttendance && openAttendance(nextEvent.id)">
-            <div class="avatar-circle avatar-next" slot="start">
-              <ion-icon name="calendar-outline"></ion-icon>
+          <ion-item class="dash-row" [button]="canOpenAttendance" [detail]="false" (click)="canOpenAttendance && openAttendance(nextEvent.id)">
+            <div class="date-tile tile-blue" slot="start" [class.tile-solid]="isToday(nextEvent.date)">
+              <span class="tile-main">{{ tileDay(nextEvent.date) }}</span>
+              <span class="tile-sub">{{ tileMonth(nextEvent.date) }}</span>
             </div>
             <ion-label>
               <h3>{{ nextEvent.typeInfo }}</h3>
-              <p>{{ formatDate(nextEvent.date, 'dddd, DD.MM.YYYY') }}</p>
-              @if (nextEvent.start_time) {
-                <p>
-                  <ion-icon name="time-outline" style="vertical-align:middle; margin-right:3px; font-size:12px;"></ion-icon>
-                  {{ nextEvent.start_time }}
-                  @if (nextEvent.end_time) { – {{ nextEvent.end_time }} }
-                  Uhr
-                </p>
-              }
+              <p>
+                {{ formatDate(nextEvent.date, 'dddd') }}
+                @if (nextEvent.start_time) {
+                  · {{ nextEvent.start_time }}@if (nextEvent.end_time) { – {{ nextEvent.end_time }} } Uhr
+                }
+              </p>
             </ion-label>
+            <span slot="end" class="row-meta">{{ relativeDays(nextEvent.date) }}</span>
           </ion-item>
 
-          @if (nextEvent.description) {
-            <ion-item>
-              <div class="avatar-circle avatar-stat" slot="start">
-                <ion-icon name="information-outline"></ion-icon>
-              </div>
-              <ion-label class="ion-text-wrap">
-                <p>{{ nextEvent.description }}</p>
-              </ion-label>
-            </ion-item>
-          }
-
-          @if (nextEvent.notes) {
-            <ion-item>
-              <div class="avatar-circle avatar-shift" slot="start">
-                <ion-icon name="document-text-outline"></ion-icon>
-              </div>
-              <ion-label class="ion-text-wrap">
-                <p>{{ nextEvent.notes }}</p>
-              </ion-label>
-            </ion-item>
+          @if (nextEvent.description || nextEvent.notes) {
+            <div class="event-notes">
+              @if (nextEvent.description) {
+                <div class="note-line">
+                  <ion-icon name="information-circle-outline"></ion-icon>
+                  <span>{{ nextEvent.description }}</span>
+                </div>
+              }
+              @if (nextEvent.notes) {
+                <div class="note-line">
+                  <ion-icon name="document-text-outline"></ion-icon>
+                  <span>{{ nextEvent.notes }}</span>
+                </div>
+              }
+            </div>
           }
 
           @if (nextTotal > 0) {
-            @if (nextPresent > 0) {
-              <ion-item>
-                <div class="avatar-circle avatar-joined" slot="start">
-                  <ion-icon name="checkmark-outline"></ion-icon>
-                </div>
-                <ion-label>Anwesend</ion-label>
-                <ion-note slot="end" class="note-value">{{ nextPresent }}</ion-note>
-              </ion-item>
-            }
+            <div class="stat-grid">
+              <div class="stat-box tile-green">
+                <span class="stat-value">{{ nextPresent }}</span>
+                <span class="stat-label">Anwesend</span>
+              </div>
+              <div class="stat-box tile-orange" [class.stat-clickable]="nextExcused > 0" [attr.id]="nextExcused > 0 ? 'open-excused-modal' : null">
+                <span class="stat-value">{{ nextExcused }}</span>
+                <span class="stat-label">
+                  Abgemeldet
+                  @if (nextShiftWorkers > 0) { <br>{{ nextShiftWorkers }} Schicht }
+                </span>
+              </div>
+              <div class="stat-box tile-muted">
+                <span class="stat-value">{{ nextNeutral }}</span>
+                <span class="stat-label">Offen</span>
+              </div>
+            </div>
+
+            <div class="perc-row">
+              <div class="perc-text">
+                <span>Durchschnitt</span>
+                <span><strong>{{ nextPerc }}%</strong> · {{ nextTotal }} gesamt</span>
+              </div>
+              <div class="perc-bar"><div class="perc-fill" [style.width.%]="nextPerc"></div></div>
+            </div>
 
             @if (nextExcused > 0) {
-              <ion-item button id="open-excused-modal">
-                <div class="avatar-circle avatar-absent" slot="start">
-                  <ion-icon name="person-remove-outline"></ion-icon>
-                </div>
-                <ion-label>
-                  Abgemeldet
-                  @if (nextShiftWorkers > 0) {
-                    <p>davon {{ nextShiftWorkers }} schichtbedingt</p>
-                  }
-                </ion-label>
-                <ion-note slot="end" class="note-value">{{ nextExcused }}</ion-note>
-              </ion-item>
-
               <ion-modal trigger="open-excused-modal" [initialBreakpoint]="0.75" [breakpoints]="[0, 0.5, 0.75, 1]">
                 <ng-template>
                   <ion-header>
@@ -112,32 +109,6 @@
                 </ng-template>
               </ion-modal>
             }
-
-            @if (nextNeutral > 0) {
-              <ion-item>
-                <div class="avatar-circle avatar-stat" slot="start">
-                  <ion-icon name="help-outline"></ion-icon>
-                </div>
-                <ion-label>Keine Rückmeldung</ion-label>
-                <ion-note slot="end" class="note-value">{{ nextNeutral }}</ion-note>
-              </ion-item>
-            }
-
-            <ion-item>
-              <div class="avatar-circle avatar-event" slot="start">
-                <ion-icon name="people-outline"></ion-icon>
-              </div>
-              <ion-label color="medium">Gesamt</ion-label>
-              <ion-note slot="end" class="note-value">{{ nextTotal }}</ion-note>
-            </ion-item>
-
-            <ion-item lines="none">
-              <div class="avatar-circle avatar-stat" slot="start">
-                <ion-icon name="stats-chart-outline"></ion-icon>
-              </div>
-              <ion-label color="medium">Durchschnitt</ion-label>
-              <ion-note slot="end" class="note-value">{{ nextPerc }}%</ion-note>
-            </ion-item>
           }
         }
 
@@ -146,23 +117,16 @@
           <ion-item-divider class="card-divider">
             <ion-label>Letzter Termin</ion-label>
           </ion-item-divider>
-          <ion-item [button]="canOpenAttendance" [detail]="canOpenAttendance" (click)="canOpenAttendance && openAttendance(lastEvent.id)">
-            <div class="avatar-circle avatar-event" slot="start">
-              <ion-icon name="time-outline"></ion-icon>
+          <ion-item class="dash-row" lines="none" [button]="canOpenAttendance" [detail]="false" (click)="canOpenAttendance && openAttendance(lastEvent.id)">
+            <div class="date-tile tile-muted" slot="start">
+              <span class="tile-main">{{ tileDay(lastEvent.date) }}</span>
+              <span class="tile-sub">{{ tileMonth(lastEvent.date) }}</span>
             </div>
             <ion-label>
               <h3>{{ lastEvent.typeInfo }}</h3>
-              <p>{{ formatDate(lastEvent.date, 'dd, DD.MM.YYYY') }}</p>
+              <p>{{ lastPresent }}/{{ lastTotal }} anwesend · {{ lastExcused }} entschuldigt</p>
             </ion-label>
-            <ion-badge slot="end" [color]="percColor(lastPerc)">{{ lastPerc }}%</ion-badge>
-          </ion-item>
-          <ion-item lines="none">
-            <div class="avatar-circle avatar-stat" slot="start">
-              <ion-icon name="stats-chart-outline"></ion-icon>
-            </div>
-            <ion-label color="medium">
-              <p>{{ lastPresent }} anwesend · {{ lastExcused }} entschuldigt · {{ lastTotal }} gesamt</p>
-            </ion-label>
+            <span slot="end" class="soft-chip" [class]="percTile(lastPerc)">{{ lastPerc }}%</span>
           </ion-item>
         }
 

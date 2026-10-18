@@ -62,10 +62,12 @@ Du kannst mehrere Regeln anlegen und festlegen, ob bereits eine erfüllte Regel 
     id: 'settings-extra-fields',
     title: 'Zusatzfelder anlegen',
     categoryId: 'settings',
-    keywords: ['zusatzfeld erstellen', 'eigenes feld', 'custom field', 'organisationsweit', 'gemeinsame personendaten'],
+    keywords: ['zusatzfeld erstellen', 'eigenes feld', 'custom field', 'organisationsweit', 'gemeinsame personendaten', 'reihenfolge', 'sortieren', 'verschieben', 'chips anordnen'],
     body: `Unter "Einstellungen → Allgemein → Zusatzfelder" erstellst du eigene [[Zusatzfeld|Zusatzfelder]] für Personen oder für [[Werk|Werke]] — getrennt konfigurierbar.
 
 Verfügbare Feldtypen: Text, mehrzeiliger Text, Zahl, Datum, Ja/Nein sowie Auswahl (mit selbst definierten Optionen). Zu jedem Feld kannst du einen Standardwert setzen und festlegen, ob [[Mitglied|Mitglieder]] es sehen bzw. selbst bearbeiten dürfen.
+
+Die Reihenfolge der Felder bestimmst du selbst: Zieh ein Feld am Griff rechts nach oben oder unten und tippe danach auf "Speichern". In genau dieser Reihenfolge erscheinen die Felder überall in der App, also als Chips und als Text unter dem Namen in der Personen- und Werkliste, in den Detailansichten und beim Bearbeiten. Organisationsweite Felder stehen dabei immer vor den Feldern der Instanz und werden unter "Personen-Zusatzfelder" der Organisation genauso sortiert.
 
 Diese Felder gelten nur für die aktuelle [[Instanz]]. Gehört die Instanz zu einer [[Organisation]], können [[Administrator|Administratoren]] unter "Einstellungen → Organisation → Personen-Zusatzfelder" zusätzlich organisationsweite Personenfelder anlegen. Deren Werte sind in allen Instanzen der Organisation gleich, sobald die Person über ihr Attendix-Konto oder über "Personen verknüpfen" eindeutig zugeordnet ist. Änderungen in einer Instanz sind dadurch auch in den anderen Instanzen sichtbar.`,
   },

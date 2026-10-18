@@ -44,50 +44,23 @@
       }
     </div>
     }
-    <ion-modal #imageViewer (ionModalDidDismiss)="closePassImageViewer()" [isOpen]="isImageViewerOpen">
+    <ion-modal class="image-viewer-modal" (ionModalDidDismiss)="closePassImageViewer()" [isOpen]="isImageViewerOpen">
       <ng-template>
-        <ion-header>
-          <ion-toolbar color="dark">
-            <ion-title>Passbild</ion-title>
-            <ion-buttons slot="end">
-              <ion-button (click)="closePassImageViewer()">
-                <ion-icon slot="icon-only" name="close"></ion-icon>
-              </ion-button>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content color="dark" class="pass-preview-content">
-          <div class="pass-preview-container"
-            (dblclick)="onPassImageDblClick()"
-            (wheel)="onPassImageWheel($event)"
-            (touchstart)="onPassImageTouchStart($event)"
-            (touchmove)="onPassImageTouchMove($event)"
-            (touchend)="onPassImageTouchEnd($event)">
-            <img [src]="player.img.replace('?quality=20', '')"
-              #passPreviewImage
-              alt="Passbild"
-              class="pass-preview-image"
-              [class.zoomed]="passImageZoomScale > 1"
-              (error)="$event.target.src='assets/icon/avatar-placeholder.svg'"
-              [style.transform]="'translate(' + passImageOffsetX + 'px, ' + passImageOffsetY + 'px) scale(' + passImageZoomScale + ')'" />
+        <app-image-viewer [src]="player.img.replace('?quality=20', '')" title="Passbild"
+          fallbackSrc="assets/icon/avatar-placeholder.svg" (closed)="closePassImageViewer()">
+          @if (!readOnly) {
+          <div viewerActions>
+            <button type="button" class="viewer-action" (click)="replaceImgFromViewer()">
+              <ion-icon name="camera-outline"></ion-icon>
+              Ersetzen
+            </button>
+            <button type="button" class="viewer-action danger" (click)="removeImgFromViewer()">
+              <ion-icon name="trash-outline"></ion-icon>
+              Entfernen
+            </button>
           </div>
-        </ion-content>
-        @if (!readOnly) {
-        <ion-footer>
-          <ion-toolbar color="dark">
-            <ion-buttons class="pass-preview-actions">
-              <ion-button (click)="replaceImgFromViewer()">
-                <ion-icon slot="start" name="camera-outline"></ion-icon>
-                Ersetzen
-              </ion-button>
-              <ion-button color="danger" (click)="removeImgFromViewer()">
-                <ion-icon slot="start" name="trash-outline"></ion-icon>
-                Entfernen
-              </ion-button>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-footer>
-        }
+          }
+        </app-image-viewer>
       </ng-template>
     </ion-modal>
   </div>
@@ -188,7 +161,7 @@
       <ion-col>
         <ion-item>
           <ion-label position="stacked">Notizen</ion-label>
-          <ion-textarea autocapitalize="words" [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()"
+          <ion-textarea autocapitalize="sentences" [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()"
             [(ngModel)]="player.notes"></ion-textarea>
         </ion-item>
       </ion-col>
@@ -210,7 +183,7 @@
         </ion-item>
         <ion-item *ngIf="solved">
           <ion-label position="stacked">Anmerkungen</ion-label>
-          <ion-textarea autocapitalize="words" autoGrow="true" (ionChange)="onChange()" [(ngModel)]="notes"></ion-textarea>
+          <ion-textarea autocapitalize="sentences" autoGrow="true" (ionChange)="onChange()" [(ngModel)]="notes"></ion-textarea>
         </ion-item>
       </div>
     </ion-accordion>
@@ -262,7 +235,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Stimmumfang</ion-label>
-                <ion-input autocapitalize="words" [disabled]="readOnly || !isAdmin" [(ngModel)]="player.range"></ion-input>
+                <ion-input autocapitalize="sentences" [disabled]="readOnly || !isAdmin" [(ngModel)]="player.range"></ion-input>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -271,7 +244,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Telefon-/Handynummer</ion-label>
-                <ion-input autocapitalize="words" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.phone"></ion-input>
+                <ion-input autocapitalize="sentences" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.phone"></ion-input>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -279,7 +252,7 @@
             <ion-col>
               <ion-item [color]="!existingPlayer || player.correctBirthday || readOnly ? '' : 'warning'">
                 <ion-label position="stacked">Geburtsdatum</ion-label>
-                <ion-input autocapitalize="words"
+                <ion-input autocapitalize="sentences"
                   [disabled]="readOnly"
                   [value]="formatDateForDisplay(player.birthday)"
                   (ionBlur)="onManualDateInput('birthday', $event)"
@@ -311,7 +284,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
-                <ion-input autocapitalize="words"
+                <ion-input autocapitalize="sentences"
                   [disabled]="readOnly"
                   [value]="formatDateForDisplay(player.playsSince)"
                   (ionBlur)="onManualDateInput('playsSince', $event)"
@@ -343,7 +316,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Beigetreten am</ion-label>
-                <ion-input autocapitalize="words"
+                <ion-input autocapitalize="sentences"
                   [disabled]="readOnly"
                   [value]="formatDateForDisplay(player.joined)"
                   (ionBlur)="onManualDateInput('joined', $event)"
@@ -427,7 +400,7 @@
           @if (!isMainGroup && isChoir) {
           <ion-item>
             <ion-label position="stacked">Instrumente</ion-label>
-            <ion-input autocapitalize="words" [disabled]="readOnly || !isAdmin" (ionChange)="onChange()"
+            <ion-input autocapitalize="sentences" [disabled]="readOnly || !isAdmin" (ionChange)="onChange()"
               [(ngModel)]="player.instruments"></ion-input>
           </ion-item>
           }
@@ -460,7 +433,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Testergebnis</ion-label>
-                <ion-input autocapitalize="words" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.testResult"></ion-input>
+                <ion-input autocapitalize="sentences" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.testResult"></ion-input>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -516,7 +489,7 @@
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">Sonstige Dienste</ion-label>
-                <ion-input autocapitalize="words" [disabled]="readOnly" (ionChange)="onChange()"
+                <ion-input autocapitalize="sentences" [disabled]="readOnly" (ionChange)="onChange()"
                   [(ngModel)]="player.otherExercise"></ion-input>
               </ion-item>
             </ion-col>
@@ -535,7 +508,7 @@
           <ion-col>
             <ion-item>
               <ion-label position="stacked">E-Mail</ion-label>
-              <ion-input autocapitalize="words" [disabled]="player.appId || readOnly" [debounce]="500"
+              <ion-input autocapitalize="off" [disabled]="player.appId || readOnly" [debounce]="500"
                 (ionBlur)="onEmailBlur()" (ionChange)="onChange()"
                 [(ngModel)]="player.email"></ion-input>
               @if (!player.appId && !readOnly) {
@@ -615,10 +588,10 @@
           @for (field of db.getPersonExtraFields(); track field.id) {
           <ion-item>
             @if (field.type === fieldTypes.TEXT) {
-            <ion-input autocapitalize="words" [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name" labelPlacement="stacked"
+            <ion-input autocapitalize="sentences" [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name" labelPlacement="stacked"
               [(ngModel)]="player.additional_fields[field.id]"></ion-input>
             } @else if (field.type === fieldTypes.NUMBER) {
-            <ion-input autocapitalize="words" type="number" [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name"
+            <ion-input autocapitalize="sentences" type="number" [disabled]="readOnly" (ionChange)="onChange()" [label]="field.name"
               labelPlacement="stacked" [(ngModel)]="player.additional_fields[field.id]"></ion-input>
             } @else if (field.type === fieldTypes.BOOLEAN) {
             <ion-label>{{ field.name }}</ion-label>
@@ -626,7 +599,7 @@
               [(ngModel)]="player.additional_fields[field.id]"></ion-toggle>
             } @else if (field.type === fieldTypes.DATE) {
             <ion-label position="stacked">{{ field.name }}</ion-label>
-            <ion-input autocapitalize="words"
+            <ion-input autocapitalize="sentences"
               [disabled]="readOnly"
               [value]="formatDateForDisplay($any(player.additional_fields[field.id]))"
               (ionBlur)="onManualDateInput('extra-' + field.id, $event)"
@@ -658,7 +631,7 @@
               }
             </ion-select>
             } @else if (field.type === fieldTypes.TEXTAREA) {
-            <ion-textarea autocapitalize="words" [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()" [label]="field.name"
+            <ion-textarea autocapitalize="sentences" [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()" [label]="field.name"
               labelPlacement="stacked" [(ngModel)]="player.additional_fields[field.id]"></ion-textarea>
             } @else if (field.type === fieldTypes.BFECG_CHURCH) {
             <ion-label>{{ field.name }}</ion-label>
@@ -956,7 +929,7 @@
         <ion-list>
           <ion-item>
             <ion-label position="stacked">Grund *</ion-label>
-            <ion-textarea autocapitalize="words" [(ngModel)]="pauseReason" placeholder="Gib einen Grund für die Pause an..."
+            <ion-textarea autocapitalize="sentences" [(ngModel)]="pauseReason" placeholder="Gib einen Grund für die Pause an..."
               [autoGrow]="true"></ion-textarea>
           </ion-item>
         </ion-list>
@@ -1117,11 +1090,11 @@
       <ion-content class="ion-padding">
         <ion-item>
           <ion-label position="stacked">Austrittsdatum</ion-label>
-          <ion-input autocapitalize="words" type="date" [(ngModel)]="archiveDate"></ion-input>
+          <ion-input autocapitalize="sentences" type="date" [(ngModel)]="archiveDate"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label position="stacked">Notiz</ion-label>
-          <ion-textarea autocapitalize="words" [(ngModel)]="archiveNote"></ion-textarea>
+          <ion-textarea autocapitalize="sentences" [(ngModel)]="archiveNote"></ion-textarea>
         </ion-item>
         <ion-fab vertical="bottom" horizontal="end" slot="fixed">
           <ion-fab-button (click)="archivePlayer()">

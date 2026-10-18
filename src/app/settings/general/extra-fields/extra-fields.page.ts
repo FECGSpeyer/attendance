@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { AlertController, IonModal, NavController } from '@ionic/angular/lazy';
+import { AlertController, IonModal, ItemReorderEventDetail, NavController } from '@ionic/angular/lazy';
 import { PlayerService } from 'src/app/services/player/player.service';
 import { DbService } from 'src/app/services/db.service';
 import { FieldType } from 'src/app/utilities/constants';
@@ -138,6 +138,14 @@ export class ExtraFieldsPage implements OnInit {
       }]
     });
     await alert.present();
+  }
+
+  handleReorder(ev: CustomEvent<ItemReorderEventDetail>, target: 'person' | 'song') {
+    if (target === 'person') {
+      this.extraFields = ev.detail.complete([...this.extraFields]);
+    } else {
+      this.songExtraFields = ev.detail.complete([...this.songExtraFields]);
+    }
   }
 
   openEditExtraField(index: number, target: 'person' | 'song') {

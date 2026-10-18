@@ -4,6 +4,7 @@ import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, is
 import { Browser } from '@capacitor/browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import dayjs from 'dayjs';
+import { attendanceHasEnded, attendanceIsRunning } from '../../utilities/plan-days';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
@@ -244,7 +245,7 @@ export class SignoutPage implements OnInit {
     if (this.showAllAttendances) {
       // Vergangene: nur eigene Teilnahmen
       const pastPAs = (await this.db.getPersonAttendances(this.player.id, true))
-        .filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf('day')))
+        .filter((att: PersonAttendance) => attendanceHasEnded(att))
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
       // Zukünftige: alle Termine der Instanz + eigener Status
@@ -278,7 +279,7 @@ export class SignoutPage implements OnInit {
 
       this.personAttendances = allPersonAttendances;
 
-      const vergangene: PersonAttendance[] = this.personAttendances.filter((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
+      const vergangene: PersonAttendance[] = this.personAttendances.filter((att: PersonAttendance) => attendanceHasEnded(att));
       if (vergangene.length) {
         this.lateCount = vergangene.filter((a) => a.status === AttendanceStatus.Late).length;
         const vergangeneToCalcPerc = vergangene.filter((att: PersonAttendance) => {
@@ -293,7 +294,7 @@ export class SignoutPage implements OnInit {
         this.perc = 0;
       }
 
-      this.actualAttendances = allPersonAttendances.filter((att: PersonAttendance) => dayjs(att.date).isAfter(dayjs().startOf('day'))).reverse();
+      this.actualAttendances = allPersonAttendances.filter((att: PersonAttendance) => !attendanceHasEnded(att)).reverse();
       if (this.actualAttendances.length) {
         this.currentAttendance = this.actualAttendances[0];
         this.actualAttendances.splice(0, 1);
@@ -636,11 +637,11 @@ export class SignoutPage implements OnInit {
   }
 
   hasPastAttendances(attendances: PersonAttendance[]): boolean {
-    return attendances.some((att: PersonAttendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
+    return attendances.some((att: PersonAttendance) => attendanceHasEnded(att));
   }
 
   attHasPassed(att: PersonAttendance) {
-    return dayjs(att.date).isBefore(dayjs(), 'day');
+    return attendanceHasEnded(att);
   }
 
   attIsInFuture(att: PersonAttendance) {
@@ -652,7 +653,7 @@ export class SignoutPage implements OnInit {
   }
 
   isAttToday(att: PersonAttendance) {
-    return dayjs(att.date).isSame(dayjs(), 'day');
+    return attendanceIsRunning(att);
   }
 
   getReadableDate(date: string, type_id: string): string {

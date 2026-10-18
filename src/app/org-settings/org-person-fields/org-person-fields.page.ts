@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, IonModal, NavController } from '@ionic/angular/lazy';
+import { AlertController, IonModal, ItemReorderEventDetail, NavController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { FieldType, Role } from 'src/app/utilities/constants';
 import { ExtraField } from 'src/app/utilities/interfaces';
@@ -119,6 +119,10 @@ export class OrgPersonFieldsPage implements OnInit {
     this.isEditModalOpen = false;
     this.editingField = null;
     this.editingFieldIndex = -1;
+  }
+
+  handleReorder(ev: CustomEvent<ItemReorderEventDetail>): void {
+    this.fields = ev.detail.complete([...this.fields]);
   }
 
   updateOptions(field: ExtraField, value: string): void {

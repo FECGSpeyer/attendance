@@ -6,6 +6,7 @@ import { Storage } from '@ionic/storage-angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { format, isSameDay, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
+import { attendanceHasEnded } from '../../utilities/plan-days';
 import 'dayjs/locale/de';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
@@ -264,9 +265,9 @@ export class AttListPage implements OnInit {
 
     const filtered = this.filterTypeId === 'all' ? attendances : attendances.filter(att => att.type_id === this.filterTypeId);
 
-    this.attendances = filtered.filter((att: Attendance) => dayjs(att.date).isAfter(dayjs().startOf('day'))).reverse();
-    this.oldAttendances = filtered.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
-    this.viewerAttendances = filtered.filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().startOf('day')));
+    this.attendances = filtered.filter((att: Attendance) => !attendanceHasEnded(att)).reverse();
+    this.oldAttendances = filtered.filter((att: Attendance) => attendanceHasEnded(att));
+    this.viewerAttendances = filtered.filter((att: Attendance) => attendanceHasEnded(att));
     if (this.attendances.length) {
       this.currentAttendance = { ...this.attendances[0] };
       this.viewerAttendances.unshift(this.attendances[0]);

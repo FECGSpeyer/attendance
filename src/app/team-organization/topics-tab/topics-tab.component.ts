@@ -9,8 +9,7 @@ import { AgendaItem, AgendaItemPriority, Attendance, AttendanceType, FieldSelect
 import { Utils } from 'src/app/utilities/Utils';
 import { AgendaPickerComponent } from 'src/app/agenda-items/agenda-picker/agenda-picker.component';
 import { addTopicsToAttendance, upcomingProtocolAttendances } from 'src/app/agenda-items/agenda-plan.helpers';
-import { createAttendanceForType, personsForAttendanceType } from 'src/app/utilities/attendance-create';
-import { promptAttendanceDateChange } from 'src/app/utilities/attendance-date-dialog';
+import { promptAttendanceDateChange, promptCreateProtocolAttendance } from 'src/app/utilities/attendance-date-dialog';
 import { personName, postponedAgendaItemIds, sortTopicsForPlanning, topNumbers } from '../team-org.utils';
 import {
   initials,
@@ -155,13 +154,6 @@ export class TeamTopicsTabComponent implements OnInit {
     return `${name} · ${dayjs(att.date).locale('de').format('dd, DD.MM.')}`;
   }
 
-  /** Protocol-enabled types a Termin can be created for ad hoc. */
-  private protocolTypes(): AttendanceType[] {
-    return this.db.attendanceTypes()
-      .filter(t => t.enable_protocol && t.visible !== false)
-      .sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
-  }
-
   /** "Ändern": pick another upcoming Termin or create a new one. */
   async changeAttendance() {
     const buttons: ActionSheetButton[] = this.upcomingAttendances.slice(0, 8).map(att => ({
@@ -194,73 +186,16 @@ export class TeamTopicsTabComponent implements OnInit {
   /** Creates a Termin of a protocol-enabled type ad hoc and selects it. */
   async createAttendance() {
     if (this.creatingAttendance) return;
-    const types = this.protocolTypes();
-    if (!types.length) {
-      Utils.showToast('Kein Termintyp mit Protokoll & Tagesordnung vorhanden', 'warning');
-      return;
-    }
-    const type = types.length === 1 ? types[0] : await this.pickType(types);
-    if (!type) return;
-    const date = await this.pickDate(type);
-    if (!date) return;
-
     this.creatingAttendance = true;
-    const loading = await Utils.getLoadingElement();
-    await loading.present();
     try {
-      const [persons, absences] = await Promise.all([
-        personsForAttendanceType(this.db, type),
-        this.db.getPlayerAbsencesForTenant().catch(() => []),
-      ]);
-      const id = await createAttendanceForType(this.db, type, { date }, persons, absences);
-      const created = await this.db.getAttendanceById(id);
-      this.chosenAttendanceId = id;
-      Utils.showToast(`Termin am ${dayjs(date).format('DD.MM.')} angelegt`, 'success');
+      const created = await promptCreateProtocolAttendance(this.alertController, this.db);
+      if (!created) return;
+      this.chosenAttendanceId = created.id;
       await this.loadLeader();
-      if (this.nextAttendance?.id !== id && created) this.chooseAttendance(created);
-    } catch (error) {
-      console.error('Ad hoc attendance error:', error);
-      Utils.showToast('Termin konnte nicht angelegt werden', 'danger');
+      if (this.nextAttendance?.id !== created.id) this.chooseAttendance(created);
     } finally {
-      await loading.dismiss();
       this.creatingAttendance = false;
     }
-  }
-
-  private async pickType(types: AttendanceType[]): Promise<AttendanceType | null> {
-    const alert = await this.alertController.create({
-      header: 'Welcher Termintyp?',
-      inputs: types.map((t, i) => ({ type: 'radio' as const, label: t.name, value: t.id, checked: i === 0 })),
-      buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        { text: 'Weiter', role: 'confirm' },
-      ],
-    });
-    await alert.present();
-    const { role, data } = await alert.onDidDismiss();
-    if (role !== 'confirm') return null;
-    return types.find(t => t.id === data?.values) ?? null;
-  }
-
-  private async pickDate(type: AttendanceType): Promise<string | null> {
-    const alert = await this.alertController.create({
-      header: `${type.name} anlegen`,
-      message: 'An welchem Tag findet der Termin statt?',
-      inputs: [{ name: 'date', type: 'date', value: dayjs().format('YYYY-MM-DD'), min: dayjs().format('YYYY-MM-DD') }],
-      buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        { text: 'Anlegen', role: 'confirm' },
-      ],
-    });
-    await alert.present();
-    const { role, data } = await alert.onDidDismiss();
-    const value: string = data?.values?.date ?? '';
-    if (role !== 'confirm' || !value) return null;
-    if (dayjs(value).isBefore(dayjs(), 'day')) {
-      Utils.showToast('Bitte ein Datum ab heute wählen', 'warning');
-      return null;
-    }
-    return dayjs(value).toISOString();
   }
 
   /** Tap on a TOP: open the topic or take it off this Termin (it stays in the Themenspeicher). */

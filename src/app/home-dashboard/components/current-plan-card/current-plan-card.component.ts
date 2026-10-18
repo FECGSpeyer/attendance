@@ -6,6 +6,7 @@ import { DbService } from '../../../services/db.service';
 import { Attendance, Plan } from '../../../utilities/interfaces';
 import { Role } from '../../../utilities/constants';
 import { allPlans, planDate, todayPlanIndex } from '../../../utilities/plan-days';
+import { tileDay, tileMonth } from '../shared/dashboard-date';
 
 @Component({
   selector: 'app-current-plan-card',
@@ -41,12 +42,12 @@ export class CurrentPlanCardComponent implements OnDestroy {
     this.loadDone = false;
     this.loading = true;
     try {
-      const upcoming = await this.db.getUpcomingAttendances();
+      const upcoming = await this.db.getUpcomingAttendances(undefined, true);
       const role = this.db.tenantUser()?.role;
       const isAdmin = [Role.ADMIN, Role.RESPONSIBLE].includes(role);
 
       const next = upcoming.find(a =>
-        (a.plan?.fields?.length ?? 0) > 0 &&
+        allPlans(a).some(p => (p?.fields?.length ?? 0) > 0) &&
         (isAdmin || a.share_plan)
       ) ?? null;
 
@@ -120,6 +121,13 @@ export class CurrentPlanCardComponent implements OnDestroy {
     if (!this.attendance) { return ''; }
     const attType = this.db.attendanceTypes().find(t => t.id === this.attendance!.type_id);
     return attType?.name ?? this.attendance.typeInfo ?? this.attendance.type ?? '';
+  }
+
+  tileDay = tileDay;
+  tileMonth = tileMonth;
+
+  get planDayValue(): dayjs.Dayjs {
+    return this.planDay ?? dayjs(this.attendance?.date);
   }
 
   get dateLabel(): string {

@@ -20,9 +20,10 @@
     </div>
     <ion-card-content class="card-body">
       <ion-list lines="none" class="card-list">
-        <ion-item lines="full">
-          <div class="avatar-circle avatar-next" slot="start">
-            <ion-icon name="calendar-outline"></ion-icon>
+        <ion-item lines="full" class="dash-row">
+          <div class="date-tile tile-teal" slot="start" [class.tile-solid]="isToday">
+            <span class="tile-main">{{ tileDay(planDayValue) }}</span>
+            <span class="tile-sub">{{ tileMonth(planDayValue) }}</span>
           </div>
           <ion-label>
             <h3>{{ dateLabel }}</h3>
@@ -43,9 +44,11 @@
                 <span class="conductor"> · {{ field.conductor }}</span>
               }
             </ion-label>
-            <ion-badge slot="end" [color]="isLive && i === activeFieldIndex ? 'primary' : 'medium'">
-              {{ isLive && i === activeFieldIndex ? getActiveCountdown() : fieldStartTimes()[i] }}
-            </ion-badge>
+            @if (isLive && i === activeFieldIndex) {
+              <span slot="end" class="soft-chip chip-solid tile-teal">{{ getActiveCountdown() }}</span>
+            } @else {
+              <span slot="end" class="row-meta">{{ fieldStartTimes()[i] }}</span>
+            }
           </ion-item>
         }
       </ion-list>
