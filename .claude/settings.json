@@ -1,5 +1,11 @@
 {
-  "worktree": {
-    "bgIsolation": "none"
+  "worktree": { "bgIsolation": "none" },
+  "permissions": {
+    "allow": [
+      "mcp__Supabase__apply_migration",
+      "mcp__Supabase__deploy_edge_function",
+      "mcp__Supabase__execute_sql"
+    ]
   }
 }
+
