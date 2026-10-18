@@ -258,10 +258,13 @@ Deno.serve(async (req) => {
         const event: 'start' | 'update' | 'end' = state.phase === 'ended' ? 'end' : prev ? 'update' : 'start';
         let message: unknown = null;
 
+        const tokens = (laTokens ?? []) as TokenRow[];
         if (device.platform === 'android') {
-          message = androidMessage(device.token, event, plan, state);
+          // Only app builds with the native plugin register this; older ones would show an empty alert.
+          if (tokens.some(t => t.user_id === userId && t.kind === 'start' && t.platform === 'android')) {
+            message = androidMessage(device.token, event, plan, state);
+          }
         } else if (device.platform === 'ios') {
-          const tokens = (laTokens ?? []) as TokenRow[];
           const updateToken = tokens.find(t => t.user_id === userId && t.kind === 'update');
           const startToken = tokens.find(t => t.user_id === userId && t.kind === 'start');
           if (updateToken) {
@@ -299,7 +302,9 @@ Deno.serve(async (req) => {
       if (row.phase !== 'ended') {
         const { data: device } = await supabase.from('device_tokens').select('token, platform').eq('user_id', row.user_id).limit(1).maybeSingle();
         const fakePlan = { attendance: { id: row.attendance_id } as AttendanceRow, planKey: row.plan_key, title: '', state: null };
-        if (device?.platform === 'android') {
+        const { data: capable } = await supabase.from('live_activity_tokens').select('id')
+          .eq('user_id', row.user_id).eq('kind', 'start').eq('platform', 'android').limit(1).maybeSingle();
+        if (device?.platform === 'android' && capable) {
           await fcmSend(await token(), androidMessage(device.token, 'end', fakePlan, null));
         } else if (device?.platform === 'ios') {
           const { data: updateToken } = await supabase.from('live_activity_tokens').select('token')

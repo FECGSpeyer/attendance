@@ -181,6 +181,10 @@ export class LiveActivityService {
   private async registerTokenListeners(): Promise<void> {
     this.listeners.push(await LiveActivity.addListener('pushToStartToken', e => this.saveToken('start', e.token)));
     this.listeners.push(await LiveActivity.addListener('activityToken', e => this.saveToken('update', e.token, e)));
+    if (Capacitor.getPlatform() === 'android') {
+      // Tells the server this build can show live plan notifications (no ActivityKit token on Android).
+      await this.saveToken('start', 'android');
+    }
     try {
       const tokens = await LiveActivity.getTokens();
       if (tokens.pushToStartToken) { await this.saveToken('start', tokens.pushToStartToken); }
