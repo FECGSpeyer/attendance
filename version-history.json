@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.19",
+      "date": "18.10.2026",
+      "changes": [
+        "🔤 Import: Umlaute und Sonderzeichen (z. B. ü, ö, ß) aus CSV-Dateien werden beim Import von Personen und Werken wieder korrekt übernommen."
+      ]
+    },
+    {
       "version": "4.14.18",
       "date": "18.10.2026",
       "changes": [

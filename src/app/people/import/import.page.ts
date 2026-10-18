@@ -3,6 +3,7 @@ import { AlertController, ModalController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { ExtraField, Group } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { readSpreadsheetFile } from 'src/app/utilities/spreadsheet-reader';
 import {
   autoMapHeaders,
   buildImportTemplateHeaders,
@@ -96,9 +97,8 @@ export class ImportPage {
     await loading.present();
 
     try {
-      const buffer = await file.arrayBuffer();
-      const { read, utils } = await import('xlsx');
-      const wb = read(buffer, { type: 'array', cellDates: true });
+      const { utils } = await import('xlsx');
+      const wb = await readSpreadsheetFile(file);
       const sheet = wb.Sheets[wb.SheetNames[0]];
       const rows = utils.sheet_to_json<Record<string, any>>(sheet, { defval: '' });
 
