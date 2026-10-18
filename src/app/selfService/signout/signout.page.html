@@ -49,27 +49,27 @@
               </ion-list-header>
               <ion-item-group>
                 <ion-item lines="none">
-                  <ion-badge slot="start" color="success">✓</ion-badge>
-                  <ion-label>Anwesend</ion-label>
+                  <span slot="start" class="ev-pill ion-color-success">Dabei</span>
+                  <ion-label>Dabei / Anwesend</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <ion-badge slot="start" color="warning">E</ion-badge>
+                  <span slot="start" class="ev-pill ion-color-warning">Entschuldigt</span>
                   <ion-label>Entschuldigt</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <ion-badge slot="start" color="danger">A</ion-badge>
+                  <span slot="start" class="ev-pill ion-color-danger">Abwesend</span>
                   <ion-label>Abwesend</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <ion-badge slot="start" color="tertiary">L</ion-badge>
-                  <ion-label>Verspätet anwesend</ion-label>
+                  <span slot="start" class="ev-pill ion-color-tertiary">Später</span>
+                  <ion-label>Später / Verspätet</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <ion-badge slot="start" color="rosa">LE</ion-badge>
-                  <ion-label>Verspätet entschuldigt</ion-label>
+                  <span slot="start" class="ev-pill ion-color-rosa">Kommt später (entschuldigt)</span>
+                  <ion-label>Kommt später (entschuldigt)</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <ion-badge slot="start" color="medium">N</ion-badge>
+                  <span slot="start" class="ev-pill ion-color-medium">Neutral</span>
                   <ion-label>Neutral</ion-label>
                 </ion-item>
               </ion-item-group>
@@ -108,104 +108,101 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  @if (perc || upcomingSongs.length > 0 || canPlannedAbsence) {
-  <div class="hero-card">
-    <div class="hero-content">
-      <ion-avatar class="hero-avatar">
-        <img [src]="player.img || 'assets/icon/avatar-placeholder.svg'"
-             (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
-      </ion-avatar>
-      <div class="hero-text">
-        @if (!player.paused) {
-          <h1>Shalom {{ player.firstName }}!</h1>
-        }
+  <div class="greet">
+    <ion-avatar class="greet__avatar">
+      <img [src]="player.img || 'assets/icon/avatar-placeholder.svg'"
+           (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
+    </ion-avatar>
+    <div class="greet__text">
+      <h1>Shalom {{ player.firstName }}!</h1>
+      <p>
         @if (player.paused) {
-          <h1>Shalom {{ player.firstName }}!</h1>
-          <p class="paused-badge"><ion-icon name="pause-circle-outline"></ion-icon> Pausiert</p>
+          <span class="greet__paused"><ion-icon name="pause-circle-outline"></ion-icon> Pausiert</span>
         }
-      </div>
-    </div>
-    <div class="hero-stats">
-      @if (perc) {
-        <div class="stat-chip" [class.stat-good]="perc >= 75" [class.stat-warn]="perc >= 50 && perc < 75" [class.stat-bad]="perc < 50">
-          <ion-icon name="checkmark-circle-outline"></ion-icon>
-          <span>{{ perc }}% Anwesenheit</span>
-        </div>
-      }
-      @if (lateCount && lateCount !== 0) {
-        <div class="stat-chip stat-late">
-          <ion-icon name="time-outline"></ion-icon>
+        @if (perc) {
+          <span class="greet__perc" [ngClass]="'ion-color-' + percColor(perc)">{{ perc }}% Anwesenheit</span>
+        }
+        @if (lateCount) {
           <span>{{ lateCount }}× zu spät</span>
-        </div>
-      }
-    </div>
-    <div class="hero-actions">
-      @if (upcomingSongs.length > 0) {
-        <ion-button fill="outline" size="small" (click)="songsModalOpen = true" class="hero-btn">
-          <ion-icon slot="start" name="musical-notes-outline"></ion-icon>
-          Aktuelle Werke
-        </ion-button>
-        <ion-modal class="songsModal" [isOpen]="songsModalOpen" (ionModalDidDismiss)="songsModalOpen = false" #songsModal
-          [initialBreakpoint]="upcomingSongs.length > 1 ? 0.8 : 0.6"
-          handle-behavior="none"
-          [breakpoints]="upcomingSongs.length > 1 ? [0, 0.8, 1] : [0, 0.6, 1]">
-          <ng-template>
-            <ion-header>
-              <ion-toolbar>
-                <ion-buttons slot="start">
-                  <ion-button (click)="songsModalOpen = false">
-                    <ion-icon name="close"></ion-icon>
-                  </ion-button>
-                </ion-buttons>
-                <ion-title>Aktuelle Werke</ion-title>
-                <ion-buttons slot="end">
-                  <ion-button (click)="printAllCurrentFiles()">
-                    <ion-icon name="print-outline"></ion-icon>
-                  </ion-button>
-                </ion-buttons>
-              </ion-toolbar>
-            </ion-header>
-            <ion-content color="light">
-              @for (group of upcomingSongs; track group.date) {
-              <ion-list [inset]="true">
-                <ion-list-header>
-                  <ion-label>
-                    <h2>{{ group.date }}</h2>
-                  </ion-label>
-                </ion-list-header>
-                <ion-item-group>
-                  @for (his of group.history; track trackByHistoryId($index, his)) {
-                  <ion-item [color]="hasSongNotesForPlayer(his.song) ? '' : 'danger'" button
-                    (click)="openSongOptions(his.song)">
-                    @if (his.song) {
-                    <ion-label>
-                      <h2>{{ his.song.number }}. {{ his.song.name }}</h2>
-                      <h3>Dirigent: {{ his.conductorName }}</h3>
-                    </ion-label>
-                    }
-                    @if (his.song.link) {
-                    <ion-button fill="clear" size="small" (click)="openSongLink(his.song.link)">
-                      <ion-icon name="download-outline"></ion-icon>
-                    </ion-button>
-                    }
-                  </ion-item>
-                  }
-                </ion-item-group>
-              </ion-list>
-              }
-            </ion-content>
-          </ng-template>
-        </ion-modal>
-      }
-      @if (canPlannedAbsence) {
-        <ion-button fill="outline" size="small" (click)="isAbsenceModalOpen = true" class="hero-btn">
-          <ion-icon slot="start" name="calendar-outline"></ion-icon>
-          Abwesenheit melden
-        </ion-button>
-      }
+        }
+      </p>
     </div>
   </div>
+
+  @if (upcomingSongs.length > 0 || canPlannedAbsence) {
+  <div class="greet-tiles">
+    @if (upcomingSongs.length > 0) {
+      <button class="greet-tile" (click)="songsModalOpen = true">
+        <span class="greet-tile__icon"><ion-icon name="musical-notes-outline"></ion-icon></span>
+        <span>
+          <span class="greet-tile__title">Aktuelle Werke</span>
+          <span class="greet-tile__sub">{{ upcomingSongs.length === 1 ? 'Nächster Termin' : upcomingSongs.length + ' Termine' }}</span>
+        </span>
+      </button>
+    }
+    @if (canPlannedAbsence) {
+      <button class="greet-tile" (click)="isAbsenceModalOpen = true">
+        <span class="greet-tile__icon"><ion-icon name="calendar-outline"></ion-icon></span>
+        <span>
+          <span class="greet-tile__title">Abwesenheit</span>
+          <span class="greet-tile__sub">melden</span>
+        </span>
+      </button>
+    }
+  </div>
   }
+
+  <ion-modal class="songsModal" [isOpen]="songsModalOpen" (ionModalDidDismiss)="songsModalOpen = false" #songsModal
+    [initialBreakpoint]="upcomingSongs.length > 1 ? 0.8 : 0.6"
+    handle-behavior="none"
+    [breakpoints]="upcomingSongs.length > 1 ? [0, 0.8, 1] : [0, 0.6, 1]">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="songsModalOpen = false">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title>Aktuelle Werke</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="printAllCurrentFiles()">
+              <ion-icon name="print-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content color="light">
+        @for (group of upcomingSongs; track group.date) {
+        <ion-list [inset]="true">
+          <ion-list-header>
+            <ion-label>
+              <h2>{{ group.date }}</h2>
+            </ion-label>
+          </ion-list-header>
+          <ion-item-group>
+            @for (his of group.history; track trackByHistoryId($index, his)) {
+            <ion-item [color]="hasSongNotesForPlayer(his.song) ? '' : 'danger'" button
+              (click)="openSongOptions(his.song)">
+              @if (his.song) {
+              <ion-label>
+                <h2>{{ his.song.number }}. {{ his.song.name }}</h2>
+                <h3>Dirigent: {{ his.conductorName }}</h3>
+              </ion-label>
+              }
+              @if (his.song.link) {
+              <ion-button fill="clear" size="small" (click)="openSongLink(his.song.link)">
+                <ion-icon name="download-outline"></ion-icon>
+              </ion-button>
+              }
+            </ion-item>
+            }
+          </ion-item-group>
+        </ion-list>
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 
   @if (db.teamOrgEnabled()) {
   <app-my-tasks></app-my-tasks>
@@ -230,169 +227,168 @@
   </ion-list>
   }
 
-  <ion-accordion-group [multiple]="true" [value]="['current', 'first']">
-    <app-excuse-reason-picker #excusePicker [absenceReasons]="absenceReasons" [lateReasons]="lateReasons"
-      (confirm)="onExcuseConfirm($event)"></app-excuse-reason-picker>
+  <app-excuse-reason-picker #excusePicker [absenceReasons]="absenceReasons" [lateReasons]="lateReasons"
+    (confirm)="onExcuseConfirm($event)"></app-excuse-reason-picker>
 
-    <ion-modal #descriptionModal [initialBreakpoint]="0.6" handle-behavior="none" [breakpoints]="[0, 0.6, 1]">
-      <ng-template>
-        <ion-header>
-          <ion-toolbar>
-            <ion-title>Beschreibung</ion-title>
-            <ion-buttons slot="end">
-              <ion-button (click)="descriptionModal.dismiss()">
-                <ion-icon slot="icon-only" name="close"></ion-icon>
-              </ion-button>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content class="ion-padding">
-          <quill-view [content]="selectedDescription"></quill-view>
-        </ion-content>
-      </ng-template>
-    </ion-modal>
+  <ion-modal #descriptionModal [initialBreakpoint]="0.6" handle-behavior="none" [breakpoints]="[0, 0.6, 1]">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Beschreibung</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="descriptionModal.dismiss()">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <quill-view [content]="selectedDescription"></quill-view>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 
-    <ion-accordion value="current">
-      <ion-item slot="header" color="primary">
-        <ion-label>Aktuelle</ion-label>
-      </ion-item>
-      <div slot="content">
-        <ion-list>
-          @if (currentAttendance) {
-          <ion-item button (click)="presentActionSheetForChoice(currentAttendance)" color="light"
-            [class.not-member]="showAllAttendances && !currentAttendance.isMember">
-            <ion-label>
-              <h2>{{ getReadableDate(currentAttendance.date, currentAttendance.typeId) }}</h2>
-              <h3 [style.fontWeight]="currentAttendance.highlight ? 'bold' : 'normal'">{{ currentAttendance.title }} @if (currentAttendance.attendance?.place) {<ion-icon name="navigate-outline" style="vertical-align: middle;"></ion-icon>}</h3>
-              @if (showAllAttendances && !currentAttendance.isMember) {
-                <p class="all-attendances-info-text">{{ showAllAttendancesInfoText }}</p>
-              }
-              @if (showDeadlineInfo(currentAttendance)) {
-              <ion-note [style.fontSize]="'.9rem'" color="danger">{{ getDeadlineText(currentAttendance) }}</ion-note>
-              }
-              @if (currentAttendance.notes) {
-              <ion-note [style.fontSize]="'.8rem'" color="medium">Notiz: {{ currentAttendance.notes }}</ion-note>
-              }
-              @if (currentAttendance.attendance?.description || currentAttendance.attendance?.attachment_url || hasFilesFolder(currentAttendance)) {
-              <ion-note [style.fontSize]="'.8rem'" color="primary">
-                @if (currentAttendance.attendance?.description) {
-                  <ion-icon name="document-text-outline" style="vertical-align: middle;"></ion-icon>
-                }
-                @if (currentAttendance.attendance?.attachment_url) {
-                  <ion-icon name="attach-outline" style="vertical-align: middle;"></ion-icon>
-                }
-                @if (hasFilesFolder(currentAttendance)) {
-                  <ion-icon name="folder-outline" style="vertical-align: middle;"></ion-icon>
-                }
-                Infos verfügbar
-              </ion-note>
-              }
-              @if (hasPlan(currentAttendance)) {
-              <ion-note [style.fontSize]="'.8rem'" color="primary"><ion-icon name="document-text-outline"
-                  style="vertical-align: middle;"></ion-icon> Ablaufplan verfügbar</ion-note>
-              }
-            </ion-label>
-            @if (!showAllAttendances || currentAttendance.isMember) {
-            <ion-badge slot="end"
-              [color]="currentAttendance.text === 'X' ? 'success' : currentAttendance.text === 'A' ? 'danger' : currentAttendance.text === 'L' ? (currentAttendance.status === 3 ? 'tertiary' : 'rosa') : currentAttendance.text === 'N' ? 'medium' : 'warning'">
-              {{ currentAttendance.text === 'X' ? '✓' : currentAttendance.text === 'L' && currentAttendance.status !== 3 ? 'LE' : currentAttendance.text }}</ion-badge>
-            }
-          </ion-item>
-          }
-        </ion-list>
+  <ng-template #eventChips let-att>
+    @if (showDeadlineInfo(att) || att.notes || att.attendance?.description || att.attendance?.attachment_url || hasFilesFolder(att) || hasPlan(att) || att.attendance?.place) {
+      <div class="ev-chips">
+        @if (showDeadlineInfo(att)) {
+          <span class="ev-chip ev-chip--danger">{{ getDeadlineText(att) }}</span>
+        }
+        @if (att.notes) {
+          <span class="ev-chip">Notiz: {{ att.notes }}</span>
+        }
+        @if (hasPlan(att)) {
+          <span class="ev-chip"><ion-icon name="document-text-outline"></ion-icon> Ablaufplan</span>
+        }
+        @if (att.attendance?.description || att.attendance?.attachment_url) {
+          <span class="ev-chip"><ion-icon [name]="att.attendance?.attachment_url ? 'attach-outline' : 'information-circle-outline'"></ion-icon> Infos</span>
+        }
+        @if (hasFilesFolder(att)) {
+          <span class="ev-chip"><ion-icon name="folder-outline"></ion-icon> Dateien</span>
+        }
+        @if (att.attendance?.place) {
+          <span class="ev-chip"><ion-icon name="navigate-outline"></ion-icon> Route</span>
+        }
       </div>
-    </ion-accordion>
+    }
+  </ng-template>
 
-    <ion-accordion *ngIf="actualAttendances?.length" value="first">
-      <ion-item slot="header" color="primary">
-        <ion-label>Anstehende</ion-label>
-      </ion-item>
-      <div slot="content">
-        <ion-list>
-          @for (att of actualAttendances; track att.attendance_id) {
-          <ion-item button (click)="presentActionSheetForChoice(att)"
+  @if (currentAttendance) {
+    <div class="ev-month">{{ isAttToday(currentAttendance) ? 'Heute' : 'Nächster Termin' }}</div>
+    <div class="ev-today" [class.not-member]="showAllAttendances && !currentAttendance.isMember"
+      (click)="presentActionSheetForChoice(currentAttendance)">
+      <div class="ev-today__head">
+        <div class="ev-tile">
+          <span class="ev-tile__wd">{{ weekday(currentAttendance.date) }}</span>
+          <span class="ev-tile__day">{{ day(currentAttendance.date) }}</span>
+        </div>
+        <div>
+          <div class="ev-today__title">{{ getEventTitle(currentAttendance) }}</div>
+          <div class="ev-today__meta">{{ getEventMeta(currentAttendance, true) }}</div>
+        </div>
+        @if (isOwnAttendance(currentAttendance)) {
+          <span class="ev-pill ev-today__status" [ngClass]="'ion-color-' + statusColorOf(currentAttendance)">{{ statusLabelOf(currentAttendance) }}</span>
+        }
+      </div>
+      @if (showAllAttendances && !currentAttendance.isMember) {
+        <p class="all-attendances-info-text">{{ showAllAttendancesInfoText }}</p>
+      }
+      <ng-container *ngTemplateOutlet="eventChips; context: { $implicit: currentAttendance }"></ng-container>
+      @if (quickActions(currentAttendance); as qa) {
+        <div class="ev-today__actions">
+          <ion-button [fill]="qa.present ? 'solid' : 'outline'" color="success" [disabled]="!qa.canSignin"
+            (click)="$event.stopPropagation(); handleSigninWithFields(currentAttendance)">Dabei</ion-button>
+          @if (qa.allowLate) {
+            <ion-button [fill]="qa.late ? 'solid' : 'outline'" color="tertiary" [disabled]="qa.blocked"
+              (click)="$event.stopPropagation(); quickSignout(currentAttendance, true)">Später</ion-button>
+          }
+          @if (qa.allowExcuse) {
+            <ion-button [fill]="qa.excused ? 'solid' : 'outline'" color="warning" [disabled]="qa.blocked"
+              (click)="$event.stopPropagation(); quickSignout(currentAttendance, false)">Absagen</ion-button>
+          }
+        </div>
+        <button class="ev-more-link" (click)="$event.stopPropagation(); presentActionSheetForChoice(currentAttendance)">Weitere Optionen</button>
+      }
+    </div>
+  }
+
+  @if (actualAttendances?.length) {
+    <div class="ev-section">
+      <h2>Anstehend</h2>
+      <span class="ev-section__count">{{ actualAttendances.length }}</span>
+    </div>
+    @for (group of upcomingGroups; track group.key) {
+      <div class="ev-month">{{ group.label }}</div>
+      <ion-list [inset]="true" class="ev-list">
+        @for (att of group.items; track att.attendance_id) {
+          <ion-item button detail="false" (click)="presentActionSheetForChoice(att)"
             [class.not-member]="showAllAttendances && !att.isMember">
+            <div slot="start" class="ev-tile" [class.ev-tile--hl]="att.highlight">
+              <span class="ev-tile__wd">{{ weekday(att.date) }}</span>
+              <span class="ev-tile__day">{{ day(att.date) }}</span>
+            </div>
             <ion-label>
-              <h2>{{ getReadableDate(att.date, att.typeId) }}</h2>
-              <h3 [style.fontWeight]="att.highlight ? 'bold' : 'normal'">{{ att.title }} @if (att.attendance?.place) {<ion-icon name="navigate-outline" style="vertical-align: middle;"></ion-icon> {{ att.attendance.place }} }</h3>
+              <h2>{{ getEventTitle(att) }}</h2>
+              @if (getEventMeta(att); as meta) {
+                <p>{{ meta }}</p>
+              }
               @if (showAllAttendances && !att.isMember) {
                 <p class="all-attendances-info-text">{{ showAllAttendancesInfoText }}</p>
               }
-              @if (showDeadlineInfo(att)) {
-              <ion-note [style.fontSize]="'.9rem'" color="danger">{{ getDeadlineText(att) }}</ion-note>
-              }
-              @if (att.notes) {
-              <ion-note [style.fontSize]="'.8rem'" color="medium">Notiz: {{ att.notes }}</ion-note>
-              }
-              @if (att.attendance?.description || att.attendance?.attachment_url || hasFilesFolder(att)) {
-              <ion-note [style.fontSize]="'.8rem'" color="primary">
-                @if (att.attendance?.description) {
-                  <ion-icon name="document-text-outline" style="vertical-align: middle;"></ion-icon>
-                }
-                @if (att.attendance?.attachment_url) {
-                  <ion-icon name="attach-outline" style="vertical-align: middle;"></ion-icon>
-                }
-                @if (hasFilesFolder(att)) {
-                  <ion-icon name="folder-outline" style="vertical-align: middle;"></ion-icon>
-                }
-                Infos verfügbar
-              </ion-note>
-              }
-              @if (hasPlan(att)) {
-              <ion-note [style.fontSize]="'.8rem'" color="primary"><ion-icon name="document-text-outline"
-                  style="vertical-align: middle;"></ion-icon> Ablaufplan verfügbar</ion-note>
-              }
+              <ng-container *ngTemplateOutlet="eventChips; context: { $implicit: att }"></ng-container>
             </ion-label>
-            @if (!showAllAttendances || att.isMember) {
-            <ion-badge slot="end"
-              [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? (att.status === 3 ? 'tertiary' : 'rosa') : att.text === 'N' ? 'medium' : 'warning'">
-              {{ att.text === 'X' ? '✓' : att.text === 'L' && att.status !== 3 ? 'LE' : att.text }}</ion-badge>
+            @if (isOwnAttendance(att)) {
+              <span slot="end" class="ev-pill" [ngClass]="'ion-color-' + statusColorOf(att)">{{ statusLabelOf(att) }}</span>
             }
           </ion-item>
-          }
-        </ion-list>
+        }
+      </ion-list>
+    }
+  }
+
+  @if (pastAttendances.length) {
+    <div class="ev-section">
+      <h2>Vergangen</h2>
+      <span class="ev-section__count">{{ pastAttendances.length }}</span>
+    </div>
+    <ion-list [inset]="true" class="ev-list">
+      <div class="ev-summary">
+        <span><span class="ev-summary__value">{{ perc }}%</span> <span class="ev-summary__label">Anwesenheit</span></span>
+        @if (lateCount) {
+          <span class="ev-summary__label">{{ lateCount }}× zu spät</span>
+        }
       </div>
-    </ion-accordion>
-    <ion-accordion *ngIf="hasPastAttendances(personAttendances)" value="second">
-      <ion-item slot="header" color="primary">
-        <ion-label>Vergangene</ion-label>
-      </ion-item>
-      <div slot="content">
-        <ion-list>
-          <ion-item-divider>
-            @if (lateCount === 0) {
-            <ion-label>Durchschnitt</ion-label>
-            }
-            @if (lateCount !== 0) {
-            <ion-label>Durchschnitt ({{lateCount}}x zu spät)</ion-label>
-            }
-            <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" slot="end">Ø {{ perc
-              }}%</ion-badge>
-          </ion-item-divider>
-          @for (att of personAttendances; track trackByAttendanceId($index, att)) {
-          @if (attHasPassed(att)) {
-          <ion-item [button]="isExcusedStatus(att)" [detail]="false"
-            (click)="isExcusedStatus(att) && presentActionSheetForChoice(att)">
-            <ion-label>
-              <h2>{{ getReadableDate(att.date, att.typeId) }}</h2>
-              <h3 [style.fontWeight]="att.highlight ? 'bold' : 'normal'">{{ att.title }}</h3>
-            </ion-label>
-            @if (hasFilesFolder(att)) {
+      <div class="ev-dots" aria-label="Status der letzten Termine">
+        @for (att of pastAttendances.slice(0, 12); track att.attendance_id) {
+          <span [ngClass]="'ion-color-' + statusColorOf(att)" [title]="getReadableDate(att.date, att.typeId) + ': ' + statusLabelOf(att, true)"></span>
+        }
+      </div>
+      @for (att of pastPreview; track att.attendance_id) {
+        <ion-item [button]="isExcusedStatus(att)" [detail]="false"
+          (click)="isExcusedStatus(att) && presentActionSheetForChoice(att)">
+          <div slot="start" class="ev-tile ev-tile--past" [class.ev-tile--hl]="att.highlight">
+            <span class="ev-tile__wd">{{ weekday(att.date) }}</span>
+            <span class="ev-tile__day">{{ day(att.date) }}</span>
+          </div>
+          <ion-label>
+            <h2>{{ getEventTitle(att) }}</h2>
+            <p>{{ getReadableDate(att.date, att.typeId) }}</p>
+          </ion-label>
+          @if (hasFilesFolder(att)) {
             <ion-button slot="end" fill="clear" (click)="openFilesFolder(att); $event.stopPropagation()" aria-label="Dateiablage öffnen">
               <ion-icon slot="icon-only" name="folder-open-outline"></ion-icon>
             </ion-button>
-            }
-            <ion-badge slot="end"
-              [color]="att.text === 'X' ? 'success' : att.text === 'A' ? 'danger' : att.text === 'L' ? (att.status === 3 ? 'tertiary' : 'rosa') : att.text === 'N' ? 'medium' : 'warning'">
-              {{ att.text === 'X' ? '✓' : att.text === 'L' && att.status !== 3 ? 'LE' : att.text}}
-            </ion-badge>
-          </ion-item>
           }
-          }
-        </ion-list>
-      </div>
-    </ion-accordion>
-  </ion-accordion-group>
+          <span slot="end" class="ev-pill" [ngClass]="'ion-color-' + statusColorOf(att)">{{ statusLabelOf(att, true) }}</span>
+        </ion-item>
+      }
+      @if (pastAttendances.length > pastPreviewCount) {
+        <button class="ev-more-link" (click)="showAllPast = !showAllPast">
+          {{ showAllPast ? 'Weniger anzeigen' : 'Alle ' + pastAttendances.length + ' anzeigen' }}
+        </button>
+      }
+    </ion-list>
+  }
   }
 
   <ion-modal handle-behavior="none" [breakpoints]="[0, 0.75, 1]" [initialBreakpoint]="0.75" backdropDismiss="true" [isOpen]="isPauseModalOpen" (ionModalDidDismiss)="dismissPauseModal()">

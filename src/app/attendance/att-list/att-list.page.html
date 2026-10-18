@@ -82,131 +82,118 @@
       }
     </ion-list>
   } @else if (loaded && allAttendances.length) {
-    <ion-accordion-group [multiple]="true" [value]="['current', 'future']">
-      @if (currentAttendance && (isConductor || isHelper)) {
-        <ion-accordion value="current">
-          <ion-item class="accordion-header" slot="header" color="primary">
-            <ion-label>Aktuelle</ion-label>
-          </ion-item>
-          <div slot="content">
+    @if (currentAttendance && (isConductor || isHelper)) {
+      <div class="ev-month">{{ isRunning(currentAttendance) ? 'Heute' : 'Nächster Termin' }}</div>
+      <ion-item-sliding #slider class="ev-today-sliding">
+        <ion-item lines="none" class="ev-today-item">
+          <div class="ev-today ev-today--filled" (click)="openAttendance(currentAttendance)">
+            <div class="ev-today__head">
+              <div class="ev-tile">
+                <span class="ev-tile__wd">{{ weekday(currentAttendance.date) }}</span>
+                <span class="ev-tile__day">{{ day(currentAttendance.date) }}</span>
+              </div>
+              <div>
+                <div class="ev-today__title">{{ getEventTitle(currentAttendance) }}</div>
+                <div class="ev-today__meta">{{ getEventMeta(currentAttendance, true) }}</div>
+              </div>
+              <div class="ev-today__perc">{{ currentAttendance.percentage || 0 }}%</div>
+            </div>
+            @if (getStatusCounts(currentAttendance); as counts) {
+              <div class="ev-today__stats">
+                <span>{{ counts.present }} anwesend</span>
+                @if (counts.excused) {
+                  <span>{{ counts.excused }} entschuldigt</span>
+                }
+                @if (counts.absent) {
+                  <span>{{ counts.absent }} abwesend</span>
+                }
+              </div>
+            }
+            <div class="ev-today__cta">Anwesenheit erfassen</div>
+          </div>
+        </ion-item>
+        <ion-item-options side="end" (ionSwipe)="remove(currentAttendance.id, slider)">
+          <ion-item-option expandable color="danger" (click)="remove(currentAttendance.id, slider)">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    }
+
+    @if (attendances.length && (isConductor || isHelper)) {
+      <div class="ev-section">
+        <h2>Anstehend</h2>
+        <span class="ev-section__count">{{ attendances.length }}</span>
+      </div>
+      @for (group of upcomingGroups; track group.key) {
+        <div class="ev-month">{{ group.label }}</div>
+        <ion-list [inset]="true" class="ev-list">
+          @for (att of group.items; track att.id) {
             <ion-item-sliding #slider>
-              <ng-container>
-                <ion-item button detail="false" (click)="openAttendance(currentAttendance)">
-                  <ion-label
-                    [style.fontWeight]="highlightedTypes.includes(currentAttendance.type_id) ? 'bold' : 'normal'">{{
-                  getAttendanceTitle(currentAttendance) }}</ion-label>
-                  @if (currentAttendance.percentage) {
-                    <ion-badge
-                      [color]="currentAttendance.percentage >= 75 ? 'success' : currentAttendance.percentage >= 50 ? 'warning' : 'danger'"
-                    slot="end">{{ currentAttendance.percentage }}%</ion-badge>
-                  } @else {
-                    <ion-badge color="danger" slot="end">0%</ion-badge>
+              <ion-item button detail="false" (click)="openAttendance(att)">
+                <div slot="start" class="ev-tile" [class.ev-tile--hl]="highlightedTypes.includes(att.type_id)">
+                  <span class="ev-tile__wd">{{ weekday(att.date) }}</span>
+                  <span class="ev-tile__day">{{ day(att.date) }}</span>
+                </div>
+                <ion-label>
+                  <h2>{{ getEventTitle(att) }}</h2>
+                  @if (getEventMeta(att); as meta) {
+                    <p>{{ meta }}</p>
                   }
-                </ion-item>
-                <ion-item-options side="end" (ionSwipe)="remove(currentAttendance.id, slider)">
-                  <ion-item-option expandable color="danger" (click)="remove(currentAttendance.id, slider)">
+                </ion-label>
+                <span slot="end" class="ev-pill" [ngClass]="'ion-color-' + percColor(att.percentage || 0)">{{ att.percentage || 0 }}%</span>
+              </ion-item>
+              @if (isConductor) {
+                <ion-item-options side="end" (ionSwipe)="remove(att.id, slider)">
+                  <ion-item-option expandable color="danger" (click)="remove(att.id, slider)">
                     <ion-icon name="trash-outline"></ion-icon>
                   </ion-item-option>
                 </ion-item-options>
-              </ng-container>
+              }
             </ion-item-sliding>
-          </div>
-        </ion-accordion>
-      }
-
-      @if (attendances.length && (isConductor || isHelper)) {
-        <ion-accordion value="future">
-          <ion-item class="accordion-header" slot="header" color="primary">
-            <ion-label>Anstehende</ion-label>
-          </ion-item>
-          <div slot="content">
-            <ion-list>
-              @for (att of attendances; track att.id) {
-                <ion-item-sliding #slider>
-                  <ion-item button detail="false" (click)="openAttendance(att)">
-                    <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
-                    getAttendanceTitle(att) }}</ion-label>
-                    @if (att.percentage) {
-                      <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
-                      slot="end">{{ att.percentage }}%</ion-badge>
-                    } @else {
-                      <ion-badge color="danger" slot="end">0%</ion-badge>
-                    }
-                  </ion-item>
-                  @if (isConductor) {
-                    <ion-item-options side="end" (ionSwipe)="remove(att.id, slider)">
-                      <ion-item-option expandable color="danger" (click)="remove(att.id, slider)">
-                        <ion-icon name="trash-outline"></ion-icon>
-                      </ion-item-option>
-                    </ion-item-options>
-                  }
-                </ion-item-sliding>
-              }
-            </ion-list>
-          </div>
-        </ion-accordion>
-      }
-      @if (oldAttendances.length) {
-        <ion-accordion value="old">
-          @if (isConductor) {
-            <ion-item class="accordion-header" slot="header" color="primary">
-              <ion-label>Vergangene</ion-label>
-            </ion-item>
-          }
-          <div slot="content">
-            <ion-list class="marginBottom">
-              <ion-item-divider>
-                <ion-label>Durchschnitt</ion-label>
-                <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'"
-                slot="end">{{ perc }}%</ion-badge>
-              </ion-item-divider>
-              @for (att of oldAttendances; track att) {
-                <ion-item-sliding #slider>
-                  <ion-item button detail="false" (click)="openAttendance(att)">
-                    <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
-                    getAttendanceTitle(att) }}</ion-label>
-                    @if (att.percentage) {
-                      <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'"
-                      slot="end">{{ att.percentage }}%</ion-badge>
-                    } @else {
-                      <ion-badge color="danger" slot="end">0%</ion-badge>
-                    }
-                  </ion-item>
-                  <ion-item-options side="end" (ionSwipe)="remove(att.id, slider)">
-                    <ion-item-option expandable color="danger" (click)="remove(att.id, slider)">
-                      <ion-icon name="trash-outline"></ion-icon>
-                    </ion-item-option>
-                  </ion-item-options>
-                </ion-item-sliding>
-              }
-            </ion-list>
-          </div>
-        </ion-accordion>
-      }
-    </ion-accordion-group>
-
-    @if (!isConductor && !isHelper) {
-      <ion-list class="marginBottom">
-        <ion-item-divider>
-          <ion-label>Durchschnitt</ion-label>
-          <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" style="margin-right: '16px'"
-          slot="end">{{ perc }}%</ion-badge>
-        </ion-item-divider>
-        @for (att of viewerAttendances; track att) {
-          <ion-item detail="false">
-            <ion-label [style.fontWeight]="highlightedTypes.includes(att.type_id) ? 'bold' : 'normal'">{{
-              getAttendanceTitle(att) }}<p>{{ getCountText(att) }}</p></ion-label>
-              @if (att.percentage) {
-                <ion-badge [color]="att.percentage >= 75 ? 'success' : att.percentage >= 50 ? 'warning' : 'danger'" slot="end">{{
-                att.percentage }}%</ion-badge>
-              } @else {
-                <ion-badge color="danger" slot="end">0%</ion-badge>
-              }
-            </ion-item>
           }
         </ion-list>
       }
-    } @else {
+    }
+
+    @if (isConductor || isHelper ? oldAttendances.length : viewerAttendances.length) {
+      <div class="ev-section">
+        <h2>{{ isConductor || isHelper ? 'Vergangen' : 'Termine' }}</h2>
+        <span class="ev-section__count">{{ isConductor || isHelper ? oldAttendances.length : viewerAttendances.length }}</span>
+      </div>
+      <ion-list [inset]="true" class="ev-list marginBottom">
+        <div class="ev-summary">
+          <span class="ev-summary__label">Durchschnitt</span>
+          <span class="ev-pill" [ngClass]="'ion-color-' + percColor(perc)">{{ perc }}%</span>
+        </div>
+        @for (att of pastPreview; track att.id) {
+          <ion-item-sliding #slider [disabled]="!isConductor">
+            <ion-item [button]="isConductor || isHelper" detail="false" (click)="openAttendance(att)">
+              <div slot="start" class="ev-tile ev-tile--past" [class.ev-tile--hl]="highlightedTypes.includes(att.type_id)">
+                <span class="ev-tile__wd">{{ weekday(att.date) }}</span>
+                <span class="ev-tile__day">{{ day(att.date) }}</span>
+              </div>
+              <ion-label>
+                <h2>{{ getEventTitle(att) }}</h2>
+                <p>{{ getReadableDate(att.date, att.type_id) }} · {{ getCountText(att) }}</p>
+              </ion-label>
+              <span slot="end" class="ev-pill" [ngClass]="'ion-color-' + percColor(att.percentage || 0)">{{ att.percentage || 0 }}%</span>
+            </ion-item>
+            <ion-item-options side="end" (ionSwipe)="remove(att.id, slider)">
+              <ion-item-option expandable color="danger" (click)="remove(att.id, slider)">
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        }
+        @if (pastList.length > pastPreviewCount) {
+          <button class="ev-more-link" (click)="showAllPast = !showAllPast">
+            {{ showAllPast ? 'Weniger anzeigen' : 'Alle ' + pastList.length + ' anzeigen' }}
+          </button>
+        }
+      </ion-list>
+    }
+  } @else {
       <div class="noDataContainer">
         <div class="noPersons">
           <ion-icon name="checkbox-outline" size="large"></ion-icon>

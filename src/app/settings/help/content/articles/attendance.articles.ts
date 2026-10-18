@@ -2,6 +2,17 @@ import { HelpArticle } from '../types';
 
 export const ATTENDANCE_ARTICLES: HelpArticle[] = [
   {
+    id: 'att-list-layout',
+    title: 'Die Terminübersicht lesen',
+    categoryId: 'attendance',
+    keywords: ['terminliste', 'termine übersicht', 'anstehende termine', 'vergangene termine', 'nächster termin', 'prozent', 'durchschnitt', 'monat'],
+    body: `Unter "Termine" siehst du als Dirigent oder Helfer oben den Termin von heute (oder den nächsten Termin) als große Karte, mit erwarteter Anwesenheit und wie viele Personen anwesend, entschuldigt oder abwesend sind. Tippe auf die Karte, um die Anwesenheit zu erfassen.
+
+Darunter folgen die anstehenden Termine, nach Monaten gruppiert. Links steht das Datum, hervorgehobene Termin-Typen haben eine farbige Datumskachel. Rechts siehst du die Anwesenheit in Prozent: grün ab 75 %, gelb ab 50 %, sonst rot.
+
+Unter „Vergangen“ stehen der Durchschnitt und die letzten drei Termine; mit „Alle anzeigen“ klappst du die ganze Liste auf. Dirigenten können einen Termin wie bisher durch Wischen nach links löschen.`,
+  },
+  {
     id: 'att-mark-status',
     title: 'Anwesenheit markieren',
     categoryId: 'attendance',

@@ -3,7 +3,8 @@ import { ActionSheetController, IonModal, ModalController } from '@ionic/angular
 import { Browser } from '@capacitor/browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import dayjs from 'dayjs';
-import { attendanceHasEnded, attendanceIsRunning } from '../../utilities/plan-days';
+import { attendanceHasEnded, attendanceIsRunning, isMultiDay } from '../../utilities/plan-days';
+import { EventMonthGroup, PAST_PREVIEW_COUNT, eventDay, eventMeta, eventTimeRange, eventWeekday, groupByMonth, statusColor, statusLabel } from '../../utilities/event-list';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
 import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
@@ -36,6 +37,10 @@ export class ParentsPage implements OnInit {
   public upcomingAttendances: Attendance[] = [];
   public pastAttendances: Attendance[] = [];
   public kidStats: { [key: number]: KidStats } = {};
+  public kidsByAttendance: { [attendanceId: number]: PersonAttendance[] } = {};
+  public upcomingGroups: EventMonthGroup<Attendance>[] = [];
+  public showAllPast = false;
+  public readonly pastPreviewCount = PAST_PREVIEW_COUNT;
   public upcomingSongs: { date: string; history: History[] }[] = [];
   public songsModalOpen = false;
   public absenceReasons: string[] = [];
@@ -145,6 +150,9 @@ export class ParentsPage implements OnInit {
           attachment_url: pa.attendance?.attachment_url,
           attachment_name: pa.attendance?.attachment_name,
           place: pa.attendance?.place,
+          start_time: pa.attendance?.start_time,
+          end_time: pa.attendance?.end_time,
+          highlight: pa.highlight,
         } as unknown as Attendance);
       }
     }
@@ -183,6 +191,59 @@ export class ParentsPage implements OnInit {
     this.currentAttendance = current[0];
     this.upcomingAttendances = upcoming;
     this.pastAttendances = past.slice(0, 10); // Limit past attendances
+    this.upcomingGroups = groupByMonth(upcoming, att => att.date);
+
+    this.kidsByAttendance = {};
+    for (const pa of this.personAttendances) {
+      (this.kidsByAttendance[pa.attendance_id] ??= []).push(pa);
+    }
+  }
+
+  get pastPreview(): Attendance[] {
+    return this.showAllPast ? this.pastAttendances : this.pastAttendances.slice(0, PAST_PREVIEW_COUNT);
+  }
+
+  weekday(date: string): string {
+    return eventWeekday(date);
+  }
+
+  day(date: string): string {
+    return eventDay(date);
+  }
+
+  isRunning(att: Attendance): boolean {
+    return attendanceIsRunning(att);
+  }
+
+  isHighlighted(att: Attendance): boolean {
+    return Boolean((att as any).highlight);
+  }
+
+  getEventTitle(att: Attendance): string {
+    return (att as any).title || this.getReadableDate(att.date, att.type_id);
+  }
+
+  /** Time and place; multi-day Termine (and the current card) also show the date. */
+  getEventMeta(att: Attendance, withDate = false): string {
+    const attType = this.db.attendanceTypes().find(type => type.id === att.type_id);
+    const showDate = withDate || isMultiDay(att) || (attType?.all_day && (attType.duration_days ?? 1) > 1);
+    return eventMeta(
+      showDate ? this.getReadableDate(att.date, att.type_id) : '',
+      eventTimeRange(att.start_time ?? attType?.start_time, att.end_time ?? attType?.end_time),
+      att.place,
+    );
+  }
+
+  initials(pa: PersonAttendance): string {
+    return ((pa as any).person?.firstName ?? '').slice(0, 2).toUpperCase();
+  }
+
+  statusColorOf(status: AttendanceStatus): string {
+    return statusColor(status);
+  }
+
+  statusLabelOf(status: AttendanceStatus, past = false): string {
+    return statusLabel(status, past);
   }
 
   private openAttendanceById(attendanceId: number): void {

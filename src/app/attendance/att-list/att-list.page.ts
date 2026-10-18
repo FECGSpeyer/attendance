@@ -6,14 +6,15 @@ import { Storage } from '@ionic/storage-angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { format, isSameDay, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
-import { attendanceHasEnded } from '../../utilities/plan-days';
+import { attendanceHasEnded, attendanceIsRunning, isMultiDay } from '../../utilities/plan-days';
+import { EventMonthGroup, PAST_PREVIEW_COUNT, eventDay, eventMeta, eventTimeRange, eventWeekday, groupByMonth, percentageColor } from '../../utilities/event-list';
 import 'dayjs/locale/de';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
 import { Attendance, PlayerAbsence, Song, History, Person } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { createAttendanceForType, personsForAttendanceType } from 'src/app/utilities/attendance-create';
-import { DefaultAttendanceType, Role } from 'src/app/utilities/constants';
+import { AttendanceStatus, DefaultAttendanceType, Role } from 'src/app/utilities/constants';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 @Component({
@@ -59,6 +60,9 @@ export class AttListPage implements OnInit {
   public highlightedTypes: string[] = [];
   public isAddModalOpen = false;
   public filterTypeId = 'all';
+  public showAllPast = false;
+  public readonly pastPreviewCount = PAST_PREVIEW_COUNT;
+  private upcomingGroupsCache: { src: Attendance[]; groups: EventMonthGroup<Attendance>[] };
   public songSearchTerm = '';
   public filteredSongs: Song[] = [];
 
@@ -418,20 +422,6 @@ export class AttListPage implements OnInit {
     return Utils.getReadableDate(date, this.db.attendanceTypes().find(type => type.id === type_id));
   }
 
-  getAttendanceTitle(att: Attendance): string {
-    if (att.typeInfo) {
-      return `${this.getReadableDate(att.date, att.type_id)} | ${att.typeInfo}`;
-    }
-
-    const attType = this.db.attendanceTypes().find(type => type.id === att.type_id);
-
-    if (attType.hide_name) {
-      return this.getReadableDate(att.date, att.type_id);
-    }
-
-    return `${this.getReadableDate(att.date, att.type_id)} | ${attType.name}`;
-  }
-
   async openAttendance(attendance): Promise<void> {
     if (!this.isConductor && !this.isHelper) {
       return;
@@ -512,6 +502,66 @@ export class AttListPage implements OnInit {
   setFilter(typeId: string): void {
     this.filterTypeId = typeId;
     void this.getAttendance();
+  }
+
+  get upcomingGroups(): EventMonthGroup<Attendance>[] {
+    if (this.upcomingGroupsCache?.src !== this.attendances) {
+      this.upcomingGroupsCache = { src: this.attendances, groups: groupByMonth(this.attendances, att => att.date) };
+    }
+    return this.upcomingGroupsCache.groups;
+  }
+
+  /** Past Termine for conductors/helpers, everything (incl. current) for viewers. */
+  get pastList(): Attendance[] {
+    return this.isConductor || this.isHelper ? this.oldAttendances : this.viewerAttendances;
+  }
+
+  get pastPreview(): Attendance[] {
+    return this.showAllPast ? this.pastList : this.pastList.slice(0, PAST_PREVIEW_COUNT);
+  }
+
+  weekday(date: string): string {
+    return eventWeekday(date);
+  }
+
+  day(date: string): string {
+    return eventDay(date);
+  }
+
+  percColor(perc: number): string {
+    return percentageColor(perc);
+  }
+
+  isRunning(att: Attendance): boolean {
+    return attendanceIsRunning(att);
+  }
+
+  getEventTitle(att: Attendance): string {
+    if (att.typeInfo) {
+      return att.typeInfo;
+    }
+    const attType = this.db.attendanceTypes().find(type => type.id === att.type_id);
+    return attType && !attType.hide_name ? attType.name : this.getReadableDate(att.date, att.type_id);
+  }
+
+  /** Time and place; multi-day Termine (and the current card) also show the date. */
+  getEventMeta(att: Attendance, withDate = false): string {
+    const attType = this.db.attendanceTypes().find(type => type.id === att.type_id);
+    const showDate = withDate || isMultiDay(att) || (attType?.all_day && (attType.duration_days ?? 1) > 1);
+    return eventMeta(
+      showDate ? this.getReadableDate(att.date, att.type_id) : '',
+      eventTimeRange(att.start_time ?? attType?.start_time, att.end_time ?? attType?.end_time),
+      att.place,
+    );
+  }
+
+  getStatusCounts(att: Attendance): { present: number; excused: number; absent: number } {
+    const persons = att.persons ?? [];
+    return {
+      present: persons.filter(p => p.status === AttendanceStatus.Present || p.status === AttendanceStatus.Late).length,
+      excused: persons.filter(p => p.status === AttendanceStatus.Excused || p.status === AttendanceStatus.LateExcused).length,
+      absent: persons.filter(p => p.status === AttendanceStatus.Absent).length,
+    };
   }
 
   getCountText(att: Attendance) {

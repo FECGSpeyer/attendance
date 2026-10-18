@@ -4,7 +4,8 @@ import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, is
 import { Browser } from '@capacitor/browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import dayjs from 'dayjs';
-import { attendanceHasEnded, attendanceIsRunning } from '../../utilities/plan-days';
+import { attendanceHasEnded, attendanceIsRunning, isMultiDay } from '../../utilities/plan-days';
+import { EventMonthGroup, PAST_PREVIEW_COUNT, eventDay, eventMeta, eventTimeRange, eventWeekday, groupByMonth, percentageColor, statusColor, statusLabel } from '../../utilities/event-list';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
@@ -61,6 +62,10 @@ export class SignoutPage implements OnInit {
   public canPlannedAbsence = false;
   public playerAbsences: PlayerAbsence[] = [];
   public showAllAttendances = false;
+  public showAllPast = false;
+  public readonly pastPreviewCount = PAST_PREVIEW_COUNT;
+  private upcomingGroupsCache: { src: PersonAttendance[]; groups: EventMonthGroup<PersonAttendance>[] };
+  private pastCache: { src: PersonAttendance[]; list: PersonAttendance[] };
   public showAllAttendancesInfoText = '';
   public isRegFieldsModalOpen = false;
   public pendingSigninAttendance: PersonAttendance | null = null;
@@ -426,15 +431,7 @@ export class SignoutPage implements OnInit {
 
     const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === attendance.typeId);
 
-    let canSignin = true;
-    if (attendance.attendance.deadline) {
-      const deadline = dayjs(attendance.attendance.deadline);
-      const localDeadline = deadline.subtract(dayjs().utcOffset(), 'minute');
-      const now = dayjs();
-      if (now.isAfter(localDeadline)) {
-        canSignin = false;
-      }
-    }
+    const canSignin = this.isSigninOpen(attendance);
 
     if (attendance.text === 'X' || !canSignin) {
       buttons = buttons.filter((btn) => btn.text !== 'Anmelden' && btn.text !== 'Abmeldung zurücknehmen' && btn.text !== 'Anmelden mit Notiz');
@@ -636,12 +633,95 @@ export class SignoutPage implements OnInit {
     this.regFieldAnswers[fieldId] = idx >= 0 ? arr.filter(o => o !== option) : [...arr, option];
   }
 
-  hasPastAttendances(attendances: PersonAttendance[]): boolean {
-    return attendances.some((att: PersonAttendance) => attendanceHasEnded(att));
+  // ========== TERMINLISTEN (Karten-Layout) ==========
+
+  get upcomingGroups(): EventMonthGroup<PersonAttendance>[] {
+    if (this.upcomingGroupsCache?.src !== this.actualAttendances) {
+      this.upcomingGroupsCache = { src: this.actualAttendances, groups: groupByMonth(this.actualAttendances, att => att.date) };
+    }
+    return this.upcomingGroupsCache.groups;
   }
 
-  attHasPassed(att: PersonAttendance) {
-    return attendanceHasEnded(att);
+  /** Own past Termine, newest first. */
+  get pastAttendances(): PersonAttendance[] {
+    if (this.pastCache?.src !== this.personAttendances) {
+      this.pastCache = { src: this.personAttendances, list: this.personAttendances.filter(att => attendanceHasEnded(att)) };
+    }
+    return this.pastCache.list;
+  }
+
+  get pastPreview(): PersonAttendance[] {
+    return this.showAllPast ? this.pastAttendances : this.pastAttendances.slice(0, PAST_PREVIEW_COUNT);
+  }
+
+  weekday(date: string): string {
+    return eventWeekday(date);
+  }
+
+  day(date: string): string {
+    return eventDay(date);
+  }
+
+  getEventTitle(att: PersonAttendance): string {
+    return att.title || this.getReadableDate(att.date, att.typeId);
+  }
+
+  /** Time and place; multi-day Termine (and the current card) also show the date. */
+  getEventMeta(att: PersonAttendance, withDate = false): string {
+    const attType = this.db.attendanceTypes().find(type => type.id === att.typeId);
+    const showDate = withDate || isMultiDay(att.attendance) || (attType?.all_day && (attType.duration_days ?? 1) > 1);
+    return eventMeta(
+      showDate ? this.getReadableDate(att.date, att.typeId) : '',
+      eventTimeRange(att.attendance?.start_time ?? attType?.start_time, att.attendance?.end_time ?? attType?.end_time),
+      att.attendance?.place,
+    );
+  }
+
+  /** In "alle Termine anzeigen" mode the person may not be part of a Termin; then there is no status. */
+  isOwnAttendance(att: PersonAttendance): boolean {
+    return !this.showAllAttendances || att.isMember;
+  }
+
+  percColor(perc: number): string {
+    return percentageColor(perc);
+  }
+
+  statusColorOf(att: PersonAttendance): string {
+    return statusColor(att.status);
+  }
+
+  statusLabelOf(att: PersonAttendance, past = false): string {
+    return statusLabel(att.status, past);
+  }
+
+  isSigninOpen(attendance: PersonAttendance): boolean {
+    if (!attendance.attendance?.deadline) {
+      return true;
+    }
+    const localDeadline = dayjs(attendance.attendance.deadline).subtract(dayjs().utcOffset(), 'minute');
+    return !dayjs().isAfter(localDeadline);
+  }
+
+  /** Direct buttons on the current card; follows the same rules as the action sheet. */
+  quickActions(att: PersonAttendance) {
+    if (!this.isOwnAttendance(att) || !att.id) {
+      return null;
+    }
+    const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === att.typeId);
+    return {
+      present: att.text === 'X',
+      canSignin: att.text !== 'X' && this.isSigninOpen(att),
+      late: att.status === AttendanceStatus.LateExcused,
+      excused: att.status === AttendanceStatus.Excused,
+      blocked: this.isExcusedStatus(att) || att.text === 'A',
+      allowLate: !attType || attType.available_statuses.includes(AttendanceStatus.Late),
+      allowExcuse: !attType || attType.available_statuses.includes(AttendanceStatus.Excused),
+    };
+  }
+
+  quickSignout(att: PersonAttendance, isLate: boolean): void {
+    this.selAttIds = [att.id];
+    this.excusePicker.open(isLate, this.isAttToday(att));
   }
 
   attIsInFuture(att: PersonAttendance) {
@@ -675,7 +755,6 @@ export class SignoutPage implements OnInit {
   }
 
   trackByHistoryId = (_: number, item: History): number => item.id;
-  trackByAttendanceId = (_: number, item: PersonAttendance): string => item.id;
 
   async openPlanViewer(attendance: PersonAttendance) {
     const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === attendance.typeId);

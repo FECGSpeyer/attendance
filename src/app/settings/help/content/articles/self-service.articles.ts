@@ -5,8 +5,14 @@ export const SELF_SERVICE_ARTICLES: HelpArticle[] = [
     id: 'self-signout',
     title: 'Mich selbst an- oder abmelden',
     categoryId: 'self-service',
-    keywords: ['abmelden', 'anmelden', 'meine termine', 'signout', 'anmeldefelder', 'notiz', 'antworten ändern', 'anmeldung bearbeiten'],
-    body: `Unter "Meine Anwesenheit" siehst du deine anstehenden und vergangenen Termine und kannst deinen eigenen [[Anwesenheitsstatus]] setzen. Meldest du dich ab, wählst du optional einen [[Ausfallgrund]] aus.
+    keywords: ['abmelden', 'anmelden', 'meine termine', 'signout', 'anmeldefelder', 'notiz', 'antworten ändern', 'anmeldung bearbeiten', 'dabei', 'später', 'absagen', 'heute', 'nächster termin', 'weitere optionen', 'vergangene termine', 'anwesenheitsquote'],
+    body: `Unter "Meine Anwesenheit" siehst du oben deine Begrüßung mit deiner Anwesenheitsquote und wie oft du zu spät warst. Darunter liegen die Kacheln „Aktuelle Werke“ und „Abwesenheit melden“, sofern sie für dich freigeschaltet sind.
+
+Der Termin von heute (oder der nächste Termin) steht in einer eigenen Karte. Dort meldest du dich direkt mit „Dabei“, „Später“ oder „Absagen“ an oder ab. Alles Weitere, z. B. Anmelden mit Notiz, Anmeldefelder, Ablaufplan oder Navigation, findest du unter „Weitere Optionen“ oder indem du die Karte antippst.
+
+Die anstehenden Termine sind nach Monaten gruppiert. Jeder Termin zeigt links das Datum, darunter Uhrzeit und Ort und rechts deinen [[Anwesenheitsstatus]]. Hinweise wie Anmeldefrist, Notiz, Ablaufplan oder Infos erscheinen als kleine Markierungen. Tippe einen Termin an, um deinen Status zu ändern. Meldest du dich ab, wählst du optional einen [[Ausfallgrund]] aus.
+
+Unter „Vergangen“ siehst du deine Quote, farbige Punkte für deine letzten Termine und die letzten drei Termine. Mit „Alle anzeigen“ klappst du die ganze Liste auf.
 
 Hat ein Termin Anmeldefelder (z. B. „Essen mit?“), fragt die App sie beim Anmelden ab – auch wenn du „Anmelden mit Notiz“ wählst: Erst gibst du deine Notiz ein, danach füllst du die Anmeldefelder aus.
 
@@ -23,7 +29,9 @@ Bist du schon angemeldet, tippst du den Termin an und wählst „Anmeldefelder a
     id: 'self-children',
     title: 'Anwesenheit für mein Kind pflegen',
     categoryId: 'self-service',
-    keywords: ['eltern', 'kind anmelden', 'parent'],
-    body: `Als [[Elternteil]] siehst du unter "Meine Anwesenheit" zusätzlich die Termine deiner Kinder und kannst deren [[Anwesenheitsstatus]] genauso pflegen wie deinen eigenen.`,
+    keywords: ['eltern', 'kind anmelden', 'parent', 'alle kinder', 'kinder abmelden'],
+    body: `Als [[Elternteil]] siehst du unter "Meine Anwesenheit" zusätzlich die Termine deiner Kinder und kannst deren [[Anwesenheitsstatus]] genauso pflegen wie deinen eigenen.
+
+Jeder Termin ist eine Karte, in der deine Kinder mit ihrem Status stehen. Tippe auf ein Kind, um nur seinen Status zu ändern, oder auf „Alle“, um alle Kinder auf einmal an- oder abzumelden. Der Termin von heute (oder der nächste) steht oben in einer eigenen Karte. Bei vergangenen Terminen siehst du den Status jedes Kindes direkt in der Zeile.`,
   },
 ];

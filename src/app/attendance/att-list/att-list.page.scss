@@ -19,3 +19,8 @@ ion-card {
 .attPage .noDataContainer {
   height: 90%;
 }
+ion-item.ev-today-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --background: transparent;
+}
