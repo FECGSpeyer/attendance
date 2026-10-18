@@ -333,6 +333,12 @@ export class SignoutPage implements OnInit {
     }
   }
 
+  openRoute(attendance: PersonAttendance) {
+    if (attendance.attendance?.place) {
+      Utils.openNavigation(attendance.attendance.place);
+    }
+  }
+
   async openDescription(attendance: PersonAttendance) {
     this.selectedDescription = attendance.attendance?.description || '';
     this.descriptionModal.present();
@@ -472,8 +478,9 @@ export class SignoutPage implements OnInit {
       }
     }
 
+    // On the current card plan, infos, attachment, route and files are chips already
     // Add plan viewing option if share_plan is true
-    if (attendance.attendance?.share_plan && attendance.attendance?.plan) {
+    if (attendance.attendance?.share_plan && attendance.attendance?.plan && !(hideQuickActions && this.hasPlan(attendance))) {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
@@ -482,7 +489,7 @@ export class SignoutPage implements OnInit {
       });
     }
 
-    if (attendance.attendance?.description) {
+    if (attendance.attendance?.description && !hideQuickActions) {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
@@ -491,7 +498,7 @@ export class SignoutPage implements OnInit {
       });
     }
 
-    if (attendance.attendance?.attachment_url) {
+    if (attendance.attendance?.attachment_url && !hideQuickActions) {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
@@ -500,7 +507,7 @@ export class SignoutPage implements OnInit {
       });
     }
 
-    if (attendance.attendance?.place) {
+    if (attendance.attendance?.place && !hideQuickActions) {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
@@ -509,7 +516,7 @@ export class SignoutPage implements OnInit {
       });
     }
 
-    if (this.hasFilesFolder(attendance)) {
+    if (this.hasFilesFolder(attendance) && !hideQuickActions) {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.7",
+      "date": "18.10.2026",
+      "changes": [
+        "👆 Meine Anwesenheit: Ein Tipp auf die Karte des heutigen bzw. nächsten Termins öffnet kein Menü mehr, das geht nur noch über „Weitere Optionen“. Ablaufplan, Infos, Anhang, Dateien und Route öffnest du direkt über die Markierungen auf der Karte, sie stehen deshalb nicht mehr unter „Weitere Optionen“."
+      ]
+    },
+    {
       "version": "4.14.6",
       "date": "18.10.2026",
       "changes": [

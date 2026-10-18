@@ -128,6 +128,10 @@ ion-list.ev-list {
   border: 2px solid var(--ion-color-primary);
   cursor: pointer;
 
+  &.ev-today--static {
+    cursor: default;
+  }
+
   &.ev-today--filled {
     background: var(--ion-color-primary);
     color: var(--ion-color-primary-contrast);

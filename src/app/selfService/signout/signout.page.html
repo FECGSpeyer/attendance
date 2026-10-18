@@ -258,16 +258,19 @@
           <span class="ev-chip">Notiz: {{ att.notes }}</span>
         }
         @if (hasPlan(att)) {
-          <span class="ev-chip"><ion-icon name="document-text-outline"></ion-icon> Ablaufplan</span>
+          <button class="ev-chip" (click)="$event.stopPropagation(); openPlanViewer(att)"><ion-icon name="document-text-outline"></ion-icon> Ablaufplan</button>
         }
-        @if (att.attendance?.description || att.attendance?.attachment_url) {
-          <span class="ev-chip"><ion-icon [name]="att.attendance?.attachment_url ? 'attach-outline' : 'information-circle-outline'"></ion-icon> Infos</span>
+        @if (att.attendance?.description) {
+          <button class="ev-chip" (click)="$event.stopPropagation(); openDescription(att)"><ion-icon name="information-circle-outline"></ion-icon> Infos</button>
+        }
+        @if (att.attendance?.attachment_url) {
+          <button class="ev-chip" (click)="$event.stopPropagation(); openAttachment(att.attendance)"><ion-icon name="attach-outline"></ion-icon> {{ att.attendance?.attachment_name || 'Anhang' }}</button>
         }
         @if (hasFilesFolder(att)) {
-          <span class="ev-chip"><ion-icon name="folder-outline"></ion-icon> Dateien</span>
+          <button class="ev-chip" (click)="$event.stopPropagation(); openFilesFolder(att)"><ion-icon name="folder-outline"></ion-icon> Dateien</button>
         }
         @if (att.attendance?.place) {
-          <span class="ev-chip"><ion-icon name="navigate-outline"></ion-icon> Route</span>
+          <button class="ev-chip" (click)="$event.stopPropagation(); openRoute(att)"><ion-icon name="navigate-outline"></ion-icon> Route</button>
         }
       </div>
     }
@@ -275,8 +278,7 @@
 
   @if (currentAttendance) {
     <div class="ev-month">{{ isAttToday(currentAttendance) ? 'Heute' : 'Nächster Termin' }}</div>
-    <div class="ev-today" [class.not-member]="showAllAttendances && !currentAttendance.isMember"
-      (click)="presentActionSheetForChoice(currentAttendance, true)">
+    <div class="ev-today ev-today--static" [class.not-member]="showAllAttendances && !currentAttendance.isMember">
       <div class="ev-today__head">
         <div class="ev-tile">
           <span class="ev-tile__wd">{{ weekday(currentAttendance.date) }}</span>
@@ -300,17 +302,17 @@
       @if (quickActions(currentAttendance); as qa) {
         <div class="ev-today__actions">
           <ion-button [fill]="qa.present ? 'solid' : 'outline'" [color]="qa.present ? 'success' : 'primary'" [disabled]="!qa.canSignin"
-            (click)="$event.stopPropagation(); handleSigninWithFields(currentAttendance)">Zusagen</ion-button>
+            (click)="handleSigninWithFields(currentAttendance)">Zusagen</ion-button>
           @if (qa.allowLate) {
             <ion-button [fill]="qa.late ? 'solid' : 'outline'" [color]="qa.late ? 'rosa' : 'primary'" [disabled]="qa.blocked"
-              (click)="$event.stopPropagation(); quickSignout(currentAttendance, true)">Verspätung</ion-button>
+              (click)="quickSignout(currentAttendance, true)">Verspätung</ion-button>
           }
           @if (qa.allowExcuse) {
             <ion-button [fill]="qa.excused ? 'solid' : 'outline'" [color]="qa.excused ? 'warning' : 'primary'" [disabled]="qa.blocked"
-              (click)="$event.stopPropagation(); quickSignout(currentAttendance, false)">Absagen</ion-button>
+              (click)="quickSignout(currentAttendance, false)">Absagen</ion-button>
           }
         </div>
-        <button class="ev-more-link" (click)="$event.stopPropagation(); presentActionSheetForChoice(currentAttendance, true)">Weitere Optionen</button>
+        <button class="ev-more-link" (click)="presentActionSheetForChoice(currentAttendance, true)">Weitere Optionen</button>
       }
     </div>
   }
