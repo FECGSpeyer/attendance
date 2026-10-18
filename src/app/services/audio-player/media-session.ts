@@ -3,6 +3,7 @@ import { MediaSession } from '@capgo/capacitor-media-session';
 import { Utils } from 'src/app/utilities/Utils';
 
 export type MediaSessionActionName = 'play' | 'pause' | 'previoustrack' | 'nexttrack' | 'seekto' | 'stop';
+type ActionHandler = (seekTime?: number) => void;
 export type MediaSessionPlayback = 'none' | 'paused' | 'playing';
 
 type Artwork = { src: string; sizes?: string; type?: string }[];
@@ -42,12 +43,41 @@ export class MediaSessionBridge {
     return this.useNativePlugin || !!this.webSession;
   }
 
-  setActionHandler(action: MediaSessionActionName, handler: (seekTime?: number) => void): void {
+  /** Handlers by action, so track skipping can be switched off and on again (see setTrackSkipping). */
+  private readonly handlers = new Map<MediaSessionActionName, ActionHandler>();
+
+  setActionHandler(action: MediaSessionActionName, handler: ActionHandler): void {
+    this.handlers.set(action, handler);
     if (this.useNativePlugin) {
       this.run(() => MediaSession.setActionHandler({ action }, details => handler(details?.seekTime ?? undefined)));
       return;
     }
-    this.run(() => this.webSession?.setActionHandler(action, details => handler(details?.seekTime ?? undefined)));
+    this.setWebHandler(action, handler);
+  }
+
+  /**
+   * Previous/next track buttons only make sense with a queue. Browsers (iOS
+   * above all) show their own ±10 s skip buttons instead when no track
+   * handlers are set, and prefer them while seek handlers exist, so those are
+   * cleared. The Android notification keeps its buttons; the plugin can't
+   * remove handlers.
+   */
+  setTrackSkipping(enabled: boolean): void {
+    if (this.useNativePlugin) {return;}
+    for (const action of ['previoustrack', 'nexttrack'] as const) {
+      this.setWebHandler(action, enabled ? this.handlers.get(action) ?? null : null);
+    }
+    if (enabled) {
+      this.setWebHandler('seekbackward', null);
+      this.setWebHandler('seekforward', null);
+    }
+  }
+
+  private setWebHandler(action: MediaSessionAction, handler: ActionHandler | null): void {
+    this.run(() => this.webSession?.setActionHandler(
+      action,
+      handler ? details => handler(details?.seekTime ?? undefined) : null,
+    ));
   }
 
   /** Loaded once per image and shared by all players. */

@@ -276,6 +276,7 @@ export class AudioPlayerService {
     this.currentTime.set(0);
     this.duration.set(0);
     this.mediaSession.setMetadata(songName || file.fileName, 'Attendix', this.coverUrl());
+    this.mediaSession.setTrackSkipping(this.hasQueue());
 
     audio.play().then(() => {
       this.isPlaying.set(true);
