@@ -71,6 +71,11 @@ export class MediaSessionBridge {
       this.setWebHandler('seekbackward', null);
       this.setWebHandler('seekforward', null);
     }
+    // WebKit drops the lock-screen scrubber when other handlers change, so set seekto again last.
+    const seekTo = this.handlers.get('seekto');
+    if (seekTo) {
+      this.setWebHandler('seekto', seekTo);
+    }
   }
 
   private setWebHandler(action: MediaSessionAction, handler: ActionHandler | null): void {
