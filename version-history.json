@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.2",
+      "date": "18.10.2026",
+      "changes": [
+        "🎁 Der Geburtstagsbanner auf der Personen-Seite ist schlichter: helle Karte statt Farbverlauf, das Alter steht als \"17 Jahre\" neben dem Namen."
+      ]
+    },
+    {
       "version": "4.14.1",
       "date": "18.10.2026",
       "changes": [
