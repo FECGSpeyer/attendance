@@ -545,12 +545,14 @@ export class AttListPage implements OnInit {
     return attType && !attType.hide_name ? attType.name : this.getReadableDate(att.date, att.type_id);
   }
 
-  /** Time and place; multi-day Termine (and the current card) also show the date. */
+  /** Time and place; multi-day Termine (and the current card) also show the date unless it is the title. */
   getEventMeta(att: Attendance, withDate = false, withPlace = true): string {
     const attType = this.db.attendanceTypes().find(type => type.id === att.type_id);
     const showDate = withDate || isMultiDay(att) || (attType?.all_day && (attType.duration_days ?? 1) > 1);
+    const date = this.getReadableDate(att.date, att.type_id);
     return eventMeta(
-      showDate ? this.getReadableDate(att.date, att.type_id) : '',
+      // Termine without a name already show the date as title
+      showDate && date !== this.getEventTitle(att) ? date : '',
       eventTimeRange(att.start_time ?? attType?.start_time, att.end_time ?? attType?.end_time),
       withPlace ? att.place : '',
     );
