@@ -189,12 +189,16 @@ function buildIcal(orgName: string, plans: PlanEntry[], detailed: boolean): stri
       for (let i = 0; i < plan.fields.length; i++) {
         const f = plan.fields[i];
         if (f.id.includes('noteFld')) { cumulativeMins += Number(f.time) || 0; continue; }
+        // A Programmblock head takes no time; its Unterpunkte get their own events.
+        if (f.isGroup) { continue; }
         const dur = Number(f.time) || 0;
         const slotStart = parseLocalDateTime(plan.date, plan.time);
         if (!slotStart) { cumulativeMins += dur; continue; }
         const dtStart = new Date(slotStart.getTime() + cumulativeMins * 60000);
         const dtEnd = new Date(dtStart.getTime() + (dur || 15) * 60000);
-        const summary = escapeIcal(f.conductor ? `${f.name} (${f.conductor})` : f.name);
+        const head = f.groupId ? plan.fields.find(h => h.id === f.groupId) : undefined;
+        const name = head ? `${head.name}: ${f.name}` : f.name;
+        const summary = escapeIcal(f.conductor ? `${name} (${f.conductor})` : name);
         lines.push(
           'BEGIN:VEVENT',
           icalLine('UID', `${plan.uid}-${i}@attendix.de`),
