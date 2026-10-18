@@ -129,7 +129,8 @@ describe('AudioPlayerService media session', () => {
   const session: any = {
     metadata: null,
     playbackState: 'none',
-    setActionHandler: (action: string, handler: (details: any) => void) => handlers.set(action, handler),
+    setActionHandler: (action: string, handler: ((details: any) => void) | null) =>
+      handler ? handlers.set(action, handler) : handlers.delete(action),
     setPositionState: vi.fn(),
   };
 
@@ -180,6 +181,16 @@ describe('AudioPlayerService media session', () => {
     await service.playQueue([item('a.mp3')], 0);
     expect(session.metadata.title).toBe('a.mp3');
     expect(session.metadata.artwork?.[0].src).toMatch(/\/assets\/icons\/icon-256\.webp$/);
+  });
+
+  it('offers track buttons only with a queue', async () => {
+    service.play({ url: 'https://example.com/a.mp3', fileName: 'a.mp3' } as any, 'a');
+    expect(handlers.has('nexttrack')).toBe(false);
+    expect(handlers.has('previoustrack')).toBe(false);
+
+    await service.playQueue([item('a.mp3'), item('b.mp3')], 0);
+    expect(handlers.has('nexttrack')).toBe(true);
+    expect(handlers.has('previoustrack')).toBe(true);
   });
 
   it('prefers the branding logo as cover', async () => {

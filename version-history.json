@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.17",
+      "date": "18.10.2026",
+      "changes": [
+        "⏭️ Audio-Player: Bei mehreren Audiodateien aus einem Ordner zeigt der Sperrbildschirm auf dem iPhone wieder Vor/Zurück zum nächsten bzw. vorherigen Titel, Spulen über den Schieberegler bleibt möglich."
+      ]
+    },
+    {
       "version": "4.14.16",
       "date": "18.10.2026",
       "changes": [

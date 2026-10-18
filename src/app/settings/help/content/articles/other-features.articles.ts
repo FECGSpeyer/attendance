@@ -183,12 +183,12 @@ Darfst du die Person bearbeiten, findest du beim Passbild unten außerdem "Erset
     id: 'other-audio-player',
     title: 'Audio-Player',
     categoryId: 'other',
-    keywords: ['audio', 'abspielen', 'aufnahme anhören', 'mp3', 'sperrbildschirm', 'hintergrund', 'weiterspielen', 'playlist', 'musik hören', 'cover', 'logo', 'branding'],
+    keywords: ['audio', 'abspielen', 'aufnahme anhören', 'mp3', 'sperrbildschirm', 'hintergrund', 'weiterspielen', 'playlist', 'musik hören', 'cover', 'logo', 'branding', 'nächster titel', 'vorspulen'],
     body: `Tippst du in der Dateiablage auf eine Audiodatei, öffnet sich der Audio-Player am unteren Bildschirmrand.
 
 - Mit **Vor/Zurück** wechselst du zur nächsten bzw. vorherigen Audiodatei im selben Ordner. Ist ein Titel zu Ende, startet automatisch der nächste.
 - In der App läuft die Wiedergabe **im Hintergrund** weiter, auch wenn du die App verlässt oder den Bildschirm sperrst.
-- Auf dem **Sperrbildschirm**, im Kontrollzentrum (iOS) bzw. in der Benachrichtigung (Android) siehst du den aktuellen Titel (mit dem Logo aus dem Branding deiner Gruppe bzw. Organisation als Cover, ohne Branding mit dem Attendix-Logo) und kannst Wiedergabe/Pause, Vor/Zurück und Spulen steuern.
+- Auf dem **Sperrbildschirm**, im Kontrollzentrum (iOS) bzw. in der Benachrichtigung (Android) siehst du den aktuellen Titel (mit dem Logo aus dem Branding deiner Gruppe bzw. Organisation als Cover, ohne Branding mit dem Attendix-Logo) und kannst Wiedergabe/Pause und Spulen steuern. Liegen weitere Audiodateien im Ordner, springst du dort mit **Vor/Zurück** zum nächsten bzw. vorherigen Titel; bei einer einzelnen Datei zeigt das iPhone stattdessen 10 Sekunden vor/zurück.
 
 Die Hintergrundwiedergabe und Sperrbildschirm-Steuerung benötigen eine aktuelle Version der App. Im Browser hängt sie davon ab, was Browser und Gerät unterstützen.`,
   },
