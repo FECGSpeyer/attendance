@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.11",
+      "date": "18.10.2026",
+      "changes": [
+        "🎵 Audio-Player: Auch auf dem iPhone zeigen Sperrbildschirm und Kontrollzentrum jetzt ein Cover, das Branding-Logo deiner Gruppe bzw. Organisation oder sonst das Attendix-Logo."
+      ]
+    },
+    {
       "version": "4.14.10",
       "date": "18.10.2026",
       "changes": [

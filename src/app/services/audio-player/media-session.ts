@@ -13,15 +13,16 @@ const LOGO_URL = 'assets/icons/icon-256.webp';
 /**
  * Lock-screen / notification controls for the audio player.
  *
- * Android uses the native @capgo/capacitor-media-session plugin (foreground
- * service + media notification). App shells built before the plugin was added
- * don't have it, so we check `isPluginAvailable` and fall back to the browser
- * Media Session API — the same API that iOS (WKWebView) and the web use.
+ * Android and iOS use the native @capgo/capacitor-media-session plugin
+ * (Android: foreground service + media notification, iOS: Now Playing info
+ * set directly, so the cover works there too). App shells built before the
+ * plugin was added don't have it, so we check `isPluginAvailable` and fall
+ * back to the browser Media Session API, which the web also uses.
  * All calls are best-effort and never throw.
  */
 export class MediaSessionBridge {
   private readonly useNativePlugin =
-    Capacitor.getPlatform() === 'android' && Capacitor.isPluginAvailable('MediaSession');
+    ['android', 'ios'].includes(Capacitor.getPlatform()) && Capacitor.isPluginAvailable('MediaSession');
 
   constructor() {
     if (this.useNativePlugin) {
@@ -90,9 +91,9 @@ export class MediaSessionBridge {
   }
 
   /**
-   * Browsers load the cover themselves. Not in the iOS app: on iOS 27 the lock
-   * screen drops the whole Now Playing panel as soon as WKWebView passes any
-   * artwork (data or asset URL, seen in the simulator).
+   * Browsers load the cover themselves. Not in an iOS app without the native
+   * plugin: on iOS 27 the lock screen drops the whole Now Playing panel as soon
+   * as WKWebView passes any artwork (data or asset URL, seen in the simulator).
    */
   private static webArtwork(coverUrl?: string): Artwork | undefined {
     if (Capacitor.getPlatform() === 'ios') { return undefined; }
@@ -107,8 +108,8 @@ export class MediaSessionBridge {
   }
 
   /**
-   * The cover as a data URL for the Android plugin, which can't load blob: URLs
-   * or the WebView's https://localhost origin from native code.
+   * The cover as a data URL for the native plugin, which can't load blob: URLs
+   * or the WebView's local origin from native code.
    */
   private static loadArtwork(src: string): Promise<Artwork | undefined> {
     const cache = MediaSessionBridge.artworkCache;
@@ -135,8 +136,8 @@ export class MediaSessionBridge {
   }
 
   /**
-   * Branding logos come in any shape and may be transparent. The notification
-   * crops covers to a square, so the logo is centered on a white square.
+   * Branding logos come in any shape and may be transparent. Lock screen and
+   * notification crop covers to a square, so the logo is centered on a white square.
    */
   private static async squareArtwork(blob: Blob): Promise<Artwork> {
     const objectUrl = URL.createObjectURL(blob);
