@@ -195,12 +195,16 @@ export class SongsPage implements OnInit, OnDestroy {
       this.selectedInstruments = groups.map((instrument: Group) => instrument.id);
     }
     this.songs = rawSongs.map((song: Song): Song => {
-      const hisEntry: History | undefined = history.find((his: History): boolean => his.songId === song.id);
+      // History is sorted by date descending and also contains entries of planned future events.
+      const songHistory = history.filter((his: History): boolean => his.songId === song.id);
+      const hisEntry: History | undefined = songHistory.find((his: History): boolean => !dayjs(his.date).isAfter(dayjs(), 'day'));
+      const nextPlannedEntry: History | undefined = songHistory.filter((his: History): boolean => dayjs(his.date).isAfter(dayjs(), 'day')).pop();
       const lastSung: string | undefined = hisEntry?.date;
       const conductor: Person | undefined = hisEntry ? conductors.find((con: Person) => con.id === hisEntry.person_id) : undefined;
       return {
         ...song,
         lastSung,
+        nextPlanned: nextPlannedEntry?.date,
         conductor: conductor ? `${conductor.firstName} ${conductor.lastName}` : (hisEntry?.otherConductor ?? undefined),
         instrument_ids: song.instrument_ids?.length ? song.instrument_ids : this.selectedInstruments,
       };

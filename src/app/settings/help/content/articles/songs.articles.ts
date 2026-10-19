@@ -12,8 +12,8 @@ export const SONGS_ARTICLES: HelpArticle[] = [
     id: 'songs-filter',
     title: 'Werke suchen und filtern',
     categoryId: 'songs',
-    keywords: ['suche', 'filter', 'schwierigkeit', 'zuletzt gespielt', 'präfix', 'liedbuch', 'nachladen', 'scrollen'],
-    body: `Die Werkeliste kann per Suchfeld (Titel, Nummer oder Präfix mit Nummer, z. B. "LB12") sowie nach Instrument, Schwierigkeitsgrad oder Datum des letzten Auftritts gefiltert werden. So findest du schnell z. B. alle Stücke, die lange nicht mehr gespielt wurden. Bei großen Listen zeigt Attendix zuerst die ersten 100 Werke und lädt beim Herunterscrollen automatisch weitere nach.`,
+    keywords: ['suche', 'filter', 'schwierigkeit', 'zuletzt gespielt', 'zuletzt gesungen', 'geplant', 'noch nicht gesungen', 'präfix', 'liedbuch', 'nachladen', 'scrollen'],
+    body: `Die Werkeliste kann per Suchfeld (Titel, Nummer oder Präfix mit Nummer, z. B. "LB12") sowie nach Instrument, Schwierigkeitsgrad oder Datum des letzten Auftritts gefiltert werden. So findest du schnell z. B. alle Stücke, die lange nicht mehr gespielt wurden. Unter jedem Werk siehst du, wann es zuletzt gesungen bzw. gespielt wurde. Ist es schon für einen künftigen Termin eingeplant, steht dort zusätzlich "Geplant am …", bei neuen Werken "Noch nicht gesungen · Geplant am …". Für "Zuletzt gesungen" und die Sortierung zählen nur Termine, die bereits stattgefunden haben. Bei großen Listen zeigt Attendix zuerst die ersten 100 Werke und lädt beim Herunterscrollen automatisch weitere nach.`,
   },
   {
     id: 'songs-import',

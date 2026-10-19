@@ -411,6 +411,7 @@ export interface Song {
   withChoir: boolean;
   withSolo: boolean;
   lastSung?: string;
+  nextPlanned?: string;
   link?: string;
   conductor?: string;
   composer?: string;

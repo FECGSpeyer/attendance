@@ -374,6 +374,9 @@
                 date:'dd.MM.yyyy' }} | {{ song.conductor  }}
               </h3>
             }
+            @if (!tenantData && song.nextPlanned && viewOpts.includes('lastSung')) {
+              <h3>@if (!song.lastSung) {Noch nicht {{ tenantType === 'orchestra' ? 'gespielt' : 'gesungen' }} · }Geplant am {{ song.nextPlanned | date:'dd.MM.yyyy' }}</h3>
+            }
             @for (field of db.tenant()?.song_additional_fields; track field.id) {
               @if (viewOpts.includes(field.id) && field.displayMode === 'underneath' && song.additional_fields?.[field.id] !== undefined && song.additional_fields?.[field.id] !== '' && song.additional_fields?.[field.id] !== false && song.additional_fields?.[field.id] !== null) {
                 <h3>
