@@ -26,6 +26,8 @@ public struct PlanActivityAttributes: ActivityAttributes {
         public var next: [NextItem]
         public var planStart: Double
         public var planEnd: Double
+        /// Start of every item; missing in pushes from older servers.
+        public var bounds: [Double]?
     }
 
     public var attendanceId: Int

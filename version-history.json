@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.24",
+      "date": "19.10.2026",
+      "changes": [
+        "✨ Laufender Ablaufplan auf dem iPhone: neues Design für Sperrbildschirm und Dynamic Island mit dem aktuellen Punkt groß samt Restzeit, einem Balken für den ganzen Ablauf und den nächsten Punkten wie im Programmheft (ab diesem App-Update)."
+      ]
+    },
+    {
       "version": "4.14.23",
       "date": "19.10.2026",
       "changes": [

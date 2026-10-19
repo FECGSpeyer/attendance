@@ -63,6 +63,8 @@ export interface LivePlanState {
   next: LiveNextItem[];
   planStart: number;
   planEnd: number;
+  /** Start of every item (epoch seconds), for the widget's timeline bar; the last one ends at planEnd. */
+  bounds?: number[];
 }
 
 /** Offset of `timezone` from UTC at the given instant, in milliseconds. */
@@ -159,6 +161,7 @@ export function liveStateAt(schedule: LivePlanItem[], now: number): LivePlanStat
   const planEnd = schedule[schedule.length - 1].end;
   const total = schedule.length;
   const nextFrom = (i: number) => schedule.slice(i, i + 2).map(item => ({ name: item.name, at: sec(item.start) }));
+  const bounds = schedule.map(item => sec(item.start));
 
   if (now < planStart) {
     const first = schedule[0];
@@ -166,7 +169,7 @@ export function liveStateAt(schedule: LivePlanItem[], now: number): LivePlanStat
       phase: 'before', index: 1, total,
       title: first.name, subtitle: first.subtitle,
       startsAt: sec(first.start), endsAt: sec(first.end),
-      next: nextFrom(1), planStart: sec(planStart), planEnd: sec(planEnd),
+      next: nextFrom(1), planStart: sec(planStart), planEnd: sec(planEnd), bounds,
     };
   }
   if (now >= planEnd) {
@@ -174,7 +177,7 @@ export function liveStateAt(schedule: LivePlanItem[], now: number): LivePlanStat
       phase: 'ended', index: total, total,
       title: 'Ablaufplan beendet', subtitle: '',
       startsAt: sec(planStart), endsAt: sec(planEnd),
-      next: [], planStart: sec(planStart), planEnd: sec(planEnd),
+      next: [], planStart: sec(planStart), planEnd: sec(planEnd), bounds,
     };
   }
   // Zero-length items are skipped; the item whose end lies after now is current.
@@ -184,7 +187,7 @@ export function liveStateAt(schedule: LivePlanItem[], now: number): LivePlanStat
     phase: 'running', index: idx + 1, total,
     title: current.name, subtitle: current.subtitle,
     startsAt: sec(current.start), endsAt: sec(current.end),
-    next: nextFrom(idx + 1), planStart: sec(planStart), planEnd: sec(planEnd),
+    next: nextFrom(idx + 1), planStart: sec(planStart), planEnd: sec(planEnd), bounds,
   };
 }
 
