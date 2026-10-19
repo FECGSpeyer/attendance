@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.14.22",
+      "date": "19.10.2026",
+      "changes": [
+        "⏱️ Ablaufplan-Ansicht: Vor dem Start ist noch kein Punkt markiert, stattdessen zählt neben „Start“ die Zeit bis zum Beginn herunter.",
+        "✏️ Ablaufplan-Ansicht: Öffnest du den Plan in der Terminübersicht, kommst du über den Stift oben direkt in den Editor."
+      ]
+    },
+    {
       "version": "4.14.21",
       "date": "18.10.2026",
       "changes": [

@@ -25,6 +25,8 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
   @Input() playerInstrument: number;
   @Input() songs: Song[] = [];
   @Input() defaultLive = false;
+  /** Shows an edit button; the viewer then closes with role 'edit' and `{ planIndex }` so the opener can open the editor. */
+  @Input() canEdit = false;
 
   public hasChatId = false;
   readonly AGENDA_ITEMS_PLACEHOLDER_ID = AGENDA_ITEMS_PLACEHOLDER_ID;
@@ -69,6 +71,10 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
     this.modalController.dismiss();
   }
 
+  edit() {
+    this.modalController.dismiss({ planIndex: this.planIndex }, 'edit');
+  }
+
   /** Date of the shown plan (Termin date plus its day). */
   currentDate(): dayjs.Dayjs {
     return this.planLabels.length ? planDate(this.attendance, this.planIndex) : dayjs(this.attendance?.date);
@@ -110,6 +116,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
   private stopLive() {
     if (this.liveInterval) { clearInterval(this.liveInterval); this.liveInterval = null; }
     this.activeFieldIndex = -1;
+    this.liveStart = null;
     this.liveMode = false;
   }
 
@@ -123,6 +130,12 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
       ? dayjs(this.plan.time)
       : dayjs().hour(Number(this.plan.time.substring(0, 2))).minute(Number(this.plan.time.substring(3, 5)));
     let t = this.currentDate().hour(timeBase.hour()).minute(timeBase.minute()).second(0);
+    // Not started yet: nothing is running, the Start row counts down instead.
+    this.liveStart = t;
+    if (now.isBefore(t)) {
+      this.activeFieldIndex = -1;
+      return;
+    }
     for (let i = 0; i < this.plan.fields.length; i++) {
       // A Programmblock head takes no time; its Unterpunkte become active instead.
       if (isGroupHead(this.plan.fields[i])) { continue; }
@@ -187,6 +200,25 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
     return `${time.add(minutesToAdd, 'minute').format('HH:mm')} ${field.conductor ? `| ${field.conductor}` : ''}`;
   }
 
+  /** Start of the shown plan while live mode is on. */
+  private liveStart: dayjs.Dayjs | null = null;
+
+  /** "in 04:12" on the Start row while live mode is on and the plan hasn't started. */
+  getStartCountdown(): string {
+    if (!this.liveMode || !this.liveStart) { return ''; }
+    const remaining = this.liveStart.diff(dayjs(), 'second');
+    return remaining > 0 ? `in ${this.formatDuration(remaining)}` : '';
+  }
+
+  private formatDuration(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return h > 0
+      ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+      : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+
   getActiveCountdown(): string {
     if (!this.liveMode || this.activeFieldIndex < 0 || !this.plan?.fields || !this.plan.time || !this.attendance?.date) { return ''; }
     const timeBase = dayjs(this.plan.time).isValid()
@@ -196,13 +228,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
     for (let i = 0; i <= this.activeFieldIndex; i++) {
       t = t.add(Number(this.plan.fields[i].time) || 0, 'minute');
     }
-    const remaining = Math.max(0, t.diff(dayjs(), 'second'));
-    const h = Math.floor(remaining / 3600);
-    const m = Math.floor((remaining % 3600) / 60);
-    const s = remaining % 60;
-    return h > 0
-      ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-      : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    return this.formatDuration(Math.max(0, t.diff(dayjs(), 'second')));
   }
 
   getEndTime(): string {

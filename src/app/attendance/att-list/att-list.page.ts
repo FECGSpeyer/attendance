@@ -13,6 +13,7 @@ import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
 import { Attendance, PlayerAbsence, Song, History, Person, Plan } from 'src/app/utilities/interfaces';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
+import { PlanningPage } from 'src/app/planning/planning.page';
 import { Utils } from 'src/app/utilities/Utils';
 import { createAttendanceForType, personsForAttendanceType } from 'src/app/utilities/attendance-create';
 import { AttendanceStatus, DefaultAttendanceType, Role } from 'src/app/utilities/constants';
@@ -573,9 +574,19 @@ export class AttListPage implements OnInit {
         isPractice: attType?.name?.toLowerCase().includes('probe') || attType?.name?.toLowerCase().includes('übung') || att.type === 'uebung',
         songs: this.songs,
         defaultLive: attendanceIsRunning(att),
+        canEdit: this.isConductor || this.isHelper,
       },
     });
     await modal.present();
+    const { data, role } = await modal.onDidDismiss();
+    if (role === 'edit') {
+      const editor = await this.modalController.create({
+        component: PlanningPage,
+        cssClass: 'planningModal',
+        componentProps: { attendanceId: att.id, initialPlanIndex: data?.planIndex ?? 0 },
+      });
+      await editor.present();
+    }
   }
 
   getStatusCounts(att: Attendance): { present: number; excused: number; absent: number } {

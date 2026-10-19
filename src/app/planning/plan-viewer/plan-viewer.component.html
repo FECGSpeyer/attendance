@@ -12,6 +12,11 @@
                 <ion-icon slot="icon-only" [name]="liveMode ? 'radio' : 'radio-outline'"></ion-icon>
               </ion-button>
             }
+            @if (canEdit) {
+              <ion-button (click)="edit()" aria-label="Ablaufplan bearbeiten">
+                <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+              </ion-button>
+            }
             <ion-button (click)="showExportOptions()">
                 <ion-icon slot="icon-only" name="share-outline"></ion-icon>
             </ion-button>
@@ -32,6 +37,9 @@
         <ion-item-group>
             <ion-item>
                 <ion-label>Start</ion-label>
+                @if (getStartCountdown(); as countdown) {
+                  <ion-badge slot="end" color="medium">{{ countdown }}</ion-badge>
+                }
                 <ion-note slot="end">{{ getStartTime() }} Uhr</ion-note>
             </ion-item>
 
