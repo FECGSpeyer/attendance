@@ -114,7 +114,7 @@ export class LiveActivityService {
   async sync(): Promise<void> {
     if (!this.supported || !this.db.tenant()) { return; }
     try {
-      const candidates = this.enabled ? await this.runningPlans() : [];
+      const { candidates, attendanceIds } = this.enabled ? await this.runningPlans() : { candidates: [], attendanceIds: null };
       const { activities } = await LiveActivity.list();
       const key = (t: LiveActivityTarget) => `${t.attendanceId}:${t.planKey}`;
       const wanted = new Set(candidates.map(key));
@@ -134,9 +134,10 @@ export class LiveActivityService {
         }
         this.lastKeys.set(k, stateKey);
       }
-      // Plans that are over, deleted or no longer visible to this user.
+      // Plans that are over or no longer visible to this user. Activities of the user's other
+      // tenants are left alone (the server keeps those up to date); deleted plans the server ends.
       for (const a of activities) {
-        if (!wanted.has(key(a))) {
+        if (!wanted.has(key(a)) && (!attendanceIds || attendanceIds.has(a.attendanceId))) {
           await LiveActivity.end({ attendanceId: a.attendanceId, planKey: a.planKey, immediate: true });
           this.lastKeys.delete(key(a));
         }
@@ -147,7 +148,7 @@ export class LiveActivityService {
   }
 
   /** Plans of the current tenant whose live window contains now, limited like the home "current plan" card. */
-  private async runningPlans(): Promise<LivePlanCandidate[]> {
+  private async runningPlans(): Promise<{ candidates: LivePlanCandidate[]; attendanceIds: Set<number> }> {
     const tenant = this.db.tenant();
     const role = this.db.tenantUser()?.role;
     const isLeader = [Role.ADMIN, Role.RESPONSIBLE].includes(role);
@@ -177,7 +178,7 @@ export class LiveActivityService {
         });
       });
     }
-    return result;
+    return { candidates: result, attendanceIds: new Set((data ?? []).map((a: any) => a.id as number)) };
   }
 
   private async registerTokenListeners(): Promise<void> {

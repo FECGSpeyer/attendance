@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.14.34",
+      "date": "20.10.2026",
+      "changes": [
+        "🐛 iPhone: Absturz behoben, wenn mehrere laufende Ablaufpläne gleichzeitig starten.",
+        "🐛 Bist du in mehreren Gruppen, beendet das Öffnen der App nicht mehr die Live-Anzeigen der anderen Gruppen."
+      ]
+    },
+    {
       "version": "4.14.33",
       "date": "20.10.2026",
       "changes": [

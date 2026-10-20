@@ -24,14 +24,16 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
     ]
 
     override public func load() {
-        let reporter = LiveActivityTokenReporter.shared
-        reporter.onPushToStartToken = { [weak self] token in
-            self?.notifyListeners("pushToStartToken", data: ["token": token], retainUntilConsumed: true)
+        DispatchQueue.main.async {
+            let reporter = LiveActivityTokenReporter.shared
+            reporter.onPushToStartToken = { [weak self] token in
+                self?.notifyListeners("pushToStartToken", data: ["token": token], retainUntilConsumed: true)
+            }
+            reporter.onActivityToken = { [weak self] payload in
+                self?.notifyListeners("activityToken", data: payload, retainUntilConsumed: true)
+            }
+            reporter.start()
         }
-        reporter.onActivityToken = { [weak self] payload in
-            self?.notifyListeners("activityToken", data: payload, retainUntilConsumed: true)
-        }
-        reporter.start()
     }
 
     /// Where the reporter sends update tokens while the app runs in the background.
@@ -131,10 +133,13 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func getTokens(_ call: CAPPluginCall) {
-        let reporter = LiveActivityTokenReporter.shared
-        var result: [String: Any] = ["activityTokens": Array(reporter.activityTokens.values)]
-        if let token = reporter.pushToStartToken { result["pushToStartToken"] = token }
-        call.resolve(result)
+        // Plugin calls run on a background queue; the reporter's tokens are only touched on main.
+        DispatchQueue.main.async {
+            let reporter = LiveActivityTokenReporter.shared
+            var result: [String: Any] = ["activityTokens": Array(reporter.activityTokens.values)]
+            if let token = reporter.pushToStartToken { result["pushToStartToken"] = token }
+            call.resolve(result)
+        }
     }
 
     // MARK: - Helpers
@@ -172,6 +177,7 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
 /// wakes the app in the background after a push-to-start (no WebView then).
 /// Update tokens are sent straight to the `live-activity-token` Edge Function,
 /// so the server can move the activity on without the app being opened.
+/// All state is only read and written on the main thread.
 final class LiveActivityTokenReporter {
     static let shared = LiveActivityTokenReporter()
 
@@ -267,11 +273,16 @@ final class LiveActivityTokenReporter {
         request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
-        // Finish the request even if iOS only woke the app for this.
+        // Finish the request even if iOS only woke the app for this; end the task exactly once.
         var task: UIBackgroundTaskIdentifier = .invalid
-        task = UIApplication.shared.beginBackgroundTask { UIApplication.shared.endBackgroundTask(task) }
+        let finish = {
+            guard task != .invalid else { return }
+            UIApplication.shared.endBackgroundTask(task)
+            task = .invalid
+        }
+        task = UIApplication.shared.beginBackgroundTask(expirationHandler: finish)
         URLSession.shared.dataTask(with: request) { _, _, _ in
-            DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(task) }
+            DispatchQueue.main.async(execute: finish)
         }.resume()
     }
 
