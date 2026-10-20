@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.31",
+      "date": "20.10.2026",
+      "changes": [
+        "🧹 Dashboard: Die Karte „Termine“ zeigt die Terminbeschreibung nicht mehr als rohen Text mit HTML-Tags an. Die Beschreibung findest du weiterhin im Termin selbst."
+      ]
+    },
+    {
       "version": "4.14.30",
       "date": "20.10.2026",
       "changes": [
