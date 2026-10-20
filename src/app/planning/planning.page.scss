@@ -115,3 +115,13 @@ ion-col {
     --min-height: 40px;
     font-size: 15px;
 }
+
+// Bei vielen Einträgen (Vorlagen, Felder) nicht über den Screen hinauswachsen
+ion-popover.add-popover {
+    --max-height: 70vh;
+
+    &::part(content) {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}

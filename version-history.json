@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.27",
+      "date": "20.10.2026",
+      "changes": [
+        "💄 Ablaufplan: Das Menü zum Hinzufügen von Punkten bleibt auch bei vielen Vorlagen und Feldern auf dem Bildschirm und lässt sich scrollen, „Programmblock hinzufügen“ kommt ohne Icon aus."
+      ]
+    },
+    {
       "version": "4.14.26",
       "date": "20.10.2026",
       "changes": [
