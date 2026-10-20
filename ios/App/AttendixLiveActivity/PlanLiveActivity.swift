@@ -34,7 +34,7 @@ struct PlanLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.bottom) {
                     VStack(alignment: .leading, spacing: 8) {
                         TimelineBar(state: context.state)
-                            .frame(height: 5)
+                            .frame(height: 4)
                         NextItemsView(state: context.state, limit: 1)
                     }
                     .padding(.horizontal, 6)
@@ -61,7 +61,8 @@ struct PlanLiveActivity: Widget {
 enum LiveColors {
     /// Attendix teal, lightened for the dark Live Activity background.
     static let accent = Color(red: 0.37, green: 0.72, blue: 0.75)
-    static let track = Color(white: 0.28)
+    /// Close to the system's own track of a linear ProgressView, so all segments look alike.
+    static let track = Color.white.opacity(0.22)
     static let secondary = Color(white: 0.72)
     static let done = Color(red: 0.24, green: 0.81, blue: 0.56)
 }
@@ -202,10 +203,9 @@ private struct SegmentView: View {
             }
             .progressViewStyle(.linear)
             .tint(LiveColors.accent)
-            .background(LiveColors.track)
-            .clipShape(Capsule())
         } else {
             Capsule().fill(done ? LiveColors.accent : LiveColors.track)
+                .frame(height: 4)
         }
     }
 }
@@ -229,26 +229,23 @@ private struct SingleItemBar: View {
     }
 }
 
-/// The highlighted "JETZT" row: current item and its remaining time.
+/// Current item and its remaining time (before the start: time until the start).
 @available(iOS 16.1, *)
 struct CurrentItemView: View {
     let state: PlanActivityAttributes.ContentState
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
-            if state.phase == "running" {
-                StatusDot(state: state)
-            }
+        HStack(alignment: .lastTextBaseline, spacing: 10) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(label)
                     .font(.caption2.weight(.bold))
                     .tracking(0.8)
                     .foregroundStyle(state.phase == "running" ? LiveColors.accent : LiveColors.secondary)
                 Text(headline)
-                    .font(.title3.weight(.bold))
+                    .font(.headline)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
-                if state.phase == "running" && !state.subtitle.isEmpty {
+                if state.phase == "running" && !state.subtitle.isEmpty && state.title.count <= 26 {
                     Text(state.subtitle)
                         .font(.caption)
                         .foregroundStyle(LiveColors.secondary)
@@ -258,22 +255,13 @@ struct CurrentItemView: View {
             Spacer(minLength: 6)
             VStack(alignment: .trailing, spacing: 0) {
                 if state.phase == "before" {
-                    Text("in").font(.caption).foregroundStyle(LiveColors.secondary)
+                    Text("in").font(.caption2).foregroundStyle(LiveColors.secondary)
                 }
                 CountdownText(state: state)
-                    .font(.system(size: 30, weight: .bold).monospacedDigit())
-                    .frame(maxWidth: 120, alignment: .trailing)
-                if state.phase == "running" {
-                    Text("noch").font(.caption).foregroundStyle(LiveColors.secondary)
-                }
+                    .font(.system(size: 28, weight: .bold).monospacedDigit())
+                    .frame(maxWidth: 110, alignment: .trailing)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(state.phase == "running" ? LiveColors.accent.opacity(0.16) : Color.white.opacity(0.08))
-        )
     }
 
     private var label: String {
@@ -301,25 +289,34 @@ struct NextItemsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             ForEach(Array(state.next.prefix(limit).enumerated()), id: \.offset) { entry in
-                ProgrammeRow(name: entry.element.name, time: clock(Date(timeIntervalSince1970: entry.element.at)))
+                ProgrammeRow(label: entry.offset == 0 ? firstLabel : nil, name: entry.element.name,
+                             time: clock(Date(timeIntervalSince1970: entry.element.at)))
             }
             if state.phase == "running" && state.next.isEmpty {
-                ProgrammeRow(name: "Ende", time: clock(state.planEndDate))
+                ProgrammeRow(label: firstLabel, name: "Ende", time: clock(state.planEndDate))
             }
         }
     }
 }
 
 @available(iOS 16.1, *)
+extension NextItemsView {
+    /// The plan's first item comes through `next` before the start (see iosLiveState).
+    var firstLabel: String { state.phase == "before" ? "Als Erstes" : "Danach" }
+}
+
+@available(iOS 16.1, *)
 private struct ProgrammeRow: View {
+    let label: String?
     let name: String
     let time: String
 
     var body: some View {
-        HStack(spacing: 10) {
-            Circle()
-                .strokeBorder(LiveColors.secondary, lineWidth: 2)
-                .frame(width: 10, height: 10)
+        HStack(spacing: 6) {
+            if let label {
+                Text(label)
+                    .foregroundStyle(LiveColors.secondary)
+            }
             Text(name)
                 .lineLimit(1)
             Spacer(minLength: 6)
@@ -337,7 +334,7 @@ struct LockScreenView: View {
 
     var body: some View {
         let state = context.state
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 9) {
             HStack(spacing: 8) {
                 Image(systemName: "list.bullet.rectangle.fill")
                     .foregroundStyle(LiveColors.accent)
@@ -351,13 +348,13 @@ struct LockScreenView: View {
             }
             CurrentItemView(state: state)
             TimelineBar(state: state)
-                .frame(height: 6)
+                .frame(height: 4)
             if state.phase != "ended" {
-                // A two-line title takes the room of the second row.
-                NextItemsView(state: state, limit: state.phase == "running" && state.title.count > 26 ? 1 : 2)
+                NextItemsView(state: state, limit: 1)
             }
         }
-        .padding(16)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
         .foregroundStyle(.white)
     }
 

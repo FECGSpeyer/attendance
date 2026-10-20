@@ -53,7 +53,7 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
     title: 'Laufender Ablaufplan auf dem Sperrbildschirm',
     categoryId: 'planning',
     keywords: ['live activity', 'dynamic island', 'sperrbildschirm', 'lockscreen', 'live update', 'countdown', 'restzeit', 'aktueller punkt', 'benachrichtigung', 'iphone', 'android'],
-    body: `Läuft gerade ein [[Ablaufplan]], zeigt die Attendix-App den aktuellen Programmpunkt groß mit Restzeit, darunter einen Balken für den ganzen Ablauf und die nächsten Punkte mit Uhrzeit auf deinem Sperrbildschirm. Lange Titel dürfen zwei Zeilen haben, dafür erscheint dann nur ein nächster Punkt. Auf dem iPhone erscheint er außerdem in der Dynamic Island, auf Android als laufende Benachrichtigung mit Countdown.
+    body: `Läuft gerade ein [[Ablaufplan]], zeigt die Attendix-App den aktuellen Programmpunkt groß mit Restzeit, darunter einen Balken für den ganzen Ablauf und den nächsten Punkt mit Uhrzeit auf deinem Sperrbildschirm. Lange Titel dürfen zwei Zeilen haben. Auf dem iPhone erscheint er außerdem in der Dynamic Island, auf Android als laufende Benachrichtigung mit Countdown.
 
 **Wann:** Die Anzeige startet automatisch 15 Minuten vor dem ersten Punkt. Bis zum Beginn zeigt sie einen Countdown bis zum Start und die ersten Programmpunkte mit Uhrzeit. Danach springt sie von selbst zum nächsten Punkt und verschwindet 15 Minuten nach dem Ende. Wird der Plan während des Termins geändert, ist die Anzeige spätestens nach einer Minute aktuell. Der Plan läuft nach Uhrzeit: Ist die Zeit eines Punkts um, bleibt die Restzeit kurz bei 0:00, bis der nächste Punkt erscheint.
 
