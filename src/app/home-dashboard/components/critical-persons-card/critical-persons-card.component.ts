@@ -30,9 +30,9 @@ export class CriticalPersonsCardComponent {
     });
   }
 
-  async load() {
+  async load(silent = false) {
     this.loadDone = false;
-    this.loading = true;
+    if (!silent) this.loading = true;
     const players = await this.db.getPlayers(true);
     this.criticalPersons = players.filter(p => p.isCritical);
     this.loading = false;
@@ -53,6 +53,9 @@ export class CriticalPersonsCardComponent {
       backdropDismiss: false,
     });
     await modal.present();
+    await modal.onWillDismiss();
+    // Problemfall kann im Modal gelöst oder die Person geändert worden sein
+    await this.load(true);
   }
 
   initials(player: Player): string {

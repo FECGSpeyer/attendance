@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.25",
+      "date": "20.10.2026",
+      "changes": [
+        "🐛 Dashboard: Ein Problemfall verschwindet jetzt sofort aus der Karte „Problemfälle“, sobald du ihn in der Person gelöst hast."
+      ]
+    },
+    {
       "version": "4.14.24",
       "date": "19.10.2026",
       "changes": [
