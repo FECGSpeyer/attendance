@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.30",
+      "date": "20.10.2026",
+      "changes": [
+        "⚡ Web-App: deutlich weniger Serveranfragen. Nach Updates wird nicht mehr alle 30 Sekunden gesucht, sondern beim Öffnen und Zurückkehren in den Tab sowie stündlich. Icons werden erst bei Bedarf geladen."
+      ]
+    },
+    {
       "version": "4.14.29",
       "date": "20.10.2026",
       "changes": [
