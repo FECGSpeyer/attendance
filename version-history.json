@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.28",
+      "date": "20.10.2026",
+      "changes": [
+        "🔧 iOS: Theme-Paket auf Version 1.1.0 festgesetzt, damit die App wieder mit Xcode 26 baut."
+      ]
+    },
+    {
       "version": "4.14.27",
       "date": "20.10.2026",
       "changes": [
