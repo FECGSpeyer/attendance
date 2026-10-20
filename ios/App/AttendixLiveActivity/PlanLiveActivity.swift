@@ -61,8 +61,8 @@ struct PlanLiveActivity: Widget {
 enum LiveColors {
     /// Attendix teal, lightened for the dark Live Activity background.
     static let accent = Color(red: 0.37, green: 0.72, blue: 0.75)
-    /// Close to the system's own track of a linear ProgressView, so all segments look alike.
-    static let track = Color.white.opacity(0.22)
+    /// Grey of the segments still to come, also drawn behind the running one.
+    static let track = Color.white.opacity(0.3)
     static let secondary = Color(white: 0.72)
     static let done = Color(red: 0.24, green: 0.81, blue: 0.56)
 }
@@ -203,6 +203,10 @@ private struct SegmentView: View {
             }
             .progressViewStyle(.linear)
             .tint(LiveColors.accent)
+            // The system track is almost invisible on the dark background: same grey as the later segments behind it.
+            .frame(height: 4)
+            .background(Capsule().fill(LiveColors.track))
+            .clipShape(Capsule())
         } else {
             Capsule().fill(done ? LiveColors.accent : LiveColors.track)
                 .frame(height: 4)

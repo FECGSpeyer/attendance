@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.33",
+      "date": "20.10.2026",
+      "changes": [
+        "🎨 iPhone: Der laufende Programmpunkt im Fortschrittsbalken hat wieder einen sichtbaren grauen Hintergrund."
+      ]
+    },
+    {
       "version": "4.14.32",
       "date": "20.10.2026",
       "changes": [
