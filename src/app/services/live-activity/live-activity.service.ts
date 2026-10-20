@@ -188,7 +188,7 @@ export class LiveActivityService {
       await this.saveToken('start', 'android');
     }
     if (Capacitor.getPlatform() === 'ios') {
-      // Builds before 4.14.30 don't have configure; they register tokens only while the app is open.
+      // Builds before 4.14.32 don't have configure; they register tokens only while the app is open.
       LiveActivity.configure({ url: environment.apiUrl, key: environment.apiKey }).catch(() => undefined);
     }
     try {

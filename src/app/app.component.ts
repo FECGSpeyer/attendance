@@ -17,6 +17,9 @@ import { OfflineQueueService } from './services/offline-queue/offline-queue.serv
 import { LiveActivityService } from './services/live-activity/live-activity.service';
 import { AudioPlayerService } from './services/audio-player/audio-player.service';
 
+const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
+const UPDATE_CHECK_MIN_GAP_MS = 5 * 60 * 1000;
+
 @Component({
     selector: 'app-root',
     templateUrl: 'app.component.html',
@@ -179,13 +182,20 @@ export class AppComponent {
           document.location.reload();
         });
 
-      // Check for updates every 30 seconds
-      setInterval(() => {
-        this.swUpdate.checkForUpdate();
-      }, 30000);
-
-      // Also check immediately on app start
-      this.swUpdate.checkForUpdate();
+      // A version check fetches ngsw.json from the CDN and is counted as a
+      // Vercel request, so don't poll on a short timer. Check on start, when
+      // the tab comes back into view, and hourly while it stays visible.
+      // Hidden tabs never check.
+      let lastCheck = 0;
+      const check = () => {
+        if (document.visibilityState !== 'visible') return;
+        if (Date.now() - lastCheck < UPDATE_CHECK_MIN_GAP_MS) return;
+        lastCheck = Date.now();
+        this.swUpdate.checkForUpdate().catch(err => console.warn('[SwUpdate] check failed', err));
+      };
+      document.addEventListener('visibilitychange', check);
+      setInterval(check, UPDATE_CHECK_INTERVAL_MS);
+      check();
     }
   }
 

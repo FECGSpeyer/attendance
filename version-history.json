@@ -1,10 +1,24 @@
 {
   "versions": [
     {
-      "version": "4.14.30",
+      "version": "4.14.32",
       "date": "20.10.2026",
       "changes": [
         "🐛 iPhone: Der laufende Ablaufplan springt beim Start jetzt auch dann zum ersten Punkt, wenn die App geschlossen ist, statt bei „Beginnt in 0:00“ stehen zu bleiben."
+      ]
+    },
+    {
+      "version": "4.14.31",
+      "date": "20.10.2026",
+      "changes": [
+        "🧹 Dashboard: Die Karte „Termine“ zeigt die Terminbeschreibung nicht mehr als rohen Text mit HTML-Tags an. Die Beschreibung findest du weiterhin im Termin selbst."
+      ]
+    },
+    {
+      "version": "4.14.30",
+      "date": "20.10.2026",
+      "changes": [
+        "⚡ Web-App: deutlich weniger Serveranfragen. Nach Updates wird nicht mehr alle 30 Sekunden gesucht, sondern beim Öffnen und Zurückkehren in den Tab sowie stündlich. Icons werden erst bei Bedarf geladen."
       ]
     },
     {

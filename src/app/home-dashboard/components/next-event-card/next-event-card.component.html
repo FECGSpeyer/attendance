@@ -37,20 +37,12 @@
             <span slot="end" class="row-meta">{{ relativeDays(nextEvent.date) }}</span>
           </ion-item>
 
-          @if (nextEvent.description || nextEvent.notes) {
+          @if (nextEvent.notes) {
             <div class="event-notes">
-              @if (nextEvent.description) {
-                <div class="note-line">
-                  <ion-icon name="information-circle-outline"></ion-icon>
-                  <span>{{ nextEvent.description }}</span>
-                </div>
-              }
-              @if (nextEvent.notes) {
-                <div class="note-line">
-                  <ion-icon name="document-text-outline"></ion-icon>
-                  <span>{{ nextEvent.notes }}</span>
-                </div>
-              }
+              <div class="note-line">
+                <ion-icon name="document-text-outline"></ion-icon>
+                <span>{{ nextEvent.notes }}</span>
+              </div>
             </div>
           }
 
