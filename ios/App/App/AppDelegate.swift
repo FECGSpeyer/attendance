@@ -12,6 +12,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         FirebaseApp.configure()
+        // Live Activity push tokens, also when iOS launches the app only in the background.
+        LiveActivityTokenReporter.shared.start()
         // Audio-Player: Wiedergabe im Hintergrund, bei gesperrtem Bildschirm und im Stumm-Modus
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
         return true

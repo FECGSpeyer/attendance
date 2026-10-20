@@ -4,6 +4,7 @@ import { App } from '@capacitor/app';
 import { ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { supabase } from '../base/supabase';
+import { environment } from 'src/environments/environment';
 import { DbService } from '../db.service';
 import { Role } from '../../utilities/constants';
 import { Attendance } from '../../utilities/interfaces';
@@ -185,6 +186,10 @@ export class LiveActivityService {
     if (Capacitor.getPlatform() === 'android') {
       // Tells the server this build can show live plan notifications (no ActivityKit token on Android).
       await this.saveToken('start', 'android');
+    }
+    if (Capacitor.getPlatform() === 'ios') {
+      // Builds before 4.14.30 don't have configure; they register tokens only while the app is open.
+      LiveActivity.configure({ url: environment.apiUrl, key: environment.apiKey }).catch(() => undefined);
     }
     try {
       const tokens = await LiveActivity.getTokens();

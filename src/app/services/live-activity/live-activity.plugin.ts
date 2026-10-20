@@ -23,6 +23,8 @@ export interface LiveActivityPlugin {
   endAll(): Promise<void>;
   list(): Promise<{ activities: (LiveActivityTarget & { id: string })[] }>;
   getTokens(): Promise<{ pushToStartToken?: string; activityTokens: LiveActivityTokenEvent[] }>;
+  /** iOS: lets the native side register update tokens itself while the app only runs in the background. */
+  configure(options: { url: string; key: string }): Promise<void>;
   addListener(event: 'pushToStartToken', listener: (e: { token: string }) => void): Promise<PluginListenerHandle>;
   addListener(event: 'activityToken', listener: (e: LiveActivityTokenEvent) => void): Promise<PluginListenerHandle>;
 }

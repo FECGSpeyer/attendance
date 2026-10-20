@@ -1,5 +1,6 @@
 import Foundation
 import Capacitor
+import UIKit
 #if canImport(ActivityKit)
 import ActivityKit
 #endif
@@ -19,17 +20,27 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "endAll", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "list", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getTokens", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "configure", returnType: CAPPluginReturnPromise),
     ]
 
-    /// Last known tokens, so JS can read them after it attached its listeners.
-    private var pushToStartToken: String?
-    private var activityTokens: [String: [String: Any]] = [:]
-    private var observing = false
-
     override public func load() {
-        if #available(iOS 16.2, *) {
-            startObserving()
+        let reporter = LiveActivityTokenReporter.shared
+        reporter.onPushToStartToken = { [weak self] token in
+            self?.notifyListeners("pushToStartToken", data: ["token": token], retainUntilConsumed: true)
         }
+        reporter.onActivityToken = { [weak self] payload in
+            self?.notifyListeners("activityToken", data: payload, retainUntilConsumed: true)
+        }
+        reporter.start()
+    }
+
+    /// Where the reporter sends update tokens while the app runs in the background.
+    @objc func configure(_ call: CAPPluginCall) {
+        guard let url = call.getString("url"), let key = call.getString("key") else {
+            return call.reject("url and key are required")
+        }
+        LiveActivityTokenReporter.shared.configure(url: url, key: key)
+        call.resolve()
     }
 
     @objc func isAvailable(_ call: CAPPluginCall) {
@@ -61,7 +72,7 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
             do {
                 let attributes = PlanActivityAttributes(attendanceId: attendanceId, planKey: planKey, title: title)
                 let activity = try Activity.request(attributes: attributes, content: content(for: state), pushType: .token)
-                observeTokens(of: activity)
+                LiveActivityTokenReporter.shared.observeTokens(of: activity)
                 call.resolve(["id": activity.id])
             } catch {
                 call.reject("Could not start Live Activity: \(error.localizedDescription)")
@@ -120,8 +131,9 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func getTokens(_ call: CAPPluginCall) {
-        var result: [String: Any] = ["activityTokens": Array(activityTokens.values)]
-        if let token = pushToStartToken { result["pushToStartToken"] = token }
+        let reporter = LiveActivityTokenReporter.shared
+        var result: [String: Any] = ["activityTokens": Array(reporter.activityTokens.values)]
+        if let token = reporter.pushToStartToken { result["pushToStartToken"] = token }
         call.resolve(result)
     }
 
@@ -154,6 +166,42 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
         return ActivityContent(state: state, staleDate: stale)
     }
 
+}
+
+/// Observes Live Activity push tokens from app launch on, also when iOS only
+/// wakes the app in the background after a push-to-start (no WebView then).
+/// Update tokens are sent straight to the `live-activity-token` Edge Function,
+/// so the server can move the activity on without the app being opened.
+final class LiveActivityTokenReporter {
+    static let shared = LiveActivityTokenReporter()
+
+    private static let urlKey = "liveActivity.apiUrl"
+    private static let apiKeyKey = "liveActivity.apiKey"
+    private static let startTokenKey = "liveActivity.pushToStartToken"
+
+    /// Last known tokens, so JS can read them after it attached its listeners.
+    private(set) var pushToStartToken: String?
+    private(set) var activityTokens: [String: [String: Any]] = [:]
+    var onPushToStartToken: ((String) -> Void)?
+    var onActivityToken: (([String: Any]) -> Void)?
+    private var observing = false
+    private var observedActivities = Set<String>()
+
+    private init() {
+        pushToStartToken = UserDefaults.standard.string(forKey: Self.startTokenKey)
+    }
+
+    func configure(url: String, key: String) {
+        UserDefaults.standard.set(url, forKey: Self.urlKey)
+        UserDefaults.standard.set(key, forKey: Self.apiKeyKey)
+    }
+
+    /// Called from AppDelegate on every launch and again by the plugin; runs once.
+    func start() {
+        guard #available(iOS 16.2, *) else { return }
+        DispatchQueue.main.async { self.startObserving() }
+    }
+
     @available(iOS 16.2, *)
     private func startObserving() {
         guard !observing else { return }
@@ -162,7 +210,7 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
             observeTokens(of: activity)
         }
         // Activities started by a push-to-start notification show up here.
-        Task {
+        Task { @MainActor in
             for await activity in Activity<PlanActivityAttributes>.activityUpdates {
                 // A push-to-start can race with a start from the open app: keep only the newest.
                 for other in Activity<PlanActivityAttributes>.activities where other.id != activity.id
@@ -174,32 +222,60 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
             }
         }
         if #available(iOS 17.2, *) {
-            Task {
+            Task { @MainActor in
                 for await data in Activity<PlanActivityAttributes>.pushToStartTokenUpdates {
-                    let token = hex(data)
+                    let token = Self.hex(data)
                     pushToStartToken = token
-                    notifyListeners("pushToStartToken", data: ["token": token], retainUntilConsumed: true)
+                    UserDefaults.standard.set(token, forKey: Self.startTokenKey)
+                    onPushToStartToken?(token)
                 }
             }
         }
     }
 
     @available(iOS 16.2, *)
-    private func observeTokens(of activity: Activity<PlanActivityAttributes>) {
-        Task {
-            for await data in activity.pushTokenUpdates {
-                let payload: [String: Any] = [
-                    "attendanceId": activity.attributes.attendanceId,
-                    "planKey": activity.attributes.planKey,
-                    "token": hex(data),
-                ]
-                activityTokens[activity.id] = payload
-                notifyListeners("activityToken", data: payload, retainUntilConsumed: true)
+    func observeTokens(of activity: Activity<PlanActivityAttributes>) {
+        DispatchQueue.main.async {
+            guard self.observedActivities.insert(activity.id).inserted else { return }
+            Task { @MainActor in
+                for await data in activity.pushTokenUpdates {
+                    let payload: [String: Any] = [
+                        "attendanceId": activity.attributes.attendanceId,
+                        "planKey": activity.attributes.planKey,
+                        "token": Self.hex(data),
+                    ]
+                    self.activityTokens[activity.id] = payload
+                    self.onActivityToken?(payload)
+                    self.upload(payload)
+                }
             }
         }
     }
 
-    private func hex(_ data: Data) -> String {
+    /// The server finds the user by this device's push-to-start token.
+    private func upload(_ payload: [String: Any]) {
+        guard let base = UserDefaults.standard.string(forKey: Self.urlKey),
+              let key = UserDefaults.standard.string(forKey: Self.apiKeyKey),
+              let startToken = pushToStartToken,
+              let url = URL(string: "\(base)/functions/v1/live-activity-token") else { return }
+        var body = payload
+        body["startToken"] = startToken
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(key, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        // Finish the request even if iOS only woke the app for this.
+        var task: UIBackgroundTaskIdentifier = .invalid
+        task = UIApplication.shared.beginBackgroundTask { UIApplication.shared.endBackgroundTask(task) }
+        URLSession.shared.dataTask(with: request) { _, _, _ in
+            DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(task) }
+        }.resume()
+    }
+
+    private static func hex(_ data: Data) -> String {
         data.map { String(format: "%02x", $0) }.joined()
     }
 }
