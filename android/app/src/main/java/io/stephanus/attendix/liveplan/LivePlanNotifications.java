@@ -32,6 +32,7 @@ public final class LivePlanNotifications {
     /** Notification.EXTRA_REQUEST_PROMOTED_ONGOING (API 36), as a literal so older compile SDKs work. */
     private static final String EXTRA_REQUEST_PROMOTED_ONGOING = "android.requestPromotedOngoing";
     private static final long TAIL_MS = 15 * 60 * 1000;
+    private static final int PROGRESS_MAX = 1000;
 
     private LivePlanNotifications() {}
 
@@ -113,15 +114,29 @@ public final class LivePlanNotifications {
                 break;
             default:
                 String subtitle = state.optString("subtitle", "");
+                double planStart = state.optDouble("planStart", 0);
+                double endsAt = state.optDouble("endsAt", 0);
+                // Header: plan name and position, followed by the countdown.
+                String position = "Punkt " + index + " von " + Math.max(total, index);
+                builder.setSubText(title.isEmpty() ? position : title + " · " + position);
+                // Collapsed: what follows. Expanded: until when, then what follows.
+                String body = "Bis " + clock(endsAt) + (subtitle.isEmpty() ? "" : " · " + subtitle);
                 builder
                     .setContentTitle(state.optString("title"))
-                    .setContentText(subtitle.isEmpty() ? nextLine : subtitle + " · " + nextLine)
+                    .setContentText(nextLine)
+                    .setStyle(new NotificationCompat.BigTextStyle().bigText(body + "\n" + nextLine))
                     .setOngoing(true)
                     .setUsesChronometer(true)
                     .setChronometerCountDown(true)
                     .setShowWhen(true)
-                    .setWhen((long) (state.optDouble("endsAt") * 1000))
-                    .setProgress(Math.max(total, 1), Math.max(index - 1, 0), false);
+                    .setWhen((long) (endsAt * 1000));
+                // Progress over the plan's time span, filled through the current item,
+                // so the first item already shows its share instead of an empty bar.
+                double span = planEnd - planStart;
+                if (span > 0) {
+                    int filled = (int) Math.round(Math.min(1, Math.max(0, (endsAt - planStart) / span)) * PROGRESS_MAX);
+                    builder.setProgress(PROGRESS_MAX, filled, false);
+                }
                 break;
         }
         if (!"ended".equals(phase)) {

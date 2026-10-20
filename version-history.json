@@ -5,7 +5,8 @@
       "date": "20.10.2026",
       "changes": [
         "🐛 Android: Keine doppelten leeren Ränder mehr über der Kopfzeile und unter der Tab-Leiste, und der Audio-Player liegt wieder über statt auf der Tab-Leiste.",
-        "🐛 Android: Der Hinweis „Verbindung wiederhergestellt“ erscheint nur noch, wenn die Verbindung wirklich weg war, nicht mehr bei jedem Wechsel zwischen WLAN und Mobilfunk."
+        "🐛 Android: Der Hinweis „Verbindung wiederhergestellt“ erscheint nur noch, wenn die Verbindung wirklich weg war, nicht mehr bei jedem Wechsel zwischen WLAN und Mobilfunk.",
+        "💄 Android: Die Benachrichtigung zum laufenden Ablaufplan ist aufgeräumt: oben Ablauf und „Punkt x von y“ mit Restzeit, darunter bis wann der Punkt läuft und was danach kommt, und der Balken zeigt den Fortschritt im ganzen Ablauf."
       ]
     },
     {
