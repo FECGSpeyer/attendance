@@ -4,7 +4,8 @@
       "version": "4.14.26",
       "date": "20.10.2026",
       "changes": [
-        "🐛 Android: Keine doppelten leeren Ränder mehr über der Kopfzeile und unter der Tab-Leiste, und der Audio-Player liegt wieder über statt auf der Tab-Leiste."
+        "🐛 Android: Keine doppelten leeren Ränder mehr über der Kopfzeile und unter der Tab-Leiste, und der Audio-Player liegt wieder über statt auf der Tab-Leiste.",
+        "🐛 Android: Der Hinweis „Verbindung wiederhergestellt“ erscheint nur noch, wenn die Verbindung wirklich weg war, nicht mehr bei jedem Wechsel zwischen WLAN und Mobilfunk."
       ]
     },
     {

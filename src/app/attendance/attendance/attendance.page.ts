@@ -524,6 +524,12 @@ export class AttendancePage implements OnInit, OnDestroy {
   async listenOnNetworkChanges(): Promise<void> {
     this.isOnline = (await Network.getStatus()).connected;
     Network.addListener('networkStatusChange', (status: ConnectionStatus) => {
+      // Android also fires this when only the connection type or network
+      // capabilities change (e.g. Wi-Fi ↔ mobile), so only react to a real
+      // online/offline transition.
+      if (status.connected === this.isOnline) {
+        return;
+      }
       this.isOnline = status.connected;
       Utils.showToast(status.connected ? 'Verbindung wiederhergestellt' : 'Keine Internetverbindung vorhanden', status.connected ? 'success' : 'danger');
       if (status.connected) {
