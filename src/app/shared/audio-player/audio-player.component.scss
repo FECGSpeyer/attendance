@@ -2,7 +2,7 @@
   position: fixed;
   // Matches the floating iOS tab bar offset (max(10px, safe-area - 12px)) + 54px bar height + gap,
   // so the player also clears the tab bar in mobile Safari where the safe area is 0.
-  bottom: calc(max(10px, env(safe-area-inset-bottom, 0px) - 12px) + 68px);
+  bottom: calc(max(10px, var(--ion-safe-area-bottom, 0px) - 12px) + 68px);
   left: 17px;
   right: 17px;
   z-index: 999;
@@ -20,7 +20,7 @@
 }
 
 :host-context(.md) .audio-player-bar {
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 64px);
+  bottom: calc(var(--ion-safe-area-bottom, 0px) + 64px);
   border-radius: 19px;
   left: 8px;
   right: 8px;

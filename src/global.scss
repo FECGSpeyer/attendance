@@ -434,11 +434,11 @@ ion-select-popover ion-list {
 // with controls at the very bottom add .tabbar-safe to their ion-content or
 // ion-footer (tab bar offset + bar height + gap).
 ion-tabs ion-content.ios.tabbar-safe {
-  --padding-bottom: calc(max(10px, env(safe-area-inset-bottom, 0px) - 12px) + 68px);
+  --padding-bottom: calc(max(10px, var(--ion-safe-area-bottom, 0px) - 12px) + 68px);
 }
 
 ion-tabs ion-footer.ios.tabbar-safe {
-  padding-bottom: calc(max(10px, env(safe-area-inset-bottom, 0px) - 12px) + 68px);
+  padding-bottom: calc(max(10px, var(--ion-safe-area-bottom, 0px) - 12px) + 68px);
 }
 
 // Fullscreen image viewer (app-image-viewer): edge-to-edge, transparent so

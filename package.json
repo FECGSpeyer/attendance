@@ -1,6 +1,6 @@
 {
   "name": "attendix",
-  "version": "4.14.25",
+  "version": "4.14.26",
   "author": "Matthias Eckstaedt",
   "homepage": "https://attendix.de/",
   "engines": {
@@ -49,7 +49,6 @@
     "@capacitor/network": "^8.0.0",
     "@capacitor/push-notifications": "^8.0.0",
     "@capacitor/status-bar": "^8.0.0",
-    "@capawesome/capacitor-android-edge-to-edge-support": "^8.0.8",
     "@capawesome/capacitor-badge": "^8.0.2",
     "@capawesome/capacitor-live-update": "^8.3.0",
     "@capgo/capacitor-media-session": "^8.1.3",
