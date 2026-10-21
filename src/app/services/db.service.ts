@@ -2849,7 +2849,7 @@ export class DbService {
   }
 
   async getSong(id: number, tenantId?: number): Promise<Song> {
-    return this.songSvc.getSong(id, tenantId ?? this.tenant().id);
+    return this.songSvc.getSong(id, tenantId ?? this.effectiveSongTenantId());
   }
 
   async addSong(song: Song): Promise<Song> {

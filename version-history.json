@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.37",
+      "date": "21.10.2026",
+      "changes": [
+        "🐛 Werk-Synchronisierung: Werke der Quellinstanz lassen sich jetzt auch in der synchronisierten Instanz öffnen."
+      ]
+    },
+    {
       "version": "4.14.36",
       "date": "21.10.2026",
       "changes": [
