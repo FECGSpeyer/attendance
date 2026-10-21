@@ -715,7 +715,7 @@ export class PersonPage implements OnInit, AfterViewInit {
           text: 'Ja',
           handler: async () => {
             try {
-              await this.db.removeUserFromTenant(this.player.appId);
+              await this.db.removeUserFromTenant(this.player.appId, false, this.player.id);
               await this.db.updatePlayer({
                 ...this.player,
                 email: null,
@@ -1678,7 +1678,7 @@ export class PersonPage implements OnInit, AfterViewInit {
               pending: false,
               left: new Date().toISOString(),
             });
-            await this.db.removeUserFromTenant(this.player.appId);
+            await this.db.removeUserFromTenant(this.player.appId, false, this.player.id);
             await this.db.informUserAboutReject(this.player.email, this.player.firstName);
 
             loading.dismiss();

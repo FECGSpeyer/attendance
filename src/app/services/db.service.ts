@@ -2448,11 +2448,16 @@ export class DbService {
     this.checkDemoRestriction();
     await this.playerSvc.removePlayer(player);
     if (player.appId) {
-      await this.removeEmailFromAuth(player.appId, player.email);
+      await this.removeEmailFromAuth(player.appId, player.email, false, player.id);
     }
   }
 
-  async removeUserFromTenant(appId: string, deleteAdmin: boolean = false): Promise<void> {
+  /**
+   * Removes the account's access (tenantUsers row) from the current tenant.
+   * Pass `personId` when unlinking a single person: if the same account is
+   * still linked to another active person in this tenant, access is kept.
+   */
+  async removeUserFromTenant(appId: string, deleteAdmin: boolean = false, personId?: number): Promise<void> {
     if (deleteAdmin) {
       const { error } = await supabase
         .from('tenantUsers')
@@ -2479,6 +2484,21 @@ export class DbService {
       return;
     }
 
+    if (personId !== undefined) {
+      const { data: otherPersons } = await supabase
+        .from('player')
+        .select('id')
+        .eq('tenantId', this.tenant().id)
+        .eq('appId', appId)
+        .is('left', null)
+        .neq('id', personId)
+        .limit(1);
+
+      if (otherPersons?.length) {
+        return;
+      }
+    }
+
     const { error } = await supabase
       .from('tenantUsers')
       .delete()
@@ -2490,8 +2510,8 @@ export class DbService {
     }
   }
 
-  async removeEmailFromAuth(appId: string, email: string, deleteAdmin: boolean = false): Promise<void> {
-    await this.removeUserFromTenant(appId, deleteAdmin);
+  async removeEmailFromAuth(appId: string, email: string, deleteAdmin: boolean = false, personId?: number): Promise<void> {
+    await this.removeUserFromTenant(appId, deleteAdmin, personId);
 
     if (await this.getAppIdByEmail(email, this.tenant().id)) {
       return;
@@ -2502,7 +2522,7 @@ export class DbService {
     this.checkDemoRestriction();
     let clearAppId = false;
     if (player.appId && player.email) {
-      await this.removeEmailFromAuth(player.appId, player.email);
+      await this.removeEmailFromAuth(player.appId, player.email, false, player.id);
       delete player.appId;
       clearAppId = true;
     }

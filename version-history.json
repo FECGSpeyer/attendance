@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.35",
+      "date": "21.10.2026",
+      "changes": [
+        "🐛 „Account entfernen“ bei einer Person nimmt dem Konto nicht mehr den Zugang zur Instanz, wenn es dort noch mit einer anderen Person verknüpft ist."
+      ]
+    },
+    {
       "version": "4.14.34",
       "date": "20.10.2026",
       "changes": [
