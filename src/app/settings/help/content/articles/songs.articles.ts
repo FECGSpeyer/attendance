@@ -38,4 +38,13 @@ export const SONGS_ARTICLES: HelpArticle[] = [
 
 Sind Partituren hinterlegt, gibt es zusätzlich die Gruppe "Dirigenten", die alle Partituren enthält. Das Gruppenverzeichnis ist auch verfügbar, wenn deine Instanz keine Werkkategorien verwendet.`,
   },
+  {
+    id: 'songs-sync',
+    title: 'Werke mit einer anderen Instanz teilen (Werk-Synchronisierung)',
+    categoryId: 'songs',
+    keywords: ['werk-synchronisierung', 'synchronisieren', 'quellinstanz', 'werke teilen', 'gemeinsame werke', 'werke zusammenführen', 'werk löschen'],
+    body: `Verknüpfte [[Instanz|Instanzen]] können eine gemeinsame Werkbibliothek nutzen. Als Super-Admin wählst du dafür unter "Organisation → Werk-Synchronisierung" eine Quellinstanz aus. Deine Instanz zeigt dann die Werke, Kategorien und Notendateien der Quellinstanz an, und alle Änderungen werden dort gespeichert. Termine und Historie bleiben pro Instanz getrennt.
+
+Wichtig beim Löschen: Ein Werk gibt es nur einmal für alle beteiligten Instanzen. Löschst du es, ist es überall weg, inklusive der Historie aller Instanzen. Attendix weist dich beim Löschen darauf hin und nennt die betroffenen Instanzen.`,
+  },
 ];

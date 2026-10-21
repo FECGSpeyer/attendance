@@ -763,9 +763,14 @@ export class SongPage implements OnInit {
   }
 
   async confirmDeleteSong() {
+    const syncedTenantNames = await this.getSyncedTenantNames();
+    const message = syncedTenantNames.length
+      ? `Die Werke werden mit ${syncedTenantNames.join(', ')} geteilt. Das Werk wird dort ebenfalls gelöscht, `
+        + 'inklusive der Historie aller beteiligten Instanzen. Soll das Werk wirklich gelöscht werden?'
+      : 'Soll das Werk wirklich gelöscht werden?';
     const alert = await this.alertController.create({
       header: 'Werk löschen',
-      message: 'Soll das Werk wirklich gelöscht werden?',
+      message,
       buttons: [
         {
           text: 'Abbrechen',
@@ -784,6 +789,23 @@ export class SongPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  /**
+   * Names of the other instances sharing this song library via Werk-Synchronisierung
+   * (the source instance and every instance using the same source).
+   */
+  private async getSyncedTenantNames(): Promise<string[]> {
+    const tenant = this.db.tenant();
+    const sourceId = tenant.song_source_tenant_id ?? tenant.id;
+    try {
+      const linked = await this.db.getLinkedTenants();
+      return linked
+        .filter(t => t.id === sourceId || t.song_source_tenant_id === sourceId)
+        .map(t => t.shortName);
+    } catch {
+      return tenant.song_source_tenant_id ? ['der Quellinstanz'] : [];
+    }
   }
 
   getCategoryName(categoryId: string | undefined): string {

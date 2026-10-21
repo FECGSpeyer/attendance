@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.36",
+      "date": "21.10.2026",
+      "changes": [
+        "⚠️ Werk löschen bei Werk-Synchronisierung: Attendix warnt jetzt, dass das Werk auch in den verknüpften Instanzen gelöscht wird, inklusive deren Historie."
+      ]
+    },
+    {
       "version": "4.14.35",
       "date": "21.10.2026",
       "changes": [
