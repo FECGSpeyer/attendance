@@ -153,8 +153,8 @@ Instanzspezifische [[Zusatzfeld|Zusatzfelder]] bleiben daneben bestehen und gelt
     id: 'other-files',
     title: 'Dateiablage',
     categoryId: 'other',
-    keywords: ['dateien', 'ordner', 'upload', 'hochladen', 'aufnahmen', 'dokumente', 'direktlink', 'link teilen', 'files'],
-    body: `In der Dateiablage legt deine Instanz gemeinsame Dateien in Ordnern ab, z. B. Aufnahmen, Dokumente oder Bilder. Du findest sie unter Einstellungen → Dateiablage. Die Funktion ist nicht in jeder Instanz freigeschaltet; [[Bewerber]] haben keinen Zugriff.
+    keywords: ['dateien', 'ordner', 'upload', 'hochladen', 'aufnahmen', 'dokumente', 'direktlink', 'link teilen', 'files', 'freischalten', 'aktivieren', 'einschalten'],
+    body: `In der Dateiablage legt deine Instanz gemeinsame Dateien in Ordnern ab, z. B. Aufnahmen, Dokumente oder Bilder. Du findest sie unter Einstellungen → Dateiablage. Die Funktion ist nicht in jeder Instanz freigeschaltet: Das Attendix-Team schaltet sie je Instanz ein oder aus. Ist sie aktiv, sehen [[Administrator|Administratoren]], [[Verantwortlicher|Verantwortliche]] und Helfer die Dateiablage; auf Wunsch kann sie zusätzlich für alle Mitglieder freigegeben werden. [[Bewerber]] haben nie Zugriff. Möchtest du die Dateiablage für deine Instanz nutzen, melde dich über "Hilfe & Feedback".
 
 - **Hochladen und Ordner anlegen** dürfen [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]]. Beides findest du im Menü (drei Punkte oben rechts).
 - **Sortieren** nach Name, Änderungsdatum oder Dateigröße, auf- oder absteigend, ebenfalls über das Menü.

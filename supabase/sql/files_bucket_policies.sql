@@ -2,13 +2,13 @@
 -- Storage RLS policies for the `files` bucket (Dateiablage)
 -- Object keys are prefixed with the tenant id: `<tenantId>/<path>`.
 --
+-- Only tenants with tenants.files_enabled = true (see add_tenant_files_toggle.sql).
 -- Read (SELECT):
 --   * Admin (1), Verantwortlicher (5), Helfer (4), Stimmführer-Helfer (9) of the tenant
---   * In shared tenants (currently 194) every member except Bewerber (7) / None (99)
+--   * In tenants with files_shared = true every member except Bewerber (7) / None (99)
 -- Write (INSERT/UPDATE/DELETE): only Admin (1) and Verantwortlicher (5).
 --
--- Keep the shared tenant list in sync with FILES_SHARED_TENANT_IDS
--- in src/app/utilities/constants.ts.
+-- Keep in sync with DbService.canAccessFiles() in src/app/services/db.service.ts.
 --
 -- Run in the Supabase dashboard SQL editor (needs the owner of storage.objects).
 -- Idempotent: safe to re-run.
@@ -25,11 +25,12 @@ CREATE POLICY "files_select_tenant_members"
     AND EXISTS (
       SELECT 1
       FROM "tenantUsers" tu
+      JOIN tenants t ON t.id = tu."tenantId" AND t.files_enabled
       WHERE tu."tenantId" = split_part(objects.name, '/', 1)::integer
         AND tu."userId" = auth.uid()::text
         AND (
           tu.role = ANY (ARRAY[1, 5, 4, 9])
-          OR (tu."tenantId" = ANY (ARRAY[194]) AND tu.role <> ALL (ARRAY[7, 99]))
+          OR (t.files_shared AND tu.role <> ALL (ARRAY[7, 99]))
         )
     )
   );
@@ -44,6 +45,7 @@ CREATE POLICY "files_insert_tenant_admin_responsible"
     AND EXISTS (
       SELECT 1
       FROM "tenantUsers" tu
+      JOIN tenants t ON t.id = tu."tenantId" AND t.files_enabled
       WHERE tu."tenantId" = split_part(objects.name, '/', 1)::integer
         AND tu."userId" = auth.uid()::text
         AND tu.role = ANY (ARRAY[1, 5])
@@ -60,6 +62,7 @@ CREATE POLICY "files_update_tenant_admin_responsible"
     AND EXISTS (
       SELECT 1
       FROM "tenantUsers" tu
+      JOIN tenants t ON t.id = tu."tenantId" AND t.files_enabled
       WHERE tu."tenantId" = split_part(objects.name, '/', 1)::integer
         AND tu."userId" = auth.uid()::text
         AND tu.role = ANY (ARRAY[1, 5])
@@ -71,6 +74,7 @@ CREATE POLICY "files_update_tenant_admin_responsible"
     AND EXISTS (
       SELECT 1
       FROM "tenantUsers" tu
+      JOIN tenants t ON t.id = tu."tenantId" AND t.files_enabled
       WHERE tu."tenantId" = split_part(objects.name, '/', 1)::integer
         AND tu."userId" = auth.uid()::text
         AND tu.role = ANY (ARRAY[1, 5])
@@ -87,6 +91,7 @@ CREATE POLICY "files_delete_tenant_admin_responsible"
     AND EXISTS (
       SELECT 1
       FROM "tenantUsers" tu
+      JOIN tenants t ON t.id = tu."tenantId" AND t.files_enabled
       WHERE tu."tenantId" = split_part(objects.name, '/', 1)::integer
         AND tu."userId" = auth.uid()::text
         AND tu.role = ANY (ARRAY[1, 5])

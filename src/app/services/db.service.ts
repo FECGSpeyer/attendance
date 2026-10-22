@@ -4,7 +4,7 @@ import { AlertController, Platform } from '@ionic/angular/lazy';
 import { SupabaseClient, User } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
 import { environment } from 'src/environments/environment';
-import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SUPER_DEVELOPER_EMAIL, SupabaseTable, FILES_SHARED_TENANT_IDS } from '../utilities/constants';
+import { AttendanceStatus, DEFAULT_IMAGE, PlayerHistoryType, Role, SUPER_DEVELOPER_EMAIL, SupabaseTable } from '../utilities/constants';
 import { Attendance, ExtraField, FieldSelection, History, Group, Person, Plan, Player, PlayerHistoryEntry, Song, Teacher, Tenant, TenantUser, Viewer, PersonAttendance, NotificationConfig, Parent, Admin, Organisation, AttendanceType, ShiftPlan, ShiftDefinition, Church, SongCategory, CrossTenantPersonAttendance, TenantRolePermission, PlayerAbsence, DashboardCardConfig, DEFAULT_DASHBOARD_CARDS, AgendaItem, AgendaItemHistoryEntry, Protocol, ProtocolOutcome, Task } from '../utilities/interfaces';
 import { isInAnyCircle, isTeamLeaderRole, isTeamOrgEnabled } from '../team-organization/team-org.utils';
 import { SongFile } from '../utilities/interfaces';
@@ -568,22 +568,29 @@ export class DbService {
     return this.tenantUser()?.email?.endsWith('developer@attendix.de') || this.user?.email?.toLocaleLowerCase().endsWith('erwinfast98@gmail.com') || tenantId === 12;
   }
 
-  // Dateiablage: Beta-Instanzen für Admins/Verantwortliche/Helfer, freigegebene Instanzen
-  // für alle außer Bewerber. Muss mit den Storage-Policies des Buckets `files` übereinstimmen.
+  // Dateiablage: nur in Instanzen mit files_enabled (schaltet der Super-Developer in den
+  // Einstellungen). Admins/Verantwortliche/Helfer haben Zugriff, mit files_shared alle außer
+  // Bewerber. Muss mit den Storage-Policies des Buckets `files` übereinstimmen.
   // Ohne tenantId gilt die aktuelle Instanz, sonst die Rolle in der angegebenen Instanz.
   canAccessFiles(tenantId: number = this.tenant()?.id): boolean {
-    const role = tenantId === this.tenant()?.id
+    const isCurrent = tenantId === this.tenant()?.id;
+    const tenant = isCurrent ? this.tenant() : this.tenants().find((t) => t.id === tenantId);
+    if (!tenant?.files_enabled) {
+      return false;
+    }
+
+    const role = isCurrent
       ? this.tenantUser()?.role
       : this.tenantUsers().find((tu) => tu.tenantId === tenantId)?.role;
     if (role === undefined || role === null) {
       return false;
     }
 
-    if (FILES_SHARED_TENANT_IDS.includes(tenantId)) {
+    if (tenant.files_shared) {
       return ![Role.APPLICANT, Role.NONE].includes(role);
     }
 
-    return this.isBeta(tenantId) && [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER, Role.VOICE_LEADER_HELPER].includes(role);
+    return [Role.ADMIN, Role.RESPONSIBLE, Role.HELPER, Role.VOICE_LEADER_HELPER].includes(role);
   }
 
   canEditFiles(): boolean {

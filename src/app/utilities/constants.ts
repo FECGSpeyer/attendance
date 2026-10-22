@@ -163,9 +163,5 @@ export const DEFAULT_LATE_REASONS = [
 
 export const SUPER_DEVELOPER_EMAIL = 'developer@attendix.de';
 
-// Instanzen, in denen die Dateiablage für alle Mitglieder (außer Bewerber) freigegeben ist.
-// Muss mit den Storage-Policies des Buckets `files` übereinstimmen (supabase/sql/files_bucket_policies.sql).
-export const FILES_SHARED_TENANT_IDS: number[] = [194];
-
 export const DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT = 'Du bist bei diesem Termin nicht dabei.';
 

@@ -69,6 +69,8 @@ export interface Tenant {
   absence_reasons?: string[];
   late_reasons?: string[];
   plan_block_templates?: PlanBlockTemplate[];
+  files_enabled?: boolean;
+  files_shared?: boolean;
 }
 
 export interface ExtraField {

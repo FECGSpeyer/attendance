@@ -351,6 +351,26 @@
     </ion-item-group>
   </ion-list>
 
+  @if (db.isSuperDeveloper()) {
+    <ion-list [inset]="true">
+      <ion-list-header><ion-label>Super-Developer</ion-label></ion-list-header>
+      <ion-item-group>
+        <ion-item>
+          <ion-toggle
+            helperText="Schaltet die Dateiablage für diese Instanz frei. Zugriff haben Admins, Verantwortliche und Helfer."
+            [(ngModel)]="filesEnabled">Dateiablage</ion-toggle>
+        </ion-item>
+        @if (filesEnabled) {
+          <ion-item>
+            <ion-toggle
+              helperText="Alle Mitglieder außer Bewerber können die Dateiablage lesen. Hochladen bleibt Admins und Verantwortlichen vorbehalten."
+              [(ngModel)]="filesShared">Dateiablage für alle Mitglieder</ion-toggle>
+          </ion-item>
+        }
+      </ion-item-group>
+    </ion-list>
+  }
+
   @if (db.isBeta()) {
     <ion-list [inset]="true">
       <ion-list-header>
