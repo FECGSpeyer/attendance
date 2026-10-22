@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.38",
+      "date": "22.10.2026",
+      "changes": [
+        "📁 Dateiablage: Das Attendix-Team kann die Dateiablage jetzt je Instanz ein- und ausschalten und für alle Mitglieder freigeben."
+      ]
+    },
+    {
       "version": "4.14.37",
       "date": "21.10.2026",
       "changes": [
