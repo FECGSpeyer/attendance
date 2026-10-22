@@ -189,6 +189,58 @@ export class FilesPage implements OnInit {
     return this.db.tenant()?.files_max_bytes ?? null;
   }
 
+  /** Ab 80 % Belegung bieten wir an, mehr Speicher anzufragen. */
+  get isStorageAlmostFull(): boolean {
+    const maxBytes = this.maxBytes;
+    return maxBytes !== null && this.usedBytes !== null && this.usedBytes >= maxBytes * 0.8;
+  }
+
+  get storageStatusLabel(): string {
+    if (!this.isStorageAlmostFull) {
+      return '';
+    }
+    return (this.usedBytes ?? 0) >= (this.maxBytes ?? 0) ? ' · voll' : ' · fast voll';
+  }
+
+  // Schickt die Anfrage als Hilfe-Frage an den Attendix-Admin (wie "Feedback geben").
+  async requestMoreStorage(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Mehr Speicher anfragen',
+      message: 'Die Anfrage geht an den Attendix-Admin. Er meldet sich bei dir.',
+      inputs: [{
+        type: 'textarea',
+        name: 'note',
+        placeholder: 'Wie viel Speicher braucht ihr ungefähr? (optional)',
+      }],
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Senden',
+          handler: async (data: { note?: string }) => {
+            const tenant = this.db.tenant();
+            const usage = this.maxBytes !== null
+              ? `${this.formatFileSize(this.usedBytes ?? 0)} von ${this.formatFileSize(this.maxBytes)}`
+              : this.formatFileSize(this.usedBytes ?? 0);
+            const message = [
+              'Anfrage: Mehr Speicher für die Dateiablage',
+              `Instanz: ${tenant.longName} (ID ${tenant.id})`,
+              `Belegt: ${usage}`,
+              data?.note?.trim() ? `Nachricht: ${data.note.trim()}` : '',
+            ].filter(Boolean).join('\n');
+
+            try {
+              await this.db.sendQuestion(message, '');
+              Utils.showToast('Deine Anfrage wurde gesendet. Wir melden uns so schnell wie möglich.', 'success');
+            } catch (error: any) {
+              Utils.showToast(`Fehler beim Senden der Anfrage: ${error?.message || error}`, 'danger');
+            }
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
   async loadUsage(): Promise<void> {
     try {
       this.usedBytes = await this.filesSvc.getUsedBytes(this.db.tenant().id);
@@ -606,8 +658,11 @@ export class FilesPage implements OnInit {
 
     const alert = await this.alertController.create({
       header: 'Speicher voll',
-      message: `Für diesen Upload werden ${this.formatFileSize(neededBytes)} benötigt, frei sind noch ${this.formatFileSize(freeBytes)} von ${this.formatFileSize(maxBytes)}. Lösche nicht mehr benötigte Dateien oder melde dich beim Attendix-Admin, um mehr Speicher zu bekommen.`,
-      buttons: ['OK'],
+      message: `Für diesen Upload werden ${this.formatFileSize(neededBytes)} benötigt, frei sind noch ${this.formatFileSize(freeBytes)} von ${this.formatFileSize(maxBytes)}. Lösche nicht mehr benötigte Dateien oder frage mehr Speicher an.`,
+      buttons: [
+        { text: 'OK', role: 'cancel' },
+        { text: 'Mehr Speicher anfragen', handler: () => { void this.requestMoreStorage(); } },
+      ],
     });
     await alert.present();
     return false;

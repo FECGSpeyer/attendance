@@ -23,42 +23,34 @@
       </ion-item>
     </ion-item-group>
 
-    <ion-list-header><ion-label>Instanz: {{ db.tenant()?.longName }}</ion-label></ion-list-header>
+    <ion-list-header><ion-label>Dateiablage: {{ db.tenant()?.longName }}</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item>
         <ion-toggle
-          helperText="Schaltet die Dateiablage für diese Instanz frei. Zugriff haben Admins, Verantwortliche und Helfer."
+          helperText="Alle Mitglieder außer Bewerber können die Dateiablage lesen. Hochladen bleibt Admins und Verantwortlichen vorbehalten."
           [disabled]="isSaving"
-          [(ngModel)]="filesEnabled" (ionChange)="saveFiles()">Dateiablage</ion-toggle>
+          [(ngModel)]="filesShared" (ionChange)="saveFiles()">Dateiablage für alle Mitglieder</ion-toggle>
       </ion-item>
-      @if (filesEnabled) {
+      <ion-item>
+        <ion-input
+          label="Max. Speicher (GB)"
+          labelPlacement="stacked"
+          type="number"
+          inputmode="decimal"
+          min="0"
+          placeholder="Unbegrenzt"
+          helperText="Leer lassen für unbegrenzt. Neue Instanzen starten mit 5 GB."
+          [disabled]="isSaving"
+          [(ngModel)]="filesMaxGb"
+          (ionBlur)="saveFilesLimit()"
+          (keyup.enter)="saveFilesLimit()">
+        </ion-input>
+      </ion-item>
+      @if (usedGb !== null) {
         <ion-item>
-          <ion-toggle
-            helperText="Alle Mitglieder außer Bewerber können die Dateiablage lesen. Hochladen bleibt Admins und Verantwortlichen vorbehalten."
-            [disabled]="isSaving"
-            [(ngModel)]="filesShared" (ionChange)="saveFiles()">Dateiablage für alle Mitglieder</ion-toggle>
+          <ion-label>Aktuell belegt</ion-label>
+          <ion-note slot="end">{{ usedGb | number:'1.0-2' }} GB</ion-note>
         </ion-item>
-        <ion-item>
-          <ion-input
-            label="Max. Speicher (GB)"
-            labelPlacement="stacked"
-            type="number"
-            inputmode="decimal"
-            min="0"
-            placeholder="Unbegrenzt"
-            helperText="Leer lassen für unbegrenzt. Neue Instanzen starten mit 5 GB."
-            [disabled]="isSaving"
-            [(ngModel)]="filesMaxGb"
-            (ionBlur)="saveFilesLimit()"
-            (keyup.enter)="saveFilesLimit()">
-          </ion-input>
-        </ion-item>
-        @if (usedGb !== null) {
-          <ion-item>
-            <ion-label>Aktuell belegt</ion-label>
-            <ion-note slot="end">{{ usedGb | number:'1.0-2' }} GB</ion-note>
-          </ion-item>
-        }
       }
     </ion-item-group>
   </ion-list>

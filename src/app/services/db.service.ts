@@ -568,17 +568,13 @@ export class DbService {
     return this.tenantUser()?.email?.endsWith('developer@attendix.de') || tenantId === 12;
   }
 
-  // Dateiablage: nur in Instanzen mit files_enabled (schaltet der Super-Developer in den
-  // Einstellungen). Admins/Verantwortliche/Helfer haben Zugriff, mit files_shared alle außer
-  // Bewerber. Muss mit den Storage-Policies des Buckets `files` übereinstimmen.
+  // Dateiablage: in jeder Instanz für Admins/Verantwortliche/Helfer, mit files_shared für
+  // alle außer Bewerber. Der Speicher ist je Instanz über files_max_bytes begrenzt.
+  // Muss mit den Storage-Policies des Buckets `files` übereinstimmen.
   // Ohne tenantId gilt die aktuelle Instanz, sonst die Rolle in der angegebenen Instanz.
   canAccessFiles(tenantId: number = this.tenant()?.id): boolean {
     const isCurrent = tenantId === this.tenant()?.id;
     const tenant = isCurrent ? this.tenant() : this.tenants().find((t) => t.id === tenantId);
-    if (!tenant?.files_enabled) {
-      return false;
-    }
-
     const role = isCurrent
       ? this.tenantUser()?.role
       : this.tenantUsers().find((tu) => tu.tenantId === tenantId)?.role;
@@ -586,7 +582,7 @@ export class DbService {
       return false;
     }
 
-    if (tenant.files_shared) {
+    if (tenant?.files_shared) {
       return ![Role.APPLICANT, Role.NONE].includes(role);
     }
 

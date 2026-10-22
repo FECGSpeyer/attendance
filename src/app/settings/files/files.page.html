@@ -78,10 +78,16 @@
   @if (canEditEntries && usedBytes !== null) {
   <div class="storage-usage">
     <ion-note>
-      Speicher: {{ formatFileSize(usedBytes) }}{{ maxBytes !== null ? ' von ' + formatFileSize(maxBytes) : '' }} belegt
+      Speicher: {{ formatFileSize(usedBytes) }}{{ maxBytes !== null ? ' von ' + formatFileSize(maxBytes) : '' }} belegt{{ storageStatusLabel }}
     </ion-note>
     @if (maxBytes !== null) {
     <ion-progress-bar [value]="usedBytes / maxBytes" [color]="usedBytes >= maxBytes * 0.9 ? 'danger' : 'primary'"></ion-progress-bar>
+    }
+    @if (isStorageAlmostFull) {
+    <ion-button size="small" fill="clear" class="storage-request" (click)="requestMoreStorage()">
+      <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+      Mehr Speicher anfragen
+    </ion-button>
     }
   </div>
   }

@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.15.0",
+      "date": "22.10.2026",
+      "changes": [
+        "📁 Dateiablage für alle: Jede Instanz hat jetzt eine eigene Dateiablage mit 5 GB Speicher (Einstellungen → Dateiablage).",
+        "💾 Ist der Speicher fast voll, kannst du direkt in der Dateiablage mehr Speicher anfragen."
+      ]
+    },
+    {
       "version": "4.14.43",
       "date": "22.10.2026",
       "changes": [
