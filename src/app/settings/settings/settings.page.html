@@ -540,6 +540,25 @@
   </ion-list>
   }
 
+  <!-- Allgemeine Instanzen haben keinen Block "Werke & Proben", die Dateiablage steht dann allein. -->
+  @if (isGeneral && db.canAccessFiles()) {
+  <ion-list [inset]="true" class="category-list">
+    <ion-list-header>
+      <ion-label>
+        <ion-icon name="folder-outline" class="header-icon"></ion-icon>
+        Dateien
+      </ion-label>
+    </ion-list-header>
+    <ion-item-group>
+      <ion-item routerLink="files" button lines="none">
+        <ion-icon name="folder-outline" slot="start"></ion-icon>
+        <ion-label>Dateiablage</ion-label>
+        <ion-badge slot="end" color="success">NEU</ion-badge>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+  }
+
   <!-- ==================== PLANUNG (inkl. Teamorganisation) ==================== -->
   @let showPlanning = isAdmin && !isApplicant;
   @let showTeam = db.teamOrgEnabled() && (db.isTeamLeader() || db.inTeamCircle() || hasOwnTasks);
