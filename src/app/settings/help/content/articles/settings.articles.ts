@@ -12,8 +12,8 @@ export const SETTINGS_ARTICLES: HelpArticle[] = [
     id: 'settings-roles',
     title: 'Rollenrechte konfigurieren',
     categoryId: 'settings',
-    keywords: ['rollenrechte', 'berechtigungen einstellen', 'sichtbarkeit'],
-    body: `Unter "Einstellungen → Rollenrechte" legst du für jede [[Rolle]] fest, was sie sehen und bearbeiten darf, z. B. ob [[Helfer]] Notizen zu Personen sehen dürfen oder ob eine [[Checkliste]] für [[Mitglied|Mitglieder]] sichtbar ist.`,
+    keywords: ['rollenrechte', 'berechtigungen einstellen', 'sichtbarkeit', 'dateiablage freigeben'],
+    body: `Unter "Einstellungen → Rollenrechte" legst du für jede [[Rolle]] fest, was sie sehen und bearbeiten darf, z. B. ob [[Helfer]] Notizen zu Personen sehen dürfen oder ob eine [[Checkliste]] für [[Mitglied|Mitglieder]] sichtbar ist. Als [[Administrator]] gibst du dort außerdem mit "Dateiablage für alle Mitglieder" die Dateiablage für alle Mitglieder frei.`,
   },
   {
     id: 'settings-notifications',

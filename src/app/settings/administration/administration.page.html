@@ -23,14 +23,8 @@
       </ion-item>
     </ion-item-group>
 
-    <ion-list-header><ion-label>Dateiablage: {{ db.tenant()?.longName }}</ion-label></ion-list-header>
+    <ion-list-header><ion-label>Speicher Dateiablage: {{ db.tenant()?.longName }}</ion-label></ion-list-header>
     <ion-item-group>
-      <ion-item>
-        <ion-toggle
-          helperText="Alle Mitglieder außer Bewerber können die Dateiablage lesen. Hochladen bleibt Admins und Verantwortlichen vorbehalten."
-          [disabled]="isSaving"
-          [(ngModel)]="filesShared" (ionChange)="saveFiles()">Dateiablage für alle Mitglieder</ion-toggle>
-      </ion-item>
       <ion-item>
         <ion-input
           label="Max. Speicher (GB)"

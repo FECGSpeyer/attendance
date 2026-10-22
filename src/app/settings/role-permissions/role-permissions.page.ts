@@ -19,6 +19,8 @@ interface RoleSection {
 })
 export class RolePermissionsPage implements OnInit {
   public roleSections: RoleSection[] = [];
+  public filesShared = false;
+  public canEditFilesShared = false;
   private originalState = '';
 
   @HostListener('window:beforeunload', ['$event'])
@@ -50,11 +52,15 @@ export class RolePermissionsPage implements OnInit {
       permission: this.db.getPermissionForRole(role),
     }));
 
+    this.filesShared = this.db.tenant()?.files_shared || false;
+    // Freigabe der Dateiablage: nur Admins (DB-Trigger protect_tenant_files_flags prüft das).
+    this.canEditFilesShared = this.db.tenantUser()?.role === Role.ADMIN;
+
     this.originalState = this.getCurrentStateJson();
   }
 
   private getCurrentStateJson(): string {
-    return JSON.stringify(this.roleSections.map(s => ({
+    return JSON.stringify({ filesShared: this.filesShared, roles: this.roleSections.map(s => ({
       role: s.role,
       attendance_all_groups: s.permission?.attendance_all_groups,
       attendance_create: s.permission?.attendance_create,
@@ -62,7 +68,7 @@ export class RolePermissionsPage implements OnInit {
       checklist_view: s.permission?.checklist_view,
       player_self_pause: s.permission?.player_self_pause,
       player_planned_absence: s.permission?.player_planned_absence,
-    })));
+    })) });
   }
 
   hasUnsavedChanges(): boolean {
@@ -123,6 +129,9 @@ export class RolePermissionsPage implements OnInit {
             player_planned_absence: section.permission.player_planned_absence,
           });
         }
+      }
+      if (this.canEditFilesShared && this.filesShared !== (this.db.tenant()?.files_shared || false)) {
+        await this.db.updateTenantData({ files_shared: this.filesShared });
       }
       this.markAsSaved();
       Utils.showToast('Rollenberechtigungen gespeichert', 'success');

@@ -15,7 +15,6 @@ const GB = 1024 * 1024 * 1024;
   standalone: false,
 })
 export class AdministrationPage implements OnInit {
-  public filesShared = false;
   public isSaving = false;
   public filesMaxGb: number | null = null;
   public usedGb: number | null = null;
@@ -29,7 +28,6 @@ export class AdministrationPage implements OnInit {
   ) {}
 
   async ngOnInit() {
-    this.filesShared = this.db.tenant()?.files_shared || false;
     this.filesMaxGb = this.toGb(this.db.tenant()?.files_max_bytes);
     this.filesSvc.getUsedBytes(this.db.tenant().id)
       .then((bytes) => this.usedGb = this.toGb(bytes))
@@ -60,20 +58,6 @@ export class AdministrationPage implements OnInit {
       Utils.showToast(bytes === null ? 'Speicher: unbegrenzt' : `Speicherlimit: ${gb} GB`, 'success');
     } catch {
       this.filesMaxGb = this.toGb(this.db.tenant()?.files_max_bytes);
-    } finally {
-      this.isSaving = false;
-    }
-  }
-
-  async saveFiles() {
-    if (this.isSaving) { return; }
-    this.isSaving = true;
-    try {
-      // DB-Trigger erlaubt die Änderung nur developer@attendix.de.
-      await this.db.updateTenantData({ files_shared: this.filesShared });
-      Utils.showToast('Dateiablage gespeichert', 'success');
-    } catch {
-      this.filesShared = this.db.tenant()?.files_shared || false;
     } finally {
       this.isSaving = false;
     }

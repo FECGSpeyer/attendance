@@ -156,7 +156,7 @@ Instanzspezifische [[Zusatzfeld|Zusatzfelder]] bleiben daneben bestehen und gelt
     keywords: ['dateien', 'ordner', 'upload', 'hochladen', 'aufnahmen', 'dokumente', 'direktlink', 'link teilen', 'files', 'freigeben', 'alle mitglieder', 'speicher', 'speicherplatz', 'limit', 'voll', 'gb', 'mehr speicher', 'anfragen'],
     body: `In der Dateiablage legt deine Instanz gemeinsame Dateien in Ordnern ab, z. B. Aufnahmen, Dokumente oder Bilder. Du findest sie unter Einstellungen → Dateiablage.
 
-**Wer sieht sie?** Die Dateiablage gibt es in jeder Instanz. [[Administrator|Administratoren]], [[Verantwortlicher|Verantwortliche]] und Helfer sehen sie immer. Auf Wunsch wird sie zusätzlich für alle Mitglieder freigegeben; melde dich dafür beim Attendix-Admin unter Einstellungen → Feedback geben. [[Bewerber]] haben nie Zugriff.
+**Wer sieht sie?** Die Dateiablage gibt es in jeder Instanz. [[Administrator|Administratoren]], [[Verantwortlicher|Verantwortliche]] und Helfer sehen sie immer. Ein [[Administrator]] kann sie unter Einstellungen → Rollen & Berechtigungen mit „Dateiablage für alle Mitglieder“ zusätzlich für alle Mitglieder freigeben. [[Bewerber]] haben nie Zugriff.
 
 **Speicherplatz:** Jede Instanz hat ein Speicherlimit, standardmäßig 5 GB. Administratoren und Verantwortliche sehen oben in der Dateiablage, wie viel davon belegt ist. Ab 80 % Belegung erscheint dort "Mehr Speicher anfragen". Damit schickst du dem Attendix-Admin eine Anfrage, optional mit einer Nachricht, wie viel ihr braucht. Reicht der freie Platz für einen Upload nicht, wird er nicht gestartet, und du kannst direkt aus dem Hinweis mehr Speicher anfragen oder nicht mehr benötigte Dateien löschen.
 

@@ -5,7 +5,8 @@
       "date": "22.10.2026",
       "changes": [
         "📁 Dateiablage für alle: Jede Instanz hat jetzt eine eigene Dateiablage mit 5 GB Speicher (Einstellungen → Dateiablage).",
-        "💾 Ist der Speicher fast voll, kannst du direkt in der Dateiablage mehr Speicher anfragen."
+        "💾 Ist der Speicher fast voll, kannst du direkt in der Dateiablage mehr Speicher anfragen.",
+        "🔐 Admins legen unter Rollen & Berechtigungen fest, ob alle Mitglieder die Dateiablage sehen."
       ]
     },
     {

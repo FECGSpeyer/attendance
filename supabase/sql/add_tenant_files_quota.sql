@@ -3,7 +3,7 @@
 --
 -- tenants.files_max_bytes: maximale Belegung im Bucket `files` (NULL = unbegrenzt).
 -- Standard 5 GB für neue Instanzen; GoS (12) und Mus. Dienst (194) unbegrenzt.
--- Nur der Super-Developer darf den Wert ändern (Trigger protect_tenant_files_flags).
+-- Nur der Super-Developer darf den Wert ändern (Trigger protect_tenant_files_flags, unten).
 --
 -- Die INSERT-Policy in files_bucket_policies.sql blockt Uploads, sobald die Belegung das
 -- Limit erreicht hat. Die Größe einer neuen Datei kennt die Policy noch nicht, deshalb prüft
@@ -40,20 +40,36 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.files_used_bytes(integer) TO authenticated;
 
+-- files_enabled/files_max_bytes: nur Super-Developer.
+-- files_shared ("für alle Mitglieder"): Admins der Instanz in der Rollenverwaltung.
 CREATE OR REPLACE FUNCTION public.protect_tenant_files_flags()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = public
 AS $$
+DECLARE
+  is_super boolean := coalesce(auth.role(), '') = 'service_role'
+    OR coalesce(auth.jwt() ->> 'email', '') = 'developer@attendix.de'
+    OR current_user IN ('postgres', 'supabase_admin');
 BEGIN
-  IF (NEW.files_enabled IS DISTINCT FROM OLD.files_enabled
-      OR NEW.files_shared IS DISTINCT FROM OLD.files_shared
-      OR NEW.files_max_bytes IS DISTINCT FROM OLD.files_max_bytes)
-     AND coalesce(auth.role(), '') <> 'service_role'
-     AND coalesce(auth.jwt() ->> 'email', '') <> 'developer@attendix.de'
-     AND current_user NOT IN ('postgres', 'supabase_admin') THEN
-    RAISE EXCEPTION 'Nur der Super-Developer darf die Dateiablage ein- oder ausschalten';
+  IF is_super THEN
+    RETURN NEW;
   END IF;
+
+  -- Aktivierung und Speicherlimit: nur Super-Developer.
+  IF NEW.files_enabled IS DISTINCT FROM OLD.files_enabled
+     OR NEW.files_max_bytes IS DISTINCT FROM OLD.files_max_bytes THEN
+    RAISE EXCEPTION 'Nur der Super-Developer darf das Speicherlimit der Dateiablage ändern';
+  END IF;
+
+  -- Freigabe für alle Mitglieder: Admins der Instanz (Rollenverwaltung).
+  IF NEW.files_shared IS DISTINCT FROM OLD.files_shared AND NOT EXISTS (
+    SELECT 1 FROM public."tenantUsers" tu
+    WHERE tu."tenantId" = NEW.id AND tu."userId" = auth.uid()::text AND tu.role = 1
+  ) THEN
+    RAISE EXCEPTION 'Nur Admins der Instanz dürfen die Dateiablage für alle Mitglieder freigeben';
+  END IF;
+
   RETURN NEW;
 END;
 $$;
