@@ -156,7 +156,7 @@ Instanzspezifische [[Zusatzfeld|Zusatzfelder]] bleiben daneben bestehen und gelt
     keywords: ['dateien', 'ordner', 'upload', 'hochladen', 'aufnahmen', 'dokumente', 'direktlink', 'link teilen', 'files', 'freischalten', 'aktivieren', 'einschalten', 'beantragen', 'nicht sichtbar'],
     body: `In der Dateiablage legt deine Instanz gemeinsame Dateien in Ordnern ab, z. B. Aufnahmen, Dokumente oder Bilder. Du findest sie unter Einstellungen → Dateiablage.
 
-**Freischaltung:** Die Dateiablage ist nicht automatisch aktiv, sondern wird vom Attendix-Team je Instanz freigeschaltet. Möchte deine Instanz sie nutzen, melde dich bei deinem [[Administrator]]. Administratoren fragen die Freischaltung unter Einstellungen → Feedback geben beim Attendix-Team an.
+**Freischaltung:** Die Dateiablage ist nicht automatisch aktiv, sondern wird vom Attendix-Team je Instanz freigeschaltet. Möchte deine Instanz sie nutzen, melde dich beim Attendix-Admin unter Einstellungen → Feedback geben.
 
 **Wer sieht sie?** Ist die Dateiablage aktiv, sehen sie [[Administrator|Administratoren]], [[Verantwortlicher|Verantwortliche]] und Helfer. Auf Wunsch wird sie zusätzlich für alle Mitglieder freigegeben. [[Bewerber]] haben nie Zugriff.
 

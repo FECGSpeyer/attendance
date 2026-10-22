@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.42",
+      "date": "22.10.2026",
+      "changes": [
+        "❓ Hilfe: Für die Freischaltung der Dateiablage meldest du dich direkt beim Attendix-Admin über „Feedback geben“."
+      ]
+    },
+    {
       "version": "4.14.41",
       "date": "22.10.2026",
       "changes": [
