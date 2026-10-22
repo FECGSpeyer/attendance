@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.43",
+      "date": "22.10.2026",
+      "changes": [
+        "💾 Dateiablage: Jede Instanz hat jetzt ein Speicherlimit (Standard 5 GB). Die Belegung steht oben in der Dateiablage, zu große Uploads werden mit Hinweis abgelehnt."
+      ]
+    },
+    {
       "version": "4.14.42",
       "date": "22.10.2026",
       "changes": [

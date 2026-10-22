@@ -116,3 +116,13 @@
 .files-content {
   --padding-bottom: calc(max(10px, var(--ion-safe-area-bottom, 0px) - 12px) + 68px);
 }
+
+.storage-usage {
+  padding: 0 16px 8px;
+
+  ion-note {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+}

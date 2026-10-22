@@ -38,6 +38,27 @@
             [disabled]="isSaving"
             [(ngModel)]="filesShared" (ionChange)="saveFiles()">Dateiablage für alle Mitglieder</ion-toggle>
         </ion-item>
+        <ion-item>
+          <ion-input
+            label="Max. Speicher (GB)"
+            labelPlacement="stacked"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            placeholder="Unbegrenzt"
+            helperText="Leer lassen für unbegrenzt. Neue Instanzen starten mit 5 GB."
+            [disabled]="isSaving"
+            [(ngModel)]="filesMaxGb"
+            (ionBlur)="saveFilesLimit()"
+            (keyup.enter)="saveFilesLimit()">
+          </ion-input>
+        </ion-item>
+        @if (usedGb !== null) {
+          <ion-item>
+            <ion-label>Aktuell belegt</ion-label>
+            <ion-note slot="end">{{ usedGb | number:'1.0-2' }} GB</ion-note>
+          </ion-item>
+        }
       }
     </ion-item-group>
   </ion-list>

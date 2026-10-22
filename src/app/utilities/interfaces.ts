@@ -71,6 +71,7 @@ export interface Tenant {
   plan_block_templates?: PlanBlockTemplate[];
   files_enabled?: boolean;
   files_shared?: boolean;
+  files_max_bytes?: number | null;
 }
 
 export interface ExtraField {

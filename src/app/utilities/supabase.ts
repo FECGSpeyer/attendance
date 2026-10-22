@@ -1375,6 +1375,7 @@ export type Database = {
           show_all_attendances: boolean | null
           files_enabled: boolean
           files_shared: boolean
+          files_max_bytes: number | null
           show_all_attendances_info_text: string | null
           shortName: string | null
           showHolidays: boolean | null
@@ -1408,6 +1409,7 @@ export type Database = {
           show_all_attendances?: boolean | null
           files_enabled?: boolean
           files_shared?: boolean
+          files_max_bytes?: number | null
           show_all_attendances_info_text?: string | null
           shortName?: string | null
           showHolidays?: boolean | null
@@ -1441,6 +1443,7 @@ export type Database = {
           show_all_attendances?: boolean | null
           files_enabled?: boolean
           files_shared?: boolean
+          files_max_bytes?: number | null
           show_all_attendances_info_text?: string | null
           shortName?: string | null
           showHolidays?: boolean | null

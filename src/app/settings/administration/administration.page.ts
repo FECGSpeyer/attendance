@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular/lazy';
 import { DbService } from '../../services/db.service';
+import { FilesService } from '../../services/files/files.service';
 import { Church } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
+
+const GB = 1024 * 1024 * 1024;
 
 // Administration: nur für den Super-Developer (SuperDeveloperGuard).
 // Sammelt instanzübergreifende Schalter und Werkzeuge wie das Usage Dashboard.
@@ -15,19 +18,53 @@ export class AdministrationPage implements OnInit {
   public filesEnabled = false;
   public filesShared = false;
   public isSaving = false;
+  public filesMaxGb: number | null = null;
+  public usedGb: number | null = null;
   public churches: Church[] = [];
   public duplicateGroups: { target: Church; duplicates: Church[] }[] = [];
 
   constructor(
     public db: DbService,
+    private filesSvc: FilesService,
     private alertController: AlertController,
   ) {}
 
   async ngOnInit() {
     this.filesEnabled = this.db.tenant()?.files_enabled || false;
     this.filesShared = this.db.tenant()?.files_shared || false;
+    this.filesMaxGb = this.toGb(this.db.tenant()?.files_max_bytes);
+    this.filesSvc.getUsedBytes(this.db.tenant().id)
+      .then((bytes) => this.usedGb = this.toGb(bytes))
+      .catch(() => this.usedGb = null);
     this.churches = await this.db.getChurches();
     this.findDuplicates();
+  }
+
+  private toGb(bytes?: number | null): number | null {
+    return bytes === null || bytes === undefined ? null : Math.round(bytes / GB * 100) / 100;
+  }
+
+  // Leeres Feld = unbegrenzt.
+  async saveFilesLimit() {
+    const raw = this.filesMaxGb as unknown;
+    const gb = raw === null || raw === undefined || raw === '' ? null : Number(raw);
+    if (gb !== null && (!Number.isFinite(gb) || gb <= 0)) {
+      Utils.showToast('Bitte eine Zahl größer 0 eingeben oder das Feld leeren (unbegrenzt).', 'warning');
+      return;
+    }
+
+    const bytes = gb === null ? null : Math.round(gb * GB);
+    if (bytes === (this.db.tenant()?.files_max_bytes ?? null)) { return; }
+
+    this.isSaving = true;
+    try {
+      await this.db.updateTenantData({ files_max_bytes: bytes });
+      Utils.showToast(bytes === null ? 'Speicher: unbegrenzt' : `Speicherlimit: ${gb} GB`, 'success');
+    } catch {
+      this.filesMaxGb = this.toGb(this.db.tenant()?.files_max_bytes);
+    } finally {
+      this.isSaving = false;
+    }
   }
 
   async saveFiles() {

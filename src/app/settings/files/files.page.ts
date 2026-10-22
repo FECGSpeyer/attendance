@@ -30,6 +30,7 @@ export class FilesPage implements OnInit {
   public sortBy: 'name' | 'updatedAt' | 'size' = 'name';
   public sortDirection: 'asc' | 'desc' = 'asc';
   public canEditEntries = false;
+  public usedBytes: number | null = null;
 
   constructor(
     public db: DbService,
@@ -118,6 +119,9 @@ export class FilesPage implements OnInit {
       const loadedEntries = await this.filesSvc.listEntries(this.db.tenant().id, this.currentPath);
       this.entries = this.sortEntries(loadedEntries);
       await this.loadImagePreviews();
+      if (this.canEditEntries) {
+        void this.loadUsage();
+      }
     } catch (error: any) {
       Utils.showToast(`Fehler beim Laden der Dateien: ${error.message || error}`, 'danger');
     } finally {
@@ -180,6 +184,19 @@ export class FilesPage implements OnInit {
     this.fileInput?.nativeElement.click();
   }
 
+  /** Speicherlimit der Instanz in Bytes, null = unbegrenzt. */
+  get maxBytes(): number | null {
+    return this.db.tenant()?.files_max_bytes ?? null;
+  }
+
+  async loadUsage(): Promise<void> {
+    try {
+      this.usedBytes = await this.filesSvc.getUsedBytes(this.db.tenant().id);
+    } catch {
+      this.usedBytes = null;
+    }
+  }
+
   formatFileSize(size?: number): string {
     if (size === undefined || size === null || size < 0) {
       return '';
@@ -195,7 +212,11 @@ export class FilesPage implements OnInit {
     }
 
     const mb = kb / 1024;
-    return `${mb.toFixed(1)} MB`;
+    if (mb < 1024) {
+      return `${mb.toFixed(1)} MB`;
+    }
+
+    return `${(mb / 1024).toFixed(1)} GB`;
   }
 
   formatUpdatedAt(updatedAt?: string): string {
@@ -554,6 +575,44 @@ export class FilesPage implements OnInit {
     return 'cancel';
   }
 
+  // Prüft das Speicherlimit der Instanz vor dem Upload. Die Storage-Policy blockt erst,
+  // wenn das Limit schon erreicht ist, daher rechnet die App die neuen Dateien vorab mit ein.
+  private async hasEnoughSpace(files: File[], fileNameMap: Map<File, string>, duplicateNames: Set<string>, overwrite: boolean): Promise<boolean> {
+    const maxBytes = this.maxBytes;
+    if (maxBytes === null) {
+      return true;
+    }
+
+    await this.loadUsage();
+    const sizeByName = new Map(this.entries.filter((e) => !e.isFolder).map((e) => [e.name, e.size || 0]));
+    let neededBytes = 0;
+    for (const file of files) {
+      const name = fileNameMap.get(file) || '';
+      if (duplicateNames.has(name)) {
+        if (!overwrite) {
+          continue;
+        }
+        // Überschreiben ersetzt die alte Datei, nur der Zuwachs zählt.
+        neededBytes += Math.max(0, file.size - (sizeByName.get(name) || 0));
+      } else {
+        neededBytes += file.size;
+      }
+    }
+
+    const freeBytes = Math.max(0, maxBytes - (this.usedBytes || 0));
+    if (neededBytes <= freeBytes) {
+      return true;
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Speicher voll',
+      message: `Für diesen Upload werden ${this.formatFileSize(neededBytes)} benötigt, frei sind noch ${this.formatFileSize(freeBytes)} von ${this.formatFileSize(maxBytes)}. Lösche nicht mehr benötigte Dateien oder melde dich beim Attendix-Admin, um mehr Speicher zu bekommen.`,
+      buttons: ['OK'],
+    });
+    await alert.present();
+    return false;
+  }
+
   async onFileSelected(evt: Event): Promise<void> {
     const input = evt.target as HTMLInputElement;
     const files = Array.from(input.files || []);
@@ -600,6 +659,11 @@ export class FilesPage implements OnInit {
         }
 
         overwriteDuplicates = handling === 'overwrite';
+      }
+
+      if (!(await this.hasEnoughSpace(files, fileNameMap, duplicateNameSet, overwriteDuplicates))) {
+        input.value = '';
+        return;
       }
 
       loading = await Utils.getLoadingElement(999999, this.getUploadProgressMessage(0, files.length));

@@ -75,6 +75,17 @@
     </ion-breadcrumbs>
   </div>
 
+  @if (canEditEntries && usedBytes !== null) {
+  <div class="storage-usage">
+    <ion-note>
+      Speicher: {{ formatFileSize(usedBytes) }}{{ maxBytes !== null ? ' von ' + formatFileSize(maxBytes) : '' }} belegt
+    </ion-note>
+    @if (maxBytes !== null) {
+    <ion-progress-bar [value]="usedBytes / maxBytes" [color]="usedBytes >= maxBytes * 0.9 ? 'danger' : 'primary'"></ion-progress-bar>
+    }
+  </div>
+  }
+
   <div class="search-block">
     <div class="search-row">
       <ion-searchbar class="files-search" [(ngModel)]="searchTerm" placeholder="Dateien & Ordner suchen...">

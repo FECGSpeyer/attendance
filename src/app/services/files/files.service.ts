@@ -304,6 +304,17 @@ export class FilesService {
     }
   }
 
+  /** Belegung der Dateiablage einer Instanz in Bytes (RPC files_used_bytes). */
+  async getUsedBytes(tenantId: number): Promise<number> {
+    const { data, error } = await supabase.rpc('files_used_bytes' as any, { p_tenant_id: tenantId } as any);
+
+    if (error) {
+      throw error;
+    }
+
+    return Number(data) || 0;
+  }
+
   async uploadFile(tenantId: number, currentRelativePath: string, file: File, overwrite: boolean = false): Promise<void> {
     const fileName = this.sanitizeFileName(file.name);
 

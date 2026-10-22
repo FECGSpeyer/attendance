@@ -7,6 +7,8 @@
 --   * Admin (1), Verantwortlicher (5), Helfer (4), Stimmführer-Helfer (9) of the tenant
 --   * In tenants with files_shared = true every member except Bewerber (7) / None (99)
 -- Write (INSERT/UPDATE/DELETE): only Admin (1) and Verantwortlicher (5).
+-- INSERT additionally requires usage below tenants.files_max_bytes (NULL = unlimited,
+-- see add_tenant_files_quota.sql).
 --
 -- Keep in sync with DbService.canAccessFiles() in src/app/services/db.service.ts.
 --
@@ -49,6 +51,7 @@ CREATE POLICY "files_insert_tenant_admin_responsible"
       WHERE tu."tenantId" = split_part(objects.name, '/', 1)::integer
         AND tu."userId" = auth.uid()::text
         AND tu.role = ANY (ARRAY[1, 5])
+        AND (t.files_max_bytes IS NULL OR public.files_used_bytes(t.id::integer) < t.files_max_bytes)
     )
   );
 

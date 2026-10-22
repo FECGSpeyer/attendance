@@ -153,12 +153,14 @@ Instanzspezifische [[Zusatzfeld|Zusatzfelder]] bleiben daneben bestehen und gelt
     id: 'other-files',
     title: 'Dateiablage',
     categoryId: 'other',
-    keywords: ['dateien', 'ordner', 'upload', 'hochladen', 'aufnahmen', 'dokumente', 'direktlink', 'link teilen', 'files', 'freischalten', 'aktivieren', 'einschalten', 'beantragen', 'nicht sichtbar'],
+    keywords: ['dateien', 'ordner', 'upload', 'hochladen', 'aufnahmen', 'dokumente', 'direktlink', 'link teilen', 'files', 'freischalten', 'aktivieren', 'einschalten', 'beantragen', 'nicht sichtbar', 'speicher', 'speicherplatz', 'limit', 'voll', 'gb'],
     body: `In der Dateiablage legt deine Instanz gemeinsame Dateien in Ordnern ab, z. B. Aufnahmen, Dokumente oder Bilder. Du findest sie unter Einstellungen → Dateiablage.
 
 **Freischaltung:** Die Dateiablage ist nicht automatisch aktiv, sondern wird vom Attendix-Team je Instanz freigeschaltet. Möchte deine Instanz sie nutzen, melde dich beim Attendix-Admin unter Einstellungen → Feedback geben.
 
 **Wer sieht sie?** Ist die Dateiablage aktiv, sehen sie [[Administrator|Administratoren]], [[Verantwortlicher|Verantwortliche]] und Helfer. Auf Wunsch wird sie zusätzlich für alle Mitglieder freigegeben. [[Bewerber]] haben nie Zugriff.
+
+**Speicherplatz:** Jede Instanz hat ein Speicherlimit, standardmäßig 5 GB. Administratoren und Verantwortliche sehen oben in der Dateiablage, wie viel davon belegt ist. Reicht der freie Platz für einen Upload nicht, wird er nicht gestartet. Lösche dann nicht mehr benötigte Dateien oder melde dich beim Attendix-Admin unter Einstellungen → Feedback geben, wenn du mehr Speicher brauchst.
 
 - **Hochladen und Ordner anlegen** dürfen [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]]. Beides findest du im Menü (drei Punkte oben rechts).
 - **Sortieren** nach Name, Änderungsdatum oder Dateigröße, auf- oder absteigend, ebenfalls über das Menü.
