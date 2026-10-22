@@ -19,37 +19,37 @@ struct PlanLiveActivity: Widget {
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     HStack(spacing: 6) {
-                        StatusDot(state: context.state)
-                        Text(islandTitle(context.state))
+                        StatusDot(state: shownState(context))
+                        Text(islandTitle(shownState(context)))
                             .font(.headline)
                             .lineLimit(1)
                     }
                     .padding(.leading, 6)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    CountdownText(state: context.state)
+                    CountdownText(state: shownState(context))
                         .font(.title3.monospacedDigit().weight(.bold))
                         .padding(.trailing, 6)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     VStack(alignment: .leading, spacing: 8) {
-                        TimelineBar(state: context.state)
+                        TimelineBar(state: shownState(context))
                             .frame(height: 4)
-                        NextItemsView(state: context.state, limit: 1)
+                        NextItemsView(state: shownState(context), limit: 1)
                     }
                     .padding(.horizontal, 6)
                 }
             } compactLeading: {
-                Text(islandTitle(context.state))
+                Text(islandTitle(shownState(context)))
                     .font(.caption.weight(.semibold))
                     .lineLimit(1)
                     .frame(maxWidth: 84, alignment: .leading)
             } compactTrailing: {
-                CountdownText(state: context.state)
+                CountdownText(state: shownState(context))
                     .font(.caption.monospacedDigit().weight(.bold))
                     .frame(maxWidth: 48)
             } minimal: {
-                ProgressRing(state: context.state)
+                ProgressRing(state: shownState(context))
                     .frame(width: 20, height: 20)
             }
             .widgetURL(deepLink(context.attributes))
@@ -65,6 +65,46 @@ enum LiveColors {
     static let track = Color.white.opacity(0.3)
     static let secondary = Color(white: 0.72)
     static let done = Color(red: 0.24, green: 0.81, blue: 0.56)
+}
+
+/// iOS marks the activity stale a minute after the current item (or the start) is over.
+/// If the update for the next item didn't arrive by then (e.g. weak network), the plan
+/// is assumed to run by the clock, so it never sits on "Beginnt in 0:00".
+@available(iOS 16.1, *)
+private func shownState(_ context: ActivityViewContext<PlanActivityAttributes>) -> PlanActivityAttributes.ContentState {
+    if #available(iOS 16.2, *), context.isStale {
+        return context.state.advanced(to: Date())
+    }
+    return context.state
+}
+
+@available(iOS 16.1, *)
+extension PlanActivityAttributes.ContentState {
+    /// The item running at `now`, as far as `next` and `bounds` reach.
+    func advanced(to now: Date) -> Self {
+        guard phase != "ended", let bounds, !bounds.isEmpty else { return self }
+        let nowSec = now.timeIntervalSince1970
+        var state = self
+        if nowSec >= planEnd {
+            state.phase = "ended"
+            state.index = total
+            state.title = "Ablaufplan beendet"
+            state.subtitle = ""
+            state.next = []
+            return state
+        }
+        // Before the start the first item is next[0] (see iosLiveState), so it counts as step 0.
+        guard let k = next.lastIndex(where: { $0.at <= nowSec }) else { return self }
+        let item = next[k]
+        state.phase = "running"
+        state.index = (phase == "before" ? index - 1 : index) + k + 1
+        state.title = item.name
+        state.subtitle = ""
+        state.startsAt = item.at
+        state.endsAt = bounds.first(where: { $0 > item.at }) ?? planEnd
+        state.next = Array(next.dropFirst(k + 1))
+        return state
+    }
 }
 
 @available(iOS 16.1, *)
@@ -337,7 +377,7 @@ struct LockScreenView: View {
     let context: ActivityViewContext<PlanActivityAttributes>
 
     var body: some View {
-        let state = context.state
+        let state = shownState(context)
         VStack(alignment: .leading, spacing: 9) {
             HStack(spacing: 8) {
                 Image(systemName: "list.bullet.rectangle.fill")

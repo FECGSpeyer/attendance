@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.15.1",
+      "date": "22.10.2026",
+      "changes": [
+        "⏱️ iPhone: Kommt bei schlechtem Netz kein Update an, springt der laufende Ablaufplan nach einer Minute selbst zum nächsten Punkt, statt bei „Beginnt in 0:00“ stehen zu bleiben."
+      ]
+    },
+    {
       "version": "4.15.0",
       "date": "22.10.2026",
       "changes": [
