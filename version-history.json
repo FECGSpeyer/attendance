@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.39",
+      "date": "22.10.2026",
+      "changes": [
+        "🛠️ Neuer Bereich „Administration“ für das Attendix-Team mit Usage Dashboard und dem Dateiablage-Schalter je Instanz."
+      ]
+    },
+    {
       "version": "4.14.38",
       "date": "22.10.2026",
       "changes": [

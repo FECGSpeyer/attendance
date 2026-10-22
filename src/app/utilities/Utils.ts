@@ -1252,6 +1252,9 @@ export class Utils {
       case '/tabs/settings/register':
       case '/tabs/settings/help':
       case '/tabs/settings/help/glossary':
+      // Administration/Usage Dashboard: SuperDeveloperGuard prüft den Zugriff.
+      case '/tabs/settings/administration':
+      case '/tabs/dashboard':
         return true;
       case '/tabs/members':
         return [Role.HELPER, Role.PLAYER, Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER, Role.NONE].includes(role);

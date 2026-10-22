@@ -45,8 +45,6 @@ export class GeneralPage implements OnInit {
   public showMembersList = false;
   public isOrchestra = false;
   public isSuperAdmin = false;
-  public filesEnabled = false;
-  public filesShared = false;
   public isGeneral = false;
   public max: string = new Date().toISOString();
   public churches: Church[] = [];
@@ -125,8 +123,6 @@ export class GeneralPage implements OnInit {
     this.showAllAttendances = this.db.tenant().show_all_attendances || false;
     this.showAllAttendancesInfoText = this.db.tenant().show_all_attendances_info_text
       || DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT;
-    this.filesEnabled = this.db.tenant().files_enabled || false;
-    this.filesShared = this.db.tenant().files_shared || false;
 
     if (this.db.tenant().additional_fields?.length) {
       this.registerFields = this.registerFields.concat(this.db.tenant().additional_fields.map(field => ({
@@ -185,8 +181,6 @@ export class GeneralPage implements OnInit {
       shiftExcusedAsPresent: this.shiftExcusedAsPresent,
       showAllAttendances: this.showAllAttendances,
       showAllAttendancesInfoText: this.showAllAttendancesInfoText,
-      filesEnabled: this.filesEnabled,
-      filesShared: this.filesShared,
     });
   }
 
@@ -342,11 +336,6 @@ export class GeneralPage implements OnInit {
           : null,
         absence_reasons: filteredAbsenceReasons.length > 0 ? filteredAbsenceReasons : null,
         late_reasons: filteredLateReasons.length > 0 ? filteredLateReasons : null,
-        // Dateiablage darf nur der Super-Developer schalten (DB-Trigger prüft das ebenfalls).
-        ...(this.db.isSuperDeveloper() ? {
-          files_enabled: this.filesEnabled,
-          files_shared: this.filesEnabled ? this.filesShared : false,
-        } : {}),
       });
 
       // Evaluate critical rules for all players after saving

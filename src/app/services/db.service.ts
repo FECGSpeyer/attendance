@@ -565,7 +565,7 @@ export class DbService {
   }
 
   isBeta(tenantId: number = this.tenant()?.id) {
-    return this.tenantUser()?.email?.endsWith('developer@attendix.de') || this.user?.email?.toLocaleLowerCase().endsWith('erwinfast98@gmail.com') || tenantId === 12;
+    return this.tenantUser()?.email?.endsWith('developer@attendix.de') || tenantId === 12;
   }
 
   // Dateiablage: nur in Instanzen mit files_enabled (schaltet der Super-Developer in den

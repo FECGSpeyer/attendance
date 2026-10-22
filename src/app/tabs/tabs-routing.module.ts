@@ -196,6 +196,11 @@ const routes: Routes = [
         loadChildren: () => import('./../public-planning/public-planning.module').then(m => m.PublicPlanningPageModule)
       },
       {
+        path: 'settings/administration',
+        canActivate: [SuperDeveloperGuard],
+        loadChildren: () => import('./../settings/administration/administration.module').then(m => m.AdministrationPageModule)
+      },
+      {
         path: 'dashboard',
         canActivate: [SuperDeveloperGuard],
         loadChildren: () => import('./../dashboard/dashboard.module').then(m => m.DashboardPageModule)
