@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.14.40",
+      "date": "22.10.2026",
+      "changes": [
+        "🛠️ Die Gemeinden-Verwaltung ist aus den allgemeinen Einstellungen in den Bereich „Administration“ umgezogen."
+      ]
+    },
+    {
       "version": "4.14.39",
       "date": "22.10.2026",
       "changes": [
