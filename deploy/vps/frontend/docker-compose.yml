@@ -1,0 +1,25 @@
+# Frontend container for attendix.de. www/ is rsynced to ./www by the
+# "Deploy VPS" GitHub Action.
+#
+# Adjust TRAEFIK_NETWORK and the certresolver name to the existing Traefik
+# setup on the VPS.
+services:
+  attendix-web:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    volumes:
+      - ./www:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - traefik
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.attendix-web.rule=Host(`attendix.de`) || Host(`www.attendix.de`)
+      - traefik.http.routers.attendix-web.entrypoints=websecure
+      - traefik.http.routers.attendix-web.tls.certresolver=letsencrypt
+      - traefik.http.services.attendix-web.loadbalancer.server.port=80
+
+networks:
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK:-traefik}

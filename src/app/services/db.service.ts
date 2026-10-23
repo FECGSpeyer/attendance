@@ -312,7 +312,7 @@ export class DbService {
 
         // Download from source tenant
         const blob = await this.downloadSongFileFromTenant(
-          file.url.split('https://ultyjzgwejpehfjuyenr.supabase.co/storage/v1/object/public/songs/')[1]
+          file.url.split('/storage/v1/object/public/songs/')[1]
         );
 
         // Map instrument ID

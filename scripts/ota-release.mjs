@@ -55,7 +55,8 @@ const PRIVATE_KEY_PATH = path.join(ROOT, 'ota-private.pem');
 const BUCKET = 'ota-bundles';
 const MANIFEST_PATH = 'manifest.json';
 
-const SUPABASE_URL = 'https://ultyjzgwejpehfjuyenr.supabase.co';
+// Override for the self-hosted instance (e.g. https://api.attendix.de).
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ultyjzgwejpehfjuyenr.supabase.co';
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 function fail(msg) {

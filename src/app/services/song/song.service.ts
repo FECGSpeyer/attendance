@@ -240,7 +240,7 @@ export class SongService {
         if (onProgress) {onProgress(i + 1, totalFiles);}
 
         const blob = await this.downloadSongFileFromPath(
-          file.url.split('https://ultyjzgwejpehfjuyenr.supabase.co/storage/v1/object/public/songs/')[1]
+          file.url.split('/storage/v1/object/public/songs/')[1]
         );
 
         const mappedInstrumentId = file.instrumentId

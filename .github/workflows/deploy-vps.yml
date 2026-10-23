@@ -1,0 +1,63 @@
+# Builds the frontend and deploys it to the own VPS (replacement for Vercel).
+# Manual only until the migration is done; afterwards add `push: branches: [main]`.
+#
+# Secrets:
+#   ENV_FILE                  content of src/environments/environment.ts (see server.js)
+#   VPS_HOST, VPS_USER        SSH target
+#   VPS_SSH_KEY               private key for VPS_USER
+#   VPS_WEB_DIR               e.g. /opt/attendix/frontend/www
+#   SUPABASE_URL              API base for the OTA upload (e.g. https://api.attendix.de)
+#   SUPABASE_SERVICE_ROLE_KEY service-role key of that instance
+#   OTA_PRIVATE_KEY           PEM of the OTA signing key
+name: Deploy VPS
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_ota:
+        description: 'OTA-Bundle für native Apps veröffentlichen'
+        type: boolean
+        default: true
+
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Write environment files
+        run: node server.js
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+
+      - run: npx ng build
+
+      - name: Upload www/ to VPS
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_WEB_DIR: ${{ secrets.VPS_WEB_DIR }}
+        run: |
+          install -m 600 /dev/null ~/.ssh_key
+          echo "$SSH_KEY" > ~/.ssh_key
+          rsync -az --delete -e "ssh -i ~/.ssh_key -o StrictHostKeyChecking=accept-new" www/ "$VPS_USER@$VPS_HOST:$VPS_WEB_DIR/"
+
+      - name: Publish OTA bundle
+        if: ${{ inputs.publish_ota }}
+        run: node scripts/ota-release.mjs --skip-build
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OTA_PRIVATE_KEY: ${{ secrets.OTA_PRIVATE_KEY }}

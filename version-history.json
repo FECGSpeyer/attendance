@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.15.3",
+      "date": "23.10.2026",
+      "changes": [
+        "🛠️ Hintergrund: Vorbereitung für den Umzug auf einen eigenen Server. Adressen sind nicht mehr fest eingebaut, an der App ändert sich nichts."
+      ]
+    },
+    {
       "version": "4.15.2",
       "date": "23.10.2026",
       "changes": [

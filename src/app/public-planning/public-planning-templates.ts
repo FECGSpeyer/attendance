@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { FieldSelection } from '../utilities/interfaces';
 
 export interface PublicPlanningTemplate {
@@ -16,7 +17,7 @@ export interface PublicBranding {
 
 // Predefined brandings selectable on the public planning page (which has no
 // tenant context). Both FECG options share the same logo; only the text differs.
-const FECG_LOGO = 'https://ultyjzgwejpehfjuyenr.supabase.co/storage/v1/object/public/public_files/fecg_speyer.png';
+const FECG_LOGO = `${environment.apiUrl}/storage/v1/object/public/public_files/fecg_speyer.png`;
 
 export const PUBLIC_BRANDINGS: PublicBranding[] = [
   { id: 'none', name: 'Kein Branding' },
