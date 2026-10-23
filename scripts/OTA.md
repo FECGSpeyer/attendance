@@ -105,6 +105,16 @@ The signing script will use `OTA_PRIVATE_KEY` when no local `ota-private.pem` is
 
 Local releases continue to work with the file-based key. `OTA_PRIVATE_KEY` is only a fallback when the file isn't there.
 
+## Cleanup of old bundles
+
+Every production deploy adds a ~15 MB ZIP to `ota-bundles/bundles/`. The Edge Function `ota-cleanup` (cron: Sundays 03:00 UTC, `supabase/sql/ota_cleanup_cron.sql`) keeps the bundle from `manifest.json` plus the newest 10 and deletes the rest via the Storage API. It aborts without deleting if the manifest or the live bundle can't be found.
+
+Dry run (default, deletes nothing):
+```sh
+curl -X POST "$SUPABASE_URL/functions/v1/ota-cleanup" -H "Authorization: Bearer $ANON_KEY" -H "Content-Type: application/json" -d '{}'
+```
+Delete for real: body `{"dryRun": false}`, optionally `"keep": 5`.
+
 ## Manifest schema
 
 ```json
