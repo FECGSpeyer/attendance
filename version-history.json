@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.15.2",
+      "date": "23.10.2026",
+      "changes": [
+        "🧹 Hintergrund: Alte App-Updates werden jetzt jede Woche automatisch vom Server gelöscht. Das spart rund 6 GB Speicher, an der App ändert sich nichts."
+      ]
+    },
+    {
       "version": "4.15.1",
       "date": "22.10.2026",
       "changes": [
