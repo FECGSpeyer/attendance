@@ -812,11 +812,17 @@ export class SettingsPage implements OnInit, OnDestroy {
   async changeImg() {
     const additionalButtons: ActionSheetButton[] = [];
 
-    if (this.userData.img !== DEFAULT_IMAGE) {
+    if (this.userData.img && this.userData.img !== DEFAULT_IMAGE) {
       additionalButtons.push({
         text: 'Passbild ansehen',
         handler: () => {
           this.openPassImageViewer();
+        }
+      }, {
+        text: 'Passbild entfernen',
+        role: 'destructive',
+        handler: () => {
+          this.removeImg();
         }
       });
     }
@@ -833,6 +839,36 @@ export class SettingsPage implements OnInit, OnDestroy {
     });
 
     await actionSheet.present();
+  }
+
+  async removeImg(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Passbild entfernen',
+      message: 'Möchtest du dein Passbild wirklich entfernen?',
+      buttons: [
+        {
+          text: 'Abbrechen',
+          role: 'cancel',
+        },
+        {
+          text: 'Entfernen',
+          role: 'destructive',
+          handler: async () => {
+            try {
+              const fileName = this.userData.img.split('/').pop().replace('?quality=20', '');
+              await this.db.removeImage(this.userData.id, fileName, false, this.userData.appId || '');
+              this.userData.img = DEFAULT_IMAGE;
+              this.closePassImageViewer();
+              Utils.showToast('Das Passbild wurde erfolgreich entfernt', 'success');
+            } catch (error) {
+              Utils.showToast('Fehler beim Entfernen des Passbildes, versuche es später erneut', 'danger');
+            }
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 
   openPassImageViewer(): void {

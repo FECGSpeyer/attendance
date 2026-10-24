@@ -157,7 +157,7 @@
                 type="file" />
               <ion-label>Passbild</ion-label>
               <ion-avatar slot="end">
-                <img [src]="userData.img" alt="Profilbild" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
+                <img [src]="userData.img || 'assets/icon/avatar-placeholder.svg'" alt="Profilbild" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
               </ion-avatar>
             </ion-item>
             <ion-item>

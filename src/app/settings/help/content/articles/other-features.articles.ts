@@ -171,7 +171,7 @@ Audiodateien spielst du direkt im integrierten Audio-Player ab (siehe "Audio-Pla
     id: 'other-image-viewer',
     title: 'Bilder ansehen und zoomen',
     categoryId: 'other',
-    keywords: ['bild', 'foto', 'passbild', 'profilbild', 'zoom', 'zoomen', 'vergrößern', 'heranzoomen', 'vollbild', 'bildvorschau', 'pinch', 'doppeltippen'],
+    keywords: ['bild', 'foto', 'passbild', 'profilbild', 'bild entfernen', 'bild löschen', 'profilbild entfernen', 'zoom', 'zoomen', 'vergrößern', 'heranzoomen', 'vollbild', 'bildvorschau', 'pinch', 'doppeltippen'],
     body: `Bilder aus der Dateiablage und Passbilder (in deinem Profil unter Einstellungen oder auf der Seite einer Person) öffnen sich in einer Vollbildansicht.
 
 - **Zoomen:** Zieh das Bild mit zwei Fingern auseinander. Gezoomt wird genau an der Stelle zwischen deinen Fingern. Am Computer zoomst du mit dem Mausrad oder per Trackpad.
@@ -181,7 +181,9 @@ Audiodateien spielst du direkt im integrierten Audio-Player ab (siehe "Audio-Pla
 - **Schließen:** Wisch das Bild nach unten oder oben weg (geht, solange es nicht vergrößert ist), oder tippe oben rechts auf das X. Am Computer geht auch die Esc-Taste.
 - **Einmal tippen** blendet Titel und Leisten aus, damit du das Bild ohne Ablenkung siehst. Nochmal tippen holt sie zurück.
 
-Darfst du die Person bearbeiten, findest du beim Passbild unten außerdem "Ersetzen" und "Entfernen".`,
+Darfst du die Person bearbeiten, findest du beim Passbild unten außerdem "Ersetzen" und "Entfernen".
+
+Dein eigenes Passbild änderst du unter Einstellungen bei deinen Profildaten: Tipp auf "Passbild" und wähle "Passbild ansehen", "Passbild ersetzen" oder "Passbild entfernen". Nach dem Entfernen siehst du wieder das Standardbild.`,
   },
   {
     id: 'other-audio-player',

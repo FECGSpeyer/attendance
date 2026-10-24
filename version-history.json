@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.15.5",
+      "date": "24.10.2026",
+      "changes": [
+        "🖼️ Profil: Unter Einstellungen kannst du dein Passbild jetzt auch entfernen (Tipp auf „Passbild“ → „Passbild entfernen“)."
+      ]
+    },
+    {
       "version": "4.15.4",
       "date": "24.10.2026",
       "changes": [
