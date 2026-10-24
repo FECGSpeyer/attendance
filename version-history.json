@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.15.4",
+      "date": "24.10.2026",
+      "changes": [
+        "⏰ Ablauf: Vor dem Start steht unter „Start“ jetzt klar „beginnt in 14 Min.“ statt eines dunklen Badges mit „in 13:42“."
+      ]
+    },
+    {
       "version": "4.15.3",
       "date": "23.10.2026",
       "changes": [

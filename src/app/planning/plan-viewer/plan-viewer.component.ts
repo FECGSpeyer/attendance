@@ -207,7 +207,13 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
   getStartCountdown(): string {
     if (!this.liveMode || !this.liveStart) { return ''; }
     const remaining = this.liveStart.diff(dayjs(), 'second');
-    return remaining > 0 ? `in ${this.formatDuration(remaining)}` : '';
+    if (remaining <= 0) { return ''; }
+    if (remaining < 60) { return 'beginnt gleich'; }
+    const minutes = Math.ceil(remaining / 60);
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h === 0) { return `beginnt in ${m} Min.`; }
+    return m > 0 ? `beginnt in ${h} Std. ${m} Min.` : `beginnt in ${h} Std.`;
   }
 
   private formatDuration(seconds: number): string {

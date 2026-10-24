@@ -36,10 +36,12 @@
 
         <ion-item-group>
             <ion-item>
-                <ion-label>Start</ion-label>
-                @if (getStartCountdown(); as countdown) {
-                  <ion-badge slot="end" color="medium">{{ countdown }}</ion-badge>
-                }
+                <ion-label>
+                    <h2>Start</h2>
+                    @if (getStartCountdown(); as countdown) {
+                    <p class="start-countdown">{{ countdown }}</p>
+                    }
+                </ion-label>
                 <ion-note slot="end">{{ getStartTime() }} Uhr</ion-note>
             </ion-item>
 
