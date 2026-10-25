@@ -7,8 +7,10 @@ export const OTHER_FEATURES_ARTICLES: HelpArticle[] = [
     id: 'other-dashboard',
     title: 'Dashboard',
     categoryId: 'other',
-    keywords: ['übersicht', 'kacheln', 'startseite'],
-    body: `Das Dashboard zeigt [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortlichen]] eine Übersicht mit Geburtstagen, dem nächsten Termin, Mitgliederänderungen, Abwesenheiten, [[Kritische Person|kritischen Personen]] und aktuellen Werken.`,
+    keywords: ['übersicht', 'kacheln', 'startseite', 'geburtstag', 'geburtstage', 'archiviert'],
+    body: `Das Dashboard zeigt [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortlichen]] eine Übersicht mit Geburtstagen, dem nächsten Termin, Mitgliederänderungen, Abwesenheiten, [[Kritische Person|kritischen Personen]] und aktuellen Werken.
+
+Die Karte **Geburtstage** listet die Geburtstage der letzten und kommenden 14 Tage. Archivierte Personen tauchen dort nicht auf.`,
   },
   {
     id: 'other-messages',

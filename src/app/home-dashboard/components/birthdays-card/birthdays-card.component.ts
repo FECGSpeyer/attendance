@@ -54,7 +54,7 @@ export class BirthdaysCardComponent {
       const WINDOW = 14;
 
       this.entries = players
-        .filter(p => p.birthday && p.correctBirthday)
+        .filter(p => !p.left && p.birthday && p.correctBirthday)
         .map(p => {
           const bday = dayjs(p.birthday).startOf('day');
           const thisYear = bday.year(today.year()).startOf('day');

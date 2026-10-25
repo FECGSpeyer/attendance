@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.15.6",
+      "date": "25.10.2026",
+      "changes": [
+        "🎂 Dashboard: Die Geburtstage-Karte zeigt keine archivierten Personen mehr an."
+      ]
+    },
+    {
       "version": "4.15.5",
       "date": "24.10.2026",
       "changes": [
