@@ -760,20 +760,25 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   async openCalendarSubscription() {
     let link = `${environment.apiUrl}/functions/v1/ical-tenant?tenantId=${this.db.tenant().id}`;
+    let personal = false;
     if (!this.isAdmin) {
       const personId = await this.db.getPersonIdForTenant(this.db.tenant().id);
       if (personId) {
         link += `&personId=${personId}`;
+        personal = true;
       }
     }
     const alert = await this.alertController.create({
       header: 'Kalender abonnieren',
       message: `Kopiere den folgenden Link in deine Kalender-App, um die Termine zu abonnieren:\n\n${link}`,
+      // Personal feeds can leave out Termine you cancelled (default: shown with status).
+      inputs: personal ? [{ type: 'checkbox', label: 'Abgesagte Termine ausblenden', value: 'hideExcused' }] : [],
       buttons: [
         {
           text: 'Link kopieren',
-          handler: () => {
-            navigator?.clipboard.writeText(link);
+          handler: (values?: string[]) => {
+            const finalLink = Array.isArray(values) && values.includes('hideExcused') ? `${link}&hideExcused=1` : link;
+            navigator?.clipboard.writeText(finalLink);
             Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
             return false;
           },

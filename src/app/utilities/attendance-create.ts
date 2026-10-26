@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { AttendanceStatus } from './constants';
-import { Attendance, AttendanceType, ChecklistItem, PersonAttendance, Player, PlayerAbsence } from './interfaces';
+import { Attendance, AttendanceType, ChecklistItem, PersonAttendance, PersonUnavailability, Player, PlayerAbsence } from './interfaces';
+import { isDutyType, matchingUnavailability, unavailabilityNote } from './duty';
 import { Utils } from './Utils';
 import type { DbService } from '../services/db.service';
 
@@ -11,6 +12,8 @@ export interface NewAttendanceOptions {
   typeInfo?: string;
   durationDays?: number;
   place?: string | null;
+  /** Persons needed (Dienst-Modus); null/undefined = type default. */
+  dutyRequired?: number | null;
 }
 
 /** Persons a new Termin of this type is created for (not paused, in the type's groups and extra-field filter). */
@@ -47,6 +50,7 @@ export async function createAttendanceForType(
   options: NewAttendanceOptions,
   persons: Player[],
   absences: PlayerAbsence[] = [],
+  unavailability: PersonUnavailability[] = [],
 ): Promise<number> {
   // Normalize date to noon (12:00) to avoid timezone issues between 22:00-02:00
   const normalizedDate = dayjs(options.date).hour(12).minute(0).second(0).millisecond(0).toISOString();
@@ -81,10 +85,15 @@ export async function createAttendanceForType(
     is_org_plan: type.is_default_org_plan ?? false,
     checklist,
     place: options.place || null,
+    ...(isDutyType(type) && options.dutyRequired != null && options.dutyRequired !== type.duty_required
+      ? { duty_required: options.dutyRequired }
+      : {}),
   });
 
+  const canExcuse = type.available_statuses?.includes(AttendanceStatus.Excused) ?? true;
   const personAttendances: PersonAttendance[] = persons.map(player => {
-    let status = type.default_status;
+    // Duties: nobody is expected until assigned.
+    let status = isDutyType(type) ? AttendanceStatus.Neutral : type.default_status;
     let notes = '';
     if (player.shift_id && !type.all_day) {
       const shift = db.shifts().find(s => s.id === player.shift_id);
@@ -110,6 +119,12 @@ export async function createAttendanceForType(
     if (absence) {
       status = AttendanceStatus.Excused;
       notes = absence.reason;
+    } else if (canExcuse) {
+      const rule = matchingUnavailability(unavailability, player.id, normalizedDate, type.id);
+      if (rule) {
+        status = AttendanceStatus.Excused;
+        notes = unavailabilityNote(rule);
+      }
     }
 
     return { attendance_id, person_id: player.id, status, notes };

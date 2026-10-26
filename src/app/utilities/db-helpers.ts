@@ -64,8 +64,14 @@ export function stripComputedFields<T extends Record<string, any>>(
  * Pick only the fields that are valid for person_attendances table
  */
 export function pickPersonAttendanceFields(att: any) {
-  const { id, attendance_id, person_id, status, notes, changed_by, changed_at, registration_answers } = att;
-  return { id, attendance_id, person_id, status, notes, changed_by, changed_at, registration_answers };
+  const {
+    id, attendance_id, person_id, status, notes, changed_by, changed_at, registration_answers,
+    duty_state, duty_assigned_by, duty_assigned_at, duty_reminder_sent,
+  } = att;
+  return {
+    id, attendance_id, person_id, status, notes, changed_by, changed_at, registration_answers,
+    duty_state, duty_assigned_by, duty_assigned_at, duty_reminder_sent,
+  };
 }
 
 /**

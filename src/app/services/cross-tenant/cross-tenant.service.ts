@@ -69,7 +69,11 @@ export class CrossTenantService {
 
     const attendanceTypes = this.crossTenantAttendanceTypes.get(tenantId) || [];
 
-    return data.filter((a) => Boolean(a.attendance) && a.attendance.tenantId === tenantId).map((att): PersonAttendance => {
+    // Duties (Dienst-Modus) only show up for persons who were assigned.
+    const isUnassignedDuty = (a: any) => !a.duty_state &&
+      !!attendanceTypes.find((type: AttendanceType) => type.id === a.attendance.type_id)?.duty_mode;
+
+    return data.filter((a) => Boolean(a.attendance) && a.attendance.tenantId === tenantId && !isUnassignedDuty(a)).map((att): PersonAttendance => {
       const attText = Utils.getAttText(att);
       const attType = attendanceTypes.find((type: AttendanceType) => type.id === att.attendance.type_id);
       let title = '';
@@ -91,6 +95,7 @@ export class CrossTenantService {
         typeId: att.attendance.type_id,
         attendance: att.attendance,
         highlight: attType ? attType.highlight : att.attendance.type === 'vortrag',
+        duty_state: att.duty_state ?? null,
       } as any;
     });
   }

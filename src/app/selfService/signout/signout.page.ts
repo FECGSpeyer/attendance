@@ -13,6 +13,9 @@ import { TelegramService } from 'src/app/services/telegram/telegram.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Attendance, PersonAttendance, Player, PlayerAbsence, PlayerHistoryEntry, Song, Tenant, History, SongFile, AttendanceType, Plan, RegistrationField } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { countsForAverage, isCancelled, isDutyType, occupiesDuty } from 'src/app/utilities/duty';
+import { DutyTermin } from 'src/app/services/duty/duty.service';
+import { UnavailabilityModalComponent } from 'src/app/duty/unavailability-modal/unavailability-modal.component';
 import { PrintService } from 'src/app/services/print/print.service';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
@@ -72,6 +75,13 @@ export class SignoutPage implements OnInit {
   public regFieldAnswers: { [fieldId: string]: any } = {};
   public regFieldsMode: 'signin' | 'edit' = 'signin';
   private pendingSigninNote = '';
+  /** Dienstplan: assignments waiting for my confirmation. */
+  public dutyRequests: PersonAttendance[] = [];
+  /** Dienstplan: duties I could take (not full, I am a stand-in). */
+  public openDuties: DutyTermin[] = [];
+  /** Dienstplan: I am in the circle of at least one upcoming duty. */
+  public inDutyCircle = false;
+  public isOpenDutiesModalOpen = false;
 
   constructor(
     public db: DbService,
@@ -116,7 +126,9 @@ export class SignoutPage implements OnInit {
     return new Promise(resolve => {
       const start = Date.now();
       const check = () => {
-        if (this.personAttendances.find(pa => pa.attendance_id === attendanceId) || Date.now() - start > 5000) {
+        if (this.personAttendances.find(pa => (pa.attendance_id ?? pa.attId) === attendanceId)
+        || this.openDuties.some(t => t.attendance.id === attendanceId)
+        || Date.now() - start > 5000) {
           resolve();
         } else {
           setTimeout(check, 100);
@@ -190,7 +202,17 @@ export class SignoutPage implements OnInit {
     const loading = await Utils.getLoadingElement(10000);
     await loading.present();
     try {
+      // Assigned duties that are cancelled now may leave the duty understaffed.
+      const cancelledDuties = this.personAttendances
+        .filter(att => this.selAttIds.includes(att.id) && this.isDutyPa(att) && occupiesDuty(att));
       await this.db.signout(this.selAttIds, reason, isLate, false, true);
+      for (const att of cancelledDuties) {
+        void this.db.dutySvc.notify({
+          type: 'understaffed',
+          tenantId: this.db.tenant().id,
+          attendanceId: att.attendance_id ?? att.attId,
+        });
+      }
 
       Utils.showToast(isLate ? 'Vielen Dank für die Info und Gottes Segen dir!' : 'Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.', 'success', 4000);
 
@@ -231,6 +253,11 @@ export class SignoutPage implements OnInit {
   }
 
   async signin(attendance: PersonAttendance, notes: string = '') {
+    // "Zusagen" on a duty I was assigned to confirms it.
+    if (attendance.duty_state === 'requested') {
+      await this.confirmDuty(attendance);
+      return;
+    }
     await this.db.signin(
       attendance.id,
       attendance.status === AttendanceStatus.LateExcused ? 'lateSignIn' : attendance.status === AttendanceStatus.Neutral ? 'neutralSignin' : 'signin',
@@ -262,7 +289,7 @@ export class SignoutPage implements OnInit {
         this.lateCount = pastPAs.filter((a) => a.status === AttendanceStatus.Late).length;
         const vergangeneToCalcPerc = pastPAs.filter((att: PersonAttendance) => {
           const type = this.db.attendanceTypes().find((t) => t.id === att.typeId);
-          return type?.include_in_average ?? true;
+          return countsForAverage(type, att, true);
         });
         pastPAs[0].showDivider = true;
         const attended = vergangeneToCalcPerc.filter((att: PersonAttendance) => att.attended);
@@ -289,7 +316,7 @@ export class SignoutPage implements OnInit {
         this.lateCount = vergangene.filter((a) => a.status === AttendanceStatus.Late).length;
         const vergangeneToCalcPerc = vergangene.filter((att: PersonAttendance) => {
           const type = this.db.attendanceTypes().find((t) => t.id === att.typeId);
-          return type?.include_in_average ?? true;
+          return countsForAverage(type, att, true);
         });
         vergangene[0].showDivider = true;
         const attended = vergangeneToCalcPerc.filter((att: PersonAttendance) => att.attended);
@@ -305,12 +332,114 @@ export class SignoutPage implements OnInit {
         this.actualAttendances.splice(0, 1);
       }
     }
+
+    this.applyDutyView();
+    void this.loadOpenDuties();
+  }
+
+  // ── Dienstplan ─────────────────────────────────────────────
+
+  private typeOf(att: PersonAttendance) {
+    return this.db.attendanceTypes().find(t => t.id === (att.typeId ?? att.attendance?.type_id));
+  }
+
+  /** Duties only show up for persons who were assigned; open ones live behind the tile. */
+  private isUnassignedDuty(att: PersonAttendance): boolean {
+    return !att.duty_state && isDutyType(this.typeOf(att));
+  }
+
+  isDutyPa(att: PersonAttendance): boolean {
+    return !!att.duty_state && isDutyType(this.typeOf(att));
+  }
+
+  private applyDutyView(): void {
+    if (!this.db.attendanceTypes().some(t => t.duty_mode)) {
+      this.dutyRequests = [];
+      return;
+    }
+    const upcoming = [this.currentAttendance, ...(this.actualAttendances ?? [])]
+      .filter(Boolean)
+      .filter(att => !this.isUnassignedDuty(att));
+    this.currentAttendance = upcoming.shift();
+    this.actualAttendances = upcoming;
+    this.personAttendances = this.personAttendances.filter(att => !this.isUnassignedDuty(att));
+    this.dutyRequests = [this.currentAttendance, ...upcoming]
+      .filter(Boolean)
+      .filter(att => att.duty_state === 'requested' && !isCancelled(att));
+  }
+
+  private async loadOpenDuties(): Promise<void> {
+    const types = this.db.attendanceTypes();
+    if (!this.player || !types.some(t => t.duty_mode)) {
+      this.openDuties = [];
+      this.inDutyCircle = false;
+      return;
+    }
+    const termine = await this.db.dutySvc.getUpcomingDutyTermine(this.db.tenant().id, types);
+    const mine = termine.filter(t => t.persons.some(p => p.person_id === this.player.id));
+    this.inDutyCircle = mine.length > 0;
+    this.openDuties = mine.filter(t => {
+      const own = t.persons.find(p => p.person_id === this.player.id);
+      return t.type?.duty_self_signup !== false && !own.duty_state && !isCancelled(own) && t.occupied < t.required;
+    });
+  }
+
+  async openUnavailability(): Promise<void> {
+    if (!this.player) return;
+    this.isOpenDutiesModalOpen = false;
+    const modal = await this.modalController.create({
+      component: UnavailabilityModalComponent,
+      componentProps: { personId: this.player.id },
+    });
+    await modal.present();
+    await modal.onDidDismiss();
+    await this.getAttendances();
+  }
+
+  dutyMeta(t: DutyTermin): string {
+    const time = t.attendance.start_time ?? t.type?.start_time;
+    return `${time ? time.slice(0, 5) + ' · ' : ''}${t.occupied} von ${t.required} besetzt`;
+  }
+
+  dutyTitle(t: DutyTermin): string {
+    return t.attendance.typeInfo || t.type?.name || 'Dienst';
+  }
+
+  async confirmDuty(att: PersonAttendance): Promise<void> {
+    await this.db.dutySvc.confirm(att.id, this.db.user?.id);
+    Utils.showToast('Danke, dein Dienst ist bestätigt 🙂', 'success', 3000);
+    await this.getAttendances();
+  }
+
+  declineDuty(att: PersonAttendance): void {
+    this.quickSignout(att, false);
+  }
+
+  async takeDuty(t: DutyTermin): Promise<void> {
+    const result = await this.db.dutySvc.take(t.attendance.id, this.db.tenant().id);
+    switch (result) {
+      case 'ok':
+        Utils.showToast('Danke, du bist eingetragen 🙂', 'success', 3000);
+        break;
+      case 'full':
+        Utils.showToast('Jemand war schneller, der Dienst ist schon voll.', 'warning', 4000);
+        break;
+      default:
+        Utils.showToast('Du kannst diesen Dienst nicht übernehmen.', 'warning', 4000);
+    }
+    await this.getAttendances();
+    if (!this.openDuties.length) {
+      this.isOpenDutiesModalOpen = false;
+    }
   }
 
   private openAttendanceById(attendanceId: number): void {
-    const att = this.personAttendances.find(pa => pa.attendance_id === attendanceId);
+    const att = this.personAttendances.find(pa => (pa.attendance_id ?? pa.attId) === attendanceId);
     if (att) {
       this.presentActionSheetForChoice(att);
+    } else if (this.openDuties.some(t => t.attendance.id === attendanceId)) {
+      // Push "wer springt ein?" for a duty I am not assigned to.
+      this.isOpenDutiesModalOpen = true;
     }
   }
 
@@ -710,10 +839,16 @@ export class SignoutPage implements OnInit {
   }
 
   statusColorOf(att: PersonAttendance): string {
+    if (att.duty_state === 'requested' && !isCancelled(att) && !attendanceHasEnded(att)) {
+      return 'warning';
+    }
     return statusColor(att.status);
   }
 
   statusLabelOf(att: PersonAttendance, past = false): string {
+    if (!past && att.duty_state === 'requested' && !isCancelled(att)) {
+      return 'Bitte bestätigen';
+    }
     return statusLabel(att.status, past);
   }
 

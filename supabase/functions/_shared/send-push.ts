@@ -7,6 +7,8 @@ interface PushPayload {
   title: string;
   body: string;
   data?: Record<string, string>;
+  /** iOS: time-sensitive interruption level (shown through Focus modes). */
+  urgent?: boolean;
 }
 
 interface DeviceToken {
@@ -139,7 +141,11 @@ export async function sendPushToUser(
       };
     } else if (deviceToken.platform === 'ios') {
       message.message.apns = {
-        payload: { aps: { sound: 'default', badge: 1 } },
+        payload: {
+          aps: payload.urgent
+            ? { sound: 'default', badge: 1, 'interruption-level': 'time-sensitive' }
+            : { sound: 'default', badge: 1 },
+        },
       };
     }
 

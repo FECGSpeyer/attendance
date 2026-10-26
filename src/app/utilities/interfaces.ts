@@ -157,6 +157,8 @@ export interface NotificationConfig {
   push_and_telegram?: boolean;
   tasks?: boolean;
   messages?: boolean;
+  /** Dienste: Einteilung, Erinnerung, unterbesetzt; null counts as on. */
+  duties?: boolean | null;
   /** Laufender Ablaufplan als Live Activity / Live-Benachrichtigung; null counts as on. */
   live_activity?: boolean | null;
 }
@@ -343,6 +345,10 @@ export interface Attendance {
   attachment_name?: string;
   place?: string;
   files_folder?: string;
+  /** Persons needed for this Termin (Dienst-Modus); null = type default. */
+  duty_required?: number | null;
+  duty_urgent_sent_at?: string | null;
+  duty_alert_sent_at?: string | null;
 }
 
 export interface Plan {
@@ -402,6 +408,10 @@ export interface PersonAttendance {
   changed_at?: string;
   isMember?: boolean;
   registration_answers?: { [fieldId: string]: any };
+  duty_state?: DutyState | null;
+  duty_assigned_by?: string | null;
+  duty_assigned_at?: string | null;
+  duty_reminder_sent?: boolean;
 }
 
 export interface Song {
@@ -565,6 +575,33 @@ export interface AttendanceType {
   agenda_default_duration?: number;
   suggest_postponed?: boolean;
   place_enabled?: boolean;
+  /** Dienst-Modus: only assigned persons are expected, others are stand-ins. */
+  duty_mode?: boolean;
+  /** Default number of persons needed per Termin (Dienst-Modus). */
+  duty_required?: number;
+  duty_self_signup?: boolean;
+  /** Remind persons who have not confirmed an assignment after X days; null = off. */
+  duty_confirm_reminder_days?: number | null;
+  duty_notify_understaffed?: boolean;
+  /** Urgent notification X hours before start when still understaffed; null = off. */
+  duty_urgent_hours?: number | null;
+}
+
+export type DutyState = 'requested' | 'confirmed' | 'self';
+
+/** Recurring weekday unavailability of a person ("regelmäßig verhindert"). */
+export interface PersonUnavailability {
+  id?: string;
+  created_at?: string;
+  created_by?: string | null;
+  tenant_id: number;
+  person_id: number;
+  /** ISO weekdays, 1 = Monday … 7 = Sunday */
+  weekdays: number[];
+  /** Empty = all Termintypen */
+  type_ids: string[];
+  reason: string;
+  valid_until?: string | null;
 }
 
 export interface ShiftPlan {

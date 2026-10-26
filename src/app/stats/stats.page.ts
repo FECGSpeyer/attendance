@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { Chart, ChartConfiguration, ChartData, registerables } from 'chart.js';
 import { DbService } from '../services/db.service';
 import { Attendance, Group, Person, Player, Tenant } from '../utilities/interfaces';
+import { averagePersons } from 'src/app/utilities/duty';
 import { Utils } from '../utilities/Utils';
 import { AttendanceStatus, DefaultAttendanceType } from '../utilities/constants';
 import { normalizeName } from '../utilities/person-matcher';
@@ -82,7 +83,10 @@ export class StatsPage implements OnInit {
       .filter((att: Attendance) => dayjs(att.date).isBefore(dayjs().add(1, 'day')))
       .map((att: Attendance) => ({
         ...att,
-        percentage: Utils.getPercentage(att.persons, this.db.tenant()?.shift_excused_as_present),
+        percentage: Utils.getPercentage(
+          averagePersons(att.persons, this.db.attendanceTypes().find(t => t.id === att.type_id)),
+          this.db.tenant()?.shift_excused_as_present,
+        ),
       }));
 
     // Set default date range (season start to today)

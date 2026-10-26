@@ -11,6 +11,8 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const CANCELLED_STATUSES = [2, 4, 5];
+
 const STATUS_LABELS: Record<number, string> = {
   1: 'Zugesagt',
   2: 'Entschuldigt',
@@ -119,6 +121,8 @@ Deno.serve(async (req: Request) => {
 
   const personIdParam = url.searchParams.get('personId');
   const personId = personIdParam ? Number(personIdParam) : null;
+  // Optional for personal feeds: leave out Termine the person cancelled.
+  const hideExcused = url.searchParams.get('hideExcused') === '1';
 
   // Fetch tenant shortName
   const { data: tenant } = await supabase
@@ -133,26 +137,30 @@ Deno.serve(async (req: Request) => {
 
   // Build a status map for the person if personId is provided
   let statusMap: Map<number, number> | null = null;
+  let dutyStateMap: Map<number, string | null> | null = null;
   let assignedIds: number[] | null = null;
 
   if (personId !== null && !isNaN(personId)) {
     const { data: paRows } = await supabase
       .from('person_attendances')
-      .select('attendance_id, status')
+      .select('attendance_id, status, duty_state')
       .eq('person_id', personId);
 
     statusMap = new Map();
+    dutyStateMap = new Map();
     assignedIds = [];
     for (const row of (paRows ?? []) as any[]) {
+      if (hideExcused && CANCELLED_STATUSES.includes(row.status)) continue;
       assignedIds.push(row.attendance_id);
       statusMap.set(row.attendance_id, row.status ?? 0);
+      dutyStateMap.set(row.attendance_id, row.duty_state ?? null);
     }
   }
 
   // Fetch attendance rows with their type joined
   let query = supabase
     .from('attendance')
-    .select('id, date, type_id, typeInfo, start_time, end_time, duration_days, plan, deadline, place, attendanceType:type_id(name, start_time, end_time, all_day, duration_days, color)')
+    .select('id, date, type_id, typeInfo, start_time, end_time, duration_days, plan, deadline, place, attendanceType:type_id(name, start_time, end_time, all_day, duration_days, color, duty_mode)')
     .eq('tenantId', tenantId)
     .order('date', { ascending: true });
 
@@ -207,7 +215,15 @@ Deno.serve(async (req: Request) => {
 
     // Resolve status for this event (only meaningful when personId is provided)
     const status: number = statusMap?.get(ev.id) ?? 0;
-    const statusLabel = STATUS_LABELS[status];
+    let statusLabel = STATUS_LABELS[status];
+
+    // Dienstplan: a personal feed only shows duties the person was assigned to
+    // and did not cancel; unconfirmed ones say so in the title.
+    if (type.duty_mode && dutyStateMap !== null) {
+      const dutyState = dutyStateMap.get(ev.id) ?? null;
+      if (!dutyState || CANCELLED_STATUSES.includes(status)) continue;
+      if (dutyState === 'requested') statusLabel = 'bitte bestätigen';
+    }
 
     // Parse date as UTC midnight
     const dateParts = (ev.date as string).substring(0, 10).split('-');

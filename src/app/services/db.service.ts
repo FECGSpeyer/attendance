@@ -30,6 +30,7 @@ import { TaskService } from './task/task.service';
 import { NotificationService } from './notification/notification.service';
 import { ImageService } from './image/image.service';
 import { ShiftService } from './shift/shift.service';
+import { DutyService } from './duty/duty.service';
 import { AttendanceTypeService } from './attendance-type/attendance-type.service';
 import { OrganisationService } from './organisation/organisation.service';
 import { ChurchService } from './church/church.service';
@@ -100,6 +101,7 @@ export class DbService {
   public readonly notificationSvc = inject(NotificationService);
   public readonly imageSvc = inject(ImageService);
   public readonly shiftSvc = inject(ShiftService);
+  public readonly dutySvc = inject(DutyService);
   public readonly attTypeSvc = inject(AttendanceTypeService);
   public readonly orgSvc = inject(OrganisationService);
   public readonly churchSvc = inject(ChurchService);
@@ -2693,7 +2695,7 @@ export class DbService {
   async getPersonAttendances(id: number, all: boolean = false): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, duration_days, plan, extra_plans, share_plan, description, attachment_url, attachment_name, files_folder, place, attType:type_id(id, highlight, include_in_average, name, color, registration_fields))')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, duration_days, plan, extra_plans, share_plan, description, attachment_url, attachment_name, files_folder, place, attType:type_id(id, highlight, include_in_average, name, color, registration_fields, duty_mode))')
       .eq('person_id', id)
       .gt('attendance.date', all ? dayjs('2020-01-01').toISOString() : this.getCurrentAttDate()) as any;
 
@@ -2719,7 +2721,9 @@ export class DbService {
         typeId: att.attendance.type_id,
         attendance: att.attendance,
         highlight: attType ? attType.highlight : att.attendance.type === 'vortrag',
-        include_in_average: attType?.include_in_average ?? false,
+        // Duties only count for persons who were assigned.
+        include_in_average: (attType?.include_in_average ?? false) && !(attType?.duty_mode && !att.duty_state),
+        duty_state: att.duty_state ?? null,
       } as any;
     });
   }
@@ -2727,7 +2731,7 @@ export class DbService {
   async getAllUpcomingAttendancesForSignout(playerId: number): Promise<PersonAttendance[]> {
     const { data: allAtts } = await supabase
       .from('attendance')
-      .select('id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, duration_days, plan, extra_plans, share_plan, description, attachment_url, attachment_name, files_folder, place, attType:type_id(id, highlight, include_in_average, name, color, registration_fields)')
+      .select('id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, duration_days, plan, extra_plans, share_plan, description, attachment_url, attachment_name, files_folder, place, attType:type_id(id, highlight, include_in_average, name, color, registration_fields, duty_mode)')
       .eq('tenantId', this.tenant().id)
       // Look back a bit so mehrtägige Termine that started earlier and are still running stay included.
       .gt('date', dayjs().startOf('day').subtract(31, 'day').toISOString())
@@ -2738,7 +2742,7 @@ export class DbService {
 
     const { data: playerPAs } = await supabase
       .from('person_attendances')
-      .select('id, attendance_id, status, notes, registration_answers')
+      .select('id, attendance_id, status, notes, registration_answers, duty_state')
       .eq('person_id', playerId)
       .in('attendance_id', runningAtts.map((a: any) => a.id)) as any;
 
@@ -2766,6 +2770,7 @@ export class DbService {
         highlight: attType?.highlight ?? att.type === 'vortrag',
         include_in_average: attType?.include_in_average ?? false,
         isMember: !!playerPa,
+        duty_state: playerPa?.duty_state ?? null,
       } as any;
     });
   }

@@ -1,0 +1,123 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      @if (step === 'preview') {
+        <ion-button (click)="back()">Zurück</ion-button>
+      } @else {
+        <ion-button (click)="cancel()" aria-label="Abbrechen">
+          <ion-icon slot="icon-only" name="close"></ion-icon>
+        </ion-button>
+      }
+    </ion-buttons>
+    <ion-title>{{ step === 'rules' ? 'Dienste verteilen' : 'Vorschlag' }}</ion-title>
+    @if (step === 'preview') {
+      <ion-buttons slot="end">
+        <ion-button (click)="run()" aria-label="Neu verteilen">
+          <ion-icon slot="icon-only" name="shuffle-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  @if (step === 'rules') {
+    <ion-list [inset]="true">
+      <ion-list-header><ion-label>Zeitraum</ion-label></ion-list-header>
+      <ion-item>
+        <ion-input type="date" label="Von" [(ngModel)]="from"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input type="date" label="Bis" [(ngModel)]="to"></ion-input>
+      </ion-item>
+    </ion-list>
+
+    @if (dutyTypes.length > 1) {
+      <ion-list [inset]="true">
+        <ion-list-header><ion-label>Termintypen</ion-label></ion-list-header>
+        @for (t of dutyTypes; track t.id) {
+          <ion-item>
+            <ion-checkbox [checked]="selectedTypeIds.includes(t.id)" (ionChange)="toggleType(t.id)" justify="start" labelPlacement="end">{{ t.name }}</ion-checkbox>
+          </ion-item>
+        }
+      </ion-list>
+    }
+
+    <ion-list [inset]="true">
+      <ion-list-header><ion-label>Regeln</ion-label></ion-list-header>
+      <ion-item>
+        <ion-label>Höchstens pro Person</ion-label>
+        <div slot="end" class="stepper">
+          <ion-button fill="clear" size="small" (click)="changeMax(-1)" [disabled]="maxPerPerson <= 1" aria-label="Weniger">
+            <ion-icon slot="icon-only" name="remove-circle-outline"></ion-icon>
+          </ion-button>
+          <span>{{ maxPerPerson }}</span>
+          <ion-button fill="clear" size="small" (click)="changeMax(1)" aria-label="Mehr">
+            <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-item>
+      <ion-item>
+        <ion-toggle [(ngModel)]="notTwiceSameDay">Nicht zweimal am selben Tag</ion-toggle>
+      </ion-item>
+    </ion-list>
+    <p class="hint">
+      Nur offene Plätze werden gefüllt, bestehende Einteilungen bleiben. Wer abgesagt hat oder regelmäßig verhindert ist, wird nicht eingeteilt.
+      Wer bisher am wenigsten Dienste hat, kommt zuerst dran.
+    </p>
+    <div class="ion-padding">
+      <ion-button expand="block" (click)="calculate()">Vorschlag berechnen</ion-button>
+    </div>
+  } @else {
+    @if (!rows.length) {
+      <div class="empty">Im Zeitraum gibt es keine Termine mit Dienst-Modus.</div>
+    } @else {
+      <p class="hint top">
+        {{ plannedTotal }} {{ plannedTotal === 1 ? 'Einteilung' : 'Einteilungen' }} geplant{{ missingTotal ? ', ' + missingTotal + ' ' + (missingTotal === 1 ? 'Platz bleibt' : 'Plätze bleiben') + ' offen' : '' }}.
+        Tippe auf einen Namen zum Tauschen.
+      </p>
+      <ion-list [inset]="true">
+        @for (row of rows; track row.termin.attendance.id) {
+          <ion-item lines="full">
+            <ion-label class="ion-text-wrap">
+              <h2>{{ dateLabel(row.termin) }}</h2>
+              <p>{{ title(row.termin) }} · {{ row.existing.length + row.picked.length }}/{{ row.termin.required }}</p>
+              <div class="names">
+                @for (pa of row.existing; track pa.id) {
+                  <ion-chip outline="true" color="medium" disabled="true">{{ firstName(pa) }}</ion-chip>
+                }
+                @for (pa of row.picked; track pa.id) {
+                  <ion-chip color="primary" (click)="change(row, pa)">{{ firstName(pa) }}</ion-chip>
+                }
+                @for (n of range(row.missing); track $index) {
+                  <ion-chip outline="true" color="danger" (click)="change(row)">offen</ion-chip>
+                }
+              </div>
+            </ion-label>
+          </ion-item>
+        }
+      </ion-list>
+
+      <ion-list [inset]="true">
+        <ion-list-header><ion-label>Dienste pro Person im Zeitraum</ion-label></ion-list-header>
+        @for (c of personCounts; track c.name) {
+          <ion-item>
+            <ion-label>{{ c.name }}</ion-label>
+            <ion-note slot="end">{{ c.count }}{{ c.planned ? ' (+' + c.planned + ' neu)' : '' }}</ion-note>
+          </ion-item>
+        }
+      </ion-list>
+      <p class="hint">Grau = schon eingeteilt, bleibt unverändert.</p>
+    }
+  }
+</ion-content>
+
+@if (step === 'preview' && rows.length) {
+  <ion-footer>
+    <ion-toolbar>
+      <ion-button expand="block" class="ion-margin-horizontal" [disabled]="saving || !plannedTotal" (click)="save()">
+        {{ plannedTotal ? plannedTotal + ' Einteilungen speichern' : 'Nichts zu verteilen' }}
+      </ion-button>
+    </ion-toolbar>
+  </ion-footer>
+}

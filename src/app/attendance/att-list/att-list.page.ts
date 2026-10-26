@@ -1,4 +1,5 @@
 import { Component, OnInit, effect } from '@angular/core';
+import { DutyDistributeModalComponent } from 'src/app/duty/duty-distribute-modal/duty-distribute-modal.component';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Network } from '@capacitor/network';
 import { AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular/lazy';
@@ -17,6 +18,7 @@ import { PlanningPage } from 'src/app/planning/planning.page';
 import { Utils } from 'src/app/utilities/Utils';
 import { createAttendanceForType, personsForAttendanceType } from 'src/app/utilities/attendance-create';
 import { AttendanceStatus, DefaultAttendanceType, Role } from 'src/app/utilities/constants';
+import { averagePersons, dutyFill, dutyFillColor, dutyRequired, isDutyType, isoWeekday, occupiedCount, occupiesDuty, WEEKDAY_LONG } from 'src/app/utilities/duty';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 @Component({
@@ -62,6 +64,8 @@ export class AttListPage implements OnInit {
   public highlightedTypes: string[] = [];
   public isAddModalOpen = false;
   public filterTypeId = 'all';
+  /** Dienst-Modus: persons needed per ISO weekday when creating several Termine. */
+  public dutyRequiredByWeekday: Record<number, number> = {};
   public showAllPast = false;
   public readonly pastPreviewCount = PAST_PREVIEW_COUNT;
   private upcomingGroupsCache: { src: Attendance[]; groups: EventMonthGroup<Attendance>[] };
@@ -259,7 +263,10 @@ export class AttListPage implements OnInit {
 
     const attendances: Attendance[] = (await this.db.getAttendance(false, true)).map((att: Attendance): Attendance => ({
         ...att,
-        percentage: Utils.getPercentage(att.persons, this.db.tenant()?.shift_excused_as_present),
+        percentage: Utils.getPercentage(
+          averagePersons(att.persons, this.db.attendanceTypes().find(t => t.id === att.type_id)),
+          this.db.tenant()?.shift_excused_as_present,
+        ),
       }));
 
     await this.storage.set(cacheKey, { tenantId: this.db.tenant()?.id, data: attendances, cachedAt: new Date().toISOString() });
@@ -282,8 +289,10 @@ export class AttListPage implements OnInit {
       this.currentAttendance = undefined;
     }
 
-    if (this.oldAttendances.length) {
-      this.perc = Math.round((this.oldAttendances.reduce((value: number, current: Attendance) => value + current.percentage, 0)) / this.oldAttendances.length);
+    // Duty Termine without anybody assigned have no meaningful percentage.
+    const forAverage = this.oldAttendances.filter((att: Attendance) => !this.isDutyAttendance(att) || (att.persons ?? []).some(p => !!p.duty_state));
+    if (forAverage.length) {
+      this.perc = Math.round((forAverage.reduce((value: number, current: Attendance) => value + current.percentage, 0)) / forAverage.length);
     }
 
     this.type_id = this.db.attendanceTypes().find(type => type.visible)?.id;
@@ -350,6 +359,7 @@ export class AttListPage implements OnInit {
     }
 
     const allPersons = await personsForAttendanceType(this.db, type);
+    const unavailability = await this.db.dutySvc.getUnavailabilityForTenant(this.db.tenant().id);
 
     for (const date of this.dates) {
       const attendance_id = await createAttendanceForType(this.db, type, {
@@ -358,7 +368,8 @@ export class AttListPage implements OnInit {
         typeInfo: this.typeInfo,
         durationDays: this.allDayDuration,
         place: this.place || null,
-      }, allPersons, tenantAbsences);
+        dutyRequired: isDutyType(type) ? this.dutyRequiredByWeekday[isoWeekday(date)] ?? type.duty_required : null,
+      }, allPersons, tenantAbsences, unavailability);
 
       if (this.historyEntries.length) {
         await this.db.addSongsToHistory(this.historyEntries.map((entry: History) => ({
@@ -391,11 +402,76 @@ export class AttListPage implements OnInit {
     this.dateString = format(new Date(), 'dd.MM.yyyy');
     this.selectedSongs = [];
     this.historyEntries = [];
+    this.dutyRequiredByWeekday = {};
   }
 
   onTypeChange(): void {
     const attType = this.db.attendanceTypes().find(type => type.id === this.type_id);
     this.allDayDuration = attType.all_day ? attType.duration_days : 1;
+    this.dutyRequiredByWeekday = {};
+  }
+
+  // ── Dienst-Modus ──────────────────────────────────────────
+
+  get hasDutyTypes(): boolean {
+    return this.db.attendanceTypes().some(t => t.duty_mode);
+  }
+
+  async openDutyDistribution(): Promise<void> {
+    const modal = await this.modalController.create({ component: DutyDistributeModalComponent });
+    await modal.present();
+    const { role } = await modal.onDidDismiss();
+    if (role === 'confirm') {
+      await this.getAttendance();
+    }
+  }
+
+  isDutyTypeSelected(): boolean {
+    return isDutyType(this.db.attendanceTypes().find(type => type.id === this.type_id));
+  }
+
+  /** Weekdays of the selected dates with the number of Termine and persons needed. */
+  get dutyWeekdays(): { weekday: number; label: string; count: number; required: number }[] {
+    const type = this.db.attendanceTypes().find(t => t.id === this.type_id);
+    const counts = new Map<number, number>();
+    for (const date of this.dates ?? []) {
+      const wd = isoWeekday(date);
+      counts.set(wd, (counts.get(wd) ?? 0) + 1);
+    }
+    return [...counts.entries()].sort((a, b) => a[0] - b[0]).map(([weekday, count]) => ({
+      weekday,
+      label: WEEKDAY_LONG[weekday - 1],
+      count,
+      required: this.dutyRequiredByWeekday[weekday] ?? type?.duty_required ?? 1,
+    }));
+  }
+
+  changeDutyRequired(weekday: number, delta: number): void {
+    const type = this.db.attendanceTypes().find(t => t.id === this.type_id);
+    const current = this.dutyRequiredByWeekday[weekday] ?? type?.duty_required ?? 1;
+    this.dutyRequiredByWeekday = { ...this.dutyRequiredByWeekday, [weekday]: Math.max(1, current + delta) };
+  }
+
+  isDutyAttendance(att: Attendance): boolean {
+    return isDutyType(this.db.attendanceTypes().find(type => type.id === att.type_id));
+  }
+
+  /** "1/2" plus color for duty Termine. */
+  dutyBadge(att: Attendance): { text: string; color: string } {
+    const type = this.db.attendanceTypes().find(t => t.id === att.type_id);
+    const required = dutyRequired(att, type);
+    const fill = dutyFill(att.persons, required);
+    return {
+      text: `${occupiedCount(att.persons)}/${required}${fill === 'requested' ? ' ?' : ''}`,
+      color: dutyFillColor(fill),
+    };
+  }
+
+  /** First names of the persons on duty, "angefragt" for unconfirmed ones. */
+  dutyNames(att: Attendance): string {
+    const names = (att.persons ?? []).filter(occupiesDuty).map(p =>
+      p.duty_state === 'requested' ? `${p.firstName} (angefragt)` : p.firstName);
+    return names.length ? names.join(', ') : 'noch niemand eingeteilt';
   }
 
   isAllDay(): boolean {

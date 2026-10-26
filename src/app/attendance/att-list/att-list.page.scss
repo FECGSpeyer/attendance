@@ -30,3 +30,23 @@ ion-item.ev-today-item {
     min-width: 0;
   }
 }
+
+.duty-icon {
+  vertical-align: -2px;
+  margin-right: 4px;
+  color: var(--ion-color-primary);
+}
+
+.duty-stepper {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border-radius: 10px;
+  background: var(--ion-color-light);
+
+  span {
+    min-width: 22px;
+    text-align: center;
+    font-weight: 600;
+  }
+}

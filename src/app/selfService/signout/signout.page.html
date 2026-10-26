@@ -129,7 +129,7 @@
     </div>
   </div>
 
-  @if (upcomingSongs.length > 0 || canPlannedAbsence) {
+  @if (upcomingSongs.length > 0 || canPlannedAbsence || inDutyCircle) {
   <div class="greet-tiles">
     @if (upcomingSongs.length > 0) {
       <button class="greet-tile" (click)="songsModalOpen = true">
@@ -149,8 +149,83 @@
         </span>
       </button>
     }
+    @if (inDutyCircle) {
+      <button class="greet-tile" (click)="isOpenDutiesModalOpen = true">
+        <span class="greet-tile__icon"><ion-icon name="headset-outline"></ion-icon></span>
+        <span>
+          <span class="greet-tile__title">Offene Dienste</span>
+          <span class="greet-tile__sub">{{ openDuties.length === 0 ? 'alles besetzt' : openDuties.length === 1 ? '1 offen' : openDuties.length + ' offen' }}</span>
+        </span>
+      </button>
+    }
   </div>
   }
+
+  @if (dutyRequests.length) {
+    <div class="ev-section">
+      <h2>Bitte bestätigen</h2>
+      <span class="ev-section__count">{{ dutyRequests.length }}</span>
+    </div>
+    @for (att of dutyRequests; track att.attendance_id ?? att.id) {
+      <div class="ev-today ev-today--static duty-request">
+        <div class="ev-today__head">
+          <div class="ev-tile">
+            <span class="ev-tile__wd">{{ weekday(att.date) }}</span>
+            <span class="ev-tile__day">{{ day(att.date) }}</span>
+          </div>
+          <div>
+            <div class="ev-today__title" lang="de">{{ getEventTitle(att) }}</div>
+            <div class="ev-today__meta">{{ getEventMeta(att, true, false) }}</div>
+            <span class="ev-pill ev-today__status ion-color-warning">Du bist eingeteilt</span>
+          </div>
+        </div>
+        <div class="ev-today__actions">
+          <ion-button color="success" (click)="confirmDuty(att)">Bestätigen</ion-button>
+          <ion-button fill="outline" color="primary" (click)="declineDuty(att)">Kann nicht</ion-button>
+        </div>
+      </div>
+    }
+  }
+
+  <ion-modal [isOpen]="isOpenDutiesModalOpen" (ionModalDidDismiss)="isOpenDutiesModalOpen = false"
+    handle-behavior="none" [initialBreakpoint]="0.75" [breakpoints]="[0, 0.75, 1]">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Offene Dienste</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="isOpenDutiesModalOpen = false">Schließen</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        @if (openDuties.length) {
+          <ion-list [inset]="true">
+            @for (t of openDuties; track t.attendance.id) {
+              <ion-item>
+                <ion-label>
+                  <h2>{{ dutyTitle(t) }}</h2>
+                  <p>{{ dutyMeta(t) }}</p>
+                </ion-label>
+                <ion-button slot="end" (click)="takeDuty(t)">Ich übernehme</ion-button>
+              </ion-item>
+            }
+          </ion-list>
+        } @else {
+          <p class="ion-padding ion-text-center">Gerade sind alle Dienste besetzt. Danke!</p>
+        }
+        <ion-list [inset]="true">
+          <ion-item button detail="true" (click)="openUnavailability()">
+            <ion-icon slot="start" name="calendar-clear-outline"></ion-icon>
+            <ion-label>
+              <h2>Regelmäßig verhindert</h2>
+              <p>z. B. jeden Mittwoch wegen der Kinderstunde</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 
   <ion-modal class="songsModal" [isOpen]="songsModalOpen" (ionModalDidDismiss)="songsModalOpen = false" #songsModal
     [initialBreakpoint]="upcomingSongs.length > 1 ? 0.8 : 0.6"
@@ -333,7 +408,7 @@
               <span class="ev-tile__day">{{ day(att.date) }}</span>
             </div>
             <ion-label>
-              <h2>{{ getEventTitle(att) }}</h2>
+              <h2>{{ getEventTitle(att) }}@if (isDutyPa(att)) { <span class="ev-chip duty-tag"><ion-icon name="headset-outline"></ion-icon> Dienst</span>}</h2>
               @if (getEventMeta(att); as meta) {
                 <p>{{ meta }}</p>
               }

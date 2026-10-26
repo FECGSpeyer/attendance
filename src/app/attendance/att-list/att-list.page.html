@@ -49,6 +49,11 @@
           </ion-list>
         </ng-template>
       </ion-popover>
+      @if (isConductor && hasDutyTypes) {
+        <ion-button (click)="openDutyDistribution()" aria-label="Dienste verteilen">
+          <ion-icon slot="icon-only" name="shuffle-outline"></ion-icon>
+        </ion-button>
+      }
       <app-notification-bell></app-notification-bell>
     </ion-buttons>
   </ion-toolbar>
@@ -100,7 +105,12 @@
             @if (currentAttendance.place) {
               <div class="ev-today__place"><ion-icon name="location-outline"></ion-icon><span>{{ currentAttendance.place }}</span></div>
             }
-            @if (getStatusCounts(currentAttendance); as counts) {
+            @if (isDutyAttendance(currentAttendance)) {
+              <div class="ev-today__stats">
+                <span class="ev-today__stat-strong">{{ dutyBadge(currentAttendance).text }} besetzt</span>
+                <span>{{ dutyNames(currentAttendance) }}</span>
+              </div>
+            } @else if (getStatusCounts(currentAttendance); as counts) {
               <div class="ev-today__stats">
                 <span class="ev-today__stat-strong">{{ currentAttendance.percentage || 0 }} %</span>
                 <span>{{ counts.present }} anwesend</span>
@@ -150,9 +160,17 @@
                   <span class="ev-tile__day">{{ day(att.date) }}</span>
                 </div>
                 <ion-label>
-                  <h2>{{ getEventTitle(att) }}</h2>
+                  <h2>
+                    @if (isDutyAttendance(att)) {
+                      <ion-icon name="headset-outline" class="duty-icon" aria-hidden="true"></ion-icon>
+                    }
+                    {{ getEventTitle(att) }}
+                  </h2>
                   @if (getEventMeta(att); as meta) {
                     <p>{{ meta }}</p>
+                  }
+                  @if (isDutyAttendance(att)) {
+                    <p>{{ dutyNames(att) }}</p>
                   }
                 </ion-label>
                 @if (hasPlan(att)) {
@@ -160,7 +178,11 @@
                     <ion-icon slot="icon-only" name="document-text-outline"></ion-icon>
                   </ion-button>
                 }
-                <span slot="end" class="ev-pill" [ngClass]="'ion-color-' + percColor(att.percentage || 0)">{{ att.percentage || 0 }}%</span>
+                @if (isDutyAttendance(att)) {
+                  <span slot="end" class="ev-pill" [ngClass]="'ion-color-' + dutyBadge(att).color" [attr.aria-label]="'Besetzung ' + dutyBadge(att).text">{{ dutyBadge(att).text }}</span>
+                } @else {
+                  <span slot="end" class="ev-pill" [ngClass]="'ion-color-' + percColor(att.percentage || 0)">{{ att.percentage || 0 }}%</span>
+                }
               </ion-item>
               @if (isConductor) {
                 <ion-item-options side="end" (ionSwipe)="remove(att.id, slider)">
@@ -324,6 +346,25 @@
                 <ion-textarea autocapitalize="sentences" helperText="Dieser Text wird anstelle des Typs angezeigt."
                 [(ngModel)]="typeInfo"></ion-textarea>
               </ion-item>
+              @if (isDutyTypeSelected()) {
+                @for (wd of dutyWeekdays; track wd.weekday) {
+                  <ion-item>
+                    <ion-label>
+                      <h2>Benötigte Personen · {{ wd.label }}</h2>
+                      <p>{{ wd.count }} {{ wd.count === 1 ? 'Termin' : 'Termine' }}</p>
+                    </ion-label>
+                    <div slot="end" class="duty-stepper">
+                      <ion-button fill="clear" size="small" (click)="changeDutyRequired(wd.weekday, -1)" [disabled]="wd.required <= 1" aria-label="Weniger">
+                        <ion-icon slot="icon-only" name="remove"></ion-icon>
+                      </ion-button>
+                      <span>{{ wd.required }}</span>
+                      <ion-button fill="clear" size="small" (click)="changeDutyRequired(wd.weekday, 1)" aria-label="Mehr">
+                        <ion-icon slot="icon-only" name="add"></ion-icon>
+                      </ion-button>
+                    </div>
+                  </ion-item>
+                }
+              }
               @if (isPlaceEnabled()) {
                 <ion-item>
                   <ion-label position="stacked">Ort (für Navigation)</ion-label>

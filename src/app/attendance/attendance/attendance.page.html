@@ -589,6 +589,76 @@
     </ion-item-group>
     }
 
+    <!-- Dienstplan: Besetzung -->
+    @if (isDuty) {
+    <ion-item-group class="duty-block">
+      <ion-item lines="full">
+        <ion-icon name="headset-outline" slot="start" color="primary"></ion-icon>
+        <ion-label>
+          <h2>Besetzung</h2>
+          <p>Benötigt: {{ dutyRequiredCount }} {{ dutyRequiredCount === 1 ? 'Person' : 'Personen' }}</p>
+        </ion-label>
+        @if (canManageDuty) {
+        <ion-button slot="end" fill="clear" size="small" (click)="changeDutyRequired(-1)" [disabled]="dutyRequiredCount <= 1" aria-label="Weniger Personen benötigt">
+          <ion-icon slot="icon-only" name="remove-circle-outline"></ion-icon>
+        </ion-button>
+        }
+        <ion-badge slot="end" [color]="dutyFillColor">{{ dutyOccupants.length }}/{{ dutyRequiredCount }}</ion-badge>
+        @if (canManageDuty) {
+        <ion-button slot="end" fill="clear" size="small" (click)="changeDutyRequired(1)" aria-label="Mehr Personen benötigt">
+          <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+        </ion-button>
+        }
+      </ion-item>
+      @for (pa of dutyOccupants; track pa.id) {
+      <ion-item>
+        <ion-avatar slot="start"><img [src]="pa.img" alt="" /></ion-avatar>
+        <ion-label>
+          <h3>{{ pa.firstName }} {{ pa.lastName }}</h3>
+          <p>{{ dutyStateText(pa) }}</p>
+        </ion-label>
+        <ion-badge slot="end" [color]="pa.duty_state === 'requested' ? 'warning' : 'success'">
+          {{ pa.duty_state === 'requested' ? 'angefragt' : 'bestätigt' }}
+        </ion-badge>
+        @if (canManageDuty) {
+        <ion-button slot="end" fill="clear" color="medium" (click)="removeDutyAssignment(pa)" aria-label="Austragen">
+          <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
+        </ion-button>
+        }
+      </ion-item>
+      }
+      @if (canManageDuty) {
+      <ion-item button detail="false" (click)="openDutyAssign()" lines="full">
+        <ion-icon name="person-add-outline" slot="start" color="primary"></ion-icon>
+        <ion-label color="primary">Person einteilen</ion-label>
+      </ion-item>
+      }
+      @if (dutyAvailable.length && canManageDuty) {
+      <ion-item-divider><ion-label>Verfügbar</ion-label></ion-item-divider>
+      @for (pa of dutyAvailable; track pa.id) {
+      <ion-item>
+        <ion-label>
+          <h3>{{ pa.firstName }} {{ pa.lastName }}</h3>
+        </ion-label>
+        <ion-button slot="end" fill="outline" size="small" shape="round" (click)="openDutyAssign(pa)">Einteilen</ion-button>
+      </ion-item>
+      }
+      }
+      @if (dutyUnavailable.length) {
+      <ion-item-divider><ion-label>Kann nicht</ion-label></ion-item-divider>
+      @for (pa of dutyUnavailable; track pa.id) {
+      <ion-item>
+        <ion-label class="ion-text-wrap">
+          <h3>{{ pa.firstName }} {{ pa.lastName }}</h3>
+          @if (pa.notes) { <p>{{ pa.notes }}</p> }
+        </ion-label>
+        <ion-badge slot="end" color="medium">{{ pa.duty_state ? 'abgesagt' : 'abgemeldet' }}</ion-badge>
+      </ion-item>
+      }
+      }
+    </ion-item-group>
+    }
+
     <!-- Protocol card (Protokoll & Tagesordnung) -->
     @if (type?.enable_protocol) {
     <ion-item-group>

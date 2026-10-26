@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()" aria-label="Abbrechen">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      Person einteilen
+      <div class="sub">{{ title }} · {{ openPlaces }} {{ openPlaces === 1 ? 'Platz' : 'Plätze' }} frei</div>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  @if (sorted.length === 0) {
+    <div class="empty">Alle aus dem Personenkreis sind schon eingeteilt.</div>
+  } @else {
+    <ion-list [inset]="true">
+      @for (c of sorted; track c.personAttendanceId) {
+        <ion-item button detail="false" (click)="toggle(c)" [class.dim]="!!c.unavailableNote">
+          <ion-checkbox slot="start" [checked]="selected.has(c.personAttendanceId)" aria-hidden="true"></ion-checkbox>
+          <ion-label>
+            <h2>{{ c.name }}</h2>
+            <p>
+              @if (c.unavailableNote) {
+                {{ c.unavailableNote }}
+              } @else {
+                {{ c.count }} {{ c.count === 1 ? 'Dienst' : 'Dienste' }}{{ monthLabel ? ' im ' + monthLabel : '' }}
+                @if (c.sameDay) { · am selben Tag schon dran }
+              }
+            </p>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+    <p class="hint">
+      Sortiert nach Anzahl Dienste. Eingeteilte bekommen sofort eine Push-Nachricht und müssen bestätigen.
+    </p>
+    @if (tooMany) {
+      <p class="hint warn">Du hast mehr Personen gewählt als Plätze frei sind. Der Dienst ist dann überbesetzt.</p>
+    }
+  }
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar>
+    <ion-button expand="block" shape="round" [disabled]="selected.size === 0" (click)="confirm()">
+      {{ confirmLabel }}
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

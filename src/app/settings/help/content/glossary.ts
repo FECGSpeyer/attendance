@@ -175,4 +175,22 @@ export const GLOSSARY: GlossaryTerm[] = [
     term: 'Personenkreis',
     definition: 'Alle Personen in den relevanten Gruppen eines Termintyps mit „Protokoll & Tagesordnung“ (ohne Gruppen: alle Mitglieder), außer Eltern und Bewerbern. Sie lesen freigegebene Protokolle und dürfen Themen vorschlagen.',
   },
+  {
+    id: 'dienst-modus',
+    term: 'Dienst-Modus',
+    aliases: ['Dienstplan', 'Dienst'],
+    definition: 'Einstellung eines Termintyps für Dienste wie Tontechnik: Pro Termin werden nur so viele Personen gebraucht wie eingestellt. Die Leitung teilt ein oder man trägt sich selbst ein; nur Eingeteilte zählen für die Quote.',
+  },
+  {
+    id: 'springer',
+    term: 'Springer',
+    aliases: ['Springerin', 'Einspringer'],
+    definition: 'Person aus dem Dienst-Team, die bei einem Dienst nicht eingeteilt ist. Springer bekommen eine Nachricht, wenn jemand ausfällt, und können den Dienst übernehmen.',
+  },
+  {
+    id: 'regelmaessig-verhindert',
+    term: 'Regelmäßig verhindert',
+    aliases: ['Verfügbarkeit'],
+    definition: 'Regel, an welchen Wochentagen eine Person grundsätzlich nicht kann. Neue Termine an diesen Tagen werden automatisch als entschuldigt eingetragen.',
+  },
 ];

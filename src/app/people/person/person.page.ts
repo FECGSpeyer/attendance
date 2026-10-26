@@ -8,6 +8,7 @@ import utc from 'dayjs/plugin/utc';
 import { Utils } from 'src/app/utilities/Utils';
 import { AttendanceStatus, DefaultAttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role, FieldType } from 'src/app/utilities/constants';
 import { RankedMatch } from 'src/app/utilities/person-matcher';
+import { UnavailabilityModalComponent } from 'src/app/duty/unavailability-modal/unavailability-modal.component';
 dayjs.extend(utc);
 
 @Component({
@@ -1731,5 +1732,21 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     loading.dismiss();
+  }
+
+  get hasDutyTypes(): boolean {
+    return this.db.attendanceTypes().some(t => t.duty_mode);
+  }
+
+  async openUnavailability(): Promise<void> {
+    const modal = await this.modalController.create({
+      component: UnavailabilityModalComponent,
+      componentProps: {
+        personId: this.player.id,
+        personName: `${this.player.firstName} ${this.player.lastName}`.trim(),
+        forOther: true,
+      },
+    });
+    await modal.present();
   }
 }

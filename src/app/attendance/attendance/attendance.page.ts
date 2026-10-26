@@ -7,6 +7,7 @@ import { Storage } from '@ionic/storage-angular';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { format } from 'date-fns';
 import dayjs from 'dayjs';
+import 'dayjs/locale/de';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { StatusInfoComponent } from './status-info/status-info.component';
 import { ChurchOverviewComponent } from 'src/app/shared/church-overview/church-overview.component';
@@ -25,6 +26,8 @@ import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracki
 import { OfflineQueueService } from 'src/app/services/offline-queue/offline-queue.service';
 import { allPlans, planDate, planLabel, todayPlanIndex } from 'src/app/utilities/plan-days';
 import { openPlanShareSheet } from 'src/app/planning/plan-share-sheet/plan-share-sheet.component';
+import { DutyAssignModalComponent, DutyCandidate } from 'src/app/duty/duty-assign-modal/duty-assign-modal.component';
+import { dutyFill, dutyFillColor, dutyRequired, dutyStateLabel, isCancelled, isDutyType, matchingUnavailability, occupiesDuty } from 'src/app/utilities/duty';
 
 @Component({
     selector: 'app-attendance',
@@ -621,6 +624,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       ...this.players[idx],
       status: payload.new.status,
       notes: payload.new.notes,
+      duty_state: payload.new.duty_state,
     };
   }
 
@@ -774,6 +778,139 @@ export class AttendancePage implements OnInit, OnDestroy {
         Utils.showToast('Fehler beim hinzufügen des Bildes, versuche es später erneut', 'danger');
       }
     }
+  }
+
+  // ── Dienstplan ─────────────────────────────────────────────
+
+  get isDuty(): boolean {
+    return isDutyType(this.type);
+  }
+
+  get dutyRequiredCount(): number {
+    return dutyRequired(this.attendance, this.type);
+  }
+
+  get dutyOccupants(): PersonAttendance[] {
+    return this.players.filter(occupiesDuty);
+  }
+
+  /** Persons that cannot do this duty (cancelled assignment or excused upfront). */
+  get dutyUnavailable(): PersonAttendance[] {
+    return this.players.filter(p => isCancelled(p));
+  }
+
+  get dutyAvailable(): PersonAttendance[] {
+    return this.players.filter(p => !p.duty_state && !isCancelled(p));
+  }
+
+  get dutyFillColor(): string {
+    return dutyFillColor(dutyFill(this.players, this.dutyRequiredCount));
+  }
+
+  dutyStateText(pa: PersonAttendance): string {
+    return dutyStateLabel(pa.duty_state);
+  }
+
+  get canManageDuty(): boolean {
+    return this.isTeamLeader;
+  }
+
+  async changeDutyRequired(delta: number): Promise<void> {
+    const next = Math.max(1, this.dutyRequiredCount + delta);
+    this.attendance.duty_required = next;
+    await this.db.updateAttendance({ duty_required: next }, this.attendance.id);
+  }
+
+  /** Sheet "Person einteilen" (B3). Candidates are sorted by their duties in the Termin's month. */
+  async openDutyAssign(preselect?: PersonAttendance): Promise<void> {
+    if (preselect) {
+      await this.assignDuty([preselect.id]);
+      return;
+    }
+    const candidates = this.players.filter(p => !occupiesDuty(p));
+    const month = dayjs(this.attendance.date);
+    const [counts, unavailability, sameDayTermine] = await Promise.all([
+      this.db.dutySvc.getDutyCounts(
+        candidates.map(c => c.person_id),
+        month.startOf('month').toISOString(),
+        month.endOf('month').toISOString(),
+      ),
+      this.db.dutySvc.getUnavailabilityForTenant(this.db.tenant().id),
+      this.db.dutySvc.getUpcomingDutyTermine(this.db.tenant().id, this.db.attendanceTypes(),
+        month.endOf('day').toISOString(), month.startOf('day').toISOString()),
+    ]);
+    const busyToday = new Set<number>();
+    for (const t of sameDayTermine) {
+      if (t.attendance.id === this.attendance.id) continue;
+      t.persons.filter(occupiesDuty).forEach(p => busyToday.add(p.person_id));
+    }
+
+    const list: DutyCandidate[] = candidates.map(pa => {
+      const rule = matchingUnavailability(unavailability, pa.person_id, this.attendance.date, this.attendance.type_id);
+      let unavailableNote = '';
+      if (isCancelled(pa)) {
+        unavailableNote = pa.notes ? `Kann nicht: ${pa.notes}` : 'Kann nicht';
+      } else if (rule) {
+        unavailableNote = rule.reason ? `Regelmäßig verhindert: ${rule.reason}` : 'Regelmäßig verhindert';
+      }
+      return {
+        personAttendanceId: pa.id,
+        name: `${pa.firstName} ${pa.lastName}`,
+        img: pa.img,
+        count: counts.get(pa.person_id) ?? 0,
+        sameDay: busyToday.has(pa.person_id),
+        unavailableNote,
+      };
+    });
+
+    const modal = await this.modalController.create({
+      component: DutyAssignModalComponent,
+      componentProps: {
+        title: `${this.type?.name ?? ''} · ${dayjs(this.attendance.date).format('DD.MM.')}`,
+        openPlaces: Math.max(0, this.dutyRequiredCount - this.dutyOccupants.length),
+        candidates: list,
+        monthLabel: month.locale('de').format('MMMM'),
+      },
+      breakpoints: [0, 0.75, 1],
+      initialBreakpoint: 0.75,
+      handleBehavior: 'cycle',
+    });
+    await modal.present();
+    const { data, role } = await modal.onDidDismiss();
+    if (role === 'confirm' && data?.length) {
+      await this.assignDuty(data);
+    }
+  }
+
+  private async assignDuty(personAttendanceIds: string[]): Promise<void> {
+    const userId = this.db.user?.id;
+    await this.db.dutySvc.assign(personAttendanceIds, this.attendance.id, this.db.tenant().id, userId);
+    const now = new Date().toISOString();
+    this.players = this.players.map(p => personAttendanceIds.includes(p.id)
+      ? { ...p, duty_state: 'requested', status: AttendanceStatus.Neutral, notes: '', duty_assigned_at: now }
+      : p);
+    Utils.showToast(personAttendanceIds.length === 1 ? 'Eingeteilt, die Person wird benachrichtigt' : 'Eingeteilt, die Personen werden benachrichtigt', 'success');
+  }
+
+  async removeDutyAssignment(pa: PersonAttendance): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Aus dem Dienst austragen?',
+      message: `${pa.firstName} ist dann nicht mehr eingeteilt.`,
+      buttons: [
+        { text: 'Abbrechen', role: 'cancel' },
+        {
+          text: 'Austragen',
+          role: 'destructive',
+          handler: async () => {
+            await this.db.dutySvc.unassign(pa.id, this.db.user?.id);
+            this.players = this.players.map(p => p.id === pa.id
+              ? { ...p, duty_state: null, status: AttendanceStatus.Neutral, notes: '' }
+              : p);
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   async onDescriptionChanged() {

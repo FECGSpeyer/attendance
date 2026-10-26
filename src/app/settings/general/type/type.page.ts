@@ -355,6 +355,23 @@ export class TypePage implements OnInit {
     if (this.type.suggest_postponed === undefined || this.type.suggest_postponed === null) this.type.suggest_postponed = true;
   }
 
+  /** Dienst-Modus: nobody is expected until assigned, so new Termine start neutral. */
+  onDutyToggle() {
+    if (!this.type.duty_mode) return;
+    if (!this.type.duty_required) this.type.duty_required = 1;
+    if (this.type.duty_self_signup === undefined || this.type.duty_self_signup === null) this.type.duty_self_signup = true;
+    if (this.type.duty_notify_understaffed === undefined || this.type.duty_notify_understaffed === null) this.type.duty_notify_understaffed = true;
+    if (this.type.duty_confirm_reminder_days === undefined) this.type.duty_confirm_reminder_days = 2;
+    const statuses = new Set(this.type.available_statuses ?? []);
+    [AttendanceStatus.Neutral, AttendanceStatus.Present, AttendanceStatus.Excused].forEach(st => statuses.add(st));
+    this.type.available_statuses = [...statuses].sort((a, b) => a - b);
+    this.type.default_status = AttendanceStatus.Neutral;
+  }
+
+  openDutyHelp() {
+    this.navController.navigateForward('/tabs/settings/help/article/duty-setup');
+  }
+
   openTeamHelp() {
     this.navController.navigateForward('/tabs/settings/help/article/team-activate');
   }

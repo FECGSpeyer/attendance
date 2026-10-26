@@ -147,3 +147,13 @@
 .ev-today__status {
     margin-top: 6px;
 }
+
+.duty-tag {
+  margin-left: 6px;
+  vertical-align: middle;
+  font-size: 11px;
+}
+
+.duty-request {
+  border-left: 4px solid var(--ion-color-warning);
+}

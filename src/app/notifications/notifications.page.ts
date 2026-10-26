@@ -16,6 +16,10 @@ import { NotificationConfig } from 'src/app/utilities/interfaces';
     standalone: false
 })
 export class NotificationsPage implements OnInit, OnDestroy {
+  /** Only show the "Dienste" toggle when the tenant uses the Dienstplan. */
+  get hasDutyTypes(): boolean {
+    return this.db.attendanceTypes().some(t => t.duty_mode);
+  }
   public notificationConfig: NotificationConfig;
   public isAdmin: boolean;
   public isNative: boolean;

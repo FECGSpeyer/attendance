@@ -185,6 +185,66 @@
   </ion-list>
 
   <ion-list [inset]="true">
+    <ion-list-header><ion-label>Dienstplan</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item>
+        <ion-toggle
+          helperText="Für Dienste wie Tontechnik: Pro Termin wird eine feste Zahl Personen eingeteilt. Nur Eingeteilte sind erwartet, alle anderen aus dem Personenkreis sind Springer."
+          [(ngModel)]="type.duty_mode" (ionChange)="onDutyToggle()">Dienst-Modus</ion-toggle>
+      </ion-item>
+      @if (!isNew) {
+      <ion-item button detail="false" (click)="openDutyHelp()" [lines]="type.duty_mode ? 'inset' : 'full'">
+        <ion-icon name="help-circle-outline" slot="start" color="primary"></ion-icon>
+        <ion-label color="primary">Mehr erfahren</ion-label>
+      </ion-item>
+      }
+      @if (type.duty_mode) {
+      <ion-item>
+        <ion-input type="number" min="1" label="Benötigte Personen pro Termin" labelPlacement="start"
+          class="ion-text-end" [(ngModel)]="type.duty_required" placeholder="1"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-toggle helperText="Personen aus dem Personenkreis können offene Dienste selbst übernehmen."
+          [ngModel]="type.duty_self_signup !== false"
+          (ngModelChange)="type.duty_self_signup = $event">Selbst eintragen erlaubt</ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-select label="Erinnerung, wenn unbestätigt" interface="popover"
+          [(ngModel)]="type.duty_confirm_reminder_days">
+          <ion-select-option [value]="null">Aus</ion-select-option>
+          <ion-select-option [value]="1">nach 1 Tag</ion-select-option>
+          <ion-select-option [value]="2">nach 2 Tagen</ion-select-option>
+          <ion-select-option [value]="3">nach 3 Tagen</ion-select-option>
+          <ion-select-option [value]="7">nach 7 Tagen</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-toggle helperText="Sagt eine eingeteilte Person ab und der Dienst ist unterbesetzt, bekommen alle aus dem Personenkreis eine Nachricht."
+          [ngModel]="type.duty_notify_understaffed !== false"
+          (ngModelChange)="type.duty_notify_understaffed = $event">Gruppe bei Ausfall benachrichtigen</ion-toggle>
+      </ion-item>
+      <ion-item lines="full">
+        <ion-select label="Dringend, wenn noch offen" interface="popover"
+          helperText="Einmaliger dringender Push an alle aus dem Personenkreis und die Leitung."
+          [(ngModel)]="type.duty_urgent_hours">
+          <ion-select-option [value]="null">Aus</ion-select-option>
+          <ion-select-option [value]="6">6 h vorher</ion-select-option>
+          <ion-select-option [value]="12">12 h vorher</ion-select-option>
+          <ion-select-option [value]="24">24 h vorher</ion-select-option>
+          <ion-select-option [value]="48">48 h vorher</ion-select-option>
+          <ion-select-option [value]="72">72 h vorher</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-label class="ion-text-wrap">
+          <p>Den Personenkreis legst du wie gewohnt über relevante Gruppen oder unter „Filter“ mit einem Zusatzfeld fest (z. B. Ja/Nein-Feld „Tontechnik“). Dienste zählen in die Anwesenheitsquote, aber nur für eingeteilte Personen.</p>
+        </ion-label>
+      </ion-item>
+      }
+    </ion-item-group>
+  </ion-list>
+
+  <ion-list [inset]="true">
     <ion-list-header><ion-label>Terminerinnerungen</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item>

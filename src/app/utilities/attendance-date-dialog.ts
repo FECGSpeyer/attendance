@@ -138,11 +138,12 @@ export async function promptCreateProtocolAttendance(
   const loading = await Utils.getLoadingElement();
   await loading.present();
   try {
-    const [persons, absences] = await Promise.all([
+    const [persons, absences, unavailability] = await Promise.all([
       personsForAttendanceType(db, type),
       db.getPlayerAbsencesForTenant().catch(() => []),
+      db.dutySvc.getUnavailabilityForTenant(db.tenant().id),
     ]);
-    const id = await createAttendanceForType(db, type, { date }, persons, absences);
+    const id = await createAttendanceForType(db, type, { date }, persons, absences, unavailability);
     const created = await db.getAttendanceById(id);
     Utils.showToast(`Termin am ${dayjs(date).format('DD.MM.')} angelegt`, 'success');
     return created;

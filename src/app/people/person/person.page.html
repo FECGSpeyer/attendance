@@ -866,6 +866,12 @@
             <ion-icon slot="start" name="add-circle-outline" color="primary"></ion-icon>
             <ion-label color="primary">Abwesenheit hinzufügen</ion-label>
           </ion-item>
+          @if (hasDutyTypes) {
+          <ion-item button detail="true" (click)="openUnavailability()">
+            <ion-icon slot="start" name="calendar-clear-outline" color="primary"></ion-icon>
+            <ion-label color="primary">Regelmäßig verhindert</ion-label>
+          </ion-item>
+          }
         </ion-list>
       </div>
     </ion-accordion>

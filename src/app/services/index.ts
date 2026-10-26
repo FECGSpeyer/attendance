@@ -37,3 +37,4 @@ export { HelpContentService } from './help/help-content.service';
 
 // Main facade service (backwards compatibility)
 export { DbService } from './db.service';
+export { DutyService } from './duty/duty.service';

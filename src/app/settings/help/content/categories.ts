@@ -9,5 +9,6 @@ export const HELP_CATEGORIES: HelpCategory[] = [
   { id: 'self-service', label: 'Meine Anwesenheit', icon: 'person-circle-outline', order: 6 },
   { id: 'settings', label: 'Einstellungen', icon: 'settings-outline', order: 7 },
   { id: 'team', label: 'Teamorganisation', icon: 'people-circle-outline', order: 8 },
-  { id: 'other', label: 'Weitere Funktionen', icon: 'ellipsis-horizontal-circle-outline', order: 9 },
+  { id: 'duty', label: 'Dienstplan', icon: 'headset-outline', order: 9 },
+  { id: 'other', label: 'Weitere Funktionen', icon: 'ellipsis-horizontal-circle-outline', order: 10 },
 ];

@@ -98,6 +98,14 @@
           <ion-toggle (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.reminders"
           label="Terminerinnerungen">Terminerinnerungen</ion-toggle>
       </ion-item>
+      @if (hasDutyTypes) {
+      <ion-item>
+          <ion-toggle helperText="Wenn du für einen Dienst eingeteilt wirst, an die Bestätigung erinnert wirst oder jemand zum Einspringen gesucht wird. Dringende Anfragen kommen trotzdem an."
+          [checked]="notificationConfig.duties !== false"
+          (ionChange)="notificationConfig.duties = $event.detail.checked; updateNotificationConfig()"
+          label="Dienste">Dienste</ion-toggle>
+      </ion-item>
+      }
       <ion-item>
           <ion-toggle helperText="Erhalte Erinnerungen für fällige To-Dos in deiner Checkliste. Nur möglich, wenn du Verantwortlicher einer Gruppe bist."
           (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.checklist"

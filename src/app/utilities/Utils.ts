@@ -130,6 +130,8 @@ export class Utils {
 
           const type = typeMap.get(attendance.type_id);
           if (!type?.include_in_average) {return false;}
+          // Duties only count for persons who were assigned.
+          if (type.duty_mode && !personAttendance.duty_state) {return false;}
 
           return dayjs(attendance.date).isBefore(tomorrow);
         });

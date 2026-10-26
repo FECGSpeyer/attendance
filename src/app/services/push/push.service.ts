@@ -318,6 +318,11 @@ export class PushService {
       case 'attendance':
       case 'reminder':
       case 'checklist':
+      case 'duty':
+      case 'duty_reminder':
+      case 'duty_understaffed':
+      case 'duty_urgent':
+      case 'duty_filled':
         if (data.attendanceId) {
           await this.navigateToAttendance(Number(data.attendanceId));
         } else {

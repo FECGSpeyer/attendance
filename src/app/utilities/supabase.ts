@@ -16,6 +16,9 @@ export type Database = {
     Tables: {
       attendance: {
         Row: {
+          duty_required: number | null
+          duty_urgent_sent_at: string | null
+          duty_alert_sent_at: string | null
           attachment_name: string | null
           attachment_url: string | null
           checklist: Json | null
@@ -48,6 +51,9 @@ export type Database = {
           typeInfo: string | null
         }
         Insert: {
+          duty_required?: number | null
+          duty_urgent_sent_at?: string | null
+          duty_alert_sent_at?: string | null
           attachment_name?: string | null
           attachment_url?: string | null
           checklist?: Json | null
@@ -80,6 +86,9 @@ export type Database = {
           typeInfo?: string | null
         }
         Update: {
+          duty_required?: number | null
+          duty_urgent_sent_at?: string | null
+          duty_alert_sent_at?: string | null
           attachment_name?: string | null
           attachment_url?: string | null
           checklist?: Json | null
@@ -130,6 +139,12 @@ export type Database = {
       }
       attendance_types: {
         Row: {
+          duty_mode: boolean
+          duty_required: number
+          duty_self_signup: boolean
+          duty_confirm_reminder_days: number | null
+          duty_notify_understaffed: boolean
+          duty_urgent_hours: number | null
           additional_fields_filter: Json | null
           all_day: boolean | null
           available_statuses: number[]
@@ -158,6 +173,12 @@ export type Database = {
           registration_fields: Json | null
         }
         Insert: {
+          duty_mode?: boolean
+          duty_required?: number
+          duty_self_signup?: boolean
+          duty_confirm_reminder_days?: number | null
+          duty_notify_understaffed?: boolean
+          duty_urgent_hours?: number | null
           additional_fields_filter?: Json | null
           all_day?: boolean | null
           available_statuses?: number[]
@@ -186,6 +207,12 @@ export type Database = {
           registration_fields?: Json | null
         }
         Update: {
+          duty_mode?: boolean
+          duty_required?: number
+          duty_self_signup?: boolean
+          duty_confirm_reminder_days?: number | null
+          duty_notify_understaffed?: boolean
+          duty_urgent_hours?: number | null
           additional_fields_filter?: Json | null
           all_day?: boolean | null
           available_statuses?: number[]
@@ -616,6 +643,7 @@ export type Database = {
       }
       notifications: {
         Row: {
+          duties: boolean | null
           live_activity: boolean | null
           birthdays: boolean
           checklist: boolean | null
@@ -633,6 +661,7 @@ export type Database = {
           updates: boolean | null
         }
         Insert: {
+          duties?: boolean | null
           live_activity?: boolean | null
           birthdays?: boolean
           checklist?: boolean | null
@@ -650,6 +679,7 @@ export type Database = {
           updates?: boolean | null
         }
         Update: {
+          duties?: boolean | null
           live_activity?: boolean | null
           birthdays?: boolean
           checklist?: boolean | null
@@ -708,6 +738,10 @@ export type Database = {
       }
       person_attendances: {
         Row: {
+          duty_state: string | null
+          duty_assigned_by: string | null
+          duty_assigned_at: string | null
+          duty_reminder_sent: boolean
           attendance_id: number
           changed_at: string | null
           changed_by: string | null
@@ -718,6 +752,10 @@ export type Database = {
           registration_answers: Json | null
         }
         Insert: {
+          duty_state?: string | null
+          duty_assigned_by?: string | null
+          duty_assigned_at?: string | null
+          duty_reminder_sent?: boolean
           attendance_id: number
           changed_at?: string | null
           changed_by?: string | null
@@ -728,6 +766,10 @@ export type Database = {
           registration_answers?: Json | null
         }
         Update: {
+          duty_state?: string | null
+          duty_assigned_by?: string | null
+          duty_assigned_at?: string | null
+          duty_reminder_sent?: boolean
           attendance_id?: number
           changed_at?: string | null
           changed_by?: string | null
