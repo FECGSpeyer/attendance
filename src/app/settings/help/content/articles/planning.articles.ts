@@ -57,7 +57,7 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
 
 **Wann:** Die Anzeige startet automatisch 15 Minuten vor dem ersten Punkt. Bis zum Beginn zeigt sie einen Countdown bis zum Start und die ersten Programmpunkte mit Uhrzeit. Danach springt sie von selbst zum nächsten Punkt und verschwindet 15 Minuten nach dem Ende. Wird der Plan während des Termins geändert, ist die Anzeige spätestens nach einer Minute aktuell. Der Plan läuft nach Uhrzeit: Ist die Zeit eines Punkts um, bleibt die Restzeit kurz bei 0:00, bis der nächste Punkt erscheint. Auf dem iPhone springt die Anzeige spätestens eine Minute später auch ohne Netz von selbst zum nächsten Punkt.
 
-**Wer:** Alle, die den Ablaufplan sehen dürfen: Admins und Verantwortliche immer, alle anderen, wenn der Plan für Mitglieder freigegeben ist. Wer sich vom Termin abgemeldet hat, bekommt keine Anzeige.
+**Wer:** Alle, die den Ablaufplan sehen dürfen: Admins und Verantwortliche immer, alle anderen, wenn der Plan für Mitglieder freigegeben ist. Beobachter sehen den Ablaufplan nie, also auch keine Anzeige. Wer sich vom Termin abgemeldet hat, bekommt ebenfalls keine.
 
 **Mehrere Pläne:** Bei Terminen mit mehreren Plänen (z. B. pro Tag einer Freizeit) erscheint jeweils der Plan, der gerade läuft.
 

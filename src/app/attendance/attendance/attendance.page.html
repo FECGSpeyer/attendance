@@ -650,6 +650,7 @@
     </ion-item-group>
     }
 
+    @if (!isViewer) {
     <ion-item-group>
       <ion-accordion-group>
         <ion-accordion value="plan">
@@ -727,6 +728,7 @@
         </ion-accordion>
       </ion-accordion-group>
     </ion-item-group>
+    }
     <ion-item-group>
       @if (personsLoadFailed && players.length === 0) {
       <ion-item lines="none" class="ion-padding-vertical ion-text-center">

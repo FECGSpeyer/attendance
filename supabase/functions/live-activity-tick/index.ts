@@ -24,7 +24,7 @@ const DEFAULT_TIMEZONE = 'Europe/Berlin';
 const LOOKBACK_DAYS = 14;
 const EXCUSED = 2;
 const LEADER_ROLES = [1, 5]; // ADMIN, RESPONSIBLE
-const NO_PLAN_ROLES = [7, 99]; // APPLICANT, NONE
+const NO_PLAN_ROLES = [3, 7, 99]; // VIEWER (Beobachter), APPLICANT, NONE
 
 interface PlanJson {
   id?: string;

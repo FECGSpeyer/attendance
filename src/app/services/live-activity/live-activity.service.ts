@@ -164,7 +164,8 @@ export class LiveActivityService {
     const now = Date.now();
     const result: LivePlanCandidate[] = [];
     for (const att of (data ?? []) as Partial<Attendance>[]) {
-      if (!isLeader && !att.share_plan) { continue; }
+      // Beobachter never see the plan; others only when it is shared.
+      if (role === Role.VIEWER || (!isLeader && !att.share_plan)) { continue; }
       const plans = allPlans(att);
       const typeName = this.db.attendanceTypes().find(t => t.id === att.type_id)?.name ?? '';
       plans.forEach((plan, index) => {

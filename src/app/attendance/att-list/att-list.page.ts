@@ -560,6 +560,8 @@ export class AttListPage implements OnInit {
   }
 
   hasPlan(att: Attendance): boolean {
+    // Beobachter never see the Ablaufplan.
+    if (this.db.tenantUser()?.role === Role.VIEWER) { return false; }
     return (att.plan?.fields?.length ?? 0) > 0;
   }
 

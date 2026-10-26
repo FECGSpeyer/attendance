@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.15.7",
+      "date": "26.10.2026",
+      "changes": [
+        "👁️ Beobachter sehen den Ablaufplan nicht mehr: weder in der Terminübersicht noch im Termin noch als Live-Anzeige."
+      ]
+    },
+    {
       "version": "4.15.6",
       "date": "25.10.2026",
       "changes": [

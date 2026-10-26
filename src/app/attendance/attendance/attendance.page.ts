@@ -53,6 +53,8 @@ export class AttendancePage implements OnInit, OnDestroy {
   // modal's state.
   private onVisibilityChange: () => void;
   public isHelper = false;
+  /** Beobachter never see the Ablaufplan. */
+  public isViewer = false;
   public canViewNotes = true;
   public canViewChecklist = true;
   public songs: Song[] = [];
@@ -355,6 +357,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     // the worst case here is "helper sees the unfiltered list", which is
     // strictly better than the previous "everyone sees an empty list".
     this.isHelper = this.db.tenantUser().role === Role.HELPER;
+    this.isViewer = this.db.tenantUser().role === Role.VIEWER;
     const isHelperRole =
       this.db.tenantUser().role === Role.HELPER ||
       this.db.tenantUser().role === Role.VOICE_LEADER_HELPER;
