@@ -113,7 +113,7 @@ BEGIN
       duty_assigned_by = auth.uid()::text,
       duty_assigned_at = now(),
       duty_reminder_sent = true,
-      changed_by = auth.uid()::text,
+      changed_by = auth.uid(),
       changed_at = now()
   WHERE id = v_pa_id;
 
