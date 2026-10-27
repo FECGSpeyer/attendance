@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.3",
+      "date": "27.10.2026",
+      "changes": [
+        "🐛 Sagst du als Admin einen Dienst mit „Kann nicht“ ab, verschwindet er oben unter Termine sofort aus „Bitte bestätigen“."
+      ]
+    },
+    {
       "version": "4.17.2",
       "date": "27.10.2026",
       "changes": [

@@ -18,7 +18,7 @@ import { PlanningPage } from 'src/app/planning/planning.page';
 import { Utils } from 'src/app/utilities/Utils';
 import { createAttendanceForType, personsForAttendanceType } from 'src/app/utilities/attendance-create';
 import { AttendanceStatus, DefaultAttendanceType, Role } from 'src/app/utilities/constants';
-import { averagePersons, dutyFill, dutyFillColor, dutyRequired, isDutyType, isoWeekday, occupiedCount, occupiesDuty, weekdayLongNames } from 'src/app/utilities/duty';
+import { averagePersons, dutyFill, dutyFillColor, dutyRequired, isCancelled, isDutyType, isoWeekday, occupiedCount, occupiesDuty, weekdayLongNames } from 'src/app/utilities/duty';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { translate } from '@jsverse/transloco';
 
@@ -464,7 +464,7 @@ export class AttListPage implements OnInit {
     // allAttendances is sorted newest first.
     for (const att of [...this.allAttendances].reverse()) {
       if (attendanceHasEnded(att) || !this.isDutyAttendance(att)) continue;
-      const pa = (att.persons ?? []).find(p => p.person_id === this.myPersonId && p.duty_state === 'requested');
+      const pa = (att.persons ?? []).find(p => p.person_id === this.myPersonId && p.duty_state === 'requested' && !isCancelled(p));
       if (pa) result.push({ att, pa });
     }
     return result;

@@ -823,7 +823,7 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   /** Own assignment that still waits for confirmation (leaders confirm here instead of "Meine Termine"). */
   isOwnRequestedDuty(pa: PersonAttendance): boolean {
-    return pa.duty_state === 'requested' && !!this.myPersonId && pa.person_id === this.myPersonId;
+    return pa.duty_state === 'requested' && !isCancelled(pa) && !!this.myPersonId && pa.person_id === this.myPersonId;
   }
 
   async confirmOwnDuty(pa: PersonAttendance): Promise<void> {
