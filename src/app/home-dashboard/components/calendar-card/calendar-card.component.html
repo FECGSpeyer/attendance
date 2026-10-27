@@ -18,12 +18,15 @@
           <ion-label>{{ selectedDayLabel }}</ion-label>
         </ion-item-divider>
         @for (att of dayEntries; track att.tenantId + ':' + att.attId) {
-          <ion-item class="dash-row" [detail]="false">
+          <ion-item class="dash-row" button [detail]="false" (click)="open(att)">
             <span slot="start" class="cal-mark" [ngClass]="'cal-mark--' + mark(att)" [style.--dot]="att.tenantColor"></span>
             <ion-label>
               <h3>{{ title(att) }}</h3>
               <p>{{ time(att) ? time(att) + ' · ' : '' }}{{ att.tenantName }}</p>
             </ion-label>
+            @if (!att.eventOnly) {
+              <span slot="end" class="ev-pill" [ngClass]="'ion-color-' + statusColor(att)">{{ statusLabel(att) }}</span>
+            }
           </ion-item>
         } @empty {
           <ion-item lines="none">
@@ -34,6 +37,8 @@
           </ion-item>
         }
       </ion-list>
+      <app-excuse-reason-picker #excusePicker [absenceReasons]="absenceReasons" [lateReasons]="lateReasons"
+        (confirm)="onExcuseConfirm($event)"></app-excuse-reason-picker>
       <button class="month-link" (click)="openMonth()">{{ 'calendar.openMonth' | transloco }}</button>
     }
   </ion-card-content>

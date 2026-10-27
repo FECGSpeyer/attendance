@@ -20,6 +20,7 @@ import { MyTasksComponent } from '../tasks/my-tasks/my-tasks.component';
 import { TranslocoModule } from '@jsverse/transloco';
 import { CalendarCardComponent } from './components/calendar-card/calendar-card.component';
 import { EventCalendarComponent } from '../shared/event-calendar/event-calendar.component';
+import { ExcuseReasonPickerComponent } from '../shared/excuse-reason-picker/excuse-reason-picker.component';
 
 @NgModule({
   imports: [
@@ -34,6 +35,7 @@ import { EventCalendarComponent } from '../shared/event-calendar/event-calendar.
     PlanViewerComponent,
     MyTasksComponent,
     EventCalendarComponent,
+    ExcuseReasonPickerComponent,
   ],
   declarations: [
     HomeDashboardPage,

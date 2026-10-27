@@ -16,6 +16,7 @@ import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker
 import { translate } from '@jsverse/transloco';
 import { dayKey, groupByDay, mergeCalendarEntries } from 'src/app/utilities/calendar';
 import { openCalendarSubscription } from 'src/app/utilities/calendar-subscription';
+import { isSigninOpen, quickActions, signinKind } from 'src/app/utilities/self-actions';
 
 type GroupingMode = 'chronological' | 'byTenant' | 'calendar';
 
@@ -80,6 +81,9 @@ export class OverviewPage implements OnInit {
       if (params.get('view') === 'calendar') {
         this.groupingMode = 'calendar';
         this.viewChosen = true;
+      }
+      if (params.get('day')) {
+        this.selectedDay = params.get('day');
       }
       const from = params.get('from');
       this.backUrl = from === 'dashboard' ? '/tabs/home-dashboard' : from === 'settings' ? '/tabs/settings' : null;
@@ -373,12 +377,7 @@ export class OverviewPage implements OnInit {
   }
 
   async signin(attendance: CrossTenantPersonAttendance, notes: string = '') {
-    await this.db.signin(
-      attendance.id!,
-      attendance.status === AttendanceStatus.LateExcused ? 'lateSignIn' :
-        attendance.status === AttendanceStatus.Neutral ? 'neutralSignin' : 'signin',
-      notes
-    );
+    await this.db.signin(attendance.id!, signinKind(attendance), notes);
     this.tracking.track(TrackingEvent.AttendanceCheckIn);
 
     Utils.showToast(translate('signout.gladYouCome'), 'success', 4000);
@@ -539,26 +538,12 @@ export class OverviewPage implements OnInit {
   }
 
   isSigninOpen(attendance: CrossTenantPersonAttendance): boolean {
-    if (!attendance.attendance?.deadline) {
-      return true;
-    }
-    const localDeadline = dayjs(attendance.attendance.deadline).subtract(dayjs().utcOffset(), 'minute');
-    return !dayjs().isAfter(localDeadline);
+    return isSigninOpen(attendance);
   }
 
   /** Direct buttons on the current card; follows the same rules as the action sheet. */
   quickActions(att: CrossTenantPersonAttendance) {
-    const attType = att.attendanceType;
-    const isExcused = att.status === AttendanceStatus.Excused || att.status === AttendanceStatus.LateExcused;
-    return {
-      present: att.text === 'X',
-      canSignin: att.text !== 'X' && this.isSigninOpen(att),
-      late: att.status === AttendanceStatus.LateExcused,
-      excused: att.status === AttendanceStatus.Excused,
-      blocked: isExcused || att.text === 'A',
-      allowLate: !attType || attType.available_statuses.includes(AttendanceStatus.Late),
-      allowExcuse: !attType || attType.available_statuses.includes(AttendanceStatus.Excused),
-    };
+    return quickActions(att);
   }
 
   quickSignout(att: CrossTenantPersonAttendance, isLate: boolean): void {

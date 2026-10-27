@@ -7,7 +7,7 @@ export const OTHER_EN: Record<string, HelpArticleTranslation> = {
     keywords: ['overview', 'tiles', 'start page', 'birthday', 'birthdays', 'archived', 'calendar', 'week'],
     body: `The dashboard shows [[Administrator|administrators]] and [[Person in charge|people in charge]] an overview with birthdays, a week calendar, the next event, member changes, absences, [[Critical person|critical people]] and current pieces.
 
-The **Calendar** card shows the current week with the events of all your instances, coloured by instance. Tap a day to see its events, or "View month" for the whole month.
+The **Calendar** card shows the current week with the events of all your instances, coloured by instance. Tap a day to see its events, or "View month" for the whole month. Tap one of your own events to accept, report being late or decline right there. Events of your current instance without your own entry open directly.
 
 The **Birthdays** card lists the birthdays of the last and next 14 days. Archived people do not appear there.`,
   },
