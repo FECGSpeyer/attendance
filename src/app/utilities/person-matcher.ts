@@ -1,3 +1,4 @@
+import { translate } from '@jsverse/transloco';
 /**
  * Person Matcher
  *
@@ -197,13 +198,13 @@ function reasonFor(
     + 0.55 * partSimilarity(query.lastName ?? '', candidate.lastName ?? '');
   const swapped = 0.45 * swapFirst + 0.55 * swapLast;
 
-  if (swapped - straight > 0.2) {return 'Vor-/Nachname vertauscht';}
-  if (score >= 0.95) {return 'Name fast identisch';}
-  if (qLast && cLast && qLast === cLast) {return 'Nachname identisch';}
-  if (qFirst && cFirst && qFirst === cFirst) {return 'Vorname identisch';}
-  if (qLast.length >= 2 && cLast.startsWith(qLast)) {return 'Nachname-Präfix';}
-  if (qFirst.length >= 2 && cFirst.startsWith(qFirst)) {return 'Vorname-Präfix';}
-  return 'Ähnlicher Name';
+  if (swapped - straight > 0.2) {return translate('linkPersons.reason.swapped');}
+  if (score >= 0.95) {return translate('linkPersons.reason.nearlyIdentical');}
+  if (qLast && cLast && qLast === cLast) {return translate('linkPersons.reason.sameLastName');}
+  if (qFirst && cFirst && qFirst === cFirst) {return translate('linkPersons.reason.sameFirstName');}
+  if (qLast.length >= 2 && cLast.startsWith(qLast)) {return translate('linkPersons.reason.lastNamePrefix');}
+  if (qFirst.length >= 2 && cFirst.startsWith(qFirst)) {return translate('linkPersons.reason.firstNamePrefix');}
+  return translate('linkPersons.reason.similarName');
 }
 
 /**
@@ -241,14 +242,14 @@ export function rankCandidates<T extends PersonLike>(
   for (const candidate of candidates) {
     // Definitive match: shared global_person_id
     if (qGlobalId && candidate.global_person_id && qGlobalId === candidate.global_person_id) {
-      scored.push({ candidate, score: 1.0, reason: 'Verknüpfte Person' });
+      scored.push({ candidate, score: 1.0, reason: translate('linkPersons.reason.linked') });
       continue;
     }
 
     // Definitive match: same non-empty email
     const cEmail = (candidate.email ?? '').trim().toLowerCase();
     if (qEmail && cEmail && qEmail === cEmail) {
-      scored.push({ candidate, score: 1.0, reason: 'E-Mail identisch' });
+      scored.push({ candidate, score: 1.0, reason: translate('linkPersons.reason.sameEmail') });
       continue;
     }
 
@@ -274,8 +275,8 @@ export function rankCandidates<T extends PersonLike>(
 
     const score = Math.min(1, Math.max(0, base + accountBoost + bdDelta));
     if (score >= threshold) {
-      const reason = bdCompare === 'match' && base >= 0.7 ? 'Gleicher Geburtstag'
-        : bdCompare === 'close' && base >= 0.7 ? 'Ähnlicher Geburtstag'
+      const reason = bdCompare === 'match' && base >= 0.7 ? translate('linkPersons.reason.sameBirthday')
+        : bdCompare === 'close' && base >= 0.7 ? translate('linkPersons.reason.similarBirthday')
         : reasonFor(query, candidate, score);
       scored.push({ candidate, score, reason });
     }

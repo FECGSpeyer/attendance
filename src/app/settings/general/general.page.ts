@@ -3,7 +3,7 @@ import { AlertController, IonModal, NavController } from '@ionic/angular/lazy';
 import { format, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
-import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT, Role } from 'src/app/utilities/constants';
+import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, defaultShowAllAttendancesInfoText, Role } from 'src/app/utilities/constants';
 import { AttendanceType, CriticalRule, CriticalRuleOperator, CriticalRulePeriodType, CriticalRuleThresholdType } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { translate } from '@jsverse/transloco';
@@ -123,7 +123,7 @@ export class GeneralPage implements OnInit {
     this.showAllAttendances = this.db.tenant().show_all_attendances || false;
     this.dutyView = this.db.tenant().duty_view || false;
     this.showAllAttendancesInfoText = this.db.tenant().show_all_attendances_info_text
-      || DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT;
+      || defaultShowAllAttendancesInfoText();
 
     if (this.db.tenant().additional_fields?.length) {
       this.registerFields = this.registerFields.concat(this.db.tenant().additional_fields.map(field => ({
@@ -329,7 +329,7 @@ export class GeneralPage implements OnInit {
         shift_excused_as_present: this.shiftExcusedAsPresent,
         show_all_attendances: this.showAllAttendances,
         show_all_attendances_info_text: this.showAllAttendances
-          ? (this.showAllAttendancesInfoText?.trim() || DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT)
+          ? (this.showAllAttendancesInfoText?.trim() || defaultShowAllAttendancesInfoText())
           : null,
         absence_reasons: filteredAbsenceReasons.length > 0 ? filteredAbsenceReasons : null,
         late_reasons: filteredLateReasons.length > 0 ? filteredLateReasons : null,

@@ -10,7 +10,7 @@ import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
 import { TelegramService } from 'src/app/services/telegram/telegram.service';
-import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT, PlayerHistoryType, Role } from 'src/app/utilities/constants';
+import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, defaultShowAllAttendancesInfoText, PlayerHistoryType, Role } from 'src/app/utilities/constants';
 import { Attendance, PersonAttendance, Player, PlayerAbsence, PlayerHistoryEntry, Song, Tenant, History, SongFile, AttendanceType, Plan, RegistrationField } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { countsForAverage, isCancelled, isDutyType, occupiesDuty } from 'src/app/utilities/duty';
@@ -152,7 +152,7 @@ export class SignoutPage implements OnInit {
     this.tenantId = this.db.tenant().id;
     this.showAllAttendances = this.db.tenant().show_all_attendances === true;
     this.showAllAttendancesInfoText = this.db.tenant().show_all_attendances_info_text
-      || DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT;
+      || defaultShowAllAttendancesInfoText();
 
     // Load reasons from tenant config or use defaults
     this.absenceReasons = this.db.tenant().absence_reasons?.length

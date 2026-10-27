@@ -81,7 +81,7 @@ export class AuthService {
           Utils.showToast(translate('db.invalidPassword'), 'danger');
           break;
         case 'user_not_found':
-          Utils.showToast('Benutzer nicht gefunden', 'danger');
+          Utils.showToast(translate('auth.userNotFound'), 'danger');
           break;
         case 'email_not_confirmed':
           Utils.showToast(translate('auth.confirmEmailFirst'), 'danger');

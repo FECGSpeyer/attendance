@@ -305,11 +305,11 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
     }
     const buttons: any[] = [
       {
-        text: 'PDF exportieren',
+        text: translate('planning.exportPdf'),
         handler: () => this.exportPdf()
       },
       {
-        text: 'PDF exportieren (2x A5)',
+        text: translate('planning.exportPdfA5'),
         handler: () => this.exportPdf(true)
       }
     ];

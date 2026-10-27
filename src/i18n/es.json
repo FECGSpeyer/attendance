@@ -483,7 +483,8 @@
     "confirmationResent": "Correo de confirmación reenviado",
     "resetFailed": "Error al restablecer la contraseña",
     "resetSent": "Correo para restablecer la contraseña enviado",
-    "resetRetry": "Error al restablecer, inténtalo de nuevo"
+    "resetRetry": "Error al restablecer, inténtalo de nuevo",
+    "userNotFound": "Usuario no encontrado"
   },
   "export": {
     "time": "Hora",
@@ -523,7 +524,8 @@
       "rehearsal": "Ensayo",
       "rehearsalPlan": "Plan de ensayo",
       "performance": "Actuación"
-    }
+    },
+    "showAllInfoText": "No participas en este evento."
   },
   "svc": {
     "activate": "Activar",
@@ -1556,7 +1558,9 @@
     "minShort": "{min} min",
     "telegramPdfShort": "Por Telegram (PDF)",
     "telegramImageShort": "Por Telegram (imagen)",
-    "blockSubHeader": "{count, plural, one {# subpunto} other {# subpuntos}} · {min} min"
+    "blockSubHeader": "{count, plural, one {# subpunto} other {# subpuntos}} · {min} min",
+    "exportPdf": "Exportar PDF",
+    "exportPdfA5": "Exportar PDF (2x A5)"
   },
   "duty": {
     "placesFree": "{count, plural, one {# plaza libre} other {# plazas libres}}",
@@ -2828,7 +2832,20 @@
     "intro": "Posibles coincidencias de distintas instancias. Las personas vinculadas sincronizan nombre, cumpleaños, correo y teléfono automáticamente.",
     "ignore": "Ignorar",
     "link": "Vincular",
-    "linked": "{count} personas vinculadas"
+    "linked": "{count} personas vinculadas",
+    "reason": {
+      "swapped": "Nombre y apellido invertidos",
+      "nearlyIdentical": "Nombre casi idéntico",
+      "sameLastName": "Mismo apellido",
+      "sameFirstName": "Mismo nombre",
+      "lastNamePrefix": "Prefijo del apellido",
+      "firstNamePrefix": "Prefijo del nombre",
+      "similarName": "Nombre similar",
+      "linked": "Persona vinculada",
+      "sameEmail": "Mismo correo",
+      "sameBirthday": "Mismo cumpleaños",
+      "similarBirthday": "Cumpleaños similar"
+    }
   },
   "shifts": {
     "enterName": "Introduce un nombre para el plan de turnos.",

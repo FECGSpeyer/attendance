@@ -999,7 +999,7 @@ export class PlanningPage implements OnInit {
     const buttons: ActionSheetButton[] = [];
 
     if (this.selectedFields.length) {      buttons.push({
-        text: 'PDF exportieren',
+        text: translate('planning.exportPdf'),
         handler: () => this.export()
       });
       if (this.planLabels.length > 1) {
@@ -1009,7 +1009,7 @@ export class PlanningPage implements OnInit {
         });
       }
       buttons.push({
-        text: 'PDF exportieren (2x A5)',
+        text: translate('planning.exportPdfA5'),
         handler: () => this.export(true)
       });
 

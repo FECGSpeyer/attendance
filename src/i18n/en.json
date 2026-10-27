@@ -483,7 +483,8 @@
     "confirmationResent": "Confirmation email sent again",
     "resetFailed": "Could not reset the password",
     "resetSent": "Password reset email sent",
-    "resetRetry": "Reset failed, please try again"
+    "resetRetry": "Reset failed, please try again",
+    "userNotFound": "User not found"
   },
   "export": {
     "time": "Time",
@@ -523,7 +524,8 @@
       "rehearsal": "Rehearsal",
       "rehearsalPlan": "Rehearsal plan",
       "performance": "Performance"
-    }
+    },
+    "showAllInfoText": "You are not part of this event."
   },
   "svc": {
     "activate": "Activate",
@@ -1556,7 +1558,9 @@
     "minShort": "{min} min",
     "telegramPdfShort": "Via Telegram (PDF)",
     "telegramImageShort": "Via Telegram (image)",
-    "blockSubHeader": "{count, plural, one {# sub-item} other {# sub-items}} · {min} min"
+    "blockSubHeader": "{count, plural, one {# sub-item} other {# sub-items}} · {min} min",
+    "exportPdf": "Export PDF",
+    "exportPdfA5": "Export PDF (2x A5)"
   },
   "duty": {
     "placesFree": "{count, plural, one {# place free} other {# places free}}",
@@ -2828,7 +2832,20 @@
     "intro": "Possible matches from different instances. Linked people sync name, birthday, email and phone automatically.",
     "ignore": "Ignore",
     "link": "Link",
-    "linked": "{count} people linked"
+    "linked": "{count} people linked",
+    "reason": {
+      "swapped": "First/last name swapped",
+      "nearlyIdentical": "Name nearly identical",
+      "sameLastName": "Same last name",
+      "sameFirstName": "Same first name",
+      "lastNamePrefix": "Last name prefix",
+      "firstNamePrefix": "First name prefix",
+      "similarName": "Similar name",
+      "linked": "Linked person",
+      "sameEmail": "Same email",
+      "sameBirthday": "Same birthday",
+      "similarBirthday": "Similar birthday"
+    }
   },
   "shifts": {
     "enterName": "Please enter a name for the shift plan.",

@@ -483,7 +483,8 @@
     "confirmationResent": "Bestätigungs-E-Mail wurde erneut gesendet",
     "resetFailed": "Fehler beim Zurücksetzen des Passworts",
     "resetSent": "E-Mail zum Zurücksetzen des Passworts wurde gesendet",
-    "resetRetry": "Fehler beim zurücksetzen, versuche es noch einmal"
+    "resetRetry": "Fehler beim zurücksetzen, versuche es noch einmal",
+    "userNotFound": "Benutzer nicht gefunden"
   },
   "export": {
     "time": "Uhrzeit",
@@ -523,7 +524,8 @@
       "rehearsal": "Probe",
       "rehearsalPlan": "Probenplan",
       "performance": "Vortrag"
-    }
+    },
+    "showAllInfoText": "Du bist bei diesem Termin nicht dabei."
   },
   "svc": {
     "activate": "Aktivieren",
@@ -1556,7 +1558,9 @@
     "minShort": "{min} min",
     "telegramPdfShort": "Per Telegram (PDF)",
     "telegramImageShort": "Per Telegram (Bild)",
-    "blockSubHeader": "{count, plural, one {# Unterpunkt} other {# Unterpunkte}} · {min} min"
+    "blockSubHeader": "{count, plural, one {# Unterpunkt} other {# Unterpunkte}} · {min} min",
+    "exportPdf": "PDF exportieren",
+    "exportPdfA5": "PDF exportieren (2x A5)"
   },
   "duty": {
     "placesFree": "{count, plural, one {# Platz frei} other {# Plätze frei}}",
@@ -2828,7 +2832,20 @@
     "intro": "Mögliche Übereinstimmungen aus verschiedenen Instanzen. Verknüpfte Personen synchronisieren Name, Geburtstag, E-Mail und Telefon automatisch.",
     "ignore": "Ignorieren",
     "link": "Verknüpfen",
-    "linked": "{count} Personen verknüpft"
+    "linked": "{count} Personen verknüpft",
+    "reason": {
+      "swapped": "Vor-/Nachname vertauscht",
+      "nearlyIdentical": "Name fast identisch",
+      "sameLastName": "Nachname identisch",
+      "sameFirstName": "Vorname identisch",
+      "lastNamePrefix": "Nachname-Präfix",
+      "firstNamePrefix": "Vorname-Präfix",
+      "similarName": "Ähnlicher Name",
+      "linked": "Verknüpfte Person",
+      "sameEmail": "E-Mail identisch",
+      "sameBirthday": "Gleicher Geburtstag",
+      "similarBirthday": "Ähnlicher Geburtstag"
+    }
   },
   "shifts": {
     "enterName": "Bitte gib einen Namen für den Schichtplan ein.",

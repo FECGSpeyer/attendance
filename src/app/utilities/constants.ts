@@ -1,3 +1,4 @@
+import { translate } from '@jsverse/transloco';
 export enum PlayerHistoryType {
     PAUSED = 1,
     UNEXCUSED = 2,
@@ -163,5 +164,5 @@ export const DEFAULT_LATE_REASONS = [
 
 export const SUPER_DEVELOPER_EMAIL = 'developer@attendix.de';
 
-export const DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT = 'Du bist bei diesem Termin nicht dabei.';
+export const defaultShowAllAttendancesInfoText = (): string => translate('defaults.showAllInfoText');
 

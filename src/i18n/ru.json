@@ -483,7 +483,8 @@
     "confirmationResent": "Письмо для подтверждения отправлено повторно",
     "resetFailed": "Не удалось сбросить пароль",
     "resetSent": "Письмо для сброса пароля отправлено",
-    "resetRetry": "Ошибка при сбросе, попробуй ещё раз"
+    "resetRetry": "Ошибка при сбросе, попробуй ещё раз",
+    "userNotFound": "Пользователь не найден"
   },
   "export": {
     "time": "Время",
@@ -523,7 +524,8 @@
       "rehearsal": "Репетиция",
       "rehearsalPlan": "План репетиции",
       "performance": "Выступление"
-    }
+    },
+    "showAllInfoText": "Ты не участвуешь в этом мероприятии."
   },
   "svc": {
     "activate": "Включить",
@@ -1556,7 +1558,9 @@
     "minShort": "{min} мин",
     "telegramPdfShort": "В Telegram (PDF)",
     "telegramImageShort": "В Telegram (изображение)",
-    "blockSubHeader": "{count, plural, one {# подпункт} few {# подпункта} many {# подпунктов} other {# подпункта}} · {min} мин"
+    "blockSubHeader": "{count, plural, one {# подпункт} few {# подпункта} many {# подпунктов} other {# подпункта}} · {min} мин",
+    "exportPdf": "Экспорт в PDF",
+    "exportPdfA5": "Экспорт в PDF (2× A5)"
   },
   "duty": {
     "placesFree": "{count, plural, one {Свободно # место} few {Свободно # места} many {Свободно # мест} other {Свободно # места}}",
@@ -2828,7 +2832,20 @@
     "intro": "Возможные совпадения из разных экземпляров. У связанных людей имя, день рождения, почта и телефон синхронизируются автоматически.",
     "ignore": "Игнорировать",
     "link": "Связать",
-    "linked": "Связано людей: {count}"
+    "linked": "Связано людей: {count}",
+    "reason": {
+      "swapped": "Имя и фамилия перепутаны",
+      "nearlyIdentical": "Имя почти совпадает",
+      "sameLastName": "Та же фамилия",
+      "sameFirstName": "То же имя",
+      "lastNamePrefix": "Начало фамилии",
+      "firstNamePrefix": "Начало имени",
+      "similarName": "Похожее имя",
+      "linked": "Связанный человек",
+      "sameEmail": "Тот же e-mail",
+      "sameBirthday": "Тот же день рождения",
+      "similarBirthday": "Похожий день рождения"
+    }
   },
   "shifts": {
     "enterName": "Введи название графика смен.",
