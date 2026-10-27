@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.16.4",
+      "date": "27.10.2026",
+      "changes": [
+        "🌍 Weitere Vorbereitung für Englisch, Russisch und Spanisch: Datumsauswahl, Wochentage und Monatsnamen richten sich nach der App-Sprache. Sichtbar ändert sich noch nichts."
+      ]
+    },
+    {
       "version": "4.16.3",
       "date": "27.10.2026",
       "changes": [
