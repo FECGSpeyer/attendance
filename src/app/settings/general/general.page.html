@@ -38,7 +38,7 @@
         <ion-modal class="attDateModal" #attModal trigger="date-modal">
           <ng-template>
             <ion-content>
-              <ion-datetime show-adjacent-days="true" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+              <ion-datetime show-adjacent-days="true" [locale]="'common.intlLocale' | transloco" [firstDayOfWeek]="1" [max]="max"
                 [(ngModel)]="attDate" (ionChange)="onAttDateChange(attDatePicker.value, attModal)" presentation="date"
               #attDatePicker></ion-datetime>
             </ion-content>

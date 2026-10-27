@@ -1,3 +1,4 @@
+import { currentLanguage } from '../../i18n/languages';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -142,7 +143,7 @@ export class DutyDistributeModalComponent implements OnInit {
 
   dateLabel(t: DutyTermin): string {
     const time = (t.attendance.start_time ?? t.type?.start_time ?? '').slice(0, 5);
-    return dayjs(t.attendance.date).locale('de').format('dd, D.M.') + (time ? ` · ${time}` : '');
+    return dayjs(t.attendance.date).locale(currentLanguage()).format('dd, D.M.') + (time ? ` · ${time}` : '');
   }
 
   title(t: DutyTermin): string {

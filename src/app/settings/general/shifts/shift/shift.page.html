@@ -79,7 +79,7 @@
               <ion-datetime-button [datetime]="'datetimestartatt' + i"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
-                  <ion-datetime locale="de-DE" [(ngModel)]="s.start_time" presentation="time"
+                  <ion-datetime [locale]="'common.intlLocale' | transloco" [(ngModel)]="s.start_time" presentation="time"
               minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" [id]="'datetimestartatt' + i" [formatOptions]="{
                       time: {
                         hour: '2-digit',
@@ -144,7 +144,7 @@
           <ion-modal [keepContentsMounted]="true">
             <ng-template>
               <ion-datetime [(ngModel)]="s.date" presentation="date" [id]="'datetimestartshift' + i"
-              locale="de-DE" [firstDayOfWeek]="1"></ion-datetime>
+              [locale]="'common.intlLocale' | transloco" [firstDayOfWeek]="1"></ion-datetime>
             </ng-template>
           </ion-modal>
         </ion-item>

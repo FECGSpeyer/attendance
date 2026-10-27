@@ -1,3 +1,4 @@
+import { currentLanguage } from '../i18n/languages';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
@@ -202,7 +203,7 @@ export class SharedPlanPage implements OnInit, OnDestroy {
 
   getDateFormatted(): string {
     if (!this.date) { return this.planTitle; }
-    return dayjs(this.date).locale('de').format('dddd, DD.MM.YYYY');
+    return dayjs(this.date).locale(currentLanguage()).format('dddd, DD.MM.YYYY');
   }
 
   getStartTime(): string {
@@ -507,7 +508,7 @@ export class SharedPlanPage implements OnInit, OnDestroy {
     await Utils.createPlanExport(
       {
         time: this.time, end: this.end, fields: this.fields, sideBySide, branding,
-        dateLabel: this.planLabels.length ? `${dayjs(this.date).locale('de').format('dddd, DD.MM.YYYY')} · ${this.planLabels[this.planIndex]}` : undefined,
+        dateLabel: this.planLabels.length ? `${dayjs(this.date).locale(currentLanguage()).format('dddd, DD.MM.YYYY')} · ${this.planLabels[this.planIndex]}` : undefined,
       },
       this.planTitle || translate('plans.runSheet'),
     );

@@ -1,3 +1,4 @@
+import { currentLanguage } from '../../i18n/languages';
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
@@ -200,7 +201,7 @@ export class AgendaItemDetailPage implements OnInit {
       const type = this.db.attendanceTypes().find(t => t.id === att.type_id);
       const already = !!att.plan?.fields?.some(f => f.id === fieldId);
       return {
-        text: `${dayjs(att.date).locale('de').format('dd, DD.MM.')} · ${(type ? Utils.getTypeTitle(type, att.typeInfo) : att.typeInfo) || type?.name || translate('attendance.eventFallback')}${already ? translate('agenda.alreadyPlanned') : ''}`,
+        text: `${dayjs(att.date).locale(currentLanguage()).format('dd, DD.MM.')} · ${(type ? Utils.getTypeTitle(type, att.typeInfo) : att.typeInfo) || type?.name || translate('attendance.eventFallback')}${already ? translate('agenda.alreadyPlanned') : ''}`,
         disabled: already,
         handler: () => { void this.insertInto(att); },
       } as ActionSheetButton;

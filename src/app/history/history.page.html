@@ -197,7 +197,7 @@
                 presentation="date"
                 [value]="historyEntry.date"
                 [preferWheel]="true"
-                locale="de-DE"
+                [locale]="'common.intlLocale' | transloco"
                 [firstDayOfWeek]="1"
                 (ionChange)="onDateChanged($event.detail.value, dateModal)"></ion-datetime>
             </ng-template>

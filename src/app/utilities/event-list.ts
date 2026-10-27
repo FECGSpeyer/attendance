@@ -1,3 +1,4 @@
+import { currentLanguage } from '../i18n/languages';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
 import { AttendanceStatus } from './constants';
@@ -21,7 +22,7 @@ export interface EventMonthGroup<T> {
 export function groupByMonth<T>(items: T[], getDate: (item: T) => string): EventMonthGroup<T>[] {
   const groups: EventMonthGroup<T>[] = [];
   for (const item of items) {
-    const date = dayjs(getDate(item)).locale('de');
+    const date = dayjs(getDate(item)).locale(currentLanguage());
     const key = date.format('YYYY-MM');
     let group = groups[groups.length - 1];
     if (!group || group.key !== key) {
@@ -35,7 +36,7 @@ export function groupByMonth<T>(items: T[], getDate: (item: T) => string): Event
 
 /** Short weekday ("Di") for the date tile. */
 export function eventWeekday(date: string): string {
-  return dayjs(date).locale('de').format('dd');
+  return dayjs(date).locale(currentLanguage()).format('dd');
 }
 
 /** Day of month ("20") for the date tile. */

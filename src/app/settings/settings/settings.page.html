@@ -177,7 +177,7 @@
               <ion-datetime-button datetime="birthday-master-data"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
-                  <ion-datetime id="birthday-master-data" locale="de-DE" [firstDayOfWeek]="1" [max]="max"
+                  <ion-datetime id="birthday-master-data" [locale]="'common.intlLocale' | transloco" [firstDayOfWeek]="1" [max]="max"
                     [(ngModel)]="userData.birthday" presentation="date"></ion-datetime>
                 </ng-template>
               </ion-modal>

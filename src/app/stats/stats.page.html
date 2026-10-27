@@ -22,7 +22,7 @@
         <ion-datetime-button datetime="datetime-stats-from"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime id="datetime-stats-from" locale="de-DE" [firstDayOfWeek]="1"
+            <ion-datetime id="datetime-stats-from" [locale]="'common.intlLocale' | transloco" [firstDayOfWeek]="1"
               [(ngModel)]="filterStartDate" (ionChange)="onDateFilterChange()" presentation="date">
             </ion-datetime>
           </ng-template>
@@ -33,7 +33,7 @@
         <ion-datetime-button datetime="datetime-stats-to"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime id="datetime-stats-to" locale="de-DE" [firstDayOfWeek]="1"
+            <ion-datetime id="datetime-stats-to" [locale]="'common.intlLocale' | transloco" [firstDayOfWeek]="1"
               [(ngModel)]="filterEndDate" (ionChange)="onDateFilterChange()" presentation="date">
             </ion-datetime>
           </ng-template>

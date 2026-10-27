@@ -54,7 +54,7 @@
         <ng-template>
           <ion-datetime
             presentation="date"
-            locale="de-DE"
+            [locale]="'common.intlLocale' | transloco"
             [firstDayOfWeek]="1"
             [value]="dueDate"
             [showDefaultButtons]="true"

@@ -1,3 +1,4 @@
+import { currentIntlLocale } from '../../i18n/languages';
 import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
@@ -283,7 +284,7 @@ export class FilesPage implements OnInit {
       return '';
     }
 
-    return new Intl.DateTimeFormat('de-DE', {
+    return new Intl.DateTimeFormat(currentIntlLocale(), {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',

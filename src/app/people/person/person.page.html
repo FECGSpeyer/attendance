@@ -270,7 +270,7 @@
                       [value]="player.birthday"
                       [max]="max"
                       [preferWheel]="true"
-                      locale="de-DE"
+                      [locale]="'common.intlLocale' | transloco"
                       [firstDayOfWeek]="1"
                       (ionChange)="onBirthdayChange($event.detail.value, birthdayModal)"></ion-datetime>
                   </ng-template>
@@ -302,7 +302,7 @@
                       [value]="player.playsSince"
                       [max]="max"
                       [preferWheel]="true"
-                      locale="de-DE"
+                      [locale]="'common.intlLocale' | transloco"
                       [firstDayOfWeek]="1"
                       (ionChange)="onPlaysSinceChange($event.detail.value, playsSinceModal)"></ion-datetime>
                   </ng-template>
@@ -334,7 +334,7 @@
                       [value]="player.joined"
                       [max]="max"
                       [preferWheel]="true"
-                      locale="de-DE"
+                      [locale]="'common.intlLocale' | transloco"
                       [firstDayOfWeek]="1"
                       (ionChange)="onJoinedChange($event.detail.value, joinedModal)"></ion-datetime>
                   </ng-template>
@@ -475,7 +475,7 @@
                 <ion-modal [keepContentsMounted]="true">
                   <ng-template>
                     <ion-datetime (ionChange)="onChange()" [(ngModel)]="player.shift_start" presentation="date"
-                      id="shift_start_date" locale="de-DE" [firstDayOfWeek]="1"></ion-datetime>
+                      id="shift_start_date" [locale]="'common.intlLocale' | transloco" [firstDayOfWeek]="1"></ion-datetime>
                   </ng-template>
                 </ion-modal>
               </ion-item>
@@ -612,7 +612,7 @@
                   [value]="player.additional_fields[field.id]"
                   [max]="max"
                   [preferWheel]="true"
-                  locale="de-DE"
+                  [locale]="'common.intlLocale' | transloco"
                   [firstDayOfWeek]="1"
                   (ionChange)="onExtraFieldDateChange(field.id, $event.detail.value, extraDateModal)"></ion-datetime>
               </ng-template>
@@ -951,7 +951,7 @@
               }
             </ion-item>
             <div slot="content">
-              <ion-datetime locale="de-DE" [firstDayOfWeek]="1" [max]="minPauseDate" [(ngModel)]="pauseFrom"
+              <ion-datetime [locale]="'common.intlLocale' | transloco" [firstDayOfWeek]="1" [max]="minPauseDate" [(ngModel)]="pauseFrom"
                 presentation="date" size="cover">
               </ion-datetime>
             </div>
@@ -973,7 +973,7 @@
               }
             </ion-item>
             <div slot="content">
-              <ion-datetime locale="de-DE" [firstDayOfWeek]="1" [min]="minPauseDate" [(ngModel)]="pauseUntil"
+              <ion-datetime [locale]="'common.intlLocale' | transloco" [firstDayOfWeek]="1" [min]="minPauseDate" [(ngModel)]="pauseUntil"
                 presentation="date" size="cover">
               </ion-datetime>
             </div>
@@ -1032,7 +1032,7 @@
               }
             </ion-item>
             <div slot="content">
-              <ion-datetime locale="de-DE" [firstDayOfWeek]="1" [(ngModel)]="absenceFrom"
+              <ion-datetime [locale]="'common.intlLocale' | transloco" [firstDayOfWeek]="1" [(ngModel)]="absenceFrom"
                 presentation="date" size="cover">
               </ion-datetime>
             </div>
@@ -1054,7 +1054,7 @@
               }
             </ion-item>
             <div slot="content">
-              <ion-datetime locale="de-DE" [firstDayOfWeek]="1" [min]="absenceFrom || undefined" [(ngModel)]="absenceUntil"
+              <ion-datetime [locale]="'common.intlLocale' | transloco" [firstDayOfWeek]="1" [min]="absenceFrom || undefined" [(ngModel)]="absenceUntil"
                 presentation="date" size="cover">
               </ion-datetime>
             </div>

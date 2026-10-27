@@ -255,7 +255,7 @@
                 [datetime]="'datetimedeadlineatt'"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
-                  <ion-datetime [min]="minDeadlineDate" [max]="maxDeadlineDate" locale="de-DE"
+                  <ion-datetime [min]="minDeadlineDate" [max]="maxDeadlineDate" [locale]="'common.intlLocale' | transloco"
                     (ionChange)="onInfoChanged()" [(ngModel)]="attendance.deadline" presentation="date-time"
                     minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimedeadlineatt">
                   </ion-datetime>
@@ -270,7 +270,7 @@
               <ion-datetime-button datetime="datetimestartatt"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
-                  <ion-datetime locale="de-DE" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.start_time"
+                  <ion-datetime [locale]="'common.intlLocale' | transloco" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.start_time"
                     presentation="time" minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimestartatt"
                     [formatOptions]="{
                       time: {
@@ -289,7 +289,7 @@
               <ion-datetime-button datetime="datetimeendatt"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
-                  <ion-datetime locale="de-DE" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.end_time"
+                  <ion-datetime [locale]="'common.intlLocale' | transloco" (ionChange)="onInfoChanged()" [(ngModel)]="attendance.end_time"
                     presentation="time" minuteValues="0,5,10,15,20,25,30,35,40,45,50,55" id="datetimeendatt"
                     [formatOptions]="{
                       time: {

@@ -1,3 +1,4 @@
+import { currentLanguage } from '../../../../i18n/languages';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController } from '@ionic/angular/lazy';
@@ -277,7 +278,7 @@ export class ShiftPage implements OnInit {
       for (const def of shiftDefinitions) {
         for (let i = 0; i < def.repeat_count; i++) {
           const shift = {
-            date: nextDate.locale('de').format('ddd, DD.MM.YYYY'),
+            date: nextDate.locale(currentLanguage()).format('ddd, DD.MM.YYYY'),
             start_time: def.start_time,
             duration: def.duration,
             free: def.free,

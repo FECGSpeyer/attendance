@@ -1,3 +1,4 @@
+import { currentLanguage } from '../i18n/languages';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ActionSheetController, AlertController } from '@ionic/angular/lazy';
@@ -214,7 +215,7 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
   }
 
   getDateFormatted(entry: PlanEntry): string {
-    return entry.date ? dayjs(entry.date).locale('de').format('dddd, DD.MM.YYYY') : entry.title;
+    return entry.date ? dayjs(entry.date).locale(currentLanguage()).format('dddd, DD.MM.YYYY') : entry.title;
   }
 
   getStartTime(entry: PlanEntry): string {

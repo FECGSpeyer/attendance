@@ -67,7 +67,8 @@
     "people": "Personas",
     "confirm": "Confirmar",
     "next": "Siguiente",
-    "create": "Crear"
+    "create": "Crear",
+    "intlLocale": "es-ES"
   },
   "settings": {
     "language": {

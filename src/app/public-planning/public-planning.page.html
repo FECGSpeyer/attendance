@@ -56,7 +56,7 @@
       <ion-datetime-button datetime="dateOnly"></ion-datetime-button>
       <ion-modal [keepContentsMounted]="true">
         <ng-template>
-          <ion-datetime id="dateOnly" presentation="date" locale="de-DE" [(ngModel)]="date"
+          <ion-datetime id="dateOnly" presentation="date" [locale]="'common.intlLocale' | transloco" [(ngModel)]="date"
             (ionChange)="onDateChange()"></ion-datetime>
         </ng-template>
       </ion-modal>
@@ -168,7 +168,7 @@
         <ion-datetime-button datetime="startTime"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime id="startTime" presentation="time" locale="de-DE" [(ngModel)]="time"
+            <ion-datetime id="startTime" presentation="time" [locale]="'common.intlLocale' | transloco" [(ngModel)]="time"
               (ionChange)="calculateEnd()"
               [formatOptions]="{ time: { hour: '2-digit', minute: '2-digit', hour12: false } }">
             </ion-datetime>
@@ -207,7 +207,7 @@
         <ion-datetime-button datetime="endTime"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime id="endTime" presentation="time" locale="de-DE" disabled="true" [(ngModel)]="end"
+            <ion-datetime id="endTime" presentation="time" [locale]="'common.intlLocale' | transloco" disabled="true" [(ngModel)]="end"
               [formatOptions]="{ time: { hour: '2-digit', minute: '2-digit', hour12: false } }">
             </ion-datetime>
           </ng-template>

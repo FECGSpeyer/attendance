@@ -106,7 +106,7 @@
         <ion-datetime-button slot="end" [datetime]="'dt-tpl-' + i"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime [id]="'dt-tpl-' + i" presentation="time" locale="de-DE" [(ngModel)]="tpl.time"
+            <ion-datetime [id]="'dt-tpl-' + i" presentation="time" [locale]="'common.intlLocale' | transloco" [(ngModel)]="tpl.time"
               (ionChange)="onStartTimeChange(tpl, i)">
             </ion-datetime>
           </ng-template>

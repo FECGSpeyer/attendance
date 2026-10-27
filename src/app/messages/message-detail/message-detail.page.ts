@@ -1,3 +1,4 @@
+import { currentIntlLocale } from '../../i18n/languages';
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController } from '@ionic/angular/lazy';
@@ -234,7 +235,7 @@ export class MessageDetailPage implements OnInit {
   private time(iso: string): string {
     const d = new Date(iso);
     const sameDay = d.toDateString() === new Date().toDateString();
-    const hm = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-    return sameDay ? hm : `${d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })} ${hm}`;
+    const hm = d.toLocaleTimeString(currentIntlLocale(), { hour: '2-digit', minute: '2-digit' });
+    return sameDay ? hm : `${d.toLocaleDateString(currentIntlLocale(), { day: '2-digit', month: '2-digit' })} ${hm}`;
   }
 }

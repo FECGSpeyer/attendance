@@ -67,7 +67,8 @@
     "people": "Люди",
     "confirm": "Подтвердить",
     "next": "Далее",
-    "create": "Создать"
+    "create": "Создать",
+    "intlLocale": "ru-RU"
   },
   "settings": {
     "language": {

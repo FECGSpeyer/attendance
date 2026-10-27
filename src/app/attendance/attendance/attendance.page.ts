@@ -1,3 +1,4 @@
+import { currentLanguage } from '../../i18n/languages';
 import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ConnectionStatus, Network } from '@capacitor/network';
@@ -871,7 +872,7 @@ export class AttendancePage implements OnInit, OnDestroy {
         title: `${this.type?.name ?? ''} · ${dayjs(this.attendance.date).format('DD.MM.')}`,
         openPlaces: Math.max(0, this.dutyRequiredCount - this.dutyOccupants.length),
         candidates: list,
-        monthLabel: month.locale('de').format('MMMM'),
+        monthLabel: month.locale(currentLanguage()).format('MMMM'),
       },
       breakpoints: [0, 0.75, 1],
       initialBreakpoint: 0.75,

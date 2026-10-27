@@ -563,7 +563,7 @@
             </ion-item>
             <div slot="content">
               <ion-datetime
-                locale="de-DE"
+                [locale]="'common.intlLocale' | transloco"
                 [firstDayOfWeek]="1"
                 [max]="minPauseDate"
                 [(ngModel)]="pauseFrom"
@@ -590,7 +590,7 @@
             </ion-item>
             <div slot="content">
               <ion-datetime
-                locale="de-DE"
+                [locale]="'common.intlLocale' | transloco"
                 [firstDayOfWeek]="1"
                 [min]="minPauseDate"
                 [(ngModel)]="pauseUntil"

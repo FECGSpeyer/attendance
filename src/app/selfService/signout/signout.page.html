@@ -628,7 +628,7 @@
             </ion-item>
             <div slot="content">
               <ion-datetime
-                locale="de-DE"
+                [locale]="'common.intlLocale' | transloco"
                 [firstDayOfWeek]="1"
                 [(ngModel)]="pauseUntil"
                 presentation="date"
@@ -682,7 +682,7 @@
           }
         </div>
 
-        <ion-datetime locale="de-DE" [firstDayOfWeek]="1" presentation="date" size="cover"
+        <ion-datetime [locale]="'common.intlLocale' | transloco" [firstDayOfWeek]="1" presentation="date" size="cover"
           [highlightedDates]="absenceHighlightedDates"
           [value]="absenceFrom || null"
           (ionChange)="onAbsenceDatePick($event)">
