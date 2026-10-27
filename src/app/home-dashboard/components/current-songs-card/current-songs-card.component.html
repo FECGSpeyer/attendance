@@ -2,8 +2,8 @@
   <div class="card-header-strip strip-songs">
     <ion-icon name="musical-notes-outline"></ion-icon>
     <div>
-      <div class="card-title">Aktuelle Werke</div>
-      <div class="card-subtitle">Geplante Werke</div>
+      <div class="card-title">{{ 'homeDashboard.currentSongs' | transloco }}</div>
+      <div class="card-subtitle">{{ 'homeDashboard.plannedSongs' | transloco }}</div>
     </div>
   </div>
   <ion-card-content class="card-body">
@@ -14,7 +14,7 @@
     } @else if (entries.length === 0) {
       <div class="empty-row">
         <ion-icon name="musical-notes-outline" color="medium"></ion-icon>
-        <span>Keine geplanten Werke.</span>
+        <span>{{ 'homeDashboard.noPlannedSongs' | transloco }}</span>
       </div>
     } @else {
       <ion-list lines="full" class="card-list">

@@ -8,9 +8,11 @@ import { BaseChartDirective } from 'ng2-charts';
 import { StatsPageRoutingModule } from './stats-routing.module';
 
 import { StatsPage } from './stats.page';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

@@ -7,9 +7,11 @@ import { IonicModule } from '@ionic/angular/lazy';
 import { ExportPageRoutingModule } from './export-routing.module';
 
 import { ExportPage } from './export.page';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

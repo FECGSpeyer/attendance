@@ -10,6 +10,8 @@ import { tileDay, tileMonth } from '../shared/dashboard-date';
 
 import { fieldNumbers, isGroupHead } from '../../../utilities/plan-groups';
 import { Utils } from '../../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
+import { currentLanguage } from '../../../i18n/languages';
 @Component({
   selector: 'app-current-plan-card',
   templateUrl: './current-plan-card.component.html',
@@ -144,8 +146,8 @@ export class CurrentPlanCardComponent implements OnDestroy {
   }
 
   get dateLabel(): string {
-    if (this.isToday) { return 'Heute'; }
-    return (this.planDay ?? dayjs(this.attendance?.date)).locale('de').format('dddd, DD.MM.YYYY');
+    if (this.isToday) { return translate('teamOrg.todayCap'); }
+    return (this.planDay ?? dayjs(this.attendance?.date)).locale(currentLanguage()).format('dddd, DD.MM.YYYY');
   }
 
   get activeFieldIndex(): number {

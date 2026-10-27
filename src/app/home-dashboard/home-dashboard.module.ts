@@ -17,9 +17,11 @@ import { PersonPageModule } from '../people/person/person.module';
 import { AttendancePageModule } from '../attendance/attendance/attendance.module';
 import { NotificationBellComponent } from '../shared/notification-bell/notification-bell.component';
 import { MyTasksComponent } from '../tasks/my-tasks/my-tasks.component';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

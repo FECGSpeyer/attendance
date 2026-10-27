@@ -2,8 +2,8 @@
   <div class="card-header-strip strip-birthday">
     <ion-icon name="gift-outline"></ion-icon>
     <div>
-      <div class="card-title">Geburtstage</div>
-      <div class="card-subtitle">Letzte und nächste 14 Tage</div>
+      <div class="card-title">{{ 'homeDashboard.birthdays' | transloco }}</div>
+      <div class="card-subtitle">{{ 'homeDashboard.birthdayRange' | transloco }}</div>
     </div>
   </div>
   <ion-card-content class="card-body">
@@ -14,7 +14,7 @@
     } @else if (entries.length === 0) {
       <div class="empty-row">
         <ion-icon name="happy-outline" color="medium"></ion-icon>
-        <span>Keine Geburtstage im Zeitraum.</span>
+        <span>{{ 'homeDashboard.noBirthdays' | transloco }}</span>
       </div>
     } @else {
       <ion-list lines="full" class="card-list">
@@ -22,7 +22,7 @@
           <ng-container *ngTemplateOutlet="row; context: { $implicit: entry }"></ng-container>
         }
         @if (past.length) {
-          <ion-item-divider>Zuletzt</ion-item-divider>
+          <ion-item-divider>{{ 'homeDashboard.recently' | transloco }}</ion-item-divider>
           @for (entry of past; track entry.birthday + entry.firstName) {
             <ng-container *ngTemplateOutlet="row; context: { $implicit: entry }"></ng-container>
           }
@@ -44,7 +44,7 @@
       <p>{{ entry.weekday }} · {{ ageText(entry) }}</p>
     </ion-label>
     @if (entry.daysOffset === 0) {
-      <span slot="end" class="soft-chip chip-solid tile-pink"><ion-icon name="sparkles"></ion-icon>Heute</span>
+      <span slot="end" class="soft-chip chip-solid tile-pink"><ion-icon name="sparkles"></ion-icon>{{ 'teamOrg.todayCap' | transloco }}</span>
     } @else {
       <span slot="end" class="row-meta">{{ formatDaysOffset(entry.daysOffset) }}</span>
     }

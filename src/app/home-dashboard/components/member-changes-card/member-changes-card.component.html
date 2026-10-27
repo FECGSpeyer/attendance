@@ -2,8 +2,8 @@
   <div class="card-header-strip strip-members">
     <ion-icon name="people-outline"></ion-icon>
     <div>
-      <div class="card-title">Mitglieder-Veränderungen</div>
-      <div class="card-subtitle">Letzte 60 Tage</div>
+      <div class="card-title">{{ 'homeDashboard.memberChanges' | transloco }}</div>
+      <div class="card-subtitle">{{ 'homeDashboard.last60Days' | transloco }}</div>
     </div>
   </div>
   <ion-card-content class="card-body">
@@ -14,7 +14,7 @@
     } @else if (changes.length === 0) {
       <div class="empty-row">
         <ion-icon name="people-outline" color="medium"></ion-icon>
-        <span>Keine Veränderungen im Zeitraum.</span>
+        <span>{{ 'homeDashboard.noChanges' | transloco }}</span>
       </div>
     } @else {
       <ion-list lines="full" class="card-list">

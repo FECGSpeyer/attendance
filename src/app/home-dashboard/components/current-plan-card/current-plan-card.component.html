@@ -11,11 +11,11 @@
     <div class="card-header-strip strip-plan">
       <ion-icon name="list-outline"></ion-icon>
       <div>
-        <div class="card-title">Aktueller Ablaufplan</div>
+        <div class="card-title">{{ 'homeDashboard.currentPlan' | transloco }}</div>
         <div class="card-subtitle">{{ typeName }}</div>
       </div>
       @if (isLive) {
-        <ion-badge color="danger" class="live-badge">Live</ion-badge>
+        <ion-badge color="danger" class="live-badge">{{ 'homeDashboard.live' | transloco }}</ion-badge>
       }
     </div>
     <ion-card-content class="card-body">
@@ -27,7 +27,7 @@
           </div>
           <ion-label>
             <h3>{{ dateLabel }}</h3>
-            <p>{{ formatTime(plan.time) }} – {{ formatTime(plan.end) }} Uhr · {{ positionCount }} Positionen</p>
+            <p>{{ 'homeDashboard.planTimes' | transloco: { start: formatTime(plan.time), end: formatTime(plan.end), count: positionCount } }}</p>
           </ion-label>
           <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
         </ion-item>

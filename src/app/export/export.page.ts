@@ -8,11 +8,24 @@ import { TrackingEvent, TrackingService } from '../services/tracking/tracking.se
 import { Attendance, ExtraField, Player } from '../utilities/interfaces';
 import { FieldType } from '../utilities/constants';
 import { Utils } from '../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 const PLAYER_STANDARD_FIELDS = ['Vorname', 'Nachname', 'Geburtsdatum', 'Gruppe', 'E-Mail', 'Telefon', 'Eingetreten', 'Notizen', 'Anwesenheit %'];
 const ATT_STANDARD_FIELDS = ['Vorname', 'Nachname', 'Gruppe', 'E-Mail', 'Telefon'];
 const DEFAULT_PLAYER_FIELDS = ['Vorname', 'Nachname', 'Geburtsdatum', 'Gruppe'];
 const DEFAULT_ATT_FIELDS = ['Vorname', 'Nachname', 'Gruppe'];
+// The standard fields are identified by their German name; only the label is translated.
+const FIELD_LABEL_KEYS: Record<string, string> = {
+  'Vorname': 'people.firstName',
+  'Nachname': 'people.lastName',
+  'Geburtsdatum': 'people.birthday',
+  'Gruppe': 'people.group',
+  'E-Mail': 'people.email',
+  'Telefon': 'people.phone',
+  'Eingetreten': 'people.joined',
+  'Notizen': 'people.notes',
+  'Anwesenheit %': 'export.attendancePercent',
+};
 
 @Component({
     selector: 'app-export',
@@ -69,20 +82,25 @@ export class ExportPage implements OnInit {
   updateSortableFields() {
     const standard = this.content === 'player'
       ? [
-          { value: 'nachname', label: 'Nachname' },
-          { value: 'vorname', label: 'Vorname' },
-          { value: 'gruppe', label: 'Gruppe' },
-          { value: 'geburtsdatum', label: 'Geburtsdatum' },
-          { value: 'eingetreten', label: 'Eingetreten' },
-          { value: 'anwesenheit', label: 'Anwesenheit %' },
+          { value: 'nachname', label: this.fieldLabel('Nachname') },
+          { value: 'vorname', label: this.fieldLabel('Vorname') },
+          { value: 'gruppe', label: this.fieldLabel('Gruppe') },
+          { value: 'geburtsdatum', label: this.fieldLabel('Geburtsdatum') },
+          { value: 'eingetreten', label: this.fieldLabel('Eingetreten') },
+          { value: 'anwesenheit', label: this.fieldLabel('Anwesenheit %') },
         ]
       : [
-          { value: 'nachname', label: 'Nachname' },
-          { value: 'vorname', label: 'Vorname' },
-          { value: 'gruppe', label: 'Gruppe' },
+          { value: 'nachname', label: this.fieldLabel('Nachname') },
+          { value: 'vorname', label: this.fieldLabel('Vorname') },
+          { value: 'gruppe', label: this.fieldLabel('Gruppe') },
         ];
     const extra = this.additionalFields.map(f => ({ value: `extra_${f.id}`, label: f.name }));
     this.sortableFields = [...standard, ...extra];
+  }
+
+  fieldLabel(field: string): string {
+    const key = FIELD_LABEL_KEYS[field];
+    return key ? translate(key) : field;
   }
 
   applySort() {
@@ -138,15 +156,15 @@ export class ExportPage implements OnInit {
 
   async addExtraField() {
     const alert = await this.alertController.create({
-      header: 'Feld hinzufügen',
+      header: translate('export.addField'),
       inputs: [{
         type: 'text',
         name: 'field'
       }],
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Hinzufügen',
+        text: translate('attendance.add'),
         handler: (evt: any) => {
           this.selectedFields.push(evt.field);
         }
@@ -171,7 +189,7 @@ export class ExportPage implements OnInit {
     let row = 1;
 
     const date: string = dayjs().format('DD.MM.YYYY');
-    const data = [['', ...this.selectedFields]];
+    const data = [['', ...this.selectedFields.map(f => this.fieldLabel(f))]];
 
     for (const user of this.players) {
       data.push([row.toString(), ...this.getFieldValues(user)]);
@@ -180,9 +198,9 @@ export class ExportPage implements OnInit {
 
     const ws = utils.aoa_to_sheet(data);
     const wb = utils.book_new();
-    utils.book_append_sheet(wb, ws, 'Anwesenheit');
+    utils.book_append_sheet(wb, ws, translate('export.attendance'));
 
-    await Utils.saveWorkbook(wb, `${shortName}_Spielerliste_Stand_${date}.xlsx`);
+    await Utils.saveWorkbook(wb, `${translate('export.playerListFile', { name: shortName, date })}.xlsx`);
   }
 
   async exportPlayerPDF(shortName: string) {
@@ -201,14 +219,14 @@ export class ExportPage implements OnInit {
 
     const branding = await Utils.buildTenantBranding(this.db.getBrandingSource());
     const headerOpts = {
-      title: `${shortName} Spielerliste`,
-      subtitle: `Stand: ${date}`,
+      title: translate('export.playerListTitle', { name: shortName }),
+      subtitle: translate('planning.asOf', { date }),
     };
 
     const buildTable = (doc: any, styles: any, headStyles: any) => {
       const contentTop = Utils.addBrandingHeader(doc, branding, headerOpts);
       (doc as any).autoTable({
-        head: [['', ...this.selectedFields]],
+        head: [['', ...this.selectedFields.map(f => this.fieldLabel(f))]],
         body: data,
         margin: { top: contentTop, bottom: 14 },
         theme: 'plain',
@@ -255,7 +273,7 @@ export class ExportPage implements OnInit {
     await Utils.registerExportFont(doc);
     buildTable(doc, styles, headStyles);
 
-    const fileName = `${shortName}_Spielerliste_Stand_${date}.pdf`;
+    const fileName = `${translate('export.playerListFile', { name: shortName, date })}.pdf`;
     await Utils.downloadFileNative(doc.output('blob'), fileName);
   }
 
@@ -290,7 +308,7 @@ export class ExportPage implements OnInit {
       row++;
     }
 
-    const header: string[] = ['', ...this.selectedFields, ...attDates.reverse()];
+    const header: string[] = ['', ...this.selectedFields.map(f => this.fieldLabel(f)), ...attDates.reverse()];
 
     if (this.type === 'excel') {
       data.unshift(header);
@@ -310,10 +328,10 @@ export class ExportPage implements OnInit {
 
     /* generate workbook and add the worksheet */
     const wb = utils.book_new();
-    utils.book_append_sheet(wb, ws, 'Anwesenheit');
+    utils.book_append_sheet(wb, ws, translate('export.attendance'));
 
     /* save to file */
-    await Utils.saveWorkbook(wb, `${shortName}_Anwesenheit_Stand_${date}.xlsx`);
+    await Utils.saveWorkbook(wb, `${translate('export.attendanceFileAsOf', { name: shortName, date })}.xlsx`);
   }
 
   async exportAttPDF(data: any[], header: string[], shortName: string) {
@@ -324,8 +342,8 @@ export class ExportPage implements OnInit {
 
     const branding = await Utils.buildTenantBranding(this.db.getBrandingSource());
     const headerOpts = {
-      title: `${shortName} Anwesenheit`,
-      subtitle: `Stand: ${date}`,
+      title: translate('export.attendanceTitle', { name: shortName }),
+      subtitle: translate('planning.asOf', { date }),
     };
 
     const didParseCell = (cellData: any) => {
@@ -410,7 +428,7 @@ export class ExportPage implements OnInit {
     await Utils.registerExportFont(doc);
     buildTable(doc, styles, headStyles, bodyStyles);
 
-    const attFileName = `${shortName}_Anwesenheit_Stand_${date}.pdf`;
+    const attFileName = `${translate('export.attendanceFileAsOf', { name: shortName, date })}.pdf`;
     await Utils.downloadFileNative(doc.output('blob'), attFileName);
   }
 
@@ -467,7 +485,7 @@ export class ExportPage implements OnInit {
 
     switch (field.type) {
       case FieldType.BOOLEAN:
-        return value ? 'Ja' : 'Nein';
+        return value ? translate('common.yes') : translate('common.no');
       case FieldType.DATE:
         return value ? dayjs(value).format('DD.MM.YYYY') : '';
       case FieldType.BFECG_CHURCH:

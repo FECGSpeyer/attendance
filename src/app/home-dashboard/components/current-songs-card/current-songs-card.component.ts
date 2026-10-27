@@ -4,6 +4,7 @@ import { DbService } from '../../../services/db.service';
 import { History } from '../../../utilities/interfaces';
 import dayjs from 'dayjs';
 import { relativeDays } from '../shared/dashboard-date';
+import { currentLanguage } from '../../../i18n/languages';
 
 interface SongEntry {
   songId: number;
@@ -79,6 +80,6 @@ export class CurrentSongsCardComponent {
   songSubtitle(entry: SongEntry): string {
     const parts = [entry.conductorName, entry.typeLabel].filter(Boolean);
     if (parts.length) return parts.join(' · ');
-    return entry.date ? dayjs(entry.date).locale('de').format('dddd, DD.MM.') : entry.dateLabel;
+    return entry.date ? dayjs(entry.date).locale(currentLanguage()).format('dddd, DD.MM.') : entry.dateLabel;
   }
 }

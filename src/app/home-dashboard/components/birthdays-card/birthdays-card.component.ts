@@ -7,6 +7,9 @@ import { Player } from '../../../utilities/interfaces';
 import { Utils } from '../../../utilities/Utils';
 import { PersonPage } from '../../../people/person/person.page';
 import { Role } from '../../../utilities/constants';
+import { translate } from '@jsverse/transloco';
+import { relativeDays } from '../shared/dashboard-date';
+import { currentLanguage } from '../../../i18n/languages';
 
 interface BirthdayEntry {
   player: Player;
@@ -64,7 +67,7 @@ export class BirthdaysCardComponent {
             diff = nextYear.diff(today, 'day');
           }
           const age = Utils.calculateAge(new Date(p.birthday));
-          const date = today.add(diff, 'day').locale('de');
+          const date = today.add(diff, 'day').locale(currentLanguage());
           return {
             player: p,
             firstName: p.firstName,
@@ -103,16 +106,12 @@ export class BirthdaysCardComponent {
   }
 
   formatDaysOffset(offset: number): string {
-    if (offset === 0) return 'Heute';
-    if (offset === -1) return 'Gestern';
-    if (offset === 1) return 'Morgen';
-    if (offset < 0) return `vor ${Math.abs(offset)} Tagen`;
-    return `in ${offset} Tagen`;
+    return relativeDays(dayjs().add(offset, 'day'));
   }
 
   ageText(entry: BirthdayEntry): string {
-    if (entry.daysOffset === 0) return `wird heute ${entry.age}`;
-    if (entry.daysOffset > 0) return `wird ${entry.age}`;
-    return `ist ${entry.age} geworden`;
+    if (entry.daysOffset === 0) return translate('homeDashboard.turnsToday', { age: entry.age });
+    if (entry.daysOffset > 0) return translate('homeDashboard.turns', { age: entry.age });
+    return translate('homeDashboard.turned', { age: entry.age });
   }
 }

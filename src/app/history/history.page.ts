@@ -7,6 +7,7 @@ import { DbService } from '../services/db.service';
 import { Attendance, FieldSelection, History, Person, Song } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
 import { allPlans } from '../utilities/plan-days';
+import { translate } from '@jsverse/transloco';
 
 interface GroupedHistory { date: string; parts: History[] };
 
@@ -186,16 +187,16 @@ export class HistoryPage implements OnInit {
   async onConChange() {
     if (this.historyEntry.person_id === this.otherConductor) {
       const alert = await this.alertController.create({
-        header: 'Dirigent eingeben',
+        header: translate('attList.enterConductor'),
         inputs: [
           {
             type: 'text',
             name: 'conductor',
-            placeholder: 'Dirigent',
+            placeholder: translate('attList.conductor'),
           }
         ],
-        buttons: ['Abbrechen', {
-          text: 'Speichern',
+        buttons: [translate('common.cancel'), {
+          text: translate('common.save'),
           handler: (data: any) => {
             this.historyEntry.otherConductor = data.conductor;
           }
@@ -210,7 +211,7 @@ export class HistoryPage implements OnInit {
 
   async addHistoryEntry(modal: IonModal): Promise<void> {
     if (!this.selectedSongs.length) {
-      Utils.showToast('Bitte wähle mindestens ein Werk an', 'danger');
+      Utils.showToast(translate('history.selectAtLeastOne'), 'danger');
       return;
     }
 
@@ -245,15 +246,15 @@ export class HistoryPage implements OnInit {
   async remove(id: number, sliding: IonItemSliding) {
     try { await Haptics.impact({ style: ImpactStyle.Medium }); } catch { /* Haptics not available in PWA */ }
     const alert = await this.alertController.create({
-      header: 'Möchtest du den Eintrag wirklich entfernen?',
+      header: translate('history.removeConfirm'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           handler: () => {
             sliding.close();
           },
         }, {
-          text: 'Ja',
+          text: translate('common.yes'),
           handler: async () => {
             try {
               await this.db.removeHistoryEntry(id);

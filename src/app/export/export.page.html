@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Daten exportieren</ion-title>
+    <ion-title>{{ 'export.title' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -12,17 +12,17 @@
 <ion-content>
   <ion-segment (ionChange)="onSegmentChange()" mode="md" [(ngModel)]="content">
     <ion-segment-button value="player">
-      <ion-label>Spieler</ion-label>
+      <ion-label>{{ 'export.players' | transloco }}</ion-label>
     </ion-segment-button>
     <ion-segment-button value="attendance">
-      <ion-label>Anwesenheit</ion-label>
+      <ion-label>{{ 'export.attendance' | transloco }}</ion-label>
     </ion-segment-button>
   </ion-segment>
   <ion-list>
     <ion-item>
-      <ion-select label="Felder" [(ngModel)]="selectedFields" multiple="true">
+      <ion-select [label]="'export.fields' | transloco" [(ngModel)]="selectedFields" multiple="true">
         @for (field of fields; track field) {
-          <ion-select-option>{{ field }}</ion-select-option>
+          <ion-select-option [value]="field">{{ fieldLabel(field) }}</ion-select-option>
         }
       </ion-select>
     </ion-item>
@@ -32,7 +32,7 @@
         @for (field of selectedFields; track field; let i = $index) {
           <ion-item-sliding #slider>
             <ion-item>
-              <ion-label>{{ field }}</ion-label>
+              <ion-label>{{ fieldLabel(field) }}</ion-label>
               <ion-reorder slot="end"></ion-reorder>
             </ion-item>
             <ion-item-options>
@@ -45,10 +45,10 @@
       </ion-reorder-group>
     </ion-list>
 
-    <ion-button (click)="addExtraField()" style="margin-left: '16px'" size="small">Extrafeld hinzufügen</ion-button>
+    <ion-button (click)="addExtraField()" style="margin-left: '16px'" size="small">{{ 'export.addExtraField' | transloco }}</ion-button>
 
     <ion-item>
-      <ion-select label="Sortieren nach" interface="popover" [(ngModel)]="sortField" (ionChange)="applySort()">
+      <ion-select [label]="'export.sortBy' | transloco" interface="popover" [(ngModel)]="sortField" (ionChange)="applySort()">
         @for (field of sortableFields; track field.value) {
           <ion-select-option [value]="field.value">{{ field.label }}</ion-select-option>
         }
@@ -56,18 +56,18 @@
     </ion-item>
 
     <ion-item>
-      <ion-select label="Reihenfolge" interface="popover" [(ngModel)]="sortDirection" (ionChange)="applySort()">
-        <ion-select-option value="asc">Aufsteigend (A–Z)</ion-select-option>
-        <ion-select-option value="desc">Absteigend (Z–A)</ion-select-option>
+      <ion-select [label]="'export.order' | transloco" interface="popover" [(ngModel)]="sortDirection" (ionChange)="applySort()">
+        <ion-select-option value="asc">{{ 'export.asc' | transloco }}</ion-select-option>
+        <ion-select-option value="desc">{{ 'export.desc' | transloco }}</ion-select-option>
       </ion-select>
     </ion-item>
 
     <ion-item>
-      <ion-select label="Export-Typ" interface="popover" [(ngModel)]="type">
+      <ion-select [label]="'export.exportType' | transloco" interface="popover" [(ngModel)]="type">
         <ion-select-option value="pdf">PDF</ion-select-option>
         <ion-select-option value="excel">Excel</ion-select-option>
       </ion-select>
     </ion-item>
   </ion-list>
-  <ion-button (click)="export()" expand="block">Exportieren</ion-button>
+  <ion-button (click)="export()" expand="block">{{ 'export.export' | transloco }}</ion-button>
 </ion-content>

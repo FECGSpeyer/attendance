@@ -2,8 +2,8 @@
   <div class="card-header-strip strip-critical">
     <ion-icon name="warning-outline"></ion-icon>
     <div>
-      <div class="card-title">Problemfälle</div>
-      <div class="card-subtitle">Aktuelle Problemfälle</div>
+      <div class="card-title">{{ 'homeDashboard.problemCases' | transloco }}</div>
+      <div class="card-subtitle">{{ 'homeDashboard.currentProblemCases' | transloco }}</div>
     </div>
   </div>
   <ion-card-content class="card-body">
@@ -14,7 +14,7 @@
     } @else if (criticalPersons.length === 0) {
       <div class="empty-row">
         <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
-        <span>Keine Problemfälle vorhanden.</span>
+        <span>{{ 'homeDashboard.noProblemCases' | transloco }}</span>
       </div>
     } @else {
       <ion-list lines="full" class="card-list">

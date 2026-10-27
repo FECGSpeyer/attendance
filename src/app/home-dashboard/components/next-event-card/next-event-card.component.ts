@@ -9,6 +9,8 @@ import { Attendance, PersonAttendance } from '../../../utilities/interfaces';
 import { Utils } from '../../../utilities/Utils';
 import { AttendanceStatus, Role } from '../../../utilities/constants';
 import { tileDay, tileMonth, relativeDays } from '../shared/dashboard-date';
+import { translate } from '@jsverse/transloco';
+import { currentLanguage } from '../../../i18n/languages';
 
 @Component({
   selector: 'app-next-event-card',
@@ -118,7 +120,7 @@ export class NextEventCardComponent {
   }
 
   formatDate(date: string, format: string): string {
-    return dayjs(date).locale('de').format(format);
+    return dayjs(date).locale(currentLanguage()).format(format);
   }
 
   tileDay = tileDay;
@@ -136,7 +138,7 @@ export class NextEventCardComponent {
   }
 
   statusLabel(status: AttendanceStatus): string {
-    return status === AttendanceStatus.LateExcused ? 'Entsch. verspätet' : 'Entschuldigt';
+    return status === AttendanceStatus.LateExcused ? translate('homeDashboard.lateExcusedShort') : translate('common.status.excused');
   }
 
   isShift(notes: string): boolean {

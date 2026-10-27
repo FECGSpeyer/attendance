@@ -1,6 +1,6 @@
 ﻿<ion-header>
   <ion-toolbar>
-    <ion-title>Werkhistorie</ion-title>
+    <ion-title>{{ 'history.title' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -14,14 +14,14 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" placeholder="Werk suchen...">
+  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" [placeholder]="'history.searchSong' | transloco">
   </ion-searchbar>
 
   @if (groupedHistory.length === 0 && !searchTerm) {
     <div class="noDataContainer">
       <div class="noPersons">
         <ion-icon name="musical-notes-outline" size="large"></ion-icon>
-        <ion-label>Noch keine Werke gespielt</ion-label>
+        <ion-label>{{ 'history.noneYet' | transloco }}</ion-label>
       </div>
     </div>
   }
@@ -74,12 +74,7 @@
                     }
                   </ion-label>
                   @if (his.count !== 0) {
-                    @if (his.count === 1) {
-                      <ion-badge>{{ his.count }} Probe</ion-badge>
-                    }
-                    @if (his.count !== 1) {
-                      <ion-badge>{{ his.count }} Proben</ion-badge>
-                    }
+                    <ion-badge>{{ 'history.rehearsals' | transloco: { count: his.count } }}</ion-badge>
                   }
                 </ion-item>
                 <ion-item-options side="end">
@@ -100,16 +95,16 @@
       <ion-content>
         <ion-header>
           <ion-toolbar>
-            <ion-title>Werk(e) hinzufügen</ion-title>
+            <ion-title>{{ 'history.addSongs' | transloco }}</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-item button detail="true" id="song-select-trigger-his">
           <ion-label>
-            <h2>Werk(e)</h2>
+            <h2>{{ 'history.songs' | transloco }}</h2>
             @if (selectedSongs.length > 0) {
-              <p>{{ selectedSongs.length }} Werk(e) ausgewählt</p>
+              <p>{{ 'history.selectedCount' | transloco: { count: selectedSongs.length } }}</p>
             } @else {
-              <p>Keine Werke ausgewählt</p>
+              <p>{{ 'history.noneSelected' | transloco }}</p>
             }
           </ion-label>
         </ion-item>
@@ -118,7 +113,7 @@
           <ng-template>
             <ion-header>
               <ion-toolbar>
-                <ion-title>Werke auswählen</ion-title>
+                <ion-title>{{ 'history.selectSongs' | transloco }}</ion-title>
                 <ion-buttons slot="end">
                   <ion-button (click)="songSelectModal.dismiss()">
                     <ion-icon slot="icon-only" name="checkmark"></ion-icon>
@@ -130,7 +125,7 @@
                   [(ngModel)]="songSearchTerm"
                   (ionInput)="onSongSearch($event)"
                   (ionClear)="resetSongSearch()"
-                  placeholder="Werk suchen..."
+                  [placeholder]="'history.searchSong' | transloco"
                   [debounce]="250">
                 </ion-searchbar>
               </ion-toolbar>
@@ -140,7 +135,7 @@
                 <ion-list [inset]="true">
                   <ion-item lines="none">
                     <ion-label class="ion-text-center" color="medium">
-                      <p>Keine Werke gefunden</p>
+                      <p>{{ 'history.noneFound' | transloco }}</p>
                     </ion-label>
                   </ion-item>
                 </ion-list>
@@ -169,14 +164,14 @@
         </ion-modal>
 
         <ion-item>
-          <ion-select label="Dirigent" (ionChange)="onConChange()" [(ngModel)]="historyEntry.person_id" #select
+          <ion-select [label]="'attList.conductor' | transloco" (ionChange)="onConChange()" [(ngModel)]="historyEntry.person_id" #select
             multiple="false">
             @for (con of activeConductors; track con) {
               <ion-select-option [value]="con.id">{{ con.firstName }} {{ con.lastName
                 }}
               </ion-select-option>
             }
-            <ion-select-option [value]="otherConductor">Anderer Dirigent</ion-select-option>
+            <ion-select-option [value]="otherConductor">{{ 'attList.otherConductor' | transloco }}</ion-select-option>
           </ion-select>
         </ion-item>
         @if (historyEntry.person_id === otherConductor && historyEntry.otherConductor) {
@@ -185,11 +180,11 @@
           </ion-item>
         }
         <ion-item>
-          <ion-label position="stacked">Datum</ion-label>
+          <ion-label position="stacked">{{ 'attendance.date' | transloco }}</ion-label>
           <ion-input autocapitalize="sentences"
             [value]="formatDate(historyEntry.date)"
             (ionBlur)="onManualDateInput($event)"
-            placeholder="TT.MM.JJJJ"></ion-input>
+            [placeholder]="'history.datePlaceholder' | transloco"></ion-input>
           <ion-button
             fill="clear"
             slot="end"
@@ -208,7 +203,7 @@
             </ng-template>
           </ion-modal>
         </ion-item>
-        <ion-button (click)="addHistoryEntry(addHisModal)" expand="block">Hinzufügen</ion-button>
+        <ion-button (click)="addHistoryEntry(addHisModal)" expand="block">{{ 'attendance.add' | transloco }}</ion-button>
       </ion-content>
     </ng-template>
   </ion-modal>

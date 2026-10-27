@@ -8,6 +8,7 @@ import { averagePersons } from 'src/app/utilities/duty';
 import { Utils } from '../utilities/Utils';
 import { AttendanceStatus, DefaultAttendanceType } from '../utilities/constants';
 import { normalizeName } from '../utilities/person-matcher';
+import { translate } from '@jsverse/transloco';
 
 // Register Chart.js components
 Chart.register(...registerables);
@@ -158,7 +159,7 @@ export class StatsPage implements OnInit {
       labels: sortedAttendances.map(a => dayjs(a.date).format('DD.MM')),
       datasets: [{
         data: sortedAttendances.map(a => a.percentage),
-        label: 'Anwesenheit %',
+        label: translate('export.attendancePercent'),
         fill: true,
         tension: 0.3,
         borderColor: '#3880ff',
@@ -171,7 +172,7 @@ export class StatsPage implements OnInit {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        title: { display: true, text: 'Anwesenheitsverlauf (letzte 20 Termine)' }
+        title: { display: true, text: translate('stats.historyChart') }
       },
       scales: {
         y: { min: 0, max: 100, title: { display: true, text: '%' } }
@@ -205,10 +206,10 @@ export class StatsPage implements OnInit {
 
     this.statusPieData = {
       labels: [
-        `Anwesend (${percentages[0]}%)`,
-        `Entschuldigt (${percentages[1]}%)`,
-        `Verspätet (${percentages[2]}%)`,
-        `Abwesend (${percentages[3]}%)`
+        translate('stats.pieLabel', { label: translate('common.status.present'), perc: percentages[0] }),
+        translate('stats.pieLabel', { label: translate('common.status.excused'), perc: percentages[1] }),
+        translate('stats.pieLabel', { label: translate('common.status.lateShort'), perc: percentages[2] }),
+        translate('stats.pieLabel', { label: translate('common.status.absent'), perc: percentages[3] })
       ],
       datasets: [{
         data: percentages,
@@ -220,7 +221,7 @@ export class StatsPage implements OnInit {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        title: { display: true, text: 'Statusverteilung (in %)' },
+        title: { display: true, text: translate('stats.statusChart') },
         tooltip: {
           callbacks: {
             label: (context) => `${context.label}`
@@ -262,7 +263,7 @@ export class StatsPage implements OnInit {
       labels: groupData.map(g => g.name),
       datasets: [{
         data: groupData.map(g => g.percentage),
-        label: 'Anwesenheit %',
+        label: translate('export.attendancePercent'),
         backgroundColor: '#3880ff'
       }]
     };
@@ -272,7 +273,7 @@ export class StatsPage implements OnInit {
       maintainAspectRatio: false,
       indexAxis: 'y',
       plugins: {
-        title: { display: true, text: 'Anwesenheitsquote nach Instrument' },
+        title: { display: true, text: translate('stats.instrumentChart') },
         legend: { display: false }
       },
       scales: {
@@ -315,7 +316,7 @@ export class StatsPage implements OnInit {
       labels: top20.map(p => p.name),
       datasets: [{
         data: top20.map(p => p.percentage),
-        label: 'Anwesenheit %',
+        label: translate('export.attendancePercent'),
         backgroundColor: '#2dd36f'
       }]
     };
@@ -325,7 +326,7 @@ export class StatsPage implements OnInit {
       maintainAspectRatio: false,
       indexAxis: 'y',
       plugins: {
-        title: { display: true, text: 'Top 20 - Anwesenheits-Elite 🏆' },
+        title: { display: true, text: translate('stats.top20Chart') },
         legend: { display: false }
       },
       scales: {
@@ -345,7 +346,7 @@ export class StatsPage implements OnInit {
     });
 
     if (ages.length === 0) {
-      this.ageDistributionData = { labels: [], datasets: [{ data: [], label: 'Anzahl' }] };
+      this.ageDistributionData = { labels: [], datasets: [{ data: [], label: translate('stats.count') }] };
       return;
     }
 
@@ -376,7 +377,7 @@ export class StatsPage implements OnInit {
       labels: filteredBuckets.map(b => b.label),
       datasets: [{
         data: filteredBuckets.map(b => b.count),
-        label: 'Anzahl Personen',
+        label: translate('stats.personCount'),
         backgroundColor: '#5260ff'
       }]
     };
@@ -385,7 +386,7 @@ export class StatsPage implements OnInit {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        title: { display: true, text: 'Altersverteilung 🎂' },
+        title: { display: true, text: translate('stats.ageChart') },
         legend: { display: false }
       },
       scales: {
@@ -455,11 +456,11 @@ export class StatsPage implements OnInit {
       maintainAspectRatio: false,
       indexAxis: 'y',
       plugins: {
-        title: { display: true, text: 'Durchschnittsalter pro Instrument' },
+        title: { display: true, text: translate('stats.avgAgeChart') },
         legend: { display: false }
       },
       scales: {
-        x: { title: { display: true, text: 'Jahre' } }
+        x: { title: { display: true, text: translate('stats.years') } }
       }
     };
   }
@@ -494,7 +495,7 @@ export class StatsPage implements OnInit {
       labels: topDivas.map(p => p.name),
       datasets: [{
         data: topDivas.map(p => p.absences),
-        label: 'Unentschuldigte Fehlzeiten',
+        label: translate('stats.unexcusedChart'),
         backgroundColor: '#eb445a'
       }]
     };
@@ -504,7 +505,7 @@ export class StatsPage implements OnInit {
       maintainAspectRatio: false,
       indexAxis: 'y',
       plugins: {
-        title: { display: true, text: 'Unentschuldigte Abwesenheiten' },
+        title: { display: true, text: translate('stats.unexcusedAbsences') },
         legend: { display: false }
       }
     };
@@ -569,7 +570,7 @@ export class StatsPage implements OnInit {
 
   async openInstancesAlert() {
     const alert = await this.alertController.create({
-      header: 'Instanzen der Organisation',
+      header: translate('stats.orgTenants'),
       message: `${this.tenants.map(t => t.longName).join(', ')}`,
       buttons: ['OK']
     });

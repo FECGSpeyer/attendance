@@ -2,8 +2,8 @@
   <div class="card-header-strip strip-event">
     <ion-icon name="calendar-outline"></ion-icon>
     <div>
-      <div class="card-title">Termine</div>
-      <div class="card-subtitle">Nächster &amp; letzter Termin</div>
+      <div class="card-title">{{ 'homeDashboard.events' | transloco }}</div>
+      <div class="card-subtitle">{{ 'homeDashboard.nextAndLast' | transloco }}</div>
     </div>
   </div>
   <ion-card-content class="card-body">
@@ -17,7 +17,7 @@
         <!-- ── Nächster Termin (oben, detailliert) ───────────────────── -->
         @if (nextEvent) {
           <ion-item-divider class="card-divider">
-            <ion-label>Nächster Termin</ion-label>
+            <ion-label>{{ 'teamOrg.nextEvent' | transloco }}</ion-label>
           </ion-item-divider>
 
           <ion-item class="dash-row" [button]="canOpenAttendance" [detail]="false" (click)="canOpenAttendance && openAttendance(nextEvent.id)">
@@ -30,7 +30,7 @@
               <p>
                 {{ formatDate(nextEvent.date, 'dddd') }}
                 @if (nextEvent.start_time) {
-                  · {{ nextEvent.start_time }}@if (nextEvent.end_time) { – {{ nextEvent.end_time }} } Uhr
+                  · {{ 'attendance.timeOClock' | transloco: { time: nextEvent.start_time + (nextEvent.end_time ? ' – ' + nextEvent.end_time : '') } }}
                 }
               </p>
             </ion-label>
@@ -50,25 +50,25 @@
             <div class="stat-grid">
               <div class="stat-box tile-green">
                 <span class="stat-value">{{ nextPresent }}</span>
-                <span class="stat-label">Anwesend</span>
+                <span class="stat-label">{{ 'common.status.present' | transloco }}</span>
               </div>
               <div class="stat-box tile-orange" [class.stat-clickable]="nextExcused > 0" [attr.id]="nextExcused > 0 ? 'open-excused-modal' : null">
                 <span class="stat-value">{{ nextExcused }}</span>
                 <span class="stat-label">
-                  Abgemeldet
-                  @if (nextShiftWorkers > 0) { <br>{{ nextShiftWorkers }} Schicht }
+                  {{ 'homeDashboard.signedOut' | transloco }}
+                  @if (nextShiftWorkers > 0) { <br>{{ 'homeDashboard.shiftCount' | transloco: { count: nextShiftWorkers } }} }
                 </span>
               </div>
               <div class="stat-box tile-muted">
                 <span class="stat-value">{{ nextNeutral }}</span>
-                <span class="stat-label">Offen</span>
+                <span class="stat-label">{{ 'tasks.status.open' | transloco }}</span>
               </div>
             </div>
 
             <div class="perc-row">
               <div class="perc-text">
-                <span>Durchschnitt</span>
-                <span><strong>{{ nextPerc }}%</strong> · {{ nextTotal }} gesamt</span>
+                <span>{{ 'homeDashboard.average' | transloco }}</span>
+                <span><strong>{{ nextPerc }}%</strong> · {{ 'homeDashboard.totalCount' | transloco: { count: nextTotal } }}</span>
               </div>
               <div class="perc-bar"><div class="perc-fill" [style.width.%]="nextPerc"></div></div>
             </div>
@@ -78,7 +78,7 @@
                 <ng-template>
                   <ion-header>
                     <ion-toolbar>
-                      <ion-title>Abmeldungen</ion-title>
+                      <ion-title>{{ 'homeDashboard.signOuts' | transloco }}</ion-title>
                     </ion-toolbar>
                   </ion-header>
                   <ion-content>
@@ -92,7 +92,7 @@
                           </ion-label>
                           <ion-badge slot="end" [color]="p.status === AttendanceStatus.LateExcused ? 'warning' : 'primary'">
                             {{ statusLabel(p.status) }}
-                            @if (isShift(p.notes)) { · Schicht }
+                            @if (isShift(p.notes)) { · {{ 'homeDashboard.shift' | transloco }} }
                           </ion-badge>
                         </ion-item>
                       }
@@ -107,7 +107,7 @@
         <!-- ── Letzter Termin (unten, kompakt) ───────────────────── -->
         @if (lastEvent) {
           <ion-item-divider class="card-divider">
-            <ion-label>Letzter Termin</ion-label>
+            <ion-label>{{ 'homeDashboard.lastEvent' | transloco }}</ion-label>
           </ion-item-divider>
           <ion-item class="dash-row" lines="none" [button]="canOpenAttendance" [detail]="false" (click)="canOpenAttendance && openAttendance(lastEvent.id)">
             <div class="date-tile tile-muted" slot="start">
@@ -116,7 +116,7 @@
             </div>
             <ion-label>
               <h3>{{ lastEvent.typeInfo }}</h3>
-              <p>{{ lastPresent }}/{{ lastTotal }} anwesend · {{ lastExcused }} entschuldigt</p>
+              <p>{{ 'homeDashboard.lastSummary' | transloco: { present: lastPresent, total: lastTotal, excused: lastExcused } }}</p>
             </ion-label>
             <span slot="end" class="soft-chip" [class]="percTile(lastPerc)">{{ lastPerc }}%</span>
           </ion-item>
@@ -126,7 +126,7 @@
           <ion-item lines="none">
             <div class="empty-row">
               <ion-icon name="calendar-outline" color="medium"></ion-icon>
-              <span>Keine Termine gefunden.</span>
+              <span>{{ 'homeDashboard.noEvents' | transloco }}</span>
             </div>
           </ion-item>
         }
