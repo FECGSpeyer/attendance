@@ -4,6 +4,7 @@ import { DbService } from 'src/app/services/db.service';
 import { TypePage } from 'src/app/settings/general/type/type.page';
 import { AttendanceType } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-types',
@@ -28,7 +29,7 @@ export class TypesPage implements OnInit {
   }
 
   async saveOrder() {
-    const loading = await Utils.getLoadingElement(9999, 'Speichere Reihenfolge...');
+    const loading = await Utils.getLoadingElement(9999, translate('typeSettings.savingOrder'));
     await loading.present();
 
     const attendanceTypes = [...this.db.attendanceTypes()];
@@ -40,7 +41,7 @@ export class TypesPage implements OnInit {
     }
 
     await loading.dismiss();
-    await Utils.showToast('Reihenfolge gespeichert', 'success');
+    await Utils.showToast(translate('typeSettings.orderSaved'), 'success');
     this.reorder = false;
   }
 

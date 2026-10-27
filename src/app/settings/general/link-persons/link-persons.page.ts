@@ -5,6 +5,7 @@ import { Player, Tenant } from 'src/app/utilities/interfaces';
 import { RankedMatch, rankCandidates } from 'src/app/utilities/person-matcher';
 import { Utils } from 'src/app/utilities/Utils';
 import dayjs from 'dayjs';
+import { translate } from '@jsverse/transloco';
 
 interface MatchEntry extends RankedMatch<Player> {
   selected: boolean;
@@ -99,7 +100,7 @@ export class LinkPersonsPage implements OnInit {
 
   async link(group: PersonLinkGroup, selectedCandidates: Player[]) {
     if (selectedCandidates.length === 0) {
-      Utils.showToast('Bitte mindestens eine Übereinstimmung auswählen', 'warning');
+      Utils.showToast(translate('linkPersons.selectOne'), 'warning');
       return;
     }
 
@@ -113,9 +114,9 @@ export class LinkPersonsPage implements OnInit {
       await this.db.setGlobalPersonId(allIds, globalPersonId);
       this.linkedCount += allIds.length;
       this.groups = this.groups.filter(g => g !== group);
-      Utils.showToast(`${allIds.length} Personen verknüpft`, 'success');
+      Utils.showToast(translate('linkPersons.linked', { count: allIds.length }), 'success');
     } catch {
-      Utils.showToast('Fehler beim Verknüpfen', 'danger');
+      Utils.showToast(translate('linkPersons.failed'), 'danger');
     }
   }
 

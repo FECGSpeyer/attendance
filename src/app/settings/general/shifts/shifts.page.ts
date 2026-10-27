@@ -4,6 +4,7 @@ import { IonModal, NavController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { ShiftPlan } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-shifts',
@@ -32,7 +33,7 @@ export class ShiftsPage implements OnInit {
     await modal.dismiss();
 
     if (this.newShiftName.trim().length === 0) {
-      Utils.showToast('Bitte gib einen Namen für den Schichtplan ein.', 'danger');
+      Utils.showToast(translate('shifts.enterName'), 'danger');
       return;
     }
 

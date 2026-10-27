@@ -5,6 +5,7 @@ import { Role } from 'src/app/utilities/constants';
 import { Organisation, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { LinkPersonsPage } from '../settings/general/link-persons/link-persons.page';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-org-settings',
@@ -41,7 +42,7 @@ export class OrgSettingsPage implements OnInit {
 
     if (organisations.length) {
       const alert = await this.alertController.create({
-        header: 'Organisation auswählen',
+        header: translate('org.select'),
         inputs: organisations.map((org: Organisation, index: number) => ({
           type: 'radio',
           checked: index === 0,
@@ -49,28 +50,28 @@ export class OrgSettingsPage implements OnInit {
           value: org,
         })),
         buttons: [{
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
         }, {
-          text: 'Auswählen',
+          text: translate('org.choose'),
           handler: async (data: Organisation) => {
             if (data) {
               const loading = await Utils.getLoadingElement();
               loading.present();
               try {
                 await this.db.linkTenantToOrganisation(this.db.tenant().id, data);
-                Utils.showToast('Die Organisation wurde erfolgreich ausgewählt.', 'success');
+                Utils.showToast(translate('org.selected'), 'success');
                 await loading.dismiss();
               } catch (error) {
                 Utils.showToast(error.message, 'danger');
                 await loading.dismiss();
               }
             } else {
-              alert.message = 'Bitte wähle eine Organisation aus.';
+              alert.message = translate('org.pleaseSelect');
               return false;
             }
           }
         }, {
-          text: 'Neue Organisation erstellen',
+          text: translate('org.createNew'),
           handler: async () => {
             alert.dismiss();
             this.openCreateOrganisationAlert();
@@ -87,30 +88,30 @@ export class OrgSettingsPage implements OnInit {
 
   async openCreateOrganisationAlert() {
     const alert = await this.alertController.create({
-      header: 'Organisation erstellen',
+      header: translate('org.create'),
       inputs: [{
         type: 'text',
         name: 'name',
-        placeholder: 'Name eingeben...',
+        placeholder: translate('org.namePh'),
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Hinzufügen',
+        text: translate('attendance.add'),
         handler: async (data: { name: string }) => {
           if (data.name.length) {
             const loading = await Utils.getLoadingElement();
             loading.present();
             try {
               await this.db.createOrganisation(data.name);
-              Utils.showToast('Die Organisation wurde erfolgreich erstellt.', 'success');
+              Utils.showToast(translate('org.created'), 'success');
               await loading.dismiss();
             } catch (error) {
               Utils.showToast(error.message, 'danger');
               await loading.dismiss();
             }
           } else {
-            alert.message = 'Bitte gib gültige Werte ein.';
+            alert.message = translate('admin.invalidValues');
             return false;
           }
         }
@@ -125,26 +126,26 @@ export class OrgSettingsPage implements OnInit {
     if (!org) { return; }
 
     const alert = await this.alertController.create({
-      header: 'Organisation umbenennen',
+      header: translate('org.rename'),
       inputs: [{
         type: 'text',
         name: 'name',
         value: org.name,
-        placeholder: 'Name eingeben...',
+        placeholder: translate('org.namePh'),
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Speichern',
+        text: translate('common.save'),
         handler: async (data: { name: string }) => {
           const name = data.name?.trim();
           if (!name) {
-            alert.message = 'Bitte gib einen gültigen Namen ein.';
+            alert.message = translate('org.validName');
             return false;
           }
           try {
             await this.db.updateOrgName(name);
-            Utils.showToast('Organisation umbenannt', 'success');
+            Utils.showToast(translate('org.renamed'), 'success');
           } catch {
             // toast shown in service
           }
@@ -160,17 +161,17 @@ export class OrgSettingsPage implements OnInit {
     if (!org) { return; }
 
     const alert = await this.alertController.create({
-      header: 'Organisation von Instanz trennen?',
-      message: `Möchtest du die Organisation '${org.name}' wirklich von der Instanz trennen?`,
+      header: translate('org.unlink'),
+      message: translate('org.unlinkMessage', { name: org.name }),
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Trennen',
+        text: translate('org.unlinkButton'),
         role: 'destructive',
         handler: async () => {
           await this.db.unlinkTenantFromOrganisation(org.id);
           this.db.organisation.set(null);
-          Utils.showToast('Die Organisation wurde erfolgreich von der Instanz getrennt.', 'success');
+          Utils.showToast(translate('org.unlinked'), 'success');
         }
       }]
     });
@@ -197,12 +198,12 @@ export class OrgSettingsPage implements OnInit {
         return;
       }
     }
-    const loading = await Utils.getLoadingElement(999999, 'Einstellungen werden gespeichert...');
+    const loading = await Utils.getLoadingElement(999999, translate('generalSettings.saving'));
     await loading.present();
     try {
       await this.db.updateTenantData({ song_source_tenant_id: newSourceId ?? null });
       this.selectedSongSourceTenantId = newSourceId;
-      Utils.showToast('Werk-Synchronisierung gespeichert.', 'success');
+      Utils.showToast(translate('org.syncSaved'), 'success');
     } catch { }
     finally { await loading.dismiss(); }
   }
@@ -210,12 +211,11 @@ export class OrgSettingsPage implements OnInit {
   private async confirmDeactivation(): Promise<boolean> {
     return new Promise(async (resolve) => {
       const alert = await this.alertController.create({
-        header: 'Synchronisierung deaktivieren?',
-        message: 'Die Werke dieser Instanz sind danach leer, bis eigene Werke angelegt werden. '
-          + 'Historieneinträge auf Werke der Quellinstanz können nicht mehr aufgelöst werden.',
+        header: translate('org.disableSync'),
+        message: translate('org.disableSyncMessage'),
         buttons: [
-          { text: 'Abbrechen', role: 'cancel', handler: () => resolve(false) },
-          { text: 'Deaktivieren', role: 'destructive', handler: () => resolve(true) },
+          { text: translate('common.cancel'), role: 'cancel', handler: () => resolve(false) },
+          { text: translate('org.disable'), role: 'destructive', handler: () => resolve(true) },
         ],
       });
       await alert.present();

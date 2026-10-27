@@ -4,9 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular/lazy';
 import { OrgPlanningTemplatesPage } from './org-planning-templates.page';
 import { OrgPlanningTemplatesPageRoutingModule } from './org-planning-templates-routing.module';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

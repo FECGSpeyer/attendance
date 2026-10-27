@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Personen verknüpfen</ion-title>
+    <ion-title>{{ 'linkPersons.title' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()" fill="clear"><ion-icon slot="icon-only" name="close"></ion-icon></ion-button>
     </ion-buttons>
@@ -15,14 +15,14 @@
   } @else if (groups.length === 0) {
     <div class="ion-text-center ion-padding">
       <ion-icon name="checkmark-circle-outline" color="success" style="font-size: 48px; display: block; margin: 24px auto 8px"></ion-icon>
-      <p>Keine weiteren Vorschläge.</p>
+      <p>{{ 'linkPersons.noMore' | transloco }}</p>
       @if (linkedCount > 0) {
-        <p><strong>{{ linkedCount }} Personen wurden verknüpft.</strong></p>
+        <p><strong>{{ 'linkPersons.linkedCount' | transloco: { count: linkedCount } }}</strong></p>
       }
     </div>
   } @else {
     <p class="info-text">
-      Mögliche Übereinstimmungen aus verschiedenen Instanzen. Verknüpfte Personen synchronisieren Name, Geburtstag, E-Mail und Telefon automatisch.
+      {{ 'linkPersons.intro' | transloco }}
     </p>
 
     @for (group of groups; track group.representative.id) {
@@ -59,11 +59,11 @@
           <!-- Actions -->
           <div class="card-actions">
             <ion-button fill="outline" color="medium" size="small" (click)="ignore(group)">
-              Ignorieren
+              {{ 'linkPersons.ignore' | transloco }}
             </ion-button>
             <ion-button fill="solid" color="primary" size="small"
               (click)="link(group, getSelectedMatches(group))">
-              Verknüpfen
+              {{ 'linkPersons.link' | transloco }}
             </ion-button>
           </div>
         </ion-card-content>

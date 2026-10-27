@@ -4,6 +4,7 @@ import { DbService } from 'src/app/services/db.service';
 import { FieldType, Role } from 'src/app/utilities/constants';
 import { ExtraField } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-org-person-fields',
@@ -38,13 +39,13 @@ export class OrgPersonFieldsPage implements OnInit {
 
   getFieldTypeName(type: FieldType): string {
     switch (type) {
-      case FieldType.TEXT: return 'Text';
-      case FieldType.TEXTAREA: return 'Textbereich';
-      case FieldType.NUMBER: return 'Zahl';
-      case FieldType.DATE: return 'Datum';
-      case FieldType.BOOLEAN: return 'Ja/Nein';
-      case FieldType.SELECT: return 'Auswahl';
-      default: return 'Unbekannt';
+      case FieldType.TEXT: return translate('typeSettings.text');
+      case FieldType.TEXTAREA: return translate('extraFields.textarea');
+      case FieldType.NUMBER: return translate('extraFields.number');
+      case FieldType.DATE: return translate('attendance.date');
+      case FieldType.BOOLEAN: return translate('extraFields.yesNo');
+      case FieldType.SELECT: return translate('extraFields.select');
+      default: return translate('common.unknown');
     }
   }
 
@@ -52,13 +53,13 @@ export class OrgPersonFieldsPage implements OnInit {
     const organisationId = this.db.organisation()?.id;
     const name = this.newField.name.trim();
     if (!organisationId || !name) {
-      Utils.showToast('Bitte gib einen gültigen Namen für das Zusatzfeld ein.', 'danger');
+      Utils.showToast(translate('extraFields.invalidName'), 'danger');
       return;
     }
 
     const id = `org_${organisationId}_${this.toFieldId(name)}`;
     if (this.fields.some(field => field.id === id)) {
-      Utils.showToast('Ein Zusatzfeld mit diesem Namen existiert bereits.', 'danger');
+      Utils.showToast(translate('orgFields.nameExists'), 'danger');
       return;
     }
 
@@ -71,7 +72,7 @@ export class OrgPersonFieldsPage implements OnInit {
     if (field.type === FieldType.SELECT) {
       field.options = (field.options ?? []).filter(option => option.trim());
       if (!field.options.length) {
-        Utils.showToast('Bitte füge mindestens eine Auswahloption hinzu.', 'danger');
+        Utils.showToast(translate('orgFields.addOption'), 'danger');
         return;
       }
       field.defaultValue = field.options[0];
@@ -84,11 +85,11 @@ export class OrgPersonFieldsPage implements OnInit {
 
   async removeField(index: number): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Zusatzfeld löschen?',
-      message: `Möchtest du das Zusatzfeld '${this.fields[index].name}' wirklich löschen?`,
+      header: translate('extraFields.deleteField'),
+      message: translate('extraFields.deleteFieldMessage', { name: this.fields[index].name }),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        { text: 'Löschen', role: 'destructive', handler: () => this.fields.splice(index, 1) },
+        { text: translate('common.cancel'), role: 'cancel' },
+        { text: translate('common.delete'), role: 'destructive', handler: () => this.fields.splice(index, 1) },
       ],
     });
     await alert.present();
@@ -108,7 +109,7 @@ export class OrgPersonFieldsPage implements OnInit {
       if (this.editingField.type === FieldType.SELECT) {
         const options = (this.editingField.options ?? []).map(option => option.trim()).filter(Boolean);
         if (!options.length) {
-          Utils.showToast('Bitte füge mindestens eine Auswahloption hinzu.', 'danger');
+          Utils.showToast(translate('orgFields.addOption'), 'danger');
           return;
         }
         this.editingField.options = options;
@@ -169,11 +170,11 @@ export class OrgPersonFieldsPage implements OnInit {
     if (!this.isSuperAdmin) { return; }
     for (const field of this.fields) {
       if (!field.name.trim() || !field.id.startsWith(`org_${this.db.organisation()?.id}_`)) {
-        Utils.showToast('Ungültige Organisations-Zusatzfelder.', 'danger');
+        Utils.showToast(translate('orgFields.invalid'), 'danger');
         return;
       }
       if (field.type === FieldType.SELECT && !(field.options ?? []).length) {
-        Utils.showToast(`Das Auswahlfeld "${field.name}" benötigt Optionen.`, 'danger');
+        Utils.showToast(translate('orgFields.needsOptions', { name: field.name }), 'danger');
         return;
       }
     }
@@ -185,7 +186,7 @@ export class OrgPersonFieldsPage implements OnInit {
       await this.db.updateOrgExtraFields(this.fields);
       await this.db.deleteSharedPersonFieldValues(deletedFieldIds);
       this.originalFieldIds = currentFieldIds;
-      Utils.showToast('Organisations-Zusatzfelder gespeichert.', 'success');
+      Utils.showToast(translate('orgFields.saved'), 'success');
     } finally {
       this.isSaving = false;
     }

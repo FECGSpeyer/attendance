@@ -3,21 +3,21 @@
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="/tabs/settings/org-settings"></ion-back-button>
     </ion-buttons>
-    <ion-title>Planvorlagen & Felder</ion-title>
+    <ion-title>{{ 'orgTemplates.title' | transloco }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content color="light" [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar color="light">
-      <ion-title size="large">Planvorlagen & Felder</ion-title>
+      <ion-title size="large">{{ 'orgTemplates.title' | transloco }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
   <!-- ── Standardfelder ──────────────────────────────────────────────── -->
   <ion-list [inset]="true">
     <ion-list-header>
-      <ion-label>Standardfelder</ion-label>
+      <ion-label>{{ 'orgTemplates.defaultFields' | transloco }}</ion-label>
       <ion-button fill="clear" size="small" (click)="addDefaultField()">
         <ion-icon name="add-outline"></ion-icon>
       </ion-button>
@@ -26,7 +26,7 @@
     <ion-reorder-group [disabled]="false" (ionItemReorder)="handleDefaultFieldReorder($any($event))">
       @if (defaultFields.length === 0) {
       <ion-item>
-        <ion-label color="medium">Noch keine Standardfelder definiert</ion-label>
+        <ion-label color="medium">{{ 'orgTemplates.noDefaultFields' | transloco }}</ion-label>
       </ion-item>
       }
       @for (field of defaultFields; track field.id; let i = $index) {
@@ -38,7 +38,7 @@
             <h3>{{ field.conductor }}</h3>
             }
           </ion-label>
-          <ion-input style="width: 3rem;" type="number" slot="end" placeholder="min" [(ngModel)]="field.time"
+          <ion-input style="width: 3rem;" type="number" slot="end" [placeholder]="'typeSettings.minPh' | transloco" [(ngModel)]="field.time"
             (ionBlur)="saveDefaultFields()">
           </ion-input>
           <ion-reorder slot="end"></ion-reorder>
@@ -57,8 +57,7 @@
     <ion-item lines="none">
       <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
       <ion-label class="ion-text-wrap">
-        <p>Standardfelder erscheinen im Planungs-Menü als schnell hinzufügbare Felder für alle Instanzen der
-          Organisation.</p>
+        <p>{{ 'orgTemplates.defaultFieldsHint' | transloco }}</p>
       </ion-label>
     </ion-item>
   </ion-list>
@@ -66,7 +65,7 @@
   <!-- ── Vorlagen ────────────────────────────────────────────────────── -->
   <ion-list [inset]="true">
     <ion-list-header>
-      <ion-label>Vorlagen</ion-label>
+      <ion-label>{{ 'orgTemplates.templates' | transloco }}</ion-label>
       <ion-button fill="clear" size="small" (click)="addTemplate()">
         <ion-icon name="add-outline"></ion-icon>
       </ion-button>
@@ -75,7 +74,7 @@
     <ion-item-group>
       @if (templates.length === 0) {
       <ion-item>
-        <ion-label color="medium">Noch keine Vorlagen definiert</ion-label>
+        <ion-label color="medium">{{ 'orgTemplates.noTemplates' | transloco }}</ion-label>
       </ion-item>
       }
       @for (tpl of templates; track trackByIndex(i); let i = $index) {
@@ -103,7 +102,7 @@
       @if (selectedTemplateIndex === i) {
       <!-- Start time -->
       <ion-item>
-        <ion-label>Startzeit</ion-label>
+        <ion-label>{{ 'shifts.startTime' | transloco }}</ion-label>
         <ion-datetime-button slot="end" [datetime]="'dt-tpl-' + i"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
@@ -131,7 +130,7 @@
               }
             </ion-label>
             @if (!field.id?.includes('noteFld')) {
-            <ion-input style="width: 3rem;" type="number" slot="end" placeholder="min" [(ngModel)]="field.time"
+            <ion-input style="width: 3rem;" type="number" slot="end" [placeholder]="'typeSettings.minPh' | transloco" [(ngModel)]="field.time"
               (ionBlur)="updateTemplateEndPublic(tpl, i); saveTemplates()">
             </ion-input>
             }
@@ -150,29 +149,29 @@
       <ion-item>
         <ion-button [id]="'add-tpl-' + i" fill="clear" size="small">
           <ion-icon name="add-outline" slot="start"></ion-icon>
-          Feld hinzufügen
+          {{ 'typeSettings.addField' | transloco }}
         </ion-button>
         <ion-popover [trigger]="'add-tpl-' + i" triggerAction="click" #addTplPopover>
           <ng-template>
             <ion-item button (click)="addExtraField(tpl, i, addTplPopover)">
-              <ion-label>Feld hinzufügen</ion-label>
+              <ion-label>{{ 'typeSettings.addField' | transloco }}</ion-label>
             </ion-item>
             <ion-item button (click)="addNoteField(tpl, i, addTplPopover)">
-              <ion-label>Notizfeld hinzufügen</ion-label>
+              <ion-label>{{ 'typeSettings.addNoteField' | transloco }}</ion-label>
             </ion-item>
             @if (!isGeneral) {
             <ion-item button (click)="addSongPlaceholder(tpl, i, addTplPopover)">
-              <ion-label>Werk-Platzhalter</ion-label>
+              <ion-label>{{ 'orgTemplates.songPlaceholder' | transloco }}</ion-label>
             </ion-item>
             }
             @if (defaultFields.length) {
             <ion-item-divider></ion-item-divider>
             <ion-item lines="none">
-              <ion-label><small><b>Standardfelder</b></small></ion-label>
+              <ion-label><small><b>{{ 'orgTemplates.defaultFields' | transloco }}</b></small></ion-label>
             </ion-item>
             @for (f of defaultFields; track f.id) {
             <ion-item button (click)="addOrgDefaultField(f, tpl, i, addTplPopover)">
-              <ion-label>{{ f.name }} <ion-note>{{ f.time }} min</ion-note></ion-label>
+              <ion-label>{{ f.name }} <ion-note>{{ 'planning.minShort' | transloco: { min: f.time } }}</ion-note></ion-label>
             </ion-item>
             }
             }
@@ -183,7 +182,7 @@
       @if (templateEnds[i]) {
       <ion-item lines="none">
         <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
-        <ion-label color="medium">Ende ca. {{ templateEnds[i] | date:'HH:mm' }}</ion-label>
+        <ion-label color="medium">{{ 'orgTemplates.endApprox' | transloco: { time: (templateEnds[i] | date:'HH:mm') } }}</ion-label>
       </ion-item>
       }
       }
@@ -195,8 +194,7 @@
     <ion-item lines="none">
       <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
       <ion-label class="ion-text-wrap">
-        <p>Vorlagen können beim Planen mit einem Tippen auf das Programm angewendet werden und ersetzen dabei den
-          aktuellen Ablauf.</p>
+        <p>{{ 'orgTemplates.templatesHint' | transloco }}</p>
       </ion-label>
     </ion-item>
   </ion-list>

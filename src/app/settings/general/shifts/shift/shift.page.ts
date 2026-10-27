@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { ShiftInstance, ShiftPlan, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-shift',
@@ -37,15 +38,15 @@ export class ShiftPage implements OnInit {
 
   async save() {
     if (!this.shift.name || this.shift.name.trim().length === 0) {
-      Utils.showToast('Bitte gib einen Namen für den Schichtplan ein.', 'danger');
+      Utils.showToast(translate('shifts.enterName'), 'danger');
       return;
     }
 
     try {
       await this.db.updateShift(this.shift);
-      Utils.showToast('Schichtplan gespeichert', 'success');
+      Utils.showToast(translate('shifts.saved'), 'success');
     } catch (error) {
-      Utils.showToast('Fehler beim Speichern des Schichtplans', 'danger');
+      Utils.showToast(translate('shifts.saveFailed'), 'danger');
     }
   }
 
@@ -91,23 +92,23 @@ export class ShiftPage implements OnInit {
 
   async delete() {
     const alert = await this.alertController.create({
-      header: 'Schichtplan löschen',
-      message: 'Möchtest du den Schichtplan wirklich löschen? Alle zugehörigen Schichten werden ebenfalls gelöscht. Personen, die diesem Schichtplan zugewiesen sind, verlieren ihre Zuordnung. Diese Aktion kann nicht rückgängig gemacht werden.',
+      header: translate('shifts.delete'),
+      message: translate('shifts.deleteMessage'),
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Löschen',
+        text: translate('common.delete'),
         role: 'destructive',
         handler: async () => {
           try {
-            const loading = await Utils.getLoadingElement(9999, 'Schichtplan wird gelöscht...');
+            const loading = await Utils.getLoadingElement(9999, translate('shifts.deleting'));
             await loading.present();
             await this.db.deleteShift(this.shift.id);
             await loading.dismiss();
             this.router.navigate(['/tabs/settings/general/shifts']);
-            Utils.showToast('Schichtplan gelöscht', 'success');
+            Utils.showToast(translate('shifts.deleted'), 'success');
           } catch (error) {
-            Utils.showToast('Fehler beim Löschen des Schichtplans', 'danger');
+            Utils.showToast(translate('shifts.deleteFailed'), 'danger');
           }
         }
       }]
@@ -117,7 +118,7 @@ export class ShiftPage implements OnInit {
 
   async copyToInstance() {
     if (this.linkedTenants.length === 0) {
-      Utils.showToast('Keine anderen Instanzen verfügbar.', 'warning');
+      Utils.showToast(translate('shifts.noOtherTenants'), 'warning');
       return;
     }
 
@@ -128,16 +129,16 @@ export class ShiftPage implements OnInit {
     }));
 
     const alert = await this.alertController.create({
-      header: 'In Instanz kopieren',
-      message: 'Wähle die Ziel-Instanz, in die der Schichtplan kopiert werden soll.',
+      header: translate('shifts.copyToTenant'),
+      message: translate('shifts.chooseTarget'),
       inputs,
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Weiter',
+        text: translate('common.next'),
         handler: async (tenantId: string) => {
           if (!tenantId) {
-            Utils.showToast('Bitte wähle eine Instanz aus.', 'warning');
+            Utils.showToast(translate('shifts.selectTenant'), 'warning');
             return false;
           }
 
@@ -165,19 +166,19 @@ export class ShiftPage implements OnInit {
     const targetTenant = this.linkedTenants.find(t => t.id === tenantId);
 
     const alert = await this.alertController.create({
-      header: 'Zuweisungen kopieren?',
-      message: `Der Schichtplan ist ${playersWithShift.length} ${playersWithShift.length === 1 ? 'Person' : 'Personen'} zugewiesen. Sollen diese Zuweisungen auch in "${targetTenant?.longName}" übernommen werden?`,
+      header: translate('shifts.copyAssignments'),
+      message: translate('shifts.copyAssignmentsMessage', { count: playersWithShift.length, tenant: targetTenant?.longName }),
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Nur Schichtplan',
+        text: translate('shifts.onlyPlan'),
         handler: async () => {
           await alert.dismiss();
           await this.executeCopy(tenantId, false, playersWithShift);
           return false;
         }
       }, {
-        text: 'Mit Zuweisungen',
+        text: translate('shifts.withAssignments'),
         handler: async () => {
           await alert.dismiss();
           await this.executeCopy(tenantId, true, playersWithShift);
@@ -194,7 +195,7 @@ export class ShiftPage implements OnInit {
     playersWithShift: { id: number; appId: string; shift_name: string; shift_start: string }[]
   ) {
     try {
-      const loading = await Utils.getLoadingElement(9999, 'Schichtplan wird kopiert...');
+      const loading = await Utils.getLoadingElement(9999, translate('shifts.copying'));
       await loading.present();
 
       // Create a clean copy without IDs and dependencies
@@ -247,20 +248,20 @@ export class ShiftPage implements OnInit {
 
       if (copyAssignments && assignedCount > 0) {
         Utils.showToast(
-          `Schichtplan nach "${targetTenant?.longName}" kopiert und ${assignedCount} ${assignedCount === 1 ? 'Person' : 'Personen'} zugewiesen.`,
+          translate('shifts.copiedAssigned', { tenant: targetTenant?.longName, count: assignedCount }),
           'success'
         );
       } else if (copyAssignments && assignedCount === 0 && playersWithShift.length > 0) {
         Utils.showToast(
-          `Schichtplan nach "${targetTenant?.longName}" kopiert. Keine passenden Personen in Ziel-Instanz gefunden.`,
+          translate('shifts.copiedNoMatch', { tenant: targetTenant?.longName }),
           'warning'
         );
       } else {
-        Utils.showToast(`Schichtplan nach "${targetTenant?.longName}" kopiert.`, 'success');
+        Utils.showToast(translate('shifts.copied', { tenant: targetTenant?.longName }), 'success');
       }
     } catch (error) {
       console.error('Error copying shift:', error);
-      Utils.showToast('Fehler beim Kopieren des Schichtplans.', 'danger');
+      Utils.showToast(translate('shifts.copyFailed'), 'danger');
     }
   }
 

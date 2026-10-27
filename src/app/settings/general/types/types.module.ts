@@ -8,9 +8,11 @@ import { TypesPageRoutingModule } from './types-routing.module';
 
 import { TypesPage } from './types.page';
 import { TypePageModule } from '../type/type.module';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

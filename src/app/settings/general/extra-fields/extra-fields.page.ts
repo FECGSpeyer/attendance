@@ -5,6 +5,7 @@ import { DbService } from 'src/app/services/db.service';
 import { FieldType } from 'src/app/utilities/constants';
 import { ExtraField } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-extra-fields',
@@ -52,13 +53,13 @@ export class ExtraFieldsPage implements OnInit {
 
   getFieldTypeName(type: FieldType): string {
     switch (type) {
-      case FieldType.TEXT: return 'Text';
-      case FieldType.TEXTAREA: return 'Textbereich';
-      case FieldType.NUMBER: return 'Zahl';
-      case FieldType.SELECT: return 'Auswahl';
-      case FieldType.DATE: return 'Datum';
-      case FieldType.BOOLEAN: return 'Ja/Nein';
-      default: return 'Unbekannt';
+      case FieldType.TEXT: return translate('typeSettings.text');
+      case FieldType.TEXTAREA: return translate('extraFields.textarea');
+      case FieldType.NUMBER: return translate('extraFields.number');
+      case FieldType.SELECT: return translate('extraFields.select');
+      case FieldType.DATE: return translate('attendance.date');
+      case FieldType.BOOLEAN: return translate('extraFields.yesNo');
+      default: return translate('common.unknown');
     }
   }
 
@@ -86,7 +87,7 @@ export class ExtraFieldsPage implements OnInit {
     const field = target === 'person' ? this.newExtraField : this.newSongExtraField;
 
     if (!field.name.trim()) {
-      Utils.showToast('Bitte gib einen gültigen Namen für das Zusatzfeld ein.', 'danger');
+      Utils.showToast(translate('extraFields.invalidName'), 'danger');
       return;
     }
 
@@ -97,24 +98,24 @@ export class ExtraFieldsPage implements OnInit {
     }
 
     if (fields.find(f => f.id === field.id)) {
-      Utils.showToast('Ein Zusatzfeld mit dieser ID existiert bereits. Bitte wähle einen anderen Namen.', 'danger');
+      Utils.showToast(translate('extraFields.idExists'), 'danger');
       return;
     }
 
     if (field.type === FieldType.SELECT) {
       if (!field.options?.length) {
-        Utils.showToast('Bitte füge mindestens eine Option für das Auswahlfeld hinzu.', 'danger');
+        Utils.showToast(translate('extraFields.addOption'), 'danger');
         return;
       }
       if (field.options.some(opt => !opt.trim())) {
-        Utils.showToast('Optionen dürfen nicht leer sein.', 'danger');
+        Utils.showToast(translate('extraFields.optionsEmpty'), 'danger');
         return;
       }
       field.defaultValue = field.options[0];
     }
 
     if (!field.id) {
-      Utils.showToast('Die ID des Zusatzfeldes darf nicht leer sein.', 'danger');
+      Utils.showToast(translate('extraFields.idEmpty'), 'danger');
       return;
     }
 
@@ -130,10 +131,10 @@ export class ExtraFieldsPage implements OnInit {
   async removeExtraField(index: number, target: 'person' | 'song') {
     const fields = target === 'person' ? this.extraFields : this.songExtraFields;
     const alert = await this.alertController.create({
-      header: 'Zusatzfeld löschen?',
-      message: `Möchtest du das Zusatzfeld '${fields[index].name}' wirklich löschen?`,
-      buttons: [{ text: 'Abbrechen' }, {
-        text: 'Löschen',
+      header: translate('extraFields.deleteField'),
+      message: translate('extraFields.deleteFieldMessage', { name: fields[index].name }),
+      buttons: [{ text: translate('common.cancel') }, {
+        text: translate('common.delete'),
         handler: () => { fields.splice(index, 1); }
       }]
     });
@@ -201,10 +202,10 @@ export class ExtraFieldsPage implements OnInit {
 
     if (isExistingOption && optionToRemove) {
       const alert = await this.alertController.create({
-        header: 'Option löschen?',
-        message: `Wenn du die Option "${optionToRemove}" löschst, werden alle betroffenen Datensätze auf den Standardwert zurückgesetzt.`,
-        buttons: [{ text: 'Abbrechen' }, {
-          text: 'Löschen',
+        header: translate('extraFields.deleteOption'),
+        message: translate('extraFields.deleteOptionMessage', { option: optionToRemove }),
+        buttons: [{ text: translate('common.cancel') }, {
+          text: translate('common.delete'),
           handler: async () => {
             const newDefault = editingField.options[0] === optionToRemove
               ? (editingField.options[1] || '')
@@ -213,7 +214,7 @@ export class ExtraFieldsPage implements OnInit {
               try {
                 const count = await this.playerSvc.updateExtraFieldValue(this.db.tenant().id, editingField.id, optionToRemove, newDefault);
                 editingField.options.splice(index, 1);
-                if (count > 0) { Utils.showToast(`${count} Personen aktualisiert`, 'success'); }
+                if (count > 0) { Utils.showToast(translate('extraFields.personsUpdated', { count }), 'success'); }
               } catch { /* service shows toast */ }
             } else {
               editingField.options.splice(index, 1);
@@ -232,10 +233,10 @@ export class ExtraFieldsPage implements OnInit {
     if (!editingField) { return; }
 
     const alert = await this.alertController.create({
-      header: 'Werte zurücksetzen?',
-      message: `Möchtest du alle Werte des Feldes '${editingField.name}' auf den Standardwert zurücksetzen? Dies kann nicht rückgängig gemacht werden!`,
-      buttons: [{ text: 'Abbrechen' }, {
-        text: 'Zurücksetzen',
+      header: translate('extraFields.resetValues'),
+      message: translate('extraFields.resetValuesMessage', { name: editingField.name }),
+      buttons: [{ text: translate('common.cancel') }, {
+        text: translate('dashSettings.reset'),
         handler: async () => {
           if (target !== 'person') { return; }
           const resolved = Utils.getFieldTypeDefaultValue(
@@ -246,7 +247,7 @@ export class ExtraFieldsPage implements OnInit {
           );
           try {
             const count = await this.playerSvc.resetExtraFieldValues(this.db.tenant().id, editingField.id, resolved);
-            Utils.showToast(`${count} Personen aktualisiert`, 'success');
+            Utils.showToast(translate('extraFields.personsUpdated', { count }), 'success');
           } catch { /* service shows toast */ }
         }
       }]
@@ -257,22 +258,22 @@ export class ExtraFieldsPage implements OnInit {
   async save() {
     for (const field of [...this.extraFields, ...this.songExtraFields]) {
       if (!field.name?.trim()) {
-        Utils.showToast('Alle Zusatzfelder müssen einen Namen haben.', 'danger');
+        Utils.showToast(translate('extraFields.allNeedName'), 'danger');
         return;
       }
       if (field.type === FieldType.SELECT) {
         if (!field.options?.length) {
-          Utils.showToast(`Das Auswahlfeld "${field.name}" muss mindestens eine Option haben.`, 'danger');
+          Utils.showToast(translate('extraFields.selectNeedsOption', { name: field.name }), 'danger');
           return;
         }
         if (field.options.some(opt => !opt?.trim())) {
-          Utils.showToast(`Die Optionen im Feld "${field.name}" dürfen nicht leer sein.`, 'danger');
+          Utils.showToast(translate('extraFields.optionsEmptyIn', { name: field.name }), 'danger');
           return;
         }
       }
     }
 
-    const loading = await Utils.getLoadingElement(999999, 'Felder werden gespeichert...');
+    const loading = await Utils.getLoadingElement(999999, translate('extraFields.saving'));
     await loading.present();
 
     try {
@@ -288,10 +289,10 @@ export class ExtraFieldsPage implements OnInit {
       this.originalSongExtraFields = [...this.songExtraFields].map(f => ({ ...f, options: f.options ? [...f.options] : [] }));
 
       await loading.dismiss();
-      Utils.showToast('Felder gespeichert', 'success');
+      Utils.showToast(translate('extraFields.saved'), 'success');
     } catch {
       await loading.dismiss();
-      Utils.showToast('Fehler beim Speichern', 'danger');
+      Utils.showToast(translate('extraFields.saveFailed'), 'danger');
     }
   }
 

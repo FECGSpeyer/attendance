@@ -27,23 +27,23 @@
   <ion-list [inset]="true">
     <ion-item-group>
       <ion-item>
-        <ion-label position="stacked">Name</ion-label>
+        <ion-label position="stacked">{{ 'typeSettings.name' | transloco }}</ion-label>
         <ion-input autocapitalize="sentences" [(ngModel)]="type.name"></ion-input>
       </ion-item>
     </ion-item-group>
   </ion-list>
 
   <ion-list [inset]="true">
-    <ion-list-header><ion-label>Optionen</ion-label></ion-list-header>
+    <ion-list-header><ion-label>{{ 'typeSettings.options' | transloco }}</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item>
         <ion-toggle
-          helperText="Wenn du diese Option deaktivierst, wird der Anwesenheitstyp beim Anlegen einer Anwesenheit nicht mehr als Option angezeigt."
-          [(ngModel)]="type.visible">Aktiv</ion-toggle>
+          [helperText]="'typeSettings.activeHelper' | transloco"
+          [(ngModel)]="type.visible">{{ 'typeSettings.active' | transloco }}</ion-toggle>
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Verfügbare Anwesenheitsstatus</ion-label>
+        <ion-label position="stacked">{{ 'typeSettings.availableStatus' | transloco }}</ion-label>
         <ion-select (ionChange)="onAvailableStatusesChanged()" [(ngModel)]="type.available_statuses" multiple="true">
           @for (status of attendanceStatuses; track status) {
           <ion-select-option [disabled]="status === 1" [value]="status">
@@ -54,7 +54,7 @@
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Standard Anwesenheitsstatus</ion-label>
+        <ion-label position="stacked">{{ 'typeSettings.defaultStatus' | transloco }}</ion-label>
         <ion-select [(ngModel)]="type.default_status">
           @for (status of attendanceStatuses; track status) {
           @if (type.available_statuses.includes(status)) {
@@ -69,20 +69,20 @@
       @if (!isGeneral) {
       <ion-item>
         <ion-toggle
-          helperText="Wenn du diese Option aktivierst, dann kannst du beim Anlegen einer Anwesenheit von diesem Typ, Werke hinzufügen, die für die kommenden Proben relevant sind und automatisch im Probenplan berücksichtigt werden."
-          [(ngModel)]="type.manage_songs">Werke verwalten</ion-toggle>
+          [helperText]="'typeSettings.songsHelper' | transloco"
+          [(ngModel)]="type.manage_songs">{{ 'typeSettings.manageSongs' | transloco }}</ion-toggle>
       </ion-item>
       }
 
       <ion-item>
-        <ion-toggle label="Ganztägig"
-          helperText="Wenn du diese Option aktivierst, wird bei einer Anwesenheit von diesem Typ keine Uhrzeit festgelegt aber eine Dauer angegeben."
-          [(ngModel)]="type.all_day">Ganztägig</ion-toggle>
+        <ion-toggle [attr.label]="'typeSettings.allDay' | transloco"
+          [helperText]="'typeSettings.allDayHelper' | transloco"
+          [(ngModel)]="type.all_day">{{ 'typeSettings.allDay' | transloco }}</ion-toggle>
       </ion-item>
 
       @if (type.all_day) {
       <ion-item>
-        <ion-label position="stacked">Standarddauer (in Tagen)</ion-label>
+        <ion-label position="stacked">{{ 'typeSettings.defaultDays' | transloco }}</ion-label>
         <ion-input autocapitalize="sentences" type="number" [(ngModel)]="type.duration_days"></ion-input>
       </ion-item>
       }
@@ -90,8 +90,8 @@
       @if (!type.all_day) {
       <ion-item>
         <ion-label>
-          <h2>Beginn</h2>
-          <h3>Die Zeiten können nachträglich individuell in jeder Anwesenheit angepasst werden</h3>
+          <h2>{{ 'typeSettings.start' | transloco }}</h2>
+          <h3>{{ 'typeSettings.timesHint' | transloco }}</h3>
         </ion-label>
         <ion-datetime-button datetime="datetimestart"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
@@ -110,7 +110,7 @@
       }
       @if (!type.all_day) {
       <ion-item>
-        <ion-label>Ende</ion-label>
+        <ion-label>{{ 'typeSettings.end' | transloco }}</ion-label>
         <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
@@ -129,118 +129,118 @@
       }
 
       <ion-item>
-        <ion-toggle label="Name verbergen"
-          helperText="Wenn du diese Option aktivierst, wird der Name dieses Anwesenheitstyps in der Liste verborgen. Nur die Zusatzinfo (falls vorhanden) wird angezeigt."
-          [(ngModel)]="type.hide_name">Name verbergen</ion-toggle>
+        <ion-toggle [attr.label]="'typeSettings.hideName' | transloco"
+          [helperText]="'typeSettings.hideNameHelper' | transloco"
+          [(ngModel)]="type.hide_name">{{ 'typeSettings.hideName' | transloco }}</ion-toggle>
       </ion-item>
 
       <ion-item>
-        <ion-toggle label="Hervorheben"
-          helperText="Wenn du diese Option aktivierst, wird dieser Anwesenheitstyp in der Liste als Fett dargestellt."
-          [(ngModel)]="type.highlight">Hervorheben</ion-toggle>
+        <ion-toggle [attr.label]="'typeSettings.highlight' | transloco"
+          [helperText]="'typeSettings.highlightHelper' | transloco"
+          [(ngModel)]="type.highlight">{{ 'typeSettings.highlight' | transloco }}</ion-toggle>
       </ion-item>
 
       <ion-item>
-        <ion-toggle label="Für Ø berücksichtigen"
-          helperText="Wenn diese Option aktiviert ist, wird dieser Typ beim Anwesenheitsdurchschnitt berücksichtigt."
-          [(ngModel)]="type.include_in_average">Für Ø berücksichtigen</ion-toggle>
+        <ion-toggle [attr.label]="'typeSettings.countForAvg' | transloco"
+          [helperText]="'typeSettings.countForAvgHelper' | transloco"
+          [(ngModel)]="type.include_in_average">{{ 'typeSettings.countForAvg' | transloco }}</ion-toggle>
       </ion-item>
 
       <ion-item>
         <ion-toggle
-          helperText="Termine dieses Typs bekommen eine Tagesordnung im Ablaufplan und ein Protokoll. Wer dazugehört, regeln die relevanten Gruppen."
-          [(ngModel)]="type.enable_protocol" (ionChange)="onProtocolToggle()">Protokoll &amp; Tagesordnung</ion-toggle>
+          [helperText]="'typeSettings.protocolHelper' | transloco"
+          [(ngModel)]="type.enable_protocol" (ionChange)="onProtocolToggle()">{{ 'typeSettings.protocolAgenda' | transloco }}</ion-toggle>
       </ion-item>
       @if (!isNew) {
       <ion-item button detail="false" (click)="openTeamHelp()" lines="full">
         <ion-icon name="help-circle-outline" slot="start" color="primary"></ion-icon>
-        <ion-label color="primary">Mehr erfahren</ion-label>
+        <ion-label color="primary">{{ 'typeSettings.learnMore' | transloco }}</ion-label>
       </ion-item>
       }
       @if (type.enable_protocol) {
       <ion-item>
-        <ion-input type="number" min="1" label="Standarddauer pro Thema (Min.)" labelPlacement="start"
+        <ion-input type="number" min="1" [label]="'typeSettings.topicMinutes' | transloco" labelPlacement="start"
           class="ion-text-end" [(ngModel)]="type.agenda_default_duration" placeholder="10"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-toggle helperText="Beim nächsten Termin dieses Typs stehen vertagte Themen beim Aufnehmen ganz oben."
+        <ion-toggle [helperText]="'typeSettings.postponedHelper' | transloco"
           [ngModel]="type.suggest_postponed !== false"
-          (ngModelChange)="type.suggest_postponed = $event">Vertagte Themen vorschlagen</ion-toggle>
+          (ngModelChange)="type.suggest_postponed = $event">{{ 'typeSettings.suggestPostponed' | transloco }}</ion-toggle>
       </ion-item>
       <ion-item lines="full">
         <ion-label class="ion-text-wrap">
-          <p>Der Platzhalter „Tagesordnung“ im Standard-Ablaufplan legt fest, wo Themen eingefügt werden. Ohne Platzhalter landen sie am Ende.</p>
+          <p>{{ 'typeSettings.placeholderHint' | transloco }}</p>
         </ion-label>
         @if (!hasAgendaMarker) {
-        <ion-button slot="end" fill="clear" size="small" (click)="addAgendaItemsPlaceholder()">Platzhalter einfügen</ion-button>
+        <ion-button slot="end" fill="clear" size="small" (click)="addAgendaItemsPlaceholder()">{{ 'typeSettings.insertPlaceholder' | transloco }}</ion-button>
         }
       </ion-item>
       }
       <ion-item>
         <ion-toggle
-          helperText="Wenn aktiviert, kann bei Terminen dieses Typs ein Ort hinterlegt werden. Dieser wird dann als Navigationslink in Google Maps oder Apple Karten angezeigt."
-          [(ngModel)]="type.place_enabled">Ort / Navigation aktivieren</ion-toggle>
+          [helperText]="'typeSettings.locationHelper' | transloco"
+          [(ngModel)]="type.place_enabled">{{ 'typeSettings.enableLocation' | transloco }}</ion-toggle>
       </ion-item>
     </ion-item-group>
   </ion-list>
 
   <ion-list [inset]="true">
-    <ion-list-header><ion-label>Dienstplan</ion-label></ion-list-header>
+    <ion-list-header><ion-label>{{ 'typeSettings.dutyRoster' | transloco }}</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item>
         <ion-toggle
-          helperText="Für Dienste wie Tontechnik: Pro Termin wird eine feste Zahl Personen eingeteilt. Nur Eingeteilte sind erwartet, alle anderen aus dem Personenkreis sind Springer."
-          [(ngModel)]="type.duty_mode" (ionChange)="onDutyToggle()">Dienst-Modus</ion-toggle>
+          [helperText]="'typeSettings.dutyHelper' | transloco"
+          [(ngModel)]="type.duty_mode" (ionChange)="onDutyToggle()">{{ 'typeSettings.dutyMode' | transloco }}</ion-toggle>
       </ion-item>
       @if (!isNew) {
       <ion-item button detail="false" (click)="openDutyHelp()" [lines]="type.duty_mode ? 'inset' : 'full'">
         <ion-icon name="help-circle-outline" slot="start" color="primary"></ion-icon>
-        <ion-label color="primary">Mehr erfahren</ion-label>
+        <ion-label color="primary">{{ 'typeSettings.learnMore' | transloco }}</ion-label>
       </ion-item>
       }
       @if (type.duty_mode) {
       <ion-item>
         <ion-input type="number" min="1" labelPlacement="start"
           class="ion-text-end" [(ngModel)]="type.duty_required" placeholder="1">
-          <div slot="label" class="ion-text-wrap">Benötigte Personen</div>
+          <div slot="label" class="ion-text-wrap">{{ 'typeSettings.neededPeople' | transloco }}</div>
         </ion-input>
       </ion-item>
       <ion-item>
-        <ion-toggle helperText="Personen aus dem Personenkreis können offene Dienste selbst übernehmen."
+        <ion-toggle [helperText]="'typeSettings.selfAssignHelper' | transloco"
           [ngModel]="type.duty_self_signup !== false"
-          (ngModelChange)="type.duty_self_signup = $event">Selbst eintragen erlaubt</ion-toggle>
+          (ngModelChange)="type.duty_self_signup = $event">{{ 'typeSettings.selfAssign' | transloco }}</ion-toggle>
       </ion-item>
       <ion-item>
         <ion-select interface="popover" [(ngModel)]="type.duty_confirm_reminder_days">
-          <div slot="label" class="ion-text-wrap">Erinnern, wenn unbestätigt</div>
-          <ion-select-option [value]="null">Aus</ion-select-option>
-          <ion-select-option [value]="1">nach 1 Tag</ion-select-option>
-          <ion-select-option [value]="2">nach 2 Tagen</ion-select-option>
-          <ion-select-option [value]="3">nach 3 Tagen</ion-select-option>
-          <ion-select-option [value]="7">nach 7 Tagen</ion-select-option>
+          <div slot="label" class="ion-text-wrap">{{ 'typeSettings.remindUnconfirmed' | transloco }}</div>
+          <ion-select-option [value]="null">{{ 'typeSettings.off' | transloco }}</ion-select-option>
+          <ion-select-option [value]="1">{{ 'typeSettings.after1Day' | transloco }}</ion-select-option>
+          <ion-select-option [value]="2">{{ 'typeSettings.after2Days' | transloco }}</ion-select-option>
+          <ion-select-option [value]="3">{{ 'typeSettings.after3Days' | transloco }}</ion-select-option>
+          <ion-select-option [value]="7">{{ 'typeSettings.after7Days' | transloco }}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-toggle helperText="Sagt eine eingeteilte Person ab und der Dienst ist unterbesetzt, bekommen alle aus dem Personenkreis eine Nachricht."
+        <ion-toggle [helperText]="'typeSettings.notifyGroupHelper' | transloco"
           [ngModel]="type.duty_notify_understaffed !== false"
-          (ngModelChange)="type.duty_notify_understaffed = $event">Gruppe bei Ausfall benachrichtigen</ion-toggle>
+          (ngModelChange)="type.duty_notify_understaffed = $event">{{ 'typeSettings.notifyGroup' | transloco }}</ion-toggle>
       </ion-item>
       <ion-item lines="full">
         <ion-select interface="popover"
-          helperText="Einmaliger dringender Push an alle aus dem Personenkreis und die Leitung."
+          [helperText]="'typeSettings.urgentHelper' | transloco"
           [(ngModel)]="type.duty_urgent_hours">
-          <div slot="label" class="ion-text-wrap">Dringend, wenn noch offen</div>
-          <ion-select-option [value]="null">Aus</ion-select-option>
-          <ion-select-option [value]="6">6 h vorher</ion-select-option>
-          <ion-select-option [value]="12">12 h vorher</ion-select-option>
-          <ion-select-option [value]="24">24 h vorher</ion-select-option>
-          <ion-select-option [value]="48">48 h vorher</ion-select-option>
-          <ion-select-option [value]="72">72 h vorher</ion-select-option>
+          <div slot="label" class="ion-text-wrap">{{ 'typeSettings.urgentIfOpen' | transloco }}</div>
+          <ion-select-option [value]="null">{{ 'typeSettings.off' | transloco }}</ion-select-option>
+          <ion-select-option [value]="6">{{ 'typeSettings.h6' | transloco }}</ion-select-option>
+          <ion-select-option [value]="12">{{ 'typeSettings.h12' | transloco }}</ion-select-option>
+          <ion-select-option [value]="24">{{ 'typeSettings.h24' | transloco }}</ion-select-option>
+          <ion-select-option [value]="48">{{ 'typeSettings.h48' | transloco }}</ion-select-option>
+          <ion-select-option [value]="72">{{ 'typeSettings.h72' | transloco }}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item lines="none">
         <ion-label class="ion-text-wrap">
-          <p>Den Personenkreis legst du wie gewohnt über relevante Gruppen oder unter „Filter“ mit einem Zusatzfeld fest (z. B. Ja/Nein-Feld „Tontechnik“). Dienste zählen in die Anwesenheitsquote, aber nur für eingeteilte Personen.</p>
+          <p>{{ 'typeSettings.circleHint' | transloco }}</p>
         </ion-label>
       </ion-item>
       }
@@ -248,23 +248,23 @@
   </ion-list>
 
   <ion-list [inset]="true">
-    <ion-list-header><ion-label>Terminerinnerungen</ion-label></ion-list-header>
+    <ion-list-header><ion-label>{{ 'typeSettings.eventReminders' | transloco }}</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item>
-        <ion-toggle label="Terminerinnerung"
-          helperText="Wenn diese Option aktiviert ist, Erinnerungen angelegt wurden und die Benachrichtigungen aktiviert sind, erhalten Personen eine Terminerinnerung."
-          [(ngModel)]="type.notification">Terminerinnerung</ion-toggle>
+        <ion-toggle [attr.label]="'typeSettings.eventReminder' | transloco"
+          [helperText]="'typeSettings.eventReminderHelper' | transloco"
+          [(ngModel)]="type.notification">{{ 'typeSettings.eventReminder' | transloco }}</ion-toggle>
       </ion-item>
 
       <!-- Reminder Configuration Button -->
       @if (type.notification) {
       <ion-item button detail="true" id="reminders-modal-trigger">
         <ion-label>
-          <h2>Erinnerungen konfigurieren</h2>
+          <h2>{{ 'typeSettings.configureReminders' | transloco }}</h2>
           @if (type.reminders && type.reminders.length > 0) {
-          <p>{{ type.reminders.length }} Erinnerung(en) aktiv</p>
+          <p>{{ 'typeSettings.remindersActive' | transloco: { count: type.reminders.length } }}</p>
           } @else {
-          <p>Keine Erinnerungen konfiguriert</p>
+          <p>{{ 'typeSettings.noReminders' | transloco }}</p>
           }
         </ion-label>
         @if (type.reminders && type.reminders.length > 0) {
@@ -278,7 +278,7 @@
         <ng-template>
           <ion-header>
             <ion-toolbar>
-              <ion-title>Erinnerungen</ion-title>
+              <ion-title>{{ 'typeSettings.reminders' | transloco }}</ion-title>
               <ion-buttons slot="end">
                 <ion-button (click)="closeRemindersModal()">
                   <ion-icon slot="icon-only" name="checkmark"></ion-icon>
@@ -290,26 +290,25 @@
             <!-- Info Card -->
             <ion-list [inset]="true" class="info-list">
               <ion-list-header>
-                <ion-label>So funktionieren Erinnerungen</ion-label>
+                <ion-label>{{ 'typeSettings.howReminders' | transloco }}</ion-label>
               </ion-list-header>
               <ion-item-group>
                 <ion-item lines="none">
                   <ion-icon slot="start" name="time-outline" color="primary"></ion-icon>
                   <ion-label class="ion-text-wrap">
-                    <p>Erinnerungen werden <strong>alle 5 Minuten</strong> geprüft und versendet.</p>
+                    <p [innerHTML]="'typeSettings.howEvery5' | transloco"></p>
                   </ion-label>
                 </ion-item>
                 <ion-item lines="none">
                   <ion-icon slot="start" name="calculator-outline" color="primary"></ion-icon>
                   <ion-label class="ion-text-wrap">
-                    <p>Die Erinnerung wird versendet, sobald die <strong>verbleibende Zeit</strong> dem konfigurierten
-                      Wert entspricht.</p>
+                    <p [innerHTML]="'typeSettings.howRemaining' | transloco"></p>
                   </ion-label>
                 </ion-item>
                 <ion-item lines="none">
                   <ion-icon slot="start" name="notifications-outline" color="primary"></ion-icon>
                   <ion-label class="ion-text-wrap">
-                    <p>Maximal <strong>3 Erinnerungen</strong> pro Termintyp möglich.</p>
+                    <p [innerHTML]="'typeSettings.howMax' | transloco"></p>
                   </ion-label>
                 </ion-item>
               </ion-item-group>
@@ -318,7 +317,7 @@
             <!-- Active Reminders -->
             <ion-list [inset]="true">
               <ion-list-header>
-                <ion-label>Aktive Erinnerungen</ion-label>
+                <ion-label>{{ 'typeSettings.activeReminders' | transloco }}</ion-label>
                 <ion-badge color="medium">{{ type.reminders?.length || 0 }}/3</ion-badge>
               </ion-list-header>
               <ion-item-group>
@@ -329,7 +328,7 @@
                     <ion-icon slot="start" name="alarm-outline" color="primary"></ion-icon>
                     <ion-label>
                       <h2>{{ getFormattedReminder(reminder) }}</h2>
-                      <p>{{ reminder }} Stunde(n) vor Terminbeginn</p>
+                      <p>{{ 'typeSettings.hoursBeforeStart' | transloco: { count: reminder } }}</p>
                     </ion-label>
                   </ion-item>
                   <ion-item-options side="end">
@@ -343,7 +342,7 @@
                 <ion-item lines="none">
                   <ion-label class="ion-text-center" color="medium">
                     <ion-icon name="notifications-off-outline" style="font-size: 2rem;"></ion-icon>
-                    <p>Noch keine Erinnerungen konfiguriert</p>
+                    <p>{{ 'typeSettings.noRemindersYet' | transloco }}</p>
                   </ion-label>
                 </ion-item>
                 }
@@ -354,7 +353,7 @@
             @if (canAddReminder()) {
             <ion-list [inset]="true">
               <ion-list-header>
-                <ion-label>Schnellauswahl</ion-label>
+                <ion-label>{{ 'typeSettings.quickSelect' | transloco }}</ion-label>
               </ion-list-header>
               <ion-item-group>
                 <div class="reminder-chips">
@@ -371,13 +370,13 @@
 
             <ion-list [inset]="true">
               <ion-list-header>
-                <ion-label>Benutzerdefiniert</ion-label>
+                <ion-label>{{ 'typeSettings.custom' | transloco }}</ion-label>
               </ion-list-header>
               <ion-item-group>
                 <ion-item lines="none" class="custom-reminder-item">
-                  <ion-input autocapitalize="sentences" type="number" label="Stunden vor Termin" labelPlacement="stacked"
-                    min="0" max="168" [(ngModel)]="customReminderHours" placeholder="z.B. 12 für 12 Stunden vorher"
-                    helperText="Gültige Werte: 0-168 Stunden (max. 1 Woche vorher)">
+                  <ion-input autocapitalize="sentences" type="number" [label]="'typeSettings.hoursBefore' | transloco" labelPlacement="stacked"
+                    min="0" max="168" [(ngModel)]="customReminderHours" [placeholder]="'typeSettings.hoursPlaceholder' | transloco"
+                    [helperText]="'typeSettings.validHours' | transloco">
                   </ion-input>
                 </ion-item>
                 <ion-item lines="none">
@@ -385,7 +384,7 @@
                     [disabled]="!customReminderHours && customReminderHours !== 0"
                     (click)="addReminder(customReminderHours); customReminderHours = null">
                     <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-                    Erinnerung hinzufügen
+                    {{ 'typeSettings.addReminder' | transloco }}
                   </ion-button>
                 </ion-item>
               </ion-item-group>
@@ -394,7 +393,7 @@
             <ion-card color="warning">
               <ion-card-content>
                 <ion-icon name="warning-outline"></ion-icon>
-                Maximum von 3 Erinnerungen erreicht. Entferne eine bestehende Erinnerung, um eine neue hinzuzufügen.
+                {{ 'typeSettings.maxReached' | transloco }}
               </ion-card-content>
             </ion-card>
             }
@@ -406,12 +405,12 @@
   </ion-list>
 
   <ion-list [inset]="true">
-    <ion-list-header><ion-label>Darstellung</ion-label></ion-list-header>
+    <ion-list-header><ion-label>{{ 'typeSettings.appearance' | transloco }}</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item id="color-btn" button detail="false">
         <ion-label>
-          <h2>Farbe</h2>
-          <h3>Die Farbe ist nur für den Kalender relevant (beim Anlegen einer Anwesenheit).</h3>
+          <h2>{{ 'typeSettings.color' | transloco }}</h2>
+          <h3>{{ 'typeSettings.colorHint' | transloco }}</h3>
         </ion-label>
         <ion-icon slot="end" name="ellipse" [color]="type.color"></ion-icon>
       </ion-item>
@@ -434,11 +433,11 @@
   </ion-list>
 
   <ion-list [inset]="true">
-    <ion-list-header><ion-label>Filter</ion-label></ion-list-header>
+    <ion-list-header><ion-label>{{ 'typeSettings.filter' | transloco }}</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item>
-        <ion-select label="Relevante Gruppen"
-          helperText="Nur die relevanten Gruppen werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt. Wenn keine Gruppe ausgewählt ist, werden alle Gruppen berücksichtigt."
+        <ion-select [label]="'typeSettings.relevantGroups' | transloco"
+          [helperText]="'typeSettings.relevantGroupsHelper' | transloco"
           [(ngModel)]="type.relevant_groups" multiple="true">
           @for (group of db.groups(); track group) {
           <ion-select-option [value]="group.id">
@@ -450,10 +449,10 @@
 
       @if (areSelectFieldsAvailable()) {
       <ion-item>
-        <ion-select label="Zusatzfeld-Filter" (ionChange)="onAdditionalFieldFilterChanged()"
-          helperText="Nur Personen mit dem ausgewählten Zusatzfeld-Wert werden beim Anlegen einer Anwesenheit von diesem Typ berücksichtigt."
+        <ion-select [label]="'typeSettings.extraFilter' | transloco" (ionChange)="onAdditionalFieldFilterChanged()"
+          [helperText]="'typeSettings.extraFilterHelper' | transloco"
           [(ngModel)]="additionalFieldFilter" multiple="false">
-          <ion-select-option [value]="null">Kein Filter</ion-select-option>
+          <ion-select-option [value]="null">{{ 'typeSettings.noFilter' | transloco }}</ion-select-option>
           @for (field of db.tenant().additional_fields; track field) {
           @if (field.type === "select" || field.type === "boolean") {
           <ion-select-option [value]="field.id">
@@ -466,14 +465,14 @@
       @if (additionalFieldFilter) {
       @if (selectedFieldType() === 'boolean') {
       <ion-item>
-        <ion-select [(ngModel)]="type.additional_fields_filter.option" label="Wert">
-          <ion-select-option [value]="true">Ja</ion-select-option>
-          <ion-select-option [value]="false">Nein</ion-select-option>
+        <ion-select [(ngModel)]="type.additional_fields_filter.option" [label]="'typeSettings.value' | transloco">
+          <ion-select-option [value]="true">{{ 'common.yes' | transloco }}</ion-select-option>
+          <ion-select-option [value]="false">{{ 'common.no' | transloco }}</ion-select-option>
         </ion-select>
       </ion-item>
       } @else if (type.additional_fields_filter?.option !== undefined) {
       <ion-item>
-        <ion-select [(ngModel)]="type.additional_fields_filter.option" label="Option">
+        <ion-select [(ngModel)]="type.additional_fields_filter.option" [label]="'typeSettings.option' | transloco">
           @for (field of db.tenant().additional_fields; track field) {
           @if (field.type === "select" && field.id === additionalFieldFilter) {
           @for (option of field.options; track option) {
@@ -494,27 +493,27 @@
   @if (type.default_plan?.fields) {
   <ion-list [inset]="true">
     <ion-list-header>
-      <ion-label>Ablaufplan</ion-label>
+      <ion-label>{{ 'typeSettings.runSheet' | transloco }}</ion-label>
       <ion-button size="small" id="add-field-trigger" fill="clear">
         <ion-icon name="add"></ion-icon>
       </ion-button>
       <ion-popover #addFieldPopover trigger="add-field-trigger" triggerAction="click">
         <ng-template>
           <ion-item (click)="addExtraField(addFieldPopover)">
-            <ion-label>Feld hinzufügen</ion-label>
+            <ion-label>{{ 'typeSettings.addField' | transloco }}</ion-label>
           </ion-item>
           <ion-item (click)="addNoteField(addFieldPopover)" [lines]="isGeneral ? 'none' : 'full'">
-            <ion-label>Notizfeld hinzufügen</ion-label>
+            <ion-label>{{ 'typeSettings.addNoteField' | transloco }}</ion-label>
           </ion-item>
           @if (!isGeneral) {
           <ion-item (click)="addSongPlaceholder(addFieldPopover)" lines="none">
-            <ion-label>Werk Platzhalter</ion-label>
+            <ion-label>{{ 'typeSettings.songPlaceholder' | transloco }}</ion-label>
           </ion-item>
           }
           @if (type.enable_protocol) {
           <ion-item (click)="addAgendaItemsPlaceholder(addFieldPopover)" lines="none">
             <ion-icon name="git-commit-outline" slot="start" color="medium"></ion-icon>
-            <ion-label>Tagesordnung Platzhalter</ion-label>
+            <ion-label>{{ 'typeSettings.agendaPlaceholder' | transloco }}</ion-label>
           </ion-item>
           }
         </ng-template>
@@ -522,28 +521,27 @@
     </ion-list-header>
     <ion-item-group>
       <ion-item>
-        <ion-label position="stacked">Ablaufplan Überschrift</ion-label>
+        <ion-label position="stacked">{{ 'typeSettings.planHeading' | transloco }}</ion-label>
         <ion-input autocapitalize="sentences"
-          helperText="Dieser Titel wird beim Exportieren eines Ablaufplans angezeigt. Falls eine Typ-Info vorhanden ist, wird diese in Klammern dahinter angezeigt. (z.B. Probenplan (Kantateprobe))"
+          [helperText]="'typeSettings.titleHelper' | transloco"
           [(ngModel)]="type.planning_title"></ion-input>
       </ion-item>
       @if (!isGeneral) {
       <ion-item>
-        <ion-toggle helperText="Falls aktiviert, wird der Instanz-Name vor jedem Werk im Ablaufplan angezeigt."
-          [(ngModel)]="type.planning_prefix_instance_name">Instanz-Name vor Werken</ion-toggle>
+        <ion-toggle [helperText]="'typeSettings.tenantNameHelper' | transloco"
+          [(ngModel)]="type.planning_prefix_instance_name">{{ 'typeSettings.tenantNameBefore' | transloco }}</ion-toggle>
       </ion-item>
       }
       @if (db.organisation()) {
       <ion-item>
-        <ion-toggle [(ngModel)]="type.is_default_org_plan">Ablaufplan ist standardmäßig ein
-          Organisationsplan</ion-toggle>
+        <ion-toggle [(ngModel)]="type.is_default_org_plan">{{ 'typeSettings.orgPlanDefault' | transloco }}</ion-toggle>
       </ion-item>
       }
       <ion-item>
         <ion-label>
-          <h2>Start</h2>
+          <h2>{{ 'typeSettings.startShort' | transloco }}</h2>
           @if (type.all_day) {
-          <h3>Startzeit für den Ablaufplan bei ganztägigen Terminen</h3>
+          <h3>{{ 'typeSettings.startAllDay' | transloco }}</h3>
           }
         </ion-label>
         <ion-datetime-button datetime="datetimestartplan"></ion-datetime-button>
@@ -570,8 +568,8 @@
               @if (field.id === AGENDA_ITEMS_PLACEHOLDER_ID) {
               <ion-icon name="git-commit-outline" slot="start" color="medium"></ion-icon>
               <ion-label>
-                <h2>Tagesordnung</h2>
-                <h3>Hier werden Themen eingefügt</h3>
+                <h2>{{ 'typeSettings.agenda' | transloco }}</h2>
+                <h3>{{ 'typeSettings.topicsHere' | transloco }}</h3>
               </ion-label>
               } @else {
               <ion-label (click)="changeField(field)" [class.note-field]="field.id.includes('noteFld')">
@@ -585,7 +583,7 @@
               </ion-label>
               @if (!field.id.includes('noteFld')) {
               <ion-input autocapitalize="sentences" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()"
-                [(ngModel)]="field.time" placeholder="min" type="number" slot="end"></ion-input>
+                [(ngModel)]="field.time" [placeholder]="'typeSettings.minPh' | transloco" type="number" slot="end"></ion-input>
               }
               }
               <ion-reorder slot="end"></ion-reorder>
@@ -601,7 +599,7 @@
       </ion-list>
       @if (end) {
       <ion-item class="marginBottom">
-        <ion-label>Ende</ion-label>
+        <ion-label>{{ 'typeSettings.end' | transloco }}</ion-label>
         <ion-datetime-button datetime="datetimeendplan"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
@@ -625,7 +623,7 @@
   @if (type.checklist) {
   <ion-list [inset]="true">
     <ion-list-header>
-      <ion-label>Checkliste</ion-label>
+      <ion-label>{{ 'typeSettings.checklist' | transloco }}</ion-label>
       <ion-badge color="medium">{{ type.checklist?.length || 0 }}</ion-badge>
     </ion-list-header>
     <ion-item-group>
@@ -652,33 +650,33 @@
       <ion-item lines="none">
         <ion-label class="ion-text-center" color="medium">
           <ion-icon name="checkbox-outline" style="font-size: 2rem;"></ion-icon>
-          <p>Noch keine To-Dos angelegt</p>
+          <p>{{ 'typeSettings.noTodos' | transloco }}</p>
         </ion-label>
       </ion-item>
       }
 
       <!-- Add new checklist item -->
       <ion-item lines="none">
-        <ion-input autocapitalize="sentences" [(ngModel)]="newChecklistText" label="Neues To-Do" labelPlacement="stacked"
-          placeholder="To-Do Text eingeben...">
+        <ion-input autocapitalize="sentences" [(ngModel)]="newChecklistText" [label]="'typeSettings.newTodo' | transloco" labelPlacement="stacked"
+          [placeholder]="'typeSettings.todoPlaceholder' | transloco">
         </ion-input>
       </ion-item>
 
       <!-- Deadline selection - compact mobile-friendly design -->
       <ion-item>
-        <ion-select [(ngModel)]="newChecklistDeadline" label="Deadline" labelPlacement="stacked"
-          interface="action-sheet" placeholder="Keine Deadline">
-          <ion-select-option [value]="null">Keine Deadline</ion-select-option>
+        <ion-select [(ngModel)]="newChecklistDeadline" [label]="'typeSettings.deadline' | transloco" labelPlacement="stacked"
+          interface="action-sheet" [placeholder]="'typeSettings.noDeadline' | transloco">
+          <ion-select-option [value]="null">{{ 'typeSettings.noDeadline' | transloco }}</ion-select-option>
           @for (option of checklistDeadlineOptions; track option.hours) {
           <ion-select-option [value]="option.hours">{{ option.label }}</ion-select-option>
           }
-          <ion-select-option [value]="-1">Benutzerdefiniert...</ion-select-option>
+          <ion-select-option [value]="-1">{{ 'typeSettings.customDots' | transloco }}</ion-select-option>
         </ion-select>
       </ion-item>
 
       @if (newChecklistDeadline === -1 || (newChecklistDeadline !== null && !isPresetDeadline(newChecklistDeadline))) {
       <ion-item>
-        <ion-input autocapitalize="sentences" type="number" [(ngModel)]="customChecklistDeadline" label="Stunden vor Termin"
+        <ion-input autocapitalize="sentences" type="number" [(ngModel)]="customChecklistDeadline" [label]="'typeSettings.hoursBefore' | transloco"
           labelPlacement="stacked" min="1" placeholder="z.B. 12">
         </ion-input>
       </ion-item>
@@ -688,7 +686,7 @@
         <ion-button expand="block" fill="solid" color="primary" [disabled]="!newChecklistText?.trim()"
           (click)="addChecklistItem()">
           <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-          To-Do hinzufügen
+          {{ 'typeSettings.addTodo' | transloco }}
         </ion-button>
       </ion-item>
     </ion-item-group>
@@ -702,8 +700,8 @@
         <ion-toggle [(ngModel)]="type.checklist" [ngModelOptions]="{standalone: true}"
           (ionChange)="type.checklist = $event.detail.checked ? [] : null"
           [checked]="type.checklist !== null && type.checklist !== undefined"
-          helperText="Aktiviere die Checkliste, um To-Dos für diesen Anwesenheitstyp zu definieren. Diese werden automatisch bei neuen Terminen übernommen.">
-          Checkliste aktivieren
+          [helperText]="'typeSettings.checklistHelper' | transloco">
+          {{ 'typeSettings.enableChecklist' | transloco }}
         </ion-toggle>
       </ion-item>
     </ion-item-group>
@@ -712,7 +710,7 @@
   <!-- Anmeldefelder -->
   <ion-list [inset]="true">
     <ion-list-header>
-      <ion-label>Anmeldefelder</ion-label>
+      <ion-label>{{ 'typeSettings.signupFields' | transloco }}</ion-label>
       @if (type.registration_fields?.length) {
       <ion-badge color="medium">{{ type.registration_fields.length }}</ion-badge>
       }
@@ -737,33 +735,33 @@
       @if (!type.registration_fields?.length) {
       <ion-item lines="none">
         <ion-label class="ion-text-center" color="medium">
-          <p>Keine Anmeldefelder konfiguriert</p>
+          <p>{{ 'typeSettings.noSignupFields' | transloco }}</p>
         </ion-label>
       </ion-item>
       }
       <ion-item>
-        <ion-input label="Feldbezeichnung" labelPlacement="stacked" [(ngModel)]="newRegField.label"
-          placeholder="z.B. Instrument mitbringen?"></ion-input>
+        <ion-input [label]="'typeSettings.fieldLabel' | transloco" labelPlacement="stacked" [(ngModel)]="newRegField.label"
+          [placeholder]="'typeSettings.fieldLabelPh' | transloco"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-select label="Typ" labelPlacement="stacked" [(ngModel)]="newRegField.type">
-          <ion-select-option value="text">Text</ion-select-option>
-          <ion-select-option value="boolean">Ja / Nein</ion-select-option>
-          <ion-select-option value="select">Einzelauswahl</ion-select-option>
-          <ion-select-option value="multi_select">Mehrfachauswahl</ion-select-option>
+        <ion-select [label]="'typeSettings.type' | transloco" labelPlacement="stacked" [(ngModel)]="newRegField.type">
+          <ion-select-option value="text">{{ 'typeSettings.text' | transloco }}</ion-select-option>
+          <ion-select-option value="boolean">{{ 'typeSettings.yesNo' | transloco }}</ion-select-option>
+          <ion-select-option value="select">{{ 'typeSettings.single' | transloco }}</ion-select-option>
+          <ion-select-option value="multi_select">{{ 'typeSettings.multi' | transloco }}</ion-select-option>
         </ion-select>
       </ion-item>
       @if (newRegField.type === 'select' || newRegField.type === 'multi_select') {
       <ion-item>
-        <ion-input label="Optionen (kommagetrennt)" labelPlacement="stacked" [(ngModel)]="newRegFieldOptionsText"
-          placeholder="Option A, Option B, Option C"></ion-input>
+        <ion-input [label]="'typeSettings.optionsComma' | transloco" labelPlacement="stacked" [(ngModel)]="newRegFieldOptionsText"
+          [placeholder]="'typeSettings.optionsPh' | transloco"></ion-input>
       </ion-item>
       }
       <ion-item lines="none">
         <ion-button expand="block" fill="solid" color="primary"
           [disabled]="!newRegField.label?.trim() || !newRegField.type" (click)="addRegistrationField()">
           <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-          Feld hinzufügen
+          {{ 'typeSettings.addField' | transloco }}
         </ion-button>
       </ion-item>
     </ion-item-group>

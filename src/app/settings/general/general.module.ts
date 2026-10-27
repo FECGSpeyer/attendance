@@ -8,9 +8,11 @@ import { GeneralPageRoutingModule } from './general-routing.module';
 
 import { GeneralPage } from './general.page';
 import { LinkPersonsPageModule } from './link-persons/link-persons.module';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

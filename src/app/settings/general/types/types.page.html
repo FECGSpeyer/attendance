@@ -5,7 +5,7 @@
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Typen</ion-title>
+    <ion-title>{{ 'typeSettings.types' | transloco }}</ion-title>
     <ion-buttons slot="end">
       @if (!reorder) {
         <ion-button (click)="reorder = true">
@@ -24,7 +24,7 @@
 <ion-content color="light" [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar color="light">
-      <ion-title size="large">Typen</ion-title>
+      <ion-title size="large">{{ 'typeSettings.types' | transloco }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
@@ -33,14 +33,12 @@
       <ion-icon class="headerIcon" name="list-outline"></ion-icon>
     </ion-card-header>
     <ion-card-content>
-      Pflege deine eigenen Typen für Anwesenheiten. So kannst du individuelle Bezeichnungen, einen Standard-Status,
-      Probenvorlagen und Start- bzw. Endzeiten hinterlegen und auch Anwesenheiten nur für bestimmte Gruppen
-      konfigurieren.
+      {{ 'typeSettings.typesIntro' | transloco }}
     </ion-card-content>
   </ion-card>
 
   <ion-list [inset]="true">
-    <ion-list-header><ion-label>Anwesenheitstypen</ion-label></ion-list-header>
+    <ion-list-header><ion-label>{{ 'typeSettings.attendanceTypes' | transloco }}</ion-label></ion-list-header>
     <ion-item-group>
       @if (!reorder) {
         @for (type of db.attendanceTypes(); track type) {

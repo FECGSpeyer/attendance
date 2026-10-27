@@ -6,9 +6,11 @@ import { IonicModule } from '@ionic/angular/lazy';
 import { OrgSettingsPageRoutingModule } from './org-settings-routing.module';
 import { OrgSettingsPage } from './org-settings.page';
 import { LinkPersonsPageModule } from '../settings/general/link-persons/link-persons.module';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

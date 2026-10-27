@@ -7,9 +7,11 @@ import { IonicModule } from '@ionic/angular/lazy';
 import { ShiftPageRoutingModule } from './shift-routing.module';
 
 import { ShiftPage } from './shift.page';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

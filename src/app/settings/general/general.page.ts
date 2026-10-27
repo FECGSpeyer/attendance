@@ -6,6 +6,7 @@ import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT, Role } from 'src/app/utilities/constants';
 import { AttendanceType, CriticalRule, CriticalRuleOperator, CriticalRulePeriodType, CriticalRuleThresholdType } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-general',
@@ -51,12 +52,12 @@ export class GeneralPage implements OnInit {
   public registerAllowed = false;
   public autoApproveRegistrations = false;
   public registerFields: { key: string; label: string; disabled: boolean }[] = [
-    { key: 'picture', label: 'Passbild', disabled: false },
-    { key: 'firstName', label: 'Vorname', disabled: true },
-    { key: 'lastName', label: 'Nachname', disabled: true },
-    { key: 'group', label: 'Gruppe', disabled: true },
-    { key: 'birthDate', label: 'Geburtsdatum', disabled: false },
-    { key: 'phone', label: 'Handynummer', disabled: false },
+    { key: 'picture', label: translate('settings.passPhoto'), disabled: false },
+    { key: 'firstName', label: translate('people.firstName'), disabled: true },
+    { key: 'lastName', label: translate('people.lastName'), disabled: true },
+    { key: 'group', label: translate('people.group'), disabled: true },
+    { key: 'birthDate', label: translate('people.birthday'), disabled: false },
+    { key: 'phone', label: translate('settings.mobile'), disabled: false },
   ];
   public selectedRegisterFields: string[] = ['firstName', 'lastName', 'birthDate', 'group'];
 
@@ -211,21 +212,21 @@ export class GeneralPage implements OnInit {
   private async confirmUnsavedChanges(): Promise<boolean> {
     return new Promise(async (resolve) => {
       const alert = await this.alertController.create({
-        header: 'Ungespeicherte Änderungen',
-        message: 'Du hast ungespeicherte Änderungen. Möchtest du sie speichern bevor du die Seite verlässt?',
+        header: translate('rolePerm.unsaved'),
+        message: translate('rolePerm.unsavedMessage'),
         buttons: [
           {
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             role: 'cancel',
             handler: () => resolve(false)
           },
           {
-            text: 'Verwerfen',
+            text: translate('rolePerm.discard'),
             role: 'destructive',
             handler: () => resolve(true)
           },
           {
-            text: 'Speichern',
+            text: translate('common.save'),
             handler: async () => {
               await this.saveGeneralSettings();
               resolve(true);
@@ -258,13 +259,13 @@ export class GeneralPage implements OnInit {
   getPeriodTypeName(periodType: CriticalRulePeriodType): string {
     switch (periodType) {
       case CriticalRulePeriodType.DAYS:
-        return 'Letzte X Tage';
+        return translate('generalSettings.lastXDays');
       case CriticalRulePeriodType.SEASON:
-        return 'Seit Saisonbeginn';
+        return translate('generalSettings.sinceSeason');
       case CriticalRulePeriodType.ALL_TIME:
-        return 'Gesamte Historie';
+        return translate('generalSettings.allTime');
       default:
-        return 'Unbekannt';
+        return translate('common.unknown');
     }
   }
 
@@ -278,11 +279,11 @@ export class GeneralPage implements OnInit {
 
   async saveGeneralSettings() {
     if (!this.longName?.trim()) {
-      Utils.showToast('Der Gruppenname darf nicht leer sein.', 'danger');
+      Utils.showToast(translate('generalSettings.groupNameEmpty'), 'danger');
       return;
     }
     if (!this.shortName?.trim()) {
-      Utils.showToast('Der Kurzname darf nicht leer sein.', 'danger');
+      Utils.showToast(translate('generalSettings.shortNameEmpty'), 'danger');
       return;
     }
 
@@ -292,7 +293,7 @@ export class GeneralPage implements OnInit {
     }
 
     if (this.registerAllowed && !this.hasSelectableGroups()) {
-      Utils.showToast('Registrierung kann nicht aktiviert werden: Bitte lege zuerst mindestens eine Gruppe an.', 'danger');
+      Utils.showToast(translate('generalSettings.registerNoGroups'), 'danger');
       return;
     }
 
@@ -301,7 +302,7 @@ export class GeneralPage implements OnInit {
       register_id = crypto.randomUUID();
     }
 
-    const loading = await Utils.getLoadingElement(999999, 'Einstellungen werden gespeichert...');
+    const loading = await Utils.getLoadingElement(999999, translate('generalSettings.saving'));
     await loading.present();
 
     try {
@@ -345,15 +346,15 @@ export class GeneralPage implements OnInit {
 
       this.markAsSaved();
       await loading.dismiss();
-      Utils.showToast('Einstellungen gespeichert', 'success');
+      Utils.showToast(translate('generalSettings.saved'), 'success');
 
       const alert = await this.alertController.create({
-        header: 'Einstellungen gespeichert',
-        message: 'Die Einstellungen wurden erfolgreich gespeichert. Bitte lade die Seite neu, um die Änderungen zu sehen.',
+        header: translate('generalSettings.saved'),
+        message: translate('generalSettings.savedReload'),
         buttons: [{
-          text: 'Abbrechen'
+          text: translate('common.cancel')
         }, {
-          text: 'Neu laden',
+          text: translate('generalSettings.reload'),
           handler: () => {
             window?.location?.reload();
           }
@@ -363,7 +364,7 @@ export class GeneralPage implements OnInit {
       await alert.present();
     } catch (error) {
       await loading.dismiss();
-      Utils.showToast('Fehler beim Aktualisieren der Einstellungen', 'danger');
+      Utils.showToast(translate('generalSettings.saveFailed'), 'danger');
     }
   }
 
@@ -385,7 +386,7 @@ export class GeneralPage implements OnInit {
 
   copySongSharingLink() {
     navigator?.clipboard.writeText(this.getSongSharingLink());
-    Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
+    Utils.showToast(translate('settings.linkCopied'), 'success');
   }
 
   getRegisterLink(): string {
@@ -394,26 +395,26 @@ export class GeneralPage implements OnInit {
 
   copyRegisterLink() {
     navigator?.clipboard.writeText(this.getRegisterLink());
-    Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
+    Utils.showToast(translate('settings.linkCopied'), 'success');
   }
 
   // Critical rule methods
   getStatusName(status: AttendanceStatus): string {
     switch (status) {
       case AttendanceStatus.Present:
-        return 'Anwesend';
+        return translate('common.status.present');
       case AttendanceStatus.Absent:
-        return 'Abwesend';
+        return translate('common.status.absent');
       case AttendanceStatus.Excused:
-        return 'Entschuldigt';
+        return translate('common.status.excused');
       case AttendanceStatus.Late:
-        return 'Verspätet';
+        return translate('common.status.lateShort');
       case AttendanceStatus.LateExcused:
-        return 'Verspätet (entsch.)';
+        return translate('generalSettings.lateExcusedShort');
       case AttendanceStatus.Neutral:
-        return 'Neutral';
+        return translate('generalSettings.neutral');
       default:
-        return 'Unbekannt';
+        return translate('common.unknown');
     }
   }
 
@@ -429,17 +430,17 @@ export class GeneralPage implements OnInit {
 
   addCriticalRule(modal: IonModal) {
     if (this.newCriticalRule.statuses.length === 0) {
-      Utils.showToast('Bitte wähle mindestens einen Status aus.', 'danger');
+      Utils.showToast(translate('generalSettings.selectStatus'), 'danger');
       return;
     }
 
     if (this.newCriticalRule.threshold_value <= 0) {
-      Utils.showToast('Der Schwellenwert muss größer als 0 sein.', 'danger');
+      Utils.showToast(translate('generalSettings.thresholdPositive'), 'danger');
       return;
     }
 
     if (this.newCriticalRule.period_type === CriticalRulePeriodType.DAYS && (!this.newCriticalRule.period_days || this.newCriticalRule.period_days <= 0)) {
-      Utils.showToast('Der Zeitraum muss größer als 0 sein.', 'danger');
+      Utils.showToast(translate('generalSettings.periodPositive'), 'danger');
       return;
     }
 
@@ -457,12 +458,12 @@ export class GeneralPage implements OnInit {
 
   async removeCriticalRule(index: number) {
     const alert = await this.alertController.create({
-      header: 'Regel löschen?',
-      message: 'Möchtest du diese Regel wirklich löschen?',
+      header: translate('generalSettings.deleteRule'),
+      message: translate('generalSettings.deleteRuleMessage'),
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Löschen',
+        text: translate('common.delete'),
         handler: () => {
           this.criticalRules.splice(index, 1);
         }
@@ -476,7 +477,7 @@ export class GeneralPage implements OnInit {
     const statusNames = rule.statuses.map(s => this.getStatusName(s)).join(', ');
     const typeNames = rule.attendance_type_ids.length > 0
       ? this.attendanceTypes.filter(t => rule.attendance_type_ids.includes(t.id)).map(t => t.name).join(', ')
-      : 'Alle Typen';
+      : translate('generalSettings.allTypes');
 
     let periodText: string;
     switch (rule.period_type) {

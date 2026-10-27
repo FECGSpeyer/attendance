@@ -7,6 +7,7 @@ import { DbService } from 'src/app/services/db.service';
 import { AttendanceStatus, CHECKLIST_DEADLINE_OPTIONS } from 'src/app/utilities/constants';
 import { AttendanceType, ChecklistItem, FieldSelection, Plan, RegistrationField, RegistrationFieldType, AGENDA_ITEMS_PLACEHOLDER_ID } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-type',
@@ -159,21 +160,21 @@ export class TypePage implements OnInit {
   private async confirmUnsavedChanges(): Promise<boolean> {
     return new Promise(async (resolve) => {
       const alert = await this.alertController.create({
-        header: 'Ungespeicherte Änderungen',
-        message: 'Du hast ungespeicherte Änderungen. Möchtest du sie speichern bevor du die Seite verlässt?',
+        header: translate('rolePerm.unsaved'),
+        message: translate('rolePerm.unsavedMessage'),
         buttons: [
           {
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             role: 'cancel',
             handler: () => resolve(false)
           },
           {
-            text: 'Verwerfen',
+            text: translate('rolePerm.discard'),
             role: 'destructive',
             handler: () => resolve(true)
           },
           {
-            text: 'Speichern',
+            text: translate('common.save'),
             handler: async () => {
               await this.save();
               resolve(true);
@@ -193,9 +194,9 @@ export class TypePage implements OnInit {
     try {
       await this.db.updateAttendanceType(this.type.id, this.type);
       this.markAsSaved();
-      Utils.showToast('Anwesenheitstyp erfolgreich aktualisiert', 'success');
+      Utils.showToast(translate('typeSettings.updated'), 'success');
     } catch (error) {
-      Utils.showToast('Fehler beim Aktualisieren des Anwesenheitstyps', 'danger');
+      Utils.showToast(translate('typeSettings.updateFailed'), 'danger');
       return;
     }
     await this.offerDutyView();
@@ -208,11 +209,11 @@ export class TypePage implements OnInit {
 
     try {
       this.type = await this.db.addAttendanceType(this.type);
-      Utils.showToast('Anwesenheitstyp erfolgreich erstellt', 'success');
+      Utils.showToast(translate('typeSettings.created'), 'success');
       await this.offerDutyView();
       await this.modalController.dismiss();
     } catch (error) {
-      Utils.showToast('Fehler beim Erstellen des Anwesenheitstyps', 'danger');
+      Utils.showToast(translate('typeSettings.createFailed'), 'danger');
     }
   }
 
@@ -225,10 +226,10 @@ export class TypePage implements OnInit {
       delete this.type.agenda_default_duration;
     }
     if (!this.type.name || this.type.name.trim().length === 0) {
-      Utils.showToast('Bitte einen Namen für den Anwesenheitstyp eingeben.', 'danger');
+      Utils.showToast(translate('typeSettings.enterName'), 'danger');
       return false;
     } else if (this.type.available_statuses.length === 1) {
-      Utils.showToast('Bitte mindestens zwei verfügbare Anwesenheitsstatus auswählen.', 'danger');
+      Utils.showToast(translate('typeSettings.twoStatus'), 'danger');
       return false;
     }
 
@@ -237,20 +238,20 @@ export class TypePage implements OnInit {
 
   async deleteType() {
     const alert = await this.alertController.create({
-      header: 'Anwesenheitstyp löschen',
-      message: `Möchtest du den Anwesenheitstyp "${this.type.name}" wirklich löschen? Alle Anwesenheiten dieses Typs werden ebenfalls gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.`,
+      header: translate('typeSettings.deleteType'),
+      message: translate('typeSettings.deleteTypeMessage', { name: this.type.name }),
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Löschen',
+        text: translate('common.delete'),
         role: 'destructive',
         handler: async () => {
           try {
             await this.db.deleteAttendanceType(this.type.id);
-            Utils.showToast('Anwesenheitstyp erfolgreich gelöscht', 'success');
+            Utils.showToast(translate('typeSettings.deleted'), 'success');
             this.router.navigate(['/tabs/settings/general/types']);
           } catch (error) {
-            Utils.showToast('Fehler beim Löschen des Anwesenheitstyps', 'danger');
+            Utils.showToast(translate('typeSettings.deleteFailed'), 'danger');
           }
         }
       }]
@@ -263,15 +264,15 @@ export class TypePage implements OnInit {
     // For new types in modal, check if any meaningful data was entered
     if (this.isNew && this.type.name?.trim()) {
       const alert = await this.alertController.create({
-        header: 'Änderungen verwerfen?',
-        message: 'Du hast bereits Daten eingegeben. Möchtest du diese wirklich verwerfen?',
+        header: translate('typeSettings.discardChanges'),
+        message: translate('typeSettings.discardMessage'),
         buttons: [
           {
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             role: 'cancel'
           },
           {
-            text: 'Verwerfen',
+            text: translate('rolePerm.discard'),
             role: 'destructive',
             handler: async () => {
               await this.modalController.dismiss();
@@ -306,20 +307,20 @@ export class TypePage implements OnInit {
     await popover.dismiss();
 
     const alert = await this.alertController.create({
-      header: 'Feld hinzufügen',
+      header: translate('typeSettings.addField'),
       inputs: [{
         type: 'textarea',
         name: 'field',
-        placeholder: 'Freitext eingeben...'
+        placeholder: translate('typeSettings.freeTextPh')
       }, {
         type: 'textarea',
         name: 'info',
-        placeholder: 'Info-Text (optional)'
+        placeholder: translate('typeSettings.infoOptional')
       }],
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Hinzufügen',
+        text: translate('attendance.add'),
         handler: (evt: any) => {
           this.type.default_plan.fields.push({
             id: evt.field,
@@ -343,7 +344,7 @@ export class TypePage implements OnInit {
 
     this.type.default_plan.fields.push({
       id: `song-placeholder-${numberOfSongs + 1}`,
-      name: `Werk Platzhalter ${numberOfSongs + 1}`,
+      name: translate('typeSettings.songPlaceholderN', { n: numberOfSongs + 1 }),
       time: '20',
     });
 
@@ -385,18 +386,18 @@ export class TypePage implements OnInit {
     const otherDutyTypes = this.db.attendanceTypes().filter(t => t.duty_mode && t.id !== this.type.id);
     if (otherDutyTypes.length) return;
     const alert = await this.alertController.create({
-      header: 'Dienstplan-Ansicht verwenden?',
-      message: 'Sind Dienste bei euch der Normalfall? Dann zeigt „Meine Termine“ für alle im Dienst-Team zuerst ihre Dienste, offene Dienste und Zahlen statt der Anwesenheitsquote. Du kannst das jederzeit unter Mehr → Einstellungen ändern.',
+      header: translate('typeSettings.useDutyView'),
+      message: translate('typeSettings.useDutyViewMessage'),
       buttons: [
-        { text: 'Nein, normale Ansicht', role: 'cancel' },
+        { text: translate('typeSettings.normalView'), role: 'cancel' },
         {
-          text: 'Ja, verwenden',
+          text: translate('typeSettings.useIt'),
           handler: async () => {
             try {
               await this.db.updateTenantData({ duty_view: true });
-              Utils.showToast('Dienstplan-Ansicht ist aktiv', 'success');
+              Utils.showToast(translate('typeSettings.dutyViewActive'), 'success');
             } catch {
-              Utils.showToast('Konnte die Ansicht nicht umstellen', 'danger');
+              Utils.showToast(translate('typeSettings.viewFailed'), 'danger');
             }
           },
         },
@@ -419,13 +420,13 @@ export class TypePage implements OnInit {
 
     const alreadyExists = this.type.default_plan.fields.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID);
     if (alreadyExists) {
-      Utils.showToast('Ein Tagesordnungs-Platzhalter ist bereits vorhanden', 'warning');
+      Utils.showToast(translate('typeSettings.agendaExists'), 'warning');
       return;
     }
 
     this.type.default_plan.fields.push({
       id: AGENDA_ITEMS_PLACEHOLDER_ID,
-      name: 'Tagesordnung',
+      name: translate('typeSettings.agenda'),
       time: '0',
     });
 
@@ -436,16 +437,16 @@ export class TypePage implements OnInit {
     await popover.dismiss();
 
     const alert = await this.alertController.create({
-      header: 'Notizfeld hinzufügen',
+      header: translate('typeSettings.addNoteField'),
       inputs: [{
         type: 'textarea',
         name: 'field',
-        placeholder: 'Notiz eingeben...'
+        placeholder: translate('typeSettings.notePh')
       }],
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Hinzufügen',
+        text: translate('attendance.add'),
         handler: (evt: any) => {
           this.type.default_plan.fields.push({
             id: `noteFld ${evt.field}`,
@@ -478,45 +479,45 @@ export class TypePage implements OnInit {
     slider?.close();
     const clone: FieldSelection = JSON.parse(JSON.stringify(field));
     let inputs: AlertInput[] = [{
-      label: 'Programmpunkt',
+      label: translate('typeSettings.programmeItem'),
       type: 'text',
       name: 'field',
       value: clone.name,
-      placeholder: 'Programmpunkt eingeben...'
+      placeholder: translate('typeSettings.programmeItemPh')
     }, {
-      label: 'Ausführender',
+      label: translate('typeSettings.performer'),
       type: 'text',
       name: 'conductor',
       value: clone.conductor,
-      placeholder: 'Ausführenden eingeben...'
+      placeholder: translate('typeSettings.performerPh')
     }, {
-      label: 'Info',
+      label: translate('typeSettings.info'),
       type: 'text',
       name: 'info',
       value: clone.info,
-      placeholder: 'Info-Text (optional)...'
+      placeholder: translate('typeSettings.infoOptionalDots')
     }];
 
     if (field.id.includes('noteFld')) {
       inputs = [{
-        label: 'Notiz',
+        label: translate('typeSettings.note'),
         type: 'textarea',
         name: 'field',
         value: clone.name,
-        placeholder: 'Notiz eingeben...'
+        placeholder: translate('typeSettings.notePh')
       }];
     }
 
     const alert = await this.alertController.create({
-      header: 'Feld bearbeiten',
+      header: translate('typeSettings.editField'),
       inputs,
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Updaten',
+        text: translate('typeSettings.update'),
         handler: (evt: any) => {
           if (!evt.field) {
-            alert.message = 'Bitte einen Programmpunkt eingeben.';
+            alert.message = translate('typeSettings.enterItem');
             return false;
           }
           field.name = evt.field;
@@ -598,7 +599,7 @@ export class TypePage implements OnInit {
     const parsed = parseInt(String(hours), 10);
 
     if (isNaN(parsed) || parsed < 0) {
-      Utils.showToast('Bitte geben Sie eine positive Ganzzahl ein', 'danger');
+      Utils.showToast(translate('typeSettings.positiveInt'), 'danger');
       return;
     }
 
@@ -607,12 +608,12 @@ export class TypePage implements OnInit {
     }
 
     if (this.type.reminders.includes(parsed)) {
-      Utils.showToast('Diese Erinnerung existiert bereits', 'warning');
+      Utils.showToast(translate('typeSettings.reminderExists'), 'warning');
       return;
     }
 
     if (this.type.reminders.length >= 3) {
-      Utils.showToast('Maximal 3 Erinnerungen pro Typ möglich', 'danger');
+      Utils.showToast(translate('typeSettings.max3'), 'danger');
       return;
     }
 
@@ -634,15 +635,11 @@ export class TypePage implements OnInit {
    */
   getFormattedReminder(hours: number): string {
     if (hours === 0) {
-      return 'Zur gleichen Zeit';
-    } else if (hours === 1) {
-      return '1 Stunde vorher';
+      return translate('typeSettings.sameTime');
     } else if (hours < 24) {
-      return `${hours} Stunden vorher`;
-    } else if (hours === 24) {
-      return '1 Tag vorher';
+      return translate('typeSettings.hoursBeforeN', { count: hours });
     } else {
-      return `${Math.floor(hours / 24)} Tage vorher`;
+      return translate('typeSettings.daysBeforeN', { count: Math.floor(hours / 24) });
     }
   }
 
@@ -653,17 +650,17 @@ export class TypePage implements OnInit {
 
   addRegistrationField(): void {
     if (!this.newRegField.label?.trim()) {
-      Utils.showToast('Bitte eine Feldbezeichnung eingeben', 'warning');
+      Utils.showToast(translate('typeSettings.enterFieldLabel'), 'warning');
       return;
     }
     if (!this.newRegField.type) {
-      Utils.showToast('Bitte einen Feldtyp auswählen', 'warning');
+      Utils.showToast(translate('typeSettings.selectFieldType'), 'warning');
       return;
     }
     if (this.newRegField.type === 'select' || this.newRegField.type === 'multi_select') {
       const opts = this.newRegFieldOptionsText.split(',').map(o => o.trim()).filter(Boolean);
       if (opts.length < 2) {
-        Utils.showToast('Bitte mindestens 2 Optionen angeben', 'warning');
+        Utils.showToast(translate('typeSettings.twoOptions'), 'warning');
         return;
       }
       this.newRegField.options = opts;
@@ -690,10 +687,10 @@ export class TypePage implements OnInit {
 
   getRegFieldTypeLabel(type: RegistrationFieldType): string {
     const labels: Record<RegistrationFieldType, string> = {
-      text: 'Text',
-      boolean: 'Ja / Nein',
-      select: 'Einzelauswahl',
-      multi_select: 'Mehrfachauswahl',
+      text: translate('typeSettings.text'),
+      boolean: translate('typeSettings.yesNo'),
+      select: translate('typeSettings.single'),
+      multi_select: translate('typeSettings.multi'),
     };
     return labels[type] ?? type;
   }
@@ -713,7 +710,7 @@ export class TypePage implements OnInit {
    */
   addChecklistItem(): void {
     if (!this.newChecklistText?.trim()) {
-      Utils.showToast('Bitte einen Text für das To-Do eingeben', 'warning');
+      Utils.showToast(translate('typeSettings.enterTodo'), 'warning');
       return;
     }
 
@@ -758,22 +755,22 @@ export class TypePage implements OnInit {
     slider?.close();
 
     const alert = await this.alertController.create({
-      header: 'To-Do bearbeiten',
+      header: translate('typeSettings.editTodo'),
       inputs: [
         {
           type: 'text',
           name: 'text',
           value: item.text,
-          placeholder: 'To-Do Text...',
+          placeholder: translate('typeSettings.todoTextPh'),
         },
       ],
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel',
         },
         {
-          text: 'Speichern',
+          text: translate('common.save'),
           handler: (data) => {
             if (data.text?.trim()) {
               item.text = data.text.trim();
@@ -791,7 +788,7 @@ export class TypePage implements OnInit {
    */
   getChecklistDeadlineText(hours: number | null): string {
     if (hours === null) {
-      return 'Keine Deadline';
+      return translate('typeSettings.noDeadline');
     }
     return this.getFormattedReminder(hours);
   }

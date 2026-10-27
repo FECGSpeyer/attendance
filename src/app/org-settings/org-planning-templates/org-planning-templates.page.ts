@@ -3,6 +3,7 @@ import { AlertController, AlertInput, IonItemSliding, IonPopover, ItemReorderEve
 import dayjs from 'dayjs';
 import { DbService } from 'src/app/services/db.service';
 import { FieldSelection, Plan } from 'src/app/utilities/interfaces';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-org-planning-templates',
@@ -34,32 +35,32 @@ export class OrgPlanningTemplatesPage implements OnInit {
 
   async addDefaultField() {
     const alert = await this.alertController.create({
-      header: 'Feld hinzufügen',
+      header: translate('typeSettings.addField'),
       inputs: [{
         type: 'textarea',
         name: 'name',
-        placeholder: 'Feldname...',
+        placeholder: translate('orgTemplates.fieldNamePh'),
       }, {
         type: 'textarea',
         name: 'conductor',
-        placeholder: 'Ausführender (optional)...',
+        placeholder: translate('orgTemplates.performerOptPh'),
       }, {
         type: 'textarea',
         name: 'info',
-        placeholder: 'Info-Text (optional)',
+        placeholder: translate('typeSettings.infoOptional'),
       }, {
         type: 'number',
-        label: 'Minuten',
+        label: translate('orgTemplates.minutes'),
         name: 'time',
         value: 20,
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Hinzufügen',
+        text: translate('attendance.add'),
         handler: async (evt: any) => {
           if (!evt.name?.trim()) {
-            alert.message = 'Bitte einen Feldnamen eingeben.';
+            alert.message = translate('orgTemplates.enterFieldName');
             return false;
           }
           this.defaultFields.push({
@@ -81,33 +82,33 @@ export class OrgPlanningTemplatesPage implements OnInit {
     const clone: FieldSelection = JSON.parse(JSON.stringify(field));
     const inputs: AlertInput[] = [{
       type: 'textarea',
-      label: 'Feldname',
+      label: translate('orgTemplates.fieldName'),
       name: 'name',
       value: clone.name,
-      placeholder: 'Feldname...',
+      placeholder: translate('orgTemplates.fieldNamePh'),
     }, {
       type: 'textarea',
-      label: 'Ausführender',
+      label: translate('typeSettings.performer'),
       name: 'conductor',
       value: clone.conductor,
-      placeholder: 'Ausführender (optional)...',
+      placeholder: translate('orgTemplates.performerOptPh'),
     }, {
       type: 'number',
-      label: 'Minuten',
+      label: translate('orgTemplates.minutes'),
       name: 'time',
       value: clone.time ? Number(clone.time) : 20,
     }];
 
     const alert = await this.alertController.create({
-      header: 'Feld bearbeiten',
+      header: translate('typeSettings.editField'),
       inputs,
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Speichern',
+        text: translate('common.save'),
         handler: async (evt: any) => {
           if (!evt.name?.trim()) {
-            alert.message = 'Bitte einen Feldnamen eingeben.';
+            alert.message = translate('orgTemplates.enterFieldName');
             return false;
           }
           field.name = evt.name.trim();
@@ -139,19 +140,19 @@ export class OrgPlanningTemplatesPage implements OnInit {
 
   async addTemplate() {
     const alert = await this.alertController.create({
-      header: 'Vorlage hinzufügen',
+      header: translate('orgTemplates.addTemplate'),
       inputs: [{
         type: 'text',
         name: 'title',
-        placeholder: 'Name der Vorlage...',
+        placeholder: translate('orgTemplates.templateNamePh'),
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Hinzufügen',
+        text: translate('attendance.add'),
         handler: async (evt: any) => {
           if (!evt.title?.trim()) {
-            alert.message = 'Bitte einen Namen eingeben.';
+            alert.message = translate('orgTemplates.enterName');
             return false;
           }
           this.templates.push({ title: evt.title.trim(), time: '', end: '', fields: [] });
@@ -167,20 +168,20 @@ export class OrgPlanningTemplatesPage implements OnInit {
   async renameTemplate(template: Plan, slider: IonItemSliding) {
     slider.close();
     const alert = await this.alertController.create({
-      header: 'Vorlage umbenennen',
+      header: translate('orgTemplates.renameTemplate'),
       inputs: [{
         type: 'text',
         name: 'title',
         value: template.title,
-        placeholder: 'Name der Vorlage...',
+        placeholder: translate('orgTemplates.templateNamePh'),
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Speichern',
+        text: translate('common.save'),
         handler: async (evt: any) => {
           if (!evt.title?.trim()) {
-            alert.message = 'Bitte einen Namen eingeben.';
+            alert.message = translate('orgTemplates.enterName');
             return false;
           }
           template.title = evt.title.trim();
@@ -223,29 +224,29 @@ export class OrgPlanningTemplatesPage implements OnInit {
   async addExtraField(tpl: Plan, index: number, popover: IonPopover) {
     await popover.dismiss();
     const alert = await this.alertController.create({
-      header: 'Feld hinzufügen',
+      header: translate('typeSettings.addField'),
       inputs: [{
         type: 'textarea',
         name: 'field',
-        placeholder: 'Freitext eingeben...',
+        placeholder: translate('typeSettings.freeTextPh'),
       }, {
         type: 'textarea',
         name: 'conductor',
-        placeholder: 'Ausführenden eingeben...',
+        placeholder: translate('typeSettings.performerPh'),
       }, {
         type: 'textarea',
         name: 'info',
-        placeholder: 'Info-Text (optional)',
+        placeholder: translate('typeSettings.infoOptional'),
       }, {
         type: 'number',
-        label: 'Minuten',
+        label: translate('orgTemplates.minutes'),
         name: 'time',
         value: 20,
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Hinzufügen',
+        text: translate('attendance.add'),
         handler: async (evt: any) => {
           tpl.fields.push({
             id: evt.field || crypto.randomUUID(),
@@ -265,16 +266,16 @@ export class OrgPlanningTemplatesPage implements OnInit {
   async addNoteField(tpl: Plan, index: number, popover: IonPopover) {
     await popover.dismiss();
     const alert = await this.alertController.create({
-      header: 'Notizfeld hinzufügen',
+      header: translate('typeSettings.addNoteField'),
       inputs: [{
         type: 'textarea',
         name: 'field',
-        placeholder: 'Notiz eingeben...',
+        placeholder: translate('typeSettings.notePh'),
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Hinzufügen',
+        text: translate('attendance.add'),
         handler: async (evt: any) => {
           tpl.fields.push({
             id: `noteFld ${evt.field}`,
@@ -295,7 +296,7 @@ export class OrgPlanningTemplatesPage implements OnInit {
     const count = tpl.fields.filter(f => f.id?.startsWith('song-placeholder-')).length;
     tpl.fields.push({
       id: `song-placeholder-${count + 1}`,
-      name: `Werk Platzhalter ${count + 1}`,
+      name: translate('typeSettings.songPlaceholderN', { n: count + 1 }),
       time: '20',
     });
     this.updateTemplateEnd(tpl, index);
@@ -307,25 +308,25 @@ export class OrgPlanningTemplatesPage implements OnInit {
     const clone: FieldSelection = JSON.parse(JSON.stringify(field));
     let inputs: AlertInput[] = [{
       type: 'textarea',
-      label: 'Programmpunkt',
+      label: translate('typeSettings.programmeItem'),
       name: 'field',
       value: clone.name,
-      placeholder: 'Programmpunkt eingeben...',
+      placeholder: translate('typeSettings.programmeItemPh'),
     }, {
       type: 'textarea',
-      label: 'Ausführender',
+      label: translate('typeSettings.performer'),
       name: 'conductor',
       value: clone.conductor,
-      placeholder: 'Ausführenden eingeben...',
+      placeholder: translate('typeSettings.performerPh'),
     }, {
       type: 'textarea',
-      label: 'Info',
+      label: translate('typeSettings.info'),
       name: 'info',
       value: clone.info,
-      placeholder: 'Info-Text (optional)...',
+      placeholder: translate('typeSettings.infoOptionalDots'),
     }, {
       type: 'number',
-      label: 'Minuten',
+      label: translate('orgTemplates.minutes'),
       name: 'time',
       value: clone.time ? Number(clone.time) : 20,
     }];
@@ -333,23 +334,23 @@ export class OrgPlanningTemplatesPage implements OnInit {
     if (field.id.includes('noteFld')) {
       inputs = [{
         type: 'textarea',
-        label: 'Notiz',
+        label: translate('typeSettings.note'),
         name: 'field',
         value: clone.name,
-        placeholder: 'Notiz eingeben...',
+        placeholder: translate('typeSettings.notePh'),
       }];
     }
 
     const alert = await this.alertController.create({
-      header: 'Feld bearbeiten',
+      header: translate('typeSettings.editField'),
       inputs,
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Speichern',
+        text: translate('common.save'),
         handler: async (evt: any) => {
           if (!evt.field) {
-            alert.message = 'Bitte einen Programmpunkt eingeben.';
+            alert.message = translate('typeSettings.enterItem');
             return false;
           }
           field.name = evt.field;
@@ -420,7 +421,8 @@ export class OrgPlanningTemplatesPage implements OnInit {
     if (!total) { return ''; }
     const h = Math.floor(total / 60);
     const m = total % 60;
-    return h > 0 ? `${h}h ${m > 0 ? m + 'min' : ''}`.trim() : `${m}min`;
+    if (!h) { return translate('planning.minShort', { min: m }); }
+    return m > 0 ? translate('orgTemplates.duration', { h, m }) : translate('orgTemplates.durationH', { h });
   }
 
   trackByIndex(index: number): number {

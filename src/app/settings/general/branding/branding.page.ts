@@ -3,6 +3,7 @@ import { NavController } from '@ionic/angular/lazy';
 import { DbService } from '../../../services/db.service';
 import { ImageService } from '../../../services/image/image.service';
 import { Utils } from '../../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-branding',
@@ -34,11 +35,11 @@ export class BrandingPage implements OnInit {
 
     if (!imgFile) { return; }
     if (imgFile.size > 2 * 1024 * 1024) {
-      Utils.showToast('Das Logo darf maximal 2MB groß sein.', 'danger');
+      Utils.showToast(translate('branding.logoTooBig'), 'danger');
       return;
     }
     if (imgFile.type.substring(0, 5) !== 'image') {
-      Utils.showToast('Bitte wähle eine Bilddatei aus.', 'danger');
+      Utils.showToast(translate('branding.selectImage'), 'danger');
       return;
     }
 
@@ -46,7 +47,7 @@ export class BrandingPage implements OnInit {
     await loading.present();
     try {
       this.logoUrl = await this.imageSvc.updateOrgLogo(this.db.organisation().id, imgFile);
-      Utils.showToast('Logo hochgeladen. Speichern nicht vergessen.', 'success');
+      Utils.showToast(translate('branding.logoUploaded'), 'success');
     } catch (error) {
       Utils.showToast(error, 'danger');
     } finally {
@@ -60,7 +61,7 @@ export class BrandingPage implements OnInit {
     try {
       await this.imageSvc.removeOrgLogo(this.db.organisation().id);
       this.logoUrl = '';
-      Utils.showToast('Logo entfernt. Speichern nicht vergessen.', 'success');
+      Utils.showToast(translate('branding.logoRemoved'), 'success');
     } catch (error) {
       Utils.showToast(error, 'danger');
     } finally {
@@ -69,14 +70,14 @@ export class BrandingPage implements OnInit {
   }
 
   async save() {
-    const loading = await Utils.getLoadingElement(999999, 'Branding wird gespeichert...');
+    const loading = await Utils.getLoadingElement(999999, translate('branding.saving'));
     await loading.present();
     try {
       await this.db.updateOrgBranding({
         logo_url: this.logoUrl || null,
         branding_text: this.brandingText?.trim() || null,
       });
-      Utils.showToast('Branding gespeichert.', 'success');
+      Utils.showToast(translate('branding.saved'), 'success');
     } catch (error) {
       Utils.showToast(error, 'danger');
     } finally {

@@ -5,7 +5,7 @@
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Schichtplan anpassen</ion-title>
+    <ion-title>{{ 'shifts.edit' | transloco }}</ion-title>
     <ion-buttons slot="end">
       @if (linkedTenants.length > 0) {
         <ion-button (click)="copyToInstance()">
@@ -22,7 +22,7 @@
 <ion-content color="light" [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar color="light">
-      <ion-title size="large">Schichtplan anpassen</ion-title>
+      <ion-title size="large">{{ 'shifts.edit' | transloco }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
@@ -31,30 +31,27 @@
       <ion-icon class="headerIcon" name="time-outline"></ion-icon>
     </ion-card-header>
     <ion-card-content>
-      Füge hier die verschiedenen Schichten hinzu, aus denen sich der Schichtplan zusammensetzt. Jede Schicht
-      entspricht einem Tag, an dem eine Person Schicht hat. Der Schichtplan beginnt wieder von vorne, wenn alle
-      Schichten
-      durchlaufen sind.<br><br><ion-label
-    color="danger">ACHTUNG: Das Ändern der Schichtdefinition kann zu Inkonsistenzen führen. Falls der Schichtplan bereits einer Person zugewiesen wurde, können feste Schichten nicht mehr geändert oder entfernt werden! Lege stattdessen einen neuen Schichtplan an.</ion-label>
+      {{ 'shifts.editIntro' | transloco }}<br><br><ion-label
+    color="danger">{{ 'shifts.warning' | transloco }}</ion-label>
   </ion-card-content>
 </ion-card>
 
 @if (shift) {
   <ion-list [inset]="true">
-    <ion-list-header><ion-label>Allgemein</ion-label></ion-list-header>
+    <ion-list-header><ion-label>{{ 'generalSettings.general' | transloco }}</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item>
-        <ion-label position="stacked">Name</ion-label>
+        <ion-label position="stacked">{{ 'typeSettings.name' | transloco }}</ion-label>
         <ion-input autocapitalize="sentences" [(ngModel)]="shift.name"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="stacked">Beschreibung</ion-label>
+        <ion-label position="stacked">{{ 'tasks.description' | transloco }}</ion-label>
         <ion-input autocapitalize="sentences" [(ngModel)]="shift.description"></ion-input>
       </ion-item>
     </ion-item-group>
 
     <ion-list-header>
-      <ion-label>Definition</ion-label>
+      <ion-label>{{ 'shifts.definition' | transloco }}</ion-label>
       <ion-button fill="clear" color="primary" (click)="addEntry()">
         <ion-icon name="add-outline"></ion-icon>
       </ion-button>
@@ -63,21 +60,21 @@
       @if (shift.definition && shift.definition.length > 0) {
         @for (s of shift.definition; let i = $index; track s) {
           <ion-item color="primary" lines="none">
-            <ion-label>Abschnitt {{ i + 1 }}</ion-label>
+            <ion-label>{{ 'shifts.section' | transloco: { n: i + 1 } }}</ion-label>
             <ion-button slot="end" fill="clear" color="light" (click)="removeEntry(i)">
               <ion-icon name="trash-outline"></ion-icon>
             </ion-button>
           </ion-item>
           <ion-item lines="none">
             <ion-label>
-              <p>Frei</p>
+              <p>{{ 'shifts.free' | transloco }}</p>
             </ion-label>
             <ion-toggle slot="end" [(ngModel)]="s.free"></ion-toggle>
           </ion-item>
           @if (!s.free) {
             <ion-item lines="none">
               <ion-label>
-                <p>Startzeit</p>
+                <p>{{ 'shifts.startTime' | transloco }}</p>
               </ion-label>
               <ion-datetime-button [datetime]="'datetimestartatt' + i"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
@@ -97,53 +94,52 @@
         @if (!s.free) {
           <ion-item>
             <ion-label position="stacked">
-              <p>Dauer (in Stunden)</p>
+              <p>{{ 'shifts.durationHours' | transloco }}</p>
             </ion-label>
             <ion-input autocapitalize="sentences"
-              helperText="Wenn die Schichtdauer keine ganze Zahl ist, bitte Dezimalstellen mit Punkt angeben. (z.B. 8.5 für 8 1/2 Stunden)"
+              [helperText]="'shifts.decimalHelper' | transloco"
             type="number" [(ngModel)]="s.duration"></ion-input>
           </ion-item>
         }
         <ion-item>
           <ion-label position="stacked">
-            <p>Wiederholungen</p>
+            <p>{{ 'shifts.repetitions' | transloco }}</p>
           </ion-label>
-          <ion-input autocapitalize="sentences" helperText="Anzahl der Wiederholungen dieser Schicht im Plan." type="number"
+          <ion-input autocapitalize="sentences" [helperText]="'shifts.repetitionsHelper' | transloco" type="number"
           [(ngModel)]="s.repeat_count"></ion-input>
         </ion-item>
       }
       <ion-item button (click)="calculateShifts()">
-        <ion-label color="primary">Beispiel-Rechnung</ion-label>
+        <ion-label color="primary">{{ 'shifts.example' | transloco }}</ion-label>
       </ion-item>
     } @else {
       <ion-item>
-        <ion-label>Keine Schichten hinzugefügt.</ion-label>
+        <ion-label>{{ 'shifts.noShifts' | transloco }}</ion-label>
       </ion-item>
     }
   </ion-item-group>
 
   <ion-list-header>
-    <ion-label>Feste Schichten (optional)</ion-label>
+    <ion-label>{{ 'shifts.fixedOptional' | transloco }}</ion-label>
     <ion-button fill="clear" color="primary" (click)="addShift()">
       <ion-icon name="add-outline"></ion-icon>
     </ion-button>
   </ion-list-header>
   <ion-item-group>
     <ion-item>
-      <p>Lege feste Schichten fest, die regelmäßig wiederkehren. Falls keine Schichten festgelegt sind, kann mein
-      Zuweisen der Schicht einer Person, das Anfangsdatum festgelegt werden.</p>
+      <p>{{ 'shifts.fixedIntro' | transloco }}</p>
     </ion-item>
     @if (shift.shifts && shift.shifts.length > 0) {
       @for (s of shift.shifts; let i = $index; track s) {
         <ion-item lines="none">
-          <ion-label position="stacked">Bezeichnung</ion-label>
+          <ion-label position="stacked">{{ 'shifts.label' | transloco }}</ion-label>
           <ion-button [disabled]="isUsed" slot="end" fill="clear" color="danger" (click)="removeShift(i)">
             <ion-icon name="trash-outline"></ion-icon>
           </ion-button>
           <ion-input autocapitalize="sentences" [disabled]="isUsed" [(ngModel)]="s.name"></ion-input>
         </ion-item>
         <ion-item lines="none">
-          <ion-label>Anfangsdatum</ion-label>
+          <ion-label>{{ 'shifts.startDate' | transloco }}</ion-label>
           <ion-datetime-button [disabled]="isUsed" [datetime]="'datetimestartshift' + i"></ion-datetime-button>
           <ion-modal [keepContentsMounted]="true">
             <ng-template>
@@ -153,12 +149,12 @@
           </ion-modal>
         </ion-item>
         <ion-item button (click)="calculateShifts(s)">
-          <ion-label color="primary">Beispiel-Rechnung</ion-label>
+          <ion-label color="primary">{{ 'shifts.example' | transloco }}</ion-label>
         </ion-item>
       }
     } @else {
       <ion-item>
-        <ion-label>Keine Schichten hinzugefügt.</ion-label>
+        <ion-label>{{ 'shifts.noShifts' | transloco }}</ion-label>
       </ion-item>
     }
   </ion-item-group>
@@ -180,18 +176,17 @@
       </ion-header>
       <ion-list>
         <ion-list-header>
-          <ion-label>Berechnete Schichten</ion-label>
+          <ion-label>{{ 'shifts.computed' | transloco }}</ion-label>
         </ion-list-header>
         @for (cs of calculatedShifts; track trackByShiftIndex($index, cs)) {
           <ion-item>
             <ion-label>
               <h2>{{ cs.date }}</h2>
               @if (!cs.free) {
-                <h3>{{ cs.start_time }} - {{ cs.end_time }}, {{ cs.duration }} Stunden
-                </h3>
+                <h3>{{ 'shifts.computedLine' | transloco: { start: cs.start_time, end: cs.end_time, hours: cs.duration } }}</h3>
               }
               @if (cs.free) {
-                <h3>Frei</h3>
+                <h3>{{ 'shifts.free' | transloco }}</h3>
               }
             </ion-label>
           </ion-item>
