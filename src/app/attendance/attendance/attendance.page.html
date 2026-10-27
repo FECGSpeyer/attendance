@@ -595,19 +595,19 @@
       <ion-item lines="full">
         <ion-icon name="headset-outline" slot="start" color="primary"></ion-icon>
         <ion-label>
-          <h2>Besetzung</h2>
+          <h2>Besetzung <ion-badge class="duty-fill" [color]="dutyFillColor">{{ dutyOccupants.length }}/{{ dutyRequiredCount }}</ion-badge></h2>
           <p>Benötigt: {{ dutyRequiredCount }} {{ dutyRequiredCount === 1 ? 'Person' : 'Personen' }}</p>
         </ion-label>
         @if (canManageDuty) {
-        <ion-button slot="end" fill="clear" size="small" (click)="changeDutyRequired(-1)" [disabled]="dutyRequiredCount <= 1" aria-label="Weniger Personen benötigt">
-          <ion-icon slot="icon-only" name="remove-circle-outline"></ion-icon>
-        </ion-button>
-        }
-        <ion-badge slot="end" [color]="dutyFillColor">{{ dutyOccupants.length }}/{{ dutyRequiredCount }}</ion-badge>
-        @if (canManageDuty) {
-        <ion-button slot="end" fill="clear" size="small" (click)="changeDutyRequired(1)" aria-label="Mehr Personen benötigt">
-          <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
-        </ion-button>
+        <div slot="end" class="duty-stepper">
+          <ion-button fill="clear" size="small" (click)="changeDutyRequired(-1)" [disabled]="dutyRequiredCount <= 1" aria-label="Weniger Personen benötigt">
+            <ion-icon slot="icon-only" name="remove"></ion-icon>
+          </ion-button>
+          <span>{{ dutyRequiredCount }}</span>
+          <ion-button fill="clear" size="small" (click)="changeDutyRequired(1)" aria-label="Mehr Personen benötigt">
+            <ion-icon slot="icon-only" name="add"></ion-icon>
+          </ion-button>
+        </div>
         }
       </ion-item>
       @for (pa of dutyOccupants; track pa.id) {
