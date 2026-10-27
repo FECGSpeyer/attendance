@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Erinnerung versenden</ion-title>
+    <ion-title>{{ 'attendance.sendReminder' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="cancel()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -11,36 +11,36 @@
 
 <ion-content class="ion-padding">
   <div class="intro">
-    <p>Die Erinnerung wird per App-Benachrichtigung und per E-Mail verschickt. Betreff und Nachricht können frei angepasst werden.</p>
+    <p>{{ 'attendance.reminderInfo' | transloco }}</p>
   </div>
 
   <ion-list lines="full" class="reminder-list">
     <ion-item>
       <ion-textarea autocapitalize="sentences"
-        label="Betreff"
+        [label]="'attendance.subject' | transloco"
         labelPlacement="stacked"
         [(ngModel)]="title"
         [autoGrow]="true"
         rows="2"
-        placeholder="z. B. 🔔 Erinnerung: Probe am 01.09.2026">
+        [placeholder]="'attendance.subjectPlaceholder' | transloco">
       </ion-textarea>
     </ion-item>
     <ion-item>
       <ion-textarea autocapitalize="sentences"
-        label="Nachricht"
+        [label]="'attendance.message' | transloco"
         labelPlacement="stacked"
         [(ngModel)]="message"
         [autoGrow]="true"
         rows="3"
-        placeholder="Nachrichtentext">
+        [placeholder]="'attendance.messagePlaceholder' | transloco">
       </ion-textarea>
     </ion-item>
     @if (hasNeutralPersons) {
     <ion-item>
       <ion-toggle [(ngModel)]="neutralOnly" justify="space-between">
         <ion-label>
-          Nur Personen ohne Status
-          <p>Sendet nur an Personen, die noch keine Rückmeldung gegeben haben</p>
+          {{ 'attendance.onlyNeutral' | transloco }}
+          <p>{{ 'attendance.onlyNeutralHint' | transloco }}</p>
         </ion-label>
       </ion-toggle>
     </ion-item>
@@ -52,7 +52,7 @@
     <ion-item>
       <ion-icon slot="start" name="link-outline" color="medium"></ion-icon>
       <ion-label>
-        <p>Link in der E-Mail</p>
+        <p>{{ 'attendance.emailLink' | transloco }}</p>
         <p><a [href]="attendanceLink" target="_blank">{{ attendanceLink }}</a></p>
       </ion-label>
     </ion-item>
@@ -62,7 +62,7 @@
   <div class="actions">
     <ion-button expand="block" fill="solid" color="primary" (click)="send()" [disabled]="!title.trim() && !message.trim()">
       <ion-icon slot="start" name="notifications-outline"></ion-icon>
-      Versenden
+      {{ 'attendance.send' | transloco }}
     </ion-button>
   </div>
 </ion-content>

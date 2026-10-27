@@ -18,9 +18,9 @@
       <ion-chip color="warning" style="margin: 0; height: 28px; font-size: 12px; --padding-start: 8px; --padding-end: 8px;">
         <ion-icon name="cloud-offline-outline" style="margin-right: 4px;"></ion-icon>
         @if (offlineQueue.pendingCount() > 0) {
-          {{ offlineQueue.pendingCount() }} ausstehend
+          {{ 'attendance.pending' | transloco: { count: offlineQueue.pendingCount() } }}
         } @else {
-          Offline
+          {{ 'attendance.offline' | transloco }}
         }
       </ion-chip>
     </div>
@@ -38,9 +38,9 @@
             <ion-item button detail="true" id="attendance-filter-trigger">
               <ion-icon slot="start" [color]="isFilterActive ? 'primary' : ''" name="filter"></ion-icon>
               <ion-label [color]="isFilterActive ? 'primary' : ''">
-                Status-Filter
+                {{ 'attendance.statusFilter' | transloco }}
                 @if (isFilterActive) {
-                <p>{{ statusFilter.size }} aktiv</p>
+                <p>{{ 'attendance.filterActive' | transloco: { count: statusFilter.size } }}</p>
                 }
               </ion-label>
             </ion-item>
@@ -50,43 +50,43 @@
                   @if (type?.available_statuses.includes(0)) {
                   <ion-item button detail="false" (click)="toggleStatusFilter(0)">
                     <ion-checkbox slot="start" [checked]="statusFilter.has(0)" style="pointer-events: none;"></ion-checkbox>
-                    <ion-label>Neutral</ion-label>
+                    <ion-label>{{ 'common.status.neutral' | transloco }}</ion-label>
                   </ion-item>
                   }
                   @if (type?.available_statuses.includes(1)) {
                   <ion-item button detail="false" (click)="toggleStatusFilter(1)">
                     <ion-checkbox slot="start" [checked]="statusFilter.has(1)" style="pointer-events: none;"></ion-checkbox>
-                    <ion-label>Anwesend</ion-label>
+                    <ion-label>{{ 'common.status.present' | transloco }}</ion-label>
                   </ion-item>
                   }
                   @if (type?.available_statuses.includes(2)) {
                   <ion-item button detail="false" (click)="toggleStatusFilter(2)">
                     <ion-checkbox slot="start" [checked]="statusFilter.has(2)" style="pointer-events: none;"></ion-checkbox>
-                    <ion-label>Entschuldigt</ion-label>
+                    <ion-label>{{ 'common.status.excused' | transloco }}</ion-label>
                   </ion-item>
                   }
                   @if (type?.available_statuses.includes(3)) {
                   <ion-item button detail="false" (click)="toggleStatusFilter(3)">
                     <ion-checkbox slot="start" [checked]="statusFilter.has(3)" style="pointer-events: none;"></ion-checkbox>
-                    <ion-label>Verspätet</ion-label>
+                    <ion-label>{{ 'common.status.lateShort' | transloco }}</ion-label>
                   </ion-item>
                   }
                   @if (type?.available_statuses.includes(3)) {
                   <ion-item button detail="false" (click)="toggleStatusFilter(5)">
                     <ion-checkbox slot="start" [checked]="statusFilter.has(5)" style="pointer-events: none;"></ion-checkbox>
-                    <ion-label>Verspätet entschuldigt</ion-label>
+                    <ion-label>{{ 'common.status.lateExcused' | transloco }}</ion-label>
                   </ion-item>
                   }
                   @if (type?.available_statuses.includes(4)) {
                   <ion-item button detail="false" (click)="toggleStatusFilter(4)">
                     <ion-checkbox slot="start" [checked]="statusFilter.has(4)" style="pointer-events: none;"></ion-checkbox>
-                    <ion-label>Abwesend</ion-label>
+                    <ion-label>{{ 'common.status.absent' | transloco }}</ion-label>
                   </ion-item>
                   }
                   @if (isFilterActive) {
                   <ion-item button detail="false" (click)="clearStatusFilter()">
                     <ion-icon slot="start" name="close-circle-outline" color="danger"></ion-icon>
-                    <ion-label color="danger">Filter löschen</ion-label>
+                    <ion-label color="danger">{{ 'attendance.clearFilter' | transloco }}</ion-label>
                   </ion-item>
                   }
                 </ion-list>
@@ -96,7 +96,7 @@
             <ion-item button detail="false" (click)="openSortPicker(); optionsPopover.dismiss()">
               <ion-icon slot="start" [name]="extraFieldSortId ? 'swap-vertical' : 'swap-vertical-outline'"></ion-icon>
               <ion-label>
-                Sortierung
+                {{ 'attendance.sorting' | transloco }}
                 @if (extraFieldSortId) {
                 <p>{{ getActiveExtraSortLabel() }}</p>
                 }
@@ -105,26 +105,26 @@
             }
             <ion-item button detail="true" id="attendance-view-trigger">
               <ion-icon slot="start" name="eye-outline"></ion-icon>
-              <ion-label>Ansicht</ion-label>
+              <ion-label>{{ 'attendance.view' | transloco }}</ion-label>
             </ion-item>
             <ion-popover trigger="attendance-view-trigger" triggerAction="click" [dismissOnSelect]="false" side="start">
               <ng-template>
                 <ion-list lines="none">
                   <ion-item button detail="false" (click)="toggleShowAvatars()">
                     <ion-checkbox slot="start" [checked]="showAvatars" style="pointer-events: none;"></ion-checkbox>
-                    <ion-label>Bilder anzeigen</ion-label>
+                    <ion-label>{{ 'attendance.showPictures' | transloco }}</ion-label>
                   </ion-item>
                   @if (hasRegFields) {
                   <ion-item button detail="false" (click)="toggleShowRegFields()">
                     <ion-checkbox slot="start" [checked]="showRegFields" style="pointer-events: none;"></ion-checkbox>
-                    <ion-label>Anmeldefelder anzeigen</ion-label>
+                    <ion-label>{{ 'attendance.showRegFields' | transloco }}</ion-label>
                   </ion-item>
                   }
                   <ion-item button detail="false" (click)="switchMode()">
                     <ion-checkbox slot="start" [checked]="attendanceViewMode === AttendanceViewMode.SELECT" style="pointer-events: none;"></ion-checkbox>
                     <ion-label>
-                      Explizite Statusauswahl
-                      <p>Status über Dropdown statt Antippen wählen</p>
+                      {{ 'attendance.explicitStatus' | transloco }}
+                      <p>{{ 'attendance.explicitStatusHint' | transloco }}</p>
                     </ion-label>
                   </ion-item>
                 </ion-list>
@@ -133,39 +133,39 @@
             @if (!isHelper) {
             <ion-item button detail="false" (click)="openAddPersonModal(); optionsPopover.dismiss()">
               <ion-icon slot="start" name="person-add-outline"></ion-icon>
-              <ion-label>Person hinzufügen</ion-label>
+              <ion-label>{{ 'attendance.addPerson' | transloco }}</ion-label>
             </ion-item>
             }
             @if (!isHelper && (!attendance?.checklist || attendance?.checklist?.length === 0)) {
             <ion-item button detail="false" (click)="addChecklistItem(); optionsPopover.dismiss()">
               <ion-icon slot="start" name="checkbox-outline"></ion-icon>
-              <ion-label>Checkliste starten</ion-label>
+              <ion-label>{{ 'attendance.startChecklist' | transloco }}</ion-label>
             </ion-item>
             }
             @if (!isHelper && canRestoreChecklist()) {
             <ion-item button detail="false" (click)="restoreChecklist(); optionsPopover.dismiss()">
               <ion-icon slot="start" name="refresh-outline"></ion-icon>
-              <ion-label>Checkliste zurücksetzen</ion-label>
+              <ion-label>{{ 'attendance.resetChecklist' | transloco }}</ion-label>
             </ion-item>
             }
             <ion-item button detail="false" (click)="showStatusInfo(); optionsPopover.dismiss()">
               <ion-icon slot="start" name="stats-chart-outline"></ion-icon>
-              <ion-label>Status-Übersicht</ion-label>
+              <ion-label>{{ 'attendance.statusOverview' | transloco }}</ion-label>
             </ion-item>
             @if (churchField) {
             <ion-item button detail="false" (click)="showChurchOverview(); optionsPopover.dismiss()">
               <ion-icon slot="start" name="business-outline"></ion-icon>
-              <ion-label>Gemeinde-Übersicht</ion-label>
+              <ion-label>{{ 'attendance.churchOverview' | transloco }}</ion-label>
             </ion-item>
             }
             <ion-item button detail="false" (click)="showLegend(); optionsPopover.dismiss()">
               <ion-icon slot="start" name="information-circle-outline"></ion-icon>
-              <ion-label>Legende</ion-label>
+              <ion-label>{{ 'signout.legend' | transloco }}</ion-label>
             </ion-item>
             @if (!isHelper) {
             <ion-item button detail="false" (click)="sendAdHocReminder(); optionsPopover.dismiss()">
               <ion-icon slot="start" name="notifications-outline"></ion-icon>
-              <ion-label>Erinnerung versenden</ion-label>
+              <ion-label>{{ 'attendance.sendReminder' | transloco }}</ion-label>
             </ion-item>
             }
           </ion-list>
@@ -176,32 +176,32 @@
           <ion-content color="light">
             <ion-list [inset]="true">
               <ion-list-header>
-                <ion-label>Legende</ion-label>
+                <ion-label>{{ 'signout.legend' | transloco }}</ion-label>
               </ion-list-header>
               <ion-item-group>
                 <ion-item lines="none">
                   <ion-badge slot="start" color="success">✓</ion-badge>
-                  <ion-label>Anwesend</ion-label>
+                  <ion-label>{{ 'common.status.present' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
                   <ion-badge slot="start" color="warning">E</ion-badge>
-                  <ion-label>Entschuldigt</ion-label>
+                  <ion-label>{{ 'common.status.excused' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
                   <ion-badge slot="start" color="danger">A</ion-badge>
-                  <ion-label>Abwesend</ion-label>
+                  <ion-label>{{ 'common.status.absent' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
                   <ion-badge slot="start" color="tertiary">L</ion-badge>
-                  <ion-label>Verspätet anwesend</ion-label>
+                  <ion-label>{{ 'common.status.late' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
                   <ion-badge slot="start" color="rosa">LE</ion-badge>
-                  <ion-label>Verspätet entschuldigt</ion-label>
+                  <ion-label>{{ 'common.status.lateExcused' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
                   <ion-badge slot="start" color="medium">N</ion-badge>
-                  <ion-label>Neutral</ion-label>
+                  <ion-label>{{ 'common.status.neutral' | transloco }}</ion-label>
                 </ion-item>
               </ion-item-group>
             </ion-list>
@@ -219,38 +219,38 @@
       <ion-accordion-group>
         <ion-accordion value="info">
           <ion-item slot="header">
-            <ion-label>Allgemein</ion-label>
+            <ion-label>{{ 'attendance.general' | transloco }}</ion-label>
           </ion-item>
           <div slot="content">
             <ion-item lines="none">
-              <ion-label>Typ</ion-label>
+              <ion-label>{{ 'attList.type' | transloco }}</ion-label>
               <ion-badge slot="end">{{ getTypeName(attendance.type_id) }}</ion-badge>
             </ion-item>
             <ion-item lines="none" button detail="false" (click)="changeDate()">
-              <ion-label>Datum</ion-label>
+              <ion-label>{{ 'attendance.date' | transloco }}</ion-label>
               <ion-note slot="end" color="primary">{{ attendance.date | date:'dd.MM.yyyy' }}</ion-note>
             </ion-item>
             <ion-item lines="none">
-              <ion-label position="stacked">Info-Text</ion-label>
+              <ion-label position="stacked">{{ 'attendance.infoText' | transloco }}</ion-label>
               <ion-input autocapitalize="sentences" (ionBlur)="onInfoChanged()" [(ngModel)]="attendance.typeInfo"></ion-input>
             </ion-item>
 
             <ion-item lines="none">
-              <ion-label position="stacked">Notizen</ion-label>
+              <ion-label position="stacked">{{ 'attendance.notes' | transloco }}</ion-label>
               <ion-textarea autocapitalize="sentences" (ionBlur)="onInfoChanged()" autoGrow="true" [(ngModel)]="attendance.notes"></ion-textarea>
             </ion-item>
 
             @if (!isDeadlineReadonly) {
             <ion-item>
-              <ion-label>Anmeldefrist setzen</ion-label>
+              <ion-label>{{ 'attendance.setDeadline' | transloco }}</ion-label>
               <ion-toggle
-                helperText="Personen können sich nur bis zu diesem Datum anmelden. Eine Abmeldung ist weiterhin möglich."
+                [helperText]="'attendance.deadlineHelper' | transloco"
                 slot="end" [(ngModel)]="hasDeadline" (ionChange)="onDeadlineToggleChanged()"></ion-toggle>
             </ion-item>
             }
             @if (attendance.deadline) {
             <ion-item lines="none">
-              <ion-label>Fristdatum</ion-label>
+              <ion-label>{{ 'attendance.deadlineDate' | transloco }}</ion-label>
               <ion-datetime-button [disabled]="isDeadlineReadonly"
                 [datetime]="'datetimedeadlineatt'"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
@@ -266,7 +266,7 @@
 
             @if (!type?.all_day) {
             <ion-item>
-              <ion-label>Beginn</ion-label>
+              <ion-label>{{ 'attendance.start' | transloco }}</ion-label>
               <ion-datetime-button datetime="datetimestartatt"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
@@ -285,7 +285,7 @@
             }
             @if (!type?.all_day) {
             <ion-item>
-              <ion-label>Ende</ion-label>
+              <ion-label>{{ 'attendance.end' | transloco }}</ion-label>
               <ion-datetime-button datetime="datetimeendatt"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
@@ -306,7 +306,7 @@
 
             @if (type?.all_day) {
             <ion-item>
-              <ion-label position="stacked">Dauer (in Tagen)</ion-label>
+              <ion-label position="stacked">{{ 'attList.durationDays' | transloco }}</ion-label>
               <ion-input autocapitalize="sentences" type="number" [(ngModel)]="attendance.duration_days" (ionBlur)="onInfoChanged()"></ion-input>
             </ion-item>
             }
@@ -315,11 +315,11 @@
             <ion-item lines="none">
               <ion-icon name="folder-outline" slot="start" color="primary"></ion-icon>
               <ion-label>
-                <h3>Ordner in der Dateiablage</h3>
-                <p>z. B. Aufnahmen des Termins</p>
+                <h3>{{ 'attendance.filesFolder' | transloco }}</h3>
+                <p>{{ 'attendance.filesFolderHint' | transloco }}</p>
               </ion-label>
               @if (!attendance.files_folder) {
-              <ion-button slot="end" fill="clear" (click)="filesFolderPicker.open()">Wählen</ion-button>
+              <ion-button slot="end" fill="clear" (click)="filesFolderPicker.open()">{{ 'attendance.choose' | transloco }}</ion-button>
               }
             </ion-item>
             @if (attendance.files_folder) {
@@ -328,10 +328,10 @@
                 <ion-icon name="folder-open-outline"></ion-icon>
                 <ion-label>{{ attendance.files_folder }}</ion-label>
               </ion-chip>
-              <ion-button slot="end" fill="clear" (click)="filesFolderPicker.open(attendance.files_folder)" aria-label="Ordner ändern">
+              <ion-button slot="end" fill="clear" (click)="filesFolderPicker.open(attendance.files_folder)" [attr.aria-label]="'attendance.changeFolder' | transloco">
                 <ion-icon name="create-outline" slot="icon-only"></ion-icon>
               </ion-button>
-              <ion-button slot="end" fill="clear" color="danger" (click)="removeFilesFolder()" aria-label="Ordner entfernen">
+              <ion-button slot="end" fill="clear" color="danger" (click)="removeFilesFolder()" [attr.aria-label]="'attendance.removeFolder' | transloco">
                 <ion-icon name="close-circle-outline" slot="icon-only"></ion-icon>
               </ion-button>
             </ion-item>
@@ -341,22 +341,22 @@
 
             @if (type?.place_enabled) {
               <ion-item lines="none">
-                <ion-label position="stacked">Ort</ion-label>
-                <ion-textarea [(ngModel)]="attendance.place" (ionBlur)="onPlaceChanged()" placeholder="Adresse oder Ortsname" rows="2"></ion-textarea>
+                <ion-label position="stacked">{{ 'attendance.place' | transloco }}</ion-label>
+                <ion-textarea [(ngModel)]="attendance.place" (ionBlur)="onPlaceChanged()" [placeholder]="'attendance.addressPlaceholder' | transloco" rows="2"></ion-textarea>
               </ion-item>
               @if (attendance.place) {
                 <ion-item button detail="false" (click)="openNavigation()">
-                  <ion-label color="primary">Navigation öffnen</ion-label>
+                  <ion-label color="primary">{{ 'signout.openNavigation' | transloco }}</ion-label>
                 </ion-item>
               }
             }
 
             <ion-item button (click)="descriptionModal.present()" detail="false">
-              <ion-label color="primary">Beschreibung & Anhang bearbeiten</ion-label>
+              <ion-label color="primary">{{ 'attendance.editDescription' | transloco }}</ion-label>
             </ion-item>
 
             <ion-item button (click)="exportToExcel()" detail="false">
-              <ion-label color="primary">Anwesenheit als Excel exportieren</ion-label>
+              <ion-label color="primary">{{ 'attendance.exportExcel' | transloco }}</ion-label>
             </ion-item>
 
             <!-- <input style="display: 'none';" name="file" #chooser (change)="onImageSelect($event)" accept="image/*" class="inputFile" type="file" />
@@ -375,7 +375,7 @@
       <ng-template>
         <ion-header>
           <ion-toolbar>
-            <ion-title>Beschreibung & Anhang</ion-title>
+            <ion-title>{{ 'attendance.descriptionAttachment' | transloco }}</ion-title>
             <ion-buttons slot="end">
               <ion-button (click)="descriptionModal.dismiss()">
                 <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -384,12 +384,12 @@
           </ion-toolbar>
         </ion-header>
         <ion-content class="ion-padding">
-          <quill-editor placeholder="Beschreibung eingeben..." [(ngModel)]="attendance.description"
+          <quill-editor [placeholder]="'attendance.descriptionPlaceholder' | transloco" [(ngModel)]="attendance.description"
             (onBlur)="onDescriptionChanged()" [styles]="{ minHeight: '200px' }" style="width: 100%;"
             [modules]="{ toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }], ['link']] }"></quill-editor>
 
           <ion-item lines="none" style="margin-top: 16px;">
-            <ion-label>Anhang</ion-label>
+            <ion-label>{{ 'selfService.attachment' | transloco }}</ion-label>
             @if (!attendance.attachment_url) {
             <ion-button slot="end" fill="clear" (click)="attachmentInput.click()">
               <ion-icon name="attach-outline" slot="icon-only"></ion-icon>
@@ -415,7 +415,7 @@
       <ion-accordion-group>
         <ion-accordion value="songs">
           <ion-item slot="header">
-            <ion-label>Werke ({{ historyEntries.length }})</ion-label>
+            <ion-label>{{ 'attendance.songsCount' | transloco: { count: historyEntries.length } }}</ion-label>
           </ion-item>
           <div slot="content">
             @if (manageSongs) {
@@ -432,24 +432,24 @@
               </ion-item>
               }
               <ion-item id="add-his-button" button detail="false">
-                <ion-label color="primary">Werk(e) hinzufügen</ion-label>
+                <ion-label color="primary">{{ 'attList.addSongs' | transloco }}</ion-label>
                 <ion-modal #addHisModal trigger="add-his-button" handle-behavior="none" [breakpoints]="[0, 0.7]" [initialBreakpoint]="0.7">
                   <ng-template>
                     <ion-content color="light">
                       <ion-header>
                         <ion-toolbar>
-                          <ion-title>Werk(e) hinzufügen</ion-title>
+                          <ion-title>{{ 'attList.addSongs' | transloco }}</ion-title>
                         </ion-toolbar>
                       </ion-header>
                       <ion-list [inset]="true">
                         <ion-item-group>
                           <ion-item button detail="true" id="song-select-trigger-att">
                             <ion-label>
-                              <h2>Werk(e)</h2>
+                              <h2>{{ 'attList.songsLabel' | transloco }}</h2>
                               @if (selectedSongs.length > 0) {
-                              <p>{{ selectedSongs.length }} Werk(e) ausgewählt</p>
+                              <p>{{ 'attList.songsSelected' | transloco: { count: selectedSongs.length } }}</p>
                               } @else {
-                              <p>Keine Werke ausgewählt</p>
+                              <p>{{ 'attList.noSongsSelected' | transloco }}</p>
                               }
                             </ion-label>
                           </ion-item>
@@ -458,7 +458,7 @@
                             <ng-template>
                               <ion-header>
                                 <ion-toolbar>
-                                  <ion-title>Werke auswählen</ion-title>
+                                  <ion-title>{{ 'attList.chooseSongs' | transloco }}</ion-title>
                                   <ion-buttons slot="end">
                                     <ion-button (click)="songSelectModal.dismiss()">
                                       <ion-icon slot="icon-only" name="checkmark"></ion-icon>
@@ -467,7 +467,7 @@
                                 </ion-toolbar>
                                 <ion-toolbar>
                                   <ion-searchbar [(ngModel)]="songSearchTerm" (ionInput)="onSongSearch($event)"
-                                    (ionClear)="resetSongSearch()" placeholder="Werk suchen..." [debounce]="250">
+                                    (ionClear)="resetSongSearch()" [placeholder]="'attList.searchSong' | transloco" [debounce]="250">
                                   </ion-searchbar>
                                 </ion-toolbar>
                               </ion-header>
@@ -476,7 +476,7 @@
                                 <ion-list [inset]="true">
                                   <ion-item lines="none">
                                     <ion-label class="ion-text-center" color="medium">
-                                      <p>Keine Werke gefunden</p>
+                                      <p>{{ 'attList.noSongsFound' | transloco }}</p>
                                     </ion-label>
                                   </ion-item>
                                 </ion-list>
@@ -503,7 +503,7 @@
                           </ion-modal>
 
                           <ion-item>
-                            <ion-select label="Dirigent" (ionChange)="onConChange()"
+                            <ion-select [label]="'attList.conductor' | transloco" (ionChange)="onConChange()"
                               [(ngModel)]="historyEntry.person_id" #select multiple="false">
                               @for (con of activeConductors; track con) {
                               <ion-select-option [value]="con.id">{{ con.firstName
@@ -512,7 +512,7 @@
                                 con.lastName }}
                               </ion-select-option>
                               }
-                              <ion-select-option [value]="otherConductor">Anderer Dirigent</ion-select-option>
+                              <ion-select-option [value]="otherConductor">{{ 'attList.otherConductor' | transloco }}</ion-select-option>
                             </ion-select>
                           </ion-item>
                           @if (historyEntry.person_id === otherConductor && historyEntry.otherConductor) {
@@ -523,7 +523,7 @@
                         </ion-item-group>
                         <ion-item-group>
                           <ion-item (click)="addSongsToHistory(addHisModal)" button detail="false">
-                            <ion-label color="primary">Hinzufügen</ion-label>
+                            <ion-label color="primary">{{ 'attendance.add' | transloco }}</ion-label>
                           </ion-item>
                         </ion-item-group>
                       </ion-list>
@@ -545,7 +545,7 @@
       <ion-accordion-group>
         <ion-accordion value="checklist">
           <ion-item slot="header">
-            <ion-label>Checkliste</ion-label>
+            <ion-label>{{ 'attendance.checklist' | transloco }}</ion-label>
             <ion-badge slot="end"
               [color]="getChecklistProgress().completed === getChecklistProgress().total ? 'success' : 'primary'">
               {{ getChecklistProgress().completed }}/{{ getChecklistProgress().total }}
@@ -580,7 +580,7 @@
             <ion-item button detail="false" (click)="addChecklistItem()">
               <ion-label color="primary">
                 <ion-icon name="add-circle-outline"></ion-icon>
-                To-Do hinzufügen
+                {{ 'attendance.addTodo' | transloco }}
               </ion-label>
             </ion-item>
           </div>
@@ -595,16 +595,16 @@
       <ion-item lines="full">
         <ion-icon name="headset-outline" slot="start" color="primary"></ion-icon>
         <ion-label>
-          <h2>Besetzung <ion-badge class="duty-fill" [color]="dutyFillColor">{{ dutyOccupants.length }}/{{ dutyRequiredCount }}</ion-badge></h2>
-          <p>Benötigt: {{ dutyRequiredCount }} {{ dutyRequiredCount === 1 ? 'Person' : 'Personen' }}</p>
+          <h2>{{ 'attendance.staffing' | transloco }} <ion-badge class="duty-fill" [color]="dutyFillColor">{{ dutyOccupants.length }}/{{ dutyRequiredCount }}</ion-badge></h2>
+          <p>{{ 'attendance.needed' | transloco: { count: dutyRequiredCount } }}</p>
         </ion-label>
         @if (canManageDuty) {
         <div slot="end" class="duty-stepper">
-          <ion-button fill="clear" size="small" (click)="changeDutyRequired(-1)" [disabled]="dutyRequiredCount <= 1" aria-label="Weniger Personen benötigt">
+          <ion-button fill="clear" size="small" (click)="changeDutyRequired(-1)" [disabled]="dutyRequiredCount <= 1" [attr.aria-label]="'attendance.fewerPeopleNeeded' | transloco">
             <ion-icon slot="icon-only" name="remove"></ion-icon>
           </ion-button>
           <span>{{ dutyRequiredCount }}</span>
-          <ion-button fill="clear" size="small" (click)="changeDutyRequired(1)" aria-label="Mehr Personen benötigt">
+          <ion-button fill="clear" size="small" (click)="changeDutyRequired(1)" [attr.aria-label]="'attendance.morePeopleNeeded' | transloco">
             <ion-icon slot="icon-only" name="add"></ion-icon>
           </ion-button>
         </div>
@@ -616,14 +616,14 @@
         <ion-label>
           <h3>{{ pa.firstName }} {{ pa.lastName }}</h3>
           @if (pa.duty_state === 'self') {
-            <p>selbst eingetragen</p>
+            <p>{{ 'attendance.selfSignedUp' | transloco }}</p>
           }
         </ion-label>
         <ion-badge slot="end" [color]="pa.duty_state === 'requested' ? 'warning' : 'success'">
-          {{ pa.duty_state === 'requested' ? 'angefragt' : 'bestätigt' }}
+          {{ (pa.duty_state === 'requested' ? 'attendance.requested' : 'attendance.confirmed') | transloco }}
         </ion-badge>
         @if (canManageDuty) {
-        <ion-button slot="end" fill="clear" color="medium" (click)="removeDutyAssignment(pa)" aria-label="Austragen">
+        <ion-button slot="end" fill="clear" color="medium" (click)="removeDutyAssignment(pa)" [attr.aria-label]="'attendance.unassign' | transloco">
           <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
         </ion-button>
         }
@@ -632,29 +632,29 @@
       @if (canManageDuty) {
       <ion-item button detail="false" (click)="openDutyAssign()" lines="full">
         <ion-icon name="person-add-outline" slot="start" color="primary"></ion-icon>
-        <ion-label color="primary">Person einteilen</ion-label>
+        <ion-label color="primary">{{ 'attendance.assignPerson' | transloco }}</ion-label>
       </ion-item>
       }
       @if (dutyAvailable.length && canManageDuty) {
-      <ion-item-divider><ion-label>Verfügbar</ion-label></ion-item-divider>
+      <ion-item-divider><ion-label>{{ 'attendance.available' | transloco }}</ion-label></ion-item-divider>
       @for (pa of dutyAvailable; track pa.id) {
       <ion-item>
         <ion-label>
           <h3>{{ pa.firstName }} {{ pa.lastName }}</h3>
         </ion-label>
-        <ion-button slot="end" fill="outline" size="small" shape="round" (click)="openDutyAssign(pa)">Einteilen</ion-button>
+        <ion-button slot="end" fill="outline" size="small" shape="round" (click)="openDutyAssign(pa)">{{ 'attendance.assign' | transloco }}</ion-button>
       </ion-item>
       }
       }
       @if (dutyUnavailable.length) {
-      <ion-item-divider><ion-label>Kann nicht</ion-label></ion-item-divider>
+      <ion-item-divider><ion-label>{{ 'signout.cannot' | transloco }}</ion-label></ion-item-divider>
       @for (pa of dutyUnavailable; track pa.id) {
       <ion-item>
         <ion-label class="ion-text-wrap">
           <h3>{{ pa.firstName }} {{ pa.lastName }}</h3>
           @if (pa.notes) { <p>{{ pa.notes }}</p> }
         </ion-label>
-        <ion-badge slot="end" color="medium">{{ pa.duty_state ? 'abgesagt' : 'abgemeldet' }}</ion-badge>
+        <ion-badge slot="end" color="medium">{{ (pa.duty_state ? 'attendance.declined' : 'attendance.signedOut') | transloco }}</ion-badge>
       </ion-item>
       }
       }
@@ -667,40 +667,40 @@
       <ion-item lines="none" class="protocol-card">
         <ion-icon name="document-text-outline" slot="start" color="primary"></ion-icon>
         <ion-label class="ion-text-wrap">
-          <h2>Protokoll</h2>
+          <h2>{{ 'attendance.protocol' | transloco }}</h2>
           @if (!protocol) {
-          <p>Noch nicht begonnen</p>
+          <p>{{ 'attendance.notStarted' | transloco }}</p>
           } @else if (protocol.status === 'published') {
           <p>
-            Freigegeben am {{ protocol.published_at | date:'dd.MM.yyyy' }}
+            {{ 'attendance.publishedOn' | transloco: { date: (protocol.published_at | date:'dd.MM.yyyy') } }}
             @if (protocolEditedAfterPublish) {
-            · geändert am {{ protocol.updated_at | date:'dd.MM.yyyy' }}
+            {{ 'attendance.changedOn' | transloco: { date: (protocol.updated_at | date:'dd.MM.yyyy') } }}
             }
           </p>
           } @else {
-          <p>Entwurf · zuletzt bearbeitet {{ (protocol.updated_at || protocol.created_at) | date:'dd.MM.yyyy, HH:mm' }} Uhr</p>
+          <p>{{ 'attendance.draftEdited' | transloco: { date: ((protocol.updated_at || protocol.created_at) | date:'dd.MM.yyyy, HH:mm') } }}</p>
           }
         </ion-label>
         @if (protocol) {
         <ion-badge slot="end" [color]="protocol.status === 'published' ? 'success' : 'medium'">
-          {{ protocol.status === 'published' ? 'Freigegeben' : 'Entwurf' }}
+          {{ (protocol.status === 'published' ? 'attendance.published' : 'attendance.draft') | transloco }}
         </ion-badge>
         }
       </ion-item>
       @if (isTeamLeader) {
       <ion-item button detail="false" (click)="openProtocol()">
         <ion-icon [name]="protocol ? 'create-outline' : 'play-circle-outline'" slot="start" color="primary"></ion-icon>
-        <ion-label color="primary">{{ protocol ? 'Protokoll öffnen' : 'Sitzung starten & protokollieren' }}</ion-label>
+        <ion-label color="primary">{{ (protocol ? 'attendance.openProtocol' : 'attendance.startSession') | transloco }}</ion-label>
       </ion-item>
       } @else if (protocol?.status === 'published') {
       <ion-item button detail="false" (click)="openProtocol()">
         <ion-icon name="reader-outline" slot="start" color="primary"></ion-icon>
-        <ion-label color="primary">Protokoll lesen</ion-label>
+        <ion-label color="primary">{{ 'attendance.readProtocol' | transloco }}</ion-label>
       </ion-item>
       }
       @if (attendanceTasks.length) {
       <ion-item-divider>
-        <ion-label>Aufgaben aus diesem Termin</ion-label>
+        <ion-label>{{ 'attendance.tasksFromEvent' | transloco }}</ion-label>
       </ion-item-divider>
       @for (task of attendanceTasks; track task.id) {
       <ion-item button (click)="openTask(task)">
@@ -709,9 +709,9 @@
         <ion-label class="ion-text-wrap">
           <h3 [class.text-strikethrough]="task.status === 'completed'">{{ task.title }}</h3>
           <p>
-            {{ task.responsible_person ? task.responsible_person.firstName + ' ' + task.responsible_person.lastName : 'Niemand zugewiesen' }}
+            {{ task.responsible_person ? task.responsible_person.firstName + ' ' + task.responsible_person.lastName : ('attendance.nobodyAssigned' | transloco) }}
             @if (task.due_date && task.status !== 'completed') {
-            · fällig {{ task.due_date | date:'dd.MM.' }}
+            {{ 'attendance.dueOn' | transloco: { date: (task.due_date | date:'dd.MM.') } }}
             }
           </p>
         </ion-label>
@@ -727,7 +727,7 @@
       <ion-accordion-group>
         <ion-accordion value="plan">
           <ion-item slot="header">
-            <ion-label>{{ type?.enable_protocol ? 'Ablaufplan & Tagesordnung' : 'Ablaufplan' }}</ion-label>
+            <ion-label>{{ (type?.enable_protocol ? 'attendance.runSheetAgenda' : 'signout.runSheet') | transloco }}</ion-label>
           </ion-item>
           @if (attendance.plan) {
           <div slot="content">
@@ -735,8 +735,8 @@
             <app-plan-chips [labels]="planLabels" [selected]="planIndex" [todayIndex]="todayPlanChip" (selectedChange)="selectPlan($event)"></app-plan-chips>
             }
             <ion-item lines="none">
-              <ion-label>Start</ion-label>
-              <ion-badge slot="end">{{ shownPlan.time }} Uhr</ion-badge>
+              <ion-label>{{ 'attendance.startLabel' | transloco }}</ion-label>
+              <ion-badge slot="end">{{ 'attendance.timeOClock' | transloco: { time: shownPlan.time } }}</ion-badge>
             </ion-item>
             @for (field of shownPlan.fields; track field; let i = $index) {
             @if (field.id !== AGENDA_ITEMS_PLACEHOLDER_ID) {
@@ -760,27 +760,27 @@
               @if (planLiveMode && i === planActiveFieldIndex) {
                 <ion-badge slot="end" color="primary">{{ getPlanActiveCountdown() }}</ion-badge>
               } @else {
-                <ion-badge slot="end">{{ field | planMinutes: shownPlan.fields }} min</ion-badge>
+                <ion-badge slot="end">{{ 'attendance.minutesShort' | transloco: { min: (field | planMinutes: shownPlan.fields) } }}</ion-badge>
               }
             </ion-item>
             }
             }
             <ion-item lines="none">
-              <ion-label>Ende</ion-label>
-              <ion-badge slot="end">{{ shownPlan.end | date:'HH:mm' }} Uhr</ion-badge>
+              <ion-label>{{ 'attendance.end' | transloco }}</ion-label>
+              <ion-badge slot="end">{{ 'attendance.timeOClock' | transloco: { time: (shownPlan.end | date:'HH:mm') } }}</ion-badge>
             </ion-item>
             @if (type?.enable_protocol && isTeamLeader && planIndex === 0) {
             <ion-item button (click)="openAgendaPicker()" detail="false">
               <ion-icon name="add-circle-outline" slot="start" color="primary"></ion-icon>
-              <ion-label color="primary">Themen aufnehmen</ion-label>
+              <ion-label color="primary">{{ 'attendance.addTopics' | transloco }}</ion-label>
             </ion-item>
             }
             <ion-item button (click)="editPlan()" detail="false">
-              <ion-label color="primary">Ablaufplan bearbeiten</ion-label>
+              <ion-label color="primary">{{ 'attendance.editRunSheet' | transloco }}</ion-label>
             </ion-item>
             <ion-item button (click)="sharePlan()" detail="false">
               <ion-icon name="share-outline" slot="start" color="primary"></ion-icon>
-              <ion-label color="primary">Teilen</ion-label>
+              <ion-label color="primary">{{ 'attendance.share' | transloco }}</ion-label>
             </ion-item>
           </div>
           }
@@ -789,11 +789,11 @@
             @if (type?.enable_protocol && isTeamLeader) {
             <ion-item button (click)="openAgendaPicker()" detail="false">
               <ion-icon name="add-circle-outline" slot="start" color="primary"></ion-icon>
-              <ion-label color="primary">Themen aufnehmen</ion-label>
+              <ion-label color="primary">{{ 'attendance.addTopics' | transloco }}</ion-label>
             </ion-item>
             }
             <ion-item button (click)="editPlan()" detail="false">
-              <ion-label color="primary">Ablaufplan erstellen</ion-label>
+              <ion-label color="primary">{{ 'attendance.createRunSheet' | transloco }}</ion-label>
             </ion-item>
           </div>
           }
@@ -805,12 +805,12 @@
       @if (personsLoadFailed && players.length === 0) {
       <ion-item lines="none" class="ion-padding-vertical ion-text-center">
         <ion-label class="ion-text-wrap">
-          <h2>Anwesenheitsliste konnte nicht geladen werden</h2>
-          <p>Bitte versuche es erneut.</p>
+          <h2>{{ 'attendance.loadFailed' | transloco }}</h2>
+          <p>{{ 'attendance.tryAgain' | transloco }}</p>
         </ion-label>
         <ion-button slot="end" fill="outline" (click)="reloadAttendance()">
           <ion-icon slot="start" name="refresh-outline"></ion-icon>
-          Neu laden
+          {{ 'attendance.reload' | transloco }}
         </ion-button>
       </ion-item>
       }
@@ -834,7 +834,7 @@
             <h3>{{ player.notes }}</h3>
             }
             @if (isHelper && !canViewNotes && player.notes) {
-            <h3>Notiz hinzugefügt</h3>
+            <h3>{{ 'attendance.noteAdded' | transloco }}</h3>
             }
             @if (showRegFields && getRegistrationAnswerSummary(player)) {
             <p style="font-size: 0.78rem; color: var(--ion-color-medium);">{{ getRegistrationAnswerSummary(player) }}</p>
@@ -846,22 +846,22 @@
           <ion-select interface="popover" (ionChange)="onAttStaticChange(player, $event)" [value]="player.status"
             slot="end">
             @if (type?.available_statuses.includes(0)) {
-            <ion-select-option [value]="0">Neutral</ion-select-option>
+            <ion-select-option [value]="0">{{ 'common.status.neutral' | transloco }}</ion-select-option>
             }
             @if (type?.available_statuses.includes(1)) {
-            <ion-select-option [value]="1">Anwesend</ion-select-option>
+            <ion-select-option [value]="1">{{ 'common.status.present' | transloco }}</ion-select-option>
             }
             @if (type?.available_statuses.includes(2)) {
-            <ion-select-option [value]="2">Entschuldigt</ion-select-option>
+            <ion-select-option [value]="2">{{ 'common.status.excused' | transloco }}</ion-select-option>
             }
             @if (type?.available_statuses.includes(3)) {
-            <ion-select-option [value]="3">Verspätet</ion-select-option>
+            <ion-select-option [value]="3">{{ 'common.status.lateShort' | transloco }}</ion-select-option>
             }
             @if (type?.available_statuses.includes(3)) {
-            <ion-select-option [value]="5">Verspätet entschuldigt</ion-select-option>
+            <ion-select-option [value]="5">{{ 'common.status.lateExcused' | transloco }}</ion-select-option>
             }
             @if (type?.available_statuses.includes(4)) {
-            <ion-select-option [value]="4">Abwesend</ion-select-option>
+            <ion-select-option [value]="4">{{ 'common.status.absent' | transloco }}</ion-select-option>
             }
           </ion-select>
         </ion-item>
@@ -878,7 +878,7 @@
             <h3>{{ player.notes }}</h3>
             }
             @if (isHelper && !canViewNotes && player.notes) {
-            <h3>Notiz hinzugefügt</h3>
+            <h3>{{ 'attendance.noteAdded' | transloco }}</h3>
             }
             @if (showRegFields && getRegistrationAnswerSummary(player)) {
             <p style="font-size: 0.78rem; color: var(--ion-color-medium);">{{ getRegistrationAnswerSummary(player) }}</p>
@@ -922,7 +922,7 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>Person hinzufügen</ion-title>
+          <ion-title>{{ 'attendance.addPerson' | transloco }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="addPersonModal.dismiss(); isAddPersonModalOpen = false">
               <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -934,7 +934,7 @@
         @if (isLoadingPersons) {
         <div class="ion-padding ion-text-center">
           <ion-spinner name="crescent"></ion-spinner>
-          <p>Lade Personen...</p>
+          <p>{{ 'attendance.loadingPeople' | transloco }}</p>
         </div>
         }
         @if (!isLoadingPersons) {
@@ -942,7 +942,7 @@
         <ion-list [inset]="true">
           <ion-item lines="none">
             <ion-label class="ion-text-center ion-text-wrap">
-              <p>Alle Personen sind bereits in dieser Anwesenheit enthalten.</p>
+              <p>{{ 'attendance.allAlreadyIncluded' | transloco }}</p>
             </ion-label>
           </ion-item>
         </ion-list>
@@ -954,7 +954,7 @@
           <ion-accordion value="matching">
             <ion-item slot="header" color="light">
               <ion-label>
-                Passende Personen
+                {{ 'attendance.matchingPeople' | transloco }}
                 <ion-badge color="primary" style="margin-left: 8px">{{ filteredAvailablePersons.length }}</ion-badge>
               </ion-label>
             </ion-item>
@@ -978,7 +978,7 @@
           <ion-accordion value="others">
             <ion-item slot="header" color="light">
               <ion-label>
-                Andere Personen
+                {{ 'attendance.otherPeople' | transloco }}
                 <ion-badge color="medium" style="margin-left: 8px">{{ availablePersons.length }}</ion-badge>
               </ion-label>
             </ion-item>
@@ -1003,9 +1003,9 @@
           <ion-button expand="block" (click)="addPersonsToAttendance(addPersonModal)"
             [disabled]="selectedPersonsToAdd.length === 0">
             @if (selectedPersonsToAdd.length > 0) {
-            {{ selectedPersonsToAdd.length }} Person(en) hinzufügen
+            {{ 'attendance.addPersonsCount' | transloco: { count: selectedPersonsToAdd.length } }}
             } @else {
-            Personen auswählen
+            {{ 'attendance.choosePeople' | transloco }}
             }
           </ion-button>
         </div>
@@ -1030,7 +1030,7 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>Anmeldefelder</ion-title>
+          <ion-title>{{ 'attendance.regFields' | transloco }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="isRegFieldsModalOpen = false">
               <ion-icon slot="icon-only" name="close-outline"></ion-icon>
@@ -1078,7 +1078,7 @@
           <div class="ion-padding">
             <ion-button expand="block" (click)="saveRegFieldAnswers(regFieldAnswers)">
               <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-              Speichern
+              {{ 'common.save' | transloco }}
             </ion-button>
           </div>
         }

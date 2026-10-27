@@ -20,6 +20,7 @@ import { createAttendanceForType, personsForAttendanceType } from 'src/app/utili
 import { AttendanceStatus, DefaultAttendanceType, Role } from 'src/app/utilities/constants';
 import { averagePersons, dutyFill, dutyFillColor, dutyRequired, isDutyType, isoWeekday, occupiedCount, occupiesDuty, WEEKDAY_LONG } from 'src/app/utilities/duty';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-att-list',
@@ -304,11 +305,11 @@ export class AttListPage implements OnInit {
   async remove(id: number, slider: IonItemSliding): Promise<void> {
     try { await Haptics.impact({ style: ImpactStyle.Medium }); } catch { /* Haptics not available in PWA */ }
     const alert: HTMLIonAlertElement = await this.alertController.create({
-      header: 'Möchtest du den Termin wirklich entfernen?',
+      header: translate('attList.removeConfirm'),
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Fortfahren',
+        text: translate('attList.continue'),
         handler: async (): Promise<void> => {
           slider.close();
           await this.db.removeAttendance(id);
@@ -326,16 +327,16 @@ export class AttListPage implements OnInit {
 
   onDateChanged(value: string | string[], dateModal: IonModal): void {
     if (!value || (Array.isArray(value) && value.length === 0)) {
-      this.dateString = 'Kein Datum ausgewählt';
+      this.dateString = translate('attList.noDate');
       return;
     }
 
-    this.dateString = value.length === 1 ? this.formatDate(value[0]) : `${value.length} Termine ausgewählt`;
+    this.dateString = value.length === 1 ? this.formatDate(value[0]) : translate('attList.eventsSelected', { count: value.length });
   }
 
   async addAttendance(modal: IonModal): Promise<void> {
     if (!this.dates?.length) {
-      Utils.showToast('Bitte wähle mindestens ein Datum aus', 'warning');
+      Utils.showToast(translate('attList.chooseOneDate'), 'warning');
       return;
     }
 
@@ -353,7 +354,7 @@ export class AttListPage implements OnInit {
     const type = this.db.attendanceTypes().find(type => type.id === this.type_id);
 
     if (!type) {
-      Utils.showToast('Ungültiger Anwesenheitstyp ausgewählt', 'danger');
+      Utils.showToast(translate('attList.invalidType'), 'danger');
       await loading.dismiss();
       return;
     }
@@ -383,7 +384,7 @@ export class AttListPage implements OnInit {
     }
 
     await loading.dismiss();
-    Utils.showToast(this.dates.length === 1 ? 'Termin hinzugefügt' : 'Termine hinzugefügt', 'success');
+    Utils.showToast(this.dates.length === 1 ? translate('attList.eventAdded') : translate('attList.eventsAdded'), 'success');
     await modal.dismiss();
 
     // Refresh directly instead of relying solely on the `att-changes` realtime
@@ -491,8 +492,8 @@ export class AttListPage implements OnInit {
   onDateClick() {
     if (this.dates.length === 1 && isSameDay(new Date(this.dates[0]), new Date())) {
       this.dates = [];
-      this.dateString = 'Kein Datum ausgewählt';
-      Utils.showToast('Das aktuelle Datum wurde deselektiert', 'light', 3000);
+      this.dateString = translate('attList.noDate');
+      Utils.showToast(translate('attList.todayDeselected'), 'light', 3000);
     }
   }
 
@@ -531,7 +532,7 @@ export class AttListPage implements OnInit {
   getSongInfo(entry: History): string {
     const song: Song = this.songs.find((s: Song) => s.id === entry.songId);
     if (!song) {
-      return 'Unbekanntes Lied';
+      return translate('attList.unknownSong');
     }
     return `${song.number} ${song.name}`;
   }
@@ -543,7 +544,7 @@ export class AttListPage implements OnInit {
 
     const conductor: Person | undefined = this.activeConductors.find((con: Person) => con.id === entry.person_id);
     if (!conductor) {
-      return 'Unbekannter Dirigent';
+      return translate('attList.unknownConductor');
     }
     return `${conductor.firstName} ${conductor.lastName}`;
   }
@@ -551,16 +552,16 @@ export class AttListPage implements OnInit {
   async onConChange() {
     if (this.historyEntry.person_id === this.otherConductor) {
       const alert = await this.alertController.create({
-        header: 'Dirigent eingeben',
+        header: translate('attList.enterConductor'),
         inputs: [
           {
             type: 'text',
             name: 'conductor',
-            placeholder: 'Dirigent',
+            placeholder: translate('attList.conductor'),
           }
         ],
-        buttons: ['Abbrechen', {
-          text: 'Speichern',
+        buttons: [translate('common.cancel'), {
+          text: translate('common.save'),
           handler: (data: any) => {
             this.historyEntry.otherConductor = data.conductor;
           }
@@ -677,7 +678,7 @@ export class AttListPage implements OnInit {
   }
 
   getCountText(att: Attendance) {
-    return Math.round((att.percentage / 100) * att.persons.length) + ' von ' + att.persons.length + ' anwesend';
+    return translate('attList.presentOf', { present: Math.round((att.percentage / 100) * att.persons.length), total: att.persons.length });
   }
 
   onSongSearch(event: any) {

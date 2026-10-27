@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
 import { AttendanceStatus } from './constants';
+import { translate } from '@jsverse/transloco';
 
 /**
  * Helpers for the card layout of the Terminlisten (Termine, Signout, Parents):
@@ -75,11 +76,11 @@ export function statusColor(status: AttendanceStatus): string {
 /** Readable status for the pill; upcoming Termine read as a plan ("Zugesagt"), past ones as a result. */
 export function statusLabel(status: AttendanceStatus, past = false): string {
   switch (status) {
-    case AttendanceStatus.Present: return past ? 'Anwesend' : 'Zugesagt';
-    case AttendanceStatus.Absent: return 'Abwesend';
-    case AttendanceStatus.Late: return 'Verspätet';
-    case AttendanceStatus.LateExcused: return past ? 'Verspätet entsch.' : 'Verspätung gemeldet';
-    case AttendanceStatus.Neutral: return 'Neutral';
-    default: return 'Entschuldigt';
+    case AttendanceStatus.Present: return past ? translate('common.status.present') : translate('common.status.accepted');
+    case AttendanceStatus.Absent: return translate('common.status.absent');
+    case AttendanceStatus.Late: return translate('common.status.lateShort');
+    case AttendanceStatus.LateExcused: return past ? translate('common.status.lateExcusedShort') : translate('common.status.lateReported');
+    case AttendanceStatus.Neutral: return translate('common.status.neutral');
+    default: return translate('common.status.excused');
   }
 }

@@ -28,6 +28,7 @@ import { allPlans, planDate, planLabel, todayPlanIndex } from 'src/app/utilities
 import { openPlanShareSheet } from 'src/app/planning/plan-share-sheet/plan-share-sheet.component';
 import { DutyAssignModalComponent, DutyCandidate } from 'src/app/duty/duty-assign-modal/duty-assign-modal.component';
 import { dutyFill, dutyFillColor, dutyRequired, dutyStateAfterStatus, isCancelled, isDutyType, matchingUnavailability, occupiesDuty } from 'src/app/utilities/duty';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-attendance',
@@ -354,7 +355,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       this.attendance = await this.fetchAttendance('modal_open');
     } catch (e) {
       console.error('[attendance] failed to load attendance after retries + fallback:', e);
-      Utils.showToast('Anwesenheit konnte nicht geladen werden — bitte erneut öffnen.', 'danger');
+      Utils.showToast(translate('attendance.loadFailedReopen'), 'danger');
       this.navigateBack();
       return;
     }
@@ -483,7 +484,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       this.attendance = await this.fetchAttendance('modal_open');
     } catch (e) {
       console.warn('[attendance] reloadAttendance failed:', e);
-      Utils.showToast('Neu laden fehlgeschlagen — bitte erneut versuchen.', 'danger');
+      Utils.showToast(translate('attendance.reloadFailed'), 'danger');
       return;
     }
     this.initializeAttObjects();
@@ -542,7 +543,7 @@ export class AttendancePage implements OnInit, OnDestroy {
         return;
       }
       this.isOnline = status.connected;
-      Utils.showToast(status.connected ? 'Verbindung wiederhergestellt' : 'Keine Internetverbindung vorhanden', status.connected ? 'success' : 'danger');
+      Utils.showToast(status.connected ? translate('attendance.connectionRestored') : translate('attendance.noConnection'), status.connected ? 'success' : 'danger');
       if (status.connected) {
         void this.offlineQueue.flush();
       }
@@ -594,7 +595,7 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   onAttRealtimeChanges(payload: RealtimePostgresChangesPayload<any>) {
     if (!Object.keys(payload.new).length && payload.old && (payload.old as { id: number }).id === this.attendance.id) {
-      Utils.showToast('Die Anwesenheit wurde soeben von einem anderen Nutzer gelöscht', 'danger', 3000);
+      Utils.showToast(translate('attendance.deletedByOther'), 'danger', 3000);
       this.navigateBack();
       return;
     }
@@ -609,7 +610,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   onPersonAttRealtimeChanges(payload: RealtimePostgresChangesPayload<any>) {
     if (!Object.keys(payload.new).length) {
       if (payload.old && this.players.find((p: PersonAttendance) => p.id === (payload.old as { id: string }).id)) {
-        Utils.showToast('Die Anwesenheit wurde soeben von einem anderen Nutzer gelöscht', 'danger', 3000);
+        Utils.showToast(translate('attendance.deletedByOther'), 'danger', 3000);
         this.navigateBack();
         return;
       }
@@ -657,7 +658,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     } else if (attType.available_statuses.length === 2 && attType.available_statuses.includes(AttendanceStatus.Present) && attType.available_statuses.includes(AttendanceStatus.Excused)) {
       status = ATTENDANCE_STATUS_MAPPING.ONLY_PRESENT_EXCUSED[individual.status];
     } else {
-      Utils.showToast('Fehler beim Ändern des Anwesenheitsstatus, bitte versuche es später erneut', 'danger');
+      Utils.showToast(translate('attendance.statusChangeFailed'), 'danger');
       return;
     }
 
@@ -701,7 +702,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     }));
 
     buttons.push({
-      text: 'Eigene Notiz...',
+      text: translate('attendance.customNoteEllipsis'),
       handler: async (): Promise<void> => {
         await this.promptCustomNote(player);
       },
@@ -709,7 +710,7 @@ export class AttendancePage implements OnInit, OnDestroy {
 
     if (player.notes) {
       buttons.push({
-        text: 'Notiz löschen',
+        text: translate('attendance.deleteNote'),
         role: 'destructive',
         handler: async (): Promise<void> => {
           await this.savePlayerNotes(player.id, '');
@@ -718,13 +719,13 @@ export class AttendancePage implements OnInit, OnDestroy {
     }
 
     buttons.push({
-      text: 'Abbrechen',
+      text: translate('common.cancel'),
       role: 'cancel',
     });
 
     const actionSheet = await this.actionSheetController.create({
-      header: 'Notiz hinzufügen',
-      subHeader: player.notes ? `Aktuell: ${player.notes}` : undefined,
+      header: translate('attendance.addNote'),
+      subHeader: player.notes ? translate('attendance.currentNote', { note: player.notes }) : undefined,
       buttons,
     });
 
@@ -734,18 +735,18 @@ export class AttendancePage implements OnInit, OnDestroy {
   private async promptCustomNote(player: PersonAttendance): Promise<void> {
     const isPreset = player.notes && this.getPresetReasons().includes(player.notes);
     const alert: HTMLIonAlertElement = await this.alertController.create({
-      header: 'Eigene Notiz',
+      header: translate('attendance.customNote'),
       inputs: [{
         type: 'textarea',
-        placeholder: 'Notiz eingeben...',
+        placeholder: translate('attendance.enterNote'),
         value: isPreset ? '' : (player.notes || ''),
         name: 'note',
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
         role: 'cancel',
       }, {
-        text: 'Speichern',
+        text: translate('common.save'),
         handler: async (evt: { note: string }): Promise<void> => {
           await this.savePlayerNotes(player.id, evt.note);
         },
@@ -780,7 +781,7 @@ export class AttendancePage implements OnInit, OnDestroy {
         }
       } else {
         loading.dismiss();
-        Utils.showToast('Fehler beim hinzufügen des Bildes, versuche es später erneut', 'danger');
+        Utils.showToast(translate('attendance.pictureFailed'), 'danger');
       }
     }
   }
@@ -850,9 +851,9 @@ export class AttendancePage implements OnInit, OnDestroy {
       const rule = matchingUnavailability(unavailability, pa.person_id, this.attendance.date, this.attendance.type_id);
       let unavailableNote = '';
       if (isCancelled(pa)) {
-        unavailableNote = pa.notes ? `Kann nicht: ${pa.notes}` : 'Kann nicht';
+        unavailableNote = pa.notes ? translate('attendance.cannotWithNote', { note: pa.notes }) : translate('signout.cannot');
       } else if (rule) {
-        unavailableNote = rule.reason ? `Regelmäßig verhindert: ${rule.reason}` : 'Regelmäßig verhindert';
+        unavailableNote = rule.reason ? translate('attendance.regularlyUnavailableWithReason', { reason: rule.reason }) : translate('signout.regularlyUnavailable');
       }
       return {
         personAttendanceId: pa.id,
@@ -890,17 +891,17 @@ export class AttendancePage implements OnInit, OnDestroy {
     this.players = this.players.map(p => personAttendanceIds.includes(p.id)
       ? { ...p, duty_state: 'requested', status: AttendanceStatus.Neutral, notes: '', duty_assigned_at: now }
       : p);
-    Utils.showToast(personAttendanceIds.length === 1 ? 'Eingeteilt, die Person wird benachrichtigt' : 'Eingeteilt, die Personen werden benachrichtigt', 'success');
+    Utils.showToast(translate('attendance.assignedNotified', { count: personAttendanceIds.length }), 'success');
   }
 
   async removeDutyAssignment(pa: PersonAttendance): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Aus dem Dienst austragen?',
+      header: translate('attendance.unassignConfirm'),
       message: `${pa.firstName} ist dann nicht mehr eingeteilt.`,
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Austragen',
+          text: translate('attendance.unassign'),
           role: 'destructive',
           handler: async () => {
             await this.db.dutySvc.unassign(pa.id, this.db.user?.id);
@@ -985,9 +986,9 @@ export class AttendancePage implements OnInit, OnDestroy {
         attachment_name: file.name,
       }, this.attendance.id);
 
-      Utils.showToast('Anhang hochgeladen', 'success');
+      Utils.showToast(translate('attendance.attachmentUploaded'), 'success');
     } catch (error) {
-      Utils.showToast('Fehler beim Hochladen', 'danger');
+      Utils.showToast(translate('attendance.uploadFailed'), 'danger');
     }
 
     await loading.dismiss();
@@ -1259,9 +1260,9 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   taskStatusLabel(task: Task): string {
     switch (task.status) {
-      case 'completed': return 'Erledigt';
-      case 'in_progress': return 'In Arbeit';
-      default: return 'Offen';
+      case 'completed': return translate('tasks.status.completed');
+      case 'in_progress': return translate('tasks.status.inProgress');
+      default: return translate('tasks.status.open');
     }
   }
 
@@ -1285,34 +1286,34 @@ export class AttendancePage implements OnInit, OnDestroy {
       return;
     }
     const sheet = await this.actionSheetController.create({
-      header: 'Ablaufplan teilen',
+      header: translate('attendance.shareRunSheet'),
       buttons: [
         {
-          text: 'Exportieren (PDF)',
+          text: translate('attendance.exportPdf'),
           icon: 'document-outline',
           handler: () => this.exportPlan(),
         },
         {
-          text: 'Exportieren (PDF 2x A5)',
+          text: translate('attendance.exportPdfA5'),
           icon: 'documents-outline',
           handler: () => this.exportPlan(true),
         },
         {
-          text: 'Per Telegram senden (PDF)',
+          text: translate('attendance.telegramPdf'),
           icon: 'paper-plane-outline',
           handler: () => this.send(false),
         },
         {
-          text: 'Per Telegram senden (PDF 2x A5)',
+          text: translate('attendance.telegramPdfA5'),
           icon: 'paper-plane-outline',
           handler: () => this.send(false, true),
         },
         {
-          text: 'Per Telegram senden (Bild)',
+          text: translate('attendance.telegramImage'),
           icon: 'image-outline',
           handler: () => this.send(true),
         },
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
       ],
     });
     await sheet.present();
@@ -1463,19 +1464,19 @@ export class AttendancePage implements OnInit, OnDestroy {
       subHeader: this.getConductorInfo(entry),
       buttons: [
         {
-          text: 'Dirigent ändern',
+          text: translate('attendance.changeConductor'),
           handler: async (): Promise<void> => {
             await this.changeConductor(entry);
           },
         },
         {
-          text: 'Zum Werk',
+          text: translate('attendance.toSong'),
           handler: async (): Promise<void> => {
             await this.navigateToSong(entry.songId);
           },
         },
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel',
         },
       ],
@@ -1492,18 +1493,18 @@ export class AttendancePage implements OnInit, OnDestroy {
     }));
     inputs.push({
       type: 'radio',
-      label: 'Anderer Dirigent',
+      label: translate('attList.otherConductor'),
       value: this.otherConductor,
       checked: Boolean(entry.otherConductor),
     });
 
     const alert = await this.alertController.create({
-      header: 'Dirigent ändern',
+      header: translate('attendance.changeConductor'),
       inputs,
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Speichern',
+          text: translate('common.save'),
           handler: async (selected: number): Promise<void> => {
             if (selected === undefined || selected === null) {
               return;
@@ -1526,17 +1527,17 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   private async promptOtherConductor(entry: History): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Dirigent eingeben',
+      header: translate('attList.enterConductor'),
       inputs: [{
         type: 'text',
         name: 'conductor',
-        placeholder: 'Dirigent',
+        placeholder: translate('attList.conductor'),
         value: entry.otherConductor || '',
       }],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Speichern',
+          text: translate('common.save'),
           handler: async (data: { conductor: string }): Promise<void> => {
             const name = (data.conductor || '').trim();
             if (!name) {
@@ -1557,7 +1558,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   getSongInfo(entry: History): string {
     const song: Song = this.songs.find((s: Song) => s.id === entry.songId);
     if (!song) {
-      return 'Unbekanntes Lied';
+      return translate('attList.unknownSong');
     }
     return `${song.number} ${song.name}`;
   }
@@ -1569,7 +1570,7 @@ export class AttendancePage implements OnInit, OnDestroy {
 
     const conductor: Person | undefined = this.conductors.find((con: Person) => con.id === entry.person_id);
     if (!conductor) {
-      return 'Unbekannter Dirigent';
+      return translate('attList.unknownConductor');
     }
     return `${conductor.firstName} ${conductor.lastName}`;
   }
@@ -1577,16 +1578,16 @@ export class AttendancePage implements OnInit, OnDestroy {
   async onConChange() {
     if (this.historyEntry.person_id === this.otherConductor) {
       const alert = await this.alertController.create({
-        header: 'Dirigent eingeben',
+        header: translate('attList.enterConductor'),
         inputs: [
           {
             type: 'text',
             name: 'conductor',
-            placeholder: 'Dirigent',
+            placeholder: translate('attList.conductor'),
           }
         ],
-        buttons: ['Abbrechen', {
-          text: 'Speichern',
+        buttons: [translate('common.cancel'), {
+          text: translate('common.save'),
           handler: (data: any) => {
             this.historyEntry.otherConductor = data.conductor;
           }
@@ -1611,7 +1612,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   getTypeName(type_id: string) {
-    return this.db.attendanceTypes().find(type => type.id === type_id)?.name || 'Unbekannt';
+    return this.db.attendanceTypes().find(type => type.id === type_id)?.name || translate('common.unknown');
   }
 
   toNeutral(player: PersonAttendance, slider: IonItemSliding) {
@@ -1634,15 +1635,15 @@ export class AttendancePage implements OnInit, OnDestroy {
     slider.close();
 
     const alert = await this.alertController.create({
-      header: 'Person entfernen',
-      message: `Möchtest du ${player.firstName} ${player.lastName} wirklich aus dieser Anwesenheit entfernen? Diese Aktion kann nicht rückgängig gemacht werden.`,
+      header: translate('attendance.removePerson'),
+      message: translate('attendance.removePersonConfirm', { name: `${player.firstName} ${player.lastName}` }),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel'
         },
         {
-          text: 'Entfernen',
+          text: translate('common.remove'),
           role: 'destructive',
           handler: async () => {
             try {
@@ -1652,10 +1653,10 @@ export class AttendancePage implements OnInit, OnDestroy {
               this.attendance = await this.db.getAttendanceById(this.attendanceId);
               this.initializeAttObjects();
 
-              Utils.showToast('Person aus Anwesenheit entfernt', 'success');
+              Utils.showToast(translate('attendance.personRemoved'), 'success');
             } catch (error) {
               console.error('Error removing person:', error);
-              Utils.showToast('Fehler beim Entfernen der Person', 'danger');
+              Utils.showToast(translate('attendance.personRemoveFailed'), 'danger');
             }
           }
         }
@@ -1669,27 +1670,30 @@ export class AttendancePage implements OnInit, OnDestroy {
     slider.close();
 
     if (!player.changed_by) {
-      await Utils.showToast('Der Status wurde bisher nicht verändert', 'warning');
+      await Utils.showToast(translate('attendance.statusNotChanged'), 'warning');
       return;
     }
 
-    let message;
-
     const person = this.players.find((p: PersonAttendance) => player.changed_by === p.person.appId);
 
+    let name: string;
     if (!person) {
-      message = player.changed_by === '665fe2b4-d53f-4f17-a66b-46c0949af99a' ? 'Zuletzt geändert von Matthias Eckstädt' : 'Zuletzt geänderrt von \'Unbekannt\'';
+      name = player.changed_by === '665fe2b4-d53f-4f17-a66b-46c0949af99a' ? 'Matthias Eckstädt' : `'${translate('common.unknown')}'`;
     } else {
-      message = `Zuletzt geändert von ${person.firstName} ${person.lastName}`;
+      name = `${person.firstName} ${person.lastName}`;
     }
 
-    if (player.changed_at) {
-      message += ` am ${format(new Date(player.changed_at), 'dd.MM.yyyy')} um ${format(new Date(player.changed_at), 'HH:mm')} Uhr`;
-    }
+    const message = player.changed_at
+      ? translate('attendance.lastChangedByAt', {
+        name,
+        date: format(new Date(player.changed_at), 'dd.MM.yyyy'),
+        time: format(new Date(player.changed_at), 'HH:mm'),
+      })
+      : translate('attendance.lastChangedBy', { name });
 
     const alert = await this.alertController.create({
       message,
-      buttons: ['Ok'],
+      buttons: [translate('common.ok')],
     });
 
     await alert.present();
@@ -1719,8 +1723,8 @@ export class AttendancePage implements OnInit, OnDestroy {
       inputs = [{ type: 'text', name: 'answer', placeholder: '...', value: this.regFieldAnswers[field.id] ?? '' }];
     } else if (field.type === 'boolean') {
       inputs = [
-        { type: 'radio', name: 'answer', label: 'Ja', value: true, checked: this.regFieldAnswers[field.id] === true },
-        { type: 'radio', name: 'answer', label: 'Nein', value: false, checked: this.regFieldAnswers[field.id] === false },
+        { type: 'radio', name: 'answer', label: translate('common.yes'), value: true, checked: this.regFieldAnswers[field.id] === true },
+        { type: 'radio', name: 'answer', label: translate('common.no'), value: false, checked: this.regFieldAnswers[field.id] === false },
       ];
     } else {
       inputs = (field.options ?? []).map(opt => ({
@@ -1737,9 +1741,9 @@ export class AttendancePage implements OnInit, OnDestroy {
       header: field.label,
       inputs,
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Speichern',
+          text: translate('common.save'),
           handler: (data) => {
             const answer = field.type === 'multi_select' ? (Array.isArray(data) ? data : []) : data?.answer ?? data;
             this.saveRegFieldAnswers({ [field.id]: answer }, player);
@@ -1773,7 +1777,7 @@ export class AttendancePage implements OnInit, OnDestroy {
 
     if (player.status !== 0) {
       buttons.push({
-        text: 'Status neutral setzen',
+        text: translate('attendance.setNeutral'),
         icon: 'remove-circle-outline',
         handler: () => {
           this.applyPlayerStatus(player.id, AttendanceStatus.Neutral);
@@ -1786,7 +1790,7 @@ export class AttendancePage implements OnInit, OnDestroy {
 
     if (this.type?.available_statuses.includes(3) && this.attendanceViewMode === AttendanceViewMode.CLICK) {
       buttons.push({
-        text: 'Verspätet entschuldigt',
+        text: translate('common.status.lateExcused'),
         icon: 'time-outline',
         handler: () => {
           this.applyPlayerStatus(player.id, AttendanceStatus.LateExcused);
@@ -1800,7 +1804,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     const regFields: RegistrationField[] = (this.type as any)?.registration_fields ?? [];
     if (regFields.length) {
       buttons.push({
-        text: 'Anmeldefelder bearbeiten',
+        text: translate('attendance.editRegFields'),
         icon: 'create-outline',
         handler: () => this.openRegFieldsEditor(player),
       });
@@ -1808,7 +1812,7 @@ export class AttendancePage implements OnInit, OnDestroy {
 
     if (!this.isHelper) {
       buttons.push({
-        text: 'Wer hat geändert?',
+        text: translate('attendance.whoChanged'),
         icon: 'information-circle-outline',
         handler: async () => {
           await this.getModifierInfo(player, slider);
@@ -1816,7 +1820,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       });
 
       buttons.push({
-        text: 'Person entfernen',
+        text: translate('attendance.removePerson'),
         role: 'destructive',
         icon: 'trash-outline',
         handler: async () => {
@@ -1826,14 +1830,14 @@ export class AttendancePage implements OnInit, OnDestroy {
     }
 
     buttons.push({
-      text: 'Erinnerung senden',
+      text: translate('attendance.sendReminderShort'),
       icon: 'notifications-outline',
       handler: async () => {
         await this.sendAdHocReminder(player.person?.appId);
       },
     });
 
-    buttons.push({ text: 'Abbrechen', role: 'cancel' });
+    buttons.push({ text: translate('common.cancel'), role: 'cancel' });
 
     const sheet = await this.actionSheetController.create({
       header: `${player.firstName} ${player.lastName}`,
@@ -1904,30 +1908,30 @@ export class AttendancePage implements OnInit, OnDestroy {
    */
   async addChecklistItem(): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'To-Do hinzufügen',
+      header: translate('attendance.addTodo'),
       inputs: [
         {
           type: 'text',
           name: 'text',
-          placeholder: 'To-Do Text...',
+          placeholder: translate('attendance.todoText'),
         },
         {
           type: 'number',
           name: 'deadlineHours',
-          placeholder: 'Deadline in Stunden (optional)',
+          placeholder: translate('attendance.deadlineHours'),
           min: 0,
         },
       ],
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel',
         },
         {
-          text: 'Hinzufügen',
+          text: translate('attendance.add'),
           handler: async (data) => {
             if (!data.text?.trim()) {
-              Utils.showToast('Bitte einen Text eingeben', 'warning');
+              Utils.showToast(translate('attendance.enterText'), 'warning');
               return false;
             }
 
@@ -1975,7 +1979,7 @@ export class AttendancePage implements OnInit, OnDestroy {
    */
   async restoreChecklist(): Promise<void> {
     if (!this.type?.checklist?.length) {
-      Utils.showToast('Keine Standard-Checkliste vorhanden', 'warning');
+      Utils.showToast(translate('attendance.noDefaultChecklist'), 'warning');
       return;
     }
 
@@ -1998,7 +2002,7 @@ export class AttendancePage implements OnInit, OnDestroy {
 
     this.attendance.checklist = checklist;
     await this.db.updateAttendance({ checklist }, this.attendance.id);
-    Utils.showToast('Checkliste wiederhergestellt', 'success');
+    Utils.showToast(translate('attendance.checklistRestored'), 'success');
   }
 
   /**
@@ -2008,15 +2012,15 @@ export class AttendancePage implements OnInit, OnDestroy {
     slider?.close();
 
     const alert = await this.alertController.create({
-      header: 'To-Do löschen',
-      message: 'Möchtest du dieses To-Do wirklich löschen?',
+      header: translate('attendance.deleteTodo'),
+      message: translate('attendance.deleteTodoConfirm'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel',
         },
         {
-          text: 'Löschen',
+          text: translate('common.delete'),
           role: 'destructive',
           handler: async () => {
             if (this.attendance.checklist) {
@@ -2067,20 +2071,20 @@ export class AttendancePage implements OnInit, OnDestroy {
       const overdueDays = Math.abs(diffDays);
       const overdueHours = Math.abs(diffHours);
       if (overdueDays >= 1) {
-        return `${overdueDays} Tag(e) überfällig`;
+        return translate('attendance.overdueDays', { count: overdueDays });
       }
-      return `${overdueHours} Stunde(n) überfällig`;
+      return translate('attendance.overdueHours', { count: overdueHours });
     }
 
     if (diffHours < 1) {
-      return 'Jetzt fällig';
+      return translate('attendance.dueNow');
     }
 
     if (diffHours < 24) {
-      return `in ${diffHours} Stunde(n)`;
+      return translate('attendance.inHours', { count: diffHours });
     }
 
-    return `in ${diffDays} Tag(en)`;
+    return translate('attendance.inDays', { count: diffDays });
   }
 
   /**
@@ -2088,7 +2092,7 @@ export class AttendancePage implements OnInit, OnDestroy {
    */
   formatDeadlineAbsolute(item: ChecklistItem): string {
     if (!item.dueDate) {return '';}
-    return format(new Date(item.dueDate), 'dd.MM.yyyy HH:mm') + ' Uhr';
+    return translate('attendance.timeOClock', { time: format(new Date(item.dueDate), 'dd.MM.yyyy HH:mm') });
   }
 
   /**
@@ -2136,7 +2140,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       componentProps: {
         churchIds,
         churches: this.db.churches() ?? [],
-        subtitle: 'Anwesende',
+        subtitle: translate('attendance.presentPeople'),
       },
       breakpoints: [0, 0.5, 0.75, 1],
       initialBreakpoint: 0.5,
@@ -2152,15 +2156,16 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   async sendAdHocReminder(playerAppId?: string): Promise<void> {
     const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === this.attendance.type_id);
-    const typeName = attType?.name || 'Termin';
+    const typeName = attType?.name || translate('attendance.eventFallback');
     const dateStr = dayjs(this.attendance.date).format('DD.MM.YYYY');
-    const timeStr = this.attendance.start_time ? ` um ${this.attendance.start_time} Uhr` : '';
+    const timeStr = this.attendance.start_time ? translate('attendance.atTime', { time: this.attendance.start_time }) : '';
     const infoStr = this.attendance.typeInfo ? ` (${this.attendance.typeInfo})` : '';
-    const defaultTitle = `🔔 Erinnerung: ${typeName} am ${dateStr}${timeStr}${infoStr}`;
+    const eventLine = translate('attendance.eventOnDate', { type: typeName, date: dateStr }) + timeStr + infoStr;
+    const defaultTitle = translate('attendance.reminderTitle', { event: eventLine });
     const tenantLongName = this.db.tenant()?.longName || '';
     const defaultMessage = tenantLongName
-      ? `${tenantLongName}\n${typeName} am ${dateStr}${timeStr}${infoStr}`
-      : `${typeName} am ${dateStr}${timeStr}${infoStr}`;
+      ? `${tenantLongName}\n${eventLine}`
+      : eventLine;
     const attendanceLink = `https://attendix.de/open-attendance?id=${this.attendance.id}&tenantId=${this.attendance.tenantId}`;
 
     const neutralAppIds = this.players
@@ -2191,7 +2196,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       return;
     }
     this.isSendingReminder = true;
-    const loading = await this.loadingController.create({ message: 'Wird versendet...' });
+    const loading = await this.loadingController.create({ message: translate('attendance.sending') });
     await loading.present();
     try {
       const { error } = await this.db.getSupabase().functions.invoke('send-ad-hoc-reminder', {
@@ -2205,9 +2210,9 @@ export class AttendancePage implements OnInit, OnDestroy {
         },
       });
       if (error) {
-        Utils.showToast('Fehler beim Versenden', 'danger');
+        Utils.showToast(translate('attendance.sendFailed'), 'danger');
       } else {
-        Utils.showToast('Erinnerung versendet', 'success');
+        Utils.showToast(translate('attendance.reminderSent'), 'success');
       }
     } finally {
       await loading.dismiss();
@@ -2269,7 +2274,7 @@ export class AttendancePage implements OnInit, OnDestroy {
           const group = this.instruments.find(g => g.id === instrumentId);
           return {
             ...person,
-            groupName: group?.name || 'Keine Gruppe',
+            groupName: group?.name || translate('attendance.noGroup'),
             instrument: instrumentId, // Keep instrument for sorting
           };
         });
@@ -2295,7 +2300,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       this.availablePersons = sortByGroup(addGroupNames(otherPersons));
     } catch (error) {
       console.error('Error loading persons:', error);
-      Utils.showToast('Fehler beim Laden der Personen', 'danger');
+      Utils.showToast(translate('attendance.loadPeopleFailed'), 'danger');
     } finally {
       this.isLoadingPersons = false;
     }
@@ -2326,11 +2331,11 @@ export class AttendancePage implements OnInit, OnDestroy {
    */
   async addPersonsToAttendance(modal: any): Promise<void> {
     if (!this.selectedPersonsToAdd.length) {
-      Utils.showToast('Bitte wähle mindestens eine Person aus', 'warning');
+      Utils.showToast(translate('attendance.choosePersonMin'), 'warning');
       return;
     }
 
-    const loading = await Utils.getLoadingElement(999999, 'Personen werden hinzugefügt...');
+    const loading = await Utils.getLoadingElement(999999, translate('attendance.addingPeople'));
     await loading.present();
 
     try {
@@ -2383,11 +2388,11 @@ export class AttendancePage implements OnInit, OnDestroy {
       this.isAddPersonModalOpen = false;
       this.selectedPersonsToAdd = [];
 
-      Utils.showToast(`${personsToAdd.length} Person(en) hinzugefügt`, 'success');
+      Utils.showToast(translate('attendance.peopleAdded', { count: personsToAdd.length }), 'success');
     } catch (error) {
       await loading.dismiss();
       console.error('Error adding persons:', error);
-      Utils.showToast('Fehler beim Hinzufügen der Personen', 'danger');
+      Utils.showToast(translate('attendance.addPeopleFailed'), 'danger');
     }
   }
 
@@ -2450,7 +2455,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     if (!this.extraFieldSortId) { return ''; }
     const raw = this.getExtraFieldValue(player, this.extraFieldSortId, this.extraFieldSortLevel);
     if (raw === null || raw === undefined || raw === '') { return '–'; }
-    if (typeof raw === 'boolean') { return raw ? 'Ja' : 'Nein'; }
+    if (typeof raw === 'boolean') { return raw ? translate('common.yes') : translate('common.no'); }
     if (Array.isArray(raw)) { return raw.join(', '); }
     const field = this.getSortableExtraFields().find(f => f.id === this.extraFieldSortId);
     if (field?.fieldType === 'bfecg_church') {
@@ -2475,18 +2480,18 @@ export class AttendancePage implements OnInit, OnDestroy {
       ? `${this.extraFieldSortId}__${this.extraFieldSortDir}`
       : '__default__';
     const alert = await this.alertController.create({
-      header: 'Sortierung',
+      header: translate('attendance.sorting'),
       inputs: [
-        { type: 'radio', label: 'Standard (Gruppe)', value: '__default__', checked: currentValue === '__default__' },
+        { type: 'radio', label: translate('attendance.defaultSortGroup'), value: '__default__', checked: currentValue === '__default__' },
         ...fields.flatMap(f => [
           { type: 'radio' as const, label: `${f.name} ↑`, value: `${f.id}__asc`, checked: currentValue === `${f.id}__asc` },
           { type: 'radio' as const, label: `${f.name} ↓`, value: `${f.id}__desc`, checked: currentValue === `${f.id}__desc` },
         ]),
       ],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'OK',
+          text: translate('common.ok'),
           handler: (value: string) => {
             if (value === '__default__' || !value) {
               this.extraFieldSortId = null;
@@ -2519,7 +2524,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     return fields.map(f => {
       const val = answers[f.id];
       if (val === undefined || val === null) { return null; }
-      if (f.type === 'boolean') { return `${f.label}: ${val ? 'Ja' : 'Nein'}`; }
+      if (f.type === 'boolean') { return `${f.label}: ${val ? translate('common.yes') : translate('common.no')}`; }
       if (f.type === 'multi_select' && Array.isArray(val)) { return `${f.label}: ${val.join(', ') || '–'}`; }
       return `${f.label}: ${val}`;
     }).filter(Boolean).join(' · ');

@@ -14,7 +14,7 @@
               <ion-item button detail="false" (click)="onTenantChange(tenant.id)">
                 <ion-label>{{ tenant.longName }}</ion-label>
                 @if (tenant.id === db.tenant()?.id) {
-                  <ion-badge slot="end" color="primary">Aktuell</ion-badge>
+                  <ion-badge slot="end" color="primary">{{ 'signout.current' | transloco }}</ion-badge>
                 }
               </ion-item>
             }
@@ -22,7 +22,7 @@
         </ng-template>
       </ion-popover>
     } @else {
-      <ion-title>Termine</ion-title>
+      <ion-title>{{ 'attList.events' | transloco }}</ion-title>
     }
     <ion-buttons slot="end">
       <ion-button id="att-filter-trigger">
@@ -32,7 +32,7 @@
         <ng-template>
           <ion-list>
             <ion-item button detail="false" (click)="setFilter('all')">
-              <ion-label [color]="filterTypeId === 'all' ? 'primary' : ''">Alle anzeigen</ion-label>
+              <ion-label [color]="filterTypeId === 'all' ? 'primary' : ''">{{ 'attList.showAll' | transloco }}</ion-label>
               @if (filterTypeId === 'all') {
                 <ion-icon slot="end" name="checkmark" color="primary"></ion-icon>
               }
@@ -50,7 +50,7 @@
         </ng-template>
       </ion-popover>
       @if (isConductor && hasDutyTypes) {
-        <ion-button (click)="openDutyDistribution()" aria-label="Dienste verteilen">
+        <ion-button (click)="openDutyDistribution()" [attr.aria-label]="'attList.distributeDuties' | transloco">
           <ion-icon slot="icon-only" name="shuffle-outline"></ion-icon>
         </ion-button>
       }
@@ -66,7 +66,7 @@
   @if ((db.tenants()?.length ?? 0) <= 1) {
     <ion-header collapse="condense">
       <ion-toolbar>
-        <ion-title size="large">Termine</ion-title>
+        <ion-title size="large">{{ 'attList.events' | transloco }}</ion-title>
       </ion-toolbar>
     </ion-header>
   }
@@ -107,18 +107,18 @@
             }
             @if (isDutyAttendance(currentAttendance)) {
               <div class="ev-today__stats">
-                <span class="ev-today__stat-strong">{{ dutyBadge(currentAttendance).text }} besetzt</span>
+                <span class="ev-today__stat-strong">{{ 'attList.dutyFilled' | transloco: { text: dutyBadge(currentAttendance).text } }}</span>
                 <span>{{ dutyNames(currentAttendance) }}</span>
               </div>
             } @else if (getStatusCounts(currentAttendance); as counts) {
               <div class="ev-today__stats">
                 <span class="ev-today__stat-strong">{{ currentAttendance.percentage || 0 }} %</span>
-                <span>{{ counts.present }} anwesend</span>
+                <span>{{ 'attList.countPresent' | transloco: { count: counts.present } }}</span>
                 @if (counts.excused) {
-                  <span>{{ counts.excused }} entschuldigt</span>
+                  <span>{{ 'attList.countExcused' | transloco: { count: counts.excused } }}</span>
                 }
                 @if (counts.absent) {
-                  <span>{{ counts.absent }} abwesend</span>
+                  <span>{{ 'attList.countAbsent' | transloco: { count: counts.absent } }}</span>
                 }
               </div>
             }
@@ -130,7 +130,7 @@
               @if (hasPlan(currentAttendance)) {
                 <button class="ev-today__cta ev-today__cta--secondary" (click)="$event.stopPropagation(); openPlanViewer(currentAttendance)">
                   <ion-icon name="document-text-outline"></ion-icon>
-                  Ablaufplan
+                  {{ 'signout.runSheet' | transloco }}
                 </button>
               }
             </div>
@@ -146,7 +146,7 @@
 
     @if (attendances.length && (isConductor || isHelper)) {
       <div class="ev-section">
-        <h2>Anstehend</h2>
+        <h2>{{ 'signout.upcoming' | transloco }}</h2>
         <span class="ev-section__count">{{ attendances.length }}</span>
       </div>
       @for (group of upcomingGroups; track group.key) {
@@ -174,7 +174,7 @@
                   }
                 </ion-label>
                 @if (hasPlan(att)) {
-                  <ion-button slot="end" fill="clear" (click)="$event.stopPropagation(); openPlanViewer(att)" aria-label="Ablaufplan anzeigen">
+                  <ion-button slot="end" fill="clear" (click)="$event.stopPropagation(); openPlanViewer(att)" [attr.aria-label]="'signout.showRunSheet' | transloco">
                     <ion-icon slot="icon-only" name="document-text-outline"></ion-icon>
                   </ion-button>
                 }
@@ -204,7 +204,7 @@
       </div>
       <ion-list [inset]="true" class="ev-list marginBottom">
         <div class="ev-summary">
-          <span class="ev-summary__label">Durchschnitt</span>
+          <span class="ev-summary__label">{{ 'attList.average' | transloco }}</span>
           <span class="ev-pill" [ngClass]="'ion-color-' + percColor(perc)">{{ perc }}%</span>
         </div>
         @for (att of pastPreview; track att.id) {
@@ -238,8 +238,8 @@
       <div class="noDataContainer">
         <div class="noPersons">
           <ion-icon name="checkbox-outline" size="large"></ion-icon>
-          <ion-label>Bisher wurden noch keine Termine angelegt</ion-label>
-          <ion-button size="small" (click)="isAddModalOpen = true">Termin hinzufügen</ion-button>
+          <ion-label>{{ 'attList.noEventsYet' | transloco }}</ion-label>
+          <ion-button size="small" (click)="isAddModalOpen = true">{{ 'attList.addEvent' | transloco }}</ion-button>
         </div>
       </div>
     }
@@ -250,13 +250,13 @@
         <ion-content color="light">
           <ion-header>
             <ion-toolbar>
-              <ion-title>Termin hinzufügen</ion-title>
+              <ion-title>{{ 'attList.addEvent' | transloco }}</ion-title>
             </ion-toolbar>
           </ion-header>
           <ion-list inset="true">
             <ion-item-group>
               <ion-item>
-                <ion-label position="stacked">Datum (Mehrfachauswahl möglich)</ion-label>
+                <ion-label position="stacked">{{ 'attList.dateMulti' | transloco }}</ion-label>
                 <ion-input autocapitalize="sentences" (click)="onDateClick()" readonly [(ngModel)]="dateString" id="att-date-modal"></ion-input>
                 <ion-button id="info-button" fill="clear" slot="end">
                   <ion-icon name="information"></ion-icon>
@@ -266,7 +266,7 @@
                     <ion-content color="light">
                       <ion-list [inset]="true">
                         <ion-list-header>
-                          <ion-label>Veranstaltungstypen</ion-label>
+                          <ion-label>{{ 'attList.eventTypes' | transloco }}</ion-label>
                         </ion-list-header>
                         <ion-item-group>
                           @for (type of db.attendanceTypes(); track type.id) {
@@ -278,17 +278,17 @@
                           @if (holidays.publicHolidays.length || holidays.schoolHolidays.length) {
                             <ion-item lines="none">
                               <ion-icon slot="start" name="ellipse" color="holiday"></ion-icon>
-                              <ion-label>Feiertage des ausgewählten Bundeslandes</ion-label>
+                              <ion-label>{{ 'attList.holidaysOfState' | transloco }}</ion-label>
                             </ion-item>
                             <ion-item lines="none">
                               <ion-icon slot="start" name="ellipse" color="medium"></ion-icon>
-                              <ion-label>Ferien des ausgewählten Bundeslandes</ion-label>
+                              <ion-label>{{ 'attList.schoolHolidaysOfState' | transloco }}</ion-label>
                             </ion-item>
                           }
                         </ion-item-group>
                       </ion-list>
                       <ion-list-header>
-                        <ion-label>Ferien</ion-label>
+                        <ion-label>{{ 'attList.schoolHolidays' | transloco }}</ion-label>
                       </ion-list-header>
                       @for (holiday of holidays.schoolHolidays; track holiday.id) {
                         @if (!holiday.gone) {
@@ -302,7 +302,7 @@
                       }
                       <ion-list>
                         <ion-list-header>
-                          <ion-label>Feiertage</ion-label>
+                          <ion-label>{{ 'attList.holidays' | transloco }}</ion-label>
                         </ion-list-header>
                         @for (holiday of holidays.publicHolidays; track holiday.id) {
                           @if (!holiday.gone) {
@@ -327,7 +327,7 @@
                 </ion-modal>
               </ion-item>
               <ion-item>
-                <ion-select label="Typ" (ionChange)="onTypeChange()" [(ngModel)]="type_id">
+                <ion-select [label]="'attList.type' | transloco" (ionChange)="onTypeChange()" [(ngModel)]="type_id">
                   @for (type of db.attendanceTypes(); track type.id) {
                     @if (type.visible) {
                       <ion-select-option [value]="type.id">{{ type.name }}</ion-select-option>
@@ -337,28 +337,28 @@
               </ion-item>
               @if (isAllDay()) {
                 <ion-item>
-                  <ion-label position="stacked">Dauer (in Tagen)</ion-label>
+                  <ion-label position="stacked">{{ 'attList.durationDays' | transloco }}</ion-label>
                   <ion-input autocapitalize="sentences" type="number" min="1" [(ngModel)]="allDayDuration"></ion-input>
                 </ion-item>
               }
               <ion-item>
-                <ion-label position="stacked">Info-Text (optional)</ion-label>
-                <ion-textarea autocapitalize="sentences" helperText="Dieser Text wird anstelle des Typs angezeigt."
+                <ion-label position="stacked">{{ 'attList.infoText' | transloco }}</ion-label>
+                <ion-textarea autocapitalize="sentences" [helperText]="'attList.infoTextHelper' | transloco"
                 [(ngModel)]="typeInfo"></ion-textarea>
               </ion-item>
               @if (isDutyTypeSelected()) {
                 @for (wd of dutyWeekdays; track wd.weekday) {
                   <ion-item>
                     <ion-label>
-                      <h2>Benötigte Personen · {{ wd.label }}</h2>
+                      <h2>{{ 'attList.neededPeople' | transloco: { label: wd.label } }}</h2>
                       <p>{{ wd.count }} {{ wd.count === 1 ? 'Termin' : 'Termine' }}</p>
                     </ion-label>
                     <div slot="end" class="duty-stepper">
-                      <ion-button fill="clear" size="small" (click)="changeDutyRequired(wd.weekday, -1)" [disabled]="wd.required <= 1" aria-label="Weniger">
+                      <ion-button fill="clear" size="small" (click)="changeDutyRequired(wd.weekday, -1)" [disabled]="wd.required <= 1" [attr.aria-label]="'attList.less' | transloco">
                         <ion-icon slot="icon-only" name="remove"></ion-icon>
                       </ion-button>
                       <span>{{ wd.required }}</span>
-                      <ion-button fill="clear" size="small" (click)="changeDutyRequired(wd.weekday, 1)" aria-label="Mehr">
+                      <ion-button fill="clear" size="small" (click)="changeDutyRequired(wd.weekday, 1)" [attr.aria-label]="'attList.more' | transloco">
                         <ion-icon slot="icon-only" name="add"></ion-icon>
                       </ion-button>
                     </div>
@@ -367,14 +367,14 @@
               }
               @if (isPlaceEnabled()) {
                 <ion-item>
-                  <ion-label position="stacked">Ort (für Navigation)</ion-label>
-                  <ion-textarea autocapitalize="sentences" [(ngModel)]="place" placeholder="z. B. Gemeindehaus, Musterstr. 1, 12345 Berlin" rows="2"></ion-textarea>
+                  <ion-label position="stacked">{{ 'attList.place' | transloco }}</ion-label>
+                  <ion-textarea autocapitalize="sentences" [(ngModel)]="place" [placeholder]="'attList.placePlaceholder' | transloco" rows="2"></ion-textarea>
                 </ion-item>
               }
             </ion-item-group>
             @if (showSongsSelection()) {
               <ion-list-header>
-                <ion-label>Werke</ion-label>
+                <ion-label>{{ 'attList.songs' | transloco }}</ion-label>
                 <ion-button size="small" id="add-his-button">
                   <ion-icon name="add"></ion-icon>
                 </ion-button>
@@ -383,18 +383,18 @@
                     <ion-content color="light">
                       <ion-header>
                         <ion-toolbar>
-                          <ion-title>Werk(e) hinzufügen</ion-title>
+                          <ion-title>{{ 'attList.addSongs' | transloco }}</ion-title>
                         </ion-toolbar>
                       </ion-header>
                       <ion-list inset="true">
                         <ion-item-group>
                           <ion-item button detail="true" id="song-select-trigger">
                             <ion-label>
-                              <h2>Werk(e)</h2>
+                              <h2>{{ 'attList.songsLabel' | transloco }}</h2>
                               @if (selectedSongs.length > 0) {
-                                <p>{{ selectedSongs.length }} Werk(e) ausgewählt</p>
+                                <p>{{ 'attList.songsSelected' | transloco: { count: selectedSongs.length } }}</p>
                               } @else {
-                                <p>Keine Werke ausgewählt</p>
+                                <p>{{ 'attList.noSongsSelected' | transloco }}</p>
                               }
                             </ion-label>
                           </ion-item>
@@ -403,7 +403,7 @@
                             <ng-template>
                               <ion-header>
                                 <ion-toolbar>
-                                  <ion-title>Werke auswählen</ion-title>
+                                  <ion-title>{{ 'attList.chooseSongs' | transloco }}</ion-title>
                                   <ion-buttons slot="end">
                                     <ion-button (click)="songSelectModal.dismiss()">
                                       <ion-icon slot="icon-only" name="checkmark"></ion-icon>
@@ -415,7 +415,7 @@
                                     [(ngModel)]="songSearchTerm"
                                     (ionInput)="onSongSearch($event)"
                                     (ionClear)="resetSongSearch()"
-                                    placeholder="Werk suchen..."
+                                    [placeholder]="'attList.searchSong' | transloco"
                                     [debounce]="250">
                                   </ion-searchbar>
                                 </ion-toolbar>
@@ -425,7 +425,7 @@
                                   <ion-list [inset]="true">
                                     <ion-item lines="none">
                                       <ion-label class="ion-text-center" color="medium">
-                                        <p>Keine Werke gefunden</p>
+                                        <p>{{ 'attList.noSongsFound' | transloco }}</p>
                                       </ion-label>
                                     </ion-item>
                                   </ion-list>
@@ -454,7 +454,7 @@
                           </ion-modal>
 
                           <ion-item>
-                            <ion-select label="Dirigent" (ionChange)="onConChange()" [(ngModel)]="historyEntry.person_id"
+                            <ion-select [label]="'attList.conductor' | transloco" (ionChange)="onConChange()" [(ngModel)]="historyEntry.person_id"
                               #select multiple="false">
                               @for (con of activeConductors; track con) {
                                 <ion-select-option [value]="con.id">{{ con.firstName }}
@@ -462,7 +462,7 @@
                                   con.lastName }}
                                 </ion-select-option>
                               }
-                              <ion-select-option [value]="otherConductor">Anderer Dirigent</ion-select-option>
+                              <ion-select-option [value]="otherConductor">{{ 'attList.otherConductor' | transloco }}</ion-select-option>
                             </ion-select>
                           </ion-item>
                           @if (historyEntry.person_id === otherConductor && historyEntry.otherConductor) {
@@ -473,7 +473,7 @@
                         </ion-item-group>
                         <ion-item-group>
                           <ion-item (click)="addSong(addHisModal)" button detail="false">
-                            <ion-label color="primary">Werk(e) hinzufügen</ion-label>
+                            <ion-label color="primary">{{ 'attList.addSongs' | transloco }}</ion-label>
                           </ion-item>
                         </ion-item-group>
                       </ion-list>
@@ -495,7 +495,7 @@
                 }
                 @if (!historyEntries.length) {
                   <ion-item>
-                    <ion-label>Keine Werke ausgewählt</ion-label>
+                    <ion-label>{{ 'attList.noSongsSelected' | transloco }}</ion-label>
                   </ion-item>
                 }
               </ion-item-group>
@@ -505,11 +505,11 @@
               <ion-item color="primary" [disabled]="dates.length === 0" button detail="false"
                 (click)="addAttendance(addAttModal)">
                 @if (dates.length === 1) {
-                  <ion-label>Termin hinzufügen</ion-label>
+                  <ion-label>{{ 'attList.addEvent' | transloco }}</ion-label>
                 } @else if (dates.length > 1) {
-                  <ion-label>Termine hinzufügen</ion-label>
+                  <ion-label>{{ 'attList.addEvents' | transloco }}</ion-label>
                 } @else {
-                  <ion-label>Termin hinzufügen</ion-label>
+                  <ion-label>{{ 'attList.addEvent' | transloco }}</ion-label>
                 }
               </ion-item>
             </ion-item-group>

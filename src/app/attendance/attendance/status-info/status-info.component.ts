@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular/lazy';
 import { AttendanceStatus } from 'src/app/utilities/constants';
 import { PersonAttendance } from 'src/app/utilities/interfaces';
+import { translate } from '@jsverse/transloco';
 
 interface StatusCount {
   status: AttendanceStatus;
@@ -69,19 +70,19 @@ export class StatusInfoComponent implements OnInit {
   getStatusName(status: AttendanceStatus): string {
     switch (status) {
       case AttendanceStatus.Present:
-        return 'Anwesend';
+        return translate('common.status.present');
       case AttendanceStatus.Absent:
-        return 'Abwesend';
+        return translate('common.status.absent');
       case AttendanceStatus.Excused:
-        return 'Entschuldigt';
+        return translate('common.status.excused');
       case AttendanceStatus.Late:
-        return 'Verspätet';
+        return translate('common.status.lateShort');
       case AttendanceStatus.LateExcused:
-        return 'Verspätet (entsch.)';
+        return translate('attendance.lateExcusedParen');
       case AttendanceStatus.Neutral:
-        return 'Neutral';
+        return translate('common.status.neutral');
       default:
-        return 'Unbekannt';
+        return translate('common.unknown');
     }
   }
 
