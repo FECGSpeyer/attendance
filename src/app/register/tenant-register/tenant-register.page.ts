@@ -355,12 +355,12 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
       await loading.dismiss();
       console.error('Registration error:', error);
 
-      if (error?.message === 'Fehler beim Erstellen des Accounts: Deine E-Mail-Adresse existiert bereits. Bitte melde dich an.') {
+      if (error?.message === translate('db.createAccountFailedWith', { error: translate('db.emailExists') })) {
         Utils.showToast(error.message, 'danger', 4000);
         return;
       }
 
-      Utils.showToast(translate('tenantRegister.failed', { error: error?.message ?? translate('tenantRegister.unknownError') }), 'danger', 6000);
+      Utils.showToast(translate('tenantRegister.failed', { error: error?.message ?? translate('common.unknownError') }), 'danger', 6000);
       return;
     }
 

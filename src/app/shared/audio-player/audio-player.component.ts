@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular/lazy';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-audio-player',
@@ -32,6 +33,6 @@ export class AudioPlayerComponent {
   }
 
   private showError(error: any): void {
-    Utils.showToast(`Fehler beim Abspielen: ${error?.message || error}`, 'danger');
+    Utils.showToast(translate('audio.playFailed', { error: error?.message || error }), 'danger');
   }
 }

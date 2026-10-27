@@ -3,6 +3,7 @@ import { supabase } from '../base/supabase';
 import { NotificationConfig } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -58,7 +59,7 @@ export class NotificationService {
       .eq('id', config.id);
 
     if (error) {
-      Utils.showToast('Fehler beim Updaten der Konfiguration, bitte versuche es später erneut.', 'danger');
+      Utils.showToast(translate('svc.updateConfigFailed'), 'danger');
       throw new Error(error.message);
     }
 
@@ -120,9 +121,9 @@ export class NotificationService {
     loading.dismiss();
 
     if (!sendError) {
-      Utils.showToast('Nachricht wurde erfolgreich gesendet!');
+      Utils.showToast(translate('svc.messageSent'));
     } else {
-      Utils.showToast('Fehler beim Senden der Nachricht, versuche es später erneut!', 'danger');
+      Utils.showToast(translate('svc.sendMessageFailed'), 'danger');
     }
 
     window.setTimeout(async () => {
@@ -143,9 +144,9 @@ export class NotificationService {
     });
 
     if (!sendError) {
-      Utils.showToast('Nachricht wurde erfolgreich gesendet!');
+      Utils.showToast(translate('svc.messageSent'));
     } else {
-      Utils.showToast('Fehler beim Senden der Nachricht, versuche es später erneut!', 'danger');
+      Utils.showToast(translate('svc.sendMessageFailed'), 'danger');
     }
   }
 }

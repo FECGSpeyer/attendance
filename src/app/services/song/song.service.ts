@@ -3,6 +3,7 @@ import { Network } from '@capacitor/network';
 import { Storage } from '@ionic/storage-angular';
 import { Song, SongCategory, SongFile } from '../../utilities/interfaces';
 import { supabase } from '../base/supabase';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -109,7 +110,7 @@ export class SongService {
       .match({ id: song.id });
 
     if (error) {
-      throw new Error('Fehler beim Löschen des Werks');
+      throw new Error(translate('svc.deleteSongFailed'));
     }
   }
 
@@ -331,7 +332,7 @@ export class SongService {
       .select();
 
     if (error) {
-      throw new Error('Fehler beim hinzufügen der Werkkategorie');
+      throw new Error(translate('svc.addSongCategoryFailed'));
     }
   }
 

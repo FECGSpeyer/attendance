@@ -4,6 +4,7 @@ import { Admin, Group, Organisation, Parent, Tenant, TenantUser, Viewer } from '
 import { Utils } from '../../utilities/Utils';
 import { supabase } from '../base/supabase';
 import { pickTenantUserFields } from '../../utilities/db-helpers';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +21,7 @@ export class TenantService {
       .order('longName', { ascending: true });
 
     if (error) {
-      throw new Error('Fehler beim Laden der Tenants');
+      throw new Error(translate('db.loadTenantsFailed'));
     }
 
     return data as unknown as Tenant[];
@@ -34,7 +35,7 @@ export class TenantService {
       .single();
 
     if (error) {
-      throw new Error('Fehler beim Laden des Tenants');
+      throw new Error(translate('svc.loadTenantFailed2'));
     }
 
     return data as unknown as Tenant;
@@ -50,8 +51,8 @@ export class TenantService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Aktualisieren der Einstellungen', 'danger');
-      throw new Error('Fehler beim Aktualisieren der Mandantendaten');
+      Utils.showToast(translate('svc.updateSettingsFailed'), 'danger');
+      throw new Error(translate('svc.updateTenantDataFailed'));
     }
 
     return data as unknown as Tenant;
@@ -64,7 +65,7 @@ export class TenantService {
       .eq('userId', userId);
 
     if (error) {
-      throw new Error('Fehler beim Laden der Mandanten');
+      throw new Error(translate('db.loadTenantsFailed2'));
     }
 
     return data;
@@ -78,7 +79,7 @@ export class TenantService {
       .single();
 
     if (error) {
-      throw new Error('Fehler beim Laden des Mandanten');
+      throw new Error(translate('svc.loadTenantFailed'));
     }
 
     return data;
@@ -90,7 +91,7 @@ export class TenantService {
       .insert({ userId, role, tenantId, email });
 
     if (error) {
-      throw new Error('Fehler beim Hinzufügen des Benutzers zum Mandanten');
+      throw new Error(translate('svc.addUserToTenantFailed'));
     }
   }
 
@@ -102,7 +103,7 @@ export class TenantService {
       .match({ userId, tenantId });
 
     if (error) {
-      throw new Error('Fehler beim Aktualisieren des Mandantenbenutzers');
+      throw new Error(translate('svc.updateTenantUserFailed'));
     }
   }
 
@@ -116,7 +117,7 @@ export class TenantService {
         .match({ userId: appId });
 
       if (error) {
-        throw new Error('Fehler beim Löschen des Accounts vom Mandanten');
+        throw new Error(translate('db.removeFromTenantFailed'));
       }
       return;
     }
@@ -140,7 +141,7 @@ export class TenantService {
       .match({ userId: appId });
 
     if (error) {
-      throw new Error('Fehler beim Löschen des Accounts vom Mandanten');
+      throw new Error(translate('db.removeFromTenantFailed'));
     }
   }
 
@@ -160,7 +161,7 @@ export class TenantService {
       .maybeSingle();
 
     if (error) {
-      throw new Error('Fehler beim Laden der Rolle');
+      throw new Error(translate('db.loadRoleFailed'));
     }
 
     return (data?.role ?? Role.NONE) as Role;
@@ -174,7 +175,7 @@ export class TenantService {
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Beobachter', 'danger');
+      Utils.showToast(translate('svc.loadViewersFailed'), 'danger');
       throw error;
     }
 
@@ -187,7 +188,7 @@ export class TenantService {
       .insert({ ...viewer, tenantId, appId });
 
     if (error) {
-      throw new Error('Fehler beim hinzufügen des Beobachters.');
+      throw new Error(translate('db.addViewerFailed'));
     }
   }
 
@@ -198,7 +199,7 @@ export class TenantService {
       .match({ id: viewer.id });
 
     if (error) {
-      Utils.showToast('Fehler beim Löschen des Beobachters', 'danger');
+      Utils.showToast(translate('db.deleteViewerFailed'), 'danger');
       throw error;
     }
   }
@@ -211,7 +212,7 @@ export class TenantService {
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Elternteile', 'danger');
+      Utils.showToast(translate('svc.loadParentsFailed'), 'danger');
       throw error;
     }
 
@@ -226,7 +227,7 @@ export class TenantService {
       .single();
 
     if (error) {
-      throw new Error('Fehler beim hinzufügen des Elternteils.');
+      throw new Error(translate('db.addParentFailed'));
     }
 
     return data;
@@ -239,7 +240,7 @@ export class TenantService {
       .match({ id: parent.id });
 
     if (error) {
-      Utils.showToast('Fehler beim Löschen des Elternteils', 'danger');
+      Utils.showToast(translate('db.deleteParentFailed'), 'danger');
       throw error;
     }
   }
@@ -267,7 +268,7 @@ export class TenantService {
       .single();
 
     if (error) {
-      throw new Error('Fehler beim Erstellen der Organisation');
+      throw new Error(translate('svc.createOrgFailed'));
     }
 
     return data as Organisation;
@@ -281,7 +282,7 @@ export class TenantService {
       .single();
 
     if (!org) {
-      throw new Error('Organisation nicht gefunden');
+      throw new Error(translate('svc.orgNotFound'));
     }
 
     const tenantIds = [...(org.tenantIds || []), tenantId];
@@ -300,7 +301,7 @@ export class TenantService {
       .single();
 
     if (!org) {
-      throw new Error('Organisation nicht gefunden');
+      throw new Error(translate('svc.orgNotFound'));
     }
 
     const tenantIds = (org.tenantIds || []).filter((id: number) => id !== tenantId);
@@ -336,7 +337,7 @@ export class TenantService {
       .single();
 
     if (error) {
-      throw new Error('Fehler beim Erstellen des Mandanten');
+      throw new Error(translate('svc.createTenantFailed'));
     }
 
     return data as unknown as Tenant;
@@ -349,7 +350,7 @@ export class TenantService {
       .eq('id', tenantId);
 
     if (error) {
-      throw new Error('Fehler beim Löschen des Mandanten');
+      throw new Error(translate('svc.deleteTenantFailed'));
     }
   }
 

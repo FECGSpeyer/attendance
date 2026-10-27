@@ -10,6 +10,8 @@ import type { WorkBook } from 'xlsx';
 import { fieldDisplayName, topNumbers } from '../team-organization/team-org.utils';
 import { allPlans, planDate, planSubtitle } from './plan-days';
 import { fieldMinutes, groupDuration, isGroupHead } from './plan-groups';
+import { translate } from '@jsverse/transloco';
+import { currentIntlLocale } from '../i18n/languages';
 
 export class Utils {
   public static getId(): number {
@@ -292,11 +294,11 @@ export class Utils {
   public static getClefText(key: string) {
     switch (key) {
       case 'c':
-        return 'Altschlüssel';
+        return translate('common.clef.c');
       case 'g':
-        return 'Violinschlüssel';
+        return translate('common.clef.g');
       case 'f':
-        return 'Bassschlüssel';
+        return translate('common.clef.f');
       default:
         throw new Error('unknown clef key');
     }
@@ -305,25 +307,25 @@ export class Utils {
   public static getRoleText(role: Role): string {
     switch (role) {
       case Role.ADMIN:
-        return 'Admin';
+        return translate('common.roles.admin');
       case Role.PLAYER:
-        return 'Mitglied';
+        return translate('common.roles.member');
       case Role.VIEWER:
-        return 'Beobachter';
+        return translate('common.roles.viewer');
       case Role.HELPER:
-        return 'Helfer';
+        return translate('common.roles.helper');
       case Role.RESPONSIBLE:
-        return 'Verantwortlicher';
+        return translate('common.roles.responsible');
       case Role.PARENT:
-        return 'Elternteil';
+        return translate('common.roles.parent');
       case Role.VOICE_LEADER:
-        return 'Stimmführer';
+        return translate('common.roles.voiceLeader');
       case Role.VOICE_LEADER_HELPER:
-        return 'Stimmführer & Helfer';
+        return translate('common.roles.voiceLeaderHelper');
       case Role.NONE:
-        return 'Mitglied';
+        return translate('common.roles.member');
       default:
-        return 'Unbekannt';
+        return translate('common.unknown');
     }
   }
 
@@ -338,24 +340,24 @@ export class Utils {
   public static getPlayerHistoryTypeText(key: PlayerHistoryType) {
     switch (key) {
       case PlayerHistoryType.PAUSED:
-        return 'Pausiert';
+        return translate('common.history.paused');
       case PlayerHistoryType.UNEXCUSED:
-        return 'Unentschuldigt';
+        return translate('common.history.unexcused');
       case PlayerHistoryType.CRITICAL_PERSON:
         return '';
       case PlayerHistoryType.INSTRUMENT_CHANGE:
-        return 'Wechsel';
+        return translate('common.history.groupChange');
       case PlayerHistoryType.ARCHIVED:
-        return 'Archiviert';
+        return translate('common.history.archived');
       case PlayerHistoryType.RETURNED:
-        return 'Reaktiviert';
+        return translate('common.history.returned');
       case PlayerHistoryType.TRANSFERRED_FROM:
       case PlayerHistoryType.TRANSFERRED_TO:
       case PlayerHistoryType.COPIED_FROM:
       case PlayerHistoryType.COPIED_TO:
         return '';
       default:
-        return 'Sonstiges';
+        return translate('common.other');
     }
   }
 
@@ -611,7 +613,7 @@ export class Utils {
     // creation timestamp, right-aligned, vertically centered to the top row
     doc.setFontSize(stampFontSize);
     doc.setTextColor(140, 140, 140);
-    doc.text(`Erstellt am: ${dayjs().format('DD.MM.YYYY HH:mm')}`, rightEdge, logoMidY, { align: 'right', baseline: 'middle' });
+    doc.text(translate('common.createdAt', { date: dayjs().format('DD.MM.YYYY HH:mm') }), rightEdge, logoMidY, { align: 'right', baseline: 'middle' });
 
     // ---- title + subtitle block ----
     let y = topRowY + logoHeight / 2 + (sideBySide ? 6 : 9);
@@ -725,14 +727,14 @@ export class Utils {
     }
 
     const head = hasConductors ? [[
-      { content: 'Uhrzeit', styles: { fontSize: props.sideBySide ? 8 : 11 } },
-      { content: 'Programmpunkt', styles: { fontSize: props.sideBySide ? 8 : 11 } },
-      { content: 'Ausführung', styles: { fontSize: props.sideBySide ? 8 : 11 } },
-      { content: 'Dauer', styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: translate('export.time'), styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: translate('export.programmeItem'), styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: translate('export.performer'), styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: translate('export.duration'), styles: { fontSize: props.sideBySide ? 8 : 11 } },
     ]] : [[
-      { content: 'Uhrzeit', styles: { fontSize: props.sideBySide ? 8 : 11 } },
-      { content: 'Programmpunkt', styles: { fontSize: props.sideBySide ? 8 : 11 } },
-      { content: 'Dauer', styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: translate('export.time'), styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: translate('export.programmeItem'), styles: { fontSize: props.sideBySide ? 8 : 11 } },
+      { content: translate('export.duration'), styles: { fontSize: props.sideBySide ? 8 : 11 } },
     ]];
 
     const tableStyles = {
@@ -947,14 +949,14 @@ export class Utils {
     const buildA4Table = (doc: any, styles: any) => {
       const fs = styles.fontSize ?? (props.sideBySide ? 8 : 11);
       const scaledHead = hasConductors ? [[
-        { content: 'Uhrzeit', styles: { fontSize: fs } },
-        { content: 'Programmpunkt', styles: { fontSize: fs } },
-        { content: 'Ausführung', styles: { fontSize: fs } },
-        { content: 'Dauer', styles: { fontSize: fs } },
+        { content: translate('export.time'), styles: { fontSize: fs } },
+        { content: translate('export.programmeItem'), styles: { fontSize: fs } },
+        { content: translate('export.performer'), styles: { fontSize: fs } },
+        { content: translate('export.duration'), styles: { fontSize: fs } },
       ]] : [[
-        { content: 'Uhrzeit', styles: { fontSize: fs } },
-        { content: 'Programmpunkt', styles: { fontSize: fs } },
-        { content: 'Dauer', styles: { fontSize: fs } },
+        { content: translate('export.time'), styles: { fontSize: fs } },
+        { content: translate('export.programmeItem'), styles: { fontSize: fs } },
+        { content: translate('export.duration'), styles: { fontSize: fs } },
       ]];
       const headerOpts = { title: typeText, subtitle: date };
       const contentTop = Utils.addBrandingHeader(doc, props.branding, headerOpts);
@@ -1070,11 +1072,11 @@ export class Utils {
     const plans = allPlans(att);
     const indexes = opts.indexes.filter(i => plans[i]?.fields?.length);
     if (!indexes.length) {
-      Utils.showToast('Kein Plan verfügbar', 'warning');
+      Utils.showToast(translate('export.noPlan'), 'warning');
       return { name: '' };
     }
     const titleOf = (i: number): string => plans[i].title?.trim()
-      || (opts.type ? Utils.getPlanningTitle(opts.type, att.typeInfo) : (att.typeInfo || 'Ablaufplan'));
+      || (opts.type ? Utils.getPlanningTitle(opts.type, att.typeInfo) : (att.typeInfo || translate('export.runSheet')));
     const build = (i: number) => ({
       props: {
         time: plans[i].time,
@@ -1170,7 +1172,7 @@ export class Utils {
     let data;
 
     if (churches?.length) {
-      data = [['Nachname', 'Vorname', 'Gruppe', 'Gemeinde', 'Status', 'Bemerkung']];
+      data = [[translate('export.lastName'), translate('export.firstName'), translate('export.group'), translate('export.church'), translate('export.status'), translate('export.notes')]];
 
       for (const user of players) {
         data.push([
@@ -1183,7 +1185,7 @@ export class Utils {
         ]);
       }
     } else {
-      data = [['Nachname', 'Vorname', 'Gruppe', 'Status', 'Bemerkung']];
+      data = [[translate('export.lastName'), translate('export.firstName'), translate('export.group'), translate('export.status'), translate('export.notes')]];
 
       for (const user of players) {
         data.push([user.lastName, user.firstName, user.groupName, Utils.getAttText(user), user.notes || '']);
@@ -1192,9 +1194,9 @@ export class Utils {
 
     const ws = utils.aoa_to_sheet(data);
     const wb = utils.book_new();
-    utils.book_append_sheet(wb, ws, 'Anwesenheit');
+    utils.book_append_sheet(wb, ws, translate('export.attendance'));
 
-    const fileName = `${attendance.typeInfo ?? type.name}_${dayjs(attendance.date).format('DD_MM_YYYY')}_Anwesenheit.xlsx`;
+    const fileName = translate('export.attendanceFile', { name: attendance.typeInfo ?? type.name, date: dayjs(attendance.date).format('DD_MM_YYYY') });
     await Utils.saveWorkbook(wb, fileName);
   }
 
@@ -1359,20 +1361,25 @@ export class Utils {
   public static getAttendanceStatusDescription(status: AttendanceStatus): string {
     switch (status) {
       case AttendanceStatus.Neutral:
-        return 'Neutral';
+        return translate('common.status.neutral');
       case AttendanceStatus.Present:
-        return 'Anwesend';
+        return translate('common.status.present');
       case AttendanceStatus.Excused:
-        return 'Entschuldigt';
+        return translate('common.status.excused');
       case AttendanceStatus.Late:
-        return 'Verspätet anwesend';
+        return translate('common.status.late');
       case AttendanceStatus.LateExcused:
-        return 'Verspätet entschuldigt';
+        return translate('common.status.lateExcused');
       case AttendanceStatus.Absent:
-        return 'Abwesend';
+        return translate('common.status.absent');
       default:
-        return 'Unbekannt';
+        return translate('common.unknown');
     }
+  }
+
+  /** Joins items as "a, b und c" in the current UI language. */
+  public static formatList(items: string[]): string {
+    return new Intl.ListFormat(currentIntlLocale(), { type: 'conjunction' }).format(items);
   }
 
   public static getInstrumentText(instrumentIds: number[], instruments: Group[], groupCategories: GroupCategory[]): string {
@@ -1383,7 +1390,7 @@ export class Utils {
     if (filteredInstruments.length === 0) {
       return '';
     } else if (filteredInstruments.length === 1) {
-      return 'Ohne ' + filteredInstruments[0].name;
+      return translate('common.without', { list: filteredInstruments[0].name });
     }
 
     // check if all instruments of one category are missing
@@ -1410,7 +1417,7 @@ export class Utils {
       const totalInstrumentsInCategory = nonMainInstruments.filter((instrument: Group) => instrument.category === catIdNum).length;
       if (categoryMap[catIdNum].length === totalInstrumentsInCategory) {
         // all instruments of this category are missing
-        const categoryName = catIdNum === -1 ? 'Sonstige' : groupCategories.find(cat => cat.id === catIdNum)?.name || 'Unbekannt';
+        const categoryName = catIdNum === -1 ? translate('common.otherPlural') : groupCategories.find(cat => cat.id === catIdNum)?.name || translate('common.unknown');
         categoriesMissingAllInstruments.push(categoryName);
         // remove this category from categoryMap
         delete categoryMap[catIdNum];
@@ -1426,11 +1433,7 @@ export class Utils {
 
     const allParts: string[] = categoriesMissingAllInstruments.concat(individualInstruments.map(inst => inst.name));
 
-    if (allParts.length === 1) {
-      return 'Ohne ' + allParts[0];
-    }
-
-    return 'Ohne ' + allParts.slice(0, -1).join(', ') + ' und ' + allParts.slice(-1);
+    return translate('common.without', { list: Utils.formatList(allParts) });
   }
 
   public static getFieldTypeDefaultValue(fieldType: FieldType, defaultValue?: any, options?: string[], churches?: Church[]): any {
@@ -1464,8 +1467,8 @@ export class Utils {
   public static getDefaultAttendanceTypes(tenantId: number, type: string): AttendanceType[] {
     const attendanceTypes: AttendanceType[] = [
       {
-        name: type === DefaultAttendanceType.GENERAL ? 'Treffen' : 'Probe',
-        planning_title: type === DefaultAttendanceType.GENERAL ? 'Treffen' : 'Probenplan',
+        name: type === DefaultAttendanceType.GENERAL ? translate('defaults.types.meeting') : translate('defaults.types.rehearsal'),
+        planning_title: type === DefaultAttendanceType.GENERAL ? translate('defaults.types.meeting') : translate('defaults.types.rehearsalPlan'),
         color: 'primary',
         include_in_average: true,
         available_statuses: [AttendanceStatus.Present, AttendanceStatus.Excused, AttendanceStatus.Late, AttendanceStatus.Absent],
@@ -1482,8 +1485,8 @@ export class Utils {
 
     if (type !== DefaultAttendanceType.GENERAL) {
       attendanceTypes.push({
-        name: 'Vortrag',
-        planning_title: 'Vortrag',
+        name: translate('defaults.types.performance'),
+        planning_title: translate('defaults.types.performance'),
         color: 'secondary',
         include_in_average: true,
         available_statuses: [AttendanceStatus.Present, AttendanceStatus.Excused, AttendanceStatus.Late, AttendanceStatus.Absent, AttendanceStatus.Neutral],
@@ -1499,8 +1502,8 @@ export class Utils {
     }
 
     attendanceTypes.push({
-      name: 'Sonstiges',
-      planning_title: 'Sonstiges',
+      name: translate('common.other'),
+      planning_title: translate('common.other'),
       color: 'tertiary',
       include_in_average: true,
       available_statuses: [AttendanceStatus.Present, AttendanceStatus.Excused, AttendanceStatus.Late, AttendanceStatus.Absent, AttendanceStatus.Neutral],
@@ -1594,12 +1597,18 @@ export class Utils {
     return dayjs(date).locale('de').format('ddd, DD.MM.YYYY');
   }
 
+  /** Rehearsal-like type? Type names are user data, so this checks all app languages. */
+  public static isPracticeTypeName(name?: string | null): boolean {
+    const lower = name?.toLowerCase() ?? '';
+    return ['probe', 'übung', 'rehearsal', 'practice', 'репетиц', 'ensayo'].some(w => lower.includes(w));
+  }
+
   public static getPlanningTitle(type: AttendanceType, typeInfo?: string): string {
     if (type.planning_title && typeInfo) {
       return `${type.planning_title} (${typeInfo})`;
     }
 
-    return type.planning_title || typeInfo || type.name || 'Probenplan';
+    return type.planning_title || typeInfo || type.name || translate('defaults.types.rehearsalPlan');
   }
 
   static getNavigationUrl(place: string, app: 'apple' | 'google' = 'google'): string {
@@ -1631,14 +1640,14 @@ export class Utils {
       const sheet = await new ActionSheetController().create({
         buttons: [
           {
-            text: 'Apple Karten',
+            text: translate('common.appleMaps'),
             handler: () => open(Utils.getNavigationUrl(place, 'apple')),
           },
           {
             text: 'Google Maps',
             handler: () => open(Utils.getNavigationUrl(place, 'google')),
           },
-          { text: 'Abbrechen', role: 'cancel' },
+          { text: translate('common.cancel'), role: 'cancel' },
         ],
       });
       await sheet.present();

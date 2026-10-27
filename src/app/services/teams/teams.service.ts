@@ -4,6 +4,7 @@ import { environment } from '../../../environments/environment';
 import { supabase } from '../base/supabase';
 import { AuthService } from '../auth/auth.service';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 /** Result of an attempted silent Teams sign-in. */
 export type SsoResult = 'ok' | 'needs-link' | 'failed';
@@ -151,7 +152,7 @@ export class TeamsService {
         // Settle on the freshly minted session so state is consistent.
         return await this.consumeTokenHash(res.token_hash);
       }
-      Utils.showToast(res.error || 'Verknüpfung fehlgeschlagen', 'danger');
+      Utils.showToast(res.error || translate('svc.linkFailed'), 'danger');
       return false;
     } catch (e) {
       console.error('[teams] ssoLink failed:', e);

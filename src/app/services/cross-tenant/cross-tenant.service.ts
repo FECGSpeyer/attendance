@@ -11,6 +11,7 @@ import {
 import { AttendanceStatus, Role } from '../../utilities/constants';
 import { Utils } from '../../utilities/Utils';
 import { rankCandidates, RankedMatch } from '../../utilities/person-matcher';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -198,7 +199,7 @@ export class CrossTenantService {
       .eq('userId', userId);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Mandanten', 'danger');
+      Utils.showToast(translate('db.loadTenantsFailed2'), 'danger');
       throw error;
     }
 
@@ -212,7 +213,7 @@ export class CrossTenantService {
       .eq('userId', userId);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Mandanten', 'danger');
+      Utils.showToast(translate('db.loadTenantsFailed2'), 'danger');
       throw error;
     }
 
@@ -232,7 +233,7 @@ export class CrossTenantService {
       .neq('role', Role.VIEWER);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Benutzer', 'danger');
+      Utils.showToast(translate('svc.loadUsersFailed'), 'danger');
       throw error;
     }
 
@@ -308,7 +309,7 @@ export class CrossTenantService {
     const { data, error } = await query;
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Personen', 'danger');
+      Utils.showToast(translate('db.loadPeopleFailed'), 'danger');
       throw error;
     }
 
@@ -336,7 +337,7 @@ export class CrossTenantService {
       .ilike('email', normalized);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Personen', 'danger');
+      Utils.showToast(translate('db.loadPeopleFailed'), 'danger');
       throw error;
     }
 

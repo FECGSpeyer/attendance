@@ -16,6 +16,7 @@ import { TeamsService } from './services/teams/teams.service';
 import { OfflineQueueService } from './services/offline-queue/offline-queue.service';
 import { LiveActivityService } from './services/live-activity/live-activity.service';
 import { AudioPlayerService } from './services/audio-player/audio-player.service';
+import { translate } from '@jsverse/transloco';
 
 const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
 const UPDATE_CHECK_MIN_GAP_MS = 5 * 60 * 1000;
@@ -110,26 +111,26 @@ export class AppComponent {
     this.passwordRecoveryAlertOpen = true;
 
     const alert = await this.alertController.create({
-      header: 'Neues Passwort eingeben',
+      header: translate('app.newPassword'),
       inputs: [
         {
           name: 'password',
           type: 'password',
-          placeholder: 'Min. 6 Zeichen eingeben...'
+          placeholder: translate('app.minSixPlaceholder')
         }
       ],
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel'
         }, {
-          text: 'Passwort ändern',
+          text: translate('app.changePassword'),
           // Returning false keeps the alert open so the user can retry without
           // losing the recovery session. We only let it dismiss on success.
           handler: async (values: any) => {
             const password = values?.password ?? '';
             if (password.length < 6) {
-              Utils.showToast('Bitte gib ein Passwort mit mindestens 6 Zeichen ein', 'danger');
+              Utils.showToast(translate('app.passwordMin'), 'danger');
               return false;
             }
 
@@ -216,12 +217,12 @@ export class AppComponent {
     const storeName = isIOS ? 'App Store' : 'Play Store';
 
     const alert = await this.alertController.create({
-      header: 'Attendix als App verfügbar!',
-      message: `Attendix gibt es jetzt als native App mit Push-Benachrichtigungen und schnellerem Zugriff. Jetzt im ${storeName} herunterladen!`,
+      header: translate('app.nativeAd.header'),
+      message: translate('app.nativeAd.message', { store: storeName }),
       buttons: [
-        { text: 'Später', role: 'cancel' },
+        { text: translate('svc.later'), role: 'cancel' },
         {
-          text: 'Zum ' + storeName,
+          text: translate('app.nativeAd.goTo', { store: storeName }),
           handler: () => {
             window.open(storeUrl, '_blank');
           }
@@ -355,15 +356,15 @@ export class AppComponent {
         // session. Load the tenant context and route to the correct landing
         // page (freshly-confirmed users without a tenant go to /register).
         window.history.replaceState({}, '', '/login');
-        Utils.showToast('E-Mail-Adresse bestätigt. Willkommen!', 'success', 4000);
+        Utils.showToast(translate('app.emailConfirmed'), 'success', 4000);
         await this.db.routeAfterAuth();
       }
     } catch (e) {
       console.error('[handleAuthUrl] failed:', e);
       Utils.showToast(
         isRecovery
-          ? 'Der Link zum Zurücksetzen ist ungültig oder abgelaufen.'
-          : 'Der Bestätigungslink ist ungültig oder abgelaufen.',
+          ? translate('app.resetLinkInvalid')
+          : translate('app.confirmLinkInvalid'),
         'danger'
       );
       this.router.navigateByUrl('/login');

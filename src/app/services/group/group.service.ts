@@ -4,6 +4,7 @@ import { Utils } from '../../utilities/Utils';
 import { supabase } from '../base/supabase';
 import { pickGroupFields, pickTeacherFields } from '../../utilities/db-helpers';
 import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -57,11 +58,11 @@ export class GroupService {
 
     if (error) {
       if (error.code === '23505') {
-        Utils.showToast('Es kann nur eine Hauptgruppe existieren', 'danger');
+        Utils.showToast(translate('svc.onlyOneMainGroup'), 'danger');
       } else {
-        Utils.showToast('Fehler beim updaten des Instruments', 'danger');
+        Utils.showToast(translate('svc.updateGroupFailed'), 'danger');
       }
-      throw new Error('Fehler beim updaten des Instruments');
+      throw new Error(translate('svc.updateGroupFailed'));
     }
 
     this.tracking.track(TrackingEvent.InstrumentUpdated);
@@ -97,7 +98,7 @@ export class GroupService {
       .select();
 
     if (error) {
-      throw new Error('Fehler beim hinzufügen der Gruppenkategorie');
+      throw new Error(translate('svc.addGroupCategoryFailed'));
     }
   }
 

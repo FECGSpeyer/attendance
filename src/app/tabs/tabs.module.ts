@@ -7,9 +7,11 @@ import { TabsPageRoutingModule } from './tabs-routing.module';
 
 import { TabsPage } from './tabs.page';
 import { AudioPlayerComponent } from '../shared/audio-player/audio-player.component';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     IonicModule,
     CommonModule,
     FormsModule,

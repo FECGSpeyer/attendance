@@ -4,13 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { IonContent, IonicModule, IonModal, Platform } from '@ionic/angular/lazy';
 import { Keyboard } from '@capacitor/keyboard';
 import type { PluginListenerHandle } from '@capacitor/core';
+import { translate } from '@jsverse/transloco';
+import { TranslocoModule } from '@jsverse/transloco';
 
 const CUSTOM_REASON = 'Sonstiger Grund';
 
 @Component({
   selector: 'app-excuse-reason-picker',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, TranslocoModule],
   templateUrl: './excuse-reason-picker.component.html',
   styleUrls: ['./excuse-reason-picker.component.scss'],
 })
@@ -40,7 +42,7 @@ export class ExcuseReasonPickerComponent {
 
   /**
    * Opens the reason sheet.
-   * @param isLate  true = "Verspätung", false = "Abmeldung".
+   * @param isLate  true = translate('excuse.late'), false = translate('excuse.signOut').
    * @param isToday when the event is today we default to the free-text reason
    *                (matches the previous isAttToday behaviour); otherwise we
    *                preselect the first predefined reason.

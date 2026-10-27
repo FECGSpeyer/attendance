@@ -4,6 +4,7 @@ import { ShiftPlan, ShiftDefinition, AttendanceType, PersonAttendance } from '..
 import { Utils } from '../../utilities/Utils';
 import { AttendanceStatus } from '../../utilities/constants';
 import dayjs from 'dayjs';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +19,7 @@ export class ShiftService {
       .order('name', { ascending: true });
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Schichten', 'danger');
+      Utils.showToast(translate('svc.loadShiftsFailed'), 'danger');
       throw error;
     }
 
@@ -36,7 +37,7 @@ export class ShiftService {
       .limit(1);
 
     if (error) {
-      Utils.showToast('Fehler beim Überprüfen der Schichtverwendung', 'danger');
+      Utils.showToast(translate('svc.checkShiftUsageFailed'), 'danger');
       throw error;
     }
 
@@ -57,7 +58,7 @@ export class ShiftService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Hinzufügen der Schicht', 'danger');
+      Utils.showToast(translate('svc.addShiftFailed'), 'danger');
       throw error;
     }
 
@@ -71,7 +72,7 @@ export class ShiftService {
       .match({ id: shift.id });
 
     if (error) {
-      Utils.showToast('Fehler beim Aktualisieren der Schicht', 'danger');
+      Utils.showToast(translate('svc.updateShiftFailed'), 'danger');
       throw error;
     }
   }
@@ -83,7 +84,7 @@ export class ShiftService {
       .match({ id });
 
     if (error) {
-      Utils.showToast('Fehler beim Löschen der Schicht', 'danger');
+      Utils.showToast(translate('svc.deleteShiftFailed'), 'danger');
       throw error;
     }
   }
@@ -97,7 +98,7 @@ export class ShiftService {
       .not('appId', 'is', null);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Personen mit Schicht', 'danger');
+      Utils.showToast(translate('svc.loadShiftPeopleFailed'), 'danger');
       throw error;
     }
 
@@ -123,7 +124,7 @@ export class ShiftService {
       .is('left', null);
 
     if (fetchError) {
-      Utils.showToast('Fehler beim Suchen der Personen in Ziel-Instanz', 'danger');
+      Utils.showToast(translate('svc.searchTargetPeopleFailed'), 'danger');
       throw fetchError;
     }
 

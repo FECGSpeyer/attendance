@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, IonModal } from '@ionic/angular/lazy';
 import { FilesService, StorageEntry } from 'src/app/services/files/files.service';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
+import { TranslocoModule } from '@jsverse/transloco';
 
 /**
  * Auswahl eines Ordners der Dateiablage (z. B. Aufnahmen eines Termins).
@@ -11,7 +13,7 @@ import { Utils } from 'src/app/utilities/Utils';
 @Component({
   selector: 'app-files-folder-picker',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, TranslocoModule],
   templateUrl: './files-folder-picker.component.html',
 })
 export class FilesFolderPickerComponent {
@@ -48,7 +50,7 @@ export class FilesFolderPickerComponent {
         await this.navigate('');
         return;
       }
-      Utils.showToast(`Fehler beim Laden der Ordner: ${error.message || error}`, 'danger');
+      Utils.showToast(translate('folderPicker.loadFailed', { error: error.message || error }), 'danger');
     } finally {
       this.isLoading = false;
     }

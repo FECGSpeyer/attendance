@@ -1,7 +1,7 @@
 ﻿<!-- Bell (sits inside an <ion-buttons slot="end"> on each page toolbar).
      Rendered without ion-button so no native circular background can paint
      over the badge on iOS — the badge always shows fully. -->
-<button class="bell-trigger" type="button" (click)="open()" aria-label="Benachrichtigungen">
+<button class="bell-trigger" type="button" (click)="open()" [attr.aria-label]="'bell.title' | transloco">
   <ion-icon name="notifications-outline"></ion-icon>
   @if (unread() > 0) {
     <ion-badge class="bell-badge" color="danger">{{ unread() > 99 ? '99+' : unread() }}</ion-badge>
@@ -13,15 +13,15 @@
   <ng-template>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Benachrichtigungen</ion-title>
+        <ion-title>{{ 'bell.title' | transloco }}</ion-title>
         <ion-buttons slot="end">
           @if (unread() > 0) {
-            <ion-button (click)="markAll()" aria-label="Alle gelesen">
+            <ion-button (click)="markAll()" [attr.aria-label]="'bell.markAllRead' | transloco">
               <ion-icon slot="icon-only" name="checkmark-done-outline"></ion-icon>
             </ion-button>
           }
           @if (notifications().length > 0) {
-            <ion-button (click)="deleteAll()" color="danger" aria-label="Alle löschen">
+            <ion-button (click)="deleteAll()" color="danger" [attr.aria-label]="'bell.deleteAll' | transloco">
               <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
             </ion-button>
           }
@@ -30,10 +30,10 @@
       <ion-toolbar>
         <ion-segment [value]="segment()" (ionChange)="onSegmentChange($any($event.detail.value))">
           <ion-segment-button value="current">
-            <ion-label>Aktuelle Instanz</ion-label>
+            <ion-label>{{ 'bell.currentInstance' | transloco }}</ion-label>
           </ion-segment-button>
           <ion-segment-button value="all">
-            <ion-label>Alle</ion-label>
+            <ion-label>{{ 'common.all' | transloco }}</ion-label>
           </ion-segment-button>
         </ion-segment>
       </ion-toolbar>
@@ -47,7 +47,7 @@
       @if (notifications().length === 0) {
         <div class="empty-state">
           <ion-icon name="notifications-off-outline"></ion-icon>
-          <p>Keine Benachrichtigungen</p>
+          <p>{{ 'bell.none' | transloco }}</p>
         </div>
       } @else {
         <ion-list [inset]="true">

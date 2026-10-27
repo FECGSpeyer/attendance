@@ -3,6 +3,7 @@ import { supabase } from '../base/supabase';
 import { Tenant } from '../../utilities/interfaces';
 import { Role, SUPER_DEVELOPER_EMAIL } from '../../utilities/constants';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -16,11 +17,11 @@ export class InstanceService {
       .match({ id: tenantId });
 
     if (error) {
-      Utils.showToast('Fehler beim Löschen der Instanz, bitte versuche es später erneut.', 'danger');
+      Utils.showToast(translate('db.deleteInstanceFailed'), 'danger');
       throw new Error(error.message);
     }
 
-    Utils.showToast('Instanz wurde erfolgreich gelöscht!');
+    Utils.showToast(translate('db.instanceDeleted'));
   }
 
   async createInstance(tenant: Tenant, userId: string, userEmail: string): Promise<Tenant> {
@@ -31,7 +32,7 @@ export class InstanceService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Erstellen der Instanz, bitte versuche es später erneut.', 'danger');
+      Utils.showToast(translate('db.createInstanceFailed'), 'danger');
       throw new Error(error.message);
     }
 
@@ -56,11 +57,11 @@ export class InstanceService {
       .insert(usersToAdd);
 
     if (userError) {
-      Utils.showToast('Fehler beim Erstellen des Benutzers, bitte versuche es später erneut.', 'danger');
+      Utils.showToast(translate('db.createUserFailed'), 'danger');
       throw new Error(userError.message);
     }
 
-    Utils.showToast('Instanz wurde erfolgreich erstellt!');
+    Utils.showToast(translate('db.instanceCreated'));
 
     return data as unknown as Tenant;
   }
@@ -76,7 +77,7 @@ export class InstanceService {
       if (error.code === 'PGRST116') {
         return null;
       }
-      Utils.showToast('Fehler beim Laden des Tenants', 'danger');
+      Utils.showToast(translate('svc.loadTenantFailed2'), 'danger');
       throw error;
     }
 
@@ -94,7 +95,7 @@ export class InstanceService {
       if (error.code === 'PGRST116') {
         return null;
       }
-      Utils.showToast('Fehler beim Laden des Tenants', 'danger');
+      Utils.showToast(translate('svc.loadTenantFailed2'), 'danger');
       throw error;
     }
 

@@ -26,11 +26,13 @@ import BubbleMenu from '@tiptap/extension-bubble-menu';
 import { Placeholder } from '@tiptap/extensions';
 import { AgendaItemNode } from './extensions/agenda-item-node';
 import { TaskRefNode, taskRefText } from './extensions/task-ref-node';
+import { translate } from '@jsverse/transloco';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-tiptap-editor',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslocoModule],
   template: `
     <div #bubbleMenuEl class="tiptap-bubble-menu">
       <button (mousedown)="$event.preventDefault(); cmd('toggleBold')"       [class.active]="isActive('bold')">        <b>B</b></button>
@@ -141,7 +143,7 @@ export class TiptapEditorComponent implements AfterViewInit, OnDestroy, OnChange
   // Optional key so a host page with several editors can find the right one.
   @Input() sectionId?: string;
   /** Hint shown while the editor is empty and editable. */
-  @Input() placeholder = 'Tippe hier, um Notizen zu schreiben …';
+  @Input() placeholder = translate('editor.notesPlaceholder');
   @HostBinding('class.editable') get isEditableHost() { return this.editable; }
   /** Live task statuses (id → status) for task references in the text. */
   @Input() taskStatuses: Record<string, string> | null = null;

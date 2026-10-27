@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular/lazy';
+import { TranslocoModule } from '@jsverse/transloco';
 
 interface Point {
   x: number;
@@ -40,7 +41,7 @@ const DISMISS_VELOCITY = 0.6; // px per ms
 @Component({
   selector: 'app-image-viewer',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, TranslocoModule],
   templateUrl: './image-viewer.component.html',
   styleUrls: ['./image-viewer.component.scss'],
 })

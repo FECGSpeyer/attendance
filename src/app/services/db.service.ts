@@ -54,6 +54,7 @@ import { RolePermissionService } from './role-permission/role-permission.service
 import { UserNotificationService } from './user-notification/user-notification.service';
 import { PlayerAbsenceService } from './player-absence/player-absence.service';
 import { FilesService } from './files/files.service';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -537,8 +538,8 @@ export class DbService {
   async getWantedTenant(tenantId?: number): Promise<number> {
     return new Promise<number>(async (resolve) => {
       const alert = await this.alertController.create({
-        header: 'Instanz auswählen',
-        message: 'Bitte wähle die Instanz aus, die du öffnen möchtest:',
+        header: translate('db.chooseInstance.header'),
+        message: translate('db.chooseInstance.message'),
         backdropDismiss: false,
         inputs: this.tenants().map(t => ({
           name: t.longName,
@@ -556,7 +557,7 @@ export class DbService {
             }
           },
           {
-            text: 'Öffnen',
+            text: translate('common.open'),
             handler: (tenantId: string) => {
               resolve(Number(tenantId));
             }
@@ -609,7 +610,7 @@ export class DbService {
       .order('longName', { ascending: true });
 
     if (error) {
-      throw new Error('Fehler beim Laden der Tenants');
+      throw new Error(translate('db.loadTenantsFailed'));
     }
 
     return data.map(t => ({
@@ -833,7 +834,7 @@ export class DbService {
   async deleteAccount(): Promise<void> {
     const { error } = await supabase.functions.invoke('delete-account');
     if (error) {
-      throw new Error(error.message || 'Fehler beim Löschen des Kontos');
+      throw new Error(error.message || translate('db.deleteAccountFailed'));
     }
     await supabase.auth.signOut();
     this.clearState();
@@ -854,7 +855,7 @@ export class DbService {
     try {
       await this.removeEmailFromAuth(viewer.appId, viewer.email);
     } catch (error) {
-      Utils.showToast('Fehler beim Entfernen der E-Mail aus der Authentifizierung', 'danger');
+      Utils.showToast(translate('db.removeAuthEmailFailed'), 'danger');
       throw error;
     }
 
@@ -864,7 +865,7 @@ export class DbService {
       .match({ id: viewer.id });
 
     if (error) {
-      Utils.showToast('Fehler beim Löschen des Beobachters', 'danger');
+      Utils.showToast(translate('db.deleteViewerFailed'), 'danger');
       throw error;
     }
   }
@@ -878,7 +879,7 @@ export class DbService {
     try {
       await this.removeEmailFromAuth(parent.appId, parent.email);
     } catch (error) {
-      Utils.showToast('Fehler beim Entfernen der E-Mail aus der Authentifizierung', 'danger');
+      Utils.showToast(translate('db.removeAuthEmailFailed'), 'danger');
       throw error;
     }
 
@@ -888,7 +889,7 @@ export class DbService {
       .match({ id: parent.id });
 
     if (error) {
-      Utils.showToast('Fehler beim Löschen des Elternteils', 'danger');
+      Utils.showToast(translate('db.deleteParentFailed'), 'danger');
       throw error;
     }
   }
@@ -910,7 +911,7 @@ export class DbService {
       });
 
     if (error) {
-      throw new Error('Fehler beim hinzufügen des Beobachters.');
+      throw new Error(translate('db.addViewerFailed'));
     }
   }
 
@@ -929,7 +930,7 @@ export class DbService {
       .single();
 
     if (error) {
-      throw new Error('Fehler beim hinzufügen des Elternteils.');
+      throw new Error(translate('db.addParentFailed'));
     }
 
     await this.updateTenantUser({
@@ -955,7 +956,7 @@ export class DbService {
           try {
             await this.updateTenantUser({ role: Role.ADMIN }, userId);
           } catch (error) {
-            throw new Error('Fehler beim Aktualisieren der Benutzerrolle');
+            throw new Error(translate('db.updateRoleFailed'));
           }
         }
 
@@ -974,7 +975,7 @@ export class DbService {
         });
 
         if (error || !data?.mailSent) {
-          throw new Error('Fehler beim Informieren des Benutzers');
+          throw new Error(translate('db.notifyUserFailed'));
         }
       }
 
@@ -1001,7 +1002,7 @@ export class DbService {
           });
 
           if (informError || !informData?.mailSent) {
-            throw new Error('Fehler beim Informieren des Benutzers');
+            throw new Error(translate('db.notifyUserFailed'));
           }
         }
         return data[0].id;
@@ -1020,14 +1021,14 @@ export class DbService {
       });
 
       if (error || !data?.user?.id) {
-        throw new Error('Fehler beim Erstellen des Accounts');
+        throw new Error(translate('db.createAccountFailed'));
       }
 
       await this.addUserToTenant(data.user.id, role, email);
 
       return data.user.id;
     } catch (e: any) {
-      throw new Error(e.message || 'Fehler beim Erstellen des Accounts');
+      throw new Error(e.message || translate('db.createAccountFailed'));
     }
   }
 
@@ -1051,7 +1052,7 @@ export class DbService {
       .match({ tenantId: this.tenant().id, userId });
 
     if (error) {
-      throw new Error('Fehler beim Updaten des Benutzers');
+      throw new Error(translate('db.updateUserFailed'));
     }
 
     return data;
@@ -1089,11 +1090,11 @@ export class DbService {
           .eq('appId', foundTenantUser.userId);
 
         if (playersError) {
-          throw new Error('Fehler beim Laden des Benutzers');
+          throw new Error(translate('db.loadUserFailed'));
         }
 
         if (playersData.length) {
-          throw new Error(`Der Benutzer ist bereits in diesem Mandanten: ${playersData[0].firstName} ${playersData[0].lastName} (${Utils.getRoleText(foundTenantUser.role)})`);
+          throw new Error(translate('db.userAlreadyInTenantAs', { name: `${playersData[0].firstName} ${playersData[0].lastName}`, role: Utils.getRoleText(foundTenantUser.role) }));
         } else {
           await supabase
             .from('tenantUsers')
@@ -1110,11 +1111,11 @@ export class DbService {
           .eq('appId', foundTenantUser.userId);
 
         if (parentsError) {
-          throw new Error('Fehler beim Laden des Benutzers');
+          throw new Error(translate('db.loadUserFailed'));
         }
 
         if (parentsData.length) {
-          throw new Error(`Der Benutzer ist bereits in dieser Instanz: ${parentsData[0].firstName} ${parentsData[0].lastName} (Elternteil)`);
+          throw new Error(translate('db.userAlreadyInInstanceAs', { name: `${parentsData[0].firstName} ${parentsData[0].lastName}`, role: translate('db.roleParent') }));
         } else {
           await supabase
             .from('tenantUsers')
@@ -1130,11 +1131,11 @@ export class DbService {
           .eq('appId', foundTenantUser.userId);
 
         if (viewersError) {
-          throw new Error('Fehler beim Laden des Benutzers');
+          throw new Error(translate('db.loadUserFailed'));
         }
 
         if (viewersData.length) {
-          throw new Error(`Der Benutzer ist bereits in diesem Mandanten: ${viewersData[0].firstName} ${viewersData[0].lastName} (Beobachter)`);
+          throw new Error(translate('db.userAlreadyInTenantAs', { name: `${viewersData[0].firstName} ${viewersData[0].lastName}`, role: translate('db.roleViewer') }));
         } else {
           await supabase
             .from('tenantUsers')
@@ -1143,7 +1144,7 @@ export class DbService {
           return undefined;
         }
       } else {
-        throw new Error('Der Benutzer ist bereits in diesem Mandanten');
+        throw new Error(translate('db.userAlreadyInTenant'));
       }
     }
 
@@ -1155,7 +1156,7 @@ export class DbService {
     }
 
     if (error) {
-      throw new Error('Fehler beim Laden des Benutzers');
+      throw new Error(translate('db.loadUserFailed'));
     }
 
     return data.length ? {
@@ -1184,7 +1185,7 @@ export class DbService {
         .single();
 
       if (updateError) {
-        throw new Error('Fehler beim updaten des Benutzers');
+        throw new Error(translate('db.updateUserFailed2'));
       }
 
       return data;
@@ -1206,35 +1207,35 @@ export class DbService {
     if (error) {
       switch (error.code) {
         case 'invalid_login_credentials':
-          Utils.showToast('E-Mail oder Passwort falsch. Falls du kein Passwort gesetzt hast, nutze den Anmelde-Code per E-Mail.', 'danger', 5000);
+          Utils.showToast(translate('db.wrongCredentials'), 'danger', 5000);
           break;
         case 'user_disabled':
-          Utils.showToast('Dein Konto wurde deaktiviert. Bitte wende dich an den Administrator deiner Instanz.', 'danger');
+          Utils.showToast(translate('db.accountDisabled'), 'danger');
           break;
         case 'too_many_requests':
-          Utils.showToast('Zu viele Anmeldeversuche. Bitte versuche es später erneut.', 'danger');
+          Utils.showToast(translate('db.tooManyLogins'), 'danger');
           break;
         case 'invalid_email':
-          Utils.showToast('Ungültige E-Mail Adresse', 'danger');
+          Utils.showToast(translate('db.invalidEmail'), 'danger');
           break;
         case 'invalid_password':
-          Utils.showToast('Ungültiges Passwort', 'danger');
+          Utils.showToast(translate('db.invalidPassword'), 'danger');
           break;
         case 'user_not_found':
-          Utils.showToast('Kein Konto mit dieser E-Mail-Adresse gefunden. Bitte registriere dich zuerst.', 'danger', 5000);
+          Utils.showToast(translate('db.noAccount'), 'danger', 5000);
           break;
         case 'email_not_confirmed':
           // No toast here: the login page catches this code and shows an
           // actionable prompt offering to resend the confirmation email.
           break;
         case 'password_strength_insufficient':
-          Utils.showToast('Das Passwort erfüllt nicht die Sicherheitsanforderungen.', 'danger');
+          Utils.showToast(translate('db.weakPasswordRequirements'), 'danger');
           break;
         case 'invalid_credentials':
-          Utils.showToast('E-Mail oder Passwort falsch. Falls du kein Passwort gesetzt hast, nutze den Anmelde-Code per E-Mail.', 'danger', 5000);
+          Utils.showToast(translate('db.wrongCredentials'), 'danger', 5000);
           break;
         default:
-          Utils.showToast('Fehler beim Anmelden', 'danger');
+          Utils.showToast(translate('db.loginFailed'), 'danger');
           break;
       }
       throw error;
@@ -1249,7 +1250,7 @@ export class DbService {
 
       await this.routeAfterAuth(loading);
     } else {
-      Utils.showToast('Bitte gib die richtigen Daten an!', 'danger');
+      Utils.showToast(translate('db.enterCorrectData'), 'danger');
     }
 
     return Boolean(data.user);
@@ -1278,40 +1279,40 @@ export class DbService {
       switch (error.code) {
         case 'over_email_send_rate_limit':
         case 'too_many_requests':
-          Utils.showToast('Zu viele Anfragen. Bitte warte einen Moment und versuche es erneut.', 'danger');
+          Utils.showToast(translate('db.tooManyRequests'), 'danger');
           break;
         case 'invalid_email':
-          Utils.showToast('Ungültige E-Mail Adresse', 'danger');
+          Utils.showToast(translate('db.invalidEmail'), 'danger');
           break;
         case 'signup_disabled':
         case 'otp_disabled':
           // On a sign-in-only surface these codes mean Supabase refused to create
           // a new user — i.e. no account exists for this email.
           if (!allowCreate) {
-            Utils.showToast('Kein Konto mit dieser E-Mail-Adresse gefunden. Bitte registriere dich zuerst.', 'danger', 5000);
+            Utils.showToast(translate('db.noAccount'), 'danger', 5000);
             throw error;
           }
-          Utils.showToast('Anmeldung per Code ist derzeit nicht möglich.', 'danger');
+          Utils.showToast(translate('db.otpUnavailable'), 'danger');
           break;
         case 'user_not_found':
-          Utils.showToast('Kein Konto mit dieser E-Mail-Adresse gefunden. Bitte registriere dich zuerst.', 'danger', 5000);
+          Utils.showToast(translate('db.noAccount'), 'danger', 5000);
           throw error;
         default:
           // Supabase returns signup_disabled/otp_disabled (not user_not_found) when
           // shouldCreateUser=false and the email is unknown — catch that here too.
           if (!allowCreate) {
-            Utils.showToast('Kein Konto mit dieser E-Mail-Adresse gefunden. Bitte registriere dich zuerst.', 'danger', 5000);
+            Utils.showToast(translate('db.noAccount'), 'danger', 5000);
             throw error;
           }
           // Unknown-email on a sign-in-only surface may return a generic error
           // (enumeration protection), so we do not rely on a specific code here.
-          Utils.showToast('Der Code konnte nicht gesendet werden. Bitte versuche es erneut.', 'danger');
+          Utils.showToast(translate('db.codeSendFailed'), 'danger');
           break;
       }
       return false;
     }
 
-    Utils.showToast('Wir haben dir einen Code per E-Mail gesendet.', 'success');
+    Utils.showToast(translate('db.codeSent'), 'success');
     return true;
   }
 
@@ -1347,13 +1348,13 @@ export class DbService {
     if (error) {
       switch (error.code) {
         case 'otp_expired':
-          Utils.showToast('Der Code ist abgelaufen. Bitte fordere einen neuen an.', 'danger');
+          Utils.showToast(translate('db.codeExpired'), 'danger');
           break;
         case 'too_many_requests':
-          Utils.showToast('Zu viele Versuche. Bitte versuche es später erneut.', 'danger');
+          Utils.showToast(translate('db.tooManyAttempts'), 'danger');
           break;
         default:
-          Utils.showToast('Der Code ist ungültig. Bitte überprüfe deine Eingabe.', 'danger');
+          Utils.showToast(translate('db.codeInvalid'), 'danger');
           break;
       }
       return false;
@@ -1407,7 +1408,7 @@ export class DbService {
     });
 
     if (error) {
-      Utils.showToast('Fehler beim Registrieren', 'danger');
+      Utils.showToast(translate('db.registerFailed'), 'danger');
       return null;
     }
 
@@ -1417,7 +1418,7 @@ export class DbService {
       });
 
       if (loginError) {
-        throw new Error('Deine E-Mail-Adresse existiert bereits. Bitte melde dich an.');
+        throw new Error(translate('db.emailExists'));
       }
 
       return {
@@ -1481,7 +1482,7 @@ export class DbService {
       .match({ appId: this.user.id });
 
     if (error) {
-      Utils.showToast('Fehler beim Aktualisieren des Profils', 'danger');
+      Utils.showToast(translate('db.updateProfileFailed'), 'danger');
       throw error;
     }
 
@@ -1502,7 +1503,7 @@ export class DbService {
               .match({ id: player.id });
 
             if (updateError) {
-              Utils.showToast('Fehler beim Aktualisieren der Kirchenzuordnung', 'danger');
+              Utils.showToast(translate('db.updateChurchFailed'), 'danger');
               throw updateError;
             }
           }
@@ -1530,7 +1531,7 @@ export class DbService {
       .maybeSingle();
 
     if (error) {
-      throw new Error('Fehler beim Laden der Rolle');
+      throw new Error(translate('db.loadRoleFailed'));
     }
 
     return data?.role ?? Role.NONE;
@@ -1549,7 +1550,7 @@ export class DbService {
         .eq('tenantId', this.tenant().id);
 
       if (error) {
-        Utils.showToast('Fehler beim Laden der Personen', 'danger');
+        Utils.showToast(translate('db.loadPeopleFailed'), 'danger');
         throw error;
       }
 
@@ -1574,7 +1575,7 @@ export class DbService {
         .order('lastName');
 
       if (error) {
-        Utils.showToast('Fehler beim Laden der Kinder');
+        Utils.showToast(translate('db.loadChildrenFailed'));
         throw error;
       }
 
@@ -1597,7 +1598,7 @@ export class DbService {
       .order('lastName');
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Personen', 'danger');
+      Utils.showToast(translate('db.loadPeopleFailed'), 'danger');
       throw error;
     }
 
@@ -1625,11 +1626,11 @@ export class DbService {
     loading.dismiss();
 
     if (error) {
-      Utils.showToast('Fehler beim Zurücksetzen des Passworts. Versuche es später erneut', 'danger');
+      Utils.showToast(translate('db.resetPasswordFailed'), 'danger');
       return;
     }
 
-    Utils.showToast('Eine E-Mail mit weiteren Anweisungen wurde dir zugesandt', 'success', 4000);
+    Utils.showToast(translate('db.resetPasswordSent'), 'success', 4000);
   }
 
   async resendConfirmationEmail(email: string): Promise<void> {
@@ -1651,7 +1652,7 @@ export class DbService {
     loading.dismiss();
 
     if (!error && data?.user) {
-      return { success: true, message: 'Passwort wurde erfolgreich aktualisiert' };
+      return { success: true, message: translate('db.passwordUpdated') };
     }
 
     console.error('[updatePassword] failed:', error);
@@ -1659,22 +1660,22 @@ export class DbService {
     let message: string;
     switch (error?.code) {
       case 'same_password':
-        message = 'Das neue Passwort darf nicht mit dem alten übereinstimmen.';
+        message = translate('db.passwordSameAsOld');
         break;
       case 'weak_password':
       case 'password_strength_insufficient':
-        message = 'Das Passwort ist zu schwach. Bitte wähle ein sichereres Passwort.';
+        message = translate('db.passwordTooWeak');
         break;
       case 'over_request_rate_limit':
       case 'too_many_requests':
-        message = 'Zu viele Versuche. Bitte warte einen Moment und versuche es erneut.';
+        message = translate('db.tooManyAttemptsWait');
         break;
       case 'session_not_found':
       case 'session_expired':
-        message = 'Deine Sitzung ist abgelaufen. Bitte fordere den Link zum Zurücksetzen erneut an.';
+        message = translate('db.sessionExpired');
         break;
       default:
-        message = 'Passwort konnte nicht geändert werden. Bitte versuche es erneut.';
+        message = translate('db.passwordChangeFailed');
         break;
     }
 
@@ -1692,7 +1693,7 @@ export class DbService {
   async getConductors(all: boolean = false, tenantId?: number, mainGroupId?: number): Promise<Person[]> {
     const mainGroupIdLocal = mainGroupId ?? this.getMainGroup()?.id;
     if (!mainGroupIdLocal) {
-      throw new Error('Hauptgruppe nicht gefunden');
+      throw new Error(translate('db.mainGroupNotFound'));
     }
     return this.conductorSvc.getConductors(mainGroupIdLocal, tenantId ?? this.tenant().id, all);
   }
@@ -1718,7 +1719,7 @@ export class DbService {
         await this.addUserToTenant(user?.id, role, player.email, tenantId);
         player.appId = user?.id;
       } catch (error) {
-        throw new Error(`Fehler beim Erstellen des Accounts: ${error.message}`);
+        throw new Error(translate('db.createAccountFailedWith', { error: error.message }));
       }
     } else if (player.email && register && role) {
       const appId: string = await this.registerUser(
@@ -1922,7 +1923,7 @@ export class DbService {
           const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
 
           if (!attType) {
-            throw new Error('Fehler beim Laden des Anwesenheitstyps');
+            throw new Error(translate('db.loadAttendanceTypeFailed'));
           }
 
           let status = attType.default_status;
@@ -2240,7 +2241,7 @@ export class DbService {
       .select();
 
     if (error) {
-      throw new Error('Fehler beim updaten des Spielers');
+      throw new Error(translate('db.updatePlayerFailed'));
     }
 
     if (pausedAction) {
@@ -2275,7 +2276,7 @@ export class DbService {
       .eq('id', playerId);
 
     if (error) {
-      throw new Error('Fehler beim Pausieren in anderer Instanz');
+      throw new Error(translate('db.pauseOtherFailed'));
     }
 
     if (paused) {
@@ -2474,7 +2475,7 @@ export class DbService {
         .match({ userId: appId });
 
       if (error) {
-        throw new Error('Fehler beim Löschen des Accounts vom Mandanten');
+        throw new Error(translate('db.removeFromTenantFailed'));
       }
       return;
     }
@@ -2513,7 +2514,7 @@ export class DbService {
       .match({ userId: appId });
 
     if (error) {
-      throw new Error('Fehler beim Löschen des Accounts vom Mandanten');
+      throw new Error(translate('db.removeFromTenantFailed'));
     }
   }
 
@@ -2805,7 +2806,7 @@ export class DbService {
       .eq('tenantId', this.tenant().id)
       .eq('attendance_id', attendance_id);
     if (error) {
-      throw new Error('Fehler beim Aktualisieren des Song-Verlaufs');
+      throw new Error(translate('db.updateSongHistoryFailed'));
     }
   }
 
@@ -2925,7 +2926,7 @@ export class DbService {
   async proposeAgendaItem(title: string, description?: string): Promise<void> {
     this.checkDemoRestriction();
     const person = await this.loadTeamPerson();
-    if (!person) throw new Error('Keine Person gefunden');
+    if (!person) throw new Error(translate('db.noPersonFound'));
     return this.agendaItemSvc.proposeAgendaItem({
       tenant_id: this.tenant().id,
       title,
@@ -3258,7 +3259,7 @@ export class DbService {
       .match({ id: tenantId });
 
     if (error) {
-      Utils.showToast('Fehler beim Löschen der Instanz, bitte versuche es später erneut.', 'danger');
+      Utils.showToast(translate('db.deleteInstanceFailed'), 'danger');
       throw new Error(error.message);
     }
 
@@ -3270,7 +3271,7 @@ export class DbService {
       this.router.navigateByUrl('/register');
     }
 
-    Utils.showToast('Instanz wurde erfolgreich gelöscht!');
+    Utils.showToast(translate('db.instanceDeleted'));
   }
 
   async setFavoriteTenant(tenantId: number, favorite: boolean): Promise<void> {
@@ -3284,7 +3285,7 @@ export class DbService {
     this.tenants.set(await this.getTenants());
 
     if (error) {
-      Utils.showToast('Fehler beim Setzen des Favoriten, bitte versuche es später erneut.', 'danger');
+      Utils.showToast(translate('db.favoriteFailed'), 'danger');
       throw new Error(error.message);
     }
   }
@@ -3298,7 +3299,7 @@ export class DbService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Erstellen der Instanz, bitte versuche es später erneut.', 'danger');
+      Utils.showToast(translate('db.createInstanceFailed'), 'danger');
       throw new Error(error.message);
     }
 
@@ -3323,7 +3324,7 @@ export class DbService {
       .insert(usersToAdd);
 
     if (userError) {
-      Utils.showToast('Fehler beim Erstellen des Benutzers, bitte versuche es später erneut.', 'danger');
+      Utils.showToast(translate('db.createUserFailed'), 'danger');
       throw new Error(userError.message);
     }
 
@@ -3331,7 +3332,7 @@ export class DbService {
 
     await this.addDefaultAttendanceTypes(data.id, tenant.type);
 
-    Utils.showToast('Instanz wurde erfolgreich erstellt!');
+    Utils.showToast(translate('db.instanceCreated'));
 
     await this.setTenant(data.id);
     this.router.navigateByUrl(Utils.getUrl(Role.ADMIN));
@@ -3345,7 +3346,7 @@ export class DbService {
       .insert(defaultTypes as any[]);
 
     if (error) {
-      Utils.showToast('Fehler beim Hinzufügen der Standard Anwesenheitstypen', 'danger');
+      Utils.showToast(translate('db.addDefaultTypesFailed'), 'danger');
       throw error;
     }
   }
@@ -3413,7 +3414,7 @@ export class DbService {
       .select('*, tenant:tenant_id(*)');
 
     if (tenantGroupTenantsError) {
-      Utils.showToast('Fehler beim Laden der Gruppenteilnehmer', 'danger');
+      Utils.showToast(translate('db.loadGroupMembersFailed'), 'danger');
       throw tenantGroupTenantsError;
     }
 
@@ -3434,7 +3435,7 @@ export class DbService {
       .eq('userId', userId);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Mandanten', 'danger');
+      Utils.showToast(translate('db.loadTenantsFailed2'), 'danger');
       throw error;
     }
 
@@ -3466,7 +3467,7 @@ export class DbService {
    */
   private checkDemoRestriction(): void {
     if (this.isDemo()) {
-      Utils.showToast('Diese Funktion ist im Demo-Modus nicht verfügbar.', 'warning');
+      Utils.showToast(translate('db.demoRestricted'), 'warning');
       throw new Error('Demo mode restriction');
     }
   }
@@ -3611,7 +3612,7 @@ export class DbService {
         await this.addPlayer(player, register, role);
         imported.push(player);
       } catch (error) {
-        failed.push({ player, reason: error?.message ?? 'Unbekannter Fehler' });
+        failed.push({ player, reason: error?.message ?? translate('common.unknownError') });
       } finally {
         done++;
         opts.onProgress?.(done, total);
@@ -3714,7 +3715,7 @@ export class DbService {
       try {
         imported.push(await this.addSong(song as Song));
       } catch (error) {
-        failed.push({ song, reason: error?.message ?? 'Unbekannter Fehler' });
+        failed.push({ song, reason: error?.message ?? translate('common.unknownError') });
       } finally {
         done++;
         opts.onProgress?.(done, total);
@@ -3758,10 +3759,9 @@ export class DbService {
 
   async handoverPerson(person: Player, targetTenant: Tenant, groupId: number, stayInInstance: boolean = false, mainGroup: number | null): Promise<void> {
     if (await this.personExistsInTenant(person, targetTenant.id)) {
-      const identifier = person.email
-        ? `der E-Mail-Adresse "${person.email}"`
-        : `dem Namen "${person.firstName} ${person.lastName}"`;
-      throw new Error(`In der Zielinstanz existiert bereits eine Person mit ${identifier}.`);
+      throw new Error(person.email
+        ? translate('db.personExistsWithEmail', { email: person.email })
+        : translate('db.personExistsWithName', { name: `${person.firstName} ${person.lastName}` }));
     }
 
     const newPerson: Player = {

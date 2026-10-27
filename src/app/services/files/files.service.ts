@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
+import { translate } from '@jsverse/transloco';
 
 const PENDING_FILE_LINK_KEY = 'pendingFileLink';
 
@@ -289,7 +290,7 @@ export class FilesService {
     const sanitizedFolder = this.sanitizeSegment(folderName);
 
     if (!sanitizedFolder) {
-      throw new Error('Ungültiger Ordnername.');
+      throw new Error(translate('svc.invalidFolderName'));
     }
 
     const folderRelativePath = this.toRelativePath(currentRelativePath, sanitizedFolder);
@@ -319,7 +320,7 @@ export class FilesService {
     const fileName = this.sanitizeFileName(file.name);
 
     if (!fileName) {
-      throw new Error('Ungültiger Dateiname.');
+      throw new Error(translate('svc.invalidFileName'));
     }
 
     const key = `${this.tenantPrefix(tenantId, currentRelativePath)}/${fileName}`;
@@ -357,7 +358,7 @@ export class FilesService {
       .createSignedUrl(key, expiresInSeconds);
 
     if (error || !data?.signedUrl) {
-      throw error || new Error('Signed URL konnte nicht erzeugt werden.');
+      throw error || new Error(translate('svc.signedUrlFailed'));
     }
 
     return data.signedUrl;
@@ -380,7 +381,7 @@ export class FilesService {
     const sanitizedName = isFolder ? this.sanitizeSegment(newName) : this.sanitizeFileName(newName);
 
     if (!sanitizedName) {
-      throw new Error('Ungültiger Name.');
+      throw new Error(translate('svc.invalidName'));
     }
 
     const targetRelativePath = this.toRelativePath(parent, sanitizedName);
@@ -415,7 +416,7 @@ export class FilesService {
     if (isFolder) {
       const sourceNormalized = this.normalizeRelativePath(relativePath);
       if (normalizedTarget.startsWith(sourceNormalized)) {
-        throw new Error('Ordner kann nicht in sich selbst verschoben werden.');
+        throw new Error(translate('svc.folderIntoItself'));
       }
 
       await this.moveFolder(tenantId, relativePath, targetRelativePath);

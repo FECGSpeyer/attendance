@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Gemeinde-Übersicht</ion-title>
+    <ion-title>{{ 'churchOverview.title' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="close()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -12,7 +12,7 @@
 <ion-content color="light">
   <ion-list [inset]="true">
     <ion-list-header>
-      <ion-label>Gesamt</ion-label>
+      <ion-label>{{ 'churchOverview.total' | transloco }}</ion-label>
     </ion-list-header>
     <ion-item-group>
       <ion-item>
@@ -22,14 +22,14 @@
       </ion-item>
       <ion-item>
         <ion-icon slot="start" name="business-outline"></ion-icon>
-        <ion-label>Gemeinden</ion-label>
+        <ion-label>{{ 'churchOverview.churches' | transloco }}</ion-label>
         <ion-badge slot="end" color="primary">{{ churchCounts.length }}</ion-badge>
       </ion-item>
     </ion-item-group>
 
     @if (churchCounts.length > 0) {
     <ion-list-header>
-      <ion-label>Gemeinden</ion-label>
+      <ion-label>{{ 'churchOverview.churches' | transloco }}</ion-label>
     </ion-list-header>
     <ion-item-group>
       @for (item of churchCounts; track item.name) {
@@ -43,11 +43,11 @@
 
     @if (withoutChurch > 0) {
     <ion-list-header>
-      <ion-label>Ohne Zuordnung</ion-label>
+      <ion-label>{{ 'churchOverview.unassigned' | transloco }}</ion-label>
     </ion-list-header>
     <ion-item-group>
       <ion-item>
-        <ion-label>Ohne Gemeinde</ion-label>
+        <ion-label>{{ 'churchOverview.noChurch' | transloco }}</ion-label>
         <ion-badge slot="end" color="medium">{{ withoutChurch }}</ion-badge>
       </ion-item>
     </ion-item-group>
@@ -56,7 +56,7 @@
     @if (total === 0) {
     <ion-item-group>
       <ion-item>
-        <ion-label class="ion-text-center" color="medium">Keine Personen vorhanden</ion-label>
+        <ion-label class="ion-text-center" color="medium">{{ 'churchOverview.noPeople' | transloco }}</ion-label>
       </ion-item>
     </ion-item-group>
     }

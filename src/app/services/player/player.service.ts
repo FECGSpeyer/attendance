@@ -7,6 +7,7 @@ import { supabase } from '../base/supabase';
 import { pickPersonFields } from '../../utilities/db-helpers';
 import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
 import { RankedMatch, rankCandidates } from '../../utilities/person-matcher';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -26,7 +27,7 @@ export class PlayerService {
 
     if (error) {
       if (showToast) {
-        Utils.showToast('Fehler beim Laden des Benutzers', 'danger');
+        Utils.showToast(translate('db.loadUserFailed'), 'danger');
       }
       throw error;
     }
@@ -34,7 +35,7 @@ export class PlayerService {
     if (!data?.length) {
       const notFound: any = { code: 'PGRST116', message: 'No rows found' };
       if (showToast) {
-        Utils.showToast('Fehler beim Laden des Benutzers', 'danger');
+        Utils.showToast(translate('db.loadUserFailed'), 'danger');
       }
       throw notFound;
     }
@@ -66,7 +67,7 @@ export class PlayerService {
         .eq('tenantId', tenantId);
 
       if (error) {
-        Utils.showToast('Fehler beim Laden der Personen', 'danger');
+        Utils.showToast(translate('db.loadPeopleFailed'), 'danger');
         throw error;
       }
 
@@ -89,7 +90,7 @@ export class PlayerService {
         .order('lastName');
 
       if (error) {
-        Utils.showToast('Fehler beim Laden der Kinder');
+        Utils.showToast(translate('db.loadChildrenFailed'));
         throw error;
       }
 
@@ -112,7 +113,7 @@ export class PlayerService {
       .order('lastName');
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Personen', 'danger');
+      Utils.showToast(translate('db.loadPeopleFailed'), 'danger');
       throw error;
     }
 
@@ -134,7 +135,7 @@ export class PlayerService {
       .order('lastName');
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Gruppenmitglieder', 'danger');
+      Utils.showToast(translate('svc.loadGroupMembersFailed'), 'danger');
       throw error;
     }
 
@@ -153,7 +154,7 @@ export class PlayerService {
       .order('created_at', { ascending: true });
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Personen', 'danger');
+      Utils.showToast(translate('db.loadPeopleFailed'), 'danger');
       throw error;
     }
 
@@ -225,7 +226,7 @@ export class PlayerService {
       .limit(500);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Personen', 'danger');
+      Utils.showToast(translate('db.loadPeopleFailed'), 'danger');
       throw error;
     }
 
@@ -257,13 +258,13 @@ export class PlayerService {
       .eq('person_id', fromId);
 
     if (error) {
-      throw new Error('Fehler beim Übertragen der Abwesenheiten');
+      throw new Error(translate('svc.transferAbsencesFailed'));
     }
   }
 
   async getConductors(tenantId: number, mainGroupId: number, all: boolean = false): Promise<Person[]> {
     if (!mainGroupId) {
-      throw new Error('Hauptgruppe nicht gefunden');
+      throw new Error(translate('db.mainGroupNotFound'));
     }
 
     const { data, error } = await supabase
@@ -275,8 +276,8 @@ export class PlayerService {
       .order('lastName');
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Hauptgruppen-Personen', 'danger');
-      throw new Error('Fehler beim Laden der Personen');
+      Utils.showToast(translate('svc.loadMainGroupPeopleFailed'), 'danger');
+      throw new Error(translate('db.loadPeopleFailed'));
     }
 
     return (all ? data : data.filter((c: any) => !c.left) as unknown as Person[])
@@ -342,7 +343,7 @@ export class PlayerService {
       .select();
 
     if (error) {
-      throw new Error('Fehler beim updaten des Spielers');
+      throw new Error(translate('db.updatePlayerFailed'));
     }
 
     // Propagate shared identity fields to all linked rows
@@ -379,7 +380,7 @@ export class PlayerService {
       .single();
 
     if (error) {
-      throw new Error('Fehler beim updaten des Spielers');
+      throw new Error(translate('db.updatePlayerFailed'));
     }
 
     return data;
@@ -392,7 +393,7 @@ export class PlayerService {
       .in('id', playerIds);
 
     if (error) {
-      throw new Error('Fehler beim Verknüpfen der Personen');
+      throw new Error(translate('svc.linkPeopleFailed'));
     }
   }
 
@@ -407,7 +408,7 @@ export class PlayerService {
       .match({ id });
 
     if (error) {
-      throw new Error('Fehler beim updaten der Zusatzfelder');
+      throw new Error(translate('svc.updateExtraFieldsFailed'));
     }
   }
 
@@ -421,7 +422,7 @@ export class PlayerService {
       .match({ id });
 
     if (error) {
-      throw new Error('Fehler beim updaten des Feldes');
+      throw new Error(translate('svc.updateFieldFailed'));
     }
   }
 
@@ -505,7 +506,7 @@ export class PlayerService {
       .match({ appId });
 
     if (error) {
-      Utils.showToast('Fehler beim Aktualisieren des Profils', 'danger');
+      Utils.showToast(translate('db.updateProfileFailed'), 'danger');
       throw error;
     }
   }
@@ -537,7 +538,7 @@ export class PlayerService {
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Personen', 'danger');
+      Utils.showToast(translate('db.loadPeopleFailed'), 'danger');
       throw error;
     }
 
@@ -572,7 +573,7 @@ export class PlayerService {
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Personen', 'danger');
+      Utils.showToast(translate('db.loadPeopleFailed'), 'danger');
       throw error;
     }
 

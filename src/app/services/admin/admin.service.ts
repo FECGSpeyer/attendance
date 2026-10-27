@@ -3,6 +3,7 @@ import { supabase } from '../base/supabase';
 import { Admin, TenantUser } from '../../utilities/interfaces';
 import { Role, SUPER_DEVELOPER_EMAIL } from '../../utilities/constants';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,7 @@ export class AdminService {
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Admins', 'danger');
+      Utils.showToast(translate('svc.loadAdminsFailed'), 'danger');
       throw error;
     }
 
@@ -34,7 +35,7 @@ export class AdminService {
         .match({ userId: appId });
 
       if (error) {
-        throw new Error('Fehler beim Löschen des Accounts vom Mandanten');
+        throw new Error(translate('db.removeFromTenantFailed'));
       }
       return;
     }
@@ -58,7 +59,7 @@ export class AdminService {
       .match({ userId: appId });
 
     if (error) {
-      throw new Error('Fehler beim Löschen des Accounts vom Mandanten');
+      throw new Error(translate('db.removeFromTenantFailed'));
     }
   }
 
@@ -71,7 +72,7 @@ export class AdminService {
       .match({ tenantId, userId });
 
     if (error) {
-      throw new Error('Fehler beim Updaten des Benutzers');
+      throw new Error(translate('db.updateUserFailed'));
     }
   }
 
@@ -84,7 +85,7 @@ export class AdminService {
       .maybeSingle();
 
     if (error) {
-      throw new Error('Fehler beim Laden der Rolle');
+      throw new Error(translate('db.loadRoleFailed'));
     }
 
     return data?.role ?? Role.NONE;
@@ -98,7 +99,7 @@ export class AdminService {
       .single();
 
     if (error) {
-      throw new Error('Fehler beim Laden des Mandanten');
+      throw new Error(translate('svc.loadTenantFailed'));
     }
 
     return data;
@@ -112,7 +113,7 @@ export class AdminService {
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast('Fehler beim Setzen des Favoriten, bitte versuche es später erneut.', 'danger');
+      Utils.showToast(translate('db.favoriteFailed'), 'danger');
       throw new Error(error.message);
     }
   }

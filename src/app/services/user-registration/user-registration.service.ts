@@ -3,6 +3,7 @@ import { supabase } from '../base/supabase';
 import { TenantUser } from '../../utilities/interfaces';
 import { Role, SupabaseTable } from '../../utilities/constants';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +30,7 @@ export class UserRegistrationService {
           try {
             await this.updateTenantUserRole(userId, tenantId, Role.ADMIN);
           } catch (error) {
-            throw new Error('Fehler beim Aktualisieren der Benutzerrolle');
+            throw new Error(translate('db.updateRoleFailed'));
           }
         }
         return userId;
@@ -49,7 +50,7 @@ export class UserRegistrationService {
         });
 
         if (error || !data?.mailSent) {
-          throw new Error('Fehler beim Informieren des Benutzers');
+          throw new Error(translate('db.notifyUserFailed'));
         }
       }
 
@@ -69,14 +70,14 @@ export class UserRegistrationService {
       });
 
       if (error || !data?.user?.id) {
-        throw new Error('Fehler beim Erstellen des Accounts');
+        throw new Error(translate('db.createAccountFailed'));
       }
 
       await this.addUserToTenant(data.user.id, role, normalizedEmail, tenantId);
 
       return data.user.id;
     } catch (e: any) {
-      throw new Error(e.message || 'Fehler beim Erstellen des Accounts');
+      throw new Error(e.message || translate('db.createAccountFailed'));
     }
   }
 
@@ -92,7 +93,7 @@ export class UserRegistrationService {
     });
 
     if (error || !data?.mailSent) {
-      throw new Error('Fehler beim Informieren des Benutzers');
+      throw new Error(translate('db.notifyUserFailed'));
     }
   }
 
@@ -107,7 +108,7 @@ export class UserRegistrationService {
     });
 
     if (error || !data?.mailSent) {
-      throw new Error('Fehler beim Informieren des Benutzers');
+      throw new Error(translate('db.notifyUserFailed'));
     }
   }
 
@@ -117,8 +118,8 @@ export class UserRegistrationService {
       .insert({ userId, role, tenantId, email });
 
     if (error) {
-      Utils.showToast('Fehler beim Hinzufügen des Benutzers zum Mandanten', 'danger');
-      throw new Error('Fehler beim Hinzufügen des Benutzers zum Mandanten');
+      Utils.showToast(translate('svc.addUserToTenantFailed'), 'danger');
+      throw new Error(translate('svc.addUserToTenantFailed'));
     }
   }
 
@@ -129,7 +130,7 @@ export class UserRegistrationService {
       .match({ tenantId, userId });
 
     if (error) {
-      throw new Error('Fehler beim Updaten des Benutzers');
+      throw new Error(translate('db.updateUserFailed'));
     }
   }
 
@@ -142,7 +143,7 @@ export class UserRegistrationService {
       .select('*')
       .eq('email', email.toLowerCase().trim());
 
-    if (error) {throw new Error('Fehler beim Laden des Benutzers');}
+    if (error) {throw new Error(translate('db.loadUserFailed'));}
 
     const foundTenantUser = data?.find((tenantUser: TenantUser) => tenantUser.tenantId === tenantId);
 
@@ -188,12 +189,12 @@ export class UserRegistrationService {
         .eq('appId', userId)
         .maybeSingle();
 
-      if (playersError) {throw new Error('Fehler beim Laden des Benutzers');}
+      if (playersError) {throw new Error(translate('db.loadUserFailed'));}
 
       if (playersData) {
         return {
           exists: true,
-          errorMessage: `Der Benutzer ist bereits in diesem Mandanten: ${playersData.firstName} ${playersData.lastName} (${Utils.getRoleText(role)})`
+          errorMessage: translate('db.userAlreadyInTenantAs', { name: `${playersData.firstName} ${playersData.lastName}`, role: Utils.getRoleText(role) })
         };
       }
     } else if (role === Role.PARENT) {
@@ -204,12 +205,12 @@ export class UserRegistrationService {
         .eq('appId', userId)
         .maybeSingle();
 
-      if (parentError) {throw new Error('Fehler beim Laden des Benutzers');}
+      if (parentError) {throw new Error(translate('db.loadUserFailed'));}
 
       if (parentData) {
         return {
           exists: true,
-          errorMessage: `Der Benutzer ist bereits in dieser Instanz: ${parentData.firstName} ${parentData.lastName} (Elternteil)`
+          errorMessage: translate('db.userAlreadyInInstanceAs', { name: `${parentData.firstName} ${parentData.lastName}`, role: translate('db.roleParent') })
         };
       }
     } else if (role === Role.VIEWER) {
@@ -220,16 +221,16 @@ export class UserRegistrationService {
         .eq('appId', userId)
         .maybeSingle();
 
-      if (viewerError) {throw new Error('Fehler beim Laden des Benutzers');}
+      if (viewerError) {throw new Error(translate('db.loadUserFailed'));}
 
       if (viewerData) {
         return {
           exists: true,
-          errorMessage: `Der Benutzer ist bereits in diesem Mandanten: ${viewerData.firstName} ${viewerData.lastName} (Beobachter)`
+          errorMessage: translate('db.userAlreadyInTenantAs', { name: `${viewerData.firstName} ${viewerData.lastName}`, role: translate('db.roleViewer') })
         };
       }
     } else {
-      throw new Error('Der Benutzer ist bereits in diesem Mandanten');
+      throw new Error(translate('db.userAlreadyInTenant'));
     }
 
     return { exists: false };
@@ -263,7 +264,7 @@ export class UserRegistrationService {
       .single();
 
     if (updateError) {
-      throw new Error('Fehler beim updaten des Benutzers');
+      throw new Error(translate('db.updateUserFailed2'));
     }
 
     return data;

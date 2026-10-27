@@ -6,69 +6,69 @@
     @if (showDashboardTab) {
       <ion-tab-button tab="home-dashboard">
         <ion-icon name="grid-outline"></ion-icon>
-        <ion-label>Dashboard</ion-label>
+        <ion-label>{{ 'tabs.dashboard' | transloco }}</ion-label>
       </ion-tab-button>
     }
 
     @if (isParent) {
       <ion-tab-button tab="parents">
         <ion-icon name="person-outline"></ion-icon>
-        <ion-label>Termine</ion-label>
+        <ion-label>{{ 'tabs.events' | transloco }}</ion-label>
       </ion-tab-button>
     }
 
     @if (!isConductor && !isParent) {
       <ion-tab-button tab="signout">
         <ion-icon name="person-outline"></ion-icon>
-        <ion-label>Meine Termine</ion-label>
+        <ion-label>{{ 'tabs.myEvents' | transloco }}</ion-label>
       </ion-tab-button>
     }
 
     @if (showMembersTab) {
       <ion-tab-button tab="members">
         <ion-icon name="people-outline"></ion-icon>
-        <ion-label>Mitglieder</ion-label>
+        <ion-label>{{ 'tabs.members' | transloco }}</ion-label>
       </ion-tab-button>
     }
 
     @if ((isPlayer || isHelper) && hasMultipleTenants) {
       <ion-tab-button tab="overview">
         <ion-icon name="calendar-outline"></ion-icon>
-        <ion-label>Übersicht</ion-label>
+        <ion-label>{{ 'tabs.overview' | transloco }}</ion-label>
       </ion-tab-button>
     }
 
     @if (isConductor) {
       <ion-tab-button tab="player">
         <ion-icon name="people-outline"></ion-icon>
-        <ion-label>Personen</ion-label>
+        <ion-label>{{ 'common.people' | transloco }}</ion-label>
       </ion-tab-button>
     }
 
     @if (isHelper || isConductor) {
       <ion-tab-button tab="attendance">
         <ion-icon name="checkbox-outline"></ion-icon>
-        <ion-label>Termine</ion-label>
+        <ion-label>{{ 'tabs.events' | transloco }}</ion-label>
       </ion-tab-button>
     }
 
     @if (showSongsTab) {
       <ion-tab-button tab="songs-tab">
         <ion-icon name="musical-notes-outline"></ion-icon>
-        <ion-label>Werke</ion-label>
+        <ion-label>{{ 'tabs.songs' | transloco }}</ion-label>
       </ion-tab-button>
     }
 
     @if (showOrgPlansTab) {
       <ion-tab-button tab="org-plans">
         <ion-icon name="business-outline"></ion-icon>
-        <ion-label>Org</ion-label>
+        <ion-label>{{ 'tabs.org' | transloco }}</ion-label>
       </ion-tab-button>
     }
 
     <ion-tab-button tab="settings">
       <ion-icon name="ellipsis-horizontal"></ion-icon>
-      <ion-label>Mehr</ion-label>
+      <ion-label>{{ 'tabs.more' | transloco }}</ion-label>
     </ion-tab-button>
   </ion-tab-bar>
 

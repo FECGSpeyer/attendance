@@ -5,7 +5,7 @@ import 'dayjs/locale/de';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/es';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
-import { AppLanguage, DEFAULT_LANGUAGE, ENABLED_LANGUAGES, INTL_LOCALES, normalizeLanguage, resolveLanguage } from './languages';
+import { AppLanguage, DEFAULT_LANGUAGE, ENABLED_LANGUAGES, INTL_LOCALES, normalizeLanguage, resolveLanguage, setActiveLanguage } from './languages';
 
 const STORAGE_KEY = 'appLanguage';
 
@@ -66,6 +66,7 @@ export class LocaleService {
   }
 
   private apply(lang: AppLanguage): void {
+    setActiveLanguage(lang);
     this.transloco.setActiveLang(lang);
     dayjs.locale(lang);
     if (typeof document !== 'undefined') {

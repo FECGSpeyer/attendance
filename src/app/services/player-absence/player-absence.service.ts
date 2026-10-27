@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { PlayerAbsence } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db: any = supabase;
@@ -20,7 +21,7 @@ export class PlayerAbsenceService {
       .order('from_date');
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Abwesenheiten', 'danger');
+      Utils.showToast(translate('svc.loadAbsencesFailed'), 'danger');
       throw error;
     }
 
@@ -34,7 +35,7 @@ export class PlayerAbsenceService {
       .eq('tenant_id', tenantId);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Abwesenheiten', 'danger');
+      Utils.showToast(translate('svc.loadAbsencesFailed'), 'danger');
       throw error;
     }
 
@@ -49,7 +50,7 @@ export class PlayerAbsenceService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Speichern der Abwesenheit', 'danger');
+      Utils.showToast(translate('svc.saveAbsenceFailed'), 'danger');
       throw error;
     }
 
@@ -63,7 +64,7 @@ export class PlayerAbsenceService {
       .eq('id', id);
 
     if (error) {
-      Utils.showToast('Fehler beim Löschen der Abwesenheit', 'danger');
+      Utils.showToast(translate('svc.deleteAbsenceFailed'), 'danger');
       throw error;
     }
   }

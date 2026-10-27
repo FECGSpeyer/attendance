@@ -649,7 +649,7 @@ export class AttListPage implements OnInit {
       componentProps: {
         attendance: att,
         plan: att.plan as Plan,
-        isPractice: attType?.name?.toLowerCase().includes('probe') || attType?.name?.toLowerCase().includes('übung') || att.type === 'uebung',
+        isPractice: Utils.isPracticeTypeName(attType?.name) || att.type === 'uebung',
         songs: this.songs,
         defaultLive: attendanceIsRunning(att),
         canEdit: this.isConductor || this.isHelper,

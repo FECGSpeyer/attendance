@@ -14,6 +14,8 @@ import { CommonModule } from '@angular/common';
 import { AlertController } from '@ionic/angular/lazy';
 import { Editor, JSONContent } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
+import { translate } from '@jsverse/transloco';
+import { TranslocoModule } from '@jsverse/transloco';
 
 /**
  * Small rich-text editor for Mitteilungen with a fixed toolbar (works on
@@ -25,20 +27,20 @@ import StarterKit from '@tiptap/starter-kit';
 @Component({
   selector: 'app-message-editor',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslocoModule],
   template: `
-    <div class="toolbar" role="toolbar" aria-label="Formatierung">
-      <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('toggleBold')" [class.active]="isActive('bold')" aria-label="Fett"><b>B</b></button>
-      <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('toggleItalic')" [class.active]="isActive('italic')" aria-label="Kursiv"><i>I</i></button>
-      <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('toggleUnderline')" [class.active]="isActive('underline')" aria-label="Unterstrichen"><u>U</u></button>
-      <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('toggleStrike')" [class.active]="isActive('strike')" aria-label="Durchgestrichen"><s>S</s></button>
+    <div class="toolbar" role="toolbar" [attr.aria-label]="'editor.formatting' | transloco">
+      <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('toggleBold')" [class.active]="isActive('bold')" [attr.aria-label]="'editor.bold' | transloco"><b>B</b></button>
+      <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('toggleItalic')" [class.active]="isActive('italic')" [attr.aria-label]="'editor.italic' | transloco"><i>I</i></button>
+      <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('toggleUnderline')" [class.active]="isActive('underline')" [attr.aria-label]="'editor.underline' | transloco"><u>U</u></button>
+      <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('toggleStrike')" [class.active]="isActive('strike')" [attr.aria-label]="'editor.strike' | transloco"><s>S</s></button>
       <span class="sep"></span>
-      <button type="button" (mousedown)="$event.preventDefault()" (click)="toggleHeading()" [class.active]="isActive('heading')" aria-label="Überschrift">H</button>
-      <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('toggleBulletList')" [class.active]="isActive('bulletList')" aria-label="Aufzählung">&#8226;&#8801;</button>
-      <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('toggleOrderedList')" [class.active]="isActive('orderedList')" aria-label="Nummerierte Liste">1&#8801;</button>
+      <button type="button" (mousedown)="$event.preventDefault()" (click)="toggleHeading()" [class.active]="isActive('heading')" [attr.aria-label]="'editor.heading' | transloco">H</button>
+      <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('toggleBulletList')" [class.active]="isActive('bulletList')" [attr.aria-label]="'editor.bulletList' | transloco">&#8226;&#8801;</button>
+      <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('toggleOrderedList')" [class.active]="isActive('orderedList')" [attr.aria-label]="'editor.orderedList' | transloco">1&#8801;</button>
       <span class="sep"></span>
-      <button type="button" (mousedown)="$event.preventDefault()" (click)="editLink()" [class.active]="isActive('link')" aria-label="Link">&#128279;</button>
-      <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('undo')" aria-label="Rückgängig">&#8630;</button>
+      <button type="button" (mousedown)="$event.preventDefault()" (click)="editLink()" [class.active]="isActive('link')" [attr.aria-label]="'editor.link' | transloco">&#128279;</button>
+      <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('undo')" [attr.aria-label]="'editor.undo' | transloco">&#8630;</button>
     </div>
     <div class="host-wrap">
       @if (empty) {
@@ -103,7 +105,7 @@ export class MessageEditorComponent implements AfterViewInit, OnDestroy {
   @ViewChild('editorHost') private editorHost: ElementRef<HTMLDivElement>;
 
   @Input() content: JSONContent | null = null;
-  @Input() placeholder = 'Nachricht schreiben …';
+  @Input() placeholder = translate('editor.messagePlaceholder');
   @Output() contentChange = new EventEmitter<JSONContent>();
 
   empty = true;
@@ -164,20 +166,20 @@ export class MessageEditorComponent implements AfterViewInit, OnDestroy {
     const hasSelection = from !== to;
 
     const alert = await this.alertController.create({
-      header: 'Link',
+      header: translate('editor.link'),
       inputs: [
         { name: 'url', type: 'url', placeholder: 'https://…', value: current },
-        ...(hasSelection || current ? [] : [{ name: 'text', type: 'text' as const, placeholder: 'Angezeigter Text (optional)' }]),
+        ...(hasSelection || current ? [] : [{ name: 'text', type: 'text' as const, placeholder: translate('editor.linkText') }]),
       ],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         ...(current ? [{
-          text: 'Entfernen',
+          text: translate('common.remove'),
           role: 'destructive',
           handler: () => { this.editor?.chain().focus().extendMarkRange('link').unsetLink().run(); },
         }] : []),
         {
-          text: 'Übernehmen',
+          text: translate('common.apply'),
           handler: (data: { url?: string; text?: string }) => {
             let url = (data.url ?? '').trim();
             if (!url) return;

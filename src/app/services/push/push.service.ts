@@ -11,6 +11,7 @@ import { firstValueFrom } from 'rxjs';
 import { DbService } from '../db.service';
 import { Role } from '../../utilities/constants';
 import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
+import { translate } from '@jsverse/transloco';
 
 const PUSH_PROMPT_SHOWN_KEY = 'push_prompt_shown';
 
@@ -64,18 +65,18 @@ export class PushService {
     }
 
     const alert = await this.alertController.create({
-      header: 'Push-Benachrichtigungen',
-      message: 'Möchtest du Push-Benachrichtigungen aktivieren? Du wirst über Termine, Checklisten und wichtige Ereignisse informiert.',
+      header: translate('svc.pushTitle'),
+      message: translate('svc.pushPrompt'),
       buttons: [
         {
-          text: 'Später',
+          text: translate('svc.later'),
           role: 'cancel',
           handler: () => {
             localStorage.setItem(PUSH_PROMPT_SHOWN_KEY, 'true');
           }
         },
         {
-          text: 'Aktivieren',
+          text: translate('svc.activate'),
           handler: async () => {
             localStorage.setItem(PUSH_PROMPT_SHOWN_KEY, 'true');
             await this.initPush();
@@ -216,12 +217,12 @@ export class PushService {
   // and FirebaseMessaging Notification.
   private async showForegroundAlert(notification: { title?: string; body?: string; data?: any }): Promise<void> {
     const alert = await this.alertController.create({
-      header: notification.title || 'Benachrichtigung',
+      header: notification.title || translate('svc.notification'),
       message: notification.body || '',
       buttons: [
         { text: 'OK', role: 'cancel' },
         {
-          text: 'Anzeigen',
+          text: translate('svc.show'),
           handler: () => {
             this.navigateFromData(notification.data);
           }
@@ -269,7 +270,7 @@ export class PushService {
     if (!data) return;
 
     // tenant/tenantUser must be loaded — caller (handlePendingPushNavigation)
-    // has already awaited checkToken. For warm-start "Anzeigen" it's already set.
+    // has already awaited checkToken. For warm-start translate('svc.show') it's already set.
     if (!this.db.tenant() || !this.db.tenantUser()) {
       // No session — nothing we can do. Let the normal login flow proceed.
       return;

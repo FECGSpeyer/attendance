@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +19,7 @@ export class FeedbackService {
       });
 
     if (error) {
-      Utils.showToast('Fehler beim Senden der Frage', 'danger');
+      Utils.showToast(translate('svc.sendQuestionFailed'), 'danger');
       throw error;
     }
   }
@@ -43,7 +44,7 @@ export class FeedbackService {
       });
 
     if (error) {
-      Utils.showToast('Fehler beim Senden des Feedbacks', 'danger');
+      Utils.showToast(translate('svc.sendFeedbackFailed'), 'danger');
       throw error;
     }
   }

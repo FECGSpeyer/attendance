@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -53,9 +54,9 @@ export class TelegramService {
     loading.dismiss();
 
     if (!sendError) {
-      Utils.showToast('Nachricht wurde erfolgreich gesendet!');
+      Utils.showToast(translate('svc.messageSent'));
     } else {
-      Utils.showToast('Fehler beim Senden der Nachricht, versuche es später erneut!', 'danger');
+      Utils.showToast(translate('svc.sendMessageFailed'), 'danger');
     }
 
     window.setTimeout(async () => {
@@ -76,9 +77,9 @@ export class TelegramService {
     });
 
     if (!sendError) {
-      Utils.showToast('Nachricht wurde erfolgreich gesendet!');
+      Utils.showToast(translate('svc.messageSent'));
     } else {
-      Utils.showToast('Fehler beim Senden der Nachricht, versuche es später erneut!', 'danger');
+      Utils.showToast(translate('svc.sendMessageFailed'), 'danger');
     }
   }
 

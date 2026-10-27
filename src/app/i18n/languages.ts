@@ -54,3 +54,19 @@ export function resolveLanguage(
   }
   return DEFAULT_LANGUAGE;
 }
+
+// Active UI language for code outside Angular DI (utilities, static helpers).
+// LocaleService keeps it in sync.
+let activeLanguage: AppLanguage = DEFAULT_LANGUAGE;
+
+export function setActiveLanguage(lang: AppLanguage): void {
+  activeLanguage = lang;
+}
+
+export function currentLanguage(): AppLanguage {
+  return activeLanguage;
+}
+
+export function currentIntlLocale(): string {
+  return INTL_LOCALES[activeLanguage];
+}

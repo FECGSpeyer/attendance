@@ -1,5 +1,6 @@
 import { Editor, Extension } from '@tiptap/core';
 import { AgendaItem } from 'src/app/utilities/interfaces';
+import { translate } from '@jsverse/transloco';
 
 export interface SlashCommandItem {
   title: string;
@@ -14,33 +15,33 @@ function buildCommandItems(
 ): SlashCommandItem[] {
   const items: SlashCommandItem[] = [
     {
-      title: 'Überschrift 1',
-      description: 'Große Überschrift',
+      title: translate('editor.h1'),
+      description: translate('editor.h1Desc'),
       action: (e) => e.chain().focus().toggleHeading({ level: 1 }).run(),
     },
     {
-      title: 'Überschrift 2',
-      description: 'Mittlere Überschrift',
+      title: translate('editor.h2'),
+      description: translate('editor.h2Desc'),
       action: (e) => e.chain().focus().toggleHeading({ level: 2 }).run(),
     },
     {
-      title: 'Aufzählung',
-      description: 'Ungeordnete Liste',
+      title: translate('editor.bulletList'),
+      description: translate('editor.bulletDesc'),
       action: (e) => e.chain().focus().toggleBulletList().run(),
     },
     {
-      title: 'Nummerierte Liste',
-      description: 'Geordnete Liste',
+      title: translate('editor.orderedList'),
+      description: translate('editor.orderedDesc'),
       action: (e) => e.chain().focus().toggleOrderedList().run(),
     },
     {
-      title: '/aufgabe – Neue Aufgabe',
-      description: 'Aufgabe erstellen und verknüpfen',
+      title: translate('editor.newTask'),
+      description: translate('editor.newTaskDesc'),
       action: (e) => onCreateTask(e),
     },
     ...agendaItems.map(item => ({
       title: `/tagesordnung – ${item.title}`,
-      description: 'Tagesordnungspunkt einfügen',
+      description: translate('editor.agendaDesc'),
       action: (e: Editor) => {
         e.chain().focus().insertContent({
           type: 'agendaItemRef',

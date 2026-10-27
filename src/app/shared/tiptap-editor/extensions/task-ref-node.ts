@@ -1,14 +1,16 @@
 import { Node, mergeAttributes } from '@tiptap/core';
+import { translate } from '@jsverse/transloco';
 
-const STATUS_LABELS: Record<string, string> = {
-  open: 'Offen',
-  in_progress: 'In Arbeit',
-  completed: 'Erledigt',
+const STATUS_KEYS: Record<string, string> = {
+  open: 'tasks.status.open',
+  in_progress: 'tasks.status.inProgress',
+  completed: 'tasks.status.completed',
 };
 
 /** Text of a task reference; `status` is the live status when known. */
 export function taskRefText(title: string, status: string | undefined): string {
-  const label = STATUS_LABELS[status ?? ''] ?? status ?? '';
+  const key = STATUS_KEYS[status ?? ''];
+  const label = key ? translate(key) : status ?? '';
   return label ? `${status === 'completed' ? '✅' : '📋'} ${title} · ${label}` : `📋 ${title}`;
 }
 

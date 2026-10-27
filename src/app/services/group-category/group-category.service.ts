@@ -4,6 +4,7 @@ import { Storage } from '@ionic/storage-angular';
 import { supabase } from '../base/supabase';
 import { GroupCategory } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +30,7 @@ export class GroupCategoryService {
       .order('name', { ascending: true });
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Kategorien', 'danger');
+      Utils.showToast(translate('svc.loadCategoriesFailed'), 'danger');
       throw error;
     }
 
@@ -48,7 +49,7 @@ export class GroupCategoryService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Hinzufügen der Kategorie', 'danger');
+      Utils.showToast(translate('svc.addCategoryFailed'), 'danger');
       throw error;
     }
 
@@ -64,7 +65,7 @@ export class GroupCategoryService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Aktualisieren der Kategorie', 'danger');
+      Utils.showToast(translate('svc.updateCategoryFailed'), 'danger');
       throw error;
     }
 
@@ -80,7 +81,7 @@ export class GroupCategoryService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Aktualisieren der Kategoriereihenfolge', 'danger');
+      Utils.showToast(translate('svc.updateCategoryOrderFailed'), 'danger');
       throw error;
     }
 
@@ -94,7 +95,7 @@ export class GroupCategoryService {
       .match({ id });
 
     if (error) {
-      Utils.showToast('Fehler beim Löschen der Kategorie', 'danger');
+      Utils.showToast(translate('svc.deleteCategoryFailed'), 'danger');
       throw error;
     }
   }

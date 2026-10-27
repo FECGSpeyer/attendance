@@ -4,6 +4,7 @@ import { PersonAttendance } from '../../utilities/interfaces';
 import { AttendanceStatus } from '../../utilities/constants';
 import { TelegramService } from '../telegram/telegram.service';
 import { pickPersonAttendanceFields, syncDutyWithStatus } from '../../utilities/db-helpers';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -70,7 +71,7 @@ export class SignInOutService {
       .match({ id });
 
     if (error) {
-      throw new Error('Fehler beim updaten der Anwesenheit');
+      throw new Error(translate('svc.updateAttendanceFailed'));
     }
     await syncDutyWithStatus(supabase, id, att, userId);
   }

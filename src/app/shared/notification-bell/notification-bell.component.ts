@@ -8,11 +8,13 @@ import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
 import { UserNotification } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-notification-bell',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, TranslocoModule],
   templateUrl: './notification-bell.component.html',
   styleUrls: ['./notification-bell.component.scss'],
 })
@@ -151,7 +153,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     // Only skip the (empty) modal when there is nothing in any tenant.
     if (this.notifications().length === 0) {
       this.segment.set('current');
-      Utils.showToast('Keine Benachrichtigungen vorhanden.', 'medium');
+      Utils.showToast(translate('bell.noneAvailable'), 'medium');
       return;
     }
 
@@ -173,12 +175,12 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     if (this.segment() === 'all') {
       // Cross-tenant: confirm, since it affects every instance the user belongs to.
       const alert = await this.alertController.create({
-        header: 'Alle als gelesen markieren?',
-        message: 'Alle Benachrichtigungen aus allen Instanzen werden als gelesen markiert.',
+        header: translate('bell.markAllHeader'),
+        message: translate('bell.markAllMessage'),
         buttons: [{
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
         }, {
-          text: 'Markieren',
+          text: translate('bell.mark'),
           handler: async (): Promise<void> => {
             await this.db.markAllNotificationsReadAllTenants();
             await this.load();
@@ -198,14 +200,14 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   async deleteAll(): Promise<void> {
     const allTenants = this.segment() === 'all';
     const alert = await this.alertController.create({
-      header: 'Alle Benachrichtigungen löschen?',
+      header: translate('bell.deleteAllHeader'),
       message: allTenants
-        ? 'Alle Benachrichtigungen aus allen Instanzen werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.'
-        : 'Diese Aktion kann nicht rückgängig gemacht werden.',
+        ? translate('bell.deleteAllMessage')
+        : translate('common.cannotUndo'),
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Löschen',
+        text: translate('common.delete'),
         role: 'destructive',
         handler: async (): Promise<void> => {
           if (allTenants) {

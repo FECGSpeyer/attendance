@@ -982,8 +982,7 @@ export class SignoutPage implements OnInit {
 
   async openPlanViewer(attendance: PersonAttendance) {
     const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === attendance.typeId);
-    const isPractice = attType?.name?.toLowerCase().includes('probe') ||
-      attType?.name?.toLowerCase().includes('übung') ||
+    const isPractice = Utils.isPracticeTypeName(attType?.name) ||
       attendance.attendance?.type === 'uebung';
 
     const modal = await this.modalController.create({

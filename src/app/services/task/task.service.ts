@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { Task } from '../../utilities/interfaces';
+import { translate } from '@jsverse/transloco';
 
 const db = supabase as any;
 
@@ -112,6 +113,6 @@ export class TaskService {
       .select('id');
 
     if (error) throw error;
-    if (!data?.length) throw new Error('Keine Berechtigung zum Löschen');
+    if (!data?.length) throw new Error(translate('svc.noDeletePermission'));
   }
 }

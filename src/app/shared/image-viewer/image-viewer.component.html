@@ -17,14 +17,14 @@
     @if (failed()) {
     <div class="error">
       <ion-icon name="image-outline"></ion-icon>
-      <span>Bild konnte nicht geladen werden</span>
+      <span>{{ 'imageViewer.loadFailed' | transloco }}</span>
     </div>
     }
   </div>
 
   <header class="top-bar">
     <span class="title">{{ title }}</span>
-    <button type="button" class="glass-btn round" (click)="close()" aria-label="Schließen">
+    <button type="button" class="glass-btn round" (click)="close()" [attr.aria-label]="'common.close' | transloco">
       <ion-icon name="close"></ion-icon>
     </button>
   </header>
@@ -32,19 +32,19 @@
   @if (showHint()) {
   <div class="hint">
     <ion-icon name="hand-left-outline"></ion-icon>
-    Doppeltippen oder mit zwei Fingern zoomen
+    {{ 'imageViewer.hint' | transloco }}
   </div>
   }
 
   <footer class="bottom-bar">
     <div class="zoom-pill glass">
-      <button type="button" (click)="zoomOut()" [disabled]="zoomPercent() <= 100" aria-label="Verkleinern">
+      <button type="button" (click)="zoomOut()" [disabled]="zoomPercent() <= 100" [attr.aria-label]="'imageViewer.zoomOut' | transloco">
         <ion-icon name="remove"></ion-icon>
       </button>
-      <button type="button" class="zoom-value" (click)="resetZoom()" aria-label="Zoom zurücksetzen">
+      <button type="button" class="zoom-value" (click)="resetZoom()" [attr.aria-label]="'imageViewer.zoomReset' | transloco">
         {{ zoomPercent() }}&nbsp;%
       </button>
-      <button type="button" (click)="zoomIn()" [disabled]="zoomPercent() >= 500" aria-label="Vergrößern">
+      <button type="button" (click)="zoomIn()" [disabled]="zoomPercent() >= 500" [attr.aria-label]="'imageViewer.zoomIn' | transloco">
         <ion-icon name="add"></ion-icon>
       </button>
     </div>

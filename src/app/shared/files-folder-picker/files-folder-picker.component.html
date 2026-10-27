@@ -3,13 +3,13 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-button (click)="dismiss()" aria-label="Abbrechen">
+          <ion-button (click)="dismiss()" [attr.aria-label]="'common.cancel' | transloco">
             <ion-icon slot="icon-only" name="close"></ion-icon>
           </ion-button>
         </ion-buttons>
-        <ion-title>Ordner wählen</ion-title>
+        <ion-title>{{ 'folderPicker.title' | transloco }}</ion-title>
         <ion-buttons slot="end">
-          <ion-button strong="true" [disabled]="!currentPath || isLoading" (click)="onSelect()" aria-label="Diesen Ordner wählen">
+          <ion-button strong="true" [disabled]="!currentPath || isLoading" (click)="onSelect()" [attr.aria-label]="'folderPicker.chooseThis' | transloco">
             <ion-icon slot="icon-only" name="checkmark"></ion-icon>
           </ion-button>
         </ion-buttons>
@@ -34,7 +34,7 @@
         </ion-item>
         <ion-item button detail="false" (click)="goUp()">
           <ion-icon name="arrow-up-outline" slot="start"></ion-icon>
-          <ion-label>Übergeordneter Ordner</ion-label>
+          <ion-label>{{ 'folderPicker.parent' | transloco }}</ion-label>
         </ion-item>
         }
         @if (isLoading) {
@@ -46,11 +46,11 @@
         <ion-item button (click)="navigate(folder.path)">
           <ion-icon name="folder-outline" slot="start" color="primary"></ion-icon>
           <ion-label>{{ folder.name }}</ion-label>
-          <ion-button slot="end" fill="clear" (click)="onSelect(folder.path); $event.stopPropagation()">Wählen</ion-button>
+          <ion-button slot="end" fill="clear" (click)="onSelect(folder.path); $event.stopPropagation()">{{ 'folderPicker.choose' | transloco }}</ion-button>
         </ion-item>
         } @empty {
         <ion-item lines="none">
-          <ion-label color="medium">Keine Unterordner vorhanden.</ion-label>
+          <ion-label color="medium">{{ 'folderPicker.noSubfolders' | transloco }}</ion-label>
         </ion-item>
         }
         }

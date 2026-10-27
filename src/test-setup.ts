@@ -5,8 +5,10 @@ import {
     platformBrowserDynamicTesting,
 } from '@angular/platform-browser-dynamic/testing';
 import { getTestBed } from '@angular/core/testing';
-import { NgModule } from '@angular/core';
-import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
+import { createEnvironmentInjector, EnvironmentInjector } from '@angular/core';
+import { provideTransloco, TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
+import { provideTranslocoMessageformat } from '@jsverse/transloco-messageformat';
+import { firstValueFrom, of } from 'rxjs';
 import de from './i18n/de.json';
 
 // Suppress unhandled promise rejections during test cleanup
@@ -58,13 +60,6 @@ Object.defineProperty(globalThis, 'matchMedia', {
     disconnect() { /* noop */ }
 };
 
-// Creates TranslocoService with the test injector, so the global
-// `translate()` also works in constructors and field initializers.
-@NgModule({ imports: [TranslocoTestingModule] })
-class TranslocoEagerModule {
-    constructor(_transloco: TranslocoService) { /* eager init */ }
-}
-
 getTestBed().initTestEnvironment(
     [
         BrowserDynamicTestingModule,
@@ -75,7 +70,22 @@ getTestBed().initTestEnvironment(
             translocoConfig: { availableLangs: ['de'], defaultLang: 'de' },
             preloadLangs: true,
         }),
-        TranslocoEagerModule,
     ],
     platformBrowserDynamicTesting()
 );
+
+// Plain unit tests (no TestBed) call the global `translate()` too, e.g. in
+// Utils. Give them a TranslocoService with the German texts up front.
+const translocoInjector = createEnvironmentInjector(
+    [
+        provideTransloco({
+            config: { availableLangs: ['de'], defaultLang: 'de', fallbackLang: 'de' },
+            loader: class { getTranslation() { return of(de); } },
+        }),
+        provideTranslocoMessageformat(),
+        TranslocoService,
+    ],
+    getTestBed().platform.injector as EnvironmentInjector,
+);
+await firstValueFrom(translocoInjector.get(TranslocoService).load('de'));
+

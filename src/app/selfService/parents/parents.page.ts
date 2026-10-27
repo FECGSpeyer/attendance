@@ -472,8 +472,7 @@ export class ParentsPage implements OnInit {
 
   async openPlanViewer(attendance: Attendance) {
     const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === attendance.type_id);
-    const isPractice = attType?.name?.toLowerCase().includes('probe') ||
-                       attType?.name?.toLowerCase().includes('übung') ||
+    const isPractice = Utils.isPracticeTypeName(attType?.name) ||
                        attendance.type === 'uebung';
 
     const modal = await this.modalController.create({

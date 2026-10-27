@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { DbService } from 'src/app/services/db.service';
 import { Song, SongFile } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 export interface PrintEntry {
   song: Song;
@@ -30,7 +31,7 @@ export class PrintService {
   private printing = false;
 
   /** Downloads, merges and prints the given files as one PDF. */
-  async printEntries(entries: PrintEntry[], fileName: string, loadingMessage = 'PDFs werden zusammengeführt...'): Promise<boolean> {
+  async printEntries(entries: PrintEntry[], fileName: string, loadingMessage = translate('svc.mergingPdfs')): Promise<boolean> {
     if (this.printing) { return false; }
     this.printing = true;
     try {
@@ -41,14 +42,14 @@ export class PrintService {
         merged = await this.mergeEntries(entries);
       } catch (err) {
         console.error('Merging print files failed:', err);
-        Utils.showToast('Fehler beim Zusammenführen der Noten.', 'danger');
+        Utils.showToast(translate('svc.mergeScoresFailed'), 'danger');
         return false;
       } finally {
         await loader.dismiss();
       }
 
       if (!merged.pageCount) {
-        Utils.showToast('Keine druckbaren Noten (PDF/Bild) gefunden.', 'warning');
+        Utils.showToast(translate('svc.noPrintableScores'), 'warning');
         return false;
       }
       if (merged.skipped) {
@@ -64,8 +65,8 @@ export class PrintService {
 
   /** Prints a single song file (PDF or image). */
   async printSongFile(song: Song, file: SongFile): Promise<boolean> {
-    const baseName = (file.fileName || song.name || 'Noten').replace(/\.[^.]+$/, '');
-    return this.printEntries([{ song, file }], `${baseName}.pdf`, 'Datei wird geladen...');
+    const baseName = (file.fileName || song.name || translate('svc.scores')).replace(/\.[^.]+$/, '');
+    return this.printEntries([{ song, file }], `${baseName}.pdf`, translate('svc.fileLoading'));
   }
 
   /** Prints a ready-made PDF blob on the current platform. */
@@ -96,7 +97,7 @@ export class PrintService {
     } catch (err) {
       console.error('Browser print failed, downloading instead:', err);
       await Utils.downloadFileNative(blob, fileName);
-      Utils.showToast('PDF heruntergeladen - bitte manuell drucken', 'warning');
+      Utils.showToast(translate('svc.pdfDownloaded'), 'warning');
     } finally {
       URL.revokeObjectURL(url);
     }

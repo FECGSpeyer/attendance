@@ -9,6 +9,7 @@ import { supabase, attendanceSelect } from '../base/supabase';
 import { pickPersonAttendanceFields, syncDutyWithStatus } from '../../utilities/db-helpers';
 import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
 import { OfflineQueueService } from '../offline-queue/offline-queue.service';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -44,7 +45,7 @@ export class AttendanceService {
       .single();
 
     if (error) {
-      throw new Error('Fehler beim Hinzufügen der Anwesenheit');
+      throw new Error(translate('svc.addAttendanceFailed'));
     }
 
     return data.id;
@@ -62,7 +63,7 @@ export class AttendanceService {
         console.warn('Duplicate person-attendance entry detected and ignored:', error.message);
         return;
       }
-      throw new Error('Fehler beim Hinzufügen der Person-Anwesenheiten');
+      throw new Error(translate('svc.addPersonAttendancesFailed'));
     }
   }
 
@@ -74,7 +75,7 @@ export class AttendanceService {
       .eq('person_id', personId);
 
     if (error) {
-      throw new Error('Fehler beim Löschen der Person-Anwesenheiten');
+      throw new Error(translate('svc.deletePersonAttendancesFailed'));
     }
   }
 
@@ -90,7 +91,7 @@ export class AttendanceService {
       .select('id, attendance_id')
       .eq('person_id', fromId);
     if (fromError) {
-      throw new Error('Fehler beim Laden der Person-Anwesenheiten');
+      throw new Error(translate('svc.loadPersonAttendancesFailed'));
     }
     if (!fromRows?.length) {return;}
 
@@ -99,7 +100,7 @@ export class AttendanceService {
       .select('attendance_id')
       .eq('person_id', toId);
     if (toError) {
-      throw new Error('Fehler beim Laden der Person-Anwesenheiten');
+      throw new Error(translate('svc.loadPersonAttendancesFailed'));
     }
     const toAttendanceIds = new Set((toRows ?? []).map(r => r.attendance_id));
 
@@ -108,12 +109,12 @@ export class AttendanceService {
 
     if (conflictingIds.length) {
       const { error } = await supabase.from('person_attendances').delete().in('id', conflictingIds);
-      if (error) {throw new Error('Fehler beim Bereinigen der Person-Anwesenheiten');}
+      if (error) {throw new Error(translate('svc.cleanupAttendancesFailed'));}
     }
 
     if (movableIds.length) {
       const { error } = await supabase.from('person_attendances').update({ person_id: toId }).in('id', movableIds);
-      if (error) {throw new Error('Fehler beim Übertragen der Person-Anwesenheiten');}
+      if (error) {throw new Error(translate('svc.transferPersonAttendancesFailed'));}
     }
   }
 
@@ -415,7 +416,7 @@ export class AttendanceService {
       .single();
 
     if (error) {
-      throw new Error('Fehler beim updaten der Anwesenheit');
+      throw new Error(translate('svc.updateAttendanceFailed'));
     }
 
     return data as any;
@@ -474,7 +475,7 @@ export class AttendanceService {
       .in('attendance_id', attendanceIds);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Anwesenheiten', 'danger');
+      Utils.showToast(translate('svc.loadAttendancesFailed'), 'danger');
       throw error;
     }
 
@@ -502,7 +503,7 @@ export class AttendanceService {
       .match({ id });
 
     if (error) {
-      throw new Error('Fehler beim updaten der Anwesenheit');
+      throw new Error(translate('svc.updateAttendanceFailed'));
     }
     await syncDutyWithStatus(supabase, id, att, userId);
   }
@@ -527,7 +528,7 @@ export class AttendanceService {
       .match({ id });
 
     if (error) {
-      throw new Error('Fehler beim Löschen der Person-Anwesenheit');
+      throw new Error(translate('svc.deletePersonAttendanceFailed'));
     }
   }
 }

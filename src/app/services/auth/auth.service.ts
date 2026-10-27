@@ -5,6 +5,7 @@ import { Role } from '../../utilities/constants';
 import { Player, TenantUser } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { supabase } from '../base/supabase';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -65,34 +66,34 @@ export class AuthService {
     if (error) {
       switch (error.code) {
         case 'invalid_login_credentials':
-          Utils.showToast('Ungültige Anmeldedaten', 'danger');
+          Utils.showToast(translate('auth.invalidCredentials'), 'danger');
           break;
         case 'user_disabled':
-          Utils.showToast('Dein Konto wurde deaktiviert. Bitte wende dich an den Administrator deiner Instanz.', 'danger');
+          Utils.showToast(translate('db.accountDisabled'), 'danger');
           break;
         case 'too_many_requests':
-          Utils.showToast('Zu viele Anmeldeversuche. Bitte versuche es später erneut.', 'danger');
+          Utils.showToast(translate('db.tooManyLogins'), 'danger');
           break;
         case 'invalid_email':
-          Utils.showToast('Ungültige E-Mail Adresse', 'danger');
+          Utils.showToast(translate('db.invalidEmail'), 'danger');
           break;
         case 'invalid_password':
-          Utils.showToast('Ungültiges Passwort', 'danger');
+          Utils.showToast(translate('db.invalidPassword'), 'danger');
           break;
         case 'user_not_found':
           Utils.showToast('Benutzer nicht gefunden', 'danger');
           break;
         case 'email_not_confirmed':
-          Utils.showToast('Bitte bestätige zuerst deine E-Mail-Adresse.', 'danger');
+          Utils.showToast(translate('auth.confirmEmailFirst'), 'danger');
           break;
         case 'password_strength_insufficient':
-          Utils.showToast('Das Passwort erfüllt nicht die Sicherheitsanforderungen.', 'danger');
+          Utils.showToast(translate('db.weakPasswordRequirements'), 'danger');
           break;
         case 'invalid_credentials':
-          Utils.showToast('Ungültige Anmeldedaten', 'danger');
+          Utils.showToast(translate('auth.invalidCredentials'), 'danger');
           break;
         default:
-          Utils.showToast(error.code === 'email_not_confirmed' ? 'Bitte bestätige zuerst deine E-Mail-Adresse.' : 'Fehler beim Anmelden', 'danger');
+          Utils.showToast(error.code === 'email_not_confirmed' ? translate('auth.confirmEmailFirst') : translate('db.loginFailed'), 'danger');
           break;
       }
       throw error;
@@ -103,7 +104,7 @@ export class AuthService {
       return { success: true, user: data.user };
     }
 
-    Utils.showToast('Bitte gib die richtigen Daten an!', 'danger');
+    Utils.showToast(translate('db.enterCorrectData'), 'danger');
     return { success: false };
   }
 
@@ -117,7 +118,7 @@ export class AuthService {
     });
 
     if (error) {
-      Utils.showToast('Fehler beim Registrieren', 'danger');
+      Utils.showToast(translate('db.registerFailed'), 'danger');
       return null;
     }
 
@@ -127,7 +128,7 @@ export class AuthService {
       });
 
       if (loginError) {
-        throw new Error('Deine E-Mail-Adresse existiert bereits. Bitte melde dich an.');
+        throw new Error(translate('db.emailExists'));
       }
 
       return {
@@ -152,11 +153,11 @@ export class AuthService {
     });
 
     if (error) {
-      Utils.showToast('Fehler beim Senden der Bestätigungs-E-Mail', 'danger');
+      Utils.showToast(translate('auth.resendConfirmationFailed'), 'danger');
       throw error;
     }
 
-    Utils.showToast('Bestätigungs-E-Mail wurde erneut gesendet', 'success');
+    Utils.showToast(translate('auth.confirmationResent'), 'success');
   }
 
   async logout(): Promise<void> {
@@ -176,21 +177,21 @@ export class AuthService {
     });
 
     if (error) {
-      Utils.showToast('Fehler beim Zurücksetzen des Passworts', 'danger');
+      Utils.showToast(translate('auth.resetFailed'), 'danger');
       throw error;
     }
 
-    Utils.showToast('E-Mail zum Zurücksetzen des Passworts wurde gesendet', 'success');
+    Utils.showToast(translate('auth.resetSent'), 'success');
   }
 
   async updatePassword(password: string): Promise<void> {
     const { data, error } = await supabase.auth.updateUser({ password });
 
     if (data) {
-      Utils.showToast('Passwort wurde erfolgreich aktualisiert', 'success');
+      Utils.showToast(translate('db.passwordUpdated'), 'success');
     }
     if (error) {
-      Utils.showToast('Fehler beim zurücksetzen, versuche es noch einmal', 'danger');
+      Utils.showToast(translate('auth.resetRetry'), 'danger');
     }
   }
 
@@ -215,7 +216,7 @@ export class AuthService {
           try {
             await updateTenantUser({ role: Role.ADMIN }, userId);
           } catch (error) {
-            throw new Error('Fehler beim Aktualisieren der Benutzerrolle');
+            throw new Error(translate('db.updateRoleFailed'));
           }
         }
         return userId;
@@ -233,7 +234,7 @@ export class AuthService {
         });
 
         if (error || !data?.mailSent) {
-          throw new Error('Fehler beim Informieren des Benutzers');
+          throw new Error(translate('db.notifyUserFailed'));
         }
       }
       return userId;
@@ -254,13 +255,13 @@ export class AuthService {
       });
 
       if (error || !data?.user?.id) {
-        throw new Error('Fehler beim Erstellen des Accounts');
+        throw new Error(translate('db.createAccountFailed'));
       }
 
       await addUserToTenant(data.user.id, role, email);
       return data.user.id;
     } catch (e: any) {
-      throw new Error(e.message || 'Fehler beim Erstellen des Accounts');
+      throw new Error(e.message || translate('db.createAccountFailed'));
     }
   }
 
@@ -276,7 +277,7 @@ export class AuthService {
     });
 
     if (error || !data?.mailSent) {
-      throw new Error('Fehler beim Informieren des Benutzers');
+      throw new Error(translate('db.notifyUserFailed'));
     }
   }
 
@@ -291,7 +292,7 @@ export class AuthService {
     });
 
     if (error || !data?.mailSent) {
-      throw new Error('Fehler beim Informieren des Benutzers');
+      throw new Error(translate('db.notifyUserFailed'));
     }
   }
 }

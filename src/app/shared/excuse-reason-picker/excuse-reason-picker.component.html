@@ -3,13 +3,13 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-button (click)="dismiss()" aria-label="Abbrechen">
+          <ion-button (click)="dismiss()" [attr.aria-label]="'common.cancel' | transloco">
             <ion-icon slot="icon-only" name="close"></ion-icon>
           </ion-button>
         </ion-buttons>
-        <ion-title>{{ isLate ? 'Verspätung' : 'Abmeldung' }}</ion-title>
+        <ion-title>{{ (isLate ? 'excuse.late' : 'excuse.signOut') | transloco }}</ion-title>
         <ion-buttons slot="end">
-          <ion-button strong="true" [disabled]="!isConfirmable()" (click)="onConfirm()" aria-label="Bestätigen">
+          <ion-button strong="true" [disabled]="!isConfirmable()" (click)="onConfirm()" [attr.aria-label]="'common.confirm' | transloco">
             <ion-icon slot="icon-only" name="checkmark"></ion-icon>
           </ion-button>
         </ion-buttons>
@@ -24,15 +24,15 @@
           </ion-item>
           }
           <ion-item>
-            <ion-radio justify="start" labelPlacement="end" [value]="customReasonValue">Sonstiger Grund (Text)</ion-radio>
+            <ion-radio justify="start" labelPlacement="end" [value]="customReasonValue">{{ 'excuse.customOption' | transloco }}</ion-radio>
           </ion-item>
         </ion-list>
       </ion-radio-group>
 
       @if (reasonSelection === customReasonValue) {
       <ion-item class="custom-reason" #customReasonField>
-        <ion-label position="stacked">Grund</ion-label>
-        <ion-textarea autocapitalize="sentences" [(ngModel)]="customReason" placeholder="Mindestens 5 Zeichen eingeben..."
+        <ion-label position="stacked">{{ 'excuse.reason' | transloco }}</ion-label>
+        <ion-textarea autocapitalize="sentences" [(ngModel)]="customReason" [placeholder]="'excuse.minChars' | transloco"
           autoGrow="true" (ionFocus)="onCustomReasonFocus()"></ion-textarea>
       </ion-item>
       <div class="keyboard-spacer"></div>

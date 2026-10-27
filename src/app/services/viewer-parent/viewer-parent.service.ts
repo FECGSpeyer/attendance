@@ -3,6 +3,7 @@ import { supabase } from '../base/supabase';
 import { Viewer, Parent } from '../../utilities/interfaces';
 import { Role, SupabaseTable } from '../../utilities/constants';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,7 @@ export class ViewerParentService {
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Beobachter', 'danger');
+      Utils.showToast(translate('svc.loadViewersFailed'), 'danger');
       throw error;
     }
 
@@ -33,7 +34,7 @@ export class ViewerParentService {
       });
 
     if (error) {
-      throw new Error('Fehler beim hinzufügen des Beobachters.');
+      throw new Error(translate('db.addViewerFailed'));
     }
   }
 
@@ -44,7 +45,7 @@ export class ViewerParentService {
       .match({ id: viewer.id });
 
     if (error) {
-      Utils.showToast('Fehler beim Löschen des Beobachters', 'danger');
+      Utils.showToast(translate('db.deleteViewerFailed'), 'danger');
       throw error;
     }
   }
@@ -56,7 +57,7 @@ export class ViewerParentService {
       .eq('tenantId', tenantId);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Elternteile', 'danger');
+      Utils.showToast(translate('svc.loadParentsFailed'), 'danger');
       throw error;
     }
 
@@ -75,7 +76,7 @@ export class ViewerParentService {
       .single();
 
     if (error) {
-      throw new Error('Fehler beim hinzufügen des Elternteils.');
+      throw new Error(translate('db.addParentFailed'));
     }
 
     return data;
@@ -88,7 +89,7 @@ export class ViewerParentService {
       .match({ id: parent.id });
 
     if (error) {
-      Utils.showToast('Fehler beim Löschen des Elternteils', 'danger');
+      Utils.showToast(translate('db.deleteParentFailed'), 'danger');
       throw error;
     }
   }

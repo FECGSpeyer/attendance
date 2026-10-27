@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { Church } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,7 @@ export class ChurchService {
       .order('name', { ascending: true });
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Kirchen', 'danger');
+      Utils.showToast(translate('svc.loadChurchesFailed'), 'danger');
       throw error;
     }
 
@@ -29,7 +30,7 @@ export class ChurchService {
       .match({ id });
 
     if (error) {
-      Utils.showToast('Fehler beim Aktualisieren der Gemeinde', 'danger');
+      Utils.showToast(translate('svc.updateChurchFailed'), 'danger');
       throw error;
     }
   }
@@ -45,7 +46,7 @@ export class ChurchService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Erstellen der Kirche', 'danger');
+      Utils.showToast(translate('svc.createChurchFailed'), 'danger');
       throw error;
     }
 
@@ -62,7 +63,7 @@ export class ChurchService {
       .select('id, additional_fields')
       .not('additional_fields', 'is', null);
 
-    if (fetchError) {throw new Error('Fehler beim Laden der Spieler');}
+    if (fetchError) {throw new Error(translate('svc.loadPlayersFailed'));}
 
     let updatedCount = 0;
 
@@ -85,7 +86,7 @@ export class ChurchService {
       .delete()
       .match({ id: duplicateId });
 
-    if (deleteError) {throw new Error('Fehler beim Löschen der Gemeinde');}
+    if (deleteError) {throw new Error(translate('svc.deleteChurchFailed'));}
 
     return updatedCount;
   }

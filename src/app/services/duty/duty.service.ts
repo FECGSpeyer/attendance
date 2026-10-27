@@ -5,6 +5,7 @@ import { AttendanceStatus } from '../../utilities/constants';
 import { Attendance, AttendanceType, PersonAttendance, PersonUnavailability } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { dutyRequired, isCancelled, matchingUnavailability, occupiedCount, occupiesDuty, unavailabilityNote } from '../../utilities/duty';
+import { translate } from '@jsverse/transloco';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db: any = supabase;
@@ -45,7 +46,7 @@ export class DutyService {
       .in('id', personAttendanceIds);
 
     if (error) {
-      Utils.showToast('Fehler beim Einteilen', 'danger');
+      Utils.showToast(translate('svc.assignFailed'), 'danger');
       throw error;
     }
 
@@ -68,7 +69,7 @@ export class DutyService {
       .eq('id', personAttendanceId);
 
     if (error) {
-      Utils.showToast('Fehler beim Austragen', 'danger');
+      Utils.showToast(translate('svc.unassignFailed'), 'danger');
       throw error;
     }
   }
@@ -87,7 +88,7 @@ export class DutyService {
       .eq('id', personAttendanceId);
 
     if (error) {
-      Utils.showToast('Fehler beim Bestätigen', 'danger');
+      Utils.showToast(translate('svc.confirmFailed'), 'danger');
       throw error;
     }
   }
@@ -96,7 +97,7 @@ export class DutyService {
   async take(attendanceId: number, tenantId: number): Promise<DutyTakeResult> {
     const { data, error } = await db.rpc('duty_take', { p_attendance_id: attendanceId });
     if (error) {
-      Utils.showToast('Fehler beim Eintragen', 'danger');
+      Utils.showToast(translate('svc.signUpFailed'), 'danger');
       throw error;
     }
     const result = data as DutyTakeResult;
@@ -200,7 +201,7 @@ export class DutyService {
       .eq('tenant_id', tenantId)
       .order('created_at');
     if (error) {
-      Utils.showToast('Fehler beim Laden der Verfügbarkeit', 'danger');
+      Utils.showToast(translate('svc.loadAvailabilityFailed'), 'danger');
       throw error;
     }
     return (data ?? []) as PersonUnavailability[];
@@ -234,7 +235,7 @@ export class DutyService {
       : db.from('person_unavailability').insert(payload);
     const { data, error } = await query.select().single();
     if (error) {
-      Utils.showToast('Fehler beim Speichern', 'danger');
+      Utils.showToast(translate('svc.saveFailed'), 'danger');
       throw error;
     }
     return data as PersonUnavailability;
@@ -243,13 +244,13 @@ export class DutyService {
   async deleteUnavailability(id: string): Promise<void> {
     const { error } = await db.from('person_unavailability').delete().eq('id', id);
     if (error) {
-      Utils.showToast('Fehler beim Löschen', 'danger');
+      Utils.showToast(translate('svc.deleteFailed'), 'danger');
       throw error;
     }
   }
 
   /**
-   * Sets "Entschuldigt" on already planned Termine the rule matches. Only rows
+   * Sets translate('common.status.excused') on already planned Termine the rule matches. Only rows
    * that still have the type's default status and no duty assignment are
    * changed, so explicit answers and assignments are kept.
    * Returns the number of changed Termine.
@@ -285,7 +286,7 @@ export class DutyService {
       })
       .in('id', ids);
     if (updErr) {
-      Utils.showToast('Fehler beim Übernehmen in geplante Termine', 'danger');
+      Utils.showToast(translate('svc.applyToPlannedFailed'), 'danger');
       throw updErr;
     }
     return ids.length;

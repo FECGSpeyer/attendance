@@ -11,6 +11,7 @@ import { Attendance } from '../../utilities/interfaces';
 import { allPlans } from '../../utilities/plan-days';
 import { iosLiveState, liveSchedule, liveStateAt, liveStateKey, liveTitle, livePlanKey, LivePlanState } from '../../utilities/live-plan';
 import { LiveActivity, LiveActivityTarget } from './live-activity.plugin';
+import { Utils } from '../../utilities/Utils';
 
 /** How often the open app re-checks running plans (the widget counts down on its own). */
 const SYNC_INTERVAL_MS = 20_000;
@@ -225,7 +226,7 @@ export class LiveActivityService {
     if (!attendance?.plan) { return true; }
     const { PlanViewerComponent } = await import('../../planning/plan-viewer/plan-viewer.component');
     const attType = this.db.attendanceTypes().find(t => t.id === attendance.type_id);
-    const isPractice = attType?.name?.toLowerCase().includes('probe') || attType?.name?.toLowerCase().includes('übung');
+    const isPractice = Utils.isPracticeTypeName(attType?.name);
     const modal = await this.modalController.create({
       component: PlanViewerComponent,
       componentProps: { attendance, plan: attendance.plan, isPractice, songs: [], defaultLive: true },

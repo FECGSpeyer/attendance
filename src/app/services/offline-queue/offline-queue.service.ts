@@ -3,6 +3,7 @@ import { ConnectionStatus, Network } from '@capacitor/network';
 import { Storage } from '@ionic/storage-angular';
 import { PersonAttendance } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 interface QueuedWrite {
   id: string;
@@ -90,7 +91,7 @@ export class OfflineQueueService {
     this._pendingCount.set(failed.length);
 
     if (failed.length === 0 && queue.length > 0) {
-      Utils.showToast('Offline-Änderungen gespeichert', 'success');
+      Utils.showToast(translate('svc.offlineSaved'), 'success');
     }
   }
 

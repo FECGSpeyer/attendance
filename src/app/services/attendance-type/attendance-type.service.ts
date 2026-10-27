@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { AttendanceType } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,7 @@ export class AttendanceTypeService {
       .order('index', { ascending: true });
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Anwesenheitstypen', 'danger');
+      Utils.showToast(translate('svc.loadTypesFailed'), 'danger');
       throw error;
     }
 
@@ -34,7 +35,7 @@ export class AttendanceTypeService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Laden des Anwesenheitstyps', 'danger');
+      Utils.showToast(translate('db.loadAttendanceTypeFailed'), 'danger');
       throw error;
     }
 
@@ -50,7 +51,7 @@ export class AttendanceTypeService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Aktualisieren des Anwesenheitstyps', 'danger');
+      Utils.showToast(translate('svc.updateTypeFailed'), 'danger');
       throw error;
     }
 
@@ -65,7 +66,7 @@ export class AttendanceTypeService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Hinzufügen des Anwesenheitstyps', 'danger');
+      Utils.showToast(translate('svc.addTypeFailed'), 'danger');
       throw error;
     }
 
@@ -79,7 +80,7 @@ export class AttendanceTypeService {
       .match({ id });
 
     if (error) {
-      Utils.showToast('Fehler beim Löschen des Anwesenheitstyps', 'danger');
+      Utils.showToast(translate('svc.deleteTypeFailed'), 'danger');
       throw error;
     }
   }
@@ -92,7 +93,7 @@ export class AttendanceTypeService {
       .insert(defaultTypes as any[]);
 
     if (error) {
-      Utils.showToast('Fehler beim Hinzufügen der Standard Anwesenheitstypen', 'danger');
+      Utils.showToast(translate('db.addDefaultTypesFailed'), 'danger');
       throw error;
     }
   }

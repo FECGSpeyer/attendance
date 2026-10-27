@@ -4,6 +4,7 @@ import { Utils } from '../../utilities/Utils';
 import { supabase } from '../base/supabase';
 import dayjs from 'dayjs';
 import { pickHistoryFields } from '../../utilities/db-helpers';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -42,8 +43,8 @@ export class HistoryService {
       .match({ id });
 
     if (error) {
-      Utils.showToast('Fehler beim Updaten des Eintrags', 'danger');
-      throw new Error('Fehler beim Updaten des Eintrags');
+      Utils.showToast(translate('svc.updateEntryFailed'), 'danger');
+      throw new Error(translate('svc.updateEntryFailed'));
     }
 
     return data;
@@ -66,7 +67,7 @@ export class HistoryService {
       .match({ id });
 
     if (error) {
-      throw new Error('Fehler beim Löschen des Eintrags');
+      throw new Error(translate('svc.deleteEntryFailed'));
     }
 
     return data;
@@ -80,7 +81,7 @@ export class HistoryService {
       .select();
 
     if (error) {
-      throw new Error('Fehler beim Hinzufügen der Lieder zur Historie');
+      throw new Error(translate('svc.addSongHistoryFailed'));
     }
   }
 

@@ -9,6 +9,7 @@ import { allPlans, planDate, todayPlanIndex } from '../../../utilities/plan-days
 import { tileDay, tileMonth } from '../shared/dashboard-date';
 
 import { fieldNumbers, isGroupHead } from '../../../utilities/plan-groups';
+import { Utils } from '../../../utilities/Utils';
 @Component({
   selector: 'app-current-plan-card',
   templateUrl: './current-plan-card.component.html',
@@ -71,8 +72,7 @@ export class CurrentPlanCardComponent implements OnDestroy {
   async openPlan(): Promise<void> {
     if (!this.attendance || !this.plan) { return; }
     const attType = this.db.attendanceTypes().find(t => t.id === this.attendance!.type_id);
-    const isPractice = attType?.name?.toLowerCase().includes('probe') ||
-      attType?.name?.toLowerCase().includes('übung') ||
+    const isPractice = Utils.isPracticeTypeName(attType?.name) ||
       this.attendance.type === 'uebung';
 
     const modal = await this.modalController.create({

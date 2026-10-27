@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { Player } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -53,7 +54,7 @@ export class ProfileService {
 
     if (error) {
       if (showToast) {
-        Utils.showToast('Es konnte kein Spieler gefunden werden.', 'danger');
+        Utils.showToast(translate('svc.noPlayerFound'), 'danger');
       }
       throw error;
     }
@@ -71,7 +72,7 @@ export class ProfileService {
       .match({ appId: userId });
 
     if (error) {
-      Utils.showToast('Fehler beim Aktualisieren des Profils', 'danger');
+      Utils.showToast(translate('db.updateProfileFailed'), 'danger');
       throw error;
     }
 
@@ -92,7 +93,7 @@ export class ProfileService {
               .match({ id: player.id });
 
             if (updateError) {
-              Utils.showToast('Fehler beim Aktualisieren der Kirchenzuordnung', 'danger');
+              Utils.showToast(translate('db.updateChurchFailed'), 'danger');
               throw updateError;
             }
           }
@@ -113,10 +114,10 @@ export class ProfileService {
     loading.dismiss();
 
     if (data) {
-      Utils.showToast('Passwort wurde erfolgreich aktualisiert', 'success');
+      Utils.showToast(translate('db.passwordUpdated'), 'success');
     }
     if (error) {
-      Utils.showToast('Fehler beim zurücksetzen, versuche es noch einmal', 'danger');
+      Utils.showToast(translate('auth.resetRetry'), 'danger');
     }
   }
 }

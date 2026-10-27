@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { SongCategory } from '../../utilities/interfaces';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -30,7 +31,7 @@ export class SongCategoryService {
       .single();
 
     if (error) {
-      throw new Error('Fehler beim hinzufügen der Werkkategorie');
+      throw new Error(translate('svc.addSongCategoryFailed'));
     }
 
     return data;

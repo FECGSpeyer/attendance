@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { ExtraField, FieldSelection, Organisation, OrganisationPersonFieldValue, Plan, Tenant, Player, Attendance } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,7 @@ export class OrganisationService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Speichern der Organisations-Zusatzfelder', 'danger');
+      Utils.showToast(translate('svc.saveOrgFieldsFailed'), 'danger');
       throw error;
     }
 
@@ -32,7 +33,7 @@ export class OrganisationService {
       .eq('person_key', personKey);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der gemeinsamen Zusatzfelder', 'danger');
+      Utils.showToast(translate('svc.loadSharedFieldsFailed'), 'danger');
       throw error;
     }
 
@@ -53,7 +54,7 @@ export class OrganisationService {
       .in('person_key', personKeys);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der gemeinsamen Zusatzfelder', 'danger');
+      Utils.showToast(translate('svc.loadSharedFieldsFailed'), 'danger');
       throw error;
     }
 
@@ -85,7 +86,7 @@ export class OrganisationService {
       .upsert(rows, { onConflict: 'tenant_group,person_key,field_id' });
 
     if (error) {
-      Utils.showToast('Fehler beim Speichern der gemeinsamen Zusatzfelder', 'danger');
+      Utils.showToast(translate('svc.saveSharedFieldsFailed'), 'danger');
       throw error;
     }
   }
@@ -99,7 +100,7 @@ export class OrganisationService {
       .in('field_id', fieldIds);
 
     if (error) {
-      Utils.showToast('Fehler beim Löschen der gemeinsamen Zusatzfeldwerte', 'danger');
+      Utils.showToast(translate('svc.deleteSharedFieldValuesFailed'), 'danger');
       throw error;
     }
   }
@@ -112,7 +113,7 @@ export class OrganisationService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Erstellen der Organisation', 'danger');
+      Utils.showToast(translate('svc.createOrgFailed'), 'danger');
       throw error;
     }
 
@@ -128,7 +129,7 @@ export class OrganisationService {
       });
 
     if (error) {
-      Utils.showToast('Fehler beim Verknüpfen der Organisation', 'danger');
+      Utils.showToast(translate('svc.linkOrgFailed'), 'danger');
       throw error;
     }
   }
@@ -141,7 +142,7 @@ export class OrganisationService {
       .eq('tenant_group', orgId);
 
     if (error) {
-      Utils.showToast('Fehler beim Entfernen der Organisation', 'danger');
+      Utils.showToast(translate('svc.removeOrgFailed'), 'danger');
       throw error;
     }
 
@@ -152,7 +153,7 @@ export class OrganisationService {
       .eq('tenant_group', orgId);
 
     if (fetchError) {
-      Utils.showToast('Fehler beim Entfernen der Organisation', 'danger');
+      Utils.showToast(translate('svc.removeOrgFailed'), 'danger');
       throw fetchError;
     }
 
@@ -175,7 +176,7 @@ export class OrganisationService {
       if (error.code === 'PGRST116') {
         return null;
       }
-      Utils.showToast('Fehler beim Laden der Organisation', 'danger');
+      Utils.showToast(translate('svc.loadOrgFailed'), 'danger');
       throw error;
     }
 
@@ -189,7 +190,7 @@ export class OrganisationService {
       .eq('tenant_group', orgId);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Organisationen', 'danger');
+      Utils.showToast(translate('svc.loadOrgsFailed'), 'danger');
       throw error;
     }
 
@@ -207,7 +208,7 @@ export class OrganisationService {
       .order('firstName', { ascending: true });
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Personen', 'danger');
+      Utils.showToast(translate('db.loadPeopleFailed'), 'danger');
       throw error;
     }
 
@@ -222,7 +223,7 @@ export class OrganisationService {
       .or('role.eq.1, role.eq.5');
 
     if (fetchError) {
-      Utils.showToast('Fehler beim Laden der Mandanten', 'danger');
+      Utils.showToast(translate('db.loadTenantsFailed2'), 'danger');
       throw fetchError;
     }
 
@@ -232,7 +233,7 @@ export class OrganisationService {
       .in('tenant_id', tenants.map((t: any) => t.tenantId.id));
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Organisationen', 'danger');
+      Utils.showToast(translate('svc.loadOrgsFailed'), 'danger');
       throw error;
     }
 
@@ -255,7 +256,7 @@ export class OrganisationService {
       .eq('tenant_group', organisation.id);
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Mandanten', 'danger');
+      Utils.showToast(translate('db.loadTenantsFailed2'), 'danger');
       throw error;
     }
 
@@ -268,7 +269,7 @@ export class OrganisationService {
       .select('*, tenant:tenant_id(*)');
 
     if (tenantGroupTenantsError) {
-      Utils.showToast('Fehler beim Laden der Gruppenteilnehmer', 'danger');
+      Utils.showToast(translate('db.loadGroupMembersFailed'), 'danger');
       throw tenantGroupTenantsError;
     }
 
@@ -285,7 +286,7 @@ export class OrganisationService {
       .eq('tenant_group', orgId);
 
     if (tgtError) {
-      Utils.showToast('Fehler beim Laden der Organisationspläne', 'danger');
+      Utils.showToast(translate('svc.loadOrgPlansFailed'), 'danger');
       throw tgtError;
     }
 
@@ -305,7 +306,7 @@ export class OrganisationService {
       .order('date', { ascending: true });
 
     if (error) {
-      Utils.showToast('Fehler beim Laden der Organisationspläne', 'danger');
+      Utils.showToast(translate('svc.loadOrgPlansFailed'), 'danger');
       throw error;
     }
 
@@ -323,7 +324,7 @@ export class OrganisationService {
       .eq('id', orgId);
 
     if (error) {
-      Utils.showToast('Fehler beim Erstellen des öffentlichen Links', 'danger');
+      Utils.showToast(translate('svc.createPublicLinkFailed'), 'danger');
       throw error;
     }
 
@@ -337,7 +338,7 @@ export class OrganisationService {
       .eq('id', orgId);
 
     if (error) {
-      Utils.showToast('Fehler beim Widerrufen des öffentlichen Links', 'danger');
+      Utils.showToast(translate('svc.revokePublicLinkFailed'), 'danger');
       throw error;
     }
   }
@@ -351,7 +352,7 @@ export class OrganisationService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Speichern der Planvorlagen', 'danger');
+      Utils.showToast(translate('svc.savePlanTemplatesFailed'), 'danger');
       throw error;
     }
 
@@ -367,7 +368,7 @@ export class OrganisationService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Speichern der Standardfelder', 'danger');
+      Utils.showToast(translate('svc.saveDefaultFieldsFailed'), 'danger');
       throw error;
     }
 
@@ -383,7 +384,7 @@ export class OrganisationService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Umbenennen der Organisation', 'danger');
+      Utils.showToast(translate('svc.renameOrgFailed'), 'danger');
       throw error;
     }
 
@@ -399,7 +400,7 @@ export class OrganisationService {
       .single();
 
     if (error) {
-      Utils.showToast('Fehler beim Speichern des Brandings', 'danger');
+      Utils.showToast(translate('svc.saveBrandingFailed'), 'danger');
       throw error;
     }
 
