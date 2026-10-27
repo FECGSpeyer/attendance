@@ -28,10 +28,12 @@ Mit den einzelnen Schaltern legst du fest, wofür du Push-Nachrichten bekommst, 
     id: 'settings-language',
     title: 'Sprache der App ändern',
     categoryId: 'settings',
-    keywords: ['sprache', 'englisch', 'english', 'deutsch', 'übersetzung', 'language', 'russisch', 'spanisch'],
+    keywords: ['sprache', 'englisch', 'english', 'deutsch', 'übersetzung', 'language', 'russisch', 'spanisch', 'push', 'e-mail', 'telegram', 'kalender'],
     body: `Unter "Einstellungen → System → Sprache" wählst du, in welcher Sprache du Attendix siehst. Das kann jede Person für sich einstellen. Nach dem Wechsel lädt die App kurz neu.
 
 Solange du nichts auswählst, richtet sich Attendix nach der Sprache deines Geräts. Ist die nicht verfügbar, bleibt die App auf Deutsch.
+
+Die Sprache wird an deinem Konto gespeichert. Push-Nachrichten, Telegram-Nachrichten und E-Mails von Attendix bekommst du ebenfalls in dieser Sprache, auch auf deinen anderen Geräten. Neue Kalender-Abos (Einstellungen → Kalender abonnieren) zeigen Status und Hinweise auch in deiner Sprache.
 
 Übersetzt werden nur die Texte der App. Inhalte, die ihr selbst anlegt, wie Gruppennamen, Termintitel, Werke oder Mitteilungen, bleiben so, wie ihr sie geschrieben habt. Die Versionshinweise unter "Was ist neu" gibt es nur auf Deutsch.`,
   },

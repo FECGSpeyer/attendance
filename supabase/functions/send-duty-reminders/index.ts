@@ -12,6 +12,7 @@ import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-
 import {
   deliverDutyNotice, DutyAttendance, DutyPerson, DutyType, dutyTitle, dutyWhen, isCancelled, leaderPersonIds, occupies, requiredOf,
 } from '../_shared/duty-delivery.ts'
+import { t } from '../_shared/i18n.ts'
 
 const DEFAULT_TIMEZONE = 'Europe/Berlin';
 const TYPE_FIELDS = 'id, name, tenant_id, duty_mode, duty_required, duty_self_signup, duty_confirm_reminder_days, duty_notify_understaffed, duty_urgent_hours, start_time';
@@ -66,8 +67,10 @@ async function sendConfirmReminders(admin: SupabaseClient, types: (DutyType & { 
 
     await deliverDutyNotice(admin, Number(row.attendance.tenantId), [row.person_id], {
       feedType: 'duty_reminder',
-      title: `🎧 Bitte bestätigen: ${dutyTitle(row.attendance, type)}`,
-      body: `Du bist für ${dutyWhen(row.attendance, type)} eingeteilt und hast noch nicht geantwortet.`,
+      text: (lang) => ({
+        title: t(lang, 'duty.confirmTitle', { title: dutyTitle(row.attendance, type, lang) }),
+        body: t(lang, 'duty.confirmBody', { when: dutyWhen(row.attendance, type, lang) }),
+      }),
       attendanceId: row.attendance.id,
     });
     await admin.from('person_attendances').update({ duty_reminder_sent: true }).eq('id', row.id);
@@ -117,10 +120,10 @@ async function sendUrgent(admin: SupabaseClient, types: (DutyType & { tenant_id:
     const missing = required - occupied;
     await deliverDutyNotice(admin, Number(att.tenantId), [...standIns, ...leaders], {
       feedType: 'duty_urgent',
-      title: `⚠️ Dringend: ${dutyTitle(att, type)} ${dutyWhen(att, type)}`,
-      body: occupied === 0
-        ? 'Es ist noch niemand eingeteilt. Bitte tippen, wenn du einspringen kannst.'
-        : `Es ${missing === 1 ? 'fehlt noch 1 Person' : `fehlen noch ${missing} Personen`}. Bitte tippen, wenn du einspringen kannst.`,
+      text: (lang) => ({
+        title: t(lang, 'duty.urgentTitle', { title: dutyTitle(att, type, lang), when: dutyWhen(att, type, lang) }),
+        body: occupied === 0 ? t(lang, 'duty.urgentNobody') : t(lang, 'duty.urgentMissing', { count: missing }),
+      }),
       attendanceId: att.id,
       urgent: true,
     });

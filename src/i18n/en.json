@@ -75,7 +75,7 @@
   "settings": {
     "language": {
       "title": "Language",
-      "hint": "Applies to the app on this device."
+      "hint": "Applies to the app and to push messages, Telegram and emails sent to you."
     },
     "profilePicture": "Profile picture",
     "searchChurch": "Search church",

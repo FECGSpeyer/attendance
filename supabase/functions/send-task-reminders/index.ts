@@ -10,6 +10,7 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendPushToUser } from '../_shared/send-push.ts'
 import { logNotification } from '../_shared/log-notification.ts'
+import { formatDate, normalizeLang, t } from '../_shared/i18n.ts'
 
 interface Task {
   id: string;
@@ -33,19 +34,15 @@ interface NotificationConfig {
   push_and_telegram: boolean | null;
   tasks: boolean | null;
   enabled_tenants: number[] | null;
+  language: string | null;
 }
 
 type ReminderKind = 'due_soon' | 'overdue';
 
-const REMINDER_TEXT: Record<ReminderKind, { title: string; flag: 'reminder_sent' | 'overdue_reminder_sent' }> = {
-  due_soon: { title: '⏰ Aufgabe fällig in 2 Tagen', flag: 'reminder_sent' },
-  overdue: { title: '⚠️ Aufgabe überfällig', flag: 'overdue_reminder_sent' },
+const REMINDER_TEXT: Record<ReminderKind, { flag: 'reminder_sent' | 'overdue_reminder_sent' }> = {
+  due_soon: { flag: 'reminder_sent' },
+  overdue: { flag: 'overdue_reminder_sent' },
 };
-
-function formatDate(isoDate: string): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate);
-  return m ? `${m[3]}.${m[2]}.${m[1]}` : isoDate;
-}
 
 Deno.serve(async (req) => {
   try {
@@ -134,7 +131,7 @@ Deno.serve(async (req) => {
     if (appIds.length > 0) {
       const { data: notifConfigs, error: notifError } = await supabase
         .from('notifications')
-        .select('id, enabled, push_enabled, telegram_chat_id, push_and_telegram, tasks, enabled_tenants')
+        .select('id, enabled, push_enabled, telegram_chat_id, push_and_telegram, tasks, enabled_tenants, language')
         .eq('enabled', true)
         .in('id', appIds)
         .range(0, 4999);
@@ -197,9 +194,10 @@ async function sendReminder(
   const enabledTenants = (notifConfig.enabled_tenants || []).map(Number);
   if (enabledTenants.length > 0 && !enabledTenants.includes(Number(task.tenant_id))) return false;
 
-  const title = REMINDER_TEXT[kind].title;
-  const formattedDate = formatDate(task.due_date);
-  const body = kind === 'overdue' ? `${task.title} (fällig seit ${formattedDate})` : task.title;
+  const lang = normalizeLang(notifConfig.language);
+  const title = t(lang, kind === 'overdue' ? 'taskReminder.overdueTitle' : 'taskReminder.dueSoonTitle');
+  const formattedDate = formatDate(lang, task.due_date.slice(0, 10));
+  const body = kind === 'overdue' ? t(lang, 'taskReminder.overdueBody', { title: task.title, date: formattedDate }) : task.title;
   const route = `/tabs/settings/tasks/${task.id}`;
   const data = { type: 'task', taskId: task.id, tenantId: String(task.tenant_id), route };
   const parallelMode = !!notifConfig.push_and_telegram && !!notifConfig.push_enabled && !!notifConfig.telegram_chat_id;
@@ -218,9 +216,8 @@ async function sendReminder(
 
   if (notifConfig.telegram_chat_id && (parallelMode || pushSent === 0)) {
     try {
-      const message = kind === 'overdue'
-        ? `⚠️ Aufgabe überfällig\n\n📋 ${task.title}\n📅 Fällig seit: ${formattedDate}\n\nIn der App öffnen: https://attendix.de${route}`
-        : `⏰ Aufgabe fällig in 2 Tagen\n\n📋 ${task.title}\n📅 Fällig am: ${formattedDate}\n\nIn der App öffnen: https://attendix.de${route}`;
+      const dueLine = t(lang, kind === 'overdue' ? 'taskReminder.overdueSince' : 'taskReminder.dueOn', { date: formattedDate });
+      const message = `${title}\n\n📋 ${task.title}\n📅 ${dueLine}\n\n${t(lang, 'telegram.openInApp', { url: `https://attendix.de${route}` })}`;
       const telegramRes = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

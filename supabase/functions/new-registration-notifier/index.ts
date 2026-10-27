@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { sendPushToUser } from '../_shared/send-push.ts';
 import { logNotification } from '../_shared/log-notification.ts';
+import { Lang, normalizeLang, t } from '../_shared/i18n.ts';
 
 interface NotificationConfig {
   id: string;
@@ -10,6 +11,7 @@ interface NotificationConfig {
   enabled_tenants: number[] | null;
   push_enabled: boolean;
   push_and_telegram?: boolean | null;
+  language?: string | null;
 }
 
 const CORS_HEADERS = {
@@ -89,7 +91,7 @@ Deno.serve(async (req) => {
       }), { status: 404, headers: CORS_HEADERS });
     }
 
-    const recipients: { userId: string; chatId: string | null; pushEnabled: boolean; parallelMode: boolean }[] = [];
+    const recipients: { userId: string; chatId: string | null; pushEnabled: boolean; parallelMode: boolean; lang: Lang }[] = [];
 
     for (const noti of notiData as NotificationConfig[]) {
       if (!noti.enabled) continue;
@@ -103,6 +105,7 @@ Deno.serve(async (req) => {
         chatId: hasTelegram ? noti.telegram_chat_id : null,
         pushEnabled: hasPush,
         parallelMode: !!noti.push_and_telegram && hasPush && hasTelegram,
+        lang: normalizeLang(noti.language),
       });
     }
 
@@ -132,14 +135,14 @@ Deno.serve(async (req) => {
     }
 
     const detailLines = [name, phone, group].filter((line) => line && String(line).length).join('\n');
-    const heading = pending ? 'Neue ausstehende Registrierung:' : 'Neue Registrierung:';
-    const messageText = `*${tenantName}*\n${heading}\n${detailLines}`;
-    // Push has no markdown — reuse the same content without the asterisks/newlines heading marker.
-    const pushBody = `${heading} ${[name, group].filter((line) => line && String(line).length).join(', ')}`;
     const pushTitle = tenantName;
     const notifData = { type: 'registration', tenantId: String(tenantId) };
 
     for (const r of recipients) {
+      const heading = t(r.lang, pending ? 'registration.pending' : 'registration.new');
+      const messageText = `*${tenantName}*\n${heading}\n${detailLines}`;
+      // Push has no markdown — reuse the same content without the asterisks/newlines heading marker.
+      const pushBody = `${heading} ${[name, group].filter((line) => line && String(line).length).join(', ')}`;
       let pushSent = 0;
       let telegramSent = false;
 

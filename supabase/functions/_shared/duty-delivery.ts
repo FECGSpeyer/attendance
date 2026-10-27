@@ -10,6 +10,7 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendPushToUser } from './send-push.ts'
 import { logNotification } from './log-notification.ts'
+import { Lang, t, userLanguages } from './i18n.ts'
 
 export const STATUS_NEUTRAL = 0;
 export const STATUS_PRESENT = 1;
@@ -57,8 +58,8 @@ export interface DutyType {
 
 export interface DutyNotice {
   feedType: string;
-  title: string;
-  body: string;
+  /** Title and body in the recipient's language. */
+  text: (lang: Lang) => { title: string; body: string };
   attendanceId: number;
   urgent?: boolean;
 }
@@ -85,17 +86,25 @@ export function requiredOf(att: Pick<DutyAttendance, 'duty_required'>, type: Pic
   return Math.max(1, att.duty_required ?? type.duty_required ?? 1);
 }
 
-export function dutyTitle(att: Pick<DutyAttendance, 'typeInfo'>, type: Pick<DutyType, 'name'>): string {
-  return (att.typeInfo ?? '').trim() || type.name || 'Dienst';
+export function dutyTitle(att: Pick<DutyAttendance, 'typeInfo'>, type: Pick<DutyType, 'name'>, lang: Lang = 'de'): string {
+  return (att.typeInfo ?? '').trim() || type.name || t(lang, 'duty.default');
 }
 
-const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+const WEEKDAYS: Record<Lang, string[]> = {
+  de: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+  en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  ru: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
+  es: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'],
+};
 
-/** "So, 8.11." plus " · 17:00" when a start time is known. */
-export function dutyWhen(att: Pick<DutyAttendance, 'date' | 'start_time'>, type?: Pick<DutyType, 'start_time'>): string {
+/** "So, 8.11." / "Sun, 8/11" plus " · 17:00" when a start time is known. */
+export function dutyWhen(att: Pick<DutyAttendance, 'date' | 'start_time'>, type?: Pick<DutyType, 'start_time'>, lang: Lang = 'de'): string {
   const d = new Date(att.date);
   const local = new Date(d.toLocaleString('en-US', { timeZone: 'Europe/Berlin' }));
-  const day = `${WEEKDAYS[local.getDay()]}, ${local.getDate()}.${local.getMonth() + 1}.`;
+  const dayMonth = lang === 'de' || lang === 'ru'
+    ? `${local.getDate()}.${local.getMonth() + 1}.`
+    : `${local.getDate()}/${local.getMonth() + 1}`;
+  const day = `${WEEKDAYS[lang][local.getDay()]}, ${dayMonth}`;
   const time = (att.start_time ?? type?.start_time ?? '').slice(0, 5);
   return time ? `${day} · ${time}` : day;
 }
@@ -202,6 +211,7 @@ export async function deliverDutyNotice(
   }
 
   const telegramToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
+  const langs = await userLanguages(admin, appIds);
   let delivered = 0;
 
   await runPool(appIds, PUSH_CONCURRENCY, async (userId) => {
@@ -214,6 +224,8 @@ export async function deliverDutyNotice(
       tenantId: String(tenantId),
     };
     const config = configs.get(userId);
+    const lang = langs.get(userId) ?? 'de';
+    const { title, body } = notice.text(lang);
     const channels: string[] = [];
 
     if (config) {
@@ -221,7 +233,7 @@ export async function deliverDutyNotice(
       let pushSent = 0;
       if (config.push_enabled) {
         try {
-          pushSent = await sendPushToUser(admin, config.id, { title: notice.title, body: notice.body, data, urgent: notice.urgent });
+          pushSent = await sendPushToUser(admin, config.id, { title, body, data, urgent: notice.urgent });
         } catch (e) {
           console.error(`[duty] push error user=${userId}:`, e);
         }
@@ -229,7 +241,7 @@ export async function deliverDutyNotice(
       if (pushSent > 0) channels.push('push');
 
       if (config.telegram_chat_id && telegramToken && (parallelMode || pushSent === 0)) {
-        const ok = await telegramMessage(telegramToken, config.telegram_chat_id, `${notice.title}\n\n${notice.body}\n\nIn der App öffnen: ${APP_URL}${route}`);
+        const ok = await telegramMessage(telegramToken, config.telegram_chat_id, `${title}\n\n${body}\n\n${t(lang, 'telegram.openInApp', { url: APP_URL + route })}`);
         if (ok) channels.push('telegram');
       }
     }
@@ -239,8 +251,8 @@ export async function deliverDutyNotice(
       userId,
       tenantId,
       type: notice.feedType,
-      title: notice.title,
-      body: notice.body,
+      title,
+      body,
       channels,
       data,
     });

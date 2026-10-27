@@ -75,7 +75,7 @@
   "settings": {
     "language": {
       "title": "Idioma",
-      "hint": "Se aplica a la app en este dispositivo."
+      "hint": "Se aplica a la app y a las notificaciones push, Telegram y los correos que recibes."
     },
     "profilePicture": "Foto de perfil",
     "searchChurch": "Buscar iglesia",

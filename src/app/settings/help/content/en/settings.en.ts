@@ -21,10 +21,12 @@ The individual switches determine what you get push messages for, e.g. "Announce
   },
   'settings-language': {
     title: 'Changing the app language',
-    keywords: ['language', 'english', 'german', 'deutsch', 'translation', 'russian', 'spanish'],
+    keywords: ['language', 'english', 'german', 'deutsch', 'translation', 'russian', 'spanish', 'push', 'email', 'telegram', 'calendar'],
     body: `Under "Settings → System → Language" you choose the language in which you see Attendix. Everyone can set this for themselves. After switching, the app reloads briefly.
 
 As long as you do not choose anything, Attendix follows the language of your device. If that is not available, the app stays in German.
+
+The language is saved to your account. You also get push messages, Telegram messages and emails from Attendix in this language, on your other devices too. New calendar subscriptions (Settings → Subscribe to calendar) also show status and notes in your language.
 
 Only the texts of the app are translated. Content you create yourselves, such as group names, event titles, pieces or announcements, stays the way you wrote it. The release notes under "What's new?" are only available in German.`,
   },

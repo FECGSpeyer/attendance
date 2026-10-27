@@ -19,6 +19,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import {
   deliverDutyNotice, dutyTitle, dutyWhen, isCancelled, leaderPersonIds, loadDutyAttendance, occupies, requiredOf,
 } from '../_shared/duty-delivery.ts'
+import { t } from '../_shared/i18n.ts'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -69,8 +70,6 @@ Deno.serve(async (req) => {
     const loaded = await loadDutyAttendance(admin, attendanceId);
     if (!loaded || Number(loaded.att.tenantId) !== tenantId) return json({ error: 'Duty not found' }, 404);
     const { att, type: dutyType, persons } = loaded;
-    const title = dutyTitle(att, dutyType);
-    const when = dutyWhen(att, dutyType);
     const required = requiredOf(att, dutyType);
     const occupied = persons.filter(occupies);
     const inFuture = new Date(att.date).getTime() > Date.now() - 24 * 3600 * 1000;
@@ -94,8 +93,10 @@ Deno.serve(async (req) => {
           const others = await firstNames(admin, occupied.filter((o) => o.person_id !== pa.person_id).map((o) => o.person_id));
           const r = await deliverDutyNotice(admin, tenantId, [pa.person_id], {
             feedType: 'duty',
-            title: `🎧 Du bist eingeteilt: ${title}`,
-            body: `${when}${others.length ? ` zusammen mit ${others.join(', ')}` : ''}. Bitte bestätige den Dienst.`,
+            text: (lang) => ({
+              title: t(lang, 'duty.assignedTitle', { title: dutyTitle(att, dutyType, lang) }),
+              body: t(lang, others.length ? 'duty.assignedBodyWith' : 'duty.assignedBody', { when: dutyWhen(att, dutyType, lang), names: others.join(', ') }),
+            }),
             attendanceId,
           }, callerId);
           result.recipients += r.recipients;
@@ -110,11 +111,15 @@ Deno.serve(async (req) => {
         }
         if (!inFuture || occupied.length >= required) return json({ success: true, skipped: 'not understaffed' });
         const standIns = persons.filter((p) => !p.duty_state && !isCancelled(p)).map((p) => p.person_id);
-        const who = callerPlayer?.firstName ? `${callerPlayer.firstName} kann` : 'Jemand kann';
+        const name = callerPlayer?.firstName;
         const result = await deliverDutyNotice(admin, tenantId, standIns, {
           feedType: 'duty_understaffed',
-          title: `${title} ${when.split(' · ')[0]}: ${occupied.length} von ${required}`,
-          body: `${who} nicht. Kannst du einspringen?`,
+          text: (lang) => ({
+            title: t(lang, 'duty.understaffedTitle', {
+              title: dutyTitle(att, dutyType, lang), day: dutyWhen(att, dutyType, lang).split(' · ')[0], count: occupied.length, required,
+            }),
+            body: name ? t(lang, 'duty.understaffedBody', { name }) : t(lang, 'duty.understaffedBodyAnon'),
+          }),
           attendanceId,
         }, callerId);
         await admin.from('attendance').update({ duty_alert_sent_at: new Date().toISOString() }).eq('id', attendanceId);
@@ -127,11 +132,13 @@ Deno.serve(async (req) => {
         const standIns = persons.filter((p) => !p.duty_state && !isCancelled(p)).map((p) => p.person_id);
         // After an urgent notice the leadership was informed too.
         const leaders = att.duty_urgent_sent_at ? await leaderPersonIds(admin, tenantId) : [];
-        const who = callerPlayer?.firstName ? `${callerPlayer.firstName} ist eingesprungen. ` : '';
+        const name = callerPlayer?.firstName;
         const result = await deliverDutyNotice(admin, tenantId, [...standIns, ...leaders], {
           feedType: 'duty_filled',
-          title: `✅ ${title} ${when.split(' · ')[0]} ist wieder besetzt`,
-          body: `${who}Danke, du musst nicht mehr einspringen.`,
+          text: (lang) => ({
+            title: t(lang, 'duty.filledTitle', { title: dutyTitle(att, dutyType, lang), day: dutyWhen(att, dutyType, lang).split(' · ')[0] }),
+            body: (name ? t(lang, 'duty.filledBy', { name }) + ' ' : '') + t(lang, 'duty.filledBody'),
+          }),
           attendanceId,
         }, callerId);
         await admin.from('attendance').update({ duty_alert_sent_at: null }).eq('id', attendanceId);

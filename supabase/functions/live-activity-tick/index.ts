@@ -19,6 +19,7 @@ import {
   LIVE_TAIL_MINUTES,
   LivePlanState,
 } from '../_shared/live-plan-state.ts'
+import { intlLocale, Lang, t, userLanguages } from '../_shared/i18n.ts'
 
 const DEFAULT_TIMEZONE = 'Europe/Berlin';
 const LOOKBACK_DAYS = 14;
@@ -125,6 +126,7 @@ function iosMessage(
   event: 'start' | 'update' | 'end',
   plan: LivePlan,
   liveState: LivePlanState,
+  lang: Lang,
 ): unknown {
   const state = iosLiveState(liveState);
   const nowSec = Math.floor(Date.now() / 1000);
@@ -139,7 +141,9 @@ function iosMessage(
     aps['attributes-type'] = 'PlanActivityAttributes';
     aps['attributes'] = { attendanceId: plan.attendance.id, planKey: plan.planKey, title: plan.title };
     // Push-to-start requires an alert; it is shown as the Live Activity appearing.
-    aps['alert'] = { title: plan.title, body: state.phase === 'before' ? `Ablaufplan startet um ${clock(state.planStart)}` : `Jetzt: ${state.title}` };
+    aps['alert'] = { title: plan.title, body: state.phase === 'before'
+      ? t(lang, 'live.startsAt', { time: clock(state.planStart, lang) })
+      : t(lang, 'live.now', { title: state.title }) };
   }
   if (event === 'end') aps['dismissal-date'] = state.planEnd + LIVE_TAIL_MINUTES * 60;
   return {
@@ -153,8 +157,8 @@ function iosMessage(
 }
 
 let timezoneForClock = DEFAULT_TIMEZONE;
-function clock(epochSec: number): string {
-  return new Intl.DateTimeFormat('de-DE', { timeZone: timezoneForClock, hour: '2-digit', minute: '2-digit' }).format(new Date(epochSec * 1000));
+function clock(epochSec: number, lang: Lang): string {
+  return new Intl.DateTimeFormat(intlLocale(lang), { timeZone: timezoneForClock, hour: '2-digit', minute: '2-digit' }).format(new Date(epochSec * 1000));
 }
 
 function androidMessage(fcmToken: string, event: 'start' | 'update' | 'end', plan: LivePlan, state: LivePlanState | null): unknown {
@@ -247,6 +251,7 @@ Deno.serve(async (req) => {
           .or(`kind.eq.start,and(attendance_id.eq.${plan.attendance.id},plan_key.eq.${plan.planKey})`),
       ]);
       const stateKey = liveStateKey(state);
+      const langs = await userLanguages(supabase, users);
 
       for (const userId of users) {
         const key = `${userId}|${plan.attendance.id}|${plan.planKey}`;
@@ -271,9 +276,9 @@ Deno.serve(async (req) => {
           const startToken = tokens.find(t => t.user_id === userId && t.kind === 'start');
           if (updateToken) {
             // Already running (started by push or by the open app).
-            message = iosMessage(device.token, updateToken.token, event === 'start' ? 'update' : event, plan, state);
+            message = iosMessage(device.token, updateToken.token, event === 'start' ? 'update' : event, plan, state, langs.get(userId) ?? 'de');
           } else if (!prev && startToken) {
-            message = iosMessage(device.token, startToken.token, 'start', plan, state);
+            message = iosMessage(device.token, startToken.token, 'start', plan, state, langs.get(userId) ?? 'de');
           }
           // else: started, but the app hasn't reported the activity's token yet; try next minute.
         }

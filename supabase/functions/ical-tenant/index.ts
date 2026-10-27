@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { normalizeLang, t } from '../_shared/i18n.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -13,13 +14,8 @@ const CORS_HEADERS = {
 
 const CANCELLED_STATUSES = [2, 4, 5];
 
-const STATUS_LABELS: Record<number, string> = {
-  1: 'Zugesagt',
-  2: 'Entschuldigt',
-  3: 'Verspätet',
-  4: 'Unentschuldigt',
-  5: 'Verspätet entschuldigt',
-};
+// Status shown in the title of personal feeds (server-texts ical.status.N).
+const STATUS_WITH_LABEL = [1, 2, 3, 4, 5];
 
 function pad(n: number): string {
   return String(n).padStart(2, '0');
@@ -127,13 +123,16 @@ Deno.serve(async (req: Request) => {
   // Fetch tenant shortName
   const { data: tenant } = await supabase
     .from('tenants')
-    .select('shortName')
+    .select('shortName, default_language')
     .eq('id', tenantId)
     .single();
 
   if (!tenant) {
     return new Response('Tenant not found', { status: 404, headers: CORS_HEADERS });
   }
+  // The app adds lang for non-German users; old links use the instance default.
+  const lang = normalizeLang(url.searchParams.get('lang') ?? tenant.default_language);
+  const calName = t(lang, 'ical.events', { name: tenant.shortName });
 
   // Build a status map for the person if personId is provided
   let statusMap: Map<number, number> | null = null;
@@ -172,7 +171,7 @@ Deno.serve(async (req: Request) => {
         'VERSION:2.0',
         icalLine('PRODID', '-//Attendix//DE'),
         'CALSCALE:GREGORIAN',
-        icalLine('X-WR-CALNAME', escapeIcal(`${tenant.shortName} Termine`)),
+        icalLine('X-WR-CALNAME', escapeIcal(calName)),
         'X-WR-TIMEZONE:Europe/Berlin',
         'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
         'X-PUBLISHED-TTL:PT1H',
@@ -197,7 +196,7 @@ Deno.serve(async (req: Request) => {
     'VERSION:2.0',
     icalLine('PRODID', '-//Attendix//DE'),
     'CALSCALE:GREGORIAN',
-    icalLine('X-WR-CALNAME', escapeIcal(`${tenant.shortName} Termine`)),
+    icalLine('X-WR-CALNAME', escapeIcal(calName)),
     'X-WR-TIMEZONE:Europe/Berlin',
     'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
     'X-PUBLISHED-TTL:PT1H',
@@ -215,14 +214,14 @@ Deno.serve(async (req: Request) => {
 
     // Resolve status for this event (only meaningful when personId is provided)
     const status: number = statusMap?.get(ev.id) ?? 0;
-    let statusLabel = STATUS_LABELS[status];
+    let statusLabel = STATUS_WITH_LABEL.includes(status) ? t(lang, `ical.status.${status}`) : undefined;
 
     // Dienstplan: a personal feed only shows duties the person was assigned to
     // and did not cancel; unconfirmed ones say so in the title.
     if (type.duty_mode && dutyStateMap !== null) {
       const dutyState = dutyStateMap.get(ev.id) ?? null;
       if (!dutyState || CANCELLED_STATUSES.includes(status)) continue;
-      if (dutyState === 'requested') statusLabel = 'bitte bestätigen';
+      if (dutyState === 'requested') statusLabel = t(lang, 'ical.pleaseConfirm');
     }
 
     // Parse date as UTC midnight
@@ -276,7 +275,7 @@ Deno.serve(async (req: Request) => {
       if (!isNaN(deadlineDate.getTime())) {
         lines.push('BEGIN:VALARM');
         lines.push('ACTION:DISPLAY');
-        lines.push(icalLine('DESCRIPTION', 'Bitte Anwesenheit eintragen'));
+        lines.push(icalLine('DESCRIPTION', t(lang, 'ical.enterAttendance')));
         lines.push(`TRIGGER;VALUE=DATE-TIME:${formatDateTimeUTC(deadlineDate)}`);
         lines.push('END:VALARM');
       }

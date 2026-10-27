@@ -13,6 +13,7 @@
 // same value in X-Telegram-Bot-Api-Secret-Token (pass it as secret_token to setWebhook).
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { normalizeLang, t } from '../_shared/i18n.ts';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -48,18 +49,20 @@ Deno.serve(async (req) => {
     const message = update?.message;
     const chatId: number | undefined = message?.chat?.id;
     const text: string = (message?.text ?? '').trim();
+    // Before linking only Telegram's own language setting is known.
+    let lang = normalizeLang(message?.from?.language_code);
 
     // Always answer 200, otherwise Telegram keeps retrying the update.
     if (!chatId || !text.startsWith('/start')) {
       if (chatId) {
-        await reply(token, chatId, 'Hallo! Verknüpfe dein Konto in Attendix unter Einstellungen → Benachrichtigungen → Telegramverknüpfung.');
+        await reply(token, chatId, t(lang, 'bot.hello'));
       }
       return new Response('ok');
     }
 
     const userId = text.split(/\s+/)[1] ?? '';
     if (!UUID_RE.test(userId)) {
-      await reply(token, chatId, 'Willkommen bei Attendix! Bitte starte die Verknüpfung direkt aus der App unter Einstellungen → Benachrichtigungen.');
+      await reply(token, chatId, t(lang, 'bot.welcome'));
       return new Response('ok');
     }
 
@@ -72,15 +75,16 @@ Deno.serve(async (req) => {
       .from('notifications')
       .update({ telegram_chat_id: String(chatId) })
       .eq('id', userId)
-      .select('id');
+      .select('id, language');
 
     if (error) {
       console.error('Failed to store chat id:', error);
-      await reply(token, chatId, 'Die Verknüpfung hat leider nicht geklappt. Bitte versuche es später erneut.');
+      await reply(token, chatId, t(lang, 'bot.failed'));
     } else if (!data?.length) {
-      await reply(token, chatId, 'Konto nicht gefunden. Bitte öffne einmal die Benachrichtigungs-Einstellungen in der App und versuche es dann erneut.');
+      await reply(token, chatId, t(lang, 'bot.notFound'));
     } else {
-      await reply(token, chatId, '✅ Dein Attendix-Konto ist jetzt mit Telegram verknüpft.');
+      if (data[0].language) lang = normalizeLang(data[0].language);
+      await reply(token, chatId, t(lang, 'bot.linked'));
     }
   } catch (err) {
     console.error('Error in attendix-bot:', err);

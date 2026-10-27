@@ -83,12 +83,20 @@ const DATE_SEPARATOR: Record<Lang, string> = { de: '.', en: '/', ru: '.', es: '/
 
 /** "2026-10-18" (or an ISO timestamp) as 18.10.2026 / 18/10/2026. */
 export function formatDate(lang: Lang, value: string | null | undefined): string {
-  const m = String(value ?? '').match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (!m) {
-    return String(value ?? '');
+  const text = String(value ?? '');
+  // Plain dates are formatted as they are to avoid a timezone shift.
+  const m = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) {
+    const sep = DATE_SEPARATOR[lang];
+    return `${m[3]}${sep}${m[2]}${sep}${m[1]}`;
   }
-  const sep = DATE_SEPARATOR[lang];
-  return `${m[3]}${sep}${m[2]}${sep}${m[1]}`;
+  const date = new Date(text);
+  if (!text || Number.isNaN(date.getTime())) {
+    return text;
+  }
+  return date.toLocaleDateString(INTL_LOCALES[lang], {
+    day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Berlin',
+  });
 }
 
 /** Day and month only: 18.10. / 18/10. */

@@ -5,6 +5,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendPushToUser } from '../_shared/send-push.ts'
 import { logNotification } from '../_shared/log-notification.ts'
+import { normalizeLang, t } from '../_shared/i18n.ts'
 
 // Enums matching the frontend
 enum AttendanceStatus {
@@ -68,6 +69,7 @@ interface NotificationConfig {
   criticals: boolean | null;
   enabled_tenants: number[] | null;
   push_and_telegram?: boolean | null;
+  language?: string | null;
 }
 
 interface PersonAttendance {
@@ -427,7 +429,7 @@ async function sendCriticalNotifications(
     // Find users who have criticals notifications enabled
     const { data: notifications, error: notifError } = await supabase
       .from('notifications')
-      .select('id, telegram_chat_id, push_enabled, push_and_telegram, enabled_tenants')
+      .select('id, telegram_chat_id, push_enabled, push_and_telegram, enabled_tenants, language')
       .eq('enabled', true)
       .eq('criticals', true)
       .in('id', authorizedUserIds);
@@ -452,11 +454,8 @@ async function sendCriticalNotifications(
       .map(p => `• ${p.firstName || ''} ${p.lastName || ''}`.trim())
       .join('\n');
 
-    const link = `\n\n[Personen öffnen](https://attendix.de/tabs/list?tenantId=${tenantId})`;
-
-    const message = `⚠️ *Neue Problemfälle (${tenantName})*\n\n` +
-      `${newCriticalPlayers.length} Person(en) wurden als Problemfall markiert:\n\n` +
-      `${playerNames}${link}`;
+    const url = `https://attendix.de/tabs/list?tenantId=${tenantId}`;
+    const count = newCriticalPlayers.length;
 
     // Send Telegram messages
     const telegramToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
@@ -466,8 +465,10 @@ async function sendCriticalNotifications(
 
     for (const notif of eligibleNotifications) {
       const parallelMode = !!notif.push_and_telegram && !!notif.push_enabled && !!notif.telegram_chat_id;
-      const notifTitle = `⚠️ Neue Problemfälle (${tenantName})`;
-      const notifBody = `${newCriticalPlayers.length} Person(en) wurden als Problemfall markiert`;
+      const lang = normalizeLang(notif.language);
+      const notifTitle = t(lang, 'criticals.title', { tenant: tenantName });
+      const notifBody = t(lang, 'criticals.body', { count });
+      const message = `*${notifTitle}*\n\n${notifBody}:\n\n${playerNames}\n\n[${t(lang, 'criticals.open')}](${url})`;
 
       let pushSent = 0;
       let telegramSent = false;

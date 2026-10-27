@@ -318,7 +318,8 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
 
   async subscribeCalendar() {
     if (!this.publicKey) return;
-    const base = `${environment.apiUrl}/functions/v1/ical-org-plans?key=${this.publicKey}`;
+    const lang = currentLanguage() !== 'de' ? `&lang=${currentLanguage()}` : '';
+    const base = `${environment.apiUrl}/functions/v1/ical-org-plans?key=${this.publicKey}${lang}`;
     const sheet = await this.actionSheetController.create({
       header: translate('plans.subscribeCalendar'),
       buttons: [

@@ -22,6 +22,7 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendPushToUser } from '../_shared/send-push.ts'
 import { logNotification } from '../_shared/log-notification.ts'
+import { formatDate, Lang, t, userLanguages } from '../_shared/i18n.ts'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -56,6 +57,9 @@ interface NotificationConfig {
   tasks: boolean | null;
   enabled_tenants: (number | string)[] | null;
 }
+
+/** Notice texts in the recipient's language. */
+type NoticeFor = (lang: Lang) => Notice;
 
 interface Notice {
   /** Feed type: task | protocol | proposal */
@@ -116,7 +120,7 @@ Deno.serve(async (req) => {
       return json({ error: 'Forbidden' }, 403);
     }
 
-    let prepared: { personIds: number[]; notice: Notice } | Response;
+    let prepared: { personIds: number[]; notice: NoticeFor } | Response;
     switch (type) {
       case 'task_assigned':
         prepared = await prepareTaskAssigned(admin, tenantId, String(body?.taskId ?? ''));
@@ -160,16 +164,19 @@ async function prepareTaskAssigned(admin: SupabaseClient, tenantId: number, task
     return { personIds: [], notice: emptyNotice() };
   }
 
-  const due = task.due_date ? `Fällig am ${formatDate(task.due_date)}` : '';
   const route = `/tabs/settings/tasks/${task.id}`;
   return {
     personIds: [Number(task.responsible_person_id)],
-    notice: {
-      feedType: 'task',
-      title: '📋 Neue Aufgabe',
-      body: due ? `${task.title} · ${due}` : task.title,
-      telegramText: `📋 Neue Aufgabe\n\n${task.title}${due ? `\n📅 ${due}` : ''}\n\nIn der App öffnen: ${APP_URL}${route}`,
-      data: { type: 'task', taskId: String(task.id), tenantId: String(tenantId), route },
+    notice: (lang: Lang) => {
+      const due = task.due_date ? t(lang, 'team.dueOn', { date: formatDate(lang, task.due_date) }) : '';
+      const title = t(lang, 'team.newTask');
+      return {
+        feedType: 'task',
+        title,
+        body: due ? `${task.title} · ${due}` : task.title,
+        telegramText: `${title}\n\n${task.title}${due ? `\n📅 ${due}` : ''}\n\n${t(lang, 'telegram.openInApp', { url: APP_URL + route })}`,
+        data: { type: 'task', taskId: String(task.id), tenantId: String(tenantId), route },
+      };
     },
   };
 }
@@ -197,7 +204,6 @@ async function prepareProtocolPublished(admin: SupabaseClient, tenantId: number,
     const { data: attType } = await admin.from('attendance_types').select('name').eq('id', attendance.type_id).maybeSingle();
     typeName = attType?.name ?? '';
   }
-  typeName = typeName || 'Termin';
 
   const [{ data: present, error: paErr }, { data: tasks, error: taskErr }] = await Promise.all([
     admin.from('person_attendances')
@@ -219,21 +225,25 @@ async function prepareProtocolPublished(admin: SupabaseClient, tenantId: number,
     ...(tasks ?? []).map((t: { responsible_person_id: number }) => Number(t.responsible_person_id)),
   ];
 
-  const date = formatDate(attendance.date);
-  const title = `📝 Protokoll freigegeben: ${typeName} vom ${date}`;
   const route = `/tabs/attendance/${attendanceId}/protocol`;
   const documentUrl = isAllowedPdfUrl(pdfUrl) ? pdfUrl : undefined;
   if (pdfUrl && !documentUrl) console.warn('[team-notify] ignoring pdfUrl outside of Supabase storage');
 
   return {
     personIds,
-    notice: {
-      feedType: 'protocol',
-      title,
-      body: 'Tippe hier, um das Protokoll zu lesen.',
-      telegramText: `${title}\n\nIn der App öffnen: ${APP_URL}${route}`,
-      data: { type: 'protocol', attendanceId: String(attendanceId), tenantId: String(tenantId), route },
-      documentUrl,
+    notice: (lang: Lang) => {
+      const title = t(lang, 'team.protocolPublished', {
+        type: typeName || t(lang, 'common.event'),
+        date: formatDate(lang, attendance.date),
+      });
+      return {
+        feedType: 'protocol',
+        title,
+        body: t(lang, 'team.protocolTap'),
+        telegramText: `${title}\n\n${t(lang, 'telegram.openInApp', { url: APP_URL + route })}`,
+        data: { type: 'protocol', attendanceId: String(attendanceId), tenantId: String(tenantId), route },
+        documentUrl,
+      };
     },
   };
 }
@@ -252,18 +262,20 @@ async function prepareProposalDecided(admin: SupabaseClient, tenantId: number, a
   }
 
   const accepted = item.proposal_status === 'accepted';
-  const title = accepted ? '✅ Dein Vorschlag wurde angenommen' : '💬 Dein Vorschlag wurde abgelehnt';
   const note = (item.decision_note as string | null)?.trim() ?? '';
   const body = note ? `${item.title} – ${note}` : item.title;
   const route = '/tabs/settings/team-organization?tab=topics';
   return {
     personIds: [Number(item.proposed_by)],
-    notice: {
-      feedType: 'proposal',
-      title,
-      body,
-      telegramText: `${title}\n\n💡 ${item.title}${note ? `\n\nBegründung: ${note}` : ''}\n\nIn der App öffnen: ${APP_URL}${route}`,
-      data: { type: 'proposal', agendaItemId: String(item.id), tenantId: String(tenantId), route },
+    notice: (lang: Lang) => {
+      const title = t(lang, accepted ? 'team.proposalAccepted' : 'team.proposalRejected');
+      return {
+        feedType: 'proposal',
+        title,
+        body,
+        telegramText: `${title}\n\n💡 ${item.title}${note ? `\n\n${t(lang, 'team.reason', { note })}` : ''}\n\n${t(lang, 'telegram.openInApp', { url: APP_URL + route })}`,
+        data: { type: 'proposal', agendaItemId: String(item.id), tenantId: String(tenantId), route },
+      };
     },
   };
 }
@@ -275,7 +287,7 @@ async function deliver(
   tenantId: number,
   callerId: string,
   personIds: number[],
-  notice: Notice,
+  noticeFor: NoticeFor,
 ): Promise<{ recipients: number; delivered: number }> {
   const ids = Array.from(new Set(personIds.filter((id) => Number.isFinite(id) && id > 0)));
   if (ids.length === 0) return { recipients: 0, delivered: 0 };
@@ -314,10 +326,12 @@ async function deliver(
   }
 
   const telegramToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
+  const langs = await userLanguages(admin, appIds);
   let delivered = 0;
 
   await runPool(appIds, PUSH_CONCURRENCY, async (userId) => {
     const config = configs.get(userId);
+    const notice = noticeFor(langs.get(userId) ?? 'de');
     const channels: string[] = [];
 
     if (config) {
@@ -393,8 +407,8 @@ async function telegramDocument(token: string, chatId: string, notice: Notice): 
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function emptyNotice(): Notice {
-  return { feedType: 'task', title: '', body: '', telegramText: '', data: {} };
+function emptyNotice(): NoticeFor {
+  return () => ({ feedType: 'task', title: '', body: '', telegramText: '', data: {} });
 }
 
 /** Only PDFs from this project's Supabase storage may be forwarded to Telegram. */
@@ -407,15 +421,6 @@ function isAllowedPdfUrl(url: unknown): url is string {
   } catch {
     return false;
   }
-}
-
-function formatDate(value: string): string {
-  // Plain dates (YYYY-MM-DD) are formatted as-is to avoid a timezone shift.
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (m) return `${m[3]}.${m[2]}.${m[1]}`;
-  return new Date(value).toLocaleDateString('de-DE', {
-    day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Berlin',
-  });
 }
 
 async function runPool<T>(items: T[], size: number, fn: (item: T) => Promise<void>): Promise<void> {

@@ -20,7 +20,7 @@ import { RegisterPage } from 'src/app/register/register.page';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { translate } from '@jsverse/transloco';
 import { LocaleService } from 'src/app/i18n/locale.service';
-import { ENABLED_LANGUAGES, LANGUAGE_NAMES } from 'src/app/i18n/languages';
+import { currentLanguage, ENABLED_LANGUAGES, LANGUAGE_NAMES } from 'src/app/i18n/languages';
 
 @Component({
     selector: 'app-settings',
@@ -787,6 +787,10 @@ export class SettingsPage implements OnInit, OnDestroy {
         link += `&personId=${personId}`;
         personal = true;
       }
+    }
+    // Calendar texts (status, reminders) in the app language; German is the server default.
+    if (currentLanguage() !== 'de') {
+      link += `&lang=${currentLanguage()}`;
     }
     const alert = await this.alertController.create({
       header: translate('settings.subscribeCalendar'),

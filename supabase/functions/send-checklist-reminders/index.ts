@@ -4,6 +4,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendPushToUser } from '../_shared/send-push.ts'
+import { intlLocale, Lang, normalizeLang, t } from '../_shared/i18n.ts'
 import { logNotification } from '../_shared/log-notification.ts'
 
 const DEFAULT_TIMEZONE = 'Europe/Berlin';
@@ -47,6 +48,7 @@ interface NotificationConfig {
   checklist: boolean | null;
   enabled_tenants: number[] | null;
   push_and_telegram?: boolean | null;
+  language?: string | null;
 }
 
 interface TenantUser {
@@ -133,9 +135,9 @@ function calculateMinutesUntilDueDate(
 /**
  * Format a due date for display
  */
-function formatDueDate(dueDateIso: string, timezone: string): string {
+function formatDueDate(dueDateIso: string, timezone: string, lang: Lang): string {
   const dueDate = new Date(dueDateIso);
-  return dueDate.toLocaleString('de-DE', {
+  return dueDate.toLocaleString(intlLocale(lang), {
     timeZone: timezone,
     day: '2-digit',
     month: '2-digit',
@@ -288,7 +290,7 @@ Deno.serve(async (req) => {
     // the page size against PostgREST's 1000-row default.
     const { data: allNotificationConfigs, error: notifError } = await supabase
       .from('notifications')
-      .select('id, enabled, telegram_chat_id, push_enabled, push_and_telegram, checklist, enabled_tenants')
+      .select('id, enabled, telegram_chat_id, push_enabled, push_and_telegram, checklist, enabled_tenants, language')
       .eq('enabled', true)
       .eq('checklist', true)
       .range(0, 4999);
@@ -372,11 +374,14 @@ Deno.serve(async (req) => {
             }
 
             // Format the message
+            const lang = normalizeLang(notifConfig.language);
+            const typeName = attType?.name || t(lang, 'common.event');
             const message = formatChecklistReminderMessage(
+              lang,
               item.text,
               item.dueDate,
               attendance.date,
-              attType?.name || 'Termin',
+              typeName,
               timezone,
               hoursUntilDue,
               attendance.id,
@@ -384,11 +389,11 @@ Deno.serve(async (req) => {
               tenantNames.get(attendance.tenantId) || ''
             );
 
-            const checklistTitle = hoursUntilDue === 0 ? '⚠️ Jetzt fällig!' : '⏰ Demnächst fällig';
+            const checklistTitle = t(lang, hoursUntilDue === 0 ? 'checklist.dueNow' : 'checklist.dueSoon');
             const checklistTenantName = tenantNames.get(attendance.tenantId) || '';
             const checklistBody = checklistTenantName
-              ? `${checklistTenantName}: ${item.text} (${attType?.name || 'Termin'})`
-              : `${item.text} (${attType?.name || 'Termin'})`;
+              ? `${checklistTenantName}: ${item.text} (${typeName})`
+              : `${item.text} (${typeName})`;
             const parallelMode = !!notifConfig.push_and_telegram && !!notifConfig.push_enabled && !!notifConfig.telegram_chat_id;
 
             let pushSent = 0;
@@ -492,6 +497,7 @@ Deno.serve(async (req) => {
  * Format a checklist reminder message for Telegram
  */
 function formatChecklistReminderMessage(
+  lang: Lang,
   itemText: string,
   dueDate: string,
   attendanceDate: string,
@@ -502,23 +508,21 @@ function formatChecklistReminderMessage(
   tenantId: number,
   tenantName: string
 ): string {
-  const urgencyText = hoursUntilDue === 0
-    ? '⚠️ *Jetzt fällig!*'
-    : '⏰ *Demnächst fällig*';
+  const urgencyText = `*${t(lang, hoursUntilDue === 0 ? 'checklist.dueNow' : 'checklist.dueSoon')}*`;
 
   // Format attendance date
   const attDateObj = new Date(attendanceDate);
-  const formattedAttDate = attDateObj.toLocaleDateString('de-DE', {
+  const formattedAttDate = attDateObj.toLocaleDateString(intlLocale(lang), {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
   });
 
-  const formattedDueDate = formatDueDate(dueDate, timezone);
+  const formattedDueDate = formatDueDate(dueDate, timezone, lang);
 
-  const link = `\n\n[Anwesenheit öffnen](https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId})`;
+  const link = `\n\n[${t(lang, 'qp.openAttendance')}](https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId})`;
 
   const tenantLine = tenantName ? `\n🏛️ ${tenantName}` : '';
 
-  return `${urgencyText}\n\n📋 *Checklisten-Erinnerung*${tenantLine}\n\n✅ ${itemText}\n📅 Termin: ${typeName} am ${formattedAttDate}\n⏳ Fällig: ${formattedDueDate}${link}`;
+  return `${urgencyText}\n\n📋 *${t(lang, 'checklist.reminder')}*${tenantLine}\n\n✅ ${itemText}\n📅 ${t(lang, 'checklist.eventLine', { type: typeName, date: formattedAttDate })}\n⏳ ${t(lang, 'checklist.dueLine', { date: formattedDueDate })}${link}`;
 }

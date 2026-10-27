@@ -4,6 +4,7 @@ import { Telegraf } from 'npm:telegraf@4.16.3';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { sendPushToUser } from '../_shared/send-push.ts';
 import { logNotification } from '../_shared/log-notification.ts';
+import { intlLocale, Lang, normalizeLang, t } from '../_shared/i18n.ts';
 
 console.info('server started');
 const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
@@ -81,7 +82,7 @@ const getBirthdays = async ()=>{
     const chunk = userIds.slice(i, i + NOTIF_ID_CHUNK);
     const { data: chunkNotifications, error: notiError } = await supabase
       .from("notifications")
-      .select("id, enabled, birthdays, telegram_chat_id, push_enabled, push_and_telegram, enabled_tenants")
+      .select("id, enabled, birthdays, telegram_chat_id, push_enabled, push_and_telegram, enabled_tenants, language")
       .eq("enabled", true)
       .eq("birthdays", true)
       .in("id", chunk)
@@ -118,17 +119,11 @@ const getBirthdays = async ()=>{
 
   const ageLabel = (age: number | null): string => age !== null ? ` (${age})` : '';
 
-  const getBirthdayString = (bs, todayYear, todayMonth, todayDay)=>{
-    let bString = "";
-    bs.map((p, index)=>{
-      const age = getAge(p.birthday, todayYear, todayMonth, todayDay);
-      if (bs.length === index + 1) {
-        bString += `${p.firstName} ${p.lastName}${ageLabel(age)} Geburtstag.`;
-      } else {
-        bString += `${p.firstName} ${p.lastName}${ageLabel(age)} und `;
-      }
-    });
-    return bString;
+  // "Heute hat A (30) Geburtstag." / "Heute haben A (30) und B (25) Geburtstag."
+  const birthdayMessage = (bs, lang: Lang, todayYear, todayMonth, todayDay): string => {
+    const names = bs.map((p) => `${p.firstName} ${p.lastName}${ageLabel(getAge(p.birthday, todayYear, todayMonth, todayDay))}`);
+    const list = new Intl.ListFormat(intlLocale(lang), { style: 'long', type: 'conjunction' }).format(names);
+    return t(lang, names.length === 1 ? 'birthday.todayOne' : 'birthday.todayMany', { names: list });
   };
 
   // Process notifications per tenant (to avoid duplicates)
@@ -142,13 +137,6 @@ const getBirthdays = async ()=>{
 
     // Get birthdays for this tenant
     const tenantBirthdays = todaysBirthdays.filter(b => b.tenantId === tenantId);
-
-    // Build message
-    const p0 = tenantBirthdays[0];
-    const age0 = getAge(p0.birthday, todayYear, todayMonth, todayDay);
-    const message = tenantBirthdays.length === 1
-      ? `Heute hat ${p0.firstName} ${p0.lastName}${ageLabel(age0)} Geburtstag.`
-      : `Heute haben ${getBirthdayString(tenantBirthdays, todayYear, todayMonth, todayDay)}`;
 
     // Get users for this tenant
     const tenantUserIds = tenantUsers
@@ -179,9 +167,11 @@ const getBirthdays = async ()=>{
       // If the recipient is themselves a birthday person, send a personalized wish
       const birthdayEntry = tenantBirthdays.find(b => b.appId === user.id);
       const selfAge = birthdayEntry ? getAge(birthdayEntry.birthday, todayYear, todayMonth, todayDay) : null;
+      const lang = normalizeLang(user.language);
+      const title = t(lang, 'birthday.title');
       const userMessage = birthdayEntry
-        ? `Herzlichen Glückwunsch zum Geburtstag${selfAge !== null ? ` – du wirst heute ${selfAge}` : ''}! 🎂`
-        : message;
+        ? t(lang, selfAge !== null ? 'birthday.selfAge' : 'birthday.self', { age: selfAge })
+        : birthdayMessage(tenantBirthdays, lang, todayYear, todayMonth, todayDay);
 
       const parallelMode = !!user.push_and_telegram && !!user.push_enabled && !!user.telegram_chat_id;
 
@@ -192,7 +182,7 @@ const getBirthdays = async ()=>{
         console.log(`[SENDING] PUSH to user ${user.id}: "${userMessage}"`);
         try {
           pushSent = await sendPushToUser(supabase, user.id, {
-            title: '🎉 Geburtstag',
+            title,
             body: userMessage,
             data: { type: 'birthday', tenantId: String(tenantId) },
           });
@@ -225,7 +215,7 @@ const getBirthdays = async ()=>{
           userId: user.id,
           tenantId,
           type: 'birthday',
-          title: '🎉 Geburtstag',
+          title,
           body: userMessage,
           channels,
           data: { type: 'birthday', tenantId: String(tenantId) },

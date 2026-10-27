@@ -75,7 +75,7 @@
   "settings": {
     "language": {
       "title": "Sprache",
-      "hint": "Gilt für die App auf diesem Gerät."
+      "hint": "Gilt für die App sowie für Push-Nachrichten, Telegram und E-Mails an dich."
     },
     "profilePicture": "Profilbild",
     "searchChurch": "Gemeinde suchen",

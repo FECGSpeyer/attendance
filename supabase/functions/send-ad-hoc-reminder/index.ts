@@ -10,6 +10,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendPushToUser } from '../_shared/send-push.ts'
 import { sendEmail } from '../_shared/send-email.ts'
 import { logNotification } from '../_shared/log-notification.ts'
+import { formatDate, Lang, normalizeLang, t, tenantLanguage, userLanguages } from '../_shared/i18n.ts'
 
 const VIEWER_ROLE = 3;
 
@@ -21,6 +22,7 @@ interface NotificationConfig {
   reminders: boolean | null;
   enabled_tenants: number[] | null;
   push_and_telegram?: boolean | null;
+  language?: string | null;
 }
 
 Deno.serve(async (req) => {
@@ -77,7 +79,7 @@ Deno.serve(async (req) => {
       .eq('id', attendance.type_id)
       .single();
 
-    const typeName = attType?.name || 'Termin';
+    const typeNameOf = (lang: Lang) => attType?.name || t(lang, 'common.event');
 
     // Fetch all non-viewer users in this tenant
     const { data: tenantUsers, error: tuError } = await supabase
@@ -138,7 +140,7 @@ Deno.serve(async (req) => {
     // Fetch notification configs
     const { data: notifConfigs, error: notifError } = await supabase
       .from('notifications')
-      .select('id, enabled, telegram_chat_id, push_enabled, push_and_telegram, reminders, enabled_tenants')
+      .select('id, enabled, telegram_chat_id, push_enabled, push_and_telegram, reminders, enabled_tenants, language')
       .eq('enabled', true)
       .eq('reminders', true)
       .in('id', userIds)
@@ -178,29 +180,31 @@ Deno.serve(async (req) => {
       console.log(`[send-ad-hoc-reminder] tenant=${tenantId} eligibleRecipients=${eligibleConfigs.length}`);
     }
 
-    // Format date
-    const dateObj = new Date(attendance.date);
-    const formattedDate = dateObj.toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
+    // Build messages. Title and message come from the sender as written;
+    // only the defaults and the frame follow the recipient's language.
     const timeStr = attendance.start_time || '';
-
-    // Build messages
-    const defaultBody = timeStr
-      ? `${typeName} am ${formattedDate} um ${timeStr}`
-      : `${typeName} am ${formattedDate}`;
-
-    const body = message || defaultBody;
-    const pushTitle = title || '🔔 Erinnerung';
-    const link = `\n\n[Anwesenheit öffnen](https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId})`;
-    const telegramMessage = `*${pushTitle}*\n\n${body}${link}`;
-    const pushBody = `${body}`;
+    const textsFor = (lang: Lang) => {
+      const typeName = typeNameOf(lang);
+      const formattedDate = formatDate(lang, attendance.date);
+      const defaultBody = timeStr
+        ? t(lang, 'reminder.bodyTime', { type: typeName, date: formattedDate, time: timeStr })
+        : t(lang, 'reminder.body', { type: typeName, date: formattedDate });
+      const body = message || defaultBody;
+      const pushTitle = title || t(lang, 'reminder.title');
+      const link = `\n\n[${t(lang, 'qp.openAttendance')}](https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId})`;
+      return {
+        body,
+        pushTitle,
+        pushBody: `${body}`,
+        telegramMessage: `*${pushTitle}*\n\n${body}${link}`,
+        subject: title || t(lang, 'reminder.subject', { type: typeName, date: formattedDate }),
+      };
+    };
 
     let sent = 0;
 
     for (const config of eligibleConfigs) {
+      const { pushTitle, pushBody, telegramMessage } = textsFor(normalizeLang(config.language));
       const parallelMode = !!config.push_and_telegram && !!config.push_enabled && !!config.telegram_chat_id;
 
       let pushSent = 0;
@@ -290,6 +294,8 @@ Deno.serve(async (req) => {
         // so users with push/Telegram disabled still see the reminder in-app.
         // Deduped by appId; external attendees without an appId are emailed only.
         const appIdSet = new Set<string>();
+        // First person per email decides the language of that mail.
+        const emailOwner = new Map<string, string | null>();
         for (const row of attendees as { person: { email: string | null; appId: string | null; instrument: number | null; left: string | null } | null }[]) {
           const person = row.person;
           if (!person) continue;
@@ -300,23 +306,31 @@ Deno.serve(async (req) => {
           if (!email) continue;
           if (mainGroupId !== null && person.instrument === mainGroupId) continue;
           emailSet.add(email.toLowerCase());
+          if (!emailOwner.has(email.toLowerCase())) emailOwner.set(email.toLowerCase(), person.appId ?? null);
           if (person.appId) appIdSet.add(person.appId);
         }
 
         if (emailSet.size > 0) {
-          const subject = title || `🔔 Erinnerung: ${typeName} am ${formattedDate}`;
-          const emailHtml = `<p>${body.replace(/\n/g, '<br>')}</p>` +
-            `<p><a href="https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId}">Anwesenheit öffnen</a></p>`;
-
-          emailsSent = await sendEmail({
-            to: Array.from(emailSet),
-            subject,
-            html: emailHtml,
-          });
+          // One mail per language: app users in their language, others in the
+          // instance default.
+          const userLangs = await userLanguages(supabase, Array.from(appIdSet));
+          const defaultLang = await tenantLanguage(supabase, Number(tenantId));
+          const byLang = new Map<Lang, string[]>();
+          for (const [email, appId] of emailOwner) {
+            const lang = (appId && userLangs.get(appId)) || defaultLang;
+            byLang.set(lang, [...(byLang.get(lang) ?? []), email]);
+          }
+          for (const [lang, to] of byLang) {
+            const { body, subject } = textsFor(lang);
+            const emailHtml = `<p>${body.replace(/\n/g, '<br>')}</p>` +
+              `<p><a href="https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId}">${t(lang, 'qp.openAttendance')}</a></p>`;
+            emailsSent += await sendEmail({ to, subject, html: emailHtml });
+          }
 
           // Record the emailed reminder in the notification center for app users.
           if (emailsSent > 0) {
             for (const appId of appIdSet) {
+              const { pushTitle, pushBody } = textsFor(userLangs.get(appId) ?? defaultLang);
               await logNotification(supabase, {
                 userId: appId,
                 tenantId,

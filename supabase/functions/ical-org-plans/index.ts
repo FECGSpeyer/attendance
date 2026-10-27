@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { intlLocale, Lang, normalizeLang, t } from '../_shared/i18n.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -117,7 +118,7 @@ function escapeIcal(s: string): string {
   return s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
 }
 
-function buildDescription(fields: FieldSelection[], startTime: string, date: string): string {
+function buildDescription(fields: FieldSelection[], startTime: string, date: string, lang: Lang): string {
   if (!fields.length) return '';
   const lines: string[] = [];
   let cumulativeMins = 0;
@@ -135,12 +136,12 @@ function buildDescription(fields: FieldSelection[], startTime: string, date: str
       let timeStr = '';
       if (slotStart) {
         const slotDate = new Date(slotStart.getTime() + cumulativeMins * 60000);
-        const berlinFormatter = new Intl.DateTimeFormat('de-DE', {
+        const berlinFormatter = new Intl.DateTimeFormat(intlLocale(lang), {
           timeZone: 'Europe/Berlin',
           hour: '2-digit', minute: '2-digit',
           hour12: false,
         });
-        timeStr = berlinFormatter.format(slotDate) + ' Uhr | ';
+        timeStr = t(lang, 'ical.clock', { time: berlinFormatter.format(slotDate) }) + ' | ';
       }
       const conductorStr = f.conductor ? ` (${f.conductor})` : '';
       lines.push(escapeIcal(`${indent}${timeStr}${f.name}${conductorStr} \u2013 ${shownDur} min`));
@@ -152,14 +153,14 @@ function buildDescription(fields: FieldSelection[], startTime: string, date: str
   return lines.join('\\n');
 }
 
-function buildIcal(orgName: string, plans: PlanEntry[], detailed: boolean): string {
+function buildIcal(orgName: string, plans: PlanEntry[], detailed: boolean, lang: Lang): string {
   const dtstamp = toIcalDate(new Date());
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     icalLine('PRODID', '-//Attendix//OrgPlans//DE'),
     'CALSCALE:GREGORIAN',
-    icalLine('X-WR-CALNAME', escapeIcal(`${orgName} Ablaufpläne`)),
+    icalLine('X-WR-CALNAME', escapeIcal(t(lang, 'ical.orgPlans', { name: orgName }))),
     'X-WR-TIMEZONE:Europe/Berlin',
     'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
     'X-PUBLISHED-TTL:PT1H',
@@ -173,7 +174,7 @@ function buildIcal(orgName: string, plans: PlanEntry[], detailed: boolean): stri
       const dtEnd = parseLocalDateTime(plan.date, plan.end);
       if (!dtStart) continue;
       const endDate = dtEnd ?? new Date(dtStart.getTime() + 60 * 60000);
-      const desc = buildDescription(plan.fields, plan.time, plan.date);
+      const desc = buildDescription(plan.fields, plan.time, plan.date, lang);
       lines.push(
         'BEGIN:VEVENT',
         icalLine('UID', `${plan.uid}@attendix.de`),
@@ -227,6 +228,7 @@ Deno.serve(async (req: Request) => {
   const url = new URL(req.url);
   const key = url.searchParams.get('key');
   const detailed = url.searchParams.get('detailed') === 'true';
+  const lang = normalizeLang(url.searchParams.get('lang'));
 
   if (!key) {
     return new Response('Missing key', { status: 400, headers: CORS_HEADERS });
@@ -294,7 +296,7 @@ Deno.serve(async (req: Request) => {
 
   plans.sort((a, b) => a.date < b.date ? -1 : 1);
 
-  const ical = buildIcal(org.name, plans, detailed);
+  const ical = buildIcal(org.name, plans, detailed, lang);
 
   return new Response(ical, {
     headers: {

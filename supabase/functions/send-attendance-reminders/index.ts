@@ -5,6 +5,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendPushToUser } from '../_shared/send-push.ts'
 import { logNotification } from '../_shared/log-notification.ts'
+import { formatDate, Lang, normalizeLang, t } from '../_shared/i18n.ts'
 
 const DEFAULT_TIMEZONE = 'Europe/Berlin';
 
@@ -57,6 +58,7 @@ interface NotificationConfig {
   reminders: boolean | null;
   enabled_tenants: number[] | null;
   push_and_telegram?: boolean | null;
+  language?: string | null;
 }
 
 interface TenantUser {
@@ -335,7 +337,7 @@ Deno.serve(async (req) => {
           // 7. Get notification configs for eligible users
           const { data: notificationConfigs, error: notifError } = await supabase
             .from('notifications')
-            .select('id, enabled, telegram_chat_id, push_enabled, push_and_telegram, reminders, enabled_tenants')
+            .select('id, enabled, telegram_chat_id, push_enabled, push_and_telegram, reminders, enabled_tenants, language')
             .eq('enabled', true)
             .eq('reminders', true)
             .in('id', eligibleUserIds)
@@ -370,7 +372,9 @@ Deno.serve(async (req) => {
             }
 
             // Send reminder message
+            const lang = normalizeLang(notifConfig.language);
             const message = formatReminderMessage(
+              lang,
               attType.name,
               attendance.date,
               attendance.start_time,
@@ -379,8 +383,8 @@ Deno.serve(async (req) => {
               attendance.tenantId
             );
 
-            const reminderTitle = '⏰ Terminerinnerung';
-            const reminderBody = `${attType.name} startet ${matchedReminder === 1 ? 'in 1 Stunde' : matchedReminder < 24 ? `in ${matchedReminder} Stunden` : `in ${Math.floor(matchedReminder / 24)} Tag(en)`}`;
+            const reminderTitle = t(lang, 'attReminder.title');
+            const reminderBody = t(lang, 'attReminder.starts', { type: attType.name, when: reminderWhen(lang, matchedReminder) });
             const parallelMode = !!notifConfig.push_and_telegram && !!notifConfig.push_enabled && !!notifConfig.telegram_chat_id;
 
             let pushSent = 0;
@@ -466,7 +470,14 @@ Deno.serve(async (req) => {
 /**
  * Format a reminder message for Telegram
  */
+function reminderWhen(lang: Lang, hoursAhead: number): string {
+  if (hoursAhead === 0) return t(lang, 'attReminder.now');
+  if (hoursAhead < 24) return t(lang, 'attReminder.inHours', { count: hoursAhead });
+  return t(lang, 'attReminder.inDays', { count: Math.floor(hoursAhead / 24) });
+}
+
 function formatReminderMessage(
+  lang: Lang,
   typeName: string,
   date: string,
   startTime: string,
@@ -474,26 +485,13 @@ function formatReminderMessage(
   attendanceId: number,
   tenantId: number
 ): string {
-  const reminderText = hoursAhead === 0
-    ? 'jetzt'
-    : hoursAhead === 1
-    ? 'in 1 Stunde'
-    : hoursAhead < 24
-    ? `in ${hoursAhead} Stunden`
-    : `in ${Math.floor(hoursAhead / 24)} Tag(en)`;
-
-  // Format date
-  const dateObj = new Date(date);
-  const formattedDate = dateObj.toLocaleDateString('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
+  const reminderText = reminderWhen(lang, hoursAhead);
+  const formattedDate = formatDate(lang, date);
 
   // Ensure startTime is in HH:mm format
   const timeStr = startTime.includes(':') ? startTime : '00:00';
 
-  const link = `\n\n[Anwesenheit öffnen](https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId})`;
+  const link = `\n\n[${t(lang, 'qp.openAttendance')}](https://attendix.de/open-attendance?id=${attendanceId}&tenantId=${tenantId})`;
 
-  return `⏰ *Terminerinnerung*\n\n${reminderText}:\n\n📋 ${typeName}\n📅 ${formattedDate}\n🕐 ${timeStr}${link}`;
+  return `*${t(lang, 'attReminder.title')}*\n\n${reminderText}:\n\n📋 ${typeName}\n📅 ${formattedDate}\n🕐 ${timeStr}${link}`;
 }
