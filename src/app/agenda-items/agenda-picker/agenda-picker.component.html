@@ -1,14 +1,14 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="dismiss()" aria-label="Schließen">
+      <ion-button (click)="dismiss()" [attr.aria-label]="'common.close' | transloco">
         <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Themen aufnehmen</ion-title>
+    <ion-title>{{ 'attendance.addTopics' | transloco }}</ion-title>
   </ion-toolbar>
   <ion-toolbar>
-    <ion-searchbar [(ngModel)]="search" placeholder="Thema suchen oder neu anlegen" [debounce]="0"></ion-searchbar>
+    <ion-searchbar [(ngModel)]="search" [placeholder]="'agenda.searchOrCreate' | transloco" [debounce]="0"></ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
@@ -22,7 +22,7 @@
       <ion-list [inset]="true">
         <ion-item button detail="false" (click)="createFromSearch()" lines="none">
           <ion-icon name="add-circle-outline" slot="start" color="primary"></ion-icon>
-          <ion-label color="primary" class="ion-text-wrap">„{{ search.trim() }}“ als neues Thema anlegen</ion-label>
+          <ion-label color="primary" class="ion-text-wrap">{{ 'agenda.createAsNew' | transloco: { name: search.trim() } }}</ion-label>
         </ion-item>
       </ion-list>
     }
@@ -30,7 +30,7 @@
     @if (visiblePostponed.length) {
       <ion-list [inset]="true">
         <ion-list-header>
-          <ion-label>Vertagt aus letzter Sitzung</ion-label>
+          <ion-label>{{ 'agenda.postponedFromLast' | transloco }}</ion-label>
         </ion-list-header>
         @for (row of visiblePostponed; track row.item.id; let last = $last) {
           <ng-container *ngTemplateOutlet="rowTpl; context: { $implicit: row, last }"></ng-container>
@@ -40,7 +40,7 @@
 
     <ion-list [inset]="true">
       <ion-list-header>
-        <ion-label>Themenspeicher</ion-label>
+        <ion-label>{{ 'agenda.topicStore' | transloco }}</ion-label>
       </ion-list-header>
       @for (row of visibleOthers; track row.item.id; let last = $last) {
         <ng-container *ngTemplateOutlet="rowTpl; context: { $implicit: row, last }"></ng-container>
@@ -62,19 +62,19 @@
         <h2>{{ row.item.title }}</h2>
         <p>
           @if (row.postponedOn !== undefined) {
-            <ion-badge color="warning" class="postponed-badge">Vertagt{{ row.postponedOn ? ' ' + (row.postponedOn | date:'dd.MM.') : '' }}</ion-badge>
+            <ion-badge color="warning" class="postponed-badge">{{ row.postponedOn ? ('agenda.postponedOn' | transloco: { date: (row.postponedOn | date:'dd.MM.') }) : ('agenda.postponed' | transloco) }}</ion-badge>
           }
           {{ subtitle(row) }}
         </p>
       </ion-label>
       @if (row.selected && !row.inPlan) {
         <div slot="end" class="stepper" (click)="$event.stopPropagation()">
-          <ion-button fill="clear" size="small" (click)="changeDuration(row, -5, $event)" aria-label="Kürzer">−</ion-button>
-          <span>{{ row.duration }} min</span>
-          <ion-button fill="clear" size="small" (click)="changeDuration(row, 5, $event)" aria-label="Länger">+</ion-button>
+          <ion-button fill="clear" size="small" (click)="changeDuration(row, -5, $event)" [attr.aria-label]="'agenda.shorter' | transloco">−</ion-button>
+          <span>{{ 'planning.minShort' | transloco: { min: row.duration } }}</span>
+          <ion-button fill="clear" size="small" (click)="changeDuration(row, 5, $event)" [attr.aria-label]="'agenda.longer' | transloco">+</ion-button>
         </div>
       } @else {
-        <ion-note slot="end">{{ row.duration }} min</ion-note>
+        <ion-note slot="end">{{ 'planning.minShort' | transloco: { min: row.duration } }}</ion-note>
       }
     </ion-item>
   </ng-template>

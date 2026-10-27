@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular/lazy';
+import { translate, TranslocoModule } from '@jsverse/transloco';
 
 export interface DutyCandidate {
   personAttendanceId: string;
@@ -18,7 +19,7 @@ export interface DutyCandidate {
 @Component({
   selector: 'app-duty-assign-modal',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [TranslocoModule, CommonModule, IonicModule],
   templateUrl: './duty-assign-modal.component.html',
   styleUrls: ['./duty-assign-modal.component.scss'],
 })
@@ -50,8 +51,8 @@ export class DutyAssignModalComponent implements OnInit {
 
   get confirmLabel(): string {
     const names = this.sorted.filter(c => this.selected.has(c.personAttendanceId)).map(c => c.name.split(' ')[0]);
-    if (!names.length) return 'Einteilen';
-    return names.length === 1 ? `${names[0]} einteilen` : `${names.length} Personen einteilen`;
+    if (!names.length) return translate('attendance.assign');
+    return names.length === 1 ? translate('duty.assignName', { name: names[0] }) : translate('duty.assignPeople', { count: names.length });
   }
 
   get tooMany(): boolean {

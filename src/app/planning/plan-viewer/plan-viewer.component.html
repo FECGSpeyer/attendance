@@ -13,7 +13,7 @@
               </ion-button>
             }
             @if (canEdit) {
-              <ion-button (click)="edit()" aria-label="Ablaufplan bearbeiten">
+              <ion-button (click)="edit()" [attr.aria-label]="'attendance.editRunSheet' | transloco">
                 <ion-icon slot="icon-only" name="create-outline"></ion-icon>
               </ion-button>
             }
@@ -31,18 +31,18 @@
     @if (plan?.fields?.length) {
     <ion-list [inset]="true">
         <ion-list-header>
-            <ion-label>Ablauf</ion-label>
+            <ion-label>{{ 'planning.runSheet' | transloco }}</ion-label>
         </ion-list-header>
 
         <ion-item-group>
             <ion-item>
                 <ion-label>
-                    <h2>Start</h2>
+                    <h2>{{ 'attendance.startLabel' | transloco }}</h2>
                     @if (getStartCountdown(); as countdown) {
                     <p class="start-countdown">{{ countdown }}</p>
                     }
                 </ion-label>
-                <ion-note slot="end">{{ getStartTime() }} Uhr</ion-note>
+                <ion-note slot="end">{{ 'attendance.timeOClock' | transloco: { time: getStartTime() } }}</ion-note>
             </ion-item>
 
             @for (field of plan.fields; track field.id; let i = $index) {
@@ -57,7 +57,7 @@
                     <p class="field-info">{{ field.info }}</p>
                     }
                 </ion-label>
-                <ion-note slot="end" class="group-duration">{{ groupMinutes(field) }} min</ion-note>
+                <ion-note slot="end" class="group-duration">{{ 'planning.minShort' | transloco: { min: groupMinutes(field) } }}</ion-note>
             </ion-item>
             } @else if (field.id !== AGENDA_ITEMS_PLACEHOLDER_ID) {
             <ion-item
@@ -67,7 +67,7 @@
                 <ion-label>
                     <h2>{{ fieldName(field) }}</h2>
                     @if (isInstrumentMissing(field)) {
-                    <p class="ion-text-wrap" style="color: var(--ion-color-danger);">Keine Noten für dein Instrument</p>
+                    <p class="ion-text-wrap" style="color: var(--ion-color-danger);">{{ 'planning.noScoresInstrument' | transloco }}</p>
                     }
                     @if (!field.id.includes('noteFld')) {
                     <p>{{ calculateTime(field, i) }}</p>
@@ -80,7 +80,7 @@
                   @if (liveMode && i === activeFieldIndex) {
                     <ion-badge slot="end" color="primary">{{ getActiveCountdown() }}</ion-badge>
                   } @else {
-                    <ion-note slot="end">{{ field.time }} min</ion-note>
+                    <ion-note slot="end">{{ 'planning.minShort' | transloco: { min: field.time } }}</ion-note>
                   }
                 }
             </ion-item>
@@ -89,8 +89,8 @@
 
             @if (plan.end) {
             <ion-item lines="none">
-                <ion-label>Ende</ion-label>
-                <ion-note slot="end">{{ getEndTime() }} Uhr</ion-note>
+                <ion-label>{{ 'attendance.end' | transloco }}</ion-label>
+                <ion-note slot="end">{{ 'attendance.timeOClock' | transloco: { time: getEndTime() } }}</ion-note>
             </ion-item>
             }
 
@@ -99,7 +99,7 @@
     } @else {
     <ion-card>
         <ion-card-content>
-            <p>Kein Ablaufplan verfügbar.</p>
+            <p>{{ 'planning.noPlanAvailable' | transloco }}</p>
         </ion-card-content>
     </ion-card>
     }

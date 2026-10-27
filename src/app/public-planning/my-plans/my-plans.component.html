@@ -1,8 +1,8 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Meine Pläne</ion-title>
+    <ion-title>{{ 'plans.myPlans' | transloco }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="dismiss()">Schließen</ion-button>
+      <ion-button (click)="dismiss()">{{ 'common.close' | transloco }}</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -34,7 +34,7 @@
       }
       @if (!plans.length) {
         <ion-item lines="none">
-          <ion-label color="medium" class="ion-text-center ion-padding">Keine Pläne vorhanden.</ion-label>
+          <ion-label color="medium" class="ion-text-center ion-padding">{{ 'plans.noPlans' | transloco }}</ion-label>
         </ion-item>
       }
     </ion-list>

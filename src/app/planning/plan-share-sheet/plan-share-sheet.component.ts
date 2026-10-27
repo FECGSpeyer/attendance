@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular/lazy';
+import { TranslocoModule } from '@jsverse/transloco';
 
 export type PlanShareScope = 'one' | 'all';
 export type PlanShareAction = 'pdf' | 'pdf2x' | 'telegram' | 'telegram2x' | 'telegramImage';
@@ -19,7 +20,7 @@ export interface PlanShareChoice {
   selector: 'app-plan-share-sheet',
   templateUrl: './plan-share-sheet.component.html',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [TranslocoModule, CommonModule, IonicModule],
 })
 export class PlanShareSheetComponent {
   @Input() currentLabel = '';

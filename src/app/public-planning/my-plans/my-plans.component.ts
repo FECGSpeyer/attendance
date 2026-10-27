@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { SharedPlan } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { getSupabase } from '../../services/base/supabase';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-my-plans',
@@ -50,12 +51,12 @@ export class MyPlansComponent implements OnInit {
 
   async deletePlan(plan: SharedPlan) {
     const alert = await this.alertController.create({
-      header: 'Plan löschen',
-      message: `"${plan.plan_title || 'Ablaufplan'}" endgültig löschen?`,
+      header: translate('planning.deletePlan'),
+      message: translate('plans.deletePlanForever', { title: plan.plan_title || translate('plans.runSheet') }),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Löschen',
+          text: translate('common.delete'),
           role: 'destructive',
           handler: async () => {
             const { error } = await getSupabase()
@@ -63,7 +64,7 @@ export class MyPlansComponent implements OnInit {
               .delete()
               .eq('id', plan.id);
             if (error) {
-              Utils.showToast('Fehler beim Löschen', 'danger');
+              Utils.showToast(translate('plans.deleteFailed'), 'danger');
             } else {
               this.plans = this.plans.filter(p => p.id !== plan.id);
             }

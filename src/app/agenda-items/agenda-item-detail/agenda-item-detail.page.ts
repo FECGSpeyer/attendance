@@ -18,6 +18,7 @@ import { agendaFieldId, OUTCOME_LABELS, personName } from 'src/app/team-organiza
 import { openTaskForm } from 'src/app/tasks/task-form/task-form.component';
 import { addTopicsToAttendance, defaultTopicDuration, upcomingProtocolAttendances } from '../agenda-plan.helpers';
 import { promptCreateProtocolAttendance } from 'src/app/utilities/attendance-date-dialog';
+import { translate } from '@jsverse/transloco';
 
 /** How many upcoming Termine "Einplanen" offers. */
 const PLAN_CHOICES = 6;
@@ -39,15 +40,15 @@ export class AgendaItemDetailPage implements OnInit {
   private itemId: string;
 
   readonly statusOptions: { value: AgendaItemStatus; label: string }[] = [
-    { value: 'open', label: 'Offen' },
-    { value: 'completed', label: 'Erledigt' },
-    { value: 'dropped', label: 'Verworfen' },
+    { value: 'open', label: translate('agenda.statusOpen') },
+    { value: 'completed', label: translate('agenda.statusDone') },
+    { value: 'dropped', label: translate('agenda.statusDropped') },
   ];
 
   readonly priorityOptions: { value: AgendaItemPriority; label: string }[] = [
-    { value: 'high', label: 'Hoch' },
-    { value: 'medium', label: 'Mittel' },
-    { value: 'low', label: 'Niedrig' },
+    { value: 'high', label: translate('agenda.high') },
+    { value: 'medium', label: translate('agenda.medium') },
+    { value: 'low', label: translate('agenda.low') },
   ];
 
   readonly outcomeLabels = OUTCOME_LABELS;
@@ -144,7 +145,7 @@ export class AgendaItemDetailPage implements OnInit {
 
   historyTypeName(entry: AgendaItemHistoryEntry): string {
     const type = this.db.attendanceTypes().find(t => t.id === entry.type_id);
-    return (type ? Utils.getTypeTitle(type, entry.type_info ?? '') : entry.type_info) || type?.name || 'Termin';
+    return (type ? Utils.getTypeTitle(type, entry.type_info ?? '') : entry.type_info) || type?.name || translate('attendance.eventFallback');
   }
 
   historyStatus(entry: AgendaItemHistoryEntry): { label: string; color: string } {
@@ -153,9 +154,9 @@ export class AgendaItemDetailPage implements OnInit {
       return { label: this.outcomeLabels[entry.outcome], color };
     }
     if (dayjs(entry.date).isAfter(dayjs().startOf('day')) || dayjs(entry.date).isSame(dayjs(), 'day')) {
-      return { label: 'Geplant', color: 'primary' };
+      return { label: translate('agenda.planned'), color: 'primary' };
     }
-    return { label: 'Ohne Ergebnis', color: 'medium' };
+    return { label: translate('agenda.noOutcome'), color: 'medium' };
   }
 
   openHistory(entry: AgendaItemHistoryEntry) {
@@ -167,11 +168,11 @@ export class AgendaItemDetailPage implements OnInit {
   }
 
   taskSubtitle(task: Task): string {
-    const who = personName(task.responsible_person) || 'Niemand zugewiesen';
+    const who = personName(task.responsible_person) || translate('attendance.nobodyAssigned');
     if (task.status === 'completed') {
-      return task.completed_at ? `${who} · erledigt ${dayjs(task.completed_at).format('DD.MM.')}` : `${who} · erledigt`;
+      return task.completed_at ? translate('agenda.doneOn', { who, date: dayjs(task.completed_at).format('DD.MM.') }) : translate('agenda.done', { who });
     }
-    return task.due_date ? `${who} · fällig ${dayjs(task.due_date).format('DD.MM.')}` : who;
+    return task.due_date ? translate('agenda.dueOn', { who, date: dayjs(task.due_date).format('DD.MM.') }) : who;
   }
 
   async createTask() {
@@ -199,15 +200,15 @@ export class AgendaItemDetailPage implements OnInit {
       const type = this.db.attendanceTypes().find(t => t.id === att.type_id);
       const already = !!att.plan?.fields?.some(f => f.id === fieldId);
       return {
-        text: `${dayjs(att.date).locale('de').format('dd, DD.MM.')} · ${(type ? Utils.getTypeTitle(type, att.typeInfo) : att.typeInfo) || type?.name || 'Termin'}${already ? ' (bereits eingeplant)' : ''}`,
+        text: `${dayjs(att.date).locale('de').format('dd, DD.MM.')} · ${(type ? Utils.getTypeTitle(type, att.typeInfo) : att.typeInfo) || type?.name || translate('attendance.eventFallback')}${already ? translate('agenda.alreadyPlanned') : ''}`,
         disabled: already,
         handler: () => { void this.insertInto(att); },
       } as ActionSheetButton;
     });
-    buttons.push({ text: 'Neuen Termin anlegen', icon: 'add-circle-outline', handler: () => { void this.planIntoNewAttendance(); } });
-    buttons.push({ text: 'Abbrechen', role: 'cancel' });
+    buttons.push({ text: translate('agenda.newEvent'), icon: 'add-circle-outline', handler: () => { void this.planIntoNewAttendance(); } });
+    buttons.push({ text: translate('common.cancel'), role: 'cancel' });
     const sheet = await this.actionSheetController.create({
-      header: upcoming.length ? 'In welchen Termin einplanen?' : 'Noch kein Termin mit Tagesordnung geplant',
+      header: upcoming.length ? translate('agenda.whichEvent') : translate('agenda.noProtocolEvent'),
       buttons,
     });
     await sheet.present();
@@ -223,31 +224,31 @@ export class AgendaItemDetailPage implements OnInit {
     const type = this.db.attendanceTypes().find(t => t.id === att.type_id);
     try {
       await addTopicsToAttendance(this.db, att, type, [{ item: this.item, duration: defaultTopicDuration(this.item, type) }]);
-      Utils.showToast(`Eingeplant für ${dayjs(att.date).format('DD.MM.')}`, 'success');
+      Utils.showToast(translate('agenda.plannedFor', { date: dayjs(att.date).format('DD.MM.') }), 'success');
       await this.loadRelated();
     } catch (e) {
       console.error('plan topic failed', e);
-      Utils.showToast('Thema konnte nicht eingeplant werden', 'danger');
+      Utils.showToast(translate('agenda.planFailed'), 'danger');
     }
   }
 
   async deleteItem() {
     const alert = await this.alertController.create({
-      header: 'Thema wirklich löschen?',
-      message: 'Es verschwindet aus dem Themenspeicher. Bereits geplante Ablaufpläne und Protokolle bleiben unverändert. Soll es nur aus einem Termin raus, entferne es dort über „Themen aufnehmen“ oder in der Teamorganisation.',
+      header: translate('agenda.deleteConfirm'),
+      message: translate('agenda.deleteMessage'),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Löschen',
+          text: translate('common.delete'),
           role: 'destructive',
           handler: async () => {
             try {
               await this.db.deleteAgendaItem(this.itemId);
-              Utils.showToast('Gelöscht');
+              Utils.showToast(translate('agenda.deleted'));
               this.navController.navigateBack('/tabs/settings/team-organization?tab=topics');
             } catch (error) {
               console.error('Delete error:', error);
-              Utils.showToast('Löschen fehlgeschlagen', 'danger');
+              Utils.showToast(translate('agenda.deleteFailed'), 'danger');
             }
           }
         }
@@ -258,7 +259,7 @@ export class AgendaItemDetailPage implements OnInit {
 
   async save() {
     if (!this.item.title?.trim()) {
-      Utils.showToast('Bitte einen Titel eingeben', 'warning');
+      Utils.showToast(translate('agenda.enterTitle'), 'warning');
       return;
     }
     const duration = Number(this.item.default_duration);
@@ -283,10 +284,10 @@ export class AgendaItemDetailPage implements OnInit {
       } else {
         this.item = await this.db.updateAgendaItem(this.itemId, changes);
       }
-      Utils.showToast('Gespeichert');
+      Utils.showToast(translate('duty.saved'));
     } catch (error) {
       console.error('Agenda item save error:', error);
-      Utils.showToast('Thema konnte nicht gespeichert werden', 'danger');
+      Utils.showToast(translate('agenda.saveFailed'), 'danger');
     } finally {
       await loading.dismiss();
     }

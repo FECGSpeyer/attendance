@@ -123,8 +123,13 @@ export function isoWeekday(date: string): number {
   return day === 0 ? 7 : day;
 }
 
-export const WEEKDAY_SHORT = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-export const WEEKDAY_LONG = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
+/** Weekday names Monday to Sunday in the active language (dayjs locale), e.g. "Mo" / "Montag". */
+export function weekdayShortNames(): string[] {
+  return [1, 2, 3, 4, 5, 6, 0].map(d => dayjs().day(d).format('dd'));
+}
+export function weekdayLongNames(): string[] {
+  return [1, 2, 3, 4, 5, 6, 0].map(d => dayjs().day(d).format('dddd'));
+}
 
 /** The first unavailability rule of a person that matches the date and type, if any. */
 export function matchingUnavailability(
@@ -148,7 +153,7 @@ export function unavailabilityNote(rule: PersonUnavailability): string {
 }
 
 export function weekdaysText(weekdays: number[]): string {
-  return [...weekdays].sort((a, b) => a - b).map(d => WEEKDAY_SHORT[d - 1]).join(', ');
+  return [...weekdays].sort((a, b) => a - b).map(d => weekdayShortNames()[d - 1]).join(', ');
 }
 
 /**

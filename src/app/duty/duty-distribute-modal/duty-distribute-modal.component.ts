@@ -9,6 +9,7 @@ import { DutyTermin } from '../../services/duty/duty.service';
 import { AttendanceType, PersonAttendance, PersonUnavailability } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { DutySlot, distributeDuties, isCancelled, matchingUnavailability, occupiesDuty } from '../../utilities/duty';
+import { translate, TranslocoModule } from '@jsverse/transloco';
 
 interface PreviewRow {
   termin: DutyTermin;
@@ -28,7 +29,7 @@ interface PreviewRow {
 @Component({
   selector: 'app-duty-distribute-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [TranslocoModule, CommonModule, FormsModule, IonicModule],
   templateUrl: './duty-distribute-modal.component.html',
   styleUrls: ['./duty-distribute-modal.component.scss'],
 })
@@ -69,10 +70,10 @@ export class DutyDistributeModalComponent implements OnInit {
 
   async calculate(): Promise<void> {
     if (!this.selectedTypeIds.length) {
-      Utils.showToast('Bitte wähle mindestens einen Termintyp', 'warning');
+      Utils.showToast(translate('duty.chooseTypeMin'), 'warning');
       return;
     }
-    const loading = await this.loadingController.create({ message: 'Verteile Dienste…' });
+    const loading = await this.loadingController.create({ message: translate('duty.distributing') });
     await loading.present();
     try {
       const tenantId = this.db.tenant().id;
@@ -145,7 +146,7 @@ export class DutyDistributeModalComponent implements OnInit {
   }
 
   title(t: DutyTermin): string {
-    return t.attendance.typeInfo || t.type?.name || 'Dienst';
+    return t.attendance.typeInfo || t.type?.name || translate('duty.duty');
   }
 
   /** Duties per person id: existing in the period plus planned in this run. */
@@ -194,20 +195,20 @@ export class DutyDistributeModalComponent implements OnInit {
       .sort((a, b) => countOf(a) - countOf(b) || this.name(a).localeCompare(this.name(b)))
       .map(c => ({ type: 'radio', label: `${this.name(c)} (${countOf(c)})`, value: c.id }));
     if (current) {
-      inputs.unshift({ type: 'radio', label: 'Niemand (Platz offen lassen)', value: '__none' });
+      inputs.unshift({ type: 'radio', label: translate('duty.nobody'), value: '__none' });
     }
     if (!inputs.length) {
-      Utils.showToast('Niemand sonst ist für diesen Termin verfügbar', 'warning');
+      Utils.showToast(translate('duty.nobodyElse'), 'warning');
       return;
     }
     const alert = await this.alertController.create({
-      header: current ? `${this.firstName(current)} tauschen` : 'Person wählen',
+      header: current ? translate('duty.swap', { name: this.firstName(current) }) : translate('duty.choosePerson'),
       subHeader: `${this.title(row.termin)} · ${this.dateLabel(row.termin)}`,
       inputs,
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Übernehmen',
+          text: translate('common.apply'),
           handler: (value: string) => {
             if (!value) return;
             const next = value === '__none' ? null : options.find(o => o.id === value);
@@ -227,14 +228,14 @@ export class DutyDistributeModalComponent implements OnInit {
       return;
     }
     this.saving = true;
-    const loading = await this.loadingController.create({ message: 'Teile ein…' });
+    const loading = await this.loadingController.create({ message: translate('duty.assigning') });
     await loading.present();
     try {
       const tenantId = this.db.tenant().id;
       for (const row of this.rows.filter(r => r.picked.length)) {
         await this.db.dutySvc.assign(row.picked.map(p => p.id), row.termin.attendance.id, tenantId, this.db.user?.id);
       }
-      Utils.showToast(`${this.plannedTotal} ${this.plannedTotal === 1 ? 'Dienst' : 'Dienste'} eingeteilt. Alle bekommen eine Push-Nachricht.`, 'success', 4000);
+      Utils.showToast(translate('duty.assignedToast', { count: this.plannedTotal }), 'success', 4000);
       await this.modalController.dismiss(true, 'confirm');
     } finally {
       this.saving = false;

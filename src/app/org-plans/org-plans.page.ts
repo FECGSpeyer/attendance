@@ -11,6 +11,7 @@ import { PlanViewerComponent } from '../planning/plan-viewer/plan-viewer.compone
 import { Utils } from '../utilities/Utils';
 import { supabase } from '../services/base/supabase';
 import { environment } from 'src/environments/environment';
+import { translate } from '@jsverse/transloco';
 
 interface OrgPlanRow {
   kind: 'attendance';
@@ -107,9 +108,9 @@ export class OrgPlansPage implements OnInit {
 
   getPlanTitle(entry: PlanEntry): string {
     if (entry.kind === 'attendance') {
-      return entry.plan.title || entry.attendance.typeInfo || 'Plan';
+      return entry.plan.title || entry.attendance.typeInfo || translate('plans.plan');
     }
-    return entry.sharedPlan.plan_title || 'Plan';
+    return entry.sharedPlan.plan_title || translate('plans.plan');
   }
 
   getPlanDate(entry: PlanEntry): string {
@@ -124,7 +125,7 @@ export class OrgPlansPage implements OnInit {
 
   getPlanTenantLabel(entry: PlanEntry): string {
     if (entry.kind === 'attendance') { return entry.attendance.tenantName || ''; }
-    return 'Org-Plan';
+    return translate('plans.orgPlan');
   }
 
   getFieldCount(entry: PlanEntry): number {
@@ -173,10 +174,10 @@ export class OrgPlansPage implements OnInit {
 
   async deleteAdHocPlan(entry: AdHocPlanRow) {
     const sheet = await this.actionSheetController.create({
-      header: entry.sharedPlan.plan_title || 'Plan',
+      header: entry.sharedPlan.plan_title || translate('plans.plan'),
       buttons: [
         {
-          text: 'Plan löschen',
+          text: translate('planning.deletePlan'),
           role: 'destructive',
           handler: async () => {
             const { error } = await supabase
@@ -184,13 +185,13 @@ export class OrgPlansPage implements OnInit {
               .delete()
               .eq('id', entry.sharedPlan.id);
             if (error) {
-              Utils.showToast('Fehler beim Löschen', 'danger');
+              Utils.showToast(translate('plans.deleteFailed'), 'danger');
             } else {
               await this.loadPlans();
             }
           },
         },
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
       ],
     });
     await sheet.present();
@@ -200,17 +201,17 @@ export class OrgPlansPage implements OnInit {
     if (!this.publicKey) return;
     const base = `${environment.apiUrl}/functions/v1/ical-org-plans?key=${this.publicKey}`;
     const sheet = await this.actionSheetController.create({
-      header: 'Kalender abonnieren',
+      header: translate('plans.subscribeCalendar'),
       buttons: [
         {
-          text: 'Einfach (1 Termin je Plan)',
+          text: translate('plans.simpleCalendar'),
           handler: () => this.showCalendarAlert(base),
         },
         {
-          text: 'Detailliert (je Programmpunkt)',
+          text: translate('plans.detailedCalendar'),
           handler: () => this.showCalendarAlert(`${base}&detailed=true`),
         },
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
       ],
     });
     await sheet.present();
@@ -218,24 +219,24 @@ export class OrgPlansPage implements OnInit {
 
   private async showCalendarAlert(link: string) {
     const alert = await this.alertController.create({
-      header: 'Kalender abonnieren',
-      message: `Kopiere den folgenden Link in deine Kalender-App:\n\n${link}`,
+      header: translate('plans.subscribeCalendar'),
+      message: translate('plans.calendarLinkMessage', { link }),
       buttons: [
         {
-          text: 'Link kopieren',
+          text: translate('plans.copyLink'),
           handler: () => {
             navigator.clipboard.writeText(link);
-            Utils.showToast('Link kopiert', 'success');
+            Utils.showToast(translate('plans.linkCopied'), 'success');
             return false;
           },
         },
         {
-          text: 'Anleitung öffnen',
+          text: translate('plans.openGuide'),
           handler: () => {
             Browser.open({ url: isPlatform('ios') ? 'https://support.apple.com/de-de/102301' : 'https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid' });
           },
         },
-        { text: 'Schließen', role: 'cancel' },
+        { text: translate('common.close'), role: 'cancel' },
       ],
     });
     await alert.present();
@@ -248,27 +249,27 @@ export class OrgPlansPage implements OnInit {
     if (this.publicKey) {
       const url = `https://attendix.de/org-plan?key=${this.publicKey}`;
       const sheet = await this.actionSheetController.create({
-        header: 'Öffentlicher Link',
+        header: translate('plans.publicLink'),
         buttons: [
           {
-            text: 'Link kopieren',
+            text: translate('plans.copyLink'),
             handler: async () => {
               await navigator.clipboard.writeText(url);
-              Utils.showToast('Link kopiert', 'success');
+              Utils.showToast(translate('plans.linkCopied'), 'success');
             },
           },
           {
-            text: 'Link widerrufen',
+            text: translate('plans.revokeLink'),
             role: 'destructive',
             handler: async () => {
               await this.db.orgSvc.revokePublicPlanKey(org.id);
               this.publicKey = null;
               const org2 = this.db.organisation();
               if (org2) { (org2 as any).public_plan_key = null; }
-              Utils.showToast('Link widerrufen', 'success');
+              Utils.showToast(translate('plans.revokeLink'), 'success');
             },
           },
-          { text: 'Abbrechen', role: 'cancel' },
+          { text: translate('common.cancel'), role: 'cancel' },
         ],
       });
       await sheet.present();
@@ -279,7 +280,7 @@ export class OrgPlansPage implements OnInit {
       if (org2) { (org2 as any).public_plan_key = key; }
       const url = `https://attendix.de/org-plan?key=${key}`;
       await navigator.clipboard.writeText(url);
-      Utils.showToast('Link erstellt und kopiert', 'success');
+      Utils.showToast(translate('plans.linkCreated'), 'success');
     }
   }
 }

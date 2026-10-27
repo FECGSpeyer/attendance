@@ -4,9 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular/lazy';
 import { AgendaItemDetailPageRoutingModule } from './agenda-item-detail-routing.module';
 import { AgendaItemDetailPage } from './agenda-item-detail.page';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

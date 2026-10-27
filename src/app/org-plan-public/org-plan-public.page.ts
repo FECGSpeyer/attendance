@@ -10,6 +10,7 @@ import { FieldSelection, SharedPlan } from '../utilities/interfaces';
 import { getSupabase } from '../services/base/supabase';
 import { Utils } from '../utilities/Utils';
 import { environment } from 'src/environments/environment';
+import { translate } from '@jsverse/transloco';
 
 interface OrgPlanEntry {
   kind: 'attendance';
@@ -128,7 +129,7 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
         id: row.id,
         date: row.date,
         tenantName: this.nameById[row.tenantId] ?? '',
-        title: plan.title || row.typeInfo || 'Plan',
+        title: plan.title || row.typeInfo || translate('plans.plan'),
         time: plan.time || '',
         end: plan.end || '',
         fields: plan.fields || [],
@@ -142,7 +143,7 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
       kind: 'adhoc',
       id: row.id,
       date: row.date ?? '',
-      title: row.plan_title || 'Plan',
+      title: row.plan_title || translate('plans.plan'),
       time: row.time ?? '',
       end: row.end_time ?? '',
       fields: (row.fields as unknown as FieldSelection[]) ?? [],
@@ -318,17 +319,17 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
     if (!this.publicKey) return;
     const base = `${environment.apiUrl}/functions/v1/ical-org-plans?key=${this.publicKey}`;
     const sheet = await this.actionSheetController.create({
-      header: 'Kalender abonnieren',
+      header: translate('plans.subscribeCalendar'),
       buttons: [
         {
-          text: 'Einfach (1 Termin je Plan)',
+          text: translate('plans.simpleCalendar'),
           handler: () => this.showCalendarAlert(base),
         },
         {
-          text: 'Detailliert (je Programmpunkt)',
+          text: translate('plans.detailedCalendar'),
           handler: () => this.showCalendarAlert(`${base}&detailed=true`),
         },
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
       ],
     });
     await sheet.present();
@@ -336,24 +337,24 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
 
   private async showCalendarAlert(link: string) {
     const alert = await this.alertController.create({
-      header: 'Kalender abonnieren',
-      message: `Kopiere den folgenden Link in deine Kalender-App:\n\n${link}`,
+      header: translate('plans.subscribeCalendar'),
+      message: translate('plans.calendarLinkMessage', { link }),
       buttons: [
         {
-          text: 'Link kopieren',
+          text: translate('plans.copyLink'),
           handler: () => {
             navigator.clipboard.writeText(link);
-            Utils.showToast('Link kopiert', 'success');
+            Utils.showToast(translate('plans.linkCopied'), 'success');
             return false;
           },
         },
         {
-          text: 'Anleitung öffnen',
+          text: translate('plans.openGuide'),
           handler: () => {
             Browser.open({ url: isPlatform('ios') ? 'https://support.apple.com/de-de/102301' : 'https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid' });
           },
         },
-        { text: 'Schließen', role: 'cancel' },
+        { text: translate('common.close'), role: 'cancel' },
       ],
     });
     await alert.present();
@@ -361,11 +362,11 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
 
   async exportPlan(entry: PlanEntry) {
     const sheet = await this.actionSheetController.create({
-      header: 'Exportieren',
+      header: translate('planning.export'),
       buttons: [
         { text: 'PDF (A4)',    handler: () => void Utils.createPlanExport({ time: entry.time, end: entry.end, fields: entry.fields }, entry.title) },
         { text: 'PDF (2x A5)', handler: () => void Utils.createPlanExport({ time: entry.time, end: entry.end, fields: entry.fields, sideBySide: true }, entry.title) },
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
       ],
     });
     await sheet.present();

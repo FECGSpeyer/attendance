@@ -2,11 +2,11 @@
   <ion-toolbar>
     <ion-title>{{ orgName || 'Organisationspläne' }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="subscribeCalendar()" title="Kalender abonnieren">
+      <ion-button (click)="subscribeCalendar()" [attr.title]="'plans.subscribeCalendar' | transloco">
         <ion-icon slot="icon-only" name="calendar-outline"></ion-icon>
       </ion-button>
       @if (pastPlans.length > 0) {
-        <ion-button (click)="showHistory = true" title="Vergangene Pläne">
+        <ion-button (click)="showHistory = true" [attr.title]="'plans.pastPlans' | transloco">
           <ion-icon slot="icon-only" name="time-outline"></ion-icon>
         </ion-button>
       }
@@ -40,7 +40,7 @@
   @if (!loading && notFound) {
     <ion-list [inset]="true">
       <ion-item lines="none">
-        <ion-label class="ion-text-wrap"><p>Link ungültig oder abgelaufen.</p></ion-label>
+        <ion-label class="ion-text-wrap"><p>{{ 'plans.linkInvalid' | transloco }}</p></ion-label>
       </ion-item>
     </ion-list>
   }
@@ -49,7 +49,7 @@
     @if (upcomingPlans.length === 0) {
       <ion-list [inset]="true">
         <ion-item lines="none">
-          <ion-label class="ion-text-wrap"><p>Keine bevorstehenden Org-Pläne vorhanden.</p></ion-label>
+          <ion-label class="ion-text-wrap"><p>{{ 'plans.noUpcomingPlans' | transloco }}</p></ion-label>
         </ion-item>
       </ion-list>
     }
@@ -76,14 +76,14 @@
               <div slot="content">
                 <ion-item button detail="false" (click)="exportPlan(entry)" lines="full">
                   <ion-icon name="share-outline" slot="start" color="primary"></ion-icon>
-                  <ion-label color="primary">Exportieren</ion-label>
+                  <ion-label color="primary">{{ 'planning.export' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item>
                   <ion-label>{{ entry.title }}</ion-label>
                 </ion-item>
                 <ion-item>
-                  <ion-label>Start</ion-label>
-                  <ion-badge slot="end">{{ getStartTime(entry) }} Uhr</ion-badge>
+                  <ion-label>{{ 'attendance.startLabel' | transloco }}</ion-label>
+                  <ion-badge slot="end">{{ 'attendance.timeOClock' | transloco: { time: getStartTime(entry) } }}</ion-badge>
                 </ion-item>
                 @for (field of entry.fields; track trackByField($index, field); let fi = $index) {
                   <ion-item
@@ -105,15 +105,15 @@
                       @if (entry.liveMode && fi === entry.activeFieldIndex) {
                         <ion-badge slot="end" color="primary">{{ getActiveCountdown(entry) }}</ion-badge>
                       } @else {
-                        <ion-badge slot="end">{{ field | planMinutes: entry.fields }} min</ion-badge>
+                        <ion-badge slot="end">{{ 'planning.minShort' | transloco: { min: (field | planMinutes: entry.fields) } }}</ion-badge>
                       }
                     }
                   </ion-item>
                 }
                 @if (getEndTime(entry)) {
                   <ion-item lines="none">
-                    <ion-label>Ende</ion-label>
-                    <ion-badge slot="end">{{ getEndTime(entry) }} Uhr</ion-badge>
+                    <ion-label>{{ 'attendance.end' | transloco }}</ion-label>
+                    <ion-badge slot="end">{{ 'attendance.timeOClock' | transloco: { time: getEndTime(entry) } }}</ion-badge>
                   </ion-item>
                 }
               </div>
@@ -131,7 +131,7 @@
   <ng-template>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Vergangene Pläne</ion-title>
+        <ion-title>{{ 'plans.pastPlans' | transloco }}</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="showHistory = false">
             <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -156,14 +156,14 @@
                 <div slot="content">
                   <ion-item button detail="false" (click)="exportPlan(entry)" lines="full">
                     <ion-icon name="share-outline" slot="start" color="primary"></ion-icon>
-                    <ion-label color="primary">Exportieren</ion-label>
+                    <ion-label color="primary">{{ 'planning.export' | transloco }}</ion-label>
                   </ion-item>
                   <ion-item>
                     <ion-label>{{ entry.title }}</ion-label>
                   </ion-item>
                   <ion-item>
-                    <ion-label>Start</ion-label>
-                    <ion-badge slot="end">{{ getStartTime(entry) }} Uhr</ion-badge>
+                    <ion-label>{{ 'attendance.startLabel' | transloco }}</ion-label>
+                    <ion-badge slot="end">{{ 'attendance.timeOClock' | transloco: { time: getStartTime(entry) } }}</ion-badge>
                   </ion-item>
                   @for (field of entry.fields; track trackByField($index, field); let fi = $index) {
                     <ion-item class="done-slot" [class.plan-group-head]="field.isGroup" [class.plan-group-child]="!!field.groupId">
@@ -174,14 +174,14 @@
                         }
                       </ion-label>
                       @if (!field.id.includes('noteFld')) {
-                        <ion-badge slot="end">{{ field | planMinutes: entry.fields }} min</ion-badge>
+                        <ion-badge slot="end">{{ 'planning.minShort' | transloco: { min: (field | planMinutes: entry.fields) } }}</ion-badge>
                       }
                     </ion-item>
                   }
                   @if (getEndTime(entry)) {
                     <ion-item lines="none">
-                      <ion-label>Ende</ion-label>
-                      <ion-badge slot="end">{{ getEndTime(entry) }} Uhr</ion-badge>
+                      <ion-label>{{ 'attendance.end' | transloco }}</ion-label>
+                      <ion-badge slot="end">{{ 'attendance.timeOClock' | transloco: { time: getEndTime(entry) } }}</ion-badge>
                     </ion-item>
                   }
                 </div>

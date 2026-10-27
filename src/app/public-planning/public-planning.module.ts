@@ -8,9 +8,11 @@ import { PublicPlanningPageRoutingModule } from './public-planning-routing.modul
 
 import { PublicPlanningPage } from './public-planning.page';
 import { MyPlansComponent } from './my-plans/my-plans.component';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

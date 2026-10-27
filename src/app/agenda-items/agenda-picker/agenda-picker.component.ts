@@ -8,6 +8,7 @@ import { AgendaItem, Attendance, AttendanceType, Plan } from 'src/app/utilities/
 import { Utils } from 'src/app/utilities/Utils';
 import { agendaFieldId, personName, postponedAgendaItemIds, sortTopicsForPlanning } from 'src/app/team-organization/team-org.utils';
 import { addTopicsToAttendance, defaultTopicDuration, insertAfterName, planWithTopics } from '../agenda-plan.helpers';
+import { translate, TranslocoModule } from '@jsverse/transloco';
 
 interface PickerRow {
   item: AgendaItem;
@@ -29,7 +30,7 @@ interface PickerRow {
   templateUrl: './agenda-picker.component.html',
   styleUrls: ['./agenda-picker.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [TranslocoModule, CommonModule, FormsModule, IonicModule],
 })
 export class AgendaPickerComponent implements OnInit {
   @Input() attendance!: Attendance;
@@ -41,7 +42,7 @@ export class AgendaPickerComponent implements OnInit {
   public postponedRows: PickerRow[] = [];
   public otherRows: PickerRow[] = [];
 
-  readonly priorityLabels = { high: 'Hoch', medium: 'Mittel', low: 'Niedrig' } as const;
+  readonly priorityLabels: Record<string, string> = { high: translate('agenda.high'), medium: translate('agenda.medium'), low: translate('agenda.low') };
 
   constructor(private db: DbService, private modalController: ModalController) {}
 
@@ -73,7 +74,7 @@ export class AgendaPickerComponent implements OnInit {
       this.otherRows = usePostponedSection ? rows.filter(r => r.postponedOn === undefined) : rows;
     } catch (e) {
       console.error('agenda picker load failed', e);
-      Utils.showToast('Themen konnten nicht geladen werden', 'danger');
+      Utils.showToast(translate('agenda.loadFailed'), 'danger');
     } finally {
       this.loading = false;
     }
@@ -114,9 +115,9 @@ export class AgendaPickerComponent implements OnInit {
     const added = this.newSelections.length;
     const removed = this.removals.length;
     const parts: string[] = [];
-    if (added) parts.push(`${added === 1 ? '1 Thema' : added + ' Themen'} aufnehmen · ${this.totalMinutes} min`);
-    if (removed) parts.push(`${removed === 1 ? '1 Thema' : removed + ' Themen'} entfernen`);
-    return parts.length ? parts.join(' · ') : 'Themen auswählen';
+    if (added) parts.push(translate('agenda.addTopics', { count: added, min: this.totalMinutes }));
+    if (removed) parts.push(translate('agenda.removeTopics', { count: removed }));
+    return parts.length ? parts.join(' · ') : translate('agenda.chooseTopics');
   }
 
   get totalMinutes(): number {
@@ -125,11 +126,11 @@ export class AgendaPickerComponent implements OnInit {
 
   get insertHint(): string {
     const after = insertAfterName(this.attendance?.plan?.fields);
-    const where = after ? `Wird nach „${after}“ eingefügt` : 'Wird am Anfang eingefügt';
+    const where = after ? translate('agenda.insertAfter', { name: after }) : translate('agenda.insertAtStart');
     if (!this.hasChanges) return where;
     const plan = this.previewPlan();
     const end = dayjs(plan.end).isValid() ? dayjs(plan.end).format('HH:mm') : '';
-    return end ? `${where} · Ende neu ${end}` : where;
+    return end ? translate('agenda.newEnd', { where, time: end }) : where;
   }
 
   private previewPlan(): Plan {
@@ -146,7 +147,7 @@ export class AgendaPickerComponent implements OnInit {
     const responsible = personName(row.item.responsible_person);
     if (responsible) parts.push(responsible);
     parts.push(this.priorityLabels[row.item.priority] ?? '');
-    if (row.inPlan) parts.push(row.selected ? 'bereits im Ablaufplan' : 'wird aus dem Ablaufplan entfernt');
+    if (row.inPlan) parts.push(row.selected ? translate('agenda.alreadyInPlan') : translate('agenda.removedFromPlan'));
     return parts.filter(Boolean).join(' · ');
   }
 
@@ -173,14 +174,14 @@ export class AgendaPickerComponent implements OnInit {
       this.search = '';
     } catch (e) {
       console.error('agenda item create failed', e);
-      Utils.showToast('Thema konnte nicht angelegt werden', 'danger');
+      Utils.showToast(translate('agenda.createFailed'), 'danger');
     }
   }
 
   private savedText(added: number, removed: number): string {
-    if (!removed) return added === 1 ? 'Thema aufgenommen' : `${added} Themen aufgenommen`;
-    if (!added) return removed === 1 ? 'Thema aus dem Ablaufplan entfernt' : `${removed} Themen aus dem Ablaufplan entfernt`;
-    return 'Tagesordnung aktualisiert';
+    if (!removed) return added === 1 ? translate('agenda.topicAdded') : translate('agenda.topicsAdded', { count: added });
+    if (!added) return removed === 1 ? translate('agenda.topicRemoved') : translate('agenda.topicsRemoved', { count: removed });
+    return translate('agenda.agendaUpdated');
   }
 
   dismiss() {
@@ -198,7 +199,7 @@ export class AgendaPickerComponent implements OnInit {
       await this.modalController.dismiss({ plan }, 'saved');
     } catch (e) {
       console.error('agenda picker save failed', e);
-      Utils.showToast('Ablaufplan konnte nicht gespeichert werden', 'danger');
+      Utils.showToast(translate('agenda.planSaveFailed'), 'danger');
     } finally {
       this.saving = false;
     }

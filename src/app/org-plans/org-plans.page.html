@@ -5,17 +5,17 @@
         <ion-back-button text="" defaultHref="tabs/settings/org-settings"></ion-back-button>
       }
     </ion-buttons>
-    <ion-title>Org-Pläne</ion-title>
+    <ion-title>{{ 'plans.orgPlans' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="toggleOrgTab()" [title]="showOrgTab ? 'Tab ausblenden' : 'Als Tab anzeigen'">
         <ion-icon slot="icon-only" [name]="showOrgTab ? 'bookmark' : 'bookmark-outline'"></ion-icon>
       </ion-button>
       @if (publicKey) {
-        <ion-button (click)="subscribeCalendar()" title="Kalender abonnieren">
+        <ion-button (click)="subscribeCalendar()" [attr.title]="'plans.subscribeCalendar' | transloco">
           <ion-icon slot="icon-only" name="calendar-outline"></ion-icon>
         </ion-button>
       }
-      <ion-button (click)="managePublicLink()" title="Öffentlicher Link">
+      <ion-button (click)="managePublicLink()" [attr.title]="'plans.publicLink' | transloco">
         <ion-icon slot="icon-only" [name]="publicKey ? 'link' : 'link-outline'"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -28,7 +28,7 @@
   </ion-refresher>
   <ion-header collapse="condense">
     <ion-toolbar color="light">
-      <ion-title size="large">Org-Pläne</ion-title>
+      <ion-title size="large">{{ 'plans.orgPlans' | transloco }}</ion-title>
     </ion-toolbar>
   </ion-header>
   @if (!db.organisation()) {
@@ -36,7 +36,7 @@
       <ion-item lines="none">
         <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
         <ion-label class="ion-text-wrap">
-          <p>Diese Instanz ist keiner Organisation zugeordnet.</p>
+          <p>{{ 'plans.noOrg' | transloco }}</p>
         </ion-label>
       </ion-item>
     </ion-list>
@@ -56,7 +56,7 @@
       <ion-item lines="none">
         <ion-icon name="calendar-outline" slot="start" color="medium"></ion-icon>
         <ion-label class="ion-text-wrap">
-          <p>Keine bevorstehenden Org-Pläne. Pläne können über die Ablaufplanung zur Organisation hinzugefügt werden.</p>
+          <p>{{ 'plans.noUpcomingOrgPlans' | transloco }}</p>
         </ion-label>
       </ion-item>
     </ion-list>
@@ -69,7 +69,7 @@
             <div class="plan-meta">
               <span>{{ getPlanDate(entry) }}</span>
               @if (getFieldCount(entry) > 0) {
-                <span>· {{ getFieldCount(entry) }} Punkte</span>
+                <span>· {{ 'plans.points' | transloco: { count: getFieldCount(entry) } }}</span>
               }
             </div>
             @if (getPlanTenantLabel(entry)) {
@@ -91,12 +91,12 @@
     <ion-list [inset]="true">
       <ion-item button detail [routerLink]="isTabRoute ? '/tabs/org-plans/planung' : '/tabs/settings/org-plans/planung'" lines="none">
         <ion-icon name="add-circle-outline" slot="start" color="primary"></ion-icon>
-        <ion-label color="primary">Ablaufplanung öffnen</ion-label>
+        <ion-label color="primary">{{ 'plans.openPlanning' | transloco }}</ion-label>
       </ion-item>
       @if (pastPlans.length > 0) {
         <ion-item button detail="false" (click)="showHistory = true" lines="none">
           <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
-          <ion-label color="medium">Vergangene Pläne</ion-label>
+          <ion-label color="medium">{{ 'plans.pastPlans' | transloco }}</ion-label>
         </ion-item>
       }
     </ion-list>
@@ -107,9 +107,9 @@
       <ion-item lines="none">
         <ion-icon name="globe-outline" slot="start" color="success"></ion-icon>
         <ion-label class="ion-text-wrap">
-          <p>Öffentlicher Link aktiv. Alle Org-Pläne sind für jeden mit dem Link einsehbar.</p>
+          <p>{{ 'plans.publicLinkActive' | transloco }}</p>
         </ion-label>
-        <ion-button slot="end" fill="clear" (click)="managePublicLink()">Verwalten</ion-button>
+        <ion-button slot="end" fill="clear" (click)="managePublicLink()">{{ 'plans.manage' | transloco }}</ion-button>
       </ion-item>
     </ion-list>
   }
@@ -120,7 +120,7 @@
   <ng-template>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Vergangene Pläne</ion-title>
+        <ion-title>{{ 'plans.pastPlans' | transloco }}</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="showHistory = false">
             <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -137,7 +137,7 @@
               <div class="plan-meta">
                 <span>{{ getPlanDate(entry) }}</span>
                 @if (getFieldCount(entry) > 0) {
-                  <span>· {{ getFieldCount(entry) }} Punkte</span>
+                  <span>· {{ 'plans.points' | transloco: { count: getFieldCount(entry) } }}</span>
                 }
               </div>
               @if (getPlanTenantLabel(entry)) {

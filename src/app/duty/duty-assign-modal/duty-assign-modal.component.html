@@ -1,20 +1,20 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="cancel()" aria-label="Abbrechen">
+      <ion-button (click)="cancel()" [attr.aria-label]="'common.cancel' | transloco">
         <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>
-      Person einteilen
-      <div class="sub">{{ title }} · {{ openPlaces }} {{ openPlaces === 1 ? 'Platz' : 'Plätze' }} frei</div>
+      {{ 'attendance.assignPerson' | transloco }}
+      <div class="sub">{{ title }} · {{ 'duty.placesFree' | transloco: { count: openPlaces } }}</div>
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content color="light">
   @if (sorted.length === 0) {
-    <div class="empty">Alle aus dem Personenkreis sind schon eingeteilt.</div>
+    <div class="empty">{{ 'duty.allAssigned' | transloco }}</div>
   } @else {
     <ion-list [inset]="true">
       @for (c of sorted; track c.personAttendanceId) {
@@ -26,8 +26,8 @@
               @if (c.unavailableNote) {
                 {{ c.unavailableNote }}
               } @else {
-                {{ c.count }} {{ c.count === 1 ? 'Dienst' : 'Dienste' }}{{ monthLabel ? ' im ' + monthLabel : '' }}
-                @if (c.sameDay) { · am selben Tag schon dran }
+                {{ 'duty.dutiesCount' | transloco: { count: c.count } }}{{ monthLabel ? ('duty.inMonth' | transloco: { month: monthLabel }) : '' }}
+                @if (c.sameDay) { {{ 'duty.sameDay' | transloco }} }
               }
             </p>
           </ion-label>
@@ -35,10 +35,10 @@
       }
     </ion-list>
     <p class="hint">
-      Sortiert nach Anzahl Dienste. Eingeteilte bekommen sofort eine Push-Nachricht und müssen bestätigen.
+      {{ 'duty.assignHint' | transloco }}
     </p>
     @if (tooMany) {
-      <p class="hint warn">Du hast mehr Personen gewählt als Plätze frei sind. Der Dienst ist dann überbesetzt.</p>
+      <p class="hint warn">{{ 'duty.overbooked' | transloco }}</p>
     }
   }
 </ion-content>

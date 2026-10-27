@@ -6,7 +6,8 @@ import dayjs from 'dayjs';
 import { DbService } from '../../services/db.service';
 import { AttendanceType, PersonUnavailability } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
-import { WEEKDAY_LONG, WEEKDAY_SHORT, weekdaysText } from '../../utilities/duty';
+import { weekdayLongNames, weekdayShortNames, weekdaysText } from '../../utilities/duty';
+import { translate, TranslocoModule } from '@jsverse/transloco';
 
 /**
  * "Regelmäßig verhindert": weekly rules (e.g. every Wednesday, Kinderstunde).
@@ -16,7 +17,7 @@ import { WEEKDAY_LONG, WEEKDAY_SHORT, weekdaysText } from '../../utilities/duty'
 @Component({
   selector: 'app-unavailability-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [TranslocoModule, CommonModule, FormsModule, IonicModule],
   templateUrl: './unavailability-modal.component.html',
   styleUrls: ['./unavailability-modal.component.scss'],
 })
@@ -30,8 +31,8 @@ export class UnavailabilityModalComponent implements OnInit {
   private readonly modalController = inject(ModalController);
   private readonly alertController = inject(AlertController);
 
-  readonly weekdayShort = WEEKDAY_SHORT;
-  readonly weekdayLong = WEEKDAY_LONG;
+  readonly weekdayShort = weekdayShortNames();
+  readonly weekdayLong = weekdayLongNames();
   readonly weekdaysText = weekdaysText;
 
   rules: PersonUnavailability[] = [];
@@ -56,12 +57,12 @@ export class UnavailabilityModalComponent implements OnInit {
   }
 
   typesText(rule: PersonUnavailability): string {
-    if (!rule.type_ids?.length) return 'alle Termintypen';
+    if (!rule.type_ids?.length) return translate('duty.allTypes');
     return rule.type_ids.map(id => this.types.find(t => t.id === id)?.name).filter(Boolean).join(', ');
   }
 
   untilText(rule: PersonUnavailability): string {
-    return rule.valid_until ? `bis ${dayjs(rule.valid_until).format('D.M.YYYY')}` : 'unbefristet';
+    return rule.valid_until ? translate('duty.until', { date: dayjs(rule.valid_until).format('D.M.YYYY') }) : translate('duty.unlimited');
   }
 
   add(): void {
@@ -92,7 +93,7 @@ export class UnavailabilityModalComponent implements OnInit {
 
   async save(): Promise<void> {
     if (!this.editing?.weekdays.length) {
-      Utils.showToast('Bitte wähle mindestens einen Wochentag', 'warning');
+      Utils.showToast(translate('duty.chooseWeekday'), 'warning');
       return;
     }
     this.saving = true;
@@ -110,20 +111,22 @@ export class UnavailabilityModalComponent implements OnInit {
     const tenantId = this.db.tenant().id;
     const { count, dates } = await this.db.dutySvc.countFutureMatches(rule, tenantId, this.types);
     if (!count) {
-      Utils.showToast('Gespeichert', 'success');
+      Utils.showToast(translate('duty.saved'), 'success');
       return;
     }
     const preview = dates.slice(0, 4).map(d => dayjs(d).format('D.M.')).join(', ') + (count > 4 ? ' …' : '');
     const alert = await this.alertController.create({
-      header: 'Auch geplante Termine?',
-      message: `${count} schon geplante ${count === 1 ? 'Termin passt' : 'Termine passen'} zu dieser Regel (${preview}). Soll ${this.forOther ? this.personName.split(' ')[0] : 'du'} dort als entschuldigt eingetragen werden? Termine mit eigener Antwort oder Einteilung bleiben unverändert.`,
+      header: translate('duty.alsoPlanned'),
+      message: this.forOther
+        ? translate('duty.alsoPlannedOther', { count, preview, name: this.personName.split(' ')[0] })
+        : translate('duty.alsoPlannedSelf', { count, preview }),
       buttons: [
-        { text: 'Nur neue Termine', role: 'cancel' },
+        { text: translate('duty.onlyNew'), role: 'cancel' },
         {
-          text: 'Auch geplante',
+          text: translate('duty.alsoPlannedButton'),
           handler: async () => {
             const changed = await this.db.dutySvc.applyUnavailabilityToFuture(rule, tenantId, this.types, this.db.user?.id);
-            Utils.showToast(`${changed} ${changed === 1 ? 'Termin' : 'Termine'} angepasst`, 'success');
+            Utils.showToast(translate('duty.eventsAdjusted', { count: changed }), 'success');
           },
         },
       ],
@@ -133,12 +136,12 @@ export class UnavailabilityModalComponent implements OnInit {
 
   async remove(rule: PersonUnavailability): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Regel löschen?',
-      message: 'Bereits eingetragene Abmeldungen bleiben bestehen.',
+      header: translate('duty.deleteRuleConfirm'),
+      message: translate('duty.deleteRuleMessage'),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Löschen',
+          text: translate('common.delete'),
           role: 'destructive',
           handler: async () => {
             await this.db.dutySvc.deleteUnavailability(rule.id);

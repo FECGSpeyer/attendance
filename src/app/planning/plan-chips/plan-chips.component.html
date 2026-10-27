@@ -1,7 +1,7 @@
 <div class="plan-chips">
   @for (label of labels; track $index) {
     <ion-chip [outline]="$index !== selected" [color]="$index === selected ? 'primary' : 'medium'" (click)="select($index)">
-      <ion-label>{{ label }}@if ($index === todayIndex) { · heute }</ion-label>
+      <ion-label>{{ label }}@if ($index === todayIndex) { {{ 'planning.today' | transloco }} }</ion-label>
     </ion-chip>
   }
   <ng-content></ng-content>

@@ -2,9 +2,9 @@
   <ion-toolbar>
     <ion-buttons slot="start">
       @if (step === 'preview') {
-        <ion-button (click)="back()">Zurück</ion-button>
+        <ion-button (click)="back()">{{ 'common.back' | transloco }}</ion-button>
       } @else {
-        <ion-button (click)="cancel()" aria-label="Abbrechen">
+        <ion-button (click)="cancel()" [attr.aria-label]="'common.cancel' | transloco">
           <ion-icon slot="icon-only" name="close"></ion-icon>
         </ion-button>
       }
@@ -12,7 +12,7 @@
     <ion-title>{{ step === 'rules' ? 'Dienste verteilen' : 'Vorschlag' }}</ion-title>
     @if (step === 'preview') {
       <ion-buttons slot="end">
-        <ion-button (click)="run()" aria-label="Neu verteilen">
+        <ion-button (click)="run()" [attr.aria-label]="'duty.redistribute' | transloco">
           <ion-icon slot="icon-only" name="shuffle-outline"></ion-icon>
         </ion-button>
       </ion-buttons>
@@ -23,24 +23,24 @@
 <ion-content color="light">
   @if (step === 'rules') {
     <ion-list [inset]="true">
-      <ion-list-header><ion-label>Zeitraum</ion-label></ion-list-header>
+      <ion-list-header><ion-label>{{ 'duty.period' | transloco }}</ion-label></ion-list-header>
       <ion-item>
-        <ion-label>Von</ion-label>
+        <ion-label>{{ 'duty.from' | transloco }}</ion-label>
         <ion-datetime-button datetime="dutyDistFrom"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
             <ion-datetime id="dutyDistFrom" presentation="date" locale="de-DE" [firstDayOfWeek]="1" [showDefaultButtons]="true"
-              doneText="Fertig" cancelText="Abbrechen" [(ngModel)]="from"></ion-datetime>
+              [doneText]="'person.done' | transloco" [cancelText]="'common.cancel' | transloco" [(ngModel)]="from"></ion-datetime>
           </ng-template>
         </ion-modal>
       </ion-item>
       <ion-item>
-        <ion-label>Bis</ion-label>
+        <ion-label>{{ 'duty.to' | transloco }}</ion-label>
         <ion-datetime-button datetime="dutyDistTo"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
             <ion-datetime id="dutyDistTo" presentation="date" locale="de-DE" [firstDayOfWeek]="1" [showDefaultButtons]="true"
-              doneText="Fertig" cancelText="Abbrechen" [(ngModel)]="to"></ion-datetime>
+              [doneText]="'person.done' | transloco" [cancelText]="'common.cancel' | transloco" [(ngModel)]="to"></ion-datetime>
           </ng-template>
         </ion-modal>
       </ion-item>
@@ -48,7 +48,7 @@
 
     @if (dutyTypes.length > 1) {
       <ion-list [inset]="true">
-        <ion-list-header><ion-label>Termintypen</ion-label></ion-list-header>
+        <ion-list-header><ion-label>{{ 'duty.eventTypes' | transloco }}</ion-label></ion-list-header>
         @for (t of dutyTypes; track t.id) {
           <ion-item>
             <ion-checkbox [checked]="selectedTypeIds.includes(t.id)" (ionChange)="toggleType(t.id)" justify="start" labelPlacement="end">{{ t.name }}</ion-checkbox>
@@ -58,37 +58,36 @@
     }
 
     <ion-list [inset]="true">
-      <ion-list-header><ion-label>Regeln</ion-label></ion-list-header>
+      <ion-list-header><ion-label>{{ 'duty.rules' | transloco }}</ion-label></ion-list-header>
       <ion-item>
-        <ion-label>Höchstens pro Person</ion-label>
+        <ion-label>{{ 'duty.maxPerPerson' | transloco }}</ion-label>
         <div slot="end" class="stepper">
-          <ion-button fill="clear" size="small" (click)="changeMax(-1)" [disabled]="maxPerPerson <= 1" aria-label="Weniger">
+          <ion-button fill="clear" size="small" (click)="changeMax(-1)" [disabled]="maxPerPerson <= 1" [attr.aria-label]="'attList.less' | transloco">
             <ion-icon slot="icon-only" name="remove-circle-outline"></ion-icon>
           </ion-button>
           <span>{{ maxPerPerson }}</span>
-          <ion-button fill="clear" size="small" (click)="changeMax(1)" aria-label="Mehr">
+          <ion-button fill="clear" size="small" (click)="changeMax(1)" [attr.aria-label]="'attList.more' | transloco">
             <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
           </ion-button>
         </div>
       </ion-item>
       <ion-item>
-        <ion-toggle [(ngModel)]="notTwiceSameDay">Nicht zweimal am selben Tag</ion-toggle>
+        <ion-toggle [(ngModel)]="notTwiceSameDay">{{ 'duty.notTwiceSameDay' | transloco }}</ion-toggle>
       </ion-item>
     </ion-list>
     <p class="hint">
-      Nur offene Plätze werden gefüllt, bestehende Einteilungen bleiben. Wer abgesagt hat oder regelmäßig verhindert ist, wird nicht eingeteilt.
-      Wer bisher am wenigsten Dienste hat, kommt zuerst dran.
+      {{ 'duty.distributeHint' | transloco }}
     </p>
     <div class="ion-padding">
-      <ion-button expand="block" (click)="calculate()">Vorschlag berechnen</ion-button>
+      <ion-button expand="block" (click)="calculate()">{{ 'duty.calculate' | transloco }}</ion-button>
     </div>
   } @else {
     @if (!rows.length) {
-      <div class="empty">Im Zeitraum gibt es keine Termine mit Dienst-Modus.</div>
+      <div class="empty">{{ 'duty.noDutyEvents' | transloco }}</div>
     } @else {
       <p class="hint top">
-        {{ plannedTotal }} {{ plannedTotal === 1 ? 'Einteilung' : 'Einteilungen' }} geplant{{ missingTotal ? ', ' + missingTotal + ' ' + (missingTotal === 1 ? 'Platz bleibt' : 'Plätze bleiben') + ' offen' : '' }}.
-        Tippe auf einen Namen zum Tauschen.
+        {{ missingTotal ? ('duty.plannedSummaryMissing' | transloco: { count: plannedTotal, missing: missingTotal }) : ('duty.plannedSummary' | transloco: { count: plannedTotal }) }}
+        {{ 'duty.tapToSwap' | transloco }}
       </p>
       <ion-list [inset]="true">
         @for (row of rows; track row.termin.attendance.id) {
@@ -104,7 +103,7 @@
                   <ion-chip color="primary" (click)="change(row, pa)">{{ firstName(pa) }}</ion-chip>
                 }
                 @for (n of range(row.missing); track $index) {
-                  <ion-chip outline="true" color="danger" (click)="change(row)">offen</ion-chip>
+                  <ion-chip outline="true" color="danger" (click)="change(row)">{{ 'duty.open' | transloco }}</ion-chip>
                 }
               </div>
             </ion-label>
@@ -113,7 +112,7 @@
       </ion-list>
 
       <ion-list [inset]="true">
-        <ion-list-header><ion-label>Dienste pro Person im Zeitraum</ion-label></ion-list-header>
+        <ion-list-header><ion-label>{{ 'duty.dutiesPerPerson' | transloco }}</ion-label></ion-list-header>
         @for (c of personCounts; track c.name) {
           <ion-item>
             <ion-label>{{ c.name }}</ion-label>
@@ -121,7 +120,7 @@
           </ion-item>
         }
       </ion-list>
-      <p class="hint">Grau = schon eingeteilt, bleibt unverändert.</p>
+      <p class="hint">{{ 'duty.greyHint' | transloco }}</p>
     }
   }
 </ion-content>

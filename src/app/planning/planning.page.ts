@@ -12,6 +12,7 @@ import { fieldDisplayName, topNumbers } from '../team-organization/team-org.util
 import { AgendaPickerComponent } from '../agenda-items/agenda-picker/agenda-picker.component';
 import { allPlans, dayOptions, isMultiDay, nextFreeDay, planDay, planLabel, planSubtitle, splitPlans } from '../utilities/plan-days';
 import { blockTemplateFrom, childrenOf, cloneBlock, groupDuration, isGroupHead, lastIndexOfGroup, moveRow, newGroupHead, normalizeGroups } from '../utilities/plan-groups';
+import { translate } from '@jsverse/transloco';
 
 /** A row of the editor list: a field, or the "Unterpunkt hinzufügen" row closing an open block. */
 interface PlanRow {
@@ -38,7 +39,7 @@ export class PlanningPage implements OnInit {
   public history: History[] = [];
   public selectedFields: FieldSelection[] = [{
     id: '',
-    name: 'Wort ',
+    name: translate('planning.defaultWord'),
     time: '10',
   }];
   public attendances: Attendance[] = [];
@@ -298,50 +299,50 @@ export class PlanningPage implements OnInit {
     const clone: FieldSelection = JSON.parse(JSON.stringify(field));
     let inputs: AlertInput[] = [{
       type: 'textarea',
-      label: 'Programmpunkt',
+      label: translate('planning.item'),
       name: 'field',
       value: clone.name,
-      placeholder: 'Programmpunkt eingeben...'
+      placeholder: translate('planning.enterItem')
     }, {
       type: 'textarea',
-      label: 'Ausführender',
+      label: translate('planning.performer'),
       name: 'conductor',
       value: clone.conductor,
-      placeholder: 'Ausführenden eingeben...'
+      placeholder: translate('planning.enterPerformer')
     }, {
       type: 'textarea',
-      label: 'Info',
+      label: translate('planning.info'),
       name: 'info',
       value: clone.info,
-      placeholder: 'Info-Text (optional)...'
+      placeholder: translate('planning.infoOptionalEllipsis')
     }, {
       type: 'number',
-      label: 'Minuten',
+      label: translate('planning.minutes'),
       name: 'time',
       value: clone.time ? Number(clone.time) : 20,
-      placeholder: 'Minuten'
+      placeholder: translate('planning.minutes')
     }];
 
     if (field.id.includes('noteFld')) {
       inputs = [{
         type: 'textarea',
-        label: 'Notiz',
+        label: translate('planning.note'),
         name: 'field',
         value: clone.name,
-        placeholder: 'Notiz eingeben...'
+        placeholder: translate('planning.enterNote')
       }];
     }
 
     const alert = await this.alertController.create({
-      header: 'Feld bearbeiten',
+      header: translate('planning.editField'),
       inputs,
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Updaten',
+        text: translate('planning.update'),
         handler: (evt: any) => {
           if (!evt.field) {
-            alert.message = 'Bitte einen Programmpunkt eingeben.';
+            alert.message = translate('planning.enterItemPlease');
             return false;
           }
           field.name = evt.field;
@@ -505,20 +506,20 @@ export class PlanningPage implements OnInit {
   async addGroup(popover: IonPopover) {
     popover?.dismiss();
     const alert = await this.alertController.create({
-      header: 'Programmblock hinzufügen',
-      message: 'Die Dauer ergibt sich aus den Unterpunkten.',
+      header: translate('planning.addBlock'),
+      message: translate('planning.blockDurationHint'),
       inputs: [
-        { type: 'textarea', name: 'field', placeholder: 'Name, z. B. Programm Jugendchor' },
-        { type: 'textarea', name: 'conductor', placeholder: 'Ausführung (optional)' },
-        { type: 'textarea', name: 'info', placeholder: 'Info-Text (optional)' },
+        { type: 'textarea', name: 'field', placeholder: translate('planning.blockNamePlaceholder') },
+        { type: 'textarea', name: 'conductor', placeholder: translate('planning.performanceOptional') },
+        { type: 'textarea', name: 'info', placeholder: translate('planning.infoOptional') },
       ],
       buttons: [
-        { text: 'Abbrechen' },
+        { text: translate('common.cancel') },
         {
-          text: 'Anlegen',
+          text: translate('common.create'),
           handler: (evt: any) => {
             if (!evt.field?.trim()) {
-              alert.message = 'Bitte einen Namen eingeben.';
+              alert.message = translate('planning.enterNamePlease');
               return false;
             }
             const head = newGroupHead(evt.field.trim(), evt.conductor?.trim(), evt.info?.trim());
@@ -535,21 +536,21 @@ export class PlanningPage implements OnInit {
 
   async addSubItem(head: FieldSelection) {
     const alert = await this.alertController.create({
-      header: 'Unterpunkt hinzufügen',
+      header: translate('planning.addSubItem'),
       subHeader: head.name,
       inputs: [
-        { type: 'textarea', name: 'field', placeholder: 'Programmpunkt, z. B. Gruppenlied' },
-        { type: 'textarea', name: 'conductor', placeholder: 'Ausführenden eingeben...' },
-        { type: 'textarea', name: 'info', placeholder: 'Info-Text (optional), z. B. Liedtitel' },
-        { type: 'number', label: 'Minuten', name: 'time', value: 5, placeholder: 'Minuten' },
+        { type: 'textarea', name: 'field', placeholder: translate('planning.subItemPlaceholder') },
+        { type: 'textarea', name: 'conductor', placeholder: translate('planning.enterPerformer') },
+        { type: 'textarea', name: 'info', placeholder: translate('planning.subItemInfoPlaceholder') },
+        { type: 'number', label: translate('planning.minutes'), name: 'time', value: 5, placeholder: translate('planning.minutes') },
       ],
       buttons: [
-        { text: 'Abbrechen' },
+        { text: translate('common.cancel') },
         {
-          text: 'Hinzufügen',
+          text: translate('attendance.add'),
           handler: (evt: any) => {
             if (!evt.field?.trim()) {
-              alert.message = 'Bitte einen Programmpunkt eingeben.';
+              alert.message = translate('planning.enterItemPlease');
               return false;
             }
             const at = lastIndexOfGroup(this.selectedFields, head.id) + 1;
@@ -573,21 +574,21 @@ export class PlanningPage implements OnInit {
 
   async showGroupOptions(head: FieldSelection) {
     const buttons: ActionSheetButton[] = [
-      { text: 'Block bearbeiten', handler: () => { void this.editGroup(head); } },
-      { text: 'Unterpunkt hinzufügen', handler: () => { void this.addSubItem(head); } },
+      { text: translate('planning.editBlock'), handler: () => { void this.editGroup(head); } },
+      { text: translate('planning.addSubItem'), handler: () => { void this.addSubItem(head); } },
     ];
     if (this.isAdmin && childrenOf(this.selectedFields, head.id).length) {
       const exists = this.blockTemplates.some(t => t.name === head.name);
-      buttons.push({ text: exists ? 'Vorlage aktualisieren' : 'Als Vorlage speichern', handler: () => { void this.saveBlockTemplate(head); } });
+      buttons.push({ text: exists ? translate('planning.updateTemplate') : translate('planning.saveAsTemplate'), handler: () => { void this.saveBlockTemplate(head); } });
     }
     buttons.push(
-      { text: 'Block auflösen', handler: () => { this.dissolveGroup(head); } },
-      { text: 'Block mit Unterpunkten löschen', role: 'destructive', handler: () => { void this.confirmDeleteGroup(head); } },
-      { text: 'Abbrechen', role: 'cancel' },
+      { text: translate('planning.dissolveBlock'), handler: () => { this.dissolveGroup(head); } },
+      { text: translate('planning.deleteBlockWithItems'), role: 'destructive', handler: () => { void this.confirmDeleteGroup(head); } },
+      { text: translate('common.cancel'), role: 'cancel' },
     );
     const sheet = await this.actionSheetController.create({
       header: head.name,
-      subHeader: `${childrenOf(this.selectedFields, head.id).length} Unterpunkte · ${this.groupMinutes(head)} min`,
+      subHeader: translate('planning.blockSubHeader', { count: childrenOf(this.selectedFields, head.id).length, min: this.groupMinutes(head) }),
       buttons,
     });
     await sheet.present();
@@ -595,19 +596,19 @@ export class PlanningPage implements OnInit {
 
   private async editGroup(head: FieldSelection) {
     const alert = await this.alertController.create({
-      header: 'Block bearbeiten',
+      header: translate('planning.editBlock'),
       inputs: [
-        { type: 'textarea', label: 'Name', name: 'field', value: head.name, placeholder: 'Name' },
-        { type: 'textarea', label: 'Ausführung', name: 'conductor', value: head.conductor, placeholder: 'Ausführung (optional)' },
-        { type: 'textarea', label: 'Info', name: 'info', value: head.info, placeholder: 'Info-Text (optional)' },
+        { type: 'textarea', label: translate('planning.name'), name: 'field', value: head.name, placeholder: translate('planning.name') },
+        { type: 'textarea', label: translate('planning.performance'), name: 'conductor', value: head.conductor, placeholder: translate('planning.performanceOptional') },
+        { type: 'textarea', label: translate('planning.info'), name: 'info', value: head.info, placeholder: translate('planning.infoOptional') },
       ],
       buttons: [
-        { text: 'Abbrechen' },
+        { text: translate('common.cancel') },
         {
-          text: 'Speichern',
+          text: translate('common.save'),
           handler: (evt: any) => {
             if (!evt.field?.trim()) {
-              alert.message = 'Bitte einen Namen eingeben.';
+              alert.message = translate('planning.enterNamePlease');
               return false;
             }
             head.name = evt.field.trim();
@@ -642,13 +643,13 @@ export class PlanningPage implements OnInit {
       return;
     }
     const alert = await this.alertController.create({
-      header: 'Block löschen?',
-      message: `„${head.name}“ hat ${count} Unterpunkte.`,
+      header: translate('planning.deleteBlockConfirm'),
+      message: translate('planning.blockHasItems', { name: head.name, count }),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        { text: 'Nur Block auflösen', handler: () => { this.dissolveGroup(head); } },
+        { text: translate('common.cancel'), role: 'cancel' },
+        { text: translate('planning.onlyDissolve'), handler: () => { this.dissolveGroup(head); } },
         {
-          text: 'Alles löschen',
+          text: translate('planning.deleteAll'),
           role: 'destructive',
           handler: () => {
             this.selectedFields = this.selectedFields.filter(f => f.id !== head.id && f.groupId !== head.id);
@@ -665,9 +666,9 @@ export class PlanningPage implements OnInit {
     const others = this.blockTemplates.filter(t => t.name !== template.name);
     try {
       await this.db.updateTenantData({ plan_block_templates: [...others, template] });
-      Utils.showToast(`„${template.name}“ als Vorlage gespeichert`, 'success');
+      Utils.showToast(translate('planning.templateSaved', { name: template.name }), 'success');
     } catch {
-      Utils.showToast('Die Vorlage konnte nicht gespeichert werden.', 'danger');
+      Utils.showToast(translate('planning.templateSaveFailed'), 'danger');
     }
   }
 
@@ -680,12 +681,12 @@ export class PlanningPage implements OnInit {
   async deleteBlockTemplate(template: PlanBlockTemplate, popover: IonPopover) {
     popover?.dismiss();
     const alert = await this.alertController.create({
-      header: 'Vorlage löschen?',
-      message: `Die Vorlage „${template.name}“ wird gelöscht. Bestehende Pläne bleiben unverändert.`,
+      header: translate('planning.deleteTemplateConfirm'),
+      message: translate('planning.deleteTemplateMessage', { name: template.name }),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Löschen',
+          text: translate('common.delete'),
           role: 'destructive',
           handler: async () => {
             await this.db.updateTenantData({ plan_block_templates: this.blockTemplates.filter(t => t.id !== template.id) });
@@ -699,30 +700,30 @@ export class PlanningPage implements OnInit {
   async addExtraField(popover: IonPopover) {
     popover?.dismiss();
     const alert = await this.alertController.create({
-      header: 'Feld hinzufügen',
+      header: translate('planning.addField'),
       inputs: [{
         type: 'textarea',
         name: 'field',
-        placeholder: 'Freitext eingeben...'
+        placeholder: translate('planning.enterFreeText')
       }, {
         type: 'textarea',
         name: 'conductor',
-        placeholder: 'Ausführenden eingeben...'
+        placeholder: translate('planning.enterPerformer')
       }, {
         type: 'textarea',
         name: 'info',
-        placeholder: 'Info-Text (optional)'
+        placeholder: translate('planning.infoOptional')
       }, {
         type: 'number',
-        label: 'Minuten',
+        label: translate('planning.minutes'),
         name: 'time',
         value: 20,
-        placeholder: 'Minuten'
+        placeholder: translate('planning.minutes')
       }],
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Hinzufügen',
+        text: translate('attendance.add'),
         handler: (evt: any) => {
           this.selectedFields.push({
             id: evt.field,
@@ -744,16 +745,16 @@ export class PlanningPage implements OnInit {
     popover?.dismiss();
 
     const alert = await this.alertController.create({
-      header: 'Notizfeld hinzufügen',
+      header: translate('planning.addNoteField'),
       inputs: [{
         type: 'textarea',
         name: 'field',
-        placeholder: 'Notiz eingeben...'
+        placeholder: translate('planning.enterNote')
       }],
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Hinzufügen',
+        text: translate('attendance.add'),
         handler: (evt: any) => {
           this.selectedFields.push({
             id: `noteFld ${evt.field}`,
@@ -773,12 +774,12 @@ export class PlanningPage implements OnInit {
   addAgendaItemsPlaceholder(popover: IonPopover) {
     popover?.dismiss();
     if (this.selectedFields.some(f => f.id === AGENDA_ITEMS_PLACEHOLDER_ID)) {
-      Utils.showToast('Ein Tagesordnungs-Platzhalter ist bereits vorhanden', 'warning');
+      Utils.showToast(translate('planning.agendaExists'), 'warning');
       return;
     }
     this.selectedFields.push({
       id: AGENDA_ITEMS_PLACEHOLDER_ID,
-      name: 'Tagesordnung',
+      name: translate('planning.agenda'),
       time: '0',
     });
     this.calculateEnd();
@@ -895,14 +896,14 @@ export class PlanningPage implements OnInit {
   validate(showToast: boolean = true): boolean {
     if (!this.time || !this.selectedFields.length) {
       if (showToast) {
-        Utils.showToast('Bitte wähle mindestens ein Feld aus.', 'warning');
+        Utils.showToast(translate('planning.chooseFieldMin'), 'warning');
       }
       return false;
     }
 
     if (!this.selectedFields.every(field => field.time)) {
       if (showToast) {
-        Utils.showToast('Bitte fülle alle erforderlichen Felder aus.', 'warning');
+        Utils.showToast(translate('planning.fillRequired'), 'warning');
       }
       return false;
     }
@@ -928,15 +929,15 @@ export class PlanningPage implements OnInit {
 
   async shareCurrentPlan(editLink = false) {
     if (!this.attendance) {
-      Utils.showToast('Bitte wähle zuerst einen Termin aus.', 'warning');
+      Utils.showToast(translate('planning.chooseEventFirst'), 'warning');
       return;
     }
     const sheet = await this.actionSheetController.create({
-      header: 'Link teilen',
+      header: translate('planning.shareLink'),
       buttons: [
-        { text: 'Nur-Lesen-Link', handler: () => this.doShareAttendancePlan(false) },
-        { text: 'Bearbeitungs-Link', handler: () => this.doShareAttendancePlan(true) },
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('planning.readOnlyLink'), handler: () => this.doShareAttendancePlan(false) },
+        { text: translate('planning.editLink'), handler: () => this.doShareAttendancePlan(true) },
+        { text: translate('common.cancel'), role: 'cancel' },
       ],
     });
     await sheet.present();
@@ -968,25 +969,25 @@ export class PlanningPage implements OnInit {
       await navigator.share({ url, title: this.getEffectivePlanTitle() });
     } else {
       await navigator.clipboard.writeText(url);
-      Utils.showToast('Link in Zwischenablage kopiert', 'success');
+      Utils.showToast(translate('planning.linkCopied'), 'success');
     }
   }
 
   async revokeSharePlan() {
     if (!this.attendance) { return; }
     const alert = await this.alertController.create({
-      header: 'Freigabe aufheben?',
-      message: 'Der öffentliche Link wird ungültig. Fortfahren?',
+      header: translate('planning.unshareConfirm'),
+      message: translate('planning.unshareMessage'),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Aufheben',
+          text: translate('planning.unshare'),
           role: 'destructive',
           handler: async () => {
             await this.db.updateAttendance({ share_key: null, share_edit_key: null } as any, this.attendance);
             const att = this.attendances.find((a: Attendance) => a.id === this.attendance);
             if (att) { att.share_key = null; att.share_edit_key = null; }
-            Utils.showToast('Freigabe aufgehoben', 'success');
+            Utils.showToast(translate('planning.unshared'), 'success');
           }
         },
       ],
@@ -1003,7 +1004,7 @@ export class PlanningPage implements OnInit {
       });
       if (this.planLabels.length > 1) {
         buttons.push({
-          text: 'PDF exportieren (alle Pläne)',
+          text: translate('planning.exportPdfAll'),
           handler: () => this.exportAllPlans()
         });
       }
@@ -1014,15 +1015,15 @@ export class PlanningPage implements OnInit {
 
       if (this.hasChatId) {
         buttons.push({
-          text: 'Per Telegram senden (PDF)',
+          text: translate('attendance.telegramPdf'),
           handler: () => this.send(false)
         });
         buttons.push({
-          text: 'Per Telegram senden (PDF 2x A5)',
+          text: translate('attendance.telegramPdfA5'),
           handler: () => this.send(false, true)
         });
         buttons.push({
-          text: 'Per Telegram senden (Bild)',
+          text: translate('attendance.telegramImage'),
           handler: () => this.send(true)
         });
       }
@@ -1030,7 +1031,7 @@ export class PlanningPage implements OnInit {
 
     if (this.db.tenant().type === DefaultAttendanceType.CHOIR || this.db.tenant().type === DefaultAttendanceType.ORCHESTRA) {
       buttons.push({
-        text: 'Registerprobenplan erstellen',
+        text: translate('planning.createSectionalPlan'),
         handler: () => {
           this.planGroups = this.loadPlanGroups();
           this.planConductors = this.conductors
@@ -1042,12 +1043,12 @@ export class PlanningPage implements OnInit {
     }
 
     buttons.push({
-      text: 'Abbrechen',
+      text: translate('common.cancel'),
       role: 'cancel',
     });
 
     const actionSheet = await this.actionSheetController.create({
-      header: 'Aktionen',
+      header: translate('person.actions'),
       buttons
     });
     await actionSheet.present();
@@ -1058,8 +1059,8 @@ export class PlanningPage implements OnInit {
       return this.groupCategories.map(cat => cat.name);
     }
     return this.db.tenant().type === DefaultAttendanceType.CHOIR
-      ? ['Sopran', 'Alt', 'Tenor', 'Bass']
-      : ['Streicher', 'Holzbläser', 'Sonstige'];
+      ? [translate('planning.soprano'), translate('planning.alto'), translate('planning.tenor'), translate('planning.bass')]
+      : [translate('planning.strings'), translate('planning.woodwinds'), translate('common.otherPlural')];
   }
 
   loadPlanGroups(): string[] {
@@ -1137,12 +1138,12 @@ export class PlanningPage implements OnInit {
       ? await Utils.buildTenantBranding(this.db.getBrandingSource())
       : undefined;
     const headerOpts = {
-      title: `${this.db.tenant().shortName} Registerprobenplan`,
-      subtitle: `Stand: ${date}`,
+      title: translate('planning.sectionalPlanTitle', { tenant: this.db.tenant().shortName }),
+      subtitle: translate('planning.asOf', { date }),
     };
     const contentTop = Utils.addBrandingHeader(doc, branding, headerOpts);
     (doc as any).autoTable({
-      head: [['Minuten', ...this.planGroups]],
+      head: [[translate('planning.minutes'), ...this.planGroups]],
       body: data,
       margin: { top: contentTop, bottom: 14 },
       theme: 'plain',
@@ -1195,7 +1196,7 @@ export class PlanningPage implements OnInit {
       this.attendance = this.attendances[currentIndex - 1].id;
       this.onAttChange();
     } else {
-      Utils.showToast('Dies ist die aktuell erste Veranstaltung', 'warning');
+      Utils.showToast(translate('planning.firstEvent'), 'warning');
     }
   }
 
@@ -1205,7 +1206,7 @@ export class PlanningPage implements OnInit {
       this.attendance = this.attendances[currentIndex + 1].id;
       this.onAttChange();
     } else {
-      Utils.showToast('Dies ist die aktuell letzte Veranstaltung', 'warning');
+      Utils.showToast(translate('planning.lastEvent'), 'warning');
     }
   }
 
@@ -1288,22 +1289,22 @@ export class PlanningPage implements OnInit {
     popover?.dismiss();
     const att = this.currentAtt;
     if (!att) {
-      Utils.showToast('Bitte wähle zuerst einen Termin aus.', 'warning');
+      Utils.showToast(translate('planning.chooseEventFirst'), 'warning');
       return;
     }
     if (!this.validate(false)) {
-      Utils.showToast('Lege zuerst einen Ablauf für diesen Plan an.', 'warning');
+      Utils.showToast(translate('planning.createRunSheetFirst'), 'warning');
       return;
     }
     await this.updateAttendance();
 
     const alert = await this.alertController.create({
-      header: 'Weiteren Ablaufplan anlegen',
-      message: 'Soll der neue Plan den aktuellen Ablauf übernehmen oder leer starten?',
+      header: translate('planning.addAnotherPlan'),
+      message: translate('planning.addAnotherPlanMessage'),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        { text: 'Leer', handler: () => { void this.createAdditionalPlan(false); } },
-        { text: 'Kopie', handler: () => { void this.createAdditionalPlan(true); } },
+        { text: translate('common.cancel'), role: 'cancel' },
+        { text: translate('planning.empty'), handler: () => { void this.createAdditionalPlan(false); } },
+        { text: translate('planning.copy'), handler: () => { void this.createAdditionalPlan(true); } },
       ],
     });
     await alert.present();
@@ -1343,22 +1344,22 @@ export class PlanningPage implements OnInit {
     const plans = allPlans(att);
     const index = this.planIndex;
     const buttons: ActionSheetButton[] = [
-      { text: 'Umbenennen', handler: () => { void this.renamePlan(); } },
+      { text: translate('planning.rename'), handler: () => { void this.renamePlan(); } },
     ];
     if (dayOptions(att).length) {
-      buttons.push({ text: 'Anderem Tag zuordnen', handler: () => { void this.assignPlanDay(); } });
+      buttons.push({ text: translate('planning.assignOtherDay'), handler: () => { void this.assignPlanDay(); } });
     }
     if (index > 0) {
-      buttons.push({ text: 'Nach links verschieben', handler: () => { void this.movePlan(-1); } });
+      buttons.push({ text: translate('planning.moveLeft'), handler: () => { void this.movePlan(-1); } });
     }
     if (index < plans.length - 1) {
-      buttons.push({ text: 'Nach rechts verschieben', handler: () => { void this.movePlan(1); } });
+      buttons.push({ text: translate('planning.moveRight'), handler: () => { void this.movePlan(1); } });
     }
-    buttons.push({ text: 'Plan löschen', role: 'destructive', handler: () => { void this.deletePlan(); } });
-    buttons.push({ text: 'Abbrechen', role: 'cancel' });
+    buttons.push({ text: translate('planning.deletePlan'), role: 'destructive', handler: () => { void this.deletePlan(); } });
+    buttons.push({ text: translate('common.cancel'), role: 'cancel' });
 
     const sheet = await this.actionSheetController.create({
-      header: `Plan „${planLabel(att, index, plans)}“`,
+      header: translate('planning.planHeader', { label: planLabel(att, index, plans) }),
       subHeader: `${index + 1} von ${plans.length}`,
       buttons,
     });
@@ -1373,13 +1374,13 @@ export class PlanningPage implements OnInit {
     const index = this.planIndex;
     const auto = planLabel(att, index, plans.map(p => ({ ...p, label: undefined })));
     const alert = await this.alertController.create({
-      header: 'Plan umbenennen',
-      message: 'Leer lassen für den automatischen Namen.',
+      header: translate('planning.renamePlan'),
+      message: translate('planning.renameHint'),
       inputs: [{ type: 'text', name: 'label', value: plans[index]?.label ?? '', placeholder: auto }],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Speichern',
+          text: translate('common.save'),
           handler: async (evt: any) => {
             const updated = this.withDays(att, allPlans(att));
             updated[index] = { ...updated[index], label: evt.label?.trim() || undefined };
@@ -1398,7 +1399,7 @@ export class PlanningPage implements OnInit {
     const plans = this.withDays(att, allPlans(att));
     const index = this.planIndex;
     const alert = await this.alertController.create({
-      header: 'Tag zuordnen',
+      header: translate('planning.assignDay'),
       inputs: dayOptions(att).map(o => ({
         type: 'radio' as const,
         label: o.label,
@@ -1406,9 +1407,9 @@ export class PlanningPage implements OnInit {
         checked: plans[index]?.day === o.day,
       })),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Speichern',
+          text: translate('common.save'),
           handler: async (day: number) => {
             if (day === undefined || day === null) { return; }
             const moved = { ...plans[index], day };
@@ -1443,12 +1444,12 @@ export class PlanningPage implements OnInit {
     const plans = allPlans(att);
     const index = this.planIndex;
     const alert = await this.alertController.create({
-      header: 'Plan löschen?',
-      message: `Der Plan „${planLabel(att, index, plans)}“ wird gelöscht.`,
+      header: translate('planning.deletePlanConfirm'),
+      message: translate('planning.deletePlanMessage', { label: planLabel(att, index, plans) }),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Löschen',
+          text: translate('common.delete'),
           role: 'destructive',
           handler: async () => {
             const remaining = this.withDays(att, allPlans(att));
@@ -1465,14 +1466,14 @@ export class PlanningPage implements OnInit {
 
   async resetPlan() {
     const alert = await this.alertController.create({
-      header: 'Plan zurücksetzen',
-      message: 'Möchtest du den Plan für diese Veranstaltung wirklich zurücksetzen? Alle Änderungen gehen verloren.',
+      header: translate('planning.resetPlan'),
+      message: translate('planning.resetPlanMessage'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
         },
         {
-          text: 'Zurücksetzen',
+          text: translate('dateDialog.reset'),
           handler: () => {
             this.addDefaultFieldsFromAttendanceType(this.attendances.find((att: Attendance) => att.id === this.attendance)?.type_id);
           }

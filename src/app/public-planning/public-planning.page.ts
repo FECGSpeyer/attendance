@@ -14,6 +14,7 @@ import {
 import { getSupabase } from '../services/base/supabase';
 import { MyPlansComponent } from './my-plans/my-plans.component';
 import { DbService } from '../services/db.service';
+import { translate } from '@jsverse/transloco';
 
 const STORAGE_KEY = 'attendix-public-plan';
 
@@ -29,7 +30,7 @@ export class PublicPlanningPage implements OnInit {
   public brandings: PublicBranding[] = PUBLIC_BRANDINGS;
   public selectedBrandingId = 'none';
 
-  public planTitle = 'Ablaufplan';
+  public planTitle = translate('plans.runSheet');
   public date: string = dayjs().format('YYYY-MM-DD');
   public time: string = dayjs().hour(10).minute(0).format('YYYY-MM-DDTHH:mm');
   public end = '';
@@ -248,11 +249,11 @@ export class PublicPlanningPage implements OnInit {
       return;
     }
     const alert = await this.alertController.create({
-      header: 'Vorlage anwenden',
-      message: 'Aktuellen Ablauf durch die Vorlage ersetzen?',
+      header: translate('plans.applyTemplate'),
+      message: translate('plans.replaceWithTemplate'),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        { text: 'Ersetzen', handler: () => { onConfirm(); } },
+        { text: translate('common.cancel'), role: 'cancel' },
+        { text: translate('person.replace'), handler: () => { onConfirm(); } },
       ],
     });
     await alert.present();
@@ -273,19 +274,19 @@ export class PublicPlanningPage implements OnInit {
   async addField(popover?: IonPopover) {
     popover?.dismiss();
     const alert = await this.alertController.create({
-      header: 'Feld hinzufügen',
+      header: translate('planning.addField'),
       inputs: [
-        { type: 'textarea', name: 'field',     placeholder: 'Programmpunkt eingeben...' },
-        { type: 'textarea', name: 'conductor', placeholder: 'Ausführender (optional)' },
-        { type: 'textarea', name: 'info',      placeholder: 'Info-Text (optional)' },
+        { type: 'textarea', name: 'field',     placeholder: translate('planning.enterItem') },
+        { type: 'textarea', name: 'conductor', placeholder: translate('plans.performerOptional') },
+        { type: 'textarea', name: 'info',      placeholder: translate('planning.infoOptional') },
       ],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Hinzufügen',
+          text: translate('attendance.add'),
           handler: (evt: any) => {
             if (!evt.field) {
-              alert.message = 'Bitte einen Programmpunkt eingeben.';
+              alert.message = translate('planning.enterItemPlease');
               return false;
             }
             this.selectedFields.push({
@@ -306,15 +307,15 @@ export class PublicPlanningPage implements OnInit {
   async addNoteField(popover?: IonPopover) {
     popover?.dismiss();
     const alert = await this.alertController.create({
-      header: 'Notizfeld hinzufügen',
-      inputs: [{ type: 'textarea', name: 'field', placeholder: 'Notiz eingeben...' }],
+      header: translate('planning.addNoteField'),
+      inputs: [{ type: 'textarea', name: 'field', placeholder: translate('planning.enterNote') }],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Hinzufügen',
+          text: translate('attendance.add'),
           handler: (evt: any) => {
             if (!evt.field) {
-              alert.message = 'Bitte eine Notiz eingeben.';
+              alert.message = translate('plans.enterNotePlease');
               return false;
             }
             this.selectedFields.push({
@@ -336,18 +337,18 @@ export class PublicPlanningPage implements OnInit {
     const index = this.selectedFields.indexOf(field);
     const isNote = field.id.includes('noteFld');
     const inputs: any[] = isNote
-      ? [{ type: 'textarea', name: 'field', value: field.name, placeholder: 'Notiz' }]
+      ? [{ type: 'textarea', name: 'field', value: field.name, placeholder: translate('planning.note') }]
       : [
-          { type: 'textarea', name: 'field',     value: field.name,      placeholder: 'Programmpunkt' },
-          { type: 'textarea', name: 'conductor', value: field.conductor, placeholder: 'Ausführender' },
-          { type: 'textarea', name: 'info', value: field.info, placeholder: 'Info-Text (optional)' },
+          { type: 'textarea', name: 'field',     value: field.name,      placeholder: translate('planning.item') },
+          { type: 'textarea', name: 'conductor', value: field.conductor, placeholder: translate('planning.performer') },
+          { type: 'textarea', name: 'info', value: field.info, placeholder: translate('planning.infoOptional') },
         ];
     const alert = await this.alertController.create({
-      header: 'Feld bearbeiten',
+      header: translate('planning.editField'),
       inputs,
       buttons: [
         {
-          text: 'Löschen',
+          text: translate('common.delete'),
           role: 'destructive',
           cssClass: 'alert-button-danger',
           handler: () => {
@@ -357,12 +358,12 @@ export class PublicPlanningPage implements OnInit {
             }
           },
         },
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Speichern',
+          text: translate('common.save'),
           handler: (evt: any) => {
             if (!evt.field) {
-              alert.message = 'Bitte einen Programmpunkt eingeben.';
+              alert.message = translate('planning.enterItemPlease');
               return false;
             }
             field.name = evt.field;
@@ -402,11 +403,11 @@ export class PublicPlanningPage implements OnInit {
   // ---- export ----
   validate(): boolean {
     if (!this.time || !this.selectedFields.length) {
-      Utils.showToast('Bitte mindestens ein Feld hinzufügen.', 'warning');
+      Utils.showToast(translate('plans.addFieldMin'), 'warning');
       return false;
     }
     if (!this.selectedFields.every(f => f.id.includes('noteFld') || f.time)) {
-      Utils.showToast('Bitte alle Dauern ausfüllen.', 'warning');
+      Utils.showToast(translate('plans.fillDurations'), 'warning');
       return false;
     }
     return true;
@@ -417,14 +418,14 @@ export class PublicPlanningPage implements OnInit {
     const branding = await this.buildBranding();
     await Utils.createPlanExport(
       { time: this.time, end: this.end, fields: this.selectedFields, sideBySide, branding },
-      this.planTitle?.trim() || 'Ablaufplan',
+      this.planTitle?.trim() || translate('plans.runSheet'),
     );
   }
 
   async exportImage(sideBySide = false) {
     if (!this.validate()) {return;}
     const branding = await this.buildBranding();
-    const title = this.planTitle?.trim() || 'Ablaufplan';
+    const title = this.planTitle?.trim() || translate('plans.runSheet');
     const blob = await Utils.createPlanExport(
       { time: this.time, end: this.end, fields: this.selectedFields, sideBySide, branding, asBlob: true, asImage: true },
       title,
@@ -451,11 +452,11 @@ export class PublicPlanningPage implements OnInit {
     const buttons: ActionSheetButton[] = [
       { text: 'PDF (A4)',       handler: () => this.export(false) },
       { text: 'PDF (2x A5)',    handler: () => this.export(true) },
-      { text: 'Bild (A4)',      handler: () => this.exportImage(false) },
-      { text: 'Abbrechen',      role: 'cancel' },
+      { text: translate('plans.imageA4'),      handler: () => this.exportImage(false) },
+      { text: translate('common.cancel'),      role: 'cancel' },
     ];
     const actionSheet = await this.actionSheetController.create({
-      header: 'Exportieren',
+      header: translate('planning.export'),
       buttons,
     });
     await actionSheet.present();
@@ -464,14 +465,14 @@ export class PublicPlanningPage implements OnInit {
   async shareCurrentPlan(editLink = false) {
     if (!this.validate()) { return; }
     const sheet = await this.actionSheetController.create({
-      header: 'Teilen & Exportieren',
+      header: translate('plans.shareExport'),
       buttons: [
-        { text: 'Nur-Lesen-Link', handler: () => this.doShare(false) },
-        { text: 'Bearbeitungs-Link', handler: () => this.doShare(true) },
+        { text: translate('planning.readOnlyLink'), handler: () => this.doShare(false) },
+        { text: translate('planning.editLink'), handler: () => this.doShare(true) },
         { text: 'PDF (A4)',       handler: () => this.export(false) },
         { text: 'PDF (2x A5)',    handler: () => this.export(true) },
-        { text: 'Bild (A4)',      handler: () => this.exportImage(false) },
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('plans.imageA4'),      handler: () => this.exportImage(false) },
+        { text: translate('common.cancel'), role: 'cancel' },
       ],
     });
     await sheet.present();
@@ -484,16 +485,16 @@ export class PublicPlanningPage implements OnInit {
         await this.persistToDb();
       }
       if (!this.currentPlanId) {
-        Utils.showToast('Fehler beim Erstellen des Links', 'danger');
+        Utils.showToast(translate('plans.linkFailed'), 'danger');
         return;
       }
       const base = `https://attendix.de/plan?key=${this.currentPlanId}`;
       const url = editLink ? `${base}&edit=${this.currentEditKey}` : base;
       if (navigator.share) {
-        await navigator.share({ url, title: this.planTitle?.trim() || 'Ablaufplan' });
+        await navigator.share({ url, title: this.planTitle?.trim() || translate('plans.runSheet') });
       } else {
         await navigator.clipboard.writeText(url);
-        Utils.showToast('Link in Zwischenablage kopiert', 'success');
+        Utils.showToast(translate('planning.linkCopied'), 'success');
       }
       return;
     }
@@ -504,7 +505,7 @@ export class PublicPlanningPage implements OnInit {
     const { error } = await getSupabase().from('shared_plans').insert({
       id,
       edit_key: editKey,
-      plan_title: this.planTitle?.trim() || 'Ablaufplan',
+      plan_title: this.planTitle?.trim() || translate('plans.runSheet'),
       date: this.date,
       time: this.time,
       end_time: this.end,
@@ -513,17 +514,17 @@ export class PublicPlanningPage implements OnInit {
     } as any);
 
     if (error) {
-      Utils.showToast('Fehler beim Erstellen des Links', 'danger');
+      Utils.showToast(translate('plans.linkFailed'), 'danger');
       return;
     }
 
     const base = `https://attendix.de/plan?key=${id}`;
     const url = editLink ? `${base}&edit=${editKey}` : base;
     if (navigator.share) {
-      await navigator.share({ url, title: this.planTitle?.trim() || 'Ablaufplan' });
+      await navigator.share({ url, title: this.planTitle?.trim() || translate('plans.runSheet') });
     } else {
       await navigator.clipboard.writeText(url);
-      Utils.showToast('Link in Zwischenablage kopiert', 'success');
+      Utils.showToast(translate('planning.linkCopied'), 'success');
     }
   }
 
@@ -544,7 +545,7 @@ export class PublicPlanningPage implements OnInit {
   private loadPlan(plan: SharedPlan) {
     this.currentPlanId = plan.id;
     this.currentEditKey = plan.edit_key;
-    this.planTitle = plan.plan_title || 'Ablaufplan';
+    this.planTitle = plan.plan_title || translate('plans.runSheet');
     this.date = plan.date || dayjs().format('YYYY-MM-DD');
     this.time = plan.time || dayjs().hour(10).minute(0).format('YYYY-MM-DDTHH:mm');
     this.end = plan.end_time || '';
@@ -557,11 +558,11 @@ export class PublicPlanningPage implements OnInit {
   async newPlan() {
     if (this.selectedFields.length) {
       const alert = await this.alertController.create({
-        header: 'Neuer Plan',
-        message: 'Aktuellen Plan verwerfen und einen neuen erstellen?',
+        header: translate('plans.newPlan'),
+        message: translate('plans.discardNew'),
         buttons: [
-          { text: 'Abbrechen', role: 'cancel' },
-          { text: 'Neuer Plan', handler: () => this.resetToNew() },
+          { text: translate('common.cancel'), role: 'cancel' },
+          { text: translate('plans.newPlan'), handler: () => this.resetToNew() },
         ],
       });
       await alert.present();
@@ -573,7 +574,7 @@ export class PublicPlanningPage implements OnInit {
   private resetToNew() {
     this.currentPlanId = null;
     this.currentEditKey = null;
-    this.planTitle = 'Ablaufplan';
+    this.planTitle = translate('plans.runSheet');
     this.date = dayjs().format('YYYY-MM-DD');
     this.time = dayjs().hour(10).minute(0).format('YYYY-MM-DDTHH:mm');
     this.end = '';
@@ -607,7 +608,7 @@ export class PublicPlanningPage implements OnInit {
     await getSupabase().from('shared_plans').upsert({
       id: this.currentPlanId,
       edit_key: this.currentEditKey!,
-      plan_title: this.planTitle?.trim() || 'Ablaufplan',
+      plan_title: this.planTitle?.trim() || translate('plans.runSheet'),
       date: this.date,
       time: this.time,
       end_time: this.end,
@@ -624,7 +625,7 @@ export class PublicPlanningPage implements OnInit {
 
     await this.persistToDb();
     if (!this.currentPlanId) {
-      Utils.showToast('Fehler beim Speichern des Plans', 'danger');
+      Utils.showToast(translate('plans.savePlanFailed'), 'danger');
       return;
     }
 
@@ -634,12 +635,12 @@ export class PublicPlanningPage implements OnInit {
       .eq('id', this.currentPlanId);
 
     if (error) {
-      Utils.showToast('Fehler beim Hinzufügen zur Organisation', 'danger');
+      Utils.showToast(translate('plans.addOrgFailed'), 'danger');
       return;
     }
 
     this.isOrgPlan = true;
-    Utils.showToast(`Plan zur Organisation "${org.name}" hinzugefügt`, 'success');
+    Utils.showToast(translate('plans.addedToOrg', { org: org.name }), 'success');
   }
 
   async removeFromOrg() {
@@ -651,27 +652,27 @@ export class PublicPlanningPage implements OnInit {
       .eq('id', this.currentPlanId);
 
     if (error) {
-      Utils.showToast('Fehler beim Entfernen aus der Organisation', 'danger');
+      Utils.showToast(translate('plans.removeOrgFailed'), 'danger');
       return;
     }
 
     this.isOrgPlan = false;
-    Utils.showToast('Plan aus Organisation entfernt', 'success');
+    Utils.showToast(translate('plans.removedFromOrg'), 'success');
   }
 
   async resetToTemplate() {
     const tpl = this.templates.find(t => t.id === this.selectedTemplateId);
     if (!tpl) {
-      Utils.showToast('Keine Vorlage ausgewählt.', 'warning');
+      Utils.showToast(translate('plans.noTemplate'), 'warning');
       return;
     }
     const alert = await this.alertController.create({
-      header: 'Vorlage wiederherstellen',
-      message: `Alle Änderungen verwerfen und die Standardwerte der Vorlage „${tpl.name}“ wiederherstellen?`,
+      header: translate('plans.restoreTemplate'),
+      message: translate('plans.restoreTemplateMessage', { name: tpl.name }),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Wiederherstellen',
+          text: translate('plans.restore'),
           handler: () => {
             this.applyTemplate(tpl);
           }
@@ -706,7 +707,7 @@ export class PublicPlanningPage implements OnInit {
       if (!raw) {return false;}
       const s = JSON.parse(raw);
       if (!s || !Array.isArray(s.selectedFields)) {return false;}
-      this.planTitle = s.planTitle ?? 'Ablaufplan';
+      this.planTitle = s.planTitle ?? translate('plans.runSheet');
       this.date = s.date ?? this.date;
       this.time = s.time ?? this.time;
       this.end = s.end ?? '';

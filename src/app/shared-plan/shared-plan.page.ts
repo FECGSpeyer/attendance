@@ -10,6 +10,7 @@ import { Utils } from '../utilities/Utils';
 import { normalizeGroups } from '../utilities/plan-groups';
 import { PUBLIC_BRANDINGS } from '../public-planning/public-planning-templates';
 import { getSupabase } from '../services/base/supabase';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-shared-plan',
@@ -145,7 +146,7 @@ export class SharedPlanPage implements OnInit, OnDestroy {
     }
 
     this.sharedPlan = data as unknown as SharedPlan;
-    this.planTitle = data.plan_title || 'Ablaufplan';
+    this.planTitle = data.plan_title || translate('plans.runSheet');
     this.date = data.date || '';
     this.time = data.time || '';
     this.end = data.end_time || '';
@@ -324,12 +325,12 @@ export class SharedPlanPage implements OnInit, OnDestroy {
   async editTitle() {
     if (!this.isEditMode) { return; }
     const alert = await this.alertController.create({
-      header: 'Titel bearbeiten',
-      inputs: [{ type: 'text', name: 'title', value: this.planTitle, placeholder: 'Titel' }],
+      header: translate('plans.editTitle'),
+      inputs: [{ type: 'text', name: 'title', value: this.planTitle, placeholder: translate('plans.title') }],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Speichern',
+          text: translate('common.save'),
           handler: (evt: any) => {
             if (!evt.title?.trim()) { return false; }
             this.planTitle = evt.title.trim();
@@ -345,16 +346,16 @@ export class SharedPlanPage implements OnInit, OnDestroy {
     popover?.dismiss();
     if (!this.isEditMode) { return; }
     const alert = await this.alertController.create({
-      header: 'Feld hinzufügen',
+      header: translate('planning.addField'),
       inputs: [
-        { type: 'textarea', name: 'field', placeholder: 'Programmpunkt eingeben...' },
-        { type: 'textarea', name: 'conductor', placeholder: 'Ausführender (optional)' },
-        { type: 'textarea', name: 'info', placeholder: 'Info-Text (optional)' },
+        { type: 'textarea', name: 'field', placeholder: translate('planning.enterItem') },
+        { type: 'textarea', name: 'conductor', placeholder: translate('plans.performerOptional') },
+        { type: 'textarea', name: 'info', placeholder: translate('planning.infoOptional') },
       ],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Hinzufügen',
+          text: translate('attendance.add'),
           handler: (evt: any) => {
             if (!evt.field?.trim()) { return false; }
             this.fields.push({
@@ -376,12 +377,12 @@ export class SharedPlanPage implements OnInit, OnDestroy {
     popover?.dismiss();
     if (!this.isEditMode) { return; }
     const alert = await this.alertController.create({
-      header: 'Notiz hinzufügen',
-      inputs: [{ type: 'textarea', name: 'text', placeholder: 'Notiz eingeben...' }],
+      header: translate('attendance.addNote'),
+      inputs: [{ type: 'textarea', name: 'text', placeholder: translate('planning.enterNote') }],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Hinzufügen',
+          text: translate('attendance.add'),
           handler: (evt: any) => {
             if (!evt.text?.trim()) { return false; }
             this.fields.push({
@@ -414,12 +415,12 @@ export class SharedPlanPage implements OnInit, OnDestroy {
     if (!this.isEditMode) { return; }
     const current = this.getStartTime();
     const alert = await this.alertController.create({
-      header: 'Startzeit bearbeiten',
+      header: translate('plans.editStartTime'),
       inputs: [{ type: 'time', name: 'time', value: current }],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Speichern',
+          text: translate('common.save'),
           handler: (evt: any) => {
             if (!evt.time) { return false; }
             this.time = this.date ? `${this.date}T${evt.time}` : evt.time;
@@ -435,20 +436,20 @@ export class SharedPlanPage implements OnInit, OnDestroy {
     if (!this.isEditMode) { return; }
     const isNote = field.id.includes('noteFld');
     const inputs: any[] = isNote
-      ? [{ type: 'textarea', name: 'field', value: field.name, placeholder: 'Notiz' }]
+      ? [{ type: 'textarea', name: 'field', value: field.name, placeholder: translate('planning.note') }]
       : [
-          { type: 'textarea', name: 'field', value: field.name, placeholder: 'Programmpunkt' },
-          { type: 'textarea', name: 'conductor', value: field.conductor, placeholder: 'Ausführender' },
-          { type: 'textarea', name: 'info', value: field.info, placeholder: 'Info-Text (optional)' },
-          { type: 'number', name: 'time', value: field.time, placeholder: 'Dauer (min)' },
+          { type: 'textarea', name: 'field', value: field.name, placeholder: translate('planning.item') },
+          { type: 'textarea', name: 'conductor', value: field.conductor, placeholder: translate('planning.performer') },
+          { type: 'textarea', name: 'info', value: field.info, placeholder: translate('planning.infoOptional') },
+          { type: 'number', name: 'time', value: field.time, placeholder: translate('plans.durationMin') },
         ];
     const alert = await this.alertController.create({
-      header: 'Feld bearbeiten',
+      header: translate('planning.editField'),
       inputs,
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Speichern',
+          text: translate('common.save'),
           handler: (evt: any) => {
             if (!evt.field) { return false; }
             field.name = evt.field;
@@ -482,7 +483,7 @@ export class SharedPlanPage implements OnInit, OnDestroy {
         }).eq('id', this.sharedPlan.id);
       }
     } catch {
-      Utils.showToast('Fehler beim Speichern', 'danger');
+      Utils.showToast(translate('plans.saveFailed'), 'danger');
     }
   }
 
@@ -492,9 +493,9 @@ export class SharedPlanPage implements OnInit, OnDestroy {
     const buttons: any[] = [
       { text: 'PDF (A4)', handler: () => this.exportPdf(false) },
       { text: 'PDF (2x A5)', handler: () => this.exportPdf(true) },
-      { text: 'Abbrechen', role: 'cancel' },
+      { text: translate('common.cancel'), role: 'cancel' },
     ];
-    const sheet = await this.actionSheetController.create({ header: 'Exportieren', buttons });
+    const sheet = await this.actionSheetController.create({ header: translate('planning.export'), buttons });
     await sheet.present();
   }
 
@@ -508,7 +509,7 @@ export class SharedPlanPage implements OnInit, OnDestroy {
         time: this.time, end: this.end, fields: this.fields, sideBySide, branding,
         dateLabel: this.planLabels.length ? `${dayjs(this.date).locale('de').format('dddd, DD.MM.YYYY')} · ${this.planLabels[this.planIndex]}` : undefined,
       },
-      this.planTitle || 'Ablaufplan',
+      this.planTitle || translate('plans.runSheet'),
     );
   }
 

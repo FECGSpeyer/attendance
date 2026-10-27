@@ -10,13 +10,14 @@ import { allPlans, planDate, planLabel, todayPlanIndex } from '../../utilities/p
 import { PlanChipsComponent } from '../plan-chips/plan-chips.component';
 import { groupDuration, isGroupHead } from '../../utilities/plan-groups';
 import { openPlanShareSheet } from '../plan-share-sheet/plan-share-sheet.component';
+import { translate, TranslocoModule } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-plan-viewer',
   templateUrl: './plan-viewer.component.html',
   styleUrls: ['./plan-viewer.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, PlanChipsComponent]
+  imports: [TranslocoModule, CommonModule, IonicModule, PlanChipsComponent]
 })
 export class PlanViewerComponent implements OnInit, OnDestroy {
   @Input() attendance: Partial<Attendance>;
@@ -298,7 +299,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
       });
       if (asBlob && blob) {
         this.db.sendPlanPerTelegram(blob, name, asImage);
-        Utils.showToast('Plan wird per Telegram gesendet...', 'success');
+        Utils.showToast(translate('planning.sendingTelegram'), 'success');
       }
       return;
     }
@@ -315,26 +316,26 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
 
     if (this.hasChatId) {
       buttons.push({
-        text: 'Per Telegram senden (PDF)',
+        text: translate('attendance.telegramPdf'),
         handler: () => this.sendTelegram(false)
       });
       buttons.push({
-        text: 'Per Telegram senden (PDF 2x A5)',
+        text: translate('attendance.telegramPdfA5'),
         handler: () => this.sendTelegram(false, true)
       });
       buttons.push({
-        text: 'Per Telegram senden (Bild)',
+        text: translate('attendance.telegramImage'),
         handler: () => this.sendTelegram(true)
       });
     }
 
     buttons.push({
-      text: 'Abbrechen',
+      text: translate('common.cancel'),
       role: 'destructive'
     });
 
     const actionSheet = await this.actionSheetController.create({
-      header: 'Exportieren',
+      header: translate('planning.export'),
       buttons
     });
 
@@ -343,7 +344,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
 
   async exportPdf(sideBySide: boolean = false) {
     if (!this.plan?.fields?.length) {
-      Utils.showToast('Kein Plan verfügbar', 'warning');
+      Utils.showToast(translate('planning.noPlan'), 'warning');
       return;
     }
 
@@ -363,7 +364,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
 
   async sendTelegram(asImage: boolean, sideBySide: boolean = false) {
     if (!this.plan?.fields?.length) {
-      Utils.showToast('Kein Plan verfügbar', 'warning');
+      Utils.showToast(translate('planning.noPlan'), 'warning');
       return;
     }
 
@@ -391,6 +392,6 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
       asImage
     );
 
-    Utils.showToast('Plan wird per Telegram gesendet...', 'success');
+    Utils.showToast(translate('planning.sendingTelegram'), 'success');
   }
 }

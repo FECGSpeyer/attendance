@@ -3,10 +3,10 @@
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="/tabs/settings/team-organization?tab=topics"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ isNew ? 'Neues Thema' : 'Thema' }}</ion-title>
+    <ion-title>{{ (isNew ? 'agenda.newTopic' : 'agenda.topic') | transloco }}</ion-title>
     <ion-buttons slot="end">
       @if (!isNew && item && isLeader) {
-        <ion-button (click)="deleteItem()" color="danger" aria-label="Thema löschen">
+        <ion-button (click)="deleteItem()" color="danger" [attr.aria-label]="'agenda.deleteTopic' | transloco">
           <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
         </ion-button>
       }
@@ -23,43 +23,43 @@
     @if (isLeader) {
       <ion-list [inset]="true">
         <ion-item>
-          <ion-input label="Titel" labelPlacement="stacked" [(ngModel)]="item.title" placeholder="Worum geht es?"
+          <ion-input [label]="'plans.title' | transloco" labelPlacement="stacked" [(ngModel)]="item.title" [placeholder]="'agenda.titlePlaceholder' | transloco"
             autocapitalize="sentences"></ion-input>
         </ion-item>
         <ion-item lines="none">
-          <ion-textarea label="Beschreibung" labelPlacement="stacked" [(ngModel)]="item.description"
-            placeholder="Hintergrund, Ziel, offene Fragen …" [autoGrow]="true" rows="3"
+          <ion-textarea [label]="'agenda.description' | transloco" labelPlacement="stacked" [(ngModel)]="item.description"
+            [placeholder]="'agenda.descriptionPlaceholder' | transloco" [autoGrow]="true" rows="3"
             autocapitalize="sentences"></ion-textarea>
         </ion-item>
       </ion-list>
 
       <ion-list [inset]="true">
         <ion-item>
-          <ion-select label="Status" interface="popover" [(ngModel)]="item.status">
+          <ion-select [label]="'agenda.status' | transloco" interface="popover" [(ngModel)]="item.status">
             @for (opt of statusOptions; track opt.value) {
               <ion-select-option [value]="opt.value">{{ opt.label }}</ion-select-option>
             }
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-select label="Priorität" interface="popover" [(ngModel)]="item.priority">
+          <ion-select [label]="'agenda.priority' | transloco" interface="popover" [(ngModel)]="item.priority">
             @for (opt of priorityOptions; track opt.value) {
               <ion-select-option [value]="opt.value">{{ opt.label }}</ion-select-option>
             }
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-select label="Verantwortlich" interface="modal" [(ngModel)]="item.responsible_person_id"
-            cancelText="Abbrechen">
-            <ion-select-option [value]="null">Niemand</ion-select-option>
+          <ion-select [label]="'agenda.responsible' | transloco" interface="modal" [(ngModel)]="item.responsible_person_id"
+            [cancelText]="'common.cancel' | transloco">
+            <ion-select-option [value]="null">{{ 'agenda.nobody' | transloco }}</ion-select-option>
             @for (person of persons; track person.id) {
               <ion-select-option [value]="person.id">{{ person.firstName }} {{ person.lastName }}</ion-select-option>
             }
           </ion-select>
         </ion-item>
         <ion-item lines="none">
-          <ion-input type="number" min="1" label="Dauer pro Sitzung (Min.)" class="ion-text-end"
-            [(ngModel)]="item.default_duration" placeholder="Standard"></ion-input>
+          <ion-input type="number" min="1" [label]="'agenda.durationPerSession' | transloco" class="ion-text-end"
+            [(ngModel)]="item.default_duration" [placeholder]="'agenda.default' | transloco"></ion-input>
         </ion-item>
       </ion-list>
     } @else {
@@ -75,7 +75,7 @@
         </ion-item>
         @if (responsibleName) {
           <ion-item>
-            <ion-label>Verantwortlich</ion-label>
+            <ion-label>{{ 'agenda.responsible' | transloco }}</ion-label>
             <ion-note slot="end">{{ responsibleName }}</ion-note>
           </ion-item>
         }
@@ -94,7 +94,7 @@
         <ion-item lines="none">
           <ion-icon name="bulb-outline" slot="start" color="medium"></ion-icon>
           <ion-label class="ion-text-wrap">
-            <h3>Vorschlag von {{ proposerName }}</h3>
+            <h3>{{ 'agenda.proposedBy' | transloco: { name: proposerName } }}</h3>
             @if (item.decision_note) {
               <p>{{ item.decision_note }}</p>
             }
@@ -107,7 +107,7 @@
       <div class="ion-padding-horizontal">
         <ion-button expand="block" (click)="planIntoAttendance()">
           <ion-icon name="calendar-outline" slot="start"></ion-icon>
-          Einplanen
+          {{ 'agenda.planIn' | transloco }}
         </ion-button>
       </div>
     }
@@ -115,7 +115,7 @@
     @if (!isNew) {
       <ion-list [inset]="true">
         <ion-list-header>
-          <ion-label>Verlauf</ion-label>
+          <ion-label>{{ 'agenda.history' | transloco }}</ion-label>
         </ion-list-header>
         @for (entry of history; track entry.attendance_id + entry.field_id; let last = $last) {
           <ion-item button detail="true" [lines]="last ? 'none' : 'full'" (click)="openHistory(entry)">
@@ -126,16 +126,16 @@
           </ion-item>
         } @empty {
           <ion-item lines="none">
-            <ion-label color="medium" class="ion-text-wrap">Noch in keinem Termin besprochen.</ion-label>
+            <ion-label color="medium" class="ion-text-wrap">{{ 'agenda.notDiscussed' | transloco }}</ion-label>
           </ion-item>
         }
       </ion-list>
 
       <ion-list [inset]="true">
         <ion-list-header>
-          <ion-label>Aufgaben</ion-label>
+          <ion-label>{{ 'agenda.tasks' | transloco }}</ion-label>
           @if (tasks.length) {
-            <ion-note class="list-header-note">{{ completedTaskCount }} von {{ tasks.length }} erledigt</ion-note>
+            <ion-note class="list-header-note">{{ 'agenda.tasksDone' | transloco: { done: completedTaskCount, total: tasks.length } }}</ion-note>
           }
         </ion-list-header>
         @for (task of tasks; track task.id) {
@@ -149,13 +149,13 @@
           </ion-item>
         } @empty {
           <ion-item [lines]="isLeader ? 'full' : 'none'">
-            <ion-label color="medium">Keine Aufgaben</ion-label>
+            <ion-label color="medium">{{ 'agenda.noTasks' | transloco }}</ion-label>
           </ion-item>
         }
         @if (isLeader) {
           <ion-item button detail="false" lines="none" (click)="createTask()">
             <ion-icon name="add-circle-outline" slot="start" color="primary"></ion-icon>
-            <ion-label color="primary">Aufgabe hinzufügen</ion-label>
+            <ion-label color="primary">{{ 'agenda.addTask' | transloco }}</ion-label>
           </ion-item>
         }
       </ion-list>
@@ -164,7 +164,7 @@
 
   @if (isLeader && item) {
     <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-      <ion-fab-button (click)="save()" aria-label="Speichern">
+      <ion-fab-button (click)="save()" [attr.aria-label]="'common.save' | transloco">
         <ion-icon name="save-outline"></ion-icon>
       </ion-fab-button>
     </ion-fab>

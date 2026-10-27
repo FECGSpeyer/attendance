@@ -18,7 +18,7 @@ import { PlanningPage } from 'src/app/planning/planning.page';
 import { Utils } from 'src/app/utilities/Utils';
 import { createAttendanceForType, personsForAttendanceType } from 'src/app/utilities/attendance-create';
 import { AttendanceStatus, DefaultAttendanceType, Role } from 'src/app/utilities/constants';
-import { averagePersons, dutyFill, dutyFillColor, dutyRequired, isDutyType, isoWeekday, occupiedCount, occupiesDuty, WEEKDAY_LONG } from 'src/app/utilities/duty';
+import { averagePersons, dutyFill, dutyFillColor, dutyRequired, isDutyType, isoWeekday, occupiedCount, occupiesDuty, weekdayLongNames } from 'src/app/utilities/duty';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { translate } from '@jsverse/transloco';
 
@@ -441,7 +441,7 @@ export class AttListPage implements OnInit {
     }
     return [...counts.entries()].sort((a, b) => a[0] - b[0]).map(([weekday, count]) => ({
       weekday,
-      label: WEEKDAY_LONG[weekday - 1],
+      label: weekdayLongNames()[weekday - 1],
       count,
       required: this.dutyRequiredByWeekday[weekday] ?? type?.duty_required ?? 1,
     }));

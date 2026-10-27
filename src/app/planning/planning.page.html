@@ -1,6 +1,6 @@
 ﻿<ion-header>
   <ion-toolbar>
-    <ion-title>Ablaufplan erstellen</ion-title>
+    <ion-title>{{ 'attendance.createRunSheet' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="shareCurrentPlan(false)" fill="clear">
         <ion-icon slot="icon-only" name="link-outline"></ion-icon>
@@ -15,7 +15,7 @@
 <ion-content color="light">
   <ion-list [inset]="true">
     <ion-list-header>
-      <ion-label>Zugehörige Anwesenheit</ion-label>
+      <ion-label>{{ 'planning.relatedAttendance' | transloco }}</ion-label>
       <ion-button (click)="resetPlan()" fill="clear">
         <ion-icon name="refresh"></ion-icon>
       </ion-button>
@@ -23,7 +23,7 @@
     <ion-item-group>
       @if (attendances.length) {
         <ion-item [lines]="attendance && notes ? '' : 'none'">
-          <ion-select interface="modal" label="Aktuelle" (ionChange)="onAttChange()" [(ngModel)]="attendance">
+          <ion-select interface="modal" [label]="'planning.current' | transloco" (ionChange)="onAttChange()" [(ngModel)]="attendance">
             @for (att of attendances; track att) {
               <ion-select-option [value]="att.id">{{ att.date | date:'dd.MM.yyyy' }} {{
               getAttTypeText(att) }}</ion-select-option>
@@ -33,37 +33,37 @@
       }
       @if (attendance && notes) {
         <ion-item lines="none">
-          <ion-label position="stacked">Anwesenheitsnotizen</ion-label>
+          <ion-label position="stacked">{{ 'planning.attendanceNotes' | transloco }}</ion-label>
           <ion-textarea autocapitalize="sentences" autoGrow="true" disabled="true">{{ notes }}</ion-textarea>
         </ion-item>
       }
       @if (attendance) {
         <ion-item lines="none">
           <ion-toggle [(ngModel)]="sharePlan" (ionChange)="toggleSharePlan()">
-            <ion-label>Plan mit Mitgliedern teilen</ion-label>
+            <ion-label>{{ 'planning.shareWithMembers' | transloco }}</ion-label>
           </ion-toggle>
         </ion-item>
         @if (db.organisation()) {
           <ion-item lines="none">
             <ion-toggle [(ngModel)]="isOrgPlan" (ionChange)="toggleOrgPlan()">
-              <ion-label>Organisationsplan</ion-label>
+              <ion-label>{{ 'planning.orgPlan' | transloco }}</ion-label>
             </ion-toggle>
           </ion-item>
         }
         <ion-item lines="none">
           <ion-input autocapitalize="sentences"
-            label="Ablaufplan Überschrift"
+            [label]="'planning.headingLabel' | transloco"
             labelPlacement="stacked"
             [(ngModel)]="planTitle"
             (ionBlur)="updateAttendance()"
-            placeholder="Standardtitel verwenden">
+            [placeholder]="'planning.defaultTitle' | transloco">
           </ion-input>
         </ion-item>
       }
       @if (hasBranding()) {
         <ion-item lines="none">
           <ion-toggle [(ngModel)]="includeBranding">
-            <ion-label>Branding einbeziehen</ion-label>
+            <ion-label>{{ 'planning.includeBranding' | transloco }}</ion-label>
           </ion-toggle>
         </ion-item>
       }
@@ -71,12 +71,12 @@
         <ion-col>
           <ion-button (click)="prevAtt()" size="small" fill="clear" expand="full">
             <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
-            Vorige
+            {{ 'planning.previous' | transloco }}
           </ion-button>
         </ion-col>
         <ion-col>
           <ion-button (click)="nextAtt()" size="small" fill="clear" expand="full">
-            Nächste
+            {{ 'planning.next' | transloco }}
             <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
           </ion-button>
         </ion-col>
@@ -86,53 +86,53 @@
 
   <ion-list [inset]="true">
     <ion-list-header>
-      <ion-label>Ablauf</ion-label>
+      <ion-label>{{ 'planning.runSheet' | transloco }}</ion-label>
       <ion-button id="add-trigger" fill="clear">
         <ion-icon name="add"></ion-icon>
       </ion-button>
       <ion-popover #addPopover class="add-popover" trigger="add-trigger" triggerAction="click">
         <ng-template>
           <ion-item (click)="addExtraField(addPopover)">
-            <ion-label>Feld hinzufügen</ion-label>
+            <ion-label>{{ 'planning.addField' | transloco }}</ion-label>
           </ion-item>
           <ion-item (click)="addGroup(addPopover)">
-            <ion-label>Programmblock hinzufügen</ion-label>
+            <ion-label>{{ 'planning.addBlock' | transloco }}</ion-label>
           </ion-item>
           <ion-item (click)="addNoteField(addPopover)">
-            <ion-label>Notizfeld hinzufügen</ion-label>
+            <ion-label>{{ 'planning.addNoteField' | transloco }}</ion-label>
           </ion-item>
           @if (!isGeneral) {
             <ion-item (click)="addCurrentSongs(addPopover)">
-              <ion-label>Aktuelle Werke hinzufügen</ion-label>
+              <ion-label>{{ 'planning.addCurrentSongs' | transloco }}</ion-label>
             </ion-item>
           }
           @if (songs.length && !isGeneral) {
             <ion-item (click)="openSongSelector(); addPopover.dismiss()">
-              <ion-label>Werk hinzufügen</ion-label>
+              <ion-label>{{ 'planning.addSong' | transloco }}</ion-label>
             </ion-item>
           }
           @if (canAddTopics) {
             <ion-item (click)="addPopover.dismiss(); openAgendaPicker()">
               <ion-icon name="list-circle-outline" slot="start" color="primary"></ion-icon>
-              <ion-label>Themen aufnehmen</ion-label>
+              <ion-label>{{ 'attendance.addTopics' | transloco }}</ion-label>
             </ion-item>
           }
           @if (currentAttTypeHasProtocol && !hasAgendaPlaceholder && planIndex === 0) {
             <ion-item (click)="addAgendaItemsPlaceholder(addPopover)" lines="none">
               <ion-icon name="git-commit-outline" slot="start" color="medium"></ion-icon>
-              <ion-label>Tagesordnung einfügen</ion-label>
+              <ion-label>{{ 'planning.insertAgenda' | transloco }}</ion-label>
             </ion-item>
           }
           @if (blockTemplates.length) {
             <ion-item-divider></ion-item-divider>
             <ion-item lines="none">
-              <ion-label><small><b>Programmblöcke</b></small></ion-label>
+              <ion-label><small><b>{{ 'planning.blocks' | transloco }}</b></small></ion-label>
             </ion-item>
             @for (tpl of blockTemplates; track tpl.id) {
               <ion-item button detail="false" (click)="insertBlockTemplate(tpl, addPopover)">
-                <ion-label>{{ tpl.name }} <ion-note>{{ templateMinutes(tpl) }} min</ion-note></ion-label>
+                <ion-label>{{ tpl.name }} <ion-note>{{ 'planning.minShort' | transloco: { min: templateMinutes(tpl) } }}</ion-note></ion-label>
                 @if (isAdmin) {
-                  <ion-button slot="end" fill="clear" color="medium" size="small" aria-label="Vorlage löschen"
+                  <ion-button slot="end" fill="clear" color="medium" size="small" [attr.aria-label]="'planning.deleteTemplate' | transloco"
                     (click)="$event.stopPropagation(); deleteBlockTemplate(tpl, addPopover)">
                     <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
                   </ion-button>
@@ -144,7 +144,7 @@
             <ion-item-divider></ion-item-divider>
             @if (availableTemplates.length) {
               <ion-item lines="none">
-                <ion-label><small><b>Vorlagen</b></small></ion-label>
+                <ion-label><small><b>{{ 'planning.templates' | transloco }}</b></small></ion-label>
               </ion-item>
               @for (tpl of availableTemplates; track tpl.title) {
                 <ion-item button (click)="applyTemplate(tpl, addPopover)">
@@ -154,11 +154,11 @@
             }
             @if (orgDefaultFields.length) {
               <ion-item lines="none">
-                <ion-label><small><b>Felder</b></small></ion-label>
+                <ion-label><small><b>{{ 'planning.fields' | transloco }}</b></small></ion-label>
               </ion-item>
               @for (f of orgDefaultFields; track f.name) {
                 <ion-item button (click)="addOrgField(f, addPopover)">
-                  <ion-label>{{ f.name }} <ion-note>{{ f.time }} min</ion-note></ion-label>
+                  <ion-label>{{ f.name }} <ion-note>{{ 'planning.minShort' | transloco: { min: f.time } }}</ion-note></ion-label>
                 </ion-item>
               }
             }
@@ -167,7 +167,7 @@
             <ion-item-divider></ion-item-divider>
             <ion-item button lines="none" (click)="addPlan(addPopover)">
               <ion-icon name="copy-outline" slot="start" color="medium"></ion-icon>
-              <ion-label color="medium">Weiteren Ablaufplan anlegen</ion-label>
+              <ion-label color="medium">{{ 'planning.addAnotherPlan' | transloco }}</ion-label>
             </ion-item>
           }
         </ng-template>
@@ -176,7 +176,7 @@
 
     @if (planLabels.length > 1) {
       <app-plan-chips [labels]="planLabels" [selected]="planIndex" (selectedChange)="selectPlan($event)">
-        <ion-button fill="clear" size="small" color="medium" (click)="showPlanOptions()" aria-label="Plan-Optionen">
+        <ion-button fill="clear" size="small" color="medium" (click)="showPlanOptions()" [attr.aria-label]="'planning.planOptions' | transloco">
           <ion-icon slot="icon-only" name="ellipsis-horizontal"></ion-icon>
         </ion-button>
       </app-plan-chips>
@@ -186,7 +186,7 @@
       <ng-template>
         <ion-header>
           <ion-toolbar>
-            <ion-title>Werk auswählen</ion-title>
+            <ion-title>{{ 'planning.chooseSong' | transloco }}</ion-title>
             <ion-buttons slot="end">
               <ion-button (click)="closeSongSelector()">
                 <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -198,7 +198,7 @@
               [(ngModel)]="songSearchTerm"
               (ionInput)="onSongSearch($event)"
               (ionClear)="resetSongSearch()"
-              placeholder="Werk suchen..."
+              [placeholder]="'attList.searchSong' | transloco"
               [debounce]="250">
             </ion-searchbar>
           </ion-toolbar>
@@ -208,7 +208,7 @@
             <ion-list [inset]="true">
               <ion-item lines="none">
                 <ion-label class="ion-text-center" color="medium">
-                  <p>Keine Werke gefunden</p>
+                  <p>{{ 'attList.noSongsFound' | transloco }}</p>
                 </ion-label>
               </ion-item>
             </ion-list>
@@ -233,7 +233,7 @@
 
     <ion-item-group>
       <ion-item>
-        <ion-label>Start</ion-label>
+        <ion-label>{{ 'attendance.startLabel' | transloco }}</ion-label>
         <ion-datetime-button datetime="datetime"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
@@ -255,7 +255,7 @@
           @if (row.addFor) {
             <ion-item class="group-child group-add" lines="full" button detail="false" (click)="addSubItem(row.addFor)">
               <ion-icon name="add" slot="start" color="primary"></ion-icon>
-              <ion-label color="primary">Unterpunkt hinzufügen</ion-label>
+              <ion-label color="primary">{{ 'planning.addSubItem' | transloco }}</ion-label>
             </ion-item>
           } @else {
           @let field = row.field;
@@ -265,10 +265,10 @@
               <ion-item class="agenda-marker" lines="full">
                 <ion-icon name="git-commit-outline" slot="start" color="medium"></ion-icon>
                 <ion-label color="medium">
-                  <p>Einfügeposition Tagesordnung</p>
+                  <p>{{ 'planning.agendaInsertPos' | transloco }}</p>
                 </ion-label>
                 @if (canAddTopics) {
-                  <ion-button slot="end" fill="clear" size="small" (click)="openAgendaPicker()">Themen aufnehmen</ion-button>
+                  <ion-button slot="end" fill="clear" size="small" (click)="openAgendaPicker()">{{ 'attendance.addTopics' | transloco }}</ion-button>
                 }
                 <ion-reorder slot="end"></ion-reorder>
               </ion-item>
@@ -286,7 +286,7 @@
                     <p class="field-info">{{ field.info }}</p>
                   }
                 </ion-label>
-                <ion-badge slot="end" class="group-duration">{{ groupMinutes(field) }} min</ion-badge>
+                <ion-badge slot="end" class="group-duration">{{ 'planning.minShort' | transloco: { min: groupMinutes(field) } }}</ion-badge>
                 <ion-reorder slot="end"></ion-reorder>
               </ion-item>
             } @else {
@@ -306,7 +306,7 @@
                 </ion-label>
                 @if (!field.id.includes('noteFld')) {
                   <ion-input autocapitalize="sentences" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
-                  placeholder="min" type="number" slot="end"></ion-input>
+                  [placeholder]="'planning.minPlaceholder' | transloco" type="number" slot="end"></ion-input>
                 }
                 <ion-reorder slot="end"></ion-reorder>
               </ion-item>
@@ -329,7 +329,7 @@
 
     @if (end) {
       <ion-item class="marginBottom">
-        <ion-label>Ende</ion-label>
+        <ion-label>{{ 'attendance.end' | transloco }}</ion-label>
         <ion-datetime-button datetime="datetimeend"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
@@ -353,7 +353,7 @@
   <ng-template>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Registerprobenplan</ion-title>
+        <ion-title>{{ 'planning.sectionalPlan' | transloco }}</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="planModal.dismiss(); isPlanModalOpen = false">
             <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -364,7 +364,7 @@
     <ion-content color="light">
       <ion-list [inset]="true">
         <ion-list-header>
-          <ion-label>Gruppen</ion-label>
+          <ion-label>{{ 'planning.groups' | transloco }}</ion-label>
           <ion-button fill="clear" (click)="addPlanGroup()" size="small">
             <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
           </ion-button>
@@ -373,7 +373,7 @@
         @for (group of planGroups; track trackByIndex($index); let last = $last) {
           <ion-item [lines]="last ? 'none' : ''">
             <ion-icon name="people-outline" slot="start" color="medium"></ion-icon>
-            <ion-input autocapitalize="sentences" [(ngModel)]="planGroups[$index]" placeholder="Gruppenname"></ion-input>
+            <ion-input autocapitalize="sentences" [(ngModel)]="planGroups[$index]" [placeholder]="'planning.groupName' | transloco"></ion-input>
             @if (planGroups.length > 2) {
               <ion-button slot="end" fill="clear" color="danger" (click)="removePlanGroup($index)">
                 <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
@@ -386,7 +386,7 @@
 
       <ion-list [inset]="true">
         <ion-list-header>
-          <ion-label>Dirigenten</ion-label>
+          <ion-label>{{ 'planning.conductors' | transloco }}</ion-label>
           <ion-button fill="clear" (click)="addPlanConductor()" size="small">
             <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
           </ion-button>
@@ -395,7 +395,7 @@
         @for (con of planConductors; track trackByIndex($index); let last = $last) {
           <ion-item [lines]="last ? 'none' : ''">
             <ion-icon name="person-outline" slot="start" color="medium"></ion-icon>
-            <ion-input autocapitalize="words" [(ngModel)]="planConductors[$index]" placeholder="Name"></ion-input>
+            <ion-input autocapitalize="words" [(ngModel)]="planConductors[$index]" [placeholder]="'planning.name' | transloco"></ion-input>
             @if (planConductors.length > 1) {
               <ion-button slot="end" fill="clear" color="danger" (click)="removePlanConductor($index)">
                 <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
@@ -409,7 +409,7 @@
       <ion-list [inset]="true">
         <ion-item lines="none">
           <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
-          <ion-input autocapitalize="sentences" label="Zeit in Minuten" value="60" #input type="number"></ion-input>
+          <ion-input autocapitalize="sentences" [label]="'planning.timeMinutes' | transloco" value="60" #input type="number"></ion-input>
         </ion-item>
       </ion-list>
 
@@ -417,18 +417,18 @@
         <ion-button [disabled]="isPlanExportDisabled(input.value)"
           (click)="createPlan(input.value, planModal)" expand="block">
           <ion-icon slot="start" name="document-outline"></ion-icon>
-          Exportieren
+          {{ 'planning.export' | transloco }}
         </ion-button>
         @if (db.tenantUser().telegram_chat_id) {
           <ion-button [disabled]="isPlanExportDisabled(input.value)"
             (click)="createPlan(input.value, planModal, true, false)" expand="block" fill="outline">
             <ion-icon slot="start" name="send-outline"></ion-icon>
-            Per Telegram (PDF)
+            {{ 'planning.telegramPdfShort' | transloco }}
           </ion-button>
           <ion-button [disabled]="isPlanExportDisabled(input.value)"
             (click)="createPlan(input.value, planModal, true, true)" expand="block" fill="outline">
             <ion-icon slot="start" name="image-outline"></ion-icon>
-            Per Telegram (Bild)
+            {{ 'planning.telegramImageShort' | transloco }}
           </ion-button>
         }
       </div>

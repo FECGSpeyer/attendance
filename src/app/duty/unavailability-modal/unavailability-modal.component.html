@@ -2,22 +2,22 @@
   <ion-toolbar>
     <ion-buttons slot="start">
       @if (editing) {
-        <ion-button (click)="editing = null">Zurück</ion-button>
+        <ion-button (click)="editing = null">{{ 'common.back' | transloco }}</ion-button>
       } @else {
-        <ion-button (click)="close()" aria-label="Schließen">
+        <ion-button (click)="close()" [attr.aria-label]="'common.close' | transloco">
           <ion-icon slot="icon-only" name="close"></ion-icon>
         </ion-button>
       }
     </ion-buttons>
     <ion-title>
-      Regelmäßig verhindert
+      {{ 'signout.regularlyUnavailable' | transloco }}
       @if (forOther && personName) {
         <div class="sub">{{ personName }}</div>
       }
     </ion-title>
     @if (editing) {
       <ion-buttons slot="end">
-        <ion-button [strong]="true" [disabled]="saving" (click)="save()">Speichern</ion-button>
+        <ion-button [strong]="true" [disabled]="saving" (click)="save()">{{ 'common.save' | transloco }}</ion-button>
       </ion-buttons>
     }
   </ion-toolbar>
@@ -26,7 +26,7 @@
 <ion-content color="light">
   @if (editing) {
     <ion-list [inset]="true">
-      <ion-list-header><ion-label>Wochentage</ion-label></ion-list-header>
+      <ion-list-header><ion-label>{{ 'duty.weekdays' | transloco }}</ion-label></ion-list-header>
       <div class="weekday-chips">
         @for (label of weekdayShort; track label; let i = $index) {
           <ion-chip [outline]="!editing.weekdays.includes(i + 1)" [color]="editing.weekdays.includes(i + 1) ? 'primary' : 'medium'"
@@ -36,7 +36,7 @@
     </ion-list>
 
     <ion-list [inset]="true">
-      <ion-list-header><ion-label>Für welche Termintypen?</ion-label></ion-list-header>
+      <ion-list-header><ion-label>{{ 'duty.forWhichTypes' | transloco }}</ion-label></ion-list-header>
       @for (t of types; track t.id) {
         <ion-item>
           <ion-checkbox [checked]="editing.type_ids?.includes(t.id)" (ionChange)="toggleType(t.id)" justify="start" labelPlacement="end">
@@ -45,20 +45,20 @@
         </ion-item>
       }
       <ion-item lines="none">
-        <ion-note class="small">Ohne Auswahl gilt die Regel für alle Termintypen.</ion-note>
+        <ion-note class="small">{{ 'duty.allTypesHint' | transloco }}</ion-note>
       </ion-item>
     </ion-list>
 
     <ion-list [inset]="true">
       <ion-item>
-        <ion-input label="Grund (optional)" labelPlacement="stacked" placeholder="z. B. Kinderstunde" [(ngModel)]="editing.reason"></ion-input>
+        <ion-input [label]="'duty.reasonOptional' | transloco" labelPlacement="stacked" [placeholder]="'duty.childrenHourPlaceholder' | transloco" [(ngModel)]="editing.reason"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-input type="date" label="Gültig bis (optional)" labelPlacement="stacked" [(ngModel)]="editing.valid_until"></ion-input>
+        <ion-input type="date" [label]="'duty.validUntil' | transloco" labelPlacement="stacked" [(ngModel)]="editing.valid_until"></ion-input>
       </ion-item>
     </ion-list>
     <p class="hint">
-      Neue Termine an diesen Tagen werden automatisch als entschuldigt eingetragen. Bei Diensten wirst du dann nicht eingeteilt.
+      {{ 'duty.ruleHint' | transloco }}
     </p>
   } @else {
     @if (loading) {
@@ -72,7 +72,7 @@
                 <h2>{{ weekdaysText(rule.weekdays) }}{{ rule.reason ? ' · ' + rule.reason : '' }}</h2>
                 <p>{{ typesText(rule) }} · {{ untilText(rule) }}</p>
               </ion-label>
-              <ion-button slot="end" fill="clear" color="danger" (click)="$event.stopPropagation(); remove(rule)" aria-label="Regel löschen">
+              <ion-button slot="end" fill="clear" color="danger" (click)="$event.stopPropagation(); remove(rule)" [attr.aria-label]="'duty.deleteRule' | transloco">
                 <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
               </ion-button>
             </ion-item>
@@ -80,13 +80,13 @@
         </ion-list>
       } @else {
         <div class="empty">
-          Noch keine Regel. Trag ein, an welchen Wochentagen {{ forOther ? 'die Person' : 'du' }} grundsätzlich nicht {{ forOther ? 'kann' : 'kannst' }}, z. B. mittwochs wegen der Kinderstunde.
+          {{ (forOther ? 'duty.noRuleOther' : 'duty.noRuleSelf') | transloco }}
         </div>
       }
       <div class="ion-padding">
         <ion-button expand="block" (click)="add()">
           <ion-icon slot="start" name="add"></ion-icon>
-          Regel hinzufügen
+          {{ 'duty.addRule' | transloco }}
         </ion-button>
       </div>
     }

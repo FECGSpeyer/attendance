@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular/lazy';
+import { TranslocoModule } from '@jsverse/transloco';
 
 /** Small chip row to switch between the Ablaufpläne of one Termin. */
 @Component({
@@ -8,7 +9,7 @@ import { IonicModule } from '@ionic/angular/lazy';
   templateUrl: './plan-chips.component.html',
   styleUrls: ['./plan-chips.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [TranslocoModule, CommonModule, IonicModule],
 })
 export class PlanChipsComponent {
   @Input() labels: string[] = [];

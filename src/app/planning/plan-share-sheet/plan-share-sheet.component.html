@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Ablaufplan teilen</ion-title>
+    <ion-title>{{ 'attendance.shareRunSheet' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -13,10 +13,10 @@
   <div class="ion-padding-horizontal ion-padding-top">
     <ion-segment [value]="scope" (ionChange)="scope = $any($event).detail.value">
       <ion-segment-button value="one">
-        <ion-label>Nur {{ currentLabel }}</ion-label>
+        <ion-label>{{ 'planning.onlyLabel' | transloco: { label: currentLabel } }}</ion-label>
       </ion-segment-button>
       <ion-segment-button value="all">
-        <ion-label>Alle {{ planCount }} Pläne</ion-label>
+        <ion-label>{{ 'planning.allPlans' | transloco: { count: planCount } }}</ion-label>
       </ion-segment-button>
     </ion-segment>
   </div>
@@ -24,25 +24,25 @@
   <ion-list [inset]="true">
     <ion-item button detail="false" (click)="choose('pdf')">
       <ion-icon name="document-outline" slot="start" color="primary"></ion-icon>
-      <ion-label>Exportieren (PDF)</ion-label>
+      <ion-label>{{ 'attendance.exportPdf' | transloco }}</ion-label>
     </ion-item>
     <ion-item button detail="false" [lines]="hasChatId ? 'full' : 'none'" (click)="choose('pdf2x')">
       <ion-icon name="documents-outline" slot="start" color="primary"></ion-icon>
-      <ion-label>Exportieren (PDF 2x A5)</ion-label>
+      <ion-label>{{ 'attendance.exportPdfA5' | transloco }}</ion-label>
     </ion-item>
     @if (hasChatId) {
       <ion-item button detail="false" (click)="choose('telegram')">
         <ion-icon name="paper-plane-outline" slot="start" color="primary"></ion-icon>
-        <ion-label>Per Telegram senden (PDF)</ion-label>
+        <ion-label>{{ 'attendance.telegramPdf' | transloco }}</ion-label>
       </ion-item>
       <ion-item button detail="false" [lines]="scope === 'one' ? 'full' : 'none'" (click)="choose('telegram2x')">
         <ion-icon name="paper-plane-outline" slot="start" color="primary"></ion-icon>
-        <ion-label>Per Telegram senden (PDF 2x A5)</ion-label>
+        <ion-label>{{ 'attendance.telegramPdfA5' | transloco }}</ion-label>
       </ion-item>
       @if (scope === 'one') {
         <ion-item button detail="false" lines="none" (click)="choose('telegramImage')">
           <ion-icon name="image-outline" slot="start" color="primary"></ion-icon>
-          <ion-label>Per Telegram senden (Bild)</ion-label>
+          <ion-label>{{ 'attendance.telegramImage' | transloco }}</ion-label>
         </ion-item>
       }
     }
