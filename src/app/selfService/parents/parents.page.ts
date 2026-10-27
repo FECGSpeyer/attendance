@@ -13,6 +13,7 @@ import { Attendance, AttendanceType, History, Person, PersonAttendance, Plan } f
 import { Utils } from 'src/app/utilities/Utils';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
+import { translate } from '@jsverse/transloco';
 
 interface KidStats {
   perc: number;
@@ -329,25 +330,25 @@ export class ParentsPage implements OnInit {
 
     let buttons = [
       {
-        text: 'Anmelden',
+        text: translate('signout.signIn'),
         handler: () => this.signin(attendance),
       },
       {
-        text: 'Abmelden',
+        text: translate('signout.signOut'),
         handler: () => {
           this.actionSheetController.dismiss();
           this.excusePicker.open(false, dayjs(attendance.date).isSame(dayjs(), 'day'));
         },
       },
       {
-        text: 'Verspätung eintragen',
+        text: translate('signout.enterLate'),
         handler: () => {
           this.actionSheetController.dismiss();
           this.excusePicker.open(true, dayjs(attendance.date).isSame(dayjs(), 'day'));
         },
       },
       {
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
         handler: () => { },
         role: 'destructive',
         data: {
@@ -358,17 +359,17 @@ export class ParentsPage implements OnInit {
 
     if (personAttendance) {
       if (personAttendance.status === AttendanceStatus.Present) {
-        buttons = buttons.filter((btn) => btn.text !== 'Anmelden');
+        buttons = buttons.filter((btn) => btn.text !== translate('signout.signIn'));
       } else if (personAttendance.status === AttendanceStatus.Absent) {
-        buttons = buttons.filter((btn) => btn.text !== 'Abmelden');
+        buttons = buttons.filter((btn) => btn.text !== translate('signout.signOut'));
       } else if (personAttendance.status === AttendanceStatus.Late) {
-        buttons = buttons.filter((btn) => btn.text !== 'Verspätung eintragen');
+        buttons = buttons.filter((btn) => btn.text !== translate('signout.enterLate'));
       }
     }
 
     const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === attendance.type_id);
     if (attType && !attType.available_statuses.includes(AttendanceStatus.Late)) {
-      buttons = buttons.filter((btn) => btn.text !== 'Verspätung eintragen');
+      buttons = buttons.filter((btn) => btn.text !== translate('signout.enterLate'));
     }
 
     // Add plan viewing option if share_plan is true
@@ -376,7 +377,7 @@ export class ParentsPage implements OnInit {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
-        text: 'Ablaufplan anzeigen',
+        text: translate('signout.showRunSheet'),
         handler: () => this.openPlanViewer(attendance),
       });
     }
@@ -385,7 +386,7 @@ export class ParentsPage implements OnInit {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
-        text: 'Beschreibung anzeigen',
+        text: translate('signout.showDescription'),
         handler: () => this.openDescription(attendance),
       });
     }
@@ -394,7 +395,7 @@ export class ParentsPage implements OnInit {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
-        text: 'Anhang öffnen',
+        text: translate('signout.openAttachment'),
         handler: () => this.openAttachment(attendance),
       });
     }
@@ -403,7 +404,7 @@ export class ParentsPage implements OnInit {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
-        text: 'Navigation öffnen',
+        text: translate('signout.openNavigation'),
         handler: () => Utils.openNavigation(attendance.place),
       });
     }
@@ -419,7 +420,7 @@ export class ParentsPage implements OnInit {
     await this.db.signout(this.selAttIds, reason, isLate, true);
     this.tracking.track(TrackingEvent.ParentSignOut, { count: this.selAttIds.length, isLate });
 
-    Utils.showToast(isLate ? 'Vielen Dank für die Info und Gottes Segen!' : 'Vielen Dank für die rechtzeitige Abmeldung und Gottes Segen!', 'success', 4000);
+    Utils.showToast(isLate ? translate('selfService.parentsThanksLate') : translate('selfService.parentsThanksSignout'), 'success', 4000);
 
     await this.refreshPersonAttendances();
   }
@@ -430,7 +431,7 @@ export class ParentsPage implements OnInit {
     }
     this.tracking.track(TrackingEvent.ParentSignIn, { count: this.selAttIds.length });
 
-    Utils.showToast('Danke für die Anmeldung 🙂', 'success', 4000);
+    Utils.showToast(translate('selfService.thanksForSignIn'), 'success', 4000);
 
     await this.refreshPersonAttendances();
   }

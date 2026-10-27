@@ -12,6 +12,7 @@ import { CrossTenantPersonAttendance, AttendanceType } from 'src/app/utilities/i
 import { Utils } from 'src/app/utilities/Utils';
 import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
+import { translate } from '@jsverse/transloco';
 
 type GroupingMode = 'chronological' | 'byTenant';
 
@@ -173,36 +174,36 @@ export class OverviewPage implements OnInit {
 
     let buttons = [
       {
-        text: 'Anmelden',
+        text: translate('signout.signIn'),
         handler: () => this.signin(attendance),
       },
       {
-        text: 'Anmelden mit Notiz',
+        text: translate('signout.signInWithNote'),
         handler: () => this.showNoteAlertForSignin(attendance),
       },
       {
-        text: 'Abmelden',
+        text: translate('signout.signOut'),
         handler: () => {
           this.actionSheetController.dismiss();
           this.excusePicker.open(false, this.isAttToday(attendance));
         },
       },
       {
-        text: 'Verspätung eintragen',
+        text: translate('signout.enterLate'),
         handler: () => {
           this.actionSheetController.dismiss();
           this.excusePicker.open(true, this.isAttToday(attendance));
         },
       },
       {
-        text: 'Notiz anpassen',
+        text: translate('signout.editNote'),
         handler: async () => {
           await this.showNoteAlert(attendance);
           this.actionSheetController.dismiss();
         },
       },
       {
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
         handler: () => { },
         role: 'destructive',
         data: { action: 'cancel' },
@@ -214,26 +215,26 @@ export class OverviewPage implements OnInit {
     const canSignin = this.isSigninOpen(attendance);
 
     if (attendance.text === 'X' || !canSignin) {
-      buttons = buttons.filter(btn => btn.text !== 'Anmelden' && btn.text !== 'Anmelden mit Notiz');
+      buttons = buttons.filter(btn => btn.text !== translate('signout.signIn') && btn.text !== translate('signout.signInWithNote'));
     } else if (attType && !attType.available_statuses.includes(AttendanceStatus.Excused)) {
-      buttons = buttons.filter(btn => btn.text !== 'Abmelden');
+      buttons = buttons.filter(btn => btn.text !== translate('signout.signOut'));
     } else if (attType && !attType.available_statuses.includes(AttendanceStatus.Late)) {
-      buttons = buttons.filter(btn => btn.text !== 'Verspätung eintragen');
+      buttons = buttons.filter(btn => btn.text !== translate('signout.enterLate'));
     }
 
     if (attendance.text !== 'X') {
-      buttons = buttons.filter(btn => btn.text !== 'Notiz anpassen');
+      buttons = buttons.filter(btn => btn.text !== translate('signout.editNote'));
     }
 
     if (attendance.text === 'E' || attendance.text === 'A') {
-      buttons = buttons.filter(btn => btn.text !== 'Abmelden' && btn.text !== 'Verspätung eintragen');
+      buttons = buttons.filter(btn => btn.text !== translate('signout.signOut') && btn.text !== translate('signout.enterLate'));
     }
 
     if (hideQuickActions) {
       const qa = this.quickActions(attendance);
-      const shown = ['Anmelden'];
-      if (qa.allowExcuse) { shown.push('Abmelden'); }
-      if (qa.allowLate) { shown.push('Verspätung eintragen'); }
+      const shown = [translate('signout.signIn')];
+      if (qa.allowExcuse) { shown.push(translate('signout.signOut')); }
+      if (qa.allowLate) { shown.push(translate('signout.enterLate')); }
       buttons = buttons.filter(btn => !shown.includes(btn.text));
     }
 
@@ -241,7 +242,7 @@ export class OverviewPage implements OnInit {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
-        text: 'Beschreibung anzeigen',
+        text: translate('signout.showDescription'),
         handler: () => this.openDescription(attendance),
       });
     }
@@ -250,7 +251,7 @@ export class OverviewPage implements OnInit {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
-        text: 'Anhang öffnen',
+        text: translate('signout.openAttachment'),
         handler: () => this.openAttachment(attendance.attendance),
       });
     }
@@ -259,13 +260,13 @@ export class OverviewPage implements OnInit {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
-        text: 'Dateiablage öffnen',
+        text: translate('signout.openFiles'),
         handler: () => this.openFilesFolder(attendance),
       });
     }
 
     if (buttons.length <= 1) {
-      Utils.showToast('Für diesen Termin sind keine Aktionen verfügbar.', 'warning', 4000);
+      Utils.showToast(translate('signout.noActions'), 'warning', 4000);
       return;
     }
 
@@ -279,19 +280,19 @@ export class OverviewPage implements OnInit {
 
   async showNoteAlertForSignin(attendance: CrossTenantPersonAttendance) {
     const alert = await this.alertController.create({
-      header: 'Notiz für Anmeldung',
+      header: translate('signout.noteForSignin'),
       inputs: [
         {
           name: 'note',
           type: 'textarea',
-          placeholder: 'Gib hier deine Notiz ein',
+          placeholder: translate('signout.enterNote'),
           value: '',
         },
       ],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Anmelden',
+          text: translate('signout.signIn'),
           handler: (data) => {
             this.signin(attendance, data.note);
           },
@@ -311,7 +312,7 @@ export class OverviewPage implements OnInit {
     );
     this.tracking.track(TrackingEvent.AttendanceCheckIn);
 
-    Utils.showToast('Schön, dass du dabei bist 🙂', 'success', 4000);
+    Utils.showToast(translate('signout.gladYouCome'), 'success', 4000);
     await this.loadAttendances(true);
   }
 
@@ -321,8 +322,8 @@ export class OverviewPage implements OnInit {
 
     Utils.showToast(
       isLate
-        ? 'Vielen Dank für die Info und Gottes Segen dir!'
-        : 'Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.',
+        ? translate('signout.thanksLate')
+        : translate('signout.thanksSignout'),
       'success',
       4000
     );
@@ -333,22 +334,22 @@ export class OverviewPage implements OnInit {
   async showNoteAlert(attendance: CrossTenantPersonAttendance) {
     const note = attendance.notes || '';
     const alert = await this.alertController.create({
-      header: 'Notiz anpassen',
+      header: translate('signout.editNote'),
       inputs: [
         {
           name: 'note',
           type: 'textarea',
-          placeholder: 'Gib hier deine Notiz ein',
+          placeholder: translate('signout.enterNote'),
           value: note,
         },
       ],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Speichern',
+          text: translate('common.save'),
           handler: async (data) => {
             await this.db.updateAttendanceNote(attendance.id!, data.note);
-            Utils.showToast('Notiz erfolgreich aktualisiert.', 'success', 4000);
+            Utils.showToast(translate('signout.noteUpdated'), 'success', 4000);
             await this.loadAttendances(true);
           },
         },
@@ -384,7 +385,7 @@ export class OverviewPage implements OnInit {
   getDeadlineText(att: CrossTenantPersonAttendance): string {
     if (!att.attendance?.deadline) {return '';}
     const deadline = dayjs(att.attendance.deadline);
-    return `Anmeldefrist: ${deadline.format('DD.MM.YYYY HH:mm')}`;
+    return translate('selfService.deadline', { date: deadline.format('DD.MM.YYYY HH:mm') });
   }
 
   getBadgeColor(att: CrossTenantPersonAttendance): string {

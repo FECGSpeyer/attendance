@@ -14,7 +14,7 @@
               <ion-item button detail="false" (click)="onTenantChange(tenant.id)">
                 <ion-label>{{ tenant.longName }}</ion-label>
                 @if (tenant.id === db.tenant()?.id) {
-                  <ion-badge slot="end" color="primary">Aktuell</ion-badge>
+                  <ion-badge slot="end" color="primary">{{ 'signout.current' | transloco }}</ion-badge>
                 }
               </ion-item>
             }
@@ -45,32 +45,32 @@
           <ion-content color="light">
             <ion-list [inset]="true">
               <ion-list-header>
-                <ion-label>Legende</ion-label>
+                <ion-label>{{ 'signout.legend' | transloco }}</ion-label>
               </ion-list-header>
               <ion-item-group>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-success">Zugesagt</span>
-                  <ion-label>Zugesagt / Anwesend</ion-label>
+                  <span slot="start" class="ev-pill ion-color-success">{{ 'signout.legendAccepted' | transloco }}</span>
+                  <ion-label>{{ 'signout.legendAcceptedPresent' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-warning">Entschuldigt</span>
-                  <ion-label>Entschuldigt</ion-label>
+                  <span slot="start" class="ev-pill ion-color-warning">{{ 'common.status.excused' | transloco }}</span>
+                  <ion-label>{{ 'common.status.excused' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-danger">Abwesend</span>
-                  <ion-label>Abwesend</ion-label>
+                  <span slot="start" class="ev-pill ion-color-danger">{{ 'common.status.absent' | transloco }}</span>
+                  <ion-label>{{ 'common.status.absent' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-tertiary">Verspätet</span>
-                  <ion-label>Verspätet anwesend</ion-label>
+                  <span slot="start" class="ev-pill ion-color-tertiary">{{ 'signout.legendLate' | transloco }}</span>
+                  <ion-label>{{ 'common.status.late' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-rosa">Verspätung gemeldet</span>
-                  <ion-label>Verspätung gemeldet (entschuldigt)</ion-label>
+                  <span slot="start" class="ev-pill ion-color-rosa">{{ 'signout.legendLateReported' | transloco }}</span>
+                  <ion-label>{{ 'signout.legendLateReportedExcused' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-medium">Neutral</span>
-                  <ion-label>Neutral</ion-label>
+                  <span slot="start" class="ev-pill ion-color-medium">{{ 'common.status.neutral' | transloco }}</span>
+                  <ion-label>{{ 'common.status.neutral' | transloco }}</ion-label>
                 </ion-item>
               </ion-item-group>
             </ion-list>
@@ -87,10 +87,9 @@
   <ion-card>
     <ion-card-content>
       @if (player) {
-      <h1 class="title">Shalom {{ player?.firstName }}!</h1>
+      <h1 class="title">{{ 'signout.greeting' | transloco: { name: player?.firstName } }}</h1>
       }
-      Deine Registrierung wurde erfolgreich übermittelt. Du wirst benachrichtigt, sobald
-      diese bearbeitet wurde.
+      {{ 'signout.registrationSubmitted' | transloco }}
     </ion-card-content>
   </ion-card>
 </ion-content>
@@ -114,18 +113,18 @@
            (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
     </ion-avatar>
     <div class="greet__text">
-      <h1>Shalom {{ player.firstName }}!</h1>
+      <h1>{{ 'signout.greeting' | transloco: { name: player.firstName } }}</h1>
       <p>
         @if (player.paused) {
-          <span class="greet__paused"><ion-icon name="pause-circle-outline"></ion-icon> Pausiert</span>
+          <span class="greet__paused"><ion-icon name="pause-circle-outline"></ion-icon> {{ 'signout.paused' | transloco }}</span>
         }
         @if (useDutyView) {
-          <span>Dein Dienstplan</span>
+          <span>{{ 'signout.yourDutyRoster' | transloco }}</span>
         } @else if (perc) {
-          <span class="greet__perc" [ngClass]="'ion-color-' + percColor(perc)">{{ perc }}% Anwesenheit</span>
+          <span class="greet__perc" [ngClass]="'ion-color-' + percColor(perc)">{{ 'signout.attendancePercent' | transloco: { perc: perc } }}</span>
         }
         @if (lateCount) {
-          <span>{{ lateCount }}× zu spät</span>
+          <span>{{ 'signout.lateCount' | transloco: { count: lateCount } }}</span>
         }
       </p>
     </div>
@@ -134,13 +133,13 @@
   @if (useDutyView) {
   <div class="duty-stats">
     <button class="duty-stat" (click)="scrollToSection('duty-mine')">
-      <b>{{ dutiesThisMonth }}</b><span>{{ dutiesThisMonth === 1 ? 'Dienst' : 'Dienste' }} diesen Monat</span>
+      <b>{{ dutiesThisMonth }}</b><span>{{ 'signout.dutiesThisMonth' | transloco: { count: dutiesThisMonth } }}</span>
     </button>
     <button class="duty-stat" [class.duty-stat--warn]="dutyRequests.length > 0" (click)="scrollToSection('duty-requests')">
-      <b>{{ dutyRequests.length }}</b><span>zu bestätigen</span>
+      <b>{{ dutyRequests.length }}</b><span>{{ 'signout.toConfirm' | transloco }}</span>
     </button>
     <button class="duty-stat" (click)="scrollToSection('duty-open')">
-      <b>{{ openDuties.length }}</b><span>offen im Team</span>
+      <b>{{ openDuties.length }}</b><span>{{ 'signout.openInTeam' | transloco }}</span>
     </button>
   </div>
   } @else if (upcomingSongs.length > 0 || canPlannedAbsence || inDutyCircle) {
@@ -149,7 +148,7 @@
       <button class="greet-tile" (click)="songsModalOpen = true">
         <span class="greet-tile__icon"><ion-icon name="musical-notes-outline"></ion-icon></span>
         <span>
-          <span class="greet-tile__title">Aktuelle Werke</span>
+          <span class="greet-tile__title">{{ 'signout.currentSongs' | transloco }}</span>
           <span class="greet-tile__sub">{{ upcomingSongs.length === 1 ? 'Nächster Termin' : upcomingSongs.length + ' Termine' }}</span>
         </span>
       </button>
@@ -158,8 +157,8 @@
       <button class="greet-tile" (click)="isAbsenceModalOpen = true">
         <span class="greet-tile__icon"><ion-icon name="calendar-outline"></ion-icon></span>
         <span>
-          <span class="greet-tile__title">Abwesenheit</span>
-          <span class="greet-tile__sub">melden</span>
+          <span class="greet-tile__title">{{ 'signout.absenceTileTitle' | transloco }}</span>
+          <span class="greet-tile__sub">{{ 'signout.absenceTileSub' | transloco }}</span>
         </span>
       </button>
     }
@@ -167,7 +166,7 @@
       <button class="greet-tile" (click)="isOpenDutiesModalOpen = true">
         <span class="greet-tile__icon"><ion-icon name="headset-outline"></ion-icon></span>
         <span>
-          <span class="greet-tile__title">Offene Dienste</span>
+          <span class="greet-tile__title">{{ 'signout.openDuties' | transloco }}</span>
           <span class="greet-tile__sub">{{ openDuties.length === 0 ? 'alles besetzt' : openDuties.length === 1 ? '1 offen' : openDuties.length + ' offen' }}</span>
         </span>
       </button>
@@ -177,7 +176,7 @@
 
   @if (dutyRequests.length) {
     <div class="ev-section" id="duty-requests">
-      <h2>Bitte bestätigen</h2>
+      <h2>{{ 'signout.pleaseConfirm' | transloco }}</h2>
       <span class="ev-section__count">{{ dutyRequests.length }}</span>
     </div>
     @for (att of dutyRequests; track att.attendance_id ?? att.id) {
@@ -190,12 +189,12 @@
           <div>
             <div class="ev-today__title" lang="de">{{ getEventTitle(att) }}</div>
             <div class="ev-today__meta">{{ getEventMeta(att, true, false) }}</div>
-            <span class="ev-pill ev-today__status ion-color-warning">Du bist eingeteilt</span>
+            <span class="ev-pill ev-today__status ion-color-warning">{{ 'signout.youAreAssigned' | transloco }}</span>
           </div>
         </div>
         <div class="ev-today__actions">
-          <ion-button color="success" (click)="confirmDuty(att)">Bestätigen</ion-button>
-          <ion-button fill="outline" color="primary" (click)="declineDuty(att)">Kann nicht</ion-button>
+          <ion-button color="success" (click)="confirmDuty(att)">{{ 'common.confirm' | transloco }}</ion-button>
+          <ion-button fill="outline" color="primary" (click)="declineDuty(att)">{{ 'signout.cannot' | transloco }}</ion-button>
         </div>
       </div>
     }
@@ -206,9 +205,9 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>Offene Dienste</ion-title>
+          <ion-title>{{ 'signout.openDuties' | transloco }}</ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="isOpenDutiesModalOpen = false">Schließen</ion-button>
+            <ion-button (click)="isOpenDutiesModalOpen = false">{{ 'common.close' | transloco }}</ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
@@ -221,19 +220,19 @@
                   <h2>{{ dutyTitle(t) }}</h2>
                   <p>{{ dutyMeta(t) }}</p>
                 </ion-label>
-                <ion-button slot="end" (click)="takeDuty(t)">Ich übernehme</ion-button>
+                <ion-button slot="end" (click)="takeDuty(t)">{{ 'signout.illTakeIt' | transloco }}</ion-button>
               </ion-item>
             }
           </ion-list>
         } @else {
-          <p class="ion-padding ion-text-center">Gerade sind alle Dienste besetzt. Danke!</p>
+          <p class="ion-padding ion-text-center">{{ 'signout.allDutiesFilled' | transloco }}</p>
         }
         <ion-list [inset]="true">
           <ion-item button detail="true" (click)="openUnavailability()">
             <ion-icon slot="start" name="calendar-clear-outline"></ion-icon>
             <ion-label>
-              <h2>Regelmäßig verhindert</h2>
-              <p>z. B. jeden Mittwoch wegen der Kinderstunde</p>
+              <h2>{{ 'signout.regularlyUnavailable' | transloco }}</h2>
+              <p>{{ 'signout.regularlyUnavailableHint' | transloco }}</p>
             </ion-label>
           </ion-item>
         </ion-list>
@@ -253,7 +252,7 @@
               <ion-icon name="close"></ion-icon>
             </ion-button>
           </ion-buttons>
-          <ion-title>Aktuelle Werke</ion-title>
+          <ion-title>{{ 'signout.currentSongs' | transloco }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="printAllCurrentFiles()">
               <ion-icon name="print-outline"></ion-icon>
@@ -276,7 +275,7 @@
               @if (his.song) {
               <ion-label>
                 <h2>{{ his.song.number }}. {{ his.song.name }}</h2>
-                <h3>Dirigent: {{ his.conductorName }}</h3>
+                <h3>{{ 'signout.conductor' | transloco: { name: his.conductorName } }}</h3>
               </ion-label>
               }
               @if (his.song.link) {
@@ -300,7 +299,7 @@
   @if (canPlannedAbsence && playerAbsences.length) {
   <ion-list [inset]="true">
     <ion-list-header>
-      <ion-label>Geplante Abwesenheiten</ion-label>
+      <ion-label>{{ 'signout.plannedAbsences' | transloco }}</ion-label>
     </ion-list-header>
     @for (absence of playerAbsences; track absence.id) {
     <ion-item>
@@ -323,7 +322,7 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>Beschreibung</ion-title>
+          <ion-title>{{ 'signout.description' | transloco }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="descriptionModal.dismiss()">
               <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -344,22 +343,22 @@
           <span class="ev-chip ev-chip--danger">{{ getDeadlineText(att) }}</span>
         }
         @if (att.notes) {
-          <span class="ev-chip">Notiz: {{ att.notes }}</span>
+          <span class="ev-chip">{{ 'signout.noteChip' | transloco: { note: att.notes } }}</span>
         }
         @if (hasPlan(att)) {
-          <button class="ev-chip" (click)="$event.stopPropagation(); openPlanViewer(att)"><ion-icon name="document-text-outline"></ion-icon> Ablaufplan</button>
+          <button class="ev-chip" (click)="$event.stopPropagation(); openPlanViewer(att)"><ion-icon name="document-text-outline"></ion-icon> {{ 'signout.runSheet' | transloco }}</button>
         }
         @if (att.attendance?.description) {
-          <button class="ev-chip" (click)="$event.stopPropagation(); openDescription(att)"><ion-icon name="information-circle-outline"></ion-icon> Infos</button>
+          <button class="ev-chip" (click)="$event.stopPropagation(); openDescription(att)"><ion-icon name="information-circle-outline"></ion-icon> {{ 'signout.infos' | transloco }}</button>
         }
         @if (att.attendance?.attachment_url) {
           <button class="ev-chip" (click)="$event.stopPropagation(); openAttachment(att.attendance)"><ion-icon name="attach-outline"></ion-icon> {{ att.attendance?.attachment_name || 'Anhang' }}</button>
         }
         @if (hasFilesFolder(att)) {
-          <button class="ev-chip" (click)="$event.stopPropagation(); openFilesFolder(att)"><ion-icon name="folder-outline"></ion-icon> Dateien</button>
+          <button class="ev-chip" (click)="$event.stopPropagation(); openFilesFolder(att)"><ion-icon name="folder-outline"></ion-icon> {{ 'signout.files' | transloco }}</button>
         }
         @if (att.attendance?.place) {
-          <button class="ev-chip" (click)="$event.stopPropagation(); openRoute(att)"><ion-icon name="navigate-outline"></ion-icon> Route</button>
+          <button class="ev-chip" (click)="$event.stopPropagation(); openRoute(att)"><ion-icon name="navigate-outline"></ion-icon> {{ 'signout.route' | transloco }}</button>
         }
       </div>
     }
@@ -367,7 +366,7 @@
 
   @if (useDutyView) {
     @if (nextDuty) {
-      <div class="ev-month">Nächster Dienst</div>
+      <div class="ev-month">{{ 'signout.nextDuty' | transloco }}</div>
       <div class="ev-today ev-today--static">
         <div class="ev-today__head">
           <div class="ev-tile">
@@ -378,7 +377,7 @@
             <div class="ev-today__title" lang="de">{{ getEventTitle(nextDuty) }}</div>
             <div class="ev-today__meta">{{ getEventMeta(nextDuty, true, false) }}</div>
             <div class="duty-team">
-              <span class="duty-chip duty-chip--me">Du</span>
+              <span class="duty-chip duty-chip--me">{{ 'signout.you' | transloco }}</span>
               @for (name of dutyTeam(nextDuty); track name) {
                 <span class="duty-chip">{{ name }}</span>
               }
@@ -387,15 +386,15 @@
         </div>
         <ng-container *ngTemplateOutlet="eventChips; context: { $implicit: nextDuty }"></ng-container>
         <div class="ev-today__actions">
-          <ion-button fill="outline" color="primary" (click)="declineDuty(nextDuty)">Kann doch nicht</ion-button>
+          <ion-button fill="outline" color="primary" (click)="declineDuty(nextDuty)">{{ 'signout.cannotAfterAll' | transloco }}</ion-button>
         </div>
       </div>
     }
 
     <div class="ev-section" id="duty-open">
-      <h2>Offene Dienste</h2>
+      <h2>{{ 'signout.openDuties' | transloco }}</h2>
       @if (openDuties.length > 3) {
-        <button class="ev-more-link duty-all" (click)="isOpenDutiesModalOpen = true">Alle {{ openDuties.length }}</button>
+        <button class="ev-more-link duty-all" (click)="isOpenDutiesModalOpen = true">{{ 'signout.allCount' | transloco: { count: openDuties.length } }}</button>
       }
     </div>
     <ion-list [inset]="true" class="ev-list">
@@ -409,23 +408,23 @@
             <h2>{{ dutyTitle(t) }}</h2>
             <p>
               @if (isUrgentDuty(t)) {
-                <span class="duty-urgent">Dringend</span> ·
+                <span class="duty-urgent">{{ 'signout.urgent' | transloco }}</span> ·
               }
               {{ dutyMeta(t) }}
             </p>
           </ion-label>
-          <ion-button slot="end" size="small" (click)="takeDuty(t)">Übernehmen</ion-button>
+          <ion-button slot="end" size="small" (click)="takeDuty(t)">{{ 'common.apply' | transloco }}</ion-button>
         </ion-item>
       } @empty {
         <ion-item lines="none">
-          <ion-label color="medium">Gerade sind alle Dienste besetzt. Danke!</ion-label>
+          <ion-label color="medium">{{ 'signout.allDutiesFilled' | transloco }}</ion-label>
         </ion-item>
       }
     </ion-list>
 
     @if (myDuties.length) {
       <div class="ev-section" id="duty-mine">
-        <h2>Meine Dienste</h2>
+        <h2>{{ 'signout.myDuties' | transloco }}</h2>
         <span class="ev-section__count">{{ myDuties.length }}</span>
       </div>
       <ion-list [inset]="true" class="ev-list">
@@ -437,9 +436,9 @@
             </div>
             <ion-label>
               <h2>{{ getEventTitle(att) }}</h2>
-              <p>{{ getEventMeta(att) }}@if (dutyTeam(att).length) { · mit {{ dutyTeam(att).join(', ') }}}</p>
+              <p>{{ getEventMeta(att) }}@if (dutyTeam(att).length) {{{ 'signout.withTeam' | transloco: { names: dutyTeam(att).join(', ') } }}}</p>
             </ion-label>
-            <span slot="end" class="ev-pill ion-color-success">bestätigt</span>
+            <span slot="end" class="ev-pill ion-color-success">{{ 'signout.confirmed' | transloco }}</span>
           </ion-item>
         }
       </ion-list>
@@ -451,7 +450,7 @@
       @if (otherTermineCount) {
         <ion-item button detail="false" (click)="showOtherTermine = !showOtherTermine">
           <ion-label>
-            <h2>Weitere Termine</h2>
+            <h2>{{ 'signout.moreEvents' | transloco }}</h2>
             <p>{{ otherTermineCount }} · {{ otherTermineNames }}</p>
           </ion-label>
           <ion-icon slot="end" [name]="showOtherTermine ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
@@ -459,12 +458,12 @@
       }
       <ion-item button detail="true" (click)="openUnavailability()">
         <ion-icon slot="start" name="calendar-clear-outline"></ion-icon>
-        <ion-label>Regelmäßig verhindert</ion-label>
+        <ion-label>{{ 'signout.regularlyUnavailable' | transloco }}</ion-label>
       </ion-item>
       @if (canPlannedAbsence) {
         <ion-item button detail="true" (click)="isAbsenceModalOpen = true">
           <ion-icon slot="start" name="calendar-outline"></ion-icon>
-          <ion-label>Abwesenheit melden</ion-label>
+          <ion-label>{{ 'signout.reportAbsence' | transloco }}</ion-label>
         </ion-item>
       }
     </ion-list>
@@ -497,24 +496,24 @@
       @if (quickActions(currentAttendance); as qa) {
         <div class="ev-today__actions">
           <ion-button [fill]="qa.present ? 'solid' : 'outline'" [color]="qa.present ? 'success' : 'primary'" [disabled]="!qa.canSignin"
-            (click)="handleSigninWithFields(currentAttendance)">Zusagen</ion-button>
+            (click)="handleSigninWithFields(currentAttendance)">{{ 'signout.accept' | transloco }}</ion-button>
           @if (qa.allowLate) {
             <ion-button [fill]="qa.late ? 'solid' : 'outline'" [color]="qa.late ? 'rosa' : 'primary'" [disabled]="qa.blocked"
-              (click)="quickSignout(currentAttendance, true)">Verspätung</ion-button>
+              (click)="quickSignout(currentAttendance, true)">{{ 'signout.lateButton' | transloco }}</ion-button>
           }
           @if (qa.allowExcuse) {
             <ion-button [fill]="qa.excused ? 'solid' : 'outline'" [color]="qa.excused ? 'warning' : 'primary'" [disabled]="qa.blocked"
-              (click)="quickSignout(currentAttendance, false)">Absagen</ion-button>
+              (click)="quickSignout(currentAttendance, false)">{{ 'signout.decline' | transloco }}</ion-button>
           }
         </div>
-        <button class="ev-more-link" (click)="presentActionSheetForChoice(currentAttendance, true)">Weitere Optionen</button>
+        <button class="ev-more-link" (click)="presentActionSheetForChoice(currentAttendance, true)">{{ 'signout.moreOptions' | transloco }}</button>
       }
     </div>
   }
 
   @if (actualAttendances?.length) {
     <div class="ev-section">
-      <h2>Anstehend</h2>
+      <h2>{{ 'signout.upcoming' | transloco }}</h2>
       <span class="ev-section__count">{{ actualAttendances.length }}</span>
     </div>
     @for (group of upcomingGroups; track group.key) {
@@ -528,7 +527,7 @@
               <span class="ev-tile__day">{{ day(att.date) }}</span>
             </div>
             <ion-label>
-              <h2>{{ getEventTitle(att) }}@if (isDutyPa(att)) { <span class="ev-chip duty-tag"><ion-icon name="headset-outline"></ion-icon> Dienst</span>}</h2>
+              <h2>{{ getEventTitle(att) }}@if (isDutyPa(att)) { <span class="ev-chip duty-tag"><ion-icon name="headset-outline"></ion-icon> {{ 'signout.duty' | transloco }}</span>}</h2>
               @if (getEventMeta(att); as meta) {
                 <p>{{ meta }}</p>
               }
@@ -550,17 +549,17 @@
 
   @if (pastAttendances.length) {
     <div class="ev-section">
-      <h2>Vergangen</h2>
+      <h2>{{ 'signout.past' | transloco }}</h2>
       <span class="ev-section__count">{{ pastAttendances.length }}</span>
     </div>
     <ion-list [inset]="true" class="ev-list">
       <div class="ev-summary">
-        <span class="ev-summary__main"><span class="ev-summary__value">{{ perc }}%</span><span class="ev-summary__label">Anwesenheit</span></span>
+        <span class="ev-summary__main"><span class="ev-summary__value">{{ perc }}%</span><span class="ev-summary__label">{{ 'signout.attendance' | transloco }}</span></span>
         @if (lateCount) {
-          <span class="ev-summary__label">{{ lateCount }}× zu spät</span>
+          <span class="ev-summary__label">{{ 'signout.lateCount' | transloco: { count: lateCount } }}</span>
         }
       </div>
-      <div class="ev-dots" aria-label="Status der letzten Termine">
+      <div class="ev-dots" [attr.aria-label]="'signout.lastEventsStatus' | transloco">
         @for (att of pastAttendances.slice(0, 12); track att.attendance_id) {
           <span [ngClass]="'ion-color-' + statusColorOf(att)" [title]="getReadableDate(att.date, att.typeId) + ': ' + statusLabelOf(att, true)"></span>
         }
@@ -577,7 +576,7 @@
             <p>{{ getReadableDate(att.date, att.typeId) }}</p>
           </ion-label>
           @if (hasFilesFolder(att)) {
-            <ion-button slot="end" fill="clear" (click)="openFilesFolder(att); $event.stopPropagation()" aria-label="Dateiablage öffnen">
+            <ion-button slot="end" fill="clear" (click)="openFilesFolder(att); $event.stopPropagation()" [attr.aria-label]="'signout.openFiles' | transloco">
               <ion-icon slot="icon-only" name="folder-open-outline"></ion-icon>
             </ion-button>
           }
@@ -597,7 +596,7 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>Pausieren</ion-title>
+          <ion-title>{{ 'signout.pause' | transloco }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="dismissPauseModal()">
               <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -607,18 +606,18 @@
       </ion-header>
       <ion-content class="ion-padding">
         <ion-item>
-          <ion-textarea autocapitalize="sentences" label="Grund" labelPlacement="stacked" [(ngModel)]="pauseReason"
-            placeholder="Warum möchtest du pausieren?" rows="3"></ion-textarea>
+          <ion-textarea autocapitalize="sentences" [label]="'excuse.reason' | transloco" labelPlacement="stacked" [(ngModel)]="pauseReason"
+            [placeholder]="'signout.pauseReasonPlaceholder' | transloco" rows="3"></ion-textarea>
         </ion-item>
         <ion-accordion-group>
           <ion-accordion value="date">
             <ion-item slot="header" color="light">
               <ion-label>
-                <h3>Pausiert bis (optional)</h3>
+                <h3>{{ 'signout.pausedUntil' | transloco }}</h3>
                 @if (pauseUntil) {
                   <p>{{ pauseUntil | date:'dd.MM.yyyy' }}</p>
                 } @else {
-                  <p>Kein Enddatum gewählt</p>
+                  <p>{{ 'signout.noEndDate' | transloco }}</p>
                 }
               </ion-label>
               @if (pauseUntil) {
@@ -639,7 +638,7 @@
           </ion-accordion>
         </ion-accordion-group>
         <ion-button expand="block" color="warning" class="ion-margin-top" (click)="confirmPause()">
-          Pausieren bestätigen
+          {{ 'signout.confirmPause' | transloco }}
         </ion-button>
       </ion-content>
     </ng-template>
@@ -650,7 +649,7 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>Abwesenheit melden</ion-title>
+          <ion-title>{{ 'signout.reportAbsence' | transloco }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="dismissAbsenceModal()">
               <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -661,17 +660,17 @@
       <ion-content>
         <ion-list [inset]="true" style="margin-top: 12px;">
           <ion-item>
-            <ion-label position="stacked">Grund *</ion-label>
+            <ion-label position="stacked">{{ 'signout.reasonRequired' | transloco }}</ion-label>
             <ion-textarea autocapitalize="sentences" [(ngModel)]="absenceReason"
-              placeholder="z.B. Urlaub, Krankheit..." [autoGrow]="true"></ion-textarea>
+              [placeholder]="'signout.reasonPlaceholder' | transloco" [autoGrow]="true"></ion-textarea>
           </ion-item>
         </ion-list>
 
         <div class="range-picker-header">
           @if (!absenceFrom) {
-            <span class="range-hint"><ion-icon name="calendar-outline"></ion-icon> Starttag wählen</span>
+            <span class="range-hint"><ion-icon name="calendar-outline"></ion-icon> {{ 'signout.chooseStart' | transloco }}</span>
           } @else if (!absenceUntil) {
-            <span class="range-hint"><ion-icon name="calendar-outline"></ion-icon> Endtag wählen</span>
+            <span class="range-hint"><ion-icon name="calendar-outline"></ion-icon> {{ 'signout.chooseEnd' | transloco }}</span>
           } @else {
             <span class="range-selected">
               <ion-icon name="calendar-outline"></ion-icon>
@@ -691,14 +690,14 @@
 
         @if (canSelfPause) {
         <ion-note class="ion-padding" color="warning" style="display: block; margin-top: 8px;">
-          Für längere Abwesenheiten empfiehlt sich die Pausieren-Funktion, damit du nicht in neuen Terminen erscheinst.
+          {{ 'signout.longAbsenceHint' | transloco }}
         </ion-note>
         }
 
         <ion-button expand="block" style="margin: 8px 16px 16px;" (click)="confirmAbsence()"
           [disabled]="!absenceReason || !absenceFrom || !absenceUntil">
           <ion-icon slot="start" name="calendar-outline"></ion-icon>
-          Abwesenheit eintragen
+          {{ 'signout.enterAbsence' | transloco }}
         </ion-button>
       </ion-content>
     </ng-template>
@@ -714,7 +713,7 @@
           <ion-title>{{ regFieldsMode === 'edit' ? 'Anmeldefelder' : 'Anmeldung' }}</ion-title>
           @if (regFieldsMode === 'edit') {
             <ion-buttons slot="end">
-              <ion-button (click)="cancelRegFieldsEdit()">Abbrechen</ion-button>
+              <ion-button (click)="cancelRegFieldsEdit()">{{ 'common.cancel' | transloco }}</ion-button>
             </ion-buttons>
           }
         </ion-toolbar>

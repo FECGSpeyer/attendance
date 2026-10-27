@@ -14,7 +14,7 @@
               <ion-item button detail="false" (click)="onTenantChange(tenant.id)">
                 <ion-label>{{ tenant.longName }}</ion-label>
                 @if (tenant.id === db.tenant()?.id) {
-                  <ion-badge slot="end" color="primary">Aktuell</ion-badge>
+                  <ion-badge slot="end" color="primary">{{ 'signout.current' | transloco }}</ion-badge>
                 }
               </ion-item>
             }
@@ -33,32 +33,32 @@
           <ion-content color="light">
             <ion-list [inset]="true">
               <ion-list-header>
-                <ion-label>Legende</ion-label>
+                <ion-label>{{ 'signout.legend' | transloco }}</ion-label>
               </ion-list-header>
               <ion-item-group>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-success">Zugesagt</span>
-                  <ion-label>Zugesagt / Anwesend</ion-label>
+                  <span slot="start" class="ev-pill ion-color-success">{{ 'signout.legendAccepted' | transloco }}</span>
+                  <ion-label>{{ 'signout.legendAcceptedPresent' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-warning">Entschuldigt</span>
-                  <ion-label>Entschuldigt</ion-label>
+                  <span slot="start" class="ev-pill ion-color-warning">{{ 'common.status.excused' | transloco }}</span>
+                  <ion-label>{{ 'common.status.excused' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-danger">Abwesend</span>
-                  <ion-label>Abwesend</ion-label>
+                  <span slot="start" class="ev-pill ion-color-danger">{{ 'common.status.absent' | transloco }}</span>
+                  <ion-label>{{ 'common.status.absent' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-tertiary">Verspätet</span>
-                  <ion-label>Verspätet anwesend</ion-label>
+                  <span slot="start" class="ev-pill ion-color-tertiary">{{ 'signout.legendLate' | transloco }}</span>
+                  <ion-label>{{ 'common.status.late' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-rosa">Verspätung gemeldet</span>
-                  <ion-label>Verspätung gemeldet (entschuldigt)</ion-label>
+                  <span slot="start" class="ev-pill ion-color-rosa">{{ 'signout.legendLateReported' | transloco }}</span>
+                  <ion-label>{{ 'signout.legendLateReportedExcused' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                  <span slot="start" class="ev-pill ion-color-medium">Neutral</span>
-                  <ion-label>Neutral</ion-label>
+                  <span slot="start" class="ev-pill ion-color-medium">{{ 'common.status.neutral' | transloco }}</span>
+                  <ion-label>{{ 'common.status.neutral' | transloco }}</ion-label>
                 </ion-item>
               </ion-item-group>
             </ion-list>
@@ -87,8 +87,8 @@
   @if (kids.length > 0) {
     <ion-card>
       <ion-card-content>
-        <h1 class="title">Shalom!</h1>
-        <p>Du verwaltest {{ kids.length }} {{ kids.length === 1 ? 'Kind' : 'Kinder' }}:</p>
+        <h1 class="title">{{ 'selfService.shalom' | transloco }}</h1>
+        <p>{{ 'selfService.youManageKids' | transloco: { count: kids.length } }}</p>
         @for (kid of kids; track kid.id) {
           <ion-chip>
             <ion-label>{{ kid.firstName }}</ion-label>
@@ -102,7 +102,7 @@
         @if (upcomingSongs.length > 0) {
           <br>
           <ion-button fill="clear" size="small" (click)="songsModalOpen = true">
-            Aktuelle Werke anzeigen
+            {{ 'selfService.showCurrentSongs' | transloco }}
           </ion-button>
         }
       </ion-card-content>
@@ -122,7 +122,7 @@
               <ion-icon name="close"></ion-icon>
             </ion-button>
           </ion-buttons>
-          <ion-title>Aktuelle Werke</ion-title>
+          <ion-title>{{ 'signout.currentSongs' | transloco }}</ion-title>
         </ion-toolbar>
       </ion-header>
       <ion-content color="light">
@@ -139,7 +139,7 @@
                   @if (his.song) {
                     <ion-label>
                       <h2>{{ his.song.number }}. {{ his.song.name }}</h2>
-                      <h3>Dirigent: {{ his.conductorName }}</h3>
+                      <h3>{{ 'signout.conductor' | transloco: { name: his.conductorName } }}</h3>
                     </ion-label>
                   }
                   @if (his.song?.link) {
@@ -162,7 +162,7 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>Beschreibung</ion-title>
+          <ion-title>{{ 'signout.description' | transloco }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="descriptionModal.dismiss()">
               <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -180,13 +180,13 @@
     @if (hasPlan(att) || att.description || att.attachment_url) {
       <div class="ev-chips">
         @if (hasPlan(att)) {
-          <button class="ev-chip" (click)="openPlanViewer(att); $event.stopPropagation()"><ion-icon name="document-text-outline"></ion-icon> Ablaufplan</button>
+          <button class="ev-chip" (click)="openPlanViewer(att); $event.stopPropagation()"><ion-icon name="document-text-outline"></ion-icon> {{ 'signout.runSheet' | transloco }}</button>
         }
         @if (att.description) {
-          <button class="ev-chip" (click)="openDescription(att); $event.stopPropagation()"><ion-icon name="information-circle-outline"></ion-icon> Infos</button>
+          <button class="ev-chip" (click)="openDescription(att); $event.stopPropagation()"><ion-icon name="information-circle-outline"></ion-icon> {{ 'signout.infos' | transloco }}</button>
         }
         @if (att.attachment_url) {
-          <button class="ev-chip" (click)="openAttachment(att); $event.stopPropagation()"><ion-icon name="attach-outline"></ion-icon> Anhang</button>
+          <button class="ev-chip" (click)="openAttachment(att); $event.stopPropagation()"><ion-icon name="attach-outline"></ion-icon> {{ 'selfService.attachment' | transloco }}</button>
         }
       </div>
     }
@@ -216,7 +216,7 @@
             <ion-label class="ev-kid-name">
               <h2>{{ pa.person.firstName }}</h2>
               @if (pa.notes) {
-                <p>Notiz: {{ pa.notes }}</p>
+                <p>{{ 'signout.noteChip' | transloco: { note: pa.notes } }}</p>
               }
             </ion-label>
             <span class="ev-pill" [ngClass]="'ion-color-' + statusColorOf(pa.status)">{{ statusLabelOf(pa.status) }}</span>
@@ -224,14 +224,14 @@
         }
       </div>
       @if (kids.length !== 1) {
-        <ion-button expand="block" fill="outline" (click)="openActionSheet(currentAttendance, true)">Alle Kinder an- bzw. abmelden</ion-button>
+        <ion-button expand="block" fill="outline" (click)="openActionSheet(currentAttendance, true)">{{ 'selfService.allKidsSignInOut' | transloco }}</ion-button>
       }
     </div>
   }
 
   @if (upcomingAttendances.length > 0) {
     <div class="ev-section">
-      <h2>Anstehend</h2>
+      <h2>{{ 'signout.upcoming' | transloco }}</h2>
       <span class="ev-section__count">{{ upcomingAttendances.length }}</span>
     </div>
     @for (group of upcomingGroups; track group.key) {
@@ -251,7 +251,7 @@
               <ng-container *ngTemplateOutlet="eventChips; context: { $implicit: att }"></ng-container>
             </ion-label>
             @if (kids.length !== 1) {
-              <ion-button slot="end" fill="clear" (click)="openActionSheet(att, true)">Alle</ion-button>
+              <ion-button slot="end" fill="clear" (click)="openActionSheet(att, true)">{{ 'common.all' | transloco }}</ion-button>
             }
           </ion-item>
           <div class="ev-kids">
@@ -269,7 +269,7 @@
 
   @if (pastAttendances.length > 0) {
     <div class="ev-section">
-      <h2>Vergangen</h2>
+      <h2>{{ 'signout.past' | transloco }}</h2>
       <span class="ev-section__count">{{ pastAttendances.length }}</span>
     </div>
     <ion-list [inset]="true" class="ev-list">

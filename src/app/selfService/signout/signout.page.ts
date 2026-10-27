@@ -20,6 +20,7 @@ import { PrintService } from 'src/app/services/print/print.service';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
 import { MyTasksComponent } from 'src/app/tasks/my-tasks/my-tasks.component';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-signout',
@@ -82,7 +83,7 @@ export class SignoutPage implements OnInit {
   /** Dienstplan: I am in the circle of at least one upcoming duty. */
   public inDutyCircle = false;
   public isOpenDutiesModalOpen = false;
-  /** "Meine Dienste" layout (C4): tenant switch on and the person is in a duty circle. */
+  /** translate('signout.myDuties') layout (C4): tenant switch on and the person is in a duty circle. */
   public useDutyView = false;
   public nextDuty: PersonAttendance | undefined;
   public myDuties: PersonAttendance[] = [];
@@ -221,7 +222,7 @@ export class SignoutPage implements OnInit {
         });
       }
 
-      Utils.showToast(isLate ? 'Vielen Dank für die Info und Gottes Segen dir!' : 'Vielen Dank für deine rechtzeitige Abmeldung und Gottes Segen dir.', 'success', 4000);
+      Utils.showToast(isLate ? translate('signout.thanksLate') : translate('signout.thanksSignout'), 'success', 4000);
 
       await this.getAttendances();
     } finally {
@@ -232,22 +233,22 @@ export class SignoutPage implements OnInit {
   async showNoteAlertForSignin(attendance: PersonAttendance) {
     let note = '';
     const alert = await this.alertController.create({
-      header: 'Notiz für Anmeldung',
+      header: translate('signout.noteForSignin'),
       inputs: [
         {
           name: 'note',
           type: 'textarea',
-          placeholder: 'Gib hier deine Notiz ein',
+          placeholder: translate('signout.enterNote'),
           value: note,
         },
       ],
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel',
         },
         {
-          text: 'Anmelden',
+          text: translate('signout.signIn'),
           handler: (data) => {
             note = data.note;
             this.handleSigninWithFields(attendance, note);
@@ -260,7 +261,7 @@ export class SignoutPage implements OnInit {
   }
 
   async signin(attendance: PersonAttendance, notes: string = '') {
-    // "Zusagen" on a duty I was assigned to confirms it.
+    // translate('signout.accept') on a duty I was assigned to confirms it.
     if (attendance.duty_state === 'requested') {
       await this.confirmDuty(attendance);
       return;
@@ -271,7 +272,7 @@ export class SignoutPage implements OnInit {
       notes
     );
 
-    Utils.showToast('Schön, dass du dabei bist 🙂', 'success', 4000);
+    Utils.showToast(translate('signout.gladYouCome'), 'success', 4000);
 
     await this.getAttendances();
   }
@@ -468,12 +469,12 @@ export class SignoutPage implements OnInit {
   }
 
   dutyTitle(t: DutyTermin): string {
-    return t.attendance.typeInfo || t.type?.name || 'Dienst';
+    return t.attendance.typeInfo || t.type?.name || translate('signout.duty');
   }
 
   async confirmDuty(att: PersonAttendance): Promise<void> {
     await this.db.dutySvc.confirm(att.id, this.db.user?.id);
-    Utils.showToast('Danke, dein Dienst ist bestätigt 🙂', 'success', 3000);
+    Utils.showToast(translate('signout.dutyConfirmed'), 'success', 3000);
     await this.getAttendances();
   }
 
@@ -485,13 +486,13 @@ export class SignoutPage implements OnInit {
     const result = await this.db.dutySvc.take(t.attendance.id, this.db.tenant().id);
     switch (result) {
       case 'ok':
-        Utils.showToast('Danke, du bist eingetragen 🙂', 'success', 3000);
+        Utils.showToast(translate('signout.dutySignedUp'), 'success', 3000);
         break;
       case 'full':
-        Utils.showToast('Jemand war schneller, der Dienst ist schon voll.', 'warning', 4000);
+        Utils.showToast(translate('signout.dutyFull'), 'warning', 4000);
         break;
       default:
-        Utils.showToast('Du kannst diesen Dienst nicht übernehmen.', 'warning', 4000);
+        Utils.showToast(translate('signout.dutyNotAllowed'), 'warning', 4000);
     }
     await this.getAttendances();
     if (!this.openDuties.length) {
@@ -564,56 +565,56 @@ export class SignoutPage implements OnInit {
 
     let buttons = [
       {
-        text: isExcused ? 'Abmeldung zurücknehmen' : 'Anmelden',
+        text: isExcused ? translate('signout.undoSignout') : translate('signout.signIn'),
         handler: () => this.handleSigninWithFields(attendance),
       },
       {
-        text: 'Anmelden mit Notiz',
+        text: translate('signout.signInWithNote'),
         handler: () => this.showNoteAlertForSignin(attendance),
       },
       {
-        text: 'Abmelden',
+        text: translate('signout.signOut'),
         handler: () => {
           this.actionSheetController.dismiss();
           this.excusePicker.open(false, this.isAttToday(attendance));
         },
       },
       {
-        text: 'Verspätung eintragen',
+        text: translate('signout.enterLate'),
         handler: () => {
           this.actionSheetController.dismiss();
           this.excusePicker.open(true, this.isAttToday(attendance));
         },
       },
       {
-        text: 'Anmeldefelder anpassen',
+        text: translate('signout.editRegistrationFields'),
         handler: () => this.handleSigninWithFields(attendance, '', 'edit'),
       },
       {
-        text: 'Notiz anpassen',
+        text: translate('signout.editNote'),
         handler: async () => {
           let note = attendance.notes || '';
           const alert = await this.alertController.create({
-            header: 'Notiz anpassen',
+            header: translate('signout.editNote'),
             inputs: [
               {
                 name: 'note',
                 type: 'textarea',
-                placeholder: 'Gib hier deine Notiz ein',
+                placeholder: translate('signout.enterNote'),
                 value: note,
               },
             ],
             buttons: [
               {
-                text: 'Abbrechen',
+                text: translate('common.cancel'),
                 role: 'cancel',
               },
               {
-                text: 'Speichern',
+                text: translate('common.save'),
                 handler: async (data) => {
                   note = data.note;
                   await this.db.updateAttendanceNote(attendance.id, note);
-                  Utils.showToast('Notiz erfolgreich aktualisiert.', 'success', 4000);
+                  Utils.showToast(translate('signout.noteUpdated'), 'success', 4000);
                   await this.getAttendances();
                 },
               },
@@ -625,7 +626,7 @@ export class SignoutPage implements OnInit {
         },
       },
       {
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
         handler: () => { },
         role: 'destructive',
         data: {
@@ -639,36 +640,36 @@ export class SignoutPage implements OnInit {
     const canSignin = this.isSigninOpen(attendance);
 
     if (attendance.text === 'X' || !canSignin) {
-      buttons = buttons.filter((btn) => btn.text !== 'Anmelden' && btn.text !== 'Abmeldung zurücknehmen' && btn.text !== 'Anmelden mit Notiz');
+      buttons = buttons.filter((btn) => btn.text !== translate('signout.signIn') && btn.text !== translate('signout.undoSignout') && btn.text !== translate('signout.signInWithNote'));
     }
     if (attType && !attType.available_statuses.includes(AttendanceStatus.Excused)) {
-      buttons = buttons.filter((btn) => btn.text !== 'Abmelden');
+      buttons = buttons.filter((btn) => btn.text !== translate('signout.signOut'));
     }
     if (attType && !attType.available_statuses.includes(AttendanceStatus.Late)) {
-      buttons = buttons.filter((btn) => btn.text !== 'Verspätung eintragen');
+      buttons = buttons.filter((btn) => btn.text !== translate('signout.enterLate'));
     }
 
     if (attendance.text !== 'X') {
-      buttons = buttons.filter((btn) => btn.text !== 'Notiz anpassen');
+      buttons = buttons.filter((btn) => btn.text !== translate('signout.editNote'));
     }
 
     const isSignedIn = attendance.status === AttendanceStatus.Present || attendance.status === AttendanceStatus.Late;
     if (!isSignedIn || !canSignin || !this.getRegistrationFields(attendance).length) {
-      buttons = buttons.filter((btn) => btn.text !== 'Anmeldefelder anpassen');
+      buttons = buttons.filter((btn) => btn.text !== translate('signout.editRegistrationFields'));
     }
 
     if (isExcused) {
-      buttons = buttons.filter((btn) => btn.text !== 'Anmelden mit Notiz' && btn.text !== 'Abmelden' && btn.text !== 'Verspätung eintragen');
+      buttons = buttons.filter((btn) => btn.text !== translate('signout.signInWithNote') && btn.text !== translate('signout.signOut') && btn.text !== translate('signout.enterLate'));
     } else if (attendance.text === 'A') {
-      buttons = buttons.filter((btn) => btn.text !== 'Abmelden' && btn.text !== 'Verspätung eintragen');
+      buttons = buttons.filter((btn) => btn.text !== translate('signout.signOut') && btn.text !== translate('signout.enterLate'));
     }
 
     if (hideQuickActions) {
       const qa = this.quickActions(attendance);
       if (qa) {
-        const shown = ['Anmelden', 'Abmeldung zurücknehmen'];
-        if (qa.allowExcuse) { shown.push('Abmelden'); }
-        if (qa.allowLate) { shown.push('Verspätung eintragen'); }
+        const shown = [translate('signout.signIn'), translate('signout.undoSignout')];
+        if (qa.allowExcuse) { shown.push(translate('signout.signOut')); }
+        if (qa.allowLate) { shown.push(translate('signout.enterLate')); }
         buttons = buttons.filter((btn) => !shown.includes(btn.text));
       }
     }
@@ -679,7 +680,7 @@ export class SignoutPage implements OnInit {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
-        text: 'Ablaufplan anzeigen',
+        text: translate('signout.showRunSheet'),
         handler: () => this.openPlanViewer(attendance),
       });
     }
@@ -688,7 +689,7 @@ export class SignoutPage implements OnInit {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
-        text: 'Beschreibung anzeigen',
+        text: translate('signout.showDescription'),
         handler: () => this.openDescription(attendance),
       });
     }
@@ -697,7 +698,7 @@ export class SignoutPage implements OnInit {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
-        text: 'Anhang öffnen',
+        text: translate('signout.openAttachment'),
         handler: () => this.openAttachment(attendance.attendance),
       });
     }
@@ -706,7 +707,7 @@ export class SignoutPage implements OnInit {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
-        text: 'Navigation öffnen',
+        text: translate('signout.openNavigation'),
         handler: () => Utils.openNavigation(attendance.attendance.place),
       });
     }
@@ -715,13 +716,13 @@ export class SignoutPage implements OnInit {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
-        text: 'Dateiablage öffnen',
+        text: translate('signout.openFiles'),
         handler: () => this.openFilesFolder(attendance),
       });
     }
 
     if (buttons.length <= 1) {
-      Utils.showToast('Für diesen Termin sind keine Aktionen verfügbar.', 'warning', 4000);
+      Utils.showToast(translate('signout.noActions'), 'warning', 4000);
       return;
     }
 
@@ -776,8 +777,8 @@ export class SignoutPage implements OnInit {
       }];
     } else if (field.type === 'boolean') {
       inputs = [
-        { type: 'radio', name: 'answer', label: 'Ja', value: true, checked: this.regFieldAnswers[field.id] === true },
-        { type: 'radio', name: 'answer', label: 'Nein', value: false, checked: this.regFieldAnswers[field.id] === false },
+        { type: 'radio', name: 'answer', label: translate('common.yes'), value: true, checked: this.regFieldAnswers[field.id] === true },
+        { type: 'radio', name: 'answer', label: translate('common.no'), value: false, checked: this.regFieldAnswers[field.id] === false },
       ];
     } else {
       inputs = (field.options ?? []).map(opt => ({
@@ -798,12 +799,12 @@ export class SignoutPage implements OnInit {
       inputs,
       buttons: [
         ...(isEdit ? [{
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel',
           handler: () => { this.pendingSigninAttendance = null; },
         }] : []),
         {
-          text: isEdit ? 'Speichern' : 'Anmelden',
+          text: isEdit ? translate('common.save') : translate('signout.signIn'),
           handler: (data) => {
             const answer = field.type === 'multi_select' ? (Array.isArray(data) ? data : []) : data?.answer ?? data;
             this.confirmRegistrationAnswers({ [field.id]: answer });
@@ -818,7 +819,7 @@ export class SignoutPage implements OnInit {
     const fields = this.getRegistrationFields(this.pendingSigninAttendance);
     for (const field of fields) {
       if (field.type === 'text' && !answers[field.id]?.toString().trim()) {
-        Utils.showToast(`Bitte "${field.label}" ausfüllen`, 'warning');
+        Utils.showToast(translate('signout.fillField', { field: field.label }), 'warning');
         return;
       }
     }
@@ -830,7 +831,7 @@ export class SignoutPage implements OnInit {
     this.isRegFieldsModalOpen = false;
     if (this.regFieldsMode === 'edit') {
       att.registration_answers = answers;
-      Utils.showToast('Anmeldefelder gespeichert.', 'success', 4000);
+      Utils.showToast(translate('signout.registrationFieldsSaved'), 'success', 4000);
       await this.getAttendances();
       return;
     }
@@ -913,7 +914,7 @@ export class SignoutPage implements OnInit {
 
   statusLabelOf(att: PersonAttendance, past = false): string {
     if (!past && att.duty_state === 'requested' && !isCancelled(att)) {
-      return 'Bitte bestätigen';
+      return translate('signout.pleaseConfirm');
     }
     return statusLabel(att.status, past);
   }
@@ -1017,14 +1018,14 @@ export class SignoutPage implements OnInit {
 
   async openSongOptions(song: Song) {
     if (!this.hasSongNotesForPlayer(song)) {
-      Utils.showToast('Für dein Instrument sind leider keine Noten verfügbar.', 'danger', 4000);
+      Utils.showToast(translate('signout.noScoresForInstrument'), 'danger', 4000);
     }
 
     const buttons = [];
 
     if (song.link) {
       buttons.push({
-        text: 'Notenlink öffnen',
+        text: translate('signout.openScoreLink'),
         handler: () => this.openSongLink(song.link),
       });
     }
@@ -1047,7 +1048,7 @@ export class SignoutPage implements OnInit {
     if (files.length === 1) {
       if (!isPlatform('ios')) {
         buttons.push({
-          text: 'Noten downloaden',
+          text: translate('signout.downloadScores'),
           handler: async () => {
             const file = files[0];
             if (file) {
@@ -1059,7 +1060,7 @@ export class SignoutPage implements OnInit {
       }
 
       buttons.push({
-        text: 'Noten anzeigen',
+        text: translate('signout.showScores'),
         handler: () => {
           const file = files[0];
           if (file) {
@@ -1069,7 +1070,7 @@ export class SignoutPage implements OnInit {
       });
 
       buttons.push({
-        text: 'Noten drucken',
+        text: translate('signout.printScores'),
         handler: async () => {
           const file = files[0];
           if (file) {
@@ -1080,7 +1081,7 @@ export class SignoutPage implements OnInit {
     } else if (files.length > 1) {
       if (!isPlatform('ios')) {
         buttons.push({
-          text: 'Noten downloaden',
+          text: translate('signout.downloadScores'),
           handler: async () => {
             const fileOptions = files.map((file: SongFile) => {
               return {
@@ -1094,13 +1095,13 @@ export class SignoutPage implements OnInit {
             });
 
             fileOptions.push({
-              text: 'Abbrechen',
+              text: translate('common.cancel'),
               role: 'destructive',
               handler: () => Promise.resolve(),
             });
 
             const fileActionSheet = await this.actionSheetController.create({
-              header: `Noten für ${song.number}. ${song.name} auswählen`,
+              header: translate('signout.chooseScoresFor', { song: `${song.number}. ${song.name}` }),
               buttons: fileOptions,
             });
 
@@ -1110,7 +1111,7 @@ export class SignoutPage implements OnInit {
       }
 
       buttons.push({
-        text: 'Noten anzeigen',
+        text: translate('signout.showScores'),
         handler: async () => {
           const fileOptions = files.map((file: SongFile) => {
             return {
@@ -1123,13 +1124,13 @@ export class SignoutPage implements OnInit {
           });
 
           fileOptions.push({
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             role: 'destructive',
             handler: () => Promise.resolve(),
           });
 
           const fileActionSheet = await this.actionSheetController.create({
-            header: `Noten für ${song.number}. ${song.name} auswählen`,
+            header: translate('signout.chooseScoresFor', { song: `${song.number}. ${song.name}` }),
             buttons: fileOptions,
           });
 
@@ -1138,7 +1139,7 @@ export class SignoutPage implements OnInit {
       });
 
       buttons.push({
-        text: 'Noten drucken',
+        text: translate('signout.printScores'),
         handler: async () => {
           const fileOptions = files.map((file: SongFile) => {
             return {
@@ -1151,13 +1152,13 @@ export class SignoutPage implements OnInit {
           });
 
           fileOptions.push({
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             role: 'destructive',
             handler: () => Promise.resolve(),
           });
 
           const fileActionSheet = await this.actionSheetController.create({
-            header: `Noten für ${song.number}. ${song.name} drucken`,
+            header: translate('signout.printScoresFor', { song: `${song.number}. ${song.name}` }),
             buttons: fileOptions,
           });
 
@@ -1169,13 +1170,13 @@ export class SignoutPage implements OnInit {
     const audioFile = song.files.find(f => f.instrumentId === 1);
     if (audioFile) {
       buttons.push({
-        text: 'Aufnahme anhören',
+        text: translate('signout.listenRecording'),
         handler: () => {
           this.audioPlayer.play(audioFile, `${song.number} ${song.name}`);
         },
       });
       buttons.push({
-        text: 'Aufnahme herunterladen',
+        text: translate('signout.downloadRecording'),
         handler: async () => {
           const blob = await this.db.downloadSongFile(audioFile.storageName ?? audioFile.url.split('/').pop(), song.id);
           Utils.downloadFileNative(blob, audioFile.fileName);
@@ -1186,7 +1187,7 @@ export class SignoutPage implements OnInit {
     const liedtextFiles = song.files.filter((file: SongFile) => file.instrumentId === 2);
     if (liedtextFiles.length === 1) {
       buttons.push({
-        text: 'Liedtext ansehen',
+        text: translate('signout.viewLyrics'),
         handler: () => {
           const file = liedtextFiles[0];
           Utils.openFileNative(file.url, file.fileName);
@@ -1194,7 +1195,7 @@ export class SignoutPage implements OnInit {
       });
     } else if (liedtextFiles.length > 1) {
       buttons.push({
-        text: 'Liedtext ansehen',
+        text: translate('signout.viewLyrics'),
         handler: async () => {
           const fileOptions = liedtextFiles.map((file: SongFile) => {
             return {
@@ -1207,13 +1208,13 @@ export class SignoutPage implements OnInit {
           });
 
           fileOptions.push({
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             role: 'destructive',
             handler: () => Promise.resolve(),
           });
 
           const fileActionSheet = await this.actionSheetController.create({
-            header: `Liedtext für ${song.number}. ${song.name} auswählen`,
+            header: translate('signout.chooseLyricsFor', { song: `${song.number}. ${song.name}` }),
             buttons: fileOptions,
           });
 
@@ -1223,7 +1224,7 @@ export class SignoutPage implements OnInit {
     }
 
     buttons.push({
-      text: 'Abbrechen',
+      text: translate('common.cancel'),
       handler: () => { },
       role: 'destructive',
       data: {
@@ -1232,7 +1233,7 @@ export class SignoutPage implements OnInit {
     });
 
     if (buttons.length === 1) {
-      Utils.showToast('Für dieses Werk sind keine Aktionen verfügbar.', 'warning', 4000);
+      Utils.showToast(translate('signout.noSongActions'), 'warning', 4000);
       return;
     }
 
@@ -1267,7 +1268,7 @@ export class SignoutPage implements OnInit {
     }
 
     if (filesToPrint.length === 0) {
-      Utils.showToast('Keine Noten für dein Instrument gefunden.', 'warning');
+      Utils.showToast(translate('signout.noScoresFound'), 'warning');
       return;
     }
 
@@ -1284,9 +1285,9 @@ export class SignoutPage implements OnInit {
     const now = dayjs();
 
     if (now.isAfter(localDeadline)) {
-      return `Anmeldefrist abgelaufen`;
+      return translate('signout.deadlinePassed');
     } else {
-      return `Anmeldefrist: ${localDeadline.format('DD.MM.YYYY HH:mm')} Uhr`;
+      return translate('signout.deadline', { date: localDeadline.format('DD.MM.YYYY HH:mm') });
     }
   }
 
@@ -1326,7 +1327,7 @@ export class SignoutPage implements OnInit {
 
   async confirmPause(): Promise<void> {
     if (!this.pauseReason) {
-      Utils.showToast('Bitte gib einen Grund an!', 'warning');
+      Utils.showToast(translate('signout.giveReason'), 'warning');
       return;
     }
 
@@ -1409,7 +1410,7 @@ export class SignoutPage implements OnInit {
 
   async confirmAbsence(): Promise<void> {
     if (!this.absenceReason || !this.absenceFrom || !this.absenceUntil) {
-      Utils.showToast('Bitte fülle alle Pflichtfelder aus', 'danger');
+      Utils.showToast(translate('signout.fillRequired'), 'danger');
       return;
     }
 
@@ -1449,8 +1450,8 @@ export class SignoutPage implements OnInit {
       await this.getAttendances();
       Utils.showToast(
         toExcuse.length > 0
-          ? `Abwesenheit eingetragen (${toExcuse.length} Termin${toExcuse.length > 1 ? 'e' : ''} entschuldigt)`
-          : 'Abwesenheit eingetragen',
+          ? translate('signout.absenceEnteredCount', { count: toExcuse.length })
+          : translate('signout.absenceEntered'),
         'success'
       );
     } finally {
@@ -1460,12 +1461,12 @@ export class SignoutPage implements OnInit {
 
   async deleteAbsence(absence: PlayerAbsence): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Abwesenheit löschen',
-      message: 'Soll die Abwesenheit gelöscht werden? Bereits entschuldigte Termine in diesem Zeitraum werden auf den Standardstatus des jeweiligen Termintyps zurückgesetzt.',
+      header: translate('signout.deleteAbsence'),
+      message: translate('signout.deleteAbsenceMessage'),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Löschen',
+          text: translate('common.delete'),
           role: 'destructive',
           handler: async () => {
             const loading = await Utils.getLoadingElement();
@@ -1494,7 +1495,7 @@ export class SignoutPage implements OnInit {
               }
               this.playerAbsences = await this.db.getPlayerAbsences(this.player.id);
               await this.getAttendances();
-              Utils.showToast('Abwesenheit gelöscht', 'success');
+              Utils.showToast(translate('signout.absenceDeleted'), 'success');
             } finally {
               await loading.dismiss();
             }
@@ -1507,12 +1508,12 @@ export class SignoutPage implements OnInit {
 
   async confirmUnpause(): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Pausierung beenden',
-      message: 'Möchtest du deine Pausierung wirklich beenden und wieder aktiv werden?',
+      header: translate('signout.endPause'),
+      message: translate('signout.endPauseMessage'),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Reaktivieren',
+          text: translate('signout.reactivate'),
           handler: async () => {
             const history: PlayerHistoryEntry[] = [...this.player.history];
             history.push({
