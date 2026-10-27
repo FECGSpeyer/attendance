@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
-import { FieldSelection, History, Plan, SharedPlan, Song } from '../utilities/interfaces';
+import { FieldSelection, History, Plan, PlanBlockTemplate, SharedPlan, Song } from '../utilities/interfaces';
+import { childrenOf, cloneBlock, groupDuration, isGroupHead, lastIndexOfGroup, moveRow, newGroupHead, normalizeGroups } from '../utilities/plan-groups';
 import { Utils } from '../utilities/Utils';
 import {
   PUBLIC_PLANNING_TEMPLATES,
@@ -17,6 +18,15 @@ import { DbService } from '../services/db.service';
 import { translate } from '@jsverse/transloco';
 
 const STORAGE_KEY = 'attendix-public-plan';
+
+interface PlanRow {
+  key: string;
+  field?: FieldSelection;
+  /** Index of `field` in selectedFields. */
+  index: number;
+  /** Set on the add row of a block. */
+  addFor?: FieldSelection;
+}
 
 @Component({
   selector: 'app-public-planning',
@@ -51,6 +61,11 @@ export class PublicPlanningPage implements OnInit {
   private currentEditKey: string | null = null;
   private dbSaveTimeout: any = null;
 
+  /** Programmblöcke folded in the editor (UI state only). */
+  private collapsedGroups = new Set<string>();
+  private rowsCache: PlanRow[] = [];
+  private rowsKey = '';
+
   constructor(
     private alertController: AlertController,
     private actionSheetController: ActionSheetController,
@@ -59,7 +74,31 @@ export class PublicPlanningPage implements OnInit {
     public db: DbService,
   ) { }
 
-  trackByFieldId = (_: number, f: FieldSelection): string => f.id;
+  /** Rows shown in the editor; Unterpunkte of folded blocks are hidden. Cached for stable change detection. */
+  get rows(): PlanRow[] {
+    const fields = this.selectedFields;
+    const key = fields.map(f => `${f.id}|${f.groupId ?? ''}|${f.isGroup ? 1 : 0}`).join(';') + '#' + [...this.collapsedGroups].join(';');
+    if (key === this.rowsKey && this.rowsCache.length) { return this.rowsCache; }
+    const rows: PlanRow[] = [];
+    const seen = new Map<string, number>();
+    const rowKey = (id: string) => {
+      const n = (seen.get(id) ?? 0) + 1;
+      seen.set(id, n);
+      return n > 1 ? `${id}#${n}` : id;
+    };
+    fields.forEach((field, index) => {
+      if (field.groupId && this.collapsedGroups.has(field.groupId)) { return; }
+      rows.push({ key: rowKey(field.id), field, index });
+      const closesBlock = isGroupHead(field) ? !fields[index + 1]?.groupId : (!!field.groupId && fields[index + 1]?.groupId !== field.groupId);
+      const head = isGroupHead(field) ? field : fields.find(f => f.id === field.groupId);
+      if (closesBlock && head && !this.collapsedGroups.has(head.id)) {
+        rows.push({ key: `add-${head.id}`, index: -1, addFor: head });
+      }
+    });
+    this.rowsKey = key;
+    this.rowsCache = rows;
+    return rows;
+  }
 
   async ngOnInit() {
     const { data } = await getSupabase().auth.getSession();
@@ -152,6 +191,21 @@ export class PublicPlanningPage implements OnInit {
 
   get orgDefaultFields(): FieldSelection[] {
     return this.db.organisation?.()?.default_fields ?? [];
+  }
+
+  get blockTemplates(): PlanBlockTemplate[] {
+    return this.isLoggedIn ? (this.db.tenant?.()?.plan_block_templates ?? []) : [];
+  }
+
+  templateMinutes(tpl: PlanBlockTemplate): number {
+    const head = tpl.fields.find(isGroupHead);
+    return head ? groupDuration(tpl.fields, head.id) : 0;
+  }
+
+  insertBlockTemplate(template: PlanBlockTemplate, popover: IonPopover) {
+    popover?.dismiss();
+    this.selectedFields.push(...cloneBlock(template.fields));
+    this.calculateEnd();
   }
 
   addOrgField(field: FieldSelection, popover: IonPopover) {
@@ -261,6 +315,10 @@ export class PublicPlanningPage implements OnInit {
 
   // ---- field operations ----
   calculateTime(field: FieldSelection, index: number): string {
+    return `${this.startOf(index).format('HH:mm')}${field.conductor ? ` | ${field.conductor}` : ''}`;
+  }
+
+  private startOf(index: number): dayjs.Dayjs {
     let minutesToAdd = 0;
     for (let i = 0; i < index; i++) {
       minutesToAdd += Number(this.selectedFields[i].time) || 0;
@@ -268,7 +326,7 @@ export class PublicPlanningPage implements OnInit {
     const t = dayjs(this.time).isValid()
       ? dayjs(this.time)
       : dayjs().hour(Number(this.time.substring(0, 2))).minute(Number(this.time.substring(3, 5)));
-    return `${t.add(minutesToAdd, 'minute').format('HH:mm')}${field.conductor ? ` | ${field.conductor}` : ''}`;
+    return t.add(minutesToAdd, 'minute');
   }
 
   async addField(popover?: IonPopover) {
@@ -353,8 +411,7 @@ export class PublicPlanningPage implements OnInit {
           cssClass: 'alert-button-danger',
           handler: () => {
             if (index !== -1) {
-              this.selectedFields.splice(index, 1);
-              this.calculateEnd();
+              this.removeField(index);
             }
           },
         },
@@ -378,11 +435,245 @@ export class PublicPlanningPage implements OnInit {
   }
 
   handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
-    ev.detail.complete(this.selectedFields);
+    const { from, to } = ev.detail;
+    // The list is rebuilt from selectedFields, so Ionic must not move the DOM itself.
+    ev.detail.complete(false);
+
+    const rows = [...this.rows];
+    const [moved] = rows.splice(from, 1);
+    rows.splice(to, 0, moved);
+    if (!moved?.field) { return; }
+
+    // Dropped right above a block's add row: it belongs into that block; right below it: it doesn't.
+    const pos = rows.indexOf(moved);
+    let join: string | null | undefined;
+    if (!isGroupHead(moved.field)) {
+      if (rows[pos + 1]?.addFor) { join = rows[pos + 1].addFor.id; }
+      else if (rows[pos - 1]?.addFor) { join = null; }
+    }
+
+    const fieldRows = this.rows.filter(r => r.field);
+    const visible = fieldRows.map(r => r.index);
+    const fromField = fieldRows.indexOf(moved);
+    const toField = rows.filter(r => r.field).indexOf(moved);
+    this.selectedFields = moveRow(this.selectedFields, visible, fromField, toField, join);
     this.calculateEnd();
   }
 
+  removeField(index: number, slider?: IonItemSliding) {
+    slider?.close();
+    const field = this.selectedFields[index];
+    if (isGroupHead(field)) {
+      void this.confirmDeleteGroup(field);
+      return;
+    }
+    this.selectedFields.splice(index, 1);
+    this.calculateEnd();
+  }
+
+  // ---- Programmblöcke (see plan-groups.ts) ----
+
+  isCollapsed(head: FieldSelection): boolean {
+    return this.collapsedGroups.has(head.id);
+  }
+
+  toggleGroup(head: FieldSelection) {
+    if (this.collapsedGroups.has(head.id)) {
+      this.collapsedGroups.delete(head.id);
+    } else {
+      this.collapsedGroups.add(head.id);
+    }
+  }
+
+  groupMinutes(head: FieldSelection): number {
+    return groupDuration(this.selectedFields, head.id);
+  }
+
+  /** "10:37 – 10:55" for a block head. */
+  groupRange(head: FieldSelection, index: number): string {
+    const start = this.startOf(index);
+    return `${start.format('HH:mm')} – ${start.add(this.groupMinutes(head), 'minute').format('HH:mm')}`;
+  }
+
+  /** Indenting needs a block right above; any Unterpunkt can be moved out. */
+  canIndent(index: number): boolean {
+    const field = this.selectedFields[index];
+    if (!field || isGroupHead(field)) { return false; }
+    if (field.groupId) { return true; }
+    const prev = this.selectedFields[index - 1];
+    return !!prev && (isGroupHead(prev) || !!prev.groupId);
+  }
+
+  toggleIndent(index: number, slider: IonItemSliding) {
+    slider.close();
+    const field = this.selectedFields[index];
+    if (field.groupId) {
+      // Move it out below the block.
+      const groupId = field.groupId;
+      this.selectedFields.splice(index, 1);
+      delete field.groupId;
+      this.selectedFields.splice(lastIndexOfGroup(this.selectedFields, groupId) + 1, 0, field);
+    } else {
+      const prev = this.selectedFields[index - 1];
+      field.groupId = isGroupHead(prev) ? prev.id : prev.groupId;
+      this.collapsedGroups.delete(field.groupId);
+    }
+    this.calculateEnd();
+  }
+
+  async addGroup(popover?: IonPopover) {
+    popover?.dismiss();
+    const alert = await this.alertController.create({
+      header: translate('planning.addBlock'),
+      message: translate('planning.blockDurationHint'),
+      inputs: [
+        { type: 'textarea', name: 'field', placeholder: translate('planning.blockNamePlaceholder') },
+        { type: 'textarea', name: 'conductor', placeholder: translate('planning.performanceOptional') },
+        { type: 'textarea', name: 'info', placeholder: translate('planning.infoOptional') },
+      ],
+      buttons: [
+        { text: translate('common.cancel') },
+        {
+          text: translate('common.create'),
+          handler: (evt: any) => {
+            if (!evt.field?.trim()) {
+              alert.message = translate('planning.enterNamePlease');
+              return false;
+            }
+            const head = newGroupHead(evt.field.trim(), evt.conductor?.trim(), evt.info?.trim());
+            this.selectedFields.push(head);
+            this.calculateEnd();
+            void this.addSubItem(head);
+            return true;
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  async addSubItem(head: FieldSelection) {
+    const alert = await this.alertController.create({
+      header: translate('planning.addSubItem'),
+      subHeader: head.name,
+      inputs: [
+        { type: 'textarea', name: 'field', placeholder: translate('planning.subItemPlaceholder') },
+        { type: 'textarea', name: 'conductor', placeholder: translate('planning.enterPerformer') },
+        { type: 'textarea', name: 'info', placeholder: translate('planning.subItemInfoPlaceholder') },
+        { type: 'number', label: translate('planning.minutes'), name: 'time', value: 5, placeholder: translate('planning.minutes') },
+      ],
+      buttons: [
+        { text: translate('common.cancel') },
+        {
+          text: translate('attendance.add'),
+          handler: (evt: any) => {
+            if (!evt.field?.trim()) {
+              alert.message = translate('planning.enterItemPlease');
+              return false;
+            }
+            const at = lastIndexOfGroup(this.selectedFields, head.id) + 1;
+            this.selectedFields.splice(at, 0, {
+              id: `fld-${crypto.randomUUID()}`,
+              name: evt.field.trim(),
+              conductor: evt.conductor ?? '',
+              info: evt.info?.trim() || undefined,
+              time: evt.time ? String(evt.time) : '5',
+              groupId: head.id,
+            });
+            this.collapsedGroups.delete(head.id);
+            this.calculateEnd();
+            return true;
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  async showGroupOptions(head: FieldSelection) {
+    const sheet = await this.actionSheetController.create({
+      header: head.name,
+      subHeader: translate('planning.blockSubHeader', { count: childrenOf(this.selectedFields, head.id).length, min: this.groupMinutes(head) }),
+      buttons: [
+        { text: translate('planning.editBlock'), handler: () => { void this.editGroup(head); } },
+        { text: translate('planning.addSubItem'), handler: () => { void this.addSubItem(head); } },
+        { text: translate('planning.dissolveBlock'), handler: () => { this.dissolveGroup(head); } },
+        { text: translate('planning.deleteBlockWithItems'), role: 'destructive', handler: () => { void this.confirmDeleteGroup(head); } },
+        { text: translate('common.cancel'), role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+  }
+
+  private async editGroup(head: FieldSelection) {
+    const alert = await this.alertController.create({
+      header: translate('planning.editBlock'),
+      inputs: [
+        { type: 'textarea', label: translate('planning.name'), name: 'field', value: head.name, placeholder: translate('planning.name') },
+        { type: 'textarea', label: translate('planning.performance'), name: 'conductor', value: head.conductor, placeholder: translate('planning.performanceOptional') },
+        { type: 'textarea', label: translate('planning.info'), name: 'info', value: head.info, placeholder: translate('planning.infoOptional') },
+      ],
+      buttons: [
+        { text: translate('common.cancel') },
+        {
+          text: translate('common.save'),
+          handler: (evt: any) => {
+            if (!evt.field?.trim()) {
+              alert.message = translate('planning.enterNamePlease');
+              return false;
+            }
+            head.name = evt.field.trim();
+            head.conductor = evt.conductor ?? '';
+            head.info = evt.info?.trim() || undefined;
+            this.calculateEnd();
+            return true;
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  /** Removes the head; its Unterpunkte stay as normal fields. */
+  dissolveGroup(head: FieldSelection) {
+    this.selectedFields = this.selectedFields
+      .filter(f => f.id !== head.id)
+      .map(f => {
+        if (f.groupId === head.id) { delete f.groupId; }
+        return f;
+      });
+    this.collapsedGroups.delete(head.id);
+    this.calculateEnd();
+  }
+
+  private async confirmDeleteGroup(head: FieldSelection) {
+    const count = childrenOf(this.selectedFields, head.id).length;
+    if (!count) {
+      this.selectedFields = this.selectedFields.filter(f => f.id !== head.id);
+      this.calculateEnd();
+      return;
+    }
+    const alert = await this.alertController.create({
+      header: translate('planning.deleteBlockConfirm'),
+      message: translate('planning.blockHasItems', { name: head.name, count }),
+      buttons: [
+        { text: translate('common.cancel'), role: 'cancel' },
+        { text: translate('planning.onlyDissolve'), handler: () => { this.dissolveGroup(head); } },
+        {
+          text: translate('planning.deleteAll'),
+          role: 'destructive',
+          handler: () => {
+            this.selectedFields = this.selectedFields.filter(f => f.id !== head.id && f.groupId !== head.id);
+            this.calculateEnd();
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
   calculateEnd(): void {
+    normalizeGroups(this.selectedFields);
     let t = dayjs(this.time).isValid()
       ? dayjs(this.time)
       : dayjs().hour(Number(this.time.substring(0, 2))).minute(Number(this.time.substring(3, 5)));

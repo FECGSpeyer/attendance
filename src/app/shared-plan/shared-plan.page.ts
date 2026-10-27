@@ -8,7 +8,7 @@ import 'dayjs/locale/de';
 import { Attendance, FieldSelection, Plan, SharedPlan } from '../utilities/interfaces';
 import { allPlans, planDate, planLabel, splitPlans, todayPlanIndex } from '../utilities/plan-days';
 import { Utils } from '../utilities/Utils';
-import { normalizeGroups } from '../utilities/plan-groups';
+import { moveRow, normalizeGroups } from '../utilities/plan-groups';
 import { PUBLIC_BRANDINGS } from '../public-planning/public-planning-templates';
 import { getSupabase } from '../services/base/supabase';
 import { translate } from '@jsverse/transloco';
@@ -401,14 +401,18 @@ export class SharedPlanPage implements OnInit, OnDestroy {
   }
 
   handleReorder(ev: CustomEvent<any>) {
-    ev.detail.complete(this.fields);
-    normalizeGroups(this.fields);
+    const { from, to } = ev.detail;
+    // A block head moves together with its Unterpunkte, so the list is rebuilt instead of letting Ionic move one row.
+    ev.detail.complete(false);
+    this.fields = moveRow(this.fields, this.fields.map((_, i) => i), from, to);
     this.saveEdits();
   }
 
   removeField(index: number) {
     if (!this.isEditMode) { return; }
     this.fields.splice(index, 1);
+    // Removing a block head turns its Unterpunkte into normal fields.
+    normalizeGroups(this.fields);
     this.saveEdits();
   }
 

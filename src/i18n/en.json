@@ -1563,7 +1563,11 @@
     "telegramImageShort": "Via Telegram (image)",
     "blockSubHeader": "{count, plural, one {# sub-item} other {# sub-items}} · {min} min",
     "exportPdf": "Export PDF",
-    "exportPdfA5": "Export PDF (2x A5)"
+    "exportPdfA5": "Export PDF (2x A5)",
+    "indent": "Indent",
+    "outdent": "Outdent",
+    "expandBlock": "Expand block",
+    "collapseBlock": "Collapse block"
   },
   "duty": {
     "placesFree": "{count, plural, one {# place free} other {# places free}}",

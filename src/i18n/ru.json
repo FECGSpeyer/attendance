@@ -1563,7 +1563,11 @@
     "telegramImageShort": "В Telegram (изображение)",
     "blockSubHeader": "{count, plural, one {# подпункт} few {# подпункта} many {# подпунктов} other {# подпункта}} · {min} мин",
     "exportPdf": "Экспорт в PDF",
-    "exportPdfA5": "Экспорт в PDF (2× A5)"
+    "exportPdfA5": "Экспорт в PDF (2× A5)",
+    "indent": "Сдвинуть вправо",
+    "outdent": "Сдвинуть влево",
+    "expandBlock": "Развернуть блок",
+    "collapseBlock": "Свернуть блок"
   },
   "duty": {
     "placesFree": "{count, plural, one {Свободно # место} few {Свободно # места} many {Свободно # мест} other {Свободно # места}}",

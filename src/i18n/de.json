@@ -1563,7 +1563,11 @@
     "telegramImageShort": "Per Telegram (Bild)",
     "blockSubHeader": "{count, plural, one {# Unterpunkt} other {# Unterpunkte}} · {min} min",
     "exportPdf": "PDF exportieren",
-    "exportPdfA5": "PDF exportieren (2x A5)"
+    "exportPdfA5": "PDF exportieren (2x A5)",
+    "indent": "Einrücken",
+    "outdent": "Ausrücken",
+    "expandBlock": "Block aufklappen",
+    "collapseBlock": "Block einklappen"
   },
   "duty": {
     "placesFree": "{count, plural, one {# Platz frei} other {# Plätze frei}}",

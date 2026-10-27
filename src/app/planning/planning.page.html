@@ -275,7 +275,7 @@
             } @else if (field.isGroup) {
               <ion-item class="group-head" lines="full">
                 <ion-button slot="start" fill="clear" size="small" class="group-toggle"
-                  [attr.aria-label]="isCollapsed(field) ? 'Block aufklappen' : 'Block einklappen'"
+                  [attr.aria-label]="(isCollapsed(field) ? 'planning.expandBlock' : 'planning.collapseBlock') | transloco"
                   (click)="toggleGroup(field)">
                   <ion-icon slot="icon-only" [name]="isCollapsed(field) ? 'chevron-forward' : 'chevron-down'"></ion-icon>
                 </ion-button>
@@ -314,7 +314,7 @@
             <ion-item-options (ionSwipe)="removeField(i, slider)">
               @if (canIndent(i)) {
                 <ion-item-option color="medium" (click)="toggleIndent(i, slider)">
-                  {{ field.groupId ? 'Ausrücken' : 'Einrücken' }}
+                  {{ (field.groupId ? 'planning.outdent' : 'planning.indent') | transloco }}
                 </ion-item-option>
               }
               <ion-item-option expandable color="danger" (click)="removeField(i, slider)">

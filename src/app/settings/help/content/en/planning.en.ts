@@ -28,7 +28,7 @@ With "Reset" you can return to the default programme items of the event type at 
   },
   'plan-blocks': {
     title: 'Programme blocks with sub-items',
-    keywords: ['programme block', 'block', 'sub-item', 'sub-items', 'group', 'programme', 'nested', 'indent', 'youth choir', 'children programme', 'block template'],
+    keywords: ['programme block', 'block', 'sub-item', 'sub-items', 'group', 'programme', 'nested', 'indent', 'youth choir', 'children programme', 'block template', 'ad-hoc', 'planning tool', 'public'],
     body: `Some programme items consist of several parts, for example "Youth choir programme" with songs and a poem. That is what **programme blocks** are for.
 
 **Creating a block:** In the run sheet editor, tap **+** in the schedule and then **Add programme block**. Enter a name and optionally a performer. Then you create the first sub-item right away. Add more sub-items with **Add sub-item** at the end of the block.
@@ -40,6 +40,8 @@ With "Reset" you can return to the default programme items of the event type at 
 **Editing a block:** Tap the block name. There you can edit the block, **dissolve** it (the sub-items stay as normal items) or delete it completely.
 
 **Block templates:** Admins can save a block with **Save as template**. Saved blocks appear in the **+** menu under "Programme blocks" and are added to the end of the schedule with one tap. Admins delete a template again with the bin icon next to it.
+
+**Ad-hoc run sheets and the public planning tool:** The ad-hoc run sheet (Settings › Ad-hoc run sheet) and the public planning tool at attendix.de/planung also offer **Add programme block** in the **+** menu. Creating, sorting, indenting and outdenting work just like in the run sheet editor. When you are signed in, you can also insert your group's block templates there. With an edit link, blocks are moved together with their sub-items as well.
 
 **What members see:** On the event page, in the plan view, on the dashboard card and in the PDF, sub-items appear indented under their block. In live mode the running sub-item is marked, and the block stays highlighted as long as one of its sub-items is running.`,
   },

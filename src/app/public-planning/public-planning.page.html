@@ -93,6 +93,9 @@
           <ion-item button (click)="addField(addPopover)">
             <ion-label>{{ 'planning.addField' | transloco }}</ion-label>
           </ion-item>
+          <ion-item button (click)="addGroup(addPopover)">
+            <ion-label>{{ 'planning.addBlock' | transloco }}</ion-label>
+          </ion-item>
           <ion-item button (click)="addNoteField(addPopover)">
             <ion-label>{{ 'planning.addNoteField' | transloco }}</ion-label>
           </ion-item>
@@ -114,6 +117,17 @@
             @for (f of orgDefaultFields; track f.name) {
               <ion-item button (click)="addOrgField(f, addPopover)">
                 <ion-label>{{ f.name }} <ion-note>{{ 'planning.minShort' | transloco: { min: f.time } }}</ion-note></ion-label>
+              </ion-item>
+            }
+          }
+          @if (blockTemplates.length) {
+            <ion-item-divider></ion-item-divider>
+            <ion-item lines="none">
+              <ion-label><small><b>{{ 'planning.blocks' | transloco }}</b></small></ion-label>
+            </ion-item>
+            @for (tpl of blockTemplates; track tpl.id) {
+              <ion-item button detail="false" (click)="insertBlockTemplate(tpl, addPopover)">
+                <ion-label>{{ tpl.name }} <ion-note>{{ 'planning.minShort' | transloco: { min: templateMinutes(tpl) } }}</ion-note></ion-label>
               </ion-item>
             }
           }
@@ -178,25 +192,64 @@
 
       <ion-list>
         <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
-          @for (field of selectedFields; track trackByFieldId(i, field); let i = $index) {
-          <ion-item-sliding #slider>
-            <ion-item [class.note-item]="field.id.includes('noteFld')" [lines]="field.id.includes('noteFld') ? 'none' : 'full'">
-              <ion-label (click)="editField(field, slider)" [class.note-field]="field.id.includes('noteFld')">
-                <h2>{{ field.name }}</h2>
-                @if (!field.id.includes('noteFld')) {
-                <h3>{{ calculateTime(field, i) }}</h3>
-                }
-                @if (field.info && !field.id.includes('noteFld')) {
-                <p class="field-info">{{ field.info }}</p>
-                }
-              </ion-label>
-              @if (!field.id.includes('noteFld')) {
-              <ion-input autocapitalize="sentences" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
-                [placeholder]="'planning.minPlaceholder' | transloco" type="number" slot="end"></ion-input>
+          @for (row of rows; track row.key) {
+            @if (row.addFor) {
+              <ion-item class="group-child group-add" lines="full" button detail="false" (click)="addSubItem(row.addFor)">
+                <ion-icon name="add" slot="start" color="primary"></ion-icon>
+                <ion-label color="primary">{{ 'planning.addSubItem' | transloco }}</ion-label>
+              </ion-item>
+            } @else {
+            @let field = row.field;
+            @let i = row.index;
+            <ion-item-sliding #slider>
+              @if (field.isGroup) {
+                <ion-item class="group-head" lines="full">
+                  <ion-button slot="start" fill="clear" size="small" class="group-toggle"
+                    [attr.aria-label]="(isCollapsed(field) ? 'planning.expandBlock' : 'planning.collapseBlock') | transloco"
+                    (click)="toggleGroup(field)">
+                    <ion-icon slot="icon-only" [name]="isCollapsed(field) ? 'chevron-forward' : 'chevron-down'"></ion-icon>
+                  </ion-button>
+                  <ion-label (click)="showGroupOptions(field)">
+                    <h2>{{ field.name }}</h2>
+                    <h3>{{ groupRange(field, i) }}{{ field.conductor ? ' | ' + field.conductor : '' }}</h3>
+                    @if (field.info) {
+                      <p class="field-info">{{ field.info }}</p>
+                    }
+                  </ion-label>
+                  <ion-badge slot="end" class="group-duration">{{ 'planning.minShort' | transloco: { min: groupMinutes(field) } }}</ion-badge>
+                  <ion-reorder slot="end"></ion-reorder>
+                </ion-item>
+              } @else {
+                <ion-item [class.note-item]="field.id.includes('noteFld')" [class.group-child]="!!field.groupId"
+                  [lines]="field.id.includes('noteFld') ? 'none' : 'full'">
+                  <ion-label (click)="editField(field, slider)" [class.note-field]="field.id.includes('noteFld')">
+                    <h2>{{ field.name }}</h2>
+                    @if (!field.id.includes('noteFld')) {
+                    <h3>{{ calculateTime(field, i) }}</h3>
+                    }
+                    @if (field.info && !field.id.includes('noteFld')) {
+                    <p class="field-info">{{ field.info }}</p>
+                    }
+                  </ion-label>
+                  @if (!field.id.includes('noteFld')) {
+                  <ion-input autocapitalize="sentences" required="true" style="width: 3rem;" (ionBlur)="calculateEnd()" [(ngModel)]="field.time"
+                    [placeholder]="'planning.minPlaceholder' | transloco" type="number" slot="end"></ion-input>
+                  }
+                  <ion-reorder slot="end"></ion-reorder>
+                </ion-item>
               }
-              <ion-reorder slot="end"></ion-reorder>
-            </ion-item>
-          </ion-item-sliding>
+              <ion-item-options>
+                @if (canIndent(i)) {
+                  <ion-item-option color="medium" (click)="toggleIndent(i, slider)">
+                    {{ (field.groupId ? 'planning.outdent' : 'planning.indent') | transloco }}
+                  </ion-item-option>
+                }
+                <ion-item-option color="danger" (click)="removeField(i, slider)">
+                  <ion-icon slot="icon-only" name="trash"></ion-icon>
+                </ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+            }
           }
         </ion-reorder-group>
       </ion-list>

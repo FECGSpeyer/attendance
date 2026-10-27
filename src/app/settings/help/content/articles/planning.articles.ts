@@ -33,7 +33,7 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
     id: 'plan-blocks',
     title: 'Programmblöcke mit Unterpunkten',
     categoryId: 'planning',
-    keywords: ['programmblock', 'block', 'unterpunkt', 'unterpunkte', 'gruppe', 'programm', 'verschachtelt', 'einrücken', 'jugendchor', 'kinderprogramm', 'blockvorlage'],
+    keywords: ['programmblock', 'block', 'unterpunkt', 'unterpunkte', 'gruppe', 'programm', 'verschachtelt', 'einrücken', 'jugendchor', 'kinderprogramm', 'blockvorlage', 'ad-hoc', 'planungstool', 'öffentlich'],
     body: `Manche Programmpunkte bestehen aus mehreren Teilen, zum Beispiel "Programm Jugendchor" mit Liedern und einem Gedicht. Dafür gibt es **Programmblöcke**.
 
 **Block anlegen:** Tippe im Ablaufplan-Editor beim Ablauf auf **+** und dann auf **Programmblock hinzufügen**. Gib einen Namen und optional eine Ausführung ein. Danach legst du gleich den ersten Unterpunkt an. Weitere Unterpunkte fügst du über **Unterpunkt hinzufügen** am Ende des Blocks hinzu.
@@ -45,6 +45,8 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
 **Block bearbeiten:** Tippe auf den Blocknamen. Dort kannst du den Block bearbeiten, ihn **auflösen** (die Unterpunkte bleiben als normale Punkte erhalten) oder komplett löschen.
 
 **Blockvorlagen:** Admins können einen Block über **Als Vorlage speichern** sichern. Gespeicherte Blöcke erscheinen im **+**-Menü unter "Programmblöcke" und werden mit einem Tippen an das Ende des Ablaufs angehängt. Über das Papierkorb-Symbol daneben löschen Admins eine Vorlage wieder.
+
+**Ad-hoc-Ablaufplanung und öffentliches Planungstool:** Auch in der Ad-hoc-Ablaufplanung (Einstellungen › Ad-Hoc Ablaufplanung) und im öffentlichen Planungstool unter attendix.de/planung findest du im **+**-Menü **Programmblock hinzufügen**. Anlegen, Sortieren, Ein- und Ausrücken funktionieren wie im Ablaufplan-Editor. Bist du angemeldet, kannst du dort auch die Blockvorlagen deiner Gruppe einfügen. Über einen Bearbeiten-Link sortierst du Blöcke ebenfalls samt Unterpunkten um.
 
 **Was Mitglieder sehen:** Auf der Terminseite, in der Planansicht, auf der Dashboard-Karte und im PDF erscheinen die Unterpunkte eingerückt unter ihrem Block. Im Live-Modus ist der laufende Unterpunkt markiert, und der Block bleibt hervorgehoben, solange einer seiner Unterpunkte läuft.`,
   },

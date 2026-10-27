@@ -31,3 +31,51 @@
     color: var(--ion-color-medium, #808289);
   }
 }
+
+// Programmblöcke: tinted head with its computed duration, indented Unterpunkte
+// (same look as the Termin planning editor).
+.group-head {
+  --background: rgba(var(--ion-color-primary-rgb), 0.08);
+
+  h2 {
+    font-weight: 700;
+  }
+
+  .group-toggle {
+    margin-inline-start: -10px;
+    margin-inline-end: 0;
+  }
+}
+
+.group-duration {
+  --background: rgba(var(--ion-color-primary-rgb), 0.16);
+  --color: var(--ion-color-primary-shade);
+  font-weight: 600;
+  margin-inline-end: 8px;
+}
+
+.group-child {
+  --background: rgba(var(--ion-color-primary-rgb), 0.04);
+  --padding-start: 34px;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: rgba(var(--ion-color-primary-rgb), 0.45);
+    z-index: 1;
+  }
+
+  h2 {
+    font-size: 15px;
+  }
+}
+
+.group-add {
+  --min-height: 40px;
+  font-size: 15px;
+}
