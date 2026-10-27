@@ -10,6 +10,11 @@ import { provideTransloco, TranslocoService, TranslocoTestingModule } from '@jsv
 import { provideTranslocoMessageformat } from '@jsverse/transloco-messageformat';
 import { firstValueFrom, of } from 'rxjs';
 import de from './i18n/de.json';
+import dayjs from 'dayjs';
+import 'dayjs/locale/de';
+
+// German weekday names etc., like the app's default language.
+dayjs.locale('de');
 
 // Suppress unhandled promise rejections during test cleanup
 // These often occur when async operations (like Supabase subscriptions)

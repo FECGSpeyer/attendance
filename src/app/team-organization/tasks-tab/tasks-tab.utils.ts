@@ -1,5 +1,8 @@
 import { AgendaItemPriority, Task, TaskStatus } from '../../utilities/interfaces';
 import { personName } from '../team-org.utils';
+import dayjs from 'dayjs';
+import { translate } from '@jsverse/transloco';
+import { currentLanguage } from '../../i18n/languages';
 
 /** Filter of the task list: everything, the signed-in person's tasks, or one person (player id). */
 export type TaskFilter = 'all' | 'mine' | number;
@@ -13,15 +16,15 @@ export interface TaskPersonChip {
 }
 
 export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
-  open: 'Offen',
-  in_progress: 'In Arbeit',
-  completed: 'Erledigt',
+  get open() { return translate('tasks.status.open'); },
+  get in_progress() { return translate('tasks.status.inProgress'); },
+  get completed() { return translate('tasks.status.completed'); },
 };
 
 export const TASK_PRIORITY_LABELS: Record<AgendaItemPriority, string> = {
-  low: 'Niedrig',
-  medium: 'Mittel',
-  high: 'Hoch',
+  get low() { return translate('agenda.low'); },
+  get medium() { return translate('agenda.medium'); },
+  get high() { return translate('agenda.high'); },
 };
 
 export const TASK_PRIORITY_COLORS: Record<AgendaItemPriority, string> = {
@@ -29,8 +32,6 @@ export const TASK_PRIORITY_COLORS: Record<AgendaItemPriority, string> = {
   medium: 'warning',
   high: 'danger',
 };
-
-const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 
 /**
  * One chip per person who has open (not completed) tasks, sorted by name.
@@ -48,8 +49,8 @@ export function taskPersonChips(tasks: Task[]): TaskPersonChip[] {
     const p = t.responsible_person;
     byId.set(t.responsible_person_id, {
       personId: t.responsible_person_id,
-      name: personName(p) || 'Unbekannt',
-      firstName: p?.firstName?.trim() || personName(p) || 'Unbekannt',
+      name: personName(p) || translate('common.unknown'),
+      firstName: p?.firstName?.trim() || personName(p) || translate('common.unknown'),
       lastName: p?.lastName?.trim() ?? '',
       label: '',
       openCount: 1,
@@ -63,7 +64,7 @@ export function taskPersonChips(tasks: Task[]): TaskPersonChip[] {
       ...chip,
       label: (firstNameCount.get(firstName) ?? 0) > 1 && lastName ? `${firstName} ${lastName.charAt(0)}.` : firstName,
     }))
-    .sort((a, b) => a.name.localeCompare(b.name, 'de'));
+    .sort((a, b) => a.name.localeCompare(b.name, currentLanguage()));
 }
 
 /** Applies a filter chip. "mine" without a known person shows nothing. */
@@ -75,7 +76,7 @@ export function filterTasks(tasks: Task[], filter: TaskFilter, myPersonId: numbe
 }
 
 /**
- * Short German due date: "Di, 28.10." (with year if it is not the current year),
+ * Short due date (German shown): "Di, 28.10." (with year if it is not the current year),
  * "seit 12.10." for overdue tasks, "Heute"/"Morgen" for the next days.
  */
 export function formatTaskDue(task: Pick<Task, 'due_date' | 'status'>, today: string): string {
@@ -85,21 +86,21 @@ export function formatTaskDue(task: Pick<Task, 'due_date' | 'status'>, today: st
   const date = new Date(y, m - 1, d);
   const sameYear = String(y) === today.slice(0, 4);
   const dayMonth = `${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.${sameYear ? '' : y}`;
-  if (task.status !== 'completed' && task.due_date < today) return `seit ${dayMonth}`;
-  if (task.due_date === today) return 'Heute';
+  if (task.status !== 'completed' && task.due_date < today) return translate('teamOrg.since', { date: dayMonth });
+  if (task.due_date === today) return translate('teamOrg.todayCap');
   const [ty, tm, td] = today.split('-').map(Number);
   const tomorrow = new Date(ty, tm - 1, td + 1);
-  if (date.getTime() === tomorrow.getTime()) return 'Morgen';
-  return `${WEEKDAYS[date.getDay()]}, ${dayMonth}`;
+  if (date.getTime() === tomorrow.getTime()) return translate('teamOrg.tomorrow');
+  return `${dayjs(date).format('dd')}, ${dayMonth}`;
 }
 
-/** Long German date for detail views: "Do, 30.10.2026". */
+/** Long date for detail views: "Do, 30.10.2026". */
 export function formatLongDate(isoDate: string | null | undefined): string {
   if (!isoDate) return '';
   const [y, m, d] = isoDate.slice(0, 10).split('-').map(Number);
   if (!y || !m || !d) return isoDate;
   const date = new Date(y, m - 1, d);
-  return `${WEEKDAYS[date.getDay()]}, ${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.${y}`;
+  return `${dayjs(date).format('dd')}, ${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.${y}`;
 }
 
 /** Today as YYYY-MM-DD in local time. */

@@ -6,9 +6,11 @@ import { IonicModule } from '@ionic/angular/lazy';
 
 import { MessageDetailPageRoutingModule } from './message-detail-routing.module';
 import { MessageDetailPage } from './message-detail.page';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

@@ -3,10 +3,10 @@
     <ion-buttons slot="start">
       <ion-back-button text="" [defaultHref]="backHref"></ion-back-button>
     </ion-buttons>
-    <ion-title>Mitteilung</ion-title>
+    <ion-title>{{ 'messages.message' | transloco }}</ion-title>
     @if (isManager && message) {
       <ion-buttons slot="end">
-        <ion-button color="danger" (click)="remove()" aria-label="Mitteilung löschen">
+        <ion-button color="danger" (click)="remove()" [attr.aria-label]="'messages.deleteMessage' | transloco">
           <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
         </ion-button>
       </ion-buttons>
@@ -26,7 +26,7 @@
   } @else if (!message) {
     <div class="noDataContainer">
       <ion-icon name="megaphone-outline" size="large"></ion-icon>
-      <p>Diese Mitteilung gibt es nicht mehr oder du hast keinen Zugriff darauf.</p>
+      <p>{{ 'messages.notAvailable' | transloco }}</p>
     </div>
   } @else {
     @if (isManager) {
@@ -45,7 +45,7 @@
       <div class="message-card">
         @if (!isManager) {
           <h1>{{ message.title }}</h1>
-          <p class="from">Von {{ message.sender_name || 'Unbekannt' }} · {{ message.created_at | date:'dd.MM.yyyy, HH:mm' }}</p>
+          <p class="from">{{ 'messages.from' | transloco: { name: message.sender_name || ('common.unknown' | transloco), date: (message.created_at | date:'dd.MM.yyyy, HH:mm') } }}</p>
         }
         <div class="message-body" [innerHTML]="message.body_html" (click)="onBodyClick($event)"></div>
       </div>
@@ -53,26 +53,26 @@
 
     @if (isManager) {
       @if (message.status === 'sending') {
-        <p class="hint">Der Versand läuft noch. Ziehe nach unten, um zu aktualisieren.</p>
+        <p class="hint">{{ 'messages.stillSending' | transloco }}</p>
       }
-      <ion-list-header><ion-label>Übersicht</ion-label></ion-list-header>
+      <ion-list-header><ion-label>{{ 'messages.overview' | transloco }}</ion-label></ion-list-header>
       <div class="tiles">
-        <div class="tile"><b>{{ stats.read }} / {{ stats.total }}</b><small>in der App gelesen</small></div>
-        <div class="tile"><b>{{ stats.pushDelivered }} / {{ stats.pushTotal }}</b><small>Push/Telegram zugestellt</small></div>
-        <div class="tile"><b>{{ stats.emailDelivered }} / {{ stats.emailTotal }}</b><small>E-Mail zugestellt</small></div>
-        <div class="tile"><b>≈ {{ stats.emailOpened }}</b><small>E-Mail geöffnet (ungefähr)</small></div>
+        <div class="tile"><b>{{ stats.read }} / {{ stats.total }}</b><small>{{ 'messages.readInApp' | transloco }}</small></div>
+        <div class="tile"><b>{{ stats.pushDelivered }} / {{ stats.pushTotal }}</b><small>{{ 'messages.pushDelivered' | transloco }}</small></div>
+        <div class="tile"><b>{{ stats.emailDelivered }} / {{ stats.emailTotal }}</b><small>{{ 'messages.emailDelivered' | transloco }}</small></div>
+        <div class="tile"><b>≈ {{ stats.emailOpened }}</b><small>{{ 'messages.emailOpenedApprox' | transloco }}</small></div>
       </div>
-      <p class="hint">„Geöffnet“ bei E-Mails ist ein Schätzwert: manche Mail-Apps laden Bilder vorab, andere blockieren sie.</p>
+      <p class="hint">{{ 'messages.openedEstimate' | transloco }}</p>
 
       <ion-segment class="filter" [value]="filter" (ionChange)="onFilterChange($any($event.detail.value))">
-        <ion-segment-button value="all"><ion-label>Alle {{ stats.total }}</ion-label></ion-segment-button>
-        <ion-segment-button value="read"><ion-label>Gelesen {{ stats.readAny }}</ion-label></ion-segment-button>
-        <ion-segment-button value="open"><ion-label>Offen {{ stats.open }}</ion-label></ion-segment-button>
-        <ion-segment-button value="problems"><ion-label>Probleme {{ stats.problems }}</ion-label></ion-segment-button>
+        <ion-segment-button value="all"><ion-label>{{ 'messages.allCount' | transloco: { count: stats.total } }}</ion-label></ion-segment-button>
+        <ion-segment-button value="read"><ion-label>{{ 'messages.readCount' | transloco: { count: stats.readAny } }}</ion-label></ion-segment-button>
+        <ion-segment-button value="open"><ion-label>{{ 'messages.openCount' | transloco: { count: stats.open } }}</ion-label></ion-segment-button>
+        <ion-segment-button value="problems"><ion-label>{{ 'messages.problemsCount' | transloco: { count: stats.problems } }}</ion-label></ion-segment-button>
       </ion-segment>
 
       @if (filtered.length === 0) {
-        <p class="hint">Keine Personen in dieser Ansicht.</p>
+        <p class="hint">{{ 'messages.noPeopleView' | transloco }}</p>
       } @else {
         <ion-list [inset]="true">
           @for (r of filtered; track r.id) {
@@ -90,7 +90,7 @@
         </ion-list>
       }
     } @else if (earlier.length > 0) {
-      <ion-list-header><ion-label>Frühere Mitteilungen</ion-label></ion-list-header>
+      <ion-list-header><ion-label>{{ 'messages.earlier' | transloco }}</ion-label></ion-list-header>
       <ion-list [inset]="true">
         @for (m of earlier; track m.id) {
           <ion-item button detail="true" (click)="openMessage(m)">

@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
     </ion-buttons>
-    <ion-title>Mitteilungen</ion-title>
+    <ion-title>{{ 'messages.messages' | transloco }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -17,16 +17,16 @@
       <div class="empty-icon">
         <ion-icon name="megaphone-outline"></ion-icon>
       </div>
-      <h2>Noch keine Mitteilungen</h2>
-      <p>Informiere deine Gruppe mit einer Mitteilung und sieh direkt, wer sie schon gelesen hat.</p>
+      <h2>{{ 'messages.none' | transloco }}</h2>
+      <p>{{ 'messages.noneHint' | transloco }}</p>
       <ion-button shape="round" (click)="compose()">
         <ion-icon slot="start" name="create-outline"></ion-icon>
-        Erste Mitteilung schreiben
+        {{ 'messages.writeFirst' | transloco }}
       </ion-button>
     </div>
   } @else if (messages.length > 0) {
     <ion-list-header>
-      <ion-label>Gesendet</ion-label>
+      <ion-label>{{ 'messages.sent' | transloco }}</ion-label>
     </ion-list-header>
     <ion-list [inset]="true">
       @for (m of messages; track m.id) {
@@ -34,13 +34,13 @@
           <ion-item button detail="true" (click)="open(m)">
             <ion-label class="message-row">
               <h2>{{ m.title }}</h2>
-              <p>{{ m.created_at | date:'dd.MM.yyyy' }}{{ m.sender_name ? ' · ' + m.sender_name : '' }} · an {{ m.recipient_count }} Personen</p>
+              <p>{{ m.created_at | date:'dd.MM.yyyy' }}{{ m.sender_name ? ' · ' + m.sender_name : '' }} · {{ 'messages.toPeople' | transloco: { count: m.recipient_count } }}</p>
               <div class="bar"><span [style.width.%]="readPercent(m)"></span></div>
               <div class="meta">
                 @if (m.status === 'sending') {
-                  <span>Versand läuft …</span>
+                  <span>{{ 'messages.sending' | transloco }}</span>
                 } @else {
-                  <span>{{ m.read }} von {{ m.recipient_count }} gelesen</span>
+                  <span>{{ 'messages.readOf' | transloco: { read: m.read, total: m.recipient_count } }}</span>
                 }
                 @if (m.problems > 0) {
                   <ion-badge color="warning">{{ m.problems }} {{ m.problems === 1 ? 'Problem' : 'Probleme' }}</ion-badge>
@@ -59,7 +59,7 @@
   }
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="compose()" aria-label="Neue Mitteilung">
+    <ion-fab-button (click)="compose()" [attr.aria-label]="'messages.newMessage' | transloco">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>

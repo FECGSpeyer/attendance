@@ -3,13 +3,13 @@
     <ion-buttons slot="start">
       <ion-back-button text="" [defaultHref]="backHref"></ion-back-button>
     </ion-buttons>
-    <ion-title>Aufgabe</ion-title>
+    <ion-title>{{ 'tasks.task' | transloco }}</ion-title>
     @if (isLeader && task) {
       <ion-buttons slot="end">
-        <ion-button (click)="edit()" aria-label="Bearbeiten">
+        <ion-button (click)="edit()" [attr.aria-label]="'common.edit' | transloco">
           <ion-icon slot="icon-only" name="create-outline"></ion-icon>
         </ion-button>
-        <ion-button (click)="deleteTask()" color="danger" aria-label="Löschen">
+        <ion-button (click)="deleteTask()" color="danger" [attr.aria-label]="'common.delete' | transloco">
           <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
         </ion-button>
       </ion-buttons>
@@ -29,8 +29,8 @@
   } @else if (!task) {
     <div class="task-missing">
       <ion-icon name="search-outline"></ion-icon>
-      <p>Diese Aufgabe gibt es nicht mehr oder du kannst sie nicht sehen.</p>
-      <ion-button fill="clear" [routerLink]="backHref">Zurück</ion-button>
+      <p>{{ 'tasks.notAvailable' | transloco }}</p>
+      <ion-button fill="clear" [routerLink]="backHref">{{ 'common.back' | transloco }}</ion-button>
     </div>
   } @else {
     <div class="task-hero">
@@ -40,7 +40,7 @@
 
     <div class="task-status">
       <ion-segment [value]="task.status" (ionChange)="setStatus($any($event.detail.value))" [disabled]="savingStatus"
-        aria-label="Status">
+        [attr.aria-label]="'agenda.status' | transloco">
         @for (opt of statusOptions; track opt.value) {
           <ion-segment-button [value]="opt.value">
             <ion-label>{{ opt.label }}</ion-label>
@@ -51,31 +51,31 @@
 
     <ion-list [inset]="true">
       <ion-list-header>
-        <ion-label>Details</ion-label>
+        <ion-label>{{ 'tasks.details' | transloco }}</ion-label>
       </ion-list-header>
       @if (isLeader) {
         <ion-item>
-          <ion-label>Verantwortlich</ion-label>
+          <ion-label>{{ 'tasks.responsible' | transloco }}</ion-label>
           <ion-note slot="end">
             {{ task.responsible_person ? task.responsible_person.firstName + ' ' + task.responsible_person.lastName : 'Niemand' }}
           </ion-note>
         </ion-item>
       }
       <ion-item>
-        <ion-label>Fällig am</ion-label>
+        <ion-label>{{ 'tasks.dueOn' | transloco }}</ion-label>
         <ion-note slot="end" [color]="isOverdue ? 'danger' : undefined">
           {{ task.due_date ? formatLongDate(task.due_date) : 'Ohne Fälligkeit' }}
-          @if (isOverdue) { · überfällig }
+          @if (isOverdue) { {{ 'tasks.overdueSuffix' | transloco }} }
         </ion-note>
       </ion-item>
       <ion-item>
-        <ion-label>Priorität</ion-label>
+        <ion-label>{{ 'tasks.priority' | transloco }}</ion-label>
         <ion-badge slot="end" [color]="priorityColors[task.priority]">{{ priorityLabels[task.priority] }}</ion-badge>
       </ion-item>
       @if (task.description) {
         <ion-item>
           <ion-label class="ion-text-wrap">
-            <p>Beschreibung</p>
+            <p>{{ 'tasks.description' | transloco }}</p>
             <div class="task-description">{{ task.description }}</div>
           </ion-label>
         </ion-item>
@@ -85,13 +85,13 @@
     @if (hasSource) {
       <ion-list [inset]="true">
         <ion-list-header>
-          <ion-label>Herkunft</ion-label>
+          <ion-label>{{ 'tasks.origin' | transloco }}</ion-label>
         </ion-list-header>
         @if (task.attendance_id) {
           <ion-item button detail="true" [routerLink]="['/tabs/attendance', task.attendance_id, 'protocol']">
             <ion-icon slot="start" name="document-text-outline" color="primary"></ion-icon>
             <ion-label class="ion-text-wrap">
-              <h2>Protokoll</h2>
+              <h2>{{ 'tasks.protocol' | transloco }}</h2>
               @if (attendanceLabel) {
                 <p>{{ attendanceLabel }}</p>
               }
@@ -103,7 +103,7 @@
             <ion-item button detail="true" [routerLink]="['/tabs/settings/agenda-items', task.agenda_item_id]">
               <ion-icon slot="start" name="list-outline" color="primary"></ion-icon>
               <ion-label class="ion-text-wrap">
-                <h2>Thema</h2>
+                <h2>{{ 'tasks.topic' | transloco }}</h2>
                 <p>{{ task.agenda_item?.title || 'Thema öffnen' }}</p>
               </ion-label>
             </ion-item>
@@ -111,7 +111,7 @@
             <ion-item>
               <ion-icon slot="start" name="list-outline" color="medium"></ion-icon>
               <ion-label class="ion-text-wrap">
-                <h2>Thema</h2>
+                <h2>{{ 'tasks.topic' | transloco }}</h2>
                 <p>{{ task.agenda_item?.title }}</p>
               </ion-label>
             </ion-item>
@@ -122,8 +122,7 @@
 
     @if (task.status !== 'completed' && task.due_date) {
       <ion-note class="task-hint">
-        {{ isMine ? 'Du bekommst' : 'Die verantwortliche Person bekommt' }} 2 Tage vor Fälligkeit eine Erinnerung
-        und noch eine, falls die Aufgabe überfällig wird.
+        {{ (isMine ? 'tasks.reminderSelf' : 'tasks.reminderOther') | transloco }}
       </ion-note>
     }
   }
@@ -134,7 +133,7 @@
     <ion-toolbar color="light" class="task-footer">
       <ion-button expand="block" shape="round" (click)="setStatus('completed')" [disabled]="savingStatus">
         <ion-icon slot="start" name="checkmark"></ion-icon>
-        Als erledigt markieren
+        {{ 'tasks.markDone' | transloco }}
       </ion-button>
     </ion-toolbar>
   </ion-footer>

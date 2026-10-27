@@ -20,6 +20,9 @@ import {
   TOPIC_PRIORITY_COLORS,
   TOPIC_PRIORITY_LABELS,
 } from './topics-tab.utils';
+import { translate } from '@jsverse/transloco';
+import { currentLanguage } from '../../i18n/languages';
+import { TranslocoModule } from '@jsverse/transloco';
 
 /**
  * Tab "Themen" of the Teamorganisation. Leadership: suggestions to review,
@@ -31,7 +34,7 @@ import {
   templateUrl: './topics-tab.component.html',
   styleUrls: ['./topics-tab.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, RouterModule],
+  imports: [CommonModule, FormsModule, IonicModule, RouterModule, TranslocoModule],
 })
 export class TeamTopicsTabComponent implements OnInit {
   loading = true;
@@ -100,7 +103,7 @@ export class TeamTopicsTabComponent implements OnInit {
       }
     } catch (error) {
       console.error('Topics load error:', error);
-      Utils.showToast('Themen konnten nicht geladen werden', 'danger');
+      Utils.showToast(translate('agenda.loadFailed'), 'danger');
     } finally {
       this.loading = false;
     }
@@ -145,13 +148,13 @@ export class TeamTopicsTabComponent implements OnInit {
 
   /** "Nächster Termin" or "Gewählter Termin" when the leadership switched to a later one. */
   get nextHeader(): string {
-    return this.nextAttendance && this.nextAttendance.id !== this.upcomingAttendances[0]?.id ? 'Gewählter Termin' : 'Nächster Termin';
+    return this.nextAttendance && this.nextAttendance.id !== this.upcomingAttendances[0]?.id ? translate('teamOrg.chosenEvent') : translate('teamOrg.nextEvent');
   }
 
   private attendanceTitle(att: Attendance): string {
     const type = this.db.attendanceTypes().find(t => t.id === att.type_id);
-    const name = (type ? Utils.getTypeTitle(type, att.typeInfo) : att.typeInfo) || type?.name || 'Termin';
-    return `${name} · ${dayjs(att.date).locale('de').format('dd, DD.MM.')}`;
+    const name = (type ? Utils.getTypeTitle(type, att.typeInfo) : att.typeInfo) || type?.name || translate('attendance.eventFallback');
+    return `${name} · ${dayjs(att.date).locale(currentLanguage()).format('dd, DD.MM.')}`;
   }
 
   /** "Ändern": pick another upcoming Termin or create a new one. */
@@ -161,11 +164,11 @@ export class TeamTopicsTabComponent implements OnInit {
       handler: () => { this.chooseAttendance(att); },
     }));
     if (this.nextAttendance) {
-      buttons.push({ text: 'Datum dieses Termins ändern', icon: 'calendar-outline', handler: () => { void this.changeDate(); } });
+      buttons.push({ text: translate('teamOrg.changeDate'), icon: 'calendar-outline', handler: () => { void this.changeDate(); } });
     }
-    buttons.push({ text: 'Neuen Termin anlegen', icon: 'add-circle-outline', handler: () => { void this.createAttendance(); } });
-    buttons.push({ text: 'Abbrechen', role: 'cancel' });
-    const sheet = await this.actionSheetController.create({ header: 'Für welchen Termin planen?', buttons });
+    buttons.push({ text: translate('agenda.newEvent'), icon: 'add-circle-outline', handler: () => { void this.createAttendance(); } });
+    buttons.push({ text: translate('common.cancel'), role: 'cancel' });
+    const sheet = await this.actionSheetController.create({ header: translate('teamOrg.planForWhich'), buttons });
     await sheet.present();
   }
 
@@ -203,9 +206,9 @@ export class TeamTopicsTabComponent implements OnInit {
     const sheet = await this.actionSheetController.create({
       header: top.name,
       buttons: [
-        { text: 'Thema öffnen', handler: () => { this.openTopic(top.agendaItemId); } },
-        { text: 'Aus diesem Termin entfernen', role: 'destructive', handler: () => { void this.removeTop(top); } },
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('teamOrg.openTopic'), handler: () => { this.openTopic(top.agendaItemId); } },
+        { text: translate('teamOrg.removeFromEvent'), role: 'destructive', handler: () => { void this.removeTop(top); } },
+        { text: translate('common.cancel'), role: 'cancel' },
       ],
     });
     await sheet.present();
@@ -217,18 +220,18 @@ export class TeamTopicsTabComponent implements OnInit {
       const plan = await addTopicsToAttendance(this.db, this.nextAttendance, this.nextType, [], [top.agendaItemId]);
       this.setNextAttendance({ ...this.nextAttendance, plan });
       this.upcomingAttendances = this.upcomingAttendances.map(a => a.id === this.nextAttendance?.id ? { ...a, plan } : a);
-      Utils.showToast('Aus dem Termin entfernt, bleibt im Themenspeicher');
+      Utils.showToast(translate('teamOrg.removedStays'));
     } catch (error) {
       console.error('Remove TOP error:', error);
-      Utils.showToast('Thema konnte nicht entfernt werden', 'danger');
+      Utils.showToast(translate('teamOrg.removeFailed'), 'danger');
     }
   }
 
   topicSubtitle(item: AgendaItem): string {
-    const parts = [personName(item.responsible_person) || 'Noch niemand verantwortlich'];
+    const parts = [personName(item.responsible_person) || translate('teamOrg.nobodyResponsible')];
     if (item.proposed_by) {
       const by = personName(item.proposer);
-      parts.push(by ? `Vorschlag von ${by}` : 'Vorschlag');
+      parts.push(by ? translate('agenda.proposedBy', { name: by }) : translate('teamOrg.proposal'));
     }
     return parts.join(' · ');
   }
@@ -272,8 +275,8 @@ export class TeamTopicsTabComponent implements OnInit {
 
   async accept(item: AgendaItem) {
     const alert = await this.alertController.create({
-      header: 'Vorschlag übernehmen',
-      message: 'Mit welcher Priorität kommt das Thema in den Themenspeicher?',
+      header: translate('teamOrg.acceptSuggestion'),
+      message: translate('teamOrg.whichPriority'),
       inputs: (['high', 'medium', 'low'] as AgendaItemPriority[]).map(p => ({
         type: 'radio' as const,
         label: TOPIC_PRIORITY_LABELS[p],
@@ -281,32 +284,32 @@ export class TeamTopicsTabComponent implements OnInit {
         checked: p === (item.priority ?? 'medium'),
       })),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        { text: 'Übernehmen', role: 'confirm' },
+        { text: translate('common.cancel'), role: 'cancel' },
+        { text: translate('common.apply'), role: 'confirm' },
       ],
     });
     await alert.present();
     const { role, data } = await alert.onDidDismiss();
     if (role !== 'confirm') return;
     const priority = (data?.values as AgendaItemPriority) || item.priority || 'medium';
-    await this.decide(item, { proposal_status: 'accepted', priority, decision_note: null }, 'Übernommen');
+    await this.decide(item, { proposal_status: 'accepted', priority, decision_note: null }, translate('teamOrg.suggestion.accepted'));
   }
 
   async reject(item: AgendaItem) {
     const alert = await this.alertController.create({
-      header: 'Vorschlag ablehnen',
-      message: `${personName(item.proposer) || 'Die Person'} wird informiert. Eine kurze Begründung hilft.`,
-      inputs: [{ name: 'note', type: 'textarea', placeholder: 'Begründung (optional)' }],
+      header: translate('teamOrg.rejectSuggestion'),
+      message: translate('teamOrg.personInformed', { name: personName(item.proposer) || translate('teamOrg.thePerson') }),
+      inputs: [{ name: 'note', type: 'textarea', placeholder: translate('teamOrg.reasonOptional') }],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        { text: 'Ablehnen', role: 'confirm' },
+        { text: translate('common.cancel'), role: 'cancel' },
+        { text: translate('teamOrg.reject'), role: 'confirm' },
       ],
     });
     await alert.present();
     const { role, data } = await alert.onDidDismiss();
     if (role !== 'confirm') return;
     const note = (data?.values?.note ?? '').trim();
-    await this.decide(item, { proposal_status: 'rejected', decision_note: note || null }, 'Abgelehnt');
+    await this.decide(item, { proposal_status: 'rejected', decision_note: note || null }, translate('teamOrg.suggestion.rejected'));
   }
 
   private async decide(item: AgendaItem, changes: Partial<AgendaItem>, doneText: string) {
@@ -319,7 +322,7 @@ export class TeamTopicsTabComponent implements OnInit {
       await this.loadLeader();
     } catch (error) {
       console.error('Proposal decision error:', error);
-      Utils.showToast('Entscheidung konnte nicht gespeichert werden', 'danger');
+      Utils.showToast(translate('teamOrg.decisionFailed'), 'danger');
     } finally {
       this.deciding.delete(item.id);
     }
@@ -336,7 +339,7 @@ export class TeamTopicsTabComponent implements OnInit {
   async sendSuggestion() {
     const title = this.suggestTitle.trim();
     if (!title) {
-      Utils.showToast('Bitte einen Titel eingeben', 'warning');
+      Utils.showToast(translate('agenda.enterTitle'), 'warning');
       return;
     }
     if (this.sending) return;
@@ -344,11 +347,11 @@ export class TeamTopicsTabComponent implements OnInit {
     try {
       await this.db.proposeAgendaItem(title, this.suggestDescription.trim() || undefined);
       this.isSuggestOpen = false;
-      Utils.showToast('Vorschlag gesendet', 'success');
+      Utils.showToast(translate('teamOrg.suggestionSent'), 'success');
       await this.reload();
     } catch (error) {
       console.error('Proposal error:', error);
-      Utils.showToast('Vorschlag konnte nicht gesendet werden', 'danger');
+      Utils.showToast(translate('teamOrg.suggestionFailed'), 'danger');
     } finally {
       this.sending = false;
     }

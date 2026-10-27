@@ -1,11 +1,11 @@
 @if (isLeader && tasks.length) {
-  <div class="task-chips" role="toolbar" aria-label="Filter">
+  <div class="task-chips" role="toolbar" [attr.aria-label]="'teamOrg.filter' | transloco">
     <ion-chip [class.is-active]="filter === 'all'" (click)="setFilter('all')">
-      <ion-label>Alle · {{ allOpenCount }}</ion-label>
+      <ion-label>{{ 'teamOrg.allCount' | transloco: { count: allOpenCount } }}</ion-label>
     </ion-chip>
     @if (myPersonId) {
       <ion-chip [class.is-active]="filter === 'mine'" (click)="setFilter('mine')">
-        <ion-label>Meine · {{ myOpenCount }}</ion-label>
+        <ion-label>{{ 'teamOrg.mineCount' | transloco: { count: myOpenCount } }}</ion-label>
       </ion-chip>
     }
     @for (chip of chips; track chip.personId) {
@@ -64,7 +64,7 @@
       @if (isLeader && !tasks.length) {
         <ion-button fill="clear" (click)="addTask()">
           <ion-icon slot="start" name="add"></ion-icon>
-          Aufgabe anlegen
+          {{ 'teamOrg.createTask' | transloco }}
         </ion-button>
       }
     </div>
@@ -75,8 +75,8 @@
       <ion-item>
         <ion-toggle [(ngModel)]="includeArchived" (ionChange)="onArchivedToggle()">
           <ion-label>
-            Ältere erledigte anzeigen
-            <p>Erledigte Aufgaben verschwinden nach 30 Tagen aus der Liste.</p>
+            {{ 'teamOrg.showOlderDone' | transloco }}
+            <p>{{ 'teamOrg.doneDisappear' | transloco }}</p>
           </ion-label>
         </ion-toggle>
       </ion-item>
@@ -87,7 +87,7 @@
 @if (isLeader) {
   <div class="task-fab-spacer"></div>
   <ion-fab class="task-fab" vertical="bottom" horizontal="end">
-    <ion-fab-button (click)="addTask()" aria-label="Aufgabe anlegen">
+    <ion-fab-button (click)="addTask()" [attr.aria-label]="'teamOrg.createTask' | transloco">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>

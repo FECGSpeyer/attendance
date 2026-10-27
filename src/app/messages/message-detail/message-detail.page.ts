@@ -8,6 +8,7 @@ import { Role } from 'src/app/utilities/constants';
 import { Message } from 'src/app/utilities/interfaces';
 import type { MessageRecipient } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 type Filter = 'all' | 'read' | 'open' | 'problems';
 type ChipTone = 'ok' | 'bad' | 'warn' | 'neutral';
@@ -97,7 +98,7 @@ export class MessageDetailPage implements OnInit {
       }
     } catch (e) {
       console.error('[message-detail] load failed:', e);
-      Utils.showToast('Mitteilung konnte nicht geladen werden', 'danger');
+      Utils.showToast(translate('messages.loadFailed'), 'danger');
     } finally {
       this.loading = false;
     }
@@ -133,12 +134,12 @@ export class MessageDetailPage implements OnInit {
   async remove(): Promise<void> {
     if (!this.message) return;
     const alert = await this.alertController.create({
-      header: 'Mitteilung löschen?',
-      message: 'Die Mitteilung verschwindet auch bei allen Empfängern aus der App. Bereits versendete E-Mails bleiben bestehen.',
+      header: translate('messages.deleteConfirm'),
+      message: translate('messages.deleteHint'),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Löschen',
+          text: translate('common.delete'),
           role: 'destructive',
           handler: async () => {
             try {
@@ -146,7 +147,7 @@ export class MessageDetailPage implements OnInit {
               await this.router.navigateByUrl('/tabs/settings/messages');
             } catch (e) {
               console.error('[message-detail] delete failed:', e);
-              Utils.showToast('Fehler beim Löschen', 'danger');
+              Utils.showToast(translate('messages.deleteFailed'), 'danger');
             }
           },
         },
@@ -192,40 +193,40 @@ export class MessageDetailPage implements OnInit {
 
   private chipsFor(r: MessageRecipient, unreachable: boolean): Chip[] {
     if (unreachable && !r.read_at) {
-      return [{ text: r.user_id ? 'Nicht erreichbar' : 'Kein App-Konto, keine E-Mail', tone: 'warn' }];
+      return [{ text: r.user_id ? translate('messages.unreachable') : translate('messages.noAccountNoEmail'), tone: 'warn' }];
     }
     const chips: Chip[] = [];
     chips.push(r.read_at
-      ? { text: `✓ Gelesen ${this.time(r.read_at)}`, tone: 'ok' }
-      : { text: 'Ungelesen', tone: 'neutral' });
+      ? { text: translate('messages.readAt', { time: this.time(r.read_at) }), tone: 'ok' }
+      : { text: translate('messages.unread'), tone: 'neutral' });
 
     if (!r.user_id) {
-      chips.push({ text: 'Kein App-Konto', tone: 'neutral' });
+      chips.push({ text: translate('messages.noAccount'), tone: 'neutral' });
     } else if (r.push_sent_at) {
-      chips.push({ text: 'Push', tone: 'ok' });
+      chips.push({ text: translate('messages.push'), tone: 'ok' });
     } else if (!r.push_enabled) {
-      chips.push({ text: 'Push aus', tone: 'neutral' });
+      chips.push({ text: translate('messages.pushOff'), tone: 'neutral' });
     } else if (r.push_failed) {
-      chips.push({ text: 'Push fehlgeschlagen', tone: 'bad' });
+      chips.push({ text: translate('messages.pushFailed'), tone: 'bad' });
     }
     if (r.telegram_sent_at) {
-      chips.push({ text: 'Telegram', tone: 'ok' });
+      chips.push({ text: translate('messages.telegram'), tone: 'ok' });
     }
 
     if (!r.email) {
-      chips.push({ text: 'Keine E-Mail', tone: 'neutral' });
+      chips.push({ text: translate('messages.noEmail'), tone: 'neutral' });
     } else if (r.email_bounced_at) {
-      chips.push({ text: 'E-Mail unzustellbar', tone: 'bad' });
+      chips.push({ text: translate('messages.emailBounced'), tone: 'bad' });
     } else if (r.email_failed) {
-      chips.push({ text: 'E-Mail fehlgeschlagen', tone: 'bad' });
+      chips.push({ text: translate('messages.emailFailed'), tone: 'bad' });
     } else if (r.email_opened_at) {
-      chips.push({ text: `E-Mail geöffnet ${this.time(r.email_opened_at)}`, tone: 'ok' });
+      chips.push({ text: translate('messages.emailOpened', { time: this.time(r.email_opened_at) }), tone: 'ok' });
     } else if (r.email_delivered_at) {
-      chips.push({ text: 'E-Mail zugestellt', tone: 'ok' });
+      chips.push({ text: translate('messages.emailDeliveredChip'), tone: 'ok' });
     } else if (r.email_sent_at) {
-      chips.push({ text: 'E-Mail gesendet', tone: 'neutral' });
+      chips.push({ text: translate('messages.emailSent'), tone: 'neutral' });
     } else {
-      chips.push({ text: 'E-Mail ausstehend', tone: 'neutral' });
+      chips.push({ text: translate('messages.emailPending'), tone: 'neutral' });
     }
     return chips;
   }

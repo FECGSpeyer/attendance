@@ -3,7 +3,7 @@
     <div class="card-header-strip strip-tasks">
       <ion-icon name="checkbox-outline"></ion-icon>
       <div>
-        <div class="card-title">Meine Aufgaben</div>
+        <div class="card-title">{{ 'tasks.myTasks' | transloco }}</div>
         <div class="card-subtitle">{{ subtitle }}</div>
       </div>
     </div>
@@ -12,7 +12,7 @@
         @for (task of shownTasks; track task.id) {
           <ion-item button detail="false" [routerLink]="['/tabs/settings/tasks', task.id]">
             <ion-button slot="start" fill="clear" class="task-check" (click)="complete(task, $event)"
-              aria-label="Als erledigt markieren">
+              [attr.aria-label]="'tasks.markDone' | transloco">
               <ion-icon slot="icon-only" name="ellipse-outline" color="medium"></ion-icon>
             </ion-button>
             <ion-label class="ion-text-wrap">
@@ -20,7 +20,7 @@
               <p [class.is-overdue]="isOverdue(task)">{{ dueLabel(task) }}</p>
             </ion-label>
             @if (task.status === 'in_progress') {
-              <ion-badge slot="end" color="warning">In Arbeit</ion-badge>
+              <ion-badge slot="end" color="warning">{{ 'tasks.inProgress' | transloco }}</ion-badge>
             }
           </ion-item>
         }

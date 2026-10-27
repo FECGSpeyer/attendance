@@ -19,6 +19,8 @@ import {
   taskPersonChips,
   toggledStatus,
 } from './tasks-tab.utils';
+import { translate } from '@jsverse/transloco';
+import { TranslocoModule } from '@jsverse/transloco';
 
 /**
  * Tab "Aufgaben" of the Teamorganisation. Leadership sees all tasks with
@@ -30,7 +32,7 @@ import {
   templateUrl: './tasks-tab.component.html',
   styleUrls: ['./tasks-tab.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, RouterModule],
+  imports: [CommonModule, FormsModule, IonicModule, RouterModule, TranslocoModule],
 })
 export class TeamTasksTabComponent implements OnInit {
   tasks: Task[] = [];
@@ -69,7 +71,7 @@ export class TeamTasksTabComponent implements OnInit {
       this.tasks = this.isLeader ? await this.db.getTasks() : await this.db.getMyTasks();
     } catch (error) {
       console.error('Tasks load error:', error);
-      Utils.showToast('Aufgaben konnten nicht geladen werden', 'danger');
+      Utils.showToast(translate('teamOrg.tasksLoadFailed'), 'danger');
     } finally {
       this.loading = false;
       this.rebuild();
@@ -104,10 +106,10 @@ export class TeamTasksTabComponent implements OnInit {
   }
 
   get emptyText(): string {
-    if (!this.isLeader) return 'Dir sind gerade keine Aufgaben zugewiesen. Genieß die Ruhe!';
-    if (this.filter === 'mine') return 'Du hast keine Aufgaben. Alles erledigt!';
-    if (!this.tasks.length) return 'Noch keine Aufgaben. Leg die erste mit + an oder direkt aus einem Protokoll.';
-    return 'Hier ist nichts offen.';
+    if (!this.isLeader) return translate('teamOrg.emptyMineAssigned');
+    if (this.filter === 'mine') return translate('teamOrg.emptyMine');
+    if (!this.tasks.length) return translate('teamOrg.emptyAll');
+    return translate('teamOrg.emptyPerson');
   }
 
   isOverdue(task: Task): boolean {
@@ -120,10 +122,10 @@ export class TeamTasksTabComponent implements OnInit {
 
   subtitle(task: Task): string {
     const parts: string[] = [];
-    if (this.isLeader) parts.push(personName(task.responsible_person) || 'Niemand zugewiesen');
+    if (this.isLeader) parts.push(personName(task.responsible_person) || translate('teamOrg.nobodyAssigned'));
     const due = this.dueLabel(task);
     if (due) parts.push(due);
-    else if (!this.isLeader) parts.push('Ohne Fälligkeit');
+    else if (!this.isLeader) parts.push(translate('tasks.noDue'));
     return parts.join(' · ');
   }
 
@@ -149,7 +151,7 @@ export class TeamTasksTabComponent implements OnInit {
       console.error('Task status error:', error);
       task.status = previous;
       this.rebuild();
-      Utils.showToast('Status konnte nicht geändert werden', 'danger');
+      Utils.showToast(translate('tasks.statusFailed'), 'danger');
     } finally {
       this.busy.delete(task.id);
     }

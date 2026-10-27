@@ -7,6 +7,8 @@ import { AgendaItemPriority, Player, Task } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { personName } from 'src/app/team-organization/team-org.utils';
 import { formatLongDate, needsAssignmentNotice, TASK_PRIORITY_LABELS } from 'src/app/team-organization/tasks-tab/tasks-tab.utils';
+import { translate } from '@jsverse/transloco';
+import { TranslocoModule } from '@jsverse/transloco';
 
 /** Inputs of the task form; the protocol and topic screens pass the presets. */
 export interface TaskFormProps {
@@ -43,7 +45,7 @@ export async function openTaskForm(modalController: ModalController, props: Task
   templateUrl: './task-form.component.html',
   styleUrls: ['./task-form.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, TranslocoModule],
 })
 export class TaskFormComponent implements OnInit {
   @Input() task?: Task;
@@ -144,7 +146,7 @@ export class TaskFormComponent implements OnInit {
   async save() {
     const title = this.title.trim();
     if (!title) {
-      Utils.showToast('Bitte einen Titel eingeben', 'warning');
+      Utils.showToast(translate('tasks.enterTitle'), 'warning');
       return;
     }
     if (this.saving) return;
@@ -176,11 +178,11 @@ export class TaskFormComponent implements OnInit {
       if (shouldNotify && saved?.id) {
         void this.db.notifyTeam({ type: 'task_assigned', taskId: saved.id });
       }
-      Utils.showToast(this.isEdit ? 'Gespeichert' : 'Aufgabe angelegt');
+      Utils.showToast(this.isEdit ? translate('tasks.saved') : translate('tasks.created'));
       await this.modalController.dismiss(saved, 'saved');
     } catch (error) {
       console.error('Task save error:', error);
-      Utils.showToast('Aufgabe konnte nicht gespeichert werden', 'danger');
+      Utils.showToast(translate('tasks.saveFailed'), 'danger');
     } finally {
       this.saving = false;
     }

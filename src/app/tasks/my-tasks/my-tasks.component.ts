@@ -7,6 +7,8 @@ import { Task } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { groupTasksByDue, isTaskOverdue } from 'src/app/team-organization/team-org.utils';
 import { formatTaskDue, localToday } from 'src/app/team-organization/tasks-tab/tasks-tab.utils';
+import { translate } from '@jsverse/transloco';
+import { TranslocoModule } from '@jsverse/transloco';
 
 /**
  * Compact "Meine Aufgaben" card: the signed-in person's open tasks. Used as a
@@ -18,7 +20,7 @@ import { formatTaskDue, localToday } from 'src/app/team-organization/tasks-tab/t
   templateUrl: './my-tasks.component.html',
   styleUrls: ['./my-tasks.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule],
+  imports: [CommonModule, IonicModule, RouterModule, TranslocoModule],
 })
 export class MyTasksComponent {
   /** Maximum number of tasks listed in the card. */
@@ -54,8 +56,8 @@ export class MyTasksComponent {
   }
 
   get subtitle(): string {
-    const open = `${this.openTasks.length} offen`;
-    return this.overdueCount ? `${open} · ${this.overdueCount} überfällig` : open;
+    const open = translate('tasks.openCount', { count: this.openTasks.length });
+    return this.overdueCount ? `${open} · ${translate('tasks.overdueCount', { count: this.overdueCount })}` : open;
   }
 
   async load(): Promise<void> {
@@ -81,9 +83,9 @@ export class MyTasksComponent {
   }
 
   dueLabel(task: Task): string {
-    if (!task.due_date) return 'Ohne Fälligkeit';
+    if (!task.due_date) return translate('tasks.noDue');
     const label = formatTaskDue(task, this.today);
-    return this.isOverdue(task) ? `Überfällig ${label}` : `Fällig ${label}`;
+    return this.isOverdue(task) ? translate('tasks.overdueLabel', { label }) : translate('tasks.dueLabel', { label });
   }
 
   async complete(task: Task, event: Event) {
@@ -95,13 +97,13 @@ export class MyTasksComponent {
     this.openTasks = this.openTasks.filter(t => t !== task);
     try {
       await this.db.updateTask(task.id, { status: 'completed' });
-      Utils.showToast('Erledigt');
+      Utils.showToast(translate('tasks.done'));
     } catch (error) {
       console.error('Task complete error:', error);
       const restored = [...this.openTasks];
       restored.splice(Math.max(0, index), 0, task);
       this.openTasks = restored;
-      Utils.showToast('Status konnte nicht geändert werden', 'danger');
+      Utils.showToast(translate('tasks.statusFailed'), 'danger');
     } finally {
       this.busy.delete(task.id);
     }

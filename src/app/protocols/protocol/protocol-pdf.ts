@@ -1,5 +1,6 @@
 import { Utils } from 'src/app/utilities/Utils';
 import { DocLine, docToLines } from './protocol.helpers';
+import { translate } from '@jsverse/transloco';
 
 export interface ProtocolPdfSection {
   /** e.g. "TOP 1 · Konzertplanung" */
@@ -105,8 +106,8 @@ export async function createProtocolPdf(data: ProtocolPdfData): Promise<Blob> {
   };
 
   if (data.status) write(data.status, { size: 9.5, color: [110, 110, 110], gap: 2 });
-  if (data.present.length) write(`Anwesend (${data.present.length}): ${data.present.join(', ')}`, { size: 10, gap: 1 });
-  if (data.excused.length) write(`Entschuldigt (${data.excused.length}): ${data.excused.join(', ')}`, { size: 10, color: [90, 90, 90], gap: 1 });
+  if (data.present.length) write(`${translate('protocol.presentList', { count: data.present.length })}: ${data.present.join(', ')}`, { size: 10, gap: 1 });
+  if (data.excused.length) write(`${translate('protocol.excusedList', { count: data.excused.length })}: ${data.excused.join(', ')}`, { size: 10, color: [90, 90, 90], gap: 1 });
   y += 3;
 
   for (const section of data.sections) {
@@ -119,9 +120,9 @@ export async function createProtocolPdf(data: ProtocolPdfData): Promise<Blob> {
     if (section.meta) write(section.meta, { size: 9, color: [120, 120, 120], gap: 1.5 });
     const lines = docToLines(section.doc);
     if (lines.length) writeLines(lines);
-    else write('Keine Notizen', { size: 9.5, style: 'italic', color: [150, 150, 150] });
+    else write(translate('protocol.noNotes'), { size: 9.5, style: 'italic', color: [150, 150, 150] });
     for (const task of section.tasks ?? []) {
-      write(`Aufgabe: ${task}`, { size: 10, color: [59, 125, 132], x: MARGIN + 2, gap: 0.5 });
+      write(translate('protocol.taskRef', { title: task }), { size: 10, color: [59, 125, 132], x: MARGIN + 2, gap: 0.5 });
     }
     y += 4;
   }
@@ -131,7 +132,7 @@ export async function createProtocolPdf(data: ProtocolPdfData): Promise<Blob> {
     ensure(14);
     doc.line(MARGIN, y, pageWidth - MARGIN, y);
     y += 3;
-    write('Allgemeine Notizen', { size: 12, style: 'bold', gap: 1.5 });
+    write(translate('protocol.generalNotes'), { size: 12, style: 'bold', gap: 1.5 });
     writeLines(general);
     y += 4;
   }
@@ -140,7 +141,7 @@ export async function createProtocolPdf(data: ProtocolPdfData): Promise<Blob> {
     ensure(14);
     doc.line(MARGIN, y, pageWidth - MARGIN, y);
     y += 3;
-    write('Weitere Aufgaben', { size: 12, style: 'bold', gap: 1.5 });
+    write(translate('protocol.furtherTasks'), { size: 12, style: 'bold', gap: 1.5 });
     for (const task of data.otherTasks) write(`• ${task}`, { size: 10, gap: 0.5 });
   }
 
@@ -151,7 +152,7 @@ export async function createProtocolPdf(data: ProtocolPdfData): Promise<Blob> {
     doc.setFont(font, 'normal');
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text(`Seite ${i} von ${pages}`, pageWidth - MARGIN, pageHeight - 8, { align: 'right' });
+    doc.text(translate('protocol.page', { i, n: pages }), pageWidth - MARGIN, pageHeight - 8, { align: 'right' });
   }
 
   return doc.output('blob');

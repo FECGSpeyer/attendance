@@ -1,10 +1,11 @@
 import dayjs from 'dayjs';
 import { AgendaItem, AgendaItemPriority, FieldSelection } from '../../utilities/interfaces';
+import { translate } from '@jsverse/transloco';
 
 export const TOPIC_PRIORITY_LABELS: Record<AgendaItemPriority, string> = {
-  high: 'Hoch',
-  medium: 'Mittel',
-  low: 'Niedrig',
+  get high() { return translate('agenda.high'); },
+  get medium() { return translate('agenda.medium'); },
+  get low() { return translate('agenda.low'); },
 };
 
 export const TOPIC_PRIORITY_COLORS: Record<AgendaItemPriority, string> = {
@@ -41,9 +42,9 @@ export function splitTopics(items: AgendaItem[] | undefined | null): TopicBucket
 /** Status of a member's own suggestion. */
 export function suggestionStatus(item: Pick<AgendaItem, 'proposal_status'>): { label: string; color: string } {
   switch (item.proposal_status) {
-    case 'accepted': return { label: 'Übernommen', color: 'success' };
-    case 'rejected': return { label: 'Abgelehnt', color: 'danger' };
-    default: return { label: 'Wartet', color: 'medium' };
+    case 'accepted': return { label: translate('teamOrg.suggestion.accepted'), color: 'success' };
+    case 'rejected': return { label: translate('teamOrg.suggestion.rejected'), color: 'danger' };
+    default: return { label: translate('teamOrg.suggestion.waiting'), color: 'medium' };
   }
 }
 
@@ -51,9 +52,9 @@ export function suggestionStatus(item: Pick<AgendaItem, 'proposal_status'>): { l
 export function relativeDay(date: string | undefined | null, now: Date = new Date()): string {
   if (!date) return '';
   const days = dayjs(now).startOf('day').diff(dayjs(date).startOf('day'), 'day');
-  if (days <= 0) return 'heute';
-  if (days === 1) return 'gestern';
-  if (days < 14) return `vor ${days} Tagen`;
+  if (days <= 0) return translate('teamOrg.today');
+  if (days === 1) return translate('teamOrg.yesterday');
+  if (days < 14) return translate('teamOrg.daysAgo', { count: days });
   return dayjs(date).format('DD.MM.YYYY');
 }
 

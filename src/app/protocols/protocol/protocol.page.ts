@@ -60,6 +60,8 @@ import {
   parseColumnWidths,
 } from './protocol.helpers';
 import { createProtocolPdf, ProtocolPdfData } from './protocol-pdf';
+import { translate } from '@jsverse/transloco';
+import { currentLanguage } from '../../i18n/languages';
 
 type Doc = Record<string, unknown>;
 
@@ -283,7 +285,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
       const lastName = p.person?.lastName ?? p.lastName ?? '';
       return {
         id: String(p.id ?? p.person_id),
-        name: `${firstName} ${lastName}`.trim() || 'Unbekannt',
+        name: `${firstName} ${lastName}`.trim() || translate('common.unknown'),
         initials: initials(firstName, lastName),
         color: AVATAR_COLORS[(p.person_id ?? i) % AVATAR_COLORS.length],
         status: p.status,
@@ -311,8 +313,8 @@ export class ProtocolPage implements OnInit, OnDestroy {
       key: l.key,
       doc: l.doc,
       title: l.agendaItemId
-        ? (items.find(i => i.id === l.agendaItemId)?.title ?? 'Tagesordnungspunkt')
-        : 'Früherer Programmpunkt',
+        ? (items.find(i => i.id === l.agendaItemId)?.title ?? translate('protocol.agendaItem'))
+        : translate('protocol.earlierItem'),
     }));
   }
 
@@ -324,12 +326,12 @@ export class ProtocolPage implements OnInit, OnDestroy {
   }
 
   get title(): string {
-    return this.attendance?.typeInfo || this.type?.name || 'Protokoll';
+    return this.attendance?.typeInfo || this.type?.name || translate('protocol.title');
   }
 
   get dateLabel(): string {
     if (!this.attendance?.date) return '';
-    return dayjs(this.attendance.date).locale('de').format('dd, DD.MM.YYYY');
+    return dayjs(this.attendance.date).locale(currentLanguage()).format('dd, DD.MM.YYYY');
   }
 
   get shortDate(): string {
@@ -353,19 +355,19 @@ export class ProtocolPage implements OnInit, OnDestroy {
   }
 
   get statusLine(): string {
-    if (!this.isPublished) return 'Entwurf';
+    if (!this.isPublished) return translate('teamOrg.draft');
     const published = this.protocol?.published_at ? dayjs(this.protocol.published_at).format('DD.MM.YYYY') : '';
-    let line = `Freigegeben am ${published}`;
+    let line = translate('teamOrg.publishedOn', { date: published });
     if (isEditedAfterPublish(this.protocol)) {
-      line += ` · geändert am ${dayjs(this.protocol!.updated_at).format('DD.MM.YYYY')}`;
+      line = translate('teamOrg.editedOn', { text: line, date: dayjs(this.protocol!.updated_at).format('DD.MM.YYYY') });
     }
     return line;
   }
 
   get saveLabel(): string {
-    if (this.savingCount > 0) return 'Speichert …';
-    if (this.lastSavedAt) return `Automatisch gespeichert · ${dayjs(this.lastSavedAt).format('HH:mm')}`;
-    return this.isPublished ? 'Änderungen werden automatisch gespeichert' : 'Wird automatisch gespeichert';
+    if (this.savingCount > 0) return translate('protocol.saving');
+    if (this.lastSavedAt) return translate('protocol.autoSavedAt', { time: dayjs(this.lastSavedAt).format('HH:mm') });
+    return this.isPublished ? translate('protocol.changesAutoSaved') : translate('protocol.autoSaved');
   }
 
   get activeSection(): SectionView | undefined {
@@ -383,8 +385,8 @@ export class ProtocolPage implements OnInit, OnDestroy {
   get liveLabel(): string {
     const s = this.liveSectionView;
     if (!s || !this.live) return '';
-    const name = s.topNumber ? `TOP ${s.topNumber}` : s.name;
-    return `Läuft: ${name} · noch ${this.live.remainingMinutes} min`;
+    const name = s.topNumber ? translate('protocol.top', { n: s.topNumber }) : s.name;
+    return translate('protocol.running', { name, min: this.live.remainingMinutes });
   }
 
   get hasNext(): boolean {
@@ -405,7 +407,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
   }
 
   sectionMeta(s: SectionView): string {
-    return [s.start, s.duration ? `${s.duration} min` : '', s.conductor].filter(Boolean).join(' · ');
+    return [s.start, s.duration ? translate('planning.minShort', { min: s.duration }) : '', s.conductor].filter(Boolean).join(' · ');
   }
 
   tasksFor(sectionId: string): Task[] {
@@ -421,14 +423,14 @@ export class ProtocolPage implements OnInit, OnDestroy {
   sectionLabelOfTask(task: Task): string {
     const id = task.id ? this.taskSectionMap.get(task.id) : undefined;
     const s = this.sections.find(x => x.id === id);
-    if (s) return s.topNumber ? `TOP ${s.topNumber}` : s.name;
-    return id === PROTOCOL_GENERAL_SECTION_ID ? 'Allgemein' : '';
+    if (s) return s.topNumber ? translate('protocol.top', { n: s.topNumber }) : s.name;
+    return id === PROTOCOL_GENERAL_SECTION_ID ? translate('protocol.general') : '';
   }
 
   taskLine(task: Task): string {
     const parts: string[] = [];
     if (task.responsible_person) parts.push(`${task.responsible_person.firstName} ${task.responsible_person.lastName}`.trim());
-    if (task.due_date) parts.push(`fällig ${dayjs(task.due_date).format('DD.MM.')}`);
+    if (task.due_date) parts.push(translate('protocol.dueShort', { date: dayjs(task.due_date).format('DD.MM.') }));
     return parts.join(' · ');
   }
 
@@ -645,7 +647,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
   private showSaveError() {
     if (Date.now() - this.lastErrorToast < 10000) return;
     this.lastErrorToast = Date.now();
-    Utils.showToast('Notizen konnten nicht gespeichert werden. Prüfe deine Verbindung.', 'danger');
+    Utils.showToast(translate('protocol.notesSaveFailed'), 'danger');
   }
 
   /**
@@ -731,7 +733,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
       if (previous) reverted[fieldId] = previous;
       else delete reverted[fieldId];
       this.outcomes = reverted;
-      Utils.showToast('Ergebnis konnte nicht gespeichert werden', 'danger');
+      Utils.showToast(translate('protocol.outcomeSaveFailed'), 'danger');
     } finally {
       this.savingCount--;
     }
@@ -758,14 +760,14 @@ export class ProtocolPage implements OnInit, OnDestroy {
       protocolId = await this.ensureProtocol();
     } catch (error) {
       console.error('Protocol create error:', error);
-      Utils.showToast('Protokoll konnte nicht angelegt werden', 'danger');
+      Utils.showToast(translate('protocol.createFailed'), 'danger');
       return;
     }
     const task = await openTaskForm(this.modalController, {
       attendanceId: this.attendanceId,
       protocolId,
       agendaItemId: section?.field.agendaItemId ?? null,
-      contextLabel: section ? section.title : 'Allgemeine Notizen',
+      contextLabel: section ? section.title : translate('protocol.generalNotes'),
     });
     if (!task?.id) return;
 
@@ -792,20 +794,20 @@ export class ProtocolPage implements OnInit, OnDestroy {
   async addSpontaneousTopic() {
     const defaultDuration = this.type?.agenda_default_duration || 10;
     const alert = await this.alertController.create({
-      header: 'Spontaner Punkt',
-      message: 'Wird als neues Thema angelegt und im Ablaufplan ergänzt.',
+      header: translate('protocol.spontaneous'),
+      message: translate('protocol.spontaneousHint'),
       inputs: [
-        { name: 'title', type: 'text', placeholder: 'Titel' },
-        { name: 'duration', type: 'number', placeholder: 'Dauer in Minuten', value: defaultDuration, min: 1 },
+        { name: 'title', type: 'text', placeholder: translate('tasks.title') },
+        { name: 'duration', type: 'number', placeholder: translate('protocol.durationMinutes'), value: defaultDuration, min: 1 },
       ],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Hinzufügen',
+          text: translate('protocol.add'),
           handler: (data: { title?: string; duration?: string }) => {
             const title = data.title?.trim();
             if (!title) {
-              Utils.showToast('Bitte einen Titel eingeben', 'warning');
+              Utils.showToast(translate('agenda.enterTitle'), 'warning');
               return false;
             }
             const duration = Math.max(1, parseInt(data.duration ?? '', 10) || defaultDuration);
@@ -851,7 +853,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
       this.activate(field.id, true);
     } catch (error) {
       console.error('Spontaneous topic error:', error);
-      Utils.showToast('Punkt konnte nicht hinzugefügt werden', 'danger');
+      Utils.showToast(translate('protocol.pointFailed'), 'danger');
     } finally {
       await loading.dismiss();
     }
@@ -928,7 +930,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
           pdfPath = upload.path;
         } catch (error) {
           console.error('Protocol PDF error:', error);
-          Utils.showToast('PDF konnte nicht erstellt werden, die Benachrichtigung geht ohne PDF raus', 'warning');
+          Utils.showToast(translate('protocol.pdfFailedNotify'), 'warning');
         }
       }
 
@@ -939,10 +941,10 @@ export class ProtocolPage implements OnInit, OnDestroy {
         setTimeout(() => void this.db.protocolSvc.removePdf(path).catch(() => undefined), 60000);
       }
       this.publishOpen = false;
-      Utils.showToast('Protokoll freigegeben', 'success');
+      Utils.showToast(translate('protocol.published'), 'success');
     } catch (error) {
       console.error('Publish error:', error);
-      Utils.showToast('Protokoll konnte nicht freigegeben werden', 'danger');
+      Utils.showToast(translate('protocol.publishFailed'), 'danger');
     } finally {
       this.publishing = false;
       await loading.dismiss();
@@ -957,7 +959,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
     );
     if (results.some(r => r.status === 'rejected')) {
       console.error('Topic close error:', results);
-      Utils.showToast('Nicht alle Themen konnten als erledigt markiert werden', 'warning');
+      Utils.showToast(translate('protocol.closeFailed'), 'warning');
     }
   }
 
@@ -973,7 +975,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
     const taskText = (t: Task) => {
       const parts = [t.title];
       if (t.responsible_person) parts.push(`${t.responsible_person.firstName} ${t.responsible_person.lastName}`.trim());
-      if (t.due_date) parts.push(`fällig ${dayjs(t.due_date).format('DD.MM.YYYY')}`);
+      if (t.due_date) parts.push(translate('protocol.dueShort', { date: dayjs(t.due_date).format('DD.MM.YYYY') }));
       if (t.status === 'completed') parts.push('erledigt');
       return parts.join(' · ');
     };
@@ -985,7 +987,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
       tasks: this.tasksFor(s.id).map(taskText),
     }));
     for (const l of this.leftovers) {
-      sections.push({ title: `Weitere Notizen · ${l.title}`, meta: '', outcome: undefined, doc: l.doc, tasks: this.tasksFor(l.key).map(taskText) });
+      sections.push({ title: translate('protocol.moreNotesTitle', { title: l.title }), meta: '', outcome: undefined, doc: l.doc, tasks: this.tasksFor(l.key).map(taskText) });
     }
     const general = this.tasksFor(PROTOCOL_GENERAL_SECTION_ID);
     const leftoverKeys = new Set(this.leftovers.map(l => l.key));
@@ -994,8 +996,8 @@ export class ProtocolPage implements OnInit, OnDestroy {
       return !id || (!this.sections.some(s => s.id === id) && !leftoverKeys.has(id));
     });
     return {
-      title: `Protokoll · ${this.title}`,
-      subtitle: [this.dateLabel, this.timeRange ? `${this.timeRange} Uhr` : ''].filter(Boolean).join(' · '),
+      title: translate('protocol.pdfTitle', { title: this.title }),
+      subtitle: [this.dateLabel, this.timeRange ? translate('attendance.timeOClock', { time: this.timeRange }) : ''].filter(Boolean).join(' · '),
       status: this.statusLine,
       present: this.present.map(a => a.name),
       excused: this.excused.map(a => a.name),
@@ -1013,13 +1015,13 @@ export class ProtocolPage implements OnInit, OnDestroy {
       await this.flushAll();
       const blob = await createProtocolPdf(await this.buildPdfData());
       const date = this.attendance?.date ? dayjs(this.attendance.date).format('YYYY-MM-DD') : '';
-      const name = `Protokoll ${this.title} ${date}`.trim().replace(/[\\/:*?"<>|]+/g, '-');
+      const name = translate('protocol.fileName', { title: this.title, date }).trim().replace(/[\\/:*?"<>|]+/g, '-');
       await loading.dismiss();
       await Utils.downloadFileNative(blob, `${name}.pdf`);
     } catch (error) {
       console.error('Protocol PDF error:', error);
       await loading.dismiss();
-      Utils.showToast('PDF konnte nicht erstellt werden', 'danger');
+      Utils.showToast(translate('protocol.pdfFailed'), 'danger');
     }
   }
 }

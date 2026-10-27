@@ -9,6 +9,7 @@ import {
   Task,
 } from '../utilities/interfaces';
 import { Role } from '../utilities/constants';
+import { translate } from '@jsverse/transloco';
 
 /** Plan field ids of agenda items are derived from the topic, so outcomes can be traced back to it. */
 const AGENDA_FIELD_PREFIX = 'agenda-';
@@ -17,9 +18,9 @@ const AGENDA_FIELD_PREFIX = 'agenda-';
 export const COMPLETED_TASK_VISIBLE_DAYS = 30;
 
 export const OUTCOME_LABELS: Record<ProtocolOutcome, string> = {
-  discussed: 'Besprochen',
-  decided: 'Beschlossen',
-  postponed: 'Vertagt',
+  get discussed() { return translate('teamOrg.outcome.discussed'); },
+  get decided() { return translate('teamOrg.outcome.decided'); },
+  get postponed() { return translate('agenda.postponed'); },
 };
 
 /** The whole feature is only visible once at least one attendance type has it enabled. */
@@ -115,7 +116,7 @@ export function topNumbers(fields: FieldSelection[] | undefined | null): Map<str
 /** Display name of a plan field, with "TOP n · " in front of agenda items. */
 export function fieldDisplayName(field: FieldSelection, numbers: Map<string, number>): string {
   const n = numbers.get(field.id);
-  return n ? `TOP ${n} · ${field.name}` : field.name;
+  return n ? translate('teamOrg.topName', { n, name: field.name }) : field.name;
 }
 
 /**
@@ -175,11 +176,11 @@ export interface TaskGroup {
 }
 
 const TASK_GROUP_LABELS: Record<TaskGroupKey, string> = {
-  overdue: 'Überfällig',
-  week: 'Diese Woche',
-  later: 'Später',
-  none: 'Ohne Datum',
-  done: 'Erledigt',
+  get overdue() { return translate('teamOrg.group.overdue'); },
+  get week() { return translate('teamOrg.group.week'); },
+  get later() { return translate('svc.later'); },
+  get none() { return translate('teamOrg.group.none'); },
+  get done() { return translate('tasks.done'); },
 };
 
 export function isTaskOverdue(task: Task, today: string): boolean {

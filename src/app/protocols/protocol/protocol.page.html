@@ -5,15 +5,15 @@
     </ion-buttons>
     <ion-title>
       <div class="title-stack">
-        <span>Protokoll</span>
+        <span>{{ 'protocol.title' | transloco }}</span>
         @if (attendance && !notAvailable) {
-          <small>{{ title }} · {{ shortDate }} · {{ isPublished ? 'Freigegeben' : 'Entwurf' }}</small>
+          <small>{{ title }} · {{ shortDate }} · {{ (isPublished ? 'teamOrg.published' : 'teamOrg.draft') | transloco }}</small>
         }
       </div>
     </ion-title>
     <ion-buttons slot="end">
       @if (attendance && !notAvailable && !loadFailed) {
-        <ion-button (click)="sharePdf()" aria-label="Als PDF teilen" title="Als PDF teilen">
+        <ion-button (click)="sharePdf()" [attr.aria-label]="'protocol.sharePdf' | transloco" [attr.title]="'protocol.sharePdf' | transloco">
           <ion-icon slot="icon-only" name="share-outline"></ion-icon>
         </ion-button>
       }
@@ -27,14 +27,14 @@
   } @else if (notAvailable) {
     <div class="center-state">
       <ion-icon name="lock-closed-outline"></ion-icon>
-      <h2>Dieses Protokoll ist noch nicht freigegeben.</h2>
-      <p>Sobald die Leitung es freigibt, kannst du es hier lesen.</p>
+      <h2>{{ 'protocol.notPublished' | transloco }}</h2>
+      <p>{{ 'protocol.notPublishedHint' | transloco }}</p>
     </div>
   } @else if (loadFailed || !attendance) {
     <div class="center-state">
       <ion-icon name="cloud-offline-outline"></ion-icon>
-      <h2>Protokoll konnte nicht geladen werden.</h2>
-      <ion-button fill="outline" (click)="load()">Erneut versuchen</ion-button>
+      <h2>{{ 'protocol.loadFailed' | transloco }}</h2>
+      <ion-button fill="outline" (click)="load()">{{ 'protocol.retry' | transloco }}</ion-button>
     </div>
   } @else if (isLeader && isWide) {
     <ng-container *ngTemplateOutlet="wideLayout"></ng-container>
@@ -56,11 +56,11 @@
         <div class="footer-buttons">
           <ion-button fill="outline" (click)="openNotes()">
             <ion-icon slot="start" name="document-text-outline"></ion-icon>
-            Notizen
-            @if (hasNotes(GENERAL)) { <span class="notes-dot" aria-label="Enthält Notizen"></span> }
+            {{ 'protocol.notes' | transloco }}
+            @if (hasNotes(GENERAL)) { <span class="notes-dot" [attr.aria-label]="'protocol.hasNotes' | transloco"></span> }
           </ion-button>
           <ion-button (click)="openPublish()" class="publish-button">
-            {{ isPublished ? 'Erneut freigeben' : 'Freigeben' }}
+            {{ (isPublished ? 'protocol.republish' : 'protocol.publishShort') | transloco }}
           </ion-button>
         </div>
       </div>
@@ -79,9 +79,9 @@
       @if (avatarPreview.more) { <span class="ini more">+{{ avatarPreview.more }}</span> }
     </div>
     <div class="grow">
-      <div class="t">{{ present.length }} anwesend</div>
+      <div class="t">{{ 'protocol.presentCount' | transloco: { count: present.length } }}</div>
       <div class="s">
-        @if (excused.length) { {{ excused.length }} entschuldigt · }aus der Anwesenheit
+        @if (excused.length) { {{ 'protocol.excusedCount' | transloco: { count: excused.length } }} }{{ 'protocol.fromAttendance' | transloco }}
       </div>
     </div>
     <ion-icon name="chevron-forward" class="chev"></ion-icon>
@@ -94,14 +94,14 @@
       <span class="live-dot"></span>
       <div class="grow">{{ liveLabel }}</div>
       @if (hasNext) {
-        <ion-button size="small" fill="clear" (click)="nextSection()">Nächster Punkt</ion-button>
+        <ion-button size="small" fill="clear" (click)="nextSection()">{{ 'protocol.nextPoint' | transloco }}</ion-button>
       }
     </div>
   }
 </ng-template>
 
 <ng-template #outcomeSeg let-s>
-  <div class="outcome-seg" role="radiogroup" aria-label="Ergebnis">
+  <div class="outcome-seg" role="radiogroup" [attr.aria-label]="'protocol.outcome' | transloco">
     @for (o of OUTCOMES; track o.value) {
       <button type="button" role="radio" [attr.aria-checked]="outcomes[s.id] === o.value"
         [class.on]="outcomes[s.id] === o.value" [class]="'o-' + o.value" (click)="setOutcome(s.id, o.value)">
@@ -130,8 +130,8 @@
 
 <ng-template #leftoverList>
   @if (leftovers.length) {
-    <div class="group-label">Weitere Notizen</div>
-    <p class="hint-text">Notizen zu Punkten, die nicht mehr im Ablaufplan stehen.</p>
+    <div class="group-label">{{ 'protocol.moreNotes' | transloco }}</div>
+    <p class="hint-text">{{ 'protocol.moreNotesHint' | transloco }}</p>
     @for (l of leftovers; track l.key) {
       <div class="card">
         <div class="card-head static">
@@ -157,7 +157,7 @@
 
     @if (!sections.length) {
       <div class="empty-card card">
-        <p>Der Ablaufplan ist noch leer. Füge einen Punkt hinzu oder schreib in die Notizen.</p>
+        <p>{{ 'protocol.planEmpty' | transloco }}</p>
       </div>
     }
 
@@ -170,7 +170,7 @@
           }
           <div class="grow">
             @if (s.isTop) {
-              <div class="kicker">TOP {{ s.topNumber }}@if (s.start) { · {{ s.start }} }</div>
+              <div class="kicker">{{ 'protocol.top' | transloco: { n: s.topNumber } }}@if (s.start) { · {{ s.start }} }</div>
               <div class="t">{{ s.name }}</div>
               @if (s.conductor) { <div class="s">{{ s.conductor }}</div> }
             } @else {
@@ -183,7 +183,7 @@
           @if (activeId !== s.id && outcomes[s.id]) {
             <ion-badge [color]="outcomeColor(outcomes[s.id])">{{ OUTCOME_LABELS[outcomes[s.id]] }}</ion-badge>
           }
-          @if (s.duration) { <span class="dur">{{ s.duration }} min</span> }
+          @if (s.duration) { <span class="dur">{{ 'planning.minShort' | transloco: { min: s.duration } }}</span> }
           <ion-icon class="chev" [name]="activeId === s.id ? 'chevron-up' : 'chevron-down'"></ion-icon>
         </button>
 
@@ -204,22 +204,22 @@
           <div class="card-actions">
             <ion-button fill="clear" size="small" (click)="createTask(s.id)">
               <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-              Aufgabe
+              {{ 'tasks.task' | transloco }}
             </ion-button>
           </div>
         } @else if (tasksFor(s.id).length) {
-          <div class="collapsed-tasks s">{{ tasksFor(s.id).length }} {{ tasksFor(s.id).length === 1 ? 'Aufgabe' : 'Aufgaben' }}</div>
+          <div class="collapsed-tasks s">{{ 'protocol.taskCount' | transloco: { count: tasksFor(s.id).length } }}</div>
         }
       </div>
     }
 
     <ion-button fill="clear" expand="block" class="add-point" (click)="addSpontaneousTopic()">
       <ion-icon slot="start" name="add-outline"></ion-icon>
-      Punkt
+      {{ 'protocol.point' | transloco }}
     </ion-button>
 
     @if (unassignedTasks.length) {
-      <div class="group-label">Weitere Aufgaben dieser Sitzung</div>
+      <div class="group-label">{{ 'protocol.moreTasks' | transloco }}</div>
       <div class="card"><ng-container *ngTemplateOutlet="taskList; context: { $implicit: unassignedTasks }"></ng-container></div>
     }
 
@@ -231,7 +231,7 @@
 
 <ng-template #wideLayout>
   <div class="wide" [style.grid-template-columns]="gridColumns" [class.resizing]="resizing">
-    <aside class="col left" aria-label="Tagesordnung">
+    <aside class="col left" [attr.aria-label]="'protocol.agenda' | transloco">
       <div class="side-head">
         <div class="side-title">{{ title }}</div>
         <div class="s">{{ dateLabel }}@if (timeRange) { · {{ timeRange }} }</div>
@@ -240,7 +240,7 @@
 
       <ng-container *ngTemplateOutlet="liveBar"></ng-container>
 
-      <div class="group-label">Ablaufplan</div>
+      <div class="group-label">{{ 'protocol.runSheet' | transloco }}</div>
       <div class="card agenda-list">
         @for (s of sections; track s.id) {
           <button type="button" class="agenda-item" [class.sel]="activeId === s.id" [class.live]="live?.fieldId === s.id"
@@ -249,52 +249,52 @@
             <div class="grow">
               <div class="t">{{ s.title }}</div>
               @if (s.conductor || s.duration) {
-                <div class="s">{{ s.conductor }}@if (s.conductor && s.duration) { · }@if (s.duration) { {{ s.duration }} min }</div>
+                <div class="s">{{ s.conductor }}@if (s.conductor && s.duration) { · }@if (s.duration) { {{ 'planning.minShort' | transloco: { min: s.duration } }} }</div>
               }
             </div>
             <span class="dot"
               [class.filled]="hasNotes(s.id) || outcomes[s.id]"
               [class]="outcomes[s.id] ? 'dot-' + outcomes[s.id] : ''"
-              [attr.aria-label]="outcomes[s.id] ? OUTCOME_LABELS[outcomes[s.id]] : (hasNotes(s.id) ? 'Notiert' : 'Offen')"></span>
+              [attr.aria-label]="outcomes[s.id] ? OUTCOME_LABELS[outcomes[s.id]] : ((hasNotes(s.id) ? 'protocol.noted' : 'protocol.open') | transloco)"></span>
           </button>
         }
         @for (l of leftovers; track l.key) {
           <button type="button" class="agenda-item leftover" [class.sel]="activeId === l.key" (click)="activate(l.key)">
             <span class="tm"><ion-icon name="archive-outline"></ion-icon></span>
-            <div class="grow"><div class="t">{{ l.title }}</div><div class="s">Weitere Notizen</div></div>
+            <div class="grow"><div class="t">{{ l.title }}</div><div class="s">{{ 'protocol.moreNotes' | transloco }}</div></div>
           </button>
         }
         <button type="button" class="agenda-item add" (click)="addSpontaneousTopic()">
           <span class="tm"><ion-icon name="add-outline"></ion-icon></span>
-          <div class="grow"><div class="t">Punkt</div></div>
+          <div class="grow"><div class="t">{{ 'protocol.point' | transloco }}</div></div>
         </button>
       </div>
 
-      <div class="group-label">Anwesend</div>
+      <div class="group-label">{{ 'protocol.present' | transloco }}</div>
       <div class="card"><ng-container *ngTemplateOutlet="attendeeRow"></ng-container></div>
 
       <ion-button expand="block" class="publish-button side-publish" (click)="openPublish()">
-        {{ isPublished ? 'Erneut freigeben' : 'Protokoll freigeben' }}
+        {{ (isPublished ? 'protocol.republish' : 'protocol.publish') | transloco }}
       </ion-button>
     </aside>
 
     <div class="resizer" [class.active]="resizing === 'left'" role="separator" aria-orientation="vertical"
-      aria-label="Breite der Tagesordnung anpassen" tabindex="0" [attr.aria-valuenow]="columnWidths.left" title="Ziehen, um die Breite anzupassen (Doppelklick setzt zurück)"
+      [attr.aria-label]="'protocol.resizeAgenda' | transloco" tabindex="0" [attr.aria-valuenow]="columnWidths.left" [attr.title]="'protocol.dragResize' | transloco"
       (pointerdown)="startResize('left', $event)"
       (dblclick)="resetWidth('left')" (keydown)="resizeByKey('left', $event)"></div>
 
-    <main class="col main" aria-label="Notizen zum Punkt">
+    <main class="col main" [attr.aria-label]="'protocol.pointNotes' | transloco">
       @for (s of (activeSection ? [activeSection] : []); track s.id) {
         <div class="main-head">
           <div class="kicker">
-            @if (s.topNumber) { TOP {{ s.topNumber }} · }{{ s.start }}@if (s.duration) { · {{ s.duration }} min }
+            @if (s.topNumber) { {{ 'protocol.top' | transloco: { n: s.topNumber } }} · }{{ s.start }}@if (s.duration) { · {{ 'planning.minShort' | transloco: { min: s.duration } }} }
           </div>
           <h1>{{ s.name }}</h1>
           <div class="main-meta">
             @if (s.isTop) {
               <ng-container *ngTemplateOutlet="outcomeSeg; context: { $implicit: s }"></ng-container>
             }
-            @if (s.conductor) { <span class="s">Verantwortlich: {{ s.conductor }}</span> }
+            @if (s.conductor) { <span class="s">{{ 'protocol.responsible' | transloco: { name: s.conductor } }}</span> }
           </div>
         </div>
         <div class="main-editor editor-box" [attr.data-editor-section]="s.id">
@@ -310,9 +310,9 @@
         <div class="main-foot">
           <ion-button fill="outline" size="small" (click)="createTask(s.id)">
             <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-            Aufgabe
+            {{ 'tasks.task' | transloco }}
           </ion-button>
-          <span class="shortcut"><span class="kbd">⌘/Strg ↓</span> Nächster Punkt</span>
+          <span class="shortcut"><span class="kbd">{{ 'protocol.shortcutNext' | transloco }}</span> {{ 'protocol.nextPoint' | transloco }}</span>
           <span class="save-state">
             @if (savingCount > 0) { <ion-spinner name="dots"></ion-spinner> }
             {{ saveLabel }}
@@ -321,9 +321,9 @@
       } @empty {
         @if (activeLeftover; as l) {
           <div class="main-head">
-            <div class="kicker">Weitere Notizen</div>
+            <div class="kicker">{{ 'protocol.moreNotes' | transloco }}</div>
             <h1>{{ l.title }}</h1>
-            <div class="s">Dieser Punkt steht nicht mehr im Ablaufplan. Die Notizen bleiben erhalten.</div>
+            <div class="s">{{ 'protocol.notInPlan' | transloco }}</div>
           </div>
           <div class="main-editor editor-box readonly">
             <app-tiptap-editor [content]="l.doc" [editable]="false" [taskStatuses]="taskStatuses"></app-tiptap-editor>
@@ -332,25 +332,25 @@
           <div class="center-state">
             <ion-icon name="list-outline"></ion-icon>
             <h2>{{ sections.length ? 'Wähle links einen Punkt aus.' : 'Der Ablaufplan ist noch leer.' }}</h2>
-            <ion-button fill="outline" (click)="addSpontaneousTopic()">Punkt hinzufügen</ion-button>
+            <ion-button fill="outline" (click)="addSpontaneousTopic()">{{ 'protocol.addPoint' | transloco }}</ion-button>
           </div>
         }
       }
     </main>
 
     <div class="resizer" [class.active]="resizing === 'right'" role="separator" aria-orientation="vertical"
-      aria-label="Breite der allgemeinen Notizen anpassen" tabindex="0" [attr.aria-valuenow]="columnWidths.right" title="Ziehen, um die Breite anzupassen (Doppelklick setzt zurück)"
+      [attr.aria-label]="'protocol.resizeGeneral' | transloco" tabindex="0" [attr.aria-valuenow]="columnWidths.right" [attr.title]="'protocol.dragResize' | transloco"
       (pointerdown)="startResize('right', $event)"
       (dblclick)="resetWidth('right')" (keydown)="resizeByKey('right', $event)"></div>
 
-    <aside class="col right" aria-label="Allgemeine Notizen">
+    <aside class="col right" [attr.aria-label]="'protocol.generalNotes' | transloco">
       <div class="right-head">
-        <div class="side-title">Allgemeine Notizen</div>
-        <ion-button fill="clear" size="small" (click)="createTask(GENERAL)" aria-label="Aufgabe zu den allgemeinen Notizen">
+        <div class="side-title">{{ 'protocol.generalNotes' | transloco }}</div>
+        <ion-button fill="clear" size="small" (click)="createTask(GENERAL)" [attr.aria-label]="'protocol.generalTask' | transloco">
           <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
         </ion-button>
       </div>
-      <div class="s">Immer sichtbar, unabhängig vom Punkt</div>
+      <div class="s">{{ 'protocol.alwaysVisible' | transloco }}</div>
       <div class="editor-box general" [attr.data-editor-section]="GENERAL">
         <app-tiptap-editor
           [content]="editorContent[GENERAL] ?? null"
@@ -361,7 +361,7 @@
         </app-tiptap-editor>
       </div>
 
-      <div class="group-label">Aufgaben dieser Sitzung · {{ tasks.length }}</div>
+      <div class="group-label">{{ 'protocol.sessionTasks' | transloco: { count: tasks.length } }}</div>
       @if (tasks.length) {
         <div class="card task-list">
           @for (task of tasks; track task.id) {
@@ -378,7 +378,7 @@
           }
         </div>
       } @else {
-        <p class="hint-text">Noch keine Aufgaben. Lege sie direkt bei einem Punkt an.</p>
+        <p class="hint-text">{{ 'protocol.noTasksYet' | transloco }}</p>
       }
     </aside>
   </div>
@@ -390,7 +390,7 @@
   <div class="read">
     <div class="read-head">
       <h1>{{ title }}</h1>
-      <div class="s">{{ dateLabel }}@if (timeRange) { · {{ timeRange }} Uhr }</div>
+      <div class="s">{{ dateLabel }}@if (timeRange) { · {{ 'attendance.timeOClock' | transloco: { time: timeRange } }} }</div>
       @if (isPublished) {
         <div class="published-note"><ion-icon name="checkmark-circle" color="success"></ion-icon>{{ statusLine }}</div>
       }
@@ -398,12 +398,12 @@
 
     @if (present.length || excused.length) {
       <div class="card padded">
-        <div class="card-label">Anwesend ({{ present.length }})</div>
+        <div class="card-label">{{ 'protocol.presentList' | transloco: { count: present.length } }}</div>
         <div class="chips">
           @for (a of present; track a.id) { <span class="chip">{{ a.name }}</span> }
         </div>
         @if (excused.length) {
-          <div class="card-label spaced">Entschuldigt ({{ excused.length }})</div>
+          <div class="card-label spaced">{{ 'protocol.excusedList' | transloco: { count: excused.length } }}</div>
           <div class="chips">
             @for (a of excused; track a.id) { <span class="chip muted">{{ a.name }}</span> }
           </div>
@@ -414,7 +414,7 @@
     @for (s of sections; track s.id) {
       @if (s.isTop || hasNotes(s.id) || outcomes[s.id] || tasksFor(s.id).length) {
         <div class="card padded">
-          @if (s.topNumber) { <div class="kicker">TOP {{ s.topNumber }}</div> }
+          @if (s.topNumber) { <div class="kicker">{{ 'protocol.top' | transloco: { n: s.topNumber } }}</div> }
           <div class="read-title">
             <span>{{ s.name }}</span>
             @if (outcomes[s.id]) {
@@ -426,7 +426,7 @@
               <app-tiptap-editor [content]="docs[s.id]" [editable]="false" [taskStatuses]="taskStatuses"></app-tiptap-editor>
             </div>
           } @else if (!tasksFor(s.id).length) {
-            <div class="s">Keine Notizen</div>
+            <div class="s">{{ 'protocol.noNotes' | transloco }}</div>
           }
           <ng-container *ngTemplateOutlet="taskList; context: { $implicit: tasksFor(s.id) }"></ng-container>
         </div>
@@ -437,7 +437,7 @@
 
     @if (hasNotes(GENERAL) || unassignedTasks.length) {
       <div class="card padded">
-        <div class="read-title"><span>Allgemeine Notizen</span></div>
+        <div class="read-title"><span>{{ 'protocol.generalNotes' | transloco }}</span></div>
         @if (hasNotes(GENERAL)) {
           <div class="read-content">
             <app-tiptap-editor [content]="docs[GENERAL]" [editable]="false" [taskStatuses]="taskStatuses"></app-tiptap-editor>
@@ -449,7 +449,7 @@
 
     <ion-button expand="block" fill="outline" class="share-button" (click)="sharePdf()">
       <ion-icon slot="start" name="share-outline"></ion-icon>
-      Als PDF teilen
+      {{ 'protocol.sharePdf' | transloco }}
     </ion-button>
   </div>
 </ng-template>
@@ -460,25 +460,25 @@
   <ng-template>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Teilnehmende</ion-title>
-        <ion-buttons slot="end"><ion-button (click)="attendeesOpen = false">Fertig</ion-button></ion-buttons>
+        <ion-title>{{ 'protocol.participants' | transloco }}</ion-title>
+        <ion-buttons slot="end"><ion-button (click)="attendeesOpen = false">{{ 'person.done' | transloco }}</ion-button></ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content color="light">
       <ion-list [inset]="true">
-        <ion-list-header><ion-label>Anwesend ({{ present.length }})</ion-label></ion-list-header>
+        <ion-list-header><ion-label>{{ 'protocol.presentList' | transloco: { count: present.length } }}</ion-label></ion-list-header>
         @for (a of present; track a.id) {
           <ion-item>
             <span slot="start" class="ini list-ini" [style.background]="a.color">{{ a.initials }}</span>
             <ion-label>{{ a.name }}</ion-label>
           </ion-item>
         } @empty {
-          <ion-item><ion-label color="medium">Niemand als anwesend eingetragen</ion-label></ion-item>
+          <ion-item><ion-label color="medium">{{ 'protocol.nobodyPresent' | transloco }}</ion-label></ion-item>
         }
       </ion-list>
       @if (excused.length) {
         <ion-list [inset]="true">
-          <ion-list-header><ion-label>Entschuldigt ({{ excused.length }})</ion-label></ion-list-header>
+          <ion-list-header><ion-label>{{ 'protocol.excusedList' | transloco: { count: excused.length } }}</ion-label></ion-list-header>
           @for (a of excused; track a.id) {
             <ion-item>
               <span slot="start" class="ini list-ini muted">{{ a.initials }}</span>
@@ -492,13 +492,13 @@
       }
       @if (others.length) {
         <ion-list [inset]="true">
-          <ion-list-header><ion-label>Nicht da / offen ({{ others.length }})</ion-label></ion-list-header>
+          <ion-list-header><ion-label>{{ 'protocol.othersList' | transloco: { count: others.length } }}</ion-label></ion-list-header>
           @for (a of others; track a.id) {
             <ion-item><ion-label color="medium">{{ a.name }}</ion-label></ion-item>
           }
         </ion-list>
       }
-      <p class="hint-text ion-padding-horizontal">Die Liste kommt aus der Anwesenheit des Termins.</p>
+      <p class="hint-text ion-padding-horizontal">{{ 'protocol.listFromAttendance' | transloco }}</p>
     </ion-content>
   </ng-template>
 </ion-modal>
@@ -507,12 +507,12 @@
   <ng-template>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Allgemeine Notizen</ion-title>
-        <ion-buttons slot="end"><ion-button (click)="closeNotes()">Fertig</ion-button></ion-buttons>
+        <ion-title>{{ 'protocol.generalNotes' | transloco }}</ion-title>
+        <ion-buttons slot="end"><ion-button (click)="closeNotes()">{{ 'person.done' | transloco }}</ion-button></ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content color="light" class="ion-padding">
-      <p class="hint-text">Gilt für die ganze Sitzung, unabhängig vom Punkt.</p>
+      <p class="hint-text">{{ 'protocol.wholeMeeting' | transloco }}</p>
       <div class="editor-box general" [attr.data-editor-section]="GENERAL">
         <app-tiptap-editor
           [content]="editorContent[GENERAL] ?? null"
@@ -525,7 +525,7 @@
       <ng-container *ngTemplateOutlet="taskList; context: { $implicit: tasksFor(GENERAL) }"></ng-container>
       <ion-button fill="clear" size="small" (click)="createTask(GENERAL)">
         <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-        Aufgabe
+        {{ 'tasks.task' | transloco }}
       </ion-button>
     </ion-content>
   </ng-template>
@@ -535,19 +535,19 @@
   <ng-template>
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-button (click)="publishOpen = false">Abbrechen</ion-button></ion-buttons>
-        <ion-title>Protokoll freigeben</ion-title>
+        <ion-buttons slot="start"><ion-button (click)="publishOpen = false">{{ 'common.cancel' | transloco }}</ion-button></ion-buttons>
+        <ion-title>{{ 'protocol.publish' | transloco }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content color="light">
       @if (summary; as sum) {
         <ion-list [inset]="true">
-          <ion-list-header><ion-label>Zusammenfassung</ion-label></ion-list-header>
+          <ion-list-header><ion-label>{{ 'protocol.summary' | transloco }}</ion-label></ion-list-header>
           @if (sum.decided.length) {
             <ion-item>
               <ion-icon slot="start" name="checkmark-circle" color="success"></ion-icon>
               <ion-label class="ion-text-wrap">
-                <h3>{{ sum.decided.length }} {{ sum.decided.length === 1 ? 'Thema' : 'Themen' }} beschlossen</h3>
+                <h3>{{ 'protocol.decidedCount' | transloco: { count: sum.decided.length } }}</h3>
                 <p>{{ sum.decided.join(', ') }}</p>
               </ion-label>
             </ion-item>
@@ -556,7 +556,7 @@
             <ion-item>
               <ion-icon slot="start" name="chatbubbles-outline" color="primary"></ion-icon>
               <ion-label class="ion-text-wrap">
-                <h3>{{ sum.discussed.length }} {{ sum.discussed.length === 1 ? 'Thema' : 'Themen' }} besprochen</h3>
+                <h3>{{ 'protocol.discussedCount' | transloco: { count: sum.discussed.length } }}</h3>
                 <p>{{ sum.discussed.join(', ') }}</p>
               </ion-label>
             </ion-item>
@@ -565,23 +565,23 @@
             <ion-item>
               <ion-icon slot="start" name="time-outline" color="warning"></ion-icon>
               <ion-label class="ion-text-wrap">
-                <h3>{{ sum.postponed.length }} {{ sum.postponed.length === 1 ? 'Thema' : 'Themen' }} vertagt</h3>
-                <p>{{ sum.postponed.join(', ') }}@if (type?.suggest_postponed) { · wird beim nächsten Termin vorgeschlagen }</p>
+                <h3>{{ 'protocol.postponedCount' | transloco: { count: sum.postponed.length } }}</h3>
+                <p>{{ sum.postponed.join(', ') }}@if (type?.suggest_postponed) { {{ 'protocol.suggestNext' | transloco }} }</p>
               </ion-label>
             </ion-item>
           }
           <ion-item>
             <ion-icon slot="start" name="checkbox-outline" color="medium"></ion-icon>
             <ion-label class="ion-text-wrap">
-              <h3>{{ sum.taskCount }} {{ sum.taskCount === 1 ? 'Aufgabe' : 'Aufgaben' }}</h3>
-              @if (sum.taskOwners.length) { <p>für {{ joinNames(sum.taskOwners) }}</p> }
+              <h3>{{ 'protocol.taskCount' | transloco: { count: sum.taskCount } }}</h3>
+              @if (sum.taskOwners.length) { <p>{{ 'protocol.forNames' | transloco: { names: joinNames(sum.taskOwners) } }}</p> }
             </ion-label>
           </ion-item>
           @if (sum.withoutOutcome.length) {
             <ion-item>
               <ion-icon slot="start" name="help-circle-outline" color="medium"></ion-icon>
               <ion-label class="ion-text-wrap">
-                <h3>Ohne Ergebnis: {{ sum.withoutOutcome.length }}</h3>
+                <h3>{{ 'protocol.withoutOutcome' | transloco: { count: sum.withoutOutcome.length } }}</h3>
                 <p>{{ sum.withoutOutcome.join(', ') }}</p>
               </ion-label>
             </ion-item>
@@ -590,7 +590,7 @@
             <ion-item>
               <ion-icon slot="start" name="alert-circle-outline" color="warning"></ion-icon>
               <ion-label class="ion-text-wrap">
-                <h3>Noch ohne Notizen: {{ sum.withoutNotes.length }}</h3>
+                <h3>{{ 'protocol.withoutNotes' | transloco: { count: sum.withoutNotes.length } }}</h3>
                 <p>{{ sum.withoutNotes.join(', ') }}</p>
               </ion-label>
             </ion-item>
@@ -599,7 +599,7 @@
 
         @if (topicClosures.length) {
           <ion-list [inset]="true">
-            <ion-list-header><ion-label>Themen als erledigt markieren</ion-label></ion-list-header>
+            <ion-list-header><ion-label>{{ 'protocol.closeTopics' | transloco }}</ion-label></ion-list-header>
             @for (t of topicClosures; track t.agendaItemId) {
               <ion-item>
                 <ion-checkbox [(ngModel)]="t.close" justify="space-between">
@@ -614,36 +614,36 @@
         }
 
         <ion-list [inset]="true">
-          <ion-list-header><ion-label>Sichtbarkeit</ion-label></ion-list-header>
+          <ion-list-header><ion-label>{{ 'protocol.visibility' | transloco }}</ion-label></ion-list-header>
           <ion-item>
             <ion-icon slot="start" name="eye-outline" color="medium"></ion-icon>
             <ion-label class="ion-text-wrap">
-              <h3>Lesen dürfen</h3>
+              <h3>{{ 'protocol.mayRead' | transloco }}</h3>
               <p>
-                @if (type?.relevant_groups?.length) { die Gruppen aus dem Termintyp „{{ type?.name }}“ }
-                @else { alle Mitglieder (Termintyp „{{ type?.name }}“ hat keine Gruppen) }
+                @if (type?.relevant_groups?.length) { {{ 'protocol.readGroups' | transloco: { type: type?.name } }} }
+                @else { {{ 'protocol.readAll' | transloco: { type: type?.name } }} }
               </p>
             </ion-label>
           </ion-item>
           <ion-item>
             <ion-icon slot="start" name="notifications-outline" color="medium"></ion-icon>
             <ion-label class="ion-text-wrap">
-              <h3>Benachrichtigt werden</h3>
-              <p>{{ sum.recipientCount }} Anwesende@if (sum.taskOwners.length) { · {{ sum.taskOwners.length }} {{ sum.taskOwners.length === 1 ? 'Person' : 'Personen' }} mit Aufgaben }</p>
+              <h3>{{ 'protocol.notified' | transloco }}</h3>
+              <p>{{ 'protocol.recipients' | transloco: { count: sum.recipientCount } }}@if (sum.taskOwners.length) {{{ 'protocol.taskOwners' | transloco: { count: sum.taskOwners.length } }}}</p>
             </ion-label>
           </ion-item>
           <ion-item>
             <ion-toggle [(ngModel)]="sendPdf">
               <ion-label class="ion-text-wrap">
-                Protokoll als PDF mitschicken
-                <p>Per Telegram als Dokument</p>
+                {{ 'protocol.sendPdf' | transloco }}
+                <p>{{ 'protocol.viaTelegram' | transloco }}</p>
               </ion-label>
             </ion-toggle>
           </ion-item>
         </ion-list>
 
         <p class="hint-text ion-padding-horizontal">
-          Die Leitung kann das Protokoll auch nach der Freigabe noch bearbeiten. Änderungen werden mit Datum angezeigt.
+          {{ 'protocol.editAfterPublish' | transloco }}
         </p>
 
         <div class="ion-padding">

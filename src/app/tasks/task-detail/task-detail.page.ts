@@ -13,6 +13,7 @@ import {
   TASK_STATUS_LABELS,
 } from 'src/app/team-organization/tasks-tab/tasks-tab.utils';
 import { openTaskForm } from '../task-form/task-form.component';
+import { translate } from '@jsverse/transloco';
 
 /**
  * Aufgabe (C2). Leadership edits everything (via the task form) and can
@@ -65,17 +66,17 @@ export class TaskDetailPage implements OnInit {
 
   get assigneeText(): string {
     if (!this.task) return '';
-    if (this.isMine) return 'Dir zugewiesen';
+    if (this.isMine) return translate('tasks.assignedToYou');
     const name = personName(this.task.responsible_person);
-    return name ? `Zugewiesen an ${name}` : 'Noch niemandem zugewiesen';
+    return name ? translate('tasks.assignedTo', { name }) : translate('tasks.notAssigned');
   }
 
   /** "Protokoll · Probe · Di, 21.10.2026" for the source link. */
   get attendanceLabel(): string {
     const att = this.task?.attendance as (Task['attendance'] & { type_id?: string }) | null | undefined;
     if (!att) return '';
-    const typeName = att.typeInfo || this.db.attendanceTypes()?.find(t => t.id === att.type_id)?.name || 'Termin';
-    return `${typeName} vom ${formatLongDate(att.date)}`;
+    const typeName = att.typeInfo || this.db.attendanceTypes()?.find(t => t.id === att.type_id)?.name || translate('attendance.eventFallback');
+    return translate('tasks.eventFrom', { type: typeName, date: formatLongDate(att.date) });
   }
 
   get hasSource(): boolean {
@@ -113,11 +114,11 @@ export class TaskDetailPage implements OnInit {
     this.savingStatus = true;
     try {
       this.task = await this.db.updateTask(this.task.id, { status });
-      if (status === 'completed') Utils.showToast('Erledigt – danke!');
+      if (status === 'completed') Utils.showToast(translate('tasks.doneThanks'));
     } catch (error) {
       console.error('Task status error:', error);
       if (this.task) this.task.status = previous;
-      Utils.showToast('Status konnte nicht geändert werden', 'danger');
+      Utils.showToast(translate('tasks.statusFailed'), 'danger');
     } finally {
       this.savingStatus = false;
     }
@@ -131,21 +132,21 @@ export class TaskDetailPage implements OnInit {
 
   async deleteTask() {
     const alert = await this.alertController.create({
-      header: 'Aufgabe löschen?',
-      message: 'Die Aufgabe wird endgültig entfernt.',
+      header: translate('tasks.deleteConfirm'),
+      message: translate('tasks.deleteMessage'),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Löschen',
+          text: translate('common.delete'),
           role: 'destructive',
           handler: async () => {
             try {
               await this.db.deleteTask(this.taskId);
-              Utils.showToast('Aufgabe gelöscht');
+              Utils.showToast(translate('tasks.deleted'));
               this.navController.navigateBack('/tabs/settings/team-organization');
             } catch (error) {
               console.error('Delete error:', error);
-              Utils.showToast('Löschen fehlgeschlagen', 'danger');
+              Utils.showToast(translate('tasks.deleteFailed'), 'danger');
             }
           },
         },

@@ -1,9 +1,9 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="cancel()">Abbrechen</ion-button>
+      <ion-button (click)="cancel()">{{ 'common.cancel' | transloco }}</ion-button>
     </ion-buttons>
-    <ion-title>Neue Mitteilung</ion-title>
+    <ion-title>{{ 'messages.newMessage' | transloco }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -11,13 +11,13 @@
   <ion-list [inset]="true">
     <ion-item>
       <ion-input
-        label="Titel"
+        [label]="'messages.title' | transloco"
         labelPlacement="stacked"
         [(ngModel)]="title"
         (ionInput)="onTitleChange()"
         [maxlength]="200"
         autocapitalize="sentences"
-        placeholder="z. B. Probe am Samstag fällt aus">
+        [placeholder]="'messages.titlePlaceholder' | transloco">
       </ion-input>
     </ion-item>
   </ion-list>
@@ -27,20 +27,20 @@
   </ion-list>
 
   <ion-list-header>
-    <ion-label>Empfänger</ion-label>
+    <ion-label>{{ 'messages.recipients' | transloco }}</ion-label>
   </ion-list-header>
   <ion-list [inset]="true">
     <ion-radio-group [value]="audience" (ionChange)="setAudience($any($event.detail.value))">
       <ion-item>
         <ion-radio value="all" justify="start" labelPlacement="end">
           <ion-label>
-            Alle aktiven Mitglieder
-            <p>inkl. Hauptgruppe</p>
+            {{ 'messages.allActive' | transloco }}
+            <p>{{ 'messages.inclMainGroup' | transloco }}</p>
           </ion-label>
         </ion-radio>
       </ion-item>
       <ion-item lines="none">
-        <ion-radio value="groups" justify="start" labelPlacement="end">Nur bestimmte Gruppen</ion-radio>
+        <ion-radio value="groups" justify="start" labelPlacement="end">{{ 'messages.onlyGroups' | transloco }}</ion-radio>
       </ion-item>
     </ion-radio-group>
     @if (audience === 'groups') {
@@ -55,15 +55,15 @@
   </ion-list>
 
   <ion-list-header>
-    <ion-label>Versand über</ion-label>
+    <ion-label>{{ 'messages.sendVia' | transloco }}</ion-label>
   </ion-list-header>
   <ion-list [inset]="true">
     <ion-item>
       <ion-toggle [(ngModel)]="push" (ionChange)="onChannelChange()" justify="space-between">
         <ion-label>
-          Push / Telegram
+          {{ 'messages.pushTelegram' | transloco }}
           @if (counts && push) {
-            <p>{{ counts.push }} Personen haben Mitteilungen aktiviert</p>
+            <p>{{ 'messages.pushCount' | transloco: { count: counts.push } }}</p>
           }
         </ion-label>
       </ion-toggle>
@@ -71,9 +71,9 @@
     <ion-item lines="none">
       <ion-toggle [(ngModel)]="email" (ionChange)="onChannelChange()" justify="space-between">
         <ion-label>
-          E-Mail
+          {{ 'messages.email' | transloco }}
           @if (counts && email) {
-            <p>{{ counts.email }} Personen haben eine E-Mail-Adresse</p>
+            <p>{{ 'messages.emailCount' | transloco: { count: counts.email } }}</p>
           }
         </ion-label>
       </ion-toggle>
@@ -82,13 +82,13 @@
 
   <div class="summary">
     @if (countsError) {
-      <p class="error">Die Empfänger konnten nicht geladen werden. <a (click)="loadCounts()">Erneut versuchen</a></p>
+      <p class="error">{{ 'messages.countsFailed' | transloco }} <a (click)="loadCounts()">{{ 'messages.retry' | transloco }}</a></p>
     } @else if (!counts) {
       <p><ion-spinner name="dots"></ion-spinner></p>
     } @else {
-      <p><strong>{{ counts.recipients }} Personen</strong> erhalten diese Mitteilung.</p>
+      <p [innerHTML]="'messages.recipientsSummary' | transloco: { count: counts.recipients }"></p>
       @if (counts.unreachable > 0) {
-        <p>{{ counts.unreachable }} {{ counts.unreachable === 1 ? 'Person ist' : 'Personen sind' }} über keinen Kanal erreichbar und {{ counts.unreachable === 1 ? 'sieht' : 'sehen' }} die Mitteilung nur, wenn sie die App öffnen.</p>
+        <p>{{ 'messages.unreachableSummary' | transloco: { count: counts.unreachable } }}</p>
       }
     }
   </div>
@@ -96,7 +96,7 @@
   <div class="actions">
     <ion-button expand="block" (click)="confirmSend()" [disabled]="!canSend">
       <ion-icon slot="start" name="send-outline"></ion-icon>
-      Senden
+      {{ 'messages.send' | transloco }}
     </ion-button>
   </div>
 </ion-content>

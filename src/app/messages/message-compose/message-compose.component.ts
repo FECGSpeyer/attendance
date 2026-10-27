@@ -5,6 +5,7 @@ import { DbService } from 'src/app/services/db.service';
 import { MessageService } from 'src/app/services/message/message.service';
 import { Group, MessageRecipientCounts } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 interface Draft {
   title: string;
@@ -139,15 +140,15 @@ export class MessageComposeComponent implements OnInit {
       return;
     }
     const channels: string[] = [];
-    if (this.push) channels.push(`${this.counts.push} per Push/Telegram`);
-    if (this.email) channels.push(`${this.counts.email} per E-Mail`);
+    if (this.push) channels.push(translate('messages.viaPush', { count: this.counts.push }));
+    if (this.email) channels.push(translate('messages.viaEmail', { count: this.counts.email }));
 
     const alert = await this.alertController.create({
-      header: 'Mitteilung senden?',
-      message: `„${this.title.trim()}“ geht an ${this.counts.recipients} Personen (${channels.join(', ')}). Das kann nicht rückgängig gemacht werden.`,
+      header: translate('messages.sendConfirm'),
+      message: translate('messages.sendConfirmMessage', { title: this.title.trim(), count: this.counts.recipients, channels: channels.join(', ') }),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
-        { text: 'Senden', handler: () => { void this.send(); } },
+        { text: translate('common.cancel'), role: 'cancel' },
+        { text: translate('messages.send'), handler: () => { void this.send(); } },
       ],
     });
     await alert.present();
@@ -158,7 +159,7 @@ export class MessageComposeComponent implements OnInit {
       return;
     }
     this.sending = true;
-    const loading = await this.loadingController.create({ message: 'Wird versendet …' });
+    const loading = await this.loadingController.create({ message: translate('messages.sendingNow') });
     await loading.present();
     try {
       const messageId = await this.messages.send({
@@ -173,11 +174,11 @@ export class MessageComposeComponent implements OnInit {
       } catch {
         // ignore
       }
-      Utils.showToast('Mitteilung wird versendet', 'success');
+      Utils.showToast(translate('messages.isSending'), 'success');
       await this.modalController.dismiss(messageId, 'sent');
     } catch (e) {
       console.error('[message-compose] send failed:', e);
-      Utils.showToast('Fehler beim Versenden, bitte versuche es erneut.', 'danger');
+      Utils.showToast(translate('messages.sendFailed'), 'danger');
     } finally {
       await loading.dismiss();
       this.sending = false;

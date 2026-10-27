@@ -6,6 +6,7 @@ import { MessageService } from 'src/app/services/message/message.service';
 import { Message } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { MessageComposeComponent } from '../message-compose/message-compose.component';
+import { translate } from '@jsverse/transloco';
 
 interface MessageRow extends Message {
   read: number;
@@ -56,7 +57,7 @@ export class MessageListPage implements OnInit {
       }));
     } catch (e) {
       console.error('[message-list] load failed:', e);
-      Utils.showToast('Mitteilungen konnten nicht geladen werden', 'danger');
+      Utils.showToast(translate('messages.listLoadFailed'), 'danger');
     } finally {
       this.loading = false;
     }
@@ -84,12 +85,12 @@ export class MessageListPage implements OnInit {
   async remove(m: MessageRow, sliding: IonItemSliding): Promise<void> {
     await sliding.close();
     const alert = await this.alertController.create({
-      header: 'Mitteilung löschen?',
-      message: 'Die Mitteilung verschwindet auch bei allen Empfängern aus der App. Bereits versendete E-Mails bleiben bestehen.',
+      header: translate('messages.deleteConfirm'),
+      message: translate('messages.deleteHint'),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Löschen',
+          text: translate('common.delete'),
           role: 'destructive',
           handler: async () => {
             try {
@@ -97,7 +98,7 @@ export class MessageListPage implements OnInit {
               this.messages = this.messages.filter(x => x.id !== m.id);
             } catch (e) {
               console.error('[message-list] delete failed:', e);
-              Utils.showToast('Fehler beim Löschen', 'danger');
+              Utils.showToast(translate('messages.deleteFailed'), 'danger');
             }
           },
         },

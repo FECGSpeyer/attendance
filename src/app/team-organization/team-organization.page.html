@@ -3,18 +3,18 @@
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="/tabs/settings"></ion-back-button>
     </ion-buttons>
-    <ion-title>Teamorganisation</ion-title>
+    <ion-title>{{ 'teamOrg.title' | transloco }}</ion-title>
   </ion-toolbar>
   <ion-toolbar>
     <ion-segment [value]="activeSegment" (ionChange)="onSegmentChange($event)">
       <ion-segment-button value="tasks">
-        <ion-label>Aufgaben</ion-label>
+        <ion-label>{{ 'teamOrg.tabTasks' | transloco }}</ion-label>
       </ion-segment-button>
       <ion-segment-button value="topics">
-        <ion-label>Themen</ion-label>
+        <ion-label>{{ 'teamOrg.tabTopics' | transloco }}</ion-label>
       </ion-segment-button>
       <ion-segment-button value="protocols">
-        <ion-label>Protokolle</ion-label>
+        <ion-label>{{ 'teamOrg.tabProtocols' | transloco }}</ion-label>
       </ion-segment-button>
     </ion-segment>
   </ion-toolbar>

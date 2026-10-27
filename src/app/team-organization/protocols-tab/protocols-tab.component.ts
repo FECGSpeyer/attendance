@@ -9,6 +9,9 @@ import { DbService } from 'src/app/services/db.service';
 import { Protocol } from 'src/app/utilities/interfaces';
 import { isEditedAfterPublish } from '../team-org.utils';
 import { MonthGroup, groupByMonth, matchesSearch } from 'src/app/protocols/protocol/protocol.helpers';
+import { translate } from '@jsverse/transloco';
+import { currentLanguage } from '../../i18n/languages';
+import { TranslocoModule } from '@jsverse/transloco';
 
 interface ProtocolRow {
   protocol: Protocol;
@@ -29,7 +32,7 @@ interface ProtocolRow {
   templateUrl: './protocols-tab.component.html',
   styleUrls: ['./protocols-tab.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, IonicModule],
+  imports: [CommonModule, FormsModule, RouterModule, IonicModule, TranslocoModule],
 })
 export class TeamProtocolsTabComponent implements OnInit {
   rows: ProtocolRow[] = [];
@@ -55,8 +58,8 @@ export class TeamProtocolsTabComponent implements OnInit {
           const att = p.attendance;
           const typeName = types.find(t => t.id === att?.type_id)?.name ?? '';
           const date = att?.date ?? null;
-          const d = date ? dayjs(date).locale('de') : null;
-          const title = att?.typeInfo || typeName || 'Termin';
+          const d = date ? dayjs(date).locale(currentLanguage()) : null;
+          const title = att?.typeInfo || typeName || translate('attendance.eventFallback');
           return {
             protocol: p,
             attendanceId: p.attendance_id,
@@ -86,7 +89,7 @@ export class TeamProtocolsTabComponent implements OnInit {
       r.subtitle,
       r.dateText,
       r.date ? dayjs(r.date).format('D.M.YYYY') : '',
-      r.isDraft ? 'Entwurf' : 'Freigegeben',
+      r.isDraft ? translate('teamOrg.draft') : translate('teamOrg.published'),
     ]));
     this.groups = groupByMonth(filtered, r => r.date);
   }
@@ -94,7 +97,7 @@ export class TeamProtocolsTabComponent implements OnInit {
   publishedText(row: ProtocolRow): string {
     const p = row.protocol;
     if (row.isDraft || !p.published_at) return '';
-    const text = `Freigegeben am ${dayjs(p.published_at).format('DD.MM.')}`;
-    return row.edited && p.updated_at ? `${text} · geändert am ${dayjs(p.updated_at).format('DD.MM.')}` : text;
+    const text = translate('teamOrg.publishedOn', { date: dayjs(p.published_at).format('DD.MM.') });
+    return row.edited && p.updated_at ? translate('teamOrg.editedOn', { text, date: dayjs(p.updated_at).format('DD.MM.') }) : text;
   }
 }

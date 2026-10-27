@@ -5,9 +5,11 @@ import { IonicModule } from '@ionic/angular/lazy';
 import { ProtocolPageRoutingModule } from './protocol-routing.module';
 import { ProtocolPage } from './protocol.page';
 import { TiptapEditorComponent } from 'src/app/shared/tiptap-editor/tiptap-editor.component';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

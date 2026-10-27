@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="close()" aria-label="Schließen">
+      <ion-button (click)="close()" [attr.aria-label]="'common.close' | transloco">
         <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -19,34 +19,34 @@
 
   <ion-list [inset]="true">
     <ion-item>
-      <ion-input aria-label="Titel" placeholder="Was ist zu tun?" [(ngModel)]="title" [clearInput]="true"
+      <ion-input [attr.aria-label]="'tasks.title' | transloco" [placeholder]="'tasks.whatToDo' | transloco" [(ngModel)]="title" [clearInput]="true"
         autocapitalize="sentences"></ion-input>
     </ion-item>
     <ion-item>
-      <ion-textarea aria-label="Beschreibung" placeholder="Beschreibung (optional)" [(ngModel)]="description"
+      <ion-textarea [attr.aria-label]="'tasks.description' | transloco" [placeholder]="'tasks.descriptionOptional' | transloco" [(ngModel)]="description"
         [autoGrow]="true" rows="3" autocapitalize="sentences"></ion-textarea>
     </ion-item>
   </ion-list>
 
   <ion-list [inset]="true">
     <ion-list-header>
-      <ion-label>Wer &amp; bis wann</ion-label>
+      <ion-label>{{ 'tasks.whoWhen' | transloco }}</ion-label>
     </ion-list-header>
 
     <ion-item button detail="true" (click)="isPersonPickerOpen = true">
-      <ion-label>Verantwortlich</ion-label>
+      <ion-label>{{ 'tasks.responsible' | transloco }}</ion-label>
       <ion-note slot="end" class="task-form-person" [class.is-empty]="!personId">
         @if (personId) {
           <span class="task-initials">{{ initials(selectedPerson ?? task?.responsible_person) }}</span>
           {{ selectedPersonName }}
         } @else {
-          Niemand
+          {{ 'tasks.nobody' | transloco }}
         }
       </ion-note>
     </ion-item>
 
     <ion-item>
-      <ion-label>Fällig am</ion-label>
+      <ion-label>{{ 'tasks.dueOn' | transloco }}</ion-label>
       <ion-button slot="end" fill="outline" size="small" (click)="dueDateModal.present()">
         {{ dueDate ? formatLongDate(dueDate) : 'Kein Datum' }}
       </ion-button>
@@ -59,9 +59,9 @@
             [value]="dueDate"
             [showDefaultButtons]="true"
             [showClearButton]="true"
-            doneText="OK"
-            cancelText="Abbrechen"
-            clearText="Löschen"
+            [doneText]="'common.ok' | transloco"
+            [cancelText]="'common.cancel' | transloco"
+            [clearText]="'common.delete' | transloco"
             (ionChange)="onDueDateChange($event)">
           </ion-datetime>
         </ng-template>
@@ -69,7 +69,7 @@
     </ion-item>
 
     <ion-item>
-      <ion-select label="Priorität" interface="popover" [(ngModel)]="priority">
+      <ion-select [label]="'tasks.priority' | transloco" interface="popover" [(ngModel)]="priority">
         @for (p of priorities; track p.value) {
           <ion-select-option [value]="p.value">{{ p.label }}</ion-select-option>
         }
@@ -80,8 +80,8 @@
       <ion-item>
         <ion-toggle [(ngModel)]="notify">
           <ion-label>
-            {{ selectedPerson?.firstName || 'Person' }} benachrichtigen
-            <p>Sofort per Push oder Telegram</p>
+            {{ 'tasks.notify' | transloco: { name: selectedPerson?.firstName || ('tasks.person' | transloco) } }}
+            <p>{{ 'tasks.notifyHint' | transloco }}</p>
           </ion-label>
         </ion-toggle>
       </ion-item>
@@ -93,20 +93,20 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>Verantwortlich</ion-title>
+          <ion-title>{{ 'tasks.responsible' | transloco }}</ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="isPersonPickerOpen = false">Fertig</ion-button>
+            <ion-button (click)="isPersonPickerOpen = false">{{ 'person.done' | transloco }}</ion-button>
           </ion-buttons>
         </ion-toolbar>
         <ion-toolbar>
-          <ion-searchbar placeholder="Person suchen" [(ngModel)]="personSearch" [debounce]="100"></ion-searchbar>
+          <ion-searchbar [placeholder]="'tasks.searchPerson' | transloco" [(ngModel)]="personSearch" [debounce]="100"></ion-searchbar>
         </ion-toolbar>
       </ion-header>
       <ion-content>
         <ion-list>
           @if (!personSearch) {
             <ion-item button detail="false" (click)="selectPerson(null)">
-              <ion-label color="medium">Niemand</ion-label>
+              <ion-label color="medium">{{ 'tasks.nobody' | transloco }}</ion-label>
               @if (!personId) {
                 <ion-icon slot="end" name="checkmark" color="primary"></ion-icon>
               }
@@ -122,7 +122,7 @@
             </ion-item>
           } @empty {
             <ion-item lines="none">
-              <ion-label color="medium">Keine Person gefunden</ion-label>
+              <ion-label color="medium">{{ 'tasks.noPersonFound' | transloco }}</ion-label>
             </ion-item>
           }
         </ion-list>

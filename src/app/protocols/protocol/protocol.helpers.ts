@@ -9,6 +9,8 @@ import {
   Task,
 } from '../../utilities/interfaces';
 import { AttendanceStatus } from '../../utilities/constants';
+import { translate } from '@jsverse/transloco';
+import { currentIntlLocale, currentLanguage } from '../../i18n/languages';
 
 /** Minimal Tiptap/ProseMirror JSON node, enough for reading stored protocol docs. */
 export interface DocNode {
@@ -29,8 +31,8 @@ function inlineText(node: DocNode | undefined | null): string {
   if (!node) return '';
   if (node.type === 'text') return node.text ?? '';
   if (node.type === 'hardBreak') return '\n';
-  if (node.type === 'taskRef') return `Aufgabe: ${node.attrs?.['title'] ?? ''}`;
-  if (node.type === 'agendaItemRef') return `Thema: ${node.attrs?.['title'] ?? ''}`;
+  if (node.type === 'taskRef') return translate('protocol.taskRef', { title: node.attrs?.['title'] ?? '' });
+  if (node.type === 'agendaItemRef') return translate('protocol.topicRef', { title: node.attrs?.['title'] ?? '' });
   return (node.content ?? []).map(inlineText).join('');
 }
 
@@ -345,7 +347,7 @@ export function publishSummary(
 /** "Anna", "Anna und Jonas", "Anna, Jonas und Paul". */
 export function joinNames(names: string[]): string {
   if (names.length <= 1) return names[0] ?? '';
-  return `${names.slice(0, -1).join(', ')} und ${names[names.length - 1]}`;
+  return new Intl.ListFormat(currentIntlLocale(), { type: 'conjunction' }).format(names);
 }
 
 // ── Protocol list ──────────────────────────────────────────
@@ -356,11 +358,8 @@ export interface MonthGroup<T> {
   items: T[];
 }
 
-const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-
 export function monthLabel(date: string): string {
-  const d = dayjs(date);
-  return `${MONTHS[d.month()]} ${d.year()}`;
+  return dayjs(date).locale(currentLanguage()).format('MMMM YYYY');
 }
 
 /** Groups items (already sorted) by month of their date, keeping the order. */
@@ -371,7 +370,7 @@ export function groupByMonth<T>(items: T[], dateOf: (item: T) => string | undefi
     const key = date ? dayjs(date).format('YYYY-MM') : 'none';
     let group = groups.find(g => g.key === key);
     if (!group) {
-      group = { key, label: date ? monthLabel(date) : 'Ohne Datum', items: [] };
+      group = { key, label: date ? monthLabel(date) : translate('teamOrg.group.none'), items: [] };
       groups.push(group);
     }
     group.items.push(item);

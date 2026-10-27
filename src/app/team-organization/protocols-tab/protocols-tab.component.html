@@ -2,7 +2,7 @@
   <ion-searchbar
     [(ngModel)]="search"
     (ionInput)="applyFilter()"
-    placeholder="Termin oder Datum suchen"
+    [placeholder]="'teamOrg.searchProtocols' | transloco"
     [debounce]="150">
   </ion-searchbar>
 }
@@ -13,18 +13,18 @@
   <div class="state">
     <ion-icon name="document-text-outline"></ion-icon>
     @if (isLeader) {
-      <h2>Noch keine Protokolle</h2>
-      <p>Ein Protokoll schreibst du direkt im Termin: Öffne den Termin und tippe auf „Protokoll“.</p>
+      <h2>{{ 'teamOrg.noProtocols' | transloco }}</h2>
+      <p>{{ 'teamOrg.noProtocolsHint' | transloco }}</p>
     } @else {
-      <h2>Noch keine Protokolle freigegeben</h2>
-      <p>Sobald die Leitung ein Protokoll freigibt, findest du es hier.</p>
+      <h2>{{ 'teamOrg.noPublished' | transloco }}</h2>
+      <p>{{ 'teamOrg.noPublishedHint' | transloco }}</p>
     }
   </div>
 } @else if (!groups.length) {
   <div class="state">
     <ion-icon name="search-outline"></ion-icon>
-    <h2>Keine Treffer</h2>
-    <p>Kein Protokoll passt zu „{{ search }}“.</p>
+    <h2>{{ 'teamOrg.noHits' | transloco }}</h2>
+    <p>{{ 'teamOrg.noProtocolMatch' | transloco: { search: search } }}</p>
   </div>
 } @else {
   @for (group of groups; track group.key) {
@@ -46,9 +46,9 @@
             @if (publishedText(row)) { <p class="published">{{ publishedText(row) }}</p> }
           </ion-label>
           @if (row.isDraft) {
-            <ion-badge slot="end" color="warning">Entwurf</ion-badge>
+            <ion-badge slot="end" color="warning">{{ 'teamOrg.draft' | transloco }}</ion-badge>
           } @else if (isLeader) {
-            <ion-badge slot="end" color="success">Freigegeben</ion-badge>
+            <ion-badge slot="end" color="success">{{ 'teamOrg.published' | transloco }}</ion-badge>
           }
         </ion-item>
       }
