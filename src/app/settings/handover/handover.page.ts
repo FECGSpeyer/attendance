@@ -6,6 +6,7 @@ import { DataService } from 'src/app/services/data.service';
 import { DbService } from 'src/app/services/db.service';
 import { Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-handover',
@@ -51,7 +52,7 @@ export class HandoverPage implements OnInit {
     if (this.tenants.length > 0) {
       this.tenant = this.tenants[0].id;
     } else {
-      Utils.showToast('Es sind keine weiteren Instanzen vorhanden. Bitte füge weitere Instanzen dieser Organisation hinzu.', 'danger');
+      Utils.showToast(translate('handover.noOtherTenants'), 'danger');
     }
   }
 

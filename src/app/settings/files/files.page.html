@@ -5,7 +5,7 @@
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Dateien</ion-title>
+    <ion-title>{{ 'files.title' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button fill="clear" (click)="filesMenuPopover.present($event)">
         <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
@@ -20,11 +20,11 @@
       @if (canEditEntries) {
       <ion-item button detail="false" (click)="filesMenuPopover.dismiss(); triggerUpload()">
         <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
-        Dateien hochladen
+        {{ 'files.upload' | transloco }}
       </ion-item>
       <ion-item button detail="false" (click)="filesMenuPopover.dismiss(); createFolder()">
         <ion-icon name="folder-open-outline" slot="start"></ion-icon>
-        Ordner erstellen
+        {{ 'files.createFolder' | transloco }}
       </ion-item>
       }
       <ion-item button detail="false" (click)="filesMenuPopover.dismiss(); shareEntry()">
@@ -33,21 +33,21 @@
       </ion-item>
       <ion-item lines="none">
         <ion-label>
-          <h3>Sortierung</h3>
+          <h3>{{ 'files.sorting' | transloco }}</h3>
           <p>{{ sortLabel }}</p>
         </ion-label>
       </ion-item>
       <ion-item button detail="false" (click)="setSort('name', filesMenuPopover)">
         <ion-icon name="text-outline" slot="start"></ion-icon>
-        Name
+        {{ 'files.name' | transloco }}
       </ion-item>
       <ion-item button detail="false" (click)="setSort('updatedAt', filesMenuPopover)">
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
-        Änderungsdatum
+        {{ 'files.modified' | transloco }}
       </ion-item>
       <ion-item button detail="false" (click)="setSort('size', filesMenuPopover)">
         <ion-icon name="resize-outline" slot="start"></ion-icon>
-        Dateigröße
+        {{ 'files.size' | transloco }}
       </ion-item>
       <ion-item button detail="false" lines="none" (click)="toggleSortDirection(filesMenuPopover)">
         <ion-icon [name]="sortDirection === 'asc' ? 'arrow-up-outline' : 'arrow-down-outline'" slot="start"></ion-icon>
@@ -66,7 +66,7 @@
 
   <div class="breadcrumbs-container">
     <ion-breadcrumbs>
-      <ion-breadcrumb href="#" (click)="$event.preventDefault(); openRoot()">Root</ion-breadcrumb>
+      <ion-breadcrumb href="#" (click)="$event.preventDefault(); openRoot()">{{ 'files.root' | transloco }}</ion-breadcrumb>
       @if (pathSegments.length) {
       @for (segment of pathSegments; track segment; let i = $index) {
       <ion-breadcrumb href="#" (click)="$event.preventDefault(); openSegment(i)">{{ segment }}</ion-breadcrumb>
@@ -78,7 +78,7 @@
   @if (canEditEntries && usedBytes !== null) {
   <div class="storage-usage">
     <ion-note>
-      Speicher: {{ formatFileSize(usedBytes) }}{{ maxBytes !== null ? ' von ' + formatFileSize(maxBytes) : '' }} belegt{{ storageStatusLabel }}
+      @if (maxBytes !== null) { {{ 'files.storageUsedOf' | transloco: { used: formatFileSize(usedBytes), max: formatFileSize(maxBytes) } }} } @else { {{ 'files.storageUsed' | transloco: { used: formatFileSize(usedBytes) } }} }{{ storageStatusLabel }}
     </ion-note>
     @if (maxBytes !== null) {
     <ion-progress-bar [value]="usedBytes / maxBytes" [color]="usedBytes >= maxBytes * 0.9 ? 'danger' : 'primary'"></ion-progress-bar>
@@ -86,7 +86,7 @@
     @if (isStorageAlmostFull) {
     <ion-button size="small" fill="clear" class="storage-request" (click)="requestMoreStorage()">
       <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-      Mehr Speicher anfragen
+      {{ 'files.requestMore' | transloco }}
     </ion-button>
     }
   </div>
@@ -94,7 +94,7 @@
 
   <div class="search-block">
     <div class="search-row">
-      <ion-searchbar class="files-search" [(ngModel)]="searchTerm" placeholder="Dateien & Ordner suchen...">
+      <ion-searchbar class="files-search" [(ngModel)]="searchTerm" [placeholder]="'files.searchPlaceholder' | transloco">
       </ion-searchbar>
 
       <ion-button id="files-search-help-trigger" class="search-help-button" fill="clear" color="medium">
@@ -107,15 +107,15 @@
         <ion-list>
           <ion-item lines="none">
             <ion-label>
-              <h3>Suche</h3>
-              <p>Freitext durchsucht den Dateinamen/Ordnernamen.</p>
+              <h3>{{ 'files.search' | transloco }}</h3>
+              <p>{{ 'files.searchHelp' | transloco }}</p>
             </ion-label>
           </ion-item>
           <ion-item lines="none">
             <ion-label>
-              <p><strong>typ:&lt;wert&gt;</strong> · Filtert nach Dateityp oder Art (z. B. <strong>typ:pdf</strong>, <strong>typ:ordner</strong>, <strong>typ:datei</strong>).</p>
-              <p><strong>datum:&lt;wert&gt;</strong> · Filtert nach Änderungsdatum (z. B. <strong>datum:2026</strong>, <strong>datum:03.2026</strong>, <strong>datum:03.03.2026</strong>).</p>
-              <p>Filter sind kombinierbar, z. B. <strong>protokoll typ:pdf datum:2026</strong>.</p>
+              <p [innerHTML]="'files.searchType' | transloco"></p>
+              <p [innerHTML]="'files.searchDate' | transloco"></p>
+              <p [innerHTML]="'files.searchCombine' | transloco"></p>
             </ion-label>
           </ion-item>
         </ion-list>
@@ -124,7 +124,7 @@
 
     @if (hasSearchTerm) {
     <ion-button class="clear-search-button" size="small" fill="clear" (click)="clearSearch()">
-      Suche zurücksetzen
+      {{ 'files.resetSearch' | transloco }}
     </ion-button>
     }
   </div>
@@ -138,14 +138,14 @@
   <ion-card>
     <ion-card-content class="ion-text-center ion-padding">
       <ion-icon name="folder-open-outline" class="empty-icon"></ion-icon>
-      <p>Dieser Ordner ist leer.</p>
+      <p>{{ 'files.folderEmpty' | transloco }}</p>
     </ion-card-content>
   </ion-card>
   } @else if (!filteredEntries.length) {
   <ion-card>
     <ion-card-content class="ion-text-center ion-padding">
       <ion-icon name="search-outline" class="empty-icon"></ion-icon>
-      <p>Keine Treffer für „{{ searchTerm }}“.</p>
+      <p>{{ 'files.noHits' | transloco: { term: searchTerm } }}</p>
     </ion-card-content>
   </ion-card>
   } @else {
@@ -165,7 +165,7 @@
         <p>
           {{ formatFileSize(entry.size) }}
           @if (entry.updatedAt) {
-          · Geändert: {{ formatUpdatedAt(entry.updatedAt) }}
+          {{ 'files.changedAt' | transloco: { date: formatUpdatedAt(entry.updatedAt) } }}
           }
         </p>
         }
@@ -185,33 +185,33 @@
             @if (!entry.isFolder) {
             <ion-item button (click)="handleEntryAction('download', entry, actionPopover)">
               <ion-icon name="download-outline" slot="start"></ion-icon>
-              Datei herunterladen
+              {{ 'files.download' | transloco }}
             </ion-item>
             }
             <ion-item button (click)="handleEntryAction('share', entry, actionPopover)">
               <ion-icon name="link-outline" slot="start"></ion-icon>
-              Link teilen
+              {{ 'files.shareLink' | transloco }}
             </ion-item>
             @if (!entry.isFolder) {
             @if (db.tenantUser()?.telegram_chat_id) {
             <ion-item button (click)="handleEntryAction('telegram', entry, actionPopover)">
               <ion-icon name="paper-plane-outline" slot="start"></ion-icon>
-              Per Telegram senden
+              {{ 'files.sendTelegram' | transloco }}
             </ion-item>
             }
             }
             @if (canEditEntries) {
             <ion-item button (click)="handleEntryAction('rename', entry, actionPopover)">
               <ion-icon name="create-outline" slot="start"></ion-icon>
-              Umbenennen
+              {{ 'files.rename' | transloco }}
             </ion-item>
             <ion-item button (click)="handleEntryAction('move', entry, actionPopover)">
               <ion-icon name="swap-horizontal-outline" slot="start"></ion-icon>
-              Verschieben
+              {{ 'files.move' | transloco }}
             </ion-item>
             <ion-item button (click)="handleEntryAction('delete', entry, actionPopover)">
               <ion-icon name="trash-outline" slot="start"></ion-icon>
-              Löschen
+              {{ 'common.delete' | transloco }}
             </ion-item>
             }
           </ion-list>

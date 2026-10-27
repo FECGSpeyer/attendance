@@ -18,6 +18,7 @@ import { Viewer } from '../../utilities/interfaces';
 import { Router } from '@angular/router';
 import { RegisterPage } from 'src/app/register/register.page';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-settings',
@@ -293,12 +294,12 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   async showAlertForAccountsCreation() {
     const alert = await this.alertController.create({
-      header: 'Accounts anlegen',
-      message: `Folgende Accounts werden angelegt: ${this.playersWithoutAccount.map((p: Player) => `${p.firstName} ${p.lastName}`).join(', ')}`,
+      header: translate('settings.createAccounts'),
+      message: translate('settings.createAccountsMessage', { names: this.playersWithoutAccount.map((p: Player) => `${p.firstName} ${p.lastName}`).join(', ') }),
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Fortfahren',
+        text: translate('settings.continue'),
         handler: async () => {
           await this.createAccounts();
         }
@@ -319,24 +320,24 @@ export class SettingsPage implements OnInit, OnDestroy {
       }
     } catch (error) {
       this.playersWithoutAccount = await this.db.getPlayersWithoutAccount();
-      Utils.showToast(`Fehler beim Erstellen der Accounts: ${error.message}`, 'danger');
+      Utils.showToast(translate('settings.createAccountsFailed', { error: error.message }), 'danger');
       loading.dismiss();
       return;
     }
 
-    Utils.showToast('Die Accounts wurden erfolgreich angelegt', 'success');
+    Utils.showToast(translate('settings.accountsCreated'), 'success');
 
     loading.dismiss();
   }
 
   async removeViewer(viewer: Viewer): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Beobachter entfernen?',
-      message: `Möchtest du ${viewer.firstName} wirklich entfernen?`,
+      header: translate('settings.removeViewer'),
+      message: translate('settings.removeMessage', { name: viewer.firstName }),
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Ja',
+        text: translate('common.yes'),
         handler: async () => {
           await this.db.deleteViewer(viewer);
           this.viewers = await this.db.getViewers();
@@ -349,12 +350,12 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   async removeParent(parent: Parent): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Elternteil entfernen?',
-      message: `Möchtest du ${parent.firstName} wirklich entfernen?`,
+      header: translate('settings.removeParent'),
+      message: translate('settings.removeMessage', { name: parent.firstName }),
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Ja',
+        text: translate('common.yes'),
         handler: async () => {
           await this.db.deleteParent(parent);
           this.parents = await this.db.getParents();
@@ -394,22 +395,22 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   async openViewerAlert() {
     const alert = await this.alertController.create({
-      header: 'Beobachter hinzufügen',
+      header: translate('settings.addViewer'),
       inputs: [{
         type: 'email',
         name: 'email',
-        placeholder: 'E-Mail-Adresse',
+        placeholder: translate('settings.emailAddress'),
       }, {
         name: 'firstName',
-        placeholder: 'Vorname',
+        placeholder: translate('people.firstName'),
       }, {
         name: 'lastName',
-        placeholder: 'Nachname',
+        placeholder: translate('people.lastName'),
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Einladen',
+        text: translate('settings.invite'),
         handler: async (data: { email: string; firstName: string; lastName: string }) => {
           if (Utils.validateEmail(data.email) && data.firstName.length && data.lastName.length) {
             const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
@@ -417,14 +418,14 @@ export class SettingsPage implements OnInit, OnDestroy {
             try {
               await this.db.createViewer(data);
               this.viewers = await this.db.getViewers();
-              Utils.showToast('Der Benutzer wurde erfolgreich angelegt.', 'success');
+              Utils.showToast(translate('settings.userCreated'), 'success');
               await loading.dismiss();
             } catch (error) {
               Utils.showToast(error.message, 'danger');
               await loading.dismiss();
             }
           } else {
-            alert.message = 'Bitte gib gültige Werte ein.';
+            alert.message = translate('admin.invalidValues');
             return false;
           }
         }
@@ -436,22 +437,22 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   async openParentsAlert() {
     const alert = await this.alertController.create({
-      header: 'Elternteil hinzufügen',
+      header: translate('settings.addParent'),
       inputs: [{
         type: 'email',
         name: 'email',
-        placeholder: 'E-Mail-Adresse',
+        placeholder: translate('settings.emailAddress'),
       }, {
         name: 'firstName',
-        placeholder: 'Vorname',
+        placeholder: translate('people.firstName'),
       }, {
         name: 'lastName',
-        placeholder: 'Nachname',
+        placeholder: translate('people.lastName'),
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Einladen',
+        text: translate('settings.invite'),
         handler: async (data: { email: string; firstName: string; lastName: string }) => {
           if (Utils.validateEmail(data.email) && data.firstName.length && data.lastName.length) {
             const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
@@ -459,14 +460,14 @@ export class SettingsPage implements OnInit, OnDestroy {
             try {
               await this.db.createParent(data);
               this.parents = await this.db.getParents();
-              Utils.showToast('Der Benutzer wurde erfolgreich angelegt.', 'success');
+              Utils.showToast(translate('settings.userCreated'), 'success');
               await loading.dismiss();
             } catch (error) {
               Utils.showToast(error.message, 'danger');
               await loading.dismiss();
             }
           } else {
-            alert.message = 'Bitte gib gültige Werte ein.';
+            alert.message = translate('admin.invalidValues');
             return false;
           }
         }
@@ -480,33 +481,33 @@ export class SettingsPage implements OnInit, OnDestroy {
     slider.close();
 
     if (!this.canDeleteTenant(tenant)) {
-      Utils.showToast('Du kannst diese Instanz nicht löschen.', 'danger');
+      Utils.showToast(translate('settings.cannotDeleteTenant'), 'danger');
       return;
     }
 
-    const message = `Möchtest du die Instanz '${tenant.longName}' wirklich löschen? Dies kann nicht rückgängig gemacht werden! Wenn du die Instanz wirklich löschen willst, dann gebe den Namen der Instanz ein:`;
+    const message = translate('settings.deleteTenantMessage', { name: tenant.longName });
 
     const alert = await this.alertController.create({
-      header: 'Instanz löschen?',
+      header: translate('settings.deleteTenant'),
       message,
       inputs: [{
         type: 'text',
-        placeholder: 'Name der Instanz eingeben...',
+        placeholder: translate('settings.tenantNamePh'),
         name: 'name'
       }],
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Löschen',
+        text: translate('common.delete'),
         handler: async (evt) => {
           if (evt.name === tenant.longName) {
-            const loading = await Utils.getLoadingElement(9999, 'Instanz wird entfernt...');
+            const loading = await Utils.getLoadingElement(9999, translate('settings.removingTenant'));
             await loading.present();
             modal?.dismiss();
             await this.db.deleteInstance(tenant.id);
             await loading.dismiss();
           } else {
-            alert.message = 'Der eingegebene Name ist nicht korrekt.';
+            alert.message = translate('settings.wrongName');
             return false;
           }
         }
@@ -525,7 +526,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     try {
       await this.db.setFavoriteTenant(tenant.id, !tenant.favorite);
       await loading.dismiss();
-      await Utils.showToast(`Die Instanz '${tenant.longName}' wurde ${!tenant.favorite ? 'als Favorit gesetzt' : 'als Favorit entfernt'}.`, 'success', 3000);
+      await Utils.showToast(translate(!tenant.favorite ? 'settings.favoriteSet' : 'settings.favoriteRemoved', { name: tenant.longName }), 'success', 3000);
     } catch (error) {
       await loading.dismiss();
     }
@@ -545,8 +546,8 @@ export class SettingsPage implements OnInit, OnDestroy {
     const groups = this.db.groups();
 
     const alert = await this.alertController.create({
-      header: 'Gruppen auswählen',
-      message: 'Für welche Gruppen sollen Urkunden erstellt werden?',
+      header: translate('settings.selectGroups'),
+      message: translate('settings.certificatesFor'),
       inputs: groups.map(g => ({
         type: 'checkbox' as const,
         label: g.name,
@@ -554,16 +555,16 @@ export class SettingsPage implements OnInit, OnDestroy {
         checked: true,
       })),
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
         role: 'cancel',
       }, {
-        text: 'Generieren',
+        text: translate('settings.generate'),
         handler: async (selectedGroupIds: number[]) => {
           if (!selectedGroupIds?.length) {
-            Utils.showToast('Bitte mindestens eine Gruppe auswählen.', 'warning');
+            Utils.showToast(translate('settings.selectOneGroup'), 'warning');
             return false;
           }
-          const loading = await Utils.getLoadingElement(9999, 'Urkunden werden erstellt...');
+          const loading = await Utils.getLoadingElement(9999, translate('settings.creatingCertificates'));
           await loading.present();
           try {
             const players = await this.db.getPlayers(true);
@@ -572,12 +573,12 @@ export class SettingsPage implements OnInit, OnDestroy {
               selectedGroupIds.includes(p.instrument)
             );
             if (!filtered.length) {
-              Utils.showToast('Keine Personen in den gewählten Gruppen gefunden.', 'warning');
+              Utils.showToast(translate('settings.noPersonsInGroups'), 'warning');
               return;
             }
             await Utils.generateVorkursCertificates(filtered);
           } catch {
-            Utils.showToast('Fehler beim Erstellen der Urkunden.', 'danger');
+            Utils.showToast(translate('settings.certificatesFailed'), 'danger');
           } finally {
             await loading.dismiss();
           }
@@ -590,16 +591,16 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   async openAdminsAlert() {
     const alert = await this.alertController.create({
-      header: 'Admin hinzufügen',
+      header: translate('settings.addAdmin'),
       inputs: [{
         type: 'email',
         name: 'email',
-        placeholder: 'E-Mail-Adresse',
+        placeholder: translate('settings.emailAddress'),
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Hinzufügen',
+        text: translate('attendance.add'),
         handler: async (data: { email: string }) => {
           if (Utils.validateEmail(data.email)) {
             const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
@@ -607,14 +608,14 @@ export class SettingsPage implements OnInit, OnDestroy {
             try {
               await this.db.createAdmin(data.email);
               this.admins = await this.db.getAdmins();
-              Utils.showToast('Der Admin wurde erfolgreich hinzugefügt.', 'success');
+              Utils.showToast(translate('settings.adminAdded'), 'success');
               await loading.dismiss();
             } catch (error) {
               Utils.showToast(error.message, 'danger');
               await loading.dismiss();
             }
           } else {
-            alert.message = 'Bitte gib gültige Werte ein.';
+            alert.message = translate('admin.invalidValues');
             return false;
           }
         }
@@ -626,23 +627,23 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   async openChurchInput() {
     const alert = await this.alertController.create({
-      header: 'Gemeinde hinzufügen',
+      header: translate('admin.addChurch'),
       inputs: [{
         type: 'text',
         name: 'name',
-        placeholder: 'Name der Gemeinde',
+        placeholder: translate('admin.churchName'),
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Hinzufügen',
+        text: translate('attendance.add'),
         handler: async (data: { name: string }) => {
           if (data.name.length) {
             const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
             loading.present();
             try {
               await this.db.createChurch(data.name);
-              Utils.showToast('Die Gemeinde wurde erfolgreich hinzugefügt.', 'success');
+              Utils.showToast(translate('admin.churchAdded'), 'success');
               this.churches = await this.db.getChurches();
               await loading.dismiss();
             } catch (error) {
@@ -650,7 +651,7 @@ export class SettingsPage implements OnInit, OnDestroy {
               await loading.dismiss();
             }
           } else {
-            alert.message = 'Bitte gib gültige Werte ein.';
+            alert.message = translate('admin.invalidValues');
             return false;
           }
         }
@@ -662,21 +663,21 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   async removeAdmin(admin: Admin): Promise<void> {
     if (admin.userId === this.db.tenantUser().userId) {
-      Utils.showToast('Du kannst dich nicht selbst entfernen.', 'danger');
+      Utils.showToast(translate('settings.cannotRemoveSelf'), 'danger');
       return;
     }
 
     const alert = await this.alertController.create({
-      header: 'Admin entfernen?',
-      message: `Möchtest du ${admin.email} wirklich entfernen?`,
+      header: translate('settings.removeAdmin'),
+      message: translate('settings.removeMessage', { name: admin.email }),
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Ja',
+        text: translate('common.yes'),
         handler: async () => {
           await this.db.removeEmailFromAuth(admin.userId, admin.email, true);
           this.admins = await this.db.getAdmins();
-          Utils.showToast('Der Admin wurde erfolgreich entfernt.', 'success');
+          Utils.showToast(translate('settings.adminRemoved'), 'success');
         }
       }]
     });
@@ -707,15 +708,15 @@ export class SettingsPage implements OnInit, OnDestroy {
   getRoleName(): string {
     const role = this.db.tenantUser()?.role;
     const map: Partial<Record<Role, string>> = {
-      [Role.ADMIN]: 'Administrator',
-      [Role.RESPONSIBLE]: 'Verantwortlicher',
-      [Role.HELPER]: 'Helfer',
-      [Role.VOICE_LEADER]: 'Stimmführer',
-      [Role.VOICE_LEADER_HELPER]: 'Stimmführer-Helfer',
-      [Role.PLAYER]: 'Mitglied',
-      [Role.VIEWER]: 'Beobachter',
-      [Role.PARENT]: 'Elternteil',
-      [Role.APPLICANT]: 'Bewerber',
+      [Role.ADMIN]: translate('roles.administrator'),
+      [Role.RESPONSIBLE]: translate('roles.responsible'),
+      [Role.HELPER]: translate('roles.helper'),
+      [Role.VOICE_LEADER]: translate('settings.voiceLeader'),
+      [Role.VOICE_LEADER_HELPER]: translate('roles.voiceLeaderHelper'),
+      [Role.PLAYER]: translate('roles.member'),
+      [Role.VIEWER]: translate('settings.viewers'),
+      [Role.PARENT]: translate('roles.parent'),
+      [Role.APPLICANT]: translate('roles.applicant'),
     };
     return map[role] ?? '';
   }
@@ -728,10 +729,10 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   getChurchLabel(): string {
     const value = this.userData?.additional_fields?.['bfecg_church'];
-    if (value === null || value === undefined) { return 'Bitte auswählen'; }
-    if (value === '') { return 'Nicht gelistet'; }
+    if (value === null || value === undefined) { return translate('settings.pleaseSelect'); }
+    if (value === '') { return translate('settings.notListed'); }
     const church = this.churches.find(c => c.id === value);
-    return church ? church.name : 'Bitte auswählen';
+    return church ? church.name : translate('settings.pleaseSelect');
   }
 
   openChurchModal() {
@@ -746,7 +747,7 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   getExtraFieldDisplayValue(field: any): string {
     let value = this.userData?.additional_fields?.[field.id];
-    if (field.type === FieldType.BOOLEAN) {return value ? 'Ja' : 'Nein';}
+    if (field.type === FieldType.BOOLEAN) {return value ? translate('common.yes') : translate('common.no');}
     if (value === undefined || value === null || value === '') {
       value = field.defaultValue;
     }
@@ -769,27 +770,27 @@ export class SettingsPage implements OnInit, OnDestroy {
       }
     }
     const alert = await this.alertController.create({
-      header: 'Kalender abonnieren',
-      message: `Kopiere den folgenden Link in deine Kalender-App, um die Termine zu abonnieren:\n\n${link}`,
+      header: translate('settings.subscribeCalendar'),
+      message: translate('settings.calendarMessage', { link }),
       // Personal feeds can leave out Termine you cancelled (default: shown with status).
-      inputs: personal ? [{ type: 'checkbox', label: 'Abgesagte Termine ausblenden', value: 'hideExcused' }] : [],
+      inputs: personal ? [{ type: 'checkbox', label: translate('settings.hideCancelled'), value: 'hideExcused' }] : [],
       buttons: [
         {
-          text: 'Link kopieren',
+          text: translate('settings.copyLink'),
           handler: (values?: string[]) => {
             const finalLink = Array.isArray(values) && values.includes('hideExcused') ? `${link}&hideExcused=1` : link;
             navigator?.clipboard.writeText(finalLink);
-            Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
+            Utils.showToast(translate('settings.linkCopied'), 'success');
             return false;
           },
         },
         {
-          text: 'Anleitung öffnen',
+          text: translate('settings.openGuide'),
           handler: () => {
             Browser.open({ url: this.isIos ? 'https://support.apple.com/de-de/102301' : 'https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid' });
           },
         },
-        { text: 'Schließen', role: 'cancel' },
+        { text: translate('common.close'), role: 'cancel' },
       ],
     });
     await alert.present();
@@ -819,12 +820,12 @@ export class SettingsPage implements OnInit, OnDestroy {
 
     if (this.userData.img && this.userData.img !== DEFAULT_IMAGE) {
       additionalButtons.push({
-        text: 'Passbild ansehen',
+        text: translate('settings.viewPhoto'),
         handler: () => {
           this.openPassImageViewer();
         }
       }, {
-        text: 'Passbild entfernen',
+        text: translate('settings.removePhoto'),
         role: 'destructive',
         handler: () => {
           this.removeImg();
@@ -834,12 +835,12 @@ export class SettingsPage implements OnInit, OnDestroy {
 
     const actionSheet = await this.actionSheetController.create({
       buttons: [{
-        text: 'Passbild ersetzen',
+        text: translate('settings.replacePhoto'),
         handler: () => {
           this.chooser.nativeElement.click();
         }
       }, ...additionalButtons, {
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }]
     });
 
@@ -848,15 +849,15 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   async removeImg(): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Passbild entfernen',
-      message: 'Möchtest du dein Passbild wirklich entfernen?',
+      header: translate('settings.removePhoto'),
+      message: translate('settings.removePhotoConfirm'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel',
         },
         {
-          text: 'Entfernen',
+          text: translate('common.remove'),
           role: 'destructive',
           handler: async () => {
             try {
@@ -864,9 +865,9 @@ export class SettingsPage implements OnInit, OnDestroy {
               await this.db.removeImage(this.userData.id, fileName, false, this.userData.appId || '');
               this.userData.img = DEFAULT_IMAGE;
               this.closePassImageViewer();
-              Utils.showToast('Das Passbild wurde erfolgreich entfernt', 'success');
+              Utils.showToast(translate('settings.photoRemoved'), 'success');
             } catch (error) {
-              Utils.showToast('Fehler beim Entfernen des Passbildes, versuche es später erneut', 'danger');
+              Utils.showToast(translate('settings.photoRemoveFailed'), 'danger');
             }
           },
         },
@@ -924,7 +925,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       additional_fields: additionalFields,
     }, churchId);
 
-    Utils.showToast('Die Profildaten wurden erfolgreich aktualisiert.', 'success');
+    Utils.showToast(translate('settings.profileUpdated'), 'success');
   }
 
   async onImageSelect(evt: any) {
@@ -935,7 +936,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     if (imgFile) {
       if (imgFile.size > 2 * 1024 * 1024) {
         loading.dismiss();
-        Utils.showToast('Das Bild darf maximal 2MB groß sein.', 'danger');
+        Utils.showToast(translate('settings.imageTooBig'), 'danger');
         return;
       }
 
@@ -948,14 +949,14 @@ export class SettingsPage implements OnInit, OnDestroy {
           const url: string = await this.db.updateImage(this.userData.id, imgFile, this.userData.appId);
           this.userData.img = url;
           loading.dismiss();
-          Utils.showToast('Das Passbild wurde erfolgreich geändert.', 'success');
+          Utils.showToast(translate('settings.photoChanged'), 'success');
         } catch (error) {
           Utils.showToast(error, 'danger');
           loading.dismiss();
         }
       } else {
         loading.dismiss();
-        Utils.showToast('Fehler beim ändern des Passbildes, versuche es später erneut', 'danger');
+        Utils.showToast(translate('settings.photoChangeFailed'), 'danger');
       }
     }
   }
@@ -978,10 +979,10 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.anonymous = false;
       this.feedbackPhone = '';
 
-      Utils.showToast('Deine Anfrage wurde erfolgreich gesendet. Wir melden uns so schnell wie möglich bei dir.', 'success');
+      Utils.showToast(translate('settings.questionSent'), 'success');
       loading.dismiss();
     } catch (error) {
-      Utils.showToast('Fehler beim Senden der Anfrage: ' + error.message, 'danger');
+      Utils.showToast(translate('settings.questionFailed', { error: error.message }), 'danger');
       loading.dismiss();
     }
   }
@@ -991,7 +992,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     loading.present();
 
     if (this.feedbackRating === 0) {
-      Utils.showToast('Bitte gib eine Bewertung ab.', 'danger');
+      Utils.showToast(translate('settings.ratingRequired'), 'danger');
       loading.dismiss();
       return;
     }
@@ -1009,10 +1010,10 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.anonymous = false;
       this.feedbackPhone = '';
 
-      Utils.showToast('Dein Feedback wurde erfolgreich gesendet. Vielen Dank!', 'success');
+      Utils.showToast(translate('settings.feedbackSent'), 'success');
       loading.dismiss();
     } catch (error) {
-      Utils.showToast('Fehler beim Senden des Feedbacks: ' + error.message, 'danger');
+      Utils.showToast(translate('settings.feedbackFailed', { error: error.message }), 'danger');
       loading.dismiss();
     }
   }
@@ -1028,33 +1029,33 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   async changePassword() {
     const alert = await this.alertController.create({
-      header: 'Passwort ändern',
+      header: translate('settings.changePassword'),
       inputs: [{
         type: 'password',
-        placeholder: 'Neues Passwort eingeben...',
+        placeholder: translate('settings.newPasswordPh'),
         name: 'password'
       }, {
         type: 'password',
-        placeholder: 'Passwort wiederholen...',
+        placeholder: translate('settings.repeatPasswordPh'),
         name: 'passwordConfirm'
       }],
       buttons: [{
-        text: 'Abbrechen'
+        text: translate('common.cancel')
       }, {
-        text: 'Ändern',
+        text: translate('settings.change'),
         handler: async (evt) => {
           if (evt.password !== evt.passwordConfirm) {
-            Utils.showToast('Die Passwörter stimmen nicht überein.', 'danger');
+            Utils.showToast(translate('settings.passwordsMismatch'), 'danger');
             return false;
           } else if (evt.password.length < 6) {
-            Utils.showToast('Das Passwort muss mindestens 6 Zeichen lang sein.', 'danger');
+            Utils.showToast(translate('settings.passwordTooShort'), 'danger');
             return false;
           } else {
             try {
               await this.db.changePassword(evt.password);
-              Utils.showToast('Das Passwort wurde erfolgreich geändert');
+              Utils.showToast(translate('settings.passwordChanged'));
             } catch (error) {
-              Utils.showToast('Fehler beim Ändern deines Passworts. Bitte versuche es später erneut.', 'danger');
+              Utils.showToast(translate('settings.passwordFailed'), 'danger');
             }
           }
         }

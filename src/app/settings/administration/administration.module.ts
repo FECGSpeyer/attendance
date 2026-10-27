@@ -5,9 +5,11 @@ import { IonicModule } from '@ionic/angular/lazy';
 
 import { AdministrationPageRoutingModule } from './administration-routing.module';
 import { AdministrationPage } from './administration.page';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

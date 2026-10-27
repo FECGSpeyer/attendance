@@ -7,9 +7,11 @@ import { IonicModule } from '@ionic/angular/lazy';
 import { HelpPageRoutingModule } from './help-routing.module';
 
 import { HelpPage } from './help.page';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

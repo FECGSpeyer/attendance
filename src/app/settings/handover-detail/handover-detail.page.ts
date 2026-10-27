@@ -6,6 +6,7 @@ import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracki
 import { DEFAULT_IMAGE, PlayerHistoryType } from 'src/app/utilities/constants';
 import { Group, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-handover-detail',
@@ -30,7 +31,7 @@ export class HandoverDetailPage implements OnInit {
     this.handoverData = this.dataService.getHandoverData();
 
     if (!this.handoverData) {
-      Utils.showToast('Keine Daten für die Personenübergabe vorhanden.', 'danger');
+      Utils.showToast(translate('handover.noData'), 'danger');
       this.navCtrl.navigateBack('/tabs/settings/handover');
       return;
     }
@@ -60,7 +61,7 @@ export class HandoverDetailPage implements OnInit {
 
   async changeGroup(person: Player) {
     const alert = await this.alertController.create({
-      header: 'Gruppe auswählen',
+      header: translate('handover.selectGroup'),
       inputs: this.newTenantGroups.map(g => ({
         name: 'group',
         type: 'radio',
@@ -70,11 +71,11 @@ export class HandoverDetailPage implements OnInit {
       })),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'destructive',
         },
         {
-          text: 'Ok',
+          text: translate('common.ok'),
           handler: (data: number) => {
             this.groupMapping[person.id] = data;
           }
@@ -85,20 +86,20 @@ export class HandoverDetailPage implements OnInit {
   }
 
   getInsName(insId: number): string {
-    return this.newTenantGroups.find(i => i.id === insId)?.name ?? 'Unbekannt';
+    return this.newTenantGroups.find(i => i.id === insId)?.name ?? translate('common.unknown');
   }
 
   async confirmProceed() {
     const alert = await this.alertController.create({
-      header: 'Personenübergabe',
-      message: `Möchtest du die ${this.handoverData.persons.length} ausgewählten Personen wirklich in die Instanz "${this.handoverData.tenant.longName}" übertragen? ${this.handoverData.stayInInstance ? 'Die Personen bleiben in dieser Instanz erhalten.' : 'Die Personen werden in dieser Instanz archiviert.'}`,
+      header: translate('handover.title'),
+      message: translate('handover.confirm', { count: this.handoverData.persons.length, tenant: this.handoverData.tenant.longName, note: translate(this.handoverData.stayInInstance ? 'handover.stayNote' : 'handover.archiveNote') }),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'destructive',
         },
         {
-          text: 'Übertragen',
+          text: translate('handover.transfer'),
           handler: () => {
             this.proceed();
           }
@@ -110,7 +111,7 @@ export class HandoverDetailPage implements OnInit {
   }
 
   async proceed() {
-    const loading = await Utils.getLoadingElement(99999, 'Personen werden übertragen...');
+    const loading = await Utils.getLoadingElement(99999, translate('handover.transferring'));
     await loading.present();
 
     try {
@@ -126,13 +127,13 @@ export class HandoverDetailPage implements OnInit {
 
       if (result.length) {
         const alert = await this.alertController.create({
-          header: 'Fehler bei der Personenübergabe',
-          message: `Die folgenden Personen konnten nicht übertragen werden, da sie bereits in der Zielinstanz vorhanden sind:\n${result.map(r => `${r.firstName} ${r.lastName}`).join('\n')}`,
-          buttons: ['Ok']
+          header: translate('handover.failed'),
+          message: translate('handover.alreadyThere', { names: result.map(r => `${r.firstName} ${r.lastName}`).join('\n') }),
+          buttons: [translate('common.ok')]
         });
         await alert.present();
       } else {
-        Utils.showToast(`${this.handoverData.persons.length} Personen wurden übertragen.`, 'success');
+        Utils.showToast(translate('handover.transferred', { count: this.handoverData.persons.length }), 'success');
       }
       this.tracking.track(TrackingEvent.HandoverCreated, {
         count: this.handoverData.persons.length,
@@ -142,7 +143,7 @@ export class HandoverDetailPage implements OnInit {
       this.navCtrl.navigateBack('/tabs/settings');
     } catch (error) {
       await loading.dismiss();
-      Utils.showToast('Fehler bei der Personenübergabe: ' + error.message, 'danger');
+      Utils.showToast(translate('handover.failedWith', { error: error.message }), 'danger');
       return;
     }
   }

@@ -5,26 +5,26 @@
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Rollen & Berechtigungen</ion-title>
+    <ion-title>{{ 'rolePerm.title' | transloco }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content color="light" [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar color="light">
-      <ion-title size="large">Rollen & Berechtigungen</ion-title>
+      <ion-title size="large">{{ 'rolePerm.title' | transloco }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
   <ion-list [inset]="true">
-    <ion-list-header><ion-label>Dateiablage</ion-label></ion-list-header>
+    <ion-list-header><ion-label>{{ 'rolePerm.files' | transloco }}</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item>
         <ion-toggle
-          helperText="Admins, Verantwortliche und Helfer sehen die Dateiablage immer. Wenn aktiviert, können auch alle anderen Mitglieder außer Bewerber sie lesen. Hochladen bleibt Admins und Verantwortlichen vorbehalten."
+          [helperText]="'rolePerm.filesHelper' | transloco"
           [disabled]="!canEditFilesShared"
           [(ngModel)]="filesShared">
-          Dateiablage für alle Mitglieder
+          {{ 'rolePerm.filesForAll' | transloco }}
         </ion-toggle>
       </ion-item>
     </ion-item-group>
@@ -44,54 +44,54 @@
                   @if (showAttendanceToggle(section.role)) {
                     <ion-item>
                       <ion-toggle
-                        helperText="Wenn deaktiviert, können Personen mit dieser Rolle nur Anwesenheiten der ihnen zugeordneten Gruppe pflegen."
+                        [helperText]="'rolePerm.allGroupsHelper' | transloco"
                         [(ngModel)]="section.permission.attendance_all_groups">
-                        Alle Gruppen pflegen
+                        {{ 'rolePerm.allGroups' | transloco }}
                       </ion-toggle>
                     </ion-item>
                   }
                   @if (showAttendanceCreateToggle(section.role)) {
                     <ion-item>
                       <ion-toggle
-                        helperText="Wenn deaktiviert, können Personen mit dieser Rolle keine neuen Anwesenheiten anlegen."
+                        [helperText]="'rolePerm.createHelper' | transloco"
                         [(ngModel)]="section.permission.attendance_create">
-                        Anwesenheiten erstellen
+                        {{ 'rolePerm.createAttendance' | transloco }}
                       </ion-toggle>
                     </ion-item>
                   }
                   @if (showNotesToggle(section.role)) {
                     <ion-item>
                       <ion-toggle
-                        helperText="Wenn aktiviert, können Personen mit dieser Rolle die Notizen der Mitglieder in der Anwesenheitsansicht sehen."
+                        [helperText]="'rolePerm.notesHelper' | transloco"
                         [(ngModel)]="section.permission.player_notes_view">
-                        Spielernotizen sehen
+                        {{ 'rolePerm.seeNotes' | transloco }}
                       </ion-toggle>
                     </ion-item>
                   }
                   @if (showChecklistToggle(section.role)) {
                     <ion-item>
                       <ion-toggle
-                        helperText="Wenn aktiviert, können Personen mit dieser Rolle die Checkliste in der Anwesenheitsansicht sehen."
+                        [helperText]="'rolePerm.checklistHelper' | transloco"
                         [(ngModel)]="section.permission.checklist_view">
-                        Checkliste sehen
+                        {{ 'rolePerm.seeChecklist' | transloco }}
                       </ion-toggle>
                     </ion-item>
                   }
                   @if (showSelfPauseToggle(section.role)) {
                     <ion-item>
                       <ion-toggle
-                        helperText="Wenn aktiviert, können Spieler sich selbst pausieren und reaktivieren."
+                        [helperText]="'rolePerm.pauseHelper' | transloco"
                         [(ngModel)]="section.permission.player_self_pause">
-                        Eigene Pausierung erlauben
+                        {{ 'rolePerm.allowPause' | transloco }}
                       </ion-toggle>
                     </ion-item>
                   }
                   @if (showPlannedAbsenceToggle(section.role)) {
                     <ion-item>
                       <ion-toggle
-                        helperText="Wenn aktiviert, können Personen mit dieser Rolle geplante Abwesenheiten für sich selbst eintragen."
+                        [helperText]="'rolePerm.absencesHelper' | transloco"
                         [(ngModel)]="section.permission.player_planned_absence">
-                        Geplante Abwesenheiten eintragen
+                        {{ 'rolePerm.enterAbsences' | transloco }}
                       </ion-toggle>
                     </ion-item>
                   }

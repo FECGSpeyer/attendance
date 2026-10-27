@@ -8,9 +8,11 @@ import { IonicModule } from '@ionic/angular/lazy';
 import { FilesPageRoutingModule } from './files-routing.module';
 
 import { FilesPage } from './files.page';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

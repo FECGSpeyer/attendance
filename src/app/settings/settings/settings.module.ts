@@ -14,9 +14,11 @@ import { ExportPageModule } from 'src/app/export/export.module';
 import { PlanningPageModule } from 'src/app/planning/planning.module';
 import { PersonPageModule } from 'src/app/people/person/person.module';
 import { NotificationBellComponent } from 'src/app/shared/notification-bell/notification-bell.component';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

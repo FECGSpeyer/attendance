@@ -13,7 +13,7 @@
             <ion-item button detail="false" (click)="onTenantChange(tenant.id)">
               <ion-label>{{ tenant.longName }}</ion-label>
               @if (tenant.id === db.tenant()?.id) {
-                <ion-badge slot="end" color="primary">Aktuell</ion-badge>
+                <ion-badge slot="end" color="primary">{{ 'settings.current' | transloco }}</ion-badge>
               }
             </ion-item>
           }
@@ -36,14 +36,14 @@
   <ion-card color="tertiary">
     <ion-card-header>
       <ion-card-title style="display: flex; justify-content: space-between; align-items: center;">
-        <span>📱 Attendix als App</span>
+        <span>{{ 'settings.asApp' | transloco }}</span>
         <ion-button fill="clear" size="small" (click)="dismissAppPromo()">
           <ion-icon name="close" color="light"></ion-icon>
         </ion-button>
       </ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <p>Attendix gibt es jetzt als native App mit Push-Benachrichtigungen und schnellerem Zugriff.</p>
+      <p>{{ 'settings.asAppText' | transloco }}</p>
       @if (isMobile) {
       <ion-button expand="block" fill="solid" color="light" (click)="openAppStore('auto')">
         <ion-icon [name]="isIos ? 'logo-apple' : 'logo-google-playstore'" slot="start"></ion-icon>
@@ -52,11 +52,11 @@
       } @else {
       <ion-button expand="block" fill="solid" color="light" (click)="openAppStore('ios')">
         <ion-icon name="logo-apple" slot="start"></ion-icon>
-        Im App Store laden
+        {{ 'settings.appStore' | transloco }}
       </ion-button>
       <ion-button expand="block" fill="solid" color="light" (click)="openAppStore('android')" style="margin-top: 8px;">
         <ion-icon name="logo-google-playstore" slot="start"></ion-icon>
-        Bei Google Play laden
+        {{ 'settings.googlePlay' | transloco }}
       </ion-button>
       }
     </ion-card-content>
@@ -70,8 +70,8 @@
       <div class="alert-content">
         <ion-icon name="person-add" size="large"></ion-icon>
         <div>
-          <strong>{{ pendingPersons.length }} ausstehende Registrierung(en)</strong>
-          <p>Personen warten auf Genehmigung</p>
+          <strong>{{ 'settings.pendingCount' | transloco: { count: pendingPersons.length } }}</strong>
+          <p>{{ 'settings.waitingApproval' | transloco }}</p>
         </div>
       </div>
     </ion-card-content>
@@ -81,7 +81,7 @@
       <ion-content color="light">
         <ion-header>
           <ion-toolbar>
-            <ion-title>Ausstehende Personen</ion-title>
+            <ion-title>{{ 'settings.pendingPersons' | transloco }}</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-list [inset]="true">
@@ -106,7 +106,7 @@
   <div class="hero-card" id="master-data-button" style="cursor: pointer;">
     <div class="hero-content">
       <ion-avatar class="hero-avatar">
-        <img [src]="userData.img || 'assets/icon/avatar-placeholder.svg'" alt="Profilbild"
+        <img [src]="userData.img || 'assets/icon/avatar-placeholder.svg'" [attr.alt]="'settings.profilePicture' | transloco"
           (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
       </ion-avatar>
       <div class="hero-text">
@@ -147,7 +147,7 @@
       <ion-content color="light">
         <ion-header>
           <ion-toolbar>
-            <ion-title>Meine Stammdaten</ion-title>
+            <ion-title>{{ 'settings.myData' | transloco }}</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-list [inset]="true">
@@ -155,25 +155,25 @@
             <ion-item button lines="none" (click)="changeImg()">
               <input style="display: none;" name="file" #imgChooser (change)="onImageSelect($event)" accept="image/*"
                 type="file" />
-              <ion-label>Passbild</ion-label>
+              <ion-label>{{ 'settings.passPhoto' | transloco }}</ion-label>
               <ion-avatar slot="end">
-                <img [src]="userData.img || 'assets/icon/avatar-placeholder.svg'" alt="Profilbild" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
+                <img [src]="userData.img || 'assets/icon/avatar-placeholder.svg'" [attr.alt]="'settings.profilePicture' | transloco" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
               </ion-avatar>
             </ion-item>
             <ion-item>
-              <ion-label position="stacked">Vorname</ion-label>
+              <ion-label position="stacked">{{ 'people.firstName' | transloco }}</ion-label>
               <ion-input autocapitalize="words" [(ngModel)]="userData.firstName" type="text"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-label position="stacked">Nachname</ion-label>
+              <ion-label position="stacked">{{ 'people.lastName' | transloco }}</ion-label>
               <ion-input autocapitalize="words" [(ngModel)]="userData.lastName" type="text"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-label position="stacked">Handynummer</ion-label>
+              <ion-label position="stacked">{{ 'settings.mobile' | transloco }}</ion-label>
               <ion-input autocapitalize="sentences" [(ngModel)]="userData.phone" type="tel"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-label>Geburtsdatum</ion-label>
+              <ion-label>{{ 'people.birthday' | transloco }}</ion-label>
               <ion-datetime-button datetime="birthday-master-data"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
@@ -184,7 +184,7 @@
             </ion-item>
           </ion-item-group>
           @if (getVisibleExtraFields().length) {
-            <ion-list-header><ion-label>Zusatzfelder</ion-label></ion-list-header>
+            <ion-list-header><ion-label>{{ 'settings.extraFields' | transloco }}</ion-label></ion-list-header>
             <ion-item-group>
               @for (field of getVisibleExtraFields(); track field.id) {
                 <ion-item>
@@ -209,17 +209,17 @@
                             <ion-toolbar color="light">
                               <ion-title>{{ field.name }}</ion-title>
                               <ion-buttons slot="end">
-                                <ion-button (click)="isChurchModalOpen = false">Schließen</ion-button>
+                                <ion-button (click)="isChurchModalOpen = false">{{ 'common.close' | transloco }}</ion-button>
                               </ion-buttons>
                             </ion-toolbar>
                             <ion-toolbar color="light">
-                              <ion-searchbar [(ngModel)]="churchSearch" placeholder="Gemeinde suchen" [debounce]="0"></ion-searchbar>
+                              <ion-searchbar [(ngModel)]="churchSearch" [placeholder]="'settings.searchChurch' | transloco" [debounce]="0"></ion-searchbar>
                             </ion-toolbar>
                           </ion-header>
                           <ion-content color="light">
                             <ion-list [inset]="true">
                               <ion-item button detail="false" (click)="selectChurch(field.id, '')">
-                                <ion-label>Nicht gelistet</ion-label>
+                                <ion-label>{{ 'settings.notListed' | transloco }}</ion-label>
                                 @if (userData.additional_fields[field.id] === '') {
                                   <ion-icon name="checkmark-outline" slot="end" color="primary"></ion-icon>
                                 }
@@ -234,7 +234,7 @@
                               }
                               @if (filteredChurches.length === 0) {
                                 <ion-item lines="none">
-                                  <ion-label class="ion-text-wrap" color="medium">Keine Gemeinde gefunden.</ion-label>
+                                  <ion-label class="ion-text-wrap" color="medium">{{ 'settings.noChurch' | transloco }}</ion-label>
                                 </ion-item>
                               }
                             </ion-list>
@@ -258,7 +258,7 @@
           }
           <ion-item-group>
             <ion-item (click)="updateUserData()" button detail="false">
-              <ion-label color="primary">Speichern</ion-label>
+              <ion-label color="primary">{{ 'common.save' | transloco }}</ion-label>
             </ion-item>
           </ion-item-group>
         </ion-list>
@@ -270,7 +270,7 @@
   @if (userData?.img && userData.img !== 'https://ionicframework.com/docs/img/demos/avatar.svg') {
   <ion-modal class="image-viewer-modal" [isOpen]="isImageViewerOpen" (ionModalDidDismiss)="closePassImageViewer()">
     <ng-template>
-      <app-image-viewer [src]="userData.img.replace('?quality=20', '')" title="Passbild"
+      <app-image-viewer [src]="userData.img.replace('?quality=20', '')" [attr.title]="'settings.passPhoto' | transloco"
         fallbackSrc="assets/icon/avatar-placeholder.svg" (closed)="closePassImageViewer()"></app-image-viewer>
     </ng-template>
   </ion-modal>
@@ -282,13 +282,13 @@
     <ion-list-header>
       <ion-label>
         <ion-icon name="musical-notes-outline" class="header-icon"></ion-icon>
-        Stimmführer
+        {{ 'settings.voiceLeader' | transloco }}
       </ion-label>
     </ion-list-header>
     <ion-item-group>
       <ion-item routerLink="voice-leader" button lines="none">
         <ion-icon name="people-outline" slot="start"></ion-icon>
-        <ion-label>Meine Stimme</ion-label>
+        <ion-label>{{ 'settings.myVoice' | transloco }}</ion-label>
       </ion-item>
     </ion-item-group>
   </ion-list>
@@ -300,31 +300,31 @@
     <ion-list-header>
       <ion-label>
         <ion-icon name="business-outline" class="header-icon"></ion-icon>
-        Instanz-Verwaltung
+        {{ 'settings.tenantAdmin' | transloco }}
       </ion-label>
     </ion-list-header>
     <ion-item-group>
       <ion-item [routerLink]="['/tabs/settings/general']" button>
         <ion-icon name="cog-outline" slot="start"></ion-icon>
-        <ion-label>Einstellungen</ion-label>
+        <ion-label>{{ 'settings.settings' | transloco }}</ion-label>
       </ion-item>
       <ion-item routerLink="instruments" button>
         <ion-icon name="people-outline" slot="start"></ion-icon>
-        <ion-label>Gruppen</ion-label>
+        <ion-label>{{ 'settings.groups' | transloco }}</ion-label>
       </ion-item>
       @if (maintainTeachers) {
       <ion-item routerLink="teachers" button>
         <ion-icon name="school-outline" slot="start"></ion-icon>
-        <ion-label>Lehrer</ion-label>
+        <ion-label>{{ 'settings.teachers' | transloco }}</ion-label>
       </ion-item>
       }
       <ion-item routerLink="role-permissions" button>
         <ion-icon name="key-outline" slot="start"></ion-icon>
-        <ion-label>Rollen & Berechtigungen</ion-label>
+        <ion-label>{{ 'settings.rolesPerms' | transloco }}</ion-label>
       </ion-item>
       <ion-item button detail="true" routerLink="/tabs/settings/dashboard" lines="none">
         <ion-icon name="grid-outline" slot="start"></ion-icon>
-        <ion-label>Dashboard konfigurieren</ion-label>
+        <ion-label>{{ 'settings.configureDashboard' | transloco }}</ion-label>
       </ion-item>
     </ion-item-group>
   </ion-list>
@@ -336,15 +336,15 @@
     <ion-list-header>
       <ion-label>
         <ion-icon name="megaphone-outline" class="header-icon"></ion-icon>
-        Kommunikation
+        {{ 'settings.communication' | transloco }}
       </ion-label>
     </ion-list-header>
     <ion-item-group>
       <ion-item routerLink="messages" button lines="none">
         <ion-icon name="mail-outline" slot="start"></ion-icon>
         <ion-label>
-          Mitteilungen
-          <p>Nachricht an alle senden</p>
+          {{ 'settings.announcements' | transloco }}
+          <p>{{ 'settings.messageAll' | transloco }}</p>
         </ion-label>
       </ion-item>
     </ion-item-group>
@@ -357,33 +357,33 @@
     <ion-list-header>
       <ion-label>
         <ion-icon name="people-circle-outline" class="header-icon"></ion-icon>
-        Benutzer & Rollen
+        {{ 'settings.usersRoles' | transloco }}
       </ion-label>
     </ion-list-header>
     <ion-item-group>
       @if (!db.isDemo() && isSuperAdmin) {
       <ion-item detail="false" button id="admins-button">
         <ion-icon name="shield-checkmark-outline" slot="start"></ion-icon>
-        <ion-label>Administratoren</ion-label>
+        <ion-label>{{ 'settings.admins' | transloco }}</ion-label>
         <ion-badge slot="end" color="medium">{{ admins.length }}</ion-badge>
       </ion-item>
       }
       @if (parentsEnabled) {
       <ion-item detail="false" button id="parents-button">
         <ion-icon name="heart-outline" slot="start"></ion-icon>
-        <ion-label>Eltern</ion-label>
+        <ion-label>{{ 'settings.parents' | transloco }}</ion-label>
         <ion-badge slot="end" color="medium">{{ parents.length }}</ion-badge>
       </ion-item>
       }
       <ion-item detail="false" button id="viewer-button">
         <ion-icon name="eye-outline" slot="start"></ion-icon>
-        <ion-label>Beobachter</ion-label>
+        <ion-label>{{ 'settings.viewers' | transloco }}</ion-label>
         <ion-badge slot="end" color="medium">{{ viewers.length }}</ion-badge>
       </ion-item>
       @if (playersWithoutAccount.length) {
       <ion-item detail="false" button (click)="showAlertForAccountsCreation()" lines="none">
         <ion-icon name="person-add-outline" slot="start" color="warning"></ion-icon>
-        <ion-label>Fehlende Accounts anlegen</ion-label>
+        <ion-label>{{ 'settings.createMissing' | transloco }}</ion-label>
         <ion-badge slot="end" color="warning">{{ playersWithoutAccount.length }}</ion-badge>
       </ion-item>
       }
@@ -397,7 +397,7 @@
       <ion-content color="light">
         <ion-header>
           <ion-toolbar>
-            <ion-title>Administratoren</ion-title>
+            <ion-title>{{ 'settings.admins' | transloco }}</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-card class="marginTop">
@@ -405,7 +405,7 @@
             <ion-icon class="headerIcon" name="shield-checkmark-outline"></ion-icon>
           </ion-card-header>
           <ion-card-content>
-            Administratoren haben alle Rechte in der Instanz und können auch die Instanz löschen.
+            {{ 'settings.adminsHint' | transloco }}
           </ion-card-content>
         </ion-card>
         <ion-list [inset]="true">
@@ -414,7 +414,7 @@
             <ion-item detail="false" button (click)="removeAdmin(a)">
               <ion-label>
                 <h3>{{ a.email }}</h3>
-                <p>Erstellt am: {{ a.created_at | date: 'dd.MM.yyyy' }}</p>
+                <p>{{ 'common.createdAt' | transloco: { date: (a.created_at | date: 'dd.MM.yyyy') } }}</p>
               </ion-label>
             </ion-item>
             }
@@ -437,7 +437,7 @@
       <ion-content color="light">
         <ion-header>
           <ion-toolbar>
-            <ion-title>Eltern</ion-title>
+            <ion-title>{{ 'settings.parents' | transloco }}</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-card class="marginTop">
@@ -445,7 +445,7 @@
             <ion-icon class="headerIcon" name="heart-outline"></ion-icon>
           </ion-card-header>
           <ion-card-content>
-            Eltern können die Anwesenheiten ihrer Kinder einsehen und Abwesenheiten pflegen.
+            {{ 'settings.parentsHint' | transloco }}
           </ion-card-content>
         </ion-card>
         <ion-list [inset]="true">
@@ -476,7 +476,7 @@
       <ion-content color="light">
         <ion-header>
           <ion-toolbar>
-            <ion-title>Beobachter</ion-title>
+            <ion-title>{{ 'settings.viewers' | transloco }}</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-card class="marginTop">
@@ -484,7 +484,7 @@
             <ion-icon class="headerIcon" name="eye-outline"></ion-icon>
           </ion-card-header>
           <ion-card-content>
-            Beobachter haben nur Leserechte auf Anwesenheitsübersicht und Personendaten.
+            {{ 'settings.viewersHint' | transloco }}
           </ion-card-content>
         </ion-card>
         <ion-list [inset]="true">
@@ -515,25 +515,25 @@
     <ion-list-header>
       <ion-label>
         <ion-icon name="musical-notes-outline" class="header-icon"></ion-icon>
-        Werke & Proben
+        {{ 'settings.songsRehearsals' | transloco }}
       </ion-label>
     </ion-list-header>
     <ion-item-group>
       <ion-item routerLink="songs" button>
         <ion-icon name="library-outline" slot="start"></ion-icon>
-        <ion-label>Werke</ion-label>
+        <ion-label>{{ 'settings.songs' | transloco }}</ion-label>
       </ion-item>
       @if (isAdmin || isHelper) {
       <ion-item detail="false" button (click)="openHistoryModal()">
         <ion-icon name="time-outline" slot="start"></ion-icon>
-        <ion-label>Werkhistorie</ion-label>
+        <ion-label>{{ 'history.title' | transloco }}</ion-label>
       </ion-item>
       }
       @if (db.canAccessFiles()) {
       <ion-item routerLink="files" button lines="none">
         <ion-icon name="folder-outline" slot="start"></ion-icon>
-        <ion-label>Dateiablage</ion-label>
-        <ion-badge slot="end" color="success">NEU</ion-badge>
+        <ion-label>{{ 'settings.fileStorage' | transloco }}</ion-label>
+        <ion-badge slot="end" color="success">{{ 'settings.new' | transloco }}</ion-badge>
       </ion-item>
       }
     </ion-item-group>
@@ -546,14 +546,14 @@
     <ion-list-header>
       <ion-label>
         <ion-icon name="folder-outline" class="header-icon"></ion-icon>
-        Dateien
+        {{ 'settings.files' | transloco }}
       </ion-label>
     </ion-list-header>
     <ion-item-group>
       <ion-item routerLink="files" button lines="none">
         <ion-icon name="folder-outline" slot="start"></ion-icon>
-        <ion-label>Dateiablage</ion-label>
-        <ion-badge slot="end" color="success">NEU</ion-badge>
+        <ion-label>{{ 'settings.fileStorage' | transloco }}</ion-label>
+        <ion-badge slot="end" color="success">{{ 'settings.new' | transloco }}</ion-badge>
       </ion-item>
     </ion-item-group>
   </ion-list>
@@ -567,23 +567,23 @@
     <ion-list-header>
       <ion-label>
         <ion-icon name="list-outline" class="header-icon"></ion-icon>
-        Planung
+        {{ 'settings.planning' | transloco }}
       </ion-label>
     </ion-list-header>
     <ion-item-group>
       @if (showPlanning) {
       <ion-item lines="full" detail="false" button (click)="openPlanning()">
         <ion-icon name="list-outline" slot="start"></ion-icon>
-        <ion-label>Ablaufpläne</ion-label>
+        <ion-label>{{ 'settings.runSheets' | transloco }}</ion-label>
       </ion-item>
       <ion-item routerLink="/tabs/settings/planung" detail="false" button [lines]="db.organisation() || showTeam ? 'full' : 'none'">
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
-        <ion-label>Ad-Hoc Ablaufplanung</ion-label>
+        <ion-label>{{ 'settings.adHocPlanning' | transloco }}</ion-label>
       </ion-item>
       @if (db.organisation()) {
       <ion-item routerLink="/tabs/settings/org-settings/planning-templates" detail="false" button [lines]="showTeam ? 'full' : 'none'">
         <ion-icon name="document-text-outline" slot="start"></ion-icon>
-        <ion-label>Planvorlagen & Felder</ion-label>
+        <ion-label>{{ 'settings.templatesFields' | transloco }}</ion-label>
       </ion-item>
       }
       }
@@ -591,21 +591,21 @@
       @if (db.isTeamLeader()) {
       <ion-item routerLink="/tabs/settings/team-organization" detail="false" button lines="none">
         <ion-icon name="people-circle-outline" slot="start"></ion-icon>
-        <ion-label>Teamorganisation</ion-label>
+        <ion-label>{{ 'teamOrg.title' | transloco }}</ion-label>
       </ion-item>
       } @else {
       <ion-item routerLink="/tabs/settings/team-organization" [queryParams]="{ tab: 'tasks' }" detail="false" button [lines]="db.inTeamCircle() ? 'full' : 'none'">
         <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-        <ion-label>Meine Aufgaben</ion-label>
+        <ion-label>{{ 'tasks.myTasks' | transloco }}</ion-label>
       </ion-item>
       @if (db.inTeamCircle()) {
       <ion-item routerLink="/tabs/settings/team-organization" [queryParams]="{ tab: 'topics' }" detail="false" button lines="full">
         <ion-icon name="bulb-outline" slot="start"></ion-icon>
-        <ion-label>Thema vorschlagen</ion-label>
+        <ion-label>{{ 'teamOrg.suggestTopic' | transloco }}</ion-label>
       </ion-item>
       <ion-item routerLink="/tabs/settings/team-organization" [queryParams]="{ tab: 'protocols' }" detail="false" button lines="none">
         <ion-icon name="document-text-outline" slot="start"></ion-icon>
-        <ion-label>Protokolle</ion-label>
+        <ion-label>{{ 'teamOrg.tabProtocols' | transloco }}</ion-label>
       </ion-item>
       }
       }
@@ -620,7 +620,7 @@
     <ion-list-header>
       <ion-label>
         <ion-icon name="business-outline" class="header-icon"></ion-icon>
-        Organisation
+        {{ 'settings.organisation' | transloco }}
       </ion-label>
     </ion-list-header>
     <ion-item-group>
@@ -628,7 +628,7 @@
         <ion-icon name="settings-outline" slot="start"></ion-icon>
         <ion-label>{{ db.organisation() ? db.organisation().name : 'Organisation' }}</ion-label>
         @if (!db.organisation()) {
-        <ion-note slot="end">Nicht verknüpft</ion-note>
+        <ion-note slot="end">{{ 'settings.notLinked' | transloco }}</ion-note>
         }
       </ion-item>
     </ion-item-group>
@@ -641,32 +641,32 @@
     <ion-list-header>
       <ion-label>
         <ion-icon name="bar-chart-outline" class="header-icon"></ion-icon>
-        Auswertung & Daten
+        {{ 'settings.analyticsData' | transloco }}
       </ion-label>
     </ion-list-header>
     <ion-item-group>
       <ion-item (click)="openCalendarSubscription()" detail="false" button>
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
-        <ion-label>Kalender abonnieren</ion-label>
+        <ion-label>{{ 'settings.subscribeCalendar' | transloco }}</ion-label>
       </ion-item>
       @if (isAdmin) {
       <ion-item detail="false" button (click)="openStats()">
         <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
-        <ion-label>Statistiken</ion-label>
+        <ion-label>{{ 'stats.title' | transloco }}</ion-label>
       </ion-item>
       <ion-item detail="false" button (click)="openExport()">
         <ion-icon name="download-outline" slot="start"></ion-icon>
-        <ion-label>Export</ion-label>
+        <ion-label>{{ 'settings.export' | transloco }}</ion-label>
       </ion-item>
       @if (isVorkursTenant(db.tenant())) {
       <ion-item detail="false" button (click)="generateVorkursCertificates()">
         <ion-icon name="ribbon-outline" slot="start"></ion-icon>
-        <ion-label>Urkunden generieren</ion-label>
+        <ion-label>{{ 'settings.certificates' | transloco }}</ion-label>
       </ion-item>
       }
       <ion-item detail="false" button id="archive-button" lines="none">
         <ion-icon name="archive-outline" slot="start"></ion-icon>
-        <ion-label>Archiv</ion-label>
+        <ion-label>{{ 'settings.archive' | transloco }}</ion-label>
         @if (leftPlayers.length) {
         <ion-badge slot="end" color="medium">{{ leftPlayers.length }}</ion-badge>
         }
@@ -682,7 +682,7 @@
       <ion-content>
         <ion-header>
           <ion-toolbar>
-            <ion-title>Archiv</ion-title>
+            <ion-title>{{ 'settings.archive' | transloco }}</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-list>
@@ -690,14 +690,14 @@
           <ion-item button (click)="openPlayerModal(p)">
             <ion-label>
               <h2>{{ p.firstName }} {{ p.lastName }} ({{ p.groupName }})</h2>
-              <h3>Ausgetreten: {{ p.left | date:"dd.MM.yyyy" }}</h3>
+              <h3>{{ 'settings.leftOn' | transloco: { date: (p.left | date:'dd.MM.yyyy') } }}</h3>
             </ion-label>
           </ion-item>
           }
           @if (!leftPlayers.length) {
           <ion-item>
             <ion-label class="ion-text-center" color="medium">
-              <p>Keine archivierten Personen</p>
+              <p>{{ 'settings.noArchived' | transloco }}</p>
             </ion-label>
           </ion-item>
           }
@@ -713,65 +713,65 @@
     <ion-list-header>
       <ion-label>
         <ion-icon name="settings-outline" class="header-icon"></ion-icon>
-        System
+        {{ 'settings.system' | transloco }}
       </ion-label>
     </ion-list-header>
     <ion-item-group>
       <ion-item (click)="isInstancesModalOpen = true" button detail="false">
         <ion-icon name="apps-outline" slot="start"></ion-icon>
         <ion-label>
-          <h2>Instanz wechseln</h2>
+          <h2>{{ 'settings.switchTenant' | transloco }}</h2>
           <p>{{ db.tenant().longName }}</p>
         </ion-label>
       </ion-item>
 
       <ion-item routerLink="notifications" button>
         <ion-icon name="notifications-outline" slot="start"></ion-icon>
-        <ion-label>Benachrichtigungen</ion-label>
+        <ion-label>{{ 'settings.notifications' | transloco }}</ion-label>
       </ion-item>
       <ion-item (click)="changePassword()" button detail="false">
         <ion-icon name="key-outline" slot="start"></ion-icon>
-        <ion-label>Passwort ändern</ion-label>
+        <ion-label>{{ 'settings.changePassword' | transloco }}</ion-label>
       </ion-item>
 
       <ion-item routerLink="help" button detail="true">
         <ion-icon name="help-circle-outline" slot="start"></ion-icon>
-        <ion-label>Hilfe</ion-label>
+        <ion-label>{{ 'settings.help' | transloco }}</ion-label>
       </ion-item>
 
       <ion-item detail="false" button id="feedback-button">
         <ion-icon name="chatbubble-ellipses-outline" slot="start"></ion-icon>
-        <ion-label>Feedback geben</ion-label>
+        <ion-label>{{ 'settings.giveFeedback' | transloco }}</ion-label>
       </ion-item>
 
       <ion-item button detail="false" id="whatsnew-button">
         <ion-icon name="sparkles-outline" slot="start"></ion-icon>
-        <ion-label>Was ist neu?</ion-label>
+        <ion-label>{{ 'settings.whatsNew' | transloco }}</ion-label>
         <ion-badge slot="end" color="primary">{{ version }}</ion-badge>
       </ion-item>
 
       @if (liveUpdate.updateAvailable()) {
       <ion-item button detail="false" (click)="liveUpdate.applyUpdate()">
         <ion-icon name="cloud-download-outline" slot="start" color="success"></ion-icon>
-        <ion-label color="success">Update installieren</ion-label>
+        <ion-label color="success">{{ 'settings.installUpdate' | transloco }}</ion-label>
       </ion-item>
       }
 
       @if (db.isSuperDeveloper()) {
       <ion-item button detail="true" routerLink="/tabs/settings/administration">
         <ion-icon name="construct-outline" slot="start"></ion-icon>
-        <ion-label>Administration</ion-label>
+        <ion-label>{{ 'admin.title' | transloco }}</ion-label>
       </ion-item>
       }
 
       <ion-item lines="none" color="danger" button (click)="logout()">
         <ion-icon slot="start" name="log-out-outline"></ion-icon>
-        <ion-label>Ausloggen</ion-label>
+        <ion-label>{{ 'settings.logout' | transloco }}</ion-label>
       </ion-item>
     </ion-item-group>
 
     <ion-item lines="none" routerLink="delete-account" button detail="false" class="delete-account-link">
-      <ion-label>Konto löschen</ion-label>
+      <ion-label>{{ 'settings.deleteAccount' | transloco }}</ion-label>
     </ion-item>
   </ion-list>
 
@@ -781,28 +781,28 @@
       <ion-content color="light">
         <ion-header>
           <ion-toolbar>
-            <ion-title>Hilfe & Feedback</ion-title>
+            <ion-title>{{ 'settings.helpFeedback' | transloco }}</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-list [inset]="true">
           <ion-item-group>
             <ion-item button detail="false" (click)="openTelegramSupport()">
               <ion-icon color="primary" name="send-outline" slot="start"></ion-icon>
-              <ion-label color="primary">Per Telegram kontaktieren</ion-label>
+              <ion-label color="primary">{{ 'settings.contactTelegram' | transloco }}</ion-label>
             </ion-item>
           </ion-item-group>
 
           <ion-text color="medium">
-            <p [style.textAlign]="'center'">oder</p>
+            <p [style.textAlign]="'center'">{{ 'settings.or' | transloco }}</p>
           </ion-text>
 
           <ion-item-group>
             <ion-segment>
               <ion-segment-button value="help" content-id="help">
-                <ion-label>Hilfe/Frage</ion-label>
+                <ion-label>{{ 'settings.helpQuestion' | transloco }}</ion-label>
               </ion-segment-button>
               <ion-segment-button value="feedback" content-id="feedback">
-                <ion-label>Feedback</ion-label>
+                <ion-label>{{ 'settings.feedback' | transloco }}</ion-label>
               </ion-segment-button>
             </ion-segment>
           </ion-item-group>
@@ -810,50 +810,50 @@
             <ion-segment-content id="help">
               <ion-item-group>
                 <ion-item>
-                  <ion-label position="stacked">Deine Frage</ion-label>
-                  <ion-textarea autocapitalize="sentences" placeholder="Deine Frage eingeben..." [(ngModel)]="helpQuestion"
+                  <ion-label position="stacked">{{ 'settings.yourQuestion' | transloco }}</ion-label>
+                  <ion-textarea autocapitalize="sentences" [placeholder]="'settings.yourQuestionPh' | transloco" [(ngModel)]="helpQuestion"
                     rows="6"></ion-textarea>
                 </ion-item>
                 <ion-item>
-                  <ion-label position="stacked">Deine Handynummer (optional)</ion-label>
-                  <ion-input autocapitalize="sentences" helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel"
-                    placeholder="Handynummer eingeben..." [(ngModel)]="feedbackPhone"></ion-input>
+                  <ion-label position="stacked">{{ 'settings.yourMobileOptional' | transloco }}</ion-label>
+                  <ion-input autocapitalize="sentences" [helperText]="'settings.contactOnly' | transloco" type="tel"
+                    [placeholder]="'settings.phonePh' | transloco" [(ngModel)]="feedbackPhone"></ion-input>
                 </ion-item>
               </ion-item-group>
               <ion-item-group>
                 <ion-item detail="false" button (click)="sendQuestion(feedbackModal)">
-                  <ion-label color="primary">Absenden</ion-label>
+                  <ion-label color="primary">{{ 'settings.submit' | transloco }}</ion-label>
                 </ion-item>
               </ion-item-group>
             </ion-segment-content>
             <ion-segment-content id="feedback">
               <ion-item-group>
                 <ion-item>
-                  <ion-label>Deine Bewertung</ion-label>
+                  <ion-label>{{ 'settings.yourRating' | transloco }}</ion-label>
                   @for (rating of [1,2,3,4,5]; track rating) {
                   <ion-icon name="star" [color]="rating <= feedbackRating ? 'warning' : 'medium'" slot="end"
                     (click)="feedbackRating = rating"></ion-icon>
                   }
                 </ion-item>
                 <ion-item>
-                  <ion-label position="stacked">Dein Feedback</ion-label>
-                  <ion-textarea autocapitalize="sentences" placeholder="Dein Feedback eingeben..." [(ngModel)]="feedbackText"
+                  <ion-label position="stacked">{{ 'settings.yourFeedback' | transloco }}</ion-label>
+                  <ion-textarea autocapitalize="sentences" [placeholder]="'settings.feedbackPh' | transloco" [(ngModel)]="feedbackText"
                     rows="6"></ion-textarea>
                 </ion-item>
                 <ion-item>
-                  <ion-toggle label="Anonym" [(ngModel)]="anonymous">Anonym</ion-toggle>
+                  <ion-toggle [(ngModel)]="anonymous">{{ 'settings.anonymous' | transloco }}</ion-toggle>
                 </ion-item>
                 @if (!anonymous) {
                 <ion-item>
-                  <ion-label position="stacked">Deine Handynummer (optional)</ion-label>
-                  <ion-input autocapitalize="sentences" helperText="Dient nur zur Kontaktaufnahme bei Rückfragen" type="tel"
-                    placeholder="Handynummer eingeben..." [(ngModel)]="feedbackPhone"></ion-input>
+                  <ion-label position="stacked">{{ 'settings.yourMobileOptional' | transloco }}</ion-label>
+                  <ion-input autocapitalize="sentences" [helperText]="'settings.contactOnly' | transloco" type="tel"
+                    [placeholder]="'settings.phonePh' | transloco" [(ngModel)]="feedbackPhone"></ion-input>
                 </ion-item>
                 }
               </ion-item-group>
               <ion-item-group>
                 <ion-item detail="false" button (click)="sendFeedback(feedbackModal)">
-                  <ion-label color="primary">Absenden</ion-label>
+                  <ion-label color="primary">{{ 'settings.submit' | transloco }}</ion-label>
                 </ion-item>
               </ion-item-group>
             </ion-segment-content>
@@ -869,7 +869,7 @@
       <ion-content color="light">
         <ion-header>
           <ion-toolbar color="light">
-            <ion-title>Was ist neu?</ion-title>
+            <ion-title>{{ 'settings.whatsNew' | transloco }}</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-list [inset]="true">
@@ -908,7 +908,7 @@
                 <ion-icon name="add-outline" slot="icon-only"></ion-icon>
               </ion-button>
             </ion-buttons>
-            <ion-title>Instanzen ({{ db.tenants()?.length }})</ion-title>
+            <ion-title>{{ 'settings.tenantsCount' | transloco: { count: db.tenants()?.length } }}</ion-title>
             <ion-buttons slot="end">
               <ion-button id="instance-settings-button">
                 <ion-icon name="cog-outline" slot="icon-only"></ion-icon>
@@ -920,8 +920,8 @@
                       <ion-item-group>
                         <ion-item>
                           <ion-toggle (ionChange)="onTenantSelectionChange()"
-                            helperText="Wenn diese Option aktiv ist, wirst du vor dem Öffnen der App immer gefragt, welche Instanz du öffnen möchtest."
-                            [(ngModel)]="wantInstanceSelection">Instanzauswahl aktivieren</ion-toggle>
+                            [helperText]="'settings.tenantSelectHelper' | transloco"
+                            [(ngModel)]="wantInstanceSelection">{{ 'settings.enableTenantSelect' | transloco }}</ion-toggle>
                         </ion-item>
                       </ion-item-group>
                     </ion-list>
@@ -941,7 +941,7 @@
                   <h3>{{ tenant.longName }}</h3>
                 </ion-label>
                 @if (db.tenant().id === tenant.id) {
-                <ion-badge [style.marginRight.px]="5" color="primary">Aktuell</ion-badge>
+                <ion-badge [style.marginRight.px]="5" color="primary">{{ 'settings.current' | transloco }}</ion-badge>
                 }
                 @if (tenant.favorite) {
                 <ion-icon size="small" color="warning" slot="end" name="star"></ion-icon>

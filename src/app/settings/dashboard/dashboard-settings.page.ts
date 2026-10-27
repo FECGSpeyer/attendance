@@ -1,16 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { DbService } from '../../services/db.service';
 import { DashboardCardConfig, DashboardCardId } from '../../utilities/interfaces';
+import { translate } from '@jsverse/transloco';
 
 const CARD_LABELS: Record<DashboardCardId, string> = {
-  'birthdays': 'Geburtstage',
-  'next-event': 'Termine',
-  'member-changes': 'Mitglieder-Veränderungen',
-  'absences': 'Abwesenheiten & Pausierungen',
-  'critical-persons': 'Problemfälle',
-  'current-songs': 'Aktuelle Werke',
-  'current-plan': 'Aktueller Ablaufplan',
-  'my-tasks': 'Meine Aufgaben',
+  get 'birthdays'() { return translate('homeDashboard.birthdays'); },
+  get 'next-event'() { return translate('homeDashboard.events'); },
+  get 'member-changes'() { return translate('homeDashboard.memberChanges'); },
+  get 'absences'() { return translate('homeDashboard.absences'); },
+  get 'critical-persons'() { return translate('homeDashboard.problemCases'); },
+  get 'current-songs'() { return translate('homeDashboard.currentSongs'); },
+  get 'current-plan'() { return translate('homeDashboard.currentPlan'); },
+  get 'my-tasks'() { return translate('tasks.myTasks'); },
 };
 
 @Component({

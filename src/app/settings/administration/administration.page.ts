@@ -4,6 +4,7 @@ import { DbService } from '../../services/db.service';
 import { FilesService } from '../../services/files/files.service';
 import { Church } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 const GB = 1024 * 1024 * 1024;
 
@@ -45,7 +46,7 @@ export class AdministrationPage implements OnInit {
     const raw = this.filesMaxGb as unknown;
     const gb = raw === null || raw === undefined || raw === '' ? null : Number(raw);
     if (gb !== null && (!Number.isFinite(gb) || gb <= 0)) {
-      Utils.showToast('Bitte eine Zahl größer 0 eingeben oder das Feld leeren (unbegrenzt).', 'warning');
+      Utils.showToast(translate('admin.invalidLimit'), 'warning');
       return;
     }
 
@@ -55,7 +56,7 @@ export class AdministrationPage implements OnInit {
     this.isSaving = true;
     try {
       await this.db.updateTenantData({ files_max_bytes: bytes });
-      Utils.showToast(bytes === null ? 'Speicher: unbegrenzt' : `Speicherlimit: ${gb} GB`, 'success');
+      Utils.showToast(bytes === null ? translate('admin.storageUnlimited') : translate('admin.storageLimit', { gb }), 'success');
     } catch {
       this.filesMaxGb = this.toGb(this.db.tenant()?.files_max_bytes);
     } finally {
@@ -65,23 +66,23 @@ export class AdministrationPage implements OnInit {
 
   async openChurchInput() {
     const alert = await this.alertController.create({
-      header: 'Gemeinde hinzufügen',
+      header: translate('admin.addChurch'),
       inputs: [{
         type: 'text',
         name: 'name',
-        placeholder: 'Name der Gemeinde',
+        placeholder: translate('admin.churchName'),
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Hinzufügen',
+        text: translate('attendance.add'),
         handler: async (data: { name: string }) => {
           if (data.name.length) {
             const loading = await Utils.getLoadingElement();
             loading.present();
             try {
               await this.db.createChurch(data.name);
-              Utils.showToast('Die Gemeinde wurde erfolgreich hinzugefügt.', 'success');
+              Utils.showToast(translate('admin.churchAdded'), 'success');
               this.churches = await this.db.getChurches();
               await loading.dismiss();
             } catch (error) {
@@ -89,7 +90,7 @@ export class AdministrationPage implements OnInit {
               await loading.dismiss();
             }
           } else {
-            alert.message = 'Bitte gib gültige Werte ein.';
+            alert.message = translate('admin.invalidValues');
             return false;
           }
         }
@@ -122,25 +123,25 @@ export class AdministrationPage implements OnInit {
 
   async mergeChurch(target: Church, duplicate: Church) {
     const alert = await this.alertController.create({
-      header: 'Gemeinden zusammenführen',
-      message: `"${duplicate.name}" wird in "${target.name}" zusammengeführt. Alle Personen werden aktualisiert. Fortfahren?`,
+      header: translate('admin.mergeChurches'),
+      message: translate('admin.mergeMessage', { source: duplicate.name, target: target.name }),
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Zusammenführen',
+        text: translate('admin.merge'),
         role: 'destructive',
         handler: async () => {
-          const loading = await Utils.getLoadingElement(999999, 'Gemeinden werden zusammengeführt...');
+          const loading = await Utils.getLoadingElement(999999, translate('admin.merging'));
           await loading.present();
           try {
             const count = await this.db.mergeChurches(target.id, duplicate.id);
             this.churches = await this.db.getChurches();
             this.findDuplicates();
             await loading.dismiss();
-            Utils.showToast(`Zusammengeführt: ${count} Person(en) aktualisiert`, 'success');
+            Utils.showToast(translate('admin.merged', { count }), 'success');
           } catch (error) {
             await loading.dismiss();
-            Utils.showToast('Fehler beim Zusammenführen', 'danger');
+            Utils.showToast(translate('admin.mergeFailed'), 'danger');
           }
         }
       }]
@@ -151,15 +152,15 @@ export class AdministrationPage implements OnInit {
   async mergeAllDuplicates() {
     const total = this.duplicateGroups.reduce((sum, g) => sum + g.duplicates.length, 0);
     const alert = await this.alertController.create({
-      header: 'Alle Duplikate zusammenführen',
-      message: `${total} Duplikat(e) in ${this.duplicateGroups.length} Gruppe(n) werden zusammengeführt. Fortfahren?`,
+      header: translate('admin.mergeAllDuplicates'),
+      message: translate('admin.mergeAllMessage', { total, groups: this.duplicateGroups.length }),
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Alle zusammenführen',
+        text: translate('admin.mergeAll'),
         role: 'destructive',
         handler: async () => {
-          const loading = await Utils.getLoadingElement(999999, 'Gemeinden werden zusammengeführt...');
+          const loading = await Utils.getLoadingElement(999999, translate('admin.merging'));
           await loading.present();
           try {
             let totalUpdated = 0;
@@ -171,10 +172,10 @@ export class AdministrationPage implements OnInit {
             this.churches = await this.db.getChurches();
             this.findDuplicates();
             await loading.dismiss();
-            Utils.showToast(`${totalUpdated} Person(en) aktualisiert, ${total} Duplikat(e) entfernt`, 'success');
+            Utils.showToast(translate('admin.mergedAll', { updated: totalUpdated, total }), 'success');
           } catch (error) {
             await loading.dismiss();
-            Utils.showToast('Fehler beim Zusammenführen', 'danger');
+            Utils.showToast(translate('admin.mergeFailed'), 'danger');
           }
         }
       }]
@@ -184,17 +185,17 @@ export class AdministrationPage implements OnInit {
 
   async renameChurch(church: Church) {
     const alert = await this.alertController.create({
-      header: 'Gemeinde umbenennen',
+      header: translate('admin.renameChurch'),
       inputs: [{
         type: 'text',
         name: 'name',
         value: church.name,
-        placeholder: 'Name der Gemeinde',
+        placeholder: translate('admin.churchName'),
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Speichern',
+        text: translate('common.save'),
         handler: async (data) => {
           const name = data.name?.trim();
           if (!name) {return;}
@@ -202,9 +203,9 @@ export class AdministrationPage implements OnInit {
             await this.db.renameChurch(church.id, name);
             this.churches = await this.db.getChurches();
             this.findDuplicates();
-            Utils.showToast('Gemeinde umbenannt', 'success');
+            Utils.showToast(translate('admin.churchRenamed'), 'success');
           } catch {
-            Utils.showToast('Fehler beim Umbenennen', 'danger');
+            Utils.showToast(translate('admin.renameFailed'), 'danger');
           }
         }
       }]
@@ -215,7 +216,7 @@ export class AdministrationPage implements OnInit {
   async mergeChurchManual(source: Church) {
     const targets = this.churches.filter(c => c.id !== source.id);
     const alert = await this.alertController.create({
-      header: `"${source.name}" zusammenführen mit...`,
+      header: translate('admin.mergeWith', { name: source.name }),
       inputs: targets.map((c, i) => ({
         type: 'radio' as const,
         label: c.name,
@@ -223,32 +224,32 @@ export class AdministrationPage implements OnInit {
         checked: i === 0,
       })),
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Zusammenführen',
+        text: translate('admin.merge'),
         handler: async (targetId: string) => {
           if (!targetId) {return;}
           const target = this.churches.find(c => c.id === targetId);
           const confirmAlert = await this.alertController.create({
-            header: 'Bestätigen',
-            message: `"${source.name}" wird gelöscht und alle Personen zu "${target.name}" verschoben. Fortfahren?`,
+            header: translate('common.confirm'),
+            message: translate('admin.mergeMoveMessage', { source: source.name, target: target.name }),
             buttons: [{
-              text: 'Abbrechen',
+              text: translate('common.cancel'),
             }, {
-              text: 'Zusammenführen',
+              text: translate('admin.merge'),
               role: 'destructive',
               handler: async () => {
-                const loading = await Utils.getLoadingElement(999999, 'Gemeinden werden zusammengeführt...');
+                const loading = await Utils.getLoadingElement(999999, translate('admin.merging'));
                 await loading.present();
                 try {
                   const count = await this.db.mergeChurches(targetId, source.id);
                   this.churches = await this.db.getChurches();
                   this.findDuplicates();
                   await loading.dismiss();
-                  Utils.showToast(`Zusammengeführt: ${count} Person(en) aktualisiert`, 'success');
+                  Utils.showToast(translate('admin.merged', { count }), 'success');
                 } catch (error) {
                   await loading.dismiss();
-                  Utils.showToast('Fehler beim Zusammenführen', 'danger');
+                  Utils.showToast(translate('admin.mergeFailed'), 'danger');
                 }
               }
             }]

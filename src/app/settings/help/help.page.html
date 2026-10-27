@@ -5,11 +5,11 @@
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Hilfe</ion-title>
+    <ion-title>{{ 'help.title' | transloco }}</ion-title>
   </ion-toolbar>
   <ion-toolbar color="light">
     <ion-searchbar [value]="searchTerm" (ionInput)="search($event)" debounce="150"
-      placeholder="Frage oder Stichwort suchen..."></ion-searchbar>
+      [placeholder]="'help.searchPlaceholder' | transloco"></ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
@@ -19,7 +19,7 @@
     <ion-list [inset]="true">
       @if (!searchResults.articles.length && !searchResults.glossaryTerms.length) {
         <ion-item lines="none">
-          <ion-label class="ion-text-wrap">Keine Treffer für "{{ searchTerm }}".</ion-label>
+          <ion-label class="ion-text-wrap">{{ 'help.noHits' | transloco: { term: searchTerm } }}</ion-label>
         </ion-item>
       }
 
@@ -28,7 +28,7 @@
           <ion-icon name="document-text-outline" slot="start"></ion-icon>
           <ion-label>
             <h2>{{ article.title }}</h2>
-            <p class="result-category">Artikel</p>
+            <p class="result-category">{{ 'help.articles' | transloco }}</p>
           </ion-label>
         </ion-item>
       }
@@ -38,7 +38,7 @@
           <ion-icon name="book-outline" slot="start"></ion-icon>
           <ion-label>
             <h2>{{ term.term }}</h2>
-            <p class="result-category">Glossar</p>
+            <p class="result-category">{{ 'help.glossary' | transloco }}</p>
           </ion-label>
         </ion-item>
       }
@@ -46,17 +46,17 @@
   } @else {
 
     <ion-list [inset]="true">
-      <ion-list-header><ion-label>Nachschlagen</ion-label></ion-list-header>
+      <ion-list-header><ion-label>{{ 'help.lookup' | transloco }}</ion-label></ion-list-header>
       <ion-item-group>
         <ion-item lines="none" button detail="true" (click)="openGlossary()">
             <ion-icon name="book-outline" slot="start"></ion-icon>
-            <ion-label>Glossar</ion-label>
+            <ion-label>{{ 'help.glossary' | transloco }}</ion-label>
         </ion-item>
       </ion-item-group>
     </ion-list>
 
     <ion-list [inset]="true">
-      <ion-list-header><ion-label>Themen</ion-label></ion-list-header>
+      <ion-list-header><ion-label>{{ 'help.topics' | transloco }}</ion-label></ion-list-header>
       <ion-accordion-group>
         @for (category of categories; track category.id) {
           <ion-accordion [value]="category.id">

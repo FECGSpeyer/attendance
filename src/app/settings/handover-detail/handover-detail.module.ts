@@ -7,9 +7,11 @@ import { IonicModule } from '@ionic/angular/lazy';
 import { HandoverDetailPageRoutingModule } from './handover-detail-routing.module';
 
 import { HandoverDetailPage } from './handover-detail.page';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

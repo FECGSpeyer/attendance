@@ -5,14 +5,14 @@
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Personenübergabe</ion-title>
+    <ion-title>{{ 'handover.title' | transloco }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content color="light" [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar color="light">
-      <ion-title size="large">Personenübergabe</ion-title>
+      <ion-title size="large">{{ 'handover.title' | transloco }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
@@ -21,35 +21,34 @@
       <ion-icon class="headerIcon" name="walk-outline"></ion-icon>
     </ion-card-header>
     <ion-card-content>
-      Hiermit kannst du Personen innerhalb einer Organisation weitergeben oder in einer andere Instanz kopieren. Falls die Person ein Account hat, wird diese
-      informiert.
+      {{ 'handover.intro' | transloco }}
     </ion-card-content>
   </ion-card>
 
   <ion-list [inset]="true">
-    <ion-list-header><ion-label>Einstellungen</ion-label></ion-list-header>
+    <ion-list-header><ion-label>{{ 'handover.settings' | transloco }}</ion-label></ion-list-header>
     <ion-item-group>
       <ion-item>
-        <ion-toggle helperText="Die Person wird in der aktuellen Instanz nicht archiviert sondern bleibt aktiv"
+        <ion-toggle [helperText]="'handover.keepHelper' | transloco"
           [(ngModel)]="stayInInstance">
-          Personen in Instanz behalten
+          {{ 'handover.keepInTenant' | transloco }}
         </ion-toggle>
       </ion-item>
       <ion-item>
         <ion-toggle (ionChange)="filter()"
-          helperText="Personen die in der Hauptgruppe sind, werden auch angezeigt" [(ngModel)]="includeMainGroup">
-          Hauptgruppe beachten
+          [helperText]="'handover.mainGroupHelper' | transloco" [(ngModel)]="includeMainGroup">
+          {{ 'handover.respectMainGroup' | transloco }}
         </ion-toggle>
       </ion-item>
       <ion-item>
-        <ion-select label="Ziel-Instanz" [(ngModel)]="tenant">
+        <ion-select [label]="'handover.targetTenant' | transloco" [(ngModel)]="tenant">
           @for (tnt of tenants; track tnt) {
             <ion-select-option [value]="tnt.id">{{ tnt.longName }}</ion-select-option>
           }
         </ion-select>
       </ion-item>
       <ion-item id="filter-btn-handover" button detail="false">
-        <ion-label>Filter hinzufügen</ion-label>
+        <ion-label>{{ 'handover.addFilter' | transloco }}</ion-label>
       </ion-item>
       <ion-popover #handoverFilterPopover trigger="filter-btn-handover" triggerAction="click">
         <ng-template>
@@ -57,18 +56,18 @@
             @if (!filters.includes('younger') && !filters.includes('older')) {
               <ion-item button detail="false"
                 (click)="filterBy('younger', handoverFilterPopover)">
-                <ion-label>Jünger als...</ion-label>
+                <ion-label>{{ 'handover.youngerThanDots' | transloco }}</ion-label>
               </ion-item>
             }
             @if (!filters.includes('older') && !filters.includes('younger') ) {
               <ion-item button detail="false"
                 (click)="filterBy('older', handoverFilterPopover)">
-                <ion-label>Älter als...</ion-label>
+                <ion-label>{{ 'handover.olderThanDots' | transloco }}</ion-label>
               </ion-item>
             }
             @if (!filters.includes('group')) {
               <ion-item button detail="false" (click)="filterBy('group', handoverFilterPopover)">
-                <ion-label>Ist in der Gruppe...</ion-label>
+                <ion-label>{{ 'handover.inGroupDots' | transloco }}</ion-label>
               </ion-item>
             }
           </ion-list>
@@ -77,10 +76,10 @@
       @if (filters.includes('younger') || filters.includes('older')) {
         <ion-item>
           @if (filters.includes('younger')) {
-            <ion-label position="stacked">Jünger als</ion-label>
+            <ion-label position="stacked">{{ 'handover.youngerThan' | transloco }}</ion-label>
           }
           @if (filters.includes('older')) {
-            <ion-label position="stacked">Älter als</ion-label>
+            <ion-label position="stacked">{{ 'handover.olderThan' | transloco }}</ion-label>
           }
           <ion-input autocapitalize="sentences" readonly [(ngModel)]="dateString" id="date-modal"></ion-input>
           <ion-modal class="dateModal" #dateSelModal trigger="date-modal">
@@ -97,7 +96,7 @@
       }
       @if (filters.includes('group')) {
         <ion-item>
-          <ion-label position="stacked">Gruppe</ion-label>
+          <ion-label position="stacked">{{ 'people.group' | transloco }}</ion-label>
           <ion-select (ionChange)="filter()" [(ngModel)]="groupId">
             @for (group of db.groups(); track group) {
               <ion-select-option [value]="group.id">{{ group.name }}</ion-select-option>
@@ -114,9 +113,9 @@
   @if (filteredPersons.length) {
     <ion-list [inset]="true">
       <ion-list-header>
-        <ion-label>Personenliste</ion-label>
+        <ion-label>{{ 'handover.personList' | transloco }}</ion-label>
         <ion-button size="small" fill="clear" (click)="selectAll()">
-          Alle auswählen
+          {{ 'handover.selectAll' | transloco }}
         </ion-button>
       </ion-list-header>
       <ion-item-group>
@@ -135,7 +134,7 @@
   } @else {
     <ion-card>
       <ion-card-content>
-        <ion-label color="danger">Keine Personen ausgewählt</ion-label>
+        <ion-label color="danger">{{ 'handover.noneSelected' | transloco }}</ion-label>
       </ion-card-content>
     </ion-card>
   }

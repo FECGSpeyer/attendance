@@ -6,6 +6,8 @@ import { DbService } from 'src/app/services/db.service';
 import { AudioPlayerService, AudioQueueItem } from 'src/app/services/audio-player/audio-player.service';
 import { FilesService, StorageEntry } from '../../services/files/files.service';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
+import { currentLanguage } from '../../i18n/languages';
 
 @Component({
   selector: 'app-files',
@@ -43,7 +45,7 @@ export class FilesPage implements OnInit {
     this.canEditEntries = this.db.canEditFiles();
 
     if (!this.db.canAccessFiles()) {
-      Utils.showToast('Du hast keinen Zugriff auf Dateien.', 'danger');
+      Utils.showToast(translate('files.noAccess'), 'danger');
       this.navCtrl.back();
       return;
     }
@@ -67,7 +69,7 @@ export class FilesPage implements OnInit {
 
     const entry = this.entries.find((e) => !e.isFolder && e.name === openName);
     if (!entry) {
-      Utils.showToast('Die verlinkte Datei wurde nicht gefunden.', 'warning');
+      Utils.showToast(translate('files.linkedNotFound'), 'warning');
       return;
     }
 
@@ -78,7 +80,7 @@ export class FilesPage implements OnInit {
     const path = entry ? entry.path : this.currentPath;
     const isFolder = entry ? entry.isFolder : true;
     const url = this.filesSvc.getShareLink(this.db.tenant().id, path, isFolder);
-    const title = entry?.name || this.pathSegments[this.pathSegments.length - 1] || 'Dateien';
+    const title = entry?.name || this.pathSegments[this.pathSegments.length - 1] || translate('files.title');
 
     try {
       if (navigator.share) {
@@ -93,9 +95,9 @@ export class FilesPage implements OnInit {
 
     try {
       await navigator.clipboard.writeText(url);
-      Utils.showToast('Link in Zwischenablage kopiert', 'success');
+      Utils.showToast(translate('files.linkCopied'), 'success');
     } catch {
-      Utils.showToast(`Link: ${url}`, 'medium');
+      Utils.showToast(translate('files.linkToast', { url }), 'medium');
     }
   }
 
@@ -123,7 +125,7 @@ export class FilesPage implements OnInit {
         void this.loadUsage();
       }
     } catch (error: any) {
-      Utils.showToast(`Fehler beim Laden der Dateien: ${error.message || error}`, 'danger');
+      Utils.showToast(translate('files.loadFailed', { error: error.message || error }), 'danger');
     } finally {
       this.isLoading = false;
     }
@@ -177,7 +179,7 @@ export class FilesPage implements OnInit {
 
   triggerUpload(): void {
     if (!this.canEditEntries) {
-      Utils.showToast('Du darfst Dateien nicht bearbeiten.', 'warning');
+      Utils.showToast(translate('files.noEditRights'), 'warning');
       return;
     }
 
@@ -199,23 +201,23 @@ export class FilesPage implements OnInit {
     if (!this.isStorageAlmostFull) {
       return '';
     }
-    return (this.usedBytes ?? 0) >= (this.maxBytes ?? 0) ? ' · voll' : ' · fast voll';
+    return (this.usedBytes ?? 0) >= (this.maxBytes ?? 0) ? translate('files.full') : translate('files.almostFull');
   }
 
   // Schickt die Anfrage als Hilfe-Frage an den Attendix-Admin (wie "Feedback geben").
   async requestMoreStorage(): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Mehr Speicher anfragen',
-      message: 'Die Anfrage geht an den Attendix-Admin. Er meldet sich bei dir.',
+      header: translate('files.requestMore'),
+      message: translate('files.requestHint'),
       inputs: [{
         type: 'textarea',
         name: 'note',
-        placeholder: 'Wie viel Speicher braucht ihr ungefähr? (optional)',
+        placeholder: translate('files.howMuch'),
       }],
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Senden',
+          text: translate('files.send'),
           handler: async (data: { note?: string }) => {
             const tenant = this.db.tenant();
             const usage = this.maxBytes !== null
@@ -230,9 +232,9 @@ export class FilesPage implements OnInit {
 
             try {
               await this.db.sendQuestion(message, '');
-              Utils.showToast('Deine Anfrage wurde gesendet. Wir melden uns so schnell wie möglich.', 'success');
+              Utils.showToast(translate('files.requestSent'), 'success');
             } catch (error: any) {
-              Utils.showToast(`Fehler beim Senden der Anfrage: ${error?.message || error}`, 'danger');
+              Utils.showToast(translate('files.requestFailed', { error: error?.message || error }), 'danger');
             }
           },
         },
@@ -436,10 +438,10 @@ export class FilesPage implements OnInit {
   private getUploadProgressMessage(processed: number, total: number, fileName?: string): string {
     const percent = total > 0 ? Math.round((processed / total) * 100) : 0;
     if (fileName) {
-      return `Upload ${processed}/${total} (${percent}%)\n${fileName}`;
+      return `${translate('files.uploadProgress', { done: processed, total, percent })}\n${fileName}`;
     }
 
-    return `Upload ${processed}/${total} (${percent}%)`;
+    return translate('files.uploadProgress', { done: processed, total, percent });
   }
 
   private updateLoadingMessage(loading: HTMLIonLoadingElement, message: string): void {
@@ -448,14 +450,14 @@ export class FilesPage implements OnInit {
 
   get sortLabel(): string {
     if (this.sortBy === 'updatedAt') {
-      return `Datum (${this.sortDirection === 'asc' ? 'aufsteigend' : 'absteigend'})`;
+      return translate('files.sortDate', { dir: translate(this.sortDirection === 'asc' ? 'files.ascending' : 'files.descending') });
     }
 
     if (this.sortBy === 'size') {
-      return `Größe (${this.sortDirection === 'asc' ? 'aufsteigend' : 'absteigend'})`;
+      return translate('files.sortSize', { dir: translate(this.sortDirection === 'asc' ? 'files.ascending' : 'files.descending') });
     }
 
-    return `Name (${this.sortDirection === 'asc' ? 'A-Z' : 'Z-A'})`;
+    return translate('files.sortName', { dir: this.sortDirection === 'asc' ? 'A-Z' : 'Z-A' });
   }
 
   private sortEntries(entries: StorageEntry[]): StorageEntry[] {
@@ -477,11 +479,11 @@ export class FilesPage implements OnInit {
         const rightSize = right.size ?? 0;
         comparison = leftSize - rightSize;
       } else {
-        comparison = left.name.localeCompare(right.name, 'de', { sensitivity: 'base' });
+        comparison = left.name.localeCompare(right.name, currentLanguage(), { sensitivity: 'base' });
       }
 
       if (comparison === 0) {
-        comparison = left.name.localeCompare(right.name, 'de', { sensitivity: 'base' });
+        comparison = left.name.localeCompare(right.name, currentLanguage(), { sensitivity: 'base' });
       }
 
       return comparison * directionFactor;
@@ -530,7 +532,7 @@ export class FilesPage implements OnInit {
     try {
       await this.audioPlayer.playQueue(queue, startIndex);
     } catch (error: any) {
-      Utils.showToast(`Fehler beim Abspielen: ${error.message || error}`, 'danger');
+      Utils.showToast(translate('files.playFailed', { error: error.message || error }), 'danger');
     }
   }
 
@@ -573,7 +575,7 @@ export class FilesPage implements OnInit {
         url = await this.filesSvc.getSignedFileUrl(this.db.tenant().id, entry.path, 3600);
         this.imagePreviewUrls[entry.path] = url;
       } catch (error: any) {
-        Utils.showToast(`Bildvorschau fehlgeschlagen: ${error.message || error}`, 'danger');
+        Utils.showToast(translate('files.previewFailed', { error: error.message || error }), 'danger');
         return;
       }
     }
@@ -592,22 +594,22 @@ export class FilesPage implements OnInit {
   private async askDuplicateHandling(duplicateNames: string[]): Promise<'overwrite' | 'skip' | 'cancel'> {
     const previewNames = duplicateNames.slice(0, 5).join(', ');
     const hasMore = duplicateNames.length > 5;
-    const suffix = hasMore ? ` und ${duplicateNames.length - 5} weitere` : '';
+    const suffix = hasMore ? translate('files.andMore', { count: duplicateNames.length - 5 }) : '';
 
     const alert = await this.alertController.create({
-      header: 'Datei existiert bereits',
-      message: `Folgende Datei(en) existieren bereits: ${previewNames}${suffix}. Möchtest du diese überschreiben?`,
+      header: translate('files.exists'),
+      message: translate('files.existsMessage', { names: previewNames + suffix }),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel',
         },
         {
-          text: 'Überspringen',
+          text: translate('files.skip'),
           role: 'skip',
         },
         {
-          text: 'Überschreiben',
+          text: translate('files.overwrite'),
           role: 'overwrite',
         }
       ]
@@ -657,11 +659,11 @@ export class FilesPage implements OnInit {
     }
 
     const alert = await this.alertController.create({
-      header: 'Speicher voll',
-      message: `Für diesen Upload werden ${this.formatFileSize(neededBytes)} benötigt, frei sind noch ${this.formatFileSize(freeBytes)} von ${this.formatFileSize(maxBytes)}. Lösche nicht mehr benötigte Dateien oder frage mehr Speicher an.`,
+      header: translate('files.storageFull'),
+      message: translate('files.storageFullMessage', { needed: this.formatFileSize(neededBytes), free: this.formatFileSize(freeBytes), max: this.formatFileSize(maxBytes) }),
       buttons: [
         { text: 'OK', role: 'cancel' },
-        { text: 'Mehr Speicher anfragen', handler: () => { void this.requestMoreStorage(); } },
+        { text: translate('files.requestMore'), handler: () => { void this.requestMoreStorage(); } },
       ],
     });
     await alert.present();
@@ -751,11 +753,11 @@ export class FilesPage implements OnInit {
       }
 
       if (successCount > 0 && failedCount === 0 && skippedCount === 0) {
-        Utils.showToast(successCount === 1 ? 'Datei wurde hochgeladen.' : `${successCount} Dateien wurden hochgeladen.`, 'success');
+        Utils.showToast(successCount === 1 ? translate('files.uploadedOne') : translate('files.uploadedMany', { count: successCount }), 'success');
       } else if (successCount > 0 || failedCount > 0 || skippedCount > 0) {
-        Utils.showToast(`${successCount} hochgeladen, ${skippedCount} übersprungen, ${failedCount} fehlgeschlagen.`, 'warning');
+        Utils.showToast(translate('files.uploadSummary', { ok: successCount, skipped: skippedCount, failed: failedCount }), 'warning');
       } else {
-        Utils.showToast('Keine Datei hochgeladen.', 'medium');
+        Utils.showToast(translate('files.noneUploaded'), 'medium');
       }
 
       await this.loadEntries();
@@ -767,22 +769,22 @@ export class FilesPage implements OnInit {
 
   async createFolder(): Promise<void> {
     if (!this.canEditEntries) {
-      Utils.showToast('Du darfst Dateien nicht bearbeiten.', 'warning');
+      Utils.showToast(translate('files.noEditRights'), 'warning');
       return;
     }
 
     const alert = await this.alertController.create({
-      header: 'Ordner erstellen',
+      header: translate('files.createFolder'),
       inputs: [{
         type: 'text',
         name: 'name',
-        placeholder: 'Ordnername'
+        placeholder: translate('files.folderName')
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
         role: 'cancel'
       }, {
-        text: 'Erstellen',
+        text: translate('files.create'),
         handler: async (data: { name: string }) => {
           if (!data?.name?.trim()) {
             return false;
@@ -790,10 +792,10 @@ export class FilesPage implements OnInit {
 
           try {
             await this.filesSvc.createFolder(this.db.tenant().id, this.currentPath, data.name);
-            Utils.showToast('Ordner wurde erstellt.', 'success');
+            Utils.showToast(translate('files.folderCreated'), 'success');
             await this.loadEntries();
           } catch (error: any) {
-            Utils.showToast(`Ordner konnte nicht erstellt werden: ${error.message || error}`, 'danger');
+            Utils.showToast(translate('files.folderFailed', { error: error.message || error }), 'danger');
           }
         }
       }]
@@ -814,7 +816,7 @@ export class FilesPage implements OnInit {
       const { blob, fileName } = await this.filesSvc.downloadFile(this.db.tenant().id, entry.path);
       await Utils.downloadFileNative(blob, fileName);
     } catch (error: any) {
-      Utils.showToast(`Download fehlgeschlagen: ${error.message || error}`, 'danger');
+      Utils.showToast(translate('files.downloadFailed', { error: error.message || error }), 'danger');
     } finally {
       await loading.dismiss();
     }
@@ -826,18 +828,18 @@ export class FilesPage implements OnInit {
     }
 
     if (!this.db.tenantUser()?.telegram_chat_id) {
-      Utils.showToast('Bitte verbinde zuerst Telegram in den Benachrichtigungen.', 'warning');
+      Utils.showToast(translate('files.connectTelegram'), 'warning');
       return;
     }
 
-    const loading = await Utils.getLoadingElement(999999, 'Datei wird per Telegram gesendet...');
+    const loading = await Utils.getLoadingElement(999999, translate('files.sendingTelegram'));
     await loading.present();
 
     try {
       const url = await this.filesSvc.getSignedFileUrl(this.db.tenant().id, entry.path, 600);
       await this.db.sendSongPerTelegram(url);
     } catch (error: any) {
-      Utils.showToast(`Telegram-Versand fehlgeschlagen: ${error.message || error}`, 'danger');
+      Utils.showToast(translate('files.telegramFailed', { error: error.message || error }), 'danger');
     } finally {
       await loading.dismiss();
     }
@@ -847,7 +849,7 @@ export class FilesPage implements OnInit {
     await popover.dismiss();
 
     if (['rename', 'move', 'delete'].includes(action) && !this.canEditEntries) {
-      Utils.showToast('Du darfst Dateien nicht bearbeiten.', 'warning');
+      Utils.showToast(translate('files.noEditRights'), 'warning');
       return;
     }
 
@@ -880,18 +882,18 @@ export class FilesPage implements OnInit {
 
   async deleteEntry(entry: StorageEntry): Promise<void> {
     if (!this.canEditEntries) {
-      Utils.showToast('Du darfst Dateien nicht löschen.', 'warning');
+      Utils.showToast(translate('files.noDeleteRights'), 'warning');
       return;
     }
 
     const alert = await this.alertController.create({
-      header: entry.isFolder ? 'Ordner löschen?' : 'Datei löschen?',
-      message: `Möchtest du ${entry.name} wirklich löschen?`,
+      header: entry.isFolder ? translate('files.deleteFolder') : translate('files.deleteFile'),
+      message: translate('files.deleteMessage', { name: entry.name }),
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
         role: 'cancel'
       }, {
-        text: 'Löschen',
+        text: translate('common.delete'),
         role: 'destructive',
         handler: async () => {
           const loading = await Utils.getLoadingElement(999999);
@@ -899,10 +901,10 @@ export class FilesPage implements OnInit {
 
           try {
             await this.filesSvc.deleteEntry(this.db.tenant().id, entry.path, entry.isFolder);
-            Utils.showToast('Eintrag wurde gelöscht.', 'success');
+            Utils.showToast(translate('files.deleted'), 'success');
             await this.loadEntries();
           } catch (error: any) {
-            Utils.showToast(`Löschen fehlgeschlagen: ${error.message || error}`, 'danger');
+            Utils.showToast(translate('files.deleteFailed', { error: error.message || error }), 'danger');
           } finally {
             await loading.dismiss();
           }
@@ -915,23 +917,23 @@ export class FilesPage implements OnInit {
 
   async renameEntry(entry: StorageEntry): Promise<void> {
     if (!this.canEditEntries) {
-      Utils.showToast('Du darfst Dateien nicht bearbeiten.', 'warning');
+      Utils.showToast(translate('files.noEditRights'), 'warning');
       return;
     }
 
     const alert = await this.alertController.create({
-      header: entry.isFolder ? 'Ordner umbenennen' : 'Datei umbenennen',
+      header: entry.isFolder ? translate('files.renameFolder') : translate('files.renameFile'),
       inputs: [{
         type: 'text',
         name: 'name',
         value: entry.name,
-        placeholder: 'Neuer Name'
+        placeholder: translate('files.newName')
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
         role: 'cancel'
       }, {
-        text: 'Speichern',
+        text: translate('common.save'),
         handler: async (data: { name: string }) => {
           if (!data?.name?.trim()) {
             return false;
@@ -942,10 +944,10 @@ export class FilesPage implements OnInit {
 
           try {
             await this.filesSvc.renameEntry(this.db.tenant().id, entry.path, data.name, entry.isFolder);
-            Utils.showToast('Eintrag wurde umbenannt.', 'success');
+            Utils.showToast(translate('files.renamed'), 'success');
             await this.loadEntries();
           } catch (error: any) {
-            Utils.showToast(`Umbenennen fehlgeschlagen: ${error.message || error}`, 'danger');
+            Utils.showToast(translate('files.renameFailed', { error: error.message || error }), 'danger');
           } finally {
             await loading.dismiss();
           }
@@ -958,33 +960,33 @@ export class FilesPage implements OnInit {
 
   async moveEntry(entry: StorageEntry): Promise<void> {
     if (!this.canEditEntries) {
-      Utils.showToast('Du darfst Dateien nicht bearbeiten.', 'warning');
+      Utils.showToast(translate('files.noEditRights'), 'warning');
       return;
     }
 
     const alert = await this.alertController.create({
-      header: 'Verschieben',
-      message: 'Zielordner relativ zum Tenant-Root. Leer lassen für Root.',
+      header: translate('files.move'),
+      message: translate('files.moveHint'),
       inputs: [{
         type: 'text',
         name: 'target',
         placeholder: 'z. B. Dokumente/2026'
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
         role: 'cancel'
       }, {
-        text: 'Verschieben',
+        text: translate('files.move'),
         handler: async (data: { target: string }) => {
           const loading = await Utils.getLoadingElement(999999);
           await loading.present();
 
           try {
             await this.filesSvc.moveEntry(this.db.tenant().id, entry.path, data?.target || '', entry.isFolder);
-            Utils.showToast('Eintrag wurde verschoben.', 'success');
+            Utils.showToast(translate('files.moved'), 'success');
             await this.loadEntries();
           } catch (error: any) {
-            Utils.showToast(`Verschieben fehlgeschlagen: ${error.message || error}`, 'danger');
+            Utils.showToast(translate('files.moveFailed', { error: error.message || error }), 'danger');
           } finally {
             await loading.dismiss();
           }

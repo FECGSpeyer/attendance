@@ -4,6 +4,7 @@ import { DbService } from 'src/app/services/db.service';
 import { Role } from 'src/app/utilities/constants';
 import { TenantRolePermission } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 interface RoleSection {
   role: Role;
@@ -38,12 +39,12 @@ export class RolePermissionsPage implements OnInit {
 
   ngOnInit() {
     const configurableRoles: { role: Role; label: string }[] = [
-      { role: Role.HELPER, label: 'Helfer' },
-      { role: Role.VOICE_LEADER_HELPER, label: 'Stimmführer-Helfer' },
-      { role: Role.VOICE_LEADER, label: 'Stimmführer' },
+      { role: Role.HELPER, label: translate('roles.helper') },
+      { role: Role.VOICE_LEADER_HELPER, label: translate('roles.voiceLeaderHelper') },
+      { role: Role.VOICE_LEADER, label: translate('roles.voiceLeader') },
       { role: Role.PLAYER, label: Utils.getRoleText(Role.PLAYER) },
-      { role: Role.VIEWER, label: 'Beobachter' },
-      { role: Role.PARENT, label: 'Eltern' },
+      { role: Role.VIEWER, label: translate('roles.viewer') },
+      { role: Role.PARENT, label: translate('roles.parents') },
     ];
 
     this.roleSections = configurableRoles.map(({ role, label }) => ({
@@ -90,21 +91,21 @@ export class RolePermissionsPage implements OnInit {
   private async confirmUnsavedChanges(): Promise<boolean> {
     return new Promise(async (resolve) => {
       const alert = await this.alertController.create({
-        header: 'Ungespeicherte Änderungen',
-        message: 'Du hast ungespeicherte Änderungen. Möchtest du sie speichern bevor du die Seite verlässt?',
+        header: translate('rolePerm.unsaved'),
+        message: translate('rolePerm.unsavedMessage'),
         buttons: [
           {
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             role: 'cancel',
             handler: () => resolve(false)
           },
           {
-            text: 'Verwerfen',
+            text: translate('rolePerm.discard'),
             role: 'destructive',
             handler: () => resolve(true)
           },
           {
-            text: 'Speichern',
+            text: translate('common.save'),
             handler: async () => {
               await this.save();
               resolve(true);
@@ -134,9 +135,9 @@ export class RolePermissionsPage implements OnInit {
         await this.db.updateTenantData({ files_shared: this.filesShared });
       }
       this.markAsSaved();
-      Utils.showToast('Rollenberechtigungen gespeichert', 'success');
+      Utils.showToast(translate('rolePerm.saved'), 'success');
     } catch {
-      Utils.showToast('Fehler beim Speichern der Rollenberechtigungen', 'danger');
+      Utils.showToast(translate('rolePerm.saveFailed'), 'danger');
     }
   }
 

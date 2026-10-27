@@ -3,6 +3,7 @@ import { AlertController, NavController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-delete-account',
@@ -43,24 +44,24 @@ export class DeleteAccountPage {
     if (!this.canDelete()) return;
 
     const alert = await this.alertController.create({
-      header: 'Konto wirklich löschen?',
-      message: 'Dein Konto und alle damit verbundenen Daten werden unwiderruflich entfernt. Diese Aktion kann nicht rückgängig gemacht werden.',
+      header: translate('deleteAccount.confirm'),
+      message: translate('deleteAccount.confirmMessage'),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Endgültig löschen',
+          text: translate('deleteAccount.deleteFinal'),
           role: 'destructive',
           handler: async () => {
-            const loading = await Utils.getLoadingElement(60000, 'Konto wird gelöscht...');
+            const loading = await Utils.getLoadingElement(60000, translate('deleteAccount.deleting'));
             await loading.present();
             try {
               this.tracking.track(TrackingEvent.AccountDeleted);
               await this.db.deleteAccount();
               await loading.dismiss();
-              Utils.showToast('Dein Konto wurde gelöscht.', 'success', 4000);
+              Utils.showToast(translate('deleteAccount.deleted'), 'success', 4000);
             } catch (error: any) {
               await loading.dismiss();
-              Utils.showToast(`Fehler beim Löschen: ${error?.message || 'Unbekannt'}`, 'danger', 5000);
+              Utils.showToast(translate('deleteAccount.failed', { error: error?.message || translate('common.unknown') }), 'danger', 5000);
             }
           }
         }

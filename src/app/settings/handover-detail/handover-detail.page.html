@@ -5,19 +5,19 @@
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Personenübergabe</ion-title>
+    <ion-title>{{ 'handover.title' | transloco }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content color="light" [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar color="light">
-      <ion-title size="large">Personenübergabe</ion-title>
+      <ion-title size="large">{{ 'handover.title' | transloco }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
   <ion-list [inset]="true">
-    <ion-list-header><ion-label>Gruppen-Zuordnung</ion-label></ion-list-header>
+    <ion-list-header><ion-label>{{ 'handover.groupMapping' | transloco }}</ion-label></ion-list-header>
     <ion-item-group>
       @for (person of handoverData.persons; track trackByPersonId($index, person)) {
         <ion-item button detail="false" (click)="changeGroup(person)">

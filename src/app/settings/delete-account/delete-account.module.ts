@@ -6,9 +6,11 @@ import { IonicModule } from '@ionic/angular/lazy';
 
 import { DeleteAccountPageRoutingModule } from './delete-account-routing.module';
 import { DeleteAccountPage } from './delete-account.page';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

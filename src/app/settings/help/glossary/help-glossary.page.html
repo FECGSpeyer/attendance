@@ -5,11 +5,11 @@
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Glossar</ion-title>
+    <ion-title>{{ 'help.glossary' | transloco }}</ion-title>
   </ion-toolbar>
   <ion-toolbar color="light">
     <ion-searchbar [value]="searchTerm" (ionInput)="search($event)" debounce="150"
-      placeholder="Begriff suchen..."></ion-searchbar>
+      [placeholder]="'help.searchTerm' | transloco"></ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
@@ -17,7 +17,7 @@
   <ion-list [inset]="true">
     @if (!filteredTerms.length) {
       <ion-item lines="none">
-        <ion-label class="ion-text-wrap">Keine Begriffe gefunden.</ion-label>
+        <ion-label class="ion-text-wrap">{{ 'help.noTerms' | transloco }}</ion-label>
       </ion-item>
     }
     <ion-accordion-group [multiple]="true">

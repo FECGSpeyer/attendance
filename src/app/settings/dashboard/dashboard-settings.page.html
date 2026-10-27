@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="/tabs/home-dashboard"></ion-back-button>
     </ion-buttons>
-    <ion-title>Dashboard</ion-title>
+    <ion-title>{{ 'tabs.dashboard' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="isReordering = !isReordering">
         <ion-icon [name]="isReordering ? 'checkmark-outline' : 'reorder-three-outline'" slot="icon-only"></ion-icon>
@@ -15,17 +15,17 @@
 <ion-content color="light" fullscreen="true">
 
   <ion-list [inset]="true">
-    <ion-list-header><ion-label>Tab</ion-label></ion-list-header>
+    <ion-list-header><ion-label>{{ 'dashSettings.tab' | transloco }}</ion-label></ion-list-header>
     <ion-item>
       <ion-toggle [(ngModel)]="showDashboardTab" (ionChange)="onTabToggle()">
-        Dashboard-Tab anzeigen
+        {{ 'dashSettings.showTab' | transloco }}
       </ion-toggle>
     </ion-item>
   </ion-list>
 
   <ion-list [inset]="true">
     <ion-list-header>
-      <ion-label>Karten</ion-label>
+      <ion-label>{{ 'dashSettings.cards' | transloco }}</ion-label>
     </ion-list-header>
     <ion-reorder-group [disabled]="!isReordering" (ionItemReorder)="handleReorder($event)">
       @for (card of shownCards; track card.id) {
@@ -38,12 +38,12 @@
     </ion-reorder-group>
     <ion-item lines="none" button (click)="resetCards()" color="light">
       <ion-icon name="refresh-outline" slot="start" color="medium"></ion-icon>
-      <ion-label color="medium">Zurücksetzen</ion-label>
+      <ion-label color="medium">{{ 'dashSettings.reset' | transloco }}</ion-label>
     </ion-item>
   </ion-list>
 
   <ion-note class="ion-padding" color="medium" style="display: block; font-size: 0.85rem; padding: 8px 16px;">
-    Tippe auf das Symbol oben rechts, um die Reihenfolge per Drag &amp; Drop anzupassen.
+    {{ 'dashSettings.reorderHint' | transloco }}
   </ion-note>
 
 </ion-content>

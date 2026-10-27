@@ -13,6 +13,6 @@
   @if (article) {
     <div (click)="onBodyClick($event)" [innerHTML]="bodyHtml"></div>
   } @else {
-    <p>Dieser Artikel wurde nicht gefunden.</p>
+    <p>{{ 'help.articleNotFound' | transloco }}</p>
   }
 </ion-content>

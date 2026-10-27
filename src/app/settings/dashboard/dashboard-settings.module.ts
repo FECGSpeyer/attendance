@@ -5,9 +5,11 @@ import { IonicModule } from '@ionic/angular/lazy';
 
 import { DashboardSettingsPageRoutingModule } from './dashboard-settings-routing.module';
 import { DashboardSettingsPage } from './dashboard-settings.page';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

@@ -6,6 +6,7 @@ import { ExtraField, Group, PersonAttendance } from 'src/app/utilities/interface
 import type { Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { DEFAULT_IMAGE, AttendanceStatus } from 'src/app/utilities/constants';
+import { translate } from '@jsverse/transloco';
 
 interface GroupMember extends Player {
   upcomingAbsences: PersonAttendance[];
@@ -45,14 +46,14 @@ export class VoiceLeaderPage implements OnInit {
       const currentPlayer = await this.db.getPlayerByAppId(false);
 
       if (!currentPlayer) {
-        Utils.showToast('Kein Spielerprofil gefunden.', 'danger');
+        Utils.showToast(translate('voiceLeader.noProfile'), 'danger');
         this.navCtrl.back();
         return;
       }
 
       // Get the group name
       const group = this.db.groups().find((g: Group) => g.id === currentPlayer.instrument);
-      this.groupName = group?.name || 'Meine Stimme';
+      this.groupName = group?.name || translate('voiceLeader.myVoice');
 
       // Get players from the same group directly from database
       const groupPlayers = await this.db.getPlayersByGroup(currentPlayer.instrument);
@@ -85,7 +86,7 @@ export class VoiceLeaderPage implements OnInit {
       });
 
     } catch (error) {
-      Utils.showToast('Fehler beim Laden der Gruppenmitglieder.', 'danger');
+      Utils.showToast(translate('voiceLeader.loadFailed'), 'danger');
       console.error('Error loading group members:', error);
     } finally {
       this.isLoading = false;
