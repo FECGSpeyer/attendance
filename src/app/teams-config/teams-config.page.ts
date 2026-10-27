@@ -3,6 +3,7 @@ import { pages } from '@microsoft/teams-js';
 import { DbService } from '../services/db.service';
 import { TeamsService } from '../services/teams/teams.service';
 import { Tenant } from '../utilities/interfaces';
+import { translate } from '@jsverse/transloco';
 
 /**
  * Configuration page for the Attendix channel (configurable) tab. Teams loads
@@ -57,7 +58,7 @@ export class TeamsConfigPage implements OnInit {
           suggestedDisplayName: tenant ? tenant.shortName : 'Attendix',
         })
         .then(() => saveEvent.notifySuccess())
-        .catch(() => saveEvent.notifyFailure('Konfiguration konnte nicht gespeichert werden'));
+        .catch(() => saveEvent.notifyFailure(translate('teams.saveFailed')));
     });
 
     this.updateValidity();

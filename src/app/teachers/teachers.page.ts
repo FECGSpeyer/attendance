@@ -5,6 +5,7 @@ import { TeacherPage } from '../teacher/teacher.page';
 import { Role } from '../utilities/constants';
 import { Group, Player, Teacher } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-teachers',
@@ -44,7 +45,7 @@ export class TeachersPage implements OnInit {
 
   async addTeacher(name: string | number, instruments: number[], notes: string, number: string | number, pri: string, modal: IonModal) {
     if (String(name).length < 3 || instruments.length === 0) {
-      Utils.showToast('Bitte fülle alle Felder aus...', 'danger');
+      Utils.showToast(translate('teachers.fillAll'), 'danger');
 
       return;
     }

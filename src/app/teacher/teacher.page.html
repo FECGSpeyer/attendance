@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Lehrer bearbeiten</ion-title>
+    <ion-title>{{ 'teachers.edit' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -11,32 +11,32 @@
 
 <ion-content>
   <ion-item>
-    <ion-label position="stacked">Name</ion-label>
+    <ion-label position="stacked">{{ 'typeSettings.name' | transloco }}</ion-label>
     <ion-input autocapitalize="words" [(ngModel)]="editedTeacher.name"></ion-input>
   </ion-item>
   <ion-item>
-    <ion-select interface="modal" label="Instrumente" [(ngModel)]="editedTeacher.instruments" multiple="true">
+    <ion-select interface="modal" [label]="'teachers.instruments' | transloco" [(ngModel)]="editedTeacher.instruments" multiple="true">
       @for (ins of db.groups(); track ins) {
         <ion-select-option [value]="ins.id">{{ ins.name }}</ion-select-option>
       }
     </ion-select>
   </ion-item>
   <ion-item>
-    <ion-toggle label="Privatlehrer" [(ngModel)]="editedTeacher.private">Privatlehrer</ion-toggle>
+    <ion-toggle [attr.label]="'teachers.private' | transloco" [(ngModel)]="editedTeacher.private">{{ 'teachers.private' | transloco }}</ion-toggle>
   </ion-item>
   <ion-item>
-    <ion-label position="stacked">Kontakt</ion-label>
+    <ion-label position="stacked">{{ 'teachers.contact' | transloco }}</ion-label>
     <ion-input autocapitalize="sentences" [(ngModel)]="editedTeacher.number"></ion-input>
   </ion-item>
   <ion-item>
-    <ion-label position="stacked">Notizen</ion-label>
+    <ion-label position="stacked">{{ 'people.notes' | transloco }}</ion-label>
     <ion-textarea autocapitalize="sentences" [(ngModel)]="editedTeacher.notes"></ion-textarea>
   </ion-item>
   @if (playersFromTeacher?.length) {
     <ion-accordion-group value="players">
       <ion-accordion value="players">
         <ion-item class="accordion-header" slot="header">
-          <ion-label>Spieler</ion-label>
+          <ion-label>{{ 'teachers.players' | transloco }}</ion-label>
         </ion-item>
         <div slot="content">
           <ion-list>
@@ -50,5 +50,5 @@
       </ion-accordion>
     </ion-accordion-group>
   }
-  <ion-button expand="block" (click)="editTeacher()" >Lehrer updaten</ion-button>
+  <ion-button expand="block" (click)="editTeacher()" >{{ 'teachers.update' | transloco }}</ion-button>
 </ion-content>

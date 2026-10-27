@@ -3,6 +3,7 @@ import { ModalController } from '@ionic/angular/lazy';
 import { DbService } from '../services/db.service';
 import { Player, Teacher } from '../utilities/interfaces';
 import { Utils } from '../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-teacher',
@@ -34,7 +35,7 @@ export class TeacherPage implements OnInit {
   async editTeacher() {
     await this.db.updateTeacher(this.editedTeacher, this.editedTeacher.id);
 
-    Utils.showToast('Lehrer erfolgreich geupdated!', 'success');
+    Utils.showToast(translate('teachers.updated'), 'success');
 
     this.modalController.dismiss(true);
   }

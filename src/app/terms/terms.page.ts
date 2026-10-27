@@ -5,6 +5,7 @@ import { DbService } from 'src/app/services/db.service';
 import { LegalModalComponent } from 'src/app/login/legal-modal/legal-modal.component';
 import { Utils } from 'src/app/utilities/Utils';
 import { supabase } from 'src/app/services/base/supabase';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-terms',
@@ -38,20 +39,20 @@ export class TermsPage implements OnInit {
 
   async accept() {
     if (!this.privacyAccepted) {
-      Utils.showToast('Bitte akzeptiere die Nutzungsbedingungen und Datenschutzerklärung.', 'danger');
+      Utils.showToast(translate('terms.pleaseAccept'), 'danger');
       return;
     }
     const { error: refreshError } = await supabase.auth.refreshSession();
     if (refreshError) {
       await supabase.auth.signOut();
       this.router.navigateByUrl('/login');
-      Utils.showToast('Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.', 'warning', 4000);
+      Utils.showToast(translate('terms.sessionExpired'), 'warning', 4000);
       return;
     }
     const now = new Date().toISOString();
     const { error } = await supabase.auth.updateUser({ data: { terms_accepted_at: now } });
     if (error) {
-      Utils.showToast('Fehler beim Speichern. Bitte versuche es erneut.', 'danger');
+      Utils.showToast(translate('terms.saveFailed'), 'danger');
       return;
     }
     if (this.db.user?.user_metadata) {

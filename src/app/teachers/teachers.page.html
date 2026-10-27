@@ -3,14 +3,14 @@
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
     </ion-buttons>
-    <ion-title>Lehrer</ion-title>
+    <ion-title>{{ 'teachers.title' | transloco }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content fullscreen="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Lehrer</ion-title>
+      <ion-title size="large">{{ 'teachers.title' | transloco }}</ion-title>
     </ion-toolbar>
   </ion-header>
   <ion-list class="marginBottom">
@@ -20,7 +20,7 @@
           <h2>{{ teacher.name }}</h2>
           <h3>{{ teacher.insNames }}</h3>
         </ion-label>
-        <ion-badge [color]="teacher.playerCount ? '' : 'danger'">{{ teacher.playerCount }} Spieler</ion-badge>
+        <ion-badge [color]="teacher.playerCount ? '' : 'danger'">{{ 'teachers.playerCount' | transloco: { count: teacher.playerCount ?? 0 } }}</ion-badge>
       </ion-item>
     }
   </ion-list>
@@ -30,33 +30,33 @@
       <ion-content>
         <ion-header>
           <ion-toolbar>
-            <ion-title>Lehrer hinzufügen</ion-title>
+            <ion-title>{{ 'teachers.add' | transloco }}</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-item>
-          <ion-label position="stacked">Name</ion-label>
+          <ion-label position="stacked">{{ 'typeSettings.name' | transloco }}</ion-label>
           <ion-input autocapitalize="words" #input></ion-input>
         </ion-item>
         <ion-item>
-          <ion-select interface="modal" label="Instrumente" [(ngModel)]="selInstruments" #select multiple="true">
+          <ion-select interface="modal" [label]="'teachers.instruments' | transloco" [(ngModel)]="selInstruments" #select multiple="true">
             @for (ins of instruments; track ins) {
               <ion-select-option [value]="ins.id">{{ ins.name }}</ion-select-option>
             }
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-label>Privatlehrer</ion-label>
-          <ion-toggle label="Privatlehrer" #private></ion-toggle>
+          <ion-label>{{ 'teachers.private' | transloco }}</ion-label>
+          <ion-toggle [attr.label]="'teachers.private' | transloco" #private></ion-toggle>
         </ion-item>
         <ion-item>
-          <ion-label position="stacked">Kontakt</ion-label>
+          <ion-label position="stacked">{{ 'teachers.contact' | transloco }}</ion-label>
           <ion-input autocapitalize="sentences" #number></ion-input>
         </ion-item>
         <ion-item>
-          <ion-label position="stacked">Notizen</ion-label>
+          <ion-label position="stacked">{{ 'people.notes' | transloco }}</ion-label>
           <ion-textarea autocapitalize="sentences" #notes></ion-textarea>
         </ion-item>
-        <ion-button (click)="addTeacher(input.value, select.value, notes.value, number.value, private.value, modal)" expand="full">Hinzufügen</ion-button>
+        <ion-button (click)="addTeacher(input.value, select.value, notes.value, number.value, private.value, modal)" expand="full">{{ 'attendance.add' | transloco }}</ion-button>
       </ion-content>
     </ng-template>
   </ion-modal>

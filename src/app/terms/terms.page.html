@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="light">
-    <ion-title>Datenschutz & Nutzung</ion-title>
+    <ion-title>{{ 'terms.title' | transloco }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -8,29 +8,29 @@
 
   <div class="hero">
     <ion-icon name="shield-checkmark-outline" class="hero-icon" color="primary"></ion-icon>
-    <h2>Kurz bevor es losgeht</h2>
-    <p>Um Attendix nutzen zu können, benötigen wir einmalig deine Zustimmung zu unseren Nutzungsbedingungen und der Datenschutzerklärung.</p>
+    <h2>{{ 'terms.beforeStart' | transloco }}</h2>
+    <p>{{ 'terms.intro' | transloco }}</p>
   </div>
 
   <ion-list [inset]="true" class="info-list">
     <ion-item lines="full">
       <ion-icon name="lock-closed-outline" slot="start" color="primary"></ion-icon>
       <ion-label class="ion-text-wrap">
-        <h3>Deine Daten sind sicher</h3>
-        <p>Wir speichern nur die Daten, die für den Betrieb der App notwendig sind, und geben sie nicht an Dritte weiter.</p>
+        <h3>{{ 'terms.safe' | transloco }}</h3>
+        <p>{{ 'terms.safeText' | transloco }}</p>
       </ion-label>
     </ion-item>
     <ion-item lines="full">
       <ion-icon name="people-outline" slot="start" color="primary"></ion-icon>
       <ion-label class="ion-text-wrap">
-        <h3>Wofür werden deine Daten genutzt?</h3>
-        <p>Ausschließlich zur Verwaltung deiner Anwesenheit und zur Kommunikation innerhalb deiner Gruppe oder deines Chores.</p>
+        <h3>{{ 'terms.usage' | transloco }}</h3>
+        <p>{{ 'terms.usageText' | transloco }}</p>
       </ion-label>
     </ion-item>
     <ion-item lines="none" button detail="true" (click)="openPrivacy($event)">
       <ion-icon name="document-text-outline" slot="start" color="primary"></ion-icon>
       <ion-label>
-        <h3>Datenschutzerklärung & Impressum lesen</h3>
+        <h3>{{ 'terms.read' | transloco }}</h3>
       </ion-label>
     </ion-item>
   </ion-list>
@@ -41,12 +41,12 @@
         slot="start"
         [(ngModel)]="privacyAccepted"
         name="privacyAccepted"
-        aria-label="Nutzungsbedingungen und Datenschutzerklärung akzeptieren">
+        [attr.aria-label]="'terms.acceptAria' | transloco">
       </ion-checkbox>
       <ion-label class="ion-text-wrap">
-        Ich akzeptiere die Nutzungsbedingungen und habe die
-        <a href="#" (click)="openPrivacy($event)">Datenschutzerklärung</a>
-        gelesen.
+        {{ 'terms.acceptBefore' | transloco }}
+        <a href="#" (click)="openPrivacy($event)">{{ 'terms.privacy' | transloco }}</a>
+        {{ 'terms.acceptAfter' | transloco }}
       </ion-label>
     </ion-item>
   </ion-list>
@@ -54,7 +54,7 @@
   <div class="button-row">
     <ion-button expand="block" [disabled]="!privacyAccepted" (click)="accept()">
       <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-      Akzeptieren und fortfahren
+      {{ 'terms.acceptContinue' | transloco }}
     </ion-button>
   </div>
 </ion-content>

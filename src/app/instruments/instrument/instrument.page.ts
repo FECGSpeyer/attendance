@@ -5,6 +5,7 @@ import { DbService } from 'src/app/services/db.service';
 import { DefaultAttendanceType } from 'src/app/utilities/constants';
 import { GroupCategory, Group, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-instrument',
@@ -35,28 +36,28 @@ export class InstrumentPage implements OnInit {
 
   async generateSynonyms() {
     if (!this.instrument.name || this.instrument.name.trim().length === 0) {
-      Utils.showToast('Bitte gib zuerst einen Namen an!', 'danger');
+      Utils.showToast(translate('instruments.nameFirst'), 'danger');
       return;
     }
 
-    const loading = await Utils.getLoadingElement(10000, 'Synonyme werden generiert...');
+    const loading = await Utils.getLoadingElement(10000, translate('instruments.generatingSynonyms'));
     await loading.present();
 
     try {
       const synonyms = await this.ai.getGroupSynonyms(this.instrument.name);
       this.instrument.synonyms = synonyms;
       await loading.dismiss();
-      Utils.showToast('Synonyme erfolgreich generiert!');
+      Utils.showToast(translate('instruments.synonymsGenerated'));
     } catch (error) {
       console.error('Fehler beim Generieren der Synonyme:', error);
       await loading.dismiss();
-      Utils.showToast('Fehler beim Generieren der Synonyme', 'danger');
+      Utils.showToast(translate('instruments.synonymsFailed'), 'danger');
     }
   }
 
   async update() {
     if (!this.instrument.name) {
-      Utils.showToast('Bitte gib einen Namen an!', 'danger');
+      Utils.showToast(translate('instruments.nameRequired'), 'danger');
       return;
     }
 
@@ -71,7 +72,7 @@ export class InstrumentPage implements OnInit {
       synonyms: this.instrument.synonyms,
     }, this.instrument.id);
 
-    Utils.showToast(`${this.instrument.name} wurde erfolgreich geupdated`);
+    Utils.showToast(translate('instruments.updated', { name: this.instrument.name }));
     await this.modalController.dismiss({
       updated: true,
     });
@@ -80,19 +81,19 @@ export class InstrumentPage implements OnInit {
   async delete() {
     const allPlayers: Player[] = await this.db.getPlayers(true);
     if (Boolean(allPlayers.find((p: Player) => p.instrument === this.instrument.id))) {
-      Utils.showToast('Du kannst das Instrument nicht löschen, da es Spieler gibt (gab), die darauf spielen', 'danger');
+      Utils.showToast(translate('instruments.cannotDelete'), 'danger');
       return;
     }
 
     const alert = await this.alertController.create({
-      header: 'Bestätigen',
-      message: 'Gruppe wirklich löschen?',
+      header: translate('common.confirm'),
+      message: translate('instruments.deleteGroup'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'destructive',
         }, {
-          text: 'Ja',
+          text: translate('common.yes'),
           handler: async () => {
             await this.db.removeGroup(this.instrument.id);
             await this.modalController.dismiss({

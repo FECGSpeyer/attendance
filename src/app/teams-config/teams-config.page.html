@@ -4,14 +4,14 @@
   </div>
 
   <div *ngIf="notInTeams && !loading" class="center">
-    <p>Diese Seite wird nur innerhalb von Microsoft Teams verwendet.</p>
+    <p>{{ 'teams.onlyInTeams' | transloco }}</p>
   </div>
 
   <div *ngIf="!loading && !notInTeams">
-    <h2>Attendix-Tab einrichten</h2>
+    <h2>{{ 'teams.setup' | transloco }}</h2>
 
     <p *ngIf="tenants.length === 0">
-      Kein Attendix-Konto gefunden. Bitte melde dich zuerst im Attendix-Tab an.
+      {{ 'teams.noAccount' | transloco }}
     </p>
 
     <ion-list *ngIf="tenants.length > 0">
@@ -23,7 +23,7 @@
     </ion-list>
 
     <p class="hint" *ngIf="tenants.length > 0">
-      Wähle aus, welche Attendix-Instanz in diesem Kanal angezeigt werden soll.
+      {{ 'teams.choose' | transloco }}
     </p>
   </div>
 </ion-content>

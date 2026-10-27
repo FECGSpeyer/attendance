@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DbService } from '../services/db.service';
 import { FilesService } from '../services/files/files.service';
 import { Utils } from '../utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 /**
  * Resolver route for shared Dateiablage links
@@ -32,7 +33,7 @@ export class OpenFilePage implements OnInit {
       await this.resolveLink();
     } catch (error) {
       console.error('[open-file] resolve failed:', error);
-      Utils.showToast('Der Link konnte nicht geöffnet werden.', 'danger');
+      Utils.showToast(translate('openFile.linkFailed'), 'danger');
       await this.router.navigateByUrl('/login');
     }
   }
@@ -59,7 +60,7 @@ export class OpenFilePage implements OnInit {
 
     if (tenantId !== this.db.tenant()?.id) {
       if (!this.db.tenantUsers().some((tu) => tu.tenantId === tenantId)) {
-        Utils.showToast('Du hast keinen Zugriff auf diese Instanz.', 'danger');
+        Utils.showToast(translate('openFile.noTenantAccess'), 'danger');
         await this.db.routeAfterAuth(undefined, this.db.tenant()?.id);
         return;
       }
@@ -67,7 +68,7 @@ export class OpenFilePage implements OnInit {
     }
 
     if (!this.db.canAccessFiles()) {
-      Utils.showToast('Du hast keinen Zugriff auf Dateien.', 'danger');
+      Utils.showToast(translate('files.noAccess'), 'danger');
       await this.db.routeAfterAuth(undefined, tenantId);
       return;
     }
@@ -82,7 +83,7 @@ export class OpenFilePage implements OnInit {
     const navigated = await this.router.navigate(['/tabs/settings/files'], { queryParams, replaceUrl: true });
     if (!navigated) {
       // Navigation abgebrochen (z. B. Guard) – nicht auf dem Spinner hängen bleiben.
-      Utils.showToast('Der Link konnte nicht geöffnet werden.', 'danger');
+      Utils.showToast(translate('openFile.linkFailed'), 'danger');
       await this.db.routeAfterAuth(undefined, tenantId);
     }
   }

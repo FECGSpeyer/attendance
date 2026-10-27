@@ -7,9 +7,11 @@ import { IonicModule } from '@ionic/angular/lazy';
 import { TermsPageRoutingModule } from './terms-routing.module';
 import { TermsPage } from './terms.page';
 import { LegalModalComponent } from '../login/legal-modal/legal-modal.component';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

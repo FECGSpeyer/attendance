@@ -8,9 +8,11 @@ import { InstrumentListPageRoutingModule } from './instrument-list-routing.modul
 
 import { InstrumentListPage } from './instrument-list.page';
 import { InstrumentPageModule } from '../instrument/instrument.module';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

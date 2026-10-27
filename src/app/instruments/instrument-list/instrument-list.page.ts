@@ -5,6 +5,7 @@ import { DefaultAttendanceType, Role } from 'src/app/utilities/constants';
 import { GroupCategory, Group, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { InstrumentPage } from '../instrument/instrument.page';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-instrument-list',
@@ -94,7 +95,7 @@ export class InstrumentListPage implements OnInit {
           count: players.filter((player: Player): boolean => player.instrument === ins.id).length,
           clefText: ins.clefs?.map((key: string) => Utils.getClefText(key)).join(', ') || '',
           firstOfCategory,
-          categoryName: this.categories.find(cat => cat.id === ins.category)?.name || 'Keine Kategorie',
+          categoryName: this.categories.find(cat => cat.id === ins.category)?.name || translate('instruments.noCategory'),
           categoryLength: instrumentsRaw.filter(instrument => instrument.category === ins.category).length,
         };
       });
@@ -119,7 +120,7 @@ export class InstrumentListPage implements OnInit {
     this.groupedInstruments = [];
     for (const [categoryId, instruments] of grouped) {
       const category = categoryId ? this.categories.find(cat => cat.id === categoryId) : null;
-      const categoryName = category?.name || 'Keine Kategorie';
+      const categoryName = category?.name || translate('instruments.noCategory');
       const categorySortOrder = category?.sort_order;
 
       this.groupedInstruments.push({
@@ -177,7 +178,7 @@ export class InstrumentListPage implements OnInit {
       await this.db.addGroup(String(value), false, undefined, this.newGroupCategory);
       this.newGroupCategory = null;
     } else {
-      Utils.showToast('Bitte gib einem Namen an', 'danger');
+      Utils.showToast(translate('instruments.enterName'), 'danger');
       return;
     }
 
@@ -188,26 +189,26 @@ export class InstrumentListPage implements OnInit {
 
   async addCategory() {
     const alert = await this.alertController.create({
-      header: 'Neue Kategorie',
+      header: translate('instruments.newCategory'),
       inputs: [
         {
           name: 'name',
           type: 'text',
-          placeholder: 'Name der Kategorie'
+          placeholder: translate('instruments.categoryName')
         }
       ],
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'destructive',
         }, {
-          text: 'Hinzufügen',
+          text: translate('attendance.add'),
           handler: async (data) => {
             if (data.name) {
               await this.db.addGroupCategory(data.name);
               this.categories = await this.db.getGroupCategories();
             } else {
-              Utils.showToast('Bitte gib einem Namen an', 'danger');
+              Utils.showToast(translate('instruments.enterName'), 'danger');
               return false;
             }
           }
@@ -220,14 +221,14 @@ export class InstrumentListPage implements OnInit {
 
   async deleteCategory(id: number) {
     const alert = await this.alertController.create({
-      header: 'Bestätigen',
-      message: 'Kategorie wirklich löschen? Alle Gruppen in dieser Kategorie verlieren die Kategorisierung.',
+      header: translate('common.confirm'),
+      message: translate('instruments.deleteCategory'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'destructive',
         }, {
-          text: 'Ja',
+          text: translate('common.yes'),
           handler: async () => {
             await this.db.deleteGroupCategory(id);
             this.categories = await this.db.getGroupCategories();
@@ -246,27 +247,27 @@ export class InstrumentListPage implements OnInit {
     }
 
     const alert = await this.alertController.create({
-      header: 'Kategorie bearbeiten',
+      header: translate('instruments.editCategory'),
       inputs: [
         {
           name: 'name',
           type: 'text',
           value: category.name,
-          placeholder: 'Name der Kategorie'
+          placeholder: translate('instruments.categoryName')
         }
       ],
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'destructive',
         }, {
-          text: 'Speichern',
+          text: translate('common.save'),
           handler: async (data) => {
             if (data.name) {
               await this.db.updateGroupCategory(id, data.name);
               this.categories = await this.db.getGroupCategories();
             } else {
-              Utils.showToast('Bitte gib einem Namen an', 'danger');
+              Utils.showToast(translate('instruments.enterName'), 'danger');
               return false;
             }
           }
@@ -310,7 +311,7 @@ export class InstrumentListPage implements OnInit {
   };
 
   private async saveCategoryOrder(): Promise<void> {
-    const loading = await Utils.getLoadingElement(5000, 'Reihenfolge wird gespeichert...');
+    const loading = await Utils.getLoadingElement(5000, translate('instruments.savingOrder'));
     await loading.present();
 
     try {
@@ -337,10 +338,10 @@ export class InstrumentListPage implements OnInit {
       }
 
       await loading.dismiss();
-      Utils.showToast('Reihenfolge gespeichert', 'success');
+      Utils.showToast(translate('typeSettings.orderSaved'), 'success');
     } catch (error) {
       await loading.dismiss();
-      Utils.showToast('Fehler beim Speichern der Reihenfolge', 'danger');
+      Utils.showToast(translate('instruments.orderFailed'), 'danger');
     }
   }
 
@@ -392,7 +393,7 @@ export class InstrumentListPage implements OnInit {
   }
 
   private async saveOrder(): Promise<void> {
-    const loading = await Utils.getLoadingElement(5000, 'Reihenfolge wird gespeichert...');
+    const loading = await Utils.getLoadingElement(5000, translate('instruments.savingOrder'));
     await loading.present();
 
     try {
@@ -406,10 +407,10 @@ export class InstrumentListPage implements OnInit {
       }
 
       await loading.dismiss();
-      Utils.showToast('Reihenfolge gespeichert', 'success');
+      Utils.showToast(translate('typeSettings.orderSaved'), 'success');
     } catch (error) {
       await loading.dismiss();
-      Utils.showToast('Fehler beim Speichern der Reihenfolge', 'danger');
+      Utils.showToast(translate('instruments.orderFailed'), 'danger');
     }
   }
 }

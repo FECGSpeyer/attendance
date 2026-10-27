@@ -3,14 +3,14 @@
     <ion-buttons slot="start">
       <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
     </ion-buttons>
-    <ion-title>Benachrichtigungen</ion-title>
+    <ion-title>{{ 'notif.title' | transloco }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Benachrichtigungen</ion-title>
+      <ion-title size="large">{{ 'notif.title' | transloco }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
@@ -18,42 +18,42 @@
   <ion-list>
     <ion-card class="top-card">
       <ion-item>
-        <ion-label>Benachrichtigungen aktivieren</ion-label>
+        <ion-label>{{ 'notif.enable' | transloco }}</ion-label>
         <ion-toggle (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.enabled" slot="end"
-          label="Benachrichtigungen aktivieren"></ion-toggle>
+          [attr.label]="'notif.enable' | transloco"></ion-toggle>
       </ion-item>
       @if (!notificationConfig.telegram_chat_id) {
       <ion-item>
-        <ion-label position="stacked">Benutzer-Id</ion-label>
+        <ion-label position="stacked">{{ 'notif.userId' | transloco }}</ion-label>
         <ion-input autocapitalize="sentences" type="text" readonly="true" [(ngModel)]="notificationConfig.id"></ion-input>
       </ion-item>
       }
       <ion-item>
         <ion-label>
-          <h2>Telegramverknüpfung</h2>
+          <h2>{{ 'notif.telegram' | transloco }}</h2>
           @if (notificationConfig.telegram_chat_id) {
-          <ion-note color="success">Konto erfolgreich verknüpft</ion-note>
+          <ion-note color="success">{{ 'notif.linked' | transloco }}</ion-note>
           }
         </ion-label>
         @if (!notificationConfig.telegram_chat_id) {
-        <ion-button (click)="connectTelegram()">Verbinden</ion-button>
+        <ion-button (click)="connectTelegram()">{{ 'notif.connect' | transloco }}</ion-button>
         }
         @if (notificationConfig.telegram_chat_id) {
-        <ion-button color="danger" (click)="disconnectTelegram()">Trennen</ion-button>
+        <ion-button color="danger" (click)="disconnectTelegram()">{{ 'notif.disconnect' | transloco }}</ion-button>
         }
       </ion-item>
       @if (isNative) {
       <ion-item lines="none">
         <ion-toggle [(ngModel)]="notificationConfig.push_enabled" (ionChange)="togglePush()"
-          label="Push-Benachrichtigungen">Push-Benachrichtigungen</ion-toggle>
+          [attr.label]="'notif.push' | transloco">{{ 'notif.push' | transloco }}</ion-toggle>
       </ion-item>
       }
       @if (hasLiveActivity) {
       <ion-item lines="none">
         <ion-toggle [checked]="notificationConfig.live_activity !== false" (ionChange)="toggleLiveActivity($event.detail.checked)"
-          label="Laufender Ablaufplan"
-          helperText="Zeigt den aktuellen Punkt eines laufenden Ablaufplans auf dem Sperrbildschirm{{ isIos ? ' und in der Dynamic Island' : '' }}.">
-          Laufender Ablaufplan
+          [attr.label]="'notif.liveActivity' | transloco"
+          [helperText]="(isIos ? 'notif.liveActivityHelperIos' : 'notif.liveActivityHelper') | transloco">
+          {{ 'notif.liveActivity' | transloco }}
         </ion-toggle>
       </ion-item>
       }
@@ -62,83 +62,82 @@
         <ion-toggle
           [(ngModel)]="notificationConfig.push_and_telegram"
           (ionChange)="updateNotificationConfig()"
-          label="Beide Kanäle gleichzeitig"
-          helperText="Push und Telegram werden parallel gesendet, nicht nur als Fallback.">
-          Beide Kanäle gleichzeitig
+          [attr.label]="'notif.bothChannels' | transloco"
+          [helperText]="'notif.bothChannelsHelper' | transloco">
+          {{ 'notif.bothChannels' | transloco }}
         </ion-toggle>
       </ion-item>
       @if (!notificationConfig.push_and_telegram) {
       <ion-item lines="none">
         <ion-note color="medium" class="ion-text-wrap" style="font-size: 12px; padding: 8px 0;">
-          Push wird bevorzugt. Telegram wird nur als Fallback genutzt, wenn keine Push-Zustellung möglich ist.
+          {{ 'notif.pushPreferred' | transloco }}
         </ion-note>
       </ion-item>
       }
       }
     </ion-card>
     @if (notificationConfig.enabled) {
-    <ion-card-subtitle>Benachrichtigungen</ion-card-subtitle>
+    <ion-card-subtitle>{{ 'notif.title' | transloco }}</ion-card-subtitle>
     <ion-card>
       <ion-item>
         <ion-toggle [(ngModel)]="notificationConfig.updates" (ionChange)="updateNotificationConfig()"
-          label="App-Updates"
-          helperText="Erhalte Benachrichtigungen über App-Updates sobald verfügbar">App-Updates</ion-toggle>
+          [attr.label]="'notif.appUpdates' | transloco"
+          [helperText]="'notif.appUpdatesHelper' | transloco">{{ 'notif.appUpdates' | transloco }}</ion-toggle>
       </ion-item>
       <ion-item>
-        <ion-toggle helperText="Erhalte täglich um 8:00 Uhr eine Benachrichtigung, falls jemand heute Geburtstag hat"
+        <ion-toggle [helperText]="'notif.birthdaysHelper' | transloco"
           (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.birthdays"
-          label="Geburtstage">Geburtstage</ion-toggle>
+          [attr.label]="'notif.birthdays' | transloco">{{ 'notif.birthdays' | transloco }}</ion-toggle>
       </ion-item>
       <ion-item>
-        <ion-toggle helperText="Nachrichten von Admins und Verantwortlichen deiner Instanz"
+        <ion-toggle [helperText]="'notif.announcementsHelper' | transloco"
           (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.messages"
-          label="Mitteilungen">Mitteilungen</ion-toggle>
+          [attr.label]="'notif.announcements' | transloco">{{ 'notif.announcements' | transloco }}</ion-toggle>
       </ion-item>
       <ion-item>
           <ion-toggle (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.reminders"
-          label="Terminerinnerungen">Terminerinnerungen</ion-toggle>
+          [attr.label]="'notif.eventReminders' | transloco">{{ 'notif.eventReminders' | transloco }}</ion-toggle>
       </ion-item>
       @if (hasDutyTypes) {
       <ion-item>
-          <ion-toggle helperText="Wenn du für einen Dienst eingeteilt wirst, an die Bestätigung erinnert wirst oder jemand zum Einspringen gesucht wird. Dringende Anfragen kommen trotzdem an."
+          <ion-toggle [helperText]="'notif.dutiesHelper' | transloco"
           [checked]="notificationConfig.duties !== false"
           (ionChange)="notificationConfig.duties = $event.detail.checked; updateNotificationConfig()"
-          label="Dienste">Dienste</ion-toggle>
+          [attr.label]="'notif.duties' | transloco">{{ 'notif.duties' | transloco }}</ion-toggle>
       </ion-item>
       }
       <ion-item>
-          <ion-toggle helperText="Erhalte Erinnerungen für fällige To-Dos in deiner Checkliste. Nur möglich, wenn du Verantwortlicher einer Gruppe bist."
+          <ion-toggle [helperText]="'notif.checklistHelper' | transloco"
           (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.checklist"
-          label="Checklisten-Erinnerungen">Checklisten-Erinnerungen</ion-toggle>
+          [attr.label]="'notif.checklist' | transloco">{{ 'notif.checklist' | transloco }}</ion-toggle>
       </ion-item>
       <ion-item>
-          <ion-toggle helperText="Erhalte Erinnerungen 2 Tage vor Fälligkeit von Aufgaben, für die du verantwortlich bist."
+          <ion-toggle [helperText]="'notif.tasksHelper' | transloco"
           (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.tasks"
-          label="Aufgaben-Erinnerungen">Aufgaben-Erinnerungen</ion-toggle>
+          [attr.label]="'notif.tasks' | transloco">{{ 'notif.tasks' | transloco }}</ion-toggle>
       </ion-item>
       <ion-item>
-        <ion-toggle helperText="Nur möglich, wenn du Verantwortlicher einer Gruppe bist."
+        <ion-toggle [helperText]="'notif.responsibleOnly' | transloco"
           (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.signins"
-          label="Anmeldungen">Anmeldungen</ion-toggle>
+          [attr.label]="'notif.signIns' | transloco">{{ 'notif.signIns' | transloco }}</ion-toggle>
       </ion-item>
       <ion-item>
-        <ion-toggle helperText="Nur möglich, wenn du Verantwortlicher einer Gruppe bist."
+        <ion-toggle [helperText]="'notif.responsibleOnly' | transloco"
           (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.signouts"
-          label="Abmeldungen">Abmeldungen</ion-toggle>
+          [attr.label]="'notif.signOuts' | transloco">{{ 'notif.signOuts' | transloco }}</ion-toggle>
       </ion-item>
       <ion-item>
-        <ion-toggle helperText="Nur möglich, wenn du Verantwortlicher einer Gruppe bist."
-          (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.criticals" label="Abmeldungen">Neue
-          Problemfälle</ion-toggle>
+        <ion-toggle [helperText]="'notif.responsibleOnly' | transloco"
+          (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.criticals" [attr.label]="'notif.signOuts' | transloco">{{ 'notif.newProblemCases' | transloco }}</ion-toggle>
       </ion-item>
       <ion-item lines="none">
-        <ion-toggle helperText="Nur möglich, wenn du Verantwortlicher einer Gruppe bist."
+        <ion-toggle [helperText]="'notif.responsibleOnly' | transloco"
           (ionChange)="updateNotificationConfig()" [(ngModel)]="notificationConfig.registrations"
-          label="Abmeldungen">Neu-Registrierungen</ion-toggle>
+          [attr.label]="'notif.signOuts' | transloco">{{ 'notif.newRegistrations' | transloco }}</ion-toggle>
       </ion-item>
     </ion-card>
     @if (db.tenants().length) {
-    <ion-card-subtitle>Instanz-Einstellungen</ion-card-subtitle>
+    <ion-card-subtitle>{{ 'notif.tenantSettings' | transloco }}</ion-card-subtitle>
     <ion-card>
       @for (tenant of db.tenants(); track tenant.id; let idx = $index) {
       <ion-item [lines]="(idx + 1) === db.tenants().length ? 'none' : ''">

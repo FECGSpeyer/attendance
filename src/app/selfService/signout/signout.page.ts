@@ -465,7 +465,7 @@ export class SignoutPage implements OnInit {
 
   dutyMeta(t: DutyTermin): string {
     const time = t.attendance.start_time ?? t.type?.start_time;
-    return `${time ? time.slice(0, 5) + ' · ' : ''}${t.occupied} von ${t.required} besetzt`;
+    return `${time ? time.slice(0, 5) + ' · ' : ''}${translate('signout.dutyOccupied', { occupied: t.occupied, required: t.required })}`;
   }
 
   dutyTitle(t: DutyTermin): string {

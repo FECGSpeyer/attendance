@@ -8,6 +8,7 @@ import { PushService } from 'src/app/services/push/push.service';
 import { LiveActivityService } from 'src/app/services/live-activity/live-activity.service';
 import { Role } from 'src/app/utilities/constants';
 import { NotificationConfig } from 'src/app/utilities/interfaces';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-notifications',
@@ -69,12 +70,12 @@ export class NotificationsPage implements OnInit, OnDestroy {
 
   async disconnectTelegram() {
     const alert = await this.alertController.create({
-      header: 'Möchtest du die Verbidnung wirklich trennen?',
-      message: 'Die Verbindung kann jederzeit wiederhergestellt werden',
+      header: translate('notif.disconnectConfirm'),
+      message: translate('notif.disconnectHint'),
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Ja',
+        text: translate('common.yes'),
         handler: async () => {
           await this.db.updateNotificationConfig({
             ...this.notificationConfig,
