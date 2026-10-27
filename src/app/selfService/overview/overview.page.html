@@ -1,8 +1,8 @@
 ﻿<ion-header translucent="true">
   <ion-toolbar>
-    @if (fromDashboard) {
+    @if (backUrl) {
       <ion-buttons slot="start">
-        <ion-button routerLink="/tabs/home-dashboard" routerDirection="back" [attr.aria-label]="'common.back' | transloco">
+        <ion-button [routerLink]="backUrl" routerDirection="back" [attr.aria-label]="'common.back' | transloco">
           <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
         </ion-button>
       </ion-buttons>

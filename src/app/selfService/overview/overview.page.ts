@@ -51,8 +51,8 @@ export class OverviewPage implements OnInit {
   public calendarEntries: CrossTenantPersonAttendance[] = [];
   public selectedDay = dayKey(new Date());
   public hiddenTenants: number[] = [];
-  /** Opened from the Dashboard-Karte, which has no tab button to return to. */
-  public fromDashboard = false;
+  /** Opened from the Dashboard-Karte or "Mehr" (admins have no tab button): where the back button leads. */
+  public backUrl: string | null = null;
   private viewChosen = false;
   private dayCache: { src: CrossTenantPersonAttendance[]; hidden: number[]; byDay: Map<string, CrossTenantPersonAttendance[]> };
   public selAttIds: string[] = [];
@@ -81,7 +81,8 @@ export class OverviewPage implements OnInit {
         this.groupingMode = 'calendar';
         this.viewChosen = true;
       }
-      this.fromDashboard = params.get('from') === 'dashboard';
+      const from = params.get('from');
+      this.backUrl = from === 'dashboard' ? '/tabs/home-dashboard' : from === 'settings' ? '/tabs/settings' : null;
     });
     effect(async () => {
       if (this.db.tenants() && this.db.tenantUsers()) {

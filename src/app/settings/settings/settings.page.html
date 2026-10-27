@@ -643,6 +643,13 @@
       </ion-label>
     </ion-list-header>
     <ion-item-group>
+      @if (isAdmin) {
+      <!-- Admins have no Übersicht tab; the calendar shows all Termine of their instances. -->
+      <ion-item routerLink="/tabs/overview" [queryParams]="{ view: 'calendar', from: 'settings' }" detail="false" button>
+        <ion-icon name="calendar-number-outline" slot="start"></ion-icon>
+        <ion-label>{{ 'calendar.title' | transloco }}</ion-label>
+      </ion-item>
+      }
       <ion-item (click)="openCalendarSubscription()" detail="false" button>
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
         <ion-label>{{ 'settings.subscribeCalendar' | transloco }}</ion-label>

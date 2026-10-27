@@ -166,7 +166,7 @@ Each event is a dot on its day. The **colour** shows the instance, the **shape**
 
 Tap a day to see its events below. Tap an upcoming event to accept or decline, just like in the list. Use the arrows to move between months, "Today" jumps back. With several instances you can hide and show single instances by tapping their coloured names.
 
-[[Administrator|Administrators]] and [[Person in charge|people in charge]] see all events of their instances in the calendar. They open it from the "Calendar" dashboard card via "View month".
+[[Administrator|Administrators]] and [[Person in charge|people in charge]] see all events of their instances in the calendar. They open it via "More" → "Calendar" or from the "Calendar" dashboard card via "View month".
 
 Below the calendar you can also subscribe to the events in your phone's calendar.`,
   },

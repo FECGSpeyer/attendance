@@ -16,6 +16,7 @@ export class TabsPage {
   public isHelper = false;
   public isParent = false;
   public isPlayer = false;
+  public isVoiceLeader = false;
   public showMembersTab = false;
   public showSongsTab = false;
   public showOrgPlansTab = false;
@@ -35,6 +36,7 @@ export class TabsPage {
     this.isHelper = this.db.tenantUser().role === Role.HELPER || this.db.tenantUser().role === Role.VOICE_LEADER_HELPER;
     this.isParent = this.db.tenantUser().role === Role.PARENT;
     this.isPlayer = this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.NONE;
+    this.isVoiceLeader = this.db.tenantUser().role === Role.VOICE_LEADER;
     this.showMembersTab = [Role.HELPER, Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER, Role.PLAYER, Role.NONE].includes(this.db.tenantUser().role) && this.db.tenant()?.showMembersList === true;
     this.showSongsTab = this.db.showSongsTabSignal() && this.db.tenant()?.type !== 'general' && this.db.tenantUser().role !== Role.APPLICANT;
     this.showOrgPlansTab = this.db.showOrgPlansTabSignal() && !!this.db.organisation() && [Role.ADMIN, Role.RESPONSIBLE].includes(this.db.tenantUser().role);
@@ -46,6 +48,7 @@ export class TabsPage {
       this.isHelper = this.db.tenantUser().role === Role.HELPER || this.db.tenantUser().role === Role.VOICE_LEADER_HELPER;
       this.isParent = this.db.tenantUser().role === Role.PARENT;
       this.isPlayer = this.db.tenantUser().role === Role.PLAYER || this.db.tenantUser().role === Role.NONE;
+      this.isVoiceLeader = this.db.tenantUser().role === Role.VOICE_LEADER;
       this.showMembersTab = [Role.HELPER, Role.VOICE_LEADER, Role.VOICE_LEADER_HELPER, Role.PLAYER, Role.NONE].includes(this.db.tenantUser().role) && this.db.tenant()?.showMembersList === true;
       this.showSongsTab = this.db.showSongsTabSignal() && this.db.tenant()?.type !== 'general' && this.db.tenantUser().role !== Role.APPLICANT;
       this.showOrgPlansTab = this.db.showOrgPlansTabSignal() && !!this.db.organisation() && [Role.ADMIN, Role.RESPONSIBLE].includes(this.db.tenantUser().role);

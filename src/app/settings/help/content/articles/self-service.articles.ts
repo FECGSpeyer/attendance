@@ -62,7 +62,7 @@ Jeder Termin ist ein Punkt am Tag. Die **Farbe** zeigt die Instanz, die **Form**
 
 Tippe auf einen Tag, um darunter seine Termine zu sehen. Anstehende Termine tippst du an, um zu- oder abzusagen, genau wie in der Liste. Mit den Pfeilen blätterst du zwischen den Monaten, „Heute“ springt zurück. Bei mehreren Instanzen blendest du über die farbigen Namen einzelne Instanzen aus und wieder ein.
 
-[[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]] sehen im Kalender alle Termine ihrer Instanzen. Sie öffnen ihn über die Dashboard-Karte „Kalender“ und „Monat ansehen“.
+[[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]] sehen im Kalender alle Termine ihrer Instanzen. Sie öffnen ihn über „Mehr“ → „Kalender“ oder über die Dashboard-Karte „Kalender“ und „Monat ansehen“.
 
 Unter dem Kalender kannst du die Termine auch im Kalender deines Handys abonnieren.`,
   },
