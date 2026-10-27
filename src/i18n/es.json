@@ -73,7 +73,7 @@
   "settings": {
     "language": {
       "title": "Idioma",
-      "hint": "Se aplica a la app, a las notificaciones y a los correos que recibes."
+      "hint": "Se aplica a la app en este dispositivo."
     },
     "profilePicture": "Foto de perfil",
     "searchChurch": "Buscar iglesia",

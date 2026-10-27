@@ -73,7 +73,7 @@
   "settings": {
     "language": {
       "title": "Sprache",
-      "hint": "Gilt für die App, Benachrichtigungen und E-Mails an dich."
+      "hint": "Gilt für die App auf diesem Gerät."
     },
     "profilePicture": "Profilbild",
     "searchChurch": "Gemeinde suchen",

@@ -19,6 +19,8 @@ import { Router } from '@angular/router';
 import { RegisterPage } from 'src/app/register/register.page';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { translate } from '@jsverse/transloco';
+import { LocaleService } from 'src/app/i18n/locale.service';
+import { ENABLED_LANGUAGES, LANGUAGE_NAMES } from 'src/app/i18n/languages';
 
 @Component({
     selector: 'app-settings',
@@ -67,6 +69,8 @@ export class SettingsPage implements OnInit, OnDestroy {
   public showAppPromo = false;
   public isMobile = false;
   public fieldTypes = FieldType;
+  public languages = ENABLED_LANGUAGES.map(value => ({ value, label: LANGUAGE_NAMES[value] }));
+  public language: string = '';
 
   constructor(
     public db: DbService,
@@ -77,6 +81,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     private actionSheetController: ActionSheetController,
     private teams: TeamsService,
     public liveUpdate: LiveUpdateService,
+    private locale: LocaleService,
   ) {
     effect(async () => {
       this.db.tenant();
@@ -84,7 +89,18 @@ export class SettingsPage implements OnInit, OnDestroy {
     });
   }
 
+  onLanguageChange(value: string): void {
+    if (value === this.locale.language) {
+      return;
+    }
+    this.language = this.locale.setLanguage(value);
+    // Many labels are resolved once when a page is built, so reload to show
+    // every screen in the new language.
+    window.location.reload();
+  }
+
   async ngOnInit(): Promise<void> {
+    this.language = this.locale.language;
     this.isIos = isPlatform('ios');
     this.isMobile = isPlatform('ios') || isPlatform('android');
     this.checkAppPromo();

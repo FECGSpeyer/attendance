@@ -73,7 +73,7 @@
   "settings": {
     "language": {
       "title": "Language",
-      "hint": "Applies to the app, notifications and emails sent to you."
+      "hint": "Applies to the app on this device."
     },
     "profilePicture": "Profile picture",
     "searchChurch": "Search church",

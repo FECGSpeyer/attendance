@@ -725,6 +725,18 @@
         </ion-label>
       </ion-item>
 
+      @if (languages.length > 1) {
+      <ion-item>
+        <ion-icon name="language-outline" slot="start"></ion-icon>
+        <ion-select [label]="'settings.language.title' | transloco" interface="popover"
+          [value]="language" (ionChange)="onLanguageChange($event.detail.value)">
+          @for (l of languages; track l.value) {
+            <ion-select-option [value]="l.value">{{ l.label }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+      }
+
       <ion-item routerLink="notifications" button>
         <ion-icon name="notifications-outline" slot="start"></ion-icon>
         <ion-label>{{ 'settings.notifications' | transloco }}</ion-label>

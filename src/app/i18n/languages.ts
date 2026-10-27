@@ -7,7 +7,7 @@ export const DEFAULT_LANGUAGE: AppLanguage = 'de';
 
 // Languages users can currently pick. Others stay hidden until their
 // translations are complete (see plans/mehrsprachigkeit-konzept.md).
-export const ENABLED_LANGUAGES: readonly AppLanguage[] = ['de'];
+export const ENABLED_LANGUAGES: readonly AppLanguage[] = ['de', 'en'];
 
 // Locale tags for Intl / toLocale*String, per UI language.
 export const INTL_LOCALES: Record<AppLanguage, string> = {

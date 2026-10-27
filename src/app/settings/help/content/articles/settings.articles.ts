@@ -25,6 +25,17 @@ export const SETTINGS_ARTICLES: HelpArticle[] = [
 Mit den einzelnen Schaltern legst du fest, wofür du Push-Nachrichten bekommst, z. B. "Mitteilungen" (Nachrichten von Admins und Verantwortlichen), "Terminerinnerungen" (automatische und manuell versendete Erinnerungen an Termine), "Dienste" (Einteilungen und Einspring-Anfragen beim [[Dienst-Modus]], nur sichtbar wenn es Dienste gibt) oder "Aufgaben-Erinnerungen".`,
   },
   {
+    id: 'settings-language',
+    title: 'Sprache der App ändern',
+    categoryId: 'settings',
+    keywords: ['sprache', 'englisch', 'english', 'deutsch', 'übersetzung', 'language', 'russisch', 'spanisch'],
+    body: `Unter "Einstellungen → System → Sprache" wählst du, in welcher Sprache du Attendix siehst. Das kann jede Person für sich einstellen. Nach dem Wechsel lädt die App kurz neu.
+
+Solange du nichts auswählst, richtet sich Attendix nach der Sprache deines Geräts. Ist die nicht verfügbar, bleibt die App auf Deutsch.
+
+Übersetzt werden nur die Texte der App. Inhalte, die ihr selbst anlegt, wie Gruppennamen, Termintitel, Werke oder Mitteilungen, bleiben so, wie ihr sie geschrieben habt. Die Versionshinweise unter "Was ist neu" gibt es nur auf Deutsch.`,
+  },
+  {
     id: 'settings-switch-instance',
     title: 'Instanz wechseln, favorisieren oder löschen',
     categoryId: 'settings',
