@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.17.2",
+      "date": "27.10.2026",
+      "changes": [
+        "🐛 Nach dem Tippen auf eine Push-Nachricht öffnet sich das Menü wieder unten statt mitten auf dem Bildschirm.",
+        "📋 In der Dienstplan-Ansicht springt eine Dienst-Nachricht direkt zu „Bitte bestätigen“ bzw. zu deinen Diensten statt ein Menü zu öffnen."
+      ]
+    },
+    {
       "version": "4.17.1",
       "date": "27.10.2026",
       "changes": [

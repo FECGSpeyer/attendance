@@ -113,6 +113,7 @@ export class SignoutPage implements OnInit {
       if (id !== null) {
         this.pushService.consumePendingAttendanceId();
         await this.waitForPersonAttendance(id);
+        await this.waitForStableViewport();
         this.openAttendanceById(id);
       }
     });
@@ -129,6 +130,32 @@ export class SignoutPage implements OnInit {
 
   async ngOnInit() {
     await this.initialize();
+  }
+
+  /**
+   * After tapping a push the app comes back from the background and iOS still
+   * resizes the web view for a moment. An action sheet presented during that
+   * ends up in the middle of the screen, so wait until the height is stable.
+   */
+  private waitForStableViewport(): Promise<void> {
+    return new Promise(resolve => {
+      const start = Date.now();
+      let lastHeight = window.innerHeight;
+      let stableSince = Date.now();
+      const check = () => {
+        const height = window.innerHeight;
+        if (height !== lastHeight || document.visibilityState !== 'visible') {
+          lastHeight = height;
+          stableSince = Date.now();
+        }
+        if (Date.now() - stableSince >= 400 || Date.now() - start > 3000) {
+          resolve();
+        } else {
+          setTimeout(check, 100);
+        }
+      };
+      setTimeout(check, 100);
+    });
   }
 
   private waitForPersonAttendance(attendanceId: number): Promise<void> {
@@ -503,7 +530,14 @@ export class SignoutPage implements OnInit {
 
   private openAttendanceById(attendanceId: number): void {
     const att = this.personAttendances.find(pa => (pa.attendance_id ?? pa.attId) === attendanceId);
-    if (att) {
+    if (att && this.useDutyView && this.isDutyPa(att) && !isCancelled(att)) {
+      // The duty view shows the right buttons on the page itself.
+      if (att.duty_state === 'requested') {
+        this.scrollToSection('duty-requests');
+      } else if (att.id !== this.nextDuty?.id) {
+        this.scrollToSection('duty-mine');
+      }
+    } else if (att) {
       this.presentActionSheetForChoice(att);
     } else if (this.openDuties.some(t => t.attendance.id === attendanceId)) {
       // Push "wer springt ein?" for a duty I am not assigned to.
