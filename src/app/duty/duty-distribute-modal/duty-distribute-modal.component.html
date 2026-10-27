@@ -25,10 +25,24 @@
     <ion-list [inset]="true">
       <ion-list-header><ion-label>Zeitraum</ion-label></ion-list-header>
       <ion-item>
-        <ion-input type="date" label="Von" [(ngModel)]="from"></ion-input>
+        <ion-label>Von</ion-label>
+        <ion-datetime-button datetime="dutyDistFrom"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime id="dutyDistFrom" presentation="date" locale="de-DE" [firstDayOfWeek]="1" [showDefaultButtons]="true"
+              doneText="Fertig" cancelText="Abbrechen" [(ngModel)]="from"></ion-datetime>
+          </ng-template>
+        </ion-modal>
       </ion-item>
       <ion-item>
-        <ion-input type="date" label="Bis" [(ngModel)]="to"></ion-input>
+        <ion-label>Bis</ion-label>
+        <ion-datetime-button datetime="dutyDistTo"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime id="dutyDistTo" presentation="date" locale="de-DE" [firstDayOfWeek]="1" [showDefaultButtons]="true"
+              doneText="Fertig" cancelText="Abbrechen" [(ngModel)]="to"></ion-datetime>
+          </ng-template>
+        </ion-modal>
       </ion-item>
     </ion-list>
 

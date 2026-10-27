@@ -77,8 +77,8 @@ export class DutyDistributeModalComponent implements OnInit {
     try {
       const tenantId = this.db.tenant().id;
       const types = this.dutyTypes.filter(t => this.selectedTypeIds.includes(t.id));
-      const fromIso = dayjs(this.from).startOf('day').toISOString();
-      const toIso = dayjs(this.to).endOf('day').toISOString();
+      const fromIso = dayjs(this.from.slice(0, 10)).startOf('day').toISOString();
+      const toIso = dayjs(this.to.slice(0, 10)).endOf('day').toISOString();
       const [termine, unavailability] = await Promise.all([
         this.db.dutySvc.getUpcomingDutyTermine(tenantId, types, toIso, (dayjs(fromIso).isBefore(dayjs().startOf('day')) ? dayjs().startOf('day') : dayjs(fromIso)).toISOString()),
         this.db.dutySvc.getUnavailabilityForTenant(tenantId),
