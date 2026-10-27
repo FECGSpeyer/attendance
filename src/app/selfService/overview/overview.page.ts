@@ -1,8 +1,8 @@
-import { dateFmt } from '../../i18n/languages';
+import { currentLanguage, dateFmt } from '../../i18n/languages';
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, IonModal } from '@ionic/angular/lazy';
 import { Browser } from '@capacitor/browser';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import dayjs from 'dayjs';
 import { attendanceHasEnded, attendanceIsRunning, isMultiDay } from '../../utilities/plan-days';
 import { EventMonthGroup, PAST_PREVIEW_COUNT, eventDay, eventMeta, eventTimeRange, eventWeekday, groupByMonth, statusColor, statusLabel } from '../../utilities/event-list';
@@ -14,8 +14,12 @@ import { Utils } from 'src/app/utilities/Utils';
 import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
 import { translate } from '@jsverse/transloco';
+import { dayKey, groupByDay, mergeCalendarEntries } from 'src/app/utilities/calendar';
+import { openCalendarSubscription } from 'src/app/utilities/calendar-subscription';
 
-type GroupingMode = 'chronological' | 'byTenant';
+type GroupingMode = 'chronological' | 'byTenant' | 'calendar';
+
+const VIEW_STORAGE_KEY = 'overviewView';
 
 interface TenantGroup {
   tenantId: number;
@@ -43,6 +47,14 @@ export class OverviewPage implements OnInit {
   public currentAttendance: CrossTenantPersonAttendance | null = null;
 
   public groupingMode: GroupingMode = 'chronological';
+  /** Calendar: personal Termine plus Termine of managed instances without own entry. */
+  public calendarEntries: CrossTenantPersonAttendance[] = [];
+  public selectedDay = dayKey(new Date());
+  public hiddenTenants: number[] = [];
+  /** Opened from the Dashboard-Karte, which has no tab button to return to. */
+  public fromDashboard = false;
+  private viewChosen = false;
+  private dayCache: { src: CrossTenantPersonAttendance[]; hidden: number[]; byDay: Map<string, CrossTenantPersonAttendance[]> };
   public selAttIds: string[] = [];
   public selectedAttendance: CrossTenantPersonAttendance | null = null;
 
@@ -62,7 +74,15 @@ export class OverviewPage implements OnInit {
     private tracking: TrackingService,
     private router: Router,
     private filesSvc: FilesService,
+    private route: ActivatedRoute,
   ) {
+    this.route.queryParamMap.subscribe(params => {
+      if (params.get('view') === 'calendar') {
+        this.groupingMode = 'calendar';
+        this.viewChosen = true;
+      }
+      this.fromDashboard = params.get('from') === 'dashboard';
+    });
     effect(async () => {
       if (this.db.tenants() && this.db.tenantUsers()) {
         await this.loadAttendances();
@@ -84,9 +104,22 @@ export class OverviewPage implements OnInit {
   }
 
   async loadAttendances(forceRefresh: boolean = false) {
-    const allAttendances = await this.db.loadAllPersonAttendancesAcrossTenants(forceRefresh);
+    const [allAttendances, managed] = await Promise.all([
+      this.db.loadAllPersonAttendancesAcrossTenants(forceRefresh),
+      this.db.loadManagedEventsAcrossTenants(),
+    ]);
     this.attendances = allAttendances;
     this.processAttendances();
+
+    this.calendarEntries = mergeCalendarEntries(allAttendances, managed);
+    if (!this.viewChosen) {
+      this.viewChosen = true;
+      // With one instance "Meine Termine" already is the list; admins without own Termine have nothing to list.
+      this.groupingMode = this.storedView() ?? (!this.showByTenant || (!allAttendances.length && managed.length) ? 'calendar' : 'chronological');
+    }
+    if (this.groupingMode === 'byTenant' && !this.showByTenant) {
+      this.groupingMode = 'chronological';
+    }
   }
 
   processAttendances() {
@@ -164,6 +197,40 @@ export class OverviewPage implements OnInit {
 
   onGroupingChange(event: any) {
     this.groupingMode = event.detail.value;
+    try {
+      localStorage.setItem(VIEW_STORAGE_KEY, this.groupingMode);
+    } catch { /* storage blocked: the view just isn't remembered */ }
+  }
+
+  private storedView(): GroupingMode | null {
+    try {
+      const stored = localStorage.getItem(VIEW_STORAGE_KEY);
+      return stored === 'chronological' || stored === 'byTenant' || stored === 'calendar' ? stored : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** "Nach Instanz" only helps with more than one instance. */
+  get showByTenant(): boolean {
+    return (this.db.tenants()?.length ?? 0) > 1;
+  }
+
+  /** Termine of the selected calendar day, hidden instances left out. */
+  get dayEntries(): CrossTenantPersonAttendance[] {
+    if (this.dayCache?.src !== this.calendarEntries || this.dayCache.hidden !== this.hiddenTenants) {
+      const visible = this.calendarEntries.filter(e => !this.hiddenTenants.includes(e.tenantId));
+      this.dayCache = { src: this.calendarEntries, hidden: this.hiddenTenants, byDay: groupByDay(visible) };
+    }
+    return this.dayCache.byDay.get(this.selectedDay) ?? [];
+  }
+
+  get selectedDayLabel(): string {
+    return dayjs(this.selectedDay).locale(currentLanguage()).format(`dddd, ${dateFmt()}`);
+  }
+
+  async openCalendarSubscription() {
+    await openCalendarSubscription(this.db, this.alertController);
   }
 
   /**

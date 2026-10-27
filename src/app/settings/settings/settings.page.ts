@@ -13,14 +13,14 @@ import { StatsPage } from 'src/app/stats/stats.page';
 import { DEFAULT_IMAGE, FieldType, Role } from 'src/app/utilities/constants';
 import { Admin, Church, Parent, Person, Player, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
-import { environment } from 'src/environments/environment';
+import { openCalendarSubscription } from 'src/app/utilities/calendar-subscription';
 import { Viewer } from '../../utilities/interfaces';
 import { Router } from '@angular/router';
 import { RegisterPage } from 'src/app/register/register.page';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { translate } from '@jsverse/transloco';
 import { LocaleService } from 'src/app/i18n/locale.service';
-import { currentLanguage, ENABLED_LANGUAGES, LANGUAGE_NAMES } from 'src/app/i18n/languages';
+import { ENABLED_LANGUAGES, LANGUAGE_NAMES } from 'src/app/i18n/languages';
 
 @Component({
     selector: 'app-settings',
@@ -779,44 +779,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   async openCalendarSubscription() {
-    let link = `${environment.apiUrl}/functions/v1/ical-tenant?tenantId=${this.db.tenant().id}`;
-    let personal = false;
-    if (!this.isAdmin) {
-      const personId = await this.db.getPersonIdForTenant(this.db.tenant().id);
-      if (personId) {
-        link += `&personId=${personId}`;
-        personal = true;
-      }
-    }
-    // Calendar texts (status, reminders) in the app language; German is the server default.
-    if (currentLanguage() !== 'de') {
-      link += `&lang=${currentLanguage()}`;
-    }
-    const alert = await this.alertController.create({
-      header: translate('settings.subscribeCalendar'),
-      message: translate('settings.calendarMessage', { link }),
-      // Personal feeds can leave out Termine you cancelled (default: shown with status).
-      inputs: personal ? [{ type: 'checkbox', label: translate('settings.hideCancelled'), value: 'hideExcused' }] : [],
-      buttons: [
-        {
-          text: translate('settings.copyLink'),
-          handler: (values?: string[]) => {
-            const finalLink = Array.isArray(values) && values.includes('hideExcused') ? `${link}&hideExcused=1` : link;
-            navigator?.clipboard.writeText(finalLink);
-            Utils.showToast(translate('settings.linkCopied'), 'success');
-            return false;
-          },
-        },
-        {
-          text: translate('settings.openGuide'),
-          handler: () => {
-            Browser.open({ url: this.isIos ? 'https://support.apple.com/de-de/102301' : 'https://support.google.com/calendar/answer/37100?hl=de&co=GENIE.Platform%3DAndroid' });
-          },
-        },
-        { text: translate('common.close'), role: 'cancel' },
-      ],
-    });
-    await alert.present();
+    await openCalendarSubscription(this.db, this.alertController);
   }
 
   async openApprovePersonModal(p: Player) {

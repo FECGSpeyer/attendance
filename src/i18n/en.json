@@ -777,7 +777,8 @@
     "people": "People",
     "songs": "Pieces",
     "org": "Org",
-    "more": "More"
+    "more": "More",
+    "calendar": "Calendar"
   },
   "app": {
     "newPassword": "Enter new password",
@@ -3101,5 +3102,20 @@
     "setup": "Set up Attendix tab",
     "noAccount": "No Attendix account found. Please log in to the Attendix tab first.",
     "choose": "Choose which Attendix instance to show in this channel."
+  },
+  "calendar": {
+    "title": "Calendar",
+    "previous": "Previous",
+    "next": "Next",
+    "today": "Today",
+    "eventCount": "{count, plural, one {# event} other {# events}}",
+    "legendYes": "Accepted / assigned",
+    "legendOpen": "Open",
+    "legendNo": "Declined",
+    "legendEvent": "Event without your own status",
+    "noEventsDay": "No events on this day",
+    "subscribe": "Subscribe in your phone calendar",
+    "cardSubtitle": "This week across all instances",
+    "openMonth": "View month"
   }
 }

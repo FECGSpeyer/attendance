@@ -25,7 +25,7 @@ Für Vorstand oder Leitungsteam gibt es die [[Teamorganisation]]: Tagesordnung i
 - **Werke**: Die Notenbibliothek des Vereins.
 - **Einstellungen**: Vereinsdaten, Benachrichtigungen, Rollen und Hilfe.
 
-Mitglieder ohne Verwaltungsrechte sehen stattdessen meist nur "Meine Anwesenheit" und "Werke".`,
+Mitglieder ohne Verwaltungsrechte sehen stattdessen meist nur "Meine Anwesenheit", "Werke" und den Kalender (bei mehreren Instanzen "Übersicht").`,
   },
   {
     id: 'gs-switch-instance',

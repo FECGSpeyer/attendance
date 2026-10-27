@@ -53,3 +53,17 @@ ion-segment {
   padding: 8px;
 }
 
+
+.calendar-box {
+  margin: 8px 16px 0;
+  border-radius: 14px;
+  background: var(--ion-card-background, var(--ion-item-background, #fff));
+}
+
+.calendar-subscribe {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 24px;
+}

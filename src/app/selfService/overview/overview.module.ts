@@ -11,6 +11,7 @@ import { OverviewPage } from './overview.page';
 import { NotificationBellComponent } from 'src/app/shared/notification-bell/notification-bell.component';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
 import { TranslocoModule } from '@jsverse/transloco';
+import { EventCalendarComponent } from 'src/app/shared/event-calendar/event-calendar.component';
 
 @NgModule({
   imports: [
@@ -21,6 +22,7 @@ import { TranslocoModule } from '@jsverse/transloco';
     OverviewPageRoutingModule,
     NotificationBellComponent,
     ExcuseReasonPickerComponent,
+    EventCalendarComponent,
     QuillModule.forRoot(),
   ],
   declarations: [OverviewPage]

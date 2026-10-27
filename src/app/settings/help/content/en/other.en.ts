@@ -4,8 +4,10 @@ import { HelpArticleTranslation } from '../types';
 export const OTHER_EN: Record<string, HelpArticleTranslation> = {
   'other-dashboard': {
     title: 'Dashboard',
-    keywords: ['overview', 'tiles', 'start page', 'birthday', 'birthdays', 'archived'],
-    body: `The dashboard shows [[Administrator|administrators]] and [[Person in charge|people in charge]] an overview with birthdays, the next event, member changes, absences, [[Critical person|critical people]] and current pieces.
+    keywords: ['overview', 'tiles', 'start page', 'birthday', 'birthdays', 'archived', 'calendar', 'week'],
+    body: `The dashboard shows [[Administrator|administrators]] and [[Person in charge|people in charge]] an overview with birthdays, a week calendar, the next event, member changes, absences, [[Critical person|critical people]] and current pieces.
+
+The **Calendar** card shows the current week with the events of all your instances, coloured by instance. Tap a day to see its events, or "View month" for the whole month.
 
 The **Birthdays** card lists the birthdays of the last and next 14 days. Archived people do not appear there.`,
   },

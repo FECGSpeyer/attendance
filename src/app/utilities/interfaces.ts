@@ -114,7 +114,7 @@ export interface TenantRolePermission {
   player_planned_absence: boolean;
 }
 
-export type DashboardCardId = 'birthdays' | 'next-event' | 'member-changes' | 'absences' | 'critical-persons' | 'current-songs' | 'current-plan' | 'my-tasks';
+export type DashboardCardId = 'birthdays' | 'calendar' | 'next-event' | 'member-changes' | 'absences' | 'critical-persons' | 'current-songs' | 'current-plan' | 'my-tasks';
 
 export interface DashboardCardConfig {
   id: DashboardCardId;
@@ -123,6 +123,7 @@ export interface DashboardCardConfig {
 
 export const DEFAULT_DASHBOARD_CARDS: DashboardCardConfig[] = [
   { id: 'birthdays', visible: true },
+  { id: 'calendar', visible: true },
   { id: 'next-event', visible: true },
   { id: 'member-changes', visible: true },
   { id: 'absences', visible: true },
@@ -674,6 +675,8 @@ export interface CrossTenantPersonAttendance extends PersonAttendance {
   tenantName: string;
   tenantColor: string;
   attendanceType?: AttendanceType;
+  /** Calendar only: Termin of a managed instance without own person entry, so no status. */
+  eventOnly?: boolean;
 }
 
 // ============================================================

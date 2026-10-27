@@ -5,6 +5,7 @@ import { translate } from '@jsverse/transloco';
 
 const CARD_LABELS: Record<DashboardCardId, string> = {
   get 'birthdays'() { return translate('homeDashboard.birthdays'); },
+  get 'calendar'() { return translate('calendar.title'); },
   get 'next-event'() { return translate('homeDashboard.events'); },
   get 'member-changes'() { return translate('homeDashboard.memberChanges'); },
   get 'absences'() { return translate('homeDashboard.absences'); },

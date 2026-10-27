@@ -777,7 +777,8 @@
     "people": "Personas",
     "songs": "Obras",
     "org": "Org",
-    "more": "Más"
+    "more": "Más",
+    "calendar": "Calendario"
   },
   "app": {
     "newPassword": "Introduce una nueva contraseña",
@@ -3101,5 +3102,20 @@
     "setup": "Configurar pestaña de Attendix",
     "noAccount": "No se encontró ninguna cuenta de Attendix. Inicia sesión primero en la pestaña de Attendix.",
     "choose": "Elige qué instancia de Attendix mostrar en este canal."
+  },
+  "calendar": {
+    "title": "Calendario",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "today": "Hoy",
+    "eventCount": "{count, plural, one {# evento} other {# eventos}}",
+    "legendYes": "Confirmado / asignado",
+    "legendOpen": "Pendiente",
+    "legendNo": "Cancelado",
+    "legendEvent": "Evento sin estado propio",
+    "noEventsDay": "No hay eventos este día",
+    "subscribe": "Suscribirse en el calendario del móvil",
+    "cardSubtitle": "Esta semana en todas las instancias",
+    "openMonth": "Ver mes"
   }
 }

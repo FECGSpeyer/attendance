@@ -1,5 +1,12 @@
 ﻿<ion-header translucent="true">
   <ion-toolbar>
+    @if (fromDashboard) {
+      <ion-buttons slot="start">
+        <ion-button routerLink="/tabs/home-dashboard" routerDirection="back" [attr.aria-label]="'common.back' | transloco">
+          <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    }
     <ion-title>{{ 'selfService.allEvents' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button id="legend-button-overview">
@@ -50,8 +57,13 @@
       <ion-segment-button value="chronological">
         <ion-label>{{ 'selfService.chronological' | transloco }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="byTenant">
-        <ion-label>{{ 'selfService.byInstance' | transloco }}</ion-label>
+      @if (showByTenant) {
+        <ion-segment-button value="byTenant">
+          <ion-label>{{ 'selfService.byInstance' | transloco }}</ion-label>
+        </ion-segment-button>
+      }
+      <ion-segment-button value="calendar">
+        <ion-label>{{ 'calendar.title' | transloco }}</ion-label>
       </ion-segment-button>
     </ion-segment>
   </ion-toolbar>
@@ -78,7 +90,7 @@
     </ion-card>
   }
 
-  @if (!db.crossTenantAttendancesLoading() && pastAttendances.length > 0) {
+  @if (groupingMode !== 'calendar' && !db.crossTenantAttendancesLoading() && pastAttendances.length > 0) {
     <div class="ev-summary overview-summary">
       <span class="ev-summary__main"><span class="ev-summary__value">{{ perc }}%</span><span class="ev-summary__label">{{ 'signout.attendance' | transloco }}</span></span>
       @if (lateCount) {
@@ -234,6 +246,45 @@
           }
         </ion-list>
       }
+    }
+
+    <!-- Calendar View -->
+    @if (groupingMode === 'calendar' && !db.crossTenantAttendancesLoading()) {
+      <div class="calendar-box">
+        <app-event-calendar [entries]="calendarEntries" [(selected)]="selectedDay" [(hiddenTenants)]="hiddenTenants"></app-event-calendar>
+      </div>
+      <div class="ev-section">
+        <h2>{{ selectedDayLabel }}</h2>
+        <span class="ev-section__count">{{ dayEntries.length }}</span>
+      </div>
+      @if (dayEntries.length) {
+        <ion-list [inset]="true" class="ev-list">
+          @for (att of dayEntries; track att.tenantId + ':' + att.attId) {
+            @if (att.eventOnly) {
+              <ion-item detail="false">
+                <div slot="start" class="ev-tile" [class.ev-tile--hl]="att.highlight" [class.ev-tile--past]="attHasPassed(att)">
+                  <span class="ev-tile__wd">{{ weekday(att.date) }}</span>
+                  <span class="ev-tile__day">{{ day(att.date) }}</span>
+                </div>
+                <ion-label>
+                  <h2>{{ getEventTitle(att) }}</h2>
+                  @if (getEventMeta(att); as meta) {
+                    <p>{{ meta }}</p>
+                  }
+                  <p class="tenant-line"><span class="tenant-dot" [style.backgroundColor]="att.tenantColor"></span>{{ att.tenantName }}</p>
+                </ion-label>
+              </ion-item>
+            } @else {
+              <ng-container *ngTemplateOutlet="eventRow; context: { $implicit: att, showTenant: true }"></ng-container>
+            }
+          }
+        </ion-list>
+      } @else {
+        <p class="ev-empty">{{ 'calendar.noEventsDay' | transloco }}</p>
+      }
+      <button class="ev-more-link calendar-subscribe" (click)="openCalendarSubscription()">
+        <ion-icon name="calendar-number-outline"></ion-icon> {{ 'calendar.subscribe' | transloco }}
+      </button>
     }
 
     <!-- By Tenant View -->

@@ -149,6 +149,25 @@ Each event is a card listing your children with their status. Tap a child to cha
 
 In the "Chronological" view the next event has its own card. There you sign in or out directly with "Accept", "Late" or "Decline"; more actions are under "More options". Below follow the upcoming events grouped by month and the past events (the last three, the rest via "Show all"). A coloured dot with a name shows which instance an event belongs to.
 
-In the "By instance" view you see the events per instance. Tap an upcoming event to change your [[Attendance status|attendance status]]. Markers such as "Info", "Attachment", "Files" or "Route" open the description, the attachment, the file storage or the navigation directly.`,
+In the "By instance" view you see the events per instance. Tap an upcoming event to change your [[Attendance status|attendance status]]. Markers such as "Info", "Attachment", "Files" or "Route" open the description, the attachment, the file storage or the navigation directly.
+
+The third view, "Calendar", shows all events as a month calendar, see "Viewing events in the calendar".`,
+  },
+  'self-calendar': {
+    title: 'Viewing events in the calendar',
+    keywords: ['calendar', 'month', 'month view', 'week', 'calendar view', 'colours', 'colors', 'assigned', 'duty', 'several instances', 'sound desk', 'subscribe'],
+    body: `The calendar shows all your events at a glance, also across several instances (e.g. choir and sound team). You find it in the "Overview" tab under "Calendar". If you are only in one instance, the tab is called "Calendar".
+
+Each event is a dot on its day. The **colour** shows the instance, the **shape** your status:
+- filled dot: accepted or assigned to a duty
+- ring: still open, e.g. no reply yet or a duty request waiting for your answer
+- faded dot: declined or absent
+- square: event of an instance you manage, without your own entry
+
+Tap a day to see its events below. Tap an upcoming event to accept or decline, just like in the list. Use the arrows to move between months, "Today" jumps back. With several instances you can hide and show single instances by tapping their coloured names.
+
+[[Administrator|Administrators]] and [[Person in charge|people in charge]] see all events of their instances in the calendar. They open it from the "Calendar" dashboard card via "View month".
+
+Below the calendar you can also subscribe to the events in your phone's calendar.`,
   },
 };

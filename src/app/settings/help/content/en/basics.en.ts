@@ -22,7 +22,7 @@ For the board or leadership team there is [[Team organisation]]: agenda in the r
 - **Pieces**: the club's sheet music library.
 - **Settings**: club details, notifications, roles and help.
 
-Members without management rights usually only see "My attendance" and "Pieces" instead.`,
+Members without management rights usually only see "My attendance", "Pieces" and the calendar (called "Overview" with several instances) instead.`,
   },
   'gs-switch-instance': {
     title: 'Switching between several instances',

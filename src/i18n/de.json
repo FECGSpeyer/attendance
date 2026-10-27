@@ -777,7 +777,8 @@
     "people": "Personen",
     "songs": "Werke",
     "org": "Org",
-    "more": "Mehr"
+    "more": "Mehr",
+    "calendar": "Kalender"
   },
   "app": {
     "newPassword": "Neues Passwort eingeben",
@@ -3101,5 +3102,20 @@
     "setup": "Attendix-Tab einrichten",
     "noAccount": "Kein Attendix-Konto gefunden. Bitte melde dich zuerst im Attendix-Tab an.",
     "choose": "Wähle aus, welche Attendix-Instanz in diesem Kanal angezeigt werden soll."
+  },
+  "calendar": {
+    "title": "Kalender",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "today": "Heute",
+    "eventCount": "{count, plural, one {# Termin} other {# Termine}}",
+    "legendYes": "Zugesagt / eingeteilt",
+    "legendOpen": "Offen",
+    "legendNo": "Abgesagt",
+    "legendEvent": "Termin ohne eigenen Status",
+    "noEventsDay": "Keine Termine an diesem Tag",
+    "subscribe": "Im Handy-Kalender abonnieren",
+    "cardSubtitle": "Diese Woche in allen Instanzen",
+    "openMonth": "Monat ansehen"
   }
 }

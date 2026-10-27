@@ -7,8 +7,10 @@ export const OTHER_FEATURES_ARTICLES: HelpArticle[] = [
     id: 'other-dashboard',
     title: 'Dashboard',
     categoryId: 'other',
-    keywords: ['übersicht', 'kacheln', 'startseite', 'geburtstag', 'geburtstage', 'archiviert'],
-    body: `Das Dashboard zeigt [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortlichen]] eine Übersicht mit Geburtstagen, dem nächsten Termin, Mitgliederänderungen, Abwesenheiten, [[Kritische Person|kritischen Personen]] und aktuellen Werken.
+    keywords: ['übersicht', 'kacheln', 'startseite', 'geburtstag', 'geburtstage', 'archiviert', 'kalender', 'woche'],
+    body: `Das Dashboard zeigt [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortlichen]] eine Übersicht mit Geburtstagen, einem Wochenkalender, dem nächsten Termin, Mitgliederänderungen, Abwesenheiten, [[Kritische Person|kritischen Personen]] und aktuellen Werken.
+
+Die Karte **Kalender** zeigt die aktuelle Woche mit den Terminen aller deiner Instanzen, farbig nach Instanz. Tippe auf einen Tag, um seine Termine zu sehen, oder auf „Monat ansehen“ für den ganzen Monat.
 
 Die Karte **Geburtstage** listet die Geburtstage der letzten und kommenden 14 Tage. Archivierte Personen tauchen dort nicht auf.`,
   },

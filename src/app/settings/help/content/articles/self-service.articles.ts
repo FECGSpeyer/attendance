@@ -43,6 +43,27 @@ Jeder Termin ist eine Karte, in der deine Kinder mit ihrem Status stehen. Tippe 
 
 In der Ansicht „Chronologisch“ steht der nächste Termin in einer eigenen Karte. Dort meldest du dich direkt mit „Zusagen“, „Verspätung“ oder „Absagen“ an oder ab, weitere Aktionen findest du unter „Weitere Optionen“. Darunter folgen die anstehenden Termine nach Monaten gruppiert und die vergangenen Termine (die letzten drei, der Rest über „Alle anzeigen“). Ein farbiger Punkt mit Namen zeigt, zu welcher Instanz ein Termin gehört.
 
-In der Ansicht „Nach Instanz“ siehst du die Termine je Instanz. Tippe einen anstehenden Termin an, um deinen [[Anwesenheitsstatus]] zu ändern. Markierungen wie „Infos“, „Anhang“, „Dateien“ oder „Route“ öffnen die Beschreibung, den Anhang, die Dateiablage oder die Navigation direkt.`,
+In der Ansicht „Nach Instanz“ siehst du die Termine je Instanz. Tippe einen anstehenden Termin an, um deinen [[Anwesenheitsstatus]] zu ändern. Markierungen wie „Infos“, „Anhang“, „Dateien“ oder „Route“ öffnen die Beschreibung, den Anhang, die Dateiablage oder die Navigation direkt.
+
+Die dritte Ansicht „Kalender“ zeigt alle Termine als Monatskalender, mehr dazu unter „Termine im Kalender ansehen“.`,
+  },
+  {
+    id: 'self-calendar',
+    title: 'Termine im Kalender ansehen',
+    categoryId: 'self-service',
+    keywords: ['kalender', 'monat', 'monatsansicht', 'woche', 'kalenderansicht', 'farben', 'eingeteilt', 'dienst', 'mehrere instanzen', 'mischpult', 'abonnieren'],
+    body: `Im Kalender siehst du alle deine Termine auf einen Blick, auch über mehrere Instanzen hinweg (z. B. Chor und Technik). Du findest ihn im Tab "Übersicht" unter „Kalender“. Bist du nur in einer Instanz, heißt der Tab direkt "Kalender".
+
+Jeder Termin ist ein Punkt am Tag. Die **Farbe** zeigt die Instanz, die **Form** deinen Stand:
+- gefüllter Punkt: zugesagt oder für einen Dienst eingeteilt
+- Ring: noch offen, z. B. ohne Rückmeldung oder eine Dienst-Anfrage, die auf deine Antwort wartet
+- blasser Punkt: abgesagt oder abwesend
+- Quadrat: Termin einer Instanz, die du verwaltest, ohne eigenen Eintrag
+
+Tippe auf einen Tag, um darunter seine Termine zu sehen. Anstehende Termine tippst du an, um zu- oder abzusagen, genau wie in der Liste. Mit den Pfeilen blätterst du zwischen den Monaten, „Heute“ springt zurück. Bei mehreren Instanzen blendest du über die farbigen Namen einzelne Instanzen aus und wieder ein.
+
+[[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]] sehen im Kalender alle Termine ihrer Instanzen. Sie öffnen ihn über die Dashboard-Karte „Kalender“ und „Monat ansehen“.
+
+Unter dem Kalender kannst du die Termine auch im Kalender deines Handys abonnieren.`,
   },
 ];

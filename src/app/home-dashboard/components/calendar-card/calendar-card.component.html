@@ -1,0 +1,40 @@
+<ion-card class="dashboard-card">
+  <div class="card-header-strip strip-calendar">
+    <ion-icon name="calendar-number-outline"></ion-icon>
+    <div>
+      <div class="card-title">{{ 'calendar.title' | transloco }}</div>
+      <div class="card-subtitle">{{ 'calendar.cardSubtitle' | transloco }}</div>
+    </div>
+  </div>
+  <ion-card-content class="card-body">
+    @if (loading) {
+      <div class="loading-center">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    } @else {
+      <app-event-calendar mode="week" [entries]="entries" [(selected)]="selectedDay" [showLegend]="false"></app-event-calendar>
+      <ion-list lines="full" class="card-list">
+        <ion-item-divider class="card-divider">
+          <ion-label>{{ selectedDayLabel }}</ion-label>
+        </ion-item-divider>
+        @for (att of dayEntries; track att.tenantId + ':' + att.attId) {
+          <ion-item class="dash-row" [detail]="false">
+            <span slot="start" class="cal-mark" [ngClass]="'cal-mark--' + mark(att)" [style.--dot]="att.tenantColor"></span>
+            <ion-label>
+              <h3>{{ title(att) }}</h3>
+              <p>{{ time(att) ? time(att) + ' · ' : '' }}{{ att.tenantName }}</p>
+            </ion-label>
+          </ion-item>
+        } @empty {
+          <ion-item lines="none">
+            <div class="empty-row">
+              <ion-icon name="calendar-outline" color="medium"></ion-icon>
+              <span>{{ 'calendar.noEventsDay' | transloco }}</span>
+            </div>
+          </ion-item>
+        }
+      </ion-list>
+      <button class="month-link" (click)="openMonth()">{{ 'calendar.openMonth' | transloco }}</button>
+    }
+  </ion-card-content>
+</ion-card>

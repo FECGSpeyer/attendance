@@ -1,0 +1,60 @@
+<div class="cal" [class.cal--week]="mode === 'week'">
+  <div class="cal__nav">
+    <ion-button fill="clear" size="small" (click)="move(-1)" [attr.aria-label]="'calendar.previous' | transloco">
+      <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+    </ion-button>
+    <span class="cal__title">{{ title }}</span>
+    <ion-button fill="clear" size="small" (click)="move(1)" [attr.aria-label]="'calendar.next' | transloco">
+      <ion-icon slot="icon-only" name="chevron-forward-outline"></ion-icon>
+    </ion-button>
+    @if (!showsToday) {
+      <ion-button class="cal__today" fill="outline" size="small" (click)="goToday()">{{ 'calendar.today' | transloco }}</ion-button>
+    }
+  </div>
+
+  <div class="cal__grid" role="grid">
+    @for (wd of weekdays; track $index) {
+      <span class="cal__wd" role="columnheader">{{ wd }}</span>
+    }
+    @for (week of weeks; track week[0].key) {
+      @for (day of week; track day.key) {
+        <button class="cal__day" role="gridcell"
+          [class.cal__day--out]="!day.inMonth"
+          [class.cal__day--today]="day.isToday"
+          [class.cal__day--selected]="day.key === selected"
+          [attr.aria-label]="dayAria(day) + (count(day.key) ? ' · ' + ('calendar.eventCount' | transloco: { count: count(day.key) }) : '')"
+          (click)="select(day.key)">
+          <span class="cal__num">{{ day.day }}</span>
+          <span class="cal__dots">
+            @for (dot of dots(day.key); track $index) {
+              <span class="cal__dot" [ngClass]="'cal__dot--' + dot.mark" [style.--dot]="dot.color"></span>
+            }
+            @if (more(day.key)) {
+              <span class="cal__more">+{{ more(day.key) }}</span>
+            }
+          </span>
+        </button>
+      }
+    }
+  </div>
+
+  @if (showLegend) {
+    @if (tenants.length > 1) {
+      <div class="cal__legend">
+        @for (t of tenants; track t.id) {
+          <button class="cal__chip" [class.cal__chip--off]="isHidden(t.id)" (click)="toggleTenant(t.id)" [attr.aria-pressed]="!isHidden(t.id)">
+            <span class="cal__dot cal__dot--yes" [style.--dot]="t.color"></span>{{ t.name }}
+          </button>
+        }
+      </div>
+    }
+    <div class="cal__legend cal__legend--marks">
+      <span><span class="cal__dot cal__dot--yes"></span>{{ 'calendar.legendYes' | transloco }}</span>
+      <span><span class="cal__dot cal__dot--open"></span>{{ 'calendar.legendOpen' | transloco }}</span>
+      <span><span class="cal__dot cal__dot--no"></span>{{ 'calendar.legendNo' | transloco }}</span>
+      @if (hasEventOnly) {
+        <span><span class="cal__dot cal__dot--event"></span>{{ 'calendar.legendEvent' | transloco }}</span>
+      }
+    </div>
+  }
+</div>

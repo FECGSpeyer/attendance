@@ -18,6 +18,8 @@ import { AttendancePageModule } from '../attendance/attendance/attendance.module
 import { NotificationBellComponent } from '../shared/notification-bell/notification-bell.component';
 import { MyTasksComponent } from '../tasks/my-tasks/my-tasks.component';
 import { TranslocoModule } from '@jsverse/transloco';
+import { CalendarCardComponent } from './components/calendar-card/calendar-card.component';
+import { EventCalendarComponent } from '../shared/event-calendar/event-calendar.component';
 
 @NgModule({
   imports: [
@@ -31,6 +33,7 @@ import { TranslocoModule } from '@jsverse/transloco';
     NotificationBellComponent,
     PlanViewerComponent,
     MyTasksComponent,
+    EventCalendarComponent,
   ],
   declarations: [
     HomeDashboardPage,
@@ -41,6 +44,7 @@ import { TranslocoModule } from '@jsverse/transloco';
     CriticalPersonsCardComponent,
     CurrentSongsCardComponent,
     CurrentPlanCardComponent,
+    CalendarCardComponent,
   ]
 })
 export class HomeDashboardPageModule {}

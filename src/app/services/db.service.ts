@@ -4073,6 +4073,7 @@ export class DbService {
         typeId: att.attendance.type_id,
         attendance: att.attendance,
         highlight: attType ? attType.highlight : att.attendance.type === 'vortrag',
+        duty_state: att.duty_state ?? null,
       } as any;
     });
   }
@@ -4169,6 +4170,56 @@ export class DbService {
     } finally {
       this.crossTenantAttendancesLoading.set(false);
     }
+  }
+
+  /**
+   * Termine of every instance the user manages (Admin/Verantwortliche) for the calendar,
+   * as entries without own status (`eventOnly`). Starts at the season start like the personal list.
+   */
+  async loadManagedEventsAcrossTenants(): Promise<CrossTenantPersonAttendance[]> {
+    const managed = (this.tenantUsers() ?? []).filter(tu => [Role.ADMIN, Role.RESPONSIBLE].includes(tu.role));
+    if (!managed.length) { return []; }
+
+    const missingTypes = managed.map(tu => tu.tenantId).filter(id => !this.crossTenantAttendanceTypes.has(id));
+    if (missingTypes.length) {
+      (await this.getAttendanceTypesForTenants(missingTypes)).forEach((types, id) => this.crossTenantAttendanceTypes.set(id, types));
+    }
+
+    const results = await Promise.all(managed.map(async (tu) => {
+      const tenantData = await this.tenantSvc.getTenantById(tu.tenantId);
+      const seasonStart = tenantData?.seasonStart || dayjs('2023-01-01').toISOString();
+      const { data } = await supabase
+        .from('attendance')
+        .select('id, date, type, typeInfo, type_id, start_time, end_time, deadline, duration_days, description, attachment_url, attachment_name, files_folder, tenantId')
+        .eq('tenantId', tu.tenantId)
+        .gt('date', seasonStart);
+      if (!data) { return []; }
+
+      const tenant = this.tenants()?.find(t => t.id === tu.tenantId);
+      const types = this.crossTenantAttendanceTypes.get(tu.tenantId) || [];
+      return (data as any[]).map((a): CrossTenantPersonAttendance => {
+        const attType = types.find(t => t.id === a.type_id);
+        return {
+          attendance_id: a.id,
+          attId: a.id,
+          person_id: 0,
+          status: null,
+          notes: '',
+          date: a.date,
+          title: attType ? Utils.getTypeTitle(attType, a.typeInfo) : a.typeInfo,
+          typeId: a.type_id,
+          attendance: a,
+          highlight: attType ? attType.highlight : a.type === 'vortrag',
+          tenantId: tu.tenantId,
+          tenantName: tenant?.longName || tenant?.shortName || 'Unbekannt',
+          tenantColor: this.getTenantColor(tu.tenantId),
+          attendanceType: attType,
+          eventOnly: true,
+        };
+      });
+    }));
+
+    return results.reduce((acc, curr) => acc.concat(curr), []);
   }
 
   /**

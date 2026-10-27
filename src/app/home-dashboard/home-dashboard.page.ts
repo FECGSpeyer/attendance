@@ -12,6 +12,7 @@ import { CriticalPersonsCardComponent } from './components/critical-persons-card
 import { CurrentSongsCardComponent } from './components/current-songs-card/current-songs-card.component';
 import { CurrentPlanCardComponent } from './components/current-plan-card/current-plan-card.component';
 import { MyTasksComponent } from '../tasks/my-tasks/my-tasks.component';
+import { CalendarCardComponent } from './components/calendar-card/calendar-card.component';
 
 @Component({
   selector: 'app-home-dashboard',
@@ -30,6 +31,7 @@ export class HomeDashboardPage {
   @ViewChildren(CurrentSongsCardComponent) currentSongsCards!: QueryList<CurrentSongsCardComponent>;
   @ViewChildren(CurrentPlanCardComponent) currentPlanCards!: QueryList<CurrentPlanCardComponent>;
   @ViewChildren(MyTasksComponent) myTasksCards!: QueryList<MyTasksComponent>;
+  @ViewChildren(CalendarCardComponent) calendarCards!: QueryList<CalendarCardComponent>;
   private entered = false;
 
   get isIos(): boolean {
@@ -63,6 +65,7 @@ export class HomeDashboardPage {
       ...this.currentSongsCards.map(c => c.load()),
       ...this.currentPlanCards.map(c => c.load()),
       ...this.myTasksCards.map(c => c.load()),
+      ...this.calendarCards.map(c => c.load()),
     ];
     await Promise.all(reloads);
   }

@@ -31,10 +31,11 @@
       </ion-tab-button>
     }
 
-    @if ((isPlayer || isHelper) && hasMultipleTenants) {
+    @if (isPlayer || isHelper) {
+      <!-- One instance: "Meine Termine" already lists everything, so the tab is just the calendar. -->
       <ion-tab-button tab="overview">
         <ion-icon name="calendar-outline"></ion-icon>
-        <ion-label>{{ 'tabs.overview' | transloco }}</ion-label>
+        <ion-label>{{ (hasMultipleTenants ? 'tabs.overview' : 'tabs.calendar') | transloco }}</ion-label>
       </ion-tab-button>
     }
 
