@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="light">
-    <ion-title>Registrierung</ion-title>
+    <ion-title>{{ 'tenantRegister.title' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="goHome()">
         <ion-icon slot="icon-only" name="home-outline"></ion-icon>
@@ -12,7 +12,7 @@
 <ion-content color="light" [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar color="light">
-      <ion-title size="large">Registrierung</ion-title>
+      <ion-title size="large">{{ 'tenantRegister.title' | transloco }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
@@ -25,53 +25,53 @@
         <ion-card-content>
           <ion-title class="paddingTitle">{{ tenantData.longName }}</ion-title>
           <br>
-            <p>Registriere dich über dieses Formular für die oben genannte Instanz.</p>
+            <p>{{ 'tenantRegister.intro' | transloco }}</p>
           </ion-card-content>
         </ion-card>
 
-        <ion-list-header><ion-label>Account</ion-label></ion-list-header>
+        <ion-list-header><ion-label>{{ 'tenantRegister.account' | transloco }}</ion-label></ion-list-header>
         @if (!db.user) {
           <ion-item-group>
             <ion-item button detail="false" (click)="login()">
-              <ion-label color="primary">Account bereits vorhanden? Hier klicken</ion-label>
+              <ion-label color="primary">{{ 'tenantRegister.haveAccount' | transloco }}</ion-label>
             </ion-item>
             <ion-item lines="none">
               <ion-segment class="mode-segment" [value]="otpMode ? 'otp' : 'password'" (ionChange)="onModeChange($event)">
                 <ion-segment-button value="password">
-                  <ion-label>Passwort</ion-label>
+                  <ion-label>{{ 'login.modePassword' | transloco }}</ion-label>
                 </ion-segment-button>
                 <ion-segment-button value="otp">
-                  <ion-label>Code per E-Mail</ion-label>
+                  <ion-label>{{ 'login.modeOtp' | transloco }}</ion-label>
                 </ion-segment-button>
               </ion-segment>
             </ion-item>
             <ion-item>
-              <ion-label position="stacked">E-Mail Adresse</ion-label>
+              <ion-label position="stacked">{{ 'tenantRegister.emailAddress' | transloco }}</ion-label>
               <ion-input  [(ngModel)]="email" type="email" autocomplete="email" [readonly]="otpMode && otpSent"></ion-input>
             </ion-item>
             @if (!otpMode) {
               <ion-item>
-                <ion-label position="stacked">Passwort</ion-label>
+                <ion-label position="stacked">{{ 'login.modePassword' | transloco }}</ion-label>
                 <ion-input  [(ngModel)]="password" type="password" autocomplete="new-password"></ion-input>
               </ion-item>
               <ion-item>
-                <ion-label position="stacked">Passwort bestätigen</ion-label>
+                <ion-label position="stacked">{{ 'registerModal.confirmPassword' | transloco }}</ion-label>
                 <ion-input  [(ngModel)]="confirmPassword" type="password" autocomplete="new-password"></ion-input>
               </ion-item>
             } @else {
               @if (otpSent) {
                 <ion-item lines="none">
-                  <ion-input-otp size="small" type="text" length="6" name="otpCode" [(ngModel)]="otpCode" (ionComplete)="verifyCode()">Code aus der E-Mail</ion-input-otp>
+                  <ion-input-otp size="small" type="text" length="6" name="otpCode" [(ngModel)]="otpCode" (ionComplete)="verifyCode()">{{ 'login.otpLabel' | transloco }}</ion-input-otp>
                 </ion-item>
                 <ion-item button detail="false" [disabled]="!otpCode" (click)="verifyCode()">
-                  <ion-label color="primary">Code bestätigen</ion-label>
+                  <ion-label color="primary">{{ 'tenantRegister.confirmCode' | transloco }}</ion-label>
                 </ion-item>
                 <ion-item button detail="false" [disabled]="resendCooldown > 0" (click)="resendCode()">
-                  <ion-label color="primary">{{ resendCooldown > 0 ? 'Erneut senden (' + resendCooldown + 's)' : 'Code erneut senden' }}</ion-label>
+                  <ion-label color="primary">{{ resendCooldown > 0 ? ('login.resendIn' | transloco: { seconds: resendCooldown }) : ('login.resendCode' | transloco) }}</ion-label>
                 </ion-item>
               } @else {
                 <ion-item button detail="false" (click)="requestCode()">
-                  <ion-label color="primary">Code senden</ion-label>
+                  <ion-label color="primary">{{ 'login.sendCode' | transloco }}</ion-label>
                 </ion-item>
               }
             }
@@ -80,46 +80,45 @@
                 slot="start"
                 [(ngModel)]="privacyAccepted"
                 name="privacyAccepted"
-                aria-label="Nutzungsbedingungen und Datenschutzerklärung akzeptieren">
+                [attr.aria-label]="'tenantRegister.acceptTerms' | transloco">
               </ion-checkbox>
               <ion-label class="ion-text-wrap privacy-label">
-                Ich akzeptiere die Nutzungsbedingungen und habe die
-                <a href="#" (click)="openPrivacy($event)">Datenschutzerklärung</a>
-                gelesen.
+                {{ 'registerModal.privacyBefore' | transloco }}
+                <a href="#" (click)="openPrivacy($event)">{{ 'registerModal.privacyLink' | transloco }}</a>{{ 'registerModal.privacyAfter' | transloco }}
               </ion-label>
             </ion-item>
           </ion-item-group>
         } @else {
           <ion-item-group>
             <ion-item>
-              <ion-label>Du bist angemeldet als {{ db.user.email }}.</ion-label>
+              <ion-label>{{ 'tenantRegister.signedInAs' | transloco: { email: db.user.email } }}</ion-label>
             </ion-item>
           </ion-item-group>
         }
 
-        <ion-list-header><ion-label>Persönliche Daten</ion-label></ion-list-header>
+        <ion-list-header><ion-label>{{ 'tenantRegister.personalData' | transloco }}</ion-label></ion-list-header>
         <ion-item-group>
           @if (tenantData.registration_fields?.includes('picture')) {
             <ion-item (click)="changeImg()" button detail="false">
               <ion-avatar slot="start">
                 <img [src]="profilePicture" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" />
               </ion-avatar>
-              <ion-label color="primary">Wähle ein Passbild aus (max. 15 MB)</ion-label>
+              <ion-label color="primary">{{ 'tenantRegister.choosePicture' | transloco }}</ion-label>
               <input style="display: none;" name="file" #chooser (change)="onImageSelect($event)" accept="image/*"
                 class="inputFile" type="file" />
             </ion-item>
           }
           <ion-item>
-            <ion-label position="stacked">Vorname</ion-label>
+            <ion-label position="stacked">{{ 'tenantRegister.firstName' | transloco }}</ion-label>
             <ion-input autocapitalize="words" [(ngModel)]="firstName" type="text" autocomplete="given-name"></ion-input>
           </ion-item>
           <ion-item>
-            <ion-label position="stacked">Nachname</ion-label>
+            <ion-label position="stacked">{{ 'tenantRegister.lastName' | transloco }}</ion-label>
             <ion-input autocapitalize="words" [(ngModel)]="lastName" type="text" autocomplete="family-name"></ion-input>
           </ion-item>
           @if (tenantData.registration_fields?.includes('birthDate')) {
             <ion-item>
-              <ion-label>Geburtsdatum</ion-label>
+              <ion-label>{{ 'tenantRegister.birthDate' | transloco }}</ion-label>
               <ion-datetime-button datetime="birthdateReg"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
@@ -130,24 +129,24 @@
           }
           @if (tenantData.registration_fields?.includes('phone')) {
             <ion-item>
-              <ion-label position="stacked">Handynummer</ion-label>
+              <ion-label position="stacked">{{ 'tenantRegister.phone' | transloco }}</ion-label>
               <ion-input autocapitalize="sentences" [(ngModel)]="phone" type="tel" autocomplete="tel"></ion-input>
             </ion-item>
           }
         </ion-item-group>
 
-        <ion-list-header><ion-label>Weitere Informationen</ion-label></ion-list-header>
+        <ion-list-header><ion-label>{{ 'tenantRegister.moreInfo' | transloco }}</ion-label></ion-list-header>
         <ion-item-group>
           @if (noGroupsAvailable) {
             <ion-item lines="none" color="warning">
               <ion-icon slot="start" name="warning-outline"></ion-icon>
               <ion-label class="ion-text-wrap">
-                Registrierung aktuell nicht möglich: Der Administrator hat noch keine Gruppen angelegt. Bitte versuche es später erneut.
+                {{ 'tenantRegister.noGroups' | transloco }}
               </ion-label>
             </ion-item>
           } @else {
             <ion-item>
-              <ion-select [label]="(tenantData.type === 'choir' && tenantData.id !== 194) ? 'Stimme' : tenantData.type === 'orchestra' ? 'Instrument' : 'Gruppe'" [(ngModel)]="selectedGroupId" #select>
+              <ion-select [label]="((tenantData.type === 'choir' && tenantData.id !== 194) ? 'common.groupLabel.voice' : tenantData.type === 'orchestra' ? 'common.groupLabel.instrument' : 'common.groupLabel.group') | transloco" [(ngModel)]="selectedGroupId" #select>
                 @for (group of groups; track group) {
                   <ion-select-option [value]="group.id">{{ group.name }}</ion-select-option>
                 }
@@ -182,17 +181,17 @@
                       <ion-toolbar color="light">
                         <ion-title>{{ field.name }}</ion-title>
                         <ion-buttons slot="end">
-                          <ion-button (click)="isChurchModalOpen = false">Schließen</ion-button>
+                          <ion-button (click)="isChurchModalOpen = false">{{ 'common.close' | transloco }}</ion-button>
                         </ion-buttons>
                       </ion-toolbar>
                       <ion-toolbar color="light">
-                        <ion-searchbar [(ngModel)]="churchSearch" placeholder="Gemeinde suchen" [debounce]="0"></ion-searchbar>
+                        <ion-searchbar [(ngModel)]="churchSearch" [placeholder]="'tenantRegister.searchChurch' | transloco" [debounce]="0"></ion-searchbar>
                       </ion-toolbar>
                     </ion-header>
                     <ion-content color="light">
                       <ion-list [inset]="true">
                         <ion-item button detail="false" (click)="selectChurch(field, '')">
-                          <ion-label>Nicht gelistet</ion-label>
+                          <ion-label>{{ 'tenantRegister.notListed' | transloco }}</ion-label>
                           @if (field.value === '') {
                             <ion-icon name="checkmark-outline" slot="end" color="primary"></ion-icon>
                           }
@@ -207,7 +206,7 @@
                         }
                         @if (filteredChurches.length === 0) {
                           <ion-item lines="none">
-                            <ion-label class="ion-text-wrap" color="medium">Keine Gemeinde gefunden.</ion-label>
+                            <ion-label class="ion-text-wrap" color="medium">{{ 'tenantRegister.noChurchFound' | transloco }}</ion-label>
                           </ion-item>
                         }
                       </ion-list>
@@ -218,13 +217,13 @@
             </ion-item>
             @if (field.type === 'bfecg_church' && field.value === '') {
               <ion-item>
-                <ion-label position="stacked">Gemeinde nicht gelistet? Bitte Namen eingeben</ion-label>
-                <ion-input autocapitalize="words" [(ngModel)]="customChurchName" type="text" placeholder="Name deiner Gemeinde"></ion-input>
+                <ion-label position="stacked">{{ 'tenantRegister.churchNotListed' | transloco }}</ion-label>
+                <ion-input autocapitalize="words" [(ngModel)]="customChurchName" type="text" [placeholder]="'tenantRegister.churchNamePlaceholder' | transloco"></ion-input>
               </ion-item>
             }
           }
           <ion-item>
-            <ion-label position="stacked">Bemerkungen (optional)</ion-label>
+            <ion-label position="stacked">{{ 'tenantRegister.notes' | transloco }}</ion-label>
             <ion-textarea autocapitalize="sentences" [(ngModel)]="notes"></ion-textarea>
           </ion-item>
         </ion-item-group>
@@ -233,7 +232,7 @@
       <ion-item-group>
         <ion-item color="primary" (click)="register()" button detail="false" [disabled]="noGroupsAvailable">
           <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-          <ion-label>Registrierung abschließen</ion-label>
+          <ion-label>{{ 'tenantRegister.finish' | transloco }}</ion-label>
         </ion-item>
       </ion-item-group>
     </ion-list>

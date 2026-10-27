@@ -1,8 +1,8 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Registrieren</ion-title>
+    <ion-title>{{ 'registerModal.title' | transloco }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="dismiss()" aria-label="Schließen" [disabled]="submitting">
+      <ion-button (click)="dismiss()" [attr.aria-label]="'common.close' | transloco" [disabled]="submitting">
         <ion-icon name="close" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -11,40 +11,33 @@
 
 <ion-content class="ion-padding">
   <div class="intro">
-    <h2>Willkommen bei Attendix!</h2>
+    <h2>{{ 'registerModal.welcome' | transloco }}</h2>
     <p>
-      Lege einen Account an, um deine Anwesenheit zu verwalten oder eine neue
-      Instanz für deine Gruppe, deinen Chor oder dein Orchester zu erstellen.
+      {{ 'registerModal.intro' | transloco }}
     </p>
     <p class="hint">
-      @if (otpMode) {
-        Nach der Registrierung senden wir dir einen 6-stelligen Code per E-Mail.
-        Gib ihn hier ein, um deinen Account zu aktivieren.
-      } @else {
-        Nach der Registrierung senden wir dir eine Bestätigungs-E-Mail. Bitte
-        klicke auf den Link darin, um deinen Account zu aktivieren.
-      }
+      {{ (otpMode ? 'registerModal.hintOtp' : 'registerModal.hintPassword') | transloco }}
     </p>
   </div>
 
   <form (ngSubmit)="onSubmit()" #regForm="ngForm" novalidate>
     <ion-segment class="mode-segment" [value]="otpMode ? 'otp' : 'password'" (ionChange)="onModeChange($event)" [disabled]="submitting">
       <ion-segment-button value="password">
-        <ion-label>Passwort</ion-label>
+        <ion-label>{{ 'login.modePassword' | transloco }}</ion-label>
       </ion-segment-button>
       <ion-segment-button value="otp">
-        <ion-label>Code per E-Mail</ion-label>
+        <ion-label>{{ 'login.modeOtp' | transloco }}</ion-label>
       </ion-segment-button>
     </ion-segment>
 
     <ion-list lines="full" class="register-list">
       <ion-item>
         <ion-input autocapitalize="off"
-          label="E-Mail"
+          [label]="'login.email' | transloco"
           labelPlacement="stacked"
           type="email"
           autocomplete="email"
-          placeholder="deine@email.de"
+          [placeholder]="'registerModal.emailPlaceholder' | transloco"
           name="email"
           [(ngModel)]="email"
           [readonly]="otpMode && otpSent"
@@ -55,15 +48,15 @@
       @if (!otpMode) {
         <ion-item>
           <ion-input autocapitalize="off"
-            label="Passwort"
+            [label]="'login.modePassword' | transloco"
             labelPlacement="stacked"
             [type]="showPassword ? 'text' : 'password'"
             autocomplete="new-password"
-            placeholder="Mindestens 6 Zeichen"
+            [placeholder]="'registerModal.passwordPlaceholder' | transloco"
             name="password"
             [(ngModel)]="password"
             required>
-            <ion-button fill="clear" slot="end" (click)="showPassword = !showPassword" aria-label="Passwort anzeigen" type="button">
+            <ion-button fill="clear" slot="end" (click)="showPassword = !showPassword" [attr.aria-label]="'login.showPassword' | transloco" type="button">
               <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" slot="icon-only"></ion-icon>
             </ion-button>
           </ion-input>
@@ -71,11 +64,11 @@
 
         <ion-item>
           <ion-input autocapitalize="off"
-            label="Passwort bestätigen"
+            [label]="'registerModal.confirmPassword' | transloco"
             labelPlacement="stacked"
             [type]="showPassword ? 'text' : 'password'"
             autocomplete="new-password"
-            placeholder="Passwort erneut eingeben"
+            [placeholder]="'registerModal.confirmPasswordPlaceholder' | transloco"
             name="passwordConfirm"
             [(ngModel)]="passwordConfirm"
             required>
@@ -90,7 +83,7 @@
             name="otpCode"
             [(ngModel)]="otpCode"
             (ionComplete)="verifyCode()">
-            Code aus der E-Mail
+            {{ 'login.otpLabel' | transloco }}
           </ion-input-otp>
         </ion-item>
       }
@@ -101,12 +94,11 @@
         slot="start"
         [(ngModel)]="privacyAccepted"
         name="privacyAccepted"
-        aria-label="Datenschutzerklärung akzeptieren">
+        [attr.aria-label]="'registerModal.acceptPrivacy' | transloco">
       </ion-checkbox>
       <ion-label class="ion-text-wrap privacy-label">
-        Ich akzeptiere die Nutzungsbedingungen und habe die
-        <a href="#" (click)="openPrivacy($event)">Datenschutzerklärung</a>
-        gelesen.
+        {{ 'registerModal.privacyBefore' | transloco }}
+        <a href="#" (click)="openPrivacy($event)">{{ 'registerModal.privacyLink' | transloco }}</a>{{ 'registerModal.privacyAfter' | transloco }}
       </ion-label>
     </ion-item>
 
@@ -114,26 +106,26 @@
       @if (!otpMode) {
         <ion-button expand="block" fill="solid" type="submit" [disabled]="!canSubmit || !regForm.form.valid || submitting">
           <ion-spinner *ngIf="submitting" name="crescent" slot="start"></ion-spinner>
-          {{ submitting ? 'Wird registriert...' : 'Registrieren' }}
+          {{ (submitting ? 'registerModal.submitting' : 'registerModal.title') | transloco }}
         </ion-button>
       } @else {
         @if (!otpSent) {
           <ion-button expand="block" fill="solid" type="submit" [disabled]="!email || !privacyAccepted || submitting">
             <ion-spinner *ngIf="submitting" name="crescent" slot="start"></ion-spinner>
-            Code senden
+            {{ 'login.sendCode' | transloco }}
           </ion-button>
         } @else {
           <ion-button expand="block" fill="solid" type="submit" [disabled]="!otpCode || submitting">
             <ion-spinner *ngIf="submitting" name="crescent" slot="start"></ion-spinner>
-            Bestätigen
+            {{ 'registerModal.confirm' | transloco }}
           </ion-button>
           <ion-button expand="block" fill="clear" type="button" (click)="resendCode()" [disabled]="resendCooldown > 0 || submitting">
-            {{ resendCooldown > 0 ? 'Erneut senden (' + resendCooldown + 's)' : 'Code erneut senden' }}
+            {{ resendCooldown > 0 ? ('login.resendIn' | transloco: { seconds: resendCooldown }) : ('login.resendCode' | transloco) }}
           </ion-button>
         }
       }
       <ion-button expand="block" fill="clear" type="button" (click)="dismiss()" [disabled]="submitting">
-        Abbrechen
+        {{ 'common.cancel' | transloco }}
       </ion-button>
     </div>
   </form>

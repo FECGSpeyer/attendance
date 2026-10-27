@@ -2,13 +2,14 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular/lazy';
 import { LegalService } from '../../services/legal/legal.service';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-legal-content',
   templateUrl: './legal-content.component.html',
   styleUrls: ['./legal-modal.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, TranslocoModule]
 })
 export class LegalContentComponent implements OnInit {
   private legalService = inject(LegalService);

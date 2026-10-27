@@ -5,6 +5,9 @@ import {
     platformBrowserDynamicTesting,
 } from '@angular/platform-browser-dynamic/testing';
 import { getTestBed } from '@angular/core/testing';
+import { NgModule } from '@angular/core';
+import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
+import de from './i18n/de.json';
 
 // Suppress unhandled promise rejections during test cleanup
 // These often occur when async operations (like Supabase subscriptions)
@@ -55,7 +58,24 @@ Object.defineProperty(globalThis, 'matchMedia', {
     disconnect() { /* noop */ }
 };
 
+// Creates TranslocoService with the test injector, so the global
+// `translate()` also works in constructors and field initializers.
+@NgModule({ imports: [TranslocoTestingModule] })
+class TranslocoEagerModule {
+    constructor(_transloco: TranslocoService) { /* eager init */ }
+}
+
 getTestBed().initTestEnvironment(
-    BrowserDynamicTestingModule,
+    [
+        BrowserDynamicTestingModule,
+        // Real German texts in every test, so `translate()` and the
+        // transloco pipe work like in the app.
+        TranslocoTestingModule.forRoot({
+            langs: { de },
+            translocoConfig: { availableLangs: ['de'], defaultLang: 'de' },
+            preloadLangs: true,
+        }),
+        TranslocoEagerModule,
+    ],
     platformBrowserDynamicTesting()
 );

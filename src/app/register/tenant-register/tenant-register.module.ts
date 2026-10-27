@@ -8,9 +8,11 @@ import { TenantRegisterPageRoutingModule } from './tenant-register-routing.modul
 
 import { TenantRegisterPage } from './tenant-register.page';
 import { LegalModalComponent } from 'src/app/login/legal-modal/legal-modal.component';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="light">
-    <ion-title>Neue Instanz anlegen</ion-title>
+    <ion-title>{{ 'register.title' | transloco }}</ion-title>
     @if (canDismiss) {
     <ion-buttons slot="end">
       <ion-button (click)="close()">
@@ -18,11 +18,11 @@
             <ion-list lines="none">
               <ion-item button detail="false" (click)="logout()">
                 <ion-icon slot="start" name="log-out-outline"></ion-icon>
-                <ion-label>Abmelden</ion-label>
+                <ion-label>{{ 'register.logout' | transloco }}</ion-label>
               </ion-item>
               <ion-item button detail="false" (click)="confirmDeleteAccount()">
                 <ion-icon slot="start" name="trash-outline" color="danger"></ion-icon>
-                <ion-label color="danger">Konto löschen</ion-label>
+                <ion-label color="danger">{{ 'register.deleteAccount' | transloco }}</ion-label>
               </ion-item>
             </ion-list>
           </ion-content>
@@ -38,11 +38,10 @@
   <ion-card>
     <ion-card-header>
       <ion-icon class="headerIcon" name="rocket-outline"></ion-icon>
-      <ion-card-title>Willkommen!</ion-card-title>
+      <ion-card-title>{{ 'register.welcome' | transloco }}</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <p>Eine <strong>Instanz</strong> ist dein eigener Bereich für dein Orchester, deinen Chor oder deine Gruppe. Hier
-        verwaltest du Mitglieder, Termine und Anwesenheiten.</p>
+      <p [innerHTML]="'register.introHtml' | transloco"></p>
     </ion-card-content>
   </ion-card>
 
@@ -50,9 +49,8 @@
     <ion-card-content>
       <div class="hint-content">
         <div>
-          <strong>Du möchtest einer bestehenden Instanz beitreten?</strong>
-          <p>Bitte deinen Verantwortlichen, dich per E-Mail einzuladen. Eine neue Instanz ist nur nötig, wenn du selbst
-            Administrator sein möchtest.</p>
+          <strong>{{ 'register.joinHeading' | transloco }}</strong>
+          <p>{{ 'register.joinText' | transloco }}</p>
         </div>
       </div>
     </ion-card-content>
@@ -63,19 +61,19 @@
     <ion-list-header>
       <ion-label>
         <span class="step-badge">1</span>
-        Art der Gruppe wählen
+        {{ 'register.step1' | transloco }}
       </ion-label>
     </ion-list-header>
     <ion-item-group>
       <ion-item>
-        <ion-select label="Gruppentyp" labelPlacement="stacked" (ionChange)="onTypeChange()" [(ngModel)]="tenant.type"
-          interface="action-sheet" [interfaceOptions]="{header: 'Was beschreibt deine Gruppe am besten?'}">
+        <ion-select [label]="'register.groupType' | transloco" labelPlacement="stacked" (ionChange)="onTypeChange()" [(ngModel)]="tenant.type"
+          interface="action-sheet" [interfaceOptions]="{header: ('register.groupTypeQuestion' | transloco)}">
           <ion-select-option value="general">
             <ion-icon name="people-outline"></ion-icon>
-            Allgemeine Gruppe
+            {{ 'register.typeGeneral' | transloco }}
           </ion-select-option>
-          <ion-select-option value="choir">Chor / Gesangsgruppe</ion-select-option>
-          <ion-select-option value="orchestra">Orchester / Musikgruppe</ion-select-option>
+          <ion-select-option value="choir">{{ 'register.typeChoirOption' | transloco }}</ion-select-option>
+          <ion-select-option value="orchestra">{{ 'register.typeOrchestraOption' | transloco }}</ion-select-option>
         </ion-select>
       </ion-item>
     </ion-item-group>
@@ -83,15 +81,15 @@
       @switch (tenant.type) {
       @case ('general') {
       <ion-icon name="checkmark-circle" color="success"></ion-icon>
-      Ideal für Vereine, Teams oder sonstige Gruppen.
+      {{ 'register.helpGeneral' | transloco }}
       }
       @case ('choir') {
       <ion-icon name="checkmark-circle" color="success"></ion-icon>
-      Optimiert für Chöre mit Stimmgruppen (Sopran, Alt, Tenor, Bass).
+      {{ 'register.helpChoir' | transloco }}
       }
       @case ('orchestra') {
       <ion-icon name="checkmark-circle" color="success"></ion-icon>
-      Optimiert für Orchester/Musikgruppen mit Instrumentengruppen.
+      {{ 'register.helpOrchestra' | transloco }}
       }
       }
     </p>
@@ -102,19 +100,19 @@
     <ion-list-header>
       <ion-label>
         <span class="step-badge">2</span>
-        Name deiner Instanz
+        {{ 'register.step2' | transloco }}
       </ion-label>
     </ion-list-header>
     <ion-item-group>
       <ion-item>
-        <ion-input autocapitalize="words" label="Vollständiger Name" labelPlacement="stacked" [placeholder]="namePlaceholder"
+        <ion-input autocapitalize="words" [label]="'register.fullName' | transloco" labelPlacement="stacked" [placeholder]="namePlaceholder"
           [(ngModel)]="tenant.longName" [counter]="true" maxlength="50"
-          helperText="Der Name wird in der App angezeigt"></ion-input>
+          [helperText]="'register.fullNameHelper' | transloco"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-input autocapitalize="sentences" label="Instanz-Kürzel" labelPlacement="stacked" [placeholder]="shortNamePlaceholder"
+        <ion-input autocapitalize="sentences" [label]="'register.shortName' | transloco" labelPlacement="stacked" [placeholder]="shortNamePlaceholder"
           [(ngModel)]="tenant.shortName"
-          helperText="Wird für kompakte Darstellungen verwendet"></ion-input>
+          [helperText]="'register.shortNameHelper' | transloco"></ion-input>
       </ion-item>
     </ion-item-group>
   </ion-list>
@@ -124,32 +122,21 @@
     <ion-list-header>
       <ion-label>
         <span class="step-badge">3</span>
-        Hauptgruppe festlegen
+        {{ 'register.step3' | transloco }}
       </ion-label>
       <ion-button fill="clear" size="small" id="main-group-info">
         <ion-icon slot="icon-only" name="help-circle-outline"></ion-icon>
       </ion-button>
       <ion-popover trigger="main-group-info" triggerAction="click">
         <ng-template>
-          <ion-content class="ion-padding">
-            <h3>Was ist die Hauptgruppe?</h3>
-            <p>Die Hauptgruppe ist eine besondere Gruppe für Personen mit Leitungsfunktion (z.B. Dirigenten, Chorleiter,
-              Vorstand).</p>
-            <p><strong>Besonderheiten:</strong></p>
-            <ul>
-              <li>Kann nicht gelöscht werden</li>
-              <li>Mitglieder erhalten automatisch erweiterte Rechte</li>
-              <li>Ideal für Personen, die die Instanz verwalten</li>
-            </ul>
-            <p><em>Du kannst später weitere Gruppen (z.B. Sopran, Geigen) hinzufügen.</em></p>
-          </ion-content>
+          <ion-content class="ion-padding" [innerHTML]="'register.mainGroupInfoHtml' | transloco"></ion-content>
         </ng-template>
       </ion-popover>
     </ion-list-header>
     <ion-item-group>
       <ion-item>
-        <ion-input autocapitalize="sentences" label="Name der Hauptgruppe" labelPlacement="stacked" [placeholder]="mainGroupPlaceholder"
-          [(ngModel)]="mainGroupName" helperText="z.B. Leitung, Dirigenten, Vorstand"></ion-input>
+        <ion-input autocapitalize="sentences" [label]="'register.mainGroupName' | transloco" labelPlacement="stacked" [placeholder]="mainGroupPlaceholder"
+          [(ngModel)]="mainGroupName" [helperText]="'register.mainGroupHelper' | transloco"></ion-input>
       </ion-item>
     </ion-item-group>
   </ion-list>
@@ -159,7 +146,7 @@
     <ion-list-header>
       <ion-label>
         <span class="step-badge">✓</span>
-        Zusammenfassung
+        {{ 'register.summary' | transloco }}
       </ion-label>
     </ion-list-header>
     <ion-item-group>
@@ -167,23 +154,23 @@
       <ion-item lines="none">
         <ion-label class="summary">
           <p><strong>{{ tenant.longName }}</strong> ({{ tenant.shortName }})</p>
-          <p>Typ: {{ getTypeLabel() }}</p>
-          <p>Hauptgruppe: {{ mainGroupName }}</p>
+          <p>{{ 'register.summaryType' | transloco: { type: getTypeLabel() } }}</p>
+          <p>{{ 'register.summaryMainGroup' | transloco: { name: mainGroupName } }}</p>
         </ion-label>
       </ion-item>
       } @else {
       <ion-item lines="none">
         <ion-label color="medium" class="summary">
-          <p><ion-icon name="alert-circle-outline"></ion-icon> Bitte fülle alle Felder aus, um fortzufahren.</p>
+          <p><ion-icon name="alert-circle-outline"></ion-icon> {{ 'register.fillAll' | transloco }}</p>
           <ul class="missing-fields">
             @if (!tenant.longName) {
-            <li>Name der Instanz fehlt</li>
+            <li>{{ 'register.missingName' | transloco }}</li>
             }
             @if (!tenant.shortName) {
-            <li>Instanz-Kürzel fehlt</li>
+            <li>{{ 'register.missingShortName' | transloco }}</li>
             }
             @if (!mainGroupName) {
-            <li>Name der Hauptgruppe fehlt</li>
+            <li>{{ 'register.missingMainGroup' | transloco }}</li>
             }
           </ul>
         </ion-label>
@@ -195,12 +182,12 @@
   @if (tenant.longName && tenant.shortName && mainGroupName) {
   <ion-button expand="block" class="ion-margin" (click)="createInstance()">
     <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-    Instanz jetzt erstellen
+    {{ 'register.create' | transloco }}
   </ion-button>
   } @else {
   <ion-button expand="block" class="ion-margin" disabled>
     <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-    Instanz jetzt erstellen
+    {{ 'register.create' | transloco }}
   </ion-button>
   }
 

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular/lazy';
+import { TranslocoModule } from '@jsverse/transloco';
 
 import { LoginPageRoutingModule } from './login-routing.module';
 
@@ -18,7 +19,8 @@ import { RegisterModalComponent } from './register-modal/register-modal.componen
     IonicModule,
     LoginPageRoutingModule,
     LegalContentComponent,
-    LegalModalComponent
+    LegalModalComponent,
+    TranslocoModule,
   ],
   declarations: [LoginPage, RegisterModalComponent]
 })

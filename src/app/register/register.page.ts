@@ -3,6 +3,7 @@ import { AlertController, ModalController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-register',
@@ -23,9 +24,9 @@ export class RegisterPage implements OnInit {
   };
   public mainGroupName = '';
   public canDismiss = true;
-  public namePlaceholder = 'z.B. Sportverein Musterstadt';
-  public shortNamePlaceholder = 'z.B. SVM';
-  public mainGroupPlaceholder = 'z.B. Vorstand';
+  public namePlaceholder = translate('register.placeholder.generalName');
+  public shortNamePlaceholder = translate('register.placeholder.generalShort');
+  public mainGroupPlaceholder = translate('register.placeholder.generalMain');
 
   constructor(
     private db: DbService,
@@ -39,11 +40,11 @@ export class RegisterPage implements OnInit {
 
   async createInstance() {
     if (!this.tenant.shortName || !this.tenant.longName || !this.mainGroupName) {
-      Utils.showToast('Bitte füllen Sie alle Felder aus.', 'danger');
+      Utils.showToast(translate('register.fillAllToast'), 'danger');
       return;
     }
 
-    const loading = await Utils.getLoadingElement(9999, 'Instanz wird erstellt...');
+    const loading = await Utils.getLoadingElement(9999, translate('register.creating'));
     await loading.present();
 
     try {
@@ -53,32 +54,32 @@ export class RegisterPage implements OnInit {
       }
       await loading.dismiss();
     } catch (error) {
-      Utils.showToast('Fehler beim Erstellen der Instanz: ' + error.message, 'danger');
+      Utils.showToast(translate('register.createFailed', { error: error.message }), 'danger');
       await loading.dismiss();
     }
   }
 
   onTypeChange() {
     if (this.tenant.type === 'general') {
-      this.namePlaceholder = 'z.B. Sportverein Musterstadt';
-      this.shortNamePlaceholder = 'z.B. SVM';
-      this.mainGroupPlaceholder = 'z.B. Vorstand';
+      this.namePlaceholder = translate('register.placeholder.generalName');
+      this.shortNamePlaceholder = translate('register.placeholder.generalShort');
+      this.mainGroupPlaceholder = translate('register.placeholder.generalMain');
     } else if (this.tenant.type === 'choir') {
-      this.namePlaceholder = 'z.B. Gospelchor Harmonie';
-      this.shortNamePlaceholder = 'z.B. GCH';
-      this.mainGroupPlaceholder = 'z.B. Chorleitung';
+      this.namePlaceholder = translate('register.placeholder.choirName');
+      this.shortNamePlaceholder = translate('register.placeholder.choirShort');
+      this.mainGroupPlaceholder = translate('register.placeholder.choirMain');
     } else if (this.tenant.type === 'orchestra') {
-      this.namePlaceholder = 'z.B. Stadtorchester Musterstadt';
-      this.shortNamePlaceholder = 'z.B. SOM';
-      this.mainGroupPlaceholder = 'z.B. Dirigenten';
+      this.namePlaceholder = translate('register.placeholder.orchestraName');
+      this.shortNamePlaceholder = translate('register.placeholder.orchestraShort');
+      this.mainGroupPlaceholder = translate('register.placeholder.orchestraMain');
     }
   }
 
   getTypeLabel(): string {
     switch (this.tenant.type) {
-      case 'general': return 'Allgemeine Gruppe';
-      case 'choir': return 'Chor';
-      case 'orchestra': return 'Orchester';
+      case 'general': return translate('register.typeGeneral');
+      case 'choir': return translate('register.typeChoir');
+      case 'orchestra': return translate('register.typeOrchestra');
       default: return this.tenant.type;
     }
   }
@@ -99,23 +100,23 @@ export class RegisterPage implements OnInit {
 
   async confirmDeleteAccount() {
     const alert = await this.alertController.create({
-      header: 'Konto wirklich löschen?',
-      message: 'Dein Konto wird unwiderruflich entfernt. Diese Aktion kann nicht rückgängig gemacht werden.',
+      header: translate('register.delete.header'),
+      message: translate('register.delete.message'),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Endgültig löschen',
+          text: translate('register.delete.confirm'),
           role: 'destructive',
           handler: async () => {
-            const loading = await Utils.getLoadingElement(60000, 'Konto wird gelöscht...');
+            const loading = await Utils.getLoadingElement(60000, translate('register.delete.running'));
             await loading.present();
             try {
               await this.db.deleteAccount();
               await loading.dismiss();
-              Utils.showToast('Dein Konto wurde gelöscht.', 'success', 4000);
+              Utils.showToast(translate('register.delete.done'), 'success', 4000);
             } catch (error: any) {
               await loading.dismiss();
-              Utils.showToast(`Fehler beim Löschen: ${error?.message || 'Unbekannt'}`, 'danger', 5000);
+              Utils.showToast(translate('register.delete.failed', { error: error?.message || translate('common.unknown') }), 'danger', 5000);
             }
           }
         }

@@ -4,6 +4,7 @@ import { Utils } from '../../utilities/Utils';
 import { DbService } from '../../services/db.service';
 import { LegalModalComponent } from '../legal-modal/legal-modal.component';
 import { supabase } from '../../services/base/supabase';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-register-modal',
@@ -90,11 +91,11 @@ export class RegisterModalComponent implements OnDestroy {
       return;
     }
     if (!Utils.validateEmail(this.email)) {
-      Utils.showToast('Ungültige E-Mail-Adresse', 'danger');
+      Utils.showToast(translate('registerModal.invalidEmail'), 'danger');
       return;
     }
     if (!this.privacyAccepted) {
-      Utils.showToast('Bitte stimme der Datenschutzerklärung zu', 'danger');
+      Utils.showToast(translate('registerModal.acceptPrivacyToast'), 'danger');
       return;
     }
     this.submitting = true;
@@ -172,29 +173,29 @@ export class RegisterModalComponent implements OnDestroy {
     }
 
     if (!Utils.validateEmail(this.email)) {
-      Utils.showToast('Ungültige E-Mail-Adresse', 'danger');
+      Utils.showToast(translate('registerModal.invalidEmail'), 'danger');
       return;
     }
 
     if (this.password !== this.passwordConfirm) {
-      Utils.showToast('Passwörter stimmen nicht überein', 'danger');
+      Utils.showToast(translate('registerModal.passwordMismatch'), 'danger');
       return;
     }
 
     if (this.password.length < 6) {
-      Utils.showToast('Passwort muss mindestens 6 Zeichen lang sein', 'danger');
+      Utils.showToast(translate('registerModal.passwordTooShort'), 'danger');
       return;
     }
 
     if (!this.privacyAccepted) {
-      Utils.showToast('Bitte stimme der Datenschutzerklärung zu', 'danger');
+      Utils.showToast(translate('registerModal.acceptPrivacyToast'), 'danger');
       return;
     }
 
     // Run the backend registration here so the modal stays open (with the
     // entered data intact) if it fails. We only dismiss on success.
     this.submitting = true;
-    const loading = await Utils.getLoadingElement(0, 'Registrierung läuft...');
+    const loading = await Utils.getLoadingElement(0, translate('registerModal.running'));
     await loading.present();
     try {
       const res = await this.db.register(this.email, this.password);
@@ -205,7 +206,7 @@ export class RegisterModalComponent implements OnDestroy {
       await this.modalController.dismiss({ success: true });
     } catch (e: any) {
       // e.g. "Deine E-Mail-Adresse existiert bereits. Bitte melde dich an."
-      Utils.showToast(e?.message ?? 'Fehler beim Registrieren', 'danger');
+      Utils.showToast(e?.message ?? translate('registerModal.failed'), 'danger');
     } finally {
       await loading.dismiss();
       this.submitting = false;

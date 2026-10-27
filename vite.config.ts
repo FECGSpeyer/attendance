@@ -32,7 +32,7 @@ export default defineConfig({
         reporters: ['default'],
         server: {
             deps: {
-                inline: ['@ionic/angular', '@ionic/core', '@angular'],
+                inline: ['@ionic/angular', '@ionic/core', '@angular', '@jsverse'],
             },
         },
         coverage: {

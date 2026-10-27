@@ -10,9 +10,7 @@
         <ion-row *ngIf="linkMode">
           <ion-col>
             <ion-note class="linkModeNote">
-              Verknüpfe dein Attendix-Konto einmalig mit Microsoft. Melde dich mit
-              deinen Attendix-Zugangsdaten an – danach wirst du in Teams automatisch
-              angemeldet.
+              {{ 'login.linkNote' | transloco }}
             </ion-note>
           </ion-col>
         </ion-row>
@@ -20,10 +18,10 @@
           <ion-col class="mode-col">
             <ion-segment class="mode-segment" [value]="otpMode ? 'otp' : 'password'" (ionChange)="onModeChange($event)">
               <ion-segment-button value="password">
-                <ion-label>Passwort</ion-label>
+                <ion-label>{{ 'login.modePassword' | transloco }}</ion-label>
               </ion-segment-button>
               <ion-segment-button value="otp">
-                <ion-label>Code per E-Mail</ion-label>
+                <ion-label>{{ 'login.modeOtp' | transloco }}</ion-label>
               </ion-segment-button>
             </ion-segment>
           </ion-col>
@@ -31,13 +29,13 @@
         <ion-row>
           <ion-col>
             <ion-item class="mailItem" lines="full">
-              <ion-label position="stacked">E-Mail</ion-label>
-              <ion-input #emailInput class="inputFontBlack" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" enterkeyhint="next" placeholder="E-Mail" name="email" [(ngModel)]="registerCredentials.email" [readonly]="otpMode && otpSent" required></ion-input>
+              <ion-label position="stacked">{{ 'login.email' | transloco }}</ion-label>
+              <ion-input #emailInput class="inputFontBlack" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" enterkeyhint="next" [placeholder]="'login.email' | transloco" name="email" [(ngModel)]="registerCredentials.email" [readonly]="otpMode && otpSent" required></ion-input>
             </ion-item>
             @if (!otpMode) {
               <ion-item lines="full">
-                <ion-input #passwordInput class="inputFontBlack" [type]="showPassword ? 'text' : 'password'" autocomplete="current-password" enterkeyhint="go" label="Passwort" labelPlacement="stacked" placeholder="Passwort" name="password" [(ngModel)]="registerCredentials.password" required>
-                  <ion-button fill="clear" slot="end" (click)="showPassword = !showPassword" aria-label="Passwort anzeigen">
+                <ion-input #passwordInput class="inputFontBlack" [type]="showPassword ? 'text' : 'password'" autocomplete="current-password" enterkeyhint="go" [label]="'login.password' | transloco" labelPlacement="stacked" [placeholder]="'login.password' | transloco" name="password" [(ngModel)]="registerCredentials.password" required>
+                  <ion-button fill="clear" slot="end" (click)="showPassword = !showPassword" [attr.aria-label]="'login.showPassword' | transloco">
                     <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" slot="icon-only"></ion-icon>
                   </ion-button>
                 </ion-input>
@@ -45,7 +43,7 @@
             }
             @if (otpMode && otpSent) {
               <ion-item lines="none">
-                <ion-input-otp size="small" type="text" length="6" name="otpCode" [(ngModel)]="otpCode" (ionComplete)="verifyCode()">Code aus der E-Mail</ion-input-otp>
+                <ion-input-otp size="small" type="text" length="6" name="otpCode" [(ngModel)]="otpCode" (ionComplete)="verifyCode()">{{ 'login.otpLabel' | transloco }}</ion-input-otp>
               </ion-item>
             }
           </ion-col>
@@ -54,36 +52,36 @@
         @if (!otpMode) {
           <ion-row>
             <ion-col>
-              <ion-button (click)="register()" size="small" fill="clear">Registrieren</ion-button>
-              <ion-button (click)="forgotPassword()" size="small" fill="clear">Passwort vergessen?</ion-button>
+              <ion-button (click)="register()" size="small" fill="clear">{{ 'login.register' | transloco }}</ion-button>
+              <ion-button (click)="forgotPassword()" size="small" fill="clear">{{ 'login.forgotPassword' | transloco }}</ion-button>
             </ion-col>
           </ion-row>
           <ion-row>
             <ion-col class="signup-col">
-              <ion-button (click)="login()" color="primary" expand="block" [disabled]="!registerForm.form.valid">{{ linkMode ? 'Verknüpfen & anmelden' : 'Anmelden' }}</ion-button>
+              <ion-button (click)="login()" color="primary" expand="block" [disabled]="!registerForm.form.valid">{{ linkMode ? ('login.linkAndSignIn' | transloco) : ('login.signIn' | transloco) }}</ion-button>
             </ion-col>
           </ion-row>
         } @else {
           @if (!otpSent) {
             <ion-row>
               <ion-col>
-                <ion-button (click)="register()" size="small" fill="clear">Registrieren</ion-button>
+                <ion-button (click)="register()" size="small" fill="clear">{{ 'login.register' | transloco }}</ion-button>
               </ion-col>
             </ion-row>
             <ion-row>
               <ion-col class="signup-col">
-                <ion-button (click)="requestCode()" color="primary" expand="block" [disabled]="!registerCredentials.email">Code senden</ion-button>
+                <ion-button (click)="requestCode()" color="primary" expand="block" [disabled]="!registerCredentials.email">{{ 'login.sendCode' | transloco }}</ion-button>
               </ion-col>
             </ion-row>
           } @else {
             <ion-row>
               <ion-col class="signup-col">
-                <ion-button (click)="verifyCode()" color="primary" expand="block" [disabled]="!otpCode">Anmelden</ion-button>
+                <ion-button (click)="verifyCode()" color="primary" expand="block" [disabled]="!otpCode">{{ 'login.signIn' | transloco }}</ion-button>
               </ion-col>
             </ion-row>
             <ion-row>
               <ion-col class="signup-col">
-                <ion-button (click)="resendCode()" size="small" fill="clear" [disabled]="resendCooldown > 0">{{ resendCooldown > 0 ? 'Erneut senden (' + resendCooldown + 's)' : 'Code erneut senden' }}</ion-button>
+                <ion-button (click)="resendCode()" size="small" fill="clear" [disabled]="resendCooldown > 0">{{ resendCooldown > 0 ? ('login.resendIn' | transloco: { seconds: resendCooldown }) : ('login.resendCode' | transloco) }}</ion-button>
               </ion-col>
             </ion-row>
           }
@@ -95,10 +93,10 @@
     <div class="update-banner">
       <ion-button size="small" fill="solid" color="success" (click)="liveUpdate.applyUpdate()">
         <ion-icon name="cloud-download-outline" slot="start"></ion-icon>
-        Update installieren
+        {{ 'login.installUpdate' | transloco }}
       </ion-button>
     </div>
   }
-  <ion-label class="version">Version {{ version }} | <a (click)="startDemo()">Demo starten</a> | <a (click)="openLegal()">Impressum & Datenschutz</a></ion-label>
+  <ion-label class="version">{{ 'login.version' | transloco: { version: version } }} | <a (click)="startDemo()">{{ 'login.startDemo' | transloco }}</a> | <a (click)="openLegal()">{{ 'login.legal' | transloco }}</a></ion-label>
 </ion-content>
 

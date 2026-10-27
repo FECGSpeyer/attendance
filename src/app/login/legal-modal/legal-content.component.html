@@ -4,4 +4,4 @@
 
 <div *ngIf="content() as html" [innerHTML]="html"></div>
 
-<p *ngIf="error()">Inhalt konnte nicht geladen werden.</p>
+<p *ngIf="error()">{{ 'legal.loadFailed' | transloco }}</p>

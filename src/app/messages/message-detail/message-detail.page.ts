@@ -5,7 +5,8 @@ import { Browser } from '@capacitor/browser';
 import { DbService } from 'src/app/services/db.service';
 import { MessageService } from 'src/app/services/message/message.service';
 import { Role } from 'src/app/utilities/constants';
-import { Message, MessageRecipient } from 'src/app/utilities/interfaces';
+import { Message } from 'src/app/utilities/interfaces';
+import type { MessageRecipient } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 
 type Filter = 'all' | 'read' | 'open' | 'problems';

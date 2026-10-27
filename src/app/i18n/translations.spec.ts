@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import MessageFormat from '@messageformat/core';
 import { parse } from '@messageformat/parser';
 import de from '../../i18n/de.json';
@@ -43,6 +45,28 @@ function argumentNames(message: string): string[] {
 
 const source = flatten(FILES[DEFAULT_LANGUAGE]);
 
+function sourceFiles(dir: string): string[] {
+  return readdirSync(dir).flatMap((name) => {
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) {
+      return sourceFiles(path);
+    }
+    return /\.(ts|html)$/.test(name) && !name.endsWith('.spec.ts') ? [path] : [];
+  });
+}
+
+/** Literal keys passed to t('…'), translate('…') or '…' | transloco. */
+function usedKeys(): Map<string, string> {
+  const pattern = /(?:\bt|\btranslate|\.translate)\(\s*'([a-zA-Z0-9_.]+)'|'([a-zA-Z0-9_.]+)'\s*\|\s*transloco/g;
+  const used = new Map<string, string>();
+  for (const file of sourceFiles(join(__dirname, '..'))) {
+    for (const match of readFileSync(file, 'utf8').matchAll(pattern)) {
+      used.set(match[1] ?? match[2], file);
+    }
+  }
+  return used;
+}
+
 describe('translations', () => {
   it('has a file for every supported language', () => {
     expect(Object.keys(FILES).sort()).toEqual([...SUPPORTED_LANGUAGES].sort());
@@ -79,6 +103,11 @@ describe('translations', () => {
       });
     });
   }
+
+  it('defines every key used in the code', () => {
+    const missing = [...usedKeys()].filter(([key]) => !(key in source)).map(([key, file]) => `${key} (${file})`);
+    expect(missing).toEqual([]);
+  });
 
   it('formats Russian plurals with their own forms', () => {
     const format = new MessageFormat('ru').compile(flatten(ru)['common.persons']);

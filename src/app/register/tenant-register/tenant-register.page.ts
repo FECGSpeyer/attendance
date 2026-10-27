@@ -9,6 +9,7 @@ import { DEFAULT_IMAGE, FieldType, Role } from 'src/app/utilities/constants';
 import { Church, Group, Tenant, TenantUser } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { LegalModalComponent } from 'src/app/login/legal-modal/legal-modal.component';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-tenant-register',
@@ -61,7 +62,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     const registerId = pathParts[pathParts.length - 1];
     this.tenantData = await this.db.getTenantByRegisterId(registerId);
     if (!this.tenantData) {
-      Utils.showToast('Ungültiger Freigabe-Link.');
+      Utils.showToast(translate('tenantRegister.invalidLink'));
       return;
     }
 
@@ -104,7 +105,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     const users = tenantUsers ?? await this.db.getTenantsByUserId();
     const tenant = users.find(t => t.tenantId === this.tenantData.id);
     if (tenant) {
-      Utils.showToast('Sie sind bereits in dieser Instanz registriert.', 'warning', 5000);
+      Utils.showToast(translate('tenantRegister.alreadyRegistered'), 'warning', 5000);
       this.router.navigate(['/login']);
       await loading.dismiss();
       return true;
@@ -164,11 +165,11 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
   async requestCode() {
     const email = this.email?.toLowerCase().trim();
     if (!Utils.validateEmail(email)) {
-      Utils.showToast('Bitte eine gültige E-Mail Adresse eingeben.', 'danger');
+      Utils.showToast(translate('login.toast.invalidEmail'), 'danger');
       return;
     }
     if (!this.privacyAccepted) {
-      Utils.showToast('Bitte akzeptiere die Nutzungsbedingungen und Datenschutzerklärung.', 'danger');
+      Utils.showToast(translate('tenantRegister.acceptTermsToast'), 'danger');
       return;
     }
     const loading = await Utils.getLoadingElement();
@@ -252,26 +253,26 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
 
   async login() {
     const alert = await this.alertController.create({
-      header: 'Anmelden',
+      header: translate('login.signIn'),
       inputs: [
         {
           name: 'email',
           type: 'email',
-          placeholder: 'E-Mail Adresse'
+          placeholder: translate('tenantRegister.emailAddress')
         },
         {
           name: 'password',
           type: 'password',
-          placeholder: 'Passwort'
+          placeholder: translate('login.modePassword')
         }
       ],
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel'
         },
         {
-          text: 'Anmelden',
+          text: translate('login.signIn'),
           handler: async (data) => {
             try {
               await this.db.login(data.email, data.password, true);
@@ -297,7 +298,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
       return;
     }
 
-    const loading = await Utils.getLoadingElement(45000, 'Registrierung läuft...');
+    const loading = await Utils.getLoadingElement(45000, translate('registerModal.running'));
     await loading.present();
 
     const additional_fields: { [key: string]: any } = {};
@@ -359,7 +360,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
         return;
       }
 
-      Utils.showToast(`Fehler bei der Registrierung: ${error?.message ?? 'Unbekannter Fehler'}`, 'danger', 6000);
+      Utils.showToast(translate('tenantRegister.failed', { error: error?.message ?? translate('tenantRegister.unknownError') }), 'danger', 6000);
       return;
     }
 
@@ -373,12 +374,12 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     }
 
     const alert = await this.alertController.create({
-      header: 'Registrierung erfolgreich',
+      header: translate('tenantRegister.success.header'),
       message: this.tenantData.auto_approve_registrations ?
-        !isNew ? 'Deine Registrierung war erfolgreich! Du bist nun teil der Instanz.' : `Dein Konto wurde erstellt. Um dich anmelden zu können, bestätige bitte deine E-Mail. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner. Im Anschluss kannst du dich anmelden.` :
-        !isNew ? 'Deine Registrierung war erfolgreich! Bitte warte auf die Genehmigung durch einen Administrator.' : `Dein Konto wurde erstellt und wartet auf die Genehmigung durch einen Administrator. Bitte bestätige deine E-Mail, um dich anmelden zu können. Falls keine E-Mail ankommt, überprüfe bitte deinen Spam-Ordner.`,
+        !isNew ? translate('tenantRegister.success.joined') : translate('tenantRegister.success.newConfirm') :
+        !isNew ? translate('tenantRegister.success.pending') : translate('tenantRegister.success.newPending'),
       buttons: [{
-        text: 'OK'
+        text: translate('common.ok')
       }]
     });
 
@@ -387,34 +388,34 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
 
   validate(): boolean {
     if (this.noGroupsAvailable) {
-      Utils.showToast('Registrierung nicht möglich: Es sind keine Gruppen verfügbar.', 'danger');
+      Utils.showToast(translate('tenantRegister.noGroupsToast'), 'danger');
       return false;
     }
 
     if (!this.db.user) {
       if (!this.privacyAccepted) {
-        Utils.showToast('Bitte akzeptiere die Nutzungsbedingungen und Datenschutzerklärung.', 'danger');
+        Utils.showToast(translate('tenantRegister.acceptTermsToast'), 'danger');
         return false;
       } else if (!Utils.validateEmail(this.email)) {
-        Utils.showToast('Bitte eine gültige E-Mail Adresse eingeben.', 'danger');
+        Utils.showToast(translate('login.toast.invalidEmail'), 'danger');
         return false;
       } else if (this.password.length < 6) {
-        Utils.showToast('Das Passwort muss mindestens 6 Zeichen lang sein.', 'danger');
+        Utils.showToast(translate('tenantRegister.passwordTooShort'), 'danger');
         return false;
       } else if (this.password !== this.confirmPassword) {
-        Utils.showToast('Die Passwörter stimmen nicht überein.', 'danger');
+        Utils.showToast(translate('tenantRegister.passwordMismatch'), 'danger');
         return false;
       }
     }
 
     if (!this.firstName || !this.lastName) {
-      Utils.showToast('Bitte geben Sie Ihren Vor- und Nachnamen an.', 'danger');
+      Utils.showToast(translate('tenantRegister.nameRequired'), 'danger');
       return false;
     }
 
     if (this.tenantData?.registration_fields?.includes('picture')) {
       if (this.profilePicture === DEFAULT_IMAGE) {
-        Utils.showToast('Bitte wählen Sie ein Passbild aus.', 'danger');
+        Utils.showToast(translate('tenantRegister.pictureRequired'), 'danger');
         return false;
       }
     }
@@ -422,14 +423,14 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     if (this.tenantData.registration_fields?.includes('birthDate')) {
       const birthDateObj = dayjs(this.birthDate);
       if (!birthDateObj.isValid()) {
-        Utils.showToast('Bitte geben Sie ein gültiges Geburtsdatum an.', 'danger');
+        Utils.showToast(translate('tenantRegister.birthDateRequired'), 'danger');
         return false;
       }
     }
 
     if (this.tenantData.registration_fields?.includes('phone')) {
       if (!Utils.validatePhoneNumber(this.phone.replace(/\s+/g, ''))) {
-        Utils.showToast('Bitte geben Sie eine gültige Telefonnummer an.', 'danger');
+        Utils.showToast(translate('tenantRegister.phoneRequired'), 'danger');
         return false;
       }
     }
@@ -437,35 +438,35 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     for (const field of this.additionalFields) {
       if (field.type === FieldType.TEXT || field.type === FieldType.TEXTAREA) {
         if (typeof field.value !== 'string' || field.value.trim() === '') {
-          Utils.showToast(`Bitte füllen Sie das Feld "${field.name}" aus.`, 'danger');
+          Utils.showToast(translate('tenantRegister.fieldRequired', { field: field.name }), 'danger');
           return false;
         }
       } else if (field.type === FieldType.NUMBER) {
         if (isNaN(Number(field.value))) {
-          Utils.showToast(`Bitte geben Sie eine gültige Zahl für das Feld "${field.name}" ein.`, 'danger');
+          Utils.showToast(translate('tenantRegister.fieldNumber', { field: field.name }), 'danger');
           return false;
         }
       } else if (field.type === FieldType.DATE) {
         if (isNaN(Date.parse(field.value))) {
-          Utils.showToast(`Bitte geben Sie ein gültiges Datum für das Feld "${field.name}" ein.`, 'danger');
+          Utils.showToast(translate('tenantRegister.fieldDate', { field: field.name }), 'danger');
           return false;
         }
       } else if (field.type === FieldType.BOOLEAN) {
         if (typeof field.value !== 'boolean') {
-          Utils.showToast(`Bitte geben Sie einen gültigen Wert für das Feld "${field.name}" ein.`, 'danger');
+          Utils.showToast(translate('tenantRegister.fieldValue', { field: field.name }), 'danger');
           return false;
         }
         if (field.value === false && field.name.toLowerCase().includes('einverständnis')) {
-          Utils.showToast(`Sie müssen dem Feld "${field.name}" zustimmen, um fortzufahren.`, 'danger');
+          Utils.showToast(translate('tenantRegister.fieldAccept', { field: field.name }), 'danger');
           return false;
         }
       } else if (field.type === FieldType.BFECG_CHURCH) {
         if (typeof field.value !== 'string') {
-          Utils.showToast(`Bitte wählen Sie eine Gemeinde aus.`, 'danger');
+          Utils.showToast(translate('tenantRegister.churchRequired'), 'danger');
           return false;
         }
         if (field.value === '' && (!this.customChurchName || this.customChurchName.trim().length < 5)) {
-          Utils.showToast(`Bitte geben Sie den Namen Ihrer Gemeinde ein.`, 'danger');
+          Utils.showToast(translate('tenantRegister.churchNameRequired'), 'danger');
           return false;
         }
       }
@@ -478,12 +479,12 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     if (this.profilePicture !== DEFAULT_IMAGE) {
       const actionSheet = await this.actionSheetController.create({
         buttons: [{
-          text: 'Passbild ersetzen',
+          text: translate('tenantRegister.replacePicture'),
           handler: () => {
             this.chooser.nativeElement.click();
           }
         }, {
-          text: 'Abbrechen'
+          text: translate('common.cancel')
         }]
       });
       await actionSheet.present();
@@ -501,7 +502,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     if (imgFile) {
       if (imgFile.size > 15 * 1024 * 1024) {
         loading.dismiss();
-        Utils.showToast('Das ausgewählte Bild ist zu groß. Bitte wähle ein Bild unter 15 MB.', 'danger');
+        Utils.showToast(translate('tenantRegister.pictureTooLarge'), 'danger');
         return;
       }
 
@@ -517,7 +518,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
         };
       } else {
         loading.dismiss();
-        Utils.showToast('Fehler beim ändern des Passbildes, versuche es später erneut', 'danger');
+        Utils.showToast(translate('tenantRegister.pictureFailed'), 'danger');
       }
     }
   }
@@ -532,13 +533,13 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
 
   getChurchLabel(field: { value: any }): string {
     if (field.value === null || field.value === undefined) {
-      return 'Bitte auswählen';
+      return translate('tenantRegister.pleaseChoose');
     }
     if (field.value === '') {
-      return 'Nicht gelistet';
+      return translate('tenantRegister.notListed');
     }
     const church = this.churches.find(c => c.id === field.value);
-    return church ? church.name : 'Bitte auswählen';
+    return church ? church.name : translate('tenantRegister.pleaseChoose');
   }
 
   openChurchModal() {

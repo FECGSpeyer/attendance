@@ -7,6 +7,7 @@ import { TeamsService } from '../services/teams/teams.service';
 import { LiveUpdateService } from '../services/live-update/live-update.service';
 import { Utils } from '../utilities/Utils';
 import { environment } from 'src/environments/environment';
+import { translate } from '@jsverse/transloco';
 import { LegalModalComponent } from './legal-modal/legal-modal.component';
 import { RegisterModalComponent } from './register-modal/register-modal.component';
 
@@ -95,7 +96,7 @@ export class LoginPage implements OnInit, OnDestroy {
         );
         if (ok) {
           this.linkMode = false;
-          Utils.showToast('Microsoft-Konto verknüpft. Du wirst künftig automatisch angemeldet.', 'success', 4000);
+          Utils.showToast(translate('login.toast.msLinked'), 'success', 4000);
           await this.db.routeAfterAuth();
         }
         return;
@@ -162,7 +163,7 @@ export class LoginPage implements OnInit, OnDestroy {
   async requestCode() {
     const email = this.registerCredentials.email?.trim();
     if (!Utils.validateEmail(email)) {
-      Utils.showToast('Bitte eine gültige E-Mail Adresse eingeben.', 'danger');
+      Utils.showToast(translate('login.toast.invalidEmail'), 'danger');
       return;
     }
     const loading = await Utils.getLoadingElement();
@@ -222,27 +223,27 @@ export class LoginPage implements OnInit, OnDestroy {
   private async promptResendConfirmation(): Promise<void> {
     const email = this.registerCredentials.email?.trim();
     const alert = await this.alertController.create({
-      header: 'E-Mail nicht bestätigt',
-      message: 'Deine E-Mail-Adresse wurde noch nicht bestätigt. Möchtest du die Bestätigungs-E-Mail erneut senden?',
+      header: translate('login.notConfirmed.header'),
+      message: translate('login.notConfirmed.message'),
       inputs: [
         {
           name: 'email',
           type: 'email',
           value: email,
-          placeholder: 'E-Mail eingeben...',
+          placeholder: translate('login.emailPlaceholder'),
         }
       ],
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel'
         },
         {
-          text: 'Erneut senden',
+          text: translate('login.notConfirmed.resend'),
           handler: (values: { email?: string }) => {
             const target = values?.email?.trim();
             if (!target) {
-              Utils.showToast('Bitte gib deine E-Mail-Adresse ein.', 'warning');
+              Utils.showToast(translate('login.toast.enterEmail'), 'warning');
               return false;
             }
             this.db.resendConfirmationEmail(target);
@@ -257,15 +258,15 @@ export class LoginPage implements OnInit, OnDestroy {
 
   private async promptRegister(): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Kein Konto gefunden',
-      message: 'Für diese E-Mail-Adresse existiert noch kein Konto. Möchtest du dich jetzt registrieren?',
+      header: translate('login.noAccount.header'),
+      message: translate('login.noAccount.message'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel'
         },
         {
-          text: 'Registrieren',
+          text: translate('login.register'),
           handler: () => {
             this.register();
           }
@@ -277,15 +278,15 @@ export class LoginPage implements OnInit, OnDestroy {
 
   private async promptSwitchToOtp(): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Anmeldung fehlgeschlagen',
-      message: 'E-Mail oder Passwort ist falsch. Falls du kein Passwort gesetzt hast, kannst du dich stattdessen mit einem Code per E-Mail anmelden.',
+      header: translate('login.failed.header'),
+      message: translate('login.failed.message'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel'
         },
         {
-          text: 'Code per E-Mail',
+          text: translate('login.modeOtp'),
           handler: () => {
             this.enterOtpMode();
           }
@@ -314,21 +315,21 @@ export class LoginPage implements OnInit, OnDestroy {
 
   async forgotPassword() {
     const alert = await this.alertController.create({
-      header: 'Passwort zurücksetzen',
+      header: translate('login.reset.header'),
       inputs: [
         {
           name: 'email',
           value: this.registerCredentials.email,
           type: 'email',
-          placeholder: 'E-Mail eingeben...'
+          placeholder: translate('login.emailPlaceholder')
         }
       ],
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel'
         }, {
-          text: 'Zurücksetzen',
+          text: translate('login.reset.confirm'),
           handler: (values: any) => {
             this.db.resetPassword(values.email);
           }
@@ -353,7 +354,7 @@ export class LoginPage implements OnInit, OnDestroy {
       // Passwordless OTP registration already created AND signed the user in.
       await this.db.routeAfterAuth();
     } else if (data?.success) {
-      Utils.showToast('Registrierung erfolgreich, bitte bestätige deine E-Mail-Adresse.', 'success');
+      Utils.showToast(translate('login.toast.registered'), 'success');
     }
   }
 }
