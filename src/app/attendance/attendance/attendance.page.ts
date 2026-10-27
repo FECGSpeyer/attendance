@@ -27,7 +27,7 @@ import { OfflineQueueService } from 'src/app/services/offline-queue/offline-queu
 import { allPlans, planDate, planLabel, todayPlanIndex } from 'src/app/utilities/plan-days';
 import { openPlanShareSheet } from 'src/app/planning/plan-share-sheet/plan-share-sheet.component';
 import { DutyAssignModalComponent, DutyCandidate } from 'src/app/duty/duty-assign-modal/duty-assign-modal.component';
-import { dutyFill, dutyFillColor, dutyRequired, dutyStateLabel, isCancelled, isDutyType, matchingUnavailability, occupiesDuty } from 'src/app/utilities/duty';
+import { dutyFill, dutyFillColor, dutyRequired, isCancelled, isDutyType, matchingUnavailability, occupiesDuty } from 'src/app/utilities/duty';
 
 @Component({
     selector: 'app-attendance',
@@ -805,10 +805,6 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   get dutyFillColor(): string {
     return dutyFillColor(dutyFill(this.players, this.dutyRequiredCount));
-  }
-
-  dutyStateText(pa: PersonAttendance): string {
-    return dutyStateLabel(pa.duty_state);
   }
 
   get canManageDuty(): boolean {

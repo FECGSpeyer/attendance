@@ -6,7 +6,7 @@ import { AttendanceStatus } from '../../utilities/constants';
 import { Attendance, AttendanceType, Person, PersonAttendance } from '../../utilities/interfaces';
 import { Utils } from '../../utilities/Utils';
 import { supabase, attendanceSelect } from '../base/supabase';
-import { pickPersonAttendanceFields } from '../../utilities/db-helpers';
+import { pickPersonAttendanceFields, confirmRequestedDuty } from '../../utilities/db-helpers';
 import { TrackingEvent, TrackingService } from '../tracking/tracking.service';
 import { OfflineQueueService } from '../offline-queue/offline-queue.service';
 
@@ -504,6 +504,7 @@ export class AttendanceService {
     if (error) {
       throw new Error('Fehler beim updaten der Anwesenheit');
     }
+    await confirmRequestedDuty(supabase, id, att);
   }
 
   // Sign out helper for self-service

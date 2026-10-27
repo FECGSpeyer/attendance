@@ -3,6 +3,7 @@
  */
 
 import { Database } from './supabase';
+import { AttendanceStatus } from './constants';
 
 type Tables = Database['public']['Tables'];
 
@@ -325,4 +326,20 @@ export function pickTenantUserFields(user: any) {
     parent_id,
     created_at,
   };
+}
+
+/**
+ * Dienstplan: when an assigned ("angefragt") person signs in (Zugesagt or
+ * Verspätet), the duty counts as confirmed. Only rows still in "requested"
+ * are touched, so normal Termine are unaffected.
+ */
+export async function confirmRequestedDuty(client: any, id: string, att: { status?: number; duty_state?: unknown }): Promise<void> {
+  if (att.duty_state !== undefined) return;
+  if (att.status !== AttendanceStatus.Present && att.status !== AttendanceStatus.Late) return;
+  const { error } = await client
+    .from('person_attendances')
+    .update({ duty_state: 'confirmed' })
+    .eq('id', id)
+    .eq('duty_state', 'requested');
+  if (error) console.error('confirmRequestedDuty error', error);
 }

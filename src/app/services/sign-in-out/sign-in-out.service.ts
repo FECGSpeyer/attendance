@@ -3,7 +3,7 @@ import { supabase } from '../base/supabase';
 import { PersonAttendance } from '../../utilities/interfaces';
 import { AttendanceStatus } from '../../utilities/constants';
 import { TelegramService } from '../telegram/telegram.service';
-import { pickPersonAttendanceFields } from '../../utilities/db-helpers';
+import { pickPersonAttendanceFields, confirmRequestedDuty } from '../../utilities/db-helpers';
 
 @Injectable({
   providedIn: 'root'
@@ -72,5 +72,6 @@ export class SignInOutService {
     if (error) {
       throw new Error('Fehler beim updaten der Anwesenheit');
     }
+    await confirmRequestedDuty(supabase, id, att);
   }
 }

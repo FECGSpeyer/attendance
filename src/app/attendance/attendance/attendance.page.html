@@ -615,7 +615,9 @@
         <ion-avatar slot="start"><img [src]="pa.img" alt="" /></ion-avatar>
         <ion-label>
           <h3>{{ pa.firstName }} {{ pa.lastName }}</h3>
-          <p>{{ dutyStateText(pa) }}</p>
+          @if (pa.duty_state === 'self') {
+            <p>selbst eingetragen</p>
+          }
         </ion-label>
         <ion-badge slot="end" [color]="pa.duty_state === 'requested' ? 'warning' : 'success'">
           {{ pa.duty_state === 'requested' ? 'angefragt' : 'bestätigt' }}
