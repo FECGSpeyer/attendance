@@ -200,8 +200,10 @@
       }
       @if (type.duty_mode) {
       <ion-item>
-        <ion-input type="number" min="1" label="Benötigte Personen pro Termin" labelPlacement="start"
-          class="ion-text-end" [(ngModel)]="type.duty_required" placeholder="1"></ion-input>
+        <ion-input type="number" min="1" labelPlacement="start"
+          class="ion-text-end" [(ngModel)]="type.duty_required" placeholder="1">
+          <div slot="label" class="ion-text-wrap">Benötigte Personen</div>
+        </ion-input>
       </ion-item>
       <ion-item>
         <ion-toggle helperText="Personen aus dem Personenkreis können offene Dienste selbst übernehmen."
@@ -209,8 +211,8 @@
           (ngModelChange)="type.duty_self_signup = $event">Selbst eintragen erlaubt</ion-toggle>
       </ion-item>
       <ion-item>
-        <ion-select label="Erinnerung, wenn unbestätigt" interface="popover"
-          [(ngModel)]="type.duty_confirm_reminder_days">
+        <ion-select interface="popover" [(ngModel)]="type.duty_confirm_reminder_days">
+          <div slot="label" class="ion-text-wrap">Erinnern, wenn unbestätigt</div>
           <ion-select-option [value]="null">Aus</ion-select-option>
           <ion-select-option [value]="1">nach 1 Tag</ion-select-option>
           <ion-select-option [value]="2">nach 2 Tagen</ion-select-option>
@@ -224,9 +226,10 @@
           (ngModelChange)="type.duty_notify_understaffed = $event">Gruppe bei Ausfall benachrichtigen</ion-toggle>
       </ion-item>
       <ion-item lines="full">
-        <ion-select label="Dringend, wenn noch offen" interface="popover"
+        <ion-select interface="popover"
           helperText="Einmaliger dringender Push an alle aus dem Personenkreis und die Leitung."
           [(ngModel)]="type.duty_urgent_hours">
+          <div slot="label" class="ion-text-wrap">Dringend, wenn noch offen</div>
           <ion-select-option [value]="null">Aus</ion-select-option>
           <ion-select-option [value]="6">6 h vorher</ion-select-option>
           <ion-select-option [value]="12">12 h vorher</ion-select-option>
