@@ -113,6 +113,9 @@ async function main() {
     execSync('npx ng build --configuration=production', { stdio: 'inherit', cwd: ROOT });
   }
   if (!fs.existsSync(WWW)) fail(`www/ not found at ${WWW}`);
+  // A failed ng build (e.g. budget error) can leave www/ without index.html.
+  // Such a bundle would boot native apps into a white screen, so never ship it.
+  if (!fs.existsSync(path.join(WWW, 'index.html'))) fail(`www/index.html missing, build incomplete`);
 
   console.log(`▶ Zipping www/ → ${zipName}`);
   await zipDir(WWW, zipPath);
