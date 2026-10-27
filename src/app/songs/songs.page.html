@@ -8,7 +8,7 @@
     @if (tenantData) {
       <ion-title>{{ tenantData.longName }}</ion-title>
     } @else {
-      <ion-title>Werke ({{ songs?.length }})</ion-title>
+      <ion-title>{{ 'songs.songsCount' | transloco: { count: songs?.length } }}</ion-title>
     }
     <ion-buttons slot="end">
       <ion-button fill="clear" (click)="songsMenuPopover.present($event)">
@@ -19,12 +19,12 @@
           <ion-list>
             <ion-item button (click)="openCategoriesModal(songsMenuPopover)">
               <ion-icon name="library-outline" slot="start"></ion-icon>
-              Werk-Kategorien
+              {{ 'songs.songCategories' | transloco }}
             </ion-item>
             @if (hasSongSharing) {
               <ion-item button (click)="copyShareLink(songsMenuPopover)">
                 <ion-icon name="link-outline" slot="start"></ion-icon>
-                Link kopieren
+                {{ 'songs.copyLink' | transloco }}
               </ion-item>
             }
             @if (!tenantData) {
@@ -35,13 +35,13 @@
               @if (isAdmin) {
                 <ion-item button detail="false" lines="none" (click)="openImportModal(songsMenuPopover)">
                   <ion-icon slot="start" name="cloud-upload-outline" size="small"></ion-icon>
-                  <ion-label>Werke importieren</ion-label>
+                  <ion-label>{{ 'songs.importSongs' | transloco }}</ion-label>
                 </ion-item>
               }
             }
             <ion-item button detail="false" lines="none" (click)="exportSongsPdf(songsMenuPopover)">
               <ion-icon slot="start" name="document-text-outline" size="small"></ion-icon>
-              <ion-label>Werkverzeichnis als PDF</ion-label>
+              <ion-label>{{ 'songs.catalogPdf' | transloco }}</ion-label>
             </ion-item>
           </ion-list>
         </ng-template>
@@ -50,7 +50,7 @@
         <ng-template>
           <ion-header>
             <ion-toolbar>
-              <ion-title>Werk-Kategorien</ion-title>
+              <ion-title>{{ 'songs.songCategories' | transloco }}</ion-title>
               <ion-buttons slot="end">
                 <ion-button (click)="addCategory()">
                   <ion-icon name="add"></ion-icon>
@@ -80,7 +80,7 @@
 
             @if (db.songCategories().length === 0) {
               <div class="ion-padding">
-                <p style="text-align: center;">Es wurden noch keine Kategorien angelegt.</p>
+                <p style="text-align: center;">{{ 'songs.noCategories' | transloco }}</p>
               </div>
             }
           </ion-content>
@@ -99,7 +99,7 @@
       @if (tenantData) {
         <ion-title size="large">{{ tenantData.longName }}</ion-title>
       } @else {
-        <ion-title size="large">Werke ({{ songs?.length }})</ion-title>
+        <ion-title size="large">{{ 'songs.songsCount' | transloco: { count: songs?.length } }}</ion-title>
       }
     </ion-toolbar>
   </ion-header>
@@ -107,7 +107,7 @@
   @if (categories.length > 0) {
     <ion-segment [scrollable]="true" mode="md" [(ngModel)]="selectedCategory" (ionChange)="onCategoryChanged()">
       <ion-segment-button value="">
-        <ion-label>Alle</ion-label>
+        <ion-label>{{ 'common.all' | transloco }}</ion-label>
       </ion-segment-button>
       @for (category of categories; track category.id) {
         <ion-segment-button [value]="category.id">
@@ -118,7 +118,7 @@
   }
 
   <div class="flex">
-    <ion-searchbar [debounce]="250" (ionInput)="search($event)" placeholder="Werk suchen..."></ion-searchbar>
+    <ion-searchbar [debounce]="250" (ionInput)="search($event)" [placeholder]="'attList.searchSong' | transloco"></ion-searchbar>
     <ion-button id="filter-trigger-songs" fill="none">
       <ion-icon size="medium" name="options"></ion-icon>
     </ion-button>
@@ -128,13 +128,13 @@
           <ion-item lines="none">
             <ion-icon slot="start" name="filter" size="small"></ion-icon>
             <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="sortOpt">
-              <ion-select-option value="numberAsc">Nummer ↑</ion-select-option>
-              <ion-select-option value="numberDesc">Nummer ↓</ion-select-option>
-              <ion-select-option value="nameAsc">Name ↑</ion-select-option>
-              <ion-select-option value="nameDesc">Name ↓</ion-select-option>
+              <ion-select-option value="numberAsc">{{ 'songs.numberAsc' | transloco }}</ion-select-option>
+              <ion-select-option value="numberDesc">{{ 'songs.numberDesc' | transloco }}</ion-select-option>
+              <ion-select-option value="nameAsc">{{ 'songs.nameAsc' | transloco }}</ion-select-option>
+              <ion-select-option value="nameDesc">{{ 'songs.nameDesc' | transloco }}</ion-select-option>
               @if (!tenantData) {
-                <ion-select-option value="lastSungAsc">{{ tenantType === 'orchestra' ? 'Zuletzt gespielt' : 'Zuletzt gesungen' }} ↑</ion-select-option>
-                <ion-select-option value="lastSungDesc">{{ tenantType === 'orchestra' ? 'Zuletzt gespielt' : 'Zuletzt gesungen' }} ↓</ion-select-option>
+                <ion-select-option value="lastSungAsc">{{ (tenantType === 'orchestra' ? 'songs.lastPlayed' : 'songs.lastSung') | transloco }} ↑</ion-select-option>
+                <ion-select-option value="lastSungDesc">{{ (tenantType === 'orchestra' ? 'songs.lastPlayed' : 'songs.lastSung') | transloco }} ↓</ion-select-option>
               }
             </ion-select>
           </ion-item>
@@ -142,21 +142,21 @@
           <ion-item lines="none">
             <ion-icon slot="start" name="speedometer-outline" size="small"></ion-icon>
             <ion-select slot="end" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="difficulty">
-              <ion-select-option [value]="null">Alle</ion-select-option>
-              <ion-select-option [value]="1">1 - Leicht</ion-select-option>
-              <ion-select-option [value]="2">2 - Mittel</ion-select-option>
-              <ion-select-option [value]="3">3 - Schwer</ion-select-option>
+              <ion-select-option [value]="null">{{ 'common.all' | transloco }}</ion-select-option>
+              <ion-select-option [value]="1">{{ 'songs.easy' | transloco }}</ion-select-option>
+              <ion-select-option [value]="2">{{ 'songs.medium' | transloco }}</ion-select-option>
+              <ion-select-option [value]="3">{{ 'songs.hard' | transloco }}</ion-select-option>
             </ion-select>
           </ion-item>
 
           <ion-item lines="none">
             <ion-icon slot="start" name="people" size="small"></ion-icon>
-            <ion-toggle [(ngModel)]="inclChoir" (ionChange)="onFilterChanged()">Chor & Orchester</ion-toggle>
+            <ion-toggle [(ngModel)]="inclChoir" (ionChange)="onFilterChanged()">{{ 'songs.choirOrchestra' | transloco }}</ion-toggle>
           </ion-item>
 
           <ion-item lines="none">
             <ion-icon slot="start" name="person" size="small"></ion-icon>
-            <ion-toggle [(ngModel)]="inclSolo" (ionChange)="onFilterChanged()">Solo</ion-toggle>
+            <ion-toggle [(ngModel)]="inclSolo" (ionChange)="onFilterChanged()">{{ 'songs.solo' | transloco }}</ion-toggle>
           </ion-item>
 
           @if (categories.length > 0) {
@@ -185,18 +185,18 @@
             <ion-icon slot="start" name="eye" size="small"></ion-icon>
             <ion-select multiple="true" slot="end" (ionChange)="onViewChanged()" interface="popover"
               [(ngModel)]="viewOpts">
-              <ion-select-option value="link">Link</ion-select-option>
-              <ion-select-option value="difficulty">Schwierigkeitsgrad</ion-select-option>
-              <ion-select-option value="withChoir">Chor & Orchester</ion-select-option>
-              <ion-select-option value="withSolo">Solo</ion-select-option>
-              <ion-select-option value="missingInstruments">Fehlende Instrumente</ion-select-option>
+              <ion-select-option value="link">{{ 'songs.link' | transloco }}</ion-select-option>
+              <ion-select-option value="difficulty">{{ 'songs.difficulty' | transloco }}</ion-select-option>
+              <ion-select-option value="withChoir">{{ 'songs.choirOrchestra' | transloco }}</ion-select-option>
+              <ion-select-option value="withSolo">{{ 'songs.solo' | transloco }}</ion-select-option>
+              <ion-select-option value="missingInstruments">{{ 'songs.missingInstruments' | transloco }}</ion-select-option>
               @if (tenantType === 'orchestra') {
                 @if (!tenantData) {
-                  <ion-select-option value="lastSung">Zuletzt gespielt</ion-select-option>
+                  <ion-select-option value="lastSung">{{ 'songs.lastPlayed' | transloco }}</ion-select-option>
                 }
               } @else {
                 @if (!tenantData) {
-                  <ion-select-option value="lastSung">Zuletzt gesungen</ion-select-option>
+                  <ion-select-option value="lastSung">{{ 'songs.lastSung' | transloco }}</ion-select-option>
                 }
               }
               @for (field of db.tenant()?.song_additional_fields; track field.id) {
@@ -211,7 +211,7 @@
                 <ion-icon slot="start" name="funnel-outline" size="small"></ion-icon>
                 <ion-select slot="end" interface="popover" [placeholder]="field.name"
                   (ionChange)="onFilterChanged()" [(ngModel)]="filterOpts[field.id]">
-                  <ion-select-option [value]="''">Alle</ion-select-option>
+                  <ion-select-option [value]="''">{{ 'common.all' | transloco }}</ion-select-option>
                   @for (opt of field.options; track opt) {
                     <ion-select-option [value]="opt">{{ opt }}</ion-select-option>
                   }
@@ -222,9 +222,9 @@
                 <ion-icon slot="start" name="funnel-outline" size="small"></ion-icon>
                 <ion-select slot="end" interface="popover" [placeholder]="field.name"
                   (ionChange)="onFilterChanged()" [(ngModel)]="filterOpts[field.id]">
-                  <ion-select-option value="">Alle</ion-select-option>
-                  <ion-select-option value="true">Ja</ion-select-option>
-                  <ion-select-option value="false">Nein</ion-select-option>
+                  <ion-select-option value="">{{ 'common.all' | transloco }}</ion-select-option>
+                  <ion-select-option value="true">{{ 'common.yes' | transloco }}</ion-select-option>
+                  <ion-select-option value="false">{{ 'common.no' | transloco }}</ion-select-option>
                 </ion-select>
               </ion-item>
             }
@@ -252,12 +252,12 @@
     <ion-item-group>
       @if (currentSongs?.length > 0 && selectedCategory === '' && selectedCategories.length === 0) {
         <ion-item lines="none" (click)="isCurrentSongsModalOpen = true" button>
-          <ion-label color="primary">Aktuelle Werke anzeigen</ion-label>
+          <ion-label color="primary">{{ 'songs.showCurrent' | transloco }}</ion-label>
         </ion-item>
       }
       @if (groupsWithFiles?.length > 0) {
         <ion-item lines="none" (click)="isGroupDirectoryModalOpen = true" button>
-          <ion-label color="primary">Gruppenverzeichnis</ion-label>
+          <ion-label color="primary">{{ 'songs.groupDirectory' | transloco }}</ion-label>
         </ion-item>
       }
     </ion-item-group>
@@ -270,7 +270,7 @@
       <ng-template>
         <ion-header>
           <ion-toolbar>
-            <ion-title>Aktuelle Werke</ion-title>
+            <ion-title>{{ 'songs.current' | transloco }}</ion-title>
             @if (isAdmin) {
               <ion-buttons slot="end">
                 <ion-button fill="clear" (click)="printNotesForGroup()">
@@ -325,7 +325,7 @@
         <ion-content color="light">
           <!-- Info-Hinweis -->
           <ion-note class="ion-padding" style="display: block; text-align: center; font-size: 0.85rem;" color="medium">
-            Es werden nur Gruppen angezeigt, für die Dateien vorhanden sind.
+            {{ 'songs.onlyGroupsWithFiles' | transloco }}
           </ion-note>
           <!-- Gruppenauswahl -->
           @if (!selectedGroupName) {
@@ -355,7 +355,7 @@
     </ion-modal>
 
     <ion-list-header>
-      <ion-label>Werke ({{ songsFiltered.length }})</ion-label>
+      <ion-label>{{ 'songs.songsCount' | transloco: { count: songsFiltered.length } }}</ion-label>
     </ion-list-header>
     <ion-item-group>
       @for (song of songsFiltered | slice:0:displayLimit; track trackBySongId($index, song)) {
@@ -369,13 +369,10 @@
               getInstrumentText(song.instrument_ids) }}</h3>
             }
             @if (!tenantData && song.lastSung && viewOpts.includes('lastSung')) {
-              <h3>Zuletzt {{ tenantType ===
-                'orchestra' ? 'gespielt' : 'gesungen' }} am {{ song.lastSung |
-                date:'dd.MM.yyyy' }} | {{ song.conductor  }}
-              </h3>
+              <h3>{{ (tenantType === 'orchestra' ? 'songs.lastPlayedOn' : 'songs.lastSungOn') | transloco: { date: (song.lastSung | date:'dd.MM.yyyy'), conductor: song.conductor ?? '' } }}</h3>
             }
             @if (!tenantData && song.nextPlanned && viewOpts.includes('lastSung')) {
-              <h3>@if (!song.lastSung) {Noch nicht {{ tenantType === 'orchestra' ? 'gespielt' : 'gesungen' }} · }Geplant am {{ song.nextPlanned | date:'dd.MM.yyyy' }}</h3>
+              <h3>@if (!song.lastSung) {{{ (tenantType === 'orchestra' ? 'songs.notPlayedYet' : 'songs.notSungYet') | transloco }}}{{ 'songs.plannedOn' | transloco: { date: (song.nextPlanned | date:'dd.MM.yyyy') } }}</h3>
             }
             @for (field of db.tenant()?.song_additional_fields; track field.id) {
               @if (viewOpts.includes(field.id) && field.displayMode === 'underneath' && song.additional_fields?.[field.id] !== undefined && song.additional_fields?.[field.id] !== '' && song.additional_fields?.[field.id] !== false && song.additional_fields?.[field.id] !== null) {
@@ -391,15 +388,15 @@
           </ion-label>
           @if (song.withSolo && viewOpts.includes('withSolo')) {
             <ion-badge color="success" slot="end">
-              Solo
+              {{ 'songs.solo' | transloco }}
             </ion-badge>
           }
           @if (song.withChoir && viewOpts.includes('withChoir')) {
             <ion-badge color="tertiary" slot="end">
               @if (isOrchestra) {
-                Chor
+                {{ 'songs.choir' | transloco }}
               } @else {
-                Orchester
+                {{ 'songs.orchestra' | transloco }}
               }
             </ion-badge>
           }
@@ -412,13 +409,13 @@
             <ion-badge slot="end"
               [color]="song.difficulty === 1 ? 'success' : song.difficulty === 2 ? 'warning' : song.difficulty === 3 ? 'danger' : 'medium'">
               @if (song.difficulty === 1) {
-                1 - Leicht
+                {{ 'songs.easy' | transloco }}
               } @else if (song.difficulty === 2) {
-                2 - Mittel
+                {{ 'songs.medium' | transloco }}
               } @else if (song.difficulty === 3) {
-                3 - Schwer
+                {{ 'songs.hard' | transloco }}
               } @else {
-                Nicht definiert
+                {{ 'songs.notDefined' | transloco }}
               }
             </ion-badge>
           }
@@ -452,35 +449,35 @@
           <ion-content>
             <ion-header>
               <ion-toolbar>
-                <ion-title>Werk hinzufügen</ion-title>
+                <ion-title>{{ 'songs.addSong' | transloco }}</ion-title>
               </ion-toolbar>
             </ion-header>
             <ion-item>
-              <ion-label position="stacked">Präfix (optional)</ion-label>
-              <ion-input autocapitalize="sentences" helperText="Bspw. um Weihnachtslieder kennzeichnen zu können (z.B. W für Weihnachten -> W1)"
+              <ion-label position="stacked">{{ 'songs.prefixOptional' | transloco }}</ion-label>
+              <ion-input autocapitalize="sentences" [helperText]="'songs.prefixHelper' | transloco"
               type="text" #prefix></ion-input>
             </ion-item>
             <ion-item>
-              <ion-label position="stacked">Nummer</ion-label>
+              <ion-label position="stacked">{{ 'songs.number' | transloco }}</ion-label>
               <ion-input autocapitalize="sentences" type="number" #number></ion-input>
             </ion-item>
             <ion-item>
-              <ion-label position="stacked">Name</ion-label>
+              <ion-label position="stacked">{{ 'songs.name' | transloco }}</ion-label>
               <ion-input autocapitalize="sentences" #name></ion-input>
             </ion-item>
             <ion-item>
-              <ion-label position="stacked">Link</ion-label>
+              <ion-label position="stacked">{{ 'songs.link' | transloco }}</ion-label>
               <ion-textarea autocapitalize="sentences" autoGrow="true" #link (ionFocus)="onTextAreaFocus($event)"></ion-textarea>
             </ion-item>
             <ion-item>
-              <ion-toggle [(ngModel)]="withChoir" aria-label="Chor & Orchester">Chor & Orchester</ion-toggle>
+              <ion-toggle [(ngModel)]="withChoir" [attr.aria-label]="'songs.choirOrchestra' | transloco">{{ 'songs.choirOrchestra' | transloco }}</ion-toggle>
             </ion-item>
             <ion-item>
-              <ion-toggle [(ngModel)]="withSolo" aria-label="Mit Solo-Gesang">Mit Solo-Gesang</ion-toggle>
+              <ion-toggle [(ngModel)]="withSolo" [attr.aria-label]="'songs.withSoloSinging' | transloco">{{ 'songs.withSoloSinging' | transloco }}</ion-toggle>
             </ion-item>
             @if (isOrchestra) {
               <ion-item>
-                <ion-select interface="modal" label="Besetzung" multiple="true" [(ngModel)]="selectedInstruments">
+                <ion-select interface="modal" [label]="'songs.instrumentation' | transloco" multiple="true" [(ngModel)]="selectedInstruments">
                   @for (instrument of instruments; track instrument) {
                     <ion-select-option [value]="instrument.id">{{ instrument.name
                     }}</ion-select-option>
@@ -490,7 +487,7 @@
             }
             <ion-button [disabled]="(!number.value && number.value !== 0) || !name.value"
               (click)="addSong(addSongsModal, number.value, name.value, link.value, prefix.value)"
-            expand="block">Hinzufügen</ion-button>
+            expand="block">{{ 'attendance.add' | transloco }}</ion-button>
           </ion-content>
         </ng-template>
       </ion-modal>

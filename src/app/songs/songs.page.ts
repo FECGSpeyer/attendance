@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { SongImportPage } from './import/import.page';
 import { PrintService } from '../services/print/print.service';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-songs',
@@ -38,7 +39,7 @@ export class SongsPage implements OnInit, OnDestroy {
   public instruments: Group[] = [];
   public selectedInstruments: number[] = [];
   public customModalOptions = {
-    header: 'Gruppen wählen',
+    header: translate('songs.chooseGroups'),
     breakpoints: [0, 0.7, 1],
     initialBreakpoint: 0.7,
     handleBehavior: 'none',
@@ -94,7 +95,7 @@ export class SongsPage implements OnInit, OnDestroy {
     if (!isAuthenticatedRoute) {
       this.tenantData = await this.db.getTenantBySongSharingId(lastSegment);
       if (!this.tenantData) {
-        Utils.showToast('Ungültiger Freigabe-Link.');
+        Utils.showToast(translate('songs.invalidShareLink'));
         return;
       }
     }
@@ -240,7 +241,7 @@ export class SongsPage implements OnInit, OnDestroy {
       // virtual group listing all scores (Partituren)
       groups.unshift({
         id: SongsPage.CONDUCTOR_GROUP_ID,
-        name: 'Dirigenten',
+        name: translate('songs.conductors'),
         tenantId: this.tenantData?.id ?? this.db.tenant()?.id,
         maingroup: false,
       });
@@ -256,20 +257,20 @@ export class SongsPage implements OnInit, OnDestroy {
   async printNotesForGroup(): Promise<void> {
     const groups = this.db.groups().filter(g => g.maingroup !== true);
     const alert = await this.alertController.create({
-      header: 'Gruppe wählen',
+      header: translate('songs.chooseGroup'),
       inputs: groups.map(g => ({
         type: 'radio' as const,
         label: g.name,
         value: g.id,
       })),
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
         role: 'cancel',
       }, {
-        text: 'Noten drucken',
+        text: translate('songs.printScores'),
         handler: async (groupId: number) => {
           if (!groupId) {
-            Utils.showToast('Bitte eine Gruppe auswählen.', 'warning');
+            Utils.showToast(translate('songs.chooseGroupPlease'), 'warning');
             return false;
           }
 
@@ -286,11 +287,11 @@ export class SongsPage implements OnInit, OnDestroy {
           }
 
           if (!filesToPrint.length) {
-            Utils.showToast('Keine Noten für diese Gruppe in den aktuellen Werken gefunden.', 'warning');
+            Utils.showToast(translate('songs.noScoresCurrent'), 'warning');
             return;
           }
 
-          const groupName = groups.find(g => g.id === groupId)?.name ?? 'Gruppe';
+          const groupName = groups.find(g => g.id === groupId)?.name ?? translate('songs.group');
           await this.printService.printEntries(filesToPrint, `Noten_${groupName}_${new Date().toISOString().slice(0, 10)}.pdf`);
         },
       }],
@@ -300,7 +301,7 @@ export class SongsPage implements OnInit, OnDestroy {
 
   async printGroupFolder(): Promise<void> {
     if (!this.selectedGroupFiles.length) {
-      Utils.showToast('Keine Noten für diese Gruppe vorhanden.', 'warning');
+      Utils.showToast(translate('songs.noScoresGroup'), 'warning');
       return;
     }
     const files = [...this.selectedGroupFiles].sort((a, b) =>
@@ -365,23 +366,23 @@ export class SongsPage implements OnInit, OnDestroy {
     const date = dayjs().format('DD.MM.YYYY');
     const branding = await Utils.buildTenantBranding(this.db.getBrandingSource());
     const headerOpts = {
-      title: `${shortName} Werkverzeichnis`,
-      subtitle: `Stand: ${date}`,
+      title: translate('songs.catalogTitle', { tenant: shortName }),
+      subtitle: translate('planning.asOf', { date }),
     };
 
     const additionalFields = this.db.tenant()?.song_additional_fields ?? [];
     const visibleExtraFields = additionalFields.filter(f => this.viewOpts.includes(f.id));
 
-    const head: string[] = ['Nr.', 'Name'];
+    const head: string[] = [translate('songs.numberShort'), translate('songs.name')];
     if (this.viewOpts.includes('lastSung') && !this.tenantData) {
-      head.push(this.tenantType === 'orchestra' ? 'Zuletzt gespielt' : 'Zuletzt gesungen');
+      head.push(this.tenantType === 'orchestra' ? translate('songs.lastPlayed') : translate('songs.lastSung'));
     }
-    if (this.viewOpts.includes('difficulty')) { head.push('Schwierigkeit'); }
-    if (this.viewOpts.includes('withChoir')) { head.push('Chor/Orch.'); }
-    if (this.viewOpts.includes('withSolo')) { head.push('Solo'); }
+    if (this.viewOpts.includes('difficulty')) { head.push(translate('songs.difficultyShort')); }
+    if (this.viewOpts.includes('withChoir')) { head.push(translate('songs.choirOrchShort')); }
+    if (this.viewOpts.includes('withSolo')) { head.push(translate('songs.solo')); }
     for (const f of visibleExtraFields) { head.push(f.name); }
 
-    const difficultyLabel = (d?: number) => d === 1 ? '1 - Leicht' : d === 2 ? '2 - Mittel' : d === 3 ? '3 - Schwer' : '';
+    const difficultyLabel = (d?: number) => d === 1 ? translate('songs.easy') : d === 2 ? translate('songs.medium') : d === 3 ? translate('songs.hard') : '';
 
     const body = this.songsFiltered.map(song => {
       const row: string[] = [
@@ -392,11 +393,11 @@ export class SongsPage implements OnInit, OnDestroy {
         row.push(song.lastSung ? dayjs(song.lastSung).format('DD.MM.YYYY') : '');
       }
       if (this.viewOpts.includes('difficulty')) { row.push(difficultyLabel(song.difficulty)); }
-      if (this.viewOpts.includes('withChoir')) { row.push(song.withChoir ? 'Ja' : ''); }
-      if (this.viewOpts.includes('withSolo')) { row.push(song.withSolo ? 'Ja' : ''); }
+      if (this.viewOpts.includes('withChoir')) { row.push(song.withChoir ? translate('common.yes') : ''); }
+      if (this.viewOpts.includes('withSolo')) { row.push(song.withSolo ? translate('common.yes') : ''); }
       for (const f of visibleExtraFields) {
         const val = song.additional_fields?.[f.id];
-        row.push(val === true ? 'Ja' : val === false ? 'Nein' : (val ?? '').toString());
+        row.push(val === true ? translate('common.yes') : val === false ? translate('common.no') : (val ?? '').toString());
       }
       return row;
     });
@@ -452,10 +453,10 @@ export class SongsPage implements OnInit, OnDestroy {
 
   async addSong(modal: IonModal, number: any, name: any, link: any, prefix: any) {
     if (this.songs.find((song: Song) => `${song.prefix ?? ''}${song.number}` === `${prefix ?? ''}${number}`)) {
-      Utils.showToast('Die Liednummer ist bereits vergeben', 'danger');
+      Utils.showToast(translate('songs.numberTaken'), 'danger');
       return;
     } else if (link && !this.isValidHttpUrl(link)) {
-      Utils.showToast('Der angegebene Link ist nicht valide', 'danger');
+      Utils.showToast(translate('songs.invalidLink'), 'danger');
       return;
     }
     const song = await this.db.addSong({
@@ -484,7 +485,7 @@ export class SongsPage implements OnInit, OnDestroy {
 
   async editSong(id: number, modal: IonModal, number: any, name: any, link: any, instrument_ids: any) {
     if (link && !this.isValidHttpUrl(link)) {
-      Utils.showToast('Der angegebene Link ist nicht valide', 'danger');
+      Utils.showToast(translate('songs.invalidLink'), 'danger');
       return;
     }
 
@@ -683,7 +684,7 @@ export class SongsPage implements OnInit, OnDestroy {
   copyShareLink(popover?: IonPopover) {
     popover?.dismiss();
     navigator?.clipboard.writeText(this.getSongSharingLink());
-    Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
+    Utils.showToast(translate('songs.linkCopied'), 'success');
   }
 
   openSong(songId: number, modal: IonModal) {
@@ -697,32 +698,32 @@ export class SongsPage implements OnInit, OnDestroy {
 
   async addCategory() {
     const alert = await this.alertController.create({
-      header: 'Kategorie hinzufügen',
+      header: translate('songs.addCategory'),
       inputs: [
         {
           name: 'name',
           type: 'text',
-          placeholder: 'Name der Kategorie'
+          placeholder: translate('songs.categoryName')
         }
       ],
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel',
           cssClass: 'secondary',
         }, {
-          text: 'Hinzufügen',
+          text: translate('attendance.add'),
           handler: async (data) => {
             if (data.name && data.name.trim().length > 0) {
               this.db.addSongCategory({
                 name: data.name.trim(),
                 index: this.db.songCategories().length,
               }).then(() => {
-                Utils.showToast('Kategorie hinzugefügt', 'success');
+                Utils.showToast(translate('songs.categoryAdded'), 'success');
                 this.getSongs();
               });
             } else {
-              Utils.showToast('Der Name der Kategorie darf nicht leer sein', 'danger');
+              Utils.showToast(translate('songs.categoryNameEmpty'), 'danger');
             }
           }
         }
@@ -734,32 +735,32 @@ export class SongsPage implements OnInit, OnDestroy {
 
   async editCategory(category: SongCategory) {
     const alert = await this.alertController.create({
-      header: 'Kategorie bearbeiten',
+      header: translate('songs.editCategory'),
       inputs: [
         {
           name: 'name',
           type: 'text',
           value: category.name,
-          placeholder: 'Name der Kategorie'
+          placeholder: translate('songs.categoryName')
         }
       ],
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel',
           cssClass: 'secondary',
         }, {
-          text: 'Speichern',
+          text: translate('common.save'),
           handler: async (data) => {
             if (data.name && data.name.trim().length > 0) {
               this.db.updateSongCategory({
                 name: data.name.trim(),
               }, category.id).then(() => {
-                Utils.showToast('Kategorie gespeichert', 'success');
+                Utils.showToast(translate('songs.categorySaved'), 'success');
                 this.getSongs();
               });
             } else {
-              Utils.showToast('Der Name der Kategorie darf nicht leer sein', 'danger');
+              Utils.showToast(translate('songs.categoryNameEmpty'), 'danger');
             }
           }
         }
@@ -771,18 +772,18 @@ export class SongsPage implements OnInit, OnDestroy {
 
   async deleteCategory(categoryId: string) {
     const alert = await this.alertController.create({
-      header: 'Kategorie löschen',
-      message: 'Möchten Sie diese Kategorie wirklich löschen? Alle Werke in dieser Kategorie werden keiner neuen Kategorie zugewiesen.',
+      header: translate('songs.deleteCategory'),
+      message: translate('songs.deleteCategoryMessage'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel',
           cssClass: 'secondary',
         }, {
-          text: 'Löschen',
+          text: translate('common.delete'),
           handler: async () => {
             this.db.removeSongCategory(categoryId).then(async () => {
-              Utils.showToast('Kategorie gelöscht', 'success');
+              Utils.showToast(translate('songs.categoryDeleted'), 'success');
               await this.getSongs();
             });
           }

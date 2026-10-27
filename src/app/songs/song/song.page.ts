@@ -11,6 +11,7 @@ import { matchInstrument, detectSpecialFileType } from 'src/app/utilities/instru
 import { Group, History, Organisation, Player, Song, SongFile, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { PrintService } from 'src/app/services/print/print.service';
+import { translate } from '@jsverse/transloco';
 
 
 @Component({
@@ -205,7 +206,7 @@ export class SongPage implements OnInit {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (file.size > 20 * 1024 * 1024) {
-        Utils.showToast(`Die Datei ${file.name} überschreitet die maximale Größe von 20MB.`, 'danger', 5000);
+        Utils.showToast(translate('songs.fileTooLarge', { name: file.name }), 'danger', 5000);
         continue;
       }
 
@@ -346,7 +347,7 @@ export class SongPage implements OnInit {
   async performDirectUpload(replaceExisting: boolean) {
     if (!this.selectedFileInfos.length) { return; }
     const info = this.selectedFileInfos[0];
-    const loading = await Utils.getLoadingElement(999999, 'Datei wird hochgeladen...');
+    const loading = await Utils.getLoadingElement(999999, translate('songs.uploading'));
     await loading.present();
     if (replaceExisting) {
       for (const conflict of this.singleFileConflicts.filter(f => this.singleFileConflictsToReplace.has(f.url))) {
@@ -410,15 +411,15 @@ export class SongPage implements OnInit {
 
     if (invalidLiedtextFiles.length > 0) {
       const alert = await this.alertController.create({
-        header: 'Warnung: Liedtext-Format',
-        message: `${invalidLiedtextFiles.length} Datei(en) wurden als "Liedtext" kategorisiert, sind aber keine PDF-Dateien. Die Spieler und Sänger können diese Dateien daher nicht in ihrer Übersicht bei den aktuellen Werken sehen.`,
+        header: translate('songs.lyricsWarning'),
+        message: translate('songs.lyricsWarningMessage', { count: invalidLiedtextFiles.length }),
         buttons: [
           {
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             role: 'cancel'
           },
           {
-            text: 'Trotzdem hochladen',
+            text: translate('songs.uploadAnyway'),
             handler: async () => {
               await this.performUpload(fileUploadModal, skipReplace);
             }
@@ -471,21 +472,21 @@ export class SongPage implements OnInit {
       // Keep only failed files in the modal so they can be retried
       this.selectedFileInfos = failed.map(info => ({ ...info, uploadStatus: undefined }));
       this.cdr.detectChanges();
-      await Utils.showToast(`${failed.length} von ${infos.length} Datei(en) konnten nicht hochgeladen werden.`, 'danger', 5000);
+      await Utils.showToast(translate('songs.uploadPartialFail', { failed: failed.length, total: infos.length }), 'danger', 5000);
       return;
     }
 
     this.selectedFileInfos = [];
     await fileUploadModal.dismiss();
-    await Utils.showToast(`${infos.length} Datei(en) erfolgreich hochgeladen.`);
+    await Utils.showToast(translate('songs.uploadDone', { count: infos.length }));
   }
 
   getInstrumentName(id: number | null, note?: string): string {
-    if (!id) {return note ?? 'Sonstige';}
-    if (id === 1) {return 'Aufnahme';}
-    if (id === 2) {return 'Liedtext';}
+    if (!id) {return note ?? translate('songs.other');}
+    if (id === 1) {return translate('songs.recording');}
+    if (id === 2) {return translate('songs.lyrics');}
     const inst = this.instruments.find(i => i.id === id);
-    return inst ? inst.name : 'Unbekannt';
+    return inst ? inst.name : translate('common.unknown');
   }
 
   private fileSortKey(file: SongFile): string {
@@ -539,15 +540,15 @@ export class SongPage implements OnInit {
 
   async deleteFile(file: SongFile) {
     const alert = await this.alertController.create({
-      header: 'Datei löschen',
-      message: `Möchten Sie die Datei "${file.fileName}" wirklich löschen?`,
+      header: translate('songs.deleteFile'),
+      message: translate('songs.deleteFileConfirm', { name: file.fileName }),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel'
         },
         {
-          text: 'Löschen',
+          text: translate('common.delete'),
           role: 'destructive',
           handler: async () => {
             await this.db.deleteSongFile(this.song.id, file);
@@ -607,18 +608,18 @@ export class SongPage implements OnInit {
   async deleteAllFiles(filesPopover: IonPopover) {
     filesPopover.dismiss();
     const alert = await this.alertController.create({
-      header: 'Alle Dateien löschen',
-      message: `Möchten Sie wirklich alle Dateien dieses Werks löschen?`,
+      header: translate('songs.deleteAll'),
+      message: translate('songs.deleteAllConfirm'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel'
         },
         {
-          text: 'Löschen',
+          text: translate('common.delete'),
           role: 'destructive',
           handler: async () => {
-            const loading = await Utils.getLoadingElement(999999, 'Dateien werden gelöscht...');
+            const loading = await Utils.getLoadingElement(999999, translate('songs.deletingFiles'));
             await loading.present();
             for (const file of this.song.files || []) {
               await this.db.deleteSongFile(this.song.id, file);
@@ -634,7 +635,7 @@ export class SongPage implements OnInit {
 
   async downloadAllFiles(filesPopover?: IonPopover) {
     filesPopover?.dismiss();
-    const loading = await Utils.getLoadingElement(999999, 'Dateien werden heruntergeladen...');
+    const loading = await Utils.getLoadingElement(999999, translate('songs.downloadingFiles'));
     await loading.present();
     const blobs: { fileName: string; blob: Blob }[] = [];
     for (const file of this.song.files || []) {
@@ -661,7 +662,7 @@ export class SongPage implements OnInit {
     const isAudio = AudioPlayerService.isAudioFile(file);
     const buttons: ActionSheetButton[] = [
       {
-        text: isAudio ? 'Aufnahme abspielen' : 'Datei öffnen',
+        text: isAudio ? translate('songs.playRecording') : translate('songs.openFile'),
         icon: isAudio ? 'play-circle-outline' : 'open-outline',
         handler: () => {
           if (isAudio) {
@@ -675,7 +676,7 @@ export class SongPage implements OnInit {
 
     if (!isAudio) {
       buttons.push({
-        text: 'Datei drucken',
+        text: translate('songs.printFile'),
         icon: 'print-outline',
         handler: async () => {
           await this.printService.printSongFile(this.song, file);
@@ -685,7 +686,7 @@ export class SongPage implements OnInit {
 
     if (!isPlatform('ios') || isAudio) {
       buttons.push({
-        text: isAudio ? 'Aufnahme herunterladen' : 'Datei herunterladen',
+        text: isAudio ? translate('songs.downloadRecording') : translate('songs.downloadFile'),
         icon: 'download-outline',
         handler: () => {
           this.downloadFile(file);
@@ -696,7 +697,7 @@ export class SongPage implements OnInit {
     if (!this.readOnly) {
       buttons.push(
         {
-          text: 'Kategorie ändern',
+          text: translate('songs.changeCategory'),
           icon: 'swap-horizontal-outline',
           handler: async () => {
             await this.changeCategory(file);
@@ -707,7 +708,7 @@ export class SongPage implements OnInit {
 
     if (this.db.tenantUser()?.telegram_chat_id) {
       buttons.push({
-        text: 'Per Telegram senden',
+        text: translate('songs.sendTelegram'),
         icon: 'send-outline',
         handler: async () => {
           await this.sendPerTelegram(file);
@@ -717,7 +718,7 @@ export class SongPage implements OnInit {
 
     if (!this.readOnly) {
       buttons.push({
-        text: 'Datei löschen',
+        text: translate('songs.deleteFile'),
         icon: 'trash-outline',
         role: 'destructive',
         handler: () => {
@@ -727,20 +728,20 @@ export class SongPage implements OnInit {
     }
 
     buttons.push({
-      text: 'Abbrechen',
+      text: translate('common.cancel'),
       icon: 'close-outline',
       role: 'destructive'
     });
 
     const actionSheet = await this.actionSheetController.create({
-      header: 'Datei Aktionen',
+      header: translate('songs.fileActions'),
       buttons
     });
     await actionSheet.present();
   }
 
   async sendPerTelegram(file: SongFile) {
-    const loading = await Utils.getLoadingElement(999999, 'Datei wird versendet...');
+    const loading = await Utils.getLoadingElement(999999, translate('songs.sendingFile'));
     await loading.present();
     await this.db.sendSongPerTelegram(file.url);
     await loading.dismiss();
@@ -753,7 +754,7 @@ export class SongPage implements OnInit {
   copyShareLink() {
     navigator?.clipboard.writeText(this.getSongSharingLink());
     this.tracking.track(TrackingEvent.SongShared);
-    Utils.showToast('Der Link wurde in die Zwischenablage kopiert', 'success');
+    Utils.showToast(translate('songs.linkCopied'), 'success');
   }
 
   async update() {
@@ -765,20 +766,19 @@ export class SongPage implements OnInit {
   async confirmDeleteSong() {
     const syncedTenantNames = await this.getSyncedTenantNames();
     const message = syncedTenantNames.length
-      ? `Die Werke werden mit ${syncedTenantNames.join(', ')} geteilt. Das Werk wird dort ebenfalls gelöscht, `
-        + 'inklusive der Historie aller beteiligten Instanzen. Soll das Werk wirklich gelöscht werden?'
-      : 'Soll das Werk wirklich gelöscht werden?';
+      ? translate('songs.deleteSyncedMessage', { names: syncedTenantNames.join(', ') })
+      : translate('songs.deleteConfirm');
     const alert = await this.alertController.create({
-      header: 'Werk löschen',
+      header: translate('songs.deleteSong'),
       message,
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'destructive',
         }, {
-          text: 'Löschen',
+          text: translate('common.delete'),
           handler: async () => {
-            const loading = await Utils.getLoadingElement(999999, 'Werk wird gelöscht...');
+            const loading = await Utils.getLoadingElement(999999, translate('songs.deleting'));
             await loading.present();
             await this.db.removeSong(this.song);
             await loading.dismiss();
@@ -804,14 +804,14 @@ export class SongPage implements OnInit {
         .filter(t => t.id === sourceId || t.song_source_tenant_id === sourceId)
         .map(t => t.shortName);
     } catch {
-      return tenant.song_source_tenant_id ? ['der Quellinstanz'] : [];
+      return tenant.song_source_tenant_id ? [translate('songs.sourceInstance')] : [];
     }
   }
 
   getCategoryName(categoryId: string | undefined): string {
-    if (!categoryId) {return 'Keine Kategorie';}
+    if (!categoryId) {return translate('songs.noCategory');}
     const category = this.db.songCategories().find(cat => cat.id === categoryId);
-    return category ? category.name : 'Unbekannte Kategorie';
+    return category ? category.name : translate('songs.unknownCategory');
   }
 
   /**
@@ -847,7 +847,7 @@ export class SongPage implements OnInit {
 
   async copySong(): Promise<void> {
     const loading = await this.loadingController.create({
-      message: 'Werk wird kopiert...',
+      message: translate('songs.copying'),
       duration: 9999999
     });
     await loading.present();
@@ -868,17 +868,17 @@ export class SongPage implements OnInit {
         this.targetTenantId,
         instrumentMapping,
         (current, total) => {
-          loading.message = `Datei ${current} von ${total} wird kopiert...`;
+          loading.message = translate('songs.copyingFile', { current, total });
         }
       );
 
       await loading.dismiss();
       this.isCopyModalOpen = false;
-      Utils.showToast('Werk wurde erfolgreich kopiert', 'success');
+      Utils.showToast(translate('songs.copied'), 'success');
     } catch (error) {
       await loading.dismiss();
       console.error('Error copying song:', error);
-      Utils.showToast('Fehler beim Kopieren des Werks: ' + error.message, 'danger');
+      Utils.showToast(translate('songs.copyFailed', { error: error.message }), 'danger');
     }
   }
 
@@ -906,7 +906,7 @@ export class SongPage implements OnInit {
     );
 
     if (groupPdfs.length === 0) {
-      Utils.showToast('Keine Gruppen-PDFs zum Drucken gefunden', 'warning');
+      Utils.showToast(translate('songs.noGroupPdfs'), 'warning');
       return;
     }
 
@@ -914,54 +914,54 @@ export class SongPage implements OnInit {
     const groupsWithPlayers = groupPdfs.filter(f => this.getPlayerCountByGroup(f.instrumentId) > 0);
 
     if (groupsWithPlayers.length === 0) {
-      Utils.showToast('Keine Gruppen mit zugewiesenen Personen gefunden', 'warning');
+      Utils.showToast(translate('songs.noGroupsWithPeople'), 'warning');
       return;
     }
 
     // Ask for print ratio
     const alert = await this.alertController.create({
-      header: 'Druckoptionen',
-      message: 'Wie viele Ausdrucke pro Gruppe?',
+      header: translate('songs.printOptions'),
+      message: translate('songs.copiesPerGroup'),
       inputs: [
         {
           name: 'ratio',
           type: 'radio',
-          label: 'Alle Personen (1 pro Person)',
+          label: translate('songs.perPerson'),
           value: '1',
           checked: true
         },
         {
           name: 'ratio',
           type: 'radio',
-          label: 'Jede 2. Person',
+          label: translate('songs.every2'),
           value: '2'
         },
         {
           name: 'ratio',
           type: 'radio',
-          label: 'Jede 3. Person',
+          label: translate('songs.every3'),
           value: '3'
         },
         {
           name: 'ratio',
           type: 'radio',
-          label: 'Jede 4. Person',
+          label: translate('songs.every4'),
           value: '4'
         },
         {
           name: 'ratio',
           type: 'radio',
-          label: '1 pro Gruppe',
+          label: translate('songs.perGroup'),
           value: '0'
         }
       ],
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel'
         },
         {
-          text: 'Drucken',
+          text: translate('songs.print'),
           handler: async (ratio: string) => {
             await this.generatePrintPdf(groupsWithPlayers, parseInt(ratio, 10));
           }
@@ -982,13 +982,13 @@ export class SongPage implements OnInit {
       copies: ratio === 0 ? 1 : Math.ceil(this.getPlayerCountByGroup(file.instrumentId) / ratio),
     }));
 
-    const printed = await this.printService.printEntries(entries, `${this.song.name || 'song'}_print.pdf`, 'PDF wird erstellt...');
+    const printed = await this.printService.printEntries(entries, `${this.song.name || 'song'}_print.pdf`, translate('songs.creatingPdf'));
     if (!printed) { return; }
 
     const groupSummary = entries
       .filter(e => e.copies > 0)
       .map(e => `${this.getInstrumentName(e.file.instrumentId)}: ${e.copies}x`)
       .join(', ');
-    Utils.showToast(`Druck vorbereitet: ${groupSummary}`, 'success', 5000);
+    Utils.showToast(translate('songs.printPrepared', { summary: groupSummary }), 'success', 5000);
   }
 }

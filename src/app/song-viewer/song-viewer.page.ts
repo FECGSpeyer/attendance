@@ -4,6 +4,7 @@ import { IonModal } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { History, Song, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-song-viewer',
@@ -33,7 +34,7 @@ export class SongViewerPage implements OnInit {
     this.songSharingId = pathParts[pathParts.length - 1];
     const tenantData: Tenant | null = await this.db.getTenantBySongSharingId(this.songSharingId);
     if (!tenantData) {
-      Utils.showToast('Ungültiger Freigabe-Link.');
+      Utils.showToast(translate('songs.invalidShareLink'));
       return;
     }
     this.tenantId = tenantData.id;

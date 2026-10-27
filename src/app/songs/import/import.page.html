@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Werke importieren</ion-title>
+    <ion-title>{{ 'songs.importSongs' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -14,20 +14,19 @@
   @if (step === 'file') {
     <div class="intro ion-padding">
       <p>
-        Importiere Werke aus einer Excel- (.xlsx/.xls) oder CSV-Datei. Die erste Zeile muss
-        Spaltenüberschriften enthalten. Am einfachsten ist es, die Vorlage herunterzuladen und auszufüllen.
+        {{ 'songs.importIntro' | transloco }}
       </p>
     </div>
 
     <ion-list [inset]="true">
       <ion-item button detail="false" (click)="triggerFilePicker(fileInput)">
         <ion-icon slot="start" name="cloud-upload-outline" color="primary"></ion-icon>
-        <ion-label color="primary">Datei auswählen</ion-label>
+        <ion-label color="primary">{{ 'people.chooseFile' | transloco }}</ion-label>
         <input #fileInput hidden type="file" accept=".xlsx,.xls,.csv" (change)="onFileSelect($event)" />
       </ion-item>
       <ion-item button detail="false" (click)="downloadTemplate()">
         <ion-icon slot="start" name="download-outline"></ion-icon>
-        <ion-label>Vorlage herunterladen</ion-label>
+        <ion-label>{{ 'people.downloadTemplate' | transloco }}</ion-label>
       </ion-item>
     </ion-list>
   }
@@ -35,15 +34,15 @@
   <!-- Step 2: map columns -->
   @if (step === 'mapping') {
     <div class="intro ion-padding">
-      <p><strong>{{ fileName }}</strong> — {{ rawRows.length }} Zeile(n)</p>
-      <p>Ordne die Spalten deiner Datei den Werkfeldern zu. Nummer und Name sind erforderlich.</p>
+      <p><strong>{{ fileName }}</strong> — {{ 'people.fileRows' | transloco: { count: rawRows.length } }}</p>
+      <p>{{ 'songs.mappingIntro' | transloco }}</p>
     </div>
 
     <ion-list [inset]="true">
       @for (header of fileHeaders; track header) {
         <ion-item>
           <ion-select [label]="header" labelPlacement="stacked" interface="popover"
-            [(ngModel)]="mapping[header]" placeholder="Feld wählen...">
+            [(ngModel)]="mapping[header]" [placeholder]="'people.chooseFieldPlaceholder' | transloco">
             @for (opt of targetOptions; track opt.label) {
               <ion-select-option [value]="opt.key">{{ opt.label }}</ion-select-option>
             }
@@ -54,7 +53,7 @@
 
     @if (!canProceedFromMapping) {
       <p class="hint ion-padding-horizontal">
-        Bitte Spalten für Nummer und Name zuordnen.
+        {{ 'songs.mapNumberName' | transloco }}
       </p>
     }
   }
@@ -62,10 +61,10 @@
   <!-- Step 3: preview -->
   @if (step === 'preview') {
     <div class="summary ion-padding">
-      <ion-chip color="success" outline="true">{{ importableRows.length }} bereit</ion-chip>
-      @if (warningCount) { <ion-chip color="warning" outline="true">{{ warningCount }} mit Hinweis</ion-chip> }
-      @if (duplicateCount) { <ion-chip color="medium" outline="true">{{ duplicateCount }} Duplikat(e)</ion-chip> }
-      @if (errorCount) { <ion-chip color="danger" outline="true">{{ errorCount }} fehlerhaft</ion-chip> }
+      <ion-chip color="success" outline="true">{{ 'people.ready' | transloco: { count: importableRows.length } }}</ion-chip>
+      @if (warningCount) { <ion-chip color="warning" outline="true">{{ 'people.withHint' | transloco: { count: warningCount } }}</ion-chip> }
+      @if (duplicateCount) { <ion-chip color="medium" outline="true">{{ 'people.duplicates' | transloco: { count: duplicateCount } }}</ion-chip> }
+      @if (errorCount) { <ion-chip color="danger" outline="true">{{ 'people.faulty' | transloco: { count: errorCount } }}</ion-chip> }
     </div>
 
     <ion-list [inset]="true">
@@ -90,19 +89,19 @@
   <ion-toolbar>
     @if (step === 'mapping') {
       <ion-buttons slot="start">
-        <ion-button (click)="step = 'file'">Zurück</ion-button>
+        <ion-button (click)="step = 'file'">{{ 'common.back' | transloco }}</ion-button>
       </ion-buttons>
       <ion-buttons slot="end">
-        <ion-button strong="true" [disabled]="!canProceedFromMapping" (click)="proceedToPreview()">Weiter</ion-button>
+        <ion-button strong="true" [disabled]="!canProceedFromMapping" (click)="proceedToPreview()">{{ 'common.next' | transloco }}</ion-button>
       </ion-buttons>
     }
     @if (step === 'preview') {
       <ion-buttons slot="start">
-        <ion-button (click)="backToMapping()">Zurück</ion-button>
+        <ion-button (click)="backToMapping()">{{ 'common.back' | transloco }}</ion-button>
       </ion-buttons>
       <ion-buttons slot="end">
         <ion-button strong="true" [disabled]="isImporting || !importableRows.length" (click)="startImport()">
-          {{ importableRows.length }} importieren
+          {{ 'people.importCount' | transloco: { count: importableRows.length } }}
         </ion-button>
       </ion-buttons>
     }

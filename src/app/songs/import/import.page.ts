@@ -16,6 +16,7 @@ import {
   SongMapContext,
   EXTRA_PREFIX,
 } from 'src/app/utilities/import-mapper';
+import { translate } from '@jsverse/transloco';
 
 interface SongTargetOption {
   key: SongFieldKey | null;
@@ -59,15 +60,15 @@ export class SongImportPage {
 
   private buildTargetOptions(): SongTargetOption[] {
     const opts: SongTargetOption[] = [
-      { key: null,               label: 'Ignorieren' },
-      { key: 'Nummer',           label: 'Nummer' },
-      { key: 'Präfix',           label: 'Präfix' },
-      { key: 'Name',             label: 'Name' },
-      { key: 'Chor & Orchester', label: 'Chor & Orchester' },
-      { key: 'Mit Solo',         label: 'Mit Solo' },
-      { key: 'Link',             label: 'Link' },
-      { key: 'Schwierigkeit',    label: 'Schwierigkeit (1/2/3)' },
-      { key: 'Kategorien',       label: 'Kategorien' },
+      { key: null,               label: translate('people.ignore') },
+      { key: 'Nummer',           label: translate('songs.number') },
+      { key: 'Präfix',           label: translate('songs.prefix') },
+      { key: 'Name',             label: translate('songs.name') },
+      { key: 'Chor & Orchester', label: translate('songs.choirOrchestra') },
+      { key: 'Mit Solo',         label: translate('songs.withSolo') },
+      { key: 'Link',             label: translate('songs.link') },
+      { key: 'Schwierigkeit',    label: translate('songs.difficulty123') },
+      { key: 'Kategorien',       label: translate('songs.categories') },
     ];
     for (const field of this.ctx.additionalFields ?? []) {
       opts.push({ key: `${EXTRA_PREFIX}${field.id}`, label: field.name });
@@ -86,7 +87,7 @@ export class SongImportPage {
     if (!file) return;
 
     this.fileName = file.name;
-    const loading = await Utils.getLoadingElement(10000, 'Datei wird gelesen...');
+    const loading = await Utils.getLoadingElement(10000, translate('people.readingFile'));
     await loading.present();
 
     try {
@@ -96,7 +97,7 @@ export class SongImportPage {
       const rows = utils.sheet_to_json<Record<string, any>>(sheet, { defval: '' });
 
       if (!rows.length) {
-        Utils.showToast('Die Datei enthält keine Daten.', 'warning');
+        Utils.showToast(translate('people.fileEmpty'), 'warning');
         return;
       }
 
@@ -108,7 +109,7 @@ export class SongImportPage {
       this.step = 'mapping';
     } catch (error) {
       console.error('Song import file read error:', error);
-      Utils.showToast('Die Datei konnte nicht gelesen werden.', 'danger');
+      Utils.showToast(translate('people.fileUnreadable'), 'danger');
     } finally {
       await loading.dismiss();
     }
@@ -120,11 +121,11 @@ export class SongImportPage {
 
   async proceedToPreview() {
     if (!this.canProceedFromMapping) {
-      Utils.showToast('Bitte Spalten für Nummer und Name zuordnen.', 'warning');
+      Utils.showToast(translate('songs.mapNumberName'), 'warning');
       return;
     }
 
-    const loading = await Utils.getLoadingElement(10000, 'Daten werden geprüft...');
+    const loading = await Utils.getLoadingElement(10000, translate('people.checkingData'));
     await loading.present();
     try {
       const mapped = mapSongRows(this.rawRows, this.mapping, this.ctx);
@@ -133,7 +134,7 @@ export class SongImportPage {
       this.step = 'preview';
     } catch (error) {
       console.error('Song import preview error:', error);
-      Utils.showToast('Fehler bei der Vorschau.', 'danger');
+      Utils.showToast(translate('people.previewFailed'), 'danger');
     } finally {
       await loading.dismiss();
     }
@@ -169,31 +170,31 @@ export class SongImportPage {
   async startImport() {
     const toImport = this.importableRows.map(r => r.song);
     if (!toImport.length) {
-      Utils.showToast('Keine importierbaren Werke.', 'warning');
+      Utils.showToast(translate('songs.nothingToImport'), 'warning');
       return;
     }
 
     if (this.db.isDemo()) {
-      Utils.showToast('Diese Funktion ist im Demo-Modus nicht verfügbar.', 'warning');
+      Utils.showToast(translate('people.demoUnavailable'), 'warning');
       return;
     }
 
     this.isImporting = true;
-    const loading = await Utils.getLoadingElement(0, `0 / ${toImport.length} importiert...`);
+    const loading = await Utils.getLoadingElement(0, translate('people.importProgress', { done: 0, total: toImport.length }));
     await loading.present();
 
     try {
       const { imported, failed } = await this.db.importSongs(toImport, {
         onProgress: (done, total) => {
-          loading.message = `${done} / ${total} importiert...`;
+          loading.message = translate('people.importProgress', { done, total });
         },
       });
 
       await loading.dismiss();
 
-      const parts = [`${imported.length} Werk(e) importiert.`];
+      const parts = [translate('songs.importedCount', { count: imported.length })];
       if (failed.length) {
-        parts.push(`${failed.length} fehlgeschlagen.`);
+        parts.push(translate('people.failedCount', { count: failed.length }));
       }
       Utils.showToast(parts.join(' '), failed.length ? 'warning' : 'success');
 
@@ -218,9 +219,9 @@ export class SongImportPage {
       .slice(0, 10)
       .map(f => `• ${f.song.prefix ?? ''}${f.song.number} ${f.song.name}: ${f.reason}`)
       .join('<br>');
-    const more = failed.length > 10 ? `<br>… und ${failed.length - 10} weitere` : '';
+    const more = failed.length > 10 ? '<br>' + translate('people.andMore', { count: failed.length - 10 }) : '';
     const alert = await this.alertController.create({
-      header: 'Nicht importierte Werke',
+      header: translate('songs.notImported'),
       message: list + more,
       buttons: ['OK'],
     });
