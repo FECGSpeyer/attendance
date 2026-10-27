@@ -644,6 +644,7 @@ export type Database = {
       notifications: {
         Row: {
           duties: boolean | null
+          language: string | null
           live_activity: boolean | null
           birthdays: boolean
           checklist: boolean | null
@@ -662,6 +663,7 @@ export type Database = {
         }
         Insert: {
           duties?: boolean | null
+          language?: string | null
           live_activity?: boolean | null
           birthdays?: boolean
           checklist?: boolean | null
@@ -680,6 +682,7 @@ export type Database = {
         }
         Update: {
           duties?: boolean | null
+          language?: string | null
           live_activity?: boolean | null
           birthdays?: boolean
           checklist?: boolean | null
@@ -1415,6 +1418,7 @@ export type Database = {
           seasonStart: string | null
           shift_excused_as_present: boolean
           show_all_attendances: boolean | null
+          default_language: string
           duty_view: boolean
           files_enabled: boolean
           files_shared: boolean
@@ -1450,6 +1454,7 @@ export type Database = {
           seasonStart?: string | null
           shift_excused_as_present?: boolean
           show_all_attendances?: boolean | null
+          default_language?: string
           duty_view?: boolean
           files_enabled?: boolean
           files_shared?: boolean
@@ -1485,6 +1490,7 @@ export type Database = {
           seasonStart?: string | null
           shift_excused_as_present?: boolean
           show_all_attendances?: boolean | null
+          default_language?: string
           duty_view?: boolean
           files_enabled?: boolean
           files_shared?: boolean

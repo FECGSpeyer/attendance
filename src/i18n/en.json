@@ -1,0 +1,23 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "Loading …",
+    "error": "Error",
+    "search": "Search",
+    "persons": "{count, plural, one {# person} other {# people}}"
+  },
+  "settings": {
+    "language": {
+      "title": "Language",
+      "hint": "Applies to the app, notifications and emails sent to you."
+    }
+  }
+}

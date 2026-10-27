@@ -74,6 +74,8 @@ export interface Tenant {
   files_max_bytes?: number | null;
   /** "Meine Termine" as duty roster view (C4) for members of a duty circle. */
   duty_view?: boolean;
+  /** Standardsprache der Instanz (de/en/ru/es) für Standarddaten und Feeds. */
+  default_language?: string;
 }
 
 export interface ExtraField {
@@ -161,6 +163,8 @@ export interface NotificationConfig {
   messages?: boolean;
   /** Dienste: Einteilung, Erinnerung, unterbesetzt; null counts as on. */
   duties?: boolean | null;
+  /** UI-Sprache (de/en/ru/es) für App, Push und E-Mails; null = nicht gewählt. */
+  language?: string | null;
   /** Laufender Ablaufplan als Live Activity / Live-Benachrichtigung; null counts as on. */
   live_activity?: boolean | null;
 }

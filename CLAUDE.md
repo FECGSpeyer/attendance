@@ -21,6 +21,18 @@ Jedes neue oder geänderte Feature, das Nutzer in der App bemerken, muss im selb
 - Text auf Deutsch, in Du-Form, aus Sicht der Nutzer: wo man die Funktion findet, wer sie nutzen darf, was passiert.
 - Reine Bugfixes ohne sichtbare Verhaltensänderung brauchen keinen Hilfetext; ändert der Fix aber beschriebenes Verhalten, den Artikel korrigieren.
 
+## Übersetzungen immer mitpflegen
+
+Die App wird mehrsprachig (de, en, ru, es; Konzept: `plans/mehrsprachigkeit-konzept.md` im Projektordner). Jedes neue oder geänderte Feature muss im selben Commit die Übersetzungen mitbringen:
+
+- Keine neuen fest eingebauten Texte in Templates oder TS. Texte kommen als Schlüssel in `src/i18n/de.json` und **gleichzeitig** in `en.json`, `ru.json`, `es.json` (Transloco, `| transloco` bzw. `TranslocoService.translate`).
+- Parameter und Plural im ICU-Format: `{name}`, `{count, plural, one {# Termin} other {# Termine}}`. Russisch braucht `one`/`few`/`many`/`other`.
+- Datum und Zahlen über `LocaleService` (`dayjsLocale`, `intlLocale`), nie fest `'de'` oder `'de-DE'`.
+- Hilfe-Artikel und serverseitige Texte (Push, E-Mail, Kalender) ebenfalls in allen Sprachen, sobald die jeweilige Infrastruktur da ist.
+- Nutzerinhalte (Gruppennamen, Termintitel, Werke) werden nicht übersetzt.
+- `src/app/i18n/translations.spec.ts` prüft, dass alle Sprachen dieselben Schlüssel und gültige ICU-Texte haben, und muss grün bleiben.
+- Solange Teile der App noch nicht umgestellt sind (Phase 2), neue Texte trotzdem schon als Schlüssel anlegen.
+
 ## Prüfen vor dem Push
 
 - Keinen Prod-Build (`ng build`) ausführen – nicht nötig.

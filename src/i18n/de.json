@@ -1,0 +1,23 @@
+{
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "back": "Zurück",
+    "ok": "OK",
+    "yes": "Ja",
+    "no": "Nein",
+    "loading": "Wird geladen …",
+    "error": "Fehler",
+    "search": "Suchen",
+    "persons": "{count, plural, one {# Person} other {# Personen}}"
+  },
+  "settings": {
+    "language": {
+      "title": "Sprache",
+      "hint": "Gilt für die App, Benachrichtigungen und E-Mails an dich."
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "ok": "OK",
+    "yes": "Sí",
+    "no": "No",
+    "loading": "Cargando …",
+    "error": "Error",
+    "search": "Buscar",
+    "persons": "{count, plural, one {# persona} other {# personas}}"
+  },
+  "settings": {
+    "language": {
+      "title": "Idioma",
+      "hint": "Se aplica a la app, a las notificaciones y a los correos que recibes."
+    }
+  }
+}

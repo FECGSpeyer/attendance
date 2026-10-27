@@ -12,9 +12,15 @@ import { AppComponent } from './app.component';
 import { popoverEnterAnimation, popoverLeaveAnimation } from '@rdlabo/ionic-theme-ios27';
 import { AuthService } from './services/auth/auth.service';
 import { TeamsService, isInIframe } from './services/teams/teams.service';
+import { provideAppI18n } from './i18n/i18n.providers';
+import { LocaleService } from './i18n/locale.service';
 
 function initAuth(authSvc: AuthService) {
   return () => authSvc.sessionReady;
+}
+
+function initLocale(localeSvc: LocaleService) {
+  return () => localeSvc.init();
 }
 
 function initTeams(teamsSvc: TeamsService) {
@@ -44,6 +50,8 @@ function initTeams(teamsSvc: TeamsService) {
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    provideAppI18n(),
+    { provide: APP_INITIALIZER, useFactory: initLocale, deps: [LocaleService], multi: true },
     { provide: APP_INITIALIZER, useFactory: initTeams, deps: [TeamsService], multi: true },
     { provide: APP_INITIALIZER, useFactory: initAuth, deps: [AuthService], multi: true },
   ],
