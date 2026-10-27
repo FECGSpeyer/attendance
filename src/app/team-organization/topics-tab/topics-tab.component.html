@@ -201,7 +201,7 @@
             @if (item.proposal_status === 'accepted') {
               {{ 'teamOrg.acceptedByLeaders' | transloco }}
             } @else {
-              {{ 'teamOrg.submittedOn' | transloco: { date: (item.created_at | date:'dd.MM.yyyy') } }}
+              {{ 'teamOrg.submittedOn' | transloco: { date: (item.created_at | date: ('common.ngDate' | transloco)) } }}
             }
           </p>
           @if (item.proposal_status === 'rejected' && item.decision_note) {

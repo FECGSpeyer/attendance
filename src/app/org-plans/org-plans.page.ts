@@ -1,4 +1,4 @@
-import { currentLanguage } from '../i18n/languages';
+import { currentLanguage, dateFmt } from '../i18n/languages';
 import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, AlertController, ModalController } from '@ionic/angular/lazy';
@@ -116,7 +116,7 @@ export class OrgPlansPage implements OnInit {
 
   getPlanDate(entry: PlanEntry): string {
     const d = entry.kind === 'attendance' ? entry.attendance.date : entry.sharedPlan.date;
-    return d ? dayjs(d).locale(currentLanguage()).format('dd, DD.MM.YYYY') : '';
+    return d ? dayjs(d).locale(currentLanguage()).format(`dd, ${dateFmt()}`) : '';
   }
 
   getPlanTime(entry: PlanEntry): string {

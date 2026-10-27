@@ -723,37 +723,37 @@
             <ion-item (click)="onHisItemClicked(att)">
               <ion-label>
                 @if (att.type === 2 || att.type === 3) {
-                <h2>{{ 'person.talkedToAt' | transloco: { date: (att.date | date:'dd.MM.yyyy HH:mm') } }}</h2>
+                <h2>{{ 'person.talkedToAt' | transloco: { date: (att.date | date: ('common.ngDate' | transloco) + ' HH:mm') } }}</h2>
                 }
                 @if (att.type === 5) {
-                <h2>{{ 'person.noteChangedAt' | transloco: { date: (att.date | date:'dd.MM.yyyy HH:mm') } }}</h2>
+                <h2>{{ 'person.noteChangedAt' | transloco: { date: (att.date | date: ('common.ngDate' | transloco) + ' HH:mm') } }}</h2>
                 }
                 @if (att.type === 4 && att.title) {
-                <h2>{{ att.date | date:'dd.MM.yyyy' }} | {{ att.title }}</h2>
+                <h2>{{ att.date | date: ('common.ngDate' | transloco) }} | {{ att.title }}</h2>
                 }
                 @if (att.type === 4 && !att.title) {
-                <h2>{{ att.date | date:'dd.MM.yyyy' }}</h2>
+                <h2>{{ att.date | date: ('common.ngDate' | transloco) }}</h2>
                 }
                 @if (att.type === 1) {
-                <h2>{{ 'person.pausedAt' | transloco: { date: (att.date | date:'dd.MM.yyyy HH:mm') } }}</h2>
+                <h2>{{ 'person.pausedAt' | transloco: { date: (att.date | date: ('common.ngDate' | transloco) + ' HH:mm') } }}</h2>
                 }
                 @if (att.type === 6) {
-                <h2>{{ 'person.activeSince' | transloco: { date: (att.date | date:'dd.MM.yyyy HH:mm') } }}</h2>
+                <h2>{{ 'person.activeSince' | transloco: { date: (att.date | date: ('common.ngDate' | transloco) + ' HH:mm') } }}</h2>
                 }
                 @if (att.type === 7 && att.date) {
-                <h2>{{ att.date | date:'dd.MM.yyyy' }}</h2>
+                <h2>{{ att.date | date: ('common.ngDate' | transloco) }}</h2>
                 }
                 @if (att.type === 8 && att.date) {
-                <h2>{{ 'person.archivedAt' | transloco: { date: (att.date | date:'dd.MM.yyyy') } }}</h2>
+                <h2>{{ 'person.archivedAt' | transloco: { date: (att.date | date: ('common.ngDate' | transloco)) } }}</h2>
                 }
                 @if (att.type === 9 && att.date) {
-                <h2>{{ 'person.reactivatedAt' | transloco: { date: (att.date | date:'dd.MM.yyyy') } }}</h2>
+                <h2>{{ 'person.reactivatedAt' | transloco: { date: (att.date | date: ('common.ngDate' | transloco)) } }}</h2>
                 }
                 @if (att.type === 10 || att.type === 11) {
-                <h2>{{ 'person.transferredAt' | transloco: { date: (att.date | date:'dd.MM.yyyy') } }}</h2>
+                <h2>{{ 'person.transferredAt' | transloco: { date: (att.date | date: ('common.ngDate' | transloco)) } }}</h2>
                 }
                 @if (att.type === 12 || att.type === 13) {
-                <h2>{{ 'person.copiedAt' | transloco: { date: (att.date | date:'dd.MM.yyyy') } }}</h2>
+                <h2>{{ 'person.copiedAt' | transloco: { date: (att.date | date: ('common.ngDate' | transloco)) } }}</h2>
                 }
                 @if (att.type !== 10 && att.type !== 11 && att.type !== 12 && att.type !== 13 && att.type !== 8 &&
                 att.type !== 9 && att.type !== 4 && att.type !== 6 && att.type !== 5) {
@@ -808,10 +808,10 @@
           <ion-item>
             <ion-label>
               @if (att.title) {
-              <h2>{{ att.date | date:'dd.MM.yyyy' }} | {{ att.title }}</h2>
+              <h2>{{ att.date | date: ('common.ngDate' | transloco) }} | {{ att.title }}</h2>
               }
               @if (!att.title) {
-              <h2>{{ att.date | date:'dd.MM.yyyy' }}</h2>
+              <h2>{{ att.date | date: ('common.ngDate' | transloco) }}</h2>
               }
               @if (att.notes) {
               <h3>{{ att.notes }}</h3>
@@ -842,7 +842,7 @@
           @for (absence of playerAbsences; track absence.id) {
           <ion-item>
             <ion-label>
-              <h2>{{ absence.from_date | date:'dd.MM.yyyy' }} – {{ absence.until_date | date:'dd.MM.yyyy' }}</h2>
+              <h2>{{ absence.from_date | date: ('common.ngDate' | transloco) }} – {{ absence.until_date | date: ('common.ngDate' | transloco) }}</h2>
               <p>{{ absence.reason }}</p>
             </ion-label>
             <ion-button fill="clear" slot="end" color="danger" (click)="deleteAbsence(absence)">
@@ -939,7 +939,7 @@
               <ion-label>
                 <h3>{{ 'people.pausedFrom' | transloco }}</h3>
                 @if (pauseFrom) {
-                <p>{{ pauseFrom | date:'dd.MM.yyyy' }}</p>
+                <p>{{ pauseFrom | date: ('common.ngDate' | transloco) }}</p>
                 } @else {
                 <p>{{ 'people.fromToday' | transloco }}</p>
                 }
@@ -961,7 +961,7 @@
               <ion-label>
                 <h3>{{ 'signout.pausedUntil' | transloco }}</h3>
                 @if (pauseUntil) {
-                <p>{{ pauseUntil | date:'dd.MM.yyyy' }}</p>
+                <p>{{ pauseUntil | date: ('common.ngDate' | transloco) }}</p>
                 } @else {
                 <p>{{ 'people.noEndDate' | transloco }}</p>
                 }
@@ -1020,7 +1020,7 @@
               <ion-label>
                 <h3>{{ 'person.fromRequired' | transloco }}</h3>
                 @if (absenceFrom) {
-                <p>{{ absenceFrom | date:'dd.MM.yyyy' }}</p>
+                <p>{{ absenceFrom | date: ('common.ngDate' | transloco) }}</p>
                 } @else {
                 <p>{{ 'person.noDateChosen' | transloco }}</p>
                 }
@@ -1042,7 +1042,7 @@
               <ion-label>
                 <h3>{{ 'person.untilRequired' | transloco }}</h3>
                 @if (absenceUntil) {
-                <p>{{ absenceUntil | date:'dd.MM.yyyy' }}</p>
+                <p>{{ absenceUntil | date: ('common.ngDate' | transloco) }}</p>
                 } @else {
                 <p>{{ 'person.noDateChosen' | transloco }}</p>
                 }

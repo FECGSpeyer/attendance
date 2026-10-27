@@ -304,7 +304,7 @@
     @for (absence of playerAbsences; track absence.id) {
     <ion-item>
       <ion-label>
-        <h2>{{ absence.from_date | date:'dd.MM.yyyy' }} – {{ absence.until_date | date:'dd.MM.yyyy' }}</h2>
+        <h2>{{ absence.from_date | date: ('common.ngDate' | transloco) }} – {{ absence.until_date | date: ('common.ngDate' | transloco) }}</h2>
         <p>{{ absence.reason }}</p>
       </ion-label>
       <ion-button fill="clear" slot="end" color="danger" (click)="deleteAbsence(absence)">
@@ -615,7 +615,7 @@
               <ion-label>
                 <h3>{{ 'signout.pausedUntil' | transloco }}</h3>
                 @if (pauseUntil) {
-                  <p>{{ pauseUntil | date:'dd.MM.yyyy' }}</p>
+                  <p>{{ pauseUntil | date: ('common.ngDate' | transloco) }}</p>
                 } @else {
                   <p>{{ 'signout.noEndDate' | transloco }}</p>
                 }
@@ -674,7 +674,7 @@
           } @else {
             <span class="range-selected">
               <ion-icon name="calendar-outline"></ion-icon>
-              {{ absenceFrom | date:'dd.MM.' }} – {{ absenceUntil | date:'dd.MM.yyyy' }}
+              {{ absenceFrom | date: ('common.ngDayMonth' | transloco) }} – {{ absenceUntil | date: ('common.ngDate' | transloco) }}
             </span>
             <ion-button fill="clear" size="small" color="medium" (click)="resetAbsenceRange()">
               <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>

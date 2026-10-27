@@ -1,4 +1,4 @@
-import { currentLanguage } from '../i18n/languages';
+import { currentLanguage, dateFmt } from '../i18n/languages';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
 import { Attendance, Plan } from './interfaces';
@@ -56,7 +56,7 @@ export function planDay(att: PlanSource, plans: Plan[], index: number): number |
 }
 
 export function dayLabel(att: PlanSource, day: number): string {
-  return dayjs(att.date).add(day, 'day').locale(currentLanguage()).format('dd DD.MM.');
+  return dayjs(att.date).add(day, 'day').locale(currentLanguage()).format(`dd ${dateFmt('dayMonth')}`);
 }
 
 /** Name shown on a plan chip: custom label, else the day ("Sa 18.10."), else "Plan n". */
@@ -75,7 +75,7 @@ export function planDate(att: PlanSource, index: number, plans: Plan[] = allPlan
 
 /** Subtitle for PDF exports: the plan's date, plus its name when the date alone doesn't tell plans apart. */
 export function planSubtitle(att: PlanSource, index: number, plans: Plan[] = allPlans(att)): string {
-  const date = planDate(att, index, plans).locale(currentLanguage()).format('dddd, DD.MM.YYYY');
+  const date = planDate(att, index, plans).locale(currentLanguage()).format(`dddd, ${dateFmt()}`);
   if (plans.length < 2) { return date; }
   const hasDay = planDay(att, plans, index) !== undefined && isMultiDay(att);
   const custom = plans[index]?.label?.trim();

@@ -70,3 +70,16 @@ export function currentLanguage(): AppLanguage {
 export function currentIntlLocale(): string {
   return INTL_LOCALES[activeLanguage];
 }
+
+// Numeric date patterns for dayjs().format(...), per UI language.
+const DATE_PATTERNS: Record<AppLanguage, { date: string; short: string; dayMonth: string }> = {
+  de: { date: 'DD.MM.YYYY', short: 'DD.MM.YY', dayMonth: 'DD.MM.' },
+  en: { date: 'DD/MM/YYYY', short: 'DD/MM/YY', dayMonth: 'DD/MM' },
+  ru: { date: 'DD.MM.YYYY', short: 'DD.MM.YY', dayMonth: 'DD.MM' },
+  es: { date: 'DD/MM/YYYY', short: 'DD/MM/YY', dayMonth: 'DD/MM' },
+};
+
+/** Date pattern of the active language: full date, short year, or day and month. */
+export function dateFmt(kind: 'date' | 'short' | 'dayMonth' = 'date'): string {
+  return DATE_PATTERNS[activeLanguage][kind];
+}

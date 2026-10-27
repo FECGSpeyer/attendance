@@ -1,3 +1,4 @@
+import { dateFmt } from '../../i18n/languages';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController, ActionSheetController } from '@ionic/angular/lazy';
@@ -260,7 +261,7 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
 
   getDateFormatted(): string {
     if (!this.attendance?.date) {return '';}
-    return this.currentDate().format('DD.MM.YYYY');
+    return this.currentDate().format(dateFmt());
   }
 
   isInstrumentMissing(field: FieldSelection): boolean {

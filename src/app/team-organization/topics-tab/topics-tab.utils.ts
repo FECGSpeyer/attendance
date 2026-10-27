@@ -1,3 +1,4 @@
+import { dateFmt } from '../../i18n/languages';
 import dayjs from 'dayjs';
 import { AgendaItem, AgendaItemPriority, FieldSelection } from '../../utilities/interfaces';
 import { translate } from '@jsverse/transloco';
@@ -55,7 +56,7 @@ export function relativeDay(date: string | undefined | null, now: Date = new Dat
   if (days <= 0) return translate('teamOrg.today');
   if (days === 1) return translate('teamOrg.yesterday');
   if (days < 14) return translate('teamOrg.daysAgo', { count: days });
-  return dayjs(date).format('DD.MM.YYYY');
+  return dayjs(date).format(dateFmt());
 }
 
 /** Agenda fields (TOPs) of a plan with their total duration in minutes. */

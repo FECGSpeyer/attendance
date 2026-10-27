@@ -168,7 +168,7 @@
       @for (entry of songHistory; track entry.id) {
       <ion-item>
         <ion-label>
-          <h3>{{ (entry.attendance?.date || entry.date) | date:'dd.MM.yyyy' }}@if (getHistoryEntryTitle(entry)) { · {{ getHistoryEntryTitle(entry) }}}</h3>
+          <h3>{{ (entry.attendance?.date || entry.date) | date: ('common.ngDate' | transloco) }}@if (getHistoryEntryTitle(entry)) { · {{ getHistoryEntryTitle(entry) }}}</h3>
           @if (entry.conductorName) {
           <p>{{ entry.conductorName }}</p>
           }

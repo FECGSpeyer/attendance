@@ -1,3 +1,4 @@
+import { dateFmt } from '../../i18n/languages';
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, IonModal } from '@ionic/angular/lazy';
 import { Browser } from '@capacitor/browser';
@@ -385,7 +386,7 @@ export class OverviewPage implements OnInit {
   getDeadlineText(att: CrossTenantPersonAttendance): string {
     if (!att.attendance?.deadline) {return '';}
     const deadline = dayjs(att.attendance.deadline);
-    return translate('selfService.deadline', { date: deadline.format('DD.MM.YYYY HH:mm') });
+    return translate('selfService.deadline', { date: deadline.format(`${dateFmt()} HH:mm`) });
   }
 
   getBadgeColor(att: CrossTenantPersonAttendance): string {

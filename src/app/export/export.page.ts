@@ -1,3 +1,4 @@
+import { dateFmt } from '../i18n/languages';
 import { Component, OnInit } from '@angular/core';
 import { AlertController, IonItemSliding, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
 import { Capacitor } from '@capacitor/core';
@@ -188,7 +189,7 @@ export class ExportPage implements OnInit {
     const { utils } = await import('xlsx');
     let row = 1;
 
-    const date: string = dayjs().format('DD.MM.YYYY');
+    const date: string = dayjs().format(dateFmt());
     const data = [['', ...this.selectedFields.map(f => this.fieldLabel(f))]];
 
     for (const user of this.players) {
@@ -209,7 +210,7 @@ export class ExportPage implements OnInit {
     await import('jspdf-autotable');
     let row = 1;
 
-    const date: string = dayjs().format('DD.MM.YYYY');
+    const date: string = dayjs().format(dateFmt());
     const data = [];
 
     for (const user of this.players) {
@@ -289,7 +290,7 @@ export class ExportPage implements OnInit {
     const data = [];
 
     for (const att of attendance) {
-      attDates.push(dayjs(att.date).format('DD.MM.YY'));
+      attDates.push(dayjs(att.date).format(dateFmt('short')));
       attPerc.push(String(att.percentage ? `${att.percentage}%` : ''));
     }
 
@@ -321,7 +322,7 @@ export class ExportPage implements OnInit {
   async exportAttExcel(data: any[], shortName: string) {
     this.tracking.track(TrackingEvent.ReportExported, { format: 'xlsx', kind: 'attendance' });
     const { utils } = await import('xlsx');
-    const date: string = dayjs().format('DD.MM.YYYY');
+    const date: string = dayjs().format(dateFmt());
 
     /* generate worksheet */
     const ws = utils.aoa_to_sheet(data);
@@ -338,7 +339,7 @@ export class ExportPage implements OnInit {
     this.tracking.track(TrackingEvent.ReportExported, { format: 'pdf', kind: 'attendance' });
     const { jsPDF } = await import('jspdf');
     await import('jspdf-autotable');
-    const date: string = dayjs().format('DD.MM.YYYY');
+    const date: string = dayjs().format(dateFmt());
 
     const branding = await Utils.buildTenantBranding(this.db.getBrandingSource());
     const headerOpts = {
@@ -450,7 +451,7 @@ export class ExportPage implements OnInit {
           values.push(player.lastName);
           break;
         case 'Geburtsdatum':
-          values.push(player.birthday ? dayjs(player.birthday).format('DD.MM.YYYY') : '');
+          values.push(player.birthday ? dayjs(player.birthday).format(dateFmt()) : '');
           break;
         case 'Gruppe':
           values.push(player.groupName || '');
@@ -462,7 +463,7 @@ export class ExportPage implements OnInit {
           values.push(player.phone || '');
           break;
         case 'Eingetreten':
-          values.push(player.joined ? dayjs(player.joined).format('DD.MM.YYYY') : '');
+          values.push(player.joined ? dayjs(player.joined).format(dateFmt()) : '');
           break;
         case 'Notizen':
           values.push(player.notes || '');
@@ -487,7 +488,7 @@ export class ExportPage implements OnInit {
       case FieldType.BOOLEAN:
         return value ? translate('common.yes') : translate('common.no');
       case FieldType.DATE:
-        return value ? dayjs(value).format('DD.MM.YYYY') : '';
+        return value ? dayjs(value).format(dateFmt()) : '';
       case FieldType.BFECG_CHURCH:
         const church = this.db.churches()?.find(c => c.id === value);
         return church?.name || String(value);

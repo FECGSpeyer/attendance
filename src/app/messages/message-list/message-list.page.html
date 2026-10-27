@@ -34,7 +34,7 @@
           <ion-item button detail="true" (click)="open(m)">
             <ion-label class="message-row">
               <h2>{{ m.title }}</h2>
-              <p>{{ m.created_at | date:'dd.MM.yyyy' }}{{ m.sender_name ? ' · ' + m.sender_name : '' }} · {{ 'messages.toPeople' | transloco: { count: m.recipient_count } }}</p>
+              <p>{{ m.created_at | date: ('common.ngDate' | transloco) }}{{ m.sender_name ? ' · ' + m.sender_name : '' }} · {{ 'messages.toPeople' | transloco: { count: m.recipient_count } }}</p>
               <div class="bar"><span [style.width.%]="readPercent(m)"></span></div>
               <div class="meta">
                 @if (m.status === 'sending') {

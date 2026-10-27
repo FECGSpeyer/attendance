@@ -1,3 +1,4 @@
+import { dateFmt } from '../../i18n/languages';
 import { Component, OnDestroy, OnInit, effect } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ActionSheetController, AlertController, IonItemSliding, IonModal, IonRouterOutlet, ModalController } from '@ionic/angular/lazy';
@@ -693,7 +694,7 @@ export class ListPage implements OnInit, OnDestroy {
       props.push(player.groupName);
     }
     if (this.viewOpts.includes('birthday')) {
-      props.push(translate('people.ageShort', { date: dayjs(player.birthday).format('DD.MM.YYYY'), age: Utils.calculateAge(new Date(player.birthday)) }));
+      props.push(translate('people.ageShort', { date: dayjs(player.birthday).format(dateFmt()), age: Utils.calculateAge(new Date(player.birthday)) }));
     }
     if (this.viewOpts.includes('test')) {
       props.push(player.testResult || translate('people.noResult'));

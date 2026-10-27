@@ -1,3 +1,4 @@
+import { dateFmt } from '../../i18n/languages';
 /* eslint-disable arrow-body-style */
 import { Component, effect, inject, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, isPlatform, ModalController } from '@ionic/angular/lazy';
@@ -1287,7 +1288,7 @@ export class SignoutPage implements OnInit {
     if (now.isAfter(localDeadline)) {
       return translate('signout.deadlinePassed');
     } else {
-      return translate('signout.deadline', { date: localDeadline.format('DD.MM.YYYY HH:mm') });
+      return translate('signout.deadline', { date: localDeadline.format(`${dateFmt()} HH:mm`) });
     }
   }
 

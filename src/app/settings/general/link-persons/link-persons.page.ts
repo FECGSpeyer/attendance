@@ -1,3 +1,4 @@
+import { dateFmt } from '../../../i18n/languages';
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
@@ -87,7 +88,7 @@ export class LinkPersonsPage implements OnInit {
 
   formatBirthday(birthday: string | null | undefined): string {
     if (!birthday) {return '–';}
-    return dayjs(birthday).format('DD.MM.YYYY');
+    return dayjs(birthday).format(dateFmt());
   }
 
   tenantName(tenantId: number): string {

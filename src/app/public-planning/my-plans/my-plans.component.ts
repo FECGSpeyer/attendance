@@ -1,3 +1,4 @@
+import { dateFmt } from '../../i18n/languages';
 import { Component, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
@@ -38,7 +39,7 @@ export class MyPlansComponent implements OnInit {
 
   formatDate(plan: SharedPlan): string {
     if (!plan.date) { return ''; }
-    return dayjs(plan.date).format('DD.MM.YYYY');
+    return dayjs(plan.date).format(dateFmt());
   }
 
   fieldCount(plan: SharedPlan): number {

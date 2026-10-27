@@ -68,7 +68,9 @@
     "confirm": "Подтвердить",
     "next": "Далее",
     "create": "Создать",
-    "intlLocale": "ru-RU"
+    "intlLocale": "ru-RU",
+    "ngDate": "dd.MM.yyyy",
+    "ngDayMonth": "dd.MM"
   },
   "settings": {
     "language": {

@@ -1,3 +1,4 @@
+import { dateFmt } from '../../i18n/languages';
 import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild, signal, WritableSignal } from '@angular/core';
 import { ActionSheetButton, ActionSheetController, AlertController, IonContent, IonItemSliding, IonModal, IonSelect, LoadingController, ModalController } from '@ionic/angular/lazy';
 import { format, parseISO } from 'date-fns';
@@ -1138,7 +1139,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     if (his.type === PlayerHistoryType.NOTES) {
       const alert = await this.alertController.create({
         header: translate('person.noteChanged'),
-        subHeader: dayjs(his.date).format('DD.MM.YYYY'),
+        subHeader: dayjs(his.date).format(dateFmt()),
         message: translate('person.oldNote', { note: his.text }),
         buttons: [translate('common.ok')]
       });

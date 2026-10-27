@@ -62,7 +62,7 @@
         <h2>{{ row.item.title }}</h2>
         <p>
           @if (row.postponedOn !== undefined) {
-            <ion-badge color="warning" class="postponed-badge">{{ row.postponedOn ? ('agenda.postponedOn' | transloco: { date: (row.postponedOn | date:'dd.MM.') }) : ('agenda.postponed' | transloco) }}</ion-badge>
+            <ion-badge color="warning" class="postponed-badge">{{ row.postponedOn ? ('agenda.postponedOn' | transloco: { date: (row.postponedOn | date: ('common.ngDayMonth' | transloco)) }) : ('agenda.postponed' | transloco) }}</ion-badge>
           }
           {{ subtitle(row) }}
         </p>

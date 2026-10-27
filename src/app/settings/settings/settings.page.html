@@ -120,7 +120,7 @@
       @if (userData.birthday) {
         <div class="stat-chip">
           <ion-icon name="calendar-outline"></ion-icon>
-          <span>{{ userData.birthday | date:'dd.MM.yyyy':'UTC' }}</span>
+          <span>{{ userData.birthday | date: ('common.ngDate' | transloco):'UTC' }}</span>
         </div>
       }
       @if (userData.phone) {
@@ -414,7 +414,7 @@
             <ion-item detail="false" button (click)="removeAdmin(a)">
               <ion-label>
                 <h3>{{ a.email }}</h3>
-                <p>{{ 'common.createdAt' | transloco: { date: (a.created_at | date: 'dd.MM.yyyy') } }}</p>
+                <p>{{ 'common.createdAt' | transloco: { date: (a.created_at | date: ('common.ngDate' | transloco)) } }}</p>
               </ion-label>
             </ion-item>
             }
@@ -690,7 +690,7 @@
           <ion-item button (click)="openPlayerModal(p)">
             <ion-label>
               <h2>{{ p.firstName }} {{ p.lastName }} ({{ p.groupName }})</h2>
-              <h3>{{ 'settings.leftOn' | transloco: { date: (p.left | date:'dd.MM.yyyy') } }}</h3>
+              <h3>{{ 'settings.leftOn' | transloco: { date: (p.left | date: ('common.ngDate' | transloco)) } }}</h3>
             </ion-label>
           </ion-item>
           }

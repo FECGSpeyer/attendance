@@ -1,3 +1,4 @@
+import { dateFmt } from '../i18n/languages';
 import { Component, OnInit } from '@angular/core';
 import dayjs from 'dayjs';
 import { Chart, ChartConfiguration, ChartData, registerables } from 'chart.js';
@@ -121,7 +122,7 @@ export class DashboardPage implements OnInit {
     const dayCounts = new Map<string, number>();
     for (let i = days - 1; i >= 0; i--) {
       const d = dayjs().subtract(i, 'day').format('YYYY-MM-DD');
-      labels.push(dayjs(d).format('DD.MM.'));
+      labels.push(dayjs(d).format(dateFmt('dayMonth')));
       dayCounts.set(d, 0);
     }
     perDay.forEach(r => {

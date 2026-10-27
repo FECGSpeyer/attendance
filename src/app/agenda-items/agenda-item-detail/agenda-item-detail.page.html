@@ -120,7 +120,7 @@
         @for (entry of history; track entry.attendance_id + entry.field_id; let last = $last) {
           <ion-item button detail="true" [lines]="last ? 'none' : 'full'" (click)="openHistory(entry)">
             <ion-label>
-              <h3>{{ historyTypeName(entry) }} · {{ entry.date | date:'dd.MM.yyyy' }}</h3>
+              <h3>{{ historyTypeName(entry) }} · {{ entry.date | date: ('common.ngDate' | transloco) }}</h3>
             </ion-label>
             <ion-badge slot="end" [color]="historyStatus(entry).color">{{ historyStatus(entry).label }}</ion-badge>
           </ion-item>

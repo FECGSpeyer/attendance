@@ -1,3 +1,4 @@
+import { dateFmt } from '../i18n/languages';
 import { Component, Input, OnInit } from '@angular/core';
 import { ActionSheetButton, ActionSheetController, AlertController, AlertInput, IonItemSliding, IonModal, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
 import { Capacitor } from '@capacitor/core';
@@ -1113,7 +1114,7 @@ export class PlanningPage implements OnInit {
 
     const shuffledConductors: string[] = this.shuffle([...this.planConductors]);
     const attendance = this.attendances.find((att: Attendance) => att.id === this.attendance);
-    const date: string = attendance ? dayjs(attendance.date).format('DD.MM.YYYY') : dayjs().format('DD.MM.YYYY');
+    const date: string = attendance ? dayjs(attendance.date).format(dateFmt()) : dayjs().format(dateFmt());
     const data = [];
     const groupCount = this.planGroups.length;
     const numRows = Math.max(shuffledConductors.length, groupCount);

@@ -1,3 +1,4 @@
+import { dateFmt } from '../../i18n/languages';
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -62,7 +63,7 @@ export class UnavailabilityModalComponent implements OnInit {
   }
 
   untilText(rule: PersonUnavailability): string {
-    return rule.valid_until ? translate('duty.until', { date: dayjs(rule.valid_until).format('D.M.YYYY') }) : translate('duty.unlimited');
+    return rule.valid_until ? translate('duty.until', { date: dayjs(rule.valid_until).format(dateFmt()) }) : translate('duty.unlimited');
   }
 
   add(): void {
@@ -114,7 +115,7 @@ export class UnavailabilityModalComponent implements OnInit {
       Utils.showToast(translate('duty.saved'), 'success');
       return;
     }
-    const preview = dates.slice(0, 4).map(d => dayjs(d).format('D.M.')).join(', ') + (count > 4 ? ' …' : '');
+    const preview = dates.slice(0, 4).map(d => dayjs(d).format(dateFmt('dayMonth'))).join(', ') + (count > 4 ? ' …' : '');
     const alert = await this.alertController.create({
       header: translate('duty.alsoPlanned'),
       message: this.forOther

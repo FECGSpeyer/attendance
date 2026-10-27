@@ -369,10 +369,10 @@
               getInstrumentText(song.instrument_ids) }}</h3>
             }
             @if (!tenantData && song.lastSung && viewOpts.includes('lastSung')) {
-              <h3>{{ (tenantType === 'orchestra' ? 'songs.lastPlayedOn' : 'songs.lastSungOn') | transloco: { date: (song.lastSung | date:'dd.MM.yyyy'), conductor: song.conductor ?? '' } }}</h3>
+              <h3>{{ (tenantType === 'orchestra' ? 'songs.lastPlayedOn' : 'songs.lastSungOn') | transloco: { date: (song.lastSung | date: ('common.ngDate' | transloco)), conductor: song.conductor ?? '' } }}</h3>
             }
             @if (!tenantData && song.nextPlanned && viewOpts.includes('lastSung')) {
-              <h3>@if (!song.lastSung) {{{ (tenantType === 'orchestra' ? 'songs.notPlayedYet' : 'songs.notSungYet') | transloco }}}{{ 'songs.plannedOn' | transloco: { date: (song.nextPlanned | date:'dd.MM.yyyy') } }}</h3>
+              <h3>@if (!song.lastSung) {{{ (tenantType === 'orchestra' ? 'songs.notPlayedYet' : 'songs.notSungYet') | transloco }}}{{ 'songs.plannedOn' | transloco: { date: (song.nextPlanned | date: ('common.ngDate' | transloco)) } }}</h3>
             }
             @for (field of db.tenant()?.song_additional_fields; track field.id) {
               @if (viewOpts.includes(field.id) && field.displayMode === 'underneath' && song.additional_fields?.[field.id] !== undefined && song.additional_fields?.[field.id] !== '' && song.additional_fields?.[field.id] !== false && song.additional_fields?.[field.id] !== null) {

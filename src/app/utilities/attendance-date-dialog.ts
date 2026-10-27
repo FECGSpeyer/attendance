@@ -5,7 +5,7 @@ import { changeAttendanceDate, createAttendanceForType, hasNonDefaultStatus, per
 import { Attendance, AttendanceType } from './interfaces';
 import { Utils } from './Utils';
 import { translate } from '@jsverse/transloco';
-import { currentLanguage } from '../i18n/languages';
+import { currentLanguage, dateFmt } from '../i18n/languages';
 
 /**
  * "Datum ändern": asks for the new day and, when not everybody is on the
@@ -68,7 +68,7 @@ export async function promptAttendanceDateChange(
   await saving.present();
   try {
     const updated = await changeAttendanceDate(db, current, dayjs(value).toISOString(), reset);
-    Utils.showToast(translate('dateDialog.moved', { date: dayjs(value).locale(currentLanguage()).format('dd, DD.MM.YYYY') }), 'success');
+    Utils.showToast(translate('dateDialog.moved', { date: dayjs(value).locale(currentLanguage()).format(`dd, ${dateFmt()}`) }), 'success');
     return updated;
   } catch (error) {
     console.error('Change date error:', error);
@@ -147,7 +147,7 @@ export async function promptCreateProtocolAttendance(
     ]);
     const id = await createAttendanceForType(db, type, { date }, persons, absences, unavailability);
     const created = await db.getAttendanceById(id);
-    Utils.showToast(translate('dateDialog.created', { date: dayjs(date).format('DD.MM.') }), 'success');
+    Utils.showToast(translate('dateDialog.created', { date: dayjs(date).format(dateFmt('dayMonth')) }), 'success');
     return created;
   } catch (error) {
     console.error('Ad hoc attendance error:', error);

@@ -1,3 +1,4 @@
+import { dateFmt } from '../i18n/languages';
 import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { GroupCategory, History, Group, Person, Song, Tenant, SongCategory, SongFile } from '../utilities/interfaces';
 import { DbService } from 'src/app/services/db.service';
@@ -363,7 +364,7 @@ export class SongsPage implements OnInit, OnDestroy {
     await import('jspdf-autotable');
 
     const shortName = this.tenantData?.shortName ?? this.db.tenant()?.shortName ?? '';
-    const date = dayjs().format('DD.MM.YYYY');
+    const date = dayjs().format(dateFmt());
     const branding = await Utils.buildTenantBranding(this.db.getBrandingSource());
     const headerOpts = {
       title: translate('songs.catalogTitle', { tenant: shortName }),
@@ -390,7 +391,7 @@ export class SongsPage implements OnInit, OnDestroy {
         song.name,
       ];
       if (this.viewOpts.includes('lastSung') && !this.tenantData) {
-        row.push(song.lastSung ? dayjs(song.lastSung).format('DD.MM.YYYY') : '');
+        row.push(song.lastSung ? dayjs(song.lastSung).format(dateFmt()) : '');
       }
       if (this.viewOpts.includes('difficulty')) { row.push(difficultyLabel(song.difficulty)); }
       if (this.viewOpts.includes('withChoir')) { row.push(song.withChoir ? translate('common.yes') : ''); }

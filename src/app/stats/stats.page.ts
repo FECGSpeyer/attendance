@@ -1,3 +1,4 @@
+import { dateFmt } from '../i18n/languages';
 import { Component, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
@@ -156,7 +157,7 @@ export class StatsPage implements OnInit {
       .slice(-20);
 
     this.attendanceTrendData = {
-      labels: sortedAttendances.map(a => dayjs(a.date).format('DD.MM')),
+      labels: sortedAttendances.map(a => dayjs(a.date).format(dateFmt('dayMonth'))),
       datasets: [{
         data: sortedAttendances.map(a => a.percentage),
         label: translate('export.attendancePercent'),

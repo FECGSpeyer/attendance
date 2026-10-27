@@ -1,4 +1,4 @@
-import { currentLanguage } from '../../i18n/languages';
+import { currentLanguage, dateFmt } from '../../i18n/languages';
 import { Component, effect, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController, IonModal, ModalController } from '@ionic/angular/lazy';
 import { Browser } from '@capacitor/browser';
@@ -302,7 +302,7 @@ export class ParentsPage implements OnInit {
     const attType = this.db.attendanceTypes().find(type => type.id === type_id);
     if (!attType) {
       // Fallback if attendance type not found
-      return dayjs(date).locale(currentLanguage()).format('ddd, DD.MM.YYYY');
+      return dayjs(date).locale(currentLanguage()).format(`ddd, ${dateFmt()}`);
     }
     return Utils.getReadableDate(date, attType);
   }

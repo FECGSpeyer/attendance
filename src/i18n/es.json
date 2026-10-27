@@ -68,7 +68,9 @@
     "confirm": "Confirmar",
     "next": "Siguiente",
     "create": "Crear",
-    "intlLocale": "es-ES"
+    "intlLocale": "es-ES",
+    "ngDate": "dd/MM/yyyy",
+    "ngDayMonth": "dd/MM"
   },
   "settings": {
     "language": {

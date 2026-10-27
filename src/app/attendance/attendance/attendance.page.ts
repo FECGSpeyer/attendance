@@ -1,4 +1,4 @@
-import { currentLanguage } from '../../i18n/languages';
+import { currentLanguage, dateFmt } from '../../i18n/languages';
 import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ConnectionStatus, Network } from '@capacitor/network';
@@ -869,7 +869,7 @@ export class AttendancePage implements OnInit, OnDestroy {
     const modal = await this.modalController.create({
       component: DutyAssignModalComponent,
       componentProps: {
-        title: `${this.type?.name ?? ''} · ${dayjs(this.attendance.date).format('DD.MM.')}`,
+        title: `${this.type?.name ?? ''} · ${dayjs(this.attendance.date).format(dateFmt('dayMonth'))}`,
         openPlaces: Math.max(0, this.dutyRequiredCount - this.dutyOccupants.length),
         candidates: list,
         monthLabel: month.locale(currentLanguage()).format('MMMM'),
@@ -2158,7 +2158,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   async sendAdHocReminder(playerAppId?: string): Promise<void> {
     const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === this.attendance.type_id);
     const typeName = attType?.name || translate('attendance.eventFallback');
-    const dateStr = dayjs(this.attendance.date).format('DD.MM.YYYY');
+    const dateStr = dayjs(this.attendance.date).format(dateFmt());
     const timeStr = this.attendance.start_time ? translate('attendance.atTime', { time: this.attendance.start_time }) : '';
     const infoStr = this.attendance.typeInfo ? ` (${this.attendance.typeInfo})` : '';
     const eventLine = translate('attendance.eventOnDate', { type: typeName, date: dateStr }) + timeStr + infoStr;

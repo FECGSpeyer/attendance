@@ -61,7 +61,7 @@ import {
 } from './protocol.helpers';
 import { createProtocolPdf, ProtocolPdfData } from './protocol-pdf';
 import { translate } from '@jsverse/transloco';
-import { currentLanguage } from '../../i18n/languages';
+import { currentLanguage, dateFmt } from '../../i18n/languages';
 
 type Doc = Record<string, unknown>;
 
@@ -331,11 +331,11 @@ export class ProtocolPage implements OnInit, OnDestroy {
 
   get dateLabel(): string {
     if (!this.attendance?.date) return '';
-    return dayjs(this.attendance.date).locale(currentLanguage()).format('dd, DD.MM.YYYY');
+    return dayjs(this.attendance.date).locale(currentLanguage()).format(`dd, ${dateFmt()}`);
   }
 
   get shortDate(): string {
-    return this.attendance?.date ? dayjs(this.attendance.date).format('DD.MM.') : '';
+    return this.attendance?.date ? dayjs(this.attendance.date).format(dateFmt('dayMonth')) : '';
   }
 
   get timeRange(): string {
@@ -356,10 +356,10 @@ export class ProtocolPage implements OnInit, OnDestroy {
 
   get statusLine(): string {
     if (!this.isPublished) return translate('teamOrg.draft');
-    const published = this.protocol?.published_at ? dayjs(this.protocol.published_at).format('DD.MM.YYYY') : '';
+    const published = this.protocol?.published_at ? dayjs(this.protocol.published_at).format(dateFmt()) : '';
     let line = translate('teamOrg.publishedOn', { date: published });
     if (isEditedAfterPublish(this.protocol)) {
-      line = translate('teamOrg.editedOn', { text: line, date: dayjs(this.protocol!.updated_at).format('DD.MM.YYYY') });
+      line = translate('teamOrg.editedOn', { text: line, date: dayjs(this.protocol!.updated_at).format(dateFmt()) });
     }
     return line;
   }
@@ -430,7 +430,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
   taskLine(task: Task): string {
     const parts: string[] = [];
     if (task.responsible_person) parts.push(`${task.responsible_person.firstName} ${task.responsible_person.lastName}`.trim());
-    if (task.due_date) parts.push(translate('protocol.dueShort', { date: dayjs(task.due_date).format('DD.MM.') }));
+    if (task.due_date) parts.push(translate('protocol.dueShort', { date: dayjs(task.due_date).format(dateFmt('dayMonth')) }));
     return parts.join(' · ');
   }
 
@@ -975,7 +975,7 @@ export class ProtocolPage implements OnInit, OnDestroy {
     const taskText = (t: Task) => {
       const parts = [t.title];
       if (t.responsible_person) parts.push(`${t.responsible_person.firstName} ${t.responsible_person.lastName}`.trim());
-      if (t.due_date) parts.push(translate('protocol.dueShort', { date: dayjs(t.due_date).format('DD.MM.YYYY') }));
+      if (t.due_date) parts.push(translate('protocol.dueShort', { date: dayjs(t.due_date).format(dateFmt()) }));
       if (t.status === 'completed') parts.push('erledigt');
       return parts.join(' · ');
     };

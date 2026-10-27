@@ -124,7 +124,7 @@
             <ion-checkbox (ionChange)="togglePersonSelection(person)" [checked]="selectedPersons.includes(person.id)">
               <ion-label>
                 <h2>{{ person.firstName }} {{ person.lastName }}</h2>
-                <p>{{ person.birthday | date:'dd.MM.yyyy' }} | {{ person.groupName }}</p>
+                <p>{{ person.birthday | date: ('common.ngDate' | transloco) }} | {{ person.groupName }}</p>
               </ion-label>
             </ion-checkbox>
           </ion-item>

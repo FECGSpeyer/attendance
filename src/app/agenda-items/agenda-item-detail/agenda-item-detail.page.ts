@@ -1,4 +1,4 @@
-import { currentLanguage } from '../../i18n/languages';
+import { currentLanguage, dateFmt } from '../../i18n/languages';
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
@@ -171,9 +171,9 @@ export class AgendaItemDetailPage implements OnInit {
   taskSubtitle(task: Task): string {
     const who = personName(task.responsible_person) || translate('attendance.nobodyAssigned');
     if (task.status === 'completed') {
-      return task.completed_at ? translate('agenda.doneOn', { who, date: dayjs(task.completed_at).format('DD.MM.') }) : translate('agenda.done', { who });
+      return task.completed_at ? translate('agenda.doneOn', { who, date: dayjs(task.completed_at).format(dateFmt('dayMonth')) }) : translate('agenda.done', { who });
     }
-    return task.due_date ? translate('agenda.dueOn', { who, date: dayjs(task.due_date).format('DD.MM.') }) : who;
+    return task.due_date ? translate('agenda.dueOn', { who, date: dayjs(task.due_date).format(dateFmt('dayMonth')) }) : who;
   }
 
   async createTask() {
@@ -201,7 +201,7 @@ export class AgendaItemDetailPage implements OnInit {
       const type = this.db.attendanceTypes().find(t => t.id === att.type_id);
       const already = !!att.plan?.fields?.some(f => f.id === fieldId);
       return {
-        text: `${dayjs(att.date).locale(currentLanguage()).format('dd, DD.MM.')} · ${(type ? Utils.getTypeTitle(type, att.typeInfo) : att.typeInfo) || type?.name || translate('attendance.eventFallback')}${already ? translate('agenda.alreadyPlanned') : ''}`,
+        text: `${dayjs(att.date).locale(currentLanguage()).format(`dd, ${dateFmt('dayMonth')}`)} · ${(type ? Utils.getTypeTitle(type, att.typeInfo) : att.typeInfo) || type?.name || translate('attendance.eventFallback')}${already ? translate('agenda.alreadyPlanned') : ''}`,
         disabled: already,
         handler: () => { void this.insertInto(att); },
       } as ActionSheetButton;
@@ -225,7 +225,7 @@ export class AgendaItemDetailPage implements OnInit {
     const type = this.db.attendanceTypes().find(t => t.id === att.type_id);
     try {
       await addTopicsToAttendance(this.db, att, type, [{ item: this.item, duration: defaultTopicDuration(this.item, type) }]);
-      Utils.showToast(translate('agenda.plannedFor', { date: dayjs(att.date).format('DD.MM.') }), 'success');
+      Utils.showToast(translate('agenda.plannedFor', { date: dayjs(att.date).format(dateFmt('dayMonth')) }), 'success');
       await this.loadRelated();
     } catch (e) {
       console.error('plan topic failed', e);

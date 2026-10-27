@@ -10,7 +10,7 @@
       }
     </ion-buttons>
     @if (players) {
-    <ion-title>{{ attendance?.date | date:'dd.MM.yyyy' }} | {{ getAttendedPlayers(filteredPlayers) }}/{{
+    <ion-title>{{ attendance?.date | date: ('common.ngDate' | transloco) }} | {{ getAttendedPlayers(filteredPlayers) }}/{{
       filteredPlayers.length }}</ion-title>
     }
     @if (!isOnline) {
@@ -228,7 +228,7 @@
             </ion-item>
             <ion-item lines="none" button detail="false" (click)="changeDate()">
               <ion-label>{{ 'attendance.date' | transloco }}</ion-label>
-              <ion-note slot="end" color="primary">{{ attendance.date | date:'dd.MM.yyyy' }}</ion-note>
+              <ion-note slot="end" color="primary">{{ attendance.date | date: ('common.ngDate' | transloco) }}</ion-note>
             </ion-item>
             <ion-item lines="none">
               <ion-label position="stacked">{{ 'attendance.infoText' | transloco }}</ion-label>
@@ -672,13 +672,13 @@
           <p>{{ 'attendance.notStarted' | transloco }}</p>
           } @else if (protocol.status === 'published') {
           <p>
-            {{ 'attendance.publishedOn' | transloco: { date: (protocol.published_at | date:'dd.MM.yyyy') } }}
+            {{ 'attendance.publishedOn' | transloco: { date: (protocol.published_at | date: ('common.ngDate' | transloco)) } }}
             @if (protocolEditedAfterPublish) {
-            {{ 'attendance.changedOn' | transloco: { date: (protocol.updated_at | date:'dd.MM.yyyy') } }}
+            {{ 'attendance.changedOn' | transloco: { date: (protocol.updated_at | date: ('common.ngDate' | transloco)) } }}
             }
           </p>
           } @else {
-          <p>{{ 'attendance.draftEdited' | transloco: { date: ((protocol.updated_at || protocol.created_at) | date:'dd.MM.yyyy, HH:mm') } }}</p>
+          <p>{{ 'attendance.draftEdited' | transloco: { date: ((protocol.updated_at || protocol.created_at) | date: ('common.ngDate' | transloco) + ', HH:mm') } }}</p>
           }
         </ion-label>
         @if (protocol) {
@@ -711,7 +711,7 @@
           <p>
             {{ task.responsible_person ? task.responsible_person.firstName + ' ' + task.responsible_person.lastName : ('attendance.nobodyAssigned' | transloco) }}
             @if (task.due_date && task.status !== 'completed') {
-            {{ 'attendance.dueOn' | transloco: { date: (task.due_date | date:'dd.MM.') } }}
+            {{ 'attendance.dueOn' | transloco: { date: (task.due_date | date: ('common.ngDayMonth' | transloco)) } }}
             }
           </p>
         </ion-label>

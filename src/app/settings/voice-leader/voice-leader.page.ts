@@ -1,3 +1,4 @@
+import { dateFmt } from '../../i18n/languages';
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
@@ -101,7 +102,7 @@ export class VoiceLeaderPage implements OnInit {
   }
 
   getAbsenceText(att: PersonAttendance): string {
-    const dateStr = dayjs(att.date).format('DD.MM.');
+    const dateStr = dayjs(att.date).format(dateFmt('dayMonth'));
     return att.title ? `${dateStr} ${att.title}` : dateStr;
   }
 

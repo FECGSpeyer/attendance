@@ -11,7 +11,7 @@ import { fieldDisplayName, topNumbers } from '../team-organization/team-org.util
 import { allPlans, planDate, planSubtitle } from './plan-days';
 import { fieldMinutes, groupDuration, isGroupHead } from './plan-groups';
 import { translate } from '@jsverse/transloco';
-import { currentIntlLocale, currentLanguage } from '../i18n/languages';
+import { currentIntlLocale, currentLanguage, dateFmt } from '../i18n/languages';
 
 export class Utils {
   public static getId(): number {
@@ -613,7 +613,7 @@ export class Utils {
     // creation timestamp, right-aligned, vertically centered to the top row
     doc.setFontSize(stampFontSize);
     doc.setTextColor(140, 140, 140);
-    doc.text(translate('common.createdAt', { date: dayjs().format('DD.MM.YYYY HH:mm') }), rightEdge, logoMidY, { align: 'right', baseline: 'middle' });
+    doc.text(translate('common.createdAt', { date: dayjs().format(`${dateFmt()} HH:mm`) }), rightEdge, logoMidY, { align: 'right', baseline: 'middle' });
 
     // ---- title + subtitle block ----
     let y = topRowY + logoHeight / 2 + (sideBySide ? 6 : 9);
@@ -672,7 +672,7 @@ export class Utils {
 
     const startingTime: dayjs.Dayjs = dayjs(props.time).isValid() ? dayjs(props.time) : dayjs().hour(Number(props.time.substring(0, 2))).minute(Number(props.time.substring(3, 5)));
     // `dateLabel` lets callers set the subtitle (e.g. the day of a multi-day Termin).
-    const date: string = props.dateLabel ? props.dateLabel : props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).locale(currentLanguage()).format('dddd, DD.MM.YYYY') : startingTime.locale(currentLanguage()).format('dddd, DD.MM.YYYY');
+    const date: string = props.dateLabel ? props.dateLabel : props.attendance ? dayjs(props.attendances.find((att: Attendance) => att.id === props.attendance).date).locale(currentLanguage()).format(`dddd, ${dateFmt()}`) : startingTime.locale(currentLanguage()).format(`dddd, ${dateFmt()}`);
     const hasConductors = Boolean(props.fields.find((field: FieldSelection) => field.conductor));
 
     const data: any[] = [];
@@ -1588,13 +1588,13 @@ export class Utils {
     if (type.all_day) {
       const endDate = dayjs(date).add((type.duration_days || 1) - 1, 'day');
       if (type.duration_days && type.duration_days > 1) {
-        return `${dayjs(date).locale(currentLanguage()).format('ddd, DD.MM.YYYY')} - ${endDate.locale(currentLanguage()).format('ddd, DD.MM.YYYY')}`;
+        return `${dayjs(date).locale(currentLanguage()).format(`ddd, ${dateFmt()}`)} - ${endDate.locale(currentLanguage()).format(`ddd, ${dateFmt()}`)}`;
       } else {
-        return dayjs(date).locale(currentLanguage()).format('ddd, DD.MM.YYYY');
+        return dayjs(date).locale(currentLanguage()).format(`ddd, ${dateFmt()}`);
       }
     }
 
-    return dayjs(date).locale(currentLanguage()).format('ddd, DD.MM.YYYY');
+    return dayjs(date).locale(currentLanguage()).format(`ddd, ${dateFmt()}`);
   }
 
   /** Rehearsal-like type? Type names are user data, so this checks all app languages. */

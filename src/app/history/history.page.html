@@ -34,11 +34,11 @@
             <ion-label>
               <h2>{{ entry.name }}</h2>
               @if (entry.attendance?.date) {
-                <h3>{{ entry.attendance.date | date:'dd.MM.yyyy' }} | {{ entry.conductorName }}
+                <h3>{{ entry.attendance.date | date: ('common.ngDate' | transloco) }} | {{ entry.conductorName }}
                 </h3>
               }
               @if (!entry.attendance?.date) {
-                <h3>{{ entry.date | date:'dd.MM.yyyy' }} | {{ entry.conductorName }}</h3>
+                <h3>{{ entry.date | date: ('common.ngDate' | transloco) }} | {{ entry.conductorName }}</h3>
               }
             </ion-label>
           </ion-item>
@@ -66,11 +66,11 @@
                   <ion-label>
                     <h2>{{ his.number }} {{ his.name }}</h2>
                     @if (his.attendance?.date) {
-                      <h3>{{ his.attendance.date | date:'dd.MM.yyyy' }} | {{ his.conductorName }}
+                      <h3>{{ his.attendance.date | date: ('common.ngDate' | transloco) }} | {{ his.conductorName }}
                       </h3>
                     }
                     @if (!his.attendance?.date) {
-                      <h3>{{ his.date | date:'dd.MM.yyyy' }} | {{ his.conductorName }}</h3>
+                      <h3>{{ his.date | date: ('common.ngDate' | transloco) }} | {{ his.conductorName }}</h3>
                     }
                   </ion-label>
                   @if (his.count !== 0) {

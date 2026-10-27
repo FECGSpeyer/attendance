@@ -294,7 +294,7 @@
                         @if (!holiday.gone) {
                           <ion-item>
                             <ion-label>
-                              <h2>{{ holiday.startDate | date:'dd.MM.yyyy' }} - {{ holiday.endDate | date:'dd.MM.yyyy' }}: {{
+                              <h2>{{ holiday.startDate | date: ('common.ngDate' | transloco) }} - {{ holiday.endDate | date: ('common.ngDate' | transloco) }}: {{
                               holiday.name[0].text }}</h2>
                             </ion-label>
                           </ion-item>
@@ -308,7 +308,7 @@
                           @if (!holiday.gone) {
                             <ion-item>
                               <ion-label>
-                                <h2>{{ holiday.startDate | date:'dd.MM.yyyy' }}: {{ holiday.name[0].text }}</h2>
+                                <h2>{{ holiday.startDate | date: ('common.ngDate' | transloco) }}: {{ holiday.name[0].text }}</h2>
                               </ion-label>
                             </ion-item>
                           }

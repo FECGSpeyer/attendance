@@ -10,7 +10,7 @@ import { Protocol } from 'src/app/utilities/interfaces';
 import { isEditedAfterPublish } from '../team-org.utils';
 import { MonthGroup, groupByMonth, matchesSearch } from 'src/app/protocols/protocol/protocol.helpers';
 import { translate } from '@jsverse/transloco';
-import { currentLanguage } from '../../i18n/languages';
+import { currentLanguage, dateFmt } from '../../i18n/languages';
 import { TranslocoModule } from '@jsverse/transloco';
 
 interface ProtocolRow {
@@ -68,7 +68,7 @@ export class TeamProtocolsTabComponent implements OnInit {
             weekday: d ? d.format('dd') : '',
             title,
             subtitle: att?.typeInfo && typeName && typeName !== title ? typeName : '',
-            dateText: d ? d.format('dd, DD.MM.YYYY') : '',
+            dateText: d ? d.format(`dd, ${dateFmt()}`) : '',
             isDraft: p.status !== 'published',
             edited: isEditedAfterPublish(p),
           };
@@ -88,7 +88,7 @@ export class TeamProtocolsTabComponent implements OnInit {
       r.title,
       r.subtitle,
       r.dateText,
-      r.date ? dayjs(r.date).format('D.M.YYYY') : '',
+      r.date ? dayjs(r.date).format(dateFmt()) : '',
       r.isDraft ? translate('teamOrg.draft') : translate('teamOrg.published'),
     ]));
     this.groups = groupByMonth(filtered, r => r.date);
@@ -97,7 +97,7 @@ export class TeamProtocolsTabComponent implements OnInit {
   publishedText(row: ProtocolRow): string {
     const p = row.protocol;
     if (row.isDraft || !p.published_at) return '';
-    const text = translate('teamOrg.publishedOn', { date: dayjs(p.published_at).format('DD.MM.') });
-    return row.edited && p.updated_at ? translate('teamOrg.editedOn', { text, date: dayjs(p.updated_at).format('DD.MM.') }) : text;
+    const text = translate('teamOrg.publishedOn', { date: dayjs(p.published_at).format(dateFmt('dayMonth')) });
+    return row.edited && p.updated_at ? translate('teamOrg.editedOn', { text, date: dayjs(p.updated_at).format(dateFmt('dayMonth')) }) : text;
   }
 }

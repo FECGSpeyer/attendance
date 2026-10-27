@@ -21,7 +21,7 @@ import {
   TOPIC_PRIORITY_LABELS,
 } from './topics-tab.utils';
 import { translate } from '@jsverse/transloco';
-import { currentLanguage } from '../../i18n/languages';
+import { currentLanguage, dateFmt } from '../../i18n/languages';
 import { TranslocoModule } from '@jsverse/transloco';
 
 /**
@@ -154,7 +154,7 @@ export class TeamTopicsTabComponent implements OnInit {
   private attendanceTitle(att: Attendance): string {
     const type = this.db.attendanceTypes().find(t => t.id === att.type_id);
     const name = (type ? Utils.getTypeTitle(type, att.typeInfo) : att.typeInfo) || type?.name || translate('attendance.eventFallback');
-    return `${name} · ${dayjs(att.date).locale(currentLanguage()).format('dd, DD.MM.')}`;
+    return `${name} · ${dayjs(att.date).locale(currentLanguage()).format(`dd, ${dateFmt('dayMonth')}`)}`;
   }
 
   /** "Ändern": pick another upcoming Termin or create a new one. */

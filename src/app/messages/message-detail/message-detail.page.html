@@ -34,7 +34,7 @@
         <ion-item button detail="false" (click)="showContent = !showContent">
           <ion-label class="ion-text-wrap">
             <h2 class="title">{{ message.title }}</h2>
-            <p>{{ message.created_at | date:'dd.MM.yyyy, HH:mm' }}{{ message.sender_name ? ' · ' + message.sender_name : '' }} · {{ showContent ? 'Nachricht ausblenden' : 'Nachricht anzeigen' }}</p>
+            <p>{{ message.created_at | date: ('common.ngDate' | transloco) + ', HH:mm' }}{{ message.sender_name ? ' · ' + message.sender_name : '' }} · {{ showContent ? 'Nachricht ausblenden' : 'Nachricht anzeigen' }}</p>
           </ion-label>
           <ion-icon slot="end" [name]="showContent ? 'chevron-up-outline' : 'chevron-down-outline'" color="medium"></ion-icon>
         </ion-item>
@@ -45,7 +45,7 @@
       <div class="message-card">
         @if (!isManager) {
           <h1>{{ message.title }}</h1>
-          <p class="from">{{ 'messages.from' | transloco: { name: message.sender_name || ('common.unknown' | transloco), date: (message.created_at | date:'dd.MM.yyyy, HH:mm') } }}</p>
+          <p class="from">{{ 'messages.from' | transloco: { name: message.sender_name || ('common.unknown' | transloco), date: (message.created_at | date: ('common.ngDate' | transloco) + ', HH:mm') } }}</p>
         }
         <div class="message-body" [innerHTML]="message.body_html" (click)="onBodyClick($event)"></div>
       </div>
@@ -96,7 +96,7 @@
           <ion-item button detail="true" (click)="openMessage(m)">
             <ion-label>
               {{ m.title }}
-              <p>{{ m.created_at | date:'dd.MM.yyyy' }}</p>
+              <p>{{ m.created_at | date: ('common.ngDate' | transloco) }}</p>
             </ion-label>
           </ion-item>
         }

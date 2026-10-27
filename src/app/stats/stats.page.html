@@ -73,7 +73,7 @@
     <ion-item>
       <ion-label>
         <p>{{ 'stats.best' | transloco }}</p>
-        <h2>{{ bestAttendance.date | date:'dd.MM.yyyy' }}</h2>
+        <h2>{{ bestAttendance.date | date: ('common.ngDate' | transloco) }}</h2>
       </ion-label>
       <ion-badge slot="end" color="success">{{ bestAttendance.percentage }}%</ion-badge>
     </ion-item>
@@ -83,7 +83,7 @@
     <ion-item lines="none">
       <ion-label>
         <p>{{ 'stats.worst' | transloco }}</p>
-        <h2>{{ worstAttendance.date | date:'dd.MM.yyyy' }}</h2>
+        <h2>{{ worstAttendance.date | date: ('common.ngDate' | transloco) }}</h2>
       </ion-label>
       <ion-badge slot="end" color="danger">{{ worstAttendance.percentage }}%</ion-badge>
     </ion-item>

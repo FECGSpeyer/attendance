@@ -550,7 +550,7 @@
               <ion-label>
                 <h3>{{ 'people.pausedFrom' | transloco }}</h3>
                 @if (pauseFrom) {
-                  <p>{{ pauseFrom | date:'dd.MM.yyyy' }}</p>
+                  <p>{{ pauseFrom | date: ('common.ngDate' | transloco) }}</p>
                 } @else {
                   <p>{{ 'people.fromToday' | transloco }}</p>
                 }
@@ -577,7 +577,7 @@
               <ion-label>
                 <h3>{{ 'signout.pausedUntil' | transloco }}</h3>
                 @if (pauseUntil) {
-                  <p>{{ pauseUntil | date:'dd.MM.yyyy' }}</p>
+                  <p>{{ pauseUntil | date: ('common.ngDate' | transloco) }}</p>
                 } @else {
                   <p>{{ 'people.noEndDate' | transloco }}</p>
                 }
