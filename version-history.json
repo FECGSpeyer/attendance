@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "version": "4.16.5",
+      "date": "27.10.2026",
+      "changes": [
+        "🇬🇧 Attendix gibt es jetzt auch auf Englisch: Unter Einstellungen → System → Sprache kannst du die Sprache wählen. Ohne Auswahl richtet sich die App nach deinem Gerät.",
+        "📖 Die Hilfe gibt es ebenfalls auf Englisch.",
+        "🔔 Push-Nachrichten, Telegram, E-Mails und Kalender-Abos kommen in der Sprache, die du gewählt hast.",
+        "📅 Datumsangaben werden je nach Sprache angezeigt, z. B. 27/10/2026 auf Englisch.",
+        "🐛 Benachrichtigungen bei Pausierungen werden wieder verschickt."
+      ]
+    },
+    {
       "version": "4.16.4",
       "date": "27.10.2026",
       "changes": [
