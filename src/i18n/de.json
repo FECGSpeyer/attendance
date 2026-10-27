@@ -1624,7 +1624,9 @@
     "assigning": "Teile ein…",
     "assignedToast": "{count, plural, one {# Dienst eingeteilt} other {# Dienste eingeteilt}}. Alle bekommen eine Push-Nachricht.",
     "reasonOptional": "Grund (optional)",
-    "validUntil": "Gültig bis (optional)"
+    "validUntil": "Gültig bis (optional)",
+    "myRequestsTitle": "Deine Dienste: bitte bestätigen",
+    "declinedToast": "Abgesagt, das Team wird informiert."
   },
   "plans": {
     "runSheet": "Ablaufplan",

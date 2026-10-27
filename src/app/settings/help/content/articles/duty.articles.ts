@@ -25,7 +25,7 @@ So schaltest du ihn ein (als [[Administrator]] oder [[Verantwortlicher]]):
     id: 'duty-assign',
     title: 'Personen einteilen und Dienste bestätigen',
     categoryId: 'duty',
-    keywords: ['einteilen', 'zuteilen', 'bestätigen', 'zusagen', 'kann nicht', 'absagen', 'angefragt', 'bestätigt', 'push', 'erinnerung', 'unbestätigt', 'austragen', 'besetzung', 'dienst'],
+    keywords: ['einteilen', 'zuteilen', 'bestätigen', 'zusagen', 'kann nicht', 'absagen', 'angefragt', 'bestätigt', 'push', 'erinnerung', 'unbestätigt', 'austragen', 'besetzung', 'dienst', 'admin', 'leitung', 'keine push', 'benachrichtigung'],
     body: `**Einteilen (Leitung):** Öffne den Termin. Im Bereich **Besetzung** siehst du, wer eingeteilt ist und wer noch verfügbar ist. Tippe auf **„Person einteilen“** oder bei einer Person auf **„Einteilen“**. Die Liste ist nach Anzahl Dienste im Monat sortiert, damit du fair verteilst. Wer abgesagt hat oder [[Regelmäßig verhindert|regelmäßig verhindert]] ist, steht unter „Kann nicht“.
 
 Eingeteilte bekommen sofort eine Push-Nachricht und sind erst einmal **angefragt**. Über das × neben dem Namen trägst du jemanden wieder aus.
@@ -34,7 +34,11 @@ Eingeteilte bekommen sofort eine Push-Nachricht und sind erst einmal **angefragt
 
 **Bestätigen (Mitglieder):** Unter **Meine Termine** erscheint oben „Bitte bestätigen“. Tippe auf **„Bestätigen“**, dann steht dein Dienst auf **bestätigt**. Mit **„Kann nicht“** sagst du ab wie bei einem normalen Termin, mit Grund. Du kannst auch einfach wie gewohnt zusagen; das zählt ebenfalls als Bestätigung.
 
+**Bestätigen (Admins und Verantwortliche):** Bist du selbst eingeteilt, siehst du unter **Termine** oben **„Deine Dienste: bitte bestätigen“** mit **„Bestätigen“** und **„Kann nicht“**. Dieselben Knöpfe findest du auch im Termin unter **Besetzung** bei deinem Namen. Eine Push-Nachricht zu deinem Dienst öffnet direkt den Termin.
+
 Hast du nach der eingestellten Zahl an Tagen nicht geantwortet, bekommst du einmal eine Erinnerung. Sagst du einen bestätigten Dienst später ab, ist das eine normale Abmeldung mit Grund; die Leitung wird wie gewohnt informiert.
+
+**Keine Push-Nachricht bekommen?** Unter **Benachrichtigungen** müssen **„Benachrichtigungen aktivieren“** und **„Push-Benachrichtigungen“** eingeschaltet sein, und die App muss auf dem Handy Mitteilungen senden dürfen.
 
 Möchtest du keine Dienst-Nachrichten, schalte unter **Benachrichtigungen** den Schalter **„Dienste“** aus. Dringende Anfragen bekommst du trotzdem.`,
   },

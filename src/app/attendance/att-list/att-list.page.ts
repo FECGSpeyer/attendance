@@ -12,7 +12,7 @@ import { EventMonthGroup, PAST_PREVIEW_COUNT, eventDay, eventMeta, eventTimeRang
 import 'dayjs/locale/de';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
-import { Attendance, PlayerAbsence, Song, History, Person, Plan } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, PlayerAbsence, Song, History, Person, Plan } from 'src/app/utilities/interfaces';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { Utils } from 'src/app/utilities/Utils';
@@ -39,6 +39,7 @@ export class AttListPage implements OnInit {
   public allAttendances: Attendance[] = [];
   public currentAttendance: Attendance;
   public isConductor = false;
+  public myPersonId: number | null = null;
   public isHelper = false;
   public canCreate = false;
   public isChoir = false;
@@ -181,6 +182,9 @@ export class AttListPage implements OnInit {
     } else if (this.isHelper) {
       const perm = this.db.getPermissionForRole(this.db.tenantUser().role);
       this.canCreate = perm?.attendance_create !== false;
+    }
+    if (this.isConductor || this.isHelper) {
+      void this.db.getPersonIdForTenant(this.db.tenant().id).then(id => this.myPersonId = id);
     }
     await this.getAttendance();
 
@@ -451,6 +455,45 @@ export class AttListPage implements OnInit {
     const type = this.db.attendanceTypes().find(t => t.id === this.type_id);
     const current = this.dutyRequiredByWeekday[weekday] ?? type?.duty_required ?? 1;
     this.dutyRequiredByWeekday = { ...this.dutyRequiredByWeekday, [weekday]: Math.max(1, current + delta) };
+  }
+
+  /** Own upcoming duties that still wait for confirmation (leaders have no "Meine Termine" page). */
+  get myDutyRequests(): { att: Attendance; pa: PersonAttendance }[] {
+    if (!this.myPersonId) return [];
+    const result: { att: Attendance; pa: PersonAttendance }[] = [];
+    // allAttendances is sorted newest first.
+    for (const att of [...this.allAttendances].reverse()) {
+      if (attendanceHasEnded(att) || !this.isDutyAttendance(att)) continue;
+      const pa = (att.persons ?? []).find(p => p.person_id === this.myPersonId && p.duty_state === 'requested');
+      if (pa) result.push({ att, pa });
+    }
+    return result;
+  }
+
+  async confirmMyDuty(pa: PersonAttendance): Promise<void> {
+    await this.db.dutySvc.confirm(pa.id, this.db.user?.id);
+    Utils.showToast(translate('signout.dutyConfirmed'), 'success', 3000);
+    await this.getAttendance();
+  }
+
+  async declineMyDuty(att: Attendance, pa: PersonAttendance): Promise<void> {
+    const alert = await this.alertController.create({
+      header: translate('signout.cannot'),
+      inputs: [{ name: 'reason', type: 'textarea', placeholder: translate('duty.reasonOptional') }],
+      buttons: [
+        { text: translate('common.cancel'), role: 'cancel' },
+        {
+          text: translate('common.confirm'),
+          handler: async ({ reason }) => {
+            await this.db.signout([pa.id], reason ?? '', false, false, true);
+            void this.db.dutySvc.notify({ type: 'understaffed', tenantId: this.db.tenant().id, attendanceId: att.id });
+            Utils.showToast(translate('duty.declinedToast'), 'success', 3000);
+            await this.getAttendance();
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   isDutyAttendance(att: Attendance): boolean {

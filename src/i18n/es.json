@@ -1624,7 +1624,9 @@
     "assigning": "Asignando…",
     "assignedToast": "{count, plural, one {# servicio asignado} other {# servicios asignados}}. Todos reciben una notificación.",
     "reasonOptional": "Motivo (opcional)",
-    "validUntil": "Válido hasta (opcional)"
+    "validUntil": "Válido hasta (opcional)",
+    "myRequestsTitle": "Tus servicios: confirma, por favor",
+    "declinedToast": "Cancelado, se avisará al equipo."
   },
   "plans": {
     "runSheet": "Programa",

@@ -628,6 +628,13 @@
         </ion-button>
         }
       </ion-item>
+      @if (isOwnRequestedDuty(pa)) {
+      <ion-item lines="full" class="own-duty-actions">
+        <ion-label class="ion-text-wrap"><p>{{ 'signout.youAreAssigned' | transloco }} · {{ 'signout.pleaseConfirm' | transloco }}</p></ion-label>
+        <ion-button slot="end" size="small" fill="outline" color="medium" (click)="declineOwnDuty(pa)">{{ 'signout.cannot' | transloco }}</ion-button>
+        <ion-button slot="end" size="small" color="success" (click)="confirmOwnDuty(pa)">{{ 'common.confirm' | transloco }}</ion-button>
+      </ion-item>
+      }
       }
       @if (canManageDuty) {
       <ion-item button detail="false" (click)="openDutyAssign()" lines="full">

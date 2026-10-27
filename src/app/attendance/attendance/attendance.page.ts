@@ -40,6 +40,7 @@ import { translate } from '@jsverse/transloco';
 export class AttendancePage implements OnInit, OnDestroy {
   @Input() isModal = false;
   public attendanceId!: number;
+  public myPersonId: number | null = null;
   @ViewChild('chooser') chooser: ElementRef;
   readonly AGENDA_ITEMS_PLACEHOLDER_ID = AGENDA_ITEMS_PLACEHOLDER_ID;
   @ViewChild('legendModal') legendModal: IonModal;
@@ -318,6 +319,8 @@ export class AttendancePage implements OnInit, OnDestroy {
     // Pin the tenant this page belongs to. The constructor's effect uses
     // this to detect cross-tenant switches and navigate away.
     this.ownedTenantId = this.db.tenant()?.id;
+
+    void this.db.getPersonIdForTenant(this.ownedTenantId).then(id => this.myPersonId = id);
 
     this.songs = await this.db.getSongs();
     this.filteredSongs = [...this.songs];
@@ -816,6 +819,41 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   get canManageDuty(): boolean {
     return this.isTeamLeader;
+  }
+
+  /** Own assignment that still waits for confirmation (leaders confirm here instead of "Meine Termine"). */
+  isOwnRequestedDuty(pa: PersonAttendance): boolean {
+    return pa.duty_state === 'requested' && !!this.myPersonId && pa.person_id === this.myPersonId;
+  }
+
+  async confirmOwnDuty(pa: PersonAttendance): Promise<void> {
+    await this.db.dutySvc.confirm(pa.id, this.db.user?.id);
+    this.players = this.players.map(p => p.id === pa.id
+      ? { ...p, duty_state: 'confirmed', status: AttendanceStatus.Present, notes: '' }
+      : p);
+    Utils.showToast(translate('signout.dutyConfirmed'), 'success', 3000);
+  }
+
+  async declineOwnDuty(pa: PersonAttendance): Promise<void> {
+    const alert = await this.alertController.create({
+      header: translate('signout.cannot'),
+      inputs: [{ name: 'reason', type: 'textarea', placeholder: translate('duty.reasonOptional') }],
+      buttons: [
+        { text: translate('common.cancel'), role: 'cancel' },
+        {
+          text: translate('common.confirm'),
+          handler: async ({ reason }) => {
+            await this.db.signout([pa.id], reason ?? '', false, false, true);
+            this.players = this.players.map(p => p.id === pa.id
+              ? { ...p, status: AttendanceStatus.Excused, notes: reason ?? '' }
+              : p);
+            void this.db.dutySvc.notify({ type: 'understaffed', tenantId: this.db.tenant().id, attendanceId: this.attendance.id });
+            Utils.showToast(translate('duty.declinedToast'), 'success', 3000);
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   async changeDutyRequired(delta: number): Promise<void> {

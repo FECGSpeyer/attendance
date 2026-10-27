@@ -87,6 +87,21 @@
       }
     </ion-list>
   } @else if (loaded && allAttendances.length) {
+    @if (myDutyRequests.length) {
+      <div class="ev-month">{{ 'duty.myRequestsTitle' | transloco }}</div>
+      <ion-list inset="true" class="my-duty-requests">
+        @for (r of myDutyRequests; track r.pa.id) {
+          <ion-item lines="full">
+            <ion-label class="ion-text-wrap" (click)="openAttendance(r.att)">
+              <h3>{{ getEventTitle(r.att) }}</h3>
+              <p>{{ getEventMeta(r.att, true, false) }}</p>
+            </ion-label>
+            <ion-button slot="end" size="small" fill="outline" color="medium" (click)="declineMyDuty(r.att, r.pa)">{{ 'signout.cannot' | transloco }}</ion-button>
+            <ion-button slot="end" size="small" color="success" (click)="confirmMyDuty(r.pa)">{{ 'common.confirm' | transloco }}</ion-button>
+          </ion-item>
+        }
+      </ion-list>
+    }
     @if (currentAttendance && (isConductor || isHelper)) {
       <div class="ev-month">{{ isRunning(currentAttendance) ? 'Heute' : 'Nächster Termin' }}</div>
       <ion-item-sliding #slider class="ev-today-sliding">

@@ -1624,7 +1624,9 @@
     "assigning": "Assigning…",
     "assignedToast": "{count, plural, one {# duty assigned} other {# duties assigned}}. Everyone gets a push notification.",
     "reasonOptional": "Reason (optional)",
-    "validUntil": "Valid until (optional)"
+    "validUntil": "Valid until (optional)",
+    "myRequestsTitle": "Your duties: please confirm",
+    "declinedToast": "Declined, the team will be notified."
   },
   "plans": {
     "runSheet": "Run sheet",

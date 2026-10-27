@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "4.17.1",
+      "date": "27.10.2026",
+      "changes": [
+        "✅ Admins und Verantwortliche können ihre eigenen Dienste jetzt bestätigen oder absagen: oben unter Termine und im Termin bei ihrem Namen.",
+        "📖 Die Hilfe erklärt, was nötig ist, damit Dienst-Pushs ankommen.",
+        "🎨 Die Zahlen oben in der Dienstplan-Ansicht stehen wieder auf einer Linie."
+      ]
+    },
+    {
       "version": "4.17.0",
       "date": "27.10.2026",
       "changes": [

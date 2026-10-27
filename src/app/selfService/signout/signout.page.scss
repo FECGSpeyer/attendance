@@ -174,6 +174,12 @@
   text-align: left;
   color: var(--ion-text-color);
   min-height: 44px;
+  // Native buttons center their content vertically; keep the numbers on one
+  // line even if a label wraps (e.g. "Dienste diesen Monat").
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
 
   b {
     display: block;
@@ -182,7 +188,9 @@
   }
 
   span {
+    display: block;
     font-size: 12px;
+    line-height: 1.3;
     color: var(--ion-color-medium-shade);
   }
 

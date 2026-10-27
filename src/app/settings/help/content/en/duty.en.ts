@@ -22,7 +22,7 @@ How to switch it on (as [[Administrator]] or [[Person in charge]]):
   },
   'duty-assign': {
     title: 'Assigning people and confirming duties',
-    keywords: ['assign', 'allocate', 'confirm', 'accept', "can't", 'decline', 'requested', 'confirmed', 'push', 'reminder', 'unconfirmed', 'remove', 'staffing', 'duty'],
+    keywords: ['assign', 'allocate', 'confirm', 'accept', "can't", 'decline', 'requested', 'confirmed', 'push', 'reminder', 'unconfirmed', 'remove', 'staffing', 'duty', 'admin', 'lead', 'no push', 'notification'],
     body: `**Assigning (lead):** Open the event. In the **Staffing** area you see who is assigned and who is still available. Tap **"Assign person"** or **"Assign"** next to a person. The list is sorted by the number of duties in the month so you distribute fairly. Anyone who has declined or is [[Regularly unavailable|regularly unavailable]] is listed under "Can't".
 
 Assigned people immediately get a push message and are **requested** at first. With the × next to the name you remove someone again.
@@ -31,7 +31,11 @@ Assigned people immediately get a push message and are **requested** at first. W
 
 **Confirming (members):** Under **My events**, "Please confirm" appears at the top. Tap **"Confirm"** and your duty is **confirmed**. With **"Can't"** you decline like for a normal event, with a reason. You can also simply accept as usual; that also counts as confirmation.
 
+**Confirming (admins and responsible persons):** If you are assigned yourself, **Events** shows **"Your duties: please confirm"** at the top with **"Confirm"** and **"Can't"**. You find the same buttons in the event under **Staffing** next to your name. A push message about your duty opens the event directly.
+
 If you have not answered after the set number of days, you get one reminder. If you later decline a confirmed duty, it is a normal sign-out with a reason; the lead is informed as usual.
+
+**Not getting push messages?** Under **Notifications**, **"Enable notifications"** and **"Push notifications"** must be switched on, and the app must be allowed to send notifications on your phone.
 
 If you don't want duty messages, switch off **"Duties"** under **Notifications**. You still get urgent requests.`,
   },

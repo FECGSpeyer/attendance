@@ -30,7 +30,7 @@ describe('duty utils', () => {
     ];
     const result = distributeDuties(slots, new Map(), { maxPerPerson: 5, notTwiceSameDay: true });
     expect(result.get(1)).toEqual([10]);
-    expect(result.has(2)).toBeFalse();
+    expect(result.has(2)).toBe(false);
   });
 
   it('classifies the fill state', () => {
