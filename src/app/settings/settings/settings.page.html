@@ -533,7 +533,6 @@
       <ion-item routerLink="files" button lines="none">
         <ion-icon name="folder-outline" slot="start"></ion-icon>
         <ion-label>{{ 'settings.fileStorage' | transloco }}</ion-label>
-        <ion-badge slot="end" color="success">{{ 'settings.new' | transloco }}</ion-badge>
       </ion-item>
       }
     </ion-item-group>
@@ -553,7 +552,6 @@
       <ion-item routerLink="files" button lines="none">
         <ion-icon name="folder-outline" slot="start"></ion-icon>
         <ion-label>{{ 'settings.fileStorage' | transloco }}</ion-label>
-        <ion-badge slot="end" color="success">{{ 'settings.new' | transloco }}</ion-badge>
       </ion-item>
     </ion-item-group>
   </ion-list>
@@ -728,8 +726,11 @@
       @if (languages.length > 1) {
       <ion-item>
         <ion-icon name="language-outline" slot="start"></ion-icon>
-        <ion-select [label]="'settings.language.title' | transloco" interface="popover"
-          [value]="language" (ionChange)="onLanguageChange($event.detail.value)">
+        <ion-select interface="popover" [value]="language" (ionChange)="onLanguageChange($event.detail.value)">
+          <div slot="label">
+            {{ 'settings.language.title' | transloco }}
+            <ion-badge color="success" class="new-badge">{{ 'settings.new' | transloco }}</ion-badge>
+          </div>
           @for (l of languages; track l.value) {
             <ion-select-option [value]="l.value">{{ l.label }}</ion-select-option>
           }
