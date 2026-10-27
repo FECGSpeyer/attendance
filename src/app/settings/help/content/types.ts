@@ -22,3 +22,24 @@ export interface GlossaryTerm {
   aliases?: string[];
   definition: string;
 }
+
+// Translation of the German help content into another UI language, keyed by
+// the ids of the German categories, articles and glossary terms. Missing
+// entries fall back to German.
+export interface HelpArticleTranslation {
+  title: string;
+  keywords: string[];
+  body: string;
+}
+
+export interface GlossaryTermTranslation {
+  term: string;
+  aliases?: string[];
+  definition: string;
+}
+
+export interface HelpTranslation {
+  categories: Record<string, string>;
+  articles: Record<string, HelpArticleTranslation>;
+  glossary: Record<string, GlossaryTermTranslation>;
+}

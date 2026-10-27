@@ -19,6 +19,7 @@ Jedes neue oder geänderte Feature, das Nutzer in der App bemerken, muss im selb
 - Artikel liegen in `src/app/settings/help/content/articles/*.articles.ts` (Kategorien in `categories.ts`, Begriffe in `glossary.ts`).
 - Bestehenden Artikel anpassen oder einen neuen anlegen (eindeutige `id`, passende `categoryId`, `keywords` mit Synonymen für die Suche).
 - Text auf Deutsch, in Du-Form, aus Sicht der Nutzer: wo man die Funktion findet, wer sie nutzen darf, was passiert.
+- Englische Fassung im selben Commit in `src/app/settings/help/content/en/*.en.ts` (gleiche `id`); `help-translations.spec.ts` prüft, dass jede freigeschaltete Sprache alle Artikel und Begriffe hat.
 - Reine Bugfixes ohne sichtbare Verhaltensänderung brauchen keinen Hilfetext; ändert der Fix aber beschriebenes Verhalten, den Artikel korrigieren.
 
 ## Übersetzungen immer mitpflegen

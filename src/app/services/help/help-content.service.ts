@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import Fuse from 'fuse.js';
-import { GLOSSARY, HELP_ARTICLES, HELP_CATEGORIES, GlossaryTerm, HelpArticle, HelpCategory } from '../../settings/help/content';
+import { GlossaryTerm, HelpArticle, HelpCategory, localizeHelp } from '../../settings/help/content';
+import { currentIntlLocale, currentLanguage } from '../../i18n/languages';
 
 export interface HelpSearchResults {
   articles: HelpArticle[];
@@ -11,7 +12,10 @@ export interface HelpSearchResults {
   providedIn: 'root'
 })
 export class HelpContentService {
-  private articleFuse = new Fuse(HELP_ARTICLES, {
+  // The language is fixed for the app session (switching reloads the app).
+  private readonly help = localizeHelp(currentLanguage());
+
+  private articleFuse = new Fuse(this.help.articles, {
     keys: [
       { name: 'title', weight: 2 },
       { name: 'keywords', weight: 1.5 },
@@ -21,7 +25,7 @@ export class HelpContentService {
     ignoreLocation: true,
   });
 
-  private glossaryFuse = new Fuse(GLOSSARY, {
+  private glossaryFuse = new Fuse(this.help.glossary, {
     keys: [
       { name: 'term', weight: 2 },
       { name: 'aliases', weight: 1.5 },
@@ -32,29 +36,29 @@ export class HelpContentService {
   });
 
   getCategories(): HelpCategory[] {
-    return [...HELP_CATEGORIES].sort((a, b) => a.order - b.order);
+    return [...this.help.categories].sort((a, b) => a.order - b.order);
   }
 
   getArticlesByCategory(categoryId: string): HelpArticle[] {
-    return HELP_ARTICLES.filter(a => a.categoryId === categoryId);
+    return this.help.articles.filter(a => a.categoryId === categoryId);
   }
 
   getArticle(id: string): HelpArticle | undefined {
-    return HELP_ARTICLES.find(a => a.id === id);
+    return this.help.articles.find(a => a.id === id);
   }
 
   getAllGlossaryTerms(): GlossaryTerm[] {
-    return [...GLOSSARY].sort((a, b) => a.term.localeCompare(b.term, 'de'));
+    return [...this.help.glossary].sort((a, b) => a.term.localeCompare(b.term, currentIntlLocale()));
   }
 
   getGlossaryTerm(idOrSlug: string): GlossaryTerm | undefined {
-    return GLOSSARY.find(g => g.id === idOrSlug);
+    return this.help.glossary.find(g => g.id === idOrSlug);
   }
 
   // Matches a glossary term by its display name or one of its aliases (case-insensitive).
   findGlossaryTermByName(name: string): GlossaryTerm | undefined {
     const normalized = name.trim().toLowerCase();
-    return GLOSSARY.find(g =>
+    return this.help.glossary.find(g =>
       g.term.toLowerCase() === normalized || g.aliases?.some(a => a.toLowerCase() === normalized)
     );
   }
