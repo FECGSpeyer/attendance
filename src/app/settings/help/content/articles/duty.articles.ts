@@ -17,7 +17,7 @@ So schaltest du ihn ein (als [[Administrator]] oder [[Verantwortlicher]]):
 
 **Termine anlegen:** Beim Anlegen mehrerer Termine stellst du pro Wochentag ein, wie viele Personen gebraucht werden, z. B. mittwochs und freitags 1, sonntags 2. Auf jedem Termin kannst du die Zahl später mit + und − ändern.
 
-**Dienstplan-Ansicht:** Sind Dienste bei euch der Normalfall, kann „Meine Termine“ ganz auf den Dienstplan ausgerichtet werden. Beim ersten Termintyp im Dienst-Modus fragt die App danach; später schaltest du es unter **Mehr → Einstellungen → Allgemein → Dienstplan-Ansicht für Meine Termine** um. Personen im Dienst-Team sehen dann oben ihre Zahlen (Dienste diesen Monat, zu bestätigen, offen im Team) statt der Anwesenheitsquote, danach „Bitte bestätigen“, den nächsten Dienst mit Team, die offenen Dienste direkt auf der Seite und ihre weiteren Dienste. Andere Termine stehen eingeklappt unter „Weitere Termine“. Wer in keinem Dienst-Team ist, sieht die normale Ansicht.
+**Dienstplan-Ansicht:** Sind Dienste bei euch der Normalfall, kann „Meine Termine“ ganz auf den Dienstplan ausgerichtet werden. Beim ersten Termintyp im Dienst-Modus fragt die App danach; später schaltest du es unter **Mehr → Einstellungen** im Bereich „Anwesenheiten“ mit **„Dienstplan-Ansicht für Meine Termine“** um. Der Schalter erscheint nur, wenn es mindestens einen Termintyp im Dienst-Modus gibt. Personen im Dienst-Team sehen dann oben ihre Zahlen (Dienste diesen Monat, zu bestätigen, offen im Team) statt der Anwesenheitsquote, danach „Bitte bestätigen“, den nächsten Dienst mit Team, die offenen Dienste direkt auf der Seite und ihre weiteren Dienste. Andere Termine stehen eingeklappt unter „Weitere Termine“. Wer in keinem Dienst-Team ist, sieht die normale Ansicht.
 
 **Was sich ändert:** Alle im Dienst-Team stehen im Termin, sind aber erst einmal nur [[Springer]]. Nur wer eingeteilt ist, sieht den Dienst unter „Meine Termine“ und zählt für die Anwesenheitsquote. In der Terminliste zeigt ein Abzeichen wie „1/2“, wie voll ein Dienst ist: grün = besetzt und bestätigt, gelb = teilweise oder noch unbestätigt, rot = niemand eingeteilt.`,
   },
@@ -32,7 +32,7 @@ Eingeteilte bekommen sofort eine Push-Nachricht und sind erst einmal **angefragt
 
 **Einteilung und Anwesenheit hängen zusammen:** Markierst du in der Anwesenheitsliste jemanden als anwesend oder verspätet, ist die Person automatisch eingeteilt und bestätigt. Setzt du einen bestätigten Dienst zurück auf neutral, ist er wieder angefragt. Eine Abmeldung lässt die Einteilung stehen und zählt als „kann nicht“.
 
-**Bestätigen (Mitglieder):** Unter **Meine Termine** erscheint oben „Bitte bestätigen“. Tippe auf **„Bestätigen“**, dann steht dein Dienst auf **bestätigt**. Mit **„Kann nicht“** sagst du ab wie bei einem normalen Termin, mit Grund.
+**Bestätigen (Mitglieder):** Unter **Meine Termine** erscheint oben „Bitte bestätigen“. Tippe auf **„Bestätigen“**, dann steht dein Dienst auf **bestätigt**. Mit **„Kann nicht“** sagst du ab wie bei einem normalen Termin, mit Grund. Du kannst auch einfach wie gewohnt zusagen; das zählt ebenfalls als Bestätigung.
 
 Hast du nach der eingestellten Zahl an Tagen nicht geantwortet, bekommst du einmal eine Erinnerung. Sagst du einen bestätigten Dienst später ab, ist das eine normale Abmeldung mit Grund; die Leitung wird wie gewohnt informiert.
 
@@ -43,7 +43,7 @@ Möchtest du keine Dienst-Nachrichten, schalte unter **Benachrichtigungen** den 
     title: 'Offene Dienste übernehmen und einspringen',
     categoryId: 'duty',
     keywords: ['offene dienste', 'übernehmen', 'einspringen', 'selbst eintragen', 'springer', 'vertretung', 'unterbesetzt', 'ausfall', 'dringend', 'wer kann', 'wieder besetzt'],
-    body: `**Offene Dienste:** Gehörst du zu einem Dienst-Team, siehst du unter **Meine Termine** die Kachel **„Offene Dienste“** (in der Dienstplan-Ansicht stehen sie direkt auf der Seite, dringende oben). Dort stehen alle Dienste, bei denen noch jemand fehlt. Mit **„Ich übernehme“** trägst du dich ein, sofern die Leitung das Selbst-Eintragen erlaubt hat. Waren zwei gleichzeitig schneller, gewinnt der Erste; du bekommst dann einen Hinweis.
+    body: `**Offene Dienste:** Gehörst du zu einem Dienst-Team, siehst du unter **Meine Termine** die Kachel **„Offene Dienste“** (in der Dienstplan-Ansicht stehen sie direkt auf der Seite, dringende oben). Dort stehen alle Dienste, bei denen noch jemand fehlt. Mit **„Ich übernehme“** (in der Dienstplan-Ansicht **„Übernehmen“**) trägst du dich ein, sofern die Leitung das Selbst-Eintragen erlaubt hat. Tippen zwei Personen gleichzeitig, bekommt die erste den Platz; die andere sieht einen Hinweis.
 
 **Wenn jemand ausfällt:** Sagt eine eingeteilte Person ab und der Dienst ist dadurch unterbesetzt, bekommen alle [[Springer]] eine Nachricht „Kannst du einspringen?“. Ein Tipp darauf öffnet die offenen Dienste.
 
@@ -58,7 +58,7 @@ Möchtest du keine Dienst-Nachrichten, schalte unter **Benachrichtigungen** den 
     keywords: ['regelmäßig verhindert', 'verfügbarkeit', 'wochentag', 'immer', 'jeden mittwoch', 'kinderstunde', 'nicht verfügbar', 'dauerhaft', 'abwesenheit', 'wiederkehrend', 'regel'],
     body: `Kannst du an bestimmten Wochentagen grundsätzlich nicht, z. B. mittwochs wegen der Kinderstunde, trag das einmal als Regel ein, statt jeden Termin einzeln abzusagen.
 
-**Wo:** Unter **Meine Termine → Offene Dienste → Regelmäßig verhindert**. Die Leitung findet dasselbe bei einer Person unter **Abwesenheiten → Regelmäßig verhindert**.
+**Wo:** Unter **Meine Termine → Offene Dienste → Regelmäßig verhindert**, in der Dienstplan-Ansicht direkt unten auf der Seite. Die Leitung findet dasselbe bei einer Person unter **Abwesenheiten → Regelmäßig verhindert**.
 
 **So geht's:** Tippe auf **„Regel hinzufügen“**, wähle die Wochentage, die Termintypen (ohne Auswahl gilt die Regel für alle), optional einen Grund und ein Enddatum, und speichere.
 

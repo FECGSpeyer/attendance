@@ -1,6 +1,18 @@
 {
   "versions": [
     {
+      "version": "4.16.0",
+      "date": "27.10.2026",
+      "changes": [
+        "🎧 Neu: Dienstplan. Termintypen im Dienst-Modus (z. B. Tontechnik) mit benötigter Personenzahl, Einteilung durch die Leitung, Bestätigung per Push und Selbst-Eintragen.",
+        "🆘 Fällt jemand aus, bekommt das Team eine Einspring-Anfrage; kurz vorher geht bei Bedarf eine dringende Nachricht an alle und die Leitung.",
+        "🔀 Dienste fair verteilen: Die App schlägt für einen Zeitraum eine gerechte Einteilung vor, die du anpassen kannst.",
+        "📅 Regelmäßig verhindert: Wochentage eintragen, an denen du grundsätzlich nicht kannst; neue Termine werden automatisch entschuldigt.",
+        "📱 Optionale Dienstplan-Ansicht für Meine Termine mit deinen Diensten, offenen Diensten und Zahlen statt Quote.",
+        "🗓️ Kalender-Abo: zeigt nur deine eigenen Dienste und kann abgesagte Termine ausblenden."
+      ]
+    },
+    {
       "version": "4.15.7",
       "date": "26.10.2026",
       "changes": [

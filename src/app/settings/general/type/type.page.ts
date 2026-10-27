@@ -386,7 +386,7 @@ export class TypePage implements OnInit {
     if (otherDutyTypes.length) return;
     const alert = await this.alertController.create({
       header: 'Dienstplan-Ansicht verwenden?',
-      message: 'Sind Dienste bei euch der Normalfall? Dann zeigt „Meine Termine“ für alle im Dienst-Team zuerst ihre Dienste, offene Dienste und Zahlen statt der Anwesenheitsquote. Du kannst das jederzeit unter Einstellungen → Allgemein ändern.',
+      message: 'Sind Dienste bei euch der Normalfall? Dann zeigt „Meine Termine“ für alle im Dienst-Team zuerst ihre Dienste, offene Dienste und Zahlen statt der Anwesenheitsquote. Du kannst das jederzeit unter Mehr → Einstellungen ändern.',
       buttons: [
         { text: 'Nein, normale Ansicht', role: 'cancel' },
         {
