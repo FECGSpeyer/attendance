@@ -72,6 +72,8 @@ export interface Tenant {
   files_enabled?: boolean;
   files_shared?: boolean;
   files_max_bytes?: number | null;
+  /** "Meine Termine" as duty roster view (C4) for members of a duty circle. */
+  duty_view?: boolean;
 }
 
 export interface ExtraField {

@@ -5,7 +5,7 @@ export const DUTY_ARTICLES: HelpArticle[] = [
     id: 'duty-setup',
     title: 'Dienstplan einrichten',
     categoryId: 'duty',
-    keywords: ['dienstplan', 'dienst', 'dienste', 'dienst-modus', 'tontechnik', 'technik', 'ton', 'beamer', 'ordner', 'küchendienst', 'besetzung', 'einteilen', 'schichtplan', 'termintyp', 'benötigte personen'],
+    keywords: ['dienstplan', 'dienst', 'dienste', 'dienst-modus', 'dienstplan-ansicht', 'meine dienste', 'ansicht', 'tontechnik', 'technik', 'ton', 'beamer', 'ordner', 'küchendienst', 'besetzung', 'einteilen', 'schichtplan', 'termintyp', 'benötigte personen'],
     body: `Mit dem [[Dienst-Modus]] wird aus einem Termintyp ein Dienstplan, z. B. für die Tontechnik. Nicht alle kommen, sondern nur so viele Personen, wie gebraucht werden.
 
 So schaltest du ihn ein (als [[Administrator]] oder [[Verantwortlicher]]):
@@ -16,6 +16,8 @@ So schaltest du ihn ein (als [[Administrator]] oder [[Verantwortlicher]]):
 4. Stelle ein, wie viele Personen normalerweise **benötigt** werden, ob man sich **selbst eintragen** darf, nach wie vielen Tagen an **unbestätigte Dienste erinnert** wird, ob die **Gruppe bei einem Ausfall** benachrichtigt wird und ab wann eine **dringende** Nachricht rausgeht.
 
 **Termine anlegen:** Beim Anlegen mehrerer Termine stellst du pro Wochentag ein, wie viele Personen gebraucht werden, z. B. mittwochs und freitags 1, sonntags 2. Auf jedem Termin kannst du die Zahl später mit + und − ändern.
+
+**Dienstplan-Ansicht:** Sind Dienste bei euch der Normalfall, kann „Meine Termine“ ganz auf den Dienstplan ausgerichtet werden. Beim ersten Termintyp im Dienst-Modus fragt die App danach; später schaltest du es unter **Mehr → Einstellungen → Allgemein → Dienstplan-Ansicht für Meine Termine** um. Personen im Dienst-Team sehen dann oben ihre Zahlen (Dienste diesen Monat, zu bestätigen, offen im Team) statt der Anwesenheitsquote, danach „Bitte bestätigen“, den nächsten Dienst mit Team, die offenen Dienste direkt auf der Seite und ihre weiteren Dienste. Andere Termine stehen eingeklappt unter „Weitere Termine“. Wer in keinem Dienst-Team ist, sieht die normale Ansicht.
 
 **Was sich ändert:** Alle im Dienst-Team stehen im Termin, sind aber erst einmal nur [[Springer]]. Nur wer eingeteilt ist, sieht den Dienst unter „Meine Termine“ und zählt für die Anwesenheitsquote. In der Terminliste zeigt ein Abzeichen wie „1/2“, wie voll ein Dienst ist: grün = besetzt und bestätigt, gelb = teilweise oder noch unbestätigt, rot = niemand eingeteilt.`,
   },
@@ -39,7 +41,7 @@ Möchtest du keine Dienst-Nachrichten, schalte unter **Benachrichtigungen** den 
     title: 'Offene Dienste übernehmen und einspringen',
     categoryId: 'duty',
     keywords: ['offene dienste', 'übernehmen', 'einspringen', 'selbst eintragen', 'springer', 'vertretung', 'unterbesetzt', 'ausfall', 'dringend', 'wer kann', 'wieder besetzt'],
-    body: `**Offene Dienste:** Gehörst du zu einem Dienst-Team, siehst du unter **Meine Termine** die Kachel **„Offene Dienste“**. Dort stehen alle Dienste, bei denen noch jemand fehlt. Mit **„Ich übernehme“** trägst du dich ein, sofern die Leitung das Selbst-Eintragen erlaubt hat. Waren zwei gleichzeitig schneller, gewinnt der Erste; du bekommst dann einen Hinweis.
+    body: `**Offene Dienste:** Gehörst du zu einem Dienst-Team, siehst du unter **Meine Termine** die Kachel **„Offene Dienste“** (in der Dienstplan-Ansicht stehen sie direkt auf der Seite, dringende oben). Dort stehen alle Dienste, bei denen noch jemand fehlt. Mit **„Ich übernehme“** trägst du dich ein, sofern die Leitung das Selbst-Eintragen erlaubt hat. Waren zwei gleichzeitig schneller, gewinnt der Erste; du bekommst dann einen Hinweis.
 
 **Wenn jemand ausfällt:** Sagt eine eingeteilte Person ab und der Dienst ist dadurch unterbesetzt, bekommen alle [[Springer]] eine Nachricht „Kannst du einspringen?“. Ein Tipp darauf öffnet die offenen Dienste.
 

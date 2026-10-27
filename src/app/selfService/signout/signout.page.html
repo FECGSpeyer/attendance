@@ -119,7 +119,9 @@
         @if (player.paused) {
           <span class="greet__paused"><ion-icon name="pause-circle-outline"></ion-icon> Pausiert</span>
         }
-        @if (perc) {
+        @if (useDutyView) {
+          <span>Dein Dienstplan</span>
+        } @else if (perc) {
           <span class="greet__perc" [ngClass]="'ion-color-' + percColor(perc)">{{ perc }}% Anwesenheit</span>
         }
         @if (lateCount) {
@@ -129,7 +131,19 @@
     </div>
   </div>
 
-  @if (upcomingSongs.length > 0 || canPlannedAbsence || inDutyCircle) {
+  @if (useDutyView) {
+  <div class="duty-stats">
+    <button class="duty-stat" (click)="scrollToSection('duty-mine')">
+      <b>{{ dutiesThisMonth }}</b><span>{{ dutiesThisMonth === 1 ? 'Dienst' : 'Dienste' }} diesen Monat</span>
+    </button>
+    <button class="duty-stat" [class.duty-stat--warn]="dutyRequests.length > 0" (click)="scrollToSection('duty-requests')">
+      <b>{{ dutyRequests.length }}</b><span>zu bestätigen</span>
+    </button>
+    <button class="duty-stat" (click)="scrollToSection('duty-open')">
+      <b>{{ openDuties.length }}</b><span>offen im Team</span>
+    </button>
+  </div>
+  } @else if (upcomingSongs.length > 0 || canPlannedAbsence || inDutyCircle) {
   <div class="greet-tiles">
     @if (upcomingSongs.length > 0) {
       <button class="greet-tile" (click)="songsModalOpen = true">
@@ -162,7 +176,7 @@
   }
 
   @if (dutyRequests.length) {
-    <div class="ev-section">
+    <div class="ev-section" id="duty-requests">
       <h2>Bitte bestätigen</h2>
       <span class="ev-section__count">{{ dutyRequests.length }}</span>
     </div>
@@ -351,6 +365,112 @@
     }
   </ng-template>
 
+  @if (useDutyView) {
+    @if (nextDuty) {
+      <div class="ev-month">Nächster Dienst</div>
+      <div class="ev-today ev-today--static">
+        <div class="ev-today__head">
+          <div class="ev-tile">
+            <span class="ev-tile__wd">{{ weekday(nextDuty.date) }}</span>
+            <span class="ev-tile__day">{{ day(nextDuty.date) }}</span>
+          </div>
+          <div>
+            <div class="ev-today__title" lang="de">{{ getEventTitle(nextDuty) }}</div>
+            <div class="ev-today__meta">{{ getEventMeta(nextDuty, true, false) }}</div>
+            <div class="duty-team">
+              <span class="duty-chip duty-chip--me">Du</span>
+              @for (name of dutyTeam(nextDuty); track name) {
+                <span class="duty-chip">{{ name }}</span>
+              }
+            </div>
+          </div>
+        </div>
+        <ng-container *ngTemplateOutlet="eventChips; context: { $implicit: nextDuty }"></ng-container>
+        <div class="ev-today__actions">
+          <ion-button fill="outline" color="primary" (click)="declineDuty(nextDuty)">Kann doch nicht</ion-button>
+        </div>
+      </div>
+    }
+
+    <div class="ev-section" id="duty-open">
+      <h2>Offene Dienste</h2>
+      @if (openDuties.length > 3) {
+        <button class="ev-more-link duty-all" (click)="isOpenDutiesModalOpen = true">Alle {{ openDuties.length }}</button>
+      }
+    </div>
+    <ion-list [inset]="true" class="ev-list">
+      @for (t of openDutiesPreview; track t.attendance.id) {
+        <ion-item>
+          <div slot="start" class="ev-tile">
+            <span class="ev-tile__wd">{{ weekday(t.attendance.date) }}</span>
+            <span class="ev-tile__day">{{ day(t.attendance.date) }}</span>
+          </div>
+          <ion-label>
+            <h2>{{ dutyTitle(t) }}</h2>
+            <p>
+              @if (isUrgentDuty(t)) {
+                <span class="duty-urgent">Dringend</span> ·
+              }
+              {{ dutyMeta(t) }}
+            </p>
+          </ion-label>
+          <ion-button slot="end" size="small" (click)="takeDuty(t)">Übernehmen</ion-button>
+        </ion-item>
+      } @empty {
+        <ion-item lines="none">
+          <ion-label color="medium">Gerade sind alle Dienste besetzt. Danke!</ion-label>
+        </ion-item>
+      }
+    </ion-list>
+
+    @if (myDuties.length) {
+      <div class="ev-section" id="duty-mine">
+        <h2>Meine Dienste</h2>
+        <span class="ev-section__count">{{ myDuties.length }}</span>
+      </div>
+      <ion-list [inset]="true" class="ev-list">
+        @for (att of myDuties; track att.attendance_id ?? att.id) {
+          <ion-item button detail="false" (click)="presentActionSheetForChoice(att)">
+            <div slot="start" class="ev-tile">
+              <span class="ev-tile__wd">{{ weekday(att.date) }}</span>
+              <span class="ev-tile__day">{{ day(att.date) }}</span>
+            </div>
+            <ion-label>
+              <h2>{{ getEventTitle(att) }}</h2>
+              <p>{{ getEventMeta(att) }}@if (dutyTeam(att).length) { · mit {{ dutyTeam(att).join(', ') }}}</p>
+            </ion-label>
+            <span slot="end" class="ev-pill ion-color-success">bestätigt</span>
+          </ion-item>
+        }
+      </ion-list>
+    } @else if (!nextDuty) {
+      <div id="duty-mine"></div>
+    }
+
+    <ion-list [inset]="true" class="ev-list">
+      @if (otherTermineCount) {
+        <ion-item button detail="false" (click)="showOtherTermine = !showOtherTermine">
+          <ion-label>
+            <h2>Weitere Termine</h2>
+            <p>{{ otherTermineCount }} · {{ otherTermineNames }}</p>
+          </ion-label>
+          <ion-icon slot="end" [name]="showOtherTermine ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+        </ion-item>
+      }
+      <ion-item button detail="true" (click)="openUnavailability()">
+        <ion-icon slot="start" name="calendar-clear-outline"></ion-icon>
+        <ion-label>Regelmäßig verhindert</ion-label>
+      </ion-item>
+      @if (canPlannedAbsence) {
+        <ion-item button detail="true" (click)="isAbsenceModalOpen = true">
+          <ion-icon slot="start" name="calendar-outline"></ion-icon>
+          <ion-label>Abwesenheit melden</ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  }
+
+  @if (!useDutyView || showOtherTermine) {
   @if (currentAttendance) {
     <div class="ev-month">{{ isAttToday(currentAttendance) ? 'Heute' : 'Nächster Termin' }}</div>
     <div class="ev-today ev-today--static" [class.not-member]="showAllAttendances && !currentAttendance.isMember">
@@ -424,6 +544,8 @@
         }
       </ion-list>
     }
+  }
+
   }
 
   @if (pastAttendances.length) {

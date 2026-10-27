@@ -82,6 +82,13 @@ export class SignoutPage implements OnInit {
   /** Dienstplan: I am in the circle of at least one upcoming duty. */
   public inDutyCircle = false;
   public isOpenDutiesModalOpen = false;
+  /** "Meine Dienste" layout (C4): tenant switch on and the person is in a duty circle. */
+  public useDutyView = false;
+  public nextDuty: PersonAttendance | undefined;
+  public myDuties: PersonAttendance[] = [];
+  public dutiesThisMonth = 0;
+  public showOtherTermine = false;
+  private myDutyTermine: DutyTermin[] = [];
 
   constructor(
     public db: DbService,
@@ -378,10 +385,69 @@ export class SignoutPage implements OnInit {
     const termine = await this.db.dutySvc.getUpcomingDutyTermine(this.db.tenant().id, types);
     const mine = termine.filter(t => t.persons.some(p => p.person_id === this.player.id));
     this.inDutyCircle = mine.length > 0;
+    this.myDutyTermine = mine;
     this.openDuties = mine.filter(t => {
       const own = t.persons.find(p => p.person_id === this.player.id);
       return t.type?.duty_self_signup !== false && !own.duty_state && !isCancelled(own) && t.occupied < t.required;
     });
+    this.applyDutyLayout();
+  }
+
+  /** Splits the upcoming list into own duties and the (rare) other Termine. */
+  private applyDutyLayout(): void {
+    this.useDutyView = !!this.db.tenant()?.duty_view && this.inDutyCircle;
+    if (!this.useDutyView) {
+      return;
+    }
+    const all = [this.currentAttendance, ...(this.actualAttendances ?? [])].filter(Boolean);
+    const duties = all.filter(att => this.isDutyPa(att) && !isCancelled(att));
+    const confirmed = duties.filter(att => att.duty_state !== 'requested');
+    this.nextDuty = confirmed[0];
+    this.myDuties = confirmed.slice(1);
+    const month = dayjs().format('YYYY-MM');
+    this.dutiesThisMonth = duties.filter(att => dayjs(att.date).format('YYYY-MM') === month).length;
+    const others = all.filter(att => !this.isDutyPa(att));
+    this.currentAttendance = others.shift();
+    this.actualAttendances = others;
+  }
+
+  get otherTermineCount(): number {
+    return (this.currentAttendance ? 1 : 0) + (this.actualAttendances?.length ?? 0);
+  }
+
+  get otherTermineNames(): string {
+    const names = [this.currentAttendance, ...(this.actualAttendances ?? [])]
+      .filter(Boolean)
+      .map(att => this.getEventTitle(att));
+    return Array.from(new Set(names)).slice(0, 2).join(', ');
+  }
+
+  /** First names of the others on the same duty. */
+  dutyTeam(att: PersonAttendance): string[] {
+    const id = att.attendance_id ?? att.attId;
+    const termin = this.myDutyTermine.find(t => t.attendance.id === id);
+    return (termin?.persons ?? [])
+      .filter(p => p.person_id !== this.player?.id && occupiesDuty(p))
+      .map(p => (p as any).person?.firstName)
+      .filter(Boolean);
+  }
+
+  isUrgentDuty(t: DutyTermin): boolean {
+    const hours = t.type?.duty_urgent_hours;
+    if (!hours) return false;
+    const time = (t.attendance.start_time ?? t.type?.start_time ?? '00:00').slice(0, 5);
+    const start = dayjs(`${dayjs(t.attendance.date).format('YYYY-MM-DD')}T${time}`);
+    return start.diff(dayjs(), 'hour', true) <= hours;
+  }
+
+  get openDutiesPreview(): DutyTermin[] {
+    return [...this.openDuties]
+      .sort((a, b) => Number(this.isUrgentDuty(b)) - Number(this.isUrgentDuty(a)))
+      .slice(0, 3);
+  }
+
+  scrollToSection(id: string): void {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   async openUnavailability(): Promise<void> {

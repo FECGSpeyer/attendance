@@ -64,6 +64,13 @@
           helperText="Aktivieren, damit Mitglieder auf der Abmelde-Seite alle Termine der Instanz sehen können (nicht nur eigene). Eigene Termine werden hervorgehoben."
           [(ngModel)]="showAllAttendances">Alle Termine für Mitglieder sichtbar</ion-toggle>
       </ion-item>
+      @if (hasDutyTypes) {
+      <ion-item>
+        <ion-toggle
+          helperText="„Meine Termine“ zeigt für Personen aus einem Dienst-Team zuerst ihre Dienste, offene Dienste und Zahlen statt der Anwesenheitsquote. Andere Termine stehen eingeklappt darunter."
+          [(ngModel)]="dutyView">Dienstplan-Ansicht für Meine Termine</ion-toggle>
+      </ion-item>
+      }
       @if (showAllAttendances) {
         <ion-item>
           <ion-input

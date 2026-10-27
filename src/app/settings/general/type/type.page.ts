@@ -95,6 +95,7 @@ export class TypePage implements OnInit {
     } else {
       const id = this.route.snapshot.paramMap.get('id');
       const existingType = await this.db.getAttendanceType(id);
+      this.dutyModeAtLoad = !!existingType.duty_mode;
 
       this.type = {
         ...existingType,
@@ -134,6 +135,8 @@ export class TypePage implements OnInit {
   /**
    * Mark current state as saved (update original)
    */
+  private dutyModeAtLoad = false;
+
   private markAsSaved(): void {
     this.originalType = JSON.stringify(this.type);
   }
@@ -193,7 +196,9 @@ export class TypePage implements OnInit {
       Utils.showToast('Anwesenheitstyp erfolgreich aktualisiert', 'success');
     } catch (error) {
       Utils.showToast('Fehler beim Aktualisieren des Anwesenheitstyps', 'danger');
+      return;
     }
+    await this.offerDutyView();
   }
 
   async createType() {
@@ -204,6 +209,7 @@ export class TypePage implements OnInit {
     try {
       this.type = await this.db.addAttendanceType(this.type);
       Utils.showToast('Anwesenheitstyp erfolgreich erstellt', 'success');
+      await this.offerDutyView();
       await this.modalController.dismiss();
     } catch (error) {
       Utils.showToast('Fehler beim Erstellen des Anwesenheitstyps', 'danger');
@@ -366,6 +372,38 @@ export class TypePage implements OnInit {
     [AttendanceStatus.Neutral, AttendanceStatus.Present, AttendanceStatus.Excused].forEach(st => statuses.add(st));
     this.type.available_statuses = [...statuses].sort((a, b) => a - b);
     this.type.default_status = AttendanceStatus.Neutral;
+  }
+
+  /**
+   * After the first Termintyp with Dienst-Modus: ask once whether "Meine
+   * Termine" should become the Dienstplan view. Changeable later in the
+   * instance settings.
+   */
+  private async offerDutyView(): Promise<void> {
+    if (!this.type?.duty_mode || this.dutyModeAtLoad || this.db.tenant()?.duty_view) return;
+    this.dutyModeAtLoad = true;
+    const otherDutyTypes = this.db.attendanceTypes().filter(t => t.duty_mode && t.id !== this.type.id);
+    if (otherDutyTypes.length) return;
+    const alert = await this.alertController.create({
+      header: 'Dienstplan-Ansicht verwenden?',
+      message: 'Sind Dienste bei euch der Normalfall? Dann zeigt „Meine Termine“ für alle im Dienst-Team zuerst ihre Dienste, offene Dienste und Zahlen statt der Anwesenheitsquote. Du kannst das jederzeit unter Einstellungen → Allgemein ändern.',
+      buttons: [
+        { text: 'Nein, normale Ansicht', role: 'cancel' },
+        {
+          text: 'Ja, verwenden',
+          handler: async () => {
+            try {
+              await this.db.updateTenantData({ duty_view: true });
+              Utils.showToast('Dienstplan-Ansicht ist aktiv', 'success');
+            } catch {
+              Utils.showToast('Konnte die Ansicht nicht umstellen', 'danger');
+            }
+          },
+        },
+      ],
+    });
+    await alert.present();
+    await alert.onDidDismiss();
   }
 
   openDutyHelp() {

@@ -1415,6 +1415,7 @@ export type Database = {
           seasonStart: string | null
           shift_excused_as_present: boolean
           show_all_attendances: boolean | null
+          duty_view: boolean
           files_enabled: boolean
           files_shared: boolean
           files_max_bytes: number | null
@@ -1449,6 +1450,7 @@ export type Database = {
           seasonStart?: string | null
           shift_excused_as_present?: boolean
           show_all_attendances?: boolean | null
+          duty_view?: boolean
           files_enabled?: boolean
           files_shared?: boolean
           files_max_bytes?: number | null
@@ -1483,6 +1485,7 @@ export type Database = {
           seasonStart?: string | null
           shift_excused_as_present?: boolean
           show_all_attendances?: boolean | null
+          duty_view?: boolean
           files_enabled?: boolean
           files_shared?: boolean
           files_max_bytes?: number | null

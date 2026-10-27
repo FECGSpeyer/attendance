@@ -201,3 +201,9 @@ SELECT cron.schedule('send-duty-reminders-job', '*/15 * * * *', $$
     body := '{}'::jsonb
   );
 $$);
+
+-- ------------------------------------------------------------
+-- 8. Instanz-Schalter: "Meine Termine" als Dienstplan-Ansicht
+-- ------------------------------------------------------------
+ALTER TABLE tenants
+  ADD COLUMN IF NOT EXISTS duty_view boolean NOT NULL DEFAULT false;

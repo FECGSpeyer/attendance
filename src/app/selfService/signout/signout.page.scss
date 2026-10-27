@@ -157,3 +157,66 @@
 .duty-request {
   border-left: 4px solid var(--ion-color-warning);
 }
+
+.duty-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px 16px 0;
+}
+
+.duty-stat {
+  background: var(--ion-item-background, #fff);
+  border-radius: 18px;
+  padding: 10px 12px;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  color: var(--ion-text-color);
+  min-height: 44px;
+
+  b {
+    display: block;
+    font-size: 22px;
+    line-height: 1.1;
+  }
+
+  span {
+    font-size: 12px;
+    color: var(--ion-color-medium-shade);
+  }
+
+  &--warn b {
+    color: var(--ion-color-warning-shade);
+  }
+}
+
+.duty-team {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.duty-chip {
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 3px 9px;
+  background: var(--ion-color-light);
+  color: var(--ion-color-dark);
+
+  &--me {
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+    color: var(--ion-color-primary-shade);
+    font-weight: 600;
+  }
+}
+
+.duty-urgent {
+  color: var(--ion-color-danger);
+  font-weight: 700;
+}
+
+.duty-all {
+  margin-left: auto;
+}

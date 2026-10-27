@@ -65,6 +65,7 @@ export class GeneralPage implements OnInit {
 
   // Show all attendances config
   public showAllAttendances = false;
+  public dutyView = false;
   public showAllAttendancesInfoText = '';
 
   // Absence and late reasons
@@ -119,6 +120,7 @@ export class GeneralPage implements OnInit {
     this.autoApproveRegistrations = this.db.tenant().auto_approve_registrations || false;
     this.shiftExcusedAsPresent = this.db.tenant().shift_excused_as_present || false;
     this.showAllAttendances = this.db.tenant().show_all_attendances || false;
+    this.dutyView = this.db.tenant().duty_view || false;
     this.showAllAttendancesInfoText = this.db.tenant().show_all_attendances_info_text
       || DEFAULT_SHOW_ALL_ATTENDANCES_INFO_TEXT;
 
@@ -174,6 +176,7 @@ export class GeneralPage implements OnInit {
       shiftExcusedAsPresent: this.shiftExcusedAsPresent,
       showAllAttendances: this.showAllAttendances,
       showAllAttendancesInfoText: this.showAllAttendancesInfoText,
+      dutyView: this.dutyView,
     });
   }
 
@@ -329,6 +332,8 @@ export class GeneralPage implements OnInit {
           : null,
         absence_reasons: filteredAbsenceReasons.length > 0 ? filteredAbsenceReasons : null,
         late_reasons: filteredLateReasons.length > 0 ? filteredLateReasons : null,
+        // Only sent when the tenant uses the Dienstplan at all.
+        ...(this.hasDutyTypes ? { duty_view: this.dutyView } : {}),
       });
 
       // Evaluate critical rules for all players after saving
@@ -516,5 +521,9 @@ export class GeneralPage implements OnInit {
 
   resetLateReasons() {
     this.lateReasons = [...DEFAULT_LATE_REASONS];
+  }
+
+  get hasDutyTypes(): boolean {
+    return this.db.attendanceTypes().some(t => t.duty_mode);
   }
 }
