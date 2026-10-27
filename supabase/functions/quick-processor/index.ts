@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { sendPushToUser } from '../_shared/send-push.ts'
 import { logNotification } from '../_shared/log-notification.ts'
+import { formatDate, Lang, normalizeLang, t } from '../_shared/i18n.ts'
 
 interface NotificationConfig {
   id: string;
@@ -11,6 +12,7 @@ interface NotificationConfig {
   enabled_tenants: number[] | null;
   push_enabled: boolean;
   push_and_telegram?: boolean | null;
+  language?: string | null;
 }
 
 Deno.serve(async (req)=>{
@@ -37,7 +39,7 @@ Deno.serve(async (req)=>{
       console.log(`[quick-processor] playerPaused playerId=${playerId} tenantId=${pauseTenantId}`);
 
       const { data: playerData } = await supabase.from('player').select('firstName, lastName').eq('id', playerId).single();
-      const { data: tenantDataRow } = await supabase.from('tenant').select('longName').eq('id', pauseTenantId).single();
+      const { data: tenantDataRow } = await supabase.from('tenants').select('longName').eq('id', pauseTenantId).single();
       const { data: tenantUsers } = await supabase.from('tenantUsers').select('userId').or('role.eq.5,role.eq.1').eq('tenantId', pauseTenantId).range(0, 4999);
 
       if (!playerData || !tenantDataRow || !tenantUsers?.length) {
@@ -50,10 +52,14 @@ Deno.serve(async (req)=>{
 
       const name = `${playerData.firstName} ${playerData.lastName}`;
       const tenantName = tenantDataRow.longName;
-      const untilText = pauseUntil ? ` (bis ${pauseUntil})` : '';
-      const reasonText = reason ? `\nGrund: ${reason}` : '';
-      const pushBody = `${name} hat sich selbst pausiert${untilText}.${reason ? ' Grund: ' + reason : ''}`;
-      const messageText = `*${tenantName}*\n${name} hat sich selbst pausiert${untilText}.${reasonText}`;
+      const pauseTexts = (lang: Lang) => {
+        const until = pauseUntil ? t(lang, 'qp.untilSuffix', { date: formatDate(lang, pauseUntil) }) : '';
+        const paused = t(lang, 'qp.paused', { name, until });
+        return {
+          pushBody: `${paused}${reason ? t(lang, 'qp.reasonInline', { reason }) : ''}`,
+          messageText: `*${tenantName}*\n${paused}${reason ? t(lang, 'qp.reasonLine', { reason }) : ''}`,
+        };
+      };
 
       for (const noti of (notiData ?? []) as NotificationConfig[]) {
         if (!noti.enabled) continue;
@@ -66,6 +72,7 @@ Deno.serve(async (req)=>{
 
         let pushSent = 0;
         let telegramSent = false;
+        const { pushBody, messageText } = pauseTexts(normalizeLang(noti.language));
 
         if (hasPush) {
           pushSent = await sendPushToUser(supabase, noti.id, { title: tenantName, body: pushBody, data: { type: 'pause', tenantId: String(pauseTenantId) } });
@@ -154,7 +161,7 @@ Deno.serve(async (req)=>{
       });
     }
 
-    const recipients: { userId: string; chatId: string | null; pushEnabled: boolean; parallelMode: boolean }[] = [];
+    const recipients: { userId: string; chatId: string | null; pushEnabled: boolean; parallelMode: boolean; lang: Lang }[] = [];
 
     for (const noti of notiData as NotificationConfig[]) {
       if (!noti.enabled) continue;
@@ -173,73 +180,66 @@ Deno.serve(async (req)=>{
         chatId: hasTelegram ? noti.telegram_chat_id : null,
         pushEnabled: hasPush,
         parallelMode: !!noti.push_and_telegram && hasPush && hasTelegram,
+        lang: normalizeLang(noti.language),
       });
     }
 
-    // Build message
+    // Build message (per recipient language)
     const name = attendanceData.person.firstName + " " + attendanceData.person.lastName;
-    const date = `${attendanceData.attendance.date}`;
-    const today = new Date(date);
-    const yyyy = today.getFullYear();
-    let mm = today.getMonth() + 1;
-    let dd = today.getDate();
-    let DD = String(dd);
-    let MM = String(mm);
-    if (dd < 10) DD = '0' + dd;
-    if (mm < 10) MM = '0' + mm;
-    const getAttendanceText = (attendance: any)=>{
-      return attendance.typeInfo ? " " + attendance.typeInfo : attendance.type === "vortrag" ? " (Vortrag)" : "";
+    const att = attendanceData.attendance;
+    const buildTexts = (lang: Lang) => {
+      const typeText = att.typeInfo ? " " + att.typeInfo : att.type === "vortrag" ? t(lang, 'qp.lecture') : "";
+      const date = formatDate(lang, `${att.date}`) + typeText;
+      const suffix = isParents ? t(lang, 'qp.byParent') : "";
+      const attendanceLink = `\n\n[${t(lang, 'qp.openAttendance')}](https://attendix.de/open-attendance?id=${attendanceData.attendance_id}&tenantId=${att.tenant.id})`;
+      const noteLine = notes && notes.length ? t(lang, 'qp.noteLine', { notes }) : '';
+      const noteInline = notes && notes.length ? t(lang, 'qp.noteInline', { notes }) : '';
+
+      let main: string;
+      let line = '';
+      let inline = '';
+      switch (type) {
+        case 'neutralSignin':
+          main = t(lang, 'qp.signin', { name, date });
+          break;
+        case 'signin':
+          main = t(lang, 'qp.signin', { name, date });
+          line = noteLine;
+          inline = noteInline;
+          break;
+        case 'lateSignout':
+          main = t(lang, 'qp.late', { name, date });
+          line = t(lang, 'qp.reasonLine', { reason });
+          inline = t(lang, 'qp.reasonInline', { reason });
+          break;
+        case 'lateSignin':
+          main = t(lang, 'qp.onTime', { name, date });
+          line = noteLine;
+          inline = noteInline;
+          break;
+        case 'noteUpdate':
+          main = t(lang, 'qp.noteUpdate', { name, date, reason });
+          return {
+            messageText: `*${att.tenant.longName}*\n${main}${attendanceLink}`,
+            pushBody: main,
+          };
+        default:
+          main = t(lang, 'qp.signout', { name, date });
+          line = t(lang, 'qp.reasonLine', { reason });
+          inline = t(lang, 'qp.reasonInline', { reason });
+      }
+      return {
+        messageText: `*${att.tenant.longName}*\n${main}${line}${suffix}${attendanceLink}`,
+        pushBody: `${main}${inline}${suffix}`,
+      };
     };
-    const suffix = isParents ? "\n(von Elternteil abgemeldet)" : "";
-    const formattedDate = DD + '.' + MM + '.' + yyyy + getAttendanceText(attendanceData.attendance);
-    const attendanceLink = `\n\n[Anwesenheit öffnen](https://attendix.de/open-attendance?id=${attendanceData.attendance_id}&tenantId=${attendanceData.attendance.tenant.id})`;
-
-    let messageText = `*${attendanceData.attendance.tenant.longName}*\n`;
-    let pushBody = '';
-
-    switch(type){
-      case 'neutralSignin':
-        messageText += `${name} hat sich für den ${formattedDate} angemeldet.${suffix}`;
-        pushBody = `${name} hat sich für den ${formattedDate} angemeldet.${suffix}`;
-        break;
-      case 'signin':
-        if (notes && notes.length) {
-          messageText += `${name} hat sich für den ${formattedDate} angemeldet.\nNotiz: ${notes}${suffix}`;
-          pushBody = `${name} hat sich für den ${formattedDate} angemeldet. Notiz: ${notes}${suffix}`;
-        } else {
-          messageText += `${name} hat sich für den ${formattedDate} angemeldet.${suffix}`;
-          pushBody = `${name} hat sich für den ${formattedDate} angemeldet.${suffix}`;
-        }
-        break;
-      case 'lateSignout':
-        messageText += `${name} kommt am ${formattedDate} zu spät.\nGrund: ${reason}${suffix}`;
-        pushBody = `${name} kommt am ${formattedDate} zu spät. Grund: ${reason}${suffix}`;
-        break;
-      case 'lateSignin':
-        if (notes && notes.length) {
-          messageText += `${name} kommt am ${formattedDate} doch pünktlich.\nNotiz: ${notes}${suffix}`;
-          pushBody = `${name} kommt am ${formattedDate} doch pünktlich. Notiz: ${notes}${suffix}`;
-        } else {
-          messageText += `${name} kommt am ${formattedDate} doch pünktlich.${suffix}`;
-          pushBody = `${name} kommt am ${formattedDate} doch pünktlich.${suffix}`;
-        }
-        break;
-      case 'noteUpdate':
-        messageText += `${name} hat die Notiz für den ${formattedDate} angepasst: ${reason}`;
-        pushBody = `${name} hat die Notiz für den ${formattedDate} angepasst: ${reason}`;
-        break;
-      default:
-        messageText += `${name} hat sich für den ${formattedDate} abgemeldet.\nGrund: ${reason}${suffix}`;
-        pushBody = `${name} hat sich für den ${formattedDate} abgemeldet. Grund: ${reason}${suffix}`;
-    }
-
-    messageText += attendanceLink;
 
     // Send push and/or Telegram per recipient
     const pushTitle = attendanceData.attendance.tenant.longName;
     for (const r of recipients) {
       let pushSent = 0;
       let telegramSent = false;
+      const { messageText, pushBody } = buildTexts(r.lang);
 
       if (r.pushEnabled) {
         pushSent = await sendPushToUser(supabase, r.userId, {

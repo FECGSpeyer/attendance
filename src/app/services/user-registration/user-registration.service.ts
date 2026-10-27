@@ -45,6 +45,7 @@ export class UserRegistrationService {
             email: normalizedEmail,
             name,
             role: Utils.getRoleText(role),
+            roleId: role,
             tenantId,
           },
         });
@@ -65,6 +66,7 @@ export class UserRegistrationService {
           email: normalizedEmail,
           name,
           role: Utils.getRoleText(role),
+          roleId: role,
           tenantId,
         },
       });
@@ -88,6 +90,7 @@ export class UserRegistrationService {
         email,
         name,
         role: Utils.getRoleText(role),
+        roleId: role,
         tenantId,
       },
     });

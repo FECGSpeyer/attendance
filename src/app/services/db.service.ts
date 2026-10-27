@@ -28,6 +28,7 @@ import { HistoryService } from './history/history.service';
 import { AgendaItemService } from './agenda-item/agenda-item.service';
 import { ProtocolService } from './protocol/protocol.service';
 import { TaskService } from './task/task.service';
+import { LocaleService } from '../i18n/locale.service';
 import { NotificationService } from './notification/notification.service';
 import { ImageService } from './image/image.service';
 import { ShiftService } from './shift/shift.service';
@@ -101,6 +102,7 @@ export class DbService {
   public readonly protocolSvc = inject(ProtocolService);
   public readonly taskSvc = inject(TaskService);
   public readonly notificationSvc = inject(NotificationService);
+  private readonly locale = inject(LocaleService);
   public readonly imageSvc = inject(ImageService);
   public readonly shiftSvc = inject(ShiftService);
   public readonly dutySvc = inject(DutyService);
@@ -420,6 +422,7 @@ export class DbService {
 
     if (user?.email) {
       this.user = user;
+      void this.locale.syncWithAccount(user.id);
       await this.setTenant(undefined, showSelector);
     }
   }
@@ -970,6 +973,7 @@ export class DbService {
             email,
             name,
             role: Utils.getRoleText(role),
+            roleId: role,
             tenantId: tenantId || this.tenant().id,
           },
         });
@@ -997,6 +1001,7 @@ export class DbService {
               email,
               name,
               role: Utils.getRoleText(role),
+              roleId: role,
               tenantId: tenantId || this.tenant().id,
             },
           });
@@ -1016,6 +1021,7 @@ export class DbService {
           email,
           name,
           role: Utils.getRoleText(role),
+          roleId: role,
           tenantId: tenantId || this.tenant().id,
         },
       });

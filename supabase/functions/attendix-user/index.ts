@@ -23,6 +23,7 @@ import {
   registerEmail,
   rejectEmail,
 } from "../_shared/attendix-email-templates.ts";
+import { Lang, t, tenantLanguage, userLanguages } from "../_shared/i18n.ts";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -67,7 +68,8 @@ Deno.serve(async (req) => {
     const tenantId = Number(body?.tenantId);
     const email = String(body?.email ?? "").toLowerCase().trim();
     const name = String(body?.name ?? "").trim();
-    const role = String(body?.role ?? "").trim();
+    const roleText = String(body?.role ?? "").trim();
+    const roleId = Number(body?.roleId) || 0;
 
     if (!action || !["register", "inform", "approve", "reject"].includes(action)) {
       return json({ error: "Unknown action" }, 400);
@@ -105,17 +107,24 @@ Deno.serve(async (req) => {
     }
     const tenantName = tenant.longName as string;
 
+    // Mails go out in the recipient's language: their own choice if they
+    // already have an account, otherwise the instance default.
+    const lang = await recipientLanguage(admin, email, tenantId);
+    // roleId lets the role be named in the recipient's language; older app
+    // versions only send the label in the sender's language.
+    const role = roleId ? t(lang, `role.${roleId}`) : roleText;
+
     if (action === "register") {
-      return await register(admin, email, name, tenantName, role);
+      return await register(admin, email, name, tenantName, role, lang);
     }
 
     let content: EmailContent;
     if (action === "inform") {
-      content = informEmail({ name, tenant: tenantName, role });
+      content = informEmail({ name, tenant: tenantName, role }, lang);
     } else if (action === "approve") {
-      content = approveEmail({ name, tenant: tenantName, role });
+      content = approveEmail({ name, tenant: tenantName, role }, lang);
     } else {
-      content = rejectEmail({ name, tenant: tenantName });
+      content = rejectEmail({ name, tenant: tenantName }, lang);
     }
 
     const mailSent = await send(email, content);
@@ -133,6 +142,7 @@ async function register(
   name: string,
   tenantName: string,
   role: string,
+  lang: Lang,
 ): Promise<Response> {
   // Random password that is never shared — the user sets their own via the link.
   const { data: created, error: createErr } = await admin.auth.admin.createUser({
@@ -162,10 +172,22 @@ async function register(
 
   const setPasswordUrl =
     `${RESET_PASSWORD_URL}?token_hash=${encodeURIComponent(link.properties.hashed_token)}&type=recovery`;
-  const mailSent = await send(email, registerEmail({ name, email, setPasswordUrl, tenant: tenantName, role: role || undefined }));
+  const mailSent = await send(email, registerEmail({ name, email, setPasswordUrl, tenant: tenantName, role: role || undefined }, lang));
   console.log(`[attendix-user] action=register mailSent=${mailSent}`);
 
   return json({ user: { id: created.user.id }, created: true, mailSent });
+}
+
+async function recipientLanguage(admin: SupabaseClient, email: string, tenantId: number): Promise<Lang> {
+  const { data: existing } = await admin.rpc("get_user_id_by_email", { email });
+  const userId = existing?.[0]?.id as string | undefined;
+  if (userId) {
+    const lang = (await userLanguages(admin, [userId])).get(userId);
+    if (lang) {
+      return lang;
+    }
+  }
+  return await tenantLanguage(admin, tenantId);
 }
 
 async function send(email: string, content: EmailContent): Promise<boolean> {

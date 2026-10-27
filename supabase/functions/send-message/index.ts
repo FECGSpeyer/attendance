@@ -22,6 +22,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { sendPushToUser } from "../_shared/send-push.ts";
 import { messageEmail } from "../_shared/attendix-email-templates.ts";
+import { Lang, t, tenantLanguage, userLanguages } from "../_shared/i18n.ts";
 import { renderHtml, renderText, TiptapNode } from "../_shared/message-render.ts";
 
 const CORS_HEADERS = {
@@ -333,12 +334,18 @@ async function deliver(admin: SupabaseClient, p: DeliveryParams): Promise<void> 
     if (!channelsByUser.has(userId)) channelsByUser.set(userId, new Set());
     channelsByUser.get(userId)!.add(ch);
   };
+  // Each recipient gets the frame texts in their language; the message itself
+  // is the sender's text and is not translated.
+  const userLangs = await userLanguages(admin, p.recipients.map((r) => r.userId ?? ""));
+  const tenantLang = await tenantLanguage(admin, p.tenantId);
+  const langOf = (r: Recipient): Lang => (r.userId && userLangs.get(r.userId)) || tenantLang;
 
   // 1. Push / Telegram ---------------------------------------------------------
   if (p.channels.push) {
     const pushTitle = `📣 ${p.title}`;
     const pushBody = p.bodyText.length > 180 ? `${p.bodyText.slice(0, 177).trimEnd()}…` : p.bodyText;
-    const telegramText = `📣 ${p.title}\n\n${p.bodyText}\n\nIn der App öffnen: ${url}`.slice(0, 4000);
+    const telegramText = (lang: Lang) =>
+      `📣 ${p.title}\n\n${p.bodyText}\n\n${t(lang, "telegram.openInApp", { url })}`.slice(0, 4000);
     const telegramToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
     const seen = new Set<string>();
     const targets = p.recipients.filter((r) => {
@@ -370,7 +377,7 @@ async function deliver(admin: SupabaseClient, p: DeliveryParams): Promise<void> 
           const res = await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ chat_id: config.telegram_chat_id, text: telegramText, disable_web_page_preview: true }),
+            body: JSON.stringify({ chat_id: config.telegram_chat_id, text: telegramText(langOf(r)), disable_web_page_preview: true }),
           });
           telegramSent = res.ok;
           if (!res.ok) console.error(`[send-message] telegram ${res.status} user=${config.id}: ${await res.text()}`);
@@ -390,16 +397,32 @@ async function deliver(admin: SupabaseClient, p: DeliveryParams): Promise<void> 
 
   // 2. Email ------------------------------------------------------------------
   if (p.channels.email) {
-    const emails = Array.from(new Set(p.recipients.map((r) => r.email).filter(Boolean))) as string[];
-    const content = messageEmail({
-      title: p.title,
-      bodyHtml: p.emailHtml,
-      preview: p.bodyText.slice(0, 140),
-      senderName: p.senderName,
-      tenant: p.tenantName,
-      url,
-    });
-    const results = await sendEmails(emails, content.subject, content.html, p.replyTo, p.messageId);
+    const emailsByLang = new Map<Lang, Set<string>>();
+    for (const r of p.recipients) {
+      if (!r.email) continue;
+      const lang = langOf(r);
+      if (!emailsByLang.has(lang)) emailsByLang.set(lang, new Set());
+      emailsByLang.get(lang)!.add(r.email);
+    }
+    const results = new Map<string, { id: string | null }>();
+    const sentTo = new Set<string>();
+    for (const [lang, set] of emailsByLang) {
+      // An address shared by people with different languages gets one mail only.
+      const emails = [...set].filter((e) => !sentTo.has(e));
+      emails.forEach((e) => sentTo.add(e));
+      if (!emails.length) continue;
+      const content = messageEmail({
+        title: p.title,
+        bodyHtml: p.emailHtml,
+        preview: p.bodyText.slice(0, 140),
+        senderName: p.senderName,
+        tenant: p.tenantName,
+        url,
+      }, lang);
+      for (const [email, result] of await sendEmails(emails, content.subject, content.html, p.replyTo, p.messageId)) {
+        results.set(email, result);
+      }
+    }
     const now = new Date().toISOString();
     for (const [email, result] of results) {
       const update = result.id

@@ -89,11 +89,14 @@ export class SettingsPage implements OnInit, OnDestroy {
     });
   }
 
-  onLanguageChange(value: string): void {
+  async onLanguageChange(value: string): Promise<void> {
     if (value === this.locale.language) {
       return;
     }
     this.language = this.locale.setLanguage(value);
+    if (this.db.user?.id) {
+      await this.locale.saveToAccount(this.db.user.id, this.locale.language);
+    }
     // Many labels are resolved once when a page is built, so reload to show
     // every screen in the new language.
     window.location.reload();

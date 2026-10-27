@@ -229,6 +229,7 @@ export class AuthService {
             email,
             name,
             role: Utils.getRoleText(role),
+            roleId: role,
             tenantId,
           },
         });
@@ -272,6 +273,7 @@ export class AuthService {
         email,
         name,
         role: Utils.getRoleText(role),
+        roleId: role,
         tenantId,
       },
     });

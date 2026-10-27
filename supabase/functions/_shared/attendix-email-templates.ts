@@ -3,6 +3,8 @@
 // registration approved/rejected). The layout mirrors the Supabase Auth email
 // templates (e.g. "Passwort zurücksetzen") so all Attendix mails look the same.
 
+import { Lang, t } from './i18n.ts';
+
 const APP_URL = 'https://attendix.de/';
 const BRAND_COLOR = '#438e96';
 
@@ -12,6 +14,7 @@ export interface EmailContent {
 }
 
 interface LayoutParams {
+  lang: Lang;
   title: string;
   preheader: string;
   heading: string;
@@ -42,7 +45,7 @@ function layout(p: LayoutParams): string {
                 </td>
               </tr></table>
               <p style="margin:0; font-size:13px; line-height:1.6; color:#8a9295;">
-                Falls der Button nicht funktioniert, kopiere diesen Link in deinen Browser:<br />
+                ${t(p.lang, 'email.buttonFallback')}<br />
                 <a href="${escapeHtml(p.button.url)}" style="color:${BRAND_COLOR}; word-break:break-all;">${escapeHtml(p.button.url)}</a>
               </p>`
     : '';
@@ -56,7 +59,7 @@ function layout(p: LayoutParams): string {
     : `<tr><td style="padding:0 0 24px 0;"></td></tr>`;
 
   return `<!DOCTYPE html>
-  <html lang="de">
+  <html lang="${p.lang}">
     <head>
       <meta charset="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -91,8 +94,13 @@ function layout(p: LayoutParams): string {
   </html>`;
 }
 
-function greeting(name: string): string {
-  return name ? `Hallo ${escapeHtml(name)},` : 'Hallo,';
+function greeting(lang: Lang, name: string): string {
+  return name ? t(lang, 'email.helloName', { name: escapeHtml(name) }) : t(lang, 'email.hello');
+}
+
+function instanceLines(lang: Lang, tenant: string, role?: string): string {
+  const instance = t(lang, 'email.instance', { tenant: escapeHtml(tenant) });
+  return role ? `${instance}<br />${t(lang, 'email.role', { role: escapeHtml(role) })}` : instance;
 }
 
 /** New account: link to set the initial password (no password is ever mailed). */
@@ -102,71 +110,72 @@ export function registerEmail(p: {
   setPasswordUrl: string;
   tenant: string;
   role?: string;
-}): EmailContent {
-  const instanceLine = p.role
-    ? `Instanz: <strong>${escapeHtml(p.tenant)}</strong><br />Rolle: <strong>${escapeHtml(p.role)}</strong>`
-    : `Instanz: <strong>${escapeHtml(p.tenant)}</strong>`;
+}, lang: Lang = 'de'): EmailContent {
   return {
-    subject: 'Dein Zugang zur Attendix-App',
+    subject: t(lang, 'email.register.subject'),
     html: layout({
-      title: 'Attendix - Dein Zugang',
-      preheader: `Du wurdest zur Instanz ${p.tenant} hinzugefügt.`,
-      heading: 'Willkommen bei Attendix',
+      lang,
+      title: t(lang, 'email.register.title'),
+      preheader: t(lang, 'email.addedPreheader', { tenant: p.tenant }),
+      heading: t(lang, 'email.register.heading'),
       paragraphs: [
-        `${greeting(p.name)}<br />du wurdest zu einer Attendix-Instanz hinzugefügt. Dafür wurde ein Attendix-Account mit der E-Mail-Adresse <strong>${escapeHtml(p.email)}</strong> angelegt. Klicke auf den Button, um dein Passwort festzulegen und dich anzumelden.`,
-        instanceLine,
+        `${greeting(lang, p.name)}<br />${t(lang, 'email.register.text', { email: escapeHtml(p.email) })}`,
+        instanceLines(lang, p.tenant, p.role),
       ],
-      button: { text: 'Passwort festlegen', url: p.setPasswordUrl },
-      footnote: 'Dieser Link ist aus Sicherheitsgründen nur begrenzte Zeit gültig. Ist er abgelaufen, kannst du auf der Anmeldeseite über „Passwort vergessen“ jederzeit einen neuen Link anfordern.',
+      button: { text: t(lang, 'email.register.button'), url: p.setPasswordUrl },
+      footnote: t(lang, 'email.register.footnote'),
     }),
   };
 }
 
 /** Existing account was added to another instance. */
-export function informEmail(p: { name: string; tenant: string; role: string }): EmailContent {
+export function informEmail(p: { name: string; tenant: string; role: string }, lang: Lang = 'de'): EmailContent {
   return {
-    subject: 'Du wurdest zu einer Attendix-Instanz hinzugefügt',
+    subject: t(lang, 'email.inform.subject'),
     html: layout({
-      title: 'Attendix - Neue Instanz',
-      preheader: `Du wurdest zur Instanz ${p.tenant} hinzugefügt.`,
-      heading: 'Neue Instanz',
+      lang,
+      title: t(lang, 'email.inform.title'),
+      preheader: t(lang, 'email.addedPreheader', { tenant: p.tenant }),
+      heading: t(lang, 'email.inform.heading'),
       paragraphs: [
-        `${greeting(p.name)}<br />du wurdest zu einer Attendix-Instanz hinzugefügt. Du kannst die Instanz einfach im Tab „Mehr“ wechseln.`,
-        `Instanz: <strong>${escapeHtml(p.tenant)}</strong><br />Rolle: <strong>${escapeHtml(p.role)}</strong>`,
+        `${greeting(lang, p.name)}<br />${t(lang, 'email.inform.text')}`,
+        instanceLines(lang, p.tenant, p.role),
       ],
-      button: { text: 'Zur App', url: APP_URL },
+      button: { text: t(lang, 'email.toApp'), url: APP_URL },
     }),
   };
 }
 
 /** Self-registration was approved. */
-export function approveEmail(p: { name: string; tenant: string; role: string }): EmailContent {
+export function approveEmail(p: { name: string; tenant: string; role: string }, lang: Lang = 'de'): EmailContent {
   return {
-    subject: `Deine Registrierung bei der Attendix Instanz '${p.tenant}' wurde genehmigt`,
+    subject: t(lang, 'email.approve.subject', { tenant: p.tenant }),
     html: layout({
-      title: 'Attendix - Registrierung genehmigt',
-      preheader: `Deine Registrierung bei ${p.tenant} wurde genehmigt.`,
-      heading: 'Registrierung genehmigt',
+      lang,
+      title: t(lang, 'email.approve.title'),
+      preheader: t(lang, 'email.approve.preheader', { tenant: p.tenant }),
+      heading: t(lang, 'email.approve.heading'),
       paragraphs: [
-        `${greeting(p.name)}<br />deine Registrierung wurde genehmigt! Logge dich jetzt ein, um Zugriff zur Instanz zu erhalten.`,
-        `Instanz: <strong>${escapeHtml(p.tenant)}</strong><br />Rolle: <strong>${escapeHtml(p.role)}</strong>`,
+        `${greeting(lang, p.name)}<br />${t(lang, 'email.approve.text')}`,
+        instanceLines(lang, p.tenant, p.role),
       ],
-      button: { text: 'Zur App', url: APP_URL },
+      button: { text: t(lang, 'email.toApp'), url: APP_URL },
     }),
   };
 }
 
 /** Self-registration was rejected. */
-export function rejectEmail(p: { name: string; tenant: string }): EmailContent {
+export function rejectEmail(p: { name: string; tenant: string }, lang: Lang = 'de'): EmailContent {
   return {
-    subject: `Deine Registrierung bei der Attendix Instanz '${p.tenant}' wurde abgelehnt!`,
+    subject: t(lang, 'email.reject.subject', { tenant: p.tenant }),
     html: layout({
-      title: 'Attendix - Registrierung abgelehnt',
-      preheader: `Deine Registrierung bei ${p.tenant} wurde abgelehnt.`,
-      heading: 'Registrierung abgelehnt',
+      lang,
+      title: t(lang, 'email.reject.title'),
+      preheader: t(lang, 'email.reject.preheader', { tenant: p.tenant }),
+      heading: t(lang, 'email.reject.heading'),
       paragraphs: [
-        `${greeting(p.name)}<br />deine Registrierung wurde leider abgelehnt. Bitte kontaktiere den Administrator für weitere Informationen. Dein Account bei Attendix bleibt bestehen.`,
-        `Instanz: <strong>${escapeHtml(p.tenant)}</strong>`,
+        `${greeting(lang, p.name)}<br />${t(lang, 'email.reject.text')}`,
+        instanceLines(lang, p.tenant),
       ],
     }),
   };
@@ -180,20 +189,21 @@ export function messageEmail(p: {
   senderName: string;
   tenant: string;
   url: string;
-}): EmailContent {
+}, lang: Lang = 'de'): EmailContent {
   const from = p.senderName
-    ? `Mitteilung von ${escapeHtml(p.senderName)} · ${escapeHtml(p.tenant)}`
-    : `Mitteilung · ${escapeHtml(p.tenant)}`;
+    ? t(lang, 'email.message.from', { sender: escapeHtml(p.senderName), tenant: escapeHtml(p.tenant) })
+    : t(lang, 'email.message.fromTenant', { tenant: escapeHtml(p.tenant) });
   return {
     subject: p.title,
     html: layout({
+      lang,
       title: `Attendix - ${p.title}`,
       preheader: p.preview,
       heading: p.title,
       paragraphs: [`<span style="font-size:13px; color:#8a9295;">${from}</span>`],
       bodyHtml: p.bodyHtml,
-      button: { text: 'In der App öffnen', url: p.url },
-      footnote: `Du erhältst diese E-Mail, weil du Mitglied in „${escapeHtml(p.tenant)}“ bist.`,
+      button: { text: t(lang, 'email.openInApp'), url: p.url },
+      footnote: t(lang, 'email.message.footnote', { tenant: escapeHtml(p.tenant) }),
     }),
   };
 }
