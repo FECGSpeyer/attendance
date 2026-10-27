@@ -16,6 +16,7 @@ import {
   mapRows,
   EXTRA_PREFIX,
 } from 'src/app/utilities/import-mapper';
+import { translate } from '@jsverse/transloco';
 
 interface TargetOption {
   key: FieldKey | null;
@@ -63,16 +64,16 @@ export class ImportPage {
 
   private buildTargetOptions(): TargetOption[] {
     const opts: TargetOption[] = [
-      { key: null, label: 'Ignorieren' },
-      { key: 'Vorname', label: 'Vorname' },
-      { key: 'Nachname', label: 'Nachname' },
-      { key: 'Name', label: 'Name (Vor- und Nachname)' },
-      { key: 'Geburtsdatum', label: 'Geburtsdatum' },
-      { key: 'Gruppe', label: 'Gruppe' },
-      { key: 'E-Mail', label: 'E-Mail' },
-      { key: 'Telefon', label: 'Telefon' },
-      { key: 'Eingetreten', label: 'Eingetreten' },
-      { key: 'Notizen', label: 'Notizen' },
+      { key: null, label: translate('people.ignore') },
+      { key: 'Vorname', label: translate('people.firstName') },
+      { key: 'Nachname', label: translate('people.lastName') },
+      { key: 'Name', label: translate('people.fullName') },
+      { key: 'Geburtsdatum', label: translate('people.birthday') },
+      { key: 'Gruppe', label: translate('people.group') },
+      { key: 'E-Mail', label: translate('people.email') },
+      { key: 'Telefon', label: translate('people.phone') },
+      { key: 'Eingetreten', label: translate('people.joined') },
+      { key: 'Notizen', label: translate('people.notes') },
     ];
     for (const field of this.ctx.additionalFields ?? []) {
       opts.push({ key: `${EXTRA_PREFIX}${field.id}`, label: field.name });
@@ -93,7 +94,7 @@ export class ImportPage {
     }
 
     this.fileName = file.name;
-    const loading = await Utils.getLoadingElement(10000, 'Datei wird gelesen...');
+    const loading = await Utils.getLoadingElement(10000, translate('people.readingFile'));
     await loading.present();
 
     try {
@@ -103,7 +104,7 @@ export class ImportPage {
       const rows = utils.sheet_to_json<Record<string, any>>(sheet, { defval: '' });
 
       if (!rows.length) {
-        Utils.showToast('Die Datei enthält keine Daten.', 'warning');
+        Utils.showToast(translate('people.fileEmpty'), 'warning');
         return;
       }
 
@@ -115,7 +116,7 @@ export class ImportPage {
       this.step = 'mapping';
     } catch (error) {
       console.error('Import file read error:', error);
-      Utils.showToast('Die Datei konnte nicht gelesen werden.', 'danger');
+      Utils.showToast(translate('people.fileUnreadable'), 'danger');
     } finally {
       await loading.dismiss();
     }
@@ -127,11 +128,11 @@ export class ImportPage {
 
   async proceedToPreview() {
     if (!this.canProceedFromMapping) {
-      Utils.showToast('Bitte Spalten für Vor- und Nachnamen zuordnen.', 'warning');
+      Utils.showToast(translate('people.mapNames'), 'warning');
       return;
     }
 
-    const loading = await Utils.getLoadingElement(10000, 'Daten werden geprüft...');
+    const loading = await Utils.getLoadingElement(10000, translate('people.checkingData'));
     await loading.present();
     try {
       const mapped = mapRows(this.rawRows, this.mapping, this.ctx);
@@ -140,7 +141,7 @@ export class ImportPage {
       this.step = 'preview';
     } catch (error) {
       console.error('Import preview error:', error);
-      Utils.showToast('Fehler bei der Vorschau.', 'danger');
+      Utils.showToast(translate('people.previewFailed'), 'danger');
     } finally {
       await loading.dismiss();
     }
@@ -199,32 +200,32 @@ export class ImportPage {
   async startImport() {
     const toImport = this.importableRows.map(r => r.player);
     if (!toImport.length) {
-      Utils.showToast('Keine importierbaren Personen.', 'warning');
+      Utils.showToast(translate('people.nothingToImport'), 'warning');
       return;
     }
 
     if (this.db.isDemo()) {
-      Utils.showToast('Diese Funktion ist im Demo-Modus nicht verfügbar.', 'warning');
+      Utils.showToast(translate('people.demoUnavailable'), 'warning');
       return;
     }
 
     this.isImporting = true;
-    const loading = await Utils.getLoadingElement(0, `0 / ${toImport.length} importiert...`);
+    const loading = await Utils.getLoadingElement(0, translate('people.importProgress', { done: 0, total: toImport.length }));
     await loading.present();
 
     try {
       const { imported, failed } = await this.db.importPlayers(toImport, {
         createAccounts: this.createAccounts,
         onProgress: (done, total) => {
-          loading.message = `${done} / ${total} importiert...`;
+          loading.message = translate('people.importProgress', { done, total });
         },
       });
 
       await loading.dismiss();
 
-      const parts = [`${imported.length} Person(en) importiert.`];
+      const parts = [translate('people.importedCount', { count: imported.length })];
       if (failed.length) {
-        parts.push(`${failed.length} fehlgeschlagen.`);
+        parts.push(translate('people.failedCount', { count: failed.length }));
       }
       Utils.showToast(parts.join(' '), failed.length ? 'warning' : 'success');
 
@@ -249,9 +250,9 @@ export class ImportPage {
       .slice(0, 10)
       .map(f => `• ${f.player.firstName} ${f.player.lastName}: ${f.reason}`)
       .join('<br>');
-    const more = failed.length > 10 ? `<br>… und ${failed.length - 10} weitere` : '';
+    const more = failed.length > 10 ? '<br>' + translate('people.andMore', { count: failed.length - 10 }) : '';
     const alert = await this.alertController.create({
-      header: 'Nicht importierte Personen',
+      header: translate('people.notImported'),
       message: list + more,
       buttons: ['OK'],
     });

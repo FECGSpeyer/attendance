@@ -9,6 +9,7 @@ import { Utils } from 'src/app/utilities/Utils';
 import { AttendanceStatus, DefaultAttendanceType, DEFAULT_IMAGE, PlayerHistoryType, Role, FieldType } from 'src/app/utilities/constants';
 import { RankedMatch } from 'src/app/utilities/person-matcher';
 import { UnavailabilityModalComponent } from 'src/app/duty/unavailability-modal/unavailability-modal.component';
+import { translate } from '@jsverse/transloco';
 dayjs.extend(utc);
 
 @Component({
@@ -246,7 +247,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     for (const tenant of this.otherTenants) {
       const perc = await this.getAttendanceFromOtherTenant(tenant);
-      tenant.perc = perc === 1000 ? 'Nicht verfügbar' : `${Math.round(perc)}%`;
+      tenant.perc = perc === 1000 ? translate('person.notAvailable') : `${Math.round(perc)}%`;
       if (perc === 1000) {
         tenant.percColor = 'warning';
       } else {
@@ -276,10 +277,10 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   getChurchLabel(fieldId: string): string {
     const value = this.player?.additional_fields?.[fieldId];
-    if (value === null || value === undefined) { return 'Bitte auswählen'; }
-    if (value === '') { return 'Nicht gelistet'; }
+    if (value === null || value === undefined) { return translate('person.pleaseChoose'); }
+    if (value === '') { return translate('person.notListed'); }
     const church = this.db.churches()?.find(c => c.id === value);
-    return church ? church.name : 'Bitte auswählen';
+    return church ? church.name : translate('person.pleaseChoose');
   }
 
   openChurchModal() {
@@ -384,7 +385,7 @@ export class PersonPage implements OnInit, AfterViewInit {
    * Note: This also resets the critical player status (same field is used).
    */
   async resetLateCount(): Promise<void> {
-    const loading = await this.loadingController.create({ message: 'Wird zurückgesetzt...' });
+    const loading = await this.loadingController.create({ message: translate('person.resetting') });
     await loading.present();
 
     try {
@@ -395,11 +396,11 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.lateCount = 0;
       this.lateCountExcused = 0;
       await loading.dismiss();
-      Utils.showToast('Verspätungszähler zurückgesetzt', 'success');
+      Utils.showToast(translate('person.lateCounterReset'), 'success');
     } catch (error) {
       console.error('Error resetting late count:', error);
       await loading.dismiss();
-      Utils.showToast('Fehler beim Zurücksetzen', 'danger');
+      Utils.showToast(translate('person.resetFailed'), 'danger');
     }
   }
 
@@ -490,14 +491,14 @@ export class PersonPage implements OnInit, AfterViewInit {
   async dismiss(data?: any): Promise<void> {
     if (this.hasChanges) {
       const alert = await this.alertController.create({
-        header: 'Änderungen verwerfen?',
-        message: 'Möchtest du die ungespeicherten Änderungen wirklich verwerfen?',
+        header: translate('person.discardChanges'),
+        message: translate('person.discardChangesMessage'),
         buttons: [
           {
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             role: 'destructive',
           }, {
-            text: 'Ja',
+            text: translate('common.yes'),
             handler: () => {
               this.modalController.dismiss(data);
             }
@@ -514,7 +515,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   async addPerson(): Promise<void> {
     // Validate required fields
     if (!this.player.firstName || !this.player.lastName) {
-      Utils.showToast('Bitte gib den Vornamen und Nachnamen an.', 'danger');
+      Utils.showToast(translate('person.enterNames'), 'danger');
       return;
     }
 
@@ -524,9 +525,9 @@ export class PersonPage implements OnInit, AfterViewInit {
     try {
       await this.db.addPlayer(this.player, Boolean(this.player.email), this.role);
       this.modalController.dismiss();
-      Utils.showToast(`Die Person wurde erfolgreich hinzugefügt`, 'success');
+      Utils.showToast(translate('person.added'), 'success');
     } catch (error) {
-      Utils.showToast(`Fehler beim hinzufügen der Person: ${error.message ?? 'Unbekannter Fehler'}`, 'danger');
+      Utils.showToast(translate('person.addFailed', { error: error.message ?? translate('common.unknownError') }), 'danger');
     }
 
     loading.dismiss();
@@ -535,7 +536,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   async updatePlayer(): Promise<void> {
     // Validate email
     if (this.player.email?.length && this.player.email !== this.existingPlayer.email && !Utils.validateEmail(this.player.email)) {
-      Utils.showToast('Bitte gib eine valide E-Mail Adresse ein...', 'danger');
+      Utils.showToast(translate('person.invalidEmail'), 'danger');
       return;
     }
 
@@ -543,18 +544,18 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     if (this.existingPlayer.email !== this.player.email && Utils.validateEmail(this.player.email)) {
       const alert = await this.alertController.create({
-        header: 'E-Mail Adresse hinzugefügt',
-        message: 'Möchtest du gleich ein Konto für die Person anlegen?',
+        header: translate('person.emailAdded'),
+        message: translate('person.createAccountNow'),
         buttons: [
           {
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             handler: () => {
               loading.dismiss();
             },
             role: 'destructive',
           },
           {
-            text: 'Ja',
+            text: translate('common.yes'),
             handler: async () => {
               loading.present();
               await this.continueUpdatingPlayer(true, loading, false);
@@ -569,25 +570,25 @@ export class PersonPage implements OnInit, AfterViewInit {
     // Check if isLeader is being activated (not for general tenant, and player must have account)
     if (!this.isGeneral && this.player.appId && !this.existingPlayer.isLeader && this.player.isLeader) {
       const alert = await this.alertController.create({
-        header: 'Stimmführer aktivieren',
-        message: `Mit der Stimmführer-Rolle kann ${this.player.firstName} ${this.player.lastName} die Kontaktdaten und anstehenden Termine aller Personen in der Stimme einsehen. Soll die Rolle vergeben werden?`,
+        header: translate('person.enableVoiceLeader'),
+        message: translate('person.voiceLeaderMessage', { name: `${this.player.firstName} ${this.player.lastName}` }),
         buttons: [
           {
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             handler: () => {
               this.player.isLeader = false;
             },
             role: 'cancel',
           },
           {
-            text: 'Nur Stimmführer-Status',
+            text: translate('person.voiceLeaderStatusOnly'),
             handler: async () => {
               loading.present();
               await this.continueUpdatingPlayer(false, loading, false);
             },
           },
           {
-            text: 'Mit Rolle speichern',
+            text: translate('person.saveWithRole'),
             handler: async () => {
               loading.present();
               await this.continueUpdatingPlayer(false, loading, true);
@@ -692,28 +693,28 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.hasChanges = false;
       await this.dismiss();
 
-      Utils.showToast('Die Spielerdaten wurden erfolgreich aktualisiert.', 'success');
+      Utils.showToast(translate('person.updated'), 'success');
     } catch (error) {
       loading.dismiss();
-      Utils.showToast(`Fehler beim aktualisieren des Spielers: ${error.message ?? 'Unbekannter Fehler'}`, 'danger');
+      Utils.showToast(translate('person.updateFailedWith', { error: error.message ?? translate('common.unknownError') }), 'danger');
     }
   }
 
   async onRoleChange() {
     await this.db.updateTenantUser({ role: this.role }, this.player.appId);
-    Utils.showToast('Die Rolle wurde erfolgreich aktualisiert.', 'success');
+    Utils.showToast(translate('person.roleUpdated'), 'success');
   }
 
   async removeUserFromTenant() {
     const alert = await this.alertController.create({
-      header: 'Account entfernen',
-      message: 'Möchtest du den Account wirklich aus der Instanz entfernen? Die Personendaten bleiben erhalten.',
+      header: translate('person.removeAccount'),
+      message: translate('person.removeAccountMessage'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'destructive',
         }, {
-          text: 'Ja',
+          text: translate('common.yes'),
           handler: async () => {
             try {
               await this.db.removeUserFromTenant(this.player.appId, false, this.player.id);
@@ -724,9 +725,9 @@ export class PersonPage implements OnInit, AfterViewInit {
               });
               this.hasChanges = false;
               await this.dismiss();
-              Utils.showToast('Der Benutzer wurde erfolgreich entfernt', 'success');
+              Utils.showToast(translate('person.userRemoved'), 'success');
             } catch (error) {
-              Utils.showToast('Fehler beim Entfernen des Benutzers', 'danger');
+              Utils.showToast(translate('person.userRemoveFailed'), 'danger');
             }
           }
         }
@@ -809,7 +810,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     this.nameSuggestions.set([]);
-    Utils.showToast('Die Daten wurden erfolgreich übernommen', 'success');
+    Utils.showToast(translate('person.dataTaken'), 'success');
   }
 
   /**
@@ -835,10 +836,10 @@ export class PersonPage implements OnInit, AfterViewInit {
     if (!matches.length) {return;}
 
     const alert = await this.alertController.create({
-      header: 'E-Mail bereits vergeben',
+      header: translate('person.emailTaken'),
       message: matches.length === 1
-        ? `Diese E-Mail wird in einer anderen Instanz von ${matches[0].firstName} ${matches[0].lastName} verwendet. Daten übernehmen?`
-        : 'Diese E-Mail wird bereits in anderen Instanzen verwendet. Daten welcher Person übernehmen?',
+        ? translate('person.emailUsedBy', { name: `${matches[0].firstName} ${matches[0].lastName}` })
+        : translate('person.emailUsedMany'),
       inputs: matches.length === 1 ? undefined : matches.map((p, index) => ({
         type: 'radio',
         checked: index === 0,
@@ -847,10 +848,10 @@ export class PersonPage implements OnInit, AfterViewInit {
       })),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'destructive',
         }, {
-          text: 'Ja',
+          text: translate('common.yes'),
           handler: (value: Player) => {
             this.applyMatchedPerson(value ?? matches[0]);
           }
@@ -877,30 +878,30 @@ export class PersonPage implements OnInit, AfterViewInit {
    */
   async confirmMerge(candidate: Player): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Personen zusammenführen',
-      message: `${this.player.firstName} ${this.player.lastName} wird mit der bestehenden Person `
-        + `${candidate.firstName} ${candidate.lastName} zusammengeführt. Deren Anwesenheitsdaten bleiben erhalten, `
-        + `der neu registrierte Account wird ${candidate.firstName} ${candidate.lastName} zugeordnet. `
-        + 'Dies kann nicht rückgängig gemacht werden.',
+      header: translate('person.mergePeople'),
+      message: translate('person.mergeMessage', {
+        name: `${this.player.firstName} ${this.player.lastName}`,
+        candidate: `${candidate.firstName} ${candidate.lastName}`,
+      }),
       buttons: [
-        { text: 'Abbrechen', role: 'destructive' },
+        { text: translate('common.cancel'), role: 'destructive' },
         {
-          text: 'Zusammenführen',
+          text: translate('person.merge'),
           handler: async () => {
             // No auto-dismiss timeout — merge involves several sequential DB calls plus an email
             // webhook and can outlast a fixed duration, which would otherwise falsely trip the catch.
-            const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(0, 'Die Personen werden zusammengeführt...');
+            const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(0, translate('person.merging'));
             loading.present();
             try {
               await this.db.mergePendingPlayerIntoExisting(this.player, candidate);
               await loading.dismiss();
               this.hasChanges = false;
               await this.dismiss({ approved: true });
-              Utils.showToast('Die Personen wurden erfolgreich zusammengeführt', 'success');
+              Utils.showToast(translate('person.merged'), 'success');
             } catch (error) {
               await loading.dismiss().catch(() => {});
               console.error('confirmMerge failed', error);
-              Utils.showToast('Fehler beim Zusammenführen der Personen', 'danger');
+              Utils.showToast(translate('person.mergeFailed'), 'danger');
             }
           }
         }
@@ -965,14 +966,14 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   async removeHis(his: PlayerHistoryEntry, slider: IonItemSliding) {
     const alert = await this.alertController.create({
-      header: 'Eintrag unwiderruflich entfernen?',
+      header: translate('person.removeEntry'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'destructive',
           handler: () => slider.close()
         }, {
-          text: 'Ja',
+          text: translate('common.yes'),
           handler: async () => {
             const history = this.player.history.filter((h: PlayerHistoryEntry) => h.date !== his.date);
 
@@ -984,9 +985,9 @@ export class PersonPage implements OnInit, AfterViewInit {
               this.existingPlayer = { ...res } as any;
               this.player.history = res.history as any;
               this.getHistoryInfo();
-              Utils.showToast('Eintrag wurde erfolgreich entfernt.', 'success');
+              Utils.showToast(translate('person.entryRemoved'), 'success');
             } catch {
-              Utils.showToast('Fehler beim Löschen des Eintrags.', 'danger');
+              Utils.showToast(translate('person.entryRemoveFailed'), 'danger');
             }
 
             slider.close();
@@ -1005,7 +1006,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     try {
       await this.db.createAccount(this.player);
       await this.modalController.dismiss();
-      Utils.showToast('Account wurde erfolgreich angelegt', 'success');
+      Utils.showToast(translate('person.accountCreated'), 'success');
       await loading.dismiss();
     } catch (error) {
       Utils.showToast(error.message, 'danger');
@@ -1035,15 +1036,15 @@ export class PersonPage implements OnInit, AfterViewInit {
   /** Remove the current picture from within the viewer. */
   async removeImgFromViewer(): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Passbild entfernen',
-      message: 'Möchtest du das Passbild wirklich entfernen?',
+      header: translate('person.removePhoto'),
+      message: translate('person.removePhotoMessage'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'cancel',
         },
         {
-          text: 'Entfernen',
+          text: translate('common.remove'),
           role: 'destructive',
           handler: async () => {
             if (this.existingPlayer) {
@@ -1057,7 +1058,7 @@ export class PersonPage implements OnInit, AfterViewInit {
             }
             this.player.img = DEFAULT_IMAGE;
             this.closePassImageViewer();
-            Utils.showToast('Das Passbild wurde erfolgreich entfernt', 'success');
+            Utils.showToast(translate('person.photoRemoved'), 'success');
           },
         },
       ],
@@ -1083,7 +1084,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     if (imgFile) {
       if (imgFile.size > 2 * 1024 * 1024) {
         loading.dismiss();
-        Utils.showToast('Das Bild darf maximal 2MB groß sein.', 'danger');
+        Utils.showToast(translate('person.photoTooLarge'), 'danger');
         return;
       }
 
@@ -1095,7 +1096,7 @@ export class PersonPage implements OnInit, AfterViewInit {
             const dataUrl = await this.readFileAsDataUrl(imgFile);
             this.player.img = dataUrl;
           } catch (error) {
-            Utils.showToast('Fehler beim Laden des Passbildes', 'danger');
+            Utils.showToast(translate('person.photoLoadFailed'), 'danger');
           }
           loading.dismiss();
           return;
@@ -1111,7 +1112,7 @@ export class PersonPage implements OnInit, AfterViewInit {
         }
       } else {
         loading.dismiss();
-        Utils.showToast('Fehler beim ändern des Passbildes, versuche es später erneut', 'danger');
+        Utils.showToast(translate('person.photoChangeFailed'), 'danger');
       }
     } else {
       loading.dismiss();
@@ -1136,10 +1137,10 @@ export class PersonPage implements OnInit, AfterViewInit {
   async onHisItemClicked(his: PlayerHistoryEntry) {
     if (his.type === PlayerHistoryType.NOTES) {
       const alert = await this.alertController.create({
-        header: 'Notiz geändert',
+        header: translate('person.noteChanged'),
         subHeader: dayjs(his.date).format('DD.MM.YYYY'),
-        message: `Alte Notiz: ${his.text}`,
-        buttons: ['Ok']
+        message: translate('person.oldNote', { note: his.text }),
+        buttons: [translate('common.ok')]
       });
 
       await alert.present();
@@ -1150,12 +1151,12 @@ export class PersonPage implements OnInit, AfterViewInit {
     const matches = await this.db.getPossiblePersonsByName(this.player.firstName, this.player.lastName);
 
     if (matches.length === 0) {
-      Utils.showToast('Es wurde keine passende Person in einer anderen Instanz gefunden', 'danger');
+      Utils.showToast(translate('person.noMatchOther'), 'danger');
       return;
     }
 
     const actionSheet = await this.actionSheetController.create({
-      header: 'Eintrag auswählen',
+      header: translate('person.chooseEntry'),
       buttons: matches.map((m) => ({
           text: `${m.candidate.firstName} ${m.candidate.lastName} · ${(m.candidate as any).instrument?.name ?? '?'} (${(m.candidate as any).tenantId?.longName ?? '?'})`,
           handler: async () => {
@@ -1179,7 +1180,7 @@ export class PersonPage implements OnInit, AfterViewInit {
               await this.db.setGlobalPersonId([(candidate as any).id], globalPersonId);
             }
 
-            Utils.showToast('Die E-Mail Adresse wurde erfolgreich aktualisiert', 'success');
+            Utils.showToast(translate('person.emailUpdated'), 'success');
           }
         }))
     });
@@ -1197,7 +1198,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.player.email = me.email;
       this.existingPlayer = { ...this.existingPlayer, appId: updated.appId, email: me.email };
       this.role = await this.db.getRoleFromTenantUser(updated.appId);
-      Utils.showToast('Benutzer wurde erfolgreich zugewiesen', 'success');
+      Utils.showToast(translate('person.userAssigned'), 'success');
     } catch (error) {
       Utils.showToast(error.message, 'danger');
     } finally {
@@ -1210,7 +1211,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     if (!this.player.appId && this.isAdmin) {
       buttons.push({
-        text: 'Meinen Benutzer zuweisen',
+        text: translate('person.assignMyUser'),
         handler: async () => {
           await this.assignMyAccount();
         }
@@ -1219,12 +1220,12 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     if (this.player.paused) {
       buttons.push({
-        text: 'Wieder aktivieren',
+        text: translate('person.reactivate'),
         handler: async () => {
           const history: PlayerHistoryEntry[] = this.player.history;
           history.push({
             date: new Date().toISOString(),
-            text: 'Person wieder aktiv',
+            text: translate('people.activeAgain'),
             type: PlayerHistoryType.UNPAUSED,
           });
           try {
@@ -1243,7 +1244,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       });
     } else {
       buttons.push({
-        text: 'Pausieren',
+        text: translate('people.pause'),
         handler: async () => {
           this.pauseReason = '';
           this.pauseFrom = '';
@@ -1255,7 +1256,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     if (this.organisation && this.tenants.length) {
       buttons.push({
-        text: 'In andere Instanz übertragen',
+        text: translate('person.transferOther'),
         handler: async (): Promise<void> => {
           this.copy = false;
           this.isTransferModalOpen = true;
@@ -1263,7 +1264,7 @@ export class PersonPage implements OnInit, AfterViewInit {
       });
 
       buttons.push({
-        text: 'In andere Instanz kopieren',
+        text: translate('person.copyOther'),
         handler: async (): Promise<void> => {
           this.copy = true;
           this.isTransferModalOpen = true;
@@ -1272,7 +1273,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     buttons.push({
-      text: 'Archivieren',
+      text: translate('people.archive'),
       handler: (): void => {
         this.isArchiveModalOpen = true;
       },
@@ -1281,22 +1282,22 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     if (this.player.appId !== this.db.tenantUser().userId) {
       buttons.push({
-        text: 'Entfernen',
+        text: translate('common.remove'),
         handler: async (): Promise<void> => {
           const alert = await this.alertController.create({
-            header: 'Person entfernen',
-            message: 'Möchtest du die Person wirklich entfernen? Alle zugehörigen Daten (Abwesenheiten, Notizen, etc.) gehen dabei verloren!',
+            header: translate('attendance.removePerson'),
+            message: translate('person.removePersonMessage'),
             buttons: [
               {
-                text: 'Abbrechen',
+                text: translate('common.cancel'),
                 role: 'destructive',
               }, {
-                text: 'Ja',
+                text: translate('common.yes'),
                 handler: async () => {
                   this.modalController.dismiss();
                   try {
                     await this.db.removePlayer(this.player);
-                    Utils.showToast('Die Person wurde erfolgreich entfernt', 'success');
+                    Utils.showToast(translate('person.removed'), 'success');
                   } catch (error) {
                     Utils.showToast(error, 'danger');
                   }
@@ -1311,12 +1312,12 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
 
     buttons.push({
-      text: 'Abbrechen',
+      text: translate('common.cancel'),
       role: 'destructive',
     });
 
     const actionSheet = await this.actionSheetController.create({
-      header: 'Aktionen',
+      header: translate('person.actions'),
       buttons
     });
     await actionSheet.present();
@@ -1330,23 +1331,25 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     if (await this.db.personExistsInTenant(this.player, targetTenant.id)) {
       const blockAlert = await this.alertController.create({
-        header: this.copy ? 'Kopieren nicht möglich' : 'Übertragen nicht möglich',
-        message: `In der Instanz "${targetTenant.longName}" existiert bereits eine Person mit ${this.player.email ? `der E-Mail-Adresse "${this.player.email}"` : `dem Namen "${this.player.firstName} ${this.player.lastName}"`}.`,
-        buttons: ['Ok'],
+        header: this.copy ? translate('person.copyNotPossible') : translate('person.transferNotPossible'),
+        message: this.player.email
+          ? translate('person.existsWithEmail', { tenant: targetTenant.longName, email: this.player.email })
+          : translate('person.existsWithName', { tenant: targetTenant.longName, name: `${this.player.firstName} ${this.player.lastName}` }),
+        buttons: [translate('common.ok')],
       });
       await blockAlert.present();
       return;
     }
 
     const alert = await this.alertController.create({
-      header: this.copy ? 'Person kopieren' : 'Person übertragen',
-      message: this.copy ? 'Möchtest du die Person wirklich in die andere Instanz kopieren?' : 'Möchtest du die Person wirklich in die andere Instanz übertragen? Alle zugehörigen Daten (Abwesenheiten, Notizen, etc.) gehen dabei verloren!',
+      header: this.copy ? translate('person.copyPerson') : translate('person.transferPerson'),
+      message: this.copy ? translate('person.copyConfirm') : translate('person.transferConfirm'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'destructive',
         }, {
-          text: 'Ja',
+          text: translate('common.yes'),
           handler: async () => {
             try {
               await this.db.handoverPerson(this.player, targetTenant, this.targetGroupId, this.copy, this.isMainGroup ? this.player.instrument : null);
@@ -1355,7 +1358,7 @@ export class PersonPage implements OnInit, AfterViewInit {
                 this.hasChanges = false;
                 await this.dismiss();
               }
-              Utils.showToast(this.copy ? 'Die Person wurde erfolgreich kopiert' : 'Die Person wurde erfolgreich übertragen', 'success');
+              Utils.showToast(this.copy ? translate('person.copied') : translate('person.transferred'), 'success');
             } catch (error) {
               Utils.showToast(error, 'danger');
               return;
@@ -1375,7 +1378,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     setTimeout(async () => {
       await this.dismiss();
     }, 500);
-    Utils.showToast('Die Person wurde erfolgreich archiviert', 'success');
+    Utils.showToast(translate('person.archived'), 'success');
   }
 
   async dismissArchiveModal(): Promise<void> {
@@ -1385,7 +1388,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   async confirmPause(): Promise<void> {
     if (!this.pauseReason) {
-      Utils.showToast('Bitte gib einen Grund an!', 'danger');
+      Utils.showToast(translate('signout.giveReason'), 'danger');
       return;
     }
     const segments: string[] = [];
@@ -1424,7 +1427,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   private async askPauseInOtherTenants(history: PlayerHistoryEntry[], pauseFrom: string): Promise<void> {
     await new Promise<void>(async (resolve) => {
       const alert = await this.alertController.create({
-        header: 'Auch in anderen Instanzen pausieren?',
+        header: translate('people.pauseOthers'),
         message: `${this.player.firstName} ${this.player.lastName} ist auch in anderen Instanzen aktiv. In welchen soll die Person ebenfalls pausiert werden?`,
         inputs: this.otherTenants.map((t) => ({
           type: 'checkbox' as const,
@@ -1433,9 +1436,9 @@ export class PersonPage implements OnInit, AfterViewInit {
           checked: false,
         })),
         buttons: [
-          { text: 'Überspringen', role: 'cancel', handler: () => resolve() },
+          { text: translate('people.skip'), role: 'cancel', handler: () => resolve() },
           {
-            text: 'Pausieren',
+            text: translate('people.pause'),
             handler: async (selected: Tenant[]) => {
               for (const tenant of selected) {
                 try {
@@ -1444,7 +1447,7 @@ export class PersonPage implements OnInit, AfterViewInit {
                     await this.db.pausePlayerInOtherTenant(personRef.id, tenant.id, true, this.pauseUntil || null, history, pauseFrom || undefined);
                   }
                 } catch (error) {
-                  Utils.showToast(`Fehler bei ${tenant.shortName}: ${error}`, 'danger');
+                  Utils.showToast(translate('people.errorAt', { tenant: tenant.shortName, error: String(error) }), 'danger');
                 }
               }
               resolve();
@@ -1476,7 +1479,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   async confirmAbsence(): Promise<void> {
     if (!this.absenceReason || !this.absenceFrom || !this.absenceUntil) {
-      Utils.showToast('Bitte fülle alle Pflichtfelder aus', 'danger');
+      Utils.showToast(translate('signout.fillRequired'), 'danger');
       return;
     }
 
@@ -1511,8 +1514,8 @@ export class PersonPage implements OnInit, AfterViewInit {
       await this.getHistoryInfo();
       Utils.showToast(
         toExcuse.length > 0
-          ? `Abwesenheit eingetragen (${toExcuse.length} Termin${toExcuse.length > 1 ? 'e' : ''} entschuldigt)`
-          : 'Abwesenheit eingetragen',
+          ? translate('signout.absenceEnteredCount', { count: toExcuse.length })
+          : translate('signout.absenceEntered'),
         'success'
       );
     } finally {
@@ -1522,12 +1525,12 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   async deleteAbsence(absence: PlayerAbsence): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Abwesenheit löschen',
-      message: 'Soll die Abwesenheit gelöscht werden? Bereits entschuldigte Termine in diesem Zeitraum werden auf "Neutral" zurückgesetzt.',
+      header: translate('signout.deleteAbsence'),
+      message: translate('person.deleteAbsenceMessage'),
       buttons: [
-        { text: 'Abbrechen', role: 'cancel' },
+        { text: translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Löschen',
+          text: translate('common.delete'),
           role: 'destructive',
           handler: async () => {
             const loading = await Utils.getLoadingElement();
@@ -1551,7 +1554,7 @@ export class PersonPage implements OnInit, AfterViewInit {
                 });
               }
               await this.getHistoryInfo();
-              Utils.showToast('Abwesenheit gelöscht', 'success');
+              Utils.showToast(translate('signout.absenceDeleted'), 'success');
             } finally {
               await loading.dismiss();
             }
@@ -1564,14 +1567,14 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   async activate(): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Person reaktivieren',
-      message: 'Möchtest du die Person wirklich reaktivieren?',
+      header: translate('person.reactivatePerson'),
+      message: translate('person.reactivateConfirm'),
       buttons: [
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'destructive',
         }, {
-          text: 'Ja',
+          text: translate('common.yes'),
           handler: () => this.activateConfirmed()
         }
       ]
@@ -1584,7 +1587,7 @@ export class PersonPage implements OnInit, AfterViewInit {
     await this.db.activatePlayer(this.player);
     this.hasChanges = false;
     this.modalController.dismiss({ activated: true });
-    Utils.showToast('Die Person wurde erfolgreich wieder aktiviert', 'success');
+    Utils.showToast(translate('person.reactivated'), 'success');
   }
 
   getExtraFieldDateString(dateString: string): string {
@@ -1628,16 +1631,16 @@ export class PersonPage implements OnInit, AfterViewInit {
     const actionSheet = await this.actionSheetController.create({
       buttons: [
         {
-          text: 'Person genehmigen',
+          text: translate('person.approvePerson'),
           handler: () => this.approvePlayer(),
         },
         {
-          text: 'Person ablehnen',
+          text: translate('person.declinePerson'),
           role: 'destructive',
           handler: () => this.declinePlayer(),
         },
         {
-          text: 'Abbrechen',
+          text: translate('common.cancel'),
           role: 'destructive',
         }
       ]
@@ -1648,23 +1651,23 @@ export class PersonPage implements OnInit, AfterViewInit {
 
   async declinePlayer(): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Person ablehnen',
-      subHeader: 'Gib einen Grund an.',
+      header: translate('person.declinePerson'),
+      subHeader: translate('person.giveReasonShort'),
       inputs: [{
         type: 'textarea',
         name: 'reason'
       }],
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
       }, {
-        text: 'Ablehnen',
+        text: translate('person.decline'),
         handler: async (evt: { reason: string }) => {
           if (!evt.reason) {
-            alert.message = 'Bitte gib einen Grund an!';
+            alert.message = translate('signout.giveReason');
             return false;
           }
 
-          const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(10000, 'Die Person wird abgelehnt...');
+          const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(10000, translate('person.declining'));
           loading.present();
 
           this.player.history.push({
@@ -1686,10 +1689,10 @@ export class PersonPage implements OnInit, AfterViewInit {
             this.hasChanges = false;
             await this.dismiss({ approved: true });
 
-            Utils.showToast('Die Spielerdaten wurden erfolgreich aktualisiert.', 'success');
+            Utils.showToast(translate('person.updated'), 'success');
           } catch (error) {
             loading.dismiss();
-            Utils.showToast('Fehler beim aktualisieren des Spielers', 'danger');
+            Utils.showToast(translate('person.updateFailed'), 'danger');
           }
 
           loading.dismiss();
@@ -1701,7 +1704,7 @@ export class PersonPage implements OnInit, AfterViewInit {
   }
 
   async approvePlayer(): Promise<void> {
-    const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(10000, 'Die Person wird genehmigt...');
+    const loading: HTMLIonLoadingElement = await Utils.getLoadingElement(10000, translate('person.approving'));
     loading.present();
 
     this.player.history.push({
@@ -1725,10 +1728,10 @@ export class PersonPage implements OnInit, AfterViewInit {
       this.hasChanges = false;
       await this.dismiss({ approved: true });
 
-      Utils.showToast('Die Spielerdaten wurden erfolgreich aktualisiert.', 'success');
+      Utils.showToast(translate('person.updated'), 'success');
     } catch (error) {
       loading.dismiss();
-      Utils.showToast('Fehler beim aktualisieren des Spielers', 'danger');
+      Utils.showToast(translate('person.updateFailed'), 'danger');
     }
 
     loading.dismiss();

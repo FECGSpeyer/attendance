@@ -4,6 +4,7 @@ import { DbService } from 'src/app/services/db.service';
 import { ExtraField, Group, Player } from 'src/app/utilities/interfaces';
 import { FieldType } from 'src/app/utilities/constants';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 interface FieldOption {
   key: string;
@@ -49,10 +50,10 @@ export class BulkEditPage implements OnInit {
 
   private buildFieldOptions() {
     this.fieldOptions = [
-      { key: 'instrument', label: 'Gruppe', type: 'standard' },
-      { key: 'isLeader', label: 'Stimmführer', type: 'standard' },
-      { key: 'notes', label: 'Notizen', type: 'standard' },
-      { key: 'phone', label: 'Telefon', type: 'standard' },
+      { key: 'instrument', label: translate('people.group'), type: 'standard' },
+      { key: 'isLeader', label: translate('people.voiceLeader'), type: 'standard' },
+      { key: 'notes', label: translate('people.notes'), type: 'standard' },
+      { key: 'phone', label: translate('people.phone'), type: 'standard' },
     ];
 
     const extraFields = this.db.getPersonExtraFields();
@@ -150,7 +151,7 @@ export class BulkEditPage implements OnInit {
     this.isSaving = true;
     try {
       if (this.db.isDemo()) {
-        Utils.showToast('Diese Funktion ist im Demo-Modus nicht verfügbar.', 'warning');
+        Utils.showToast(translate('people.demoUnavailable'), 'warning');
         return;
       }
 
@@ -220,7 +221,7 @@ export class BulkEditPage implements OnInit {
       this.modalController.dismiss({ updated: true });
     } catch (error) {
       console.error('Bulk update error:', error);
-      Utils.showToast('Fehler beim Speichern', 'danger');
+      Utils.showToast(translate('people.saveFailed'), 'danger');
     } finally {
       this.isSaving = false;
     }

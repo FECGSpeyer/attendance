@@ -13,6 +13,7 @@ import { Storage } from '@ionic/storage-angular';
 import { Utils } from 'src/app/utilities/Utils';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { Router } from '@angular/router';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-list',
@@ -372,7 +373,7 @@ export class ListPage implements OnInit, OnDestroy {
   }
 
   private async savePlayerOrder(): Promise<void> {
-    const loading = await Utils.getLoadingElement(5000, 'Reihenfolge wird gespeichert...');
+    const loading = await Utils.getLoadingElement(5000, translate('people.savingOrder'));
     await loading.present();
     try {
       const sb = this.db.getSupabase();
@@ -382,10 +383,10 @@ export class ListPage implements OnInit, OnDestroy {
         }
       }
       await loading.dismiss();
-      Utils.showToast('Reihenfolge gespeichert', 'success');
+      Utils.showToast(translate('people.orderSaved'), 'success');
     } catch {
       await loading.dismiss();
-      Utils.showToast('Fehler beim Speichern der Reihenfolge', 'danger');
+      Utils.showToast(translate('people.orderSaveFailed'), 'danger');
     }
   }
 
@@ -433,7 +434,7 @@ export class ListPage implements OnInit, OnDestroy {
       }
 
       const alert = await this.alertController.create({
-        header: 'Instanz wählen',
+        header: translate('people.chooseInstance'),
         inputs: this.linkedTenants.map((t) => ({
           type: 'radio',
           label: t.longName,
@@ -442,7 +443,7 @@ export class ListPage implements OnInit, OnDestroy {
         })),
         buttons: [
           {
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             role: 'destructive',
             handler: () => {
               this.filterOpt = 'all';
@@ -450,7 +451,7 @@ export class ListPage implements OnInit, OnDestroy {
             }
           },
           {
-            text: 'Filtern',
+            text: translate('people.filter'),
             handler: async (value) => {
               if (!value) {
                 this.filterOpt = 'all';
@@ -486,15 +487,15 @@ export class ListPage implements OnInit, OnDestroy {
 
       const alert = await this.alertController.create({
         header: extraField.name,
-        inputs: [{ type: 'number', placeholder: 'Wert eingeben', value: option ?? '' }],
+        inputs: [{ type: 'number', placeholder: translate('people.enterValue'), value: option ?? '' }],
         buttons: [
           {
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             role: 'destructive',
             handler: () => { this.filterOpt = 'all'; this.onFilterChanged(); }
           },
           {
-            text: 'Filtern',
+            text: translate('people.filter'),
             handler: async (data) => {
               const value = data[0];
               if (value === '' || value === null || value === undefined) {
@@ -536,17 +537,17 @@ export class ListPage implements OnInit, OnDestroy {
       const alert = await this.alertController.create({
         header: extraField.name,
         inputs: [
-          { type: 'radio', label: 'Ja', value: 'true', checked: option !== 'false' },
-          { type: 'radio', label: 'Nein', value: 'false', checked: option === 'false' },
+          { type: 'radio', label: translate('common.yes'), value: 'true', checked: option !== 'false' },
+          { type: 'radio', label: translate('common.no'), value: 'false', checked: option === 'false' },
         ],
         buttons: [
           {
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             role: 'destructive',
             handler: () => { this.filterOpt = 'all'; this.onFilterChanged(); }
           },
           {
-            text: 'Filtern',
+            text: translate('people.filter'),
             handler: async (value: string) => {
               if (!value) {
                 this.filterOpt = 'all';
@@ -594,7 +595,7 @@ export class ListPage implements OnInit, OnDestroy {
         })),
         buttons: [
           {
-            text: 'Abbrechen',
+            text: translate('common.cancel'),
             role: 'destructive',
             handler: () => {
               this.filterOpt = 'all';
@@ -602,7 +603,7 @@ export class ListPage implements OnInit, OnDestroy {
             }
           },
           {
-            text: 'Filtern',
+            text: translate('people.filter'),
             handler: async (value) => {
               if (!value) {
                 this.filterOpt = 'all';
@@ -692,10 +693,10 @@ export class ListPage implements OnInit, OnDestroy {
       props.push(player.groupName);
     }
     if (this.viewOpts.includes('birthday')) {
-      props.push(`${dayjs(player.birthday).format('DD.MM.YYYY')} (${Utils.calculateAge(new Date(player.birthday))} J.)`);
+      props.push(translate('people.ageShort', { date: dayjs(player.birthday).format('DD.MM.YYYY'), age: Utils.calculateAge(new Date(player.birthday)) }));
     }
     if (this.viewOpts.includes('test')) {
-      props.push(player.testResult || 'Kein Ergebnis');
+      props.push(player.testResult || translate('people.noResult'));
     }
     if (this.viewOpts.includes('instruments') && player.instruments) {
       props.push(player.instruments);
@@ -763,28 +764,28 @@ export class ListPage implements OnInit, OnDestroy {
 
   async remove(player: Person, slider: IonItemSliding): Promise<void> {
     if (player.appId && player.appId === this.db.tenantUser().userId) {
-      Utils.showToast('Du kannst dich nicht selbst entfernen!', 'danger');
+      Utils.showToast(translate('people.cannotRemoveSelf'), 'danger');
       slider.close();
       return;
     }
 
     const sheet: HTMLIonActionSheetElement = await this.actionSheetController.create({
       buttons: [{
-        text: 'Archivieren',
+        text: translate('people.archive'),
         handler: (): void => {
           this.playerToArchive = player as Player;
           this.isArchiveModalOpen = true;
           slider.close();
         },
       }, {
-        text: 'Entfernen',
+        text: translate('common.remove'),
         handler: (): void => {
           this.removePlayer(player);
           slider.close();
         },
       }, {
         role: 'cancel',
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
         handler: () => {
           slider.close();
         }
@@ -808,19 +809,19 @@ export class ListPage implements OnInit, OnDestroy {
   async removePlayer(player: Person): Promise<void> {
     try { await Haptics.impact({ style: ImpactStyle.Medium }); } catch { /* Haptics not available in PWA */ }
     const alert = await this.alertController.create({
-      header: 'Person wirklich entfernen?',
-      message: 'Diese Aktion kann nicht rückgängig gemacht werden!',
+      header: translate('people.removeConfirm'),
+      message: translate('people.cannotUndoExcl'),
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
         role: 'cancel',
       }, {
-        text: 'Entfernen',
+        text: translate('common.remove'),
         handler: async () => {
-          const loading = await Utils.getLoadingElement(5000, 'Person wird entfernt...');
+          const loading = await Utils.getLoadingElement(5000, translate('people.removing'));
           await loading.present();
           try {
             await this.db.removePlayer(player);
-            Utils.showToast('Person wurde entfernt.', 'success');
+            Utils.showToast(translate('people.removed'), 'success');
             await loading.dismiss();
           } catch (error) {
             Utils.showToast(error, 'danger');
@@ -845,7 +846,7 @@ export class ListPage implements OnInit, OnDestroy {
 
   async confirmPause() {
     if (!this.pauseReason) {
-      Utils.showToast('Bitte gib einen Grund an!', 'warning');
+      Utils.showToast(translate('signout.giveReason'), 'warning');
       return;
     }
 
@@ -867,7 +868,7 @@ export class ListPage implements OnInit, OnDestroy {
       type: PlayerHistoryType.PAUSED,
     });
 
-    const loading = await Utils.getLoadingElement(5000, 'Wird pausiert...');
+    const loading = await Utils.getLoadingElement(5000, translate('people.pausing'));
     await loading.present();
     try {
       await this.db.updatePlayer({
@@ -905,8 +906,8 @@ export class ListPage implements OnInit, OnDestroy {
   ): Promise<void> {
     await new Promise<void>(async (resolve) => {
       const alert = await this.alertController.create({
-        header: 'Auch in anderen Instanzen pausieren?',
-        message: `${player.firstName} ${player.lastName} ist auch in anderen Instanzen aktiv. In welchen soll die Person ebenfalls pausiert werden?`,
+        header: translate('people.pauseOthers'),
+        message: translate('people.pauseOthersMessage', { name: `${player.firstName} ${player.lastName}` }),
         inputs: otherTenants.map((t) => ({
           type: 'checkbox' as const,
           label: t.longName || t.shortName,
@@ -914,9 +915,9 @@ export class ListPage implements OnInit, OnDestroy {
           checked: false,
         })),
         buttons: [
-          { text: 'Überspringen', role: 'cancel', handler: () => resolve() },
+          { text: translate('people.skip'), role: 'cancel', handler: () => resolve() },
           {
-            text: 'Pausieren',
+            text: translate('people.pause'),
             handler: async (selected: Tenant[]) => {
               for (const tenant of selected) {
                 try {
@@ -925,7 +926,7 @@ export class ListPage implements OnInit, OnDestroy {
                     await this.db.pausePlayerInOtherTenant(personRef.id, tenant.id, true, pauseUntil || null, history, pauseFrom || undefined);
                   }
                 } catch (error) {
-                  Utils.showToast(`Fehler bei ${tenant.shortName}: ${error}`, 'danger');
+                  Utils.showToast(translate('people.errorAt', { tenant: tenant.shortName, error: String(error) }), 'danger');
                 }
               }
               resolve();
@@ -949,22 +950,22 @@ export class ListPage implements OnInit, OnDestroy {
 
   async unpausePlayer(player: Player, slider: IonItemSliding) {
     const alert = await this.alertController.create({
-      header: 'Person wieder aktivieren?',
+      header: translate('people.reactivateConfirm'),
       buttons: [{
-        text: 'Abbrechen',
+        text: translate('common.cancel'),
         handler: () => {
           slider.close();
         }
       }, {
-        text: 'Aktivieren',
+        text: translate('people.activate'),
         handler: async () => {
           const history: PlayerHistoryEntry[] = player.history;
           history.push({
             date: new Date().toISOString(),
-            text: 'Person wieder aktiv',
+            text: translate('people.activeAgain'),
             type: PlayerHistoryType.UNPAUSED,
           });
-          const loading = await Utils.getLoadingElement(5000, 'Wird aktiviert...');
+          const loading = await Utils.getLoadingElement(5000, translate('people.activating'));
           await loading.present();
           try {
             await this.db.updatePlayer({
@@ -987,12 +988,12 @@ export class ListPage implements OnInit, OnDestroy {
 
   getTeacherName(teacherId?: number): string {
     const teacher = this.teachers.find(t => t.id === teacherId);
-    return teacher ? teacher.name : 'Unbekannt';
+    return teacher ? teacher.name : translate('common.unknown');
   }
 
   getChurchName(churchId?: string): string {
     const church = this.db.churches().find(c => c.id === churchId);
-    return church ? church.name : 'Unbekannt';
+    return church ? church.name : translate('common.unknown');
   }
 
   // async updateImages() {
@@ -1062,7 +1063,7 @@ export class ListPage implements OnInit, OnDestroy {
       componentProps: {
         churchIds: this.playersFiltered.map(p => (p.additional_fields ?? {})[field.id] as string | null),
         churches: this.db.churches() ?? [],
-        subtitle: 'Personen',
+        subtitle: translate('common.people'),
       },
       breakpoints: [0, 0.5, 0.75, 1],
       initialBreakpoint: 0.5,

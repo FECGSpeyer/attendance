@@ -5,9 +5,11 @@ import { IonicModule } from '@ionic/angular/lazy';
 import { MembersPageRoutingModule } from './members-routing.module';
 import { MembersPage } from './members.page';
 import { NotificationBellComponent } from 'src/app/shared/notification-bell/notification-bell.component';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

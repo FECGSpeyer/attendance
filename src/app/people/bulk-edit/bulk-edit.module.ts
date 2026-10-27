@@ -7,9 +7,11 @@ import { IonicModule } from '@ionic/angular/lazy';
 import { BulkEditPageRoutingModule } from './bulk-edit-routing.module';
 
 import { BulkEditPage } from './bulk-edit.page';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   imports: [
+    TranslocoModule,
     CommonModule,
     FormsModule,
     IonicModule,

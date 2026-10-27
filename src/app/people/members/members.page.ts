@@ -2,6 +2,7 @@ import { Component, OnInit, effect } from '@angular/core';
 import { DbService } from 'src/app/services/db.service';
 import { ExtraField, Player } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
+import { translate } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-members',
@@ -68,7 +69,7 @@ export class MembersPage implements OnInit {
       this.applyFilters();
     } catch (error) {
       console.error('Error loading players:', error);
-      Utils.showToast('Fehler beim Laden der Mitglieder.', 'danger');
+      Utils.showToast(translate('people.membersLoadFailed'), 'danger');
     } finally {
       this.isLoading = false;
     }
@@ -133,7 +134,7 @@ export class MembersPage implements OnInit {
         ...player,
         firstOfInstrument: isFirst,
         instrumentLength: instrumentCounts.get(instrumentId) || 0,
-        groupName: player.groupName || 'Ohne Gruppe'
+        groupName: player.groupName || translate('people.noGroupAssigned')
       };
     });
   }

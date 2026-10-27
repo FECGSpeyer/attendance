@@ -1,7 +1,7 @@
 ﻿<ion-header translucent="true">
   @if (isReordering) {
     <ion-toolbar color="warning">
-      <ion-title>Reihenfolge anpassen</ion-title>
+      <ion-title>{{ 'people.reorder' | transloco }}</ion-title>
       <ion-buttons slot="end">
         <ion-button (click)="toggleReorderMode()">
           <ion-icon slot="icon-only" name="checkmark"></ion-icon>
@@ -24,7 +24,7 @@
               <ion-item button detail="false" (click)="onTenantChange(tenant.id)">
                 <ion-label>{{ tenant.longName }}</ion-label>
                 @if (tenant.id === db.tenant()?.id) {
-                  <ion-badge slot="end" color="primary">Aktuell</ion-badge>
+                  <ion-badge slot="end" color="primary">{{ 'people.current' | transloco }}</ion-badge>
                 }
               </ion-item>
             }
@@ -53,7 +53,7 @@
   </ion-header>
   }
   <div class="flex" [style.display]="isReordering ? 'none' : ''">
-    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" placeholder="Person suchen...">
+    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="search($event)" [placeholder]="'people.searchPerson' | transloco">
     </ion-searchbar>
     <ion-button fill="none" (click)="filterPopover.present($event)">
       <ion-icon slot="icon-only" [color]="filterOpt === 'all' ? '' : 'primary'" size="medium" name="options"></ion-icon>
@@ -64,28 +64,27 @@
           <ion-item lines="none">
             <ion-icon slot="start" name="funnel" size="small"></ion-icon>
             <ion-select slot="end" (ionFocus)="onFilterFocused()" (ionDismiss)="onFilterDismissed()" (ionChange)="onFilterChanged()" interface="popover" [(ngModel)]="filterOpt">
-              <ion-select-option value="all">Alle Anzeigen</ion-select-option>
-              <ion-select-option value="active">Aktive Personen</ion-select-option>
-              <ion-select-option value="criticals">Problemfälle</ion-select-option>
+              <ion-select-option value="all">{{ 'people.showAll' | transloco }}</ion-select-option>
+              <ion-select-option value="active">{{ 'people.activePeople' | transloco }}</ion-select-option>
+              <ion-select-option value="criticals">{{ 'people.problemCases' | transloco }}</ion-select-option>
               @if (!isGeneral) {
-                <ion-select-option value="leaders">Stimmführer</ion-select-option>
+                <ion-select-option value="leaders">{{ 'people.voiceLeader' | transloco }}</ion-select-option>
               }
-              <ion-select-option value="withoutAccount">Ohne Account</ion-select-option>
+              <ion-select-option value="withoutAccount">{{ 'people.withoutAccount' | transloco }}</ion-select-option>
               @if (isVoS) {
-                <ion-select-option value="examinee">Prüflinge</ion-select-option>
-              }
-              @if (isVoS) {
-                <ion-select-option value="new">Neue Spieler</ion-select-option>
+                <ion-select-option value="examinee">{{ 'people.candidates' | transloco }}</ion-select-option>
               }
               @if (isVoS) {
-                <ion-select-option value="withoutTeacher">Ohne Lehrer</ion-select-option>
+                <ion-select-option value="new">{{ 'people.newPlayers' | transloco }}</ion-select-option>
               }
               @if (isVoS) {
-                <ion-select-option value="withoutTest">Testergebnis fehlt</ion-select-option>
+                <ion-select-option value="withoutTeacher">{{ 'people.withoutTeacher' | transloco }}</ion-select-option>
+              }
+              @if (isVoS) {
+                <ion-select-option value="withoutTest">{{ 'people.testResultMissing' | transloco }}</ion-select-option>
               }
               @if (linkedTenants.length) {
-                <ion-select-option value="otherInstance">Mitglied anderer
-                Instanz</ion-select-option>
+                <ion-select-option value="otherInstance">{{ 'people.otherInstanceMember' | transloco }}</ion-select-option>
               }
               @if (db.getPersonExtraFields().length) {
                 @for (field of db.getPersonExtraFields(); track field.id) {
@@ -102,18 +101,18 @@
           <ion-item lines="none">
             <ion-icon slot="start" name="filter" size="small"></ion-icon>
             <ion-select slot="end" (ionChange)="onSortChanged()" interface="popover" [(ngModel)]="sortOpt">
-              <ion-select-option value="instrument">Gruppe</ion-select-option>
-              <ion-select-option value="vorname">Vorname</ion-select-option>
-              <ion-select-option value="nachname">Nachname</ion-select-option>
-              <ion-select-option value="attAsc">Anwesenheit ↑</ion-select-option>
-              <ion-select-option value="attDesc">Anwesenheit ↓</ion-select-option>
-              <ion-select-option value="birthdayAsc">Geburtsdatum ↑</ion-select-option>
-              <ion-select-option value="birthdayDesc">Geburtsdatum ↓</ion-select-option>
-              <ion-select-option value="joinedAsc">Beitrittsdatum ↑</ion-select-option>
-              <ion-select-option value="joinedDesc">Beitrittsdatum ↓</ion-select-option>
-              <ion-select-option value="nextBirthday">Nächster Geburtstag</ion-select-option>
+              <ion-select-option value="instrument">{{ 'people.group' | transloco }}</ion-select-option>
+              <ion-select-option value="vorname">{{ 'people.firstName' | transloco }}</ion-select-option>
+              <ion-select-option value="nachname">{{ 'people.lastName' | transloco }}</ion-select-option>
+              <ion-select-option value="attAsc">{{ 'people.attendanceAsc' | transloco }}</ion-select-option>
+              <ion-select-option value="attDesc">{{ 'people.attendanceDesc' | transloco }}</ion-select-option>
+              <ion-select-option value="birthdayAsc">{{ 'people.birthdayAsc' | transloco }}</ion-select-option>
+              <ion-select-option value="birthdayDesc">{{ 'people.birthdayDesc' | transloco }}</ion-select-option>
+              <ion-select-option value="joinedAsc">{{ 'people.joinAsc' | transloco }}</ion-select-option>
+              <ion-select-option value="joinedDesc">{{ 'people.joinDesc' | transloco }}</ion-select-option>
+              <ion-select-option value="nextBirthday">{{ 'people.nextBirthday' | transloco }}</ion-select-option>
               @if (isVoS) {
-                <ion-select-option value="test">Testergebnis</ion-select-option>
+                <ion-select-option value="test">{{ 'people.testResult' | transloco }}</ion-select-option>
               }
             </ion-select>
           </ion-item>
@@ -122,31 +121,31 @@
             <ion-icon slot="start" name="eye" size="small"></ion-icon>
             <ion-select multiple="true" slot="end" (ionChange)="onViewChanged()" interface="popover"
               [(ngModel)]="viewOpts">
-              <ion-select-option value="instrument">Gruppe</ion-select-option>
-              <ion-select-option value="attendance">Anwesenheit</ion-select-option>
-              <ion-select-option value="birthday">Geburtsdatum</ion-select-option>
+              <ion-select-option value="instrument">{{ 'people.group' | transloco }}</ion-select-option>
+              <ion-select-option value="attendance">{{ 'people.attendance' | transloco }}</ion-select-option>
+              <ion-select-option value="birthday">{{ 'people.birthday' | transloco }}</ion-select-option>
               @if (isChoir) {
-                <ion-select-option value="instruments">Instrumente</ion-select-option>
+                <ion-select-option value="instruments">{{ 'people.instruments' | transloco }}</ion-select-option>
               }
               @if (isVoS) {
-                <ion-select-option value="test">Testergebnis</ion-select-option>
+                <ion-select-option value="test">{{ 'people.testResult' | transloco }}</ion-select-option>
               }
-              <ion-select-option value="exercises">Sonstige Dienste</ion-select-option>
+              <ion-select-option value="exercises">{{ 'people.otherDuties' | transloco }}</ion-select-option>
               @if (!isGeneral) {
-                <ion-select-option value="leader">Stimmführer</ion-select-option>
+                <ion-select-option value="leader">{{ 'people.voiceLeader' | transloco }}</ion-select-option>
               }
-              <ion-select-option value="critical">Problemfälle</ion-select-option>
+              <ion-select-option value="critical">{{ 'people.problemCases' | transloco }}</ion-select-option>
               @if (isVoS) {
-                <ion-select-option value="new">Neu</ion-select-option>
+                <ion-select-option value="new">{{ 'people.new' | transloco }}</ion-select-option>
               }
-              <ion-select-option value="paused">Pausiert</ion-select-option>
-              <ion-select-option value="notes">Notizen</ion-select-option>
-              <ion-select-option value="img">Passbild</ion-select-option>
+              <ion-select-option value="paused">{{ 'people.paused' | transloco }}</ion-select-option>
+              <ion-select-option value="notes">{{ 'people.notes' | transloco }}</ion-select-option>
+              <ion-select-option value="img">{{ 'people.passportPhoto' | transloco }}</ion-select-option>
               @if (db.tenant().maintainTeachers) {
-                <ion-select-option value="teachers">Lehrer</ion-select-option>
+                <ion-select-option value="teachers">{{ 'people.teacher' | transloco }}</ion-select-option>
               }
               @if (isVoS) {
-                <ion-select-option value="examinee">Prüfling</ion-select-option>
+                <ion-select-option value="examinee">{{ 'people.candidate' | transloco }}</ion-select-option>
               }
               @if (db.getPersonExtraFields().length) {
                 @for (field of db.getPersonExtraFields(); track field.id) {
@@ -160,17 +159,17 @@
           @if (churchField) {
             <ion-item button detail="false" lines="none" (click)="showChurchOverview(filterPopover)">
               <ion-icon slot="start" name="business-outline" size="small"></ion-icon>
-              <ion-label>Gemeinde-Übersicht</ion-label>
+              <ion-label>{{ 'attendance.churchOverview' | transloco }}</ion-label>
             </ion-item>
           }
           @if (isAdmin) {
             <ion-item button detail="false" lines="none" (click)="openBulkEditModal()">
               <ion-icon slot="start" name="pencil" size="small"></ion-icon>
-              <ion-label>Bulk-Bearbeitung</ion-label>
+              <ion-label>{{ 'people.bulkEdit' | transloco }}</ion-label>
             </ion-item>
             <ion-item button detail="false" lines="none" (click)="openImportModal()">
               <ion-icon slot="start" name="cloud-upload-outline" size="small"></ion-icon>
-              <ion-label>Personen importieren</ion-label>
+              <ion-label>{{ 'people.importPeople' | transloco }}</ion-label>
             </ion-item>
             @if (sortOpt === 'instrument') {
               <ion-item button detail="false" lines="none" (click)="toggleReorderMode(filterPopover)">
@@ -190,9 +189,9 @@
         <span class="birthday-banner__icon" aria-hidden="true"><ion-icon name="gift-outline"></ion-icon></span>
         <div class="birthday-banner__title">
           @if (todaysBirthdays.length === 1) {
-            Geburtstag heute
+            {{ 'people.birthdayToday' | transloco }}
           } @else {
-            {{ todaysBirthdays.length }} Geburtstage heute
+            {{ 'people.birthdaysToday' | transloco: { count: todaysBirthdays.length } }}
           }
         </div>
       </div>
@@ -209,7 +208,7 @@
             <span class="birthday-banner__name">
               {{ player.firstName }} {{ player.lastName }}
             </span>
-            <span class="birthday-banner__age">{{ getBirthdayAge(player) }} Jahre</span>
+            <span class="birthday-banner__age">{{ 'people.ageYears' | transloco: { count: getBirthdayAge(player) } }}</span>
           </button>
         }
       </div>
@@ -219,7 +218,7 @@
   @if (players.length && playersFiltered?.length) {
     <ion-list style="padding-top: 0;" class="marginBottom">
       <ion-list-header>
-        <ion-label>Personen ({{ playersFiltered?.length }})</ion-label>
+        <ion-label>{{ 'people.peopleCount' | transloco: { count: playersFiltered?.length } }}</ion-label>
       </ion-list-header>
       @if (sortOpt === 'instrument') {
         @for (group of playerGroups; track group.groupId) {
@@ -250,9 +249,9 @@
                     }
                     @if (player.instrument !== mainGroup) {
                       @if (showTeachers && player.teacher) {
-                        <h3>Lehrer: {{ getTeacherName(player.teacher) }}</h3>
+                        <h3>{{ 'people.teacherName' | transloco: { name: getTeacherName(player.teacher) } }}</h3>
                       } @else if (showTeachers && !player.teacher) {
-                        <h3>Kein Lehrer</h3>
+                        <h3>{{ 'people.noTeacher' | transloco }}</h3>
                       }
                     }
                     @if (this.filterOpt === 'otherInstance') {
@@ -278,19 +277,19 @@
                     }
                   </ion-label>
                   @if (((showPaused && !player.paused) || !showPaused) && showLeader && player.isLeader) {
-                    <ion-badge color="secondary" slot="end">Stimmführer</ion-badge>
+                    <ion-badge color="secondary" slot="end">{{ 'people.voiceLeader' | transloco }}</ion-badge>
                   }
                   @if (((showPaused && !player.paused) || !showPaused) && showNew && player.isNew && !player.isLeader) {
-                    <ion-badge color="danger" slot="end">Neu</ion-badge>
+                    <ion-badge color="danger" slot="end">{{ 'people.new' | transloco }}</ion-badge>
                   }
                   @if (((showPaused && !player.paused) || !showPaused) && showCritical && player.isCritical) {
-                    <ion-badge color="danger" slot="end">Problemfall</ion-badge>
+                    <ion-badge color="danger" slot="end">{{ 'people.problemCase' | transloco }}</ion-badge>
                   }
                   @if (showPaused && player.paused) {
-                    <ion-badge color="warning" slot="end">Pausiert</ion-badge>
+                    <ion-badge color="warning" slot="end">{{ 'people.paused' | transloco }}</ion-badge>
                   }
                   @if (showExaminee && player.examinee) {
-                    <ion-badge color="dark" slot="end">Prüfling</ion-badge>
+                    <ion-badge color="dark" slot="end">{{ 'people.candidate' | transloco }}</ion-badge>
                   }
                   @if (db.getPersonExtraFields().length) {
                     @for (field of db.getPersonExtraFields(); track field.id) {
@@ -356,9 +355,9 @@
                   }
                   @if (player.instrument !== mainGroup) {
                     @if (showTeachers && player.teacher) {
-                      <h3>Lehrer: {{ getTeacherName(player.teacher) }}</h3>
+                      <h3>{{ 'people.teacherName' | transloco: { name: getTeacherName(player.teacher) } }}</h3>
                     } @else if (showTeachers && !player.teacher) {
-                      <h3>Kein Lehrer</h3>
+                      <h3>{{ 'people.noTeacher' | transloco }}</h3>
                     }
                   }
                   @if (this.filterOpt === 'otherInstance') {
@@ -384,19 +383,19 @@
                   }
                 </ion-label>
                 @if (((showPaused && !player.paused) || !showPaused) && showLeader && player.isLeader) {
-                  <ion-badge color="secondary" slot="end">Stimmführer</ion-badge>
+                  <ion-badge color="secondary" slot="end">{{ 'people.voiceLeader' | transloco }}</ion-badge>
                 }
                 @if (((showPaused && !player.paused) || !showPaused) && showNew && player.isNew && !player.isLeader) {
-                  <ion-badge color="danger" slot="end">Neu</ion-badge>
+                  <ion-badge color="danger" slot="end">{{ 'people.new' | transloco }}</ion-badge>
                 }
                 @if (((showPaused && !player.paused) || !showPaused) && showCritical && player.isCritical) {
-                  <ion-badge color="danger" slot="end">Problemfall</ion-badge>
+                  <ion-badge color="danger" slot="end">{{ 'people.problemCase' | transloco }}</ion-badge>
                 }
                 @if (showPaused && player.paused) {
-                  <ion-badge color="warning" slot="end">Pausiert</ion-badge>
+                  <ion-badge color="warning" slot="end">{{ 'people.paused' | transloco }}</ion-badge>
                 }
                 @if (showExaminee && player.examinee) {
-                  <ion-badge color="dark" slot="end">Prüfling</ion-badge>
+                  <ion-badge color="dark" slot="end">{{ 'people.candidate' | transloco }}</ion-badge>
                 }
                 @if (db.getPersonExtraFields().length) {
                   @for (field of db.getPersonExtraFields(); track field.id) {
@@ -445,10 +444,10 @@
     <div class="noDataContainer">
       <div class="noPersons">
         <ion-icon name="filter-outline" size="large"></ion-icon>
-        <ion-label>Keine Personen gefunden</ion-label>
-        <p class="ion-text-center" style="color: var(--ion-color-medium); margin: 8px 16px;">Die aktiven Filter ergeben keine Treffer.</p>
+        <ion-label>{{ 'people.noPeopleFound' | transloco }}</ion-label>
+        <p class="ion-text-center" style="color: var(--ion-color-medium); margin: 8px 16px;">{{ 'people.filtersNoMatch' | transloco }}</p>
         <ion-button size="small" fill="outline" (click)="clearFilters()">
-          Filter zurücksetzen
+          {{ 'people.resetFilter' | transloco }}
         </ion-button>
       </div>
     </div>
@@ -456,10 +455,10 @@
     <div class="noDataContainer">
       <div class="noPersons">
         <ion-icon name="people-outline" size="large"></ion-icon>
-        <ion-label>Bisher wurden noch keine Personen angelegt</ion-label>
-        <ion-button size="small" fill="outline" (click)="openModal()">Person hinzufügen</ion-button>
+        <ion-label>{{ 'people.noPeopleYet' | transloco }}</ion-label>
+        <ion-button size="small" fill="outline" (click)="openModal()">{{ 'attendance.addPerson' | transloco }}</ion-button>
         @if (isAdmin) {
-          <ion-button size="small" fill="outline" (click)="openImportModal()">Personen importieren</ion-button>
+          <ion-button size="small" fill="outline" (click)="openImportModal()">{{ 'people.importPeople' | transloco }}</ion-button>
         }
       </div>
     </div>
@@ -499,7 +498,7 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>{{ playerToArchive?.firstName }} {{ playerToArchive?.lastName }} Archivieren</ion-title>
+          <ion-title>{{ 'people.archiveTitle' | transloco: { name: (playerToArchive?.firstName ?? '') + ' ' + (playerToArchive?.lastName ?? '') } }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="dismissArchiveModal()">
               <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -509,11 +508,11 @@
       </ion-header>
       <ion-content class="ion-padding">
         <ion-item>
-          <ion-label position="stacked">Austrittsdatum</ion-label>
+          <ion-label position="stacked">{{ 'people.leaveDate' | transloco }}</ion-label>
           <ion-input autocapitalize="sentences" type="date" [(ngModel)]="archiveDate"></ion-input>
         </ion-item>
         <ion-item>
-          <ion-label position="stacked">Notiz</ion-label>
+          <ion-label position="stacked">{{ 'people.note' | transloco }}</ion-label>
           <ion-textarea autocapitalize="sentences" [(ngModel)]="archiveNote"></ion-textarea>
         </ion-item>
         <ion-fab vertical="bottom" horizontal="end" slot="fixed">
@@ -529,7 +528,7 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>{{ playerToPause?.firstName }} {{ playerToPause?.lastName }} Pausieren</ion-title>
+          <ion-title>{{ 'people.pauseTitle' | transloco: { name: (playerToPause?.firstName ?? '') + ' ' + (playerToPause?.lastName ?? '') } }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="dismissPauseModal()">
               <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -540,8 +539,8 @@
       <ion-content class="ion-padding">
         <ion-list>
           <ion-item>
-            <ion-label position="stacked">Grund *</ion-label>
-            <ion-textarea autocapitalize="sentences" [(ngModel)]="pauseReason" placeholder="Bitte gib einen Grund an..." [autoGrow]="true"></ion-textarea>
+            <ion-label position="stacked">{{ 'people.reasonRequired' | transloco }}</ion-label>
+            <ion-textarea autocapitalize="sentences" [(ngModel)]="pauseReason" [placeholder]="'people.reasonPlaceholder' | transloco" [autoGrow]="true"></ion-textarea>
           </ion-item>
         </ion-list>
 
@@ -549,11 +548,11 @@
           <ion-accordion value="from">
             <ion-item slot="header" color="light">
               <ion-label>
-                <h3>Pausiert ab (optional)</h3>
+                <h3>{{ 'people.pausedFrom' | transloco }}</h3>
                 @if (pauseFrom) {
                   <p>{{ pauseFrom | date:'dd.MM.yyyy' }}</p>
                 } @else {
-                  <p>Ab heute</p>
+                  <p>{{ 'people.fromToday' | transloco }}</p>
                 }
               </ion-label>
               @if (pauseFrom) {
@@ -576,11 +575,11 @@
           <ion-accordion value="date">
             <ion-item slot="header" color="light">
               <ion-label>
-                <h3>Pausiert bis (optional)</h3>
+                <h3>{{ 'signout.pausedUntil' | transloco }}</h3>
                 @if (pauseUntil) {
                   <p>{{ pauseUntil | date:'dd.MM.yyyy' }}</p>
                 } @else {
-                  <p>Kein Enddatum gewählt</p>
+                  <p>{{ 'people.noEndDate' | transloco }}</p>
                 }
               </ion-label>
               @if (pauseUntil) {
@@ -603,12 +602,12 @@
         </ion-accordion-group>
 
         <ion-note class="ion-padding" color="medium" style="display: block;">
-          Mit einem Startdatum in der Vergangenheit wird die Person auch aus zurückliegenden Anwesenheiten ab diesem Datum entfernt. Wenn ein Enddatum angegeben wird, wird die Person automatisch reaktiviert.
+          {{ 'people.pauseHint' | transloco }}
         </ion-note>
 
         <ion-button expand="block" class="ion-margin-top" (click)="confirmPause()" [disabled]="!pauseReason">
           <ion-icon slot="start" name="pause-outline"></ion-icon>
-          Pausieren
+          {{ 'people.pause' | transloco }}
         </ion-button>
       </ion-content>
     </ng-template>

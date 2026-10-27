@@ -1,13 +1,13 @@
 ﻿<ion-header>
   <ion-toolbar [color]="player?.isCritical ? 'danger' : ''">
     @if (!existingPlayer) {
-    <ion-title>Person hinzufügen</ion-title>
+    <ion-title>{{ 'attendance.addPerson' | transloco }}</ion-title>
     }
     @if (!approveMode && !readOnly && existingPlayer) {
-    <ion-title>Person bearbeiten</ion-title>
+    <ion-title>{{ 'person.editPerson' | transloco }}</ion-title>
     }
     @if (approveMode) {
-    <ion-title>Person genehmigen</ion-title>
+    <ion-title>{{ 'person.approvePerson' | transloco }}</ion-title>
     }
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
@@ -25,7 +25,7 @@
     <div class="profile-avatar-wrapper" [class.editable]="!readOnly"
       (click)="onProfileImageClick()">
       <ion-avatar class="profile-avatar">
-        <img [src]="player.img" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" alt="Passbild" />
+        <img [src]="player.img" (error)="$event.target.src='assets/icon/avatar-placeholder.svg'" [attr.alt]="'people.passportPhoto' | transloco" />
       </ion-avatar>
       @if (!readOnly) {
       <div class="profile-avatar-badge">
@@ -38,7 +38,7 @@
       <h1 class="profile-name">{{ player.firstName }} {{ player.lastName }}</h1>
       @if (existingPlayer && !readOnly && !editingName) {
       <ion-button class="profile-name-edit" fill="clear" size="small" (click)="editingName = true"
-        aria-label="Namen bearbeiten">
+        [attr.aria-label]="'person.editName' | transloco">
         <ion-icon slot="icon-only" name="create-outline"></ion-icon>
       </ion-button>
       }
@@ -46,17 +46,17 @@
     }
     <ion-modal class="image-viewer-modal" (ionModalDidDismiss)="closePassImageViewer()" [isOpen]="isImageViewerOpen">
       <ng-template>
-        <app-image-viewer [src]="player.img.replace('?quality=20', '')" title="Passbild"
+        <app-image-viewer [src]="player.img.replace('?quality=20', '')" [attr.title]="'people.passportPhoto' | transloco"
           fallbackSrc="assets/icon/avatar-placeholder.svg" (closed)="closePassImageViewer()">
           @if (!readOnly) {
           <div viewerActions>
             <button type="button" class="viewer-action" (click)="replaceImgFromViewer()">
               <ion-icon name="camera-outline"></ion-icon>
-              Ersetzen
+              {{ 'person.replace' | transloco }}
             </button>
             <button type="button" class="viewer-action danger" (click)="removeImgFromViewer()">
               <ion-icon name="trash-outline"></ion-icon>
-              Entfernen
+              {{ 'common.remove' | transloco }}
             </button>
           </div>
           }
@@ -71,7 +71,7 @@
     <ion-row>
       <ion-col>
         <ion-item lines="none">
-          <ion-label position="stacked">Vorname</ion-label>
+          <ion-label position="stacked">{{ 'people.firstName' | transloco }}</ion-label>
           <ion-input autocapitalize="words" [disabled]="readOnly" [debounce]="250" (ionInput)="onNameInput()"
             (ionChange)="onChange()"
             [(ngModel)]="player.firstName"></ion-input>
@@ -79,7 +79,7 @@
       </ion-col>
       <ion-col>
         <ion-item lines="none">
-          <ion-label position="stacked">Nachname</ion-label>
+          <ion-label position="stacked">{{ 'people.lastName' | transloco }}</ion-label>
           <ion-input autocapitalize="words" [disabled]="readOnly" [debounce]="250" (ionInput)="onNameInput()"
             (ionChange)="onChange()"
             [(ngModel)]="player.lastName"></ion-input>
@@ -91,7 +91,7 @@
       <ion-col>
         <ion-button expand="block" fill="clear" size="small" (click)="editingName = false">
           <ion-icon slot="start" name="checkmark-outline"></ion-icon>
-          Fertig
+          {{ 'person.done' | transloco }}
         </ion-button>
       </ion-col>
     </ion-row>
@@ -103,7 +103,7 @@
         <div class="name-suggestions">
           <ion-list lines="full">
             <ion-item-divider>
-              <ion-label>Ähnliche Person bereits vorhanden</ion-label>
+              <ion-label>{{ 'person.similarExists' | transloco }}</ion-label>
             </ion-item-divider>
             @for (m of duplicateCandidates(); track m.candidate.id) {
               <ion-item>
@@ -115,7 +115,7 @@
                 </ion-label>
                 <ion-badge slot="end" color="medium">{{ (m.score * 100) | number:'1.0-0' }}%</ion-badge>
                 <ion-button slot="end" size="small" fill="outline" (click)="confirmMerge(m.candidate)">
-                  Zusammenführen
+                  {{ 'person.merge' | transloco }}
                 </ion-button>
               </ion-item>
             }
@@ -129,7 +129,7 @@
       <ion-col>
         <div class="name-suggestions">
           <ion-button class="suggestions-close" fill="solid" color="medium" size="small"
-            (click)="dismissNameSuggestions()" aria-label="Vorschläge schließen">
+            (click)="dismissNameSuggestions()" [attr.aria-label]="'person.closeSuggestions' | transloco">
             <ion-icon slot="icon-only" name="close"></ion-icon>
           </ion-button>
           <ion-list lines="full">
@@ -144,9 +144,9 @@
                   <p class="reason">{{ m.reason }}</p>
                 </ion-label>
                 @if (m.candidate.appId) {
-                  <ion-badge slot="end" color="success">Konto</ion-badge>
+                  <ion-badge slot="end" color="success">{{ 'person.accountBadge' | transloco }}</ion-badge>
                 } @else if (m.candidate.email) {
-                  <ion-badge slot="end" color="primary">E-Mail</ion-badge>
+                  <ion-badge slot="end" color="primary">{{ 'people.email' | transloco }}</ion-badge>
                 }
                 <ion-badge slot="end" color="medium">{{ (m.score * 100) | number:'1.0-0' }}%</ion-badge>
               </ion-item>
@@ -160,7 +160,7 @@
     <ion-row>
       <ion-col>
         <ion-item>
-          <ion-label position="stacked">Notizen</ion-label>
+          <ion-label position="stacked">{{ 'people.notes' | transloco }}</ion-label>
           <ion-textarea autocapitalize="sentences" [disabled]="readOnly" autoGrow="true" (ionChange)="onChange()"
             [(ngModel)]="player.notes"></ion-textarea>
         </ion-item>
@@ -174,15 +174,14 @@
   <ion-accordion-group value="critical">
     <ion-accordion value="critical">
       <ion-item slot="header" color="light">
-        <ion-label>Problemfall</ion-label>
+        <ion-label>{{ 'people.problemCase' | transloco }}</ion-label>
       </ion-item>
       <div slot="content">
         <ion-item>
-          <ion-toggle label="Mit Person gesprochen" (ionChange)="onChange()" [(ngModel)]="solved">Mit Person
-            gesprochen</ion-toggle>
+          <ion-toggle (ionChange)="onChange()" [(ngModel)]="solved">{{ 'person.talkedTo' | transloco }}</ion-toggle>
         </ion-item>
         <ion-item *ngIf="solved">
-          <ion-label position="stacked">Anmerkungen</ion-label>
+          <ion-label position="stacked">{{ 'person.remarks' | transloco }}</ion-label>
           <ion-textarea autocapitalize="sentences" autoGrow="true" (ionChange)="onChange()" [(ngModel)]="notes"></ion-textarea>
         </ion-item>
       </div>
@@ -193,16 +192,16 @@
   @if (!readOnly && isAdmin && lateCount >= lateThreshold) {
   <ion-card color="warning" class="late-warning-card">
     <ion-card-header>
-      <ion-card-title>🕐 Häufige Verspätungen</ion-card-title>
+      <ion-card-title>{{ 'person.lateWarningTitle' | transloco }}</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <p>Diese Person ist <strong>{{ lateCount }}x</strong> unentschuldigt zu spät gekommen.</p>
+      <p [innerHTML]="'person.lateWarning' | transloco: { count: lateCount }"></p>
       @if (lateCountExcused > 0) {
-      <p class="excused-info">Zusätzlich {{ lateCountExcused }}x entschuldigt zu spät.</p>
+      <p class="excused-info">{{ 'person.lateExcusedExtra' | transloco: { count: lateCountExcused } }}</p>
       }
       <ion-button fill="solid" size="small" color="dark" (click)="resetLateCount()">
         <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-        Zurücksetzen (Gespräch geführt)
+        {{ 'person.resetTalked' | transloco }}
       </ion-button>
     </ion-card-content>
   </ion-card>
@@ -212,14 +211,14 @@
   <ion-accordion-group [value]="existingPlayer && !readOnly ? '' : 'more'">
     <ion-accordion value="more">
       <ion-item slot="header" color="light">
-        <ion-label>Allgemein</ion-label>
+        <ion-label>{{ 'attendance.general' | transloco }}</ion-label>
       </ion-item>
       <div slot="content">
         <ion-grid>
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-select interface="modal" label="Gruppe" [disabled]="readOnly" (ionChange)="onInstrumentChange()"
+                <ion-select interface="modal" [label]="'people.group' | transloco" [disabled]="readOnly" (ionChange)="onInstrumentChange()"
                   #select [(ngModel)]="player.instrument">
                   @for (i of db.groups(); track i) {
                   <ion-select-option [value]="i.id">
@@ -234,7 +233,7 @@
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-label position="stacked">Stimmumfang</ion-label>
+                <ion-label position="stacked">{{ 'person.vocalRange' | transloco }}</ion-label>
                 <ion-input autocapitalize="sentences" [disabled]="readOnly || !isAdmin" [(ngModel)]="player.range"></ion-input>
               </ion-item>
             </ion-col>
@@ -243,7 +242,7 @@
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-label position="stacked">Telefon-/Handynummer</ion-label>
+                <ion-label position="stacked">{{ 'person.phoneNumber' | transloco }}</ion-label>
                 <ion-input autocapitalize="sentences" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.phone"></ion-input>
               </ion-item>
             </ion-col>
@@ -251,12 +250,12 @@
           <ion-row>
             <ion-col>
               <ion-item [color]="!existingPlayer || player.correctBirthday || readOnly ? '' : 'warning'">
-                <ion-label position="stacked">Geburtsdatum</ion-label>
+                <ion-label position="stacked">{{ 'people.birthday' | transloco }}</ion-label>
                 <ion-input autocapitalize="sentences"
                   [disabled]="readOnly"
                   [value]="formatDateForDisplay(player.birthday)"
                   (ionBlur)="onManualDateInput('birthday', $event)"
-                  placeholder="TT.MM.JJJJ"></ion-input>
+                  [placeholder]="'person.datePlaceholder' | transloco"></ion-input>
                 <ion-button
                   fill="clear"
                   slot="end"
@@ -283,12 +282,12 @@
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-label position="stacked">Spielt auf dem Instrument seit</ion-label>
+                <ion-label position="stacked">{{ 'person.playsSince' | transloco }}</ion-label>
                 <ion-input autocapitalize="sentences"
                   [disabled]="readOnly"
                   [value]="formatDateForDisplay(player.playsSince)"
                   (ionBlur)="onManualDateInput('playsSince', $event)"
-                  placeholder="TT.MM.JJJJ"></ion-input>
+                  [placeholder]="'person.datePlaceholder' | transloco"></ion-input>
                 <ion-button
                   fill="clear"
                   slot="end"
@@ -315,12 +314,12 @@
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-label position="stacked">Beigetreten am</ion-label>
+                <ion-label position="stacked">{{ 'person.joinedOn' | transloco }}</ion-label>
                 <ion-input autocapitalize="sentences"
                   [disabled]="readOnly"
                   [value]="formatDateForDisplay(player.joined)"
                   (ionBlur)="onManualDateInput('joined', $event)"
-                  placeholder="TT.MM.JJJJ"></ion-input>
+                  [placeholder]="'person.datePlaceholder' | transloco"></ion-input>
                 <ion-button
                   fill="clear"
                   slot="end"
@@ -347,10 +346,10 @@
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-label position="stacked">Eltern</ion-label>
+                <ion-label position="stacked">{{ 'person.parents' | transloco }}</ion-label>
                 <ion-select interface="modal" [disabled]="readOnly" (ionChange)="onChange()"
                   [(ngModel)]="player.parent_id">
-                  <ion-select-option [value]="null">Nicht festgelegt</ion-select-option>
+                  <ion-select-option [value]="null">{{ 'person.notSet' | transloco }}</ion-select-option>
                   @for (parent of parents; track parent) {
                   <ion-select-option [value]="parent.id">
                     {{ parent.firstName }} {{ parent.lastName }}
@@ -365,8 +364,8 @@
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-toggle label="Spielt beim Lehrer" [disabled]="readOnly" (ionChange)="onChange()"
-                  [(ngModel)]="player.hasTeacher">Spielt beim Lehrer</ion-toggle>
+                <ion-toggle [disabled]="readOnly" (ionChange)="onChange()"
+                  [(ngModel)]="player.hasTeacher">{{ 'person.playsWithTeacher' | transloco }}</ion-toggle>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -375,7 +374,7 @@
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-select interface="modal" label="Lehrer" [disabled]="readOnly" (ionChange)="onChange()"
+                <ion-select interface="modal" [label]="'people.teacher' | transloco" [disabled]="readOnly" (ionChange)="onChange()"
                   [(ngModel)]="player.teacher">
                   @for (teacher of teachers; track teacher) {
                   <ion-select-option [value]="teacher.id">
@@ -391,15 +390,15 @@
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-toggle label="Stimmführer" [disabled]="readOnly" (ionChange)="onChange()"
-                  [(ngModel)]="player.isLeader">Stimmführer</ion-toggle>
+                <ion-toggle [disabled]="readOnly" (ionChange)="onChange()"
+                  [(ngModel)]="player.isLeader">{{ 'people.voiceLeader' | transloco }}</ion-toggle>
               </ion-item>
             </ion-col>
           </ion-row>
           }
           @if (!isMainGroup && isChoir) {
           <ion-item>
-            <ion-label position="stacked">Instrumente</ion-label>
+            <ion-label position="stacked">{{ 'people.instruments' | transloco }}</ion-label>
             <ion-input autocapitalize="sentences" [disabled]="readOnly || !isAdmin" (ionChange)="onChange()"
               [(ngModel)]="player.instruments"></ion-input>
           </ion-item>
@@ -408,7 +407,7 @@
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-select label="Andere Orchester" [disabled]="readOnly" multiple="true" (ionChange)="onChange()"
+                <ion-select [label]="'person.otherOrchestras' | transloco" [disabled]="readOnly" multiple="true" (ionChange)="onChange()"
                   [(ngModel)]="player.otherOrchestras">
                   <ion-select-option>SoS</ion-select-option>
                   <ion-select-option>GoS</ion-select-option>
@@ -422,8 +421,8 @@
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-toggle label="Prüfling" [disabled]="readOnly" (ionChange)="onChange()"
-                  [(ngModel)]="player.examinee">Prüfling</ion-toggle>
+                <ion-toggle [disabled]="readOnly" (ionChange)="onChange()"
+                  [(ngModel)]="player.examinee">{{ 'people.candidate' | transloco }}</ion-toggle>
               </ion-item>
             </ion-col>
           </ion-row>
@@ -432,7 +431,7 @@
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-label position="stacked">Testergebnis</ion-label>
+                <ion-label position="stacked">{{ 'people.testResult' | transloco }}</ion-label>
                 <ion-input autocapitalize="sentences" [disabled]="readOnly" (ionChange)="onChange()" [(ngModel)]="player.testResult"></ion-input>
               </ion-item>
             </ion-col>
@@ -442,9 +441,9 @@
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-select label="Schichtplan" [disabled]="readOnly" (ionChange)="onShiftChange()"
+                <ion-select [label]="'person.shiftPlan' | transloco" [disabled]="readOnly" (ionChange)="onShiftChange()"
                   [(ngModel)]="player.shift_id">
-                  <ion-select-option [value]="null">Keine Schicht zugewiesen</ion-select-option>
+                  <ion-select-option [value]="null">{{ 'person.noShift' | transloco }}</ion-select-option>
                   @for (sh of db.shifts(); track sh) {
                   <ion-select-option [value]="sh.id">
                     {{ sh.name }}
@@ -460,7 +459,7 @@
             <ion-col>
               @if (shift && shift.shifts.length > 0) {
               <ion-item>
-                <ion-select label="Schicht" [disabled]="readOnly" (ionChange)="onChange()"
+                <ion-select [label]="'person.shift' | transloco" [disabled]="readOnly" (ionChange)="onChange()"
                   [(ngModel)]="player.shift_name">
                   @for (sh of shift.shifts; track sh) {
                   <ion-select-option [value]="sh.name">
@@ -471,7 +470,7 @@
               </ion-item>
               } @else {
               <ion-item>
-                <ion-label>Anfangsdatum</ion-label>
+                <ion-label>{{ 'person.startDate' | transloco }}</ion-label>
                 <ion-datetime-button [disabled]="readOnly" datetime="shift_start_date"></ion-datetime-button>
                 <ion-modal [keepContentsMounted]="true">
                   <ng-template>
@@ -488,7 +487,7 @@
           <ion-row>
             <ion-col>
               <ion-item>
-                <ion-label position="stacked">Sonstige Dienste</ion-label>
+                <ion-label position="stacked">{{ 'people.otherDuties' | transloco }}</ion-label>
                 <ion-input autocapitalize="sentences" [disabled]="readOnly" (ionChange)="onChange()"
                   [(ngModel)]="player.otherExercise"></ion-input>
               </ion-item>
@@ -501,13 +500,13 @@
     @if (!isParent && !readOnly && !approveMode) {
     <ion-accordion>
       <ion-item slot="header" color="light">
-        <ion-label>Account</ion-label>
+        <ion-label>{{ 'person.account' | transloco }}</ion-label>
       </ion-item>
       <div slot="content">
         <ion-row>
           <ion-col>
             <ion-item>
-              <ion-label position="stacked">E-Mail</ion-label>
+              <ion-label position="stacked">{{ 'people.email' | transloco }}</ion-label>
               <ion-input autocapitalize="off" [disabled]="player.appId || readOnly" [debounce]="500"
                 (ionBlur)="onEmailBlur()" (ionChange)="onChange()"
                 [(ngModel)]="player.email"></ion-input>
@@ -528,14 +527,14 @@
         <ion-row>
           <ion-col>
             <ion-item>
-              <ion-select (ionChange)="onRoleChange()" label="Rolle" type="number" [disabled]="readOnly || isMainGroup"
+              <ion-select (ionChange)="onRoleChange()" [label]="'person.role' | transloco" type="number" [disabled]="readOnly || isMainGroup"
                 [(ngModel)]="role">
-                <ion-select-option [value]="PLAYER">Mitglied</ion-select-option>
-                <ion-select-option [value]="RESPONSIBLE">Verantwortlicher</ion-select-option>
-                <ion-select-option [value]="HELPER">Helfer</ion-select-option>
+                <ion-select-option [value]="PLAYER">{{ 'common.roles.member' | transloco }}</ion-select-option>
+                <ion-select-option [value]="RESPONSIBLE">{{ 'common.roles.responsible' | transloco }}</ion-select-option>
+                <ion-select-option [value]="HELPER">{{ 'common.roles.helper' | transloco }}</ion-select-option>
                 @if (player.isLeader) {
-                <ion-select-option [value]="VOICE_LEADER_HELPER">Stimmführer & Helfer</ion-select-option>
-                <ion-select-option [value]="VOICE_LEADER">Stimmführer</ion-select-option>
+                <ion-select-option [value]="VOICE_LEADER_HELPER">{{ 'common.roles.voiceLeaderHelper' | transloco }}</ion-select-option>
+                <ion-select-option [value]="VOICE_LEADER">{{ 'people.voiceLeader' | transloco }}</ion-select-option>
                 }
               </ion-select>
             </ion-item>
@@ -544,13 +543,13 @@
         }
         <ion-button id="accountHelpButton" fill="clear" size="small">
           <ion-icon slot="start" name="help-circle-outline"></ion-icon>
-          Hilfe
+          {{ 'person.help' | transloco }}
         </ion-button>
         <ion-modal #accountHelpModal trigger="accountHelpButton" handle-behavior="none" [breakpoints]="[0, 0.5, 1]" [initialBreakpoint]="0.5">
           <ng-template>
             <ion-header>
               <ion-toolbar>
-                <ion-title>Hilfe</ion-title>
+                <ion-title>{{ 'person.help' | transloco }}</ion-title>
                 <ion-buttons slot="end">
                   <ion-button (click)="accountHelpModal.dismiss()">
                     <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -561,16 +560,11 @@
             <ion-content>
               @if (!player.appId) {
               <ion-item lines="none">
-                <ion-label>Sobald die E-Mail Adresse eingeben wurde, kann ein Account erstellt werden. Der Benutzer wird
-                  per
-                  E-Mail über die Erstellung benachrichtigt. Das Passwort wird automatisch generiert und an die E-Mail
-                  Adresse
-                  gesendet.</ion-label>
+                <ion-label>{{ 'person.accountHelp' | transloco }}</ion-label>
               </ion-item>
               }
               <ion-item lines="none">
-                <ion-label>Falls schon ein Benutzer für die E-Mail Adresse existiert, wird dieser automatisch der
-                  Instanz zugewiesen.</ion-label>
+                <ion-label>{{ 'person.existingUserHint' | transloco }}</ion-label>
               </ion-item>
             </ion-content>
           </ng-template>
@@ -581,7 +575,7 @@
     @if (db.getPersonExtraFields().length) {
     <ion-accordion>
       <ion-item slot="header" color="light">
-        <ion-label>Zusatzfelder</ion-label>
+        <ion-label>{{ 'people.extraFields' | transloco }}</ion-label>
       </ion-item>
       <div slot="content">
         <ion-list>
@@ -603,7 +597,7 @@
               [disabled]="readOnly"
               [value]="formatDateForDisplay($any(player.additional_fields[field.id]))"
               (ionBlur)="onManualDateInput('extra-' + field.id, $event)"
-              placeholder="TT.MM.JJJJ"></ion-input>
+              [placeholder]="'person.datePlaceholder' | transloco"></ion-input>
             <ion-button
               fill="clear"
               slot="end"
@@ -644,17 +638,17 @@
                   <ion-toolbar color="light">
                     <ion-title>{{ field.name }}</ion-title>
                     <ion-buttons slot="end">
-                      <ion-button (click)="isChurchModalOpen = false">Schließen</ion-button>
+                      <ion-button (click)="isChurchModalOpen = false">{{ 'common.close' | transloco }}</ion-button>
                     </ion-buttons>
                   </ion-toolbar>
                   <ion-toolbar color="light">
-                    <ion-searchbar [(ngModel)]="churchSearch" placeholder="Gemeinde suchen" [debounce]="0"></ion-searchbar>
+                    <ion-searchbar [(ngModel)]="churchSearch" [placeholder]="'person.searchChurch' | transloco" [debounce]="0"></ion-searchbar>
                   </ion-toolbar>
                 </ion-header>
                 <ion-content color="light">
                   <ion-list [inset]="true">
                     <ion-item button detail="false" (click)="selectChurch(field.id, '')">
-                      <ion-label>Nicht gelistet</ion-label>
+                      <ion-label>{{ 'person.notListed' | transloco }}</ion-label>
                       @if (player.additional_fields[field.id] === '') {
                         <ion-icon name="checkmark-outline" slot="end" color="primary"></ion-icon>
                       }
@@ -669,7 +663,7 @@
                     }
                     @if (filteredChurches.length === 0) {
                       <ion-item lines="none">
-                        <ion-label class="ion-text-wrap" color="medium">Keine Gemeinde gefunden.</ion-label>
+                        <ion-label class="ion-text-wrap" color="medium">{{ 'person.noChurchFound' | transloco }}</ion-label>
                       </ion-item>
                     }
                   </ion-list>
@@ -686,7 +680,7 @@
     @if (otherTenants.length) {
     <ion-accordion value="otherTenants">
       <ion-item slot="header" color="light">
-        <ion-label>Andere Instanzen</ion-label>
+        <ion-label>{{ 'person.otherInstances' | transloco }}</ion-label>
       </ion-item>
       <div slot="content">
         <ion-list>
@@ -710,16 +704,16 @@
   <ion-accordion-group [value]="existingPlayer ? 'first' : ''">
     <ion-accordion value="first">
       <ion-item slot="header" color="light">
-        <ion-label>Historie</ion-label>
+        <ion-label>{{ 'person.history' | transloco }}</ion-label>
       </ion-item>
       <div slot="content">
         <ion-list>
           <ion-item>
             @if (lateCount === 0) {
-            <ion-label>Durchschnitt</ion-label>
+            <ion-label>{{ 'person.average' | transloco }}</ion-label>
             }
             @if (lateCount !== 0) {
-            <ion-label>Durchschnitt ({{lateCount}}x zu spät)</ion-label>
+            <ion-label>{{ 'person.averageLate' | transloco: { count: lateCount } }}</ion-label>
             }
             <ion-badge [color]="perc >= 75 ? 'success' : perc >= 50 ? 'warning' : 'danger'" slot="end">{{ perc
               }}%</ion-badge>
@@ -729,11 +723,10 @@
             <ion-item (click)="onHisItemClicked(att)">
               <ion-label>
                 @if (att.type === 2 || att.type === 3) {
-                <h2>Mit Person gesprochen ({{ att.date | date:'dd.MM.yyyy
-                  HH:mm' }})</h2>
+                <h2>{{ 'person.talkedToAt' | transloco: { date: (att.date | date:'dd.MM.yyyy HH:mm') } }}</h2>
                 }
                 @if (att.type === 5) {
-                <h2>Notiz geändert am {{ att.date | date:'dd.MM.yyyy HH:mm' }}</h2>
+                <h2>{{ 'person.noteChangedAt' | transloco: { date: (att.date | date:'dd.MM.yyyy HH:mm') } }}</h2>
                 }
                 @if (att.type === 4 && att.title) {
                 <h2>{{ att.date | date:'dd.MM.yyyy' }} | {{ att.title }}</h2>
@@ -742,31 +735,31 @@
                 <h2>{{ att.date | date:'dd.MM.yyyy' }}</h2>
                 }
                 @if (att.type === 1) {
-                <h2>Pausiert am {{ att.date | date:'dd.MM.yyyy HH:mm' }}</h2>
+                <h2>{{ 'person.pausedAt' | transloco: { date: (att.date | date:'dd.MM.yyyy HH:mm') } }}</h2>
                 }
                 @if (att.type === 6) {
-                <h2>Wieder aktiv seid {{ att.date | date:'dd.MM.yyyy HH:mm' }}</h2>
+                <h2>{{ 'person.activeSince' | transloco: { date: (att.date | date:'dd.MM.yyyy HH:mm') } }}</h2>
                 }
                 @if (att.type === 7 && att.date) {
                 <h2>{{ att.date | date:'dd.MM.yyyy' }}</h2>
                 }
                 @if (att.type === 8 && att.date) {
-                <h2>Archiviert am {{ att.date | date:'dd.MM.yyyy' }}</h2>
+                <h2>{{ 'person.archivedAt' | transloco: { date: (att.date | date:'dd.MM.yyyy') } }}</h2>
                 }
                 @if (att.type === 9 && att.date) {
-                <h2>Reaktiviert am {{ att.date | date:'dd.MM.yyyy' }}</h2>
+                <h2>{{ 'person.reactivatedAt' | transloco: { date: (att.date | date:'dd.MM.yyyy') } }}</h2>
                 }
                 @if (att.type === 10 || att.type === 11) {
-                <h2>Übertragen am {{ att.date | date:'dd.MM.yyyy' }}</h2>
+                <h2>{{ 'person.transferredAt' | transloco: { date: (att.date | date:'dd.MM.yyyy') } }}</h2>
                 }
                 @if (att.type === 12 || att.type === 13) {
-                <h2>Kopiert am {{ att.date | date:'dd.MM.yyyy' }}</h2>
+                <h2>{{ 'person.copiedAt' | transloco: { date: (att.date | date:'dd.MM.yyyy') } }}</h2>
                 }
                 @if (att.type !== 10 && att.type !== 11 && att.type !== 12 && att.type !== 13 && att.type !== 8 &&
                 att.type !== 9 && att.type !== 4 && att.type !== 6 && att.type !== 5) {
                 <h3>
                   {{ getTypeText(att.type) }}: {{ att.text
-                  ? att.text : 'Keine Anmerkung' }}</h3>
+                  ? att.text : ('person.noComment' | transloco) }}</h3>
                 }
                 @if (att.type === 5 || att.type === 8) {
                 <h3>{{ att.text }}</h3>
@@ -807,7 +800,7 @@
   <ion-accordion-group>
     <ion-accordion value="upcoming">
       <ion-item slot="header" color="light">
-        <ion-label>Anstehende Termine ({{ upcomingAttendances.length }})</ion-label>
+        <ion-label>{{ 'person.upcomingEvents' | transloco: { count: upcomingAttendances.length } }}</ion-label>
       </ion-item>
       <div slot="content">
         <ion-list>
@@ -842,7 +835,7 @@
   <ion-accordion-group>
     <ion-accordion value="absences">
       <ion-item slot="header" color="light">
-        <ion-label>Abwesenheiten{{ playerAbsences.length ? ' (' + playerAbsences.length + ')' : '' }}</ion-label>
+        <ion-label>{{ playerAbsences.length ? ('person.absencesCount' | transloco: { count: playerAbsences.length }) : ('person.absences' | transloco) }}</ion-label>
       </ion-item>
       <div slot="content">
         <ion-list>
@@ -859,17 +852,17 @@
           }
           @if (!playerAbsences.length) {
           <ion-item>
-            <ion-label color="medium">Keine Abwesenheiten eingetragen</ion-label>
+            <ion-label color="medium">{{ 'person.noAbsences' | transloco }}</ion-label>
           </ion-item>
           }
           <ion-item button detail="false" (click)="openAbsenceModal()">
             <ion-icon slot="start" name="add-circle-outline" color="primary"></ion-icon>
-            <ion-label color="primary">Abwesenheit hinzufügen</ion-label>
+            <ion-label color="primary">{{ 'person.addAbsence' | transloco }}</ion-label>
           </ion-item>
           @if (hasDutyTypes) {
           <ion-item button detail="true" (click)="openUnavailability()">
             <ion-icon slot="start" name="calendar-clear-outline" color="primary"></ion-icon>
-            <ion-label color="primary">Regelmäßig verhindert</ion-label>
+            <ion-label color="primary">{{ 'signout.regularlyUnavailable' | transloco }}</ion-label>
           </ion-item>
           }
         </ion-list>
@@ -923,7 +916,7 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>{{ player?.firstName }} {{ player?.lastName }} pausieren</ion-title>
+          <ion-title>{{ 'person.pauseTitle' | transloco: { name: (player?.firstName ?? '') + ' ' + (player?.lastName ?? '') } }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="dismissPauseModal()">
               <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -934,8 +927,8 @@
       <ion-content class="ion-padding">
         <ion-list>
           <ion-item>
-            <ion-label position="stacked">Grund *</ion-label>
-            <ion-textarea autocapitalize="sentences" [(ngModel)]="pauseReason" placeholder="Gib einen Grund für die Pause an..."
+            <ion-label position="stacked">{{ 'people.reasonRequired' | transloco }}</ion-label>
+            <ion-textarea autocapitalize="sentences" [(ngModel)]="pauseReason" [placeholder]="'person.pauseReasonPlaceholder' | transloco"
               [autoGrow]="true"></ion-textarea>
           </ion-item>
         </ion-list>
@@ -944,11 +937,11 @@
           <ion-accordion value="from">
             <ion-item slot="header" color="light">
               <ion-label>
-                <h3>Pausiert ab (optional)</h3>
+                <h3>{{ 'people.pausedFrom' | transloco }}</h3>
                 @if (pauseFrom) {
                 <p>{{ pauseFrom | date:'dd.MM.yyyy' }}</p>
                 } @else {
-                <p>Ab heute</p>
+                <p>{{ 'people.fromToday' | transloco }}</p>
                 }
               </ion-label>
               @if (pauseFrom) {
@@ -966,11 +959,11 @@
           <ion-accordion value="date">
             <ion-item slot="header" color="light">
               <ion-label>
-                <h3>Pausiert bis (optional)</h3>
+                <h3>{{ 'signout.pausedUntil' | transloco }}</h3>
                 @if (pauseUntil) {
                 <p>{{ pauseUntil | date:'dd.MM.yyyy' }}</p>
                 } @else {
-                <p>Kein Enddatum gewählt</p>
+                <p>{{ 'people.noEndDate' | transloco }}</p>
                 }
               </ion-label>
               @if (pauseUntil) {
@@ -988,12 +981,12 @@
         </ion-accordion-group>
 
         <ion-note class="ion-padding" color="medium" style="display: block;">
-          Mit einem Startdatum in der Vergangenheit wird die Person auch aus zurückliegenden Anwesenheiten ab diesem Datum entfernt. Wenn ein Enddatum angegeben ist, wird die Person danach automatisch wieder aktiviert.
+          {{ 'person.pauseHintAuto' | transloco }}
         </ion-note>
 
         <ion-button expand="block" class="ion-margin-top" (click)="confirmPause()" [disabled]="!pauseReason">
           <ion-icon slot="start" name="pause-outline"></ion-icon>
-          Pausieren
+          {{ 'people.pause' | transloco }}
         </ion-button>
       </ion-content>
     </ng-template>
@@ -1004,7 +997,7 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>Abwesenheit eintragen</ion-title>
+          <ion-title>{{ 'person.enterAbsence' | transloco }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="dismissAbsenceModal()">
               <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -1015,9 +1008,9 @@
       <ion-content class="ion-padding">
         <ion-list>
           <ion-item>
-            <ion-label position="stacked">Grund *</ion-label>
+            <ion-label position="stacked">{{ 'people.reasonRequired' | transloco }}</ion-label>
             <ion-textarea autocapitalize="sentences" [(ngModel)]="absenceReason"
-              placeholder="z.B. Urlaub, Krankheit..." [autoGrow]="true"></ion-textarea>
+              [placeholder]="'signout.reasonPlaceholder' | transloco" [autoGrow]="true"></ion-textarea>
           </ion-item>
         </ion-list>
 
@@ -1025,11 +1018,11 @@
           <ion-accordion value="from">
             <ion-item slot="header" color="light">
               <ion-label>
-                <h3>Von *</h3>
+                <h3>{{ 'person.fromRequired' | transloco }}</h3>
                 @if (absenceFrom) {
                 <p>{{ absenceFrom | date:'dd.MM.yyyy' }}</p>
                 } @else {
-                <p>Kein Datum gewählt</p>
+                <p>{{ 'person.noDateChosen' | transloco }}</p>
                 }
               </ion-label>
               @if (absenceFrom) {
@@ -1047,11 +1040,11 @@
           <ion-accordion value="until">
             <ion-item slot="header" color="light">
               <ion-label>
-                <h3>Bis *</h3>
+                <h3>{{ 'person.untilRequired' | transloco }}</h3>
                 @if (absenceUntil) {
                 <p>{{ absenceUntil | date:'dd.MM.yyyy' }}</p>
                 } @else {
-                <p>Kein Datum gewählt</p>
+                <p>{{ 'person.noDateChosen' | transloco }}</p>
                 }
               </ion-label>
               @if (absenceUntil) {
@@ -1069,13 +1062,13 @@
         </ion-accordion-group>
 
         <ion-note class="ion-padding" color="warning" style="display: block; margin-top: 8px;">
-          Für längere Abwesenheiten empfiehlt sich die Pausieren-Funktion, damit die Person nicht in neuen Terminen erscheint.
+          {{ 'person.longAbsenceHint' | transloco }}
         </ion-note>
 
         <ion-button expand="block" class="ion-margin-top" (click)="confirmAbsence()"
           [disabled]="!absenceReason || !absenceFrom || !absenceUntil">
           <ion-icon slot="start" name="calendar-outline"></ion-icon>
-          Abwesenheit eintragen
+          {{ 'person.enterAbsence' | transloco }}
         </ion-button>
       </ion-content>
     </ng-template>
@@ -1085,7 +1078,7 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>{{ player?.firstName }} {{ player?.lastName }} Archivieren</ion-title>
+          <ion-title>{{ 'people.archiveTitle' | transloco: { name: (player?.firstName ?? '') + ' ' + (player?.lastName ?? '') } }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="dismissArchiveModal()">
               <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -1095,11 +1088,11 @@
       </ion-header>
       <ion-content class="ion-padding">
         <ion-item>
-          <ion-label position="stacked">Austrittsdatum</ion-label>
+          <ion-label position="stacked">{{ 'people.leaveDate' | transloco }}</ion-label>
           <ion-input autocapitalize="sentences" type="date" [(ngModel)]="archiveDate"></ion-input>
         </ion-item>
         <ion-item>
-          <ion-label position="stacked">Notiz</ion-label>
+          <ion-label position="stacked">{{ 'people.note' | transloco }}</ion-label>
           <ion-textarea autocapitalize="sentences" [(ngModel)]="archiveNote"></ion-textarea>
         </ion-item>
         <ion-fab vertical="bottom" horizontal="end" slot="fixed">
@@ -1116,8 +1109,7 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>{{ copy ? 'Kopieren' : 'Übertragen' }} von {{ player?.firstName }} {{ player?.lastName
-            }}</ion-title>
+          <ion-title>{{ (copy ? 'person.copyFrom' : 'person.transferFrom') | transloco: { name: (player?.firstName ?? '') + ' ' + (player?.lastName ?? '') } }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="isTransferModalOpen = false">
               <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -1129,7 +1121,7 @@
         <ion-list [inset]="true">
           <ion-item-group>
             <ion-item>
-              <ion-select (ionChange)="onTenantChange()" label="Ziel-Instanz" [(ngModel)]="tenantId">
+              <ion-select (ionChange)="onTenantChange()" [label]="'person.targetInstance' | transloco" [(ngModel)]="tenantId">
                 @for (tnt of tenants; track tnt) {
                 <ion-select-option [value]="tnt.id">{{ tnt.longName }}</ion-select-option>
                 }
@@ -1137,7 +1129,7 @@
             </ion-item>
             @if (tenantId && tenantGroups.length) {
             <ion-item>
-              <ion-select label="Ziel-Gruppe" [(ngModel)]="targetGroupId">
+              <ion-select [label]="'person.targetGroup' | transloco" [(ngModel)]="targetGroupId">
                 @for (grp of tenantGroups; track grp) {
                 <ion-select-option [value]="grp.id">{{ grp.name }}</ion-select-option>
                 }

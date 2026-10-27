@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Bulk-Bearbeitung</ion-title>
+    <ion-title>{{ 'people.bulkEdit' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -13,16 +13,16 @@
   <!-- Step 1: Field selection -->
   <ion-list [inset]="true">
     <ion-item>
-      <ion-select label="Feld auswählen" labelPlacement="stacked" [(ngModel)]="selectedFieldKey"
-        (ionChange)="onFieldSelected()" interface="popover" placeholder="Feld wählen...">
-        <ion-select-option disabled>Standard-Felder</ion-select-option>
+      <ion-select [label]="'people.chooseField' | transloco" labelPlacement="stacked" [(ngModel)]="selectedFieldKey"
+        (ionChange)="onFieldSelected()" interface="popover" [placeholder]="'people.chooseFieldPlaceholder' | transloco">
+        <ion-select-option disabled>{{ 'people.standardFields' | transloco }}</ion-select-option>
         @for (field of fieldOptions; track field.key) {
           @if (field.type === 'standard') {
             <ion-select-option [value]="field.key">{{ field.label }}</ion-select-option>
           }
         }
         @if (db.tenant()?.additional_fields?.length) {
-          <ion-select-option disabled>Zusatzfelder</ion-select-option>
+          <ion-select-option disabled>{{ 'people.extraFields' | transloco }}</ion-select-option>
           @for (field of fieldOptions; track field.key) {
             @if (field.type === 'extra') {
               <ion-select-option [value]="field.key">{{ field.label }}</ion-select-option>
@@ -37,24 +37,24 @@
     <!-- "Set for all" section -->
     <ion-list [inset]="true">
       <ion-list-header>
-        <ion-label>Für alle setzen</ion-label>
+        <ion-label>{{ 'people.setForAll' | transloco }}</ion-label>
       </ion-list-header>
       <ion-item>
         <ion-label class="bulk-input-row">
           <div class="bulk-input-control">
             <!-- Standard fields -->
             @if (selectedField.key === 'instrument') {
-              <ion-select [(ngModel)]="bulkValue" interface="popover" placeholder="Gruppe wählen...">
+              <ion-select [(ngModel)]="bulkValue" interface="popover" [placeholder]="'people.chooseGroupPlaceholder' | transloco">
                 @for (group of db.groups(); track group.id) {
                   <ion-select-option [value]="group.id">{{ group.name }}</ion-select-option>
                 }
               </ion-select>
             } @else if (selectedField.key === 'isLeader') {
-              <ion-toggle [(ngModel)]="bulkValue">Stimmführer</ion-toggle>
+              <ion-toggle [(ngModel)]="bulkValue">{{ 'people.voiceLeader' | transloco }}</ion-toggle>
             } @else if (selectedField.key === 'notes') {
-              <ion-input autocapitalize="sentences" [(ngModel)]="bulkValue" placeholder="Notiz..."></ion-input>
+              <ion-input autocapitalize="sentences" [(ngModel)]="bulkValue" [placeholder]="'people.notePlaceholder' | transloco"></ion-input>
             } @else if (selectedField.key === 'phone') {
-              <ion-input autocapitalize="sentences" type="tel" [(ngModel)]="bulkValue" placeholder="Telefon..."></ion-input>
+              <ion-input autocapitalize="sentences" type="tel" [(ngModel)]="bulkValue" [placeholder]="'people.phonePlaceholder' | transloco"></ion-input>
             }
             <!-- Extra fields by type -->
             @else if (selectedField.fieldType === FieldType.TEXT) {
@@ -83,7 +83,7 @@
           </div>
           <ion-button size="small" fill="outline" (click)="applyToAll()" class="bulk-apply-btn">
             <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>
-            Für alle setzen
+            {{ 'people.setForAll' | transloco }}
           </ion-button>
         </ion-label>
       </ion-item>
@@ -92,7 +92,7 @@
     <!-- Step 2: Player list with editable field -->
     <ion-list [inset]="true">
       <ion-list-header>
-        <ion-label>Personen ({{ players.length }})</ion-label>
+        <ion-label>{{ 'people.peopleCount' | transloco: { count: players.length } }}</ion-label>
       </ion-list-header>
       @for (player of players; track player.id) {
         <ion-item [class.changed]="originalValues.get(player.id) !== editedValues.get(player.id)">
@@ -105,7 +105,7 @@
             @if (selectedField.key === 'instrument') {
               <ion-select [ngModel]="getEditedValue(player.id)"
                 (ionChange)="setEditedValue(player.id, $event.detail.value)"
-                interface="popover" placeholder="Gruppe...">
+                interface="popover" [placeholder]="'people.groupPlaceholder' | transloco">
                 @for (group of db.groups(); track group.id) {
                   <ion-select-option [value]="group.id">{{ group.name }}</ion-select-option>
                 }
@@ -117,12 +117,12 @@
             } @else if (selectedField.key === 'notes') {
               <ion-input autocapitalize="sentences" [ngModel]="getEditedValue(player.id)"
                 (ionChange)="setEditedValue(player.id, $event.detail.value)"
-                placeholder="Notiz...">
+                [placeholder]="'people.notePlaceholder' | transloco">
               </ion-input>
             } @else if (selectedField.key === 'phone') {
               <ion-input autocapitalize="sentences" type="tel" [ngModel]="getEditedValue(player.id)"
                 (ionChange)="setEditedValue(player.id, $event.detail.value)"
-                placeholder="Telefon...">
+                [placeholder]="'people.phonePlaceholder' | transloco">
               </ion-input>
             }
             <!-- Extra fields by type -->
@@ -176,11 +176,11 @@
       <ion-button expand="block" (click)="save()" [disabled]="changedCount === 0 || isSaving">
         @if (isSaving) {
           <ion-spinner name="crescent" slot="start"></ion-spinner>
-          Speichern...
+          {{ 'people.saving' | transloco }}
         } @else if (changedCount > 0) {
-          {{ changedCount }} Änderung(en) speichern
+          {{ 'people.saveChanges' | transloco: { count: changedCount } }}
         } @else {
-          Keine Änderungen
+          {{ 'people.noChanges' | transloco }}
         }
       </ion-button>
     </div>
@@ -189,7 +189,7 @@
   @if (!selectedField) {
     <div class="ion-padding ion-text-center" style="margin-top: 48px; color: var(--ion-color-medium)">
       <ion-icon name="create-outline" style="font-size: 48px;"></ion-icon>
-      <p>Wähle ein Feld aus, um die Werte für alle Personen zu bearbeiten.</p>
+      <p>{{ 'people.bulkEditHint' | transloco }}</p>
     </div>
   }
 </ion-content>
