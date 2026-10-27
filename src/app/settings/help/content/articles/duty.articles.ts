@@ -30,6 +30,8 @@ So schaltest du ihn ein (als [[Administrator]] oder [[Verantwortlicher]]):
 
 Eingeteilte bekommen sofort eine Push-Nachricht und sind erst einmal **angefragt**. Über das × neben dem Namen trägst du jemanden wieder aus.
 
+**Einteilung und Anwesenheit hängen zusammen:** Markierst du in der Anwesenheitsliste jemanden als anwesend oder verspätet, ist die Person automatisch eingeteilt und bestätigt. Setzt du einen bestätigten Dienst zurück auf neutral, ist er wieder angefragt. Eine Abmeldung lässt die Einteilung stehen und zählt als „kann nicht“.
+
 **Bestätigen (Mitglieder):** Unter **Meine Termine** erscheint oben „Bitte bestätigen“. Tippe auf **„Bestätigen“**, dann steht dein Dienst auf **bestätigt**. Mit **„Kann nicht“** sagst du ab wie bei einem normalen Termin, mit Grund.
 
 Hast du nach der eingestellten Zahl an Tagen nicht geantwortet, bekommst du einmal eine Erinnerung. Sagst du einen bestätigten Dienst später ab, ist das eine normale Abmeldung mit Grund; die Leitung wird wie gewohnt informiert.

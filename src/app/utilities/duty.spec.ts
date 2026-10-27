@@ -1,4 +1,4 @@
-import { distributeDuties, DutySlot, dutyFill, matchingUnavailability } from './duty';
+import { distributeDuties, DutySlot, dutyFill, dutyStateAfterStatus, matchingUnavailability } from './duty';
 import { AttendanceStatus } from './constants';
 import { PersonAttendance, PersonUnavailability } from './interfaces';
 
@@ -48,5 +48,13 @@ describe('duty utils', () => {
     expect(matchingUnavailability([rule], 5, '2026-11-05T18:00:00', 't1')).toBeUndefined();
     expect(matchingUnavailability([rule], 5, '2026-11-04T18:00:00', 't2')).toBeUndefined();
     expect(matchingUnavailability([rule], 5, '2027-01-06T18:00:00', 't1')).toBeUndefined();
+  });
+  it('keeps assignment and status in sync', () => {
+    expect(dutyStateAfterStatus(null, AttendanceStatus.Present)).toBe('confirmed');
+    expect(dutyStateAfterStatus('requested', AttendanceStatus.Late)).toBe('confirmed');
+    expect(dutyStateAfterStatus('self', AttendanceStatus.Present)).toBe('self');
+    expect(dutyStateAfterStatus('confirmed', AttendanceStatus.Neutral)).toBe('requested');
+    expect(dutyStateAfterStatus(null, AttendanceStatus.Neutral)).toBe(null);
+    expect(dutyStateAfterStatus('confirmed', AttendanceStatus.Excused)).toBe('confirmed');
   });
 });

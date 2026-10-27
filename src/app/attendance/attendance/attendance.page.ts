@@ -27,7 +27,7 @@ import { OfflineQueueService } from 'src/app/services/offline-queue/offline-queu
 import { allPlans, planDate, planLabel, todayPlanIndex } from 'src/app/utilities/plan-days';
 import { openPlanShareSheet } from 'src/app/planning/plan-share-sheet/plan-share-sheet.component';
 import { DutyAssignModalComponent, DutyCandidate } from 'src/app/duty/duty-assign-modal/duty-assign-modal.component';
-import { dutyFill, dutyFillColor, dutyRequired, isCancelled, isDutyType, matchingUnavailability, occupiesDuty } from 'src/app/utilities/duty';
+import { dutyFill, dutyFillColor, dutyRequired, dutyStateAfterStatus, isCancelled, isDutyType, matchingUnavailability, occupiesDuty } from 'src/app/utilities/duty';
 
 @Component({
     selector: 'app-attendance',
@@ -135,7 +135,12 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   private applyPlayerStatus(id: string, status: number): void {
     const idx = this.players.findIndex(p => p.id === id);
-    if (idx >= 0) { this.players[idx] = { ...this.players[idx], status }; }
+    if (idx >= 0) {
+      const player = this.players[idx];
+      // Dienstplan: status and assignment move together (see syncDutyWithStatus).
+      const duty_state = this.isDuty ? dutyStateAfterStatus(player.duty_state, status) : player.duty_state;
+      this.players[idx] = { ...player, status, duty_state };
+    }
   }
 
   /** Shows a new note right away instead of waiting for the realtime echo. */

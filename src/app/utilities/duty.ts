@@ -14,6 +14,32 @@ export type DutyFill = 'full' | 'requested' | 'partial' | 'open';
 
 const CANCELLED_STATUSES = [AttendanceStatus.Excused, AttendanceStatus.LateExcused, AttendanceStatus.Absent];
 
+let dutyTypeIds: string[] = [];
+
+/** Kept up to date by DbService whenever the Termintypen change. */
+export function setDutyTypeIds(ids: string[]): void {
+  dutyTypeIds = ids;
+}
+
+export function getDutyTypeIds(): string[] {
+  return dutyTypeIds;
+}
+
+/**
+ * Duty state after a status change (Termine of duty types). Returns the
+ * current state when nothing changes. Zugesagt/Verspätet → bestätigt (also
+ * for stand-ins), Neutral after a confirmation → angefragt.
+ */
+export function dutyStateAfterStatus(current: DutyState | null | undefined, status: number): DutyState | null {
+  if (status === AttendanceStatus.Present || status === AttendanceStatus.Late) {
+    return !current || current === 'requested' ? 'confirmed' : current;
+  }
+  if (status === AttendanceStatus.Neutral && (current === 'confirmed' || current === 'self')) {
+    return 'requested';
+  }
+  return current ?? null;
+}
+
 export function isDutyType(type: Pick<AttendanceType, 'duty_mode'> | null | undefined): boolean {
   return !!type?.duty_mode;
 }

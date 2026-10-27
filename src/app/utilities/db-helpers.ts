@@ -4,6 +4,7 @@
 
 import { Database } from './supabase';
 import { AttendanceStatus } from './constants';
+import { dutyStateAfterStatus, getDutyTypeIds } from './duty';
 
 type Tables = Database['public']['Tables'];
 
@@ -329,17 +330,36 @@ export function pickTenantUserFields(user: any) {
 }
 
 /**
- * Dienstplan: when an assigned ("angefragt") person signs in (Zugesagt or
- * Verspätet), the duty counts as confirmed. Only rows still in "requested"
- * are touched, so normal Termine are unaffected.
+ * Dienstplan: keeps assignment and status in sync for Termine of duty types.
+ * - Zugesagt/Verspätet: the person is assigned and confirmed (also when the
+ *   leadership marks a stand-in as present).
+ * - Neutral after a confirmation: back to "angefragt".
+ * - Abgemeldet: the assignment stays and counts as cancelled.
+ * Explicit duty changes (duty_state in the update) are left alone; without
+ * any duty type in the tenant nothing is queried.
  */
-export async function confirmRequestedDuty(client: any, id: string, att: { status?: number; duty_state?: unknown }): Promise<void> {
-  if (att.duty_state !== undefined) return;
-  if (att.status !== AttendanceStatus.Present && att.status !== AttendanceStatus.Late) return;
-  const { error } = await client
+export async function syncDutyWithStatus(client: any, id: string, att: { status?: number; duty_state?: unknown }, userId?: string): Promise<void> {
+  if (att.duty_state !== undefined || att.status === undefined || att.status === null) return;
+  const dutyTypeIds = getDutyTypeIds();
+  if (!dutyTypeIds.length) return;
+
+  const { data, error } = await client
     .from('person_attendances')
-    .update({ duty_state: 'confirmed' })
+    .select('id, duty_state, duty_assigned_at, attendance:attendance_id(type_id)')
     .eq('id', id)
-    .eq('duty_state', 'requested');
-  if (error) console.error('confirmRequestedDuty error', error);
+    .maybeSingle();
+  if (error || !data || !dutyTypeIds.includes(data.attendance?.type_id)) return;
+
+  const next = dutyStateAfterStatus(data.duty_state, att.status);
+  if (next === (data.duty_state ?? null)) return;
+  const update: Record<string, unknown> = { duty_state: next };
+  if (next === 'confirmed') {
+    update['duty_reminder_sent'] = true;
+    if (!data.duty_state) {
+      update['duty_assigned_by'] = userId ?? null;
+      update['duty_assigned_at'] = new Date().toISOString();
+    }
+  }
+  const { error: updErr } = await client.from('person_attendances').update(update).eq('id', id);
+  if (updErr) console.error('syncDutyWithStatus error', updErr);
 }

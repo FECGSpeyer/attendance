@@ -1,4 +1,5 @@
-import { Injectable, Signal, WritableSignal, computed, inject, signal } from '@angular/core';
+import { Injectable, Signal, WritableSignal, computed, effect, inject, signal } from '@angular/core';
+import { setDutyTypeIds } from '../utilities/duty';
 import { Router } from '@angular/router';
 import { AlertController, Platform } from '@ionic/angular/lazy';
 import { SupabaseClient, User } from '@supabase/supabase-js';
@@ -135,6 +136,7 @@ export class DbService {
     this.tenants = signal([]);
     this.tenantUser = signal(undefined);
     this.attendanceTypes = signal([]);
+    effect(() => setDutyTypeIds((this.attendanceTypes() ?? []).filter(t => t.duty_mode).map(t => t.id)));
     this.organisation = signal(null);
     this.tenantUsers = signal([]);
     this.groups = signal([]);
