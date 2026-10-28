@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.6",
+      "date": "28.10.2026",
+      "changes": [
+        "🔤 Beim Versenden von PDFs und Bildern per Telegram erscheint jetzt der lesbare Dateiname ohne zufällige Zahl am Ende."
+      ]
+    },
+    {
       "version": "4.17.5",
       "date": "28.10.2026",
       "changes": [

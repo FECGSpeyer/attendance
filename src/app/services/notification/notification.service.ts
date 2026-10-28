@@ -109,10 +109,20 @@ export class NotificationService {
       .from('attendances')
       .getPublicUrl(fileName);
 
+    const cleanName = (name || 'file')
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^\w\s-]/g, '-')
+      .replace(/\s+/g, ' ')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .trim() || 'file';
+    const publicUrl = `${urlData.publicUrl}?download=${encodeURIComponent(cleanName + extension)}`;
+
     const functionName = asImage ? 'send-photo' : 'send-document';
     const { error: sendError } = await supabase.functions.invoke(functionName, {
       body: {
-        url: urlData.publicUrl,
+        url: publicUrl,
         chat_id: chatId,
       },
       method: 'POST',
