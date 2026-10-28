@@ -91,9 +91,11 @@ Sowohl Vorlagen als auch Standardfelder stehen allen Instanzen der Organisation 
     id: 'plan-share',
     title: 'Ablaufplan exportieren und teilen',
     categoryId: 'planning',
-    keywords: ['pdf export', 'teilen', 'link', 'telegram'],
+    keywords: ['pdf export', 'teilen', 'link', 'telegram', 'ad-hoc', 'bild'],
     body: `Ein fertiger [[Ablaufplan]] kann als PDF exportiert, per Telegram verschickt oder über einen öffentlichen Link geteilt werden. Beim Teilen per Link lässt sich festlegen, ob Betrachter den Plan nur ansehen oder auch live mitverfolgen können, während er während der Veranstaltung aktualisiert wird.
 
-Hat ein Termin mehrere Ablaufpläne, kannst du beim Teilen wählen, ob nur der gezeigte Plan oder alle Pläne in einer PDF landen (siehe "Mehrere Ablaufpläne für einen Termin").`,
+Hat ein Termin mehrere Ablaufpläne, kannst du beim Teilen wählen, ob nur der gezeigte Plan oder alle Pläne in einer PDF landen (siehe "Mehrere Ablaufpläne für einen Termin").
+
+Auch in der Ad-hoc-Ablaufplanung (Einstellungen › Ad-Hoc Ablaufplanung) kannst du den Plan per Telegram verschicken, als PDF, als PDF 2x A5 oder als Bild. Die Optionen erscheinen beim Exportieren und Teilen, sobald du angemeldet bist und Telegram in deinen Benachrichtigungen verbunden hast.`,
   },
 ];

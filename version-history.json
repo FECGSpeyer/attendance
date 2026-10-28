@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.17.5",
+      "date": "28.10.2026",
+      "changes": [
+        "📨 In der Ad-hoc-Ablaufplanung kannst du den Plan jetzt auch per Telegram verschicken (PDF, PDF 2x A5 oder Bild).",
+        "🎨 Programmblöcke sind dezenter: kein farbiger Hintergrund mehr im Editor, in der Planansicht und im PDF, nur noch fetter Blockname und eine feine graue Linie bei den Unterpunkten."
+      ]
+    },
+    {
       "version": "4.17.4",
       "date": "28.10.2026",
       "changes": [

@@ -738,12 +738,40 @@ export class PublicPlanningPage implements OnInit {
     return { logo: logo || undefined, text: selected.text };
   }
 
+  /** Signed-in users with a linked Telegram chat can send the plan there, like in the Termin planner. */
+  get hasChatId(): boolean {
+    return this.isLoggedIn && Boolean(this.db.tenantUser?.()?.telegram_chat_id);
+  }
+
+  private telegramButtons(): ActionSheetButton[] {
+    if (!this.hasChatId) { return []; }
+    return [
+      { text: translate('attendance.telegramPdf'),   handler: () => this.send(false) },
+      { text: translate('attendance.telegramPdfA5'), handler: () => this.send(false, true) },
+      { text: translate('attendance.telegramImage'), handler: () => this.send(true) },
+    ];
+  }
+
+  async send(asImage = false, sideBySide = false) {
+    if (!this.validate()) { return; }
+    const branding = await this.buildBranding();
+    const title = this.planTitle?.trim() || translate('plans.runSheet');
+    const blob = await Utils.createPlanExport(
+      { time: this.time, end: this.end, fields: this.selectedFields, sideBySide, branding, asBlob: true, asImage },
+      title,
+    );
+    if (!blob) { return; }
+    const dateStr = dayjs(this.date).isValid() ? dayjs(this.date).format('DD_MM_YYYY') : dayjs().format('DD_MM_YYYY');
+    await this.db.sendPlanPerTelegram(blob, `${title.replace('(', '').replace(')', '')}_${dateStr}${sideBySide ? '_2x' : ''}`, asImage);
+  }
+
   async showExportOptions() {
     if (!this.validate()) {return;}
     const buttons: ActionSheetButton[] = [
       { text: 'PDF (A4)',       handler: () => this.export(false) },
       { text: 'PDF (2x A5)',    handler: () => this.export(true) },
       { text: translate('plans.imageA4'),      handler: () => this.exportImage(false) },
+      ...this.telegramButtons(),
       { text: translate('common.cancel'),      role: 'cancel' },
     ];
     const actionSheet = await this.actionSheetController.create({
@@ -763,6 +791,7 @@ export class PublicPlanningPage implements OnInit {
         { text: 'PDF (A4)',       handler: () => this.export(false) },
         { text: 'PDF (2x A5)',    handler: () => this.export(true) },
         { text: translate('plans.imageA4'),      handler: () => this.exportImage(false) },
+        ...this.telegramButtons(),
         { text: translate('common.cancel'), role: 'cancel' },
       ],
     });

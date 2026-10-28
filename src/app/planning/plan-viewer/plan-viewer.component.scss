@@ -34,9 +34,8 @@ p.start-countdown {
   white-space: pre-wrap;
 }
 
-// Programmblöcke: tinted head, indented Unterpunkte with a line on the left.
+// Programmblöcke: bold head, indented Unterpunkte with a line on the left.
 .group-head {
-  --background: rgba(var(--ion-color-primary-rgb), 0.08);
 
   h2 {
     font-weight: 700;
@@ -44,12 +43,11 @@ p.start-countdown {
 
   .group-duration {
     font-weight: 600;
-    color: var(--ion-color-primary-shade);
+    color: var(--ion-color-medium-shade);
   }
 }
 
 .group-child {
-  --background: rgba(var(--ion-color-primary-rgb), 0.04);
   --padding-start: 34px;
   position: relative;
 
@@ -59,8 +57,8 @@ p.start-countdown {
     left: 20px;
     top: 0;
     bottom: 0;
-    width: 3px;
-    background: rgba(var(--ion-color-primary-rgb), 0.45);
+    width: 2px;
+    background: var(--ion-color-step-200, #cccccc);
     z-index: 1;
   }
 }

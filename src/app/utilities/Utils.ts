@@ -768,8 +768,7 @@ export class Utils {
       if (hookData.section !== 'body') { return; }
       const name = raw?.[1];
       if (name?._group) {
-        // Programmblock head: tinted, bold row.
-        hookData.cell.styles.fillColor = [232, 238, 247];
+        // Programmblock head: bold row, no tint.
         hookData.cell.styles.fontStyle = 'bold';
       } else if (name?._child) {
         // Unterpunkt: Programmpunkt indented, time a bit lighter.
@@ -848,7 +847,7 @@ export class Utils {
 
       if (raw?._child) {
         // Line on the left ties the Unterpunkte to their block.
-        doc.setDrawColor(159, 179, 212);
+        doc.setDrawColor(200, 200, 200);
         doc.setLineWidth(0.5);
         doc.line(cell.x + 2, cell.y, cell.x + 2, cell.y + cell.height);
       }

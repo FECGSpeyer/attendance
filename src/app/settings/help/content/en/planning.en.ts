@@ -78,10 +78,12 @@ Both templates and default fields are available to all instances of the organisa
   },
   'plan-share': {
     title: 'Exporting and sharing a run sheet',
-    keywords: ['pdf export', 'share', 'link', 'telegram'],
+    keywords: ['pdf export', 'share', 'link', 'telegram', 'ad-hoc', 'image'],
     body: `A finished [[Run sheet|run sheet]] can be exported as PDF, sent via Telegram or shared via a public link. When sharing via link you can decide whether viewers can only look at the plan or also follow it live while it is updated during the event.
 
-If an event has several run sheets, you can choose when sharing whether only the plan shown or all plans end up in one PDF (see "Several run sheets for one event").`,
+If an event has several run sheets, you can choose when sharing whether only the plan shown or all plans end up in one PDF (see "Several run sheets for one event").
+
+The ad-hoc run sheet (Settings › Ad-hoc run sheet) can also send the plan via Telegram, as PDF, PDF 2x A5 or image. The options appear when exporting and sharing once you are signed in and have connected Telegram in your notifications.`,
   },
   'songs-add': {
     title: 'Adding a piece',
