@@ -7,6 +7,9 @@
 //   - starts it 15 min before the first item (iOS 17.2+ push-to-start, Android data push)
 //   - updates it whenever the current item changes or the plan is edited
 //   - ends it when the plan is over
+// ORG plans (Termine marked as ORG-Plan and ad-hoc plans of the organisation)
+// also go to the admins and Verantwortliche of every choir in the organisation.
+// Ad-hoc plans have no Termin: attendance_id 0, plan key "org-<shared_plans.id>".
 // Only pushes when the visible state changed (live_activity_sent).
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -45,6 +48,16 @@ interface AttendanceRow {
   share_plan: boolean | null;
   type_id: string | null;
   typeInfo: string | null;
+  is_org_plan: boolean | null;
+}
+
+interface SharedPlanRow {
+  id: string;
+  plan_title: string | null;
+  date: string | null;
+  time: string | null;
+  fields: any[] | null;
+  org_id: number;
 }
 
 interface LivePlan {
@@ -52,6 +65,10 @@ interface LivePlan {
   planKey: string;
   title: string;
   state: LivePlanState | null;
+  /** Organisation whose leaders also get this plan (ORG plans). */
+  orgId?: number | null;
+  /** Ad-hoc ORG plan without a Termin: only the organisation's leaders get it. */
+  orgOnly?: boolean;
 }
 
 interface SentRow {
@@ -105,6 +122,21 @@ function livePlans(att: AttendanceRow, typeName: string, timezone: string, now: 
       state: liveStateAt(schedule, now),
     };
   });
+}
+
+/** Ad-hoc ORG plan (shared_plans with org_id); attendance is a stand-in with id 0. */
+function sharedLivePlan(sp: SharedPlanRow, tenantId: number, timezone: string, now: number): LivePlan {
+  const schedule = sp.date && sp.time && sp.fields?.length
+    ? buildSchedule({ date: sp.date, planTime: sp.time, fields: sp.fields, timezone })
+    : [];
+  return {
+    attendance: { id: 0, tenantId } as AttendanceRow,
+    planKey: `org-${sp.id}`,
+    title: sp.plan_title?.trim() || 'ORG-Plan',
+    state: liveStateAt(schedule, now),
+    orgId: sp.org_id,
+    orgOnly: true,
+  };
 }
 
 async function fcmSend(accessToken: string, message: unknown): Promise<{ ok: boolean; error?: string }> {
@@ -173,23 +205,39 @@ function androidMessage(fcmToken: string, event: 'start' | 'update' | 'end', pla
   return { token: fcmToken, data, android: { priority: 'high', ttl: '120s' } };
 }
 
-async function recipients(supabase: SupabaseClient, att: AttendanceRow): Promise<string[]> {
-  const { data: users } = await supabase
-    .from('tenantUsers')
-    .select('userId, role')
-    .eq('tenantId', att.tenantId);
-  const allowed = (users ?? []).filter((u: any) =>
-    !NO_PLAN_ROLES.includes(u.role) && (LEADER_ROLES.includes(u.role) || att.share_plan),
-  ).map((u: any) => u.userId as string);
-  if (!allowed.length) return [];
+async function recipients(supabase: SupabaseClient, plan: LivePlan, orgTenants: Map<number, number[]>): Promise<string[]> {
+  const att = plan.attendance;
+  let allowed: string[] = [];
+  let excusedUsers = new Set<string>();
+  if (!plan.orgOnly) {
+    const { data: users } = await supabase
+      .from('tenantUsers')
+      .select('userId, role')
+      .eq('tenantId', att.tenantId);
+    allowed = (users ?? []).filter((u: any) =>
+      !NO_PLAN_ROLES.includes(u.role) && (LEADER_ROLES.includes(u.role) || att.share_plan),
+    ).map((u: any) => u.userId as string);
 
-  // Members who excused themselves don't get it.
-  const { data: excused } = await supabase
-    .from('person_attendances')
-    .select('status, person:person_id(appId)')
-    .eq('attendance_id', att.id)
-    .eq('status', EXCUSED);
-  const excusedUsers = new Set<string>((excused ?? []).map((e: any) => e.person?.appId).filter(Boolean));
+    // Members who excused themselves don't get it.
+    const { data: excused } = await supabase
+      .from('person_attendances')
+      .select('status, person:person_id(appId)')
+      .eq('attendance_id', att.id)
+      .eq('status', EXCUSED);
+    excusedUsers = new Set<string>((excused ?? []).map((e: any) => e.person?.appId).filter(Boolean));
+  }
+
+  // ORG plans: leaders of every choir in the organisation, like the ORG-Pläne page.
+  const tenantIds = plan.orgId ? orgTenants.get(plan.orgId) ?? [] : [];
+  if (tenantIds.length) {
+    const { data: leaders } = await supabase
+      .from('tenantUsers')
+      .select('userId')
+      .in('tenantId', tenantIds)
+      .in('role', LEADER_ROLES);
+    allowed.push(...(leaders ?? []).map((u: any) => u.userId as string));
+  }
+  if (!allowed.length) return [];
 
   const { data: settings } = await supabase
     .from('notifications')
@@ -211,13 +259,30 @@ Deno.serve(async (req) => {
   try {
     const { data: attendances, error } = await supabase
       .from('attendance')
-      .select('id, tenantId, date, plan, extra_plans, duration_days, share_plan, type_id, typeInfo')
+      .select('id, tenantId, date, plan, extra_plans, duration_days, share_plan, type_id, typeInfo, is_org_plan')
       .gte('date', new Date(now - LOOKBACK_DAYS * 86_400_000).toISOString())
       .lte('date', new Date(now + 2 * 86_400_000).toISOString())
       .not('plan', 'is', null);
     if (error) throw error;
 
-    const tenantIds = [...new Set((attendances ?? []).map((a: AttendanceRow) => a.tenantId))];
+    // Organisations: which choirs belong to which, for ORG plans.
+    const day = (offset: number) => new Date(now + offset * 86_400_000).toISOString().slice(0, 10);
+    const [{ data: orgLinks }, { data: sharedPlans }] = await Promise.all([
+      supabase.from('tenant_group_tenants').select('tenant_group, tenant_id'),
+      supabase.from('shared_plans').select('id, plan_title, date, time, fields, org_id')
+        .not('org_id', 'is', null).gte('date', day(-1)).lte('date', day(1)),
+    ]);
+    const orgOfTenant = new Map<number, number>();
+    const orgTenants = new Map<number, number[]>();
+    for (const link of (orgLinks ?? []) as any[]) {
+      orgOfTenant.set(link.tenant_id, link.tenant_group);
+      orgTenants.set(link.tenant_group, [...(orgTenants.get(link.tenant_group) ?? []), link.tenant_id]);
+    }
+
+    const tenantIds = [...new Set([
+      ...(attendances ?? []).map((a: AttendanceRow) => a.tenantId),
+      ...[...orgTenants.values()].flat(),
+    ])];
     const typeIds = [...new Set((attendances ?? []).map((a: AttendanceRow) => a.type_id).filter(Boolean))];
     const [{ data: tenants }, { data: types }, { data: sentRows }] = await Promise.all([
       supabase.from('tenants').select('id, timezone').in('id', tenantIds.length ? tenantIds : [-1]),
@@ -231,7 +296,15 @@ Deno.serve(async (req) => {
 
     const plans: LivePlan[] = [];
     for (const att of (attendances ?? []) as AttendanceRow[]) {
-      plans.push(...livePlans(att, typeName.get(att.type_id ?? '') ?? '', tzOf.get(att.tenantId) ?? DEFAULT_TIMEZONE, now));
+      const attPlans = livePlans(att, typeName.get(att.type_id ?? '') ?? '', tzOf.get(att.tenantId) ?? DEFAULT_TIMEZONE, now);
+      // ORG plans are plan 1 only, like on the ORG-Pläne page.
+      if (att.is_org_plan && attPlans[0]) attPlans[0].orgId = orgOfTenant.get(att.tenantId) ?? null;
+      plans.push(...attPlans);
+    }
+    for (const sp of (sharedPlans ?? []) as SharedPlanRow[]) {
+      const tenantId = orgTenants.get(sp.org_id)?.[0];
+      if (tenantId === undefined) continue;
+      plans.push(sharedLivePlan(sp, tenantId, tzOf.get(tenantId) ?? DEFAULT_TIMEZONE, now));
     }
     const live = plans.filter(p => p.state);
     stats.plans = live.length;
@@ -242,7 +315,7 @@ Deno.serve(async (req) => {
     for (const plan of live) {
       const state = plan.state!;
       timezoneForClock = tzOf.get(plan.attendance.tenantId) ?? DEFAULT_TIMEZONE;
-      const users = await recipients(supabase, plan.attendance);
+      const users = await recipients(supabase, plan, orgTenants);
       if (!users.length) continue;
 
       const [{ data: devices }, { data: laTokens }] = await Promise.all([

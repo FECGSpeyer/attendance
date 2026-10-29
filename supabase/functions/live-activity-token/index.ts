@@ -6,6 +6,7 @@
 // background then (no WebView, no login session), so the native code sends
 // the device's push-to-start token along and the user is found by it.
 // Without this the activity stays on "Beginnt in 0:00" until the app is opened.
+// Ad-hoc ORG plans have no Termin: attendanceId 0 with plan key "org-<id>".
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -18,7 +19,7 @@ Deno.serve(async (req) => {
   const token = String(body?.token ?? '');
   const attendanceId = Number(body?.attendanceId);
   const planKey = String(body?.planKey ?? '');
-  if (!HEX.test(startToken) || !HEX.test(token) || !Number.isInteger(attendanceId) || attendanceId <= 0 || !planKey || planKey.length > 100) {
+  if (!HEX.test(startToken) || !HEX.test(token) || !Number.isInteger(attendanceId) || attendanceId < 0 || (attendanceId === 0 && !planKey.startsWith('org-')) || !planKey || planKey.length > 100) {
     return new Response('Bad request', { status: 400 });
   }
 

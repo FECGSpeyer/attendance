@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.8",
+      "date": "29.10.2026",
+      "changes": [
+        "🏢 ORG-Pläne laufen jetzt auch als Live-Anzeige auf dem Sperrbildschirm, für Admins und Verantwortliche aller Chöre der Organisation."
+      ]
+    },
+    {
       "version": "4.17.7",
       "date": "29.10.2026",
       "changes": [

@@ -9,7 +9,7 @@ import { DbService } from '../db.service';
 import { Role } from '../../utilities/constants';
 import { Attendance } from '../../utilities/interfaces';
 import { allPlans } from '../../utilities/plan-days';
-import { iosLiveState, liveSchedule, liveStateAt, liveStateKey, liveTitle, livePlanKey, LivePlanState } from '../../utilities/live-plan';
+import { buildSchedule, iosLiveState, liveSchedule, liveStateAt, liveStateKey, liveTitle, livePlanKey, LivePlanState } from '../../utilities/live-plan';
 import { LiveActivity, LiveActivityTarget } from './live-activity.plugin';
 import { Utils } from '../../utilities/Utils';
 
@@ -180,7 +180,55 @@ export class LiveActivityService {
         });
       });
     }
-    return { candidates: result, attendanceIds: new Set((data ?? []).map((a: any) => a.id as number)) };
+    const attendanceIds = new Set((data ?? []).map((a: any) => a.id as number));
+    if (isLeader) {
+      await this.addOrgPlans(result, attendanceIds, timezone, now);
+    }
+    return { candidates: result, attendanceIds };
+  }
+
+  /**
+   * ORG plans of the organisation (Termine of all its choirs marked as ORG-Plan, plan 1 only,
+   * and ad-hoc ORG plans), for admins and Verantwortliche like the ORG-Pläne page.
+   * Ad-hoc plans have no Termin: attendanceId 0 and plan key "org-<id>", as in the Edge Function.
+   */
+  private async addOrgPlans(result: LivePlanCandidate[], attendanceIds: Set<number>, timezone: string, now: number): Promise<void> {
+    const org = this.db.organisation();
+    if (!org?.id) { return; }
+    const { data: links } = await supabase.from('tenant_group_tenants').select('tenant_id').eq('tenant_group', org.id);
+    const tenantIds = (links ?? []).map((l: any) => l.tenant_id as number);
+    const [{ data: orgAttendances }, { data: sharedPlans }] = await Promise.all([
+      tenantIds.length
+        ? (supabase.from('attendance') as any)
+          .select('id, date, plan, typeInfo, attType:type_id(name)')
+          .in('tenantId', tenantIds)
+          .eq('is_org_plan', true)
+          .gte('date', dayjs().subtract(1, 'day').startOf('day').toISOString())
+          .lte('date', dayjs().add(1, 'day').endOf('day').toISOString())
+          .not('plan', 'is', null)
+        : Promise.resolve({ data: [] }),
+      (supabase.from('shared_plans') as any)
+        .select('id, plan_title, date, time, fields')
+        .eq('org_id', org.id)
+        .gte('date', dayjs().subtract(1, 'day').format('YYYY-MM-DD'))
+        .lte('date', dayjs().add(1, 'day').format('YYYY-MM-DD')),
+    ]);
+
+    for (const att of (orgAttendances ?? []) as any[]) {
+      attendanceIds.add(att.id);
+      if (result.some(c => c.attendanceId === att.id && c.planKey === 'main')) { continue; }
+      const state = liveStateAt(liveSchedule({ id: att.id, date: att.date, plan: att.plan }, 0, timezone, [att.plan]), now);
+      if (!state) { continue; }
+      result.push({ attendanceId: att.id, planKey: 'main', title: liveTitle(att, att.attType?.name ?? '', 0, [att.plan]), state });
+    }
+
+    attendanceIds.add(0);
+    for (const sp of (sharedPlans ?? []) as any[]) {
+      if (!sp.date || !sp.time || !sp.fields?.length) { continue; }
+      const state = liveStateAt(buildSchedule({ date: sp.date, planTime: sp.time, fields: sp.fields, timezone }), now);
+      if (!state) { continue; }
+      result.push({ attendanceId: 0, planKey: `org-${sp.id}`, title: sp.plan_title?.trim() || 'ORG-Plan', state });
+    }
   }
 
   private async registerTokenListeners(): Promise<void> {
@@ -220,6 +268,11 @@ export class LiveActivityService {
   async openFromUrl(url: URL): Promise<boolean> {
     if (url.protocol !== 'attendix:' || url.hostname !== 'live-plan') { return false; }
     const attendanceId = Number(url.searchParams.get('attendance'));
+    const planKey = url.searchParams.get('plan') ?? '';
+    if (!attendanceId && planKey.startsWith('org-')) {
+      await this.openSharedOrgPlan(planKey.slice(4));
+      return true;
+    }
     if (!attendanceId) { return true; }
     await this.db.checkToken();
     const attendance = await this.db.getAttendanceById(attendanceId).catch(() => null);
@@ -233,5 +286,24 @@ export class LiveActivityService {
     });
     await modal.present();
     return true;
+  }
+
+  /** Ad-hoc ORG plan from a tap on its Live Activity, shown like on the ORG-Pläne page. */
+  private async openSharedOrgPlan(id: string): Promise<void> {
+    await this.db.checkToken();
+    const { data: sp } = await (supabase.from('shared_plans') as any).select('*').eq('id', id).maybeSingle();
+    if (!sp?.fields?.length) { return; }
+    const { PlanViewerComponent } = await import('../../planning/plan-viewer/plan-viewer.component');
+    const modal = await this.modalController.create({
+      component: PlanViewerComponent,
+      componentProps: {
+        attendance: { date: sp.date },
+        plan: { time: sp.time ?? '', end: sp.end_time ?? '', fields: sp.fields, title: sp.plan_title },
+        isPractice: false,
+        songs: [],
+        defaultLive: true,
+      },
+    });
+    await modal.present();
   }
 }
