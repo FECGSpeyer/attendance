@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.7",
+      "date": "29.10.2026",
+      "changes": [
+        "👆 Auf iOS kannst du wieder mit einer Wischgeste vom linken Bildschirmrand zur vorherigen Seite zurückgehen."
+      ]
+    },
+    {
       "version": "4.17.6",
       "date": "28.10.2026",
       "changes": [
