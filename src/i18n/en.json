@@ -1159,7 +1159,8 @@
     "onlyNeutral": "Only people without status",
     "onlyNeutralHint": "Only sends to people who have not responded yet",
     "emailLink": "Link in the email",
-    "send": "Send"
+    "send": "Send",
+    "presentNotAssigned": "Present, not assigned"
   },
   "people": {
     "searchPerson": "Search person...",

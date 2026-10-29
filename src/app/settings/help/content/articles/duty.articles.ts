@@ -30,7 +30,7 @@ So schaltest du ihn ein (als [[Administrator]] oder [[Verantwortlicher]]):
 
 Eingeteilte bekommen sofort eine Push-Nachricht und sind erst einmal **angefragt**. Über das × neben dem Namen trägst du jemanden wieder aus.
 
-**Einteilung und Anwesenheit hängen zusammen:** Markierst du in der Anwesenheitsliste jemanden als anwesend oder verspätet, ist die Person automatisch eingeteilt und bestätigt. Setzt du einen bestätigten Dienst zurück auf neutral, ist er wieder angefragt. Eine Abmeldung lässt die Einteilung stehen und zählt als „kann nicht“.
+**Anwesenheit und Einteilung sind getrennt:** Markierst du in der Anwesenheitsliste jemanden als anwesend oder verspätet, wird die Person dadurch nicht eingeteilt. Wer anwesend, aber nicht eingeteilt ist, steht in der Besetzung unter **„Anwesend, nicht eingeteilt“**. So findest du schnell Ersatz, wenn jemand kurzfristig ausfällt. Teilst du so eine Person ein, ist der Dienst gleich bestätigt, ohne Push. War jemand schon angefragt, zählt „anwesend“ als Bestätigung. Setzt du einen bestätigten Dienst zurück auf neutral, ist er wieder angefragt. Eine Abmeldung lässt die Einteilung stehen und zählt als „kann nicht“.
 
 **Bestätigen (Mitglieder):** Unter **Meine Termine** erscheint oben „Bitte bestätigen“. Tippe auf **„Bestätigen“**, dann steht dein Dienst auf **bestätigt**. Mit **„Kann nicht“** sagst du ab wie bei einem normalen Termin, mit Grund. Du kannst auch einfach wie gewohnt zusagen; das zählt ebenfalls als Bestätigung.
 

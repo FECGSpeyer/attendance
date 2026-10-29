@@ -27,12 +27,13 @@ export function getDutyTypeIds(): string[] {
 
 /**
  * Duty state after a status change (Termine of duty types). Returns the
- * current state when nothing changes. Zugesagt/Verspätet → bestätigt (also
- * for stand-ins), Neutral after a confirmation → angefragt.
+ * current state when nothing changes. Zugesagt/Verspätet confirms a requested
+ * duty but never assigns anybody (attendance and assignment are separate),
+ * Neutral after a confirmation → angefragt.
  */
 export function dutyStateAfterStatus(current: DutyState | null | undefined, status: number): DutyState | null {
   if (status === AttendanceStatus.Present || status === AttendanceStatus.Late) {
-    return !current || current === 'requested' ? 'confirmed' : current;
+    return current === 'requested' ? 'confirmed' : current ?? null;
   }
   if (status === AttendanceStatus.Neutral && (current === 'confirmed' || current === 'self')) {
     return 'requested';

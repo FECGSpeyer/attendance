@@ -642,6 +642,17 @@
         <ion-label color="primary">{{ 'attendance.assignPerson' | transloco }}</ion-label>
       </ion-item>
       }
+      @if (dutyPresentUnassigned.length && canManageDuty) {
+      <ion-item-divider><ion-label>{{ 'attendance.presentNotAssigned' | transloco }}</ion-label></ion-item-divider>
+      @for (pa of dutyPresentUnassigned; track pa.id) {
+      <ion-item>
+        <ion-label>
+          <h3>{{ pa.firstName }} {{ pa.lastName }}</h3>
+        </ion-label>
+        <ion-button slot="end" fill="outline" size="small" shape="round" (click)="openDutyAssign(pa)">{{ 'attendance.assign' | transloco }}</ion-button>
+      </ion-item>
+      }
+      }
       @if (dutyAvailable.length && canManageDuty) {
       <ion-item-divider><ion-label>{{ 'attendance.available' | transloco }}</ion-label></ion-item-divider>
       @for (pa of dutyAvailable; track pa.id) {

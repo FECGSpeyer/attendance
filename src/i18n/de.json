@@ -1159,7 +1159,8 @@
     "onlyNeutral": "Nur Personen ohne Status",
     "onlyNeutralHint": "Sendet nur an Personen, die noch keine Rückmeldung gegeben haben",
     "emailLink": "Link in der E-Mail",
-    "send": "Versenden"
+    "send": "Versenden",
+    "presentNotAssigned": "Anwesend, nicht eingeteilt"
   },
   "people": {
     "searchPerson": "Person suchen...",

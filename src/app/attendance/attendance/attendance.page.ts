@@ -810,7 +810,16 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   get dutyAvailable(): PersonAttendance[] {
-    return this.players.filter(p => !p.duty_state && !isCancelled(p));
+    return this.players.filter(p => !p.duty_state && !isCancelled(p) && !this.isPresent(p));
+  }
+
+  /** Present but not on duty, e.g. to find a stand-in at short notice. */
+  get dutyPresentUnassigned(): PersonAttendance[] {
+    return this.players.filter(p => !p.duty_state && this.isPresent(p));
+  }
+
+  private isPresent(pa: PersonAttendance): boolean {
+    return pa.status === AttendanceStatus.Present || pa.status === AttendanceStatus.Late;
   }
 
   get dutyFillColor(): string {
@@ -925,11 +934,15 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   private async assignDuty(personAttendanceIds: string[]): Promise<void> {
     const userId = this.db.user?.id;
-    await this.db.dutySvc.assign(personAttendanceIds, this.attendance.id, this.db.tenant().id, userId);
+    const presentIds = this.players.filter(p => personAttendanceIds.includes(p.id) && this.isPresent(p)).map(p => p.id);
+    await this.db.dutySvc.assign(personAttendanceIds, this.attendance.id, this.db.tenant().id, userId, presentIds);
     const now = new Date().toISOString();
-    this.players = this.players.map(p => personAttendanceIds.includes(p.id)
-      ? { ...p, duty_state: 'requested', status: AttendanceStatus.Neutral, notes: '', duty_assigned_at: now }
-      : p);
+    this.players = this.players.map(p => {
+      if (!personAttendanceIds.includes(p.id)) return p;
+      return presentIds.includes(p.id)
+        ? { ...p, duty_state: 'confirmed', duty_assigned_at: now }
+        : { ...p, duty_state: 'requested', status: AttendanceStatus.Neutral, notes: '', duty_assigned_at: now };
+    });
     Utils.showToast(translate('attendance.assignedNotified', { count: personAttendanceIds.length }), 'success');
   }
 
@@ -943,9 +956,10 @@ export class AttendancePage implements OnInit, OnDestroy {
           text: translate('attendance.unassign'),
           role: 'destructive',
           handler: async () => {
-            await this.db.dutySvc.unassign(pa.id, this.db.user?.id);
+            const keepStatus = this.isPresent(pa);
+            await this.db.dutySvc.unassign(pa.id, this.db.user?.id, keepStatus);
             this.players = this.players.map(p => p.id === pa.id
-              ? { ...p, duty_state: null, status: AttendanceStatus.Neutral, notes: '' }
+              ? (keepStatus ? { ...p, duty_state: null } : { ...p, duty_state: null, status: AttendanceStatus.Neutral, notes: '' })
               : p);
           },
         },

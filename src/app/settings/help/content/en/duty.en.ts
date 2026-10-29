@@ -27,7 +27,7 @@ How to switch it on (as [[Administrator]] or [[Person in charge]]):
 
 Assigned people immediately get a push message and are **requested** at first. With the × next to the name you remove someone again.
 
-**Assignment and attendance are linked:** If you mark someone as present or late in the attendance list, the person is automatically assigned and confirmed. If you set a confirmed duty back to neutral, it is requested again. A sign-out keeps the assignment and counts as "can't".
+**Attendance and assignment are separate:** Marking someone as present or late in the attendance list does not assign them. Anyone who is present but not assigned is listed under **"Present, not assigned"** in the staffing area, so you can quickly find a replacement if someone drops out at short notice. If you assign such a person, the duty is confirmed right away, without a push. If someone was already requested, "present" counts as confirmation. If you set a confirmed duty back to neutral, it is requested again. A sign-out keeps the assignment and counts as "can't".
 
 **Confirming (members):** Under **My events**, "Please confirm" appears at the top. Tap **"Confirm"** and your duty is **confirmed**. With **"Can't"** you decline like for a normal event, with a reason. You can also simply accept as usual; that also counts as confirmation.
 

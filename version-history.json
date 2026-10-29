@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.17.9",
+      "date": "29.10.2026",
+      "changes": [
+        "🔀 Anwesenheit und Dienst-Einteilung sind getrennt: Wer auf anwesend gesetzt wird, ist nicht mehr automatisch eingeteilt.",
+        "🙋 In der Besetzung siehst du, wer anwesend, aber nicht eingeteilt ist, und kannst so schnell Ersatz einteilen."
+      ]
+    },
+    {
       "version": "4.17.8",
       "date": "29.10.2026",
       "changes": [

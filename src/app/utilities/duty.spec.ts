@@ -50,7 +50,7 @@ describe('duty utils', () => {
     expect(matchingUnavailability([rule], 5, '2027-01-06T18:00:00', 't1')).toBeUndefined();
   });
   it('keeps assignment and status in sync', () => {
-    expect(dutyStateAfterStatus(null, AttendanceStatus.Present)).toBe('confirmed');
+    expect(dutyStateAfterStatus(null, AttendanceStatus.Present)).toBe(null);
     expect(dutyStateAfterStatus('requested', AttendanceStatus.Late)).toBe('confirmed');
     expect(dutyStateAfterStatus('self', AttendanceStatus.Present)).toBe('self');
     expect(dutyStateAfterStatus('confirmed', AttendanceStatus.Neutral)).toBe('requested');

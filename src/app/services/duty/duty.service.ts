@@ -29,8 +29,33 @@ export interface DutyTermin {
 export class DutyService {
 
   /** Leadership assigns persons; they get a push and have to confirm. */
-  async assign(personAttendanceIds: string[], attendanceId: number, tenantId: number, userId: string): Promise<void> {
+  /**
+   * Assigns persons. Those listed in presentIds are already marked present:
+   * they keep their status, are confirmed right away and get no request push.
+   */
+  async assign(personAttendanceIds: string[], attendanceId: number, tenantId: number, userId: string, presentIds: string[] = []): Promise<void> {
     if (!personAttendanceIds.length) return;
+    const present = personAttendanceIds.filter(id => presentIds.includes(id));
+    const requested = personAttendanceIds.filter(id => !presentIds.includes(id));
+    if (present.length) {
+      const { error } = await db
+        .from('person_attendances')
+        .update({
+          duty_state: 'confirmed',
+          duty_assigned_by: userId,
+          duty_assigned_at: new Date().toISOString(),
+          duty_reminder_sent: true,
+          changed_by: userId,
+          changed_at: new Date().toISOString(),
+        })
+        .in('id', present);
+      if (error) {
+        Utils.showToast(translate('svc.assignFailed'), 'danger');
+        throw error;
+      }
+    }
+    if (!requested.length) return;
+
     const { error } = await db
       .from('person_attendances')
       .update({
@@ -43,24 +68,26 @@ export class DutyService {
         changed_by: userId,
         changed_at: new Date().toISOString(),
       })
-      .in('id', personAttendanceIds);
+      .in('id', requested);
 
     if (error) {
       Utils.showToast(translate('svc.assignFailed'), 'danger');
       throw error;
     }
 
-    await this.notify({ type: 'assigned', tenantId, attendanceId, personAttendanceIds });
+    await this.notify({ type: 'assigned', tenantId, attendanceId, personAttendanceIds: requested });
   }
 
-  /** Removes an assignment; the person is a stand-in again. */
-  async unassign(personAttendanceId: string, userId: string): Promise<void> {
+  /**
+   * Removes an assignment; the person is a stand-in again. With keepStatus the
+   * attendance (e.g. present) stays as it is.
+   */
+  async unassign(personAttendanceId: string, userId: string, keepStatus = false): Promise<void> {
     const { error } = await db
       .from('person_attendances')
       .update({
         duty_state: null,
-        status: AttendanceStatus.Neutral,
-        notes: '',
+        ...(keepStatus ? {} : { status: AttendanceStatus.Neutral, notes: '' }),
         duty_assigned_by: null,
         duty_assigned_at: null,
         changed_by: userId,

@@ -1159,7 +1159,8 @@
     "onlyNeutral": "Solo personas sin estado",
     "onlyNeutralHint": "Solo se envía a quienes aún no han respondido",
     "emailLink": "Enlace en el correo",
-    "send": "Enviar"
+    "send": "Enviar",
+    "presentNotAssigned": "Presentes, sin asignar"
   },
   "people": {
     "searchPerson": "Buscar persona...",
