@@ -6,6 +6,7 @@ import { Organisation, Tenant } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { LinkPersonsPage } from '../settings/general/link-persons/link-persons.page';
 import { translate } from '@jsverse/transloco';
+import { gemeindeAppLinked } from '../utilities/plan-beamer';
 
 @Component({
   selector: 'app-org-settings',
@@ -119,6 +120,69 @@ export class OrgSettingsPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  /** Gemeinde App section: FECG Speyer and FECG Schwegenheim only (database flag). */
+  get showGemeindeApp(): boolean {
+    return this.isSuperAdmin && gemeindeAppLinked(this.db.organisation());
+  }
+
+  async toggleBeamerFiles(enabled: boolean) {
+    try {
+      await this.db.updateOrgGemeindeApp({ beamer_files_enabled: enabled });
+    } catch {
+      // toast shown in service
+    }
+  }
+
+  /** Creates a new key; only its hash is stored, so the key is shown once. A new key cuts the old link. */
+  async createGemeindeAppKey() {
+    const hasKey = !!this.db.organisation()?.gemeinde_app_key_hash;
+    if (hasKey && !(await this.confirm(translate('org.gaRenewKey'), translate('org.gaRenewMessage'), translate('org.gaRenewButton')))) {
+      return;
+    }
+
+    const bytes = crypto.getRandomValues(new Uint8Array(24));
+    const key = 'atx_' + Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(key));
+    const hash = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
+    try {
+      await this.db.updateOrgGemeindeApp({ gemeinde_app_key_hash: hash, gemeinde_app_key_hint: key.slice(-4) });
+    } catch {
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: translate('org.gaKeyHeader'),
+      subHeader: key,
+      message: translate('org.gaKeyMessage'),
+      buttons: [{
+        text: translate('org.gaCopy'),
+        handler: () => {
+          navigator.clipboard?.writeText(key);
+          Utils.showToast(translate('org.gaCopied'), 'success');
+          return false;
+        }
+      }, {
+        text: translate('common.close'),
+        role: 'cancel',
+      }]
+    });
+    await alert.present();
+  }
+
+  private async confirm(header: string, message: string, button: string): Promise<boolean> {
+    return new Promise(async (resolve) => {
+      const alert = await this.alertController.create({
+        header,
+        message,
+        buttons: [
+          { text: translate('common.cancel'), role: 'cancel', handler: () => resolve(false) },
+          { text: button, role: 'destructive', handler: () => resolve(true) },
+        ],
+      });
+      await alert.present();
+    });
   }
 
   async renameOrg() {

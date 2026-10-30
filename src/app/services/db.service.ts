@@ -663,6 +663,14 @@ export class DbService {
     this.organisation.set({ ...org, ...data });
   }
 
+  async updateOrgGemeindeApp(updates: { beamer_files_enabled?: boolean; gemeinde_app_key_hash?: string | null; gemeinde_app_key_hint?: string | null }): Promise<void> {
+    this.checkDemoRestriction();
+    const org = this.organisation();
+    if (!org?.id) { return; }
+    const data = await this.orgSvc.updateOrgGemeindeApp(org.id, updates);
+    this.organisation.set({ ...org, ...data });
+  }
+
   async updateOrgDefaultFields(fields: FieldSelection[]): Promise<void> {
     this.checkDemoRestriction();
     const org = this.organisation();

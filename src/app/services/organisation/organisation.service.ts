@@ -406,4 +406,21 @@ export class OrganisationService {
 
     return data as unknown as Organisation;
   }
+
+  /** Gemeinde App link settings (columns exist only after supabase/sql/add_gemeinde_app_link.sql). */
+  async updateOrgGemeindeApp(orgId: number, updates: { beamer_files_enabled?: boolean; gemeinde_app_key_hash?: string | null; gemeinde_app_key_hint?: string | null }): Promise<Organisation> {
+    const { data, error } = await supabase
+      .from('tenant_groups')
+      .update(updates as any)
+      .eq('id', orgId)
+      .select()
+      .single();
+
+    if (error) {
+      Utils.showToast(translate('svc.saveGemeindeAppFailed'), 'danger');
+      throw error;
+    }
+
+    return data as unknown as Organisation;
+  }
 }

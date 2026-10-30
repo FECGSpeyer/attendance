@@ -441,6 +441,8 @@ export interface Song {
   category?: string;
   category_ids?: string[];
   additional_fields?: { [key: string]: any };
+  /** SongBeamer file of the Werk, written by the Gemeinde App. */
+  beamer_file?: BeamerFile | null;
 }
 
 export interface SongFile {
@@ -501,6 +503,19 @@ export interface FieldSelection {
   isGroup?: boolean;
   /** Id of the Programmblock head this Unterpunkt belongs to (see plan-groups.ts). */
   groupId?: string;
+  /** Stable id of the row; song rows reuse the song id as `id`, which repeats (see plan-beamer.ts). */
+  uid?: string;
+  /** Set only when switched by hand; otherwise derived from the row (see plan-beamer.ts). */
+  needsBeamer?: boolean;
+  /** SongBeamer file linked in the Gemeinde App. */
+  beamerFile?: BeamerFile;
+}
+
+/** SongBeamer file in the Gemeinde App's Mediathek, written by the Gemeinde App. */
+export interface BeamerFile {
+  name: string;
+  path: string;
+  linkedAt?: string;
 }
 
 /** Saved Programmblock (head first, then its Unterpunkte) to insert into any plan. */
@@ -534,6 +549,14 @@ export interface Organisation {
   additional_fields?: ExtraField[];
   planning_templates?: Plan[];
   default_fields?: FieldSelection[];
+  /** Gemeinde App link; set in the database only (FECG Speyer, FECG Schwegenheim). */
+  fecg_link_enabled?: boolean;
+  /** Org setting "Beamer-Dateien im Ablaufplan". */
+  beamer_files_enabled?: boolean;
+  /** SHA-256 of the Gemeinde App key; the key itself is shown once. */
+  gemeinde_app_key_hash?: string | null;
+  /** Last characters of the key, to recognise it. */
+  gemeinde_app_key_hint?: string | null;
 }
 
 export interface OrganisationPersonFieldValue {

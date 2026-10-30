@@ -642,7 +642,8 @@
     "invalidFileName": "Ungültiger Dateiname.",
     "invalidName": "Ungültiger Name.",
     "invalidFolderName": "Ungültiger Ordnername.",
-    "linkFailed": "Verknüpfung fehlgeschlagen"
+    "linkFailed": "Verknüpfung fehlgeschlagen",
+    "saveGemeindeAppFailed": "Fehler beim Speichern der Gemeinde-App-Einstellungen"
   },
   "editor": {
     "formatting": "Formatierung",
@@ -1568,7 +1569,16 @@
     "indent": "Einrücken",
     "outdent": "Ausrücken",
     "expandBlock": "Block aufklappen",
-    "collapseBlock": "Block einklappen"
+    "collapseBlock": "Block einklappen",
+    "beamer": "Beamer",
+    "beamerNeeded": "Beamer-Datei nötig",
+    "beamerAutoSong": "Automatisch an: Werk",
+    "beamerAutoWord": "Automatisch an: Titel enthält „{word}“",
+    "beamerNoFile": "Noch keine Datei verknüpft",
+    "beamerLinkInApp": "Verknüpfen kannst du die Datei in der Gemeinde App.",
+    "beamerChangeInApp": "Ändern kannst du die Datei in der Gemeinde App.",
+    "beamerMissing": "Beamer-Datei fehlt",
+    "beamerAutoHint": "Automatisch an bei Werken und wenn „Lied“ oder „Gedicht“ im Titel steht. Schaltest du es von Hand um, bleibt es so."
   },
   "duty": {
     "placesFree": "{count, plural, one {# Platz frei} other {# Plätze frei}}",
@@ -1913,7 +1923,8 @@
     "difficulty123": "Schwierigkeit (1/2/3)",
     "prefixOptional": "Präfix (optional)",
     "prefix": "Präfix",
-    "choirOrchShort": "Chor/Orch."
+    "choirOrchShort": "Chor/Orch.",
+    "beamerFile": "SongBeamer-Datei"
   },
   "messages": {
     "deleteMessage": "Mitteilung löschen",
@@ -2958,7 +2969,21 @@
     "sourceTenant": "Quellinstanz",
     "tenants": "Instanzen",
     "thisTenant": "Diese Instanz",
-    "noneOwnSongs": "Keine (eigene Werke)"
+    "noneOwnSongs": "Keine (eigene Werke)",
+    "gemeindeApp": "Gemeinde App",
+    "gaBeamerFiles": "Beamer-Dateien im Ablaufplan",
+    "gaBeamerFilesHint": "Zeigt bei Org-Plänen „Beamer-Datei nötig“ an jedem Programmpunkt.",
+    "gaCreateKey": "Verbindungsschlüssel erstellen",
+    "gaNoKey": "Noch nicht mit der Gemeinde App verbunden",
+    "gaRenewKey": "Schlüssel erneuern",
+    "gaKeyActive": "Schlüssel aktiv, endet auf …{hint}",
+    "gaRenewMessage": "Der alte Schlüssel funktioniert danach nicht mehr. Du musst den neuen in der Gemeinde App eintragen.",
+    "gaRenewButton": "Erneuern",
+    "gaKeyHeader": "Verbindungsschlüssel",
+    "gaKeyMessage": "Nur jetzt sichtbar. Trag ihn in der Gemeinde App unter Mehr › Ablaufpläne ein.",
+    "gaCopy": "Kopieren",
+    "gaCopied": "Schlüssel kopiert",
+    "gaHint": "Nur für FECG Speyer und FECG Schwegenheim. Ein neuer Schlüssel trennt die alte Verbindung."
   },
   "orgFields": {
     "title": "Personen-Zusatzfelder",

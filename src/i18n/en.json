@@ -642,7 +642,8 @@
     "invalidFileName": "Invalid file name.",
     "invalidName": "Invalid name.",
     "invalidFolderName": "Invalid folder name.",
-    "linkFailed": "Linking failed"
+    "linkFailed": "Linking failed",
+    "saveGemeindeAppFailed": "Could not save the Gemeinde App settings"
   },
   "editor": {
     "formatting": "Formatting",
@@ -1568,7 +1569,16 @@
     "indent": "Indent",
     "outdent": "Outdent",
     "expandBlock": "Expand block",
-    "collapseBlock": "Collapse block"
+    "collapseBlock": "Collapse block",
+    "beamer": "Projector",
+    "beamerNeeded": "Projector file needed",
+    "beamerAutoSong": "On automatically: piece",
+    "beamerAutoWord": "On automatically: title contains “{word}”",
+    "beamerNoFile": "No file linked yet",
+    "beamerLinkInApp": "You can link the file in the Gemeinde App.",
+    "beamerChangeInApp": "You can change the file in the Gemeinde App.",
+    "beamerMissing": "Projector file missing",
+    "beamerAutoHint": "On automatically for pieces and when the title contains “Lied” or “Gedicht”. If you switch it by hand, it stays that way."
   },
   "duty": {
     "placesFree": "{count, plural, one {# place free} other {# places free}}",
@@ -1913,7 +1923,8 @@
     "difficulty123": "Difficulty (1/2/3)",
     "prefixOptional": "Prefix (optional)",
     "prefix": "Prefix",
-    "choirOrchShort": "Choir/orch."
+    "choirOrchShort": "Choir/orch.",
+    "beamerFile": "SongBeamer file"
   },
   "messages": {
     "deleteMessage": "Delete message",
@@ -2958,7 +2969,21 @@
     "sourceTenant": "Source instance",
     "tenants": "Instances",
     "thisTenant": "This instance",
-    "noneOwnSongs": "None (own pieces)"
+    "noneOwnSongs": "None (own pieces)",
+    "gemeindeApp": "Gemeinde App",
+    "gaBeamerFiles": "Projector files in the run sheet",
+    "gaBeamerFilesHint": "Shows “Projector file needed” on every item of org plans.",
+    "gaCreateKey": "Create connection key",
+    "gaNoKey": "Not connected to the Gemeinde App yet",
+    "gaRenewKey": "Renew key",
+    "gaKeyActive": "Key active, ends in …{hint}",
+    "gaRenewMessage": "The old key stops working. You need to enter the new one in the Gemeinde App.",
+    "gaRenewButton": "Renew",
+    "gaKeyHeader": "Connection key",
+    "gaKeyMessage": "Only visible now. Enter it in the Gemeinde App under More › Run sheets.",
+    "gaCopy": "Copy",
+    "gaCopied": "Key copied",
+    "gaHint": "Only for FECG Speyer and FECG Schwegenheim. A new key ends the old connection."
   },
   "orgFields": {
     "title": "Person fields",

@@ -1,6 +1,6 @@
 import { dateFmt } from '../i18n/languages';
 import { Component, Input, OnInit } from '@angular/core';
-import { ActionSheetButton, ActionSheetController, AlertController, AlertInput, IonItemSliding, IonModal, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
+import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
 import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
@@ -14,6 +14,8 @@ import { AgendaPickerComponent } from '../agenda-items/agenda-picker/agenda-pick
 import { allPlans, dayOptions, isMultiDay, nextFreeDay, planDay, planLabel, planSubtitle, splitPlans } from '../utilities/plan-days';
 import { blockTemplateFrom, childrenOf, cloneBlock, groupDuration, isGroupHead, lastIndexOfGroup, moveRow, newGroupHead, normalizeGroups } from '../utilities/plan-groups';
 import { translate } from '@jsverse/transloco';
+import { beamerActive, ensureFieldUids, gemeindeAppLinked, needsBeamer } from '../utilities/plan-beamer';
+import { PlanFieldEditComponent, PlanFieldEditResult } from './plan-field-edit/plan-field-edit.component';
 
 /** A row of the editor list: a field, or the "Unterpunkt hinzufügen" row closing an open block. */
 interface PlanRow {
@@ -101,6 +103,15 @@ export class PlanningPage implements OnInit {
 
   get isAdmin(): boolean {
     return this.db.tenantUser()?.role === Role.ADMIN;
+  }
+
+  /** Beamer rows only for FECG Speyer / Schwegenheim with the org setting on, and only on ORG plans. */
+  get showBeamer(): boolean {
+    return beamerActive(this.db.organisation(), this.isOrgPlan);
+  }
+
+  needsBeamer(field: FieldSelection): boolean {
+    return needsBeamer(field);
   }
 
   get blockTemplates(): PlanBlockTemplate[] {
@@ -297,46 +308,41 @@ export class PlanningPage implements OnInit {
 
   async changeField(field: FieldSelection, slider?: IonItemSliding) {
     slider?.close();
-    const clone: FieldSelection = JSON.parse(JSON.stringify(field));
-    let inputs: AlertInput[] = [{
-      type: 'textarea',
-      label: translate('planning.item'),
-      name: 'field',
-      value: clone.name,
-      placeholder: translate('planning.enterItem')
-    }, {
-      type: 'textarea',
-      label: translate('planning.performer'),
-      name: 'conductor',
-      value: clone.conductor,
-      placeholder: translate('planning.enterPerformer')
-    }, {
-      type: 'textarea',
-      label: translate('planning.info'),
-      name: 'info',
-      value: clone.info,
-      placeholder: translate('planning.infoOptionalEllipsis')
-    }, {
-      type: 'number',
-      label: translate('planning.minutes'),
-      name: 'time',
-      value: clone.time ? Number(clone.time) : 20,
-      placeholder: translate('planning.minutes')
-    }];
-
     if (field.id.includes('noteFld')) {
-      inputs = [{
+      return this.changeNoteField(field);
+    }
+
+    const modal = await this.modalController.create({
+      component: PlanFieldEditComponent,
+      componentProps: { field, showBeamer: this.showBeamer },
+    });
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss<PlanFieldEditResult>();
+    if (role !== 'save' || !data) { return; }
+
+    field.name = data.name;
+    field.conductor = data.conductor;
+    field.info = data.info;
+    field.time = data.time;
+    if (data.needsBeamer === undefined) {
+      delete field.needsBeamer;
+    } else {
+      field.needsBeamer = data.needsBeamer;
+    }
+    this.calculateEnd();
+  }
+
+  /** Note fields keep their simple dialog with one text. */
+  private async changeNoteField(field: FieldSelection) {
+    const alert = await this.alertController.create({
+      header: translate('planning.editField'),
+      inputs: [{
         type: 'textarea',
         label: translate('planning.note'),
         name: 'field',
-        value: clone.name,
+        value: field.name,
         placeholder: translate('planning.enterNote')
-      }];
-    }
-
-    const alert = await this.alertController.create({
-      header: translate('planning.editField'),
-      inputs,
+      }],
       buttons: [{
         text: translate('common.cancel')
       }, {
@@ -347,9 +353,6 @@ export class PlanningPage implements OnInit {
             return false;
           }
           field.name = evt.field;
-          field.conductor = evt.conductor ?? '';
-          field.info = evt.info?.trim() || undefined;
-          field.time = evt.time ? String(evt.time) : field.time;
           this.calculateEnd();
         }
       }]
@@ -1218,6 +1221,9 @@ export class PlanningPage implements OnInit {
       }
 
       const att = this.attendances.find((att: Attendance) => att.id === this.attendance);
+      if (gemeindeAppLinked(this.db.organisation())) {
+        this.selectedFields = ensureFieldUids(this.selectedFields);
+      }
       const plans = allPlans(att);
       const current: Plan = {
         ...(plans[this.planIndex] ?? {}),

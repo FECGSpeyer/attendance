@@ -642,7 +642,8 @@
     "invalidFileName": "Недопустимое имя файла.",
     "invalidName": "Недопустимое имя.",
     "invalidFolderName": "Недопустимое имя папки.",
-    "linkFailed": "Не удалось связать"
+    "linkFailed": "Не удалось связать",
+    "saveGemeindeAppFailed": "Не удалось сохранить настройки Gemeinde App"
   },
   "editor": {
     "formatting": "Форматирование",
@@ -1568,7 +1569,16 @@
     "indent": "Сдвинуть вправо",
     "outdent": "Сдвинуть влево",
     "expandBlock": "Развернуть блок",
-    "collapseBlock": "Свернуть блок"
+    "collapseBlock": "Свернуть блок",
+    "beamer": "Проектор",
+    "beamerNeeded": "Нужен файл для проектора",
+    "beamerAutoSong": "Включено автоматически: произведение",
+    "beamerAutoWord": "Включено автоматически: в названии есть «{word}»",
+    "beamerNoFile": "Файл ещё не привязан",
+    "beamerLinkInApp": "Привязать файл можно в приложении Gemeinde App.",
+    "beamerChangeInApp": "Изменить файл можно в приложении Gemeinde App.",
+    "beamerMissing": "Нет файла для проектора",
+    "beamerAutoHint": "Включается автоматически для произведений и если в названии есть «Lied» или «Gedicht». Если переключить вручную, так и останется."
   },
   "duty": {
     "placesFree": "{count, plural, one {Свободно # место} few {Свободно # места} many {Свободно # мест} other {Свободно # места}}",
@@ -1913,7 +1923,8 @@
     "difficulty123": "Сложность (1/2/3)",
     "prefixOptional": "Префикс (необязательно)",
     "prefix": "Префикс",
-    "choirOrchShort": "Хор/орк."
+    "choirOrchShort": "Хор/орк.",
+    "beamerFile": "Файл SongBeamer"
   },
   "messages": {
     "deleteMessage": "Удалить сообщение",
@@ -2958,7 +2969,21 @@
     "sourceTenant": "Исходный экземпляр",
     "tenants": "Экземпляры",
     "thisTenant": "Этот экземпляр",
-    "noneOwnSongs": "Нет (свои произведения)"
+    "noneOwnSongs": "Нет (свои произведения)",
+    "gemeindeApp": "Gemeinde App",
+    "gaBeamerFiles": "Файлы для проектора в программе",
+    "gaBeamerFilesHint": "Показывает «Нужен файл для проектора» у каждого пункта планов организации.",
+    "gaCreateKey": "Создать ключ подключения",
+    "gaNoKey": "Ещё не подключено к Gemeinde App",
+    "gaRenewKey": "Обновить ключ",
+    "gaKeyActive": "Ключ активен, заканчивается на …{hint}",
+    "gaRenewMessage": "Старый ключ перестанет работать. Новый нужно ввести в Gemeinde App.",
+    "gaRenewButton": "Обновить",
+    "gaKeyHeader": "Ключ подключения",
+    "gaKeyMessage": "Виден только сейчас. Введи его в Gemeinde App в разделе «Ещё › Программы».",
+    "gaCopy": "Копировать",
+    "gaCopied": "Ключ скопирован",
+    "gaHint": "Только для FECG Speyer и FECG Schwegenheim. Новый ключ отключает старое подключение."
   },
   "orgFields": {
     "title": "Доп. поля людей",

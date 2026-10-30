@@ -642,7 +642,8 @@
     "invalidFileName": "Nombre de archivo no válido.",
     "invalidName": "Nombre no válido.",
     "invalidFolderName": "Nombre de carpeta no válido.",
-    "linkFailed": "Error al vincular"
+    "linkFailed": "Error al vincular",
+    "saveGemeindeAppFailed": "No se pudieron guardar los ajustes de la Gemeinde App"
   },
   "editor": {
     "formatting": "Formato",
@@ -1568,7 +1569,16 @@
     "indent": "Sangrar",
     "outdent": "Quitar sangría",
     "expandBlock": "Desplegar bloque",
-    "collapseBlock": "Plegar bloque"
+    "collapseBlock": "Plegar bloque",
+    "beamer": "Proyector",
+    "beamerNeeded": "Se necesita archivo de proyector",
+    "beamerAutoSong": "Activado automáticamente: obra",
+    "beamerAutoWord": "Activado automáticamente: el título contiene «{word}»",
+    "beamerNoFile": "Todavía no hay archivo vinculado",
+    "beamerLinkInApp": "Puedes vincular el archivo en la Gemeinde App.",
+    "beamerChangeInApp": "Puedes cambiar el archivo en la Gemeinde App.",
+    "beamerMissing": "Falta el archivo de proyector",
+    "beamerAutoHint": "Se activa automáticamente para obras y cuando el título contiene «Lied» o «Gedicht». Si lo cambias a mano, se queda así."
   },
   "duty": {
     "placesFree": "{count, plural, one {# plaza libre} other {# plazas libres}}",
@@ -1913,7 +1923,8 @@
     "difficulty123": "Dificultad (1/2/3)",
     "prefixOptional": "Prefijo (opcional)",
     "prefix": "Prefijo",
-    "choirOrchShort": "Coro/orq."
+    "choirOrchShort": "Coro/orq.",
+    "beamerFile": "Archivo de SongBeamer"
   },
   "messages": {
     "deleteMessage": "Borrar mensaje",
@@ -2958,7 +2969,21 @@
     "sourceTenant": "Instancia de origen",
     "tenants": "Instancias",
     "thisTenant": "Esta instancia",
-    "noneOwnSongs": "Ninguna (obras propias)"
+    "noneOwnSongs": "Ninguna (obras propias)",
+    "gemeindeApp": "Gemeinde App",
+    "gaBeamerFiles": "Archivos de proyector en el programa",
+    "gaBeamerFilesHint": "Muestra «Se necesita archivo de proyector» en cada punto de los planes de la organización.",
+    "gaCreateKey": "Crear clave de conexión",
+    "gaNoKey": "Todavía no conectado con la Gemeinde App",
+    "gaRenewKey": "Renovar clave",
+    "gaKeyActive": "Clave activa, termina en …{hint}",
+    "gaRenewMessage": "La clave anterior dejará de funcionar. Tendrás que introducir la nueva en la Gemeinde App.",
+    "gaRenewButton": "Renovar",
+    "gaKeyHeader": "Clave de conexión",
+    "gaKeyMessage": "Solo visible ahora. Introdúcela en la Gemeinde App en Más › Programas.",
+    "gaCopy": "Copiar",
+    "gaCopied": "Clave copiada",
+    "gaHint": "Solo para FECG Speyer y FECG Schwegenheim. Una clave nueva corta la conexión anterior."
   },
   "orgFields": {
     "title": "Campos de personas",

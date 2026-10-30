@@ -466,6 +466,26 @@
       </ng-template>
     </ion-modal>
 
+    @if (showBeamerFile) {
+    <ion-list-header>
+      <ion-label>{{ 'songs.beamerFile' | transloco }}</ion-label>
+    </ion-list-header>
+    <ion-item-group>
+      <ion-item lines="none">
+        <ion-icon slot="start" name="tv-outline" [color]="song.beamer_file ? 'primary' : 'medium'"></ion-icon>
+        <ion-label class="ion-text-wrap">
+          @if (song.beamer_file) {
+          <h3>{{ song.beamer_file.name }}</h3>
+          <p>{{ 'planning.beamerChangeInApp' | transloco }}</p>
+          } @else {
+          <h3>{{ 'planning.beamerNoFile' | transloco }}</h3>
+          <p>{{ 'planning.beamerLinkInApp' | transloco }}</p>
+          }
+        </ion-label>
+      </ion-item>
+    </ion-item-group>
+    }
+
     <br>
 
     @if (!readOnly || song.link) {

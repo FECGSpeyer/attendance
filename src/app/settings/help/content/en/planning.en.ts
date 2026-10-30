@@ -60,6 +60,19 @@ With "Reset" you can return to the default programme items of the event type at 
 
 **Switching off:** Under Settings → Notifications → **Running run sheet**. On the iPhone the automatic start needs iOS 17.2 or later; on older versions the display appears as soon as you open the app during the event. The feature is only available in the app from the App Store or Play Store, not in the browser.`,
   },
+  'plan-beamer': {
+    title: 'Projector files in the run sheet (Gemeinde App)',
+    keywords: ['projector', 'projector file', 'beamer', 'songbeamer', 'sng', 'slides', 'gemeinde app', 'fecg', 'org plan', 'edit item', 'edit field', 'song', 'poem'],
+    body: `This feature is only available to the organisations FECG Speyer and FECG Schwegenheim, whose org plans appear in the Gemeinde App.
+
+**Switching on:** Admins switch on **Projector files in the run sheet** under Settings › Organisation › Gemeinde App. There you also create the **connection key** for the Gemeinde App. It is only visible right after you create it. If you renew it, the old key stops working.
+
+**In the run sheet:** The projector details only appear when **Organization plan** is switched on for the plan. If a programme item needs a projector file, a line below it shows the file name or "Projector file missing".
+
+**Needed or not:** Tap a programme item. In the **Edit field** window you find the switch **Projector file needed** under "Projector". It is on automatically for [[Piece|pieces]] and when the title contains "Lied" (song) or "Gedicht" (poem). If you switch it by hand, it stays that way. Notes and programme blocks need no file.
+
+**Linking the file:** You link the file itself (.sng from the media library) in the Gemeinde App. Attendix then shows it on the programme item. For a piece, the linked file appears on the piece page under **SongBeamer file**.`,
+  },
   'plan-conductor': {
     title: 'Assigning a lead/conductor',
     keywords: ['choose conductor', 'choir leader', 'lead'],

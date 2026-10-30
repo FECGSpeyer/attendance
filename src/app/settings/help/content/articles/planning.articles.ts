@@ -68,6 +68,21 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
 **Abschalten:** Unter Einstellungen → Benachrichtigungen → **Laufender Ablaufplan**. Auf dem iPhone braucht der automatische Start iOS 17.2 oder neuer; bei älteren Versionen erscheint die Anzeige, sobald du die App während des Termins öffnest. Die Funktion gibt es nur in der App aus dem App Store bzw. Play Store, nicht im Browser.`,
   },
   {
+    id: 'plan-beamer',
+    title: 'Beamer-Dateien im Ablaufplan (Gemeinde App)',
+    categoryId: 'planning',
+    keywords: ['beamer', 'beamer-datei', 'songbeamer', 'sng', 'projektion', 'folien', 'gemeinde app', 'fecg', 'org-plan', 'programmpunkt bearbeiten', 'feld bearbeiten', 'lied', 'gedicht'],
+    body: `Diese Funktion gibt es nur für die Organisationen FECG Speyer und FECG Schwegenheim, deren ORG-Pläne in der Gemeinde App erscheinen.
+
+**Einschalten:** Admins schalten unter Einstellungen › Organisation › Gemeinde App **Beamer-Dateien im Ablaufplan** ein. Dort erstellst du auch den **Verbindungsschlüssel** für die Gemeinde App. Er ist nur direkt nach dem Erstellen sichtbar. Erneuerst du ihn, funktioniert der alte nicht mehr.
+
+**Im Ablaufplan:** Die Beamer-Angaben erscheinen nur, wenn beim Plan **Organisationsplan** eingeschaltet ist. Braucht ein Programmpunkt eine Beamer-Datei, steht darunter eine Zeile mit dem Dateinamen oder "Beamer-Datei fehlt".
+
+**Nötig oder nicht:** Tippe auf einen Programmpunkt. Im Fenster **Feld bearbeiten** findest du unter "Beamer" den Schalter **Beamer-Datei nötig**. Er ist automatisch an bei [[Werk|Werken]] und wenn "Lied" oder "Gedicht" im Titel steht. Schaltest du ihn von Hand um, bleibt er so. Notizen und Programmblöcke brauchen keine Datei.
+
+**Datei verknüpfen:** Die Datei selbst (.sng aus der Mediathek) verknüpfst du in der Gemeinde App. Attendix zeigt sie danach am Programmpunkt an. Bei einem Werk erscheint die hinterlegte Datei auf der Werk-Seite unter **SongBeamer-Datei**.`,
+  },
+  {
     id: 'plan-conductor',
     title: 'Leitung/Dirigent zuordnen',
     categoryId: 'planning',

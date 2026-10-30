@@ -166,6 +166,9 @@ export function cloneBlock(fields: FieldSelection[]): FieldSelection[] {
         // Song fields are looked up by their id (= song id), so they keep it.
         id: f.songId || f.id.startsWith('noteFld') ? f.id : `fld-${crypto.randomUUID()}`,
         groupId: copy.id,
+        // A copy is a new row: it gets its own uid and no linked Beamer file.
+        uid: undefined,
+        beamerFile: undefined,
       })),
   ];
 }

@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "4.17.10",
+      "date": "30.10.2026",
+      "changes": [
+        "📽️ Für FECG Speyer und FECG Schwegenheim: Bei ORG-Plänen zeigt der Ablaufplan, welche Programmpunkte eine Beamer-Datei brauchen. Bei Werken und Titeln mit „Lied“ oder „Gedicht“ geht das von selbst.",
+        "✏️ Programmpunkte bearbeitest du jetzt in einem eigenen Fenster statt im kleinen Dialog.",
+        "🔗 In den Organisations-Einstellungen gibt es den neuen Bereich „Gemeinde App“ mit Verbindungsschlüssel."
+      ]
+    },
+    {
       "version": "4.17.9",
       "date": "29.10.2026",
       "changes": [

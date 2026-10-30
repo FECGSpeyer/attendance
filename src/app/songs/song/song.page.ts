@@ -12,6 +12,7 @@ import { Group, History, Organisation, Player, Song, SongFile, Tenant } from 'sr
 import { Utils } from 'src/app/utilities/Utils';
 import { PrintService } from 'src/app/services/print/print.service';
 import { translate } from '@jsverse/transloco';
+import { beamerActive } from 'src/app/utilities/plan-beamer';
 
 
 @Component({
@@ -62,6 +63,11 @@ export class SongPage implements OnInit {
   public targetTenantId: number;
   public availableTenants: Tenant[] = [];
   public organisation: Organisation | null;
+
+  /** SongBeamer file of the Werk, only for orgs linked to the Gemeinde App with Beamer files on. */
+  get showBeamerFile(): boolean {
+    return beamerActive(this.db.organisation(), true);
+  }
   public targetGroups: Group[] = [];
 
   // Print feature

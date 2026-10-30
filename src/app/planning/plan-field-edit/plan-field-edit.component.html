@@ -1,0 +1,78 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">{{ 'common.cancel' | transloco }}</ion-button>
+    </ion-buttons>
+    <ion-title>{{ 'planning.editField' | transloco }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button strong="true" (click)="save()">{{ 'planning.update' | transloco }}</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <ion-list [inset]="true">
+    <ion-item-group>
+      <ion-item>
+        <ion-textarea autocapitalize="sentences" autoGrow="true" labelPlacement="stacked"
+          [label]="'planning.item' | transloco" [placeholder]="'planning.enterItem' | transloco"
+          [(ngModel)]="name" (ionInput)="showNameError = false"></ion-textarea>
+      </ion-item>
+      @if (showNameError) {
+        <ion-item lines="none">
+          <ion-label color="danger" class="ion-text-wrap"><p>{{ 'planning.enterItemPlease' | transloco }}</p></ion-label>
+        </ion-item>
+      }
+      <ion-item>
+        <ion-textarea autocapitalize="sentences" autoGrow="true" labelPlacement="stacked"
+          [label]="'planning.performer' | transloco" [placeholder]="'planning.enterPerformer' | transloco"
+          [(ngModel)]="conductor"></ion-textarea>
+      </ion-item>
+      <ion-item>
+        <ion-textarea autocapitalize="sentences" autoGrow="true" labelPlacement="stacked"
+          [label]="'planning.info' | transloco" [placeholder]="'planning.infoOptionalEllipsis' | transloco"
+          [(ngModel)]="info"></ion-textarea>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-input type="number" inputmode="numeric" labelPlacement="stacked"
+          [label]="'planning.minutes' | transloco" [placeholder]="'planning.minutes' | transloco"
+          [(ngModel)]="time"></ion-input>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+
+  @if (showBeamer) {
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-label>{{ 'planning.beamer' | transloco }}</ion-label>
+      </ion-list-header>
+      <ion-item-group>
+        <ion-item>
+          <ion-toggle [ngModel]="beamerOn" (ngModelChange)="setBeamer($event)">
+            <ion-label>
+              {{ 'planning.beamerNeeded' | transloco }}
+              @if (autoReason; as reason) {
+                <p>{{ (reason.song ? 'planning.beamerAutoSong' : 'planning.beamerAutoWord') | transloco: { word: reason.word } }}</p>
+              }
+            </ion-label>
+          </ion-toggle>
+        </ion-item>
+        @if (beamerOn) {
+          <ion-item lines="none">
+            <ion-icon slot="start" name="tv-outline" [color]="beamerFile ? 'primary' : 'warning'"></ion-icon>
+            <ion-label class="ion-text-wrap">
+              @if (beamerFile) {
+                <h3>{{ beamerFile.name }}</h3>
+                <p>{{ 'planning.beamerChangeInApp' | transloco }}</p>
+              } @else {
+                <h3>{{ 'planning.beamerNoFile' | transloco }}</h3>
+                <p>{{ 'planning.beamerLinkInApp' | transloco }}</p>
+              }
+            </ion-label>
+          </ion-item>
+        }
+      </ion-item-group>
+    </ion-list>
+    <p class="hint">{{ 'planning.beamerAutoHint' | transloco }}</p>
+  }
+</ion-content>

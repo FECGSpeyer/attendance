@@ -2,6 +2,22 @@
     color: var(--ion-color-danger);
 }
 
+// Beamer-Datei of a row (ORG plans of linked orgs only): file name, or "fehlt" in warning colour.
+.beamer-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    ion-icon {
+        flex: none;
+        font-size: 14px;
+    }
+}
+
+.beamer-missing {
+    color: var(--ion-color-warning-shade, #b38600);
+}
+
 ion-item-group {
     background: #fff;
 }
