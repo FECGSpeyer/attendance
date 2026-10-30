@@ -70,7 +70,7 @@
         <ion-icon [color]="isOrgPlan ? 'success' : 'primary'" slot="start"
           [name]="isOrgPlan ? 'checkmark-circle' : 'business-outline'"></ion-icon>
         <ion-label [color]="isOrgPlan ? 'success' : 'primary'">
-          {{ isOrgPlan ? 'In Organisation "' + db.organisation().name + '"' : 'Zur Organisation hinzufügen' }}
+          {{ isOrgPlan ? ('plans.inOrg' | transloco: { org: db.organisation().name }) : ('plans.addToOrg' | transloco) }}
         </ion-label>
       </ion-item>
     }

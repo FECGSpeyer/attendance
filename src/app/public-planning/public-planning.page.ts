@@ -130,7 +130,20 @@ export class PublicPlanningPage implements OnInit {
       // Re-resolve any placeholder fields that were applied before songs/history loaded
       this.selectedFields = this.resolvePublicTemplateFields(this.selectedFields);
       this.calculateEnd();
+      await this.syncOrgStateFromDb();
     }
+  }
+
+  /** The DB row is the source of truth for the org assignment, not the local backup. */
+  private async syncOrgStateFromDb() {
+    if (!this.currentPlanId) { return; }
+    const { data, error } = await (getSupabase().from('shared_plans') as any)
+      .select('org_id')
+      .eq('id', this.currentPlanId)
+      .maybeSingle();
+    if (error || !data) { return; }
+    this.isOrgPlan = !!data.org_id;
+    this.persist();
   }
 
   // ---- template handling ----
@@ -960,6 +973,7 @@ export class PublicPlanningPage implements OnInit {
     }
 
     this.isOrgPlan = true;
+    this.persist();
     Utils.showToast(translate('plans.addedToOrg', { org: org.name }), 'success');
   }
 
@@ -977,6 +991,7 @@ export class PublicPlanningPage implements OnInit {
     }
 
     this.isOrgPlan = false;
+    this.persist();
     Utils.showToast(translate('plans.removedFromOrg'), 'success');
   }
 
@@ -1015,6 +1030,7 @@ export class PublicPlanningPage implements OnInit {
         selectedFields: this.selectedFields,
         currentPlanId: this.currentPlanId,
         currentEditKey: this.currentEditKey,
+        isOrgPlan: this.isOrgPlan,
       }));
     } catch {
       // Safari Private Mode / Quota: ignorieren
@@ -1036,6 +1052,7 @@ export class PublicPlanningPage implements OnInit {
       this.selectedFields = s.selectedFields;
       this.currentPlanId = s.currentPlanId ?? null;
       this.currentEditKey = s.currentEditKey ?? null;
+      this.isOrgPlan = !!s.isOrgPlan;
       return true;
     } catch {
       return false;

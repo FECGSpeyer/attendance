@@ -1674,6 +1674,8 @@
     "savePlanFailed": "Fehler beim Speichern des Plans",
     "addOrgFailed": "Fehler beim Hinzufügen zur Organisation",
     "addedToOrg": "Plan zur Organisation \"{org}\" hinzugefügt",
+    "addToOrg": "Zur Organisation hinzufügen",
+    "inOrg": "In Organisation \"{org}\"",
     "removeOrgFailed": "Fehler beim Entfernen aus der Organisation",
     "removedFromOrg": "Plan aus Organisation entfernt",
     "noTemplate": "Keine Vorlage ausgewählt.",

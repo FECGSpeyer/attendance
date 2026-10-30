@@ -1674,6 +1674,8 @@
     "savePlanFailed": "Could not save the plan",
     "addOrgFailed": "Could not add to the organization",
     "addedToOrg": "Plan added to the organization \"{org}\"",
+    "addToOrg": "Add to organization",
+    "inOrg": "In organization \"{org}\"",
     "removeOrgFailed": "Could not remove from the organization",
     "removedFromOrg": "Plan removed from organization",
     "noTemplate": "No template chosen.",

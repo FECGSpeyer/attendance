@@ -1674,6 +1674,8 @@
     "savePlanFailed": "No se pudo guardar el programa",
     "addOrgFailed": "No se pudo añadir a la organización",
     "addedToOrg": "Programa añadido a la organización \"{org}\"",
+    "addToOrg": "Añadir a la organización",
+    "inOrg": "En la organización \"{org}\"",
     "removeOrgFailed": "No se pudo quitar de la organización",
     "removedFromOrg": "Programa quitado de la organización",
     "noTemplate": "No se ha elegido ninguna plantilla.",

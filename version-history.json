@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.15",
+      "date": "30.10.2026",
+      "changes": [
+        "🏢 Ad-hoc-Ablaufplanung: Ein Plan, den du zur Organisation hinzugefügt hast, wird beim erneuten Öffnen jetzt zuverlässig als „In Organisation“ angezeigt."
+      ]
+    },
+    {
       "version": "4.17.14",
       "date": "30.10.2026",
       "changes": [
