@@ -1817,6 +1817,8 @@
     "dontClose": "Bitte das Fenster nicht schließen, bis der Upload abgeschlossen ist.",
     "dropHere": "Dateien hierher ziehen oder tippen zum Auswählen",
     "instrument": "Instrument",
+    "choirAll": "Chor (alle)",
+    "choirAllHint": "Datei für alle Sängerinnen und Sänger",
     "recording": "Aufnahme",
     "lyrics": "Liedtext",
     "otherFreeText": "Sonstige (Freitext)",

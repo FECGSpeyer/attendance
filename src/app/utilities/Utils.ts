@@ -14,6 +14,14 @@ import { translate } from '@jsverse/transloco';
 import { currentIntlLocale, currentLanguage, dateFmt } from '../i18n/languages';
 
 export class Utils {
+  /** Note marking a choir Werk file as meant for all singers ("Chor (alle)"). */
+  public static readonly CHOIR_ALL_NOTE = 'Chor';
+
+  /** True if the file has no group and is marked for the whole choir (tolerates case and spaces). */
+  public static isChoirAllFile(file: { instrumentId?: number | null; note?: string } | null | undefined): boolean {
+    return !!file && file.instrumentId == null && file.note?.trim().toLowerCase() === 'chor';
+  }
+
   public static getId(): number {
     return Math.floor(Math.random() * (999999999999 - 1000000000 + 1)) + 1000000000;
   }

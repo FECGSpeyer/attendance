@@ -301,6 +301,9 @@
                     <ion-select slot="end" [placeholder]="'songs.instrument' | transloco" [disabled]="isUploading"
                       (ionChange)="changeFileInstrument(i, $event.detail.value, fileInfo.note)"
                       [value]="getFileSelectValue(fileInfo)">
+                      @if (isChoir) {
+                      <ion-select-option value="chor">{{ 'songs.choirAll' | transloco }}</ion-select-option>
+                      }
                       <ion-select-option value="null">{{ 'songs.otherFreeText' | transloco }}</ion-select-option>
                       <ion-select-option value="1">{{ 'songs.recording' | transloco }}</ion-select-option>
                       <ion-select-option value="2">{{ 'songs.lyrics' | transloco }}</ion-select-option>
@@ -310,7 +313,7 @@
                       }
                     </ion-select>
                   </ion-item>
-                  @if (fileInfo.instrumentId === null) {
+                  @if (getFileSelectValue(fileInfo) === 'null') {
                   <ion-item>
                     <ion-label position="stacked">{{ 'songs.freeText' | transloco }}</ion-label>
                     <ion-input [placeholder]="'songs.enterCategory' | transloco" [disabled]="isUploading"
@@ -398,6 +401,14 @@
             </ion-item>
             <ion-radio-group [value]="getFileSelectValue(selectedFileInfos[0])"
               (ionChange)="onSingleFileInstrumentChange($event.detail.value)">
+              @if (isChoir) {
+              <ion-item>
+                <ion-radio value="chor">
+                  {{ 'songs.choirAll' | transloco }}
+                  <br><ion-note>{{ 'songs.choirAllHint' | transloco }}</ion-note>
+                </ion-radio>
+              </ion-item>
+              }
               <ion-item>
                 <ion-radio value="null">{{ 'songs.otherFreeText' | transloco }}</ion-radio>
               </ion-item>
@@ -413,7 +424,7 @@
               </ion-item>
               }
             </ion-radio-group>
-            @if (selectedFileInfos[0].instrumentId === null) {
+            @if (getFileSelectValue(selectedFileInfos[0]) === 'null') {
             <ion-item-divider>
               <ion-label>{{ 'songs.freeText' | transloco }}</ion-label>
             </ion-item-divider>
@@ -589,6 +600,14 @@
     <ion-content>
       <ion-list>
         <ion-radio-group [(ngModel)]="categoryModalInstrumentId">
+          @if (isChoir) {
+          <ion-item>
+            <ion-radio value="chor">
+              {{ 'songs.choirAll' | transloco }}
+              <br><ion-note>{{ 'songs.choirAllHint' | transloco }}</ion-note>
+            </ion-radio>
+          </ion-item>
+          }
           <ion-item>
             <ion-radio value="null">{{ 'songs.otherFreeText' | transloco }}</ion-radio>
           </ion-item>

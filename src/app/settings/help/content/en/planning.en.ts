@@ -105,6 +105,15 @@ The ad-hoc run sheet (Settings › Ad-hoc run sheet) can also send the plan via 
     keywords: ['add piece', 'sheet music library', 'new piece', 'song'],
     body: `Under "Pieces" you create a new [[Piece|piece]] with number, name, difficulty and categories. Optionally you can store matching sheet music files (PDF) for each [[Group|group]]/voice.`,
   },
+  'songs-choir-files': {
+    title: 'Files for the whole choir (Choir (all))',
+    keywords: ['choir (all)', 'choir all', 'for everyone', 'all singers', 'all voices', 'choir sheet music', 'sheet music for all', 'other', 'free text', 'change category'],
+    body: `In choirs, all singers usually share the same sheet music file. For this, when you upload a file to a [[Piece|piece]], the category **"Choir (all)"** is at the top of the selection. In choirs, Attendix picks it automatically for PDFs that cannot be matched to a voice.
+
+Every member sees a file with "Choir (all)", whatever voice they sing: on the sign-out page for a piece of an upcoming event, when printing all current sheet music and in the group directory under "Choir (all)". If a voice has its own file, it gets that one as well.
+
+You can switch an uploaded file via "Change category" on the piece page. The category only exists in choir instances.`,
+  },
   'songs-filter': {
     title: 'Searching and filtering pieces',
     keywords: ['search', 'filter', 'difficulty', 'last played', 'last sung', 'planned', 'not sung yet', 'prefix', 'song book', 'load more', 'scroll'],
@@ -125,7 +134,7 @@ The ad-hoc run sheet (Settings › Ad-hoc run sheet) can also send the plan via 
     keywords: ['group directory', 'music folder', 'voice', 'sheet music of a group', 'score', 'conductors', 'print'],
     body: `Via "Group directory" in the list of pieces you choose a [[Group|group]] and see all sheet music files stored for this group. With the printer icon at the top right you print the group's complete music folder at once.
 
-If scores are stored, there is also the group "Conductors", which contains all scores. The group directory is also available if your instance does not use piece categories.`,
+If scores are stored, there is also the group "Conductors", which contains all scores. Choirs also get the group "Choir (all)" with all files for the whole choir; when printing the sheet music of a voice, this file is added if the voice has none of its own. The group directory is also available if your instance does not use piece categories.`,
   },
   'songs-sync': {
     title: 'Sharing pieces with another instance (piece sync)',

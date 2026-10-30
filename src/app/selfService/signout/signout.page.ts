@@ -1068,11 +1068,9 @@ export class SignoutPage implements OnInit {
     // Get files for player's instrument or Chor notes
     let files = song.files.filter((file: SongFile) => file.instrumentId === this.player.instrument);
 
-    // For choir type, also include files with note="Chor"
+    // For choir type, also include files with "Chor (alle)"
     if (this.db.tenant().type === 'choir') {
-      const choirFiles = song.files.filter((file: SongFile) =>
-        file.note?.toLowerCase() === 'chor'
-      );
+      const choirFiles = song.files.filter((file: SongFile) => Utils.isChoirAllFile(file));
       files = [...files, ...choirFiles];
       // Remove duplicates if a file is both for the instrument and has "Chor" note
       files = files.filter((file, index, self) =>
@@ -1290,9 +1288,9 @@ export class SignoutPage implements OnInit {
           // Get files for player's instrument
           let file = his.song.files.find(f => f.instrumentId === this.player.instrument);
 
-          // For choir type, also check for files with note="Chor" if no instrument file found
+          // For choir type, also check for files with "Chor (alle)" if no instrument file found
           if (!file && this.db.tenant().type === 'choir') {
-            file = his.song.files.find(f => f.note?.toLowerCase() === 'chor');
+            file = his.song.files.find(f => Utils.isChoirAllFile(f));
           }
 
           if (file) {
@@ -1328,7 +1326,7 @@ export class SignoutPage implements OnInit {
 
   /**
    * Check if a song has notes available for the player's instrument.
-   * For choir attendance types, also check if there are files with note="Chor".
+   * For choir attendance types, also check if there are files with "Chor (alle)".
    */
   hasSongNotesForPlayer(song: Song): boolean {
     if (!song) {return false;}
@@ -1336,12 +1334,10 @@ export class SignoutPage implements OnInit {
     // Check if song has the player's instrument in instrument_ids
     const hasInstrumentId = song.instrument_ids?.includes(this.player.instrument);
 
-    // For choir type, also check for files with note="Chor"
+    // For choir type, also check for files with "Chor (alle)"
     const tenantType = this.db.tenant().type;
     if (tenantType === 'choir') {
-      const hasChoirNote = song.files?.some(file =>
-        file.note?.toLowerCase() === 'chor'
-      );
+      const hasChoirNote = song.files?.some(file => Utils.isChoirAllFile(file));
       return hasInstrumentId || hasChoirNote;
     }
 

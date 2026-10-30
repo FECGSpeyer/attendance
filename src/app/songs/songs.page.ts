@@ -218,6 +218,11 @@ export class SongsPage implements OnInit, OnDestroy {
   }
 
   private static readonly CONDUCTOR_GROUP_ID = -1;
+  private static readonly CHOIR_ALL_GROUP_ID = -2;
+
+  private get isChoir(): boolean {
+    return (this.tenantData ?? this.db.tenant())?.type === 'choir';
+  }
 
   private isScoreFile(file: SongFile): boolean {
     return !file.instrumentId && file.note === 'Partitur';
@@ -226,18 +231,30 @@ export class SongsPage implements OnInit, OnDestroy {
   buildGroupsWithFiles(): void {
     const groupIdsWithFiles = new Set<number>();
     let hasScores = false;
+    let hasChoirAll = false;
     for (const song of this.songs) {
       for (const file of song.files || []) {
         if (file.instrumentId && file.instrumentId > 2) {
           groupIdsWithFiles.add(file.instrumentId);
         } else if (this.isScoreFile(file)) {
           hasScores = true;
+        } else if (this.isChoir && Utils.isChoirAllFile(file)) {
+          hasChoirAll = true;
         }
       }
     }
     const groups = this.directoryGroups
       .filter(g => groupIdsWithFiles.has(g.id!))
       .sort((a, b) => a.name.localeCompare(b.name));
+    if (hasChoirAll) {
+      // virtual group listing all files for the whole choir
+      groups.unshift({
+        id: SongsPage.CHOIR_ALL_GROUP_ID,
+        name: translate('songs.choirAll'),
+        tenantId: this.tenantData?.id ?? this.db.tenant()?.id,
+        maingroup: false,
+      });
+    }
     if (hasScores) {
       // virtual group listing all scores (Partituren)
       groups.unshift({
@@ -281,7 +298,8 @@ export class SongsPage implements OnInit, OnDestroy {
           for (const group of currentSongs) {
             for (const his of group.history) {
               if (his.song?.files) {
-                const file = his.song.files.find(f => f.instrumentId === groupId);
+                const file = his.song.files.find(f => f.instrumentId === groupId)
+                  ?? (this.isChoir ? his.song.files.find(f => Utils.isChoirAllFile(f)) : undefined);
                 if (file) filesToPrint.push({ song: his.song, file });
               }
             }
@@ -319,7 +337,9 @@ export class SongsPage implements OnInit, OnDestroy {
       for (const file of song.files || []) {
         const matches = group.id === SongsPage.CONDUCTOR_GROUP_ID
           ? this.isScoreFile(file)
-          : file.instrumentId === group.id;
+          : group.id === SongsPage.CHOIR_ALL_GROUP_ID
+            ? Utils.isChoirAllFile(file)
+            : file.instrumentId === group.id;
         if (matches) {
           this.selectedGroupFiles.push({ song, file });
         }

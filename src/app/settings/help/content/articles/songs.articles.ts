@@ -9,6 +9,17 @@ export const SONGS_ARTICLES: HelpArticle[] = [
     body: `Unter "Werke" legst du ein neues [[Werk]] mit Nummer, Namen, Schwierigkeitsgrad und Kategorien an. Optional lassen sich zu jeder [[Gruppe]]/Stimme passende Notendateien (PDF) hinterlegen.`,
   },
   {
+    id: 'songs-choir-files',
+    title: 'Dateien für den ganzen Chor (Chor (alle))',
+    categoryId: 'songs',
+    keywords: ['chor (alle)', 'chor alle', 'für alle', 'alle sänger', 'alle stimmen', 'chornoten', 'noten für alle', 'sonstige', 'freitext', 'kategorie ändern'],
+    body: `In Chören haben meist alle Sängerinnen und Sänger dieselbe Notendatei. Dafür gibt es beim Hochladen einer Datei zu einem [[Werk]] die Kategorie **"Chor (alle)"** ganz oben in der Auswahl. PDFs, die keiner Stimme zugeordnet werden können, wählt Attendix in Chören automatisch so aus.
+
+Eine Datei mit "Chor (alle)" sieht jedes Mitglied, egal in welcher Stimme es ist: auf der Abmeldeseite beim Werk eines kommenden Termins, beim Drucken aller aktuellen Noten und im Gruppenverzeichnis unter "Chor (alle)". Hat eine Stimme eine eigene Datei, bekommt sie zusätzlich diese.
+
+Eine bereits hochgeladene Datei kannst du über "Kategorie ändern" auf der Werkseite umstellen. Die Kategorie gibt es nur in Chor-Instanzen.`,
+  },
+  {
     id: 'songs-filter',
     title: 'Werke suchen und filtern',
     categoryId: 'songs',
@@ -36,7 +47,7 @@ export const SONGS_ARTICLES: HelpArticle[] = [
     keywords: ['gruppenverzeichnis', 'notenmappe', 'stimme', 'noten einer gruppe', 'partitur', 'dirigenten', 'drucken'],
     body: `Über "Gruppenverzeichnis" in der Werkeliste wählst du eine [[Gruppe]] aus und siehst alle Notendateien, die für diese Gruppe hinterlegt sind. Mit dem Drucker-Symbol oben rechts druckst du die komplette Notenmappe der Gruppe auf einmal.
 
-Sind Partituren hinterlegt, gibt es zusätzlich die Gruppe "Dirigenten", die alle Partituren enthält. Das Gruppenverzeichnis ist auch verfügbar, wenn deine Instanz keine Werkkategorien verwendet.`,
+Sind Partituren hinterlegt, gibt es zusätzlich die Gruppe "Dirigenten", die alle Partituren enthält. In Chören gibt es außerdem die Gruppe "Chor (alle)" mit allen Dateien für den ganzen Chor; beim Drucken der Noten einer Stimme kommt diese Datei dazu, wenn die Stimme selbst keine eigene hat. Das Gruppenverzeichnis ist auch verfügbar, wenn deine Instanz keine Werkkategorien verwendet.`,
   },
   {
     id: 'songs-sync',

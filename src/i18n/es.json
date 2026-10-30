@@ -1817,6 +1817,8 @@
     "dontClose": "No cierres la ventana hasta que termine la subida.",
     "dropHere": "Arrastra archivos aquí o toca para elegir",
     "instrument": "Instrumento",
+    "choirAll": "Coro (todos)",
+    "choirAllHint": "Archivo para todos los cantantes",
     "recording": "Grabación",
     "lyrics": "Letra",
     "otherFreeText": "Otros (texto libre)",

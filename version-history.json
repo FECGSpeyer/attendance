@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.17.16",
+      "date": "30.10.2026",
+      "changes": [
+        "🎶 Chor: Neue Kategorie „Chor (alle)“ für Dateien, die alle Sänger bekommen, direkt oben im Upload- und Kategorie-Dialog statt „Sonstige (Freitext)“.",
+        "📄 Chor (alle)-Dateien werden auf der Abmeldeseite, beim Drucken aller aktuellen Noten und im Gruppenverzeichnis zuverlässig angezeigt, auch bei Tippvarianten wie „Chor “."
+      ]
+    },
+    {
       "version": "4.17.15",
       "date": "30.10.2026",
       "changes": [

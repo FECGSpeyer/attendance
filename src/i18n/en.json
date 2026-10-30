@@ -1817,6 +1817,8 @@
     "dontClose": "Please do not close the window until the upload is finished.",
     "dropHere": "Drag files here or tap to choose",
     "instrument": "Instrument",
+    "choirAll": "Choir (all)",
+    "choirAllHint": "File for all singers",
     "recording": "Recording",
     "lyrics": "Lyrics",
     "otherFreeText": "Other (free text)",

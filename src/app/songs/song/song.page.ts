@@ -243,7 +243,7 @@ export class SongPage implements OnInit {
       }
 
       if (!mappedId && !note && this.isChoir && file.type === 'application/pdf') {
-        note = 'Chor';
+        note = Utils.CHOIR_ALL_NOTE;
       }
 
       const conflicts = this.findConflictingFiles(mappedId, note);
@@ -321,7 +321,8 @@ export class SongPage implements OnInit {
     const isChor = value === 'chor';
     const isNull = value === 'null' || isChor;
     const instrumentId = isNull ? null : parseInt(value, 10);
-    const note = isChor ? 'Chor' : (isNull ? this.selectedFileInfos[0].note : undefined);
+    const prevNote = this.selectedFileInfos[0].note;
+    const note = isChor ? Utils.CHOIR_ALL_NOTE : (isNull ? (Utils.isChoirAllFile({ note: prevNote }) ? '' : prevNote) : undefined);
     this.selectedFileInfos[0] = { ...this.selectedFileInfos[0], instrumentId, note };
     this.refreshSingleFileConflicts();
   }
@@ -381,14 +382,15 @@ export class SongPage implements OnInit {
   }
 
   getFileSelectValue(fileInfo: { instrumentId: number | null; note?: string }): string {
-    if (fileInfo.instrumentId === null) { return 'null'; }
+    if (fileInfo.instrumentId === null) { return this.isChoir && Utils.isChoirAllFile(fileInfo) ? 'chor' : 'null'; }
     return String(fileInfo.instrumentId);
   }
 
   changeFileInstrument(index: number, value: string, note?: string) {
-    const isNull = value === 'null';
+    const isChor = value === 'chor';
+    const isNull = value === 'null' || isChor;
     const instrumentId = isNull ? null : parseInt(value, 10);
-    const resolvedNote = isNull ? (note || '') : undefined;
+    const resolvedNote = isChor ? Utils.CHOIR_ALL_NOTE : (isNull ? (Utils.isChoirAllFile({ note }) ? '' : (note || '')) : undefined);
     const conflicts = this.findConflictingFiles(instrumentId, resolvedNote);
     const toReplace = new Set(conflicts.filter(f => f.fileName === this.selectedFileInfos[index].file.name).map(f => f.url));
     if (toReplace.size === 0) { conflicts.forEach(f => toReplace.add(f.url)); }
@@ -498,7 +500,10 @@ export class SongPage implements OnInit {
   }
 
   getInstrumentName(id: number | null, note?: string): string {
-    if (!id) {return note ?? translate('songs.other');}
+    if (!id) {
+      if (this.isChoir && Utils.isChoirAllFile({ note })) { return translate('songs.choirAll'); }
+      return note ?? translate('songs.other');
+    }
     if (id === 1) {return translate('songs.recording');}
     if (id === 2) {return translate('songs.lyrics');}
     const inst = this.instruments.find(i => i.id === id);
@@ -511,7 +516,7 @@ export class SongPage implements OnInit {
     if (id === null && file.note === 'Partitur') { return '1'; }
     if (id === null && file.note === 'Sibelius') { return '2'; }
     if (id === 2) { return '3'; }                              // Liedtext
-    if (id === null && file.note === 'Chor') { return '4'; }
+    if (Utils.isChoirAllFile(file)) { return '4'; }
     if (id === null && file.note === 'Klavierauszug') { return '5'; }
     if (id === null) { return '6'; }                           // Sonstige (other notes)
     const inst = this.instruments.find(g => g.id === id);
@@ -537,7 +542,7 @@ export class SongPage implements OnInit {
       case 'Klavierauszug': return 'success';
       case 'Partitur':      return 'success';
       case 'Chor':          return 'tertiary';
-      default:              return 'medium';
+      default:              return Utils.isChoirAllFile({ note }) ? 'tertiary' : 'medium';
     }
   }
 
@@ -578,16 +583,18 @@ export class SongPage implements OnInit {
 
   changeCategory(file: SongFile) {
     this.categoryModalFile = file;
-    this.categoryModalInstrumentId = file.instrumentId === null ? 'null' : String(file.instrumentId);
-    this.categoryModalNote = file.note || (file.instrumentId === null && this.isChoir ? 'Chor' : '');
+    const isChoirAll = this.isChoir && file.instrumentId == null && (!file.note || Utils.isChoirAllFile(file));
+    this.categoryModalInstrumentId = isChoirAll ? 'chor' : (file.instrumentId == null ? 'null' : String(file.instrumentId));
+    this.categoryModalNote = isChoirAll ? '' : (file.note || '');
     this.isCategoryModalOpen = true;
   }
 
   async saveCategoryModal() {
     if (!this.categoryModalFile) { return; }
-    const isNull = this.categoryModalInstrumentId === 'null';
+    const isChor = this.categoryModalInstrumentId === 'chor';
+    const isNull = this.categoryModalInstrumentId === 'null' || isChor;
     const instrumentId = isNull ? null : parseInt(this.categoryModalInstrumentId, 10);
-    const note = isNull ? this.categoryModalNote : undefined;
+    const note = isChor ? Utils.CHOIR_ALL_NOTE : (isNull ? this.categoryModalNote : undefined);
     await this.saveFileChange(this.categoryModalFile, instrumentId, note);
     this.isCategoryModalOpen = false;
   }
