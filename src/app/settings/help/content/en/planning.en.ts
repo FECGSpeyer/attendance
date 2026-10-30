@@ -105,7 +105,7 @@ The ad-hoc run sheet (Settings › Ad-hoc run sheet) can also send the plan via 
     keywords: ['add piece', 'sheet music library', 'new piece', 'song', 'open file', 'view pdf', 'web app'],
     body: `Under "Pieces" you create a new [[Piece|piece]] with number, name, difficulty and categories. Optionally you can store matching sheet music files (PDF) for each [[Group|group]]/voice.
 
-Tap a file and then "Open file" to open it in a new tab. If you use Attendix as an installed web app (e.g. on a Mac via "Add to Dock"), Attendix shows PDFs and images right inside the app. At the top you find "Download file" and "Close".`,
+Tap a file and then "Open file" to open it in a new tab. If you use Attendix as an installed web app (e.g. on a Mac via "Add to Dock"), Attendix shows PDFs and images right inside the app. At the top you find "Download file" and "Close". In the Attendix app from the App Store on a Mac with Apple silicon, the file opens in the browser.`,
   },
   'songs-choir-files': {
     title: 'Files for the whole choir (Choir (all))',

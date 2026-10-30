@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { Browser } from '@capacitor/browser';
+import { Capacitor } from '@capacitor/core';
 import { Utils } from './Utils';
+
+vi.mock('@capacitor/browser', () => ({ Browser: { open: vi.fn().mockResolvedValue(undefined) } }));
 
 const mockDisplayMode = (standalone: boolean) => {
   vi.stubGlobal('matchMedia', (query: string) => ({ matches: standalone && query.includes('standalone') }));
@@ -37,5 +41,29 @@ describe('Utils.openFileNative (web)', () => {
     expect(document.querySelector('.app-file-viewer__body p')).not.toBeNull();
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(document.querySelector('.app-file-viewer')).toBeNull();
+  });
+});
+
+describe('Utils.openFileNative (iOS app on Mac)', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('is not detected on the web', () => {
+    expect(Utils.isIosAppOnMac()).toBe(false);
+  });
+
+  it('opens files in the browser instead of the native viewer', async () => {
+    vi.spyOn(Capacitor, 'isNativePlatform').mockReturnValue(true);
+    vi.spyOn(Capacitor, 'getPlatform').mockReturnValue('ios');
+    vi.spyOn(navigator, 'maxTouchPoints', 'get').mockReturnValue(0);
+
+    await Utils.openFileNative('https://example.com/noten.pdf', 'noten.pdf');
+
+    expect(Browser.open).toHaveBeenCalledWith({ url: 'https://example.com/noten.pdf' });
+  });
+
+  it('is not detected on iPhone/iPad', () => {
+    vi.spyOn(Capacitor, 'getPlatform').mockReturnValue('ios');
+    vi.spyOn(navigator, 'maxTouchPoints', 'get').mockReturnValue(5);
+    expect(Utils.isIosAppOnMac()).toBe(false);
   });
 });

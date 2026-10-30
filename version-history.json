@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.20",
+      "date": "30.10.2026",
+      "changes": [
+        "🍎 Werke: In der App aus dem App Store auf dem Mac (Apple-Chip) öffnen sich Dateien wieder, und zwar im Browser."
+      ]
+    },
+    {
       "version": "4.17.19",
       "date": "30.10.2026",
       "changes": [

@@ -8,7 +8,7 @@ export const SONGS_ARTICLES: HelpArticle[] = [
     keywords: ['stück hinzufügen', 'notenbibliothek', 'neues werk', 'datei öffnen', 'pdf anzeigen', 'web-app'],
     body: `Unter "Werke" legst du ein neues [[Werk]] mit Nummer, Namen, Schwierigkeitsgrad und Kategorien an. Optional lassen sich zu jeder [[Gruppe]]/Stimme passende Notendateien (PDF) hinterlegen.
 
-Tippst du auf eine Datei und dann auf "Datei öffnen", öffnet sie sich in einem neuen Tab. Nutzt du Attendix als installierte Web-App (z. B. am Mac über "Zum Dock hinzufügen"), zeigt Attendix PDFs und Bilder direkt in der App an. Oben findest du "Datei herunterladen" und "Schließen".`,
+Tippst du auf eine Datei und dann auf "Datei öffnen", öffnet sie sich in einem neuen Tab. Nutzt du Attendix als installierte Web-App (z. B. am Mac über "Zum Dock hinzufügen"), zeigt Attendix PDFs und Bilder direkt in der App an. Oben findest du "Datei herunterladen" und "Schließen". In der Attendix-App aus dem App Store auf einem Mac mit Apple-Chip öffnet sich die Datei im Browser.`,
   },
   {
     id: 'songs-choir-files',

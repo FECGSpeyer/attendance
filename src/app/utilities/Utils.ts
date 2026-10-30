@@ -1663,6 +1663,14 @@ export class Utils {
     }
   }
 
+  /**
+   * The iPhone/iPad app installed on an Apple silicon Mac reports itself as iOS,
+   * but unlike every iPhone and iPad it has no touch screen.
+   */
+  static isIosAppOnMac(): boolean {
+    return Capacitor.getPlatform() === 'ios' && (navigator.maxTouchPoints || 0) === 0;
+  }
+
   private static isStandaloneWebApp(): boolean {
     return (navigator as any).standalone === true
       || window.matchMedia?.('(display-mode: standalone)').matches
@@ -1767,6 +1775,15 @@ export class Utils {
       } else {
         Utils.openInNewTab(url);
       }
+      return;
+    }
+
+    if (typeof urlOrBlob === 'string' && urlOrBlob.startsWith('http') && Utils.isIosAppOnMac()) {
+      // The native file viewer (UIDocumentInteractionController preview) silently
+      // does nothing when the iOS app runs on an Apple silicon Mac, so hand the
+      // file to the browser there.
+      const { Browser } = await import('@capacitor/browser');
+      await Browser.open({ url: urlOrBlob });
       return;
     }
 
