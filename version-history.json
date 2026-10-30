@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.17.13",
+      "date": "30.10.2026",
+      "changes": [
+        "🔎 Werke in der Organisation suchen: Als Admin oder Verantwortlicher findest du unter Organisation (oder im Menü der Werke) die Werke aller Instanzen deiner Organisation.",
+        "📋 Werk in eine Zielinstanz kopieren: Felder und Dateien einzeln wählen, Gruppen zuordnen, bei gleichem Namen ins vorhandene Werk übernehmen und vergebene Nummern ändern."
+      ]
+    },
+    {
       "version": "4.17.12",
       "date": "30.10.2026",
       "changes": [
