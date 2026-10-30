@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.12",
+      "date": "30.10.2026",
+      "changes": [
+        "🖨️ Für FECG Speyer und FECG Schwegenheim: Das Ablaufplan-PDF in der Gemeinde App trägt jetzt Logo und Namen deiner Gemeinde, wie der Export in Attendix."
+      ]
+    },
+    {
       "version": "4.17.11",
       "date": "30.10.2026",
       "changes": [

@@ -89,14 +89,29 @@ function mapFields(fields: FieldSelection[], beamerActive: boolean, songFiles: M
   }));
 }
 
-interface Org { id: number; name: string; beamer_files_enabled: boolean }
+interface Org {
+  id: number;
+  name: string;
+  beamer_files_enabled: boolean;
+  logo_url?: string | null;
+  branding_text?: string | null;
+}
+
+interface Branding { logoUrl: string | null; text: string | null }
+
+/** Same source as DbService.getBrandingSource: the organisation, else the tenant. */
+function branding(org: Org, tenant?: { logo_url?: string | null; branding_text?: string | null }): Branding | null {
+  const source = org.logo_url || org.branding_text ? org : tenant;
+  if (!source?.logo_url && !source?.branding_text?.trim()) { return null; }
+  return { logoUrl: source.logo_url || null, text: source.branding_text?.trim() || null };
+}
 
 async function orgForKey(req: Request): Promise<Org | null> {
   const key = req.headers.get('x-gemeinde-app-key');
   if (!key || !key.startsWith('atx_')) { return null; }
   const { data } = await supabase
     .from('tenant_groups')
-    .select('id, name, beamer_files_enabled')
+    .select('id, name, beamer_files_enabled, logo_url, branding_text')
     .eq('gemeinde_app_key_hash', await sha256(key))
     .eq('fecg_link_enabled', true)
     .maybeSingle();
@@ -216,10 +231,10 @@ Deno.serve(async (req: Request) => {
 
   const { data: tgts } = await supabase
     .from('tenant_group_tenants')
-    .select('tenant_id, tenant:tenant_id(shortName, longName)')
+    .select('tenant_id, tenant:tenant_id(shortName, longName, logo_url, branding_text)')
     .eq('tenant_group', org.id);
 
-  const tenants = new Map<number, { shortName?: string; longName?: string }>(
+  const tenants = new Map<number, { shortName?: string; longName?: string; logo_url?: string; branding_text?: string }>(
     (tgts ?? []).map((t: any) => [t.tenant_id, t.tenant ?? {}]),
   );
   const tenantIds = [...tenants.keys()];
@@ -287,6 +302,7 @@ Deno.serve(async (req: Request) => {
         eventEnd: row.end_time ?? null,
         time: plan.time ?? null,
         end: plan.end ?? null,
+        branding: branding(org, tenants.get(row.tenantId)),
         fields: mapFields(plan.fields ?? [], beamerActive, songFiles),
       });
     });
@@ -308,6 +324,7 @@ Deno.serve(async (req: Request) => {
       eventEnd: null,
       time: row.time ?? null,
       end: row.end_time ?? null,
+      branding: branding(org),
       fields: mapFields((row.fields ?? []) as FieldSelection[], beamerActive, songFiles),
     });
   }
