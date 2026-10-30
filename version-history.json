@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.18",
+      "date": "30.10.2026",
+      "changes": [
+        "🐛 Werke: Dateien und Links lassen sich in der installierten Web-App (z. B. Safari „Zum Dock hinzufügen“ am Mac) wieder öffnen."
+      ]
+    },
+    {
       "version": "4.17.17",
       "date": "30.10.2026",
       "changes": [

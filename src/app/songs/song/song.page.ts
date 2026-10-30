@@ -2,6 +2,7 @@ import { Component, inject, Input, OnInit, ChangeDetectorRef } from '@angular/co
 import { Router } from '@angular/router';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, LoadingController, isPlatform } from '@ionic/angular/lazy';
 import { Browser } from '@capacitor/browser';
+import { Capacitor } from '@capacitor/core';
 // JSZip and pdf-lib are lazy-loaded for better initial bundle size
 import { DbService } from 'src/app/services/db.service';
 import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
@@ -551,6 +552,10 @@ export class SongPage implements OnInit {
   }
 
   openLink(link: string) {
+    if (!Capacitor.isNativePlatform()) {
+      Utils.openInNewTab(link);
+      return;
+    }
     Browser.open({ url: link });
   }
 

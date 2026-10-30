@@ -1638,7 +1638,7 @@ export class Utils {
       if (Capacitor.isNativePlatform()) {
         window.open(url, '_system');
       } else {
-        window.open(url, '_blank');
+        Utils.openInNewTab(url);
       }
     };
 
@@ -1663,14 +1663,37 @@ export class Utils {
     }
   }
 
+  private static isStandaloneWebApp(): boolean {
+    return (navigator as any).standalone === true
+      || window.matchMedia?.('(display-mode: standalone)').matches
+      || window.matchMedia?.('(display-mode: fullscreen)').matches
+      || window.matchMedia?.('(display-mode: minimal-ui)').matches;
+  }
+
+  /**
+   * Opens a URL in a new browser tab/window on the web.
+   * Installed web apps (e.g. Safari "Add to Dock" on macOS) silently ignore
+   * window.open(url, '_blank'), so there we click a real link instead, which
+   * hands the URL over to the default browser.
+   */
+  static openInNewTab(url: string): void {
+    if (!Utils.isStandaloneWebApp() && window.open(url, '_blank')) {
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
   static async openFileNative(urlOrBlob: string | Blob, fileName?: string): Promise<void> {
     if (!Capacitor.isNativePlatform()) {
-      if (typeof urlOrBlob === 'string') {
-        window.open(urlOrBlob, '_blank');
-      } else {
-        const url = window.URL.createObjectURL(urlOrBlob);
-        window.open(url, '_blank');
-      }
+      Utils.openInNewTab(typeof urlOrBlob === 'string' ? urlOrBlob : window.URL.createObjectURL(urlOrBlob));
       return;
     }
 
