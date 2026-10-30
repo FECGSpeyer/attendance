@@ -3196,5 +3196,9 @@
     "setup": "Configurar pestaña de Attendix",
     "noAccount": "No se encontró ninguna cuenta de Attendix. Inicia sesión primero en la pestaña de Attendix.",
     "choose": "Elige qué instancia de Attendix mostrar en este canal."
+  },
+  "fileViewer": {
+    "noPreview": "No hay vista previa para este archivo. Descárgalo para abrirlo.",
+    "downloadFailed": "No se pudo descargar el archivo"
   }
 }

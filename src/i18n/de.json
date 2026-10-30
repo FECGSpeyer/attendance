@@ -3196,5 +3196,9 @@
     "setup": "Attendix-Tab einrichten",
     "noAccount": "Kein Attendix-Konto gefunden. Bitte melde dich zuerst im Attendix-Tab an.",
     "choose": "Wähle aus, welche Attendix-Instanz in diesem Kanal angezeigt werden soll."
+  },
+  "fileViewer": {
+    "noPreview": "Für diese Datei gibt es keine Vorschau. Lade sie herunter, um sie zu öffnen.",
+    "downloadFailed": "Datei konnte nicht heruntergeladen werden"
   }
 }

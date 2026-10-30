@@ -1691,9 +1691,82 @@ export class Utils {
     link.remove();
   }
 
+  private static showInAppFileViewer(url: string, fileName?: string, mimeType?: string): void {
+    document.querySelector('.app-file-viewer')?.remove();
+
+    const name = fileName || decodeURIComponent(url.split('?')[0].split('/').pop() || '');
+    const ext = (name.split('.').pop() || '').toLowerCase();
+    const isPdf = mimeType === 'application/pdf' || ext === 'pdf';
+    const isImage = !!mimeType?.startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'heic', 'svg'].includes(ext);
+
+    const overlay = document.createElement('div');
+    overlay.className = 'app-file-viewer';
+
+    const header = document.createElement('div');
+    header.className = 'app-file-viewer__header';
+    const title = document.createElement('span');
+    title.className = 'app-file-viewer__title';
+    title.textContent = name;
+    const button = (label: string, onClick: () => void) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = label;
+      btn.addEventListener('click', onClick);
+      return btn;
+    };
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { close(); }
+    };
+    const close = () => {
+      document.removeEventListener('keydown', onKey);
+      overlay.remove();
+    };
+    const download = async () => {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) { throw new Error(String(response.status)); }
+        await Utils.downloadFileNative(await response.blob(), name || 'download');
+      } catch {
+        Utils.showToast(translate('fileViewer.downloadFailed'), 'danger');
+      }
+    };
+
+    header.append(title, button(translate('songs.downloadFile'), download), button(translate('common.close'), close));
+
+    const body = document.createElement('div');
+    body.className = 'app-file-viewer__body';
+    if (isPdf) {
+      const frame = document.createElement('iframe');
+      frame.src = url;
+      frame.title = name;
+      body.appendChild(frame);
+    } else if (isImage) {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = name;
+      body.appendChild(img);
+    } else {
+      const hint = document.createElement('p');
+      hint.textContent = translate('fileViewer.noPreview');
+      body.appendChild(hint);
+    }
+
+    overlay.append(header, body);
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(overlay);
+  }
+
   static async openFileNative(urlOrBlob: string | Blob, fileName?: string): Promise<void> {
     if (!Capacitor.isNativePlatform()) {
-      Utils.openInNewTab(typeof urlOrBlob === 'string' ? urlOrBlob : window.URL.createObjectURL(urlOrBlob));
+      const url = typeof urlOrBlob === 'string' ? urlOrBlob : window.URL.createObjectURL(urlOrBlob);
+      if (Utils.isStandaloneWebApp()) {
+        // Installed web apps (Safari "Add to Dock") block new windows entirely,
+        // so the file is shown inside the app instead.
+        Utils.showInAppFileViewer(url, fileName, typeof urlOrBlob === 'string' ? undefined : urlOrBlob.type);
+      } else {
+        Utils.openInNewTab(url);
+      }
       return;
     }
 

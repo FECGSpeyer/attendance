@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.19",
+      "date": "30.10.2026",
+      "changes": [
+        "📄 Werke: In der installierten Web-App (z. B. am Mac über „Zum Dock hinzufügen“) öffnen sich PDFs und Bilder jetzt direkt in Attendix, mit Knöpfen zum Herunterladen und Schließen."
+      ]
+    },
+    {
       "version": "4.17.18",
       "date": "30.10.2026",
       "changes": [

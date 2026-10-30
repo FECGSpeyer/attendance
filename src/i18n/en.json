@@ -3196,5 +3196,9 @@
     "setup": "Set up Attendix tab",
     "noAccount": "No Attendix account found. Please log in to the Attendix tab first.",
     "choose": "Choose which Attendix instance to show in this channel."
+  },
+  "fileViewer": {
+    "noPreview": "There is no preview for this file. Download it to open it.",
+    "downloadFailed": "File could not be downloaded"
   }
 }
