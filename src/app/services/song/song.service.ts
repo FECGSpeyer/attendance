@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { Network } from '@capacitor/network';
 import { Storage } from '@ionic/storage-angular';
-import { Song, SongCategory, SongFile } from '../../utilities/interfaces';
+import { OrgSongFile, OrgSongResult, Song, SongCategory, SongCopiedFrom, SongFile } from '../../utilities/interfaces';
+import { instrumentIdsFromFiles } from '../../utilities/song-copy';
 import { supabase } from '../base/supabase';
 import { translate } from '@jsverse/transloco';
 
@@ -350,5 +351,154 @@ export class SongService {
       .from('song_categories')
       .delete()
       .match({ id });
+  }
+
+  // Organisation-wide Werk search
+
+  /** Ids of the categories with these names in the library; missing ones are created. */
+  async ensureSongCategories(tenantId: number, names: string[]): Promise<string[]> {
+    const existing = await this.getSongCategories(tenantId) ?? [];
+    const ids: string[] = [];
+    let nextIndex = existing.reduce((max, c) => Math.max(max, c.index ?? 0), -1) + 1;
+    for (const name of names) {
+      const match = existing.find(c => c.name.trim().toLowerCase() === name.trim().toLowerCase());
+      if (match) { ids.push(match.id); continue; }
+      const { data, error } = await supabase
+        .from('song_categories')
+        .insert({ name, index: nextIndex++, tenant_id: tenantId } as SongCategory)
+        .select()
+        .single();
+      if (error) { throw new Error(translate('svc.addSongCategoryFailed')); }
+      existing.push(data as SongCategory);
+      ids.push((data as SongCategory).id);
+    }
+    return ids;
+  }
+
+  async searchOrgSongs(
+    tenantId: number,
+    query: string,
+    options: { tenantIds?: number[] | null; onlyWithFiles?: boolean; limit?: number; offset?: number } = {},
+  ): Promise<OrgSongResult[]> {
+    const { data, error } = await (supabase as any).rpc('search_org_songs', {
+      p_tenant_id: tenantId,
+      p_query: query ?? '',
+      p_tenant_ids: options.tenantIds?.length ? options.tenantIds : null,
+      p_only_with_files: !!options.onlyWithFiles,
+      p_limit: options.limit ?? 50,
+      p_offset: options.offset ?? 0,
+    });
+    if (error) { throw new Error(error.message); }
+    return (data ?? []) as OrgSongResult[];
+  }
+
+  /**
+   * Copies a Werk found in another instance into a target library: either as a new Werk
+   * (`existingSongId` empty) or into an existing one. Only the given fields and files are taken over.
+   * If copying the files fails, everything uploaded in this run is removed again, and a newly created Werk too.
+   */
+  async copyOrgSong(params: {
+    source: OrgSongResult;
+    targetLibraryId: number;
+    existingSongId?: number | null;
+    fields: Partial<Song>;
+    files: { file: OrgSongFile; instrumentId: number | null }[];
+    mainGroupId?: number;
+    onProgress?: (current: number, total: number) => void;
+  }): Promise<Song> {
+    const { source, targetLibraryId, existingSongId, fields, files, mainGroupId, onProgress } = params;
+    const copiedFrom: SongCopiedFrom = {
+      tenantId: source.tenant_id,
+      tenantName: source.tenant_name,
+      songId: source.id,
+      copiedAt: new Date().toISOString(),
+    };
+
+    let song: Song;
+    if (existingSongId) {
+      song = await this.getSong(existingSongId, targetLibraryId);
+      if (!song) { throw new Error(translate('orgSongs.targetMissing')); }
+      const update: Partial<Song> = { ...fields };
+      if (fields.additional_fields) {
+        update.additional_fields = { ...(song.additional_fields ?? {}), ...fields.additional_fields };
+      }
+      if (!song.copied_from) { update.copied_from = copiedFrom; }
+      if (Object.keys(update).length) {
+        const { error } = await supabase.from('songs').update(update as any).match({ id: song.id });
+        if (error) { throw new Error(error.message); }
+        song = { ...song, ...update };
+      }
+    } else {
+      const { data, error } = await supabase
+        .from('songs')
+        .insert({
+          name: source.name,
+          number: source.number,
+          prefix: source.prefix ?? null,
+          withChoir: false,
+          withSolo: false,
+          instrument_ids: [],
+          category: null,
+          category_ids: [],
+          ...fields,
+          copied_from: copiedFrom,
+          tenantId: targetLibraryId,
+        } as any)
+        .select()
+        .single();
+      if (error) { throw new Error(error.message); }
+      song = data as unknown as Song;
+    }
+
+    if (!files.length) { return song; }
+
+    const uploadedPaths: string[] = [];
+    const newFiles: SongFile[] = [];
+    try {
+      for (let i = 0; i < files.length; i++) {
+        onProgress?.(i + 1, files.length);
+        const { file, instrumentId } = files[i];
+        const blob = await this.downloadSongFileFromPath(file.url.split('/storage/v1/object/public/songs/')[1]);
+        const fileId = this.encodeFilename(file.fileName);
+        const filePath = `songs/${targetLibraryId}/${song.id}/${fileId}`;
+        const { error } = await supabase.storage.from('songs').upload(filePath, blob, { upsert: true });
+        if (error) { throw new Error(error.message); }
+        uploadedPaths.push(filePath);
+        const { data } = supabase.storage.from('songs').getPublicUrl(filePath);
+        newFiles.push({
+          storageName: fileId,
+          fileName: file.fileName,
+          fileType: file.fileType,
+          url: data.publicUrl,
+          instrumentId,
+          note: file.note,
+          created_at: new Date().toISOString(),
+        });
+      }
+
+      const allFiles = [...(song.files ?? []), ...newFiles].map(f => ({
+        storageName: f.storageName,
+        fileName: f.fileName,
+        fileType: f.fileType,
+        url: f.url,
+        instrumentId: f.instrumentId ?? null,
+        note: f.note,
+      }));
+      const instrument_ids = instrumentIdsFromFiles(allFiles, mainGroupId);
+      const { error } = await supabase
+        .from('songs')
+        .update({ files: allFiles, instrument_ids } as any)
+        .match({ id: song.id });
+      if (error) { throw new Error(error.message); }
+      return { ...song, files: allFiles as SongFile[], instrument_ids };
+    } catch (error) {
+      if (uploadedPaths.length) {
+        await supabase.storage.from('songs').remove(uploadedPaths);
+      }
+      if (!existingSongId) {
+        await supabase.from('songs').delete().match({ id: song.id });
+      }
+      throw error;
+    }
   }
 }

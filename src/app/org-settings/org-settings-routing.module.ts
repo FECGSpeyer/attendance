@@ -9,6 +9,10 @@ const routes: Routes = [
     loadChildren: () => import('./org-person-fields/org-person-fields.module').then(m => m.OrgPersonFieldsPageModule),
   },
   {
+    path: 'songs',
+    loadChildren: () => import('./org-songs/org-songs.module').then(m => m.OrgSongsPageModule),
+  },
+  {
     path: 'planning-templates',
     loadChildren: () => import('./org-planning-templates/org-planning-templates.module').then(m => m.OrgPlanningTemplatesPageModule),
   },

@@ -13,6 +13,7 @@ import { Utils } from 'src/app/utilities/Utils';
 import { PrintService } from 'src/app/services/print/print.service';
 import { translate } from '@jsverse/transloco';
 import { beamerActive } from 'src/app/utilities/plan-beamer';
+import { LocaleService } from 'src/app/i18n/locale.service';
 
 
 @Component({
@@ -24,6 +25,7 @@ import { beamerActive } from 'src/app/utilities/plan-beamer';
 export class SongPage implements OnInit {
   private audioPlayer = inject(AudioPlayerService);
   private printService = inject(PrintService);
+  private locale = inject(LocaleService);
   public song: Song;
   public isOrchestra = false;
   public isChoir = false;
@@ -99,6 +101,14 @@ export class SongPage implements OnInit {
         .map(f => f.instrumentId)
         .filter(id => id != null && id > 2) as number[]
     )];
+  }
+
+  /** "Kopiert aus X am …" for Werke taken over from another instance of the organisation. */
+  get copiedFromText(): string | null {
+    const origin = this.song?.copied_from;
+    if (!origin) { return null; }
+    const date = new Date(origin.copiedAt).toLocaleDateString(this.locale.intlLocale);
+    return translate('orgSongs.copiedFrom', { tenant: origin.tenantName, date });
   }
 
   getHistoryEntryTitle(entry: any): string {

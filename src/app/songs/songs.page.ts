@@ -344,6 +344,13 @@ export class SongsPage implements OnInit, OnDestroy {
     }, 700);
   }
 
+  async openOrgSongSearch(popover?: IonPopover) {
+    await popover?.dismiss();
+    this.router.navigate(['/tabs/settings/org-settings/songs'], {
+      queryParams: this.searchTerm ? { q: this.searchTerm } : {},
+    });
+  }
+
   async openImportModal(popover?: IonPopover) {
     await popover?.dismiss();
     const modal = await this.modalController.create({

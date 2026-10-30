@@ -134,6 +134,17 @@ If scores are stored, there is also the group "Conductors", which contains all s
 
 Important when deleting: a piece exists only once for all instances involved. If you delete it, it is gone everywhere, including the history of all instances. Attendix points this out when deleting and names the instances affected.`,
   },
+  'songs-org-search': {
+    title: 'Searching and copying pieces across the organisation',
+    keywords: ['organisation', 'other instance', 'copy piece', 'take over piece', 'organisation-wide', 'search', 'copy sheet music', 'duplicate'],
+    body: `As [[Administrator]] or [[Person in charge]] you can search the pieces of all other [[Instance|instances]] of your [[Organisation]]. You find the search under "Organisation → Search pieces in the organisation" or in the piece list via the menu (three dots) → "Search in organisation".
+
+Search by name or number and narrow it down to single instances or pieces with files if needed. "Already yours" shows that your instance already has a piece with this name.
+
+Tap a piece to choose the target instance. The target can be any instance where you are admin or person in charge. If it already has a piece with the same name, Attendix warns you and suggests copying into the existing piece. The selected files are then added and empty fields are filled. Fields that already have a value are only overwritten if you tick them on purpose. If you create a new piece and the number is already taken, you can change it or use the next free number.
+
+You can untick single fields and files and set the [[Group]] in the target for each file. Attendix assigns them beforehand by name and synonyms. The files are copied and then belong to the target instance; later changes to the original do not arrive automatically. Missing categories are created, [[Additional field|extra fields]] are copied if the target has a field with the same name. The copied piece shows which instance it came from.`,
+  },
   'self-signout': {
     title: 'Signing myself in or out',
     keywords: ['sign out', 'sign in', 'my events', 'signout', 'sign-up fields', 'note', 'change answers', 'edit registration', 'accept', 'late', 'decline', 'today', 'next event', 'more options', 'past events', 'attendance rate'],

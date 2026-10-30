@@ -47,4 +47,17 @@ Sind Partituren hinterlegt, gibt es zusätzlich die Gruppe "Dirigenten", die all
 
 Wichtig beim Löschen: Ein Werk gibt es nur einmal für alle beteiligten Instanzen. Löschst du es, ist es überall weg, inklusive der Historie aller Instanzen. Attendix weist dich beim Löschen darauf hin und nennt die betroffenen Instanzen.`,
   },
+  {
+    id: 'songs-org-search',
+    title: 'Werke in der Organisation suchen und kopieren',
+    categoryId: 'songs',
+    keywords: ['organisation', 'andere instanz', 'werk kopieren', 'werk übernehmen', 'organisationsweit', 'suchen', 'noten übernehmen', 'doppelt', 'duplikat'],
+    body: `Als [[Administrator]] oder [[Verantwortlicher]] kannst du die Werke aller anderen [[Instanz|Instanzen]] deiner [[Organisation]] durchsuchen. Du findest die Suche unter "Organisation → Werke in der Organisation suchen" oder in der Werkeliste über das Menü (drei Punkte) → "In der Organisation suchen".
+
+Suche nach Name oder Nummer und grenze bei Bedarf auf einzelne Instanzen oder Werke mit Dateien ein. "Schon bei dir" zeigt, dass es in deiner Instanz bereits ein Werk mit diesem Namen gibt.
+
+Tippst du auf ein Werk, wählst du die Zielinstanz. Ziel kann jede Instanz sein, in der du Admin oder Verantwortlicher bist. Gibt es dort schon ein Werk mit gleichem Namen, warnt Attendix und schlägt vor, in das vorhandene Werk zu kopieren. Dann werden die ausgewählten Dateien ergänzt und leere Felder gefüllt. Felder mit vorhandenem Wert werden nur überschrieben, wenn du sie bewusst ankreuzt. Legst du ein neues Werk an und die Nummer ist schon vergeben, kannst du sie ändern oder die nächste freie Nummer übernehmen.
+
+Du kannst Felder und Dateien einzeln abwählen und für jede Datei die [[Gruppe]] im Ziel festlegen. Attendix ordnet sie vorher anhand von Namen und Synonymen zu. Die Dateien werden kopiert und gehören danach der Zielinstanz, spätere Änderungen im Original kommen nicht automatisch an. Fehlende Kategorien werden angelegt, [[Zusatzfeld|Zusatzfelder]] werden übernommen, wenn es im Ziel ein Feld mit gleichem Namen gibt. Am kopierten Werk steht, aus welcher Instanz es stammt.`,
+  },
 ];

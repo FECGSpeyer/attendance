@@ -443,6 +443,41 @@ export interface Song {
   additional_fields?: { [key: string]: any };
   /** SongBeamer file of the Werk, written by the Gemeinde App. */
   beamer_file?: BeamerFile | null;
+  /** Set when the Werk was copied from another instance of the organisation. */
+  copied_from?: SongCopiedFrom | null;
+}
+
+export interface SongCopiedFrom {
+  tenantId: number;
+  tenantName: string;
+  songId: number;
+  copiedAt: string;
+}
+
+/** File of a Werk found by the organisation-wide search, with the name of its group in the source instance. */
+export interface OrgSongFile extends SongFile {
+  groupName?: string | null;
+  groupSynonyms?: string | null;
+}
+
+/** Row returned by the search_org_songs RPC. */
+export interface OrgSongResult {
+  id: number;
+  tenant_id: number;
+  tenant_name: string;
+  name: string;
+  number: number;
+  prefix?: string | null;
+  withChoir: boolean;
+  withSolo: boolean;
+  link?: string | null;
+  difficulty?: number | null;
+  category_names: string[];
+  additional_fields?: Record<string, any> | null;
+  field_defs?: ExtraField[] | null;
+  beamer_file?: BeamerFile | null;
+  files: OrgSongFile[];
+  total_count: number;
 }
 
 export interface SongFile {

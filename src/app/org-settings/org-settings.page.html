@@ -149,6 +149,22 @@
   </ion-list>
   }
 
+  <!-- Werke in der Organisation -->
+  @if (isAdmin && linkedTenants.length > 0) {
+  <ion-list [inset]="true">
+    <ion-list-header><ion-label>{{ 'orgSongs.section' | transloco }}</ion-label></ion-list-header>
+    <ion-item-group>
+      <ion-item button routerLink="/tabs/settings/org-settings/songs" lines="none">
+        <ion-icon name="search-outline" slot="start"></ion-icon>
+        <ion-label>
+          <h2>{{ 'orgSongs.title' | transloco }}</h2>
+          <p>{{ 'orgSongs.entryHint' | transloco }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+  }
+
   <!-- Werk-Synchronisierung -->
   @if (isSuperAdmin && linkedTenants.length > 0) {
   <ion-list [inset]="true">

@@ -1,0 +1,247 @@
+<ion-header translucent="true">
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="/tabs/settings/org-settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'orgSongs.title' | transloco }}</ion-title>
+  </ion-toolbar>
+  @if (isAdmin && db.organisation()) {
+  <ion-toolbar color="light">
+    <ion-searchbar [value]="query" [debounce]="300" (ionInput)="onSearchInput($event)"
+      [placeholder]="'orgSongs.searchPh' | transloco"></ion-searchbar>
+  </ion-toolbar>
+  }
+</ion-header>
+
+<ion-content color="light">
+  @if (!isAdmin || !db.organisation()) {
+  <ion-list [inset]="true">
+    <ion-item lines="none">
+      <ion-label class="ion-text-wrap">{{ 'orgSongs.noPermission' | transloco }}</ion-label>
+    </ion-item>
+  </ion-list>
+  } @else {
+
+  <div class="filters">
+    <ion-chip [outline]="!onlyWithFiles" [color]="onlyWithFiles ? 'primary' : 'medium'" (click)="toggleOnlyWithFiles()">
+      <ion-icon name="document-attach-outline"></ion-icon>
+      <ion-label>{{ 'orgSongs.onlyWithFiles' | transloco }}</ion-label>
+    </ion-chip>
+    @for (chip of tenantChips; track chip.id) {
+    <ion-chip [outline]="!chip.selected" [color]="chip.selected ? 'primary' : 'medium'" (click)="toggleChip(chip)">
+      <ion-label>{{ chip.name }}</ion-label>
+    </ion-chip>
+    }
+  </div>
+
+  @if (hasSearched && !isLoading) {
+  <p class="result-count">{{ 'orgSongs.resultCount' | transloco: { count: total } }}</p>
+  }
+
+  @if (results.length) {
+  <ion-list [inset]="true">
+    @for (song of results; track song.tenant_id + '-' + song.id) {
+    <ion-item button detail="false" (click)="openCopy(song)">
+      <ion-label class="ion-text-wrap">
+        <h2>{{ songLabel(song) }}</h2>
+        <p>
+          <ion-text color="primary">{{ song.tenant_name }}</ion-text>
+          @if (song.files.length) {
+          · {{ 'orgSongs.fileCount' | transloco: { count: song.files.length } }}
+          }
+          @if (song.category_names.length) {
+          · {{ song.category_names.join(', ') }}
+          }
+        </p>
+      </ion-label>
+      @if (existsInOwnLibrary(song)) {
+      <ion-badge slot="end" color="success">{{ 'orgSongs.alreadyOwn' | transloco }}</ion-badge>
+      }
+      <ion-icon slot="end" name="copy-outline" color="medium"></ion-icon>
+    </ion-item>
+    }
+  </ion-list>
+  } @else if (hasSearched && !isLoading) {
+  <ion-list [inset]="true">
+    <ion-item lines="none">
+      <ion-label class="ion-text-wrap">
+        <p>{{ 'orgSongs.noResults' | transloco }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+  }
+
+  @if (isLoading && !results.length) {
+  <div class="ion-text-center ion-padding"><ion-spinner></ion-spinner></div>
+  }
+
+  <ion-infinite-scroll [disabled]="!canLoadMore" (ionInfinite)="loadMore($event)">
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+  }
+</ion-content>
+
+<!-- Copy dialog -->
+<ion-modal [isOpen]="isCopyOpen" (didDismiss)="closeCopy()" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeCopy()">{{ 'common.cancel' | transloco }}</ion-button>
+        </ion-buttons>
+        <ion-title>{{ 'songs.copySong' | transloco }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button strong="true" [disabled]="!canCopy" (click)="copy()">{{ 'songs.copy' | transloco }}</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content color="light">
+      @if (selected) {
+      <ion-list [inset]="true">
+        <ion-item lines="none">
+          <ion-label class="ion-text-wrap">
+            <h2>{{ songLabel(selected) }}</h2>
+            <p>{{ 'orgSongs.fromTenant' | transloco: { tenant: selected.tenant_name } }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+
+      <!-- Target -->
+      <ion-list [inset]="true">
+        <ion-list-header><ion-label>{{ 'orgSongs.target' | transloco }}</ion-label></ion-list-header>
+        <ion-item [lines]="currentTarget?.libraryName ? 'full' : 'none'">
+          <ion-select [label]="'person.targetInstance' | transloco" interface="action-sheet"
+            [(ngModel)]="targetLibraryId" (ionChange)="onTargetChange()">
+            @for (target of availableTargets; track target.libraryId) {
+            <ion-select-option [value]="target.libraryId">{{ target.tenant.shortName }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        @if (currentTarget?.libraryName) {
+        <ion-item lines="none">
+          <ion-icon name="sync-outline" slot="start" color="medium"></ion-icon>
+          <ion-label class="ion-text-wrap">
+            <p>{{ 'orgSongs.syncedTarget' | transloco: { tenant: currentTarget.tenant.shortName, library: currentTarget.libraryName } }}</p>
+          </ion-label>
+        </ion-item>
+        }
+      </ion-list>
+
+      @if (isLoadingTarget) {
+      <div class="ion-text-center ion-padding"><ion-spinner></ion-spinner></div>
+      } @else {
+
+      <!-- Duplicate handling -->
+      @if (duplicates.length) {
+      <ion-list [inset]="true">
+        <ion-item color="warning" lines="none">
+          <ion-icon name="warning-outline" slot="start"></ion-icon>
+          <ion-label class="ion-text-wrap">{{ 'orgSongs.duplicateWarning' | transloco: { count: duplicates.length } }}</ion-label>
+        </ion-item>
+        <ion-radio-group [(ngModel)]="mode" (ionChange)="onModeChange()">
+          <ion-item>
+            <ion-radio value="existing" justify="start" labelPlacement="end">{{ 'orgSongs.modeExisting' | transloco }}</ion-radio>
+          </ion-item>
+          @if (mode === 'existing' && duplicates.length > 1) {
+          <ion-item>
+            <ion-select [label]="'orgSongs.existingSong' | transloco" interface="action-sheet"
+              [(ngModel)]="existingSongId" (ionChange)="onModeChange()">
+              @for (dup of duplicates; track dup.id) {
+              <ion-select-option [value]="dup.id">{{ songLabel(dup) }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+          }
+          <ion-item lines="none">
+            <ion-radio value="new" justify="start" labelPlacement="end">{{ 'orgSongs.modeNew' | transloco }}</ion-radio>
+          </ion-item>
+        </ion-radio-group>
+      </ion-list>
+      }
+
+      <!-- Number (new Werk) -->
+      @if (mode === 'new') {
+      <ion-list [inset]="true">
+        <ion-list-header><ion-label>{{ 'orgSongs.number' | transloco }}</ion-label></ion-list-header>
+        <ion-item>
+          <ion-input [label]="'orgSongs.prefix' | transloco" [(ngModel)]="prefix" maxlength="5"></ion-input>
+        </ion-item>
+        <ion-item [lines]="numberTaken ? 'full' : 'none'">
+          <ion-input type="number" inputmode="numeric" [label]="'orgSongs.number' | transloco" [(ngModel)]="number"
+            [class.number-taken]="numberTaken"></ion-input>
+        </ion-item>
+        @if (numberTaken) {
+        <ion-item lines="none" button detail="false" (click)="useNextFreeNumber()">
+          <ion-icon name="alert-circle-outline" slot="start" color="danger"></ion-icon>
+          <ion-label class="ion-text-wrap">
+            <ion-text color="danger">{{ 'orgSongs.numberTaken' | transloco }}</ion-text>
+            <p>{{ 'orgSongs.useNextFree' | transloco: { number: (prefix || '') + nextFreeNumber } }}</p>
+          </ion-label>
+        </ion-item>
+        }
+      </ion-list>
+      }
+
+      <!-- Fields -->
+      @if (fieldOptions.length) {
+      <ion-list [inset]="true">
+        <ion-list-header><ion-label>{{ 'orgSongs.fields' | transloco }}</ion-label></ion-list-header>
+        @for (option of fieldOptions; track option.key) {
+        <ion-item>
+          <ion-checkbox [(ngModel)]="option.checked" justify="start" labelPlacement="end">
+            <ion-label class="ion-text-wrap">
+              {{ option.label }}
+              <p>{{ option.value }}</p>
+              @if (option.currentValue !== undefined) {
+              <p><ion-text color="warning">{{ 'orgSongs.currentValue' | transloco: { value: option.currentValue } }}</ion-text></p>
+              }
+            </ion-label>
+          </ion-checkbox>
+        </ion-item>
+        }
+      </ion-list>
+      }
+
+      <!-- Files -->
+      @if (fileOptions.length) {
+      <ion-list [inset]="true">
+        <ion-list-header>
+          <ion-label>{{ 'orgSongs.files' | transloco: { selected: selectedFileCount, total: fileOptions.length } }}</ion-label>
+          <ion-button size="small" (click)="setAllFiles(selectedFileCount < fileOptions.length)">
+            {{ (selectedFileCount < fileOptions.length ? 'orgSongs.selectAll' : 'orgSongs.selectNone') | transloco }}
+          </ion-button>
+        </ion-list-header>
+        @for (option of fileOptions; track option.file.url) {
+        <ion-item>
+          <ion-checkbox slot="start" [(ngModel)]="option.checked"></ion-checkbox>
+          <ion-label class="ion-text-wrap">
+            <h3>{{ option.file.fileName }}</h3>
+            <p>{{ 'orgSongs.sourceGroup' | transloco: { group: sourceGroupLabel(option.file) } }}</p>
+            @if (option.existsInTarget) {
+            <p><ion-text color="warning">{{ 'orgSongs.fileExists' | transloco }}</ion-text></p>
+            }
+          </ion-label>
+          <ion-select slot="end" interface="action-sheet" [disabled]="!option.checked" [(ngModel)]="option.instrumentId"
+            [placeholder]="'songs.other' | transloco" [attr.aria-label]="'orgSongs.targetGroup' | transloco">
+            <ion-select-option [value]="null">{{ 'songs.other' | transloco }}</ion-select-option>
+            <ion-select-option [value]="1">{{ 'songs.recording' | transloco }}</ion-select-option>
+            <ion-select-option [value]="2">{{ 'songs.lyrics' | transloco }}</ion-select-option>
+            @for (group of targetGroups; track group.id) {
+            <ion-select-option [value]="group.id">{{ group.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        }
+      </ion-list>
+      }
+
+      <p class="copy-hint">{{ 'orgSongs.copyHint' | transloco }}</p>
+
+      <ion-button class="ion-margin" expand="block" [disabled]="!canCopy" (click)="copy()">
+        {{ (mode === 'existing' ? 'orgSongs.copyIntoExisting' : 'orgSongs.copyAsNew') | transloco }}
+      </ion-button>
+      }
+      }
+    </ion-content>
+  </ng-template>
+</ion-modal>

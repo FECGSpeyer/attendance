@@ -37,6 +37,12 @@
                   <ion-icon slot="start" name="cloud-upload-outline" size="small"></ion-icon>
                   <ion-label>{{ 'songs.importSongs' | transloco }}</ion-label>
                 </ion-item>
+                @if (db.organisation()) {
+                  <ion-item button detail="false" lines="none" (click)="openOrgSongSearch(songsMenuPopover)">
+                    <ion-icon slot="start" name="search-outline" size="small"></ion-icon>
+                    <ion-label>{{ 'orgSongs.menuEntry' | transloco }}</ion-label>
+                  </ion-item>
+                }
               }
             }
             <ion-item button detail="false" lines="none" (click)="exportSongsPdf(songsMenuPopover)">
